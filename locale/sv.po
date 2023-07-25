@@ -138,8 +138,10 @@ msgstr "%q i %q måste vara av typen %q, inte %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/mimxrt10xx/common-hal/usb_host/Port.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -194,6 +196,7 @@ msgid "%q must be 1 when %q is True"
 msgstr "%q måste vara 1 när %q är sann"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
+#: shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
 msgstr "%q måste vara <= %d"
 
@@ -797,10 +800,6 @@ msgstr "Det går inte att specificera RTS eller CTS i RS485-läget"
 msgid "Cannot subclass slice"
 msgstr "Det går inte att subklassa slice"
 
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot transfer without MOSI and MISO pins"
-msgstr "Det går inte att överföra utan MOSI- och MISO-pinnar"
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Det går inte att ändra frekvensen på en timer som redan används"
@@ -1113,13 +1112,10 @@ msgstr "Grupp används redan"
 msgid "Half duplex SPI is not implemented"
 msgstr "Halvduplex SPI är inte implementerat"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
-#: ports/stm/common-hal/sdioio/SDCard.c
-msgid "Hardware busy, try alternative pins"
-msgstr "Hårdvaran är upptagen, prova alternativa pinnar"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/canio/CAN.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Hårdvaran används redan, prova alternativa pinnar"
 
@@ -1383,14 +1379,6 @@ msgstr "Datastorlek matchar inte"
 msgid "Mismatched swap flag"
 msgstr "Felaktig swapflagga"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI Pin"
-msgstr "MISO- eller MOSI-pinne saknas"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI pin"
-msgstr "Saknad MISO- eller MOSI-pinne"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
@@ -1464,6 +1452,14 @@ msgid "Nimble out of memory"
 msgstr "Nimble har inget minne kvar"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/paralleldisplay/ParallelBus.c shared-module/bitbangio/SPI.c
 msgid "No %q pin"
 msgstr "Ingen %q-pinne"
 
@@ -1496,36 +1492,6 @@ msgstr "Ingen I2C-enhet på adress: 0x%x"
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "No IP"
 msgstr "Ingen IP"
-
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MISO Pin"
-msgstr "Ingen MISO-pinne"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MISO pin"
-msgstr "Ingen MISO-pinne"
-
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MOSI Pin"
-msgstr "Ingen MOSI-pinne"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MOSI pin"
-msgstr "Ingen MOSI-pinne"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No RX pin"
-msgstr "Ingen RX-pinne"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No TX pin"
-msgstr "Ingen TX-pinne"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
@@ -2455,6 +2421,7 @@ msgstr "Du tryckte ner båda knapparna vid start."
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
 msgstr "Du tryckte ner knapp A vid start."
 
@@ -3688,11 +3655,6 @@ msgstr "inget standard seed"
 msgid "no module named '%q'"
 msgstr "ingen modul med namnet '%q'"
 
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c
-msgid "no reset pin available"
-msgstr "ingen reset-pinne tillgänglig"
-
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
 msgstr "inget svar från SD-kort"
@@ -4418,6 +4380,39 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "Det går inte att överföra utan MOSI- och MISO-pinnar"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Hårdvaran är upptagen, prova alternativa pinnar"
+
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "MISO- eller MOSI-pinne saknas"
+
+#~ msgid "Missing MISO or MOSI pin"
+#~ msgstr "Saknad MISO- eller MOSI-pinne"
+
+#~ msgid "No MISO Pin"
+#~ msgstr "Ingen MISO-pinne"
+
+#~ msgid "No MISO pin"
+#~ msgstr "Ingen MISO-pinne"
+
+#~ msgid "No MOSI Pin"
+#~ msgstr "Ingen MOSI-pinne"
+
+#~ msgid "No MOSI pin"
+#~ msgstr "Ingen MOSI-pinne"
+
+#~ msgid "No RX pin"
+#~ msgstr "Ingen RX-pinne"
+
+#~ msgid "No TX pin"
+#~ msgstr "Ingen TX-pinne"
+
+#~ msgid "no reset pin available"
+#~ msgstr "ingen reset-pinne tillgänglig"
 
 #~ msgid "Sleep Memory not available"
 #~ msgstr "Sömnminne inte tillgängligt"
