@@ -232,7 +232,7 @@ STATIC void machine_hw_spi_init_internal(
         #ifdef FSPI_HOST
         && self->host != FSPI_HOST
         #endif
-        #ifdef SPI3_HOST
+        #if SOC_SPI_PERIPH_NUM > 2
         && self->host != SPI3_HOST
         #endif
         ) {
