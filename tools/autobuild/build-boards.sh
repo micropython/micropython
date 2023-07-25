@@ -3,8 +3,36 @@
 # The functions in this file can be run independently to build boards.
 # For example:
 #
-#   $ source build-boards.sh
-#   $ MICROPY_AUTOBUILD_MAKE=make build_rp2_boards -latest /tmp
+#   $ source tools/autobuild/build-boards.sh
+#   $ cd ports/rp2
+#   $ MICROPY_AUTOBUILD_MAKE="make -j8" build_rp2_boards -latest /tmp
+#
+# Or to build a single board:
+#
+#   $ source tools/autobuild/build-boards.sh
+#   $ cd ports/rp2
+#   $ MICROPY_AUTOBUILD_MAKE="make -j8" build_board boards/PICO/board.json -latest /tmp uf2
+
+function copy_artefacts {
+    local dest_dir=$1
+    local descr=$2
+    local fw_tag=$3
+    local build_dir=$4
+    shift 4
+
+    for ext in $@; do
+        dest=$dest_dir/$descr$fw_tag.$ext
+        if [ -r $build_dir/firmware.$ext ]; then
+            mv $build_dir/firmware.$ext $dest
+        elif [ -r $build_dir/micropython.$ext ]; then
+            # esp32 has micropython.elf, etc
+            mv $build_dir/micropython.$ext $dest
+        elif [ $ext = app-bin -a -r $build_dir/micropython.bin ]; then
+            # esp32 has micropython.bin which is just the application
+            mv $build_dir/micropython.bin $dest
+        fi
+    done
+}
 
 function build_board {
     # check/get parameters
@@ -13,33 +41,29 @@ function build_board {
         return 1
     fi
 
-    board_json=$1
-    fw_tag=$2
-    dest_dir=$3
-    shift
-    shift
-    shift
+    local board_json=$1
+    local fw_tag=$2
+    local dest_dir=$3
+    shift 3
 
-    board=$(echo $board_json | awk -F '/' '{ print $2 }')
-    descr=$(cat $board_json | python3 -c "import json,sys; print(json.load(sys.stdin).get('id', '$board'))")
-    build_dir=/tmp/micropython-build-$board
+    local board=$(echo $board_json | awk -F '/' '{ print $2 }')
+    local descr=$(cat $board_json | python3 -c "import json,sys; print(json.load(sys.stdin).get('id', '$board'))")
 
+    # Build the "default" variant. For most boards this is the only thing we build.
     echo "building $descr $board"
-    $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir && (
-        for ext in $@; do
-            dest=$dest_dir/$descr$fw_tag.$ext
-            if [ -r $build_dir/firmware.$ext ]; then
-                mv $build_dir/firmware.$ext $dest
-            elif [ -r $build_dir/micropython.$ext ]; then
-                # esp32 has micropython.elf, etc
-                mv $build_dir/micropython.$ext $dest
-            elif [ $ext = app-bin -a -r $build_dir/micropython.bin ]; then
-                # esp32 has micropython.bin which is just the application
-                mv $build_dir/micropython.bin $dest
-            fi
-        done
-    )
+    local build_dir=/tmp/micropython-build-$board
+    $MICROPY_AUTOBUILD_MAKE BOARD=$board BUILD=$build_dir && copy_artefacts $dest_dir $descr $fw_tag $build_dir $@
     rm -rf $build_dir
+
+    # Query variants from board.json and build them. Ignore the special "idf3"
+    # variant for ESP32 boards (this allows the downloads page to still have
+    # the idf3 files for older releases that used to be explicitly built).
+    for variant in `cat $board_json | python3 -c "import json,sys; print(' '.join(v for v in json.load(sys.stdin).get('variants', {}).keys() if v != 'idf3'))"`; do
+        local variant_build_dir=$build_dir-$variant
+        echo "building variant $descr $board $variant"
+        $MICROPY_AUTOBUILD_MAKE BOARD=$board BOARD_VARIANT=$variant BUILD=$variant_build_dir && copy_artefacts $dest_dir $descr-$variant $fw_tag $variant_build_dir $@
+        rm -rf $variant_build_dir
+    done
 }
 
 function build_boards {
@@ -49,7 +73,7 @@ function build_boards {
         return 1
     fi
 
-    check_file=$1
+    local check_file=$1
     shift
 
     # check we are in the correct directory

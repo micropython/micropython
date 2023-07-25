@@ -77,7 +77,6 @@ cd ../samd
 build_samd_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../stm32
 build_stm32_boards ${FW_TAG} ${LOCAL_FIRMWARE}
-${AUTODIR}/build-stm32-extra.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 
 popd
 
