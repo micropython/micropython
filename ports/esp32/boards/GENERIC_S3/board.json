@@ -6,6 +6,7 @@
     "features": [
         "BLE",
         "External Flash",
+        "External RAM",
         "WiFi"
     ],
     "images": [
@@ -15,5 +16,8 @@
     "product": "ESP32-S3",
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
-    "vendor": "Espressif"
+    "vendor": "Espressif",
+    "variants": {
+        "spiram-oct": "Support for Octal-SPIRAM"
+    }
 }
