@@ -170,6 +170,7 @@ set(MICROPY_CROSS_FLAGS -march=xtensawin)
 # Set compile options for this port.
 target_compile_definitions(${MICROPY_TARGET} PUBLIC
     ${MICROPY_DEF_CORE}
+    ${MICROPY_DEF_BOARD}
     MICROPY_ESP_IDF_4=1
     MICROPY_VFS_FAT=1
     MICROPY_VFS_LFS2=1

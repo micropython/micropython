@@ -13,11 +13,15 @@
         "esp32_devkitc.jpg"
     ],
     "mcu": "esp32",
-    "product": "ESP32",
+    "product": "ESP32 / WROOM",
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
     "variants": {
-        "idf3": "Compiled with IDF 3.x"
+        "idf3": "Compiled with IDF 3.x",
+        "d2wd": "ESP32 D2WD",
+        "spiram": "Support for SPIRAM / WROVER",
+        "unicore": "ESP32 Unicore",
+        "ota": "Support for OTA"
     },
     "vendor": "Espressif"
 }
