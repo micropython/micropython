@@ -44,6 +44,13 @@
 // SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2
 // SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err
 
+// Number of available hardware SPI peripherals.
+#if SOC_SPI_PERIPH_NUM > 2
+#define MICROPY_HW_SPI_MAX (2)
+#else
+#define MICROPY_HW_SPI_MAX (1)
+#endif
+
 // Default pins for SPI(id=1) aka IDF SPI2, can be overridden by a board
 #ifndef MICROPY_HW_SPI1_SCK
 // Use IO_MUX pins by default.
@@ -99,15 +106,15 @@ typedef struct _machine_hw_spi_obj_t {
 } machine_hw_spi_obj_t;
 
 // Default pin mappings for the hardware SPI instances
-STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[2] = {
+STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[MICROPY_HW_SPI_MAX] = {
     { .sck = MICROPY_HW_SPI1_SCK, .mosi = MICROPY_HW_SPI1_MOSI, .miso = MICROPY_HW_SPI1_MISO },
     #ifdef MICROPY_HW_SPI2_SCK
     { .sck = MICROPY_HW_SPI2_SCK, .mosi = MICROPY_HW_SPI2_MOSI, .miso = MICROPY_HW_SPI2_MISO },
     #endif
 };
 
-// Static objects mapping to SPI2 and SPI3 hardware peripherals
-STATIC machine_hw_spi_obj_t machine_hw_spi_obj[2];
+// Static objects mapping to SPI2 (and SPI3 if available) hardware peripherals.
+STATIC machine_hw_spi_obj_t machine_hw_spi_obj[MICROPY_HW_SPI_MAX];
 
 STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
     switch (spi_bus_remove_device(self->spi)) {
@@ -208,14 +215,6 @@ STATIC void machine_hw_spi_init_internal(
     if (miso != -2 && miso != self->miso) {
         self->miso = miso;
         changed = true;
-    }
-
-    if (self->host != SPI2_HOST
-        #if SOC_SPI_PERIPH_NUM > 2
-        && self->host != SPI3_HOST
-        #endif
-        ) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), self->host);
     }
 
     if (changed) {
@@ -464,13 +463,14 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     machine_hw_spi_obj_t *self;
     const machine_hw_spi_default_pins_t *default_pins;
-    if (args[ARG_id].u_int == 1) { // SPI2_HOST which is FSPI_HOST on ESP32Sx, SPI2_HOST on others
-        self = &machine_hw_spi_obj[0];
-        default_pins = &machine_hw_spi_default_pins[0];
+    mp_int_t spi_id = args[ARG_id].u_int;
+    if (1 <= spi_id && spi_id <= MICROPY_HW_SPI_MAX) {
+        self = &machine_hw_spi_obj[spi_id - 1];
+        default_pins = &machine_hw_spi_default_pins[spi_id - 1];
     } else {
-        self = &machine_hw_spi_obj[1];
-        default_pins = &machine_hw_spi_default_pins[1];
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
+
     self->base.type = &machine_spi_type;
 
     int8_t sck, mosi, miso;
