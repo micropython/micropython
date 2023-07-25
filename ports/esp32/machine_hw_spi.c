@@ -73,13 +73,6 @@
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
 
-#if CONFIG_IDF_TARGET_ESP32C3
-#define SPI2_HOST SPI2_HOST
-#elif CONFIG_IDF_TARGET_ESP32S3
-#define SPI2_HOST SPI3_HOST
-#define FSPI_HOST SPI2_HOST
-#endif
-
 typedef struct _machine_hw_spi_default_pins_t {
     int8_t sck;
     int8_t mosi;
@@ -218,9 +211,6 @@ STATIC void machine_hw_spi_init_internal(
     }
 
     if (self->host != SPI2_HOST
-        #ifdef FSPI_HOST
-        && self->host != FSPI_HOST
-        #endif
         #if SOC_SPI_PERIPH_NUM > 2
         && self->host != SPI3_HOST
         #endif
