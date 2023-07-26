@@ -5,7 +5,7 @@ ifdef BOARD_DIR
 BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
 # If not given on the command line, then default to PYBV10.
-BOARD ?= PYBV10
+BOARD ?= COOKIE
 BOARD_DIR ?= boards/$(BOARD)
 endif
 
@@ -588,6 +588,7 @@ endef
 define GENERATE_HEX
 	$(ECHO) "GEN $(1)"
 	$(Q)$(OBJCOPY) -O ihex $(2) $(1)
+
 endef
 
 .PHONY: deploy deploy-stlink deploy-openocd
@@ -650,7 +651,7 @@ $(BUILD)/firmware.pack.dfu: $(BUILD)/firmware.dfu $(MBOOT_PACK_KEYS_FILE)
 
 $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 	$(call GENERATE_HEX,$@,$^)
-
+	$(PYTHON) $(TOP)/tools/uf2conv.py -f 0x57755a57 -b 0x08010000 $(BUILD)/firmware.hex -c -o $(BUILD)/firmware.uf2
 $(BUILD)/firmware.elf: $(OBJ)
 	$(call GENERATE_ELF,$@,$^)
 
