@@ -44,25 +44,21 @@
 // SPI(id=1) | HSPI/SPI2 | FSPI/SPI2 | SPI2    | SPI2
 // SPI(id=2) | VSPI/SPI3 | HSPI/SPI3 | SPI3    | err
 
+// Number of available hardware SPI peripherals.
+#if SOC_SPI_PERIPH_NUM > 2
+#define MICROPY_HW_SPI_MAX (2)
+#else
+#define MICROPY_HW_SPI_MAX (1)
+#endif
+
 // Default pins for SPI(id=1) aka IDF SPI2, can be overridden by a board
 #ifndef MICROPY_HW_SPI1_SCK
-#ifdef SPI2_IOMUX_PIN_NUM_CLK
 // Use IO_MUX pins by default.
 // If SPI lines are routed to other pins through GPIO matrix
 // routing adds some delay and lower limit applies to SPI clk freq
-#define MICROPY_HW_SPI1_SCK SPI2_IOMUX_PIN_NUM_CLK      // pin 14 on ESP32
-#define MICROPY_HW_SPI1_MOSI SPI2_IOMUX_PIN_NUM_MOSI    // pin 13 on ESP32
-#define MICROPY_HW_SPI1_MISO SPI2_IOMUX_PIN_NUM_MISO    // pin 12 on ESP32
-// Only for compatibility with IDF 4.2 and older
-#elif CONFIG_IDF_TARGET_ESP32S2
-#define MICROPY_HW_SPI1_SCK FSPI_IOMUX_PIN_NUM_CLK
-#define MICROPY_HW_SPI1_MOSI FSPI_IOMUX_PIN_NUM_MOSI
-#define MICROPY_HW_SPI1_MISO FSPI_IOMUX_PIN_NUM_MISO
-#else
 #define MICROPY_HW_SPI1_SCK SPI2_IOMUX_PIN_NUM_CLK
 #define MICROPY_HW_SPI1_MOSI SPI2_IOMUX_PIN_NUM_MOSI
 #define MICROPY_HW_SPI1_MISO SPI2_IOMUX_PIN_NUM_MISO
-#endif
 #endif
 
 // Default pins for SPI(id=2) aka IDF SPI3, can be overridden by a board
@@ -83,13 +79,6 @@
 
 #define MP_HW_SPI_MAX_XFER_BYTES (4092)
 #define MP_HW_SPI_MAX_XFER_BITS (MP_HW_SPI_MAX_XFER_BYTES * 8) // Has to be an even multiple of 8
-
-#if CONFIG_IDF_TARGET_ESP32C3
-#define SPI2_HOST SPI2_HOST
-#elif CONFIG_IDF_TARGET_ESP32S3
-#define SPI2_HOST SPI3_HOST
-#define FSPI_HOST SPI2_HOST
-#endif
 
 typedef struct _machine_hw_spi_default_pins_t {
     int8_t sck;
@@ -117,15 +106,15 @@ typedef struct _machine_hw_spi_obj_t {
 } machine_hw_spi_obj_t;
 
 // Default pin mappings for the hardware SPI instances
-STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[2] = {
+STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[MICROPY_HW_SPI_MAX] = {
     { .sck = MICROPY_HW_SPI1_SCK, .mosi = MICROPY_HW_SPI1_MOSI, .miso = MICROPY_HW_SPI1_MISO },
     #ifdef MICROPY_HW_SPI2_SCK
     { .sck = MICROPY_HW_SPI2_SCK, .mosi = MICROPY_HW_SPI2_MOSI, .miso = MICROPY_HW_SPI2_MISO },
     #endif
 };
 
-// Static objects mapping to SPI2 and SPI3 hardware peripherals
-STATIC machine_hw_spi_obj_t machine_hw_spi_obj[2];
+// Static objects mapping to SPI2 (and SPI3 if available) hardware peripherals.
+STATIC machine_hw_spi_obj_t machine_hw_spi_obj[MICROPY_HW_SPI_MAX];
 
 STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
     switch (spi_bus_remove_device(self->spi)) {
@@ -226,17 +215,6 @@ STATIC void machine_hw_spi_init_internal(
     if (miso != -2 && miso != self->miso) {
         self->miso = miso;
         changed = true;
-    }
-
-    if (self->host != SPI2_HOST
-        #ifdef FSPI_HOST
-        && self->host != FSPI_HOST
-        #endif
-        #ifdef SPI3_HOST
-        && self->host != SPI3_HOST
-        #endif
-        ) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), self->host);
     }
 
     if (changed) {
@@ -485,13 +463,14 @@ mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     machine_hw_spi_obj_t *self;
     const machine_hw_spi_default_pins_t *default_pins;
-    if (args[ARG_id].u_int == 1) { // SPI2_HOST which is FSPI_HOST on ESP32Sx, SPI2_HOST on others
-        self = &machine_hw_spi_obj[0];
-        default_pins = &machine_hw_spi_default_pins[0];
+    mp_int_t spi_id = args[ARG_id].u_int;
+    if (1 <= spi_id && spi_id <= MICROPY_HW_SPI_MAX) {
+        self = &machine_hw_spi_obj[spi_id - 1];
+        default_pins = &machine_hw_spi_default_pins[spi_id - 1];
     } else {
-        self = &machine_hw_spi_obj[1];
-        default_pins = &machine_hw_spi_default_pins[1];
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%d) doesn't exist"), spi_id);
     }
+
     self->base.type = &machine_spi_type;
 
     int8_t sck, mosi, miso;

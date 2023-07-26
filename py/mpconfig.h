@@ -1726,6 +1726,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_ONEWIRE (0)
 #endif
 
+// Whether to provide the "platform" module
+#ifndef MICROPY_PY_PLATFORM
+#define MICROPY_PY_PLATFORM (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
 /*****************************************************************************/
 /* Hooks for a port to add builtins                                          */
 
