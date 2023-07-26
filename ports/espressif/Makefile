@@ -330,13 +330,13 @@ $(BUILD)/esp-idf:
 TARGET_SDKCONFIG = esp-idf-config/sdkconfig-$(IDF_TARGET).defaults
 
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE), 2MB)
-	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
 else
 UF2_BOOTLOADER ?= $(CIRCUITPY_USB)
 ifeq ($(UF2_BOOTLOADER), 1)
-	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
 else
-	FLASH_SDKCONFIG = esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
 endif
 endif
 
