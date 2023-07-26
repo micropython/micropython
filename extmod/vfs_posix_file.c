@@ -274,12 +274,58 @@ STATIC const mp_stream_p_t vfs_posix_textio_stream_p = {
     .is_text = true,
 };
 
+#if MICROPY_PY_SYS_STDIO_BUFFER
+
+const mp_obj_vfs_posix_file_t mp_sys_stdin_buffer_obj = {{&mp_type_vfs_posix_fileio}, STDIN_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stdout_buffer_obj = {{&mp_type_vfs_posix_fileio}, STDOUT_FILENO};
+const mp_obj_vfs_posix_file_t mp_sys_stderr_buffer_obj = {{&mp_type_vfs_posix_fileio}, STDERR_FILENO};
+
+// Forward declarations.
+const mp_obj_vfs_posix_file_t mp_sys_stdin_obj;
+const mp_obj_vfs_posix_file_t mp_sys_stdout_obj;
+const mp_obj_vfs_posix_file_t mp_sys_stderr_obj;
+
+STATIC void vfs_posix_textio_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] != MP_OBJ_NULL) {
+        // These objects are read-only.
+        return;
+    }
+
+    if (attr == MP_QSTR_buffer) {
+        // Implement the `buffer` attribute only on std{in,out,err} instances.
+        if (MP_OBJ_TO_PTR(self_in) == &mp_sys_stdin_obj) {
+            dest[0] = MP_OBJ_FROM_PTR(&mp_sys_stdin_buffer_obj);
+            return;
+        }
+        if (MP_OBJ_TO_PTR(self_in) == &mp_sys_stdout_obj) {
+            dest[0] = MP_OBJ_FROM_PTR(&mp_sys_stdout_buffer_obj);
+            return;
+        }
+        if (MP_OBJ_TO_PTR(self_in) == &mp_sys_stderr_obj) {
+            dest[0] = MP_OBJ_FROM_PTR(&mp_sys_stderr_buffer_obj);
+            return;
+        }
+    }
+
+    // Any other attribute - forward to locals dict.
+    dest[1] = MP_OBJ_SENTINEL;
+};
+
+#define VFS_POSIX_TEXTIO_TYPE_ATTR attr, vfs_posix_textio_attr,
+
+#else
+
+#define VFS_POSIX_TEXTIO_TYPE_ATTR
+
+#endif // MICROPY_PY_SYS_STDIO_BUFFER
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_vfs_posix_textio,
     MP_QSTR_TextIOWrapper,
     MP_TYPE_FLAG_ITER_IS_STREAM,
     print, vfs_posix_file_print,
     protocol, &vfs_posix_textio_stream_p,
+    VFS_POSIX_TEXTIO_TYPE_ATTR
     locals_dict, &vfs_posix_rawfile_locals_dict
     );
 
