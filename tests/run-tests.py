@@ -709,7 +709,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # run CPython to work out expected output
             try:
                 output_expected = subprocess.check_output(
-                    CPYTHON3_CMD + [os.path.abspath(test_file)], cwd=os.path.dirname(test_file)
+                    CPYTHON3_CMD + [os.path.abspath(test_file)],
+                    cwd=os.path.dirname(test_file),
+                    stderr=subprocess.STDOUT,
                 )
                 if args.write_exp:
                     with open(test_file_expected, "wb") as f:
