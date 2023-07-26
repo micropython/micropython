@@ -204,7 +204,7 @@ function mpy_device_erase {
 
 function arduino_lab_download_and_launch {
     echo Downloading Arduino Lab for Micropython...
-    curl -s -L https://github.com/arduino/lab-micropython-editor/releases/download/0.5.0-alpha/Arduino.Lab.for.Micropython-linux_x64.zip > arduino-for-micropython.zip
+    curl -s -L https://github.com/arduino/lab-micropython-editor/releases/download/0.8.0/Arduino.Lab.for.Micropython-linux_x64.zip > arduino-for-micropython.zip
     echo Extracting Arduino Lab for Micropython...
     mkdir arduino-lab-mpy
     unzip arduino-for-micropython.zip -d arduino-lab-mpy
