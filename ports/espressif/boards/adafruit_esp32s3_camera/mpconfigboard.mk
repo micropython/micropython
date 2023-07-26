@@ -8,7 +8,7 @@ IDF_TARGET = esp32s3
 CIRCUITPY_ESP_FLASH_MODE = dio
 CIRCUITPY_ESP_FLASH_FREQ = 40m
 CIRCUITPY_ESP_FLASH_SIZE = 4MB
-FLASH_SDKCONFIG = esp-idf-config/sdkconfig-4MB-no-ota.defaults
+FLASH_SDKCONFIG = esp-idf-config/sdkconfig-4MB-1ota.defaults
 
 CIRCUITPY_AUDIOBUSIO = 0
 CIRCUITPY_CANIO = 0

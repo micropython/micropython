@@ -73,7 +73,9 @@ with open(sys.argv[2], "r") as f:
                 ota = None
                 app = None
                 for partition in csv.reader(f):
-                    if partition[0][0] == "#":
+                    if not partition:  # empty row
+                        continue
+                    if partition[0].startswith("#"):
                         continue
                     subtype = partition[2].strip()
                     if subtype == "factory":
