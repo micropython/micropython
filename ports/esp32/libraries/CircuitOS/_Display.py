@@ -149,7 +149,7 @@ class PanelILI9341(Panel):
 
 class PanelST7789(Panel):
 	def __init__(self, spi: SPI, dc: Pin, reset: Pin = None, cs: Pin = None, rotation: int = 0):
-		super().__init__(160, 120)
+		super().__init__(160, 120, 2)
 		d = dict(spi=spi, height=self.width() * self.scale(), width=self.height() * self.scale(), dc=dc,
 				 rotation=rotation,
 				 color_order=st7789.RGB, inversion=False)
