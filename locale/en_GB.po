@@ -139,8 +139,10 @@ msgstr "%q in %q must be of type %q, not %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/mimxrt10xx/common-hal/usb_host/Port.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -195,6 +197,7 @@ msgid "%q must be 1 when %q is True"
 msgstr "%q must be 1 when %q is True"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
+#: shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
 msgstr "%q must be <= %d"
 
@@ -794,10 +797,6 @@ msgstr "Cannot specify RTS or CTS in RS485 mode"
 msgid "Cannot subclass slice"
 msgstr "Cannot subclass slice"
 
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot transfer without MOSI and MISO pins"
-msgstr "Cannot transfer without MOSI and MISO pins"
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Cannot vary frequency on a timer that is already in use"
@@ -1108,13 +1107,10 @@ msgstr "Group already used"
 msgid "Half duplex SPI is not implemented"
 msgstr "Half duplex SPI is not implemented"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
-#: ports/stm/common-hal/sdioio/SDCard.c
-msgid "Hardware busy, try alternative pins"
-msgstr "Hardware busy, try alternative pins"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/canio/CAN.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware in use, try alternative pins"
 msgstr "Hardware in use, try alternative pins"
 
@@ -1376,14 +1372,6 @@ msgstr "Mismatched data size"
 msgid "Mismatched swap flag"
 msgstr "Mismatched swap flag"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI Pin"
-msgstr "Missing MISO or MOSI Pin"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI pin"
-msgstr "Missing MISO or MOSI pin"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
@@ -1457,6 +1445,14 @@ msgid "Nimble out of memory"
 msgstr "Nimble out of memory"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/paralleldisplay/ParallelBus.c shared-module/bitbangio/SPI.c
 msgid "No %q pin"
 msgstr "No %q pin"
 
@@ -1489,36 +1485,6 @@ msgstr "No I2C device at address: 0x%x"
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "No IP"
 msgstr "No IP"
-
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MISO Pin"
-msgstr "No MISO Pin"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MISO pin"
-msgstr "No MISO pin"
-
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MOSI Pin"
-msgstr "No MOSI Pin"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MOSI pin"
-msgstr "No MOSI pin"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No RX pin"
-msgstr "No RX pin"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No TX pin"
-msgstr "No TX pin"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
@@ -2443,6 +2409,7 @@ msgstr "You pressed both buttons at start up."
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
 msgstr "You pressed button A at start up."
 
@@ -2837,6 +2804,10 @@ msgstr "can't create '%q' instances"
 #: py/objtype.c
 msgid "cannot create instance"
 msgstr "can't create instance"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr ""
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3298,6 +3269,14 @@ msgstr "initial_value length is wrong"
 msgid "inline assembler must be a function"
 msgstr "inline assembler must be a function"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr ""
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "input argument must be an integer, a tuple, or a list"
@@ -3626,6 +3605,10 @@ msgstr "native method too big"
 msgid "native yield"
 msgstr "native yield"
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3670,11 +3653,6 @@ msgstr "no default seed"
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "no module named '%q'"
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c
-msgid "no reset pin available"
-msgstr "no reset pin available"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
@@ -3728,6 +3706,10 @@ msgstr "not enough arguments for format string"
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
 msgstr "not implemented for complex dtype"
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
+msgstr ""
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3839,8 +3821,8 @@ msgstr "only slices with step=1 (aka None) are supported"
 msgid "opcode"
 msgstr "opcode"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr "operands could not be broadcast together"
 
@@ -3877,9 +3859,25 @@ msgstr "ord() expected a character, but string of length %d found"
 msgid "out array is too small"
 msgstr "out array is too small"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr ""
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
 msgstr "out must be a float dense array"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
@@ -4400,6 +4398,39 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "Cannot transfer without MOSI and MISO pins"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Hardware busy, try alternative pins"
+
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "Missing MISO or MOSI Pin"
+
+#~ msgid "Missing MISO or MOSI pin"
+#~ msgstr "Missing MISO or MOSI pin"
+
+#~ msgid "No MISO Pin"
+#~ msgstr "No MISO Pin"
+
+#~ msgid "No MISO pin"
+#~ msgstr "No MISO pin"
+
+#~ msgid "No MOSI Pin"
+#~ msgstr "No MOSI Pin"
+
+#~ msgid "No MOSI pin"
+#~ msgstr "No MOSI pin"
+
+#~ msgid "No RX pin"
+#~ msgstr "No RX pin"
+
+#~ msgid "No TX pin"
+#~ msgstr "No TX pin"
+
+#~ msgid "no reset pin available"
+#~ msgstr "no reset pin available"
 
 #~ msgid "Sleep Memory not available"
 #~ msgstr "Sleep Memory not available"

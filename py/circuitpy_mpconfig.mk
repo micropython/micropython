@@ -562,6 +562,9 @@ CFLAGS += -DCIRCUITPY_ZLIB=$(CIRCUITPY_ZLIB)
 CIRCUITPY_ULAB ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_ULAB=$(CIRCUITPY_ULAB)
 
+# whether to use -Os optimization on files in ulab
+CIRCUITPY_ULAB_OPTIMIZE_SIZE ?= 0
+
 # CIRCUITPY_VIDEOCORE is handled in the broadcom tree.
 # Only for Broadcom chips.
 # Assume not a Broadcom build.
