@@ -76,6 +76,24 @@ class PanelST7735(Panel):
 		self.tft.init()
 
 
+class PanelST7735_128x128(Panel):
+	def __init__(self, spi: SPI, dc: Pin, reset: Pin = None, cs: Pin = None, rotation: int = 0):
+		super().__init__(128, 128)
+		d = dict(spi=spi, width=self.height(), height=self.width(), dc=dc, rotation=rotation,
+				 color_order=st7789.BGR, inversion=False)
+
+		if cs is not None:
+			d.update(cs=cs)
+		if reset is not None:
+			d.update(reset=reset)
+		self.tft = ST7789(**d)
+
+	def push(self, data: bytearray):
+		self.tft.blit_buffer(data, 0, 0, self.width(), self.height())
+
+	def init(self):
+		self.tft.init()
+
 class PanelILI9341(Panel):
 	custom_init = [
 		(b'\x01', 150),  # soft reset
