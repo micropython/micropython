@@ -100,6 +100,10 @@
 //|         :param int frequency: the target clock frequency of the state machine. Actual may be less. Use 0 for system clock speed.
 //|         :param ReadableBuffer init: a program to run once at start up. This is run after program
 //|              is started so instructions may be intermingled
+//|         :param ReadableBuffer may_exec: Instructions that may be executed via `StateMachine.exec` calls.
+//|             Some elements of the `StateMachine`'s configuration are inferred from the instructions used;
+//|             for instance, if there is no ``in`` or ``push`` instruction, then the `StateMachine` is configured without a receive FIFO.
+//|             In this case, passing a ``may_exec`` program containing an ``in`` instruction such as ``in x``, a receive FIFO will be configured.
 //|         :param ~microcontroller.Pin first_out_pin: the first pin to use with the OUT instruction
 //|         :param int out_pin_count: the count of consecutive pins to use with OUT starting at first_out_pin
 //|         :param int initial_out_pin_state: the initial output value for out pins starting at first_out_pin
@@ -152,7 +156,7 @@
 STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     rp2pio_statemachine_obj_t *self = m_new_obj(rp2pio_statemachine_obj_t);
     self->base.type = &rp2pio_statemachine_type;
-    enum { ARG_program, ARG_frequency, ARG_init,
+    enum { ARG_program, ARG_frequency, ARG_init, ARG_may_exec,
            ARG_first_out_pin, ARG_out_pin_count, ARG_initial_out_pin_state, ARG_initial_out_pin_direction,
            ARG_first_in_pin, ARG_in_pin_count,
            ARG_pull_in_pin_up, ARG_pull_in_pin_down,
@@ -171,6 +175,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         { MP_QSTR_program, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_init, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_may_exec, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 
         { MP_QSTR_first_out_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_out_pin_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -220,6 +225,10 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     init_bufinfo.len = 0;
     mp_get_buffer(args[ARG_init].u_obj, &init_bufinfo, MP_BUFFER_READ);
 
+    mp_buffer_info_t may_exec_bufinfo;
+    may_exec_bufinfo.len = 0;
+    mp_get_buffer(args[ARG_may_exec].u_obj, &may_exec_bufinfo, MP_BUFFER_READ);
+
     // We don't validate pin in use here because we may be ok sharing them within a PIO.
     const mcu_pin_obj_t *first_out_pin =
         validate_obj_is_pin_or_none(args[ARG_first_out_pin].u_obj, MP_QSTR_first_out_pin);
@@ -264,6 +273,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         bufinfo.buf, bufinfo.len / 2,
         args[ARG_frequency].u_int,
         init_bufinfo.buf, init_bufinfo.len / 2,
+        may_exec_bufinfo.buf, bufinfo.len / 2,
         first_out_pin, out_pin_count, args[ARG_initial_out_pin_state].u_int, args[ARG_initial_out_pin_direction].u_int,
         first_in_pin, in_pin_count, args[ARG_pull_in_pin_up].u_int, args[ARG_pull_in_pin_down].u_int,
         first_set_pin, set_pin_count, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,

@@ -61,6 +61,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         pulsein_program, MP_ARRAY_SIZE(pulsein_program),
         1000000, // frequency
         NULL, 0, // init, init_len
+        NULL, 0, // may_exec
         NULL, 0, 0, 0, // first out pin, # out pins, initial_out_pin_state
         pin, 1, 0, 0, // first in pin, # in pins
         NULL, 0, 0, 0, // first set pin

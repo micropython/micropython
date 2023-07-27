@@ -387,10 +387,115 @@ static uint32_t mask_and_rotate(const mcu_pin_obj_t *first_pin, uint32_t bit_cou
     return value << shift | value >> (32 - shift);
 }
 
+typedef struct {
+    uint32_t pins_we_use, in_pin_count, out_pin_count;
+    bool has_jmp_pin, auto_push, auto_pull, has_in_pin, has_out_pin, has_set_pin;
+    bool tx_fifo, rx_fifo, in_loaded, out_loaded, in_used, out_used;
+} introspect_t;
+
+static void consider_instruction(introspect_t *state, uint16_t full_instruction, qstr what, size_t i) {
+    uint16_t instruction = full_instruction & 0xe000;
+    if (instruction == 0x8000) {
+        if ((full_instruction & 0xe080) == pio_instr_bits_push) {
+            state->rx_fifo = true;
+            state->in_loaded = true;
+        } else { // pull otherwise.
+            state->tx_fifo = true;
+            state->out_loaded = true;
+        }
+    }
+    if (instruction == pio_instr_bits_jmp) {
+        uint16_t condition = (full_instruction & 0x00e0) >> 5;
+        if ((condition == 0x6) && !state->has_jmp_pin) {
+            mp_raise_ValueError_varg(translate("Missing jmp_pin. %q[%u] jumps on pin"), what, i);
+        }
+    }
+    if (instruction == pio_instr_bits_wait) {
+        uint16_t wait_source = (full_instruction & 0x0060) >> 5;
+        uint16_t wait_index = full_instruction & 0x001f;
+        if (wait_source == 0 && (state->pins_we_use & (1 << wait_index)) == 0) { // GPIO
+            mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), i);
+        }
+        if (wait_source == 1) { // Input pin
+            if (state->has_in_pin) {
+                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] waits based on pin"), what, i);
+            }
+            if (wait_index >= state->in_pin_count) {
+                mp_raise_ValueError_varg(translate("%q[%u] waits on input outside of count"), what, i);
+            }
+        }
+    }
+    if (instruction == pio_instr_bits_in) {
+        uint16_t source = (full_instruction & 0x00e0) >> 5;
+        uint16_t bit_count = full_instruction & 0x001f;
+        if (source == 0) {
+            if (!state->has_in_pin) {
+                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] shifts in from pin(s)"), i);
+            }
+            if (bit_count > state->in_pin_count) {
+                mp_raise_ValueError_varg(translate("%q[%u] shifts in more bits than pin count"), i);
+            }
+        }
+        if (state->auto_push) {
+            state->in_loaded = true;
+            state->rx_fifo = true;
+        }
+        state->in_used = true;
+    }
+    if (instruction == pio_instr_bits_out) {
+        uint16_t bit_count = full_instruction & 0x001f;
+        uint16_t destination = (full_instruction & 0x00e0) >> 5;
+        // Check for pins or pindirs destination.
+        if (destination == 0x0 || destination == 0x4) {
+            if (!state->has_out_pin) {
+                mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] shifts out to pin(s)"), i);
+            }
+            if (bit_count > state->out_pin_count) {
+                mp_raise_ValueError_varg(translate("%q[%u] shifts out more bits than pin count"), i);
+            }
+        }
+        if (state->auto_pull) {
+            state->out_loaded = true;
+            state->tx_fifo = true;
+        }
+        state->out_used = true;
+    }
+    if (instruction == pio_instr_bits_set) {
+        uint16_t destination = (full_instruction & 0x00e0) >> 5;
+        // Check for pins or pindirs destination.
+        if ((destination == 0x00 || destination == 0x4) && !state->has_set_pin) {
+            mp_raise_ValueError_varg(translate("Missing first_set_pin. %q[%u] sets pin(s)"), i);
+        }
+    }
+    if (instruction == pio_instr_bits_mov) {
+        uint16_t source = full_instruction & 0x0007;
+        uint16_t destination = (full_instruction & 0x00e0) >> 5;
+        // Check for pins or pindirs destination.
+        if (destination == 0x0 && !state->has_out_pin) {
+            mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] writes pin(s)"), i);
+        }
+        if (source == 0x0 && !state->has_out_pin) {
+            mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] reads pin(s)"), i);
+        }
+        if (destination == 0x6) {
+            state->in_loaded = true;
+        } else if (destination == 0x7) {
+            state->out_loaded = true;
+        }
+    }
+}
+
+static void consider_program(introspect_t *state, const uint16_t *program, size_t program_len, qstr what) {
+    for (size_t i = 0; i < program_len; i++) {
+        consider_instruction(state, program[i], what, i);
+    }
+}
+
 void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t *program, size_t program_len,
     size_t frequency,
     const uint16_t *init, size_t init_len,
+    const uint16_t *may_exec, size_t may_exec_len,
     const mcu_pin_obj_t *first_out_pin, uint8_t out_pin_count, uint32_t initial_out_pin_state, uint32_t initial_out_pin_direction,
     const mcu_pin_obj_t *first_in_pin, uint8_t in_pin_count,
     uint32_t pull_pin_up, uint32_t pull_pin_down,
@@ -415,109 +520,25 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     pins_we_use |= _check_pins_free(jmp_pin, 1, exclusive_pin_use);
 
     // Look through the program to see what we reference and make sure it was provided.
-    bool tx_fifo = false;
-    bool rx_fifo = false;
-    bool in_loaded = false; // can be loaded in other ways besides the fifo
-    bool out_loaded = false;
-    bool in_used = false;
-    bool out_used = false;
-    for (size_t i = 0; i < program_len; i++) {
-        uint16_t full_instruction = program[i];
-        uint16_t instruction = full_instruction & 0xe000;
-        if (instruction == 0x8000) {
-            if ((full_instruction & 0xe080) == pio_instr_bits_push) {
-                rx_fifo = true;
-                in_loaded = true;
-            } else { // pull otherwise.
-                tx_fifo = true;
-                out_loaded = true;
-            }
-        }
-        if (instruction == pio_instr_bits_jmp) {
-            uint16_t condition = (full_instruction & 0x00e0) >> 5;
-            if ((condition == 0x6) && (jmp_pin == NULL)) {
-                mp_raise_ValueError_varg(translate("Missing jmp_pin. Instruction %d jumps on pin"), i);
-            }
-        }
-        if (instruction == pio_instr_bits_wait) {
-            uint16_t wait_source = (full_instruction & 0x0060) >> 5;
-            uint16_t wait_index = full_instruction & 0x001f;
-            if (wait_source == 0 && (pins_we_use & (1 << wait_index)) == 0) { // GPIO
-                mp_raise_ValueError_varg(translate("Instruction %d uses extra pin"), i);
-            }
-            if (wait_source == 1) { // Input pin
-                if (first_in_pin == NULL) {
-                    mp_raise_ValueError_varg(translate("Missing first_in_pin. Instruction %d waits based on pin"), i);
-                }
-                if (wait_index >= in_pin_count) {
-                    mp_raise_ValueError_varg(translate("Instruction %d waits on input outside of count"), i);
-                }
-            }
-        }
-        if (instruction == pio_instr_bits_in) {
-            uint16_t source = (full_instruction & 0x00e0) >> 5;
-            uint16_t bit_count = full_instruction & 0x001f;
-            if (source == 0) {
-                if (first_in_pin == NULL) {
-                    mp_raise_ValueError_varg(translate("Missing first_in_pin. Instruction %d shifts in from pin(s)"), i);
-                }
-                if (bit_count > in_pin_count) {
-                    mp_raise_ValueError_varg(translate("Instruction %d shifts in more bits than pin count"), i);
-                }
-            }
-            if (auto_push) {
-                in_loaded = true;
-                rx_fifo = true;
-            }
-            in_used = true;
-        }
-        if (instruction == pio_instr_bits_out) {
-            uint16_t bit_count = full_instruction & 0x001f;
-            uint16_t destination = (full_instruction & 0x00e0) >> 5;
-            // Check for pins or pindirs destination.
-            if (destination == 0x0 || destination == 0x4) {
-                if (first_out_pin == NULL) {
-                    mp_raise_ValueError_varg(translate("Missing first_out_pin. Instruction %d shifts out to pin(s)"), i);
-                }
-                if (bit_count > out_pin_count) {
-                    mp_raise_ValueError_varg(translate("Instruction %d shifts out more bits than pin count"), i);
-                }
-            }
-            if (auto_pull) {
-                out_loaded = true;
-                tx_fifo = true;
-            }
-            out_used = true;
-        }
-        if (instruction == pio_instr_bits_set) {
-            uint16_t destination = (full_instruction & 0x00e0) >> 5;
-            // Check for pins or pindirs destination.
-            if ((destination == 0x00 || destination == 0x4) && first_set_pin == NULL) {
-                mp_raise_ValueError_varg(translate("Missing first_set_pin. Instruction %d sets pin(s)"), i);
-            }
-        }
-        if (instruction == pio_instr_bits_mov) {
-            uint16_t source = full_instruction & 0x0007;
-            uint16_t destination = (full_instruction & 0x00e0) >> 5;
-            // Check for pins or pindirs destination.
-            if (destination == 0x0 && first_out_pin == NULL) {
-                mp_raise_ValueError_varg(translate("Missing first_out_pin. Instruction %d writes pin(s)"), i);
-            }
-            if (source == 0x0 && first_in_pin == NULL) {
-                mp_raise_ValueError_varg(translate("Missing first_in_pin. Instruction %d reads pin(s)"), i);
-            }
-            if (destination == 0x6) {
-                in_loaded = true;
-            } else if (destination == 0x7) {
-                out_loaded = true;
-            }
-        }
-    }
+    introspect_t state = {
+        .pins_we_use = pins_we_use,
+        .has_jmp_pin = jmp_pin != NULL,
+        .has_in_pin = first_in_pin != NULL,
+        .has_out_pin = first_out_pin != NULL,
+        .has_set_pin = first_set_pin != NULL,
+        .in_pin_count = in_pin_count,
+        .out_pin_count = out_pin_count,
+        .auto_pull = auto_pull,
+        .auto_push = auto_push,
+    };
+    consider_program(&state, program, program_len, MP_QSTR_program);
+    consider_program(&state, init, init_len, MP_QSTR_init);
+    consider_program(&state, may_exec, may_exec_len, MP_QSTR_may_exec);
 
-    if (!in_loaded && in_used) {
+    if (!state.in_loaded && state.in_used) {
         mp_raise_ValueError_varg(translate("Program does IN without loading ISR"));
     }
-    if (!out_loaded && out_used) {
+    if (!state.out_loaded && state.out_used) {
         mp_raise_ValueError_varg(translate("Program does OUT without loading OSR"));
     }
 
@@ -570,7 +591,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         first_sideset_pin, sideset_pin_count,
         initial_pin_state, initial_pin_direction,
         jmp_pin,
-        pins_we_use, tx_fifo, rx_fifo,
+        pins_we_use, state.tx_fifo, state.rx_fifo,
         auto_pull, pull_threshold, out_shift_right,
         wait_for_txstall,
         auto_push, push_threshold, in_shift_right,

@@ -66,6 +66,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         pdmin, MP_ARRAY_SIZE(pdmin),
         sample_rate * 32 * 2, // Frequency based on sample rate
         NULL, 0,
+        NULL, 0, // may_exec
         NULL, 1, 0, 0xffffffff, // out pin
         data_pin, 1, // in pins
         0, 0, // in pulls

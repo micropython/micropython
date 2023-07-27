@@ -102,6 +102,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         imagecapture_code, MP_ARRAY_SIZE(imagecapture_code),
         common_hal_mcu_processor_get_frequency(), // full speed (4 instructions per loop -> max pclk 30MHz @ 120MHz)
         0, 0, // init
+        NULL, 0, // may_exec
         NULL, 0, 0, 0, // out pins
         pin_from_number(data_pins[0]), data_count, // in pins
         0, 0, // in pulls

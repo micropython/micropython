@@ -98,6 +98,7 @@ void common_hal_paralleldisplay_parallelbus_construct(paralleldisplay_parallelbu
         parallel_program, MP_ARRAY_SIZE(parallel_program),
         frequency * 2, // frequency multiplied by 2 as 2 PIO instructions
         NULL, 0, // init
+        NULL, 0, // may_exec
         data0, 8, 0, 255, // first out pin, # out pins
         NULL, 0, 0, 0, // first in pin, # in pins
         NULL, 0, 0, 0, // first set pin
