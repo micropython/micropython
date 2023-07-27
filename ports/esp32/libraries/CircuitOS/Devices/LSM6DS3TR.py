@@ -64,13 +64,13 @@ class LSM6DS3TR:
     def get2reg(self, reg: int):
         return self.getreg(reg) + self.getreg(reg + 1) * 256
 
-    def get_xl_x(self) -> float:
+    def get_accel_x(self) -> float:
         return self.convert_accel(self.REG_OUT_X_L_XL)
 
-    def get_xl_y(self) -> float:
+    def get_accel_y(self) -> float:
         return self.convert_accel(self.REG_OUT_Y_L_XL)
 
-    def get_xl_z(self) -> float:
+    def get_accel_z(self) -> float:
         return self.convert_accel(self.REG_OUT_Z_L_XL)
 
     def convert_accel(self, reg):
@@ -79,32 +79,32 @@ class LSM6DS3TR:
     def convert_gyro(self, reg):
         return self.int16(self.get2reg(reg)) * 70.0 * math.pi / 180.0 / 1000.0
 
-    def get_gy_x(self) -> float:
+    def get_gyro_x(self) -> float:
         return self.convert_gyro(self.REG_OUT_X_L_GY)
 
-    def get_gy_y(self) -> float:
+    def get_gyro_y(self) -> float:
         return self.convert_gyro(self.REG_OUT_Y_L_GY)
 
-    def get_gy_z(self) -> float:
+    def get_gyro_z(self) -> float:
         return self.convert_gyro(self.REG_OUT_Z_L_GY)
 
     def get_accel(self):
-        x = self.get_xl_x()
-        y = self.get_xl_y()
-        z = self.get_xl_z()
+        x = self.get_accel_x()
+        y = self.get_accel_y()
+        z = self.get_accel_z()
         return x, y, z
 
     def get_gyro(self):
-        x = self.get_gy_x()
-        y = self.get_gy_y()
-        z = self.get_gy_z()
+        x = self.get_gyro_x()
+        y = self.get_gyro_y()
+        z = self.get_gyro_z()
         return x, y, z
 
     def get_sample(self):
-        sample = self.Sample(self.get_gy_x(),
-                             self.get_gy_y(),
-                             self.get_gy_z(),
-                             self.get_xl_x(),
-                             self.get_xl_y(),
-                             self.get_xl_z())
+        sample = self.Sample(self.get_gyro_x(),
+                             self.get_gyro_y(),
+                             self.get_gyro_z(),
+                             self.get_accel_x(),
+                             self.get_accel_y(),
+                             self.get_accel_z())
         return sample
