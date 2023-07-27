@@ -2769,6 +2769,10 @@ msgstr ""
 msgid "cannot create instance"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr ""
+
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr ""
@@ -3226,6 +3230,14 @@ msgstr ""
 msgid "inline assembler must be a function"
 msgstr ""
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr ""
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
@@ -3554,6 +3566,10 @@ msgstr ""
 msgid "native yield"
 msgstr ""
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3650,6 +3666,10 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
 msgstr ""
 
 #: extmod/ulab/code/numpy/create.c
@@ -3762,8 +3782,8 @@ msgstr ""
 msgid "opcode"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr ""
 
@@ -3800,8 +3820,24 @@ msgstr ""
 msgid "out array is too small"
 msgstr ""
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr ""
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c

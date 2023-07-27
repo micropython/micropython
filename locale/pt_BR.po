@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-13 00:51+0000\n"
+"PO-Revision-Date: 2023-07-27 17:07+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2846,6 +2846,10 @@ msgstr "não é possível criar instâncias '%q'"
 msgid "cannot create instance"
 msgstr "não é possível criar instância"
 
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr "não é possível excluir os elementos da matriz"
+
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "não pode importar nome %q"
@@ -3310,6 +3314,14 @@ msgstr "O comprimento do initial_value está errado"
 msgid "inline assembler must be a function"
 msgstr "o assembler em linha deve ser uma função"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr "as dimensões da entrada e da saída diferem"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr "as formas da entrada e da saída diferem"
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
@@ -3644,6 +3656,10 @@ msgstr "o método nativo é grande demais"
 msgid "native yield"
 msgstr "rendimento nativo"
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr "estouros de comprimento no ndarray"
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3741,6 +3757,10 @@ msgstr "argumentos insuficientes para o formato da string"
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
 msgstr "não foi implementado para dtype complexo"
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
+msgstr "não compatível para os tipos de entrada"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3853,8 +3873,8 @@ msgstr ""
 msgid "opcode"
 msgstr "opcode"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr "os operandos não puderam ser transmitidos juntos"
 
@@ -3893,9 +3913,25 @@ msgstr ""
 msgid "out array is too small"
 msgstr "a matriz externa é muito pequena"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr "a palavra-chave out não é compatível para o dtype complexo"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr "a palavra-chave out não é compatível com a função"
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
 msgstr "deve ser uma matriz densa flutuante"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr "out deve ser um ndarray"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
+msgstr "out deve ser do tipo float dtype"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"

@@ -2851,6 +2851,10 @@ msgstr "no se pueden crear '%q' instancias"
 msgid "cannot create instance"
 msgstr "no se puede crear instancia"
 
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr ""
+
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "no se puede importar name '%q'"
@@ -3312,6 +3316,14 @@ msgstr "el tamaño de initial_value es incorrecto"
 msgid "inline assembler must be a function"
 msgstr "ensamblador en línea debe ser una función"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr ""
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "argumento de entrada debe ser un entero, una tupla o una lista"
@@ -3644,6 +3656,10 @@ msgstr "método nativo muy grande"
 msgid "native yield"
 msgstr "yield nativo"
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3744,6 +3760,10 @@ msgstr "no suficientes argumentos para format string"
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
 msgstr "no esta implementado para complex dtype"
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
+msgstr ""
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3855,8 +3875,8 @@ msgstr "solo se admiten segmentos con step=1 (alias None)"
 msgid "opcode"
 msgstr "código de operación"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr "los operandos no se pueden transmitir juntos"
 
@@ -3893,9 +3913,25 @@ msgstr "ord() espera un carácter, pero encontró un string de longitud %d"
 msgid "out array is too small"
 msgstr "La matriz de salida es demasiado pequeña"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr ""
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
 msgstr "la matriz de salida debe ser densa de números float"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"

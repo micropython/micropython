@@ -2821,6 +2821,10 @@ msgstr "wúfǎ chuàngjiàn '%q' ' shílì"
 msgid "cannot create instance"
 msgstr "wúfǎ chuàngjiàn shílì"
 
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr ""
+
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "wúfǎ dǎorù míngchēng %q"
@@ -3285,6 +3289,14 @@ msgstr "Initial_value chángdù cuòwù"
 msgid "inline assembler must be a function"
 msgstr "nèi lián jíhé bìxū shì yīgè hánshù"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr ""
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "shū rù cān shù bì xū shì zhěng shù, yuán zǔ huò liè biǎo"
@@ -3614,6 +3626,10 @@ msgstr "yuán shēng fāng fǎ tài dà"
 msgid "native yield"
 msgstr "yuán chǎn"
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr ""
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3711,6 +3727,10 @@ msgstr "géshì zìfú chuàn cān shǔ bùzú"
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
 msgstr "wèi zhēn duì fù zá de dtype shí xiàn"
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
+msgstr ""
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3822,8 +3842,8 @@ msgstr "jǐn zhīchí bù zhǎng = 1(jí wú) de qiēpiàn"
 msgid "opcode"
 msgstr "cāo zuò dài mǎ"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr "cāozuò shǔ bùnéng yīqǐ guǎngbò"
 
@@ -3860,9 +3880,25 @@ msgstr "ord() yùqí zìfú, dàn chángdù zìfú chuàn %d"
 msgid "out array is too small"
 msgstr "chū zhèn liè tài xiǎo"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr ""
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
 msgstr "chū bì xū shì yí gè fú dòng mì jí zhèn liè"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr ""
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"

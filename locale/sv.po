@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-11 17:05+0000\n"
+"PO-Revision-Date: 2023-07-27 17:07+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -2817,6 +2817,10 @@ msgstr "kan inte skapa instanser av '%q'"
 msgid "cannot create instance"
 msgstr "kan inte skapa instans"
 
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr "kan inte ta bort arrayelement"
+
 #: py/runtime.c
 msgid "cannot import name %q"
 msgstr "kan inte importera namn %q"
@@ -3279,6 +3283,14 @@ msgstr "initial_value-längd är fel"
 msgid "inline assembler must be a function"
 msgstr "inline assembler måste vara en funktion"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr "In- och utdimensionerna skiljer sig åt"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr "In- och utdataformerna skiljer sig åt"
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr "indataargument måste vara integer, en tuple eller list"
@@ -3610,6 +3622,10 @@ msgstr "inbyggd metod för stor"
 msgid "native yield"
 msgstr "native yield"
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr "ndarray-längden överskriden"
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3707,6 +3723,10 @@ msgstr "inte tillräckligt med argument för formatsträng"
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
 msgstr "inte implementerat för complex dtype"
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
+msgstr "stöds inte för indatatyper"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3818,8 +3838,8 @@ msgstr "endast segment med steg=1 (aka Ingen) stöds"
 msgid "opcode"
 msgstr "opkod"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr "operander kan inte sändas tillsammans"
 
@@ -3856,9 +3876,25 @@ msgstr "ord() förväntade sig ett tecken, men en sträng med längden %d hittad
 msgid "out array is too small"
 msgstr "matrisen för out är för liten"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr "nyckelordet out stöds inte för komplex dtyp"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr "nyckelordet out stöds inte för function"
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
 msgstr "out måste vara en float dense array"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr "out måste vara en ndarray"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
+msgstr "out måste vara av float dtype"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
