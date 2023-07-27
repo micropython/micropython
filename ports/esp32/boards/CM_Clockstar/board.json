@@ -1,0 +1,18 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Clockstar",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/products/clockstar-diy-smartwatch-ages-11",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}

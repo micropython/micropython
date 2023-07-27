@@ -12,5 +12,6 @@ from .Devices.HP203B import *
 from .Devices.AHT20 import *
 from .Devices.LIS2DW12 import *
 from .Devices.AW9523 import *
+from .Devices.LSM6DS3TR import *
 
 from ._Matrix import *
