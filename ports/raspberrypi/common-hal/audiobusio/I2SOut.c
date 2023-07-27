@@ -136,7 +136,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         false, // Wait for txstall
         false, 32, false, // in settings
         false, // Not user-interruptible.
-        0, -1); // wrap settings
+        0, -1, // wrap settings
+        PIO_ANY_OFFSET);
 
     self->playing = false;
     audio_dma_init(&self->dma);

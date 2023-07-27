@@ -178,6 +178,21 @@ STATIC uint32_t _check_pins_free(const mcu_pin_obj_t *first_pin, uint8_t pin_cou
     return pins_we_use;
 }
 
+static bool can_add_program(PIO pio, const pio_program_t *program, int offset) {
+    if (offset == -1) {
+        return pio_can_add_program(pio, program);
+    }
+    return pio_can_add_program_at_offset(pio, program, offset);
+}
+
+static uint add_program(PIO pio, const pio_program_t *program, int offset) {
+    if (offset == -1) {
+        return pio_add_program(pio, program);
+    } else {
+        pio_add_program_at_offset(pio, program, offset);
+        return offset;
+    }
+}
 
 bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t *program, size_t program_len,
@@ -197,7 +212,8 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool claim_pins,
     bool user_interruptible,
     bool sideset_enable,
-    int wrap_target, int wrap
+    int wrap_target, int wrap,
+    int offset
     ) {
     // Create a program id that isn't the pointer so we can store it without storing the original object.
     uint32_t program_id = ~((uint32_t)program);
@@ -215,14 +231,15 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         uint8_t free_count = 0;
         for (size_t j = 0; j < NUM_PIO_STATE_MACHINES; j++) {
             if (_current_program_id[i][j] == program_id &&
-                _current_program_len[i][j] == program_len) {
+                _current_program_len[i][j] == program_len &&
+                (offset == -1 || offset == _current_program_offset[i][j])) {
                 program_offset = _current_program_offset[i][j];
             }
             if (!pio_sm_is_claimed(pio, j)) {
                 free_count++;
             }
         }
-        if (free_count > 0 && (program_offset < 32 || pio_can_add_program(pio, &program_struct))) {
+        if (free_count > 0 && (program_offset < 32 || can_add_program(pio, &program_struct, offset))) {
             pio_index = i;
             if (program_offset < 32) {
                 break;
@@ -254,7 +271,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     self->pio = pio_instances[pio_index];
     self->state_machine = state_machine;
     if (program_offset == 32) {
-        program_offset = pio_add_program(self->pio, &program_struct);
+        program_offset = add_program(self->pio, &program_struct, offset);
     }
     self->offset = program_offset;
     _current_program_id[pio_index][state_machine] = program_id;
@@ -509,7 +526,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool user_interruptible,
-    int wrap_target, int wrap) {
+    int wrap_target, int wrap,
+    int offset) {
 
     // First, check that all pins are free OR already in use by any PIO if exclusive_pin_use is false.
     uint32_t pins_we_use = wait_gpio_mask;
@@ -598,7 +616,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         true /* claim pins */,
         user_interruptible,
         sideset_enable,
-        wrap_target, wrap);
+        wrap_target, wrap, offset);
     if (!ok) {
         mp_raise_RuntimeError(translate("All state machines in use"));
     }

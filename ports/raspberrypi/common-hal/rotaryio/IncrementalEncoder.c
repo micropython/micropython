@@ -95,7 +95,8 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         false, // Wait for txstall
         false, 32, false, // in settings
         false, // Not user-interruptible.
-        0, MP_ARRAY_SIZE(encoder) - 1 // wrap settings
+        0, MP_ARRAY_SIZE(encoder) - 1, // wrap settings
+        PIO_ANY_OFFSET
         );
 
     // We're guaranteed by the init code that some output will be available promptly

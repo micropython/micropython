@@ -93,6 +93,7 @@
 //|         user_interruptible: bool = True,
 //|         wrap_target: int = 0,
 //|         wrap: int = -1,
+//|         offset: int = -1,
 //|     ) -> None:
 //|         """Construct a StateMachine object on the given pins with the given program.
 //|
@@ -150,6 +151,9 @@
 //|         :param int wrap: The instruction after which to wrap to the ``wrap``
 //|             instruction. As a special case, -1 (the default) indicates the
 //|             last instruction of the program.
+//|         :param int offset: A specific offset in the state machine's program memory where the program must be loaded.
+//|             The default value, -1, allows the program to be loaded at any offset.
+//|             This is appropriate for most programs.
 //|         """
 //|         ...
 
@@ -170,7 +174,8 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
            ARG_auto_push, ARG_push_threshold, ARG_in_shift_right,
            ARG_user_interruptible,
            ARG_wrap_target,
-           ARG_wrap,};
+           ARG_wrap,
+           ARG_offset,};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_program, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_INT },
@@ -214,6 +219,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 
         { MP_QSTR_wrap_target, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_wrap, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -286,7 +292,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         args[ARG_wait_for_txstall].u_bool,
         args[ARG_auto_push].u_bool, push_threshold, args[ARG_in_shift_right].u_bool,
         args[ARG_user_interruptible].u_bool,
-        wrap_target, wrap);
+        wrap_target, wrap, args[ARG_offset].u_int);
     return MP_OBJ_FROM_PTR(self);
 }
 

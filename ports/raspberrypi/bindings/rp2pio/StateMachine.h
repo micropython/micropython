@@ -54,7 +54,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool user_interruptible,
-    int wrap_taget, int wrap);
+    int wrap_taget, int wrap,
+    int offset);
 
 void common_hal_rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self);
 bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self);

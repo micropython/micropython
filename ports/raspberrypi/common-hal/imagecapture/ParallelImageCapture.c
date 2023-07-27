@@ -120,7 +120,8 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
         false, // wait for txstall
         true, 32, true,  // in settings
         false, // Not user-interruptible.
-        2, 5); // wrap settings
+        2, 5, // wrap settings
+        PIO_ANY_OFFSET);
 }
 
 void common_hal_imagecapture_parallelimagecapture_deinit(imagecapture_parallelimagecapture_obj_t *self) {
