@@ -176,16 +176,16 @@
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-ra"
 #endif
 #ifndef MICROPY_PY_USOCKET
-#define MICROPY_PY_USOCKET              (1)
+#define MICROPY_PY_USOCKET              (MICROPY_PY_LWIP)
 #endif
 #ifndef MICROPY_PY_USSL
-#define MICROPY_PY_USSL                 (1)
+#define MICROPY_PY_USSL                 (MICROPY_PY_LWIP)
 #endif
 #ifndef MICROPY_PY_UWEBSOCKET
-#define MICROPY_PY_UWEBSOCKET           (1)
+#define MICROPY_PY_UWEBSOCKET           (MICROPY_PY_LWIP)
 #endif
 #ifndef MICROPY_PY_WEBREPL
-#define MICROPY_PY_WEBREPL              (1)
+#define MICROPY_PY_WEBREPL              (MICROPY_PY_LWIP)
 #endif
 #endif
 
@@ -204,9 +204,12 @@
 
 #if MICROPY_PY_NETWORK_ESP_HOSTED
 extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
-#define MICROPY_HW_NIC_ESP_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+#define MICROPY_HW_NIC_IF_HOSTED   { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mod_network_esp_hosted_type) },
+#elif MICROPY_HW_ETH_MDC
+extern const struct _mp_obj_type_t network_lan_type;
+#define MICROPY_HW_NIC_IF_HOSTED   { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
 #else
-#define MICROPY_HW_NIC_ESP_HOSTED
+#define MICROPY_HW_NIC_IF_HOSTED
 #endif
 
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
@@ -214,7 +217,7 @@ extern const struct _mp_obj_type_t mod_network_esp_hosted_type;
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
-    MICROPY_HW_NIC_ESP_HOSTED \
+    MICROPY_HW_NIC_IF_HOSTED \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 // Miscellaneous settings

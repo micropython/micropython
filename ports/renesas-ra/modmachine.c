@@ -304,6 +304,12 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_HW_HAS_SDHI_CARD
     { MP_ROM_QSTR(MP_QSTR_SDCard),              MP_ROM_PTR(&machine_sdcard_type) },
     #endif
+    #if MODULE_LCD_ENABLED
+    { MP_ROM_QSTR(MP_QSTR_LCD),                 MP_ROM_PTR(&machine_lcd_type) },
+    #endif
+    #if MODULE_CAM_ENABLED
+    { MP_ROM_QSTR(MP_QSTR_CAM),                 MP_ROM_PTR(&machine_cam_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(PYB_RESET_POWER_ON) },
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(PYB_RESET_HARD) },
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(PYB_RESET_WDT) },
