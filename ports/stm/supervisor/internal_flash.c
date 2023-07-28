@@ -303,9 +303,8 @@ mp_uint_t supervisor_flash_read_blocks(uint8_t *dest, uint32_t block, uint32_t n
     flash_get_sector_info(src, &sector_start_addr, &sector_size);
     // Count how many blocks are left in the sector
     uint32_t count = (sector_size - (src - sector_start_addr)) / FILESYSTEM_BLOCK_SIZE;
-    count = MIN(num_blocks, count);
 
-    if (count < num_blocks && _cache_flash_addr == sector_start_addr) {
+    if (count <= num_blocks && _cache_flash_addr == sector_start_addr) {
         // Read is contained in the cache, so just read cache
         memcpy(dest, (_flash_cache + (src - sector_start_addr)), FILESYSTEM_BLOCK_SIZE * num_blocks);
     } else {
