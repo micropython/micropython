@@ -1777,6 +1777,10 @@ msgstr "Pins must be sequential GPIO pins"
 msgid "Pins must share PWM slice"
 msgstr "Pins must share PWM slice"
 
+#: shared-module/usb/core/Device.c
+msgid "Pipe error"
+msgstr ""
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Plus any modules on the filesystem\n"
@@ -1854,7 +1858,8 @@ msgstr "Random number generation error"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Read-only"
 
@@ -4064,7 +4069,7 @@ msgstr "sos[:, 3] should be all ones"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt requires iterable arguments"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
 msgstr "source palette too large"
 
