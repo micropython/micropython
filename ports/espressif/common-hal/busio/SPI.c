@@ -186,7 +186,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     const uint8_t *data, size_t len) {
     if (self->MOSI == NULL) {
-        mp_raise_ValueError(translate("No MOSI Pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
     return common_hal_busio_spi_transfer(self, data, NULL, len);
 }
@@ -194,7 +194,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     uint8_t *data, size_t len, uint8_t write_value) {
     if (self->MISO == NULL) {
-        mp_raise_ValueError(translate("No MISO Pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
     if (self->MOSI == NULL) {
         return common_hal_busio_spi_transfer(self, NULL, data, len);
@@ -210,10 +210,10 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
         return true;
     }
     if (self->MOSI == NULL && data_out != NULL) {
-        mp_raise_ValueError(translate("No MOSI Pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
     if (self->MISO == NULL && data_in != NULL) {
-        mp_raise_ValueError(translate("No MISO Pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
 
     spi_transaction_t transactions[MAX_SPI_TRANSACTIONS];

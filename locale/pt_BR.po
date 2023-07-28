@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-13 00:51+0000\n"
+"PO-Revision-Date: 2023-07-27 17:07+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -139,8 +139,10 @@ msgstr "%q em %q deve ser do tipo %q e não %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/mimxrt10xx/common-hal/usb_host/Port.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -195,6 +197,7 @@ msgid "%q must be 1 when %q is True"
 msgstr "%q deve ser 1 quando %q for verdadeiro"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
+#: shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
 msgstr "%q deve ser <= %d"
 
@@ -806,10 +809,6 @@ msgstr "Não é possível definir o RTS ou CTS no modo RS485"
 msgid "Cannot subclass slice"
 msgstr "Não é possível subclassificar a fatia"
 
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot transfer without MOSI and MISO pins"
-msgstr "Não é possível transferir sem os pinos MOSI e MISO"
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
 msgstr "Não é possível variar a frequência em um timer que já esteja em uso"
@@ -1122,13 +1121,10 @@ msgstr "O grupo já está em uso"
 msgid "Half duplex SPI is not implemented"
 msgstr "O SPI half duplex ainda não está implementado"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
-#: ports/stm/common-hal/sdioio/SDCard.c
-msgid "Hardware busy, try alternative pins"
-msgstr "O hardware está ocupado, tente os pinos alternativos"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/canio/CAN.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware in use, try alternative pins"
 msgstr "O hardware está em uso, tente os pinos alternativos"
 
@@ -1397,14 +1393,6 @@ msgstr "O tamanho dos dados é incompatível"
 msgid "Mismatched swap flag"
 msgstr "Sinalizador de troca incompatível"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI Pin"
-msgstr "O pino MISO ou MOSI está ausente"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI pin"
-msgstr "Falta o pino MISO ou o MOSI"
-
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #, c-format
 msgid "Missing first_in_pin. Instruction %d reads pin(s)"
@@ -1478,6 +1466,14 @@ msgid "Nimble out of memory"
 msgstr "Ágil fora da memória"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/paralleldisplay/ParallelBus.c shared-module/bitbangio/SPI.c
 msgid "No %q pin"
 msgstr "Sem pin %q"
 
@@ -1510,36 +1506,6 @@ msgstr "Não há nenhum dispositivo I2C no endereço: 0x%x"
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "No IP"
 msgstr "Sem IP"
-
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MISO Pin"
-msgstr "Nenhum pino MISO"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MISO pin"
-msgstr "Nenhum pino MISO"
-
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MOSI Pin"
-msgstr "Nenhum pino MOSI"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MOSI pin"
-msgstr "Nenhum pino MOSI"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No RX pin"
-msgstr "Nenhum pino RX"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No TX pin"
-msgstr "Nenhum pino TX"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
@@ -2482,6 +2448,7 @@ msgstr "Você pressionou os dois botões durante a inicialização."
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
 msgstr "Você pressionou o botão A na inicialização."
 
@@ -2878,6 +2845,10 @@ msgstr "não é possível criar instâncias '%q'"
 #: py/objtype.c
 msgid "cannot create instance"
 msgstr "não é possível criar instância"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr "não é possível excluir os elementos da matriz"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3343,6 +3314,14 @@ msgstr "O comprimento do initial_value está errado"
 msgid "inline assembler must be a function"
 msgstr "o assembler em linha deve ser uma função"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr "as dimensões da entrada e da saída diferem"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr "as formas da entrada e da saída diferem"
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
@@ -3677,6 +3656,10 @@ msgstr "o método nativo é grande demais"
 msgid "native yield"
 msgstr "rendimento nativo"
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr "estouros de comprimento no ndarray"
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3721,11 +3704,6 @@ msgstr "nenhuma semente padrão"
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "nenhum módulo chamado '%q'"
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c
-msgid "no reset pin available"
-msgstr "nenhum pino de redefinição está disponível"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
@@ -3779,6 +3757,10 @@ msgstr "argumentos insuficientes para o formato da string"
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
 msgstr "não foi implementado para dtype complexo"
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
+msgstr "não compatível para os tipos de entrada"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3891,8 +3873,8 @@ msgstr ""
 msgid "opcode"
 msgstr "opcode"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr "os operandos não puderam ser transmitidos juntos"
 
@@ -3931,9 +3913,25 @@ msgstr ""
 msgid "out array is too small"
 msgstr "a matriz externa é muito pequena"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr "a palavra-chave out não é compatível para o dtype complexo"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr "a palavra-chave out não é compatível com a função"
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
 msgstr "deve ser uma matriz densa flutuante"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr "out deve ser um ndarray"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
+msgstr "out deve ser do tipo float dtype"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
@@ -4456,6 +4454,39 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "Não é possível transferir sem os pinos MOSI e MISO"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "O hardware está ocupado, tente os pinos alternativos"
+
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "O pino MISO ou MOSI está ausente"
+
+#~ msgid "Missing MISO or MOSI pin"
+#~ msgstr "Falta o pino MISO ou o MOSI"
+
+#~ msgid "No MISO Pin"
+#~ msgstr "Nenhum pino MISO"
+
+#~ msgid "No MISO pin"
+#~ msgstr "Nenhum pino MISO"
+
+#~ msgid "No MOSI Pin"
+#~ msgstr "Nenhum pino MOSI"
+
+#~ msgid "No MOSI pin"
+#~ msgstr "Nenhum pino MOSI"
+
+#~ msgid "No RX pin"
+#~ msgstr "Nenhum pino RX"
+
+#~ msgid "No TX pin"
+#~ msgstr "Nenhum pino TX"
+
+#~ msgid "no reset pin available"
+#~ msgstr "nenhum pino de redefinição está disponível"
 
 #~ msgid "Sleep Memory not available"
 #~ msgstr "Sleep memory não está disponível"

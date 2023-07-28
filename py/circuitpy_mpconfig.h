@@ -611,6 +611,12 @@ void background_callback_run_all(void);
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
 #endif
 
+// Align the internal sector buffer. Useful when it is passed into TinyUSB for
+// loads.
+#ifndef MICROPY_FATFS_WINDOW_ALIGNMENT
+#define MICROPY_FATFS_WINDOW_ALIGNMENT CIRCUITPY_TUSB_MEM_ALIGN
+#endif
+
 #define FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY (1)
 
 #define FF_FS_MAKE_VOLID (1)

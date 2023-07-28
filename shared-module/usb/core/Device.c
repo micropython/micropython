@@ -49,6 +49,7 @@ void tuh_umount_cb(uint8_t dev_addr) {
 }
 
 STATIC xfer_result_t _xfer_result;
+STATIC size_t _actual_len;
 bool common_hal_usb_core_device_construct(usb_core_device_obj_t *self, uint8_t device_number) {
     if (device_number == 0 || device_number > CFG_TUH_DEVICE_MAX + CFG_TUH_HUB) {
         return false;
@@ -78,6 +79,9 @@ uint16_t common_hal_usb_core_device_get_idProduct(usb_core_device_obj_t *self) {
 STATIC void _transfer_done_cb(tuh_xfer_t *xfer) {
     // Store the result so we stop waiting for the transfer.
     _xfer_result = xfer->result;
+    // The passed in xfer is not the original one we passed in, so we need to
+    // copy any info out that we want (like actual_len.)
+    _actual_len = xfer->actual_len;
 }
 
 STATIC bool _wait_for_callback(void) {
@@ -159,11 +163,14 @@ STATIC size_t _xfer(tuh_xfer_t *xfer, mp_int_t timeout) {
     }
     xfer_result_t result = _xfer_result;
     _xfer_result = 0xff;
-    if (result == XFER_RESULT_STALLED || result == 0xff) {
+    if (result == XFER_RESULT_STALLED) {
+        mp_raise_usb_core_USBError(translate("Pipe error"));
+    }
+    if (result == 0xff) {
         mp_raise_usb_core_USBTimeoutError();
     }
     if (result == XFER_RESULT_SUCCESS) {
-        return xfer->actual_len;
+        return _actual_len;
     }
 
     return 0;
@@ -192,7 +199,10 @@ STATIC bool _open_endpoint(usb_core_device_obj_t *self, mp_int_t endpoint) {
     }
     tusb_desc_configuration_t *desc_cfg = (tusb_desc_configuration_t *)desc_buf;
 
-    uint8_t const *desc_end = ((uint8_t const *)desc_cfg) + tu_le16toh(desc_cfg->wTotalLength);
+    uint32_t total_length = tu_le16toh(desc_cfg->wTotalLength);
+    // Cap to the buffer size we requested.
+    total_length = MIN(total_length, sizeof(desc_buf));
+    uint8_t const *desc_end = ((uint8_t const *)desc_cfg) + total_length;
     uint8_t const *p_desc = tu_desc_next(desc_cfg);
 
     // parse each interfaces
@@ -281,7 +291,10 @@ mp_int_t common_hal_usb_core_device_ctrl_transfer(usb_core_device_obj_t *self,
     }
     xfer_result_t result = _xfer_result;
     _xfer_result = 0xff;
-    if (result == XFER_RESULT_STALLED || result == 0xff) {
+    if (result == XFER_RESULT_STALLED) {
+        mp_raise_usb_core_USBError(translate("Pipe error"));
+    }
+    if (result == 0xff) {
         mp_raise_usb_core_USBTimeoutError();
     }
     if (result == XFER_RESULT_SUCCESS) {
