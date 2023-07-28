@@ -337,6 +337,13 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     }
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
 
+    if (args[ARG_handler].u_obj == mp_const_none) {
+        // remove the IRQ from the table, leave it to gc to free it.
+        GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
+        MP_STATE_PORT(machine_pin_irq_objects[index]) = NULL;
+        return mp_const_none;
+    }
+
     // Allocate the IRQ object if it doesn't already exist.
     if (irq == NULL) {
         irq = m_new_obj(machine_pin_irq_obj_t);
@@ -371,9 +378,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
             GPIO_PinSetInterruptConfig(self->gpio, self->pin, irq->trigger);
             // Enable the specific Pin interrupt
             GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
+            // Enable LEVEL1 interrupt again
+            EnableIRQ(irq_num);
         }
-        // Enable LEVEL1 interrupt again
-        EnableIRQ(irq_num);
     }
 
     return MP_OBJ_FROM_PTR(irq);
