@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-27 17:07+0000\n"
+"PO-Revision-Date: 2023-07-29 12:56+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1804,7 +1804,7 @@ msgstr "Os pinos devem compartilhar a fatia do PWM"
 
 #: shared-module/usb/core/Device.c
 msgid "Pipe error"
-msgstr ""
+msgstr "Erro de pipe"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
