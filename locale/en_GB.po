@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-07-19 21:06+0000\n"
+"PO-Revision-Date: 2023-07-28 00:10+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -2807,7 +2807,7 @@ msgstr "can't create instance"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot delete array elements"
-msgstr ""
+msgstr "cannot delete array elements"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3271,11 +3271,11 @@ msgstr "inline assembler must be a function"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output dimensions differ"
-msgstr ""
+msgstr "input and output dimensions differ"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output shapes differ"
-msgstr ""
+msgstr "input and output shapes differ"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3607,7 +3607,7 @@ msgstr "native yield"
 
 #: extmod/ulab/code/ndarray.c
 msgid "ndarray length overflows"
-msgstr ""
+msgstr "ndarray length overflows"
 
 #: py/runtime.c
 #, c-format
@@ -3709,7 +3709,7 @@ msgstr "not implemented for complex dtype"
 
 #: extmod/ulab/code/numpy/bitwise.c
 msgid "not supported for input types"
-msgstr ""
+msgstr "not supported for input types"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3861,11 +3861,11 @@ msgstr "out array is too small"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for complex dtype"
-msgstr ""
+msgstr "out keyword is not supported for complex dtype"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for function"
-msgstr ""
+msgstr "out keyword is not supported for function"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
@@ -3873,11 +3873,11 @@ msgstr "out must be a float dense array"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be an ndarray"
-msgstr ""
+msgstr "out must be an ndarray"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be of float dtype"
-msgstr ""
+msgstr "out must be of float dtype"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
