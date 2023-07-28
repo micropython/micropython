@@ -38,6 +38,10 @@ Enabled modules
         * I2C
         * RTC
         * SoftI2C
+        * SPI
+        * SoftSPI
+        * PWM
+        * Timer
     * micropython
     * ucryptolib
     * uctypes
@@ -116,6 +120,8 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 |                 | option ``MICROPY_PY_MACHINE_PWM_DUTY`` is not enabled.                                                               |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
 | machine.SoftSPI | Option ``MICROPY_PY_MACHINE_SOFTSPI`` enabled.                                                                       |
++-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
+| machine.Timer   | mode = Timer.PERIODIC is not supported                                                                               |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
 | machine.SPI     | Option ``MICROPY_PY_MACHINE_SPI``, ``MICROPY_PY_MACHINE_SPI_MSB`` , ``MICROPY_PY_MACHINE_SPI_MSB`` enabled.          |    
 +-----------------+----------------------------------------------------------------------------------------------------------------------+

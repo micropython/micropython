@@ -447,4 +447,19 @@ Methods
 ^^^^^^^
 All the methods(functions) given in :ref:`machine.SPI <machine.SPI>` class have been implemented in this port
 
+Timers
+------
 
+Hardware timer is supported.
+
+Use the :mod:`machine.Timer` class::
+
+    from machine import Timer
+    import time
+    tim = Timer(0) #Default assignment: period=9999, frequency=10000
+    tim.init(period=2000, mode=Timer.ONE_SHOT, callback=lambda t:print(2))
+    time.sleep_ms(100)
+
+Here id=0 should be passed mandatorily.
+
+.. note:: Here mode=Timer.PERIODIC is not currently supported 
