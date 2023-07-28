@@ -101,7 +101,7 @@
 //|         :param int frequency: the target clock frequency of the state machine. Actual may be less. Use 0 for system clock speed.
 //|         :param ReadableBuffer init: a program to run once at start up. This is run after program
 //|              is started so instructions may be intermingled
-//|         :param ReadableBuffer may_exec: Instructions that may be executed via `StateMachine.exec` calls.
+//|         :param ReadableBuffer may_exec: Instructions that may be executed via `StateMachine.run` calls.
 //|             Some elements of the `StateMachine`'s configuration are inferred from the instructions used;
 //|             for instance, if there is no ``in`` or ``push`` instruction, then the `StateMachine` is configured without a receive FIFO.
 //|             In this case, passing a ``may_exec`` program containing an ``in`` instruction such as ``in x``, a receive FIFO will be configured.
