@@ -44,7 +44,6 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
-
 #include "boardctrl.h"
 #include "systick.h"
 #include "pendsv.h"
@@ -66,6 +65,7 @@
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
+#include "lwip/memp.h"
 #endif
 #if MICROPY_PY_BLUETOOTH
 #include "mpbthciport.h"
@@ -287,6 +287,9 @@ int main(void) {
     #if LWIP_MDNS_RESPONDER
     mdns_resp_init();
     #endif
+    #if MICROPY_HW_ETH_MDC
+    systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
     #endif
 
 soft_reset:
@@ -340,7 +343,9 @@ soft_reset:
     #endif
 
     #if MICROPY_PY_LWIP
+    #if MICROPY_PY_NETWORK_ESP_HOSTED
     mod_network_lwip_init();
+    #endif
     #endif
 
     // Initialise the local flash filesystem.

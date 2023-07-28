@@ -1388,7 +1388,7 @@ void ra_sci_init_with_flow(uint32_t ch, uint32_t tx_pin, uint32_t rx_pin, uint32
     sci_reg->SEMR = (uint8_t)0xc0;
     ra_sci_set_baud(ch, baud);
     delay_us(10);
-    sci_reg->SCR = (uint8_t)0x50;
+    sci_reg->SCR = (uint8_t)0x70;
     ra_sci_irq_enable(ch);
     ra_enable_irq(state);
     if (!ra_sci_init_flag[idx]) {

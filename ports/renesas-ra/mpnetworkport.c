@@ -27,10 +27,20 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "shared/runtime/softtimer.h"
+#include "shared/netutils/netutils.h"
+#include "systick.h"
+#include "pendsv.h"
+#include "extmod/modnetwork.h"
 
 #if MICROPY_PY_LWIP
-
+#include "lwip/netif.h"
 #include "lwip/timeouts.h"
+#include "lwip/dns.h"
+#include "lwip/dhcp.h"
+#include "lwip/apps/mdns.h"
+
+// Poll lwIP every 128ms
+#define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
 
 static mp_sched_node_t network_poll_node;
 static soft_timer_entry_t network_timer;
@@ -71,4 +81,17 @@ void mod_network_lwip_init(void) {
     soft_timer_reinsert(&network_timer, 50);
     timer_started = true;
 }
+
+STATIC void pyb_lwip_poll(void) {
+
+    // Run the lwIP internal updates
+    sys_check_timeouts();
+}
+
+void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
+    if (LWIP_TICK(ticks_ms)) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, pyb_lwip_poll);
+    }
+}
+
 #endif // MICROPY_PY_LWIP

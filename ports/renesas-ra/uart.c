@@ -78,7 +78,9 @@ static void uart_rx_cb(uint32_t ch, int d) {
     #endif
 
     #if MICROPY_HW_ENABLE_UART_REPL
-    ringbuf_put(&stdin_ringbuf, d);
+    if (self->attached_to_repl) {
+        ringbuf_put(&stdin_ringbuf, d);
+    }
     #endif
 
     // Check the flags to see if the user handler should be called

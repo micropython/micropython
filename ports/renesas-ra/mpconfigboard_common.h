@@ -49,6 +49,11 @@
 #define MICROPY_PY_PYB_LEGACY (1)
 #endif
 
+// Whether to enable network functions
+#ifndef MICROPY_PY_NETWORK
+#define MICROPY_PY_NETWORK (0)
+#endif
+
 // Whether machine.bootloader() will enter the bootloader via reset, or direct jump.
 #ifndef MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET
 #define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET (1)

@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Arduino SA
+ * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +24,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_RA_ETH_H
+#define MICROPY_INCLUDED_RA_ETH_H
 
-#include <stdint.h>
-#include <stdbool.h>
+typedef struct _eth_t eth_t;
+extern eth_t eth_instance;
+extern uint8_t g_ether0_mac_address[6];
 
-#include "py/runtime.h"
-#include "py/mphal.h"
+void eth_init(eth_t *self, int mac_idx);
+void eth_set_trace(eth_t *self, uint32_t value);
+struct netif *eth_netif(eth_t *self);
+int eth_link_status(eth_t *self);
+int eth_start(eth_t *self);
+int eth_stop(eth_t *self);
+void eth_low_power_mode(eth_t *self, bool enable);
 
-#if MICROPY_HW_ENABLE_RNG
-
-#include "rng.h"
-#if defined(RA6M3)
-#include "hw_sce_private.h"
-#include "hw_sce_trng_private.h"
-#elif defined(RA6M5)
-#include "r_sce.h"
-#endif
-
-uint32_t rng_read(void) {
-    uint32_t random_data[4];
-    static bool initialized = false;
-
-    if (initialized == false) {
-        initialized = true;
-        #if defined(RA6M3)
-        HW_SCE_McuSpecificInit();
-    }
-    HW_SCE_RNG_Read(random_data);
-        #elif defined(RA6M5)
-        R_SCE_Open(&sce_ctrl, &sce_cfg);
-    }
-    R_SCE_RandomNumberGenerate(random_data);
-    #endif
-
-    return random_data[0];
-}
-
-#endif
+#endif // MICROPY_INCLUDED_RA_ETH_H

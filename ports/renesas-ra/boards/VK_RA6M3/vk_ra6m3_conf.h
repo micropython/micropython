@@ -1,9 +1,7 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
- *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Arduino SA
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,39 +22,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#ifndef VK_RA6M3_CONF_H
+#define VK_RA6M3_CONF_H
 
-#include "py/runtime.h"
-#include "py/mphal.h"
+#define DEBUG_CH    7
 
-#if MICROPY_HW_ENABLE_RNG
-
-#include "rng.h"
-#if defined(RA6M3)
-#include "hw_sce_private.h"
-#include "hw_sce_trng_private.h"
-#elif defined(RA6M5)
-#include "r_sce.h"
-#endif
-
-uint32_t rng_read(void) {
-    uint32_t random_data[4];
-    static bool initialized = false;
-
-    if (initialized == false) {
-        initialized = true;
-        #if defined(RA6M3)
-        HW_SCE_McuSpecificInit();
-    }
-    HW_SCE_RNG_Read(random_data);
-        #elif defined(RA6M5)
-        R_SCE_Open(&sce_ctrl, &sce_cfg);
-    }
-    R_SCE_RandomNumberGenerate(random_data);
-    #endif
-
-    return random_data[0];
-}
-
-#endif
+#endif /* VK_RA6M3_CONF_H */
