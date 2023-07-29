@@ -2114,7 +2114,7 @@ msgid "Too many channels in sample."
 msgstr "Zu viele Kanäle im sample."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses; forgot display.release_displays() ?"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
 
 #: shared-module/displayio/__init__.c
