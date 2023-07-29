@@ -352,7 +352,7 @@ STATIC void adcx_init_periph(ADC_HandleTypeDef *adch, uint32_t resolution) {
     adch->Init.DataAlign = ADC_DATAALIGN_RIGHT;
     adch->Init.DMAContinuousRequests = DISABLE;
     #elif defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L4) || defined(STM32WB)
-    #if defined(STM32G4)
+    #if defined(STM32G4) || defined(STM32H5)
     adch->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV16;
     #else
     adch->Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV1;
@@ -395,7 +395,7 @@ STATIC void adc_init_single(pyb_obj_adc_t *adc_obj) {
 STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) {
     ADC_ChannelConfTypeDef sConfig;
 
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB)
     sConfig.Rank = ADC_REGULAR_RANK_1;
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel) == 0) {
         channel = __HAL_ADC_DECIMAL_NB_TO_CHANNEL(channel);
@@ -896,6 +896,9 @@ float adc_read_core_temp_float(ADC_HandleTypeDef *adcHandle) {
     } else {
         return 0;
     }
+    float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 100.0f;
+    #elif defined(STM32H5)
+    int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
     float core_temp_avg_slope = (*ADC_CAL2 - *ADC_CAL1) / 100.0f;
     #else
     int32_t raw_value = adc_config_and_read_ref(adcHandle, ADC_CHANNEL_TEMPSENSOR);
