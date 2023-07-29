@@ -2064,8 +2064,8 @@ msgid "Too many channels in sample."
 msgstr "Zbyt wiele kanałów."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Zbyt wiele magistrali"
+msgid "Too many display busses; forgot display.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4370,6 +4370,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Too many display busses"
+#~ msgstr "Zbyt wiele magistrali"
 
 #~ msgid "Hardware busy, try alternative pins"
 #~ msgstr "Sprzęt zajęty, wypróbuj alternatywne piny"

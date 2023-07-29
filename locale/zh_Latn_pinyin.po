@@ -2103,8 +2103,8 @@ msgid "Too many channels in sample."
 msgstr "Chōuyàng zhōng de píndào tài duō."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Xiǎnshì zǒngxiàn tài duōle"
+msgid "Too many display busses; forgot display.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4427,6 +4427,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Xiǎnshì zǒngxiàn tài duōle"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "méiyǒu MOSI hé MISO yǐnjiǎo, wúfǎ chuánshū"

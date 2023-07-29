@@ -2114,8 +2114,8 @@ msgid "Too many channels in sample."
 msgstr "Zu viele Kanäle im sample."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Zu viele Anzeigebusse"
+msgid "Too many display busses; forgot display.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4462,6 +4462,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Zu viele Anzeigebusse"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "Kann nicht ohne MISO und MOSI Pins transferieren"

@@ -2126,8 +2126,8 @@ msgid "Too many channels in sample."
 msgstr "Demasiados canales en sample."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Demasiados buses de pantalla"
+msgid "Too many display busses; forgot display.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4458,6 +4458,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Demasiados buses de pantalla"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "No puede ser transferido si los pines MOSI y MISO"

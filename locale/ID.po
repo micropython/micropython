@@ -2082,8 +2082,8 @@ msgid "Too many channels in sample."
 msgstr "Terlalu banyak channel dalam sampel"
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Terlalu banyak tampilan bus"
+msgid "Too many display busses; forgot display.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4389,6 +4389,9 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "Zi harus berbentuk (n_section, 2)"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Terlalu banyak tampilan bus"
 
 #~ msgid "Hardware busy, try alternative pins"
 #~ msgstr "Perangkat keras sibuk, coba pin alternatif"

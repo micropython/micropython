@@ -2121,8 +2121,8 @@ msgid "Too many channels in sample."
 msgstr "Muitos canais na amostra."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Muitos barramentos estão sendo exibidos"
+msgid "Too many display busses; forgot display.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4459,6 +4459,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Muitos barramentos estão sendo exibidos"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "Não é possível transferir sem os pinos MOSI e MISO"
