@@ -27,7 +27,9 @@
 mergeInto(LibraryManager.library, {
     mp_js_write: function(ptr, len) {
         const buffer = HEAPU8.subarray(ptr, ptr + len)
-        if (ENVIRONMENT_IS_NODE) {
+        if (ENVIRONMENT_IS_WORKER && typeof Module.webWorkerEventCallback === 'function') {
+            Module.webWorkerEventCallback({detail: buffer});
+        } else if (ENVIRONMENT_IS_NODE) {
             process.stdout.write(buffer);
         } else {
             const printEvent = new CustomEvent('micropython-print', { detail: buffer });
