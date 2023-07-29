@@ -88,6 +88,20 @@ MicroPython code execution will suspend the browser so be sure to atomize usage
 within this environment. Unfortunately interrupts have not been implemented for the
 browser.
 
+Running with WebWorkers on browsers
+-----------------
+To enable WebWorker support and receive messages outside of DOM, set `Module.webWorkerEventCallback` to a function that'll receive the events.
+
+```
+importScripts('micropython.js');
+// ...
+Module.webWorkerEventCallback = (event) => {
+  console.log(`Received an event from MicroPython!`);
+};
+```
+
+WebWorkers on the web gives more flexibility to developers when consuming the WASM module. Example cases where this is useful are: not blocking main thread, creating and disposing multiple instances on a single session, using multiple instances for different purposes separate from each other...
+
 Testing
 -------
 
