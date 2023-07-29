@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-29 12:56+0000\n"
+"PO-Revision-Date: 2023-07-30 11:47+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2123,6 +2123,8 @@ msgstr "Muitos canais na amostra."
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
+"Excesso de barramentos de exibição; esqueceu do displayio.release_displays() "
+"?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
