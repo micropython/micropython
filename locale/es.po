@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-16 04:32+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2023-07-30 11:47+0000\n"
+"Last-Translator: Pablo Martinez Bernal <elpekenin@elpekenin.dev>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1810,7 +1810,7 @@ msgstr "Los pines deben compartir la división PWM"
 
 #: shared-module/usb/core/Device.c
 msgid "Pipe error"
-msgstr ""
+msgstr "Error de conexión"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -2128,6 +2128,7 @@ msgstr "Demasiados canales en sample."
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
+"Demasiados buses para displays. Olvidaste displayio.release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -2858,7 +2859,7 @@ msgstr "no se puede crear instancia"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot delete array elements"
-msgstr ""
+msgstr "no se pudo eliminar elementos del array"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3323,11 +3324,11 @@ msgstr "ensamblador en línea debe ser una función"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output dimensions differ"
-msgstr ""
+msgstr "dimensiones de entrada y salida distintas"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output shapes differ"
-msgstr ""
+msgstr "formas de entrada y salida distintas"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3663,7 +3664,7 @@ msgstr "yield nativo"
 
 #: extmod/ulab/code/ndarray.c
 msgid "ndarray length overflows"
-msgstr ""
+msgstr "la longitud de ndarray desborda"
 
 #: py/runtime.c
 #, c-format
@@ -3768,7 +3769,7 @@ msgstr "no esta implementado para complex dtype"
 
 #: extmod/ulab/code/numpy/bitwise.c
 msgid "not supported for input types"
-msgstr ""
+msgstr "no soportado para los tipos de entrada"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3920,11 +3921,11 @@ msgstr "La matriz de salida es demasiado pequeña"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for complex dtype"
-msgstr ""
+msgstr "out no soportado para el dtype 'complex'"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for function"
-msgstr ""
+msgstr "out no soportado para funciones"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
@@ -3932,11 +3933,11 @@ msgstr "la matriz de salida debe ser densa de números float"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be an ndarray"
-msgstr ""
+msgstr "out debe ser un ndarray"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be of float dtype"
-msgstr ""
+msgstr "el dtype de out debe ser float"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
