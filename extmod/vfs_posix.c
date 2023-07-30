@@ -58,21 +58,23 @@ typedef struct _mp_obj_vfs_posix_t {
 } mp_obj_vfs_posix_t;
 
 STATIC const char *vfs_posix_get_path_str(mp_obj_vfs_posix_t *self, mp_obj_t path) {
-    if (self->root_len == 0) {
-        return mp_obj_str_get_str(path);
+    const char *path_str = mp_obj_str_get_str(path);
+    if (self->root_len == 0 || path_str[0] != '/') {
+        return path_str;
     } else {
-        self->root.len = self->root_len;
-        vstr_add_str(&self->root, mp_obj_str_get_str(path));
+        self->root.len = self->root_len - 1;
+        vstr_add_str(&self->root, path_str);
         return vstr_null_terminated_str(&self->root);
     }
 }
 
 STATIC mp_obj_t vfs_posix_get_path_obj(mp_obj_vfs_posix_t *self, mp_obj_t path) {
-    if (self->root_len == 0) {
+    const char *path_str = mp_obj_str_get_str(path);
+    if (self->root_len == 0 || path_str[0] != '/') {
         return path;
     } else {
-        self->root.len = self->root_len;
-        vstr_add_str(&self->root, mp_obj_str_get_str(path));
+        self->root.len = self->root_len - 1;
+        vstr_add_str(&self->root, path_str);
         return mp_obj_new_str(self->root.buf, self->root.len);
     }
 }
