@@ -11,7 +11,13 @@ except (ImportError, AttributeError):
 
 
 def test(testdir):
+    curdir = os.getcwd()
     vfs = os.VfsPosix(testdir)
+    # When VfsPosix is used the intended way via os.mount(), it can only be called
+    # with relative paths when the CWD is inside or at its root, so simulate that.
+    # (Although perhaps calling with a relative path was an oversight in this case
+    # and the respective line below was meant to read `vfs.rmdir("/" + dname)`.)
+    os.chdir(testdir)
     vfs.mkdir("/test_d1")
     vfs.mkdir("/test_d2")
     vfs.mkdir("/test_d3")
@@ -47,6 +53,9 @@ def test(testdir):
         # corruption that may be caused over the loops.
         vfs.open("/test", "w").close()
         vfs.remove("/test")
+
+    # Done with vfs, restore CWD.
+    os.chdir(curdir)
 
 
 # We need an empty directory for testing.
