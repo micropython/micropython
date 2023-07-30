@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-27 17:07+0000\n"
+"PO-Revision-Date: 2023-07-30 11:47+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1788,7 +1788,7 @@ msgstr "Pinnar måste dela PWM-segment"
 
 #: shared-module/usb/core/Device.c
 msgid "Pipe error"
-msgstr ""
+msgstr "Pipe-fel"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -2098,8 +2098,8 @@ msgid "Too many channels in sample."
 msgstr "För många kanaler i sampling."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "För många display-bussar"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr "För många displaybussar; glömt displayio.release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4421,6 +4421,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Too many display busses"
+#~ msgstr "För många display-bussar"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "Det går inte att överföra utan MOSI- och MISO-pinnar"

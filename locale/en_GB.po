@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-07-28 00:10+0000\n"
+"PO-Revision-Date: 2023-07-30 11:47+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -1779,7 +1779,7 @@ msgstr "Pins must share PWM slice"
 
 #: shared-module/usb/core/Device.c
 msgid "Pipe error"
-msgstr ""
+msgstr "Pipe error"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -2087,8 +2087,8 @@ msgid "Too many channels in sample."
 msgstr "Too many channels in sample."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Too many display busses"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr "Too many display busses; forgot displayio.release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -4403,6 +4403,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Too many display busses"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "Cannot transfer without MOSI and MISO pins"
