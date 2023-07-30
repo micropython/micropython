@@ -972,7 +972,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     for base, addr, kind in env.mpy_relocs:
         if isinstance(kind, str) and kind.startswith(".text"):
             kind = 0
-        elif kind in (".rodata", ".data.rel.ro"):
+        elif isinstance(kind, str) and kind.startswith((".rodata", ".data.rel.ro")):
             if env.arch.separate_rodata:
                 kind = rodata_const_table_idx
             else:
