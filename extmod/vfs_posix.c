@@ -186,7 +186,14 @@ STATIC mp_obj_t vfs_posix_getcwd(mp_obj_t self_in) {
     if (ret == NULL) {
         mp_raise_OSError(errno);
     }
-    ret += self->root_len;
+    if (self->root_len > 0) {
+        ret += self->root_len - 1;
+        #ifdef _WIN32
+        if (*ret == '\\') {
+            *(char *)ret = '/';
+        }
+        #endif
+    }
     return mp_obj_new_str(ret, strlen(ret));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_getcwd_obj, vfs_posix_getcwd);

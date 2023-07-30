@@ -68,6 +68,25 @@ vfs.rmdir("/subdir")
 # done with vfs, restore CWD
 os.chdir(curdir)
 
+# some integration tests with a mounted VFS
+os.mount(os.VfsPosix(temp_dir_abs), "/mnt")
+os.mkdir("/mnt/dir")
+print('chdir("/mnt/dir"):', os.chdir("/mnt/dir"))
+print("getcwd():", os.getcwd())
+print('chdir("/mnt"):', os.chdir("/mnt"))
+print("getcwd():", os.getcwd())
+print('chdir("/"):', os.chdir("/"))
+print("getcwd():", os.getcwd())
+print('chdir("/mnt/dir"):', os.chdir("/mnt/dir"))
+print("getcwd():", os.getcwd())
+print('chdir(".."):', os.chdir(".."))
+print("getcwd():", os.getcwd())
+os.rmdir("/mnt/dir")
+os.umount("/mnt")
+
+# restore CWD
+os.chdir(curdir)
+
 # rmdir
 os.rmdir(temp_dir)
 print(temp_dir in os.listdir())
