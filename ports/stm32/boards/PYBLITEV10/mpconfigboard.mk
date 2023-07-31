@@ -6,8 +6,6 @@ TEXT0_ADDR = 0x08000000
 TEXT1_ADDR = 0x08020000
 
 # Provide different variants for the downloads page.
-BOARD_VARIANTS += "dp thread dp-thread network"
-
 ifeq ($(BOARD_VARIANT),dp)
 MICROPY_FLOAT_IMPL=double
 endif

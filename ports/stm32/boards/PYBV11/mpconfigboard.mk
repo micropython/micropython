@@ -16,8 +16,6 @@ endif
 MICROPY_VFS_LFS2 = 1
 
 # Provide different variants for the downloads page.
-BOARD_VARIANTS += "dp thread dp-thread network"
-
 ifeq ($(BOARD_VARIANT),dp)
 MICROPY_FLOAT_IMPL=double
 endif
