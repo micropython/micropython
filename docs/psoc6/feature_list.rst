@@ -42,6 +42,9 @@ Enabled modules
         * SoftSPI
         * PWM
         * Timer
+        * ADC
+        * ADCBlock
+        
     * micropython
     * ucryptolib
     * uctypes
@@ -99,7 +102,7 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 |                 |                                                                                                                      |
 |                 | Constants not yet implemented : *WLAN_WAKE*, *PIN_WAKE*, *RTC_WAKE*, *IDLE*, *SLEEP*, *DEEPSLEEP*.                   |
 |                 |                                                                                                                      |
-|                 | Submodules/classes not yet implemented: *ADC*, *bitstream*, *mem*, *Signal*, *SD*, *SDCard*, *SoftSPI*, *SPI*,       |
+|                 | Submodules/classes not yet implemented: *bitstream*, *mem*, *Signal*, *SD*, *SDCard*, *SoftSPI*, *SPI*,       |
 |                 | *Timer*, *UART*, *WDT*.                                                                                              |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.Pin     | Functions not yet implemented: *drive()*, *irq()*, *mode()*, *pull()*.                                               |
@@ -108,6 +111,10 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 |                 | *MED_POWER*, *HIGH_POWER*, *IRQ_FALLING*, *IRQ_RISING*, *IRQ_LOW_LEVEL*, *IRQ_HIGH_LEVEL*.                           |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.I2C     | Option ``MICROPY_PY_MACHINE_I2C`` enabled.                                                                           |
++-----------------+----------------------------------------------------------------------------------------------------------------------+
+| machine.ADC     | Functions not implemented: *init()*.                                                                                 |
++-----------------+----------------------------------------------------------------------------------------------------------------------+
+| machine.ADCBlock| All functions enabled.                                                                                               |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.RTC     | Functions not yet implemented: *alarm()*, *alarm_left()*, *cancel()*, *irq()*.                                       |
 |                 |                                                                                                                      |

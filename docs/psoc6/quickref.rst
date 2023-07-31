@@ -463,3 +463,49 @@ Use the :mod:`machine.Timer` class::
 Here id=0 should be passed mandatorily.
 
 .. note:: Here mode=Timer.PERIODIC is not currently supported 
+
+ADC (analog to digital conversion)
+----------------------------------
+
+On the PSoC6, a single ADC block with id - '0' is available. The ADC functionality is available on the
+following pins : "P10_0" - "P10_5".
+
+Use the :ref:`machine.ADC <machine.ADC>` class::
+
+    from machine import ADC, Pin
+
+    adc = ADC(Pin("P10_0"))        # create an ADC object on ADC pin
+    val = adc.read_u16()           # read a raw analog value in the range 0-65535
+    val = adc.read_uv()            # read an analog value in micro volts
+
+The PSoC6 port also supports :ref:`machine.ADC <machine.ADCBlock>` API to have control over the ADC configuration. Currently 
+PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping and the defaults are set accordingly:
+
++---------+-------+
+| Channel |  Pin  |
++=========+=======+
+|    0    | P10_0 |
++---------+-------+
+|    1    | P10_1 |
++---------+-------+
+|    2    | P10_2 |
++---------+-------+
+|    3    | P10_3 |
++---------+-------+
+|    4    | P10_4 |
++---------+-------+
+|    5    | P10_5 |
++---------+-------+
+
+.. note::
+    Arbitrary connection of ADC channels to GPIO is not supported. Specifying a pin that is not connected to this block, 
+    or specifying a mismatched channel and pin, will raise an exception.
+
+To use the APIs:
+
+    from machine import ADCBlock, Pin
+
+    adcBlock = ADCBlock(0, bits=12)             # create an ADCBlock 0 object
+    adc = adcBlock.connect(0, Pin("P10_0"))     # connect channel 0 to pin P10_0
+    val = adc.read_uv()                         # read an analog value in micro volts
+
