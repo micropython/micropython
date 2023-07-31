@@ -239,6 +239,10 @@ def get_repository_url(directory):
     repository_urls[directory] = path
     return path
 
+def remove_prefix(s, prefix):
+    if not s.startswith(prefix):
+        raise ValueError(f"{s=} does not start with {prefix=}")
+    return s.removeprefix(prefix)
 
 def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
     """
@@ -251,7 +255,7 @@ def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
     """
     frozen_modules = []
     for frozen_path in filter(lambda x: x, frozen_mpy_dirs.split(" ")):
-        frozen_path = frozen_path.removeprefix('../../')
+        frozen_path = remove_prefix(frozen_path, '../../')
         source_dir = get_circuitpython_root_dir() / frozen_path
         url_repository = get_repository_url(source_dir)
         for sub in source_dir.glob("*"):
