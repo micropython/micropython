@@ -27,6 +27,9 @@
 # Manually disable by overriding in #mpconfigboard.mk
 
 # These Makefile variables are used to implement the "any" and "all" functions.
+# Note that these only work when the arguments expand to "0" and/or "1" but not
+# if they expand to other values like "yes", "/bin/sh", or "false".
+#
 # Make's "sort" will transform a mixed sequence of 0s and 1s to "0 1" (because
 # it also eliminates duplicates), or a non-mixed sequence of "0" or "1" to just
 # itself. Thus, if all the inputs are 1 then the first word will be 1; if any
