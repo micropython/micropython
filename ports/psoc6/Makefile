@@ -141,6 +141,8 @@ MOD_SRC_C += $(addprefix modules/,\
 	machine/machine_spi.c \
 	machine/pins.c \
 	machine/machine_timer.c \
+	machine/machine_adc.c \
+	machine/machine_adcblock.c \
 	\
 	psoc6/modpsoc6.c \
 	psoc6/psoc6_fatfs.c \

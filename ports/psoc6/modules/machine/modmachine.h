@@ -12,6 +12,8 @@ extern const mp_obj_type_t machine_rtc_type;
 extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_timer_type;
+extern const mp_obj_type_t machine_adc_type;
+extern const mp_obj_type_t machine_adcblock_type;
 
 /* Note: the static functions' prototypes in the .c file cannot be declared here
 since they are static. The static type in those functions come from MPY hence
