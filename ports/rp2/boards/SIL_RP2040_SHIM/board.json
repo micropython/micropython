@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Breadboard Friendly",
+        "RGB LED",
+        "SPI Flash",
+        "Micro USB"
+    ],
+    "images": [
+        "../images/rp2040-shim-product.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040-Shim",
+    "thumbnail": "",
+    "url": "https://silicognition.com/Products/rp2040-shim/",
+    "vendor": "Silicognition LLC"
+}
