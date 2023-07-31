@@ -85,8 +85,8 @@ STATIC void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_
     }
 }
 
-// poll each object in the map
-STATIC mp_uint_t poll_map_poll(poll_set_t *poll_set, size_t *rwx_num) {
+// For each object in the poll set, poll it once.
+STATIC mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
     mp_uint_t n_ready = 0;
     for (mp_uint_t i = 0; i < poll_set->map.alloc; ++i) {
         if (!mp_map_slot_is_filled(&poll_set->map, i)) {
@@ -122,6 +122,18 @@ STATIC mp_uint_t poll_map_poll(poll_set_t *poll_set, size_t *rwx_num) {
     return n_ready;
 }
 
+STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size_t *rwx_num, mp_uint_t timeout) {
+    mp_uint_t start_tick = mp_hal_ticks_ms();
+    for (;;) {
+        // poll the objects
+        mp_uint_t n_ready = poll_set_poll_once(poll_set, rwx_num);
+        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
+            return n_ready;
+        }
+        MICROPY_EVENT_POLL_HOOK
+    }
+}
+
 #if MICROPY_PY_SELECT_SELECT
 // select(rlist, wlist, xlist[, timeout])
 STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
@@ -154,39 +166,33 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     poll_set_add_obj(&poll_set, w_array, rwx_len[1], MP_STREAM_POLL_WR, true);
     poll_set_add_obj(&poll_set, x_array, rwx_len[2], MP_STREAM_POLL_ERR | MP_STREAM_POLL_HUP, true);
 
-    mp_uint_t start_tick = mp_hal_ticks_ms();
+    // poll all objects
     rwx_len[0] = rwx_len[1] = rwx_len[2] = 0;
-    for (;;) {
-        // poll the objects
-        mp_uint_t n_ready = poll_map_poll(&poll_set, rwx_len);
+    poll_set_poll_until_ready_or_timeout(&poll_set, rwx_len, timeout);
 
-        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
-            // one or more objects are ready, or we had a timeout
-            mp_obj_t list_array[3];
-            list_array[0] = mp_obj_new_list(rwx_len[0], NULL);
-            list_array[1] = mp_obj_new_list(rwx_len[1], NULL);
-            list_array[2] = mp_obj_new_list(rwx_len[2], NULL);
-            rwx_len[0] = rwx_len[1] = rwx_len[2] = 0;
-            for (mp_uint_t i = 0; i < poll_set.map.alloc; ++i) {
-                if (!mp_map_slot_is_filled(&poll_set.map, i)) {
-                    continue;
-                }
-                poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set.map.table[i].value);
-                if (poll_obj->flags_ret & MP_STREAM_POLL_RD) {
-                    ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[0]))->items[rwx_len[0]++] = poll_obj->obj;
-                }
-                if (poll_obj->flags_ret & MP_STREAM_POLL_WR) {
-                    ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[1]))->items[rwx_len[1]++] = poll_obj->obj;
-                }
-                if ((poll_obj->flags_ret & ~(MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) != 0) {
-                    ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[2]))->items[rwx_len[2]++] = poll_obj->obj;
-                }
-            }
-            poll_set_deinit(&poll_set);
-            return mp_obj_new_tuple(3, list_array);
+    // one or more objects are ready, or we had a timeout
+    mp_obj_t list_array[3];
+    list_array[0] = mp_obj_new_list(rwx_len[0], NULL);
+    list_array[1] = mp_obj_new_list(rwx_len[1], NULL);
+    list_array[2] = mp_obj_new_list(rwx_len[2], NULL);
+    rwx_len[0] = rwx_len[1] = rwx_len[2] = 0;
+    for (mp_uint_t i = 0; i < poll_set.map.alloc; ++i) {
+        if (!mp_map_slot_is_filled(&poll_set.map, i)) {
+            continue;
         }
-        MICROPY_EVENT_POLL_HOOK
+        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set.map.table[i].value);
+        if (poll_obj->flags_ret & MP_STREAM_POLL_RD) {
+            ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[0]))->items[rwx_len[0]++] = poll_obj->obj;
+        }
+        if (poll_obj->flags_ret & MP_STREAM_POLL_WR) {
+            ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[1]))->items[rwx_len[1]++] = poll_obj->obj;
+        }
+        if ((poll_obj->flags_ret & ~(MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) != 0) {
+            ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[2]))->items[rwx_len[2]++] = poll_obj->obj;
+        }
     }
+    poll_set_deinit(&poll_set);
+    return mp_obj_new_tuple(3, list_array);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
 #endif // MICROPY_PY_SELECT_SELECT
@@ -256,18 +262,7 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
 
     self->flags = flags;
 
-    mp_uint_t start_tick = mp_hal_ticks_ms();
-    mp_uint_t n_ready;
-    for (;;) {
-        // poll the objects
-        n_ready = poll_map_poll(&self->poll_set, NULL);
-        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
-            break;
-        }
-        MICROPY_EVENT_POLL_HOOK
-    }
-
-    return n_ready;
+    return poll_set_poll_until_ready_or_timeout(&self->poll_set, NULL, timeout);
 }
 
 STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
