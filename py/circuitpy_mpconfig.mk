@@ -26,17 +26,18 @@
 # Boards default to all modules enabled (with exceptions)
 # Manually disable by overriding in #mpconfigboard.mk
 
+# These Makefile variables are used to implement the "any" and "all" functions.
+# Make's "sort" will transform a mixed sequence of 0s and 1s to "0 1" (because
+# it also eliminates duplicates), or a non-mixed sequence of "0" or "1" to just
+# itself. Thus, if all the inputs are 1 then the first word will be 1; if any
+# of the inputs are 1, then the last word will be 1.
 enable-if-any=$(lastword $(sort $(1) 0))
 enable-if-all=$(firstword $(sort $(1) 1))
 
-#$(info enable-if-any 0 1 -> $(call enable-if-any,0 1))
-#$(info enable-if-any 1 0 -> $(call enable-if-any,1 0))
-#$(info enable-if-any 1 1 -> $(call enable-if-any,1 1))
-#$(info enable-if-any 0 0 -> $(call enable-if-any,0 0))
-#$(info enable-if-all 0 1 -> $(call enable-if-all,0 1))
-#$(info enable-if-all 1 0 -> $(call enable-if-all,1 0))
-#$(info enable-if-all 1 1 -> $(call enable-if-all,1 1))
-#$(info enable-if-all 0 0 -> $(call enable-if-all,0 0))
+# To use any/all, you "$(call)" it, with the values to test after a comma.
+# Usually the values are other $(CIRCUITPY_foo) variables. The definition
+# of CIRCUITPY_AUDIOCORE and CIRCUITPY_AUDIOMP3 below are typical of how
+# any/all are expected to be used.
 
 # Always on. Present here to help generate documentation module support matrix for "builtins".
 CIRCUITPY = 1
