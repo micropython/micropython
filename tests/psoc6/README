@@ -62,10 +62,13 @@ cpydiff
 # Many tests require files on the board filesystem, but these are not copied by default. Also, the sys.path must be adapted to reflect the mount point of the board FS.
 # All these excluded tests have been manually tested and verified to work as expected
 - import :
+        - builtin_ext.py
         - gen_context.py
         - import1a.py
         - import2a.py
         - import3a.py
+        - import_broken.py
+        - import_circular.py
         - import_file.py
         - import_long_dyn.py
         - import_override.py
@@ -77,6 +80,7 @@ cpydiff
         - import_pkg6.py
         - import_pkg7.py
         - import_pkg8.py
+        - import_pkg9.py
         - module_dict.py
         - try_module.py
 
@@ -130,7 +134,7 @@ jni
 ### TODO: clarify how to solve these
 # strange error in time module (only sometimes)
 - extmod :
-        - utime_res.py
+        - re_stack_overflow.py
 
         # this test fails at times as 1 check is not timing safe
         - vfs_lfs_mtime.py
@@ -144,6 +148,7 @@ jni
         - complex.py
         - const.py
         - coverage.py
+        - io_module.py
         - native_check.py
 
 
@@ -153,8 +158,7 @@ jni
         - repl_words_move_check.py
         - set_check.py
         - slice.py
-        - uio_module.py
-
+        
 
 # tests that require double precision (64 bits), ie double, to be set in mpconfigport.h for macro "MICROPY_FLOAT_IMPL"
 # clashes with misc/rge_sm.py

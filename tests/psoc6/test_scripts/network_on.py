@@ -13,7 +13,7 @@ wlan.connect(s.ssid, s.key)
 sleep(5)
 
 for i in range(0, 100):
-    if not wlan.isconnected() and wlan.status() >= 0:
+    if not wlan.isconnected():
         print("[Network] Waiting to connect..")
         sleep(2)
 

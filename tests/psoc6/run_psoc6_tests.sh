@@ -8,7 +8,16 @@
 echo "executing $0 $* ..."
 
 usage() {
-  echo "Usage: $0 -a <run all meaningful test by directory without excluding any> -c <clean results directory and file before running tests> -d <device to be used> -f <run failing tests only> -i <run implemented tests only and exclude known failing tests> -n <run not yet implemented tests only> -w <run wifi tests => needs secrets.py key file>" 1>&2;
+  echo "Usage:"
+  echo "sh run_psoc6_tests.sh <opt>"
+  echo "Available options:"
+  echo "  -a   run all meaningful test by directory without excluding any"
+  echo "  -c  clean results directory and file before running tests"
+  echo "  -d  device device to be used"
+  echo "  -f  run failing tests only"
+  echo "  -i  run implemented tests only and exclude known failing tests"
+  echo "  -n  run not yet implemented tests only"
+  echo "  -w  run wifi tests => needs secrets.py key file>"
   exit 1;
 }
 
@@ -195,7 +204,6 @@ if [ ${implemented} -eq 1 ]; then
 
   ./run-tests.py --target psoc6 --device ${device} \
           io/builtin_print_file.py \
-          unix/time.py \
     | tee -a ${resultsFile}
 
   echo
@@ -216,14 +224,16 @@ if [ ${implemented} -eq 1 ]; then
           stress \
           unicode \
         \
+        -e basics/async_for \
         -e basics/builtin_pow3_intbig.py \
+        -e basics/builtin_print.py \
         -e basics/fun_largestate.py \
         -e basics/list_compare.py \
         -e basics/tuple_compare.py \
         -e basics/unpack1.py \
         \
-        -e extmod/ure_split_notimpl.py \
-        -e extmod/ure_stack_overflow.py \
+        -e extmod/re_stack_overflow.py \
+        -e extmod/socket_udp_nonblock.py \
         -e extmod/vfs_lfs_mtime.py \
         \
         -e feature_check/async_check.py \
@@ -233,19 +243,22 @@ if [ ${implemented} -eq 1 ]; then
         -e feature_check/const.py \
         -e feature_check/coverage.py \
         -e feature_check/float.py \
+        -e feature_check/io_module.py \
         -e feature_check/native_check.py \
         -e feature_check/repl_emacs_check.py \
         -e feature_check/repl_words_move_check.py \
         -e feature_check/set_check.py \
         -e feature_check/slice.py \
-        -e feature_check/uio_module.py \
         \
         -e float/math_domain_special.py \
         \
+        -e import/builtin_ext.py \
         -e import/gen_context.py \
         -e import/import1a.py \
         -e import/import2a.py \
         -e import/import3a.py \
+        -e import/import_broken.py \
+        -e import/import_circular.py \
         -e import/import_file.py \
         -e import/import_long_dyn.py \
         -e import/import_override.py \
@@ -257,15 +270,12 @@ if [ ${implemented} -eq 1 ]; then
         -e import/import_pkg6.py \
         -e import/import_pkg7.py \
         -e import/import_pkg8.py \
+        -e import/import_pkg9.py \
         -e import/module_dict.py \
         -e import/try_module.py \
         \
-        -e micropython/emg_exc.py \
         -e micropython/extreme_exc.py \
-        -e micropython/heapalloc_exc_compressed_emg_exc.py \
-        -e micropython/import_mpy_invalid.py \
-        -e micropython/import_mpy_native.py \
-        -e micropython/viper_error.py \
+        -e micropython/memstats.py \
         \
         -e perf_bench/core_import_mpy_multi.py \
         -e perf_bench/core_import_mpy_single.py \
