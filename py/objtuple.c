@@ -165,6 +165,9 @@ mp_obj_t mp_obj_tuple_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (n <= 0) {
                 return mp_const_empty_tuple;
             }
+            if (o->len != 0 && (size_t)n > UINT_MAX / o->len) {
+                m_malloc_fail(UINT_MAX);
+            }
             mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(o->len * n, NULL));
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
             return MP_OBJ_FROM_PTR(s);

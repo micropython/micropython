@@ -366,6 +366,9 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return mp_const_empty_bytes;
             }
         }
+        if (lhs_len != 0 && (size_t)n > UINT_MAX / lhs_len) {
+            m_malloc_fail(UINT_MAX);
+        }
         vstr_t vstr;
         vstr_init_len(&vstr, lhs_len * n);
         mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, vstr.buf);
