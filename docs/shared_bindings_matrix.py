@@ -251,7 +251,8 @@ def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
     """
     frozen_modules = []
     for frozen_path in filter(lambda x: x, frozen_mpy_dirs.split(" ")):
-        source_dir = get_circuitpython_root_dir() / frozen_path[6:]
+        frozen_path = frozen_path.removeprefix('../../')
+        source_dir = get_circuitpython_root_dir() / frozen_path
         url_repository = get_repository_url(source_dir)
         for sub in source_dir.glob("*"):
             if sub.name in FROZEN_EXCLUDES:
