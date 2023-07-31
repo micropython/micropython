@@ -178,7 +178,12 @@ if(MICROPY_FROZEN_MANIFEST)
         set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
     endif()
 
-    if(NOT (${ECHO_SUBMODULES}) AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+    if(ECHO_SUBMODULES OR ECHO_QUERY_VARIANTS)
+        # No-op, we're just doing submodule/variant discovery.
+        # Note: All the following rules are safe to run in discovery mode even
+        # though the submodule might not be available as they do not directly depend
+        # on anything from the submodule.
+    elseif(NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
         message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
