@@ -209,6 +209,15 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
                 if (pfd.revents & POLLOUT) {
                     ret |= MP_STREAM_POLL_WR;
                 }
+                if (pfd.revents & POLLERR) {
+                    ret |= MP_STREAM_POLL_ERR;
+                }
+                if (pfd.revents & POLLHUP) {
+                    ret |= MP_STREAM_POLL_HUP;
+                }
+                if (pfd.revents & POLLNVAL) {
+                    ret |= MP_STREAM_POLL_NVAL;
+                }
             }
             return ret;
             #endif
