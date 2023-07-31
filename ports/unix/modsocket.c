@@ -164,6 +164,15 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 if (pfd.revents & POLLOUT) {
                     ret |= MP_STREAM_POLL_WR;
                 }
+                if (pfd.revents & POLLERR) {
+                    ret |= MP_STREAM_POLL_ERR;
+                }
+                if (pfd.revents & POLLHUP) {
+                    ret |= MP_STREAM_POLL_HUP;
+                }
+                if (pfd.revents & POLLNVAL) {
+                    ret |= MP_STREAM_POLL_NVAL;
+                }
             }
             return ret;
         }
