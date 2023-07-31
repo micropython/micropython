@@ -13,8 +13,8 @@
 #define PICO_RP2040_B0_SUPPORTED            0
 
 // Bus configuration
-#define MICROPY_HW_I2C0_SCL                 (16)
-#define MICROPY_HW_I2C0_SDA                 (17)
+#define MICROPY_HW_I2C0_SCL                 (17)
+#define MICROPY_HW_I2C0_SDA                 (16)
 
 #define MICROPY_HW_SPI0_SCK                 (18)
 #define MICROPY_HW_SPI0_MOSI                (19)
