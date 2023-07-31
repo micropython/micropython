@@ -46,6 +46,9 @@
 #ifdef _MSC_VER
 #include <direct.h> // For mkdir etc.
 #endif
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 typedef struct _mp_obj_vfs_posix_t {
     mp_obj_base_t base;
@@ -107,7 +110,28 @@ STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_obj_vfs_posix_t *vfs = mp_obj_malloc(mp_obj_vfs_posix_t, type);
     vstr_init(&vfs->root, 0);
     if (n_args == 1) {
-        vstr_add_str(&vfs->root, mp_obj_str_get_str(args[0]));
+        const char *root = mp_obj_str_get_str(args[0]);
+        // if the root is relative, make it absolute, otherwise we'll get confused by chdir
+        #ifdef _WIN32
+        char buf[MICROPY_ALLOC_PATH_MAX + 1];
+        DWORD result = GetFullPathNameA(root, sizeof(buf), buf, NULL);
+        if (result > 0 && result < sizeof(buf)) {
+            vstr_add_str(&vfs->root, buf);
+        } else {
+            mp_raise_OSError(GetLastError());
+        }
+        #else
+        if (root[0] != '\0' && root[0] != '/') {
+            char buf[MICROPY_ALLOC_PATH_MAX + 1];
+            const char *cwd = getcwd(buf, sizeof(buf));
+            if (cwd == NULL) {
+                mp_raise_OSError(errno);
+            }
+            vstr_add_str(&vfs->root, cwd);
+            vstr_add_char(&vfs->root, '/');
+        }
+        vstr_add_str(&vfs->root, root);
+        #endif
         vstr_add_char(&vfs->root, '/');
     }
     vfs->root_len = vfs->root.len;

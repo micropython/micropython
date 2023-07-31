@@ -99,6 +99,19 @@ if hasattr(vfs, "statvfs"):
 print(type(list(vfs.ilistdir("."))[0][0]))
 print(type(list(vfs.ilistdir(b"."))[0][0]))
 
+# chdir should not affect absolute paths (regression test)
+vfs.mkdir("/subdir")
+vfs.mkdir("/subdir/micropy_test_dir")
+with vfs.open("/subdir/micropy_test_dir/test2", "w") as f:
+    f.write("wrong")
+vfs.chdir("/subdir")
+with vfs.open("/test2", "r") as f:
+    print(f.read())
+os.chdir(curdir)
+vfs.remove("/subdir/micropy_test_dir/test2")
+vfs.rmdir("/subdir/micropy_test_dir")
+vfs.rmdir("/subdir")
+
 # remove
 os.remove(temp_dir + "/test2")
 print(os.listdir(temp_dir))

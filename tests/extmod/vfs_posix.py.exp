@@ -10,6 +10,7 @@ next_file_no <= base_file_no True
 <class 'tuple'>
 <class 'str'>
 <class 'bytes'>
+hello
 []
 remove OSError
 False
