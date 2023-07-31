@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2014-2023 Damien P. George
  * Copyright (c) 2015-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,10 +26,6 @@
  */
 
 #include "py/mpconfig.h"
-#if MICROPY_PY_SELECT
-
-#include <stdio.h>
-
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objlist.h"
@@ -37,9 +33,12 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_SELECT
+
 // Flags for poll()
 #define FLAG_ONESHOT (1)
 
+// A single pollable object.
 typedef struct _poll_obj_t {
     mp_obj_t obj;
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
@@ -47,9 +46,25 @@ typedef struct _poll_obj_t {
     mp_uint_t flags_ret;
 } poll_obj_t;
 
-STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t flags, bool or_flags) {
+// A set of pollable objects.
+typedef struct _poll_set_t {
+    // Map containing a dict with key=object to poll, value=its corresponding poll_obj_t.
+    mp_map_t map;
+} poll_set_t;
+
+STATIC void poll_set_init(poll_set_t *poll_set, size_t n) {
+    mp_map_init(&poll_set->map, n);
+}
+
+#if MICROPY_PY_SELECT_SELECT
+STATIC void poll_set_deinit(poll_set_t *poll_set) {
+    mp_map_deinit(&poll_set->map);
+}
+#endif
+
+STATIC void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t flags, bool or_flags) {
     for (mp_uint_t i = 0; i < obj_len; i++) {
-        mp_map_elem_t *elem = mp_map_lookup(poll_map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
+        mp_map_elem_t *elem = mp_map_lookup(&poll_set->map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         if (elem->value == MP_OBJ_NULL) {
             // object not found; get its ioctl and add it to the poll list
             const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
@@ -71,14 +86,14 @@ STATIC void poll_map_add(mp_map_t *poll_map, const mp_obj_t *obj, mp_uint_t obj_
 }
 
 // poll each object in the map
-STATIC mp_uint_t poll_map_poll(mp_map_t *poll_map, size_t *rwx_num) {
+STATIC mp_uint_t poll_map_poll(poll_set_t *poll_set, size_t *rwx_num) {
     mp_uint_t n_ready = 0;
-    for (mp_uint_t i = 0; i < poll_map->alloc; ++i) {
-        if (!mp_map_slot_is_filled(poll_map, i)) {
+    for (mp_uint_t i = 0; i < poll_set->map.alloc; ++i) {
+        if (!mp_map_slot_is_filled(&poll_set->map, i)) {
             continue;
         }
 
-        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_map->table[i].value);
+        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set->map.table[i].value);
         int errcode;
         mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_STREAM_POLL, poll_obj->flags, &errcode);
         poll_obj->flags_ret = ret;
@@ -133,17 +148,17 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
     }
 
     // merge separate lists and get the ioctl function for each object
-    mp_map_t poll_map;
-    mp_map_init(&poll_map, rwx_len[0] + rwx_len[1] + rwx_len[2]);
-    poll_map_add(&poll_map, r_array, rwx_len[0], MP_STREAM_POLL_RD, true);
-    poll_map_add(&poll_map, w_array, rwx_len[1], MP_STREAM_POLL_WR, true);
-    poll_map_add(&poll_map, x_array, rwx_len[2], MP_STREAM_POLL_ERR | MP_STREAM_POLL_HUP, true);
+    poll_set_t poll_set;
+    poll_set_init(&poll_set, rwx_len[0] + rwx_len[1] + rwx_len[2]);
+    poll_set_add_obj(&poll_set, r_array, rwx_len[0], MP_STREAM_POLL_RD, true);
+    poll_set_add_obj(&poll_set, w_array, rwx_len[1], MP_STREAM_POLL_WR, true);
+    poll_set_add_obj(&poll_set, x_array, rwx_len[2], MP_STREAM_POLL_ERR | MP_STREAM_POLL_HUP, true);
 
     mp_uint_t start_tick = mp_hal_ticks_ms();
     rwx_len[0] = rwx_len[1] = rwx_len[2] = 0;
     for (;;) {
         // poll the objects
-        mp_uint_t n_ready = poll_map_poll(&poll_map, rwx_len);
+        mp_uint_t n_ready = poll_map_poll(&poll_set, rwx_len);
 
         if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
             // one or more objects are ready, or we had a timeout
@@ -152,11 +167,11 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
             list_array[1] = mp_obj_new_list(rwx_len[1], NULL);
             list_array[2] = mp_obj_new_list(rwx_len[2], NULL);
             rwx_len[0] = rwx_len[1] = rwx_len[2] = 0;
-            for (mp_uint_t i = 0; i < poll_map.alloc; ++i) {
-                if (!mp_map_slot_is_filled(&poll_map, i)) {
+            for (mp_uint_t i = 0; i < poll_set.map.alloc; ++i) {
+                if (!mp_map_slot_is_filled(&poll_set.map, i)) {
                     continue;
                 }
-                poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_map.table[i].value);
+                poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set.map.table[i].value);
                 if (poll_obj->flags_ret & MP_STREAM_POLL_RD) {
                     ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[0]))->items[rwx_len[0]++] = poll_obj->obj;
                 }
@@ -167,7 +182,7 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
                     ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[2]))->items[rwx_len[2]++] = poll_obj->obj;
                 }
             }
-            mp_map_deinit(&poll_map);
+            poll_set_deinit(&poll_set);
             return mp_obj_new_tuple(3, list_array);
         }
         MICROPY_EVENT_POLL_HOOK
@@ -178,7 +193,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
 
 typedef struct _mp_obj_poll_t {
     mp_obj_base_t base;
-    mp_map_t poll_map;
+    poll_set_t poll_set;
     short iter_cnt;
     short iter_idx;
     int flags;
@@ -195,7 +210,7 @@ STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     } else {
         flags = MP_STREAM_POLL_RD | MP_STREAM_POLL_WR;
     }
-    poll_map_add(&self->poll_map, &args[1], 1, flags, false);
+    poll_set_add_obj(&self->poll_set, &args[1], 1, flags, false);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
@@ -203,7 +218,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 // unregister(obj)
 STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_map_lookup(&self->poll_set.map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
     // TODO raise KeyError if obj didn't exist in map
     return mp_const_none;
 }
@@ -212,7 +227,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(poll_unregister_obj, poll_unregister);
 // modify(obj, eventmask)
 STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmask_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_elem_t *elem = mp_map_lookup(&self->poll_map, mp_obj_id(obj_in), MP_MAP_LOOKUP);
+    mp_map_elem_t *elem = mp_map_lookup(&self->poll_set.map, mp_obj_id(obj_in), MP_MAP_LOOKUP);
     if (elem == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
@@ -245,7 +260,7 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
     mp_uint_t n_ready;
     for (;;) {
         // poll the objects
-        n_ready = poll_map_poll(&self->poll_map, NULL);
+        n_ready = poll_map_poll(&self->poll_set, NULL);
         if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
             break;
         }
@@ -262,11 +277,11 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
     // one or more objects are ready, or we had a timeout
     mp_obj_list_t *ret_list = MP_OBJ_TO_PTR(mp_obj_new_list(n_ready, NULL));
     n_ready = 0;
-    for (mp_uint_t i = 0; i < self->poll_map.alloc; ++i) {
-        if (!mp_map_slot_is_filled(&self->poll_map, i)) {
+    for (mp_uint_t i = 0; i < self->poll_set.map.alloc; ++i) {
+        if (!mp_map_slot_is_filled(&self->poll_set.map, i)) {
             continue;
         }
-        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_map.table[i].value);
+        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_set.map.table[i].value);
         if (poll_obj->flags_ret != 0) {
             mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
             ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
@@ -304,12 +319,12 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
 
     self->iter_cnt--;
 
-    for (mp_uint_t i = self->iter_idx; i < self->poll_map.alloc; ++i) {
+    for (mp_uint_t i = self->iter_idx; i < self->poll_set.map.alloc; ++i) {
         self->iter_idx++;
-        if (!mp_map_slot_is_filled(&self->poll_map, i)) {
+        if (!mp_map_slot_is_filled(&self->poll_set.map, i)) {
             continue;
         }
-        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_map.table[i].value);
+        poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_set.map.table[i].value);
         if (poll_obj->flags_ret != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->ret_tuple);
             t->items[0] = poll_obj->obj;
@@ -347,7 +362,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 // poll()
 STATIC mp_obj_t select_poll(void) {
     mp_obj_poll_t *poll = mp_obj_malloc(mp_obj_poll_t, &mp_type_poll);
-    mp_map_init(&poll->poll_map, 0);
+    poll_set_init(&poll->poll_set, 0);
     poll->iter_cnt = 0;
     poll->ret_tuple = MP_OBJ_NULL;
     return MP_OBJ_FROM_PTR(poll);
