@@ -1,0 +1,4 @@
+TypeError: Specified ADC id not supported. Currently only block 0 is configured!
+TypeError: Invalid bits. Current ADC configuration supports only 12 bits resolution!
+TypeError: Wrong pin specified for the mentioned channel
+True
