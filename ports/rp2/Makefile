@@ -50,9 +50,14 @@ clean:
 
 # First ensure that pico-sdk is initialised, then use cmake to pick everything
 # else (including board-specific dependencies).
+# Running the build with ECHO_SUBMODULES set will trigger py/mkrules.cmake to
+# print out the value of the GIT_SUBMODULES variable, prefixed with
+# "GIT_SUBMODULES", and then abort. This extracts out that line from the cmake
+# output and passes the list of submodules to py/mkrules.mk which does the
+# `git submodule init` on each.
 submodules:
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="lib/pico-sdk" submodules
-	GIT_SUBMODULES=$$(cmake -B $(BUILD)/submodules -DECHO_SUBMODULES=1 ${CMAKE_ARGS} -S . 2>&1 | \
+	@GIT_SUBMODULES=$$(cmake -B $(BUILD)/submodules -DECHO_SUBMODULES=1 ${CMAKE_ARGS} -S . 2>&1 | \
 	                  grep '^GIT_SUBMODULES=' | cut -d= -f2); \
 	$(MAKE) -f ../../py/mkrules.mk GIT_SUBMODULES="$${GIT_SUBMODULES}" submodules
 
