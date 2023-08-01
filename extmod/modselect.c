@@ -35,6 +35,29 @@
 
 #if MICROPY_PY_SELECT
 
+#if MICROPY_PY_SELECT_SELECT && MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+#error "select.select is not supported with MICROPY_PY_SELECT_POSIX_OPTIMISATIONS"
+#endif
+
+#if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+
+#include <poll.h>
+
+#if !((MP_STREAM_POLL_RD) == (POLLIN) && \
+    (MP_STREAM_POLL_WR) == (POLLOUT) && \
+    (MP_STREAM_POLL_ERR) == (POLLERR) && \
+    (MP_STREAM_POLL_HUP) == (POLLHUP) && \
+    (MP_STREAM_POLL_NVAL) == (POLLNVAL))
+#error "With MICROPY_PY_SELECT_POSIX_OPTIMISATIONS enabled, POLL constants must match"
+#endif
+
+// When non-file-descriptor objects are on the list to be polled (the polling of
+// which involves repeatedly calling ioctl(MP_STREAM_POLL)), this variable sets
+// the period between polling these objects.
+#define MICROPY_PY_SELECT_IOCTL_CALL_PERIOD_MS (1)
+
+#endif
+
 // Flags for poll()
 #define FLAG_ONESHOT (1)
 
@@ -42,18 +65,42 @@
 typedef struct _poll_obj_t {
     mp_obj_t obj;
     mp_uint_t (*ioctl)(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode);
-    mp_uint_t flags;
-    mp_uint_t flags_ret;
+    #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+    // If the pollable object has an associated file descriptor, then pollfd points to an entry
+    // in poll_set_t::pollfds, and the events/revents fields for this object are stored in the
+    // pollfd entry (and the nonfd_* members are unused).
+    // Otherwise the object is a non-file-descriptor object and pollfd==NULL, and the events/
+    // revents fields are stored in the nonfd_* members (which are named as such so that code
+    // doesn't accidentally mix the use of these members when this optimisation is used).
+    struct pollfd *pollfd;
+    uint16_t nonfd_events;
+    uint16_t nonfd_revents;
+    #else
+    mp_uint_t events;
+    mp_uint_t revents;
+    #endif
 } poll_obj_t;
 
 // A set of pollable objects.
 typedef struct _poll_set_t {
     // Map containing a dict with key=object to poll, value=its corresponding poll_obj_t.
     mp_map_t map;
+
+    #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+    // Array of pollfd entries for objects that have a file descriptor.
+    unsigned short alloc;
+    unsigned short len;
+    struct pollfd *pollfds;
+    #endif
 } poll_set_t;
 
 STATIC void poll_set_init(poll_set_t *poll_set, size_t n) {
     mp_map_init(&poll_set->map, n);
+    #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+    poll_set->alloc = 0;
+    poll_set->len = 0;
+    poll_set->pollfds = NULL;
+    #endif
 }
 
 #if MICROPY_PY_SELECT_SELECT
@@ -62,25 +109,141 @@ STATIC void poll_set_deinit(poll_set_t *poll_set) {
 }
 #endif
 
-STATIC void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t flags, bool or_flags) {
+#if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+
+STATIC mp_uint_t poll_obj_get_events(poll_obj_t *poll_obj) {
+    assert(poll_obj->pollfd == NULL);
+    return poll_obj->nonfd_events;
+}
+
+STATIC void poll_obj_set_events(poll_obj_t *poll_obj, mp_uint_t events) {
+    if (poll_obj->pollfd != NULL) {
+        poll_obj->pollfd->events = events;
+    } else {
+        poll_obj->nonfd_events = events;
+    }
+}
+
+STATIC mp_uint_t poll_obj_get_revents(poll_obj_t *poll_obj) {
+    if (poll_obj->pollfd != NULL) {
+        return poll_obj->pollfd->revents;
+    } else {
+        return poll_obj->nonfd_revents;
+    }
+}
+
+STATIC void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
+    if (poll_obj->pollfd != NULL) {
+        poll_obj->pollfd->revents = revents;
+    } else {
+        poll_obj->nonfd_revents = revents;
+    }
+}
+
+STATIC struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
+    struct pollfd *free_slot = NULL;
+    for (unsigned int i = 0; i < poll_set->len; ++i) {
+        struct pollfd *slot = &poll_set->pollfds[i];
+        if (slot->fd == -1) {
+            free_slot = slot;
+            break;
+        }
+    }
+
+    if (free_slot == NULL) {
+        if (poll_set->len >= poll_set->alloc) {
+            poll_set->pollfds = m_renew(struct pollfd, poll_set->pollfds, poll_set->alloc, poll_set->alloc + 4);
+            poll_set->alloc += 4;
+        }
+        free_slot = &poll_set->pollfds[poll_set->len++];
+    }
+
+    free_slot->fd = fd;
+
+    return free_slot;
+}
+
+static inline bool poll_set_all_are_fds(poll_set_t *poll_set) {
+    return poll_set->map.used == poll_set->len;
+}
+
+#else
+
+static inline mp_uint_t poll_obj_get_events(poll_obj_t *poll_obj) {
+    return poll_obj->events;
+}
+
+static inline void poll_obj_set_events(poll_obj_t *poll_obj, mp_uint_t events) {
+    poll_obj->events = events;
+}
+
+static inline mp_uint_t poll_obj_get_revents(poll_obj_t *poll_obj) {
+    return poll_obj->revents;
+}
+
+static inline void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
+    poll_obj->revents = revents;
+}
+
+#endif
+
+STATIC void poll_set_add_obj(poll_set_t *poll_set, const mp_obj_t *obj, mp_uint_t obj_len, mp_uint_t events, bool or_events) {
     for (mp_uint_t i = 0; i < obj_len; i++) {
         mp_map_elem_t *elem = mp_map_lookup(&poll_set->map, mp_obj_id(obj[i]), MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);
         if (elem->value == MP_OBJ_NULL) {
             // object not found; get its ioctl and add it to the poll list
-            const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
+
+            // If an exception is raised below when adding the new object then the map entry for that
+            // object remains unpopulated, and methods like poll() may crash.  This case is not handled.
+
             poll_obj_t *poll_obj = m_new_obj(poll_obj_t);
             poll_obj->obj = obj[i];
+
+            #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+            int fd = -1;
+            if (mp_obj_is_int(obj[i])) {
+                // A file descriptor integer passed in as the object, so use it directly.
+                fd = mp_obj_get_int(obj[i]);
+                if (fd < 0) {
+                    mp_raise_ValueError(NULL);
+                }
+                poll_obj->ioctl = NULL;
+            } else {
+                // An object passed in.  Check if it has a file descriptor.
+                const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
+                poll_obj->ioctl = stream_p->ioctl;
+                int err;
+                mp_uint_t res = stream_p->ioctl(obj[i], MP_STREAM_GET_FILENO, 0, &err);
+                if (res != MP_STREAM_ERROR) {
+                    fd = res;
+                }
+            }
+            if (fd >= 0) {
+                // Object has a file descriptor so add it to pollfds.
+                poll_obj->pollfd = poll_set_add_fd(poll_set, fd);
+            } else {
+                // Object doesn't have a file descriptor.
+                poll_obj->pollfd = NULL;
+            }
+            #else
+            const mp_stream_p_t *stream_p = mp_get_stream_raise(obj[i], MP_STREAM_OP_IOCTL);
             poll_obj->ioctl = stream_p->ioctl;
-            poll_obj->flags = flags;
-            poll_obj->flags_ret = 0;
+            #endif
+
+            poll_obj_set_events(poll_obj, events);
+            poll_obj_set_revents(poll_obj, 0);
             elem->value = MP_OBJ_FROM_PTR(poll_obj);
         } else {
-            // object exists; update its flags
-            if (or_flags) {
-                ((poll_obj_t *)MP_OBJ_TO_PTR(elem->value))->flags |= flags;
-            } else {
-                ((poll_obj_t *)MP_OBJ_TO_PTR(elem->value))->flags = flags;
+            // object exists; update its events
+            poll_obj_t *poll_obj = (poll_obj_t *)MP_OBJ_TO_PTR(elem->value);
+            #if MICROPY_PY_SELECT_SELECT
+            if (or_events) {
+                events |= poll_obj_get_events(poll_obj);
             }
+            #else
+            (void)or_events;
+            #endif
+            poll_obj_set_events(poll_obj, events);
         }
     }
 }
@@ -94,9 +257,17 @@ STATIC mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
         }
 
         poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set->map.table[i].value);
+
+        #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+        if (poll_obj->pollfd != NULL) {
+            // Object has file descriptor so will be polled separately by poll().
+            continue;
+        }
+        #endif
+
         int errcode;
-        mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_STREAM_POLL, poll_obj->flags, &errcode);
-        poll_obj->flags_ret = ret;
+        mp_int_t ret = poll_obj->ioctl(poll_obj->obj, MP_STREAM_POLL, poll_obj_get_events(poll_obj), &errcode);
+        poll_obj_set_revents(poll_obj, ret);
 
         if (ret == -1) {
             // error doing ioctl
@@ -106,6 +277,7 @@ STATIC mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
         if (ret != 0) {
             // object is ready
             n_ready += 1;
+            #if MICROPY_PY_SELECT_SELECT
             if (rwx_num != NULL) {
                 if (ret & MP_STREAM_POLL_RD) {
                     rwx_num[0] += 1;
@@ -117,21 +289,80 @@ STATIC mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
                     rwx_num[2] += 1;
                 }
             }
+            #else
+            (void)rwx_num;
+            #endif
         }
     }
     return n_ready;
 }
 
 STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size_t *rwx_num, mp_uint_t timeout) {
-    mp_uint_t start_tick = mp_hal_ticks_ms();
+    mp_uint_t start_ticks = mp_hal_ticks_ms();
+
+    #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+
+    for (;;) {
+        MP_THREAD_GIL_EXIT();
+
+        // Compute the timeout.
+        int t = MICROPY_PY_SELECT_IOCTL_CALL_PERIOD_MS;
+        if (poll_set_all_are_fds(poll_set)) {
+            // All our pollables are file descriptors, so we can use a blocking
+            // poll and let it (the underlying system) handle the timeout.
+            if (timeout == (mp_uint_t)-1) {
+                t = -1;
+            } else {
+                mp_uint_t delta = mp_hal_ticks_ms() - start_ticks;
+                if (delta >= timeout) {
+                    t = 0;
+                } else {
+                    t = timeout - delta;
+                }
+            }
+        }
+
+        // Call system poll for those objects that have a file descriptor.
+        int n_ready = poll(poll_set->pollfds, poll_set->len, t);
+
+        MP_THREAD_GIL_ENTER();
+
+        // The call to poll() may have been interrupted, but per PEP 475 we must retry if the
+        // signal is EINTR (this implements a special case of calling MP_HAL_RETRY_SYSCALL()).
+        if (n_ready == -1) {
+            int err = errno;
+            if (err != EINTR) {
+                mp_raise_OSError(err);
+            }
+            n_ready = 0;
+        }
+
+        // Explicitly poll any objects that do not have a file descriptor.
+        if (!poll_set_all_are_fds(poll_set)) {
+            n_ready += poll_set_poll_once(poll_set, rwx_num);
+        }
+
+        // Return if an object is ready, or if the timeout expired.
+        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_ticks >= timeout)) {
+            return n_ready;
+        }
+
+        // This would be MICROPY_EVENT_POLL_HOOK but the call to poll() above already includes a delay.
+        mp_handle_pending(true);
+    }
+
+    #else
+
     for (;;) {
         // poll the objects
         mp_uint_t n_ready = poll_set_poll_once(poll_set, rwx_num);
-        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
+        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_ticks >= timeout)) {
             return n_ready;
         }
         MICROPY_EVENT_POLL_HOOK
     }
+
+    #endif
 }
 
 #if MICROPY_PY_SELECT_SELECT
@@ -181,13 +412,13 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
             continue;
         }
         poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set.map.table[i].value);
-        if (poll_obj->flags_ret & MP_STREAM_POLL_RD) {
+        if (poll_obj->revents & MP_STREAM_POLL_RD) {
             ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[0]))->items[rwx_len[0]++] = poll_obj->obj;
         }
-        if (poll_obj->flags_ret & MP_STREAM_POLL_WR) {
+        if (poll_obj->revents & MP_STREAM_POLL_WR) {
             ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[1]))->items[rwx_len[1]++] = poll_obj->obj;
         }
-        if ((poll_obj->flags_ret & ~(MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) != 0) {
+        if ((poll_obj->revents & ~(MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)) != 0) {
             ((mp_obj_list_t *)MP_OBJ_TO_PTR(list_array[2]))->items[rwx_len[2]++] = poll_obj->obj;
         }
     }
@@ -210,13 +441,13 @@ typedef struct _mp_obj_poll_t {
 // register(obj[, eventmask])
 STATIC mp_obj_t poll_register(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
-    mp_uint_t flags;
+    mp_uint_t events;
     if (n_args == 3) {
-        flags = mp_obj_get_int(args[2]);
+        events = mp_obj_get_int(args[2]);
     } else {
-        flags = MP_STREAM_POLL_RD | MP_STREAM_POLL_WR;
+        events = MP_STREAM_POLL_RD | MP_STREAM_POLL_WR;
     }
-    poll_set_add_obj(&self->poll_set, &args[1], 1, flags, false);
+    poll_set_add_obj(&self->poll_set, &args[1], 1, events, false);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
@@ -224,7 +455,20 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_register_obj, 2, 3, poll_register);
 // unregister(obj)
 STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_lookup(&self->poll_set.map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+    mp_map_elem_t *elem = mp_map_lookup(&self->poll_set.map, mp_obj_id(obj_in), MP_MAP_LOOKUP_REMOVE_IF_FOUND);
+
+    #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+    if (elem != NULL) {
+        poll_obj_t *poll_obj = (poll_obj_t *)MP_OBJ_TO_PTR(elem->value);
+        if (poll_obj->pollfd != NULL) {
+            poll_obj->pollfd->fd = -1;
+        }
+        elem->value = MP_OBJ_NULL;
+    }
+    #else
+    (void)elem;
+    #endif
+
     // TODO raise KeyError if obj didn't exist in map
     return mp_const_none;
 }
@@ -237,7 +481,7 @@ STATIC mp_obj_t poll_modify(mp_obj_t self_in, mp_obj_t obj_in, mp_obj_t eventmas
     if (elem == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
-    ((poll_obj_t *)MP_OBJ_TO_PTR(elem->value))->flags = mp_obj_get_int(eventmask_in);
+    poll_obj_set_events((poll_obj_t *)MP_OBJ_TO_PTR(elem->value), mp_obj_get_int(eventmask_in));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(poll_modify_obj, poll_modify);
@@ -277,12 +521,12 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
             continue;
         }
         poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_set.map.table[i].value);
-        if (poll_obj->flags_ret != 0) {
-            mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret)};
+        if (poll_obj_get_revents(poll_obj) != 0) {
+            mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj_get_revents(poll_obj))};
             ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
             if (self->flags & FLAG_ONESHOT) {
-                // Don't poll next time, until new event flags will be set explicitly
-                poll_obj->flags = 0;
+                // Don't poll next time, until new event mask will be set explicitly
+                poll_obj_set_events(poll_obj, 0);
             }
         }
     }
@@ -320,13 +564,13 @@ STATIC mp_obj_t poll_iternext(mp_obj_t self_in) {
             continue;
         }
         poll_obj_t *poll_obj = MP_OBJ_TO_PTR(self->poll_set.map.table[i].value);
-        if (poll_obj->flags_ret != 0) {
+        if (poll_obj_get_revents(poll_obj) != 0) {
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->ret_tuple);
             t->items[0] = poll_obj->obj;
-            t->items[1] = MP_OBJ_NEW_SMALL_INT(poll_obj->flags_ret);
+            t->items[1] = MP_OBJ_NEW_SMALL_INT(poll_obj_get_revents(poll_obj));
             if (self->flags & FLAG_ONESHOT) {
-                // Don't poll next time, until new event flags will be set explicitly
-                poll_obj->flags = 0;
+                // Don't poll next time, until new event mask will be set explicitly
+                poll_obj_set_events(poll_obj, 0);
             }
             return MP_OBJ_FROM_PTR(t);
         }
