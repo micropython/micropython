@@ -51,6 +51,7 @@ extern void machine_init(void);
 extern void machine_deinit(void);
 extern void network_init(void);
 extern void network_deinit(void);
+extern void adcblock_deinit(void);
 
 void mpy_task(void *arg);
 
@@ -170,6 +171,7 @@ soft_reset:
 
     // Deinitialize modules
     machine_deinit();
+    adcblock_deinit();
     #if MICROPY_PY_NETWORK
     mod_network_deinit();
     network_deinit();
