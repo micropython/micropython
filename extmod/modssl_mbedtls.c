@@ -357,6 +357,7 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
     #endif
     o->base.type = &ssl_socket_type;
+    o->ssl_context = ssl_context;
     o->sock = sock;
     o->poll_mask = 0;
     o->last_error = 0;
