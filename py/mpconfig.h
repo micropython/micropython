@@ -1485,9 +1485,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_ERRNO_ERRORCODE (1)
 #endif
 
-// Whether to provide "select" module (baremetal implementation)
+// Whether to provide "select" module
 #ifndef MICROPY_PY_SELECT
 #define MICROPY_PY_SELECT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to enable POSIX optimisations in the "select" module (requires system poll)
+#ifndef MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+#define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (0)
 #endif
 
 // Whether to enable the select() function in the "select" module (baremetal
