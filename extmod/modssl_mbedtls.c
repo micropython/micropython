@@ -443,6 +443,14 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         // renegotiation.
         ret = MP_EWOULDBLOCK;
         o->poll_mask = MP_STREAM_POLL_WR;
+    #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+    } else if (ret == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
+        // It appears a new session ticket being issued by the server right after
+        // completed handshake is not uncommon and shouldn't be treated as fatal.
+        // mbedtls itself states "This error code is experimental and may be
+        // changed or removed without notice."
+        ret = MP_EWOULDBLOCK;
+    #endif
     } else {
         o->last_error = ret;
     }
