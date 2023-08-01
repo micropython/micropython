@@ -89,6 +89,9 @@ try:
 except ZeroDivisionError:
     print("ZeroDivisionError")
 
+# test importing various objects
+import frzmpy3
+
 # test for MP_QSTR_NULL regression
 from frzqstr import returns_NULL
 

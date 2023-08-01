@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -412,6 +412,7 @@ void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         MICROPY_GC_HOOK_LOOP
         void *ptr = gc_get_ptr(ptrs, i);
+	// CIRCUITPY changed i PR #1816
         gc_mark(ptr);
     }
 }
@@ -1149,13 +1150,13 @@ void gc_dump_alloc_table(void) {
                     // This code prints "Q" for qstr-pool data, and "q" for qstr-str
                     // data.  It can be useful to see how qstrs are being allocated,
                     // but is disabled by default because it is very slow.
-                    for (qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
-                        if ((qstr_pool_t *)ptr == pool) {
+                    for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); c == 'h' && pool != NULL; pool = pool->prev) {
+                        if ((const qstr_pool_t *)ptr == pool) {
                             c = 'Q';
                             break;
                         }
-                        for (const byte **q = pool->qstrs, **q_top = pool->qstrs + pool->len; q < q_top; q++) {
-                            if ((const byte *)ptr == *q) {
+                        for (const char *const *q = pool->qstrs, *const *q_top = pool->qstrs + pool->len; q < q_top; q++) {
+                            if ((const char *)ptr == *q) {
                                 c = 'q';
                                 break;
                             }

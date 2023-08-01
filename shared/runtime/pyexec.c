@@ -86,8 +86,20 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
+<<<<<<< HEAD
         #if CIRCUITPY_ATEXIT
         if (!(exec_flags & EXEC_FLAG_SOURCE_IS_ATEXIT))
+=======
+        #if MICROPY_MODULE_FROZEN_MPY
+        if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
+            // source is a raw_code object, create the function
+            const mp_frozen_module_t *frozen = source;
+            mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
+            ctx->module.globals = mp_globals_get();
+            ctx->constants = frozen->constants;
+            module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
+        } else
+>>>>>>> v1.19.1
         #endif
         {
             #if MICROPY_MODULE_FROZEN_MPY
@@ -462,9 +474,18 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
             mp_hal_stdout_tx_str("\r\n");
+<<<<<<< HEAD
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
             mp_hal_stdout_tx_str("\r\n");
             // mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+=======
+            mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
+            mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
+            mp_hal_stdout_tx_str("\r\n");
+            #if MICROPY_PY_BUILTINS_HELP
+            mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+            #endif
+>>>>>>> v1.19.1
             goto input_restart;
         } else if (ret == CHAR_CTRL_C) {
             // break
@@ -493,7 +514,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
 
         vstr_add_byte(MP_STATE_VM(repl_line), '\n');
         repl.cont_line = true;
-        readline_note_newline("... ");
+        readline_note_newline(mp_repl_get_ps2());
         return 0;
 
     } else {
@@ -514,7 +535,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
 
         if (mp_repl_continue_with_input(vstr_null_terminated_str(MP_STATE_VM(repl_line)))) {
             vstr_add_byte(MP_STATE_VM(repl_line), '\n');
-            readline_note_newline("... ");
+            readline_note_newline(mp_repl_get_ps2());
             return 0;
         }
 
@@ -528,7 +549,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
         repl.paste_mode = false;
-        readline_init(MP_STATE_VM(repl_line), ">>> ");
+        readline_init(MP_STATE_VM(repl_line), mp_repl_get_ps1());
         return 0;
     }
 }
@@ -612,10 +633,19 @@ int pyexec_friendly_repl(void) {
     vstr_init(&line, 32);
 
 friendly_repl_reset:
+<<<<<<< HEAD
     mp_hal_stdout_tx_str("\r\n");
     mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
     mp_hal_stdout_tx_str("\r\n");
     // mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+=======
+    mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
+    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
+    mp_hal_stdout_tx_str("\r\n");
+    #if MICROPY_PY_BUILTINS_HELP
+    mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
+    #endif
+>>>>>>> v1.19.1
 
     // to test ctrl-C
     /*
@@ -658,6 +688,7 @@ friendly_repl_reset:
         }
 
         vstr_reset(&line);
+<<<<<<< HEAD
 
         nlr_buf_t nlr;
         nlr.ret_val = NULL;
@@ -673,6 +704,9 @@ friendly_repl_reset:
             mp_hal_stdout_tx_str("\r\n");
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
+=======
+        int ret = readline(&line, mp_repl_get_ps1());
+>>>>>>> v1.19.1
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_A) {
@@ -725,7 +759,7 @@ friendly_repl_reset:
             // got a line with non-zero length, see if it needs continuing
             while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
                 vstr_add_byte(&line, '\n');
-                ret = readline(&line, "... ");
+                ret = readline(&line, mp_repl_get_ps2());
                 if (ret == CHAR_CTRL_C) {
                     // cancel everything
                     mp_hal_stdout_tx_str("\r\n");

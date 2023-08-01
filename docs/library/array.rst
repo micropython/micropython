@@ -1,10 +1,10 @@
 :mod:`array` -- arrays of numeric data
-=======================================
+======================================
 
 .. module:: array
    :synopsis: efficient arrays of numeric data
 
-|see_cpython_module| :mod:`cpython:array`.
+|see_cpython_module| :mod:`python:array`.
 
 Supported format codes: ``b``, ``B``, ``h``, ``H``, ``i``, ``I``, ``l``,
 ``L``, ``q``, ``Q``, ``f``, ``d`` (the latter 2 depending on the

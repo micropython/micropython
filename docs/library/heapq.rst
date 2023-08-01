@@ -6,7 +6,7 @@
 .. module:: heapq
    :synopsis: heap queue algorithm
 
-|see_cpython_module| :mod:`cpython:heapq`.
+|see_cpython_module| :mod:`python:heapq`.
 
 This module implements the
 `min heap queue algorithm <https://en.wikipedia.org/wiki/Heap_%28data_structure%29>`_.

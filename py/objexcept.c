@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2016 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -326,40 +326,35 @@ MP_DEFINE_EXCEPTION(ReloadException, BaseException)
 MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
   #if MICROPY_PY_ASYNC_AWAIT
-MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
+  MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
   #endif
-MP_DEFINE_EXCEPTION(StopIteration, Exception)
-MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
-// MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
-MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
-MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
-MP_DEFINE_EXCEPTION(AssertionError, Exception)
-MP_DEFINE_EXCEPTION(AttributeError, Exception)
-// MP_DEFINE_EXCEPTION(BufferError, Exception)
-// MP_DEFINE_EXCEPTION(EnvironmentError, Exception) use OSError instead
-MP_DEFINE_EXCEPTION(EOFError, Exception)
-MP_DEFINE_EXCEPTION(ImportError, Exception)
-// MP_DEFINE_EXCEPTION(IOError, Exception) use OSError instead
-MP_DEFINE_EXCEPTION(LookupError, Exception)
-MP_DEFINE_EXCEPTION(IndexError, LookupError)
-MP_DEFINE_EXCEPTION(KeyError, LookupError)
-MP_DEFINE_EXCEPTION(MemoryError, Exception)
-MP_DEFINE_EXCEPTION(NameError, Exception)
-/*
+  MP_DEFINE_EXCEPTION(StopIteration, Exception)
+  MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
+    //MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
+    MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
+    MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
+  MP_DEFINE_EXCEPTION(AssertionError, Exception)
+  MP_DEFINE_EXCEPTION(AttributeError, Exception)
+  //MP_DEFINE_EXCEPTION(BufferError, Exception)
+  MP_DEFINE_EXCEPTION(EOFError, Exception)
+  MP_DEFINE_EXCEPTION(ImportError, Exception)
+  MP_DEFINE_EXCEPTION(LookupError, Exception)
+    MP_DEFINE_EXCEPTION(IndexError, LookupError)
+    MP_DEFINE_EXCEPTION(KeyError, LookupError)
+  MP_DEFINE_EXCEPTION(MemoryError, Exception)
+  MP_DEFINE_EXCEPTION(NameError, Exception)
+    /*
     MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
     */
-MP_DEFINE_EXCEPTION(OSError, Exception)
-MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-MP_DEFINE_EXCEPTION(ConnectionError, OSError)
-MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
-/*
+  MP_DEFINE_EXCEPTION(OSError, Exception)
+    /*
+    MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
+    MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
+    MP_DEFINE_EXCEPTION(ConnectionError, OSError)
+      MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
       MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
-      */
-/*
-    MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
-    MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
     MP_DEFINE_EXCEPTION(InterruptedError, OSError)
     MP_DEFINE_EXCEPTION(IsADirectoryError, OSError)
     MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
@@ -370,22 +365,22 @@ MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
     MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
     MP_DEFINE_EXCEPTION(ReferenceError, Exception)
     */
-MP_DEFINE_EXCEPTION(RuntimeError, Exception)
-MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
-MP_DEFINE_EXCEPTION(SyntaxError, Exception)
-MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
-/*
+  MP_DEFINE_EXCEPTION(RuntimeError, Exception)
+    MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
+  MP_DEFINE_EXCEPTION(SyntaxError, Exception)
+    MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
+    /*
       MP_DEFINE_EXCEPTION(TabError, IndentationError)
       */
-// MP_DEFINE_EXCEPTION(SystemError, Exception)
-MP_DEFINE_EXCEPTION(TypeError, Exception)
+  //MP_DEFINE_EXCEPTION(SystemError, Exception)
+  MP_DEFINE_EXCEPTION(TypeError, Exception)
 #if MICROPY_EMIT_NATIVE
-MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
+    MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
 #endif
-MP_DEFINE_EXCEPTION(ValueError, Exception)
+  MP_DEFINE_EXCEPTION(ValueError, Exception)
 #if MICROPY_PY_BUILTINS_STR_UNICODE
-MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
-// TODO: Implement more UnicodeError subclasses which take arguments
+    MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
+    //TODO: Implement more UnicodeError subclasses which take arguments
 #endif
 #if CIRCUITPY_ALARM
 MP_DEFINE_EXCEPTION(DeepSleepRequest, BaseException)
@@ -413,7 +408,7 @@ mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
-    return exc_type->make_new(exc_type, n_args, 0, args);
+    return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
 
 #if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
@@ -670,172 +665,3 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values
         *values = self->traceback->data;
     }
 }
-
-#if MICROPY_PY_SYS_EXC_INFO
-STATIC const mp_obj_namedtuple_type_t code_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_code,
-        .print = namedtuple_print,
-        .make_new = namedtuple_make_new,
-        .parent = &mp_type_tuple,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
-    .n_fields = 15,
-    .fields = {
-        MP_QSTR_co_argcount,
-        MP_QSTR_co_kwonlyargcount,
-        MP_QSTR_co_nlocals,
-        MP_QSTR_co_stacksize,
-        MP_QSTR_co_flags,
-        MP_QSTR_co_code,
-        MP_QSTR_co_consts,
-        MP_QSTR_co_names,
-        MP_QSTR_co_varnames,
-        MP_QSTR_co_freevars,
-        MP_QSTR_co_cellvars,
-        MP_QSTR_co_filename,
-        MP_QSTR_co_name,
-        MP_QSTR_co_firstlineno,
-        MP_QSTR_co_lnotab,
-    },
-};
-
-STATIC mp_obj_t code_make_new(qstr file, qstr block) {
-    mp_obj_t elems[15] = {
-        mp_obj_new_int(0),             // co_argcount
-        mp_obj_new_int(0),             // co_kwonlyargcount
-        mp_obj_new_int(0),             // co_nlocals
-        mp_obj_new_int(0),             // co_stacksize
-        mp_obj_new_int(0),             // co_flags
-        mp_obj_new_bytearray(0, NULL), // co_code
-        mp_obj_new_tuple(0, NULL),     // co_consts
-        mp_obj_new_tuple(0, NULL),     // co_names
-        mp_obj_new_tuple(0, NULL),     // co_varnames
-        mp_obj_new_tuple(0, NULL),     // co_freevars
-        mp_obj_new_tuple(0, NULL),     // co_cellvars
-        MP_OBJ_NEW_QSTR(file),         // co_filename
-        MP_OBJ_NEW_QSTR(block),        // co_name
-        mp_obj_new_int(1),             // co_firstlineno
-        mp_obj_new_bytearray(0, NULL), // co_lnotab
-    };
-
-    return namedtuple_make_new((const mp_obj_type_t *)&code_type_obj, 15, 0, elems);
-}
-
-STATIC const mp_obj_namedtuple_type_t frame_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .name = MP_QSTR_frame,
-        .print = namedtuple_print,
-        .make_new = namedtuple_make_new,
-        .parent = &mp_type_tuple,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
-    .n_fields = 8,
-    .fields = {
-        MP_QSTR_f_back,
-        MP_QSTR_f_builtins,
-        MP_QSTR_f_code,
-        MP_QSTR_f_globals,
-        MP_QSTR_f_lasti,
-        MP_QSTR_f_lineno,
-        MP_QSTR_f_locals,
-        MP_QSTR_f_trace,
-    },
-};
-
-STATIC mp_obj_t frame_make_new(mp_obj_t f_code, int f_lineno) {
-    mp_obj_t elems[8] = {
-        mp_const_none,             // f_back
-        mp_obj_new_dict(0),        // f_builtins
-        f_code,                    // f_code
-        mp_obj_new_dict(0),        // f_globals
-        mp_obj_new_int(0),         // f_lasti
-        mp_obj_new_int(f_lineno),  // f_lineno
-        mp_obj_new_dict(0),        // f_locals
-        mp_const_none,             // f_trace
-    };
-
-    return namedtuple_make_new((const mp_obj_type_t *)&frame_type_obj, 8, 0, elems);
-}
-
-STATIC const mp_obj_namedtuple_type_t traceback_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_traceback,
-        .print = namedtuple_print,
-        .make_new = namedtuple_make_new,
-        .parent = &mp_type_tuple,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
-    .n_fields = 4,
-    .fields = {
-        MP_QSTR_tb_frame,
-        MP_QSTR_tb_lasti,
-        MP_QSTR_tb_lineno,
-        MP_QSTR_tb_next,
-    },
-};
-
-STATIC mp_obj_t traceback_from_values(size_t *values, mp_obj_t tb_next) {
-    int lineno = values[1];
-
-    mp_obj_t elems[4] = {
-        frame_make_new(code_make_new(values[0], values[2]), lineno),
-        mp_obj_new_int(0),
-        mp_obj_new_int(lineno),
-        tb_next,
-    };
-
-    return namedtuple_make_new((const mp_obj_type_t *)&traceback_type_obj, 4, 0, elems);
-};
-
-mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in) {
-    mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (!mp_obj_is_exception_instance(self)) {
-        return mp_const_none;
-    }
-
-    size_t n, *values;
-    mp_obj_exception_get_traceback(self, &n, &values);
-    if (n == 0) {
-        return mp_const_none;
-    }
-
-    mp_obj_t tb_next = mp_const_none;
-
-    for (size_t i = 0; i < n; i += 3) {
-        tb_next = traceback_from_values(&values[i], tb_next);
-    }
-
-    return tb_next;
-}
-#endif

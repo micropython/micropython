@@ -15,7 +15,7 @@ CircuitPython's long-term goal is that code written in CircuitPython
 using Python standard libraries will be runnable on CPython without changes.
 
 These libraries are not enabled on CircuitPython builds with
-limited flash memory, usually on non-Express builds:
+limited flash memory:
 ``binascii``, ``errno``, ``json``, ``re``.
 
 These libraries are not currently enabled in any CircuitPython build, but may be in the future:
@@ -42,21 +42,6 @@ Omitted functions in the ``string`` library
 -------------------------------------------
 
 A few string operations are not enabled on small builds
-(usually non-Express), due to limited flash memory:
+due to limited flash memory:
 ``string.center()``, ``string.partition()``, ``string.splitlines()``,
 ``string.reversed()``.
-
-
-CircuitPython/MicroPython-specific libraries
---------------------------------------------
-
-Functionality specific to the CircuitPython/MicroPython implementation is available in
-the following libraries. These libraries may change significantly or be removed in future
-versions of CircuitPython.
-
-.. toctree::
-   :maxdepth: 1
-
-   btree.rst
-   framebuf.rst
-   micropython.rst

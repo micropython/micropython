@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,8 +77,7 @@ const mp_obj_int_t mp_sys_maxsize_obj = {
 #endif
 
 mp_obj_int_t *mp_obj_int_new_mpz(void) {
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     mpz_init_zero(&o->mpz);
     return o;
 }

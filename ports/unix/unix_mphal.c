@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,19 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
+#include "extmod/misc.h"
+
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 25)
+#include <sys/random.h>
+#define _HAVE_GETRANDOM
+#endif
+#endif
 
 #ifndef _WIN32
 #include <signal.h>
@@ -86,6 +95,7 @@ void mp_hal_set_interrupt_char(char c) {
     }
 }
 
+// CIRCUITPY
 bool mp_hal_is_interrupted(void) {
     return false;
 }
@@ -183,5 +193,16 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
     // "The useconds argument shall be less than one million."
     usleep(ms * 1000);
+    #endif
+}
+
+void mp_hal_get_random(size_t n, void *buf) {
+    #ifdef _HAVE_GETRANDOM
+    RAISE_ERRNO(getrandom(buf, n, 0), errno);
+    #else
+    int fd = open("/dev/urandom", O_RDONLY);
+    RAISE_ERRNO(fd, errno);
+    RAISE_ERRNO(read(fd, buf, n), errno);
+    close(fd);
     #endif
 }

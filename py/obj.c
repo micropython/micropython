@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,13 @@
 #include "supervisor/linker.h"
 #include "supervisor/shared/stack.h"
 #include "supervisor/shared/translate/translate.h"
+
+// Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
+void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
+    base->type = type;
+    return base;
+}
 
 const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
@@ -224,11 +231,7 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
     mp_print_str(print, "\n");
 }
 
-void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
-    mp_obj_print_exception_with_limit(print, exc, 0);
-}
-
-bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
+bool mp_obj_is_true(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
@@ -343,7 +346,7 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
             }
 
             // Try calling __eq__.
-            mp_obj_t r = binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+            mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
                 if (op == MP_BINARY_OP_EQUAL) {
                     return r;
@@ -442,10 +445,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert to %q"), MP_QSTR_float);
+        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to float"));
         #else
-        mp_raise_TypeError_varg(
-            MP_ERROR_TEXT("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("can't convert %s to float"), mp_obj_get_type_str(arg));
         #endif
     }
 
@@ -512,7 +515,14 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
 void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     size_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
-    mp_arg_validate_length(seq_len, len, mp_obj_get_type(o)->name);
+    if (seq_len != len) {
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_ValueError(MP_ERROR_TEXT("tuple/list has wrong length"));
+        #else
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("requested length %d but object has length %d"), (int)len, (int)seq_len);
+        #endif
+    }
 }
 
 // is_slice determines whether the index is a slice index
@@ -521,7 +531,13 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_index, MP_QSTR_int, mp_obj_get_type(index)->name);
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_TypeError(MP_ERROR_TEXT("indices must be integers"));
+        #else
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("%q indices must be integers, not %s"),
+            type->name, mp_obj_get_type_str(index));
+        #endif
     }
 
     if (i < 0) {

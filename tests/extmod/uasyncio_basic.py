@@ -32,18 +32,18 @@ async def main():
     print("after sleep")
 
     t0 = ticks()
-    await delay_print(0.02, "short")
+    await delay_print(0.2, "short")
     t1 = ticks()
-    await delay_print(0.04, "long")
+    await delay_print(0.4, "long")
     t2 = ticks()
     await delay_print(-1, "negative")
     t3 = ticks()
 
     print(
         "took {} {} {}".format(
-            round(ticks_diff(t1, t0), -1),
-            round(ticks_diff(t2, t1), -1),
-            round(ticks_diff(t3, t2), -1),
+            round(ticks_diff(t1, t0), -2),
+            round(ticks_diff(t2, t1), -2),
+            round(ticks_diff(t3, t2), -2),
         )
     )
 

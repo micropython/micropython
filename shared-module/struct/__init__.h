@@ -31,4 +31,15 @@ char get_fmt_type(const char **fmt);
 mp_uint_t get_fmt_num(const char **p);
 mp_uint_t calcsize_items(const char *fmt);
 
+<<<<<<< HEAD:shared-module/struct/__init__.h
+=======
+// The main sleep implementation for the Windows port.
+void msec_sleep(double msec);
+
+// Define usleep() because some of the unix port's code uses that.
+// Mingw and the likes provide a definition of usleep(), note however
+// that it's also just Sleep(usec/1000).
+#ifdef _MSC_VER
+int usleep(__int64 usec);
+>>>>>>> v1.19.1:ports/windows/sleep.h
 #endif

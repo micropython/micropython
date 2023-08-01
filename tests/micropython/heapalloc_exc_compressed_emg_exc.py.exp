@@ -1,4 +1,4 @@
-NameError name 'name' is not defined
-KeyError pop from empty set
-name 'name' is not defined
-pop from empty set
+NameError name 'name' isn't defined
+TypeError exceptions must derive from BaseException
+name 'name' isn't defined
+exceptions must derive from BaseException

@@ -3,7 +3,11 @@
  *
  * The MIT License (MIT)
  *
+<<<<<<<< HEAD:ports/stm/peripherals/stm32f4/stm32f411xe/clocks.h
  * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+========
+ * Copyright (c) 2022 Arduino SA
+>>>>>>>> v1.19.1:ports/stm/boards/ARDUINO_PORTENTA_H7/bdev.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +28,7 @@
  * THE SOFTWARE.
  */
 
+<<<<<<<< HEAD:ports/stm/peripherals/stm32f4/stm32f411xe/clocks.h
 #include "stm32f4xx_hal.h"
 
 // Chip:                STM32F411
@@ -65,3 +70,24 @@
 #ifndef BOARD_HSE_SOURCE
 #define BOARD_HSE_SOURCE (RCC_HSE_ON)
 #endif
+========
+#include "storage.h"
+#include "qspi.h"
+
+#if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+// Shared cache for first and second SPI block devices
+STATIC mp_spiflash_cache_t spi_bdev_cache;
+#endif
+
+// First external SPI flash uses hardware QSPI interface
+const mp_spiflash_config_t spiflash_config = {
+    .bus_kind = MP_SPIFLASH_BUS_QSPI,
+    .bus.u_qspi.data = NULL,
+    .bus.u_qspi.proto = &qspi_proto,
+    #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
+    .cache = &spi_bdev_cache,
+    #endif
+};
+
+spi_bdev_t spi_bdev;
+>>>>>>>> v1.19.1:ports/stm/boards/ARDUINO_PORTENTA_H7/bdev.c

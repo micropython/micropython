@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,8 +142,18 @@ static MP_INLINE bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 #if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
 #define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau MP_ROM_PTR(&mp_const_float_tau_obj)
+#define mp_const_float_inf MP_ROM_PTR(&mp_const_float_inf_obj)
+#define mp_const_float_nan MP_ROM_PTR(&mp_const_float_nan_obj)
+#endif
 extern const struct _mp_obj_float_t mp_const_float_e_obj;
 extern const struct _mp_obj_float_t mp_const_float_pi_obj;
+#if MICROPY_PY_MATH_CONSTANTS
+extern const struct _mp_obj_float_t mp_const_float_tau_obj;
+extern const struct _mp_obj_float_t mp_const_float_inf_obj;
+extern const struct _mp_obj_float_t mp_const_float_nan_obj;
+#endif
 
 #define mp_obj_is_float(o) mp_obj_is_type((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
@@ -165,6 +175,11 @@ static MP_INLINE bool mp_obj_is_small_int(mp_const_obj_t o) {
 #if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
 #define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau MP_ROM_PTR((mp_obj_t)(((0x40c90fdb & ~3) | 2) + 0x80800000))
+#define mp_const_float_inf MP_ROM_PTR((mp_obj_t)(((0x7f800000 & ~3) | 2) + 0x80800000))
+#define mp_const_float_nan MP_ROM_PTR((mp_obj_t)(((0xffc00000 & ~3) | 2) + 0x80800000))
+#endif
 
 static MP_INLINE bool mp_obj_is_float(mp_const_obj_t o) {
     return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006;
@@ -229,6 +244,11 @@ static MP_INLINE bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 
 #define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
 #define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau {((mp_obj_t)((uint64_t)0x401921fb54442d18 + 0x8004000000000000))}
+#define mp_const_float_inf {((mp_obj_t)((uint64_t)0x7ff0000000000000 + 0x8004000000000000))}
+#define mp_const_float_nan {((mp_obj_t)((uint64_t)0xfff8000000000000 + 0x8004000000000000))}
+#endif
 
 static MP_INLINE bool mp_obj_is_float(mp_const_obj_t o) {
     return ((uint64_t)(o) & 0xfffc000000000000) != 0;
@@ -421,7 +441,9 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // param obj_module: mp_obj_module_t instance
 // param enabled_define: used as `#if (enabled_define) around entry`
 
-#define MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
+#ifndef NO_QSTR
+#define MP_REGISTER_MODULE(module_name, obj_module)
+#endif
 
 // Underlying map/hash table implementation (not dict object or map function)
 
@@ -437,8 +459,8 @@ typedef struct _mp_rom_map_elem_t {
 
 typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
-    size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
-    size_t is_ordered : 1;  // an ordered array
+    size_t is_fixed : 1;    // if set, table is fixed/read-only and can't be modified
+    size_t is_ordered : 1;  / if set, table is an ordered array, not a hash map
     size_t scanning : 1;    // true if we're in the middle of scanning linked dictionaries,
                             // e.g., make_dict_long_lived()
     size_t used : (8 * sizeof(size_t) - 4);
@@ -589,39 +611,6 @@ struct _mp_obj_type_ext {
 
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
     const void *protocol;
-};
-
-struct _mp_obj_type_t {
-    // A type is an object so must start with this entry, which points to mp_type_type.
-    mp_obj_base_t base;
-
-    // Flags associated with this type.
-    uint16_t flags;
-    // The name of this type, a qstr.
-    uint16_t name;
-
-    // A dict mapping qstrs to objects local methods/constants/etc.
-    struct _mp_obj_dict_t *locals_dict;
-
-    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
-    mp_make_new_fun_t make_new;
-
-    // Corresponds to __repr__ and __str__ special methods.
-    mp_print_fun_t print;
-
-    // Implements load, store and delete attribute.
-    //
-    // dest[0] = MP_OBJ_NULL means load
-    //  return: for fail, do nothing
-    //          for fail but continue lookup in locals_dict, dest[1] = MP_OBJ_SENTINEL
-    //          for attr, dest[0] = value
-    //          for method, dest[0] = method, dest[1] = self
-    //
-    // dest[0,1] = {MP_OBJ_SENTINEL, MP_OBJ_NULL} means delete
-    // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
-    //  return: for fail, do nothing
-    //          for success set dest[0] = MP_OBJ_NULL
-    mp_attr_fun_t attr;
 
     // A pointer to the parents of this type:
     //  - 0 parents: pointer is NULL (object is implicitly the single parent)
@@ -639,6 +628,7 @@ struct _mp_obj_full_type_t {
     mp_obj_base_t base;
     uint16_t flags;
     uint16_t name;
+    // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
     mp_make_new_fun_t make_new;
     mp_print_fun_t print;
@@ -714,9 +704,6 @@ extern const mp_obj_type_t mp_type_fun_builtin_2;
 extern const mp_obj_type_t mp_type_fun_builtin_3;
 extern const mp_obj_type_t mp_type_fun_builtin_var;
 extern const mp_obj_type_t mp_type_fun_bc;
-#if MICROPY_EMIT_NATIVE
-extern const mp_obj_type_t mp_type_fun_native;
-#endif
 extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
@@ -800,6 +787,12 @@ extern const struct _mp_obj_exception_t mp_static_GeneratorExit_obj;
 #define mp_const_empty_map (mp_const_empty_dict_obj.map)
 
 // General API for objects
+
+// Helper versions of m_new_obj when you need to immediately set base.type.
+// Implementing this as a call rather than inline saves 8 bytes per usage.
+#define mp_obj_malloc(struct_type, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type), obj_type))
+#define mp_obj_malloc_var(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 
 // These macros are derived from more primitive ones and are used to
 // check for more specific object types.
@@ -935,7 +928,6 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type);
 void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values);
-mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
@@ -1011,7 +1003,6 @@ void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
-mp_obj_t mp_obj_list_clear(mp_obj_t self_in);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
@@ -1031,7 +1022,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
 mp_obj_t mp_obj_dict_copy(mp_obj_t self_in);
-static MP_INLINE mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
+static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
     return &((mp_obj_dict_t *)MP_OBJ_TO_PTR(dict))->map;
 }
 
@@ -1091,8 +1082,9 @@ typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
 } mp_obj_module_t;
-mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
-void mp_obj_module_set_globals(mp_obj_t self_in, mp_obj_dict_t *globals);
+static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
+    return ((mp_obj_module_t *)MP_OBJ_TO_PTR(module))->globals;
+}
 // check if given module object is a package
 bool mp_obj_is_package(mp_obj_t module);
 

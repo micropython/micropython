@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -192,10 +192,11 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move) {
 }
 
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
-void m_free(void *ptr, size_t num_bytes) {
+void m_free(void *ptr, size_t num_bytes)
 #else
-void m_free(void *ptr) {
-    #endif
+void m_free(void *ptr)
+#endif
+{
     free(ptr);
     #if MICROPY_MEM_STATS
     MP_STATE_MEM(current_bytes_allocated) -= num_bytes;
@@ -239,7 +240,7 @@ STATIC size_t m_tracked_count_links(size_t *nb) {
 #endif
 
 void *m_tracked_calloc(size_t nmemb, size_t size) {
-    m_tracked_node_t *node = m_malloc_maybe(sizeof(m_tracked_node_t) + nmemb * size, false);
+    m_tracked_node_t *node = m_malloc_maybe(sizeof(m_tracked_node_t) + nmemb * size);
     if (node == NULL) {
         return NULL;
     }
@@ -298,7 +299,7 @@ void m_tracked_free(void *ptr_in) {
         );
 }
 
-#endif
+#endif // MICROPY_TRACKED_ALLOC
 
 #if MICROPY_MEM_STATS
 size_t m_get_total_bytes_allocated(void) {
