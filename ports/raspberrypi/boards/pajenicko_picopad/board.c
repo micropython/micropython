@@ -39,7 +39,7 @@ displayio_fourwire_obj_t board_display_obj;
 uint8_t display_init_sequence[] = {
     0x01, 0 | DELAY, 150, // SWRESET
 
-    0x36, 1, 0x68, // MADCTL
+    0x36, 1, 0x60, // MADCTL
     0x35, 1, 0x00, // TEON
     0xB2, 5, 0x0c, 0x0c, 0x00, 0x33, 0x33, // FRMCTR2
     0x3A, 1, 0x05, // COLMOD
