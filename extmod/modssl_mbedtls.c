@@ -168,6 +168,12 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_debug_set_threshold(3);
     #endif
 
+    // Whenever the PSA interface is used (if MBEDTLS_PSA_CRYPTO), psa_crypto_init() needs to be called before any TLS related operations.
+    // TLSv1.3 depends on the PSA interface, TLSv1.2 only uses the PSA stack if MBEDTLS_USE_PSA_CRYPTO is defined.
+    #if defined(MBEDTLS_SSL_PROTO_TLS1_3) || defined(MBEDTLS_USE_PSA_CRYPTO)
+    psa_crypto_init();
+    #endif
+
     const byte seed[] = "upy";
     int ret = mbedtls_ctr_drbg_seed(&self->ctr_drbg, mbedtls_entropy_func, &self->entropy, seed, sizeof(seed));
     if (ret != 0) {
