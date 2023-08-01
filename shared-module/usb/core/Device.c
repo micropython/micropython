@@ -51,6 +51,10 @@ void tuh_umount_cb(uint8_t dev_addr) {
 STATIC xfer_result_t _xfer_result;
 STATIC size_t _actual_len;
 bool common_hal_usb_core_device_construct(usb_core_device_obj_t *self, uint8_t device_number) {
+    if (!tuh_inited()) {
+        mp_raise_RuntimeError(translate("No usb host port initialized"));
+    }
+
     if (device_number == 0 || device_number > CFG_TUH_DEVICE_MAX + CFG_TUH_HUB) {
         return false;
     }
