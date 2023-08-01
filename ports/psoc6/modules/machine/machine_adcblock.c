@@ -238,8 +238,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_adcblock_connect_obj, 2, machine_adcbl
 void adcblock_deinit(void) {
 
     for (uint8_t i = 0; i < MAX_BLOCKS; i++) {
-        cyhal_adc_free(&adc_block[i]->adc_block_obj);
-        adc_block[i] = NULL;
+        if (adc_block[i] != NULL) {
+            cyhal_adc_free(&adc_block[i]->adc_block_obj);
+            adc_block[i] = NULL;
+        }
     }
 
 }
