@@ -58,7 +58,7 @@
 
 #endif
 
-// Flags for poll()
+// Flags for ipoll()
 #define FLAG_ONESHOT (1)
 
 // A single pollable object.
@@ -524,15 +524,11 @@ STATIC mp_obj_t poll_poll(size_t n_args, const mp_obj_t *args) {
         if (poll_obj_get_revents(poll_obj) != 0) {
             mp_obj_t tuple[2] = {poll_obj->obj, MP_OBJ_NEW_SMALL_INT(poll_obj_get_revents(poll_obj))};
             ret_list->items[n_ready++] = mp_obj_new_tuple(2, tuple);
-            if (self->flags & FLAG_ONESHOT) {
-                // Don't poll next time, until new event mask will be set explicitly
-                poll_obj_set_events(poll_obj, 0);
-            }
         }
     }
     return MP_OBJ_FROM_PTR(ret_list);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 3, poll_poll);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(poll_poll_obj, 1, 2, poll_poll);
 
 STATIC mp_obj_t poll_ipoll(size_t n_args, const mp_obj_t *args) {
     mp_obj_poll_t *self = MP_OBJ_TO_PTR(args[0]);
