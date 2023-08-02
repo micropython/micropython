@@ -79,7 +79,7 @@
 #define ATB_3_IS_FREE(a) (((a) & ATB_MASK_3) == 0)
 
 #if MICROPY_GC_SPLIT_HEAP
-#define NEXT_AREA(area) (area->next)
+#define NEXT_AREA(area) ((area)->next)
 #else
 #define NEXT_AREA(area) (NULL)
 #endif
@@ -129,7 +129,13 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     // => T = A * (1 + BLOCKS_PER_ATB / BLOCKS_PER_FTB + BLOCKS_PER_ATB * BYTES_PER_BLOCK)
     size_t total_byte_len = (byte *)end - (byte *)start;
     #if MICROPY_ENABLE_FINALISER
-    area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE) * MP_BITS_PER_BYTE / (MP_BITS_PER_BYTE + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK);
+    area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE)
+        * MP_BITS_PER_BYTE
+        / (
+            MP_BITS_PER_BYTE
+            + MP_BITS_PER_BYTE * BLOCKS_PER_ATB / BLOCKS_PER_FTB
+            + MP_BITS_PER_BYTE * BLOCKS_PER_ATB * BYTES_PER_BLOCK
+            );
     #else
     area->gc_alloc_table_byte_len = (total_byte_len - ALLOC_TABLE_GAP_BYTE) / (1 + MP_BITS_PER_BYTE / 2 * BYTES_PER_BLOCK);
     #endif
@@ -165,11 +171,19 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     #endif
 
     DEBUG_printf("GC layout:\n");
-    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(area).gc_alloc_table_start, MP_STATE_MEM(area).gc_alloc_table_byte_len, MP_STATE_MEM(area).gc_alloc_table_byte_len * BLOCKS_PER_ATB);
+    DEBUG_printf("  alloc table at %p, length " UINT_FMT " bytes, "
+        UINT_FMT " blocks\n",
+        area->gc_alloc_table_start, area->gc_alloc_table_byte_len,
+        area->gc_alloc_table_byte_len * BLOCKS_PER_ATB);
     #if MICROPY_ENABLE_FINALISER
-    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(area).gc_finaliser_table_start, gc_finaliser_table_byte_len, gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
+    DEBUG_printf("  finaliser table at %p, length " UINT_FMT " bytes, "
+        UINT_FMT " blocks\n", area->gc_finaliser_table_start,
+        gc_finaliser_table_byte_len,
+        gc_finaliser_table_byte_len * BLOCKS_PER_FTB);
     #endif
-    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, " UINT_FMT " blocks\n", MP_STATE_MEM(area).gc_pool_start, gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
+    DEBUG_printf("  pool at %p, length " UINT_FMT " bytes, "
+        UINT_FMT " blocks\n", area->gc_pool_start,
+        gc_pool_block_len * BYTES_PER_BLOCK, gc_pool_block_len);
 }
 
 void gc_init(void *start, void *end) {
