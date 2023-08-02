@@ -48,7 +48,9 @@
 #elif defined(STM32G4)
 #define ADC_STAB_DELAY_US (20)
 #elif defined(STM32H5)
-#define ADC_STAB_DELAY_US (1) // TODO: Check if this is enough
+// Stabilization delay = 1 conversion cycle
+// ADC clk = PDIV / 16 = 250 MHz / 16 = 15.625 MHz -> 64 ns -> select 1 us
+#define ADC_STAB_DELAY_US (1)
 #elif defined(STM32L4)
 #define ADC_STAB_DELAY_US (10)
 #elif defined(STM32WB)
@@ -61,8 +63,13 @@
 #elif defined(STM32F4) || defined(STM32F7)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_15CYCLES
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_480CYCLES
-#elif defined(STM32G4) || defined(STM32H5)
+#elif defined(STM32G4)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_12CYCLES_5
+#define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
+#elif defined(STM32H5)
+// Worst case sampling time: slow channel, 12 bits, 680 ohms -> 165 ns
+// ADC clk = PDIV / 16 = 250 MHz / 16 = 15.625 MHz -> 64 ns -> 2.57 cycles -> select 6.5 cycles
+#define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_6CYCLES_5
 #define ADC_SAMPLETIME_DEFAULT_INT  ADC_SAMPLETIME_247CYCLES_5
 #elif defined(STM32H7)
 #define ADC_SAMPLETIME_DEFAULT      ADC_SAMPLETIME_8CYCLES_5
@@ -81,8 +88,65 @@
 // Timeout for waiting for end-of-conversion
 #define ADC_EOC_TIMEOUT_MS (10)
 
-// This is a synthesised channel representing the maximum ADC reading (useful to scale other channels)
-#define ADC_CHANNEL_VREF (0xffff)
+// Channel IDs for machine.ADC object
+typedef enum _machine_adc_internal_ch_t {
+    // Regular external ADC inputs (0..19)
+    MACHINE_ADC_EXT_CH_0 = 0,
+    MACHINE_ADC_EXT_CH_19 = 19,
+
+    // Internal ADC channels (256..)
+    MACHINE_ADC_INT_CH_VREFINT = 256,
+    MACHINE_ADC_INT_CH_TEMPSENSOR,
+    #if defined(ADC_CHANNEL_VBAT)
+    MACHINE_ADC_INT_CH_VBAT,
+    #endif
+    #if defined(ADC_CHANNEL_VDDCORE)
+    MACHINE_ADC_INT_CH_VDDCORE,
+    #endif
+
+    // This is a synthesised channel representing the maximum ADC reading (useful to scale other channels)
+    MACHINE_ADC_CH_VREF = 0xffff // 0xffff for backward compatibility
+} machine_adc_internal_ch_t;
+
+// Convert machine_adc_internal_ch_t value to STM32 library ADC channel literal.
+// This function is required as literals are uint32_t types that don't map with MP_ROM_INT (31 bit signed).
+STATIC uint32_t adc_ll_channel(uint32_t channel_id) {
+    uint32_t adc_ll_ch;
+    switch (channel_id) {
+        // external channels map 1:1
+        case MACHINE_ADC_EXT_CH_0 ... MACHINE_ADC_EXT_CH_19:
+            adc_ll_ch = channel_id;
+            break;
+
+        // internal channels are converted to STM32 ADC defines
+        case MACHINE_ADC_INT_CH_VREFINT:
+            adc_ll_ch = ADC_CHANNEL_VREFINT;
+            break;
+        case MACHINE_ADC_INT_CH_TEMPSENSOR:
+            #if defined(STM32G4)
+            adc_ll_ch = ADC_CHANNEL_TEMPSENSOR_ADC1;
+            #else
+            adc_ll_ch = ADC_CHANNEL_TEMPSENSOR;
+            #endif
+            break;
+        #if defined(ADC_CHANNEL_VBAT)
+        case MACHINE_ADC_INT_CH_VBAT:
+            adc_ll_ch = ADC_CHANNEL_VBAT;
+            break;
+        #endif
+        #if defined(ADC_CHANNEL_VDDCORE)
+        case MACHINE_ADC_INT_CH_VDDCORE:
+            adc_ll_ch = ADC_CHANNEL_VDDCORE;
+            break;
+        #endif
+
+        // To save code memory for costly error handling, default to Vref for unknown channels
+        default:
+            adc_ll_ch = ADC_CHANNEL_VREFINT;
+            break;
+    };
+    return adc_ll_ch;
+}
 
 static inline void adc_stabilisation_delay_us(uint32_t us) {
     mp_hal_delay_us(us + 1);
@@ -150,9 +214,9 @@ void adc_config(ADC_TypeDef *adc, uint32_t bits) {
     adc->CFGR2 = 2 << ADC_CFGR2_CKMODE_Pos; // PCLK/4 (synchronous clock mode)
     #elif defined(STM32F4) || defined(STM32F7) || defined(STM32L4)
     ADCx_COMMON->CCR = 0; // ADCPR=PCLK/2
-    #elif defined(STM32G4)
+    #elif defined(STM32G4) || defined(STM32H5)
     ADC12_COMMON->CCR = 7 << ADC_CCR_PRESC_Pos; // PCLK/16 (asynchronous clock mode)
-    #elif defined(STM32H5) || defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
+    #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
     #elif defined(STM32H7)
     ADC12_COMMON->CCR = 3 << ADC_CCR_CKMODE_Pos;
@@ -352,9 +416,16 @@ STATIC void adc_config_channel(ADC_TypeDef *adc, uint32_t channel, uint32_t samp
         #else
         adc_common->CCR |= ADC_CCR_VBATEN;
         #endif
+    #if defined(STM32H5)
+    } else if (channel == ADC_CHANNEL_VDDCORE) {
+        adc->OR |= ADC_OR_OP0; // Enable Vddcore channel on ADC2
+    #endif
     }
-    #if defined(STM32G4)
-    channel = __LL_ADC_CHANNEL_TO_DECIMAL_NB(channel);
+    #if defined(STM32G4) || defined(STM32H5)
+    // G4 and H5 use encoded literals for internal channels -> extract ADC channel for following code
+    if (__LL_ADC_IS_CHANNEL_INTERNAL(channel)) {
+        channel = __LL_ADC_CHANNEL_TO_DECIMAL_NB(channel);
+    }
     adc->DIFSEL &= ~(1 << channel); // Set channel to Single-ended.
     #endif
     adc->SQR1 = (channel & 0x1f) << ADC_SQR1_SQ1_Pos | (1 - 1) << ADC_SQR1_L_Pos;
@@ -391,9 +462,12 @@ STATIC uint32_t adc_read_channel(ADC_TypeDef *adc) {
 }
 
 uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sample_time) {
-    if (channel == ADC_CHANNEL_VREF) {
+    if (channel == MACHINE_ADC_CH_VREF) {
         return 0xffff;
     }
+
+    // Map internal channel_id to STM32 ADC driver value/literal.
+    channel = adc_ll_channel(channel);
 
     // Select, configure and read the channel.
     adc_config_channel(adc, channel, sample_time);
@@ -421,7 +495,7 @@ const mp_obj_type_t machine_adc_type;
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
     ADC_TypeDef *adc;
-    uint32_t channel;
+    uint32_t channel; // one of machine_adc_internal_ch_t
     uint32_t sample_time;
 } machine_adc_obj_t;
 
@@ -452,20 +526,25 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     uint32_t sample_time = ADC_SAMPLETIME_DEFAULT;
     ADC_TypeDef *adc;
     if (mp_obj_is_int(source)) {
+        channel = mp_obj_get_int(source);
         #if defined(STM32WL)
         adc = ADC;
+        #elif defined(STM32H5)
+        // on STM32H5 vbat and vddcore channels are on ADC2
+        if (channel == MACHINE_ADC_INT_CH_VBAT || channel == MACHINE_ADC_INT_CH_VDDCORE) {
+            adc = ADC2;
+        } else {
+            adc = ADC1;
+        }
         #else
         adc = ADC1;
         #endif
-        channel = mp_obj_get_int(source);
-        if (channel == ADC_CHANNEL_VREFINT
-            #if defined(STM32G4)
-            || channel == ADC_CHANNEL_TEMPSENSOR_ADC1
-            #else
-            || channel == ADC_CHANNEL_TEMPSENSOR
-            #endif
+        if (channel == MACHINE_ADC_INT_CH_VREFINT || channel == MACHINE_ADC_INT_CH_TEMPSENSOR
             #if defined(ADC_CHANNEL_VBAT)
-            || channel == ADC_CHANNEL_VBAT
+            || channel == MACHINE_ADC_INT_CH_VBAT
+            #endif
+            #if defined(ADC_CHANNEL_VDDCORE)
+            || channel == MACHINE_ADC_INT_CH_VDDCORE
             #endif
             ) {
             sample_time = ADC_SAMPLETIME_DEFAULT_INT;
@@ -516,15 +595,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_VREF), MP_ROM_INT(ADC_CHANNEL_VREF) },
-    { MP_ROM_QSTR(MP_QSTR_CORE_VREF), MP_ROM_INT(ADC_CHANNEL_VREFINT) },
-    #if defined(STM32G4)
-    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR_ADC1) },
-    #else
-    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) },
-    #endif
+    { MP_ROM_QSTR(MP_QSTR_VREF), MP_ROM_INT(MACHINE_ADC_CH_VREF) },
+    { MP_ROM_QSTR(MP_QSTR_CORE_VREF), MP_ROM_INT(MACHINE_ADC_INT_CH_VREFINT) },
+    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(MACHINE_ADC_INT_CH_TEMPSENSOR) },
     #if defined(ADC_CHANNEL_VBAT)
-    { MP_ROM_QSTR(MP_QSTR_CORE_VBAT), MP_ROM_INT(ADC_CHANNEL_VBAT) },
+    { MP_ROM_QSTR(MP_QSTR_CORE_VBAT), MP_ROM_INT(MACHINE_ADC_INT_CH_VBAT) },
+    #endif
+    #if defined(ADC_CHANNEL_VDDCORE)
+    { MP_ROM_QSTR(MP_QSTR_CORE_VDD), MP_ROM_INT(MACHINE_ADC_INT_CH_VDDCORE) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
