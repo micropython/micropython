@@ -30,8 +30,8 @@ io             : need files in local flash (io/data/*), but those are not copied
 jni            : tests to be run in environment with JAVA available, ie Unix, Windows, ...
 micropython
 misc
-multi_bluetooth
-multi_net
+multi_bluetooth: used with run-multitests.py
+multi_net      : used with run-multitests.py
 net_hosted
 net_inet
 perf_bench     : used with run-perfbench.py for benchmarking
@@ -181,6 +181,25 @@ jni
 # tests that require single precision (32 bits), ie float, to be set in mpconfigport.h for macro "MICROPY_FLOAT_IMPL"
 # clashes with feature_check/float.py
 misc/rge_sm.py
+
+# Socket tests related which are failing
+- net_hosted : 
+        - accept_nonblock.py -> 
+                When run as tests - timeout waiting for first EOF reception
+                When run as script in device - True ;Assertion "invalid  socket state for err callback" 
+                failed at line 2064 in libs/lwip/src/core/tcp.c
+        - accept_timeout. -> 
+                When run as tests - timeout waiting for first EOF reception
+                When run as script in device - True ;Assertion "invalid  socket state for err callback" 
+                failed at line 2064 in libs/lwip/src/core/tcp.c
+        - ssl_getpeercert.py -> 
+                Script: TypeError: object of type 'NoneType' has no len() -->type(cert) is returned as NoneType
+        - uasyncio_start_server.py -> 
+                 Assertion "invalid socket state for err callback" failed at line 2064 in libs/lwip/src/core/tcp.c
+- net_inet:
+        - ssl_cert.py -> 
+                OSError: (-9984, 'X509 - Certificate verification failed, e.g. CRL, CA or signature check failed') 
+                CRASH
 
 
 # in order to enable code tracing the following switches must be set. All tests are run to completion, but output differs. Instead of file names <stdin> is printed.
