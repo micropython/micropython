@@ -80,3 +80,13 @@ void gc_collect(void) {
 }
 
 #endif
+
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+
+// The largest new region that is available to become Python heap is the largest
+// free block in the ESP-IDF system heap.
+size_t gc_get_max_new_split(void) {
+    return heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT);
+}
+
+#endif
