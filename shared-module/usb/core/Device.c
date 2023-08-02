@@ -132,13 +132,23 @@ mp_obj_t common_hal_usb_core_device_get_manufacturer(usb_core_device_obj_t *self
 }
 
 void common_hal_usb_core_device_set_configuration(usb_core_device_obj_t *self, mp_int_t configuration) {
-    if (configuration == 0x100) {
-        tusb_desc_configuration_t desc;
-        if (!tuh_descriptor_get_configuration(self->device_number, 0, &desc, sizeof(desc), _transfer_done_cb, 0) ||
-            !_wait_for_callback()) {
-            return;
-        }
-        configuration = desc.bConfigurationValue;
+    // We assume that the config index is one less than the value.
+    uint8_t config_index = configuration - 1;
+    // Get the configuration descriptor and cache it. We'll use it later to open
+    // endpoints.
+
+    // Get only the config descriptor first.
+    tusb_desc_configuration_t desc;
+    if (!tuh_descriptor_get_configuration(self->device_number, config_index, &desc, sizeof(desc), _transfer_done_cb, 0) ||
+        !_wait_for_callback()) {
+        return;
+    }
+
+    // Get the config descriptor plus interfaces and endpoints.
+    self->configuration_descriptor = m_realloc(self->configuration_descriptor, desc.wTotalLength);
+    if (!tuh_descriptor_get_configuration(self->device_number, config_index, self->configuration_descriptor, desc.wTotalLength, _transfer_done_cb, 0) ||
+        !_wait_for_callback()) {
+        return;
     }
     tuh_configuration_set(self->device_number, configuration, _transfer_done_cb, 0);
     _wait_for_callback();
@@ -159,6 +169,7 @@ STATIC size_t _xfer(tuh_xfer_t *xfer, mp_int_t timeout) {
         RUN_BACKGROUND_TASKS;
     }
     if (mp_hal_is_interrupted()) {
+        tuh_edpt_abort_xfer(xfer->daddr, xfer->ep_addr);
         return 0;
     }
     xfer_result_t result = _xfer_result;
@@ -167,6 +178,7 @@ STATIC size_t _xfer(tuh_xfer_t *xfer, mp_int_t timeout) {
         mp_raise_usb_core_USBError(translate("Pipe error"));
     }
     if (result == 0xff) {
+        tuh_edpt_abort_xfer(xfer->daddr, xfer->ep_addr);
         mp_raise_usb_core_USBTimeoutError();
     }
     if (result == XFER_RESULT_SUCCESS) {
@@ -191,17 +203,13 @@ STATIC bool _open_endpoint(usb_core_device_obj_t *self, mp_int_t endpoint) {
         return true;
     }
 
-    // Fetch the full configuration descriptor and search for the endpoint's descriptor.
-    uint8_t desc_buf[128];
-    if (!tuh_descriptor_get_configuration(self->device_number, self->configuration_index, &desc_buf, sizeof(desc_buf), _transfer_done_cb, 0) ||
-        !_wait_for_callback()) {
-        return false;
+    if (self->configuration_descriptor == NULL) {
+        mp_raise_usb_core_USBError(translate("No configuration set"));
     }
-    tusb_desc_configuration_t *desc_cfg = (tusb_desc_configuration_t *)desc_buf;
+
+    tusb_desc_configuration_t *desc_cfg = (tusb_desc_configuration_t *)self->configuration_descriptor;
 
     uint32_t total_length = tu_le16toh(desc_cfg->wTotalLength);
-    // Cap to the buffer size we requested.
-    total_length = MIN(total_length, sizeof(desc_buf));
     uint8_t const *desc_end = ((uint8_t const *)desc_cfg) + total_length;
     uint8_t const *p_desc = tu_desc_next(desc_cfg);
 
@@ -287,6 +295,7 @@ mp_int_t common_hal_usb_core_device_ctrl_transfer(usb_core_device_obj_t *self,
         RUN_BACKGROUND_TASKS;
     }
     if (mp_hal_is_interrupted()) {
+        tuh_edpt_abort_xfer(xfer.daddr, xfer.ep_addr);
         return 0;
     }
     xfer_result_t result = _xfer_result;
@@ -295,6 +304,7 @@ mp_int_t common_hal_usb_core_device_ctrl_transfer(usb_core_device_obj_t *self,
         mp_raise_usb_core_USBError(translate("Pipe error"));
     }
     if (result == 0xff) {
+        tuh_edpt_abort_xfer(xfer.daddr, xfer.ep_addr);
         mp_raise_usb_core_USBTimeoutError();
     }
     if (result == XFER_RESULT_SUCCESS) {
