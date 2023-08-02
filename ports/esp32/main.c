@@ -75,6 +75,10 @@
 #define MP_TASK_STACK_LIMIT_MARGIN (1024)
 #endif
 
+// Initial Python heap size. This starts small but adds new heap areas on
+// demand due to settings MICROPY_GC_SPLIT_HEAP & MICROPY_GC_SPLIT_HEAP_AUTO
+#define MP_TASK_HEAP_SIZE (64 * 1024)
+
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
@@ -100,19 +104,13 @@ void mp_task(void *pvParameter) {
         ESP_LOGE("esp_init", "can't create event loop: 0x%x\n", err);
     }
 
-    // Allocate the uPy heap using malloc and get the largest available region,
-    // limiting to 1/2 total available memory to leave memory for the OS.
-    // When SPIRAM is enabled, this will allocate from SPIRAM.
-    uint32_t caps = MALLOC_CAP_8BIT;
-    size_t heap_total = heap_caps_get_total_size(caps);
-    size_t mp_task_heap_size = MIN(heap_caps_get_largest_free_block(caps), heap_total / 2);
-    void *mp_task_heap = heap_caps_malloc(mp_task_heap_size, caps);
+    void *mp_task_heap = MP_PLAT_ALLOC_HEAP(MP_TASK_HEAP_SIZE);
 
 soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
     mp_stack_set_limit(MP_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
-    gc_init(mp_task_heap, mp_task_heap + mp_task_heap_size);
+    gc_init(mp_task_heap, mp_task_heap + MP_TASK_HEAP_SIZE);
     mp_init();
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     readline_init0();

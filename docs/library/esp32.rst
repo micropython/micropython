@@ -51,12 +51,19 @@ Functions
     buffers and other data. This data is useful to get a sense of how much memory
     is available to ESP-IDF and the networking stack in particular. It may shed
     some light on situations where ESP-IDF operations fail due to allocation failures.
-    The information returned is *not* useful to troubleshoot Python allocation failures,
-    use `micropython.mem_info()` instead.
 
     The capabilities parameter corresponds to ESP-IDF's ``MALLOC_CAP_XXX`` values but the
     two most useful ones are predefined as `esp32.HEAP_DATA` for data heap regions and
     `esp32.HEAP_EXEC` for executable regions as used by the native code emitter.
+
+    Free IDF heap memory in the `esp32.HEAP_DATA` region is available to be
+    automatically added to the MicroPython heap to prevent a MicroPython
+    allocation from failing. However, the information returned here is otherwise
+    *not* useful to troubleshoot Python allocation failures, use
+    `micropython.mem_info()` instead. The "max new split" value in
+    `micropython.mem_info()` output corresponds to the largest free block of
+    ESP-IDF heap that could be automatically added on demand to the MicroPython
+    heap.
 
     The return value is a list of 4-tuples, where each 4-tuple corresponds to one heap
     and contains: the total bytes, the free bytes, the largest free block, and
