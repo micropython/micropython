@@ -64,8 +64,7 @@ the tool the files that changed and it will only reformat those.
 uncrustify
 ==========
 
-Only [uncrustify](https://github.com/uncrustify/uncrustify) v0.71 or v0.72 can
-be used for MicroPython. Different uncrustify versions produce slightly
+Only [uncrustify](https://github.com/uncrustify/uncrustify) v0.71 or v0.72 can be used for MicroPython. Different uncrustify versions produce slightly
 different formatting, and the configuration file formats are often
 incompatible. v0.73 or newer *will not work*.
 
@@ -100,6 +99,12 @@ This command may work, please raise a new Issue if it doesn't:
 ```
 curl -L https://github.com/Homebrew/homebrew-core/raw/2b07d8192623365078a8b855a164ebcdf81494a6/Formula/uncrustify.rb > uncrustify.rb && brew install uncrustify.rb && rm uncrustify.rb
 ```
+
+Windows
+-------
+
+Prebuilt binaries for Windows are available at  [Sourceforge](https://sourceforge.net/projects/uncrustify/files/uncrustify-0.72-0/)
+
 
 Automatic Pre-Commit Hooks
 ==========================
@@ -150,6 +155,10 @@ Tips:
   `--no-verify`).
 * To ignore the pre-commit message format check temporarily, start the commit
   message subject line with "WIP" (for "Work In Progress").
+* If you installed Python 3 from the Windows store, make sure that the `python3` 
+  App Execution Alias is enabled as the python3 command must be available to run the pre-commit scripts.
+  To check: type `python3 --version` on a Windows terminal prompt.
+  To change: Start>  Settings> Apps> Advanced App Settings> python3.exe
 
 Python code conventions
 =======================
@@ -159,6 +168,7 @@ is auto-formatted using [black](https://github.com/psf/black) with a line-length
 of 99 characters.
 
 Naming conventions:
+
 - Module names are short and all lowercase; eg pyb, stm.
 - Class names are CamelCase, with abbreviations all uppercase; eg I2C, not
   I2c.
@@ -178,6 +188,7 @@ The main conventions, and things not enforceable via the auto-formatter, are
 described below.
 
 White space:
+
 - Expand tabs to 4 spaces.
 - Don't leave trailing whitespace at the end of a line.
 - For control blocks (if, for, while), put 1 space between the
@@ -185,6 +196,7 @@ White space:
 - Put 1 space after a comma, and 1 space around operators.
 
 Braces:
+
 - Use braces for all blocks, even no-line and single-line pieces of
   code.
 - Put opening braces on the end of the line it belongs to, not on
@@ -193,10 +205,12 @@ Braces:
   closing brace.
 
 Header files:
+
 - Header files should be protected from multiple inclusion with #if
   directives. See an existing header for naming convention.
 
 Names:
+
 - Use underscore_case, not camelCase for all names.
 - Use CAPS_WITH_UNDERSCORE for enums and macros.
 - When defining a type use underscore_case and put '_t' after it.
@@ -204,6 +218,7 @@ Names:
 Integer types: MicroPython runs on 16, 32, and 64 bit machines, so it's
 important to use the correctly-sized (and signed) integer types.  The
 general guidelines are:
+
 - For most cases use mp_int_t for signed and mp_uint_t for unsigned
   integer values.  These are guaranteed to be machine-word sized and
   therefore big enough to hold the value from a MicroPython small-int
@@ -213,10 +228,12 @@ general guidelines are:
 - If in doubt, use mp_int_t/mp_uint_t.
 
 Comments:
+
 - Be concise and only write comments for things that are not obvious.
 - Use `// ` prefix, NOT `/* ... */`. No extra fluff.
 
 Memory allocation:
+
 - Use m_new, m_renew, m_del (and friends) to allocate and free heap memory.
   These macros are defined in py/misc.h.
 
@@ -236,7 +253,7 @@ Braces, spaces, names and comments:
             foo(x + TO_ADD, some_value - 1);
         }
 
-        for (int my_counter = 0; my_counter < x; ++my_counter) {
+    for (int my_counter = 0; my_counter < x; ++my_counter) {
         }
     }
 
@@ -284,7 +301,8 @@ Specific conventions/suggestions:
 ```
 
 * Cross-referencing arbitrary locations
-~~~
+
+```
 .. _xref_target:
 
 Normal non-indented text.
@@ -293,26 +311,28 @@ This is :ref:`reference <xref_target>`.
 
 (If xref target is followed by section title, can be just
 :ref:`xref_target`).
-~~~
+```
 
 * Linking to external URL:
+
 ```
 `link text <http://foo.com/...>`_
 ```
 
 * Referencing builtin singleton objects:
+
 ```
 ``None``, ``True``, ``False``
 ```
 
 * Use following syntax to create common description for more than one element:
-~~~
+
+```
 .. function:: foo(x)
               bar(y)
 
    Description common to foo() and bar().
-~~~
-
+```
 
 More detailed guides and quickrefs:
 
