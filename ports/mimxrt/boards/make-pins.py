@@ -93,34 +93,36 @@ class Pin(object):
     def add_af(self, af):
         self.alt_fn.append(af)
 
-    def print_pin_af(self):
+    def print_pin_af(self, out_source):
         if self.alt_fn:
             print(
                 "static const machine_pin_af_obj_t pin_{0}_af[{1}] = {{".format(
                     self.name, len(self.alt_fn)
-                )
+                ),
+                file=out_source,
             )
             for af in self.alt_fn:
-                af.print()
-            print("};")
+                af.print(out_source)
+            print("};", file=out_source)
         else:
             raise ValueError("Pin '{}' has no alternative functions".format(self.name))
 
-    def print_pin_adc(self):
+    def print_pin_adc(self, out_source):
         if self.adc_fns:
             print(
                 "static const machine_pin_adc_obj_t pin_{0}_adc[{1}] = {{".format(
                     self.name, len(self.adc_fns)
-                )
+                ),
+                file=out_source,
             )
             for adc_fn in self.adc_fns:
-                adc_fn.print()
-            print("};")
+                adc_fn.print(out_source)
+            print("};", file=out_source)
 
-    def print(self):
+    def print(self, out_source):
         if self.alt_fn:
-            self.print_pin_af()
-            self.print_pin_adc()
+            self.print_pin_af(out_source)
+            self.print_pin_adc(out_source)
 
             options = {
                 "GPIO_LPSR_00": "PIN_LPSR",
@@ -165,12 +167,13 @@ class Pin(object):
                     int(self.pin),
                     len(self.adc_fns),
                     "pin_{}_adc".format(self.name) if self.adc_fns else "NULL",
-                )
+                ),
+                file=out_source,
             )
         else:
             raise ValueError("Pin '{}' has no alternative functions".format(self.name))
 
-    def print_header(self, hdr_file):
+    def print_header(self, out_header):
         pass
 
 
@@ -182,9 +185,9 @@ class AdcFunction(object):
         self.instance = instance
         self.channel = channel
 
-    def print(self):
+    def print(self, out_source):
         """Prints the C representation of this AF."""
-        print(f"    PIN_ADC({self.peripheral}{self.instance}, {self.channel}),")
+        print(f"    PIN_ADC({self.peripheral}{self.instance}, {self.channel}),", file=out_source)
 
 
 class AlternateFunction(object):
@@ -197,12 +200,13 @@ class AlternateFunction(object):
         self.input_daisy = input_daisy
         self.instance = self.af_str.split("_")[0]
 
-    def print(self):
+    def print(self, out_source):
         """Prints the C representation of this AF."""
         print(
             "    PIN_AF({0}, PIN_AF_MODE_ALT{1}, {2}, {3}, {4}, {5}),".format(
                 self.af_str, self.idx, self.input_daisy, self.instance, self.input_reg, "0x10B0U"
-            )
+            ),
+            file=out_source,
         )
 
 
@@ -292,54 +296,62 @@ class Pins(object):
                 self.cpu_pins.append(pin)
 
     @staticmethod
-    def print_named(label, pins):
-        print("")
+    def print_named(label, pins, out_source):
+        print("", file=out_source)
         print(
-            "STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{".format(label)
+            "STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{".format(label),
+            file=out_source,
         )
         for pin in pins:
-            print(
-                "    {{ MP_ROM_QSTR(MP_QSTR_{}), MP_ROM_PTR(&pin_{}) }},".format(pin.name, pin.pad)
+            (
+                print(
+                    "    {{ MP_ROM_QSTR(MP_QSTR_{}), MP_ROM_PTR(&pin_{}) }},".format(
+                        pin.name, pin.pad
+                    ),
+                    file=out_source,
+                ),
             )
-        print("};")
+        print("};", file=out_source)
         print(
             "MP_DEFINE_CONST_DICT(machine_pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);".format(
                 label, label
-            )
+            ),
+            file=out_source,
         )
 
-    def print(self):
+    def print(self, out_source):
         # Print Pin Object declarations
         for pin in self.cpu_pins:
-            pin.print()
+            pin.print(out_source)
 
-        print("")
-        print("const machine_pin_obj_t* machine_pin_board_pins [] = {")
+        print("", file=out_source)
+        print("const machine_pin_obj_t* machine_pin_board_pins [] = {", file=out_source)
         for pin in self.board_pins:
-            print("    &pin_{},".format(pin.pad))
-        print("};")
-        print("const uint32_t num_board_pins = {:d};".format(len(self.board_pins)))
+            print("    &pin_{},".format(pin.pad), file=out_source)
+        print("};", file=out_source)
+        print(
+            "const uint32_t num_board_pins = {:d};".format(len(self.board_pins)), file=out_source
+        )
         # Print Pin mapping dictionaries
-        self.print_named("cpu", self.cpu_pins)
-        self.print_named("board", self.board_pins)
-        print("")
+        self.print_named("cpu", self.cpu_pins, out_source)
+        self.print_named("board", self.board_pins, out_source)
+        print("", file=out_source)
 
-    def print_header(self, hdr_filename):
-        with open(hdr_filename, "w") as hdr_file:
-            for pin in self.cpu_pins:
-                hdr_file.write("extern const machine_pin_obj_t pin_{};\n".format(pin.name))
-            hdr_file.write("extern const machine_pin_obj_t* machine_pin_board_pins[];\n")
-            hdr_file.write("extern const uint32_t num_board_pins;\n")
-            hdr_file.write("extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;\n")
-            hdr_file.write("extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;\n")
+    def print_header(self, out_header):
+        for pin in self.cpu_pins:
+            print("extern const machine_pin_obj_t pin_{};".format(pin.name), file=out_header)
+        print("extern const machine_pin_obj_t* machine_pin_board_pins[];", file=out_header)
+        print("extern const uint32_t num_board_pins;", file=out_header)
+        print("extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;", file=out_header)
+        print("extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;", file=out_header)
+        print("", file=out_header)
+        print("// Defines", file=out_header)
+        module_instance_factory(self.cpu_pins, out_header, "USDHC")
+        module_instance_factory(self.cpu_pins, out_header, "FLEXPWM")
+        module_instance_factory(self.cpu_pins, out_header, "TMR")
 
-            hdr_file.write("\n// Defines\n")
-            module_instance_factory(self.cpu_pins, hdr_file, "USDHC")
-            module_instance_factory(self.cpu_pins, hdr_file, "FLEXPWM")
-            module_instance_factory(self.cpu_pins, hdr_file, "TMR")
 
-
-def module_instance_factory(pins, output_file, name):
+def module_instance_factory(pins, out_header, name):
     module_pin = filter(lambda p: any([af for af in p.alt_fn if name in af.af_str]), pins)
 
     module_instances = dict()
@@ -357,80 +369,47 @@ def module_instance_factory(pins, output_file, name):
                     )
 
     for k, v in module_instances.items():
-        output_file.write(f"// {k}\n")
-        output_file.write(f"#define {k}_AVAIL (1)\n")
+        print(f"// {k}", file=out_header)
+        print(f"#define {k}_AVAIL (1)", file=out_header)
         if name == "FLEXPWM":
-            output_file.write(f"#define {k} {k[-4:]}\n")
+            print(f"#define {k} {k[-4:]}", file=out_header)
         for i in v:
-            output_file.write(i + "\n")
+            print(i, file=out_header)
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        prog="make-pins.py",
-        usage="%(prog)s [options] [command]",
-        description="Generate board specific pin file",
-    )
-    parser.add_argument(
-        "-a",
-        "--af",
-        dest="af_filename",
-        help="Specifies the alternate function file for the chip",
-        default="mimxrt1021_af.csv",
-    )
-    parser.add_argument(
-        "-i",
-        "--iomux",
-        dest="iomux_filename",
-        help="Specifies the fsl_iomuxc.h file for the chip",
-        default="fsl_iomuxc.h",
-    )
-    parser.add_argument(
-        "-b",
-        "--board",
-        dest="board_filename",
-        help="Specifies the board file",
-        default="MIMXRT1020_EVK/pins.csv",
-    )
-    parser.add_argument(
-        "-p",
-        "--prefix",
-        dest="prefix_filename",
-        help="Specifies beginning portion of generated pins file",
-        default="mimxrt_prefix.c",
-    )
-    parser.add_argument(
-        "-r",
-        "--hdr",
-        dest="hdr_filename",
-        help="Specifies name of generated pin header file",
-        default="build/pins.h",
-    )
+    parser = argparse.ArgumentParser(description="Generate board specific pin file")
+    parser.add_argument("--board-csv")
+    parser.add_argument("--af-csv")
+    parser.add_argument("--prefix")
+    parser.add_argument("--iomux-header")
+    parser.add_argument("--output-source")
+    parser.add_argument("--output-header")
+    args = parser.parse_args()
 
     pins = Pins()
 
-    # test code
-    args = parser.parse_args()
-    #
+    with open(args.output_source, "w") as out_source:
+        if args.af_csv:
+            print("// --af {:s}".format(args.af_csv), file=out_source)
+            pins.parse_af_file(args.af_csv, args.iomux_header)
 
-    if args.af_filename:
-        print("// --af {:s}".format(args.af_filename))
-        pins.parse_af_file(args.af_filename, args.iomux_filename)
+        if args.board_csv:
+            print("// --board {:s}".format(args.board_csv), file=out_source)
+            pins.parse_board_file(args.board_csv)
 
-    if args.board_filename:
-        print("// --board {:s}".format(args.board_filename))
-        pins.parse_board_file(args.board_filename)
+        if args.output_header:
+            print("// --hdr {:s}".format(args.output_header), file=out_source)
 
-    if args.hdr_filename:
-        print("// --hdr {:s}".format(args.hdr_filename))
+        if args.prefix:
+            print("// --prefix {:s}".format(args.prefix), file=out_source)
+            with open(args.prefix, "r") as prefix_file:
+                print(prefix_file.read(), file=out_source)
 
-    if args.prefix_filename:
-        print("// --prefix {:s}".format(args.prefix_filename))
-        with open(args.prefix_filename, "r") as prefix_file:
-            print(prefix_file.read())
+        pins.print(out_source)
 
-    pins.print()
-    pins.print_header(args.hdr_filename)
+    with open(args.output_header, "w") as out_header:
+        pins.print_header(out_header)
 
 
 if __name__ == "__main__":

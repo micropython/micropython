@@ -505,8 +505,8 @@ $(GEN_FLEXRAM_CONFIG_SRC):
 # both pins_gen.c and pins.h
 $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE)\
-		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
-		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) \
+	    --prefix $(PREFIX_FILE) --iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
 
 include $(TOP)/py/mkrules.mk

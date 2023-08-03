@@ -243,10 +243,10 @@ $(GEN_ROOT_POINTERS): | $(HEADER_BUILD)
 
 $(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af ../$(AF_FILE) \
-		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) \
-		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
-		> $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv ../$(AF_FILE) --prefix $(PREFIX_FILE) \
+		--output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
+		--output-af-const $(GEN_PINS_AF_CONST) --output-af-defs $(GEN_PINS_AF_DEFS) \
+		--mboot-mode
 
 #########################################
 
