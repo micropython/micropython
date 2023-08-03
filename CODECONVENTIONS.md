@@ -104,6 +104,22 @@ This command may work, please raise a new Issue if it doesn't:
 curl -L https://github.com/Homebrew/homebrew-core/raw/2b07d8192623365078a8b855a164ebcdf81494a6/Formula/uncrustify.rb > uncrustify.rb && brew install uncrustify.rb && rm uncrustify.rb
 ```
 
+Code spell checking
+===================
+
+Code spell checking is done using [codespell](https://github.com/codespell-project/codespell#codespell)
+and runs in a GitHub action in CI.  Codespell is configured via `pyproject.toml`
+to avoid false positives.  It is recommended run codespell before submitting a
+PR.  To simplify this, codespell is configured as a pre-commit hook and will be
+installed if you run `pre-commit install` (see below).
+
+If you want to install and run codespell manually, you can do so by running:
+
+```
+$ pip install codespell tomli
+$ codespell
+```
+
 Automatic Pre-Commit Hooks
 ==========================
 
