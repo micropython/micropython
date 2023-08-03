@@ -82,9 +82,6 @@ class AlternateFunction(object):
             )
         )
 
-    def qstr_list(self):
-        return [self.mux_name()]
-
 
 class Pin(object):
     """Holds the information associated with a pin."""
@@ -181,13 +178,6 @@ class Pin(object):
             hdr_file.write(
                 "extern const pin_af_obj_t pin_{:s}_af[];\n".format(self.cpu_pin_name())
             )
-
-    def qstr_list(self):
-        result = []
-        for alt_fn in self.alt_fn:
-            if alt_fn.is_supported():
-                result += alt_fn.qstr_list()
-        return result
 
 
 class NamedPin(object):
@@ -312,19 +302,6 @@ class Pins(object):
             hdr_file.write("extern const pin_obj_t * const pin_adc2[];\n")
             hdr_file.write("extern const pin_obj_t * const pin_adc3[];\n")
 
-    def print_qstr(self, qstr_filename):
-        with open(qstr_filename, "wt") as qstr_file:
-            qstr_set = set([])
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if pin.is_board_pin():
-                    qstr_set |= set(pin.qstr_list())
-                    qstr_set |= set([named_pin.name()])
-            for named_pin in self.board_pins:
-                qstr_set |= set([named_pin.name()])
-            for qstr in sorted(qstr_set):
-                print("Q({})".format(qstr), file=qstr_file)
-
     def print_af_hdr(self, af_const_filename):
         with open(af_const_filename, "wt") as af_const_file:
             af_hdr_set = set([])
@@ -394,13 +371,6 @@ def main():
         default="nrf52_prefix.c",
     )
     parser.add_argument(
-        "-q",
-        "--qstr",
-        dest="qstr_filename",
-        help="Specifies name of generated qstr header file",
-        default="build/pins_qstr.h",
-    )
-    parser.add_argument(
         "-r",
         "--hdr",
         dest="hdr_filename",
@@ -430,7 +400,6 @@ def main():
     pins.print_const_table()
     pins.print()
     pins.print_header(args.hdr_filename)
-    pins.print_qstr(args.qstr_filename)
     pins.print_af_hdr(args.af_const_filename)
     pins.print_af_py(args.af_py_filename)
 
