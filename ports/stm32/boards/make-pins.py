@@ -188,9 +188,6 @@ class AlternateFunction(object):
         )
         print_conditional_endif(cond_var)
 
-    def qstr_list(self):
-        return [self.mux_name()]
-
 
 class Pin(object):
     """Holds the information associated with a pin."""
@@ -300,13 +297,6 @@ class Pin(object):
         hdr_file.write("#define pin_{:s} (&pin_{:s}_obj)\n".format(n, n))
         if self.alt_fn_count > 0:
             hdr_file.write("extern const pin_af_obj_t pin_{:s}_af[];\n".format(n))
-
-    def qstr_list(self):
-        result = []
-        for alt_fn in self.alt_fn:
-            if alt_fn.is_supported():
-                result += alt_fn.qstr_list()
-        return result
 
 
 class NamedPin(object):
@@ -462,26 +452,6 @@ class Pins(object):
                     )
                 )
 
-    def print_qstr(self, qstr_filename):
-        with open(qstr_filename, "wt") as qstr_file:
-            qstr_set = set([])
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if pin.is_board_pin():
-                    qstr_set |= set(pin.qstr_list())
-                    qstr_set |= set([named_pin.name()])
-            for named_pin in self.board_pins:
-                if not named_pin.is_hidden():
-                    qstr_set |= set([named_pin.name()])
-            for qstr in sorted(qstr_set):
-                cond_var = None
-                if qstr.startswith("AF"):
-                    af_words = qstr.split("_")
-                    cond_var = conditional_var(af_words[1])
-                    print_conditional_if(cond_var, file=qstr_file)
-                print("Q({})".format(qstr), file=qstr_file)
-                print_conditional_endif(cond_var, file=qstr_file)
-
     def print_af_hdr(self, af_const_filename):
         with open(af_const_filename, "wt") as af_const_file:
             af_hdr_set = set([])
@@ -598,13 +568,6 @@ def main():
         default="stm32f4xx_prefix.c",
     )
     parser.add_argument(
-        "-q",
-        "--qstr",
-        dest="qstr_filename",
-        help="Specifies name of generated qstr header file",
-        default="build/pins_qstr.h",
-    )
-    parser.add_argument(
         "-r",
         "--hdr",
         dest="hdr_filename",
@@ -640,7 +603,6 @@ def main():
     for i in range(1, 4):
         pins.print_adc(i)
     pins.print_header(args.hdr_filename, args.hdr_obj_decls)
-    pins.print_qstr(args.qstr_filename)
     pins.print_af_hdr(args.af_const_filename)
     pins.print_af_py(args.af_py_filename)
     pins.print_af_defs(args.af_defs_filename, args.af_defs_cmp_strings)
