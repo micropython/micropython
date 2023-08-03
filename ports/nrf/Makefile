@@ -119,7 +119,6 @@ PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
 
@@ -544,7 +543,7 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 # both pins_gen.c and pins.h
 $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --af-const $(GEN_PINS_AF_CONST) > $(GEN_PINS_SRC)
 
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os -fno-lto
 

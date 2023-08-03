@@ -72,7 +72,6 @@ GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
 FILE2H = $(TOP)/tools/file2h.py
@@ -678,7 +677,7 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --hdr-obj-decls \
 		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
-		--af-defs-cmp-strings --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+		--af-defs-cmp-strings > $(GEN_PINS_SRC)
 
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
