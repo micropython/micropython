@@ -41,9 +41,6 @@ class PinAD(object):
         hdr_file.write("extern const pin_ad_obj_t pin_{:s}_ad_obj;\n".format(n))
         hdr_file.write("#define pin_{:s}_ad (&pin_{:s}_ad_obj)\n".format(n, n))
 
-    def qstr_list(self):
-        return [self._name]
-
 
 class Pin(object):
     def __init__(self, name, port, bit):
@@ -97,15 +94,6 @@ class Pin(object):
         n = self.cpu_pin_name()
         hdr_file.write("extern const machine_pin_obj_t pin_{:s}_obj;\n".format(n))
         hdr_file.write("#define pin_{:s} (&pin_{:s}_obj)\n".format(n, n))
-
-    def qstr_list(self):
-        result = []
-        for pin_ad in self._pin_ad:
-            result += pin_ad.qstr_list()
-        # for alt_fn in self.alt_fn:
-        #    if alt_fn.is_supported():
-        #        result += alt_fn.qstr_list()
-        return result
 
 
 class NamedPin(object):
@@ -209,19 +197,6 @@ class Pins(object):
                     )
                 )
 
-    def print_qstr(self, qstr_filename):
-        with open(qstr_filename, "wt") as qstr_file:
-            qstr_set = set([])
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if pin.is_board_pin():
-                    qstr_set |= set(pin.qstr_list())
-                    qstr_set |= set([named_pin.name()])
-            for named_pin in self.board_pins:
-                qstr_set |= set([named_pin.name()])
-            for qstr in sorted(qstr_set):
-                print("Q({})".format(qstr), file=qstr_file)
-
     def print_ad_hdr(self, ad_const_filename):
         with open(ad_const_filename, "wt") as ad_const_file:
             for named_pin in self.cpu_pins:
@@ -266,12 +241,6 @@ def main():
         default="build/pins_ad_const.h",
     )
     parser.add_argument(
-        "--af-const",
-        dest="af_const_filename",
-        help="Specifies header file for alternate function constants.",
-        default="build/pins_af_const.h",
-    )
-    parser.add_argument(
         "--af-py",
         dest="af_py_filename",
         help="Specifies the filename for the python alternate function mappings.",
@@ -282,13 +251,6 @@ def main():
         dest="af_defs_filename",
         help="Specifies the filename for the alternate function defines.",
         default="build/pins_af_defs.h",
-    )
-    parser.add_argument(
-        "-q",
-        "--qstr",
-        dest="qstr_filename",
-        help="Specifies name of generated qstr header file",
-        default="build/pins_qstr.h",
     )
     parser.add_argument(
         "-r",
@@ -319,7 +281,6 @@ def main():
 
     pins.print()
     pins.print_header(args.hdr_filename)
-    pins.print_qstr(args.qstr_filename)
     pins.print_ad_hdr(args.ad_const_filename)
 
 
