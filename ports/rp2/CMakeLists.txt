@@ -480,7 +480,6 @@ set(GEN_PINS_MKPINS "${MICROPY_BOARDS_DIR}/make-pins.py")
 set(GEN_PINS_SRC "${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c")
 set(GEN_PINS_HDR "${MICROPY_GENHDR_DIR}/pins.h")
 set(GEN_PINS_AF_CONST "${MICROPY_GENHDR_DIR}/pins_af_const.h")
-set(GEN_PINS_AF_PY "${CMAKE_BINARY_DIR}/pins_af.py")
 
 if(EXISTS "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
     set(GEN_PINS_BOARD_CSV "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
@@ -495,7 +494,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
 add_custom_command(
     OUTPUT ${GEN_PINS_HDR} ${GEN_PINS_SRC}
     COMMAND ${Python3_EXECUTABLE} ${GEN_PINS_MKPINS} ${GEN_PINS_CSV_ARG} --af ${GEN_PINS_AF_CSV} --prefix ${GEN_PINS_PREFIX}
-    --hdr ${GEN_PINS_HDR} --af-py ${GEN_PINS_AF_PY} > ${GEN_PINS_SRC}
+    --hdr ${GEN_PINS_HDR} > ${GEN_PINS_SRC}
     DEPENDS
         ${GEN_PINS_AF_CSV}
         ${GEN_PINS_BOARD_CSV}

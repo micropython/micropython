@@ -241,12 +241,6 @@ def main():
         default="build/pins_ad_const.h",
     )
     parser.add_argument(
-        "--af-py",
-        dest="af_py_filename",
-        help="Specifies the filename for the python alternate function mappings.",
-        default="build/pins_af.py",
-    )
-    parser.add_argument(
         "--af-defs",
         dest="af_defs_filename",
         help="Specifies the filename for the alternate function defines.",

@@ -503,19 +503,6 @@ class Pins(object):
                 print("\n".join(sorted(pins)), file=af_defs_file)
                 print("    (0xffffffffffffffffULL))\n", file=af_defs_file)
 
-    def print_af_py(self, af_py_filename):
-        with open(af_py_filename, "wt") as af_py_file:
-            print("PINS_AF = (", file=af_py_file)
-            for named_pin in self.board_pins:
-                if named_pin.is_hidden():
-                    continue
-                print("  ('%s', " % named_pin.name(), end="", file=af_py_file)
-                for af in named_pin.pin().alt_fn:
-                    if af.is_supported():
-                        print("(%d, '%s'), " % (af.idx, af.af_str), end="", file=af_py_file)
-                print("),", file=af_py_file)
-            print(")", file=af_py_file)
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -535,12 +522,6 @@ def main():
         dest="af_const_filename",
         help="Specifies header file for alternate function constants.",
         default="build/pins_af_const.h",
-    )
-    parser.add_argument(
-        "--af-py",
-        dest="af_py_filename",
-        help="Specifies the filename for the python alternate function mappings.",
-        default="build/pins_af.py",
     )
     parser.add_argument(
         "--af-defs",
@@ -604,7 +585,6 @@ def main():
         pins.print_adc(i)
     pins.print_header(args.hdr_filename, args.hdr_obj_decls)
     pins.print_af_hdr(args.af_const_filename)
-    pins.print_af_py(args.af_py_filename)
     pins.print_af_defs(args.af_defs_filename, args.af_defs_cmp_strings)
 
 

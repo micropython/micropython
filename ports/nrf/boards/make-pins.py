@@ -320,17 +320,6 @@ class Pins(object):
                 val = "MP_ROM_INT(GPIO_{})".format(mux_name)
                 print("    { %-*s %s }," % (mux_name_width + 26, key, val), file=af_const_file)
 
-    def print_af_py(self, af_py_filename):
-        with open(af_py_filename, "wt") as af_py_file:
-            print("PINS_AF = (", file=af_py_file)
-            for named_pin in self.board_pins:
-                print("  ('%s', " % named_pin.name(), end="", file=af_py_file)
-                for af in named_pin.pin().alt_fn:
-                    if af.is_supported():
-                        print("(%d, '%s'), " % (af.idx, af.af_str), end="", file=af_py_file)
-                print("),", file=af_py_file)
-            print(")", file=af_py_file)
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -350,12 +339,6 @@ def main():
         dest="af_const_filename",
         help="Specifies header file for alternate function constants.",
         default="build/pins_af_const.h",
-    )
-    parser.add_argument(
-        "--af-py",
-        dest="af_py_filename",
-        help="Specifies the filename for the python alternate function mappings.",
-        default="build/pins_af.py",
     )
     parser.add_argument(
         "-b",
@@ -401,7 +384,6 @@ def main():
     pins.print()
     pins.print_header(args.hdr_filename)
     pins.print_af_hdr(args.af_const_filename)
-    pins.print_af_py(args.af_py_filename)
 
 
 if __name__ == "__main__":

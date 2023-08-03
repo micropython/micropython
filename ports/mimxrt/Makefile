@@ -62,7 +62,6 @@ BOARD_PINS = $(BOARD_DIR)/pins.csv
 PREFIX_FILE = boards/mimxrt_prefix.c
 GEN_FLEXRAM_CONFIG_SRC = $(BUILD)/flexram_config.s
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 

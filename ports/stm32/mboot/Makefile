@@ -229,7 +229,6 @@ GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 $(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_ROOT_POINTERS) $(GEN_PINS_AF_DEFS)
 
@@ -247,7 +246,7 @@ $(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $
 	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af ../$(AF_FILE) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) \
 		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
-		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+		> $(GEN_PINS_SRC)
 
 #########################################
 
