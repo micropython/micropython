@@ -165,9 +165,6 @@ OBJ += $(BUILD)/pins.o
 
 # List of sources for qstr extraction
 SRC_QSTR += $(APP_MODS_SRC_C) $(APP_MISC_SRC_C) $(APP_STM_SRC_C) $(APP_SHARED_SRC_C) $(APP_HAL_SRC_C) $(GEN_PINS_SRC)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
 
 # Add the linker script
 LINKER_SCRIPT = application.lds
