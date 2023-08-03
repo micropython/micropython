@@ -3259,6 +3259,10 @@ msgstr ""
 msgid "input dtype must be float or complex"
 msgstr ""
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr ""
@@ -3302,10 +3306,6 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
 msgstr ""
 
 #: extmod/ulab/code/numpy/approx.c
