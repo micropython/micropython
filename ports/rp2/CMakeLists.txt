@@ -483,7 +483,7 @@ set(GEN_PINS_AF_CONST "${MICROPY_GENHDR_DIR}/pins_af_const.h")
 
 if(EXISTS "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
     set(GEN_PINS_BOARD_CSV "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
-    set(GEN_PINS_CSV_ARG --board "${GEN_PINS_BOARD_CSV}")
+    set(GEN_PINS_CSV_ARG --board-csv "${GEN_PINS_BOARD_CSV}")
 endif()
 
 target_sources(${MICROPY_TARGET} PRIVATE
@@ -493,8 +493,7 @@ target_sources(${MICROPY_TARGET} PRIVATE
 # Generate pins
 add_custom_command(
     OUTPUT ${GEN_PINS_HDR} ${GEN_PINS_SRC}
-    COMMAND ${Python3_EXECUTABLE} ${GEN_PINS_MKPINS} ${GEN_PINS_CSV_ARG} --af ${GEN_PINS_AF_CSV} --prefix ${GEN_PINS_PREFIX}
-    --hdr ${GEN_PINS_HDR} > ${GEN_PINS_SRC}
+    COMMAND ${Python3_EXECUTABLE} ${GEN_PINS_MKPINS} ${GEN_PINS_CSV_ARG} --af-csv ${GEN_PINS_AF_CSV} --prefix ${GEN_PINS_PREFIX} --output-source ${GEN_PINS_SRC} --output-header ${GEN_PINS_HDR}
     DEPENDS
         ${GEN_PINS_AF_CSV}
         ${GEN_PINS_BOARD_CSV}
