@@ -1557,6 +1557,10 @@ msgstr "No such file/directory"
 msgid "No timer available"
 msgstr "No timer available"
 
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
 msgstr "Nordic system firmware out of memory"

@@ -1571,6 +1571,10 @@ msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 msgid "No timer available"
 msgstr "Méiyǒu jìshí qì"
 
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
 msgstr "běi ōu xì tǒng gù jiàn chū nèi cún"

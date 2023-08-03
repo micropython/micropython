@@ -1580,6 +1580,10 @@ msgstr "Este arquivo/diretório não existe"
 msgid "No timer available"
 msgstr "Não há um temporizador disponível"
 
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
 msgstr "O firmware do sistema nórdico está sem memória"

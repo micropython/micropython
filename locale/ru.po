@@ -1586,6 +1586,10 @@ msgstr "Файл/директория не существует"
 msgid "No timer available"
 msgstr "Нет доступного таймера"
 
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
+
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
 msgstr ""
