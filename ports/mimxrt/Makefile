@@ -510,7 +510,4 @@ $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PR
 		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
 		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
 
-$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
-	$(call compile_c)
-
 include $(TOP)/py/mkrules.mk

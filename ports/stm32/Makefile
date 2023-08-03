@@ -684,9 +684,6 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_
 		--af-defs $(GEN_PINS_AF_DEFS) --af-defs-cmp-strings \
 		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
 
-$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
-	$(call compile_c)
-
 modmachine.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
