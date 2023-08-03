@@ -3322,6 +3322,10 @@ msgstr "shūrù shùjù bìxū shì kě diédài de"
 msgid "input dtype must be float or complex"
 msgstr "shū rù dtype bì xū shì fú diǎn xíng huò fù shù"
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "shūrù jǔzhèn bù duìchèn"
@@ -3366,10 +3370,6 @@ msgstr "shūrù bìxū shì yuán zǔ, lièbiǎo, fànwéi huò ndarray"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "shūrù xiàngliàng de chángdù bìxū xiāngděng"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "shū rù bù kě yí dòng"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -4427,6 +4427,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "shū rù bù kě yí dòng"
 
 #~ msgid "Too many display busses"
 #~ msgstr "Xiǎnshì zǒngxiàn tài duōle"

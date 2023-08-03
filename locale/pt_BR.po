@@ -2123,8 +2123,8 @@ msgstr "Muitos canais na amostra."
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
-"Excesso de barramentos de exibição; esqueceu do displayio.release_displays() "
-"?"
+"Excesso de barramentos de exibição; esqueceu do displayio."
+"release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -3350,6 +3350,10 @@ msgstr "os dados da entrada devem ser iteráveis"
 msgid "input dtype must be float or complex"
 msgstr "o tipo da entrada dtype deve ser flutuante ou complexo"
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "a matriz da entrada é assimétrica"
@@ -3394,10 +3398,6 @@ msgstr "A entrada deve ser tupla, lista, intervalo ou matriz"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "os vetores da entrada devem ter o mesmo comprimento"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "as entradas não são iteráveis"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -4461,6 +4461,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "as entradas não são iteráveis"
 
 #~ msgid "Too many display busses"
 #~ msgstr "Muitos barramentos estão sendo exibidos"
