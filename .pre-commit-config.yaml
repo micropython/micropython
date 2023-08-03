@@ -16,3 +16,10 @@ repos:
     hooks:
       - id: ruff
       - id: ruff-format
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        name: Spellcheck for changed files (codespell)
+        additional_dependencies:
+          - tomli
