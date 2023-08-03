@@ -177,7 +177,7 @@ def get_settings_from_makefile(port_dir, board_name):
     in this script, something that has proved error-prone
     """
     contents = subprocess.run(
-        ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS"],
+        ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS"],
         encoding="utf-8",
         errors="replace",
         stdout=subprocess.PIPE,

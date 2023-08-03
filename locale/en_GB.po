@@ -3302,6 +3302,10 @@ msgstr "input data must be an iterable"
 msgid "input dtype must be float or complex"
 msgstr "input dtype must be float or complex"
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "input matrix is asymmetric"
@@ -3346,10 +3350,6 @@ msgstr "input must be tuple, list, range, or ndarray"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "input vectors must be of equal length"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "inputs are not iterable"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -4403,6 +4403,9 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "inputs are not iterable"
 
 #~ msgid "Too many display busses"
 #~ msgstr "Too many display busses"

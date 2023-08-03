@@ -211,7 +211,7 @@ SECTIONS
     _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
     _ld_dtcm_data_size = SIZEOF(.dtcm_data);
 
-    .dtcm_bss :
+    .dtcm_bss (NOLOAD) :
     {
         . = ALIGN(4);
 

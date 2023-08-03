@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-30 11:47+0000\n"
+"PO-Revision-Date: 2023-08-03 16:12+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -3316,6 +3316,10 @@ msgstr "indata måste vara en iterable"
 msgid "input dtype must be float or complex"
 msgstr "indatatyp måste vara float eller complex"
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr "indata är inte itererbar"
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "indatamatrisen är asymmetrisk"
@@ -3360,10 +3364,6 @@ msgstr "indata måste vara tupel, lista, range, eller ndarray"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "indatavektorer måste ha samma längd"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "indata är inte iterbara"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -4421,6 +4421,9 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "indata är inte iterbara"
 
 #~ msgid "Too many display busses"
 #~ msgstr "För många display-bussar"
