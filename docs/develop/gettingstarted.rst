@@ -100,7 +100,7 @@ For the stm32 port, the ARM cross-compiler is required:
 
 .. code-block:: bash
 
-   $ sudo apt-get install arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib
+   $ sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
 
 See the `ARM GCC
 toolchain <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>`_
