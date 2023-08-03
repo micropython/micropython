@@ -97,6 +97,10 @@ $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
 
+# Special case for compiling auto-generated source files.
+$(BUILD)/%.o: $(BUILD)/%.c
+	$(call compile_c)
+
 # The following rule uses | to create an order only prerequisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
 # checking to be performed.
