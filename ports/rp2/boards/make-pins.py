@@ -68,15 +68,6 @@ class AlternateFunction(object):
     def is_supported(self):
         return self.supported
 
-    def ptr(self):
-        """Returns the numbered function (i.e. USART6) for this AF."""
-        if self.fn_num is None:
-            return self.func
-        return "{:s}{:d}".format(self.func, self.fn_num)
-
-    def mux_name(self):
-        return "AF{:d}_{:s}".format(self.idx, self.ptr())
-
     def print(self):
         """Prints the C representation of this AF."""
         if self.supported:
@@ -87,9 +78,6 @@ class AlternateFunction(object):
         if fn_num is None:
             fn_num = 0
         print("({:d}, {:4s}, {:d}), // {:s}".format(self.idx, self.func, fn_num, self.af_str))
-
-    def qstr_list(self):
-        return [self.mux_name()]
 
 
 class Pin(object):
@@ -163,13 +151,6 @@ class Pin(object):
         )
         if self.alt_fn_count > 0:
             hdr_file.write("extern const machine_pin_af_obj_t pin_{:s}_af[];\n".format(n))
-
-    def qstr_list(self):
-        result = []
-        for alt_fn in self.alt_fn:
-            if alt_fn.is_supported():
-                result += alt_fn.qstr_list()
-        return result
 
 
 class NamedPin(object):
@@ -303,37 +284,6 @@ class Pins(object):
                         )
                     )
 
-    def print_qstr(self, qstr_filename):
-        with open(qstr_filename, "wt") as qstr_file:
-            qstr_set = set([])
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if pin.is_board_pin():
-                    qstr_set |= set(pin.qstr_list())
-                    qstr_set |= set([named_pin.name()])
-            for named_pin in self.board_pins:
-                qstr_set |= set([named_pin.name()])
-            for qstr in sorted(qstr_set):
-                print("Q({})".format(qstr), file=qstr_file)
-
-    def print_af_hdr(self, af_const_filename):
-        with open(af_const_filename, "wt") as af_const_file:
-            af_hdr_set = set([])
-            mux_name_width = 0
-            for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if pin.is_board_pin():
-                    for af in pin.alt_fn:
-                        if af.is_supported():
-                            mux_name = af.mux_name()
-                            af_hdr_set |= set([mux_name])
-                            if len(mux_name) > mux_name_width:
-                                mux_name_width = len(mux_name)
-            for mux_name in sorted(af_hdr_set):
-                key = "MP_OBJ_NEW_QSTR(MP_QSTR_{}),".format(mux_name)
-                val = "MP_OBJ_NEW_SMALL_INT(GPIO_{})".format(mux_name)
-                print("    { %-*s %s }," % (mux_name_width + 26, key, val), file=af_const_file)
-
     def print_af_py(self, af_py_filename):
         with open(af_py_filename, "wt") as af_py_file:
             print("PINS_AF = (", file=af_py_file)
@@ -360,12 +310,6 @@ def main():
         default="rp2_af.csv",
     )
     parser.add_argument(
-        "--af-const",
-        dest="af_const_filename",
-        help="Specifies header file for alternate function constants.",
-        default="build/pins_af_const.h",
-    )
-    parser.add_argument(
         "--af-py",
         dest="af_py_filename",
         help="Specifies the filename for the python alternate function mappings.",
@@ -383,13 +327,6 @@ def main():
         dest="prefix_filename",
         help="Specifies beginning portion of generated pins file",
         default="rp2_prefix.c",
-    )
-    parser.add_argument(
-        "-q",
-        "--qstr",
-        dest="qstr_filename",
-        help="Specifies name of generated qstr header file",
-        default="build/pins_qstr.h",
     )
     parser.add_argument(
         "-r",
@@ -419,8 +356,6 @@ def main():
             print(prefix_file.read())
     pins.print()
     pins.print_header(args.hdr_filename, True)
-    pins.print_qstr(args.qstr_filename)
-    pins.print_af_hdr(args.af_const_filename)
     pins.print_af_py(args.af_py_filename)
 
 
