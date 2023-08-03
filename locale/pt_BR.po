@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-30 11:47+0000\n"
+"PO-Revision-Date: 2023-08-04 02:36+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1582,7 +1582,7 @@ msgstr "Não há um temporizador disponível"
 
 #: shared-module/usb/core/Device.c
 msgid "No usb host port initialized"
-msgstr ""
+msgstr "Nenhuma porta do host usb foi inicializada"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
@@ -3356,7 +3356,7 @@ msgstr "o tipo da entrada dtype deve ser flutuante ou complexo"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input is not iterable"
-msgstr ""
+msgstr "a entrada não é iterável"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
