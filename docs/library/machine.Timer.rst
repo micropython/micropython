@@ -31,6 +31,7 @@ Constructors
 
    Construct a new timer object of the given ``id``. ``id`` of -1 constructs a
    virtual timer (if supported by a board).
+   ``id`` of -2 selects the ``id`` of a free timer (Supported at ESP32 port).
    ``id`` shall not be passed as a keyword argument.
 
    See ``init`` for parameters of initialisation.
