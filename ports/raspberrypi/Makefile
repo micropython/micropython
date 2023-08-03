@@ -142,7 +142,6 @@ INC += \
         -Isdk_config \
         -I../../lib/tinyusb/src \
         -I../../supervisor/shared/usb \
-        -I../bindings/cyw43/__init__.h \
         -I$(BUILD)
 
 # Pico specific configuration
@@ -172,7 +171,7 @@ else
 endif
 
 # Remove -Wno-stringop-overflow after we can test with CI's GCC 10. Mac's looks weird.
-DISABLE_WARNINGS = -Wno-stringop-overflow -Wno-cast-align -Wno-undef
+DISABLE_WARNINGS = -Wno-stringop-overflow -Wno-cast-align
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes
 
@@ -237,6 +236,7 @@ SRC_SDK := \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK) $(SRC_CYW43)): CFLAGS += -Wno-missing-prototypes -Wno-undef -Wno-unused-function -Wno-nested-externs -Wno-strict-prototypes -Wno-double-promotion -Wno-sign-compare -Wno-unused-variable -Wno-strict-overflow -Ilib/cyw43-driver
+$(BUILD)/sdk/src/rp2_common/pico_standard_link/crt0.o: CFLAGS += -Wno-undef
 
 SRC_C += \
 	boards/$(BOARD)/board.c \
