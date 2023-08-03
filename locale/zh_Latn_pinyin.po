@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-21 00:10+0000\n"
+"PO-Revision-Date: 2023-08-02 22:07+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -1793,7 +1793,7 @@ msgstr "yǐn jiǎo bì xū gòng xiǎng PWM qiē piàn"
 
 #: shared-module/usb/core/Device.c
 msgid "Pipe error"
-msgstr ""
+msgstr "guǎndào cuòwù"
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
@@ -2104,7 +2104,7 @@ msgstr "Chōuyàng zhōng de píndào tài duō."
 
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
-msgstr ""
+msgstr "Xiǎnshì zǒngxiàn guòduō;wàngjì displayio.release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -2828,7 +2828,7 @@ msgstr "wúfǎ chuàngjiàn shílì"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot delete array elements"
-msgstr ""
+msgstr "wúfǎ shānchú shùzǔ yuánsù"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3296,11 +3296,11 @@ msgstr "nèi lián jíhé bìxū shì yīgè hánshù"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output dimensions differ"
-msgstr ""
+msgstr "shūrù hé shūchū chǐcùn bùtóng"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output shapes differ"
-msgstr ""
+msgstr "shūrù hé shūchū xíngzhuàng bùtóng"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3321,6 +3321,10 @@ msgstr "shūrù shùjù bìxū shì kě diédài de"
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
 msgstr "shū rù dtype bì xū shì fú diǎn xíng huò fù shù"
+
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3366,10 +3370,6 @@ msgstr "shūrù bìxū shì yuán zǔ, lièbiǎo, fànwéi huò ndarray"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "shūrù xiàngliàng de chángdù bìxū xiāngděng"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "shū rù bù kě yí dòng"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -3633,7 +3633,7 @@ msgstr "yuán chǎn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "ndarray length overflows"
-msgstr ""
+msgstr "ndarray chángdù yìchū"
 
 #: py/runtime.c
 #, c-format
@@ -3735,7 +3735,7 @@ msgstr "wèi zhēn duì fù zá de dtype shí xiàn"
 
 #: extmod/ulab/code/numpy/bitwise.c
 msgid "not supported for input types"
-msgstr ""
+msgstr "bù zhīchí shūrù lèixíng"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3887,11 +3887,11 @@ msgstr "chū zhèn liè tài xiǎo"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for complex dtype"
-msgstr ""
+msgstr "fùzá de dtype bù zhīchí out guānjiànzì"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for function"
-msgstr ""
+msgstr "hánshù bù zhīchí out guānjiànzì"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
@@ -3899,11 +3899,11 @@ msgstr "chū bì xū shì yí gè fú dòng mì jí zhèn liè"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be an ndarray"
-msgstr ""
+msgstr "shūchū bìxū shì ndarray"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be of float dtype"
-msgstr ""
+msgstr "out bìxū shì fúdiǎn xíng dtype"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
@@ -4427,6 +4427,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "shū rù bù kě yí dòng"
 
 #~ msgid "Too many display busses"
 #~ msgstr "Xiǎnshì zǒngxiàn tài duōle"
