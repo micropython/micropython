@@ -652,9 +652,6 @@ $(BUILD)/firmware.elf: $(OBJ)
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)
 
 # Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
@@ -668,6 +665,8 @@ $(OBJ): | $(GEN_PINS_HDR)
 $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
 # main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
+# As main.c is in SRC_QSTR this will also ensure that GEN_CDCINF_HEADER
+# will be run before QSTR extraction.
 main.c: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
