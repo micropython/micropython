@@ -1488,6 +1488,10 @@ msgstr "Nessun orologio a disposizione"
 msgid "No capture in progress"
 msgstr ""
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr ""
@@ -1549,6 +1553,10 @@ msgstr "Nessun file/directory esistente"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
+msgstr ""
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c

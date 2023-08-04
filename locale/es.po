@@ -1522,6 +1522,10 @@ msgstr "Relojes no disponibles"
 msgid "No capture in progress"
 msgstr "No hay captura en marcha"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Sin conexión: no se puede determinar la longitud"
@@ -1584,6 +1588,10 @@ msgstr "No existe el archivo/directorio"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "No hay temporizador disponible"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"

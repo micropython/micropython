@@ -1486,6 +1486,10 @@ msgstr "利用できるクロックがありません"
 msgid "No capture in progress"
 msgstr ""
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "接続なし: 長さが決定できません"
@@ -1548,6 +1552,10 @@ msgstr "指定されたファイル/ディレクトリはありません"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "利用できるタイマーなし"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
