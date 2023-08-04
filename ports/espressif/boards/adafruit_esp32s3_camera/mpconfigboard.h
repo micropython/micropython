@@ -40,3 +40,5 @@
 #define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
 
 #define DOUBLE_TAP_PIN (&pin_GPIO42)
+
+#define DEFAULT_RESERVED_PSRAM      (1048576)
