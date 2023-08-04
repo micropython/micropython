@@ -72,12 +72,6 @@ Use the :mod:`time <time>` module::
     start = time.ticks_us() # get microsecond counter
     delta = time.ticks_diff(time.ticks_us(), start) # compute time difference
 
-
-Timers
-------
-
-*Feature unavailable. Placeholder. To be completed.*
-
 Pins and GPIO
 -------------
 
@@ -420,8 +414,8 @@ The driver is accessed via :ref:`machine.SPI <machine.SPI>`
 The constructor
 ^^^^^^^^^^^^^^^
 An instance of the :mod:`machine.SPI` class can be created by invoking the constructor with all the 
-necessary parameters to fully configure and initialise the ``SPI``. By invoking the constructor with no additional parameters 
-SPI object is created with default settings or settings of previous initialisation if any. 
+necessary parameters to fully configure and initialize the ``SPI``. By invoking the constructor with no additional parameters 
+SPI object is created with default settings or settings of previous initialization if any.
 
 ::
     
@@ -432,6 +426,7 @@ SPI object is created with default settings or settings of previous initialisati
 Management of a CS signal should happen in user code (via machine.Pin class).
 
 ::
+    
     from machine import Pin
     cs = Pin('P9_3', mode=Pin.OUT, value=1)      # Create chip-select on pin P9_3
     cs(0)                                        # select the peripheral
@@ -440,12 +435,13 @@ Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode op
 If the constructor is called with any additional parameters then SPI object is created & initialised.
 
 ::    
+    
     spi = SPI(0, baudrate=2000000) #object is created & initialised with baudrate=2000000 & default parameters
     spi = SPI(0, baudrate=1500000, polarity=1, phase=1, bits=8, firstbit=SPI.LSB, sck='P11_2', mosi='P11_0', miso='P11_1')
 
 Methods
 ^^^^^^^
-All the methods(functions) given in :ref:`machine.SPI <machine.SPI>` class have been implemented in this port
+All the methods(functions) given in :ref:`machine.SPI <machine.SPI>` class have been implemented in this port.
 
 Timers
 ------
@@ -478,7 +474,8 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
     val = adc.read_u16()           # read a raw analog value in the range 0-65535
     val = adc.read_uv()            # read an analog value in micro volts
 
-The PSoC6 port also supports :ref:`machine.ADC <machine.ADCBlock>` API to have control over the ADC configuration. Currently 
+The PSoC6 port also supports :ref:`machine.ADCBlock <machine.ADCBlock>` API to have control over the ADC configuration. Currently 
+
 PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping and the defaults are set accordingly:
 
 +---------+-------+
@@ -502,7 +499,8 @@ PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping a
     or specifying a mismatched channel and pin, will raise an exception.
 
 To use the APIs:
-
+::
+    
     from machine import ADCBlock, Pin
 
     adcBlock = ADCBlock(0, bits=12)             # create an ADCBlock 0 object
