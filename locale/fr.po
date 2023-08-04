@@ -1818,6 +1818,10 @@ msgstr "Les broches doivent être des broches GPIO à la suite"
 msgid "Pins must share PWM slice"
 msgstr "Les broches doivent partager la tranche PWM"
 
+#: shared-module/usb/core/Device.c
+msgid "Pipe error"
+msgstr ""
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Ainsi que tout autres modules présents sur le système de fichiers\n"
@@ -1899,7 +1903,8 @@ msgstr "Erreur de génération de chiffres aléatoires"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Lecture seule"
 
@@ -2128,8 +2133,8 @@ msgid "Too many channels in sample."
 msgstr "Trop de canaux dans l'échantillon."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Trop de bus d'affichage"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -3363,6 +3368,10 @@ msgstr "les données d'entrée doivent être un itérable"
 msgid "input dtype must be float or complex"
 msgstr "le dtype d'entrée doit être un flottant ou un complexe"
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "la matrice d'entrée est asymétrique"
@@ -3407,10 +3416,6 @@ msgstr "l'entrée 'input' doit être tuple, list, range ou ndarray"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "les vecteurs d'entrée doivent être de longueur égale"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "les entrées ne sont pas itérables"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -4141,7 +4146,7 @@ msgstr "sos[:, 3] doivent tous être à un"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt nécessite des argument itératifs"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
 msgstr "la palette source est trop grande"
 
@@ -4476,6 +4481,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "les entrées ne sont pas itérables"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Trop de bus d'affichage"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "Impossible de transférer sans une broche MOSI ou MISO"

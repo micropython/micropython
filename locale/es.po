@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-16 04:32+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"PO-Revision-Date: 2023-07-30 11:47+0000\n"
+"Last-Translator: Pablo Martinez Bernal <elpekenin@elpekenin.dev>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1808,6 +1808,10 @@ msgstr "Los pines deben ser pines GPIO secuenciales"
 msgid "Pins must share PWM slice"
 msgstr "Los pines deben compartir la división PWM"
 
+#: shared-module/usb/core/Device.c
+msgid "Pipe error"
+msgstr "Error de conexión"
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Además de cualquier módulo en el sistema de archivos\n"
@@ -1888,7 +1892,8 @@ msgstr "Error de generación de números aleatorios"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Solo-lectura"
 
@@ -2121,8 +2126,9 @@ msgid "Too many channels in sample."
 msgstr "Demasiados canales en sample."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Demasiados buses de pantalla"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr ""
+"Demasiados buses para displays. Olvidaste displayio.release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -2853,7 +2859,7 @@ msgstr "no se puede crear instancia"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot delete array elements"
-msgstr ""
+msgstr "no se pudo eliminar elementos del array"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3318,11 +3324,11 @@ msgstr "ensamblador en línea debe ser una función"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output dimensions differ"
-msgstr ""
+msgstr "dimensiones de entrada y salida distintas"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output shapes differ"
-msgstr ""
+msgstr "formas de entrada y salida distintas"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
@@ -3343,6 +3349,10 @@ msgstr "los datos de entrada deben ser iterables"
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
 msgstr "dtype de entrada debe ser float o complex"
+
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3388,10 +3398,6 @@ msgstr "la entrada debe ser una tupla, lista, rango o ndarray"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "los vectores de entrada deben ser de igual tamaño"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "Entradas no son iterables"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -3658,7 +3664,7 @@ msgstr "yield nativo"
 
 #: extmod/ulab/code/ndarray.c
 msgid "ndarray length overflows"
-msgstr ""
+msgstr "la longitud de ndarray desborda"
 
 #: py/runtime.c
 #, c-format
@@ -3763,7 +3769,7 @@ msgstr "no esta implementado para complex dtype"
 
 #: extmod/ulab/code/numpy/bitwise.c
 msgid "not supported for input types"
-msgstr ""
+msgstr "no soportado para los tipos de entrada"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3915,11 +3921,11 @@ msgstr "La matriz de salida es demasiado pequeña"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for complex dtype"
-msgstr ""
+msgstr "out no soportado para el dtype 'complex'"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for function"
-msgstr ""
+msgstr "out no soportado para funciones"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
@@ -3927,11 +3933,11 @@ msgstr "la matriz de salida debe ser densa de números float"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be an ndarray"
-msgstr ""
+msgstr "out debe ser un ndarray"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be of float dtype"
-msgstr ""
+msgstr "el dtype de out debe ser float"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
@@ -4118,7 +4124,7 @@ msgstr "sos[:, 3] deberían ser todos unos"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt requiere argumentos iterables"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
 msgstr "paleta fuente muy larga"
 
@@ -4453,6 +4459,12 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "Entradas no son iterables"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Demasiados buses de pantalla"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "No puede ser transferido si los pines MOSI y MISO"

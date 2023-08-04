@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,6 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#include "supervisor/board.h"
 
-#define MICROPY_HW_BOARD_NAME       "Adafruit Camera"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
-
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
-#define MICROPY_HW_NEOPIXEL_COUNT (1)
-
-#define MICROPY_HW_LED_STATUS (&pin_GPIO1)
-
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
-
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
-
-#define DOUBLE_TAP_PIN (&pin_GPIO42)
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

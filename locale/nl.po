@@ -1767,6 +1767,10 @@ msgstr ""
 msgid "Pins must share PWM slice"
 msgstr ""
 
+#: shared-module/usb/core/Device.c
+msgid "Pipe error"
+msgstr ""
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "En iedere module in het bestandssysteem\n"
@@ -1846,7 +1850,8 @@ msgstr "Random number generatie fout"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Alleen-lezen"
 
@@ -2072,8 +2077,8 @@ msgid "Too many channels in sample."
 msgstr "Teveel kanalen in sample."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Teveel beeldscherm bussen"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -3285,6 +3290,10 @@ msgstr "invoerdata moet itereerbaar zijn"
 msgid "input dtype must be float or complex"
 msgstr ""
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "invoermatrix is asymmetrisch"
@@ -3329,10 +3338,6 @@ msgstr "invoer moet een tuple, lijst, bereik of ndarray zijn"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "invoervectors moeten van gelijke lengte zijn"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "invoer is niet itereerbaar"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -4055,7 +4060,7 @@ msgstr "sos[:, 3] moeten allemaal 1 zijn"
 msgid "sosfilt requires iterable arguments"
 msgstr "sosfilt vereist itereerbare argumenten"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
 msgstr "bronpalet te groot"
 
@@ -4389,6 +4394,12 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "invoer is niet itereerbaar"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Teveel beeldscherm bussen"
 
 #~ msgid "Hardware busy, try alternative pins"
 #~ msgstr "Hardware bezig, probeer alternatieve pinnen"

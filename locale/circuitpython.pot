@@ -1473,6 +1473,10 @@ msgstr ""
 msgid "No capture in progress"
 msgstr ""
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr ""
@@ -1534,6 +1538,10 @@ msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
+msgstr ""
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
@@ -2056,7 +2064,7 @@ msgid "Too many channels in sample."
 msgstr ""
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
 
 #: shared-module/displayio/__init__.c
@@ -3259,6 +3267,10 @@ msgstr ""
 msgid "input dtype must be float or complex"
 msgstr ""
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr ""
@@ -3302,10 +3314,6 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
 msgstr ""
 
 #: extmod/ulab/code/numpy/approx.c

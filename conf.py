@@ -30,6 +30,7 @@ from collections import defaultdict
 from sphinx.transforms import SphinxTransform
 from docutils import nodes
 from sphinx import addnodes
+from sphinx.ext import intersphinx
 
 tools_describe = str(pathlib.Path(__file__).parent / "tools/describe")
 
@@ -441,7 +442,8 @@ texinfo_documents = [
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
-                       "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
+                       "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None),
+                       "typing": ('https://circuitpython.readthedocs.io/projects/adafruit-circuitpython-typing/en/latest/', None)}
 
 # Adapted from sphinxcontrib-redirects
 from sphinx.builders import html as builders
@@ -483,6 +485,26 @@ def generate_redirects(app):
             with open(redirected_filename, 'w') as f:
                 f.write(TEMPLATE % urllib.parse.quote(to_path, '#/'))
 
+def adafruit_typing_workaround(app, env, node, contnode):
+    # Sphinx marks a requesting node that uses circuitpython-typing
+    # as looking for a "class" definition, but unfortunately
+    # Sphinx doesn't recognize TypeAlias based types usefully from
+    # the typing library.
+    # (see: https://github.com/sphinx-doc/sphinx/issues/8934)
+    # Instead, it categorizes these types as "data".
+    # (see: python -m sphinx.ext.intersphinx \
+    #   https://docs.circuitpython.org/projects/adafruit-circuitpython-typing/en/latest/objects.inv)
+    # This workaround traps missing references, checks if
+    # they are likely to be in the circuitpython_typing package,
+    # and changes the requesting type from "class" to "data" if
+    # needed, and re-tries the reference resolver.
+    ref = node.get("reftarget", None)
+    if ref and ref.startswith("circuitpython_typing."):
+        dtype = node.get("reftype", None)
+        if dtype != "data":
+            node.attributes.update({"reftype": "data"})
+            return intersphinx.missing_reference(app, env, node, contnode)
+
 
 class CoreModuleTransform(SphinxTransform):
     default_priority = 870
@@ -519,4 +541,5 @@ def setup(app):
     app.add_js_file("filter.js")
     app.add_config_value('redirects_file', 'redirects', 'env')
     app.connect('builder-inited', generate_redirects)
+    app.connect('missing-reference', adafruit_typing_workaround)
     app.add_transform(CoreModuleTransform)

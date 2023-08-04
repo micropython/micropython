@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-27 17:07+0000\n"
+"PO-Revision-Date: 2023-07-30 11:47+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1802,6 +1802,10 @@ msgstr "Pinos devem ser pinos GPIO sequenciais"
 msgid "Pins must share PWM slice"
 msgstr "Os pinos devem compartilhar a fatia do PWM"
 
+#: shared-module/usb/core/Device.c
+msgid "Pipe error"
+msgstr "Erro de pipe"
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Além de quaisquer módulos no sistema de arquivos\n"
@@ -1884,7 +1888,8 @@ msgstr "Houve um erro na geração do número aleatório"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Somente leitura"
 
@@ -2116,8 +2121,10 @@ msgid "Too many channels in sample."
 msgstr "Muitos canais na amostra."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Muitos barramentos estão sendo exibidos"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr ""
+"Excesso de barramentos de exibição; esqueceu do displayio."
+"release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -3343,6 +3350,10 @@ msgstr "os dados da entrada devem ser iteráveis"
 msgid "input dtype must be float or complex"
 msgstr "o tipo da entrada dtype deve ser flutuante ou complexo"
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr "a matriz da entrada é assimétrica"
@@ -3387,10 +3398,6 @@ msgstr "A entrada deve ser tupla, lista, intervalo ou matriz"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "os vetores da entrada devem ter o mesmo comprimento"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "as entradas não são iteráveis"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -4120,7 +4127,7 @@ msgstr "sos[:, 3] deve ser um em todos"
 msgid "sosfilt requires iterable arguments"
 msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
 msgstr "a paleta de origem é muito grande"
 
@@ -4454,6 +4461,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "as entradas não são iteráveis"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Muitos barramentos estão sendo exibidos"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "Não é possível transferir sem os pinos MOSI e MISO"

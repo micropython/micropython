@@ -949,37 +949,37 @@ STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_a
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_circle);
 
-//|     def blit(
-//|         dest_bitmap: displayio.Bitmap,
-//|         source_bitmap: displayio.Bitmap,
-//|         x: int,
-//|         y: int,
-//|         *,
-//|         x1: int,
-//|         y1: int,
-//|         x2: int,
-//|         y2: int,
-//|         skip_source_index: int,
-//|         skip_dest_index: int
-//|     ) -> None:
-//|         """Inserts the source_bitmap region defined by rectangular boundaries
-//|                     (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
+//| def blit(
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmap: displayio.Bitmap,
+//|     x: int,
+//|     y: int,
+//|     *,
+//|     x1: int,
+//|     y1: int,
+//|     x2: int,
+//|     y2: int,
+//|     skip_source_index: int,
+//|     skip_dest_index: int
+//| ) -> None:
+//|     """Inserts the source_bitmap region defined by rectangular boundaries
+//|     (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
 //|
-//|         :param bitmap dest_bitmap: Destination bitmap that the area will be copied into.
-//|         :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
-//|         :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
-//|                       corner will be placed
-//|         :param int y: Vertical pixel location in bitmap where source_bitmap upper-left
-//|                       corner will be placed
-//|         :param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
-//|         :param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
-//|         :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
-//|         :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
-//|         :param int skip_source_index: bitmap palette index in the source that will not be copied,
-//|                                set to None to copy all pixels
-//|         :param int skip_dest_index: bitmap palette index in the destination bitmap that will not get overwritten
-//|                                 by the pixels from the source"""
-//|         ...
+//|     :param bitmap dest_bitmap: Destination bitmap that the area will be copied into.
+//|     :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
+//|     :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
+//|                   corner will be placed
+//|     :param int y: Vertical pixel location in bitmap where source_bitmap upper-left
+//|                   corner will be placed
+//|     :param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
+//|     :param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
+//|     :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|     :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|     :param int skip_source_index: bitmap palette index in the source that will not be copied,
+//|                            set to None to copy all pixels
+//|     :param int skip_dest_index: bitmap palette index in the destination bitmap that will not get overwritten
+//|                             by the pixels from the source"""
+//|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_destination, ARG_source, ARG_x, ARG_y, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_source_index, ARG_skip_dest_index};

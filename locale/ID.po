@@ -1770,6 +1770,10 @@ msgstr ""
 msgid "Pins must share PWM slice"
 msgstr ""
 
+#: shared-module/usb/core/Device.c
+msgid "Pipe error"
+msgstr ""
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Tambahkan module apapun pada filesystem\n"
@@ -1849,7 +1853,8 @@ msgstr "Kesalahan pembuatan nomor acak"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Baca-saja"
 
@@ -2077,8 +2082,8 @@ msgid "Too many channels in sample."
 msgstr "Terlalu banyak channel dalam sampel"
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Terlalu banyak tampilan bus"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr ""
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -3282,6 +3287,10 @@ msgstr ""
 msgid "input dtype must be float or complex"
 msgstr ""
 
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
 msgstr ""
@@ -3325,10 +3334,6 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
-msgstr ""
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
 msgstr ""
 
 #: extmod/ulab/code/numpy/approx.c
@@ -4050,7 +4055,7 @@ msgstr ""
 msgid "sosfilt requires iterable arguments"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
 msgstr ""
 
@@ -4384,6 +4389,9 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "Zi harus berbentuk (n_section, 2)"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Terlalu banyak tampilan bus"
 
 #~ msgid "Hardware busy, try alternative pins"
 #~ msgstr "Perangkat keras sibuk, coba pin alternatif"

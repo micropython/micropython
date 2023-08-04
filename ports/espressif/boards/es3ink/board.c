@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,17 +24,16 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
-#define MICROPY_HW_BOARD_NAME       "Neuron"
-#define MICROPY_HW_MCU_NAME         "ESP32S3"
+void board_init(void) {
+    // Debug UART
+    #ifdef DEBUG
+    common_hal_never_reset_pin(&pin_GPIO43);
+    common_hal_never_reset_pin(&pin_GPIO44);
+    #endif /* DEBUG */
+}
 
-#define DEFAULT_UART_BUS_RX         (&pin_GPIO44)
-#define DEFAULT_UART_BUS_TX         (&pin_GPIO43)
-
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
-
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO40)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO41)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO39)
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
