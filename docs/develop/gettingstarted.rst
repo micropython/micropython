@@ -228,7 +228,7 @@ You can also specify which board to use:
 .. code-block:: bash
 
    $ cd ports/stm32
-   $ make submodules
+   $ make BOARD=<board> submodules
    $ make BOARD=<board>
 
 See `ports/stm32/boards <https://github.com/micropython/micropython/tree/master/ports/stm32/boards>`_
