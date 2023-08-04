@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-30 11:47+0000\n"
+"PO-Revision-Date: 2023-08-06 17:45+0000\n"
 "Last-Translator: Pablo Martinez Bernal <elpekenin@elpekenin.dev>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -1524,7 +1524,7 @@ msgstr "No hay captura en marcha"
 
 #: shared-module/usb/core/Device.c
 msgid "No configuration set"
-msgstr ""
+msgstr "No hay configuración"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
@@ -1591,7 +1591,7 @@ msgstr "No hay temporizador disponible"
 
 #: shared-module/usb/core/Device.c
 msgid "No usb host port initialized"
-msgstr ""
+msgstr "No hay ningún puerto USB host inicializado"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
@@ -3360,7 +3360,7 @@ msgstr "dtype de entrada debe ser float o complex"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input is not iterable"
-msgstr ""
+msgstr "input no es iterable"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
