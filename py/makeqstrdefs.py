@@ -60,6 +60,7 @@ _MODE_QSTR = "qstr"
 
 # Extract MP_COMPRESSED_ROM_TEXT("") macros.  (Which come from MP_ERROR_TEXT)
 _MODE_COMPRESS = "compress"
+
 # Extract MP_REGISTER_MODULE(...) macros.
 _MODE_MODULE = "module"
 
@@ -120,7 +121,6 @@ def write_out(fname, output):
         with open(args.output_dir + "/" + fname + "." + args.mode, "w") as f:
             f.write("\n".join(output) + "\n")
 
-
 def qstr_unescape(qstr):
     for name in name2codepoint:
         if "__" + name + "__" in qstr:
@@ -131,12 +131,16 @@ def qstr_unescape(qstr):
 
 
 def process_file(f):
-    re_line = re.compile(r"#[line]*\s(\d+)\s\"([^\"]+)\"")
-    re_qstr = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
+    re_line = re.compile(r"#[line]*\s\d+\s\"([^\"]+)\"")
+    if args.mode == _MODE_QSTR:
+        re_match = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
+    elif args.mode == _MODE_COMPRESS:
+        re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
+    elif args.mode == _MODE_MODULE:
+        re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?\);")
     re_translate = re.compile(r"translate\(\"((?:(?=(\\?))\2.)*?)\"\)")
     output = []
     last_fname = None
-    lineno = 0
     for line in f:
         if line.isspace():
             continue
@@ -144,8 +148,7 @@ def process_file(f):
         if line.startswith(("# ", "#line")):
             m = re_line.match(line)
             assert m is not None
-            lineno = int(m.group(1))
-            fname = m.group(2)
+            fname = m.group(1)
             if os.path.splitext(fname)[1] not in [".c", ".cpp"]:
                 continue
             if fname != last_fname:
@@ -153,13 +156,16 @@ def process_file(f):
                 output = []
                 last_fname = fname
             continue
-        for match in re_qstr.findall(line):
-            name = match.replace("MP_QSTR_", "")
-            if name not in QSTRING_BLOCK_LIST:
-                output.append("Q(" + qstr_unescape(name) + ")")
+        for match in re_match.findall(line):
+            if args.mode == _MODE_QSTR:
+                name = match.replace("MP_QSTR_", "")
+                if name not in QSTRING_BLOCK_LIST:
+                    output.append("Q(" + qstr_unescape(name) + ")")
+            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE):
+                output.append(match)
+
         for match in re_translate.findall(line):
             output.append('TRANSLATE("' + match[0] + '")')
-        lineno += 1
 
     if last_fname:
         write_out(last_fname, output)

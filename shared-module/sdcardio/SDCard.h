@@ -45,7 +45,6 @@ typedef struct {
     bool in_cmd25;
 } sdcardio_sdcard_obj_t;
 
-<<<<<<< HEAD:shared-module/sdcardio/SDCard.h
 void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi_obj_t *spi, const mcu_pin_obj_t *cs, int baudrate);
 void common_hal_sdcardio_sdcard_deinit(sdcardio_sdcard_obj_t *self);
 void common_hal_sdcardio_sdcard_check_for_deinit(sdcardio_sdcard_obj_t *self);
@@ -53,36 +52,3 @@ int common_hal_sdcardio_sdcard_get_blockcount(sdcardio_sdcard_obj_t *self);
 int common_hal_sdcardio_sdcard_readblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf);
 int common_hal_sdcardio_sdcard_sync(sdcardio_sdcard_obj_t *self);
 int common_hal_sdcardio_sdcard_writeblocks(sdcardio_sdcard_obj_t *self, uint32_t start_block, mp_buffer_info_t *buf);
-=======
-static mp_obj_t microbit_repeat_iter_next(mp_obj_t iter_in) {
-    repeat_iterator_t *iter = (repeat_iterator_t *)iter_in;
-    iter->index++;
-    if (iter->index >= mp_obj_get_int(mp_obj_len(iter->iterable))) {
-        iter->index = 0;
-    }
-    return mp_obj_subscr(iter->iterable, MP_OBJ_NEW_SMALL_INT(iter->index), MP_OBJ_SENTINEL);
-}
-
-const mp_obj_type_t microbit_repeat_iterator_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .print = NULL,
-    .make_new = NULL,
-    .call = NULL,
-    .unary_op = NULL,
-    .binary_op = NULL,
-    .attr = NULL,
-    .subscr = NULL,
-    .getiter = mp_identity_getiter,
-    .iternext = microbit_repeat_iter_next,
-    .buffer_p = {NULL},
-    MP_OBJ_NULL
-};
-
-mp_obj_t microbit_repeat_iterator(mp_obj_t iterable) {
-    repeat_iterator_t *result = mp_obj_malloc(repeat_iterator_t, &microbit_repeat_iterator_type);
-    result->iterable = iterable;
-    result->index = -1;
-    return result;
-}
->>>>>>> v1.19.1:ports/nrf/boards/microbit/modules/iters.c

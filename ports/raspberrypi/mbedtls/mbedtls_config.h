@@ -81,13 +81,9 @@
 #define MBEDTLS_BIGNUM_C
 #define MBEDTLS_CIPHER_C
 #define MBEDTLS_CTR_DRBG_C
-<<<<<<<< HEAD:ports/raspberrypi/mbedtls/mbedtls_config.h
 #define MBEDTLS_ECDH_C
 #define MBEDTLS_ECDSA_C
 #define MBEDTLS_ECP_C
-========
-// #define MBEDTLS_ECP_C
->>>>>>>> v1.19.1:ports/stm32/mbedtls/mbedtls_config.h
 #define MBEDTLS_ENTROPY_C
 #define MBEDTLS_ERROR_C
 #define MBEDTLS_GCM_C

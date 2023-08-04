@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
+// In CircuitPython, this is defined in genghdr/mpversion.h
+#if !CIRCUITPY
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
 #define MICROPY_VERSION_MINOR 19
@@ -42,6 +44,8 @@
     MP_STRINGIFY(MICROPY_VERSION_MAJOR) "." \
     MP_STRINGIFY(MICROPY_VERSION_MINOR) "." \
     MP_STRINGIFY(MICROPY_VERSION_MICRO)
+#endif
+
 
 // This file contains default configuration settings for MicroPython.
 // You can override any of the options below using mpconfigport.h file

@@ -3,11 +3,7 @@
  *
  * The MIT License (MIT)
  *
-<<<<<<<< HEAD:ports/stm/peripherals/stm32f4/stm32f412cx/clocks.h
  * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
-========
- * Copyright (c) 2013, 2014 Damien P. George
->>>>>>>> v1.19.1:ports/renesas-ra/gccollect.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-<<<<<<<< HEAD:ports/stm/peripherals/stm32f4/stm32f412cx/clocks.h
 #include "stm32f4xx_hal.h"
 
 // Chip:                STM32F412Cx
@@ -69,50 +64,3 @@
 #ifndef BOARD_HSE_SOURCE
 #define BOARD_HSE_SOURCE (RCC_HSE_ON)
 #endif
-========
-#include <stdio.h>
-#include <stdint.h>
-
-#include "py/mpstate.h"
-#include "py/gc.h"
-#include "py/mpthread.h"
-#include "shared/runtime/gchelper.h"
-#include "gccollect.h"
-#include "softtimer.h"
-#include "systick.h"
-
-void gc_collect(void) {
-    // get current time, in case we want to time the GC
-    #if 0
-    uint32_t start = mp_hal_ticks_us();
-    #endif
-
-    // start the GC
-    gc_collect_start();
-
-    // trace the stack and registers
-    gc_helper_collect_regs_and_stack();
-
-    // trace root pointers from any threads
-    #if MICROPY_PY_THREAD
-    mp_thread_gc_others();
-    #endif
-
-    // trace soft timer nodes
-    soft_timer_gc_mark_all();
-
-    // end the GC
-    gc_collect_end();
-
-    #if 0
-    // print GC info
-    uint32_t ticks = mp_hal_ticks_us() - start;
-    gc_info_t info;
-    gc_info(&info);
-    printf("GC@%lu %lums\n", start, ticks);
-    printf(" " UINT_FMT " total\n", info.total);
-    printf(" " UINT_FMT " : " UINT_FMT "\n", info.used, info.free);
-    printf(" 1=" UINT_FMT " 2=" UINT_FMT " m=" UINT_FMT "\n", info.num_1block, info.num_2block, info.max_block);
-    #endif
-}
->>>>>>>> v1.19.1:ports/renesas-ra/gccollect.c

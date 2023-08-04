@@ -197,7 +197,6 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/modubinascii.o \
 	extmod/modurandom.o \
 	extmod/moduselect.o \
-	extmod/modframebuf.o \
 	extmod/vfs.o \
 	extmod/vfs_blockdev.o \
 	extmod/vfs_reader.o \

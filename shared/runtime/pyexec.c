@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -86,61 +86,40 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
     nlr.ret_val = NULL;
     if (nlr_push(&nlr) == 0) {
         mp_obj_t module_fun;
-<<<<<<< HEAD
         #if CIRCUITPY_ATEXIT
         if (!(exec_flags & EXEC_FLAG_SOURCE_IS_ATEXIT))
-=======
-        #if MICROPY_MODULE_FROZEN_MPY
-        if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
-            // source is a raw_code object, create the function
-            const mp_frozen_module_t *frozen = source;
-            mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
-            ctx->module.globals = mp_globals_get();
-            ctx->constants = frozen->constants;
-            module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
-        } else
->>>>>>> v1.19.1
-        #endif
+	#endif
         {
             #if MICROPY_MODULE_FROZEN_MPY
             if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
                 // source is a raw_code object, create the function
-                module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
-            } else
+                const mp_frozen_module_t *frozen = source;
+                mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
+                ctx->module.globals = mp_globals_get();
+            ctx->constants = frozen->constants;
+                module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
+        } else
+        #endif
+        {
+            #if MICROPY_ENABLE_COMPILER
+            mp_lexer_t *lex;
+            if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
+                const vstr_t *vstr = source;
+                lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
+            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
+                lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
+            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
+                lex = mp_lexer_new_from_file(source);
+            } else {
+                lex = (mp_lexer_t *)source;
+            }
+            // source is a lexer, parse and compile the script
+            qstr source_name = lex->source_name;
+            mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+            module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
+            #else
+            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
             #endif
-            {
-                #if MICROPY_ENABLE_COMPILER
-                mp_lexer_t *lex;
-                if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
-                    const vstr_t *vstr = source;
-                    lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
-                } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
-                    lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
-                } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
-                    lex = mp_lexer_new_from_file(source);
-                } else {
-                    lex = (mp_lexer_t *)source;
-                }
-                // source is a lexer, parse and compile the script
-                qstr source_name = lex->source_name;
-                if (input_kind == MP_PARSE_FILE_INPUT) {
-                    mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-                }
-                mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-                module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
-                // Clear the parse tree because it has a heap pointer we don't need anymore.
-                *((uint32_t volatile *)&parse_tree.chunk) = 0;
-                #else
-                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
-                #endif
-            }
-
-            // If the code was loaded from a file it's likely to be running for a while so we'll long
-            // live it and collect any garbage before running.
-            if (input_kind == MP_PARSE_FILE_INPUT) {
-                module_fun = make_obj_long_lived(module_fun, 6);
-                gc_collect();
-            }
         }
 
         // execute code
@@ -474,18 +453,9 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         } else if (ret == CHAR_CTRL_B) {
             // reset friendly REPL
             mp_hal_stdout_tx_str("\r\n");
-<<<<<<< HEAD
             mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
             mp_hal_stdout_tx_str("\r\n");
             // mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
-=======
-            mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
-            mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
-            mp_hal_stdout_tx_str("\r\n");
-            #if MICROPY_PY_BUILTINS_HELP
-            mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
-            #endif
->>>>>>> v1.19.1
             goto input_restart;
         } else if (ret == CHAR_CTRL_C) {
             // break
@@ -633,19 +603,10 @@ int pyexec_friendly_repl(void) {
     vstr_init(&line, 32);
 
 friendly_repl_reset:
-<<<<<<< HEAD
     mp_hal_stdout_tx_str("\r\n");
     mp_hal_stdout_tx_str(MICROPY_FULL_VERSION_INFO);
     mp_hal_stdout_tx_str("\r\n");
     // mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
-=======
-    mp_hal_stdout_tx_str(MICROPY_BANNER_NAME_AND_VERSION);
-    mp_hal_stdout_tx_str("; " MICROPY_BANNER_MACHINE);
-    mp_hal_stdout_tx_str("\r\n");
-    #if MICROPY_PY_BUILTINS_HELP
-    mp_hal_stdout_tx_str("Type \"help()\" for more information.\r\n");
-    #endif
->>>>>>> v1.19.1
 
     // to test ctrl-C
     /*
@@ -688,7 +649,6 @@ friendly_repl_reset:
         }
 
         vstr_reset(&line);
-<<<<<<< HEAD
 
         nlr_buf_t nlr;
         nlr.ret_val = NULL;
@@ -704,9 +664,6 @@ friendly_repl_reset:
             mp_hal_stdout_tx_str("\r\n");
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
         }
-=======
-        int ret = readline(&line, mp_repl_get_ps1());
->>>>>>> v1.19.1
         mp_parse_input_kind_t parse_input_kind = MP_PARSE_SINGLE_INPUT;
 
         if (ret == CHAR_CTRL_A) {

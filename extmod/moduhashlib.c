@@ -124,7 +124,6 @@ static void check_not_unicode(const mp_obj_t arg) {
     #endif
 }
 
-#if MICROPY_PY_UHASHLIB_SHA256
 #include "lib/crypto-algorithms/sha256.c"
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

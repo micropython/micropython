@@ -30,13 +30,5 @@
 #include "py/mphal.h"
 #include "common-hal/microcontroller/Pin.h"
 
-<<<<<<<< HEAD:ports/raspberrypi/common-hal/board/__init__.c
 // Pins aren't actually defined here. They are in the board specific directory
 // such as boards/arduino_zero/pins.c.
-========
-int allocate_dma_channel(void);
-void free_dma_channel(int n);
-void dma_init(void);
-
-#endif // MICROPY_INCLUDED_MIMXRT_DMACHANNEL_H
->>>>>>>> v1.19.1:ports/raspberrypi/dma_manager.h
