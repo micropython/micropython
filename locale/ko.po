@@ -1476,6 +1476,10 @@ msgstr ""
 msgid "No capture in progress"
 msgstr ""
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr ""

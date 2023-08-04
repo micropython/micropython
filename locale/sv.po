@@ -1501,6 +1501,10 @@ msgstr "Inga tillgängliga klockor"
 msgid "No capture in progress"
 msgstr "Ingen insamling pågår"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Ingen anslutning: längden kan inte bestämmas"

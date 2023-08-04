@@ -1508,6 +1508,10 @@ msgstr "Méiyǒu kěyòng de shízhōng"
 msgid "No capture in progress"
 msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Wú liánjiē: Wúfǎ quèdìng chángdù"

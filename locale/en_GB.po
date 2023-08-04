@@ -1494,6 +1494,10 @@ msgstr "No available clocks"
 msgid "No capture in progress"
 msgstr "No capture in progress"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "No connection: length cannot be determined"

@@ -1515,6 +1515,10 @@ msgstr "Nenhum clock disponível"
 msgid "No capture in progress"
 msgstr "Não há nenhuma captura em andamento"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Sem conexão: o comprimento não pode ser determinado"

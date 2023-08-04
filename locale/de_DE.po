@@ -1510,6 +1510,10 @@ msgstr "Keine Taktgeber verfügbar"
 msgid "No capture in progress"
 msgstr "Kein laufende Aufzeichnung"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Keine Verbindung: Länge kann nicht bestimmt werden"
