@@ -28,6 +28,10 @@ __attribute__((section(".boot_hdr.conf")))
 #define MICROPY_HW_FLASH_DQS kFlexSPIReadSampleClk_LoopbackFromDqsPad
 #endif
 
+#ifndef MICROPY_HW_FLASH_CLK
+#define MICROPY_HW_FLASH_CLK kFlexSpiSerialClk_100MHz
+#endif
+
 const flexspi_nor_config_t qspiflash_config = {
     .memConfig =
     {
@@ -48,7 +52,7 @@ const flexspi_nor_config_t qspiflash_config = {
         // Enable DDR mode, Wordaddassable, Safe configuration, Differential clock
         .deviceType = kFlexSpiDeviceType_SerialNOR,
         .sflashPadType = kSerialFlash_4Pads,
-        .serialClkFreq = kFlexSpiSerialClk_100MHz,
+        .serialClkFreq = MICROPY_HW_FLASH_CLK,
         .sflashA1Size = MICROPY_HW_FLASH_SIZE,
         .lookupTable =
         {
