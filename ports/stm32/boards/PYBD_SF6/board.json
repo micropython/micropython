@@ -4,8 +4,8 @@
     ],
     "docs": "",
     "features": [
-        "WiFi",
-        "BLE"
+        "BLE",
+        "WiFi"
     ],
     "id": "PYBD-SF6",
     "images": [

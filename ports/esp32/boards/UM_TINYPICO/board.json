@@ -4,10 +4,11 @@
     ],
     "docs": "",
     "features": [
-        "Battery Charging",
         "BLE",
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
         "RGB LED",
-        "SPIRAM",
         "USB-C",
         "WiFi"
     ],

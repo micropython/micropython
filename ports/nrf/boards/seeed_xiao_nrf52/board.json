@@ -4,14 +4,13 @@
     ],
     "docs": "",
     "features": [
-        "Bluetooth 5.0",
-        "IMU LSM6DS3TR",
-        "Microphone MSM261D3526H1CPM",
-        "USB-C",
-        "Breadboard Friendly",
-        "Battery Management",
+        "BLE",
+        "Battery Charging",
+        "External Flash",
+        "IMU",
+        "Microphone",
         "RGB LED",
-        "QSPI Flash"
+        "USB-C"
     ],
     "images": [
         "XIAO_nrf52840_front.jpg"

@@ -5,7 +5,8 @@
     "docs": "",
     "features": [
         "BLE",
-        "SPIRAM",
+        "External Flash",
+        "External RAM",
         "WiFi"
     ],
     "images": [

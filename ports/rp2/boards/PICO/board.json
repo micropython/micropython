@@ -4,9 +4,9 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard friendly",
-        "Castellated Pads",
-        "Micro USB"
+        "Dual-core",
+        "External Flash",
+        "USB"
     ],
     "id": "rp2-pico",
     "images": [

@@ -5,6 +5,7 @@
     "docs": "",
     "features": [
         "BLE",
+        "External Flash",
         "WiFi"
     ],
     "id": "esp32c3",

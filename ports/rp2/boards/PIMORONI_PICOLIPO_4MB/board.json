@@ -5,10 +5,9 @@
     "docs": "",
     "features": [
         "Battery Charging",
-        "Breadboard Friendly",
-        "Castellated Pads",
-        "SPI Flash",
-        "STEMMA QT/QWIIC",
+        "Dual-core",
+        "External Flash",
+        "JST-SH",
         "USB-C"
     ],
     "images": [
