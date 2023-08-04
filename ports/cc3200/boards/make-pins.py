@@ -185,22 +185,6 @@ class Pins:
                 if pin.board_pin:
                     pin.print_header(hdr_file)
 
-    def print_qstr(self, qstr_filename):
-        with open(qstr_filename, "wt") as qstr_file:
-            pin_qstr_set = set([])
-            af_qstr_set = set([])
-            for pin in self.board_pins:
-                if pin.board_pin:
-                    pin_qstr_set |= set([pin.name])
-                    for af in pin.afs:
-                        af_qstr_set |= set([af.name])
-            print("// Board pins", file=qstr_file)
-            for qstr in sorted(pin_qstr_set):
-                print("Q({})".format(qstr), file=qstr_file)
-            print("\n// Pin AFs", file=qstr_file)
-            for qstr in sorted(af_qstr_set):
-                print("Q({})".format(qstr), file=qstr_file)
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -229,13 +213,6 @@ def main():
         default="cc3200_prefix.c",
     )
     parser.add_argument(
-        "-q",
-        "--qstr",
-        dest="qstr_filename",
-        help="Specifies name of generated qstr header file",
-        default="build/pins_qstr.h",
-    )
-    parser.add_argument(
         "-r",
         "--hdr",
         dest="hdr_filename",
@@ -262,7 +239,6 @@ def main():
         with open(args.prefix_filename, "r") as prefix_file:
             print(prefix_file.read())
     pins.print()
-    pins.print_qstr(args.qstr_filename)
     pins.print_header(args.hdr_filename)
 
 
