@@ -4,17 +4,17 @@
     ],
     "docs": "",
     "features": [
-        "Battery Charging",
-        "RGB LED",
-        "SPIRAM",
-        "USB-C",
-        "WiFi",
         "BLE",
-        "STEMMA QT/QWIIC",
-        "Feather"
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
+        "Feather",
+        "JST-SH",
+        "RGB LED",
+        "USB-C",
+        "WiFi"
     ],
-    "features_non_filterable": [
-    ],
+    "features_non_filterable": [],
     "id": "pros3",
     "images": [
         "unexpectedmaker_pros3.jpg"

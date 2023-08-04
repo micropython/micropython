@@ -4,8 +4,8 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly",
-        "SPI Flash",
+        "Dual-core",
+        "External Flash",
         "USB-C"
     ],
     "images": [

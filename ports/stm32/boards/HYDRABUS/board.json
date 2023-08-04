@@ -8,8 +8,8 @@
         "hydrabus.jpg"
     ],
     "mcu": "stm32f4",
-    "product": "HYDRABUS",
+    "product": "HydraBus v1.0",
     "thumbnail": "",
     "url": "",
-    "vendor": ""
+    "vendor": "HydraBus"
 }
