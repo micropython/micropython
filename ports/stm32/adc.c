@@ -444,7 +444,7 @@ STATIC void adc_config_channel(ADC_HandleTypeDef *adc_handle, uint32_t channel) 
     if (__HAL_ADC_IS_CHANNEL_INTERNAL(channel)) {
         sConfig.SamplingTime = ADC_SAMPLETIME_247CYCLES_5;
     } else {
-        sConfig.SamplingTime = ADC_SAMPLETIME_12CYCLES_5;
+        sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
     }
     sConfig.SingleDiff = ADC_SINGLE_ENDED;
     sConfig.OffsetNumber = ADC_OFFSET_NONE;
