@@ -431,7 +431,7 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t wait_source = (full_instruction & 0x0060) >> 5;
         uint16_t wait_index = full_instruction & 0x001f;
         if (wait_source == 0 && (state->pins_we_use & (1 << wait_index)) == 0) { // GPIO
-            mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), i);
+            mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), what, i);
         }
         if (wait_source == 1) { // Input pin
             if (state->has_in_pin) {
