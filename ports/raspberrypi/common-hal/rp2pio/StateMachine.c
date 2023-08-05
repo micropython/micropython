@@ -434,7 +434,7 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
             mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), what, i);
         }
         if (wait_source == 1) { // Input pin
-            if (state->has_in_pin) {
+            if (!state->has_in_pin) {
                 mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] waits based on pin"), what, i);
             }
             if (wait_index >= state->in_pin_count) {
