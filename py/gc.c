@@ -158,6 +158,7 @@ STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     #endif
 
     area->gc_last_free_atb_index = 0;
+    area->gc_last_used_block = 0;
 
     #if MICROPY_GC_SPLIT_HEAP
     area->next = NULL;
@@ -378,7 +379,14 @@ STATIC void gc_sweep(void) {
     // free unmarked heads and their tails
     int free_tail = 0;
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
-        for (size_t block = 0; block < area->gc_alloc_table_byte_len * BLOCKS_PER_ATB; block++) {
+        size_t end_block = area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
+        if (area->gc_last_used_block < end_block) {
+            end_block = area->gc_last_used_block + 1;
+        }
+
+        size_t last_used_block = 0;
+
+        for (size_t block = 0; block < end_block; block++) {
             MICROPY_GC_HOOK_LOOP(block);
             switch (ATB_GET_KIND(area, block)) {
                 case AT_HEAD:
@@ -418,15 +426,20 @@ STATIC void gc_sweep(void) {
                         #if CLEAR_ON_SWEEP
                         memset((void *)PTR_FROM_BLOCK(area, block), 0, BYTES_PER_BLOCK);
                         #endif
+                    } else {
+                        last_used_block = block;
                     }
                     break;
 
                 case AT_MARK:
                     ATB_MARK_TO_HEAD(area, block);
                     free_tail = 0;
+                    last_used_block = block;
                     break;
             }
         }
+
+        area->gc_last_used_block = last_used_block;
     }
 }
 
@@ -679,6 +692,8 @@ found:
         #endif
         area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
     }
+
+    area->gc_last_used_block = MAX(area->gc_last_used_block, end_block);
 
     // mark first block as used head
     ATB_FREE_TO_HEAD(area, start_block);
@@ -971,10 +986,13 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
     // check if we can expand in place
     if (new_blocks <= n_blocks + n_free) {
         // mark few more blocks as used tail
-        for (size_t bl = block + n_blocks; bl < block + new_blocks; bl++) {
+        size_t end_block = block + new_blocks;
+        for (size_t bl = block + n_blocks; bl < end_block; bl++) {
             assert(ATB_GET_KIND(area, bl) == AT_FREE);
             ATB_FREE_TO_TAIL(area, bl);
         }
+
+        area->gc_last_used_block = MAX(area->gc_last_used_block, end_block);
 
         GC_EXIT();
 
