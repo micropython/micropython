@@ -33,6 +33,9 @@ function build_board {
             elif [ -r $build_dir/micropython.$ext ]; then
                 # esp32 has micropython.elf, etc
                 mv $build_dir/micropython.$ext $dest
+            elif [ $ext = app-bin -a -r $build_dir/micropython.bin ]; then
+                # esp32 has micropython.bin which is just the application
+                mv $build_dir/micropython.bin $dest
             fi
         done
     )
@@ -62,7 +65,7 @@ function build_boards {
 }
 
 function build_esp32_boards {
-    build_boards modesp32.c $1 $2 bin elf map uf2
+    build_boards modesp32.c $1 $2 bin elf map uf2 app-bin
 }
 
 function build_mimxrt_boards {

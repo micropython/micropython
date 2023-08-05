@@ -122,11 +122,22 @@ void MP_FASTCODE(pin_intr_handler_part2)(uint32_t status) {
 }
 
 pyb_pin_obj_t *mp_obj_get_pin_obj(mp_obj_t pin_in) {
-    if (mp_obj_get_type(pin_in) != &pyb_pin_type) {
-        mp_raise_ValueError(MP_ERROR_TEXT("expecting a pin"));
+    if (mp_obj_is_type(pin_in, &pyb_pin_type)) {
+        return pin_in;
     }
-    pyb_pin_obj_t *self = pin_in;
-    return self;
+    // Get the wanted pin object.
+    if (mp_obj_is_small_int(pin_in)) {
+        int wanted_pin = mp_obj_get_int(pin_in);
+        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(pyb_pin_obj)) {
+            pyb_pin_obj_t *pin = (pyb_pin_obj_t *)&pyb_pin_obj[wanted_pin];
+            if (pin->base.type != NULL) {
+                return pin;
+            }
+        }
+    }
+    // At this place a check for named pins may be added.
+    //
+    mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
 }
 
 uint mp_obj_get_pin(mp_obj_t pin_in) {
@@ -310,14 +321,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get the wanted pin object
-    int wanted_pin = mp_obj_get_int(args[0]);
-    pyb_pin_obj_t *pin = NULL;
-    if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(pyb_pin_obj)) {
-        pin = (pyb_pin_obj_t *)&pyb_pin_obj[wanted_pin];
-    }
-    if (pin == NULL || pin->base.type == NULL) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
-    }
+    pyb_pin_obj_t *pin = mp_obj_get_pin_obj(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO

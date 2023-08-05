@@ -10,6 +10,7 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\modasyncio.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modbinascii.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\moductypes.c" />
+    <PyExtModSource Include="$(PyBaseDir)extmod\moddeflate.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modhashlib.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modheapq.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modjson.c" />
@@ -18,7 +19,6 @@
     <PyExtModSource Include="$(PyBaseDir)extmod\modre.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modselect.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\modtime.c" />
-    <PyExtModSource Include="$(PyBaseDir)extmod\modzlib.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\virtpin.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\vfs.c" />
     <PyExtModSource Include="$(PyBaseDir)extmod\vfs_posix.c" />

@@ -31,5 +31,6 @@ void machine_pwm_deinit_all(void);
 // TODO: void machine_rmt_deinit_all(void);
 void machine_timer_deinit_all(void);
 void machine_i2s_init0();
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args);
 
 #endif // MICROPY_INCLUDED_ESP32_MODMACHINE_H

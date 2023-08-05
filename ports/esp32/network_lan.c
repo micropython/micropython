@@ -48,7 +48,6 @@
 typedef struct _lan_if_obj_t {
     base_if_obj_t base;
     bool initialized;
-    bool active;
     int8_t mdc_pin;
     int8_t mdio_pin;
     int8_t phy_power_pin;
@@ -295,7 +294,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     esp_err_t esp_err = esp_eth_driver_install(&config, &self->eth_handle);
     if (esp_err == ESP_OK) {
-        self->active = false;
+        self->base.active = false;
         self->initialized = true;
     } else {
         if (esp_err == ESP_ERR_INVALID_ARG) {
@@ -322,19 +321,19 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
 
     if (n_args > 1) {
         if (mp_obj_is_true(args[1])) {
-            self->active = (esp_eth_start(self->eth_handle) == ESP_OK);
-            if (!self->active) {
+            self->base.active = (esp_eth_start(self->eth_handle) == ESP_OK);
+            if (!self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
             }
         } else {
-            self->active = !(esp_eth_stop(self->eth_handle) == ESP_OK);
-            if (self->active) {
+            self->base.active = !(esp_eth_stop(self->eth_handle) == ESP_OK);
+            if (self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet disable failed"));
             }
         }
     }
 
-    return mp_obj_new_bool(self->active);
+    return mp_obj_new_bool(self->base.active);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lan_active_obj, 1, 2, lan_active);
 
@@ -345,7 +344,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_status_obj, lan_status);
 
 STATIC mp_obj_t lan_isconnected(mp_obj_t self_in) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->active ? mp_obj_new_bool(self->phy->get_link(self->phy) == ETH_LINK_UP) : mp_const_false;
+    return self->base.active ? mp_obj_new_bool(self->phy->get_link(self->phy) == ETH_LINK_UP) : mp_const_false;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_isconnected_obj, lan_isconnected);
 

@@ -40,7 +40,7 @@
 #define MICROPY_PY_BINASCII         (1)
 #define MICROPY_PY_RANDOM           (1)
 #define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_ZLIB             (1)
+#define MICROPY_PY_DEFLATE          (1)
 #define MICROPY_PY_JSON             (1)
 #define MICROPY_PY_OS               (1)
 #define MICROPY_PY_RE               (1)

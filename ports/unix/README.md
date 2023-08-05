@@ -40,8 +40,8 @@ or
     >>> import mip
     >>> mip.install("hmac")
 
-Browse available modules at [micropython-lib]
-(https://github.com/micropython/micropython-lib). See
+Browse available modules at
+[micropython-lib](https://github.com/micropython/micropython-lib). See
 [Package management](https://docs.micropython.org/en/latest/reference/packages.html)
 for more information about `mip`.
 

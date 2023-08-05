@@ -23,6 +23,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modbinascii.c
     ${MICROPY_EXTMOD_DIR}/modcryptolib.c
     ${MICROPY_EXTMOD_DIR}/moductypes.c
+    ${MICROPY_EXTMOD_DIR}/moddeflate.c
     ${MICROPY_EXTMOD_DIR}/modhashlib.c
     ${MICROPY_EXTMOD_DIR}/modheapq.c
     ${MICROPY_EXTMOD_DIR}/modjson.c
@@ -36,7 +37,6 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modssl_mbedtls.c
     ${MICROPY_EXTMOD_DIR}/modtime.c
     ${MICROPY_EXTMOD_DIR}/modwebsocket.c
-    ${MICROPY_EXTMOD_DIR}/modzlib.c
     ${MICROPY_EXTMOD_DIR}/modwebrepl.c
     ${MICROPY_EXTMOD_DIR}/network_cyw43.c
     ${MICROPY_EXTMOD_DIR}/network_lwip.c

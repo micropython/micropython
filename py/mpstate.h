@@ -93,6 +93,7 @@ typedef struct _mp_state_mem_area_t {
     byte *gc_pool_end;
 
     size_t gc_last_free_atb_index;
+    size_t gc_last_used_block; // The block ID of the highest block allocated in the area
 } mp_state_mem_area_t;
 
 // This structure hold information about the memory allocation system.

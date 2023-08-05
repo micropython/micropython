@@ -16,6 +16,7 @@ SRC_EXTMOD_C += \
 	extmod/modbluetooth.c \
 	extmod/modbtree.c \
 	extmod/modcryptolib.c \
+	extmod/moddeflate.c \
 	extmod/modframebuf.c \
 	extmod/modhashlib.c \
 	extmod/modheapq.c \
@@ -35,7 +36,6 @@ SRC_EXTMOD_C += \
 	extmod/moductypes.c \
 	extmod/modwebrepl.c \
 	extmod/modwebsocket.c \
-	extmod/modzlib.c \
 	extmod/network_cyw43.c \
 	extmod/network_lwip.c \
 	extmod/network_ninaw10.c \

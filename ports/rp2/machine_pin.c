@@ -166,6 +166,35 @@ const machine_pin_af_obj_t *machine_pin_find_alt_by_index(const machine_pin_obj_
     return NULL;
 }
 
+static const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
+    // Is already a object of the proper type
+    if (mp_obj_is_type(pin, &machine_pin_type)) {
+        return pin;
+    }
+    if (mp_obj_is_str(pin)) {
+        const char *name = mp_obj_str_get_str(pin);
+        // Try to find the pin in the board pins first.
+        const machine_pin_obj_t *self = machine_pin_find_named(&pin_board_pins_locals_dict, pin);
+        if (self != NULL) {
+            return self;
+        }
+        // If not found, try to find the pin in the cpu pins which include
+        // CPU and and externally controlled pins (if any).
+        self = machine_pin_find_named(&pin_cpu_pins_locals_dict, pin);
+        if (self != NULL) {
+            return self;
+        }
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unknown named pin \"%s\""), name);
+    } else if (mp_obj_is_int(pin)) {
+        // get the wanted pin object
+        int wanted_pin = mp_obj_get_int(pin);
+        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_cpu_pins)) {
+            return machine_pin_cpu_pins[wanted_pin];
+        }
+    }
+    mp_raise_ValueError("invalid pin");
+}
+
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
     uint funcsel = GPIO_GET_FUNCSEL(self->id);
@@ -286,30 +315,8 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
 // constructor(id, ...)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    const machine_pin_obj_t *self = NULL;
 
-    if (mp_obj_is_str(args[0])) {
-        const char *name = mp_obj_str_get_str(args[0]);
-        // Try to find the pin in the board pins first.
-        self = machine_pin_find_named(&pin_board_pins_locals_dict, args[0]);
-        if (!self) {
-            // If not found, try to find the pin in the cpu pins which include
-            // CPU and and externally controlled pins (if any).
-            self = machine_pin_find_named(&pin_cpu_pins_locals_dict, args[0]);
-        }
-        if (!self) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unknown named pin \"%s\""), name);
-        }
-    } else if (mp_obj_is_int(args[0])) {
-        // get the wanted pin object
-        int wanted_pin = mp_obj_get_int(args[0]);
-        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_cpu_pins)) {
-            self = machine_pin_cpu_pins[wanted_pin];
-        }
-    }
-    if (!self) {
-        mp_raise_ValueError("invalid pin");
-    }
+    const machine_pin_obj_t *self = machine_pin_find(args[0]);
 
     if (n_args > 1 || n_kw > 0) {
         // pin mode given, so configure this GPIO
@@ -587,10 +594,7 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
 };
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
-    if (!mp_obj_is_type(obj, &machine_pin_type)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("expecting a Pin"));
-    }
-    machine_pin_obj_t *pin = MP_OBJ_TO_PTR(obj);
+    const machine_pin_obj_t *pin = machine_pin_find(obj);
     if (is_ext_pin(pin)) {
         mp_raise_ValueError(MP_ERROR_TEXT("expecting a regular GPIO Pin"));
     }

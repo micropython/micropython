@@ -91,7 +91,7 @@
 #define MICROPY_PY_UCTYPES                  (1)
 #define MICROPY_PY_HEAPQ                    (1)
 #define MICROPY_PY_RANDOM                   (1)
-#define MICROPY_PY_ZLIB                     (1)
+#define MICROPY_PY_DEFLATE                  (1)
 #define MICROPY_PY_ASYNCIO                  (1)
 #define MICROPY_PY_MACHINE_RTC              (1)
 #ifndef MICROPY_PY_MACHINE_ADC

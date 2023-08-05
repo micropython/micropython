@@ -150,6 +150,12 @@ These are working configurations for LAN interfaces of popular boards::
     lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
                       phy_type=network.PHY_LAN8720, phy_addr=1, power=None)
 
+    # Wireless-Tag's WT32-ETH01 v1.4
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
+                      phy_type=network.PHY_LAN8720, phy_addr=1,
+                      power=machine.Pin(16))
+
     # Espressif ESP32-Ethernet-Kit_A_V1.2
 
     lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
