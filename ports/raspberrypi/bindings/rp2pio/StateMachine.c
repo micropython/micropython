@@ -62,6 +62,7 @@
 //|         program: ReadableBuffer,
 //|         frequency: int,
 //|         *,
+//|         may_exec: Optional[ReadableBuffer] = None,
 //|         init: Optional[ReadableBuffer] = None,
 //|         first_out_pin: Optional[microcontroller.Pin] = None,
 //|         out_pin_count: int = 1,
