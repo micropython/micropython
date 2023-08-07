@@ -424,21 +424,21 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
     if (instruction == pio_instr_bits_jmp) {
         uint16_t condition = (full_instruction & 0x00e0) >> 5;
         if ((condition == 0x6) && !state->has_jmp_pin) {
-            mp_raise_ValueError_varg(translate("Missing jmp_pin. %q[%u] jumps on pin"), what, i);
+            mp_raise_ValueError_varg(translate("Missing jmp_pin. %q[%u] jumps on pin"), what_program, i);
         }
     }
     if (instruction == pio_instr_bits_wait) {
         uint16_t wait_source = (full_instruction & 0x0060) >> 5;
         uint16_t wait_index = full_instruction & 0x001f;
         if (wait_source == 0 && (state->pins_we_use & (1 << wait_index)) == 0) { // GPIO
-            mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), what, i);
+            mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), what_program, i);
         }
         if (wait_source == 1) { // Input pin
             if (!state->has_in_pin) {
-                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] waits based on pin"), what, i);
+                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] waits based on pin"), what_program, i);
             }
             if (wait_index >= state->in_pin_count) {
-                mp_raise_ValueError_varg(translate("%q[%u] waits on input outside of count"), what, i);
+                mp_raise_ValueError_varg(translate("%q[%u] waits on input outside of count"), what_program, i);
             }
         }
     }
@@ -447,10 +447,10 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t bit_count = full_instruction & 0x001f;
         if (source == 0) {
             if (!state->has_in_pin) {
-                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] shifts in from pin(s)"), what, i);
+                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] shifts in from pin(s)"), what_program, i);
             }
             if (bit_count > state->in_pin_count) {
-                mp_raise_ValueError_varg(translate("%q[%u] shifts in more bits than pin count"), what, i);
+                mp_raise_ValueError_varg(translate("%q[%u] shifts in more bits than pin count"), what_program, i);
             }
         }
         if (state->auto_push) {
@@ -465,10 +465,10 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         // Check for pins or pindirs destination.
         if (destination == 0x0 || destination == 0x4) {
             if (!state->has_out_pin) {
-                mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] shifts out to pin(s)"), what, i);
+                mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] shifts out to pin(s)"), what_program, i);
             }
             if (bit_count > state->out_pin_count) {
-                mp_raise_ValueError_varg(translate("%q[%u] shifts out more bits than pin count"), what, i);
+                mp_raise_ValueError_varg(translate("%q[%u] shifts out more bits than pin count"), what_program, i);
             }
         }
         if (state->auto_pull) {
@@ -481,7 +481,7 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t destination = (full_instruction & 0x00e0) >> 5;
         // Check for pins or pindirs destination.
         if ((destination == 0x00 || destination == 0x4) && !state->has_set_pin) {
-            mp_raise_ValueError_varg(translate("Missing first_set_pin. %q[%u] sets pin(s)"), what, i);
+            mp_raise_ValueError_varg(translate("Missing first_set_pin. %q[%u] sets pin(s)"), what_program, i);
         }
     }
     if (instruction == pio_instr_bits_mov) {
@@ -489,10 +489,10 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t destination = (full_instruction & 0x00e0) >> 5;
         // Check for pins or pindirs destination.
         if (destination == 0x0 && !state->has_out_pin) {
-            mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] writes pin(s)"), what, i);
+            mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] writes pin(s)"), what_program, i);
         }
         if (source == 0x0 && !state->has_in_pin) {
-            mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] reads pin(s)"), what, i);
+            mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] reads pin(s)"), what_program, i);
         }
         if (destination == 0x6) {
             state->in_loaded = true;
@@ -502,9 +502,9 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
     }
 }
 
-static void consider_program(introspect_t *state, const uint16_t *program, size_t program_len, qstr what) {
+static void consider_program(introspect_t *state, const uint16_t *program, size_t program_len, qstr what_program) {
     for (size_t i = 0; i < program_len; i++) {
-        consider_instruction(state, program[i], what, i);
+        consider_instruction(state, program[i], what_program, i);
     }
 }
 
