@@ -238,6 +238,7 @@ def do_resume(state, _args=None):
 
 def do_soft_reset(state, _args=None):
     state.ensure_raw_repl(soft_reset=True)
+    state.did_action()
 
 
 def do_rtc(state, args):
