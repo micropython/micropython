@@ -1,331 +1,133 @@
 #!/usr/bin/env python
 """Creates the pin file for the RP2."""
 
-from __future__ import print_function
-
-import argparse
-import sys
-import csv
+import os
 import re
+import sys
 
-SUPPORTED_FN = {
-    "SPI": ["TX", "RX", "SCK", "CS"],
-    "UART": ["TX", "RX", "CTS", "RTS"],
-    "I2C": ["SCL", "SDA"],
-    "PWM": ["A", "B"],
-    "SIO": [""],
-    "PIO0": [""],
-    "PIO1": [""],
-    "GPCK": ["GPIN0", "GPOUT0", "GPIN1", "GPOUT1", "GPOUT2", "GPOUT3"],
-    "USB": ["OVCUR_DET", "VBUS_DET", "VBUS_EN"],
-}
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../tools"))
+import boardgen
+
+# This is NUM_BANK0_GPIOS. Pin indices are 0 to 29 (inclusive).
+NUM_GPIOS = 30
+# Up to 10 additional extended pins (e.g. via the wifi chip).
+NUM_EXT_GPIOS = 10
 
 
-def parse_pin(name_str):
-    """Parses a string and returns a pin number."""
-    if len(name_str) < 2:
-        raise ValueError("Expecting pin name to be at least 2 characters.")
-    if not name_str.startswith("GPIO") and not name_str.startswith("EXT_GPIO"):
-        raise ValueError("Expecting pin name to start with EXT_/GPIO")
-    return int(re.findall(r"\d+$", name_str)[0])
+class Rp2Pin(boardgen.Pin):
+    def __init__(self, cpu_pin_name):
+        super().__init__(cpu_pin_name)
+        self._afs = []
 
-
-def split_name_num(name_num):
-    num = None
-    for num_idx in range(len(name_num) - 1, -1, -1):
-        if not name_num[num_idx].isdigit():
-            name = name_num[0 : num_idx + 1]
-            num_str = name_num[num_idx + 1 :]
-            if len(num_str) > 0:
-                num = int(num_str)
-            break
-    if name == "PIO":
-        name += str(num)
-    return name, num
-
-
-class AlternateFunction(object):
-    """Holds the information associated with a pins alternate function."""
-
-    def __init__(self, idx, af_str):
-        self.idx = idx
-        self.af_str = af_str
-
-        self.func = ""
-        self.fn_num = None
-        self.pin_type = ""
-        self.supported = False
-
-        af_words = af_str.split("_", 1)
-        self.func, self.fn_num = split_name_num(af_words[0])
-        if len(af_words) > 1:
-            self.pin_type = af_words[1]
-        if self.func in SUPPORTED_FN:
-            pin_types = SUPPORTED_FN[self.func]
-            if self.pin_type in pin_types:
-                self.supported = True
-
-    def is_supported(self):
-        return self.supported
-
-    def print(self, out_source):
-        """Prints the C representation of this AF."""
-        if self.supported:
-            print("  AF", end="", file=out_source)
+        if self.name().startswith("EXT_"):
+            self._index = None
+            self._ext_index = int(self.name()[8:])  # "EXT_GPIOn"
         else:
-            print("  //", end="", file=out_source)
-        fn_num = self.fn_num
-        if fn_num is None:
-            fn_num = 0
-        print(
-            "({:d}, {:4s}, {:d}), // {:s}".format(self.idx, self.func, fn_num, self.af_str),
-            file=out_source,
-        )
+            self._index = int(self.name()[4:])  # "GPIOn"
+            self._ext_index = None
 
+    # Required by NumericPinGenerator.
+    def index(self):
+        return self._index
 
-class Pin(object):
-    """Holds the information associated with a pin."""
+    # Use the PIN() macro defined in rp2_prefix.c for defining the pin
+    # objects.
+    def definition(self):
+        if self._index is not None:
+            return "PIN({:d}, GPIO{:d}, 0, {:d}, pin_GPIO{:d}_af)".format(
+                self._index, self._index, len(self._afs), self.index()
+            )
+        else:
+            return "PIN({:d}, EXT_GPIO{:d}, 1, 0, NULL)".format(self._ext_index, self._ext_index)
 
-    def __init__(self, pin, is_ext=False):
-        self.pin = pin
-        self.alt_fn = []
-        self.alt_fn_count = 0
-        self.is_board = False
-        self.is_ext = is_ext
+    # External pins need to be mutable (because they track the output state).
+    def is_const(self):
+        return self._index is not None
 
-    def cpu_pin_name(self):
-        return "{:s}GPIO{:d}".format("EXT_" if self.is_ext else "", self.pin)
+    # Add conditional macros only around the external pins based on how many
+    # are enabled.
+    def enable_macro(self):
+        if self._ext_index is not None:
+            return "(MICROPY_HW_PIN_EXT_COUNT > {:d})".format(self._ext_index)
 
-    def is_board_pin(self):
-        return self.is_board
+    def add_af(self, af_idx, _af_name, af):
+        if self._index is None:
+            raise boardgen.PinGeneratorError(
+                "Cannot add AF for ext pin '{:s}'".format(self.name())
+            )
 
-    def set_is_board_pin(self):
-        self.is_board = True
+        # <af><unit>_<pin>
+        m = re.match("([A-Z][A-Z0-9][A-Z]+)(([0-9]+)(_.*)?)?", af)
+        af_fn = m.group(1)
+        af_unit = int(m.group(3)) if m.group(3) is not None else 0
+        if af_fn == "PIO":
+            # Pins can be either PIO unit (unlike, say, I2C where a
+            # pin can only be I2C0 _or_ I2C1, both sharing the same AF
+            # index), so each PIO unit has a distinct AF index.
+            af_fn = "{:s}{:d}".format(af_fn, af_unit)
+        self._afs.append((af_idx + 1, af_fn, af_unit, af))
 
-    def parse_af(self, af_idx, af_strs_in):
-        if len(af_strs_in) == 0:
-            return
-        # If there is a slash, then the slash separates 2 aliases for the
-        # same alternate function.
-        af_strs = af_strs_in.split("/")
-        for af_str in af_strs:
-            alt_fn = AlternateFunction(af_idx, af_str)
-            self.alt_fn.append(alt_fn)
-            if alt_fn.is_supported():
-                self.alt_fn_count += 1
-
-    def alt_fn_name(self, null_if_0=False):
-        if null_if_0 and self.alt_fn_count == 0:
-            return "NULL"
-        return "pin_{:s}_af".format(self.cpu_pin_name())
-
-    def print(self, out_source):
-        if self.is_ext:
-            print("#if (MICROPY_HW_PIN_EXT_COUNT > {:d})".format(self.pin), file=out_source)
-
-        if self.alt_fn_count == 0:
-            print("// ", end="", file=out_source)
-        print("const machine_pin_af_obj_t {:s}[] = {{".format(self.alt_fn_name()), file=out_source)
-        for alt_fn in self.alt_fn:
-            alt_fn.print(out_source)
-        if self.alt_fn_count == 0:
-            print("// ", end="", file=out_source)
-        print("};", file=out_source)
-        print("", file=out_source)
-        print(
-            "{:s}machine_pin_obj_t pin_{:s} = PIN({:d}, {:s}, {:d}, {:d}, {:s});".format(
-                "" if self.is_ext else "const ",
-                self.cpu_pin_name(),
-                self.pin,
-                self.cpu_pin_name(),
-                self.is_ext,
-                self.alt_fn_count,
-                self.alt_fn_name(null_if_0=True),
-            ),
-            file=out_source,
-        )
-        if self.is_ext:
-            print("#endif", file=out_source)
-        print("", file=out_source)
-
-    def print_header(self, out_header):
-        n = self.cpu_pin_name()
-        print(
-            "extern{:s}machine_pin_obj_t pin_{:s};".format(" " if self.is_ext else " const ", n),
-            file=out_header,
-        )
-        if self.alt_fn_count > 0:
-            print("extern const machine_pin_af_obj_t pin_{:s}_af[];".format(n), file=out_header)
-
-
-class NamedPin(object):
-    def __init__(self, name, pin):
-        self._name = name
-        self._pin = pin
-
-    def pin(self):
-        return self._pin
-
-    def name(self):
-        return self._name
-
-
-class Pins(object):
-    def __init__(self):
-        self.cpu_pins = []  # list of NamedPin objects
-        self.board_pins = []  # list of NamedPin objects
-        self.ext_pins = []  # list of NamedPin objects
-        for i in range(0, 10):
-            self.ext_pins.append(NamedPin("EXT_GPIO{:d}".format(i), Pin(i, True)))
-
-    def find_pin(self, pin_name):
-        for pin in self.cpu_pins:
-            if pin.name() == pin_name:
-                return pin.pin()
-
-        for pin in self.ext_pins:
-            if pin.name() == pin_name:
-                return pin.pin()
-
-    def parse_af_file(self, filename, pinname_col, af_col):
-        with open(filename, "r") as csvfile:
-            rows = csv.reader(csvfile)
-            for row in rows:
-                try:
-                    pin_num = parse_pin(row[pinname_col])
-                except Exception:
-                    # import traceback; traceback.print_exc()
-                    continue
-                pin = Pin(pin_num)
-                for af_idx in range(af_col, len(row)):
-                    if af_idx >= af_col:
-                        pin.parse_af(af_idx, row[af_idx])
-                self.cpu_pins.append(NamedPin(pin.cpu_pin_name(), pin))
-
-    def parse_board_file(self, filename):
-        with open(filename, "r") as csvfile:
-            rows = csv.reader(csvfile)
-            for row in rows:
-                if len(row) == 0 or row[0].startswith("#"):
-                    # Skip empty lines, and lines starting with "#"
-                    continue
-                if len(row) != 2:
-                    raise ValueError("Expecting two entries in a row")
-
-                cpu_pin_name = row[1]
-                try:
-                    parse_pin(cpu_pin_name)
-                except:
-                    # import traceback; traceback.print_exc()
-                    continue
-                pin = self.find_pin(cpu_pin_name)
-                if pin:
-                    pin.set_is_board_pin()
-                    if row[0]:  # Only add board pins that have a name
-                        self.board_pins.append(NamedPin(row[0], pin))
-
-    def print_table(self, label, named_pins, out_source):
-        print("", file=out_source)
-        print(
-            "const machine_pin_obj_t *machine_pin_{:s}_pins[] = {{".format(label), file=out_source
-        )
-        for pin in named_pins:
-            if not pin.pin().is_ext:
-                print("    &pin_{},".format(pin.name()), file=out_source)
-        print("};", file=out_source)
-        print("", file=out_source)
-
-    def print_named(self, label, named_pins, out_source):
-        print("", file=out_source)
-        print(
-            "STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{".format(label),
-            file=out_source,
-        )
-        for named_pin in named_pins:
-            pin = named_pin.pin()
-            if pin.is_ext:
-                print("  #if (MICROPY_HW_PIN_EXT_COUNT > {:d})".format(pin.pin), file=out_source)
+    # This will be called at the start of the output (after the prefix). Use
+    # it to emit the af objects (via the AF() macro in rp2_prefix.c).
+    def print_source(self, out_source):
+        if self._index is not None:
             print(
-                "  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}) }},".format(
-                    named_pin.name(), pin.cpu_pin_name()
-                ),
+                "const machine_pin_af_obj_t pin_GPIO{:d}_af[] = {{".format(self.index()),
                 file=out_source,
             )
-            if pin.is_ext:
-                print("  #endif", file=out_source)
-
-        print("};", file=out_source)
-        print(
-            "MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);".format(
-                label, label
-            ),
-            file=out_source,
-        )
-        print("", file=out_source)
-
-    def print(self, out_source):
-        for pin in self.cpu_pins:
-            pin.pin().print(out_source)
-
-        for pin in self.ext_pins:
-            if pin.pin().is_ext:
-                pin.pin().print(out_source)
-
-        self.print_table("cpu", self.cpu_pins, out_source)
-        self.print_named("cpu", self.cpu_pins + self.ext_pins, out_source)
-        self.print_named("board", self.board_pins, out_source)
-
-    def print_header(self, out_header):
-        for named_pin in self.cpu_pins:
-            pin = named_pin.pin()
-            pin.print_header(out_header)
-        for named_pin in self.board_pins:
-            pin = named_pin.pin()
-            if pin.is_ext:
-                pin.print_header(out_header)
-        # provide #define's mapping board to cpu name
-        for named_pin in self.board_pins:
-            if named_pin.pin().is_board_pin():
+            for af_idx, af_fn, af_unit, af in self._afs:
                 print(
-                    "#define pin_{:s} pin_{:s}".format(
-                        named_pin.name(), named_pin.pin().cpu_pin_name()
-                    ),
-                    file=out_header,
+                    "    AF({:d}, {:4s}, {:d}), // {:s}".format(af_idx, af_fn, af_unit, af),
+                    file=out_source,
                 )
+            print("};", file=out_source)
+            print(file=out_source)
+
+    # rp2 cpu names must be "GPIOn" or "EXT_GPIOn".
+    @staticmethod
+    def validate_cpu_pin_name(cpu_pin_name):
+        boardgen.Pin.validate_cpu_pin_name(cpu_pin_name)
+
+        if cpu_pin_name.startswith("GPIO") and cpu_pin_name[4:].isnumeric():
+            if not (0 <= int(cpu_pin_name[4:]) < NUM_GPIOS):
+                raise boardgen.PinGeneratorError("Unknown cpu pin '{}'".format(cpu_pin_name))
+        elif cpu_pin_name.startswith("EXT_GPIO") and cpu_pin_name[8:].isnumeric():
+            if not (0 <= int(cpu_pin_name[8:]) < NUM_EXT_GPIOS):
+                raise boardgen.PinGeneratorError("Unknown ext pin '{}'".format(cpu_pin_name))
+        else:
+            raise boardgen.PinGeneratorError(
+                "Invalid cpu pin name '{}', must be 'GPIOn' or 'EXT_GPIOn'".format(cpu_pin_name)
+            )
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate board specific pin file")
-    parser.add_argument("--board-csv")
-    parser.add_argument("--af-csv")
-    parser.add_argument("--prefix")
-    parser.add_argument("--output-source")
-    parser.add_argument("--output-header")
-    args = parser.parse_args()
+class Rp2PinGenerator(boardgen.NumericPinGenerator):
+    def __init__(self):
+        # Use custom pin type above, and also enable the --af-csv argument.
+        super().__init__(
+            pin_type=Rp2Pin,
+            enable_af=True,
+        )
 
-    pins = Pins()
+        # Pre-define the pins (i.e. don't require them to be listed in pins.csv).
+        for i in range(NUM_GPIOS):
+            self.add_cpu_pin("GPIO{}".format(i))
+        for i in range(NUM_EXT_GPIOS):
+            self.add_cpu_pin("EXT_GPIO{}".format(i))
 
-    with open(args.output_source, "w") as out_source:
-        print("// This file was automatically generated by make-pins.py", file=out_source)
-        print("//", file=out_source)
-        if args.af_csv:
-            print("// --af {:s}".format(args.af_csv), file=out_source)
-            pins.parse_af_file(args.af_csv, 0, 1)
+    # Provided by pico-sdk.
+    def cpu_table_size(self):
+        return "NUM_BANK0_GPIOS"
 
-        if args.board_csv:
-            print("// --board {:s}".format(args.board_csv), file=out_source)
-            pins.parse_board_file(args.board_csv)
+    # Only use pre-defined cpu pins (do not let board.csv create them).
+    def find_pin_by_cpu_pin_name(self, cpu_pin_name, create=True):
+        return super().find_pin_by_cpu_pin_name(cpu_pin_name, create=False)
 
-        if args.prefix:
-            print("// --prefix {:s}".format(args.prefix), file=out_source)
-            print("", file=out_source)
-            with open(args.prefix, "r") as prefix_file:
-                print(prefix_file.read(), file=out_source)
-        pins.print(out_source)
-
-    with open(args.output_header, "w") as out_header:
-        pins.print_header(out_header)
+    # NumericPinGenerator doesn't include the cpu dict by default (only the
+    # board dict), so add that to the output for rp2.
+    def print_source(self, out_source):
+        super().print_source(out_source)
+        self.print_cpu_locals_dict(out_source)
 
 
 if __name__ == "__main__":
-    main()
+    Rp2PinGenerator().main()
