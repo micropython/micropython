@@ -76,6 +76,14 @@ mpy_define_mtb_vars: mpy_mtb_build
 	$(eval LDFLAGS += -mcpu=cortex-m4 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -Wl,--gc-sections -T$(MPY_DIR_OF_MTB_ADAPTER_MAKEFILE)/bsps/TARGET_APP_CY8CPROTO-062-4343W/COMPONENT_CM4/TOOLCHAIN_GCC_ARM/linker.ld -Wl,-Map,$(BUILD)/firmware.map -Wl,--start-group -Wl,--end-group -Wl,--print-memory-usage)
 	$(eval QSTR_GEN_CFLAGS += $(INC) $(CFLAGS))
 
+
+attached_devs:
+	@:
+	$(eval ATTACHED_TARGET_LIST = $(shell $(MTB_HOME)/tools_3.0/fw-loader/bin/fw-loader --device-list | sed -n -e 's/[0-9]: KitProg3 CMSIS-DAP BULK-//' -e 's/FW Version[^0-9]*\(\([0-9]\.\)\{0,4\}[0-9][^.]\).*//p'| sed -n 's/^[ \t]*//p'))
+	$(eval ATTACHED_TARGETS_NUMBER = $(words $(ATTACHED_TARGET_LIST)))
+	$(info Number of attached targets : $(ATTACHED_TARGETS_NUMBER))
+	$(info List of attached targets : $(ATTACHED_TARGET_LIST))
+
 mpy_program: $(MPY_MAIN_BUILD_DIR)/firmware.hex
 	@:
 	$(info )
@@ -84,13 +92,21 @@ mpy_program: $(MPY_MAIN_BUILD_DIR)/firmware.hex
 	$(info Programming done.)
 
 # Use this target to program multiple attached target devices
-mpy_program_multi: 
+mpy_program_multi: attached_devs
 	@:
-	$(eval ATTACHED_TARGET_LIST = $(shell $(MTB_HOME)/tools_3.0/fw-loader/bin/fw-loader --device-list | sed -n -e 's/[0-9]: KitProg3 CMSIS-DAP BULK-//' -e 's/FW Version[^0-9]*\(\([0-9]\.\)\{0,4\}[0-9][^.]\).*//p'| sed -n 's/^[ \t]*//p'))
-	$(eval ATTACHED_TARGETS_NUMBER = $(words $(ATTACHED_TARGET_LIST)))
-	$(info Number of attached targets : $(ATTACHED_TARGETS_NUMBER))
-	$(info List of attached targets : $(ATTACHED_TARGET_LIST))
 	$(foreach ATTACHED_TARGET, $(ATTACHED_TARGET_LIST), $(MAKE) mpy_program SERIAL_ADAPTER_CMD='adapter serial $(ATTACHED_TARGET)';)
+
+mpy_program_ext_hex:
+	@:
+	$(info )
+	$(info Programming using openocd ...)
+	$(OPENOCD_HOME)/bin/openocd -s $(OPENOCD_HOME)/scripts -s $(MPY_DIR_OF_MTB_ADAPTER_MAKEFILE)/bsps/TARGET_APP_CY8CPROTO-062-4343W/config/GeneratedSource -c "source [find interface/kitprog3.cfg]; $(SERIAL_ADAPTER_CMD) ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program $(EXT_HEX_FILE) verify reset exit;"
+	$(info Programming done.)
+
+mpy_program_multi_ext_hex: attached_devs
+	@:
+	$(foreach ATTACHED_TARGET, $(ATTACHED_TARGET_LIST), $(MAKE) mpy_program_ext_hex SERIAL_ADAPTER_CMD='adapter serial $(ATTACHED_TARGET)' $(EXT_HEX_FILE);)
+
 
 mpy_program_win:
 	$(MAKE) mpy_program OPENOCD_HOME=$(OPENOCD_WIN_HOME)

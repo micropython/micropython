@@ -235,4 +235,7 @@ program: mpy_program
 
 program_multi: mpy_program_multi
 
+program_ext_hex: mpy_program_ext_hex
+program_multi_ext_hex: mpy_program_multi_ext_hex
+
 .PHONY: build test test_multi program_multi 
