@@ -53,14 +53,33 @@ jobs:
     - uses: actions/checkout@v3
     - name: Download binaries
       uses: actions/download-artifact@v3
-    - name: Setup device
+    - name: Container setup
       run: |
-        cd tools/psoc6
-        cp ../../mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/firmware.hex .
-        source mpy-psoc6.sh && openocd_download_install && openocd_board_conf_download ${{ matrix.board }} && mpy_firmware_deploy ${{ matrix.board }} firmware.hex
-        cd ../..
-    - name: Run tests
-      run: cd tests && ./run-tests.py --target psoc6 --device /dev/ttyACM0 -d psoc6
+        echo ${{ secrets.SELF_HOSTED_PASSWORD }} | sudo -S chmod 666 /var/run/docker.sock
+        source tools/ci.sh && ci_psoc6_setup
+    - name: Setup devices
+      run: |
+        cp mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/firmware.hex .
+        source tools/ci.sh && ci_psoc6_flash_multiple_devices firmware.hex
+    - name: Run psoc6 multi test
+      run: | 
+        cd tests
+        ./psoc6/run_psoc6_tests.sh --psoc6-multi
+    - name: Run psoc6 tests
+      run: | 
+        cd tests
+        ./psoc6/run_psoc6_tests.sh --psoc6
+    # TODO: Enable when HIL is updgraded 
+    # - name: Run all implemented tests
+    #   if:  github.event_name == 'pull_request'
+    #   continue-on-error: true
+    #   run: | 
+    #     cd tests
+    #     ./psoc6/run_psoc6_tests.sh -i
+    - name: Container teardown 
+      if: failure() || success()
+      run: |
+        source tools/ci.sh && ci_psoc6_teardown
 
   release:
     runs-on: ubuntu-latest
