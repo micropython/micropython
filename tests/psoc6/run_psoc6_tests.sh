@@ -11,18 +11,32 @@ usage() {
   echo "Usage:"
   echo "sh run_psoc6_tests.sh <opt>"
   echo "Available options:"
-  echo "  -a   run all meaningful test by directory without excluding any"
-  echo "  -c  clean results directory and file before running tests"
-  echo "  -d  device device to be used"
-  echo "  -f  run failing tests only"
-  echo "  -i  run implemented tests only and exclude known failing tests"
-  echo "  -n  run not yet implemented tests only"
-  echo "  -w  run wifi tests => needs secrets.py key file>"
+  echo "  -a            run all meaningful test by directory without excluding any"
+  echo "  -c            clean results directory and file before running tests"
+  echo "  -f            run failing tests only"
+  echo "  -i            run implemented tests only and exclude known failing tests"
+  echo "  -n            run not yet implemented tests only"
+  echo "  -w            run wifi tests => needs secrets.py key file>"
+  echo "  --dev0        device to be used"
+  echo "  --dev1        second device to be used (for multi test)"
+  echo "  --psco6       run only psoc6 port related tests"
+  echo "  --psoc6-multi run only psoc6 port multi tests (requires 2 instances)"
   exit 1;
 }
 
+# Converting long arguments into short flags for getopts
+for arg in "$@"; do
+  shift
+  case "$arg" in
+    '--dev0')         set -- "$@" '-d'   ;;
+    '--dev1')         set -- "$@" '-e'   ;;
+    '--psoc6')        set -- "$@" '-p'   ;;
+    '--psoc6-multi')  set -- "$@" '-m'   ;;
+    *)                set -- "$@" "$arg" ;;
+  esac
+done
 
-while getopts "acd:fhinw" o; do
+while getopts "acd:e:fhimnpw" o; do
   case "${o}" in
     a)
        all=1
@@ -31,7 +45,10 @@ while getopts "acd:fhinw" o; do
        cleanResultsDirectoryFirst=1
        ;;
     d)
-       device=${OPTARG}
+       device0=${OPTARG}
+       ;;
+    e) 
+       device1=${OPTARG}
        ;;
     f)
        failing=1
@@ -42,8 +59,14 @@ while getopts "acd:fhinw" o; do
     i)
        implemented=1
        ;;
+    m) 
+       psoc6OnlyMulti=1
+       ;;
     n)
        notYetImplemented=1
+       ;;
+    p)
+       psoc6Only=1
        ;;
     w)
        wifi=1
@@ -65,10 +88,13 @@ if [ -z "${cleanResultsDirectoryFirst}" ]; then
 fi
 
 
-if [ -z "${device}" ]; then
-  device="/dev/ttyACM0"
+if [ -z "${device0}" ]; then
+  device0="/dev/ttyACM0"
 fi
 
+if [ -z "${device1}" ]; then
+  device1="/dev/ttyACM1"
+fi
 
 if [ -z "${failing}" ]; then
   failing=0
@@ -89,6 +115,13 @@ if [ -z "${wifi}" ]; then
   wifi=0
 fi
 
+if [ -z "${psoc6OnlyMulti}" ]; then
+  psoc6OnlyMulti=0
+fi
+
+if [ -z "${psoc6Only}" ]; then
+  psoc6Only=0
+fi
 
 resultsFile="psoc6_test_results.log"
 passResultsFile="psoc6_test_passed.log"
@@ -97,7 +130,8 @@ failResultsFile="psoc6_test_failed.log"
 
 
 echo
-echo "  device            : ${device}"
+echo "  device0            : ${device0}"
+echo "  device1            : ${device1}"
 echo
 echo "  results file      : ${resultsFile}"
 echo "  pass results file : ${passResultsFile}"
@@ -133,7 +167,7 @@ if [ ${all} -eq 1 ]; then
   
   ../tools/mpremote/mpremote.py run psoc6/test_scripts/network_on.py
 
-  ./run-tests.py --target psoc6 --device ${device} \
+  ./run-tests.py --target psoc6 --device ${device0} \
         -d \
           basics \
           extmod \
@@ -173,7 +207,7 @@ if [ ${wifi} -eq 1 ]; then
   echo "  running wifi tests ..."
   echo
 
-  ./run-tests.py --target psoc6 --device ${device} \
+  ./run-tests.py --target psoc6 --device ${device0} \
         -d \
           net_hosted \
           net_inet \
@@ -202,13 +236,13 @@ if [ ${implemented} -eq 1 ]; then
   echo "  running implemented tests ..."
   echo
 
-  ./run-tests.py --target psoc6 --device ${device} \
+  ./run-tests.py --target psoc6 --device ${device0} \
           io/builtin_print_file.py \
     | tee -a ${resultsFile}
 
   echo
 
-  ./run-tests.py --target psoc6 --device ${device} \
+  ./run-tests.py --target psoc6 --device ${device0} \
         -d \
           basics \
           extmod \
@@ -294,6 +328,36 @@ if [ ${implemented} -eq 1 ]; then
 
 fi
 
+if [ ${psoc6Only} -eq 1 ]; then
+
+  echo "  running only psoc6 tests ..."
+  echo
+
+  ./run-tests.py --target psoc6 --device ${device0} -d psoc6 \
+    | tee -a ${resultsFile}
+  
+  echo
+  echo "  done."
+  echo
+
+fi
+
+if [ ${psoc6OnlyMulti} -eq 1 ]; then
+
+  echo "  running only psoc6 multi tests ..."
+  echo
+
+  multi_tests=$(find ./psoc6/multi/ -type f -name "*.py")
+
+  ./run-multitests.py -i pyb:${device0} -i pyb:${device1} ${multi_tests} \
+    | tee -a ${resultsFile}
+  
+  echo
+  echo "  done."
+  echo
+
+fi
+
 
 ### not yet enabled/implemented, therefore failing
 if [ ${notYetImplemented} -eq 1 ]; then
@@ -301,7 +365,7 @@ if [ ${notYetImplemented} -eq 1 ]; then
   echo "  running not yet implemented tests ..."
   echo
 
-  ./run-tests.py --target psoc6 --device ${device} -d \
+  ./run-tests.py --target psoc6 --device ${device0} -d \
         multi_bluetooth \
         multi_net \
         thread \
@@ -335,7 +399,7 @@ if [ ${failing} -eq 1 ]; then
   ../tools/mpremote/mpremote.py cp internal_bench/bench.py :/flash/bench.py
 
 
-  ./run-tests.py --target psoc6 --device ${device} -d \
+  ./run-tests.py --target psoc6 --device ${device0} -d \
         cmdline \
         cpydiff \
         internal_bench \
