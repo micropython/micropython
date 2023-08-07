@@ -410,7 +410,7 @@ typedef struct {
     bool tx_fifo, rx_fifo, in_loaded, out_loaded, in_used, out_used;
 } introspect_t;
 
-static void consider_instruction(introspect_t *state, uint16_t full_instruction, qstr what, size_t i) {
+static void consider_instruction(introspect_t *state, uint16_t full_instruction, qstr what_program, size_t i) {
     uint16_t instruction = full_instruction & 0xe000;
     if (instruction == 0x8000) {
         if ((full_instruction & 0xe080) == pio_instr_bits_push) {
