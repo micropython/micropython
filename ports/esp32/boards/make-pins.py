@@ -78,17 +78,17 @@ class Pins:
                 if row[0]:  # Only add board pins that have a name
                     self.board_pins.append(NamedPin(row[0], pin))
 
-    def print_table(self, label, named_pins, out_source):
+    def print_cpu_table(self, out_source):
         print("", file=out_source)
         print(
-            "const machine_{}_obj_t machine_{}_obj_table[GPIO_NUM_MAX] = {{".format(label, label),
+            "const machine_pin_obj_t machine_pin_obj_table[GPIO_NUM_MAX] = {",
             file=out_source,
         )
-        for pin in named_pins:
+        for pin in self.cpu_pins:
             print("    #if MICROPY_HW_ENABLE_{}".format(pin.name()), file=out_source)
             print(
-                "    [GPIO_NUM_{}] = {{ .base = {{ .type = &machine_{}_type }} }},".format(
-                    pin.pin().pin, label
+                "    [GPIO_NUM_{}] = {{ .base = {{ .type = &machine_pin_type }}, .irq = {{ .base = {{ .type = &machine_pin_irq_type }} }} }},".format(
+                    pin.pin().pin,
                 ),
                 file=out_source,
             )
@@ -121,8 +121,7 @@ class Pins:
         )
 
     def print_tables(self, out_source):
-        self.print_table("pin", self.cpu_pins, out_source)
-        self.print_table("pin_irq", self.cpu_pins, out_source)
+        self.print_cpu_table(out_source)
         self.print_named("board", self.board_pins, out_source)
 
     def print_header(self, out_header):

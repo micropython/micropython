@@ -146,18 +146,18 @@
 
 #endif
 
-typedef struct _machine_pin_obj_t {
-    mp_obj_base_t base;
-} machine_pin_obj_t;
-
 typedef struct _machine_pin_irq_obj_t {
     mp_obj_base_t base;
 } machine_pin_irq_obj_t;
 
+typedef struct _machine_pin_obj_t {
+    mp_obj_base_t base;
+    machine_pin_irq_obj_t irq;
+} machine_pin_obj_t;
+
 extern const mp_obj_type_t machine_pin_irq_type;
 
 extern const machine_pin_obj_t machine_pin_obj_table[GPIO_NUM_MAX];
-extern const machine_pin_irq_obj_t machine_pin_irq_obj_table[GPIO_NUM_MAX];
 
 extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
