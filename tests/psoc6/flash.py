@@ -7,6 +7,7 @@ bdev = psoc6.QSPI_Flash() if "QSPI_Flash" in dir(psoc6) else psoc6.Flash()
 os.umount("/")
 
 test_string = "This is a test string."
+long_test_string = "This is a very long string. And as a long string that it is, it is only getting longer and longer and the string goes. How long shall it be? Well, not really sure, but let´s try it like this."
 print(test_string)
 
 # first priority is always LFS2 filesystem as it is the default
@@ -37,6 +38,17 @@ if "VfsLfs2" in dir(os):
         print("Test successful")
     f.close()
 
+    # open a file and do some operation
+    f = open("/flash/test_lfs2_2.txt", "w")
+    f.write(long_test_string)
+    f.close()
+
+    # read back the contents
+    f = open("/flash/test_lfs2_2.txt", "r")
+    if f.read() == long_test_string:
+        print("Test successful")
+    f.close()
+
 if "VfsFat" in dir(os):
     # create a FAT fs and mount it, else format and mount it
     try:
@@ -55,5 +67,16 @@ if "VfsFat" in dir(os):
     # read back the contents
     f = open("/flash/test_fat.txt", "r")
     if f.read() == test_string:
+        print("Test successful")
+    f.close()
+
+    # open a file and do some operation
+    f = open("/flash/test_fat_2.txt", "w")
+    f.write(long_test_string)
+    f.close()
+
+    # read back the contents
+    f = open("/flash/test_fat_2.txt", "r")
+    if f.read() == long_test_string:
         print("Test successful")
     f.close()
