@@ -251,13 +251,17 @@ MPY_MTB_CI_DOCKER_VERSION=0.3.0
 function ci_psoc6_setup {
     # Access to serial device 
     if [ "$1" = "--dev-access" ]; then
-        device_flag=--device=/dev/ttyACM0
+        device0_flag=--device=/dev/ttyACM0 
+        device1_flag=--device=/dev/ttyACM1
     else
-        device_flag=
+        device0_flag=
+        device1_flag=
     fi
 
     docker pull ifxmakers/mpy-mtb-ci:${MPY_MTB_CI_DOCKER_VERSION}
-    docker run --name mtb-ci --rm --privileged -d -it ${device_flag} \
+    docker run --name mtb-ci --rm --privileged -d -it \
+      ${device0_flag} \
+      ${device1_flag} \
       -v "$(pwd)":/micropython \
       -w /micropython/ports/psoc6 \
       ifxmakers/mpy-mtb-ci:${MPY_MTB_CI_DOCKER_VERSION}
@@ -281,8 +285,18 @@ function ci_psoc6_deploy {
     docker exec mtb-ci make mpy_program
 }
 
+function ci_psoc6_flash_multiple_devices {
+    # hex file including path with respect to micropython root
+    hex_file=$1
+    docker exec mtb-ci make program_multi_ext_hex EXT_HEX_FILE=../../${hex_file}
+}
+
 function ci_psoc6_run_tests {
     docker exec mtb-ci /bin/bash -c "cd ../../tests && ./run-tests.py --target psoc6 --device /dev/ttyACM0 -d psoc6"
+}
+
+function ci_psoc6_teardown {
+    docker stop mtb-ci
 }
 
 ########################################################################################
