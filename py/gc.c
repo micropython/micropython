@@ -290,6 +290,24 @@ STATIC void gc_mark_subtree(size_t block)
         mp_state_mem_area_t *area = &MP_STATE_MEM(area);
         #endif
 
+        // Check if this is a type of Python object where we can save cycles but
+        // not recursing into its nested regions. Such an object contains
+        // pointers to other (large) regions on the Python heap, but none of
+        // those regions will contain any deeper pointers - so we don't have to
+        // push them onto the stack to recurse into.
+        //
+        // An example, mp_type_str has a 'data' pointer but the buffer at that
+        // address won't contain any further Python references, so we don't need
+        // to recursively mark inside it.
+        //
+        // There are few enough of these that we can compare a possible 'type'
+        // pointer to them directly.
+        const mp_obj_base_t *maybe_obj = (mp_obj_base_t *)(PTR_FROM_BLOCK(area, block));
+        const mp_obj_type_t *maybe_type = maybe_obj->type;
+        bool skip_nested_regions = MP_UNLIKELY(maybe_type == &mp_type_str
+                                               || maybe_type == &mp_type_bytes
+                                               || maybe_type == &mp_type_bytearray);
+
         // work out number of consecutive blocks in the chain starting with this one
         size_t n_blocks = 0;
         do {
@@ -326,14 +344,16 @@ STATIC void gc_mark_subtree(size_t block)
             // An unmarked head. Mark it, and push it on gc stack.
             TRACE_MARK(ptr_block, ptr);
             ATB_HEAD_TO_MARK(ptr_area, ptr_block);
-            if (sp < MICROPY_ALLOC_GC_STACK_SIZE) {
-                MP_STATE_MEM(gc_block_stack)[sp] = ptr_block;
-                #if MICROPY_GC_SPLIT_HEAP
-                MP_STATE_MEM(gc_area_stack)[sp] = ptr_area;
-                #endif
-                sp += 1;
-            } else {
-                MP_STATE_MEM(gc_stack_overflow) = 1;
+            if (!skip_nested_regions) {
+                if (sp < MICROPY_ALLOC_GC_STACK_SIZE) {
+                    MP_STATE_MEM(gc_block_stack)[sp] = ptr_block;
+                    #if MICROPY_GC_SPLIT_HEAP
+                    MP_STATE_MEM(gc_area_stack)[sp] = ptr_area;
+                    #endif
+                    sp += 1;
+                } else {
+                    MP_STATE_MEM(gc_stack_overflow) = 1;
+                }
             }
         }
 
