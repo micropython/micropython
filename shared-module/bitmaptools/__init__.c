@@ -894,10 +894,10 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                     pixel = (blend / (256 * ifactor1 + 256 * ifactor2 - ifactor1 * ifactor2));
                 } else if (blend_source1) {
                     // Apply iFactor1 to source1 only
-                    pixel = *sptr1++ *ifactor1 / 256;
+                    pixel = *sptr1++ * ifactor1 / 256;
                 } else if (blend_source2) {
                     // Apply iFactor2 to source1 only
-                    pixel = *sptr2++ *ifactor2 / 256;
+                    pixel = *sptr2++ * ifactor2 / 256;
                 } else {
                     // Use the destination value
                     pixel = *dptr;
