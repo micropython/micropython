@@ -126,27 +126,6 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 }
 
-MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, NORMAL, BITMAPTOOLS_BLENDMODE_NORMAL);
-MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, SCREEN, BITMAPTOOLS_BLENDMODE_SCREEN);
-
-//| class BlendMode:
-//|     """The blend mode for `alphablend` to operate use"""
-//|
-//|     NORMAL: Blendmode
-//|     """Blend with equal parts of the two source bitmaps"""
-//|
-//|     SCREEN: Blendmode
-//|     """Blend based on the value in each color channel. The result keeps the lighter colors and discards darker colors."""
-//|
-MAKE_ENUM_MAP(bitmaptools_blendmode) {
-    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, NORMAL),
-    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, SCREEN),
-};
-STATIC MP_DEFINE_CONST_DICT(bitmaptools_blendmode_locals_dict, bitmaptools_blendmode_locals_table);
-
-MAKE_PRINTER(bitmaptools, bitmaptools_blendmode);
-MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
-
 //| def rotozoom(
 //|     dest_bitmap: displayio.Bitmap,
 //|     source_bitmap: displayio.Bitmap,
@@ -295,6 +274,27 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom);
 
+//| class BlendMode:
+//|     """The blend mode for `alphablend` to operate use"""
+//|
+//|     Normal: BlendMode
+//|     """Blend with equal parts of the two source bitmaps"""
+//|
+//|     Screen: BlendMode
+//|     """Blend based on the value in each color channel. The result keeps the lighter colors and discards darker colors."""
+//|
+MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, Normal, BITMAPTOOLS_BLENDMODE_NORMAL);
+MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, Screen, BITMAPTOOLS_BLENDMODE_SCREEN);
+
+MAKE_ENUM_MAP(bitmaptools_blendmode) {
+    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, Normal),
+    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, Screen),
+};
+STATIC MP_DEFINE_CONST_DICT(bitmaptools_blendmode_locals_dict, bitmaptools_blendmode_locals_table);
+
+MAKE_PRINTER(bitmaptools, bitmaptools_blendmode);
+MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
+
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
 //| def alphablend(
@@ -304,9 +304,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 //|     colorspace: displayio.Colorspace,
 //|     factor1: float = 0.5,
 //|     factor2: Optional[float] = None,
-//|     blendmode: Optional[Blendmode] = Blendmode.NORMAL,
-//|     skip_source1_index: int,
-//|     skip_source2_index: int,
+//|     blendmode: Optional[BlendMode] = BlendMode.Normal,
+//|     skip_source1_index: Union[int, None] = None,
+//|     skip_source2_index: Union[int, None] = None,
 //| ) -> None:
 //|     """Alpha blend the two source bitmaps into the destination.
 //|
@@ -319,7 +319,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 //|     :param float factor1: The proportion of bitmap 1 to mix in
 //|     :param float factor2: The proportion of bitmap 2 to mix in.  If specified as `None`, ``1-factor1`` is used.  Usually the proportions should sum to 1.
 //|     :param displayio.Colorspace colorspace: The colorspace of the bitmaps. They must all have the same colorspace.  Only the following colorspaces are permitted:  ``L8``, ``RGB565``, ``RGB565_SWAPPED``, ``BGR565`` and ``BGR565_SWAPPED``.
-//|     :param bitmaptools.BlendMode blendmode: The blend mode to use. Default is NORMAL.
+//|     :param bitmaptools.BlendMode blendmode: The blend mode to use. Default is Normal.
 //|     :param int skip_source1_index: bitmap palette index in source_bitmap_1 that will not be blended, set to None to blend all pixels
 //|     :param int skip_source2_index: bitmap palette index in source_bitmap_2 that will not be blended, set to None to blend all pixels
 //|
@@ -337,7 +337,7 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
         {MP_QSTR_colorspace, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL}},
         {MP_QSTR_factor_1, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
         {MP_QSTR_factor_2, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
-        {MP_QSTR_blendmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (void *)&bitmaptools_blendmode_NORMAL_obj}},
+        {MP_QSTR_blendmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (void *)&bitmaptools_blendmode_Normal_obj}},
         {MP_QSTR_skip_source1_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         {MP_QSTR_skip_source2_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
@@ -1135,7 +1135,6 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_rotozoom), MP_ROM_PTR(&bitmaptools_rotozoom_obj) },
     { MP_ROM_QSTR(MP_QSTR_arrayblit), MP_ROM_PTR(&bitmaptools_arrayblit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_Blendmode), MP_ROM_PTR(&bitmaptools_blendmode_type) },
     { MP_ROM_QSTR(MP_QSTR_alphablend), MP_ROM_PTR(&bitmaptools_alphablend_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_region), MP_ROM_PTR(&bitmaptools_fill_region_obj) },
     { MP_ROM_QSTR(MP_QSTR_boundary_fill), MP_ROM_PTR(&bitmaptools_boundary_fill_obj) },
@@ -1144,6 +1143,7 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_draw_circle), MP_ROM_PTR(&bitmaptools_draw_circle_obj) },
     { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&bitmaptools_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BlendMode), MP_ROM_PTR(&bitmaptools_blendmode_type) },
     { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);
