@@ -1,3 +1,4 @@
+# TODO: get active board from mtb-base-example makefile
 BOARD     ?= CY8CPROTO-062-4343W
 BOARD_DIR  = boards/$(BOARD)
 
@@ -39,7 +40,7 @@ include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
 # get path to this file
-MPY_MAIN_BUILD_DIR := $(dir $(MPY_DIR_OF_MAIN_MAKEFILE))/$(BUILD)
+MPY_MAIN_BUILD_DIR := $(dir $(MPY_DIR_OF_MAIN_MAKEFILE))$(BUILD)
 
 $(info MPY_PATH_TO_MAIN_MAKEFILE        : $(MPY_PATH_TO_MAIN_MAKEFILE))
 $(info MPY_DIR_OF_MAIN_MAKEFILE         : $(MPY_DIR_OF_MAIN_MAKEFILE))
@@ -198,7 +199,7 @@ $(MPY_MAIN_BUILD_DIR)/firmware.hex: $(MPY_MAIN_BUILD_DIR)/firmware.elf
 
 
 # include adapter makefile
-include $(BOARD_DIR)/makefile_mtb.mk
+include makefile_mtb.mk
 
 # include py core make definitions
 include $(TOP)/py/mkrules.mk
