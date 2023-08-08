@@ -881,8 +881,8 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                 blend_source2 = skip_source2_index_none || *sptr2 != (uint8_t)skip_source2_index;
                 if (blend_source1 && blend_source2) {
                     // Premultiply by the alpha factor
-                    int sca1 = *sptr1++ * ifactor1;
-                    int sca2 = *sptr2++ * ifactor2;
+                    int sca1 = *sptr1++ *ifactor1;
+                    int sca2 = *sptr2++ *ifactor2;
                     // Blend
                     int blend;
                     if (blendmode == BITMAPTOOLS_BLENDMODE_SCREEN) {
@@ -894,10 +894,10 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                     pixel = (blend / (256 * ifactor1 + 256 * ifactor2 - ifactor1 * ifactor2));
                 } else if (blend_source1) {
                     // Apply iFactor1 to source1 only
-                    pixel = *sptr1++ * ifactor1 / 256;
+                    pixel = *sptr1++ *ifactor1 / 256;
                 } else if (blend_source2) {
                     // Apply iFactor2 to source1 only
-                    pixel = *sptr2++ * ifactor2 / 256;
+                    pixel = *sptr2++ *ifactor2 / 256;
                 } else {
                     // Use the destination value
                     pixel = *dptr;
