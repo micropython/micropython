@@ -31,7 +31,8 @@
 
 typedef struct _mp_obj_fun_bc_t {
     mp_obj_base_t base;
-    const mp_module_context_t *context;         // context within which this function was defined
+    // CIRCUITPY - Long-lived conversions need to write into context, so un-const the field.
+    /*const*/ mp_module_context_t *context;         // context within which this function was defined
     struct _mp_raw_code_t *const *child_table;  // table of children
     const byte *bytecode;                       // bytecode for the function
     #if MICROPY_PY_SYS_SETTRACE

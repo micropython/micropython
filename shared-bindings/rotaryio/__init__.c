@@ -59,4 +59,4 @@ const mp_obj_module_t rotaryio_module = {
     .globals = (mp_obj_dict_t *)&rotaryio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_rotaryio, rotaryio_module, CIRCUITPY_ROTARYIO);
+MP_REGISTER_MODULE(MP_QSTR_rotaryio, rotaryio_module);

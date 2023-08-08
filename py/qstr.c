@@ -76,27 +76,23 @@ mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
     }
     return hash;
 }
-#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
-#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
-#endif
-#if CIRCUITPY_PRECOMPUTE_QSTR_ATTR == 1
-const qstr_attr_t mp_qstr_const_attr[MP_QSTRnumber_of] = {
 
 const qstr_hash_t mp_qstr_const_hashes[] = {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) hash,
+#define TRANSLATION(id, length, compressed ...)
     #include "genhdr/qstrdefs.generated.h"
+#undef TRANSLATION
 #undef QDEF
     #endif
 };
-#else
-qstr_attr_t mp_qstr_const_attr[MP_QSTRnumber_of];
-#endif
 
 const qstr_len_t mp_qstr_const_lengths[] = {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) len,
+#define TRANSLATION(id, length, compressed ...)
     #include "genhdr/qstrdefs.generated.h"
+#undef TRANSLATION
 #undef QDEF
     #endif
 };
@@ -130,16 +126,6 @@ void qstr_init(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
 
-    #if CIRCUITPY_PRECOMPUTE_QSTR_ATTR == 0
-    if (mp_qstr_const_attr[MP_QSTR_circuitpython].len == 0) {
-        for (size_t i = 0; i < mp_qstr_const_pool.len; i++) {
-            size_t len = strlen(mp_qstr_const_pool.qstrs[i]);
-            mp_qstr_const_attr[i].hash = qstr_compute_hash((const byte *)mp_qstr_const_pool.qstrs[i], len);
-            mp_qstr_const_attr[i].len = len;
-        }
-    }
-    #endif
-
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(qstr_mutex));
     #endif
@@ -170,7 +156,7 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
         #endif
         mp_uint_t pool_size = sizeof(qstr_pool_t)
             + (sizeof(const char *) + sizeof(qstr_hash_t) + sizeof(qstr_len_t)) * new_alloc;
-        qstr_pool_t *pool = (qstr_pool_t *)m_malloc_maybe(pool_size);
+        qstr_pool_t *pool = (qstr_pool_t *)m_malloc_maybe(pool_size, true);
         if (pool == NULL) {
             // Keep qstr_last_chunk consistent with qstr_pool_t: qstr_last_chunk is not scanned
             // at garbage collection since it's reachable from a qstr_pool_t.  And the caller of

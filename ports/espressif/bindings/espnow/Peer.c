@@ -65,8 +65,7 @@ STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    espnow_peer_obj_t *self = m_new_obj(espnow_peer_obj_t);
-    self->base.type = &espnow_peer_type;
+    espnow_peer_obj_t *self = mp_obj_malloc(espnow_peer_obj_t, &espnow_peer_type);
     self->peer_info = (esp_now_peer_info_t) {
         .channel = 0,
         .ifidx = WIFI_IF_STA,

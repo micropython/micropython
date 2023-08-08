@@ -58,8 +58,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 
     mp_int_t scale = mp_arg_validate_int_range(args[ARG_scale].u_int, 1, 32767,MP_QSTR_scale);
 
-    displayio_group_t *self = m_new_obj(displayio_group_t);
-    self->base.type = &displayio_group_type;
+    displayio_group_t *self = mp_obj_malloc(displayio_group_t, &displayio_group_type);
     common_hal_displayio_group_construct(self, scale, args[ARG_x].u_int, args[ARG_y].u_int);
 
     return MP_OBJ_FROM_PTR(self);

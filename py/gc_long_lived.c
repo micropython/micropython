@@ -37,38 +37,38 @@ mp_obj_fun_bc_t *make_fun_bc_long_lived(mp_obj_fun_bc_t *fun_bc, uint8_t max_dep
         return fun_bc;
     }
     fun_bc->bytecode = gc_make_long_lived((byte *)fun_bc->bytecode);
-    fun_bc->globals = make_dict_long_lived(fun_bc->globals, max_depth - 1);
-    for (uint32_t i = 0; i < gc_nbytes(fun_bc->const_table) / sizeof(mp_obj_t); i++) {
-        // Skip things that aren't allocated on the heap (and hence have zero bytes.)
-        if (gc_nbytes(MP_OBJ_TO_PTR(fun_bc->const_table[i])) == 0) {
-            continue;
-        }
-        // Try to detect raw code.
-        mp_raw_code_t *raw_code = MP_OBJ_TO_PTR(fun_bc->const_table[i]);
-        if (raw_code->kind == MP_CODE_BYTECODE) {
-            raw_code->fun_data = gc_make_long_lived((byte *)raw_code->fun_data);
-            raw_code->const_table = gc_make_long_lived((byte *)raw_code->const_table);
-        }
-        ((mp_uint_t *)fun_bc->const_table)[i] = (mp_uint_t)make_obj_long_lived(
-            (mp_obj_t)fun_bc->const_table[i], max_depth - 1);
+    fun_bc->context->module.globals = make_dict_long_lived(fun_bc->context->module.globals, max_depth - 1);
+    // for (uint32_t i = 0; i < gc_nbytes(fun_bc->const_table) / sizeof(mp_obj_t); i++) {
+    //     // Skip things that aren't allocated on the heap (and hence have zero bytes.)
+    //     if (gc_nbytes(MP_OBJ_TO_PTR(fun_bc->const_table[i])) == 0) {
+    //         continue;
+    //     }
+    //     // Try to detect raw code.
+    //     mp_raw_code_t *raw_code = MP_OBJ_TO_PTR(fun_bc->const_table[i]);
+    //     if (raw_code->kind == MP_CODE_BYTECODE) {
+    //         raw_code->fun_data = gc_make_long_lived((byte *)raw_code->fun_data);
+    //         raw_code->const_table = gc_make_long_lived((byte *)raw_code->const_table);
+    //     }
+    //     ((mp_uint_t *)fun_bc->const_table)[i] = (mp_uint_t)make_obj_long_lived(
+    //         (mp_obj_t)fun_bc->const_table[i], max_depth - 1);
 
-    }
-    fun_bc->const_table = gc_make_long_lived((mp_uint_t *)fun_bc->const_table);
-    // extra_args stores keyword only argument default values.
-    size_t words = gc_nbytes(fun_bc) / sizeof(mp_uint_t *);
-    // Functions (mp_obj_fun_bc_t) have four pointers (base, globals, bytecode and const_table)
-    // before the variable length extra_args so remove them from the length.
-    for (size_t i = 0; i < words - 4; i++) {
-        if (MP_OBJ_TO_PTR(fun_bc->extra_args[i]) == NULL) {
-            continue;
-        }
-        if (mp_obj_is_type(fun_bc->extra_args[i], &mp_type_dict)) {
-            fun_bc->extra_args[i] = MP_OBJ_FROM_PTR(make_dict_long_lived(MP_OBJ_TO_PTR(fun_bc->extra_args[i]), max_depth - 1));
-        } else {
-            fun_bc->extra_args[i] = make_obj_long_lived(fun_bc->extra_args[i], max_depth - 1);
-        }
+    // }
+    // fun_bc->const_table = gc_make_long_lived((mp_uint_t *)fun_bc->const_table);
+    // // extra_args stores keyword only argument default values.
+    // size_t words = gc_nbytes(fun_bc) / sizeof(mp_uint_t *);
+    // // Functions (mp_obj_fun_bc_t) have four pointers (base, globals, bytecode and const_table)
+    // // before the variable length extra_args so remove them from the length.
+    // for (size_t i = 0; i < words - 4; i++) {
+    //     if (MP_OBJ_TO_PTR(fun_bc->extra_args[i]) == NULL) {
+    //         continue;
+    //     }
+    //     if (mp_obj_is_type(fun_bc->extra_args[i], &mp_type_dict)) {
+    //         fun_bc->extra_args[i] = MP_OBJ_FROM_PTR(make_dict_long_lived(MP_OBJ_TO_PTR(fun_bc->extra_args[i]), max_depth - 1));
+    //     } else {
+    //         fun_bc->extra_args[i] = make_obj_long_lived(fun_bc->extra_args[i], max_depth - 1);
+    //     }
 
-    }
+    // }
     return gc_make_long_lived(fun_bc);
 }
 

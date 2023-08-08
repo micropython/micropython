@@ -94,4 +94,4 @@ const mp_obj_module_t zlib_module = {
     .globals = (mp_obj_dict_t *)&zlib_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_zlib, zlib_module, CIRCUITPY_ZLIB);
+MP_REGISTER_MODULE(MP_QSTR_zlib, zlib_module);

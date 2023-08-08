@@ -970,4 +970,4 @@ const mp_obj_module_t bitmaptools_module = {
     .globals = (mp_obj_dict_t *)&bitmaptools_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_bitmaptools, bitmaptools_module, CIRCUITPY_BITMAPTOOLS);
+MP_REGISTER_MODULE(MP_QSTR_bitmaptools, bitmaptools_module);

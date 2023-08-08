@@ -45,7 +45,7 @@
 
 // Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
 void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
-    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes, false);
     base->type = type;
     return base;
 }
@@ -346,7 +346,7 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
             }
 
             // Try calling __eq__.
-            mp_obj_t r = type->binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+            mp_obj_t r = binary_op(MP_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
                 if (op == MP_BINARY_OP_EQUAL) {
                     return r;

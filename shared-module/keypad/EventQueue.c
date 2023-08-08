@@ -53,8 +53,7 @@ bool common_hal_keypad_eventqueue_get_into(keypad_eventqueue_obj_t *self, keypad
 }
 
 mp_obj_t common_hal_keypad_eventqueue_get(keypad_eventqueue_obj_t *self) {
-    keypad_event_obj_t *event = m_new_obj(keypad_event_obj_t);
-    event->base.type = &keypad_event_type;
+    keypad_event_obj_t *event = mp_obj_malloc(keypad_event_obj_t, &keypad_event_type);
     bool result = common_hal_keypad_eventqueue_get_into(self, event);
     if (result) {
         return event;

@@ -100,8 +100,7 @@ STATIC mp_obj_t _next_device(usb_core_devices_obj_t *iter) {
 
         // We passed the filters. Now make a properly allocated object to
         // return to the user.
-        usb_core_device_obj_t *self = m_new_obj(usb_core_device_obj_t);
-        self->base.type = &usb_core_device_type;
+        usb_core_device_obj_t *self = mp_obj_malloc(usb_core_device_obj_t, &usb_core_device_type);
 
         common_hal_usb_core_device_construct(self, i);
         iter->next_index = i + 1;
@@ -195,4 +194,4 @@ const mp_obj_module_t usb_core_module = {
     .globals = (mp_obj_dict_t *)&usb_core_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usb_dot_core, usb_core_module, CIRCUITPY_USB_HOST);
+MP_REGISTER_MODULE(MP_QSTR_usb_dot_core, usb_core_module);

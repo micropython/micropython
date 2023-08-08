@@ -61,8 +61,7 @@ mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
 //|         ...
 STATIC mp_obj_t alarm_time_timealarm_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    alarm_time_timealarm_obj_t *self = m_new_obj(alarm_time_timealarm_obj_t);
-    self->base.type = &alarm_time_timealarm_type;
+    alarm_time_timealarm_obj_t *self = mp_obj_malloc(alarm_time_timealarm_obj_t, &alarm_time_timealarm_type);
 
     enum { ARG_monotonic_time, ARG_epoch_time };
     static const mp_arg_t allowed_args[] = {

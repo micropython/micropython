@@ -236,6 +236,7 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
         }
         #endif
     }
+
     #endif // MICROPY_MODULE_FROZEN
 
     // If we support loading .mpy files then check if the file extension is of
@@ -463,6 +464,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
             // because the file will not exist.
         }
 
+        //CIRCUITPY
         // Loading a module thrashes the heap significantly so we explicitly clean up
         // afterwards.
         gc_collect();

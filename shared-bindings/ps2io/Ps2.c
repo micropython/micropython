@@ -78,8 +78,7 @@ STATIC mp_obj_t ps2io_ps2_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const mcu_pin_obj_t *clock_pin = validate_obj_is_free_pin(args[ARG_clock_pin].u_obj, MP_QSTR_clock_pin);
     const mcu_pin_obj_t *data_pin = validate_obj_is_free_pin(args[ARG_data_pin].u_obj, MP_QSTR_data_pin);
 
-    ps2io_ps2_obj_t *self = m_new_obj(ps2io_ps2_obj_t);
-    self->base.type = &ps2io_ps2_type;
+    ps2io_ps2_obj_t *self = mp_obj_malloc(ps2io_ps2_obj_t, &ps2io_ps2_type);
 
     common_hal_ps2io_ps2_construct(self, data_pin, clock_pin);
 

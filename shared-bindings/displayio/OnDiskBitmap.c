@@ -89,8 +89,7 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
 
-    displayio_ondiskbitmap_t *self = m_new_obj(displayio_ondiskbitmap_t);
-    self->base.type = &displayio_ondiskbitmap_type;
+    displayio_ondiskbitmap_t *self = mp_obj_malloc(displayio_ondiskbitmap_t, &displayio_ondiskbitmap_type);
     common_hal_displayio_ondiskbitmap_construct(self, MP_OBJ_TO_PTR(arg));
 
     return MP_OBJ_FROM_PTR(self);

@@ -112,4 +112,4 @@ const mp_obj_module_t audiocore_module = {
     .globals = (mp_obj_dict_t *)&audiocore_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_audiocore, audiocore_module, CIRCUITPY_AUDIOCORE);
+MP_REGISTER_MODULE(MP_QSTR_audiocore, audiocore_module);

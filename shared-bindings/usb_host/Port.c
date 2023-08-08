@@ -50,8 +50,7 @@ STATIC mp_obj_t usb_host_port_make_new(const mp_obj_type_t *type,
     const mcu_pin_obj_t *dp = validate_obj_is_free_pin(args[0], MP_QSTR_dp);
     const mcu_pin_obj_t *dm = validate_obj_is_free_pin(args[1], MP_QSTR_dm);
 
-    usb_host_port_obj_t *self = m_new_obj(usb_host_port_obj_t);
-    self->base.type = &usb_host_port_type;
+    usb_host_port_obj_t *self = mp_obj_malloc(usb_host_port_obj_t, &usb_host_port_type);
     common_hal_usb_host_port_construct(self, dp, dm);
 
     return (mp_obj_t)self;

@@ -460,7 +460,7 @@ typedef struct _mp_rom_map_elem_t {
 typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // if set, table is fixed/read-only and can't be modified
-    size_t is_ordered : 1;  / if set, table is an ordered array, not a hash map
+    size_t is_ordered : 1;  // if set, table is an ordered array, not a hash map
     size_t scanning : 1;    // true if we're in the middle of scanning linked dictionaries,
                             // e.g., make_dict_long_lived()
     size_t used : (8 * sizeof(size_t) - 4);
@@ -611,6 +611,39 @@ struct _mp_obj_type_ext {
 
     // One of disjoint protocols (interfaces), like mp_stream_p_t, etc.
     const void *protocol;
+};
+
+struct _mp_obj_type_t {
+    // A type is an object so must start with this entry, which points to mp_type_type.
+    mp_obj_base_t base;
+
+    // Flags associated with this type.
+    uint16_t flags;
+    // The name of this type, a qstr.
+    uint16_t name;
+
+    // A dict mapping qstrs to objects local methods/constants/etc.
+    struct _mp_obj_dict_t *locals_dict;
+
+    // Corresponds to __new__ and __init__ special methods, to make an instance of the type.
+    mp_make_new_fun_t make_new;
+
+    // Corresponds to __repr__ and __str__ special methods.
+    mp_print_fun_t print;
+
+    // Implements load, store and delete attribute.
+    //
+    // dest[0] = MP_OBJ_NULL means load
+    //  return: for fail, do nothing
+    //          for fail but continue lookup in locals_dict, dest[1] = MP_OBJ_SENTINEL
+    //          for attr, dest[0] = value
+    //          for method, dest[0] = method, dest[1] = self
+    //
+    // dest[0,1] = {MP_OBJ_SENTINEL, MP_OBJ_NULL} means delete
+    // dest[0,1] = {MP_OBJ_SENTINEL, object} means store
+    //  return: for fail, do nothing
+    //          for success set dest[0] = MP_OBJ_NULL
+    mp_attr_fun_t attr;
 
     // A pointer to the parents of this type:
     //  - 0 parents: pointer is NULL (object is implicitly the single parent)
@@ -851,10 +884,6 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
 #endif
 // Only use this string version from native MPY files with static error strings.
 mp_obj_t mp_obj_new_exception_msg_str(const mp_obj_type_t *exc_type, const char *msg);
-mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
-mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
-mp_obj_t mp_obj_new_fun_viper(size_t n_args, const void *fun_data, mp_uint_t type_sig);
-mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun, bool is_coroutine);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
@@ -928,6 +957,7 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type);
 void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values);
+mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in);
@@ -1003,6 +1033,7 @@ void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
+mp_obj_t mp_obj_list_clear(mp_obj_t self_in);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
 void mp_obj_list_get(mp_obj_t self_in, size_t *len, mp_obj_t **items);
@@ -1022,7 +1053,7 @@ mp_obj_t mp_obj_dict_get(mp_obj_t self_in, mp_obj_t index);
 mp_obj_t mp_obj_dict_store(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
 mp_obj_t mp_obj_dict_delete(mp_obj_t self_in, mp_obj_t key);
 mp_obj_t mp_obj_dict_copy(mp_obj_t self_in);
-static inline mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
+static MP_INLINE mp_map_t *mp_obj_dict_get_map(mp_obj_t dict) {
     return &((mp_obj_dict_t *)MP_OBJ_TO_PTR(dict))->map;
 }
 
@@ -1082,9 +1113,8 @@ typedef struct _mp_obj_module_t {
     mp_obj_base_t base;
     mp_obj_dict_t *globals;
 } mp_obj_module_t;
-static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
-    return ((mp_obj_module_t *)MP_OBJ_TO_PTR(module))->globals;
-}
+mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in);
+void mp_obj_module_set_globals(mp_obj_t self_in, mp_obj_dict_t *globals);
 // check if given module object is a package
 bool mp_obj_is_package(mp_obj_t module);
 

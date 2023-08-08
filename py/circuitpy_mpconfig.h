@@ -214,7 +214,6 @@ typedef long mp_off_t;
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio
 
-#define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open_obj mp_vfs_open_obj
 
 
@@ -491,13 +490,6 @@ void background_callback_run_all(void);
 #endif
 
 #define CIRCUITPY_VERBOSE_BLE 0
-
-// This trades ~1k flash space (1) for that much in RAM plus the cost to compute
-// the values once on init (0). Only turn it off, when you really need the flash
-// space and are willing to trade the RAM.
-#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
-#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
-#endif
 
 // Display the Blinka logo in the REPL on displayio displays.
 #ifndef CIRCUITPY_REPL_LOGO

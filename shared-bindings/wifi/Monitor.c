@@ -59,8 +59,7 @@ STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     wifi_monitor_obj_t *self = MP_STATE_VM(wifi_monitor_singleton);
     if (common_hal_wifi_monitor_deinited()) {
-        self = m_new_obj(wifi_monitor_obj_t);
-        self->base.type = &wifi_monitor_type;
+        self = mp_obj_malloc(wifi_monitor_obj_t, &wifi_monitor_type);
         common_hal_wifi_monitor_construct(self, channel, queue);
         MP_STATE_VM(wifi_monitor_singleton) = self;
     }

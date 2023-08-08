@@ -65,8 +65,7 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
 
     // 1st argument is the pin
     const mcu_pin_obj_t *pin = common_hal_analogio_analogin_validate_pin(args[0]);
-    analogio_analogin_obj_t *self = m_new_obj(analogio_analogin_obj_t);
-    self->base.type = &analogio_analogin_type;
+    analogio_analogin_obj_t *self = mp_obj_malloc(analogio_analogin_obj_t, &analogio_analogin_type);
     common_hal_analogio_analogin_construct(self, pin);
 
     return MP_OBJ_FROM_PTR(self);

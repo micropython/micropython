@@ -172,8 +172,7 @@ STATIC mp_obj_t synthio_math_make_new(const mp_obj_type_t *type_in, size_t n_arg
 }
 
 STATIC mp_obj_t synthio_math_make_new_common(mp_arg_val_t args[MP_ARRAY_SIZE(math_properties)]) {
-    synthio_math_obj_t *self = m_new_obj(synthio_math_obj_t);
-    self->base.base.type = &synthio_math_type;
+    synthio_math_obj_t *self = mp_obj_malloc(synthio_math_obj_t, &synthio_math_type);
 
     self->base.last_tick = synthio_global_tick;
 

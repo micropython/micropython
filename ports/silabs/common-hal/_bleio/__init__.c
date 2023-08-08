@@ -183,17 +183,12 @@ void sl_bt_on_event(sl_bt_msg_t *evt) {
             osMutexAcquire(bluetooth_connection_mutex_id, osWaitForever);
             connection = bleio_conn_handle_to_connection(
                 evt->data.evt_gatt_service.connection);
-            service = m_new_obj(bleio_service_obj_t);
-            if (NULL == service) {
-                mp_raise_bleio_BluetoothError(
-                    translate("Create new service obj fail"));
-            }
-            service->base.type = &bleio_service_type;
+            service = m_new_obj(bleio_service_obj_t, &bleio_service_type);
             bleio_service_from_connection(service,
                 bleio_connection_new_from_internal(connection));
             service->is_remote = true;
             service->handle = evt->data.evt_gatt_service.service;
-            uuid = m_new_obj(bleio_uuid_obj_t);
+            uuid = m_new_obj_maybe(bleio_uuid_obj_t);
             if (NULL == uuid) {
                 osMutexRelease(bluetooth_connection_mutex_id);
                 mp_raise_bleio_BluetoothError(
@@ -231,21 +226,8 @@ void sl_bt_on_event(sl_bt_msg_t *evt) {
             service =
                 MP_OBJ_TO_PTR(connection->remote_service_list->items[serv_idx - 1]);
 
-            characteristic = m_new_obj(bleio_characteristic_obj_t);
-            if (characteristic == NULL) {
-                mp_raise_bleio_BluetoothError(
-                    translate("Create new characteristic obj fail."));
-            }
-
-            characteristic->base.type = &bleio_characteristic_type;
-            uuid = m_new_obj(bleio_uuid_obj_t);
-            if (uuid == NULL) {
-                mp_raise_bleio_BluetoothError(
-                    translate("Create new characteristic uuid obj fail."));
-                break;
-            }
-
-            uuid->base.type = &bleio_uuid_type;
+            characteristic = mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
+            uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
             if (UUID16_LEN == evt->data.evt_gatt_characteristic.uuid.len) {
                 uuid->efr_ble_uuid.uuid16.value &= 0x0000;
                 uuid->efr_ble_uuid.uuid16.value

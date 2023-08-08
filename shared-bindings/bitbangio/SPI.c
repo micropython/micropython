@@ -89,8 +89,7 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj, MP_QSTR_mosi);
     const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj, MP_QSTR_miso);
 
-    bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
-    self->base.type = &bitbangio_spi_type;
+    bitbangio_spi_obj_t *self = mp_obj_malloc(bitbangio_spi_obj_t, &bitbangio_spi_type);
     shared_module_bitbangio_spi_construct(self, clock, mosi, miso);
     return (mp_obj_t)self;
 }

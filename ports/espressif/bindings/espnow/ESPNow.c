@@ -78,8 +78,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
 
     // Allocate a new object
-    self = m_new_obj(espnow_obj_t);
-    self->base.type = &espnow_type;
+    self = mp_obj_malloc(espnow_obj_t, &espnow_type);
 
     // Construct the object
     common_hal_espnow_construct(self, args[ARG_buffer_size].u_int, args[ARG_phy_rate].u_int);

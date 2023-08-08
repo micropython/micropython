@@ -62,8 +62,7 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_int_t width = mp_arg_validate_int_min(args[ARG_width].u_int, 1, MP_QSTR_width);
     mp_int_t height = mp_arg_validate_int_min(args[ARG_height].u_int, 1, MP_QSTR_height);
 
-    displayio_shape_t *self = m_new_obj(displayio_shape_t);
-    self->base.type = &displayio_shape_type;
+    displayio_shape_t *self = mp_obj_malloc(displayio_shape_t, &displayio_shape_type);
     common_hal_displayio_shape_construct(self,
         width,
         height,

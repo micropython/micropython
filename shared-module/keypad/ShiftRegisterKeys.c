@@ -46,20 +46,20 @@ static keypad_scanner_funcs_t shiftregisterkeys_funcs = {
 
 void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, const mcu_pin_obj_t *clock_pin, const mcu_pin_obj_t *data_pin, const mcu_pin_obj_t *latch_pin, bool value_to_latch, size_t key_count, bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
-    digitalio_digitalinout_obj_t *clock = m_new_obj(digitalio_digitalinout_obj_t);
-    clock->base.type = &digitalio_digitalinout_type;
+    digitalio_digitalinout_obj_t *clock =
+        mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
     common_hal_digitalio_digitalinout_construct(clock, clock_pin);
     common_hal_digitalio_digitalinout_switch_to_output(clock, false, DRIVE_MODE_PUSH_PULL);
     self->clock = clock;
 
-    digitalio_digitalinout_obj_t *data = m_new_obj(digitalio_digitalinout_obj_t);
-    data->base.type = &digitalio_digitalinout_type;
+    digitalio_digitalinout_obj_t *data =
+        mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
     common_hal_digitalio_digitalinout_construct(data, data_pin);
     common_hal_digitalio_digitalinout_switch_to_input(data, PULL_NONE);
     self->data = data;
 
-    digitalio_digitalinout_obj_t *latch = m_new_obj(digitalio_digitalinout_obj_t);
-    latch->base.type = &digitalio_digitalinout_type;
+    digitalio_digitalinout_obj_t *latch =
+        mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
 
     common_hal_digitalio_digitalinout_construct(latch, latch_pin);
     common_hal_digitalio_digitalinout_switch_to_output(latch, true, DRIVE_MODE_PUSH_PULL);

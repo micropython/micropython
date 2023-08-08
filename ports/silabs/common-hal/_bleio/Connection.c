@@ -251,8 +251,7 @@ mp_obj_t bleio_connection_new_from_internal(
     if (internal->connection_obj != mp_const_none) {
         return internal->connection_obj;
     }
-    connection = m_new_obj(bleio_connection_obj_t);
-    connection->base.type = &bleio_connection_type;
+    connection = mp_obj_malloc(bleio_connection_obj_t, &bleio_connection_type);
     connection->connection = internal;
     internal->connection_obj = connection;
 

@@ -75,8 +75,7 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
         }
     }
 
-    displayio_bitmap_t *self = m_new_obj(displayio_bitmap_t);
-    self->base.type = &displayio_bitmap_type;
+    displayio_bitmap_t *self = mp_obj_malloc(displayio_bitmap_t, &displayio_bitmap_type);
     common_hal_displayio_bitmap_construct(self, width, height, bits);
 
     return MP_OBJ_FROM_PTR(self);

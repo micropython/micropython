@@ -91,4 +91,4 @@ const mp_obj_module_t espnow_module = {
     .globals = (mp_obj_dict_t *)&espnow_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_espnow, espnow_module, CIRCUITPY_ESPNOW);
+MP_REGISTER_MODULE(MP_QSTR_espnow, espnow_module);

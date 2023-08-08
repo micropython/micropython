@@ -48,8 +48,8 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     mp_obj_t dios[num_pins];
 
     for (size_t i = 0; i < num_pins; i++) {
-        digitalio_digitalinout_obj_t *dio = m_new_obj(digitalio_digitalinout_obj_t);
-        dio->base.type = &digitalio_digitalinout_type;
+        digitalio_digitalinout_obj_t *dio =
+            mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
         common_hal_digitalio_digitalinout_construct(dio, pins[i]);
         if (pull) {
             common_hal_digitalio_digitalinout_set_pull(dio, value_when_pressed ? PULL_DOWN : PULL_UP);
