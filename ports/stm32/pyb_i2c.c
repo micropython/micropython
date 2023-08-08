@@ -290,8 +290,8 @@ void i2c_init0(void) {
 
 int pyb_i2c_init(I2C_HandleTypeDef *i2c) {
     int i2c_unit;
-    const pin_obj_t *scl_pin;
-    const pin_obj_t *sda_pin;
+    const machine_pin_obj_t *scl_pin;
+    const machine_pin_obj_t *sda_pin;
 
     if (0) {
     #if defined(MICROPY_HW_I2C1_SCL)

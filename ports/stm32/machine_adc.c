@@ -571,7 +571,7 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
             sample_time = ADC_SAMPLETIME_DEFAULT_INT;
         }
     } else {
-        const pin_obj_t *pin = pin_find(source);
+        const machine_pin_obj_t *pin = pin_find(source);
         if (pin->adc_num & PIN_ADC1) {
             #if defined(STM32WL)
             adc = ADC;

@@ -1199,7 +1199,7 @@ STATIC mp_obj_t pyb_timer_channel(size_t n_args, const mp_obj_t *pos_args, mp_ma
         if (!mp_obj_is_type(pin_obj, &pin_type)) {
             mp_raise_ValueError(MP_ERROR_TEXT("pin argument needs to be be a Pin type"));
         }
-        const pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
+        const machine_pin_obj_t *pin = MP_OBJ_TO_PTR(pin_obj);
         const pin_af_obj_t *af = pin_find_af(pin, AF_FN_TIM, self->tim_id);
         if (af == NULL) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Pin(%q) doesn't have an alt for Timer(%d)"), pin->name, self->tim_id);
