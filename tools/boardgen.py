@@ -344,8 +344,13 @@ class PinGenerator:
     def _cpu_pin_pointer(self, pin):
         return "&pin_{:s}_obj".format(pin.name())
 
+    # Allow a port to prefix the board pin macro names with something.
+    # e.g. STM32 does pyb_pin_NAME whereas other ports using pin_NAME.
+    def board_name_define_prefix(self):
+        return ""
+
     # Print the pin_CPUNAME and pin_BOARDNAME macros.
-    def print_defines(self, out_header):
+    def print_defines(self, out_header, cpu=True, board=True):
         # Provide #defines for each cpu pin.
         for pin in self.available_pins():
             print(file=out_header)
@@ -354,29 +359,70 @@ class PinGenerator:
                 print("#if {}".format(m), file=out_header)
 
             # #define pin_CPUNAME (...)
-            print(
-                "#define pin_{:s} ({:s})".format(pin.name(), self._cpu_pin_pointer(pin)),
-                file=out_header,
-            )
-
-            # #define pin_BOARDNAME (pin_CPUNAME)
-            for board_pin_name, _board_hidden in pin._board_pin_names:
-                # Note: Hidden board pins are still available to C via the macro.
+            if cpu:
                 print(
-                    "#define pin_{:s} (pin_{:s})".format(
-                        board_pin_name,
-                        pin.name(),
-                    ),
+                    "#define pin_{:s} ({:s})".format(pin.name(), self._cpu_pin_pointer(pin)),
                     file=out_header,
                 )
+
+            # #define pin_BOARDNAME (pin_CPUNAME)
+            if board:
+                for board_pin_name, _board_hidden in pin._board_pin_names:
+                    # Note: Hidden board pins are still available to C via the macro.
+                    # Note: The RHS isn't wrapped in (), which is necessary to make the
+                    # STATIC_AF_ macro work on STM32.
+                    print(
+                        "#define {:s}pin_{:s} pin_{:s}".format(
+                            self.board_name_define_prefix(),
+                            board_pin_name,
+                            pin.name(),
+                        ),
+                        file=out_header,
+                    )
 
             if m:
                 print("#endif", file=out_header)
 
+    def print_pin_objects(self, out_source):
+        print(file=out_source)
+        for pin in self.available_pins():
+            m = pin.enable_macro()
+            if m:
+                print("#if {}".format(m), file=out_source)
+            print(
+                "{:s}machine_pin_obj_t pin_{:s}_obj = {:s};".format(
+                    "const " if pin.is_const() else "",
+                    pin.name(),
+                    pin.definition(),
+                ),
+                file=out_source,
+            )
+            if m:
+                print("#endif", file=out_source)
+
+    def print_pin_object_externs(self, out_header):
+        print(file=out_header)
+        for pin in self.available_pins():
+            m = pin.enable_macro()
+            if m:
+                print("#if {}".format(m), file=out_header)
+            print(
+                "extern {:s}machine_pin_obj_t pin_{:s}_obj;".format(
+                    "const " if pin.is_const() else "",
+                    pin.name(),
+                ),
+                file=out_header,
+            )
+            if m:
+                print("#endif", file=out_header)
+
     def print_source(self, out_source):
-        raise NotImplementedError
+        self.print_pin_objects(out_source)
+        self.print_cpu_locals_dict(out_source)
+        self.print_board_locals_dict(out_source)
 
     def print_header(self, out_header):
+        self.print_pin_object_externs(out_header)
         self.print_defines(out_header)
 
     # A port can override this if it has extra input files (e.g. af.csv) to load.
@@ -497,6 +543,10 @@ class NumericPinGenerator(PinGenerator):
     def print_source(self, out_source):
         self.print_cpu_table(out_source)
         self.print_board_locals_dict(out_source)
+
+    # Replace PinGenerator's implementation to only print the defines.
+    def print_header(self, out_header):
+        self.print_defines(out_header)
 
     def _cpu_pin_pointer(self, pin):
         n = pin.index_name()
