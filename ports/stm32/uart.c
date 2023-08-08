@@ -250,7 +250,7 @@ bool uart_init(machine_uart_obj_t *uart_obj,
     uint8_t uart_fn = AF_FN_UART;
     int uart_unit;
 
-    const pin_obj_t *pins[4] = {0};
+    const machine_pin_obj_t *pins[4] = {0};
 
     switch (uart_obj->uart_id) {
         #if defined(MICROPY_HW_UART1_TX) && defined(MICROPY_HW_UART1_RX)

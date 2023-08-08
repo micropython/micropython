@@ -281,7 +281,7 @@ class Pin(object):
         print("};", file=out_source)
         print("", file=out_source)
         print(
-            "const pin_obj_t pin_{:s}_obj = PIN({:s}, {:d}, {:s}, {:s}, {:d});".format(
+            "const machine_pin_obj_t pin_{:s}_obj = PIN({:s}, {:d}, {:s}, {:s}, {:d});".format(
                 self.cpu_pin_name(),
                 self.port_letter(),
                 self.pin,
@@ -295,7 +295,7 @@ class Pin(object):
 
     def print_header(self, out_header):
         n = self.cpu_pin_name()
-        print("extern const pin_obj_t pin_{:s}_obj;".format(n), file=out_header)
+        print("extern const machine_pin_obj_t pin_{:s}_obj;".format(n), file=out_header)
         print("#define pin_{:s} (&pin_{:s}_obj)".format(n, n), file=out_header)
         if self.alt_fn_count > 0:
             print("extern const pin_af_obj_t pin_{:s}_af[];".format(n), file=out_header)
@@ -381,7 +381,9 @@ class Pins(object):
 
     def print_named(self, label, named_pins, out_source):
         print(
-            "STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{".format(label),
+            "STATIC const mp_rom_map_elem_t machine_pin_{:s}_pins_locals_dict_table[] = {{".format(
+                label
+            ),
             file=out_source,
         )
         for named_pin in named_pins:
@@ -395,7 +397,7 @@ class Pins(object):
                 )
         print("};", file=out_source)
         print(
-            "MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);".format(
+            "MP_DEFINE_CONST_DICT(machine_pin_{:s}_pins_locals_dict, machine_pin_{:s}_pins_locals_dict_table);".format(
                 label, label
             ),
             file=out_source,
@@ -428,7 +430,7 @@ class Pins(object):
         self.adc_table_size[adc_num] = table_size
         print("", file=out_source)
         print(
-            "const pin_obj_t * const pin_adc{:d}[{:d}] = {{".format(adc_num, table_size),
+            "const machine_pin_obj_t * const pin_adc{:d}[{:d}] = {{".format(adc_num, table_size),
             file=out_source,
         )
         for channel in range(table_size):
@@ -447,7 +449,7 @@ class Pins(object):
                     pin.print_header(out_header)
             for adc_num, table_size in self.adc_table_size.items():
                 print(
-                    "extern const pin_obj_t * const pin_adc{:d}[{:d}];".format(
+                    "extern const machine_pin_obj_t * const pin_adc{:d}[{:d}];".format(
                         adc_num, table_size
                     ),
                     file=out_header,

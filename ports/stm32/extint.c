@@ -244,7 +244,7 @@ STATIC const uint8_t nvic_irq_channel[EXTI_NUM_VECTORS] = {
 // Set override_callback_obj to true if you want to unconditionally set the
 // callback function.
 uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t callback_obj, bool override_callback_obj) {
-    const pin_obj_t *pin = NULL;
+    const machine_pin_obj_t *pin = NULL;
     uint v_line;
 
     if (mp_obj_is_int(pin_obj)) {
@@ -318,7 +318,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
 }
 
 // This function is intended to be used by the Pin.irq() method
-void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj) {
+void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_obj_t callback_obj) {
     uint32_t line = pin->pin;
 
     // Check if the ExtInt line is already in use by another Pin/ExtInt
@@ -327,7 +327,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
         if (mp_obj_is_small_int(pyb_extint_callback_arg[line])) {
             mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("ExtInt vector %d is already in use"), line);
         } else {
-            const pin_obj_t *other_pin = MP_OBJ_TO_PTR(pyb_extint_callback_arg[line]);
+            const machine_pin_obj_t *other_pin = MP_OBJ_TO_PTR(pyb_extint_callback_arg[line]);
             mp_raise_msg_varg(&mp_type_OSError,
                 MP_ERROR_TEXT("IRQ resource already taken by Pin('%q')"), other_pin->name);
         }
@@ -370,7 +370,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
     }
 }
 
-void extint_set(const pin_obj_t *pin, uint32_t mode) {
+void extint_set(const machine_pin_obj_t *pin, uint32_t mode) {
     uint32_t line = pin->pin;
 
     mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];

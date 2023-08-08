@@ -341,7 +341,7 @@ void spi_set_params(const spi_t *spi_obj, uint32_t prescale, int32_t baudrate,
 int spi_init(const spi_t *self, bool enable_nss_pin) {
     SPI_HandleTypeDef *spi = self->spi;
     uint32_t irqn = 0;
-    const pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
+    const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
 
     if (0) {
     #if defined(MICROPY_HW_SPI1_SCK)
