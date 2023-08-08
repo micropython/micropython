@@ -126,6 +126,27 @@ STATIC void validate_clip_region(displayio_bitmap_t *bitmap, mp_obj_t clip0_tupl
 
 }
 
+MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, NORMAL, BITMAPTOOLS_BLENDMODE_NORMAL);
+MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, SCREEN, BITMAPTOOLS_BLENDMODE_SCREEN);
+
+//| class BlendMode:
+//|     """The blend mode for `alphablend` to operate use"""
+//|
+//|     NORMAL: Blendmode
+//|     """Blend with equal parts of the two source bitmaps"""
+//|
+//|     SCREEN: Blendmode
+//|     """Blend based on the value in each color channel. The result keeps the lighter colors and discards darker colors."""
+//|
+MAKE_ENUM_MAP(bitmaptools_blendmode) {
+    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, NORMAL),
+    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, SCREEN),
+};
+STATIC MP_DEFINE_CONST_DICT(bitmaptools_blendmode_locals_dict, bitmaptools_blendmode_locals_table);
+
+MAKE_PRINTER(bitmaptools, bitmaptools_blendmode);
+MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
+
 //| def rotozoom(
 //|     dest_bitmap: displayio.Bitmap,
 //|     source_bitmap: displayio.Bitmap,
@@ -274,27 +295,6 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom);
 
-MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, NORMAL, BITMAPTOOLS_BLENDMODE_NORMAL);
-MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, SCREEN, BITMAPTOOLS_BLENDMODE_SCREEN);
-
-//| class BlendMode:
-//|     """The blend mode for `alphablend` to operate use"""
-//|
-//|     NORMAL: Blendmode
-//|     """Blend with equal parts of the two source bitmaps"""
-//|
-//|     SCREEN: Blendmode
-//|     """Blend based on the value in each color channel. The result keeps the lighter colors and discards darker colors."""
-//|
-MAKE_ENUM_MAP(bitmaptools_blendmode) {
-    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, NORMAL),
-    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, SCREEN),
-};
-STATIC MP_DEFINE_CONST_DICT(bitmaptools_blendmode_locals_dict, bitmaptools_blendmode_locals_table);
-
-MAKE_PRINTER(bitmaptools, bitmaptools_blendmode);
-MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
-
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
 //| def alphablend(
@@ -320,10 +320,8 @@ MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
 //|     :param float factor2: The proportion of bitmap 2 to mix in.  If specified as `None`, ``1-factor1`` is used.  Usually the proportions should sum to 1.
 //|     :param displayio.Colorspace colorspace: The colorspace of the bitmaps. They must all have the same colorspace.  Only the following colorspaces are permitted:  ``L8``, ``RGB565``, ``RGB565_SWAPPED``, ``BGR565`` and ``BGR565_SWAPPED``.
 //|     :param bitmaptools.BlendMode blendmode: The blend mode to use. Default is NORMAL.
-//|     :param int skip_source1_index: bitmap palette index in the source that will not be blended,
-//|                            set to None to blended all pixels
-//|     :param int skip_source2_index: bitmap palette index in the source that will not be blended,
-//|                            set to None to blended all pixels
+//|     :param int skip_source1_index: bitmap palette index in source_bitmap_1 that will not be blended, set to None to blend all pixels
+//|     :param int skip_source2_index: bitmap palette index in source_bitmap_2 that will not be blended, set to None to blend all pixels
 //|
 //|     For the L8 colorspace, the bitmaps must have a bits-per-value of 8.
 //|     For the RGB colorspaces, they must have a bits-per-value of 16."""
