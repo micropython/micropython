@@ -405,39 +405,43 @@ static uint32_t mask_and_rotate(const mcu_pin_obj_t *first_pin, uint32_t bit_cou
 }
 
 typedef struct {
-    uint32_t pins_we_use, in_pin_count, out_pin_count;
-    bool has_jmp_pin, auto_push, auto_pull, has_in_pin, has_out_pin, has_set_pin;
-    bool tx_fifo, rx_fifo, in_loaded, out_loaded, in_used, out_used;
+    struct {
+        uint32_t pins_we_use, in_pin_count, out_pin_count;
+        bool has_jmp_pin, auto_push, auto_pull, has_in_pin, has_out_pin, has_set_pin;
+    } inputs;
+    struct {
+        bool tx_fifo, rx_fifo, in_loaded, out_loaded, in_used, out_used;
+    } outputs;
 } introspect_t;
 
 static void consider_instruction(introspect_t *state, uint16_t full_instruction, qstr what_program, size_t i) {
     uint16_t instruction = full_instruction & 0xe000;
     if (instruction == 0x8000) {
         if ((full_instruction & 0xe080) == pio_instr_bits_push) {
-            state->rx_fifo = true;
-            state->in_loaded = true;
+            state->outputs.rx_fifo = true;
+            state->outputs.in_loaded = true;
         } else { // pull otherwise.
-            state->tx_fifo = true;
-            state->out_loaded = true;
+            state->outputs.tx_fifo = true;
+            state->outputs.out_loaded = true;
         }
     }
     if (instruction == pio_instr_bits_jmp) {
         uint16_t condition = (full_instruction & 0x00e0) >> 5;
-        if ((condition == 0x6) && !state->has_jmp_pin) {
+        if ((condition == 0x6) && !state->inputs.has_jmp_pin) {
             mp_raise_ValueError_varg(translate("Missing jmp_pin. %q[%u] jumps on pin"), what_program, i);
         }
     }
     if (instruction == pio_instr_bits_wait) {
         uint16_t wait_source = (full_instruction & 0x0060) >> 5;
         uint16_t wait_index = full_instruction & 0x001f;
-        if (wait_source == 0 && (state->pins_we_use & (1 << wait_index)) == 0) { // GPIO
+        if (wait_source == 0 && (state->inputs.pins_we_use & (1 << wait_index)) == 0) { // GPIO
             mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), what_program, i);
         }
         if (wait_source == 1) { // Input pin
-            if (!state->has_in_pin) {
+            if (!state->inputs.has_in_pin) {
                 mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] waits based on pin"), what_program, i);
             }
-            if (wait_index >= state->in_pin_count) {
+            if (wait_index >= state->inputs.in_pin_count) {
                 mp_raise_ValueError_varg(translate("%q[%u] waits on input outside of count"), what_program, i);
             }
         }
@@ -446,41 +450,41 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t source = (full_instruction & 0x00e0) >> 5;
         uint16_t bit_count = full_instruction & 0x001f;
         if (source == 0) {
-            if (!state->has_in_pin) {
+            if (!state->inputs.has_in_pin) {
                 mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] shifts in from pin(s)"), what_program, i);
             }
-            if (bit_count > state->in_pin_count) {
+            if (bit_count > state->inputs.in_pin_count) {
                 mp_raise_ValueError_varg(translate("%q[%u] shifts in more bits than pin count"), what_program, i);
             }
         }
-        if (state->auto_push) {
-            state->in_loaded = true;
-            state->rx_fifo = true;
+        if (state->inputs.auto_push) {
+            state->outputs.in_loaded = true;
+            state->outputs.rx_fifo = true;
         }
-        state->in_used = true;
+        state->outputs.in_used = true;
     }
     if (instruction == pio_instr_bits_out) {
         uint16_t bit_count = full_instruction & 0x001f;
         uint16_t destination = (full_instruction & 0x00e0) >> 5;
         // Check for pins or pindirs destination.
         if (destination == 0x0 || destination == 0x4) {
-            if (!state->has_out_pin) {
+            if (!state->inputs.has_out_pin) {
                 mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] shifts out to pin(s)"), what_program, i);
             }
-            if (bit_count > state->out_pin_count) {
+            if (bit_count > state->inputs.out_pin_count) {
                 mp_raise_ValueError_varg(translate("%q[%u] shifts out more bits than pin count"), what_program, i);
             }
         }
-        if (state->auto_pull) {
-            state->out_loaded = true;
-            state->tx_fifo = true;
+        if (state->inputs.auto_pull) {
+            state->outputs.out_loaded = true;
+            state->outputs.tx_fifo = true;
         }
-        state->out_used = true;
+        state->outputs.out_used = true;
     }
     if (instruction == pio_instr_bits_set) {
         uint16_t destination = (full_instruction & 0x00e0) >> 5;
         // Check for pins or pindirs destination.
-        if ((destination == 0x00 || destination == 0x4) && !state->has_set_pin) {
+        if ((destination == 0x00 || destination == 0x4) && !state->inputs.has_set_pin) {
             mp_raise_ValueError_varg(translate("Missing first_set_pin. %q[%u] sets pin(s)"), what_program, i);
         }
     }
@@ -488,16 +492,16 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t source = full_instruction & 0x0007;
         uint16_t destination = (full_instruction & 0x00e0) >> 5;
         // Check for pins or pindirs destination.
-        if (destination == 0x0 && !state->has_out_pin) {
+        if (destination == 0x0 && !state->inputs.has_out_pin) {
             mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] writes pin(s)"), what_program, i);
         }
-        if (source == 0x0 && !state->has_in_pin) {
+        if (source == 0x0 && !state->inputs.has_in_pin) {
             mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] reads pin(s)"), what_program, i);
         }
         if (destination == 0x6) {
-            state->in_loaded = true;
+            state->outputs.in_loaded = true;
         } else if (destination == 0x7) {
-            state->out_loaded = true;
+            state->outputs.out_loaded = true;
         }
     }
 }
@@ -539,24 +543,26 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
 
     // Look through the program to see what we reference and make sure it was provided.
     introspect_t state = {
-        .pins_we_use = pins_we_use,
-        .has_jmp_pin = jmp_pin != NULL,
-        .has_in_pin = first_in_pin != NULL,
-        .has_out_pin = first_out_pin != NULL,
-        .has_set_pin = first_set_pin != NULL,
-        .in_pin_count = in_pin_count,
-        .out_pin_count = out_pin_count,
-        .auto_pull = auto_pull,
-        .auto_push = auto_push,
+        .inputs = {
+            .pins_we_use = pins_we_use,
+            .has_jmp_pin = jmp_pin != NULL,
+            .has_in_pin = first_in_pin != NULL,
+            .has_out_pin = first_out_pin != NULL,
+            .has_set_pin = first_set_pin != NULL,
+            .in_pin_count = in_pin_count,
+            .out_pin_count = out_pin_count,
+            .auto_pull = auto_pull,
+            .auto_push = auto_push,
+        }
     };
     consider_program(&state, program, program_len, MP_QSTR_program);
     consider_program(&state, init, init_len, MP_QSTR_init);
     consider_program(&state, may_exec, may_exec_len, MP_QSTR_may_exec);
 
-    if (!state.in_loaded && state.in_used) {
+    if (!state.outputs.in_loaded && state.outputs.in_used) {
         mp_raise_ValueError_varg(translate("Program does IN without loading ISR"));
     }
-    if (!state.out_loaded && state.out_used) {
+    if (!state.outputs.out_loaded && state.outputs.out_used) {
         mp_raise_ValueError_varg(translate("Program does OUT without loading OSR"));
     }
 
@@ -609,7 +615,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         first_sideset_pin, sideset_pin_count,
         initial_pin_state, initial_pin_direction,
         jmp_pin,
-        pins_we_use, state.tx_fifo, state.rx_fifo,
+        pins_we_use, state.outputs.tx_fifo, state.outputs.rx_fifo,
         auto_pull, pull_threshold, out_shift_right,
         wait_for_txstall,
         auto_push, push_threshold, in_shift_right,
