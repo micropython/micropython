@@ -881,17 +881,17 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                 blend_source2 = skip_source2_index_none || *sptr2 != (uint8_t)skip_source2_index;
                 if (blend_source1 && blend_source2) {
                     // Premultiply by the alpha factor
-                    int sca1 = *sptr1++ *ifactor1;
-                    int sca2 = *sptr2++ *ifactor2;
+                    int sda = *sptr1++ *ifactor1;
+                    int sca = *sptr2++ *ifactor2;
                     // Blend
                     int blend;
                     if (blendmode == BITMAPTOOLS_BLENDMODE_SCREEN) {
-                        blend = sca2 + sca1 - sca2 * sca1;
+                        blend = sca + sda - (sca * sda / 65536);
                     } else {
-                        blend = sca2 + sca1 * (256 - ifactor2);
+                        blend = sca + sda * (256 - ifactor2) / 256;
                     }
                     // Divide by the alpha factor
-                    pixel = (blend / (256 * ifactor1 + 256 * ifactor2 - ifactor1 * ifactor2));
+                    pixel = (blend / (ifactor1 + ifactor2 - ifactor1 * ifactor2 / 256));
                 } else if (blend_source1) {
                     // Apply iFactor1 to source1 only
                     pixel = *sptr1++ *ifactor1 / 256;
@@ -934,31 +934,31 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                     int ifactor_blend = ifactor1 + ifactor2 - ifactor1 * ifactor2 / 256;
 
                     // Premultiply the colors by the alpha factor
-                    int red_sca1 = ((spix1 & r_mask) >> 11) * ifactor1;
-                    int green_sca1 = ((spix1 & g_mask) >> 5) * ifactor1;
-                    int blue_sca1 = (spix1 & b_mask) * ifactor1;
+                    int red_dca = ((spix1 & r_mask) >> 8) * ifactor1;
+                    int grn_dca = ((spix1 & g_mask) >> 3) * ifactor1;
+                    int blu_dca = ((spix1 & b_mask) << 3) * ifactor1;
 
-                    int red_sca2 = ((spix2 & r_mask) >> 11) * ifactor2;
-                    int green_sca2 = ((spix2 & g_mask) >> 5) * ifactor2;
-                    int blue_sca2 = (spix2 & b_mask) * ifactor2;
+                    int red_sca = ((spix2 & r_mask) >> 8) * ifactor2;
+                    int grn_sca = ((spix2 & g_mask) >> 3) * ifactor2;
+                    int blu_sca = ((spix2 & b_mask) << 3) * ifactor2;
 
-                    int red_blend, green_blend, blue_blend;
+                    int red_blend, grn_blend, blu_blend;
                     if (blendmode == BITMAPTOOLS_BLENDMODE_SCREEN) {
-                        // Perform a screen blend
-                        red_blend = red_sca2 + red_sca1 - (red_sca2 * red_sca1);
-                        green_blend = green_sca2 + green_sca1 - (green_sca2 * green_sca1);
-                        blue_blend = blue_sca2 + blue_sca1 - (blue_sca2 * blue_sca1);
+                        // Perform a screen blend Sca + Dca - Sca × Dca
+                        red_blend = red_sca + red_dca - (red_sca * red_dca / 65536);
+                        grn_blend = grn_sca + grn_dca - (grn_sca * grn_dca / 65536);
+                        blu_blend = blu_sca + blu_dca - (blu_sca * blu_dca / 65536);
                     } else {
-                        // Perform a normal blend
-                        red_blend = red_sca2 + red_sca1 * (256 - ifactor2) / 256;
-                        green_blend = green_sca2 + green_sca1 * (256 - ifactor2) / 256;
-                        blue_blend = blue_sca2 + blue_sca1 * (256 - ifactor2) / 256;
+                        // Perform a normal (src-over) blend
+                        red_blend = red_sca + red_dca * (256 - ifactor2) / 256;
+                        grn_blend = grn_sca + grn_dca * (256 - ifactor2) / 256;
+                        blu_blend = blu_sca + blu_dca * (256 - ifactor2) / 256;
                     }
 
                     // Divide by the alpha factor
-                    int r = ((red_blend / ifactor_blend) << 11) & r_mask;
-                    int g = ((green_blend / ifactor_blend) << 5) & g_mask;
-                    int b = (blue_blend / ifactor_blend) & b_mask;
+                    int r = ((red_blend / ifactor_blend) << 8) & r_mask;
+                    int g = ((grn_blend / ifactor_blend) << 3) & g_mask;
+                    int b = ((blu_blend / ifactor_blend) >> 3) & b_mask;
 
                     // Clamp to the appropriate range
                     r = MIN(r_mask, MAX(0, r)) & r_mask;
