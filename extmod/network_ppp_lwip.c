@@ -153,12 +153,17 @@ static mp_obj_t network_ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t
     if (n_args != 1 && kwargs->used != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
-    // network_ppp_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    network_ppp_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (kwargs->used != 0) {
         for (size_t i = 0; i < kwargs->alloc; i++) {
             if (mp_map_slot_is_filled(kwargs, i)) {
                 switch (mp_obj_str_get_qstr(kwargs->table[i].key)) {
+                    case MP_QSTR_stream: {
+                        mp_get_stream_raise(kwargs->table[i].value, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
+                        self->stream = kwargs->table[i].value;
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -174,6 +179,10 @@ static mp_obj_t network_ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t
     mp_obj_t val = mp_const_none;
 
     switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_stream: {
+            val = self->stream;
+            break;
+        }
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
     }
