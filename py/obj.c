@@ -231,7 +231,11 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
     mp_print_str(print, "\n");
 }
 
-bool mp_obj_is_true(mp_obj_t arg) {
+void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
+    mp_obj_print_exception_with_limit(print, exc, 0);
+}
+
+bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
     if (arg == mp_const_false) {
         return 0;
     } else if (arg == mp_const_true) {
