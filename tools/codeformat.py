@@ -60,6 +60,8 @@ PATHS = [
 EXCLUSIONS = [
     # The cc3200 port is not fully formatted yet.
     "ports/cc3200/*/*.[ch]",
+    # ESP-IDF downloads 3rd party code.
+    "ports/esp32/managed_components/*",
     # The nrf port is not fully formatted yet.
     "ports/nrf/boards/*.[ch]",
     "ports/nrf/device/*.[ch]",
