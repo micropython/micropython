@@ -146,6 +146,9 @@ The following constants are used to configure the pin objects in addition to the
           
     Selects the pin value.
 
+There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
+which can be used to invert a pin. Useful for illuminating active-low LEDs
+using ``on()`` or ``value(1)``.
 
 Software I2C bus
 ----------------

@@ -7,6 +7,7 @@
 #include "modmachine.h"
 #include "drivers/machine/psoc6_gpio.h"
 #include "pins.h"
+#include "extmod/virtpin.h"
 #include "mplogger.h"
 
 
@@ -326,6 +327,25 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
+STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    (void)errcode;
+    machine_pin_obj_t *self = self_in;
+    switch (request) {
+        case MP_PIN_READ: {
+            return cyhal_gpio_read(self->pin_addr);
+        }
+        case MP_PIN_WRITE: {
+            cyhal_gpio_write(self->pin_addr, arg);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+STATIC const mp_pin_p_t pin_pin_p = {
+    .ioctl = pin_ioctl,
+};
+
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_pin_type,
     MP_QSTR_Pin,
@@ -333,5 +353,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, mp_pin_make_new,
     print, machine_pin_print,
     call, machine_pin_call,
+    protocol, &pin_pin_p,
     locals_dict, &machine_pin_locals_dict
     );
