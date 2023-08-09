@@ -218,6 +218,14 @@ void reset_pin_number(gpio_num_t pin_number) {
     _reset_pin(pin_number);
 }
 
+void reset_pin_mask(uint64_t mask) {
+    for (int i = 0; i < 64; i++, mask >>= 1) {
+        if (mask & 1) {
+            reset_pin_number(i);
+        }
+    }
+}
+
 void common_hal_mcu_pin_reset_number(uint8_t i) {
     reset_pin_number((gpio_num_t)i);
 }

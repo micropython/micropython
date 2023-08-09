@@ -12,7 +12,11 @@ if("${CIRCUITPY_ESPCAMERA}")
 message("Including esp32-camera")
 set(EXTRA_COMPONENT_DIRS "esp32-camera")
 list(APPEND COMPONENTS "esp32-camera")
-message("COMPONENTS = ${COMPONENTS}")
+endif()
+
+if("${CIRCUITPY_DOTCLOCKFRAMEBUFFER}")
+message("Including esp32-camera")
+list(APPEND COMPONENTS "esp_lcd")
 endif()
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

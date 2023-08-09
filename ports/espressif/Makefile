@@ -257,6 +257,11 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
 endif
 
+ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
+CFLAGS += -isystem esp-idf/components/esp_lcd/include
+CFLAGS += -isystem esp-idf/components/esp_lcd/interface
+endif
+
 ifneq ($(CIRCUITPY_ESPCAMERA),0)
 SRC_CAMERA := \
 	$(wildcard common-hal/espcamera/*.c) \
@@ -355,7 +360,7 @@ endif
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 QSTR_GLOBAL_REQUIREMENTS += $(BUILD)/esp-idf/config/sdkconfig.h
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESPCAMERA=$(CIRCUITPY_ESPCAMERA)
+	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESPCAMERA=$(CIRCUITPY_ESPCAMERA) -DCIRCUITPY_DOTCLOCKFRAMEBUFFER=$(CIRCUITPY_DOTCLOCKFRAMEBUFFER)
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -392,6 +397,9 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 endif
 ifneq ($(CIRCUITPY_ESPULP),0)
 	ESP_IDF_COMPONENTS_LINK += ulp
+endif
+ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
+	ESP_IDF_COMPONENTS_LINK += esp_lcd
 endif
 
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
