@@ -35,6 +35,7 @@
 # See rfcore_firmware.py for more information.
 
 from machine import mem8, mem16, mem32
+from micropython import const
 import stm
 
 SRAM2A_BASE = const(0x2003_0000)
