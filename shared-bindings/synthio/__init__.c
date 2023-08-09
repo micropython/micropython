@@ -45,6 +45,13 @@
 
 #include "shared-module/synthio/LFO.h"
 
+//|
+//| """Support for multi-channel audio synthesis
+//|
+//| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
+//| """
+//|
+
 //| class EnvelopeState:
 //|     ATTACK: EnvelopeState
 //|     """The note is in its attack phase"""
@@ -85,12 +92,6 @@ static const mp_arg_t envelope_properties[] = {
     { MP_QSTR_sustain_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
 };
 
-//|
-//| """Support for multi-channel audio synthesis
-//|
-//| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
-//| """
-//|
 //| BlockInput = Union["Math", "LFO", float, None]
 //| """Blocks and Notes can take any of these types as inputs on certain attributes
 //|

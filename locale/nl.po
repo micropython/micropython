@@ -1481,6 +1481,10 @@ msgstr "Geen klokken beschikbaar"
 msgid "No capture in progress"
 msgstr ""
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Geen verbinding: lengte kan niet worden bepaald"
@@ -1543,6 +1547,10 @@ msgstr "Bestand/map bestaat niet"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "Geen timer beschikbaar"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"

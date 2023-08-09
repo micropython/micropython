@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-03 16:12+0000\n"
+"PO-Revision-Date: 2023-08-04 16:42+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -1501,6 +1501,10 @@ msgstr "Inga tillgängliga klockor"
 msgid "No capture in progress"
 msgstr "Ingen insamling pågår"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr "Ingen konfiguration gjord"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Ingen anslutning: längden kan inte bestämmas"
@@ -1563,6 +1567,10 @@ msgstr "Ingen sådan fil/katalog"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "Ingen timer tillgänglig"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr "Ingen usb värdport initialiserad"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"

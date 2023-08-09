@@ -1521,6 +1521,10 @@ msgstr ""
 msgid "No capture in progress"
 msgstr "Захват не ведется"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr ""
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Нет соединения: длина не может быть определена"
@@ -1585,6 +1589,10 @@ msgstr "Файл/директория не существует"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "Нет доступного таймера"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr ""
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"

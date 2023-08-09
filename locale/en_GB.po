@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-07-30 11:47+0000\n"
+"PO-Revision-Date: 2023-08-06 17:45+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -1494,6 +1494,10 @@ msgstr "No available clocks"
 msgid "No capture in progress"
 msgstr "No capture in progress"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr "No configuration set"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "No connection: length cannot be determined"
@@ -1556,6 +1560,10 @@ msgstr "No such file/directory"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "No timer available"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr "No USB host port initialised"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
@@ -3304,7 +3312,7 @@ msgstr "input dtype must be float or complex"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input is not iterable"
-msgstr ""
+msgstr "input is not iterable"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"

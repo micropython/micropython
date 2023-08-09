@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-02 22:07+0000\n"
+"PO-Revision-Date: 2023-08-07 14:52+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -1508,6 +1508,10 @@ msgstr "Méiyǒu kěyòng de shízhōng"
 msgid "No capture in progress"
 msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
 
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr "wèi shèzhì pèizhì"
+
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
 msgstr "Wú liánjiē: Wúfǎ quèdìng chángdù"
@@ -1570,6 +1574,10 @@ msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "Méiyǒu jìshí qì"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr "wèi chūshǐhuà USB zhǔjī duānkǒu"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
@@ -3324,7 +3332,7 @@ msgstr "shū rù dtype bì xū shì fú diǎn xíng huò fù shù"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input is not iterable"
-msgstr ""
+msgstr "shūrù bùkě diédài"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"

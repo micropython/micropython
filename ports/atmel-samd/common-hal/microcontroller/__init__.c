@@ -63,7 +63,7 @@ void common_hal_mcu_enable_interrupts(void) {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    if (runmode == RUNMODE_BOOTLOADER) {
+    if ((runmode == RUNMODE_BOOTLOADER) || (runmode == RUNMODE_UF2)) {
         if (!bootloader_available()) {
             mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present"));
         }
