@@ -266,6 +266,22 @@ msgstr "%q, %q, et %q doivent tous être de la même longueur"
 msgid "%q=%q"
 msgstr "%q=%q"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts in more bits than pin count"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts out more bits than pin count"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] uses extra pin"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] waits on input outside of count"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
@@ -1211,30 +1227,6 @@ msgstr "L'entrée prend trop de temps"
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
 
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts in more bits than pin count"
-msgstr ""
-"Instruction %d décale vers l'intérieur de plus de bits que le nombre de "
-"broches"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts out more bits than pin count"
-msgstr ""
-"instruction %d décale vers l'extérieur de plus de bits que le nombre de "
-"broches"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d uses extra pin"
-msgstr "instruction %d utilise des broches supplémentaires"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d waits on input outside of count"
-msgstr "instruction %d attend sur une entrée hors du compte"
-
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
 msgstr "Authentification insuffisante"
@@ -1408,41 +1400,32 @@ msgid "Mismatched swap flag"
 msgstr "Le drapeau d'échange ne correspond pas"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr "first_in_pin manquant. Instruction %d lit une/des broche(s)"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+msgid "Missing first_in_pin. %q[%u] reads pin(s)"
 msgstr ""
-"first_in_pin manquant. Instruction %d est déplacée par la/les broche(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr "first_in_pin manquant. L'instruction %d attends dépends de la broche"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
 msgstr ""
-"first_out_pin manquant. Instruction %d est déplacée par la/les broche(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr "first_out_pin manquant. Instruction %d écrit un/des broche(s)"
+msgid "Missing first_in_pin. %q[%u] waits based on pin"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr "first_set_pin manquant. L'instruction %d règle la/les broche(s)"
+msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr "jmp_pin manquant. L'instruction %d va passer à la broche"
+msgid "Missing first_out_pin. %q[%u] writes pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Missing first_set_pin. %q[%u] sets pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Missing jmp_pin. %q[%u] jumps on pin"
+msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -4489,6 +4472,57 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#, c-format
+#~ msgid "Instruction %d shifts in more bits than pin count"
+#~ msgstr ""
+#~ "Instruction %d décale vers l'intérieur de plus de bits que le nombre de "
+#~ "broches"
+
+#, c-format
+#~ msgid "Instruction %d shifts out more bits than pin count"
+#~ msgstr ""
+#~ "instruction %d décale vers l'extérieur de plus de bits que le nombre de "
+#~ "broches"
+
+#, c-format
+#~ msgid "Instruction %d uses extra pin"
+#~ msgstr "instruction %d utilise des broches supplémentaires"
+
+#, c-format
+#~ msgid "Instruction %d waits on input outside of count"
+#~ msgstr "instruction %d attend sur une entrée hors du compte"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+#~ msgstr "first_in_pin manquant. Instruction %d lit une/des broche(s)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+#~ msgstr ""
+#~ "first_in_pin manquant. Instruction %d est déplacée par la/les broche(s)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
+#~ msgstr ""
+#~ "first_in_pin manquant. L'instruction %d attends dépends de la broche"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+#~ msgstr ""
+#~ "first_out_pin manquant. Instruction %d est déplacée par la/les broche(s)"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+#~ msgstr "first_out_pin manquant. Instruction %d écrit un/des broche(s)"
+
+#, c-format
+#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+#~ msgstr "first_set_pin manquant. L'instruction %d règle la/les broche(s)"
+
+#, c-format
+#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
+#~ msgstr "jmp_pin manquant. L'instruction %d va passer à la broche"
 
 #~ msgid "inputs are not iterable"
 #~ msgstr "les entrées ne sont pas itérables"
