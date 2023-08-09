@@ -41,7 +41,7 @@ def execute(command):
     if exitCode == 0:
         return cmd_log
     else:
-        raise ProcessException(command, exitCode, output)
+        raise subprocess.CalledProcessError(exitCode, command, output)
 
 
 def main():
