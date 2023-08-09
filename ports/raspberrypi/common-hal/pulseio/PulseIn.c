@@ -61,6 +61,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         pulsein_program, MP_ARRAY_SIZE(pulsein_program),
         1000000, // frequency
         NULL, 0, // init, init_len
+        NULL, 0, // may_exec
         NULL, 0, 0, 0, // first out pin, # out pins, initial_out_pin_state
         pin, 1, 0, 0, // first in pin, # in pins
         NULL, 0, 0, 0, // first set pin
@@ -73,7 +74,8 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         false, // wait for TX stall
         true, 32, true, // RX auto pull every 32 bits. shift left to output msb first
         false, // Not user-interruptible.
-        0, -1); // wrap settings
+        0, -1, // wrap settings
+        PIO_ANY_OFFSET);
 
     common_hal_pulseio_pulsein_pause(self);
 
