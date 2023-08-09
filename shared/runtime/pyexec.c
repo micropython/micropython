@@ -33,7 +33,6 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
-#include "py/gc_long_lived.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
 #if MICROPY_HW_ENABLE_USB
@@ -98,28 +97,34 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
                 ctx->module.globals = mp_globals_get();
             ctx->constants = frozen->constants;
                 module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
-        } else
-        #endif
-        {
-            #if MICROPY_ENABLE_COMPILER
-            mp_lexer_t *lex;
-            if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
-                const vstr_t *vstr = source;
-                lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
-            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
-                lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
-            } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
-                lex = mp_lexer_new_from_file(source);
-            } else {
-                lex = (mp_lexer_t *)source;
-            }
-            // source is a lexer, parse and compile the script
-            qstr source_name = lex->source_name;
-            mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-            module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
-            #else
-            mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
+            } else
             #endif
+            {
+                #if MICROPY_ENABLE_COMPILER
+                mp_lexer_t *lex;
+                if (exec_flags & EXEC_FLAG_SOURCE_IS_VSTR) {
+                    const vstr_t *vstr = source;
+                    lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, vstr->buf, vstr->len, 0);
+                } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
+                    lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
+                } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
+                    lex = mp_lexer_new_from_file(source);
+                } else {
+                    lex = (mp_lexer_t *)source;
+                }
+                // source is a lexer, parse and compile the script
+                qstr source_name = lex->source_name;
+                mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+                module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
+                #else
+                mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
+                #endif
+            }
+
+            // If the code was loaded from a file, collect any garbage before running.
+            if (input_kind == MP_PARSE_FILE_INPUT) {
+                gc_collect();
+            }
         }
 
         // execute code

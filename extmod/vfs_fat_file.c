@@ -232,7 +232,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
         DWORD size = (temp_table[0] + 1) * 2;
 
         // Now allocate the size and construct the map.
-        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD), false);
+        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD));
         if (o->fp.cltbl != NULL) {
             o->fp.cltbl[0] = size;
             res = f_lseek(&o->fp, CREATE_LINKMAP);

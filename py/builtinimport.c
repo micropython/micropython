@@ -31,7 +31,6 @@
 #include <assert.h>
 
 #include "py/compile.h"
-#include "py/gc_long_lived.h"
 #include "py/gc.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"
@@ -159,7 +158,6 @@ STATIC void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
     // parse, compile and execute the module in its context
     mp_obj_dict_t *mod_globals = context->module.globals;
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
-    mp_obj_module_set_globals(module_obj, make_dict_long_lived(mod_globals, 10));
 }
 #endif
 
@@ -189,8 +187,6 @@ STATIC void do_execute_raw_code(mp_module_context_t *context, const mp_raw_code_
 
         // finish nlr block, restore context
         nlr_pop();
-        mp_obj_module_set_globals(module_obj,
-            make_dict_long_lived(mp_obj_module_get_globals(module_obj), 10));
         mp_globals_set(old_globals);
         mp_locals_set(old_locals);
     } else {

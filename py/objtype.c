@@ -30,7 +30,6 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/gc_long_lived.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
 
@@ -1202,7 +1201,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         #endif
     }
 
-    mp_obj_full_type_t *o = m_new0_ll(mp_obj_full_type_t, 1);
+    mp_obj_full_type_t *o = m_new0(mp_obj_full_type_t, 1);
     o->base.type = &mp_type_type;
     o->flags = base_flags;
     o->name = name;
@@ -1235,7 +1234,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
         }
     }
 
-    o->locals_dict = make_dict_long_lived(MP_OBJ_TO_PTR(locals_dict), 10);
+    o->locals_dict = MP_OBJ_TO_PTR(locals_dict);
 
     #if ENABLE_SPECIAL_ACCESSORS
     // Check if the class has any special accessor methods

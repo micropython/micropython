@@ -33,6 +33,8 @@
 
 #include "supervisor/shared/translate/translate.h"
 
+#if MICROPY_PY_UBINASCII
+
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
     if (mp_obj_is_str(arg)) {
@@ -40,8 +42,6 @@ static void check_not_unicode(const mp_obj_t arg) {
     }
     #endif
 }
-#if MICROPY_PY_UBINASCII
-
 STATIC mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
     // First argument is the data to convert.
     // Second argument is an optional separator to be used between values.

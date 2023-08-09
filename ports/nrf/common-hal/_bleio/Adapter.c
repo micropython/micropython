@@ -908,12 +908,11 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     }
 
     // The advertising data buffers must not move, because the SoftDevice depends on them.
-    // So make them long-lived and reuse them onwards.
     if (self->advertising_data == NULL) {
-        self->advertising_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+        self->advertising_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false);
     }
     if (self->scan_response_data == NULL) {
-        self->scan_response_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+        self->scan_response_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false);
     }
 
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);

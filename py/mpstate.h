@@ -87,12 +87,10 @@ typedef struct _mp_state_mem_t {
     byte *gc_pool_start;
     byte *gc_pool_end;
 
-    void *gc_lowest_long_lived_ptr;
-
     int gc_stack_overflow;
     MICROPY_GC_STACK_ENTRY_TYPE gc_stack[MICROPY_ALLOC_GC_STACK_SIZE];
 
-    // This variable controls auto garbage collection.  If set to false then the
+    // This variable controls auto garbage collection.  If set to 0 then the
     // GC won't automatically run when gc_alloc can't find enough blocks.  But
     // you can still allocate/free memory and also explicitly call gc_collect.
     uint16_t gc_auto_collect_enabled;
@@ -102,7 +100,6 @@ typedef struct _mp_state_mem_t {
     size_t gc_alloc_threshold;
     #endif
 
-    size_t gc_first_free_atb_index[MICROPY_ATB_INDICES];
     size_t gc_last_free_atb_index;
 
     #if MICROPY_PY_GC_COLLECT_RETVAL

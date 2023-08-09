@@ -38,6 +38,7 @@
 #include "supervisor/shared/translate/translate.h"
 
 // Instance of GeneratorExit exception - needed by generator.close()
+// CIRCUITPY: https://github.com/adafruit/circuitpython/pull/7069 fix
 #if MICROPY_CONST_GENERATOREXIT_OBJ
 const
 mp_obj_exception_t mp_static_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
@@ -48,12 +49,6 @@ mp_obj_exception_t mp_static_GeneratorExit_obj;
 
 /******************************************************************************/
 /* generator wrapper                                                          */
-
-typedef struct _mp_obj_gen_wrap_t {
-    mp_obj_base_t base;
-    mp_obj_t *fun;
-    bool coroutine_generator;
-} mp_obj_gen_wrap_t;
 
 typedef struct _mp_obj_gen_instance_t {
     mp_obj_base_t base;
@@ -89,11 +84,13 @@ const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_generator,
-    .call = gen_wrap_call,
-    .unary_op = mp_generic_unary_op,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
     #endif
+    MP_TYPE_EXTENDED_FIELDS(
+        .call = gen_wrap_call,
+        .unary_op = mp_generic_unary_op,
+        ),
 };
 
 /******************************************************************************/
@@ -150,53 +147,9 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     return MP_OBJ_FROM_PTR(o);
 }
 
-#endif // MICROPY_EMIT_NATIVE
-
-STATIC mp_obj_t bc_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)self->fun;
-    assert(self_fun->base.type == &mp_type_fun_bc);
-
-    // bytecode prelude: get state size and exception stack size
-    const uint8_t *ip = self_fun->bytecode;
-    MP_BC_PRELUDE_SIG_DECODE(ip);
-
-    // allocate the generator object, with room for local stack and exception stack
-    mp_obj_gen_instance_t *o = m_new_obj_var(mp_obj_gen_instance_t, byte,
-        n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t));
-    o->base.type = &mp_type_gen_instance;
-
-    o->coroutine_generator = self->coroutine_generator;
-    o->pend_exc = mp_const_none;
-    o->code_state.fun_bc = self_fun;
-    o->code_state.ip = 0;
-    o->code_state.n_state = n_state;
-    mp_setup_code_state(&o->code_state, n_args, n_kw, args);
-    return MP_OBJ_FROM_PTR(o);
-}
-
-STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    #if MICROPY_EMIT_NATIVE
-    mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)self->fun;
-    if (self_fun->base.type == &mp_type_fun_native) {
-        return native_gen_wrap_call(self, n_args, n_kw, args);
-    }
-    #endif
-    return bc_gen_wrap_call(self_in, n_args, n_kw, args);
-}
-
-#if MICROPY_PY_FUNCTION_ATTRS
-static void gen_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    mp_obj_gen_wrap_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_fun_bc_t *self_fun = (mp_obj_fun_bc_t *)self->fun;
-    mp_obj_fun_bc_attr(MP_OBJ_FROM_PTR(self_fun), attr, dest);
-}
-#endif
-
-const mp_obj_type_t mp_type_gen_wrap = {
+const mp_obj_type_t mp_type_native_gen_wrap = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
+    .flags = MP_TYPE_FLAG_BINDS_SELF,
     .name = MP_QSTR_generator,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = gen_attr,
@@ -207,14 +160,7 @@ const mp_obj_type_t mp_type_gen_wrap = {
         ),
 };
 
-
-mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun, bool is_coroutine) {
-    mp_obj_gen_wrap_t *o = m_new_obj(mp_obj_gen_wrap_t);
-    o->base.type = &mp_type_gen_wrap;
-    o->fun = MP_OBJ_TO_PTR(fun);
-    o->coroutine_generator = is_coroutine;
-    return MP_OBJ_FROM_PTR(o);
-}
+#endif // MICROPY_EMIT_NATIVE
 
 /******************************************************************************/
 /* generator instance                                                         */
@@ -363,7 +309,6 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
 
 STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
     #if MICROPY_PY_ASYNC_AWAIT
-    // This translate is literally too much for m0 boards
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->coroutine_generator) {
         mp_raise_TypeError(MP_ERROR_TEXT("'coroutine' object is not an iterator"));

@@ -439,7 +439,6 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // Declare a module as a builtin, processed by makemoduledefs.py
 // param module_name: MP_QSTR_<module name>
 // param obj_module: mp_obj_module_t instance
-// param enabled_define: used as `#if (enabled_define) around entry`
 
 #ifndef NO_QSTR
 #define MP_REGISTER_MODULE(module_name, obj_module)
@@ -461,9 +460,7 @@ typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
     size_t is_fixed : 1;    // if set, table is fixed/read-only and can't be modified
     size_t is_ordered : 1;  // if set, table is an ordered array, not a hash map
-    size_t scanning : 1;    // true if we're in the middle of scanning linked dictionaries,
-                            // e.g., make_dict_long_lived()
-    size_t used : (8 * sizeof(size_t) - 4);
+    size_t used : (8 * sizeof(size_t) - 3);
     size_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
@@ -1098,7 +1095,6 @@ typedef struct _mp_obj_fun_builtin_var_t {
 } mp_obj_fun_builtin_var_t;
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun);
-qstr mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);

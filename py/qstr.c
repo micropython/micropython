@@ -156,7 +156,7 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
         #endif
         mp_uint_t pool_size = sizeof(qstr_pool_t)
             + (sizeof(const char *) + sizeof(qstr_hash_t) + sizeof(qstr_len_t)) * new_alloc;
-        qstr_pool_t *pool = (qstr_pool_t *)m_malloc_maybe(pool_size, true);
+        qstr_pool_t *pool = (qstr_pool_t *)m_malloc_maybe(pool_size);
         if (pool == NULL) {
             // Keep qstr_last_chunk consistent with qstr_pool_t: qstr_last_chunk is not scanned
             // at garbage collection since it's reachable from a qstr_pool_t.  And the caller of
@@ -244,10 +244,10 @@ qstr qstr_from_strn(const char *str, size_t len) {
             if (al < MICROPY_ALLOC_QSTR_CHUNK_INIT) {
                 al = MICROPY_ALLOC_QSTR_CHUNK_INIT;
             }
-            MP_STATE_VM(qstr_last_chunk) = m_new_ll_maybe(char, al);
+            MP_STATE_VM(qstr_last_chunk) = m_new_maybe(char, al);
             if (MP_STATE_VM(qstr_last_chunk) == NULL) {
                 // failed to allocate a large chunk so try with exact size
-                MP_STATE_VM(qstr_last_chunk) = m_new_ll_maybe(char, n_bytes);
+                MP_STATE_VM(qstr_last_chunk) = m_new_maybe(char, n_bytes);
                 if (MP_STATE_VM(qstr_last_chunk) == NULL) {
                     QSTR_EXIT();
                     m_malloc_fail(n_bytes);

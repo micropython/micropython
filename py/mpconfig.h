@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
-// In CircuitPython, this is defined in genghdr/mpversion.h
+// In CircuitPython, this is defined in genhdr/mpversion.h
 #if !CIRCUITPY
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
@@ -201,12 +201,6 @@
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (128)
 #endif
 
-// Max number of entries in newly allocated QSTR pools. Smaller numbers may make QSTR lookups
-// slightly slower but reduce the waste of unused spots.
-#ifndef MICROPY_QSTR_POOL_MAX_ENTRIES
-#define MICROPY_QSTR_POOL_MAX_ENTRIES (64)
-#endif
-
 // Initial amount for lexer indentation level
 #ifndef MICROPY_ALLOC_LEXER_INDENT_INIT
 #define MICROPY_ALLOC_LEXER_INDENT_INIT (10)
@@ -319,14 +313,6 @@
 #define alloca(x) m_malloc(x)
 #endif
 
-// Number of atb indices to cache. Allocations of fewer blocks will be faster
-// because the search will be accelerated by the index cache. This only applies
-// to short lived allocations because we assume the long lived allocations are
-// contiguous.
-#ifndef MICROPY_ATB_INDICES
-#define MICROPY_ATB_INDICES (8)
-#endif
-
 /*****************************************************************************/
 /* MicroPython emitters                                                     */
 
@@ -382,11 +368,6 @@
 // Whether to enable the thumb inline assembler
 #ifndef MICROPY_EMIT_INLINE_THUMB
 #define MICROPY_EMIT_INLINE_THUMB (0)
-#endif
-
-// Whether to enable ARMv7-M instruction support in the Thumb2 inline assembler
-#ifndef MICROPY_EMIT_INLINE_THUMB_ARMV7M
-#define MICROPY_EMIT_INLINE_THUMB_ARMV7M (1)
 #endif
 
 // Whether to enable float support in the Thumb2 inline assembler
@@ -807,6 +788,7 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_CPYTHON_EXCEPTION_CHAIN (0)
 #endif
 
+// CIRCUITPY
 // Whether the statically allocated GeneratorExit exception may be const
 #ifndef MICROPY_CONST_GENERATOREXIT_OBJ
 #define MICROPY_CONST_GENERATOREXIT_OBJ (!MICROPY_CPYTHON_EXCEPTION_CHAIN)

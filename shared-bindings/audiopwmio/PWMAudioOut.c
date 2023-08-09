@@ -118,12 +118,9 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
         validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj, MP_QSTR_right_channel);
 
     // create AudioOut object from the given pin
-    // The object is made long-lived because many implementations keep
-    // a pointer to the object (e.g., for the interrupt handler), which
-    // will not work properly if the object is moved. It is created
-    // with a finaliser as some ports use these (rather than 'reset' functions)
+    // The object is created with a finaliser as some ports use these (rather than 'reset' functions)
     // to ensure resources are collected at interpreter shutdown.
-    audiopwmio_pwmaudioout_obj_t *self = m_new_ll_obj_with_finaliser(audiopwmio_pwmaudioout_obj_t);
+    audiopwmio_pwmaudioout_obj_t *self = m_new_obj_with_finaliser(audiopwmio_pwmaudioout_obj_t);
     self->base.type = &audiopwmio_pwmaudioout_type;
     common_hal_audiopwmio_pwmaudioout_construct(self, left_channel_pin, right_channel_pin, args[ARG_quiescent_value].u_int);
 

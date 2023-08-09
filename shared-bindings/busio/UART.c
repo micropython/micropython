@@ -155,11 +155,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     const bool rs485_invert = args[ARG_rs485_invert].u_bool;
 
-    // Always initially allocate the UART object within the long-lived heap.
-    // This is needed to avoid crashes with certain UART implementations which
-    // cannot accommodate being moved after creation. (See
-    // https://github.com/adafruit/circuitpython/issues/1056)
-    busio_uart_obj_t *self = m_new_ll_obj_with_finaliser(busio_uart_obj_t);
+    busio_uart_obj_t *self = m_new_obj_with_finaliser(busio_uart_obj_t);
     self->base.type = &busio_uart_type;
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,

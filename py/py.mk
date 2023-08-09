@@ -72,7 +72,6 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	nlrsetjmp.o \
 	malloc.o \
 	gc.o \
-	gc_long_lived.o \
 	pystack.o \
 	qstr.o \
 	vstr.o \
