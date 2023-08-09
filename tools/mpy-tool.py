@@ -35,7 +35,7 @@ if platform.python_version_tuple()[0] == "2":
     bytes_cons = lambda val, enc=None: bytearray(val)
     is_str_type = lambda o: isinstance(o, str)
     is_bytes_type = lambda o: type(o) is bytearray
-    is_int_type = lambda o: isinstance(o, int) or isinstance(o, long)
+    is_int_type = lambda o: isinstance(o, int) or isinstance(o, long)  # noqa: F821
 
     def hexlify_to_str(b):
         x = hexlify_py2(b)
