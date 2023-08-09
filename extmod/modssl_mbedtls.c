@@ -514,6 +514,10 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 }
             }
         }
+    } else {
+        // Unsupported ioctl.
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
     }
 
     // Pass all requests down to the underlying socket
