@@ -287,6 +287,11 @@ static mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         for (size_t i = 0; i < kwargs->alloc; i++) {
             if (mp_map_slot_is_filled(kwargs, i)) {
                 switch (mp_obj_str_get_qstr(kwargs->table[i].key)) {
+                    case MP_QSTR_stream: {
+                        mp_get_stream_raise(kwargs->table[i].value, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE);
+                        self->stream = kwargs->table[i].value;
+                        break;
+                    }
                     default:
                         break;
                 }
@@ -302,6 +307,10 @@ static mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
     mp_obj_t val = mp_const_none;
 
     switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_stream: {
+            val = self->stream;
+            break;
+        }
         case MP_QSTR_ifname: {
             if (self->pcb != NULL) {
                 struct netif *pppif = ppp_netif(self->pcb);
