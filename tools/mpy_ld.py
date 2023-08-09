@@ -966,6 +966,9 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
 
     # MPY: relocation information
     prev_kind = None
+    prev_base = None
+    prev_offset = None
+    prev_n = None
     for base, addr, kind in env.mpy_relocs:
         if isinstance(kind, str) and kind.startswith(".text"):
             kind = 0
