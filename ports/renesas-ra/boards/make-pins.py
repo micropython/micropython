@@ -220,13 +220,7 @@ class Pins(object):
             for named_pin in self.board_pins:
                 qstr_set |= set([named_pin.name()])
             for qstr in sorted(qstr_set):
-                cond_var = None
-                if qstr.startswith("AF"):
-                    af_words = qstr.split("_")
-                    cond_var = conditional_var(af_words[1])
-                    print_conditional_if(cond_var, file=qstr_file)
                 print("Q({})".format(qstr), file=qstr_file)
-                # print_conditional_endif(cond_var, file=qstr_file)
 
     def print_ad_hdr(self, ad_const_filename):
         with open(ad_const_filename, "wt") as ad_const_file:
