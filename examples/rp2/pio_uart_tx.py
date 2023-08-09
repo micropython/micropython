@@ -1,5 +1,7 @@
 # Example using PIO to create a UART TX interface
 
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
+
 from machine import Pin
 from rp2 import PIO, StateMachine, asm_pio
 
