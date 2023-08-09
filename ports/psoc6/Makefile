@@ -17,7 +17,7 @@ MPY_DIR_OF_MAIN_MAKEFILE  := $(dir $(MPY_PATH_TO_MAIN_MAKEFILE))
 QSTR_DEFS = qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h
 
-MICROPY_FROZEN_MANIFEST      ?= boards/manifest.py
+MICROPY_FROZEN_MANIFEST      ?= $(BOARD_DIR)/manifest.py
 MICROPY_USER_FROZEN_MANIFEST ?= $(MICROPY_FROZEN_MANIFEST)
 FROZEN_MANIFEST              ?= $(MICROPY_FROZEN_MANIFEST)
 
@@ -199,13 +199,12 @@ $(MPY_MAIN_BUILD_DIR)/firmware.hex: $(MPY_MAIN_BUILD_DIR)/firmware.elf
 
 
 # include adapter makefile
-include makefile_mtb.mk
+include mtb-libs/makefile_mtb.mk
 
 # include py core make definitions
 include $(TOP)/py/mkrules.mk
 
 MPY_CROSS_FLAGS += -march=armv7m
-
 
 build: mpy_define_mtb_vars $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN_BUILD_DIR)/firmware.hex
 
@@ -237,6 +236,7 @@ program: mpy_program
 program_multi: mpy_program_multi
 
 program_ext_hex: mpy_program_ext_hex
+
 program_multi_ext_hex: mpy_program_multi_ext_hex
 
 .PHONY: build test test_multi program_multi 

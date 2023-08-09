@@ -114,7 +114,7 @@ DEFINES+=CY_WIFI_HOST_WAKE_SW_FORCE=0
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
-MPY_PSOC6_PORT_DIR = ../..
+MPY_PSOC6_PORT_DIR = ../
 MPY_TOP_DIR = $(MPY_PSOC6_PORT_DIR)/../..
 LWIP_OPTS_DIR = $(MPY_PSOC6_PORT_DIR)/lwip_inc
 MBEDTLS_CONF_DIR = $(MPY_PSOC6_PORT_DIR)/mbedtls

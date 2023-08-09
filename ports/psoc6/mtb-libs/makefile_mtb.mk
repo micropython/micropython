@@ -5,7 +5,7 @@ MPY_DIR_OF_MTB_ADAPTER_MAKEFILE  := $(dir $(MPY_PATH_TO_MTB_ADAPTER_MAKEFILE))
 
 
 # get variable definitions from main makefile
-MTB_BASE_EXAMPLE_MAKEFILE_DIR := $(MPY_DIR_OF_MTB_ADAPTER_MAKEFILE)boards/mtb-base-example
+MTB_BASE_EXAMPLE_MAKEFILE_DIR := $(MPY_DIR_OF_MTB_ADAPTER_MAKEFILE)
 MPY_MTB_MAIN_MAKEFILE := $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/Makefile
 MPY_MTB_TARGET        := $(shell egrep '^ *TARGET' $(MPY_MTB_MAIN_MAKEFILE) | sed 's/^.*= *//g')
 MPY_MTB_CONFIG        ?= $(shell egrep '^ *CONFIG' $(MPY_MTB_MAIN_MAKEFILE) | sed 's/^.*= *//g')
