@@ -32,9 +32,14 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
-// Whether to include the stm module, with peripheral register constants
+// Whether to include the stm module
 #ifndef MICROPY_PY_STM
 #define MICROPY_PY_STM (1)
+#endif
+
+// Whether to include named register constants in the stm module
+#ifndef MICROPY_PY_STM_CONST
+#define MICROPY_PY_STM_CONST (MICROPY_PY_STM)
 #endif
 
 // Whether to include the pyb module

@@ -45,7 +45,9 @@ STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 
+    #if MICROPY_PY_STM_CONST
     #include "genhdr/modstm_const.h"
+    #endif
 
     #if defined(STM32WB)
     { MP_ROM_QSTR(MP_QSTR_rfcore_status), MP_ROM_PTR(&rfcore_status_obj) },

@@ -14,7 +14,8 @@
 #define MICROPY_PY_SOCKET                       (0)
 #define MICROPY_PY_NETWORK                      (0)
 #define MICROPY_PY_ONEWIRE                      (0)
-#define MICROPY_PY_STM                          (1)
+#define MICROPY_PY_STM                          (1) // for subghz radio functions
+#define MICROPY_PY_STM_CONST                    (0) // saves size, no named registers
 #define MICROPY_PY_PYB_LEGACY                   (0)
 #define MICROPY_PY_HEAPQ                        (0)
 
