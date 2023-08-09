@@ -320,8 +320,8 @@ MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
 //|     :param float factor2: The proportion of bitmap 2 to mix in.  If specified as `None`, ``1-factor1`` is used.  Usually the proportions should sum to 1.
 //|     :param displayio.Colorspace colorspace: The colorspace of the bitmaps. They must all have the same colorspace.  Only the following colorspaces are permitted:  ``L8``, ``RGB565``, ``RGB565_SWAPPED``, ``BGR565`` and ``BGR565_SWAPPED``.
 //|     :param bitmaptools.BlendMode blendmode: The blend mode to use. Default is Normal.
-//|     :param int skip_source1_index: bitmap palette index in source_bitmap_1 that will not be blended, set to None to blend all pixels
-//|     :param int skip_source2_index: bitmap palette index in source_bitmap_2 that will not be blended, set to None to blend all pixels
+//|     :param int skip_source1_index: Bitmap palette or luminance index in source_bitmap_1 that will not be blended, set to None to blend all pixels
+//|     :param int skip_source2_index: Bitmap palette or luminance index in source_bitmap_2 that will not be blended, set to None to blend all pixels
 //|
 //|     For the L8 colorspace, the bitmaps must have a bits-per-value of 8.
 //|     For the RGB colorspaces, they must have a bits-per-value of 16."""
