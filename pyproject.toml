@@ -35,7 +35,6 @@ ignore = [
   "F401",
   "F403",
   "F405",
-  "F821",
   "PLC1901",
 ]
 line-length = 337
@@ -46,3 +45,7 @@ max-complexity = 40
 
 [tool.ruff.per-file-ignores]
 "ports/cc3200/tools/uniflash.py" = ["E711"]
+
+# manifest.py files are evaluated with some global names pre-defined
+"**/manifest.py" = ["F821"]
+"ports/**/boards/manifest*.py" = ["F821"]
