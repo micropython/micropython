@@ -972,10 +972,16 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                     }
                 } else if (blend_source1) {
                     // Apply iFactor1 to source1 only
-                    pixel = spix1 * ifactor1 / 256;
+                    int r = (spix1 & r_mask) * ifactor1 / 256;
+                    int g = (spix1 & g_mask) * ifactor1 / 256;
+                    int b = (spix1 & b_mask) * ifactor1 / 256;
+                    pixel = r | g | b;
                 } else if (blend_source2) {
                     // Apply iFactor2 to source1 only
-                    pixel = spix2 * ifactor2 / 256;
+                    int r = (spix2 & r_mask) * ifactor2 / 256;
+                    int g = (spix2 & g_mask) * ifactor2 / 256;
+                    int b = (spix2 & b_mask) * ifactor2 / 256;
+                    pixel = r | g | b;
                 } else {
                     // Use the destination value
                     pixel = *dptr;
