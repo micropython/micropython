@@ -23,6 +23,20 @@
 #define MICROPY_GCREGS_SETJMP               (1)
 #endif
 
+// modesp32s3 lcd_cam:oct psram for rgblcd
+#if CONFIG_IDF_TARGET_ESP32S3
+#ifndef MICROPY_ESP32S3_LCDCAM
+#define MICROPY_ESP32S3_LCDCAM              (1)
+#endif
+#ifndef MICROPY_ESP_ENABLE_PSRAM_OCT
+#define MICROPY_ESP_ENABLE_PSRAM_OCT        (0)
+#endif
+#else
+#ifndef MICROPY_ESP32S3_LCDCAM
+#define MICROPY_ESP32S3_LCDCAM              (0)
+#endif
+#endif
+
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
