@@ -50,7 +50,11 @@ void machine_rtc_alarm_set_en() {
 
 void machine_rtc_alarm_off(bool clear) {
     machine_rtc_alarm_clear_en();
+    #ifdef MIMXRT117x_SERIES
+    DisableIRQ(SNVS_HP_NON_TZ_IRQn);
+    #else
     DisableIRQ(SNVS_HP_WRAPPER_IRQn);
+    #endif
 
     if (clear) {
         SNVS->LPTAR = 0;
@@ -60,7 +64,11 @@ void machine_rtc_alarm_off(bool clear) {
 }
 
 void machine_rtc_alarm_on() {
+    #ifdef MIMXRT117x_SERIES
+    EnableIRQ(SNVS_HP_NON_TZ_IRQn);
+    #else
     EnableIRQ(SNVS_HP_WRAPPER_IRQn);
+    #endif
     machine_rtc_alarm_set_en();
 }
 
