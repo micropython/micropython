@@ -258,6 +258,22 @@ msgstr "%q, %q, и %q должны быть одной длинны"
 msgid "%q=%q"
 msgstr "%q=%q"
 
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts in more bits than pin count"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts out more bits than pin count"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] uses extra pin"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] waits on input outside of count"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
@@ -1202,29 +1218,6 @@ msgstr "Ввод занимает слишком много времени"
 msgid "Input/output error"
 msgstr "Ошибка ввода/вывода"
 
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts in more bits than pin count"
-msgstr ""
-"Инструкция %d вводит (shifts in) большее количество бит, чем количество пинов"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts out more bits than pin count"
-msgstr ""
-"Инструкция %d выводит (shifts out) большее количество бит, чем количество "
-"пинов"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d uses extra pin"
-msgstr "Инструкция %d использует дополнительный пин"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d waits on input outside of count"
-msgstr "Инструкция %d ожидает ввода за пределами count"
-
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
 msgstr "Неполная аутентификация"
@@ -1399,40 +1392,32 @@ msgid "Mismatched swap flag"
 msgstr "Несоответствие флага swap"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr "Отсутствует first_in_pin. Инструкция %d читает состояние пина (-ов)"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr "Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на пин(ы)"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе пина"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+msgid "Missing first_in_pin. %q[%u] reads pin(s)"
 msgstr ""
-"Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на пин(ы)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr "Отсутствует first_out_pin. Инструкция %d записывает пин(ы)"
+msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr "Отсутствует first_set_pin. Инструкция %d устанавливает пин(ы)"
+msgid "Missing first_in_pin. %q[%u] waits based on pin"
+msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на пин"
+msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Missing first_out_pin. %q[%u] writes pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Missing first_set_pin. %q[%u] sets pin(s)"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Missing jmp_pin. %q[%u] jumps on pin"
+msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -4431,6 +4416,56 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#, c-format
+#~ msgid "Instruction %d shifts in more bits than pin count"
+#~ msgstr ""
+#~ "Инструкция %d вводит (shifts in) большее количество бит, чем количество "
+#~ "пинов"
+
+#, c-format
+#~ msgid "Instruction %d shifts out more bits than pin count"
+#~ msgstr ""
+#~ "Инструкция %d выводит (shifts out) большее количество бит, чем количество "
+#~ "пинов"
+
+#, c-format
+#~ msgid "Instruction %d uses extra pin"
+#~ msgstr "Инструкция %d использует дополнительный пин"
+
+#, c-format
+#~ msgid "Instruction %d waits on input outside of count"
+#~ msgstr "Инструкция %d ожидает ввода за пределами count"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+#~ msgstr "Отсутствует first_in_pin. Инструкция %d читает состояние пина (-ов)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+#~ msgstr ""
+#~ "Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на пин(ы)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
+#~ msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе пина"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+#~ msgstr ""
+#~ "Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на пин(ы)"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+#~ msgstr "Отсутствует first_out_pin. Инструкция %d записывает пин(ы)"
+
+#, c-format
+#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+#~ msgstr "Отсутствует first_set_pin. Инструкция %d устанавливает пин(ы)"
+
+#, c-format
+#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
+#~ msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на пин"
 
 #~ msgid "Cannot transfer without MOSI and MISO pins"
 #~ msgstr "Невозможно передать данные без пинов MOSI и MISO"
