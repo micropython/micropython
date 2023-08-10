@@ -38,11 +38,17 @@
 //   9 in some translations sometime in the future.  This length excludes
 //   the trailing NUL, though notably decompress_length includes it.
 //
-// - followed by the huffman encoding of the individual UTF-16 code
+// - followed by the huffman encoding of the individual code
 //   points that make up the string.  The trailing "\0" is not
 //   represented by a huffman code, but is implied by the length.
 //   (building the huffman encoding on UTF-16 code points gave better
 //   compression than building it on UTF-8 bytes)
+//
+// - If possible, the code points are represented as uint8_t values, with
+//   0..127 representing themselves and 160..255 representing another range
+//   of Unicode, controlled by translation_offset and translation_offstart.
+//   If this is not possible, uint16_t values are used. At present, no translation
+//   requires code points not in the BMP, so this is adequate.
 //
 // - code points starting at 128 (word_start) and potentially extending
 //   to 255 (word_end) (but never interfering with the target
