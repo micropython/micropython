@@ -124,6 +124,7 @@ int main(void) {
         #if MICROPY_PY_NETWORK
         mod_network_deinit();
         #endif
+        machine_uart_deinit_all();
         machine_pwm_deinit_all();
         soft_timer_deinit();
         gc_sweep_all();
