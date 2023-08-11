@@ -44,7 +44,7 @@ Find all the available commands and options by running the script with the comma
 
             .. code-block:: bash
             
-                ./mpy-psoc6.cmd help
+                mpy-psoc6.cmd help
 
 .. _psoc6_quick_start:
 
