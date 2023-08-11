@@ -87,7 +87,7 @@ void common_hal_bleio_characteristic_buffer_construct(
     mp_float_t timeout,
     size_t buffer_size) {
 
-    uint8_t *buffer = m_malloc(buffer_size, true);
+    uint8_t *buffer = m_malloc(buffer_size);
     _common_hal_bleio_characteristic_buffer_construct(self,
         characteristic,
         timeout,

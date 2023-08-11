@@ -54,7 +54,7 @@ STATIC mp_obj_t audiocore_get_buffer(mp_obj_t sample_in) {
         uint8_t bits_per_sample = audiosample_bits_per_sample(sample_in);
         audiosample_get_buffer_structure(sample_in, false, &single_buffer, &samples_signed, &max_buffer_length, &spacing);
         // copies the data because the gc semantics of get_buffer are unclear
-        void *result_buf = gc_alloc(buffer_length, 0, false);
+        void *result_buf = m_malloc(buffer_length);
         memcpy(result_buf, buffer, buffer_length);
         char typecode =
             (bits_per_sample == 8 && samples_signed) ? 'b' :

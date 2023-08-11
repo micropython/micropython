@@ -38,7 +38,7 @@ bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t size) {
 
 // Dynamic initialization. This should be accessible from a root pointer..
 bool ringbuf_alloc(ringbuf_t *r, size_t size) {
-    bool result = ringbuf_init(r, gc_alloc(size, false), size);
+    bool result = ringbuf_init(r, m_malloc(size), size);
     return result;
 }
 

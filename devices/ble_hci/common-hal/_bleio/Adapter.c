@@ -479,7 +479,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     self->scan_results = shared_module_bleio_new_scanresults(buffer_size, prefixes, prefix_length, minimum_rssi);
 
     // size_t max_packet_size = extended ? BLE_GAP_SCAN_BUFFER_EXTENDED_MAX_SUPPORTED : BLE_GAP_SCAN_BUFFER_MAX;
-    // uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size, false);
+    // uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size);
     // ble_data_t * sd_data = (ble_data_t *) raw_data;
     // self->scan_results->common_hal_data = sd_data;
     // sd_data->len = max_packet_size;

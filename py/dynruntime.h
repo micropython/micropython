@@ -51,7 +51,7 @@
 /******************************************************************************/
 // Memory allocation
 
-#define m_malloc(n,_)                   (m_malloc_dyn((n)))
+#define m_malloc(n)                     (m_malloc_dyn((n)))
 #define m_free(ptr)                     (m_free_dyn((ptr)))
 #define m_realloc(ptr, new_num_bytes)   (m_realloc_dyn((ptr), (new_num_bytes)))
 

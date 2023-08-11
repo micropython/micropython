@@ -256,7 +256,7 @@ $(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
 $(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
 	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
 
-# translations-*.c is generated as a side-effect of building compression_translated.generated.h
+# translations-*.c is generated as a side-effect of building compressed_translations.generated.h
 # Specifying both in a single rule actually causes the rule to be run twice!
 # This alternative makes it run just once.
 $(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compressed_translations.generated.h
