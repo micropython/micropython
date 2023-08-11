@@ -72,8 +72,8 @@ void common_hal_keypad_keymatrix_construct(keypad_keymatrix_obj_t *self, mp_uint
     }
     self->column_digitalinouts = mp_obj_new_tuple(num_column_pins, column_dios);
 
-    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_column_pins, false, false);
-    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_row_pins * num_column_pins, false, false);
+    self->currently_pressed = (bool *)m_malloc(sizeof(bool) * num_row_pins * num_column_pins);
+    self->previously_pressed = (bool *)m_malloc(sizeof(bool) * num_row_pins * num_column_pins);
 
     self->columns_to_anodes = columns_to_anodes;
     self->funcs = &keymatrix_funcs;

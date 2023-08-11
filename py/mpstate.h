@@ -36,6 +36,12 @@
 #include "py/objlist.h"
 #include "py/objexcept.h"
 
+// #if CIRCUITPY
+// #error CIRCUITPY is TRUE in mpstate.h.
+// #else
+// #error CIRCUITPY is **FALSE** in mpstate.h
+// #endif
+
 // This file contains structures defining the state of the MicroPython
 // memory system, runtime and virtual machine.  The state is a global
 // variable, but in the future it is hoped that the state can become local.

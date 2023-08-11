@@ -26,8 +26,10 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
-// In CircuitPython, this is defined in genhdr/mpversion.h
-#if !CIRCUITPY
+// In CircuitPython, version info is in genhdr/mpversion.h.
+#if CIRCUITPY
+#include "genhdr/mpversion.h"
+#else
 // Current version of MicroPython
 #define MICROPY_VERSION_MAJOR 1
 #define MICROPY_VERSION_MINOR 19

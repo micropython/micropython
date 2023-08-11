@@ -366,3 +366,5 @@ install: $(PROG)
 
 uninstall:
 	-rm $(BINDIR)/$(PROG)
+
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h

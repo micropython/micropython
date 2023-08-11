@@ -713,7 +713,7 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 	subband.c \
 	trigtabs.c \
 )
-$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
+$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_MOD += $(addprefix lib/protomatter/src/, \

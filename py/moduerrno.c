@@ -32,8 +32,6 @@
 
 #include "supervisor/shared/translate/translate.h"
 
-#if MICROPY_PY_UERRNO
-
 // This list can be defined per port in mpconfigport.h to tailor it to a
 // specific port's needs.  If it's not defined then we provide a default.
 #ifndef MICROPY_PY_UERRNO_LIST
@@ -62,6 +60,8 @@
     X(EINPROGRESS) \
 
 #endif
+
+#if MICROPY_PY_UERRNO
 
 #if MICROPY_PY_UERRNO_ERRORCODE
 STATIC const mp_rom_map_elem_t errorcode_table[] = {
@@ -129,3 +129,52 @@ qstr mp_errno_to_str(mp_obj_t errno_val) {
 }
 
 #endif // MICROPY_PY_UERRNO
+
+
+// For commonly encountered errors, return human readable strings, otherwise try errno name
+const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
+    if (!mp_obj_is_small_int(errno_val)) {
+        return NULL;
+    }
+
+    const compressed_string_t *desc = NULL;
+    switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
+        case EPERM:
+            desc = MP_ERROR_TEXT("Operation not permitted");
+            break;
+        case ENOENT:
+            desc = MP_ERROR_TEXT("No such file/directory");
+            break;
+        case EIO:
+            desc = MP_ERROR_TEXT("Input/output error");
+            break;
+        case EACCES:
+            desc = MP_ERROR_TEXT("Permission denied");
+            break;
+        case EEXIST:
+            desc = MP_ERROR_TEXT("File exists");
+            break;
+        case ENODEV:
+            desc = MP_ERROR_TEXT("No such device");
+            break;
+        case EINVAL:
+            desc = MP_ERROR_TEXT("Invalid argument");
+            break;
+        case ENOSPC:
+            desc = MP_ERROR_TEXT("No space left on device");
+            break;
+        case EROFS:
+            desc = MP_ERROR_TEXT("Read-only filesystem");
+            break;
+    }
+    if (desc != NULL && decompress_length(desc) <= len) {
+        decompress(desc, buf);
+        return buf;
+    }
+
+    const char *msg = "";
+    #if MICROPY_PY_UERRNO
+    msg = qstr_str(mp_errno_to_str(errno_val));
+    #endif
+    return msg[0] != '\0' ? msg : NULL;
+}

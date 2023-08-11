@@ -244,7 +244,7 @@ STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_ma
     }
     uint32_t track_size = (chunk_header[4] << 24) |
         (chunk_header[5] << 16) | (chunk_header[6] << 8) | chunk_header[7];
-    uint8_t *buffer = m_malloc(track_size, false);
+    uint8_t *buffer = m_malloc(track_size);
     if (f_read(&file->fp, buffer, track_size, &bytes_read) != FR_OK) {
         mp_raise_OSError(MP_EIO);
     }

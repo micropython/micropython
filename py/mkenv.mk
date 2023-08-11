@@ -20,7 +20,7 @@ ifeq ("$(origin V)", "command line")
 BUILD_VERBOSE=$(V)
 endif
 ifndef BUILD_VERBOSE
-$(info Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.)
+$(info Use make V={1,2,3} or set BUILD_VERBOSE similarly in your environment to increase build verbosity.)
 BUILD_VERBOSE = 0
 endif
 ifeq ($(BUILD_VERBOSE),0)
@@ -30,8 +30,17 @@ else ifeq ($(BUILD_VERBOSE),1)
 Q = @
 STEPECHO = @echo
 else
+# BUILD_VERBOSE not 0 or 1
 Q =
 STEPECHO = @echo
+endif
+
+ifeq ($(BUILD_VERBOSE),3)
+# This clever shell redefinition will print out the makefile line that is causing an action.
+# Note that -j can cause the order to be confusing.
+# https://www.cmcrossroads.com/article/tracing-rule-execution-gnu-make
+OLD_SHELL := $(SHELL)
+SHELL = $(warning BUILDING $@)$(OLD_SHELL)
 endif
 
 # default settings; can be overridden in main Makefile

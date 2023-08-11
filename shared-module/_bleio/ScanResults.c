@@ -36,7 +36,7 @@
 
 bleio_scanresults_obj_t *shared_module_bleio_new_scanresults(size_t buffer_size, uint8_t *prefixes, size_t prefixes_len, mp_int_t minimum_rssi) {
     bleio_scanresults_obj_t *self = mp_obj_malloc(bleio_scanresults_obj_t, &bleio_scanresults_type);
-    ringbuf_alloc(&self->buf, buffer_size, false);
+    ringbuf_alloc(&self->buf, buffer_size);
     self->prefixes = prefixes;
     self->prefix_length = prefixes_len;
     self->minimum_rssi = minimum_rssi;

@@ -58,8 +58,8 @@ void common_hal_keypad_keys_construct(keypad_keys_obj_t *self, mp_uint_t num_pin
     }
 
     self->digitalinouts = mp_obj_new_tuple(num_pins, dios);
-    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
-    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * num_pins, false, false);
+    self->currently_pressed = (bool *)m_malloc(sizeof(bool) * num_pins);
+    self->previously_pressed = (bool *)m_malloc(sizeof(bool) * num_pins);
     self->value_when_pressed = value_when_pressed;
     self->funcs = &keys_funcs;
 

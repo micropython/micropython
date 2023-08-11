@@ -223,10 +223,7 @@ endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = py/nlr%
-SRC_QSTR_EMITNATIVE = py/emitn%
 SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
-# Sources that only hold QSTRs after pre-processing.
-SRC_QSTR_PREPROCESSOR = $(addprefix $(TOP)/, $(filter $(SRC_QSTR_EMITNATIVE),$(PY_CORE_O_BASENAME:.o=.c)))
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
@@ -240,40 +237,37 @@ $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
 # overall config, so they need to be caught
 MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 
-$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
-	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
-
-$(HEADER_BUILD)/qstrdefs.preprocessed.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
-	$(STEPECHO) "GEN $@"
-	$(Q)cat $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^"\(Q(.*)\)"/\1/' > $@
-
 # qstr data
-$(HEADER_BUILD)/qstrdefs.enum.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h
-	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py --output_type=enums $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
-
 # Adding an order only dependency on $(HEADER_BUILD) causes $(HEADER_BUILD) to get
 # created before we run the script to generate the .h
 # Note: we need to protect the qstr names from the preprocessor, so we wrap
 # the lines in "" and then unwrap after the preprocessor is finished.
-$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h
-	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py --output_type=data $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
+# See more information about this process in docs/develop/qstr.rst.
+$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(CAT) $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^\"\(Q(.*)\)\"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@
 
-# Is generated as a side-effect of building compression.generated.h
+$(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
+
+// CIRCUITPY: for translations
+$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
+	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
+
+# translations-*.c is generated as a side-effect of building compression_translated.generated.h
 # Specifying both in a single rule actually causes the rule to be run twice!
 # This alternative makes it run just once.
-$(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compression.generated.h
+$(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compressed_translations.generated.h
 	@true
 
-$(HEADER_BUILD)/compression.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.preprocessed.h
+$(HEADER_BUILD)/compressed_translations.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.generated.h
 	$(STEPECHO) "GEN $@"
 	$(Q)mkdir -p $(PY_BUILD)
-	$(Q)$(PYTHON) $(PY_SRC)/maketranslationdata.py --compression_filename $(HEADER_BUILD)/compression.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo --translation_filename $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/qstrdefs.preprocessed.h
+	$(Q)$(PYTHON) $(PY_SRC)/maketranslationdata.py --compression_filename $(HEADER_BUILD)/compressed_translations.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo --translation_filename $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/qstrdefs.preprocessed.h
 
 PY_CORE_O += $(PY_BUILD)/translations-$(TRANSLATION).o
-
-$(PY_BUILD)/qstr.o: $(HEADER_BUILD)/qstrdefs.generated.h
 
 # build a list of registered modules for py/objmodule.c.
 $(HEADER_BUILD)/moduledefs.h: $(HEADER_BUILD)/moduledefs.collected
@@ -289,6 +283,7 @@ $(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 # that the function preludes are of a minimal and predictable form.
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
+# CIRCUITPY: separate SUPEROPT for gc.o and vm.o
 # optimising gc for speed; 5ms down to 4ms on pybv2
 ifndef SUPEROPT_GC
   SUPEROPT_GC = 1

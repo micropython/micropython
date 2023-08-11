@@ -36,4 +36,3 @@ const mp_obj_module_t countio_module = {
 };
 
 MP_REGISTER_MODULE(MP_QSTR_countio, countio_module);
-p

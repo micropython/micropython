@@ -75,7 +75,7 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
-vpath %.c . $(TOP) $(USER_C_MODULES)
+vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
@@ -83,17 +83,6 @@ vpath %.cpp . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.cpp
 	$(call compile_cxx)
 
-QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -x c
-
-# frozen.c and frozen_mpy.c are created in $(BUILD), so use our rule
-# for those as well.
-vpath %.c . $(BUILD)
-$(BUILD)/%.o: %.c
-	$(call compile_c)
-
-QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
-
-vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
 $(BUILD)/%.pp: %.c
 	$(ECHO) "PreProcess $<"
 	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
@@ -124,7 +113,7 @@ $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
 	$(Q)$(TOUCH) $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
-	$(STEPECHO) "GEN $@"
+	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat qstr _ $(HEADER_BUILD)/qstr $@
 
 # Module definitions via MP_REGISTER_MODULE.
@@ -244,8 +233,5 @@ print-def:
 	$(TOUCH) __empty__.c
 	@$(CC) -E -Wp,-dM __empty__.c
 	@$(RM) -f __empty__.c
-
-tags:
-	ctags -e -R $(TOP)
 
 -include $(OBJ:.o=.P)

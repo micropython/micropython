@@ -51,7 +51,7 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->stride = stride(width, bits_per_value);
     self->data_alloc = false;
     if (!data) {
-        data = m_malloc(self->stride * height * sizeof(uint32_t), false);
+        data = m_malloc(self->stride * height * sizeof(uint32_t));
         self->data_alloc = true;
     }
     self->data = data;

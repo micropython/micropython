@@ -438,11 +438,11 @@ void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channe
     synthio_synth_parse_filter(&synth->filter_bufinfo, filter_obj);
     mp_arg_validate_int_range(channel_count, 1, 2, MP_QSTR_channel_count);
     synth->buffer_length = SYNTHIO_MAX_DUR * SYNTHIO_BYTES_PER_SAMPLE * channel_count;
-    synth->buffers[0] = m_malloc(synth->buffer_length, false);
-    synth->buffers[1] = m_malloc(synth->buffer_length, false);
+    synth->buffers[0] = m_malloc(synth->buffer_length);
+    synth->buffers[1] = m_malloc(synth->buffer_length);
     if (synth->filter_bufinfo.len) {
         synth->filter_buffer_length = (synth->filter_bufinfo.len + SYNTHIO_MAX_DUR) * channel_count * sizeof(int32_t);
-        synth->filter_buffer = m_malloc(synth->filter_buffer_length, false);
+        synth->filter_buffer = m_malloc(synth->filter_buffer_length);
     }
     synth->channel_count = channel_count;
     synth->other_channel = -1;

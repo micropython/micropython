@@ -41,7 +41,7 @@
 
 STATIC mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj_t *target, uint8_t address, bool is_read, bool is_restart) {
     i2ctarget_i2c_target_request_obj_t *self =
-        mp_obj_malloc(i2ctarget_i2c_target_request_obj_t, &i2ctarget_i2c_target_request_type)
+        mp_obj_malloc(i2ctarget_i2c_target_request_obj_t, &i2ctarget_i2c_target_request_type);
     self->target = target;
     self->address = address;
     self->is_read = is_read;

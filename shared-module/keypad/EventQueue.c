@@ -35,7 +35,7 @@
 
 void common_hal_keypad_eventqueue_construct(keypad_eventqueue_obj_t *self, size_t max_events) {
     // Event queue is 16-bit values.
-    ringbuf_alloc(&self->encoded_events, max_events * (sizeof(uint16_t) + sizeof(mp_obj_t)), false);
+    ringbuf_alloc(&self->encoded_events, max_events * (sizeof(uint16_t) + sizeof(mp_obj_t)));
     self->overflowed = false;
 }
 
