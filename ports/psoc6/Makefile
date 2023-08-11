@@ -206,12 +206,11 @@ include $(TOP)/py/mkrules.mk
 
 MPY_CROSS_FLAGS += -march=armv7m
 
-build: mpy_define_mtb_vars $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN_BUILD_DIR)/firmware.hex
+build: mtb_get_build_flags $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN_BUILD_DIR)/firmware.hex
 
 all: build
 
-rebuild: clean mpy_mtb_clean all
-
+rebuild: clean mtb_clean all
 
 ifndef SINGLE_TEST
 TESTS=-d psoc6
@@ -230,13 +229,5 @@ test_multi:
 	$(info )
 	$(info Running PSoC6 multi tests)
 	$(Q) cd ../../tests ; ./run-multitests.py -i pyb:/dev/ttyACM0 -i pyb:/dev/ttyACM1 $(MULTI_TEST)
-
-program: mpy_program
-
-program_multi: mpy_program_multi
-
-program_ext_hex: mpy_program_ext_hex
-
-program_multi_ext_hex: mpy_program_multi_ext_hex
 
 .PHONY: build test test_multi program_multi 

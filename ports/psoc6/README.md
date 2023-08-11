@@ -8,31 +8,40 @@ The following port is using Infineon ModusToolbox™ to resolve the specific PSo
 
 1. Install [ModusToolbox](https://www.infineon.com/cms/en/design-support/tools/sdk/modustoolbox-software/). Minimum version required is 3.0.
 
-2. In order to use the same gcc for compiling both mpy sources and ModusToolbox™ add also the latest to the system PATH.
+2. Run the following script from MicroPython repository root to add the required tools to the system PATH, and install the udev rules:
 
-    export PATH=/home/{user}/ModusToolbox/tools_{version}/gcc/bin:$PATH
+    source tools/psoc6/dev-setup.sh && toolchain_setup
+
+If the ModusToolbox™ has not been installed in the default path (`~/ModusToolbox`), add the path as positional argument of the `toolchain_setup` function:
+
+    source tools/psoc6/dev-setup.sh && toolchain_setup [mtb_path]
 
 ## Building and running Linux version
 
-As we are working on the ports/psoc6 branch (for now), first checkout that branch after cloning this repo:
+As we are working on the ports-psoc6-main branch (for now), first checkout that branch after cloning this repo:
 
-    git checkout --track origin/ports/psoc6
+    git checkout --track origin/ports-psoc6-main
 
 Then initialize the ModusToolbox™ environment: 
 
-    make mpy_mtb_init
+    make mtb_init BOARD=<board-name>
 
+Retrieve submodules:
+
+    make submodules
+    
 Build the firmware:
 
-    make
+    make 
 
 To build and program the device:
 
-    make mpy_program
+    make program
 
-### Working from WSL
+Find more information about the available makefile targets:
 
-If you are working from WSL and you cannot access the USB resources of your machine. Copy the .hex file from *ports/psoc6/boards/{board}/mtb-app/APP_{board}/Debug/{hexname}.hex* to some location in your windows machine where you can flash the device with Cypress Programmer. 
+    make help
+
 
 # Run micropython
 
