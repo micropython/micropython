@@ -76,7 +76,9 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if os.name == "nt":
+                if device.startswith("rfc2217://"):
+                    self.serial = serial.serial_for_url(device, **serial_kwargs)
+                elif os.name == "nt":
                     self.serial = serial.Serial(**serial_kwargs)
                     self.serial.port = device
                     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
