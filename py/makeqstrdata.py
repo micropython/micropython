@@ -393,7 +393,7 @@ def print_qstr_data(qcfgs, qstrs, i18ns):
     print(
         "// Enumerate translated texts but don't actually include translations. Instead, the linker will link them in."
     )
-    for i, original in enumerate(i18ns):
+    for i, original in enumerate(sorted(i18ns)):
         print('TRANSLATION("{}", {})'.format(original, i))
 
     print()
