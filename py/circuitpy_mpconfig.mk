@@ -628,6 +628,6 @@ $(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
 
 $(BUILD)/manifest.py: $(BUILD)/frozen_mpy | $(TOP)/py/circuitpy_mpconfig.mk mpconfigport.mk boards/$(BOARD)/mpconfigboard.mk
 	$(ECHO) MKMANIFEST $(FROZEN_MPY_DIRS)
-	(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
+	$(Q)(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
 FROZEN_MANIFEST=$(BUILD)/manifest.py
 endif

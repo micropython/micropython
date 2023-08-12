@@ -82,7 +82,7 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
 
 const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
@@ -148,7 +148,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
 const mp_obj_type_t mp_type_native_gen_wrap = {
     { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF,
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = gen_attr,
