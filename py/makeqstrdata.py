@@ -270,10 +270,10 @@ def qstr_escape(qst):
     return re.sub(r"[^A-Za-z0-9_]", esc_char, qst)
 
 
-def parse_input_headers(infiles):
+def parse_input_headers_with_translations(infiles):
     qcfgs = {}
     qstrs = {}
-    i18ns = set()
+    translations = set()
 
     # add static qstrs
     for qstr in static_qstr_list:
@@ -305,7 +305,7 @@ def parse_input_headers(infiles):
 
                 match = re.match(r'^TRANSLATE\("(.*)"\)$', line)
                 if match:
-                    i18ns.add(match.group(1))
+                    translations.add(match.group(1))
                     continue
 
                 # is this a QSTR line?
@@ -347,8 +347,12 @@ def parse_input_headers(infiles):
         sys.stderr.write("ERROR: Empty preprocessor output - check for errors above\n")
         sys.exit(1)
 
-    return qcfgs, qstrs, i18ns
+    return qcfgs, qstrs, translations
 
+# Used externally by mpy-tool.py. Don't pass back translations.
+def parse_input_headers(infiles):
+    qcfgs, qstrs, translations = parse_input_headers_with_translations(infiles)
+    return (qcfgs, qstrs)
 
 def escape_bytes(qstr, qbytes):
     if all(32 <= ord(c) <= 126 and c != "\\" and c != '"' for c in qstr):
@@ -370,7 +374,7 @@ def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     return '%d, %d, "%s"' % (qhash, qlen, qdata)
 
 
-def print_qstr_data(qcfgs, qstrs, i18ns):
+def print_qstr_data(qcfgs, qstrs, translations):
     # get config variables
     cfg_bytes_len = int(qcfgs["BYTES_IN_LEN"])
     cfg_bytes_hash = int(qcfgs["BYTES_IN_HASH"])
@@ -393,7 +397,7 @@ def print_qstr_data(qcfgs, qstrs, i18ns):
     print(
         "// Enumerate translated texts but don't actually include translations. Instead, the linker will link them in."
     )
-    for i, original in enumerate(sorted(i18ns)):
+    for i, original in enumerate(sorted(translations)):
         print('TRANSLATION("{}", {})'.format(original, i))
 
     print()
@@ -402,8 +406,8 @@ def print_qstr_data(qcfgs, qstrs, i18ns):
 
 
 def do_work(infiles):
-    qcfgs, qstrs, i18ns = parse_input_headers(infiles)
-    print_qstr_data(qcfgs, qstrs, i18ns)
+    qcfgs, qstrs, translations = parse_input_headers_with_translations(infiles)
+    print_qstr_data(qcfgs, qstrs, translations)
 
 if __name__ == "__main__":
     import argparse
