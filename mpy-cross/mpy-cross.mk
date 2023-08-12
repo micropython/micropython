@@ -60,6 +60,8 @@ ifdef STATIC_BUILD
 LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
+CFLAGS += -DCIRCUITPY=1
+
 # source files
 SRC_C += \
 	main.c \

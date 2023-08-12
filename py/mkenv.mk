@@ -13,29 +13,31 @@ THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 TOP := $(patsubst %/py/mkenv.mk,%,$(THIS_MAKEFILE))
 
 # Turn on increased build verbosity by defining BUILD_VERBOSE in your main
-# Makefile or in your environment. You can also use V=1 on the make command
-# line.
+# Makefile or in your environment. You can also use V="steps commands rules" or any combination thereof
+# on the make command line.
 
 ifeq ("$(origin V)", "command line")
 BUILD_VERBOSE=$(V)
 endif
+
 ifndef BUILD_VERBOSE
-$(info Use make V={1,2,3} or set BUILD_VERBOSE similarly in your environment to increase build verbosity.)
-BUILD_VERBOSE = 0
-endif
-ifeq ($(BUILD_VERBOSE),0)
-Q = @
-STEPECHO = @:
-else ifeq ($(BUILD_VERBOSE),1)
-Q = @
-STEPECHO = @echo
-else
-# BUILD_VERBOSE not 0 or 1
-Q =
-STEPECHO = @echo
+$(info - Verbosity options: any combination of "steps commands rules", as `make V=...` or env var BUILD_VERBOSE)
+BUILD_VERBOSE = ""
 endif
 
-ifeq ($(BUILD_VERBOSE),3)
+ifneq ($(filter steps,$(BUILD_VERBOSE)),)
+STEPECHO = @echo
+else
+STEPECHO = @:
+endif
+
+ifneq ($(filter commands,$(BUILD_VERBOSE)),)
+Q =
+else
+Q = @
+endif
+
+ifneq ($(filter rules,$(BUILD_VERBOSE)),)
 # This clever shell redefinition will print out the makefile line that is causing an action.
 # Note that -j can cause the order to be confusing.
 # https://www.cmcrossroads.com/article/tracing-rule-execution-gnu-make

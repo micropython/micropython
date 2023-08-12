@@ -55,8 +55,8 @@ typedef struct _mp_obj_gen_instance_t {
     // mp_const_none: Not-running, no exception.
     // MP_OBJ_NULL: Running, no exception.
     // other: Not running, pending exception.
-    mp_obj_t pend_exc;
     bool coroutine_generator;
+    mp_obj_t pend_exc;
     mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
@@ -126,7 +126,6 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_gen_instance_native_t *o = mp_obj_malloc_var(mp_obj_gen_instance_native_t, byte, n_state * sizeof(mp_obj_t), &mp_type_gen_instance);
 
     // Parse the input arguments and set up the code state
-    o->coroutine_generator = self->coroutine_generator;
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
     o->code_state.ip = prelude_ptr;

@@ -75,7 +75,8 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
-vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
+# frozen.c and frozen_mpy.c are created in $(BUILD), so add it to the vpath as well.
+vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES) $(BUILD)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
@@ -84,7 +85,7 @@ $(BUILD)/%.o: %.cpp
 	$(call compile_cxx)
 
 $(BUILD)/%.pp: %.c
-	$(ECHO) "PreProcess $<"
+	$(STEPECHO) "PreProcess $<"
 	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
 
 # The following rule uses | to create an order only prerequisite. Order only
@@ -108,12 +109,12 @@ $(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(QSTR_GL
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py pp $(CPP) output $(HEADER_BUILD)/qstr.i.last cflags $(QSTR_GEN_CFLAGS) cxxflags $(QSTR_GEN_CXXFLAGS) sources $^ dependencies $(QSTR_GLOBAL_DEPENDENCIES) changed_sources $?
 
 $(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
-	$(ECHO) "GEN $@"
+	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split qstr $< $(HEADER_BUILD)/qstr _
 	$(Q)$(TOUCH) $@
 
 $(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
-	$(ECHO) "GEN $@"
+	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat qstr _ $(HEADER_BUILD)/qstr $@
 
 # Module definitions via MP_REGISTER_MODULE.

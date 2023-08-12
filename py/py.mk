@@ -259,6 +259,8 @@ $(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BU
 # translations-*.c is generated as a side-effect of building compressed_translations.generated.h
 # Specifying both in a single rule actually causes the rule to be run twice!
 # This alternative makes it run just once.
+# Another alternative is "grouped targets" (`a b &: c`), available in GNU make 4.3 and later.
+# TODO: use grouped targets when we expect GNU make >= 4.3 is pervasive.
 $(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compressed_translations.generated.h
 	@true
 
@@ -271,7 +273,7 @@ PY_CORE_O += $(PY_BUILD)/translations-$(TRANSLATION).o
 
 # build a list of registered modules for py/objmodule.c.
 $(HEADER_BUILD)/moduledefs.h: $(HEADER_BUILD)/moduledefs.collected
-	@$(ECHO) "GEN $@"
+	@$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py $< > $@
 
 # Standard C functions like memset need to be compiled with special flags so

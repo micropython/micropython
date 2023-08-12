@@ -38,14 +38,15 @@
 #endif
 #endif
 
-#define MICROPY_EMIT_X64            (1)
-#define MICROPY_EMIT_X86            (1)
-#define MICROPY_EMIT_THUMB          (1)
-#define MICROPY_EMIT_INLINE_THUMB   (1)
-#define MICROPY_EMIT_ARM            (1)
-#define MICROPY_EMIT_XTENSA         (1)
-#define MICROPY_EMIT_INLINE_XTENSA  (1)
-#define MICROPY_EMIT_XTENSAWIN      (1)
+//CIRCUITPY: native emitters not supported
+#define MICROPY_EMIT_X64            (!CIRCUITPY)
+#define MICROPY_EMIT_X86            (!CIRCUITPY)
+#define MICROPY_EMIT_THUMB          (!CIRCUITPY)
+#define MICROPY_EMIT_INLINE_THUMB   (!CIRCUITPY)
+#define MICROPY_EMIT_ARM            (!CIRCUITPY)
+#define MICROPY_EMIT_XTENSA         (!CIRCUITPY)
+#define MICROPY_EMIT_INLINE_XTENSA  (!CIRCUITPY)
+#define MICROPY_EMIT_XTENSAWIN      (!CIRCUITPY)
 
 #define MICROPY_DYNAMIC_COMPILER    (1)
 #define MICROPY_COMP_CONST_FOLDING  (1)
