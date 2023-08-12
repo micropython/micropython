@@ -6,7 +6,7 @@ set(ENV{IDF_PATH} ${CMAKE_SOURCE_DIR}/esp-idf)
 
 # The component list here determines what options we get in menuconfig and what the ninja file can build.
 set(COMPONENTS bt driver esp-tls esp_adc_cal esp_event esp_netif esp_psram esp_wifi esptool_py freertos log lwip main mbedtls mdns soc ulp usb wpa_supplicant esp_lcd)
-set(EXTRA_COMPONENT_DIRS esp-protocols/components/mdns)
+set(EXTRA_COMPONENT_DIRS "esp-protocols/components/mdns")
 
 list(APPEND EXTRA_COMPONENT_DIRS "esp32-camera")
 
