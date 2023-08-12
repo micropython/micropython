@@ -8,6 +8,7 @@ endif
 OBJ_EXTRA_ORDER_DEPS =
 
 # Generate moduledefs.h.
+SRC_QSTR += $(HEADER_BUILD)/devices.h
 OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h
 
 ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)

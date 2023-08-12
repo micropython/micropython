@@ -86,6 +86,7 @@ else
   endif
 
 OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/devices.h
+SRC_QSTR += $(HEADER_BUILD)/devices.h
 $(HEADER_BUILD)/devices.h : ../../supervisor/shared/external_flash/devices.h.jinja ../../tools/gen_nvm_devices.py | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
