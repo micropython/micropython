@@ -62,12 +62,15 @@ STATIC void claim_and_never_reset_pins(mp_obj_t seq) {
 }
 
 STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_t rgb_pin_count, bool allow_inefficient) {
-    uint32_t port = clock_pin / 32;
-    uint32_t bit_mask = 1 << (clock_pin % 32);
-
     if (rgb_pin_count <= 0 || rgb_pin_count % 6 != 0 || rgb_pin_count > 30) {
         mp_raise_ValueError_varg(translate("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
     }
+
+// Most ports have a strict requirement for how the rgbmatrix pins are laid
+// out; these two micros don't. Special-case it here.
+    #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(CONFIG_IDF_TARGET_ESP32S2)
+    uint32_t port = clock_pin / 32;
+    uint32_t bit_mask = 1 << (clock_pin % 32);
 
     for (uint8_t i = 0; i < rgb_pin_count; i++) {
         uint32_t pin_port = rgb_pins[i] / 32;
@@ -130,6 +133,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
             translate("Pinout uses %d bytes per element, which consumes more than the ideal %d bytes.  If this cannot be avoided, pass allow_inefficient=True to the constructor"),
             bytes_per_element, ideal_bytes_per_element);
     }
+    #endif
 }
 
 //|     def __init__(
@@ -236,12 +240,6 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
-    mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
-    if (framebuffer == mp_const_none) {
-        int bufsize = 2 * width * computed_height;
-        framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
-    }
-
     common_hal_rgbmatrix_rgbmatrix_construct(self,
         width,
         bit_depth,
@@ -249,7 +247,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         addr_count, addr_pins,
         clock_pin, latch_pin, output_enable_pin,
         args[ARG_doublebuffer].u_bool,
-        framebuffer, tile, args[ARG_serpentine].u_bool, NULL);
+        args[ARG_framebuffer].u_obj, tile, args[ARG_serpentine].u_bool, NULL);
 
     claim_and_never_reset_pins(args[ARG_rgb_list].u_obj);
     claim_and_never_reset_pins(args[ARG_addr_list].u_obj);
@@ -353,7 +351,6 @@ STATIC MP_DEFINE_CONST_DICT(rgbmatrix_rgbmatrix_locals_dict, rgbmatrix_rgbmatrix
 
 STATIC void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    check_for_deinit(self);
 
     *bufinfo = self->bufinfo;
 }

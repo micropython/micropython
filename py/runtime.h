@@ -229,6 +229,7 @@ NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
 NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_AttributeError(const compressed_string_t *msg);
 NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
+NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError_varg(const compressed_string_t *msg, ...);

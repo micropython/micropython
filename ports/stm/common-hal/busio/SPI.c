@@ -160,7 +160,7 @@ STATIC int check_pins(busio_spi_obj_t *self,
     }
 
     if (spi_taken) {
-        mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
     } else {
         raise_ValueError_invalid_pin();
     }
@@ -347,7 +347,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     const uint8_t *data, size_t len) {
     if (self->mosi == NULL) {
-        mp_raise_ValueError(translate("No MOSI pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
     HAL_StatusTypeDef result = HAL_SPI_Transmit(&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
     return result == HAL_OK;
@@ -356,9 +356,9 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     uint8_t *data, size_t len, uint8_t write_value) {
     if (self->miso == NULL && !self->half_duplex) {
-        mp_raise_ValueError(translate("No MISO pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     } else if (self->half_duplex && self->mosi == NULL) {
-        mp_raise_ValueError(translate("No MOSI pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
     HAL_StatusTypeDef result = HAL_OK;
     if ((!self->half_duplex && self->mosi == NULL) || (self->half_duplex && self->mosi != NULL && self->miso == NULL)) {
@@ -372,8 +372,11 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     const uint8_t *data_out, uint8_t *data_in, size_t len) {
-    if (self->miso == NULL || self->mosi == NULL) {
-        mp_raise_ValueError(translate("Missing MISO or MOSI pin"));
+    if (self->mosi == NULL && data_out != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+    }
+    if (self->miso == NULL && data_in != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive(&self->handle,
         (uint8_t *)data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);

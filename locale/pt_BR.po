@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-23 22:55+0000\n"
+"PO-Revision-Date: 2023-08-10 23:51+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.0-dev\n"
 
 #: main.c
 msgid ""
@@ -139,8 +139,10 @@ msgstr "%q em %q deve ser do tipo %q e não %q"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
+#: ports/mimxrt10xx/common-hal/usb_host/Port.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q in use"
@@ -195,6 +197,7 @@ msgid "%q must be 1 when %q is True"
 msgstr "%q deve ser 1 quando %q for verdadeiro"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
+#: shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
 msgstr "%q deve ser <= %d"
 
@@ -260,6 +263,22 @@ msgstr "todos os %q, %q, e %q devem ter mesmo comprimento"
 #: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr "%q=%q"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts in more bits than pin count"
+msgstr "%q[%u] desloca mais bits na entrada do que a contagem de pinos"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts out more bits than pin count"
+msgstr "%q[%u] desloca mais bits na saída do que a contagem de pinos"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] uses extra pin"
+msgstr "%q[%u] usa pino extra"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] waits on input outside of count"
+msgstr "%q[%u] espera na entrada fora da contagem"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -488,12 +507,17 @@ msgstr "Todos os periféricos UART estão em uso"
 msgid "All channels in use"
 msgstr "Todos os canais estão em uso"
 
+#: ports/raspberrypi/common-hal/usb_host/Port.c
+msgid "All dma channels in use"
+msgstr "Todos os canais dma estão em uso"
+
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
 msgstr "Todos os canais de eventos em uso"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All state machines in use"
 msgstr "O estado de todas as máquinas em uso"
 
@@ -800,10 +824,6 @@ msgstr "Não é possível definir o RTS ou CTS no modo RS485"
 #: py/objslice.c
 msgid "Cannot subclass slice"
 msgstr "Não é possível subclassificar a fatia"
-
-#: shared-module/bitbangio/SPI.c
-msgid "Cannot transfer without MOSI and MISO pins"
-msgstr "Não é possível transferir sem os pinos MOSI e MISO"
 
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Cannot vary frequency on a timer that is already in use"
@@ -1117,13 +1137,10 @@ msgstr "O grupo já está em uso"
 msgid "Half duplex SPI is not implemented"
 msgstr "O SPI half duplex ainda não está implementado"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/stm/common-hal/busio/I2C.c
-#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/canio/CAN.c
-#: ports/stm/common-hal/sdioio/SDCard.c
-msgid "Hardware busy, try alternative pins"
-msgstr "O hardware está ocupado, tente os pinos alternativos"
-
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
+#: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
+#: ports/stm/common-hal/canio/CAN.c ports/stm/common-hal/sdioio/SDCard.c
 msgid "Hardware in use, try alternative pins"
 msgstr "O hardware está em uso, tente os pinos alternativos"
 
@@ -1201,26 +1218,6 @@ msgstr "A entrada está demorando demais"
 #: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "Erro de entrada/saída"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts in more bits than pin count"
-msgstr "A instrução %d muda com mais bits do que a quantidade dos pinos"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts out more bits than pin count"
-msgstr "A instrução %d desloca mais bits do que a quantidade dos pinos"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d uses extra pin"
-msgstr "A instrução %d usa um pino extra"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d waits on input outside of count"
-msgstr "A instrução %d aguarda a entrada de fora da contagem"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1373,7 +1370,7 @@ msgstr "A camada deve ser uma subclasse Group ou TileGrid"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
-msgstr "Endereço MAC inválido"
+msgstr "O endereço MAC era inválido"
 
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
@@ -1392,48 +1389,33 @@ msgstr "O tamanho dos dados é incompatível"
 msgid "Mismatched swap flag"
 msgstr "Sinalizador de troca incompatível"
 
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI Pin"
-msgstr "O pino MISO ou MOSI está ausente"
-
-#: ports/stm/common-hal/busio/SPI.c
-msgid "Missing MISO or MOSI pin"
-msgstr "Falta o pino MISO ou o MOSI"
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "Missing first_in_pin. %q[%u] reads pin(s)"
+msgstr "Faltando first_in_pin. %q[%u] lê pino(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr "Faltando first_in_pin. A instrução %d lê pinos(s)"
+msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
+msgstr "Faltando first_in_pin. %q[%u] muda de pino(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr "Faltando first_in_pin. A instrução %d muda a partir do(s) pino(s)"
+msgid "Missing first_in_pin. %q[%u] waits based on pin"
+msgstr "Faltando first_in_pin. %q[%u] espera com base no pino"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr "Faltando first_in_pin. A instrução %d aguarda com base no pino"
+msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
+msgstr "Faltando first_out_pin. %q[%u] desloca para fora dos pino(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr "Faltando first_out_pin. A instrução %d muda para o(s) pinos(s)"
+msgid "Missing first_out_pin. %q[%u] writes pin(s)"
+msgstr "Faltando first_out_pin. %q[%u] escreve pino(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr "Faltando first_out_pin. A instrução %d escreve nos pinos(s)"
+msgid "Missing first_set_pin. %q[%u] sets pin(s)"
+msgstr "Faltando first_set_pin. %q[%u] define pino(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr "Faltando first_set_pin. A instrução %d define os pinos(s)"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr "Falta o jmp_pin. A instrução %d salta no pino"
+msgid "Missing jmp_pin. %q[%u] jumps on pin"
+msgstr "Falta jmp_pin. %q[%u] jumper no pino"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1473,6 +1455,14 @@ msgid "Nimble out of memory"
 msgstr "Ágil fora da memória"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/SPI.c
+#: ports/stm/common-hal/busio/UART.c shared-bindings/displayio/FourWire.c
+#: shared-bindings/displayio/I2CDisplay.c
+#: shared-bindings/paralleldisplay/ParallelBus.c shared-module/bitbangio/SPI.c
 msgid "No %q pin"
 msgstr "Sem pin %q"
 
@@ -1506,36 +1496,6 @@ msgstr "Não há nenhum dispositivo I2C no endereço: 0x%x"
 msgid "No IP"
 msgstr "Sem IP"
 
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MISO Pin"
-msgstr "Nenhum pino MISO"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MISO pin"
-msgstr "Nenhum pino MISO"
-
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c
-msgid "No MOSI Pin"
-msgstr "Nenhum pino MOSI"
-
-#: ports/stm/common-hal/busio/SPI.c shared-module/bitbangio/SPI.c
-msgid "No MOSI pin"
-msgstr "Nenhum pino MOSI"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No RX pin"
-msgstr "Nenhum pino RX"
-
-#: ports/espressif/common-hal/busio/UART.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
-#: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
-msgid "No TX pin"
-msgstr "Nenhum pino TX"
-
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
 msgstr "Nenhum clock disponível"
@@ -1543,6 +1503,10 @@ msgstr "Nenhum clock disponível"
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
 msgstr "Não há nenhuma captura em andamento"
+
+#: shared-module/usb/core/Device.c
+msgid "No configuration set"
+msgstr "Nenhum conjunto de configuração"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
@@ -1608,6 +1572,10 @@ msgstr "Este arquivo/diretório não existe"
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "No timer available"
 msgstr "Não há um temporizador disponível"
+
+#: shared-module/usb/core/Device.c
+msgid "No usb host port initialized"
+msgstr "Nenhuma porta do host usb foi inicializada"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
@@ -1831,6 +1799,10 @@ msgstr "Pinos devem ser pinos GPIO sequenciais"
 msgid "Pins must share PWM slice"
 msgstr "Os pinos devem compartilhar a fatia do PWM"
 
+#: shared-module/usb/core/Device.c
+msgid "Pipe error"
+msgstr "Erro de pipe"
+
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
 msgstr "Além de quaisquer módulos no sistema de arquivos\n"
@@ -1913,7 +1885,8 @@ msgstr "Houve um erro na geração do número aleatório"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
-#: shared-bindings/pulseio/PulseIn.c shared-module/displayio/Bitmap.c
+#: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
+#: shared-module/displayio/Bitmap.c
 msgid "Read-only"
 msgstr "Somente leitura"
 
@@ -2008,10 +1981,6 @@ msgstr "O contexto do lado do servidor não pode ter nome de host"
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
 msgstr "O tamanho não é suportado"
-
-#: ports/raspberrypi/common-hal/alarm/SleepMemory.c
-msgid "Sleep Memory not available"
-msgstr "Sleep memory não está disponível"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
@@ -2149,8 +2118,10 @@ msgid "Too many channels in sample."
 msgstr "Muitos canais na amostra."
 
 #: shared-module/displayio/__init__.c
-msgid "Too many display busses"
-msgstr "Muitos barramentos estão sendo exibidos"
+msgid "Too many display busses; forgot displayio.release_displays() ?"
+msgstr ""
+"Excesso de barramentos de exibição; esqueceu do displayio."
+"release_displays() ?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -2481,6 +2452,7 @@ msgstr "Você pressionou os dois botões durante a inicialização."
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
+#: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
 msgstr "Você pressionou o botão A na inicialização."
 
@@ -2877,6 +2849,10 @@ msgstr "não é possível criar instâncias '%q'"
 #: py/objtype.c
 msgid "cannot create instance"
 msgstr "não é possível criar instância"
+
+#: extmod/ulab/code/ndarray.c
+msgid "cannot delete array elements"
+msgstr "não é possível excluir os elementos da matriz"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3342,6 +3318,14 @@ msgstr "O comprimento do initial_value está errado"
 msgid "inline assembler must be a function"
 msgstr "o assembler em linha deve ser uma função"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output dimensions differ"
+msgstr "as dimensões da entrada e da saída diferem"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "input and output shapes differ"
+msgstr "as formas da entrada e da saída diferem"
+
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
 msgstr ""
@@ -3362,6 +3346,10 @@ msgstr "os dados da entrada devem ser iteráveis"
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
 msgstr "o tipo da entrada dtype deve ser flutuante ou complexo"
+
+#: extmod/ulab/code/numpy/poly.c
+msgid "input is not iterable"
+msgstr "a entrada não é iterável"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3407,10 +3395,6 @@ msgstr "A entrada deve ser tupla, lista, intervalo ou matriz"
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
 msgstr "os vetores da entrada devem ter o mesmo comprimento"
-
-#: extmod/ulab/code/numpy/poly.c
-msgid "inputs are not iterable"
-msgstr "as entradas não são iteráveis"
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "interp is defined for 1D iterables of equal length"
@@ -3676,6 +3660,10 @@ msgstr "o método nativo é grande demais"
 msgid "native yield"
 msgstr "rendimento nativo"
 
+#: extmod/ulab/code/ndarray.c
+msgid "ndarray length overflows"
+msgstr "estouros de comprimento no ndarray"
+
 #: py/runtime.c
 #, c-format
 msgid "need more than %d values to unpack"
@@ -3720,11 +3708,6 @@ msgstr "nenhuma semente padrão"
 #: py/builtinimport.c
 msgid "no module named '%q'"
 msgstr "nenhum módulo chamado '%q'"
-
-#: shared-bindings/displayio/FourWire.c shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c
-msgid "no reset pin available"
-msgstr "nenhum pino de redefinição está disponível"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
@@ -3778,6 +3761,10 @@ msgstr "argumentos insuficientes para o formato da string"
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
 msgstr "não foi implementado para dtype complexo"
+
+#: extmod/ulab/code/numpy/bitwise.c
+msgid "not supported for input types"
+msgstr "não compatível para os tipos de entrada"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3890,8 +3877,8 @@ msgstr ""
 msgid "opcode"
 msgstr "opcode"
 
-#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/compare.c
-#: extmod/ulab/code/numpy/vector.c
+#: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
+#: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
 msgid "operands could not be broadcast together"
 msgstr "os operandos não puderam ser transmitidos juntos"
 
@@ -3930,9 +3917,25 @@ msgstr ""
 msgid "out array is too small"
 msgstr "a matriz externa é muito pequena"
 
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for complex dtype"
+msgstr "a palavra-chave out não é compatível para o dtype complexo"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out keyword is not supported for function"
+msgstr "a palavra-chave out não é compatível com a função"
+
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
 msgstr "deve ser uma matriz densa flutuante"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be an ndarray"
+msgstr "out deve ser um ndarray"
+
+#: extmod/ulab/code/numpy/vector.c
+msgid "out must be of float dtype"
+msgstr "out deve ser do tipo float dtype"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
@@ -4121,7 +4124,7 @@ msgstr "sos[:, 3] deve ser um em todos"
 msgid "sosfilt requires iterable arguments"
 msgstr "o sosfilt requer que os argumentos sejam iteráveis"
 
-#: shared-bindings/bitmaptools/__init__.c shared-bindings/displayio/Bitmap.c
+#: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
 msgstr "a paleta de origem é muito grande"
 
@@ -4455,6 +4458,92 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#, c-format
+#~ msgid "Instruction %d shifts in more bits than pin count"
+#~ msgstr "A instrução %d muda com mais bits do que a quantidade dos pinos"
+
+#, c-format
+#~ msgid "Instruction %d shifts out more bits than pin count"
+#~ msgstr "A instrução %d desloca mais bits do que a quantidade dos pinos"
+
+#, c-format
+#~ msgid "Instruction %d uses extra pin"
+#~ msgstr "A instrução %d usa um pino extra"
+
+#, c-format
+#~ msgid "Instruction %d waits on input outside of count"
+#~ msgstr "A instrução %d aguarda a entrada de fora da contagem"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+#~ msgstr "Faltando first_in_pin. A instrução %d lê pinos(s)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+#~ msgstr "Faltando first_in_pin. A instrução %d muda a partir do(s) pino(s)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
+#~ msgstr "Faltando first_in_pin. A instrução %d aguarda com base no pino"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+#~ msgstr "Faltando first_out_pin. A instrução %d muda para o(s) pinos(s)"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+#~ msgstr "Faltando first_out_pin. A instrução %d escreve nos pinos(s)"
+
+#, c-format
+#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+#~ msgstr "Faltando first_set_pin. A instrução %d define os pinos(s)"
+
+#, c-format
+#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
+#~ msgstr "Falta o jmp_pin. A instrução %d salta no pino"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "as entradas não são iteráveis"
+
+#~ msgid "Too many display busses"
+#~ msgstr "Muitos barramentos estão sendo exibidos"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "Não é possível transferir sem os pinos MOSI e MISO"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "O hardware está ocupado, tente os pinos alternativos"
+
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "O pino MISO ou MOSI está ausente"
+
+#~ msgid "Missing MISO or MOSI pin"
+#~ msgstr "Falta o pino MISO ou o MOSI"
+
+#~ msgid "No MISO Pin"
+#~ msgstr "Nenhum pino MISO"
+
+#~ msgid "No MISO pin"
+#~ msgstr "Nenhum pino MISO"
+
+#~ msgid "No MOSI Pin"
+#~ msgstr "Nenhum pino MOSI"
+
+#~ msgid "No MOSI pin"
+#~ msgstr "Nenhum pino MOSI"
+
+#~ msgid "No RX pin"
+#~ msgstr "Nenhum pino RX"
+
+#~ msgid "No TX pin"
+#~ msgstr "Nenhum pino TX"
+
+#~ msgid "no reset pin available"
+#~ msgstr "nenhum pino de redefinição está disponível"
+
+#~ msgid "Sleep Memory not available"
+#~ msgstr "Sleep memory não está disponível"
 
 #~ msgid "input and output shapes are not compatible"
 #~ msgstr "as formas de entrada e saída não são compatíveis"

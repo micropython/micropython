@@ -31,7 +31,9 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
+#include "py/enum.h"
 #include "shared-bindings/util.h"
+#include "shared-bindings/synthio/Biquad.h"
 #include "shared-bindings/synthio/Synthesizer.h"
 #include "shared-bindings/synthio/LFO.h"
 #include "shared-bindings/synthio/__init__.h"
@@ -52,7 +54,6 @@
 //|         channel_count: int = 1,
 //|         waveform: Optional[ReadableBuffer] = None,
 //|         envelope: Optional[Envelope] = None,
-//|         filter: Optional[ReadableBuffer] = None,
 //|     ) -> None:
 //|         """Create a synthesizer object.
 //|
@@ -65,17 +66,15 @@
 //|         :param int sample_rate: The desired playback sample rate; higher sample rate requires more memory
 //|         :param int channel_count: The number of output channels (1=mono, 2=stereo)
 //|         :param ReadableBuffer waveform: A single-cycle waveform. Default is a 50% duty cycle square wave. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
-//|         :param ReadableBuffer filter: Coefficients of an FIR filter to apply to notes with ``filter=True``. If specified, must be a ReadableBuffer of type 'h' (signed 16 bit)
 //|         :param Optional[Envelope] envelope: An object that defines the loudness of a note over time. The default envelope, `None` provides no ramping, voices turn instantly on and off.
 //|         """
 STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_sample_rate, ARG_channel_count, ARG_waveform, ARG_envelope, ARG_filter };
+    enum { ARG_sample_rate, ARG_channel_count, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
         { MP_QSTR_channel_count, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
-        { MP_QSTR_filter, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -86,7 +85,6 @@ STATIC mp_obj_t synthio_synthesizer_make_new(const mp_obj_type_t *type, size_t n
         args[ARG_sample_rate].u_int,
         args[ARG_channel_count].u_int,
         args[ARG_waveform].u_obj,
-        args[ARG_filter].u_obj,
         args[ARG_envelope].u_obj);
 
     return MP_OBJ_FROM_PTR(self);
@@ -258,7 +256,9 @@ MP_PROPERTY_GETTER(synthio_synthesizer_sample_rate_obj,
     (mp_obj_t)&synthio_synthesizer_get_sample_rate_obj);
 
 //|     pressed: NoteSequence
-//|     """A sequence of the currently pressed notes (read-only property)"""
+//|     """A sequence of the currently pressed notes (read-only property).
+//|
+//|     This does not include notes in the release phase of the envelope."""
 //|
 STATIC mp_obj_t synthio_synthesizer_obj_get_pressed(mp_obj_t self_in) {
     synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -269,6 +269,23 @@ MP_DEFINE_CONST_FUN_OBJ_1(synthio_synthesizer_get_pressed_obj, synthio_synthesiz
 
 MP_PROPERTY_GETTER(synthio_synthesizer_pressed_obj,
     (mp_obj_t)&synthio_synthesizer_get_pressed_obj);
+
+//|     def note_info(self, note: Note) -> Tuple[Optional[EnvelopeState], float]:
+//|         """Get info about a note's current envelope state
+//|
+//|         If the note is currently playing (including in the release phase), the returned value gives the current envelope state and the current envelope value.
+//|
+//|         If the note is not playing on this synthesizer, returns the tuple ``(None, 0.0)``."""
+STATIC mp_obj_t synthio_synthesizer_obj_note_info(mp_obj_t self_in, mp_obj_t note) {
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+    mp_float_t vol = MICROPY_FLOAT_CONST(0.0);
+    envelope_state_e state = common_hal_synthio_synthesizer_note_info(self, note, &vol);
+    return MP_OBJ_NEW_TUPLE(
+        cp_enum_find(&synthio_note_state_type, state),
+        mp_obj_new_float(vol));
+}
+MP_DEFINE_CONST_FUN_OBJ_2(synthio_synthesizer_note_info_obj, synthio_synthesizer_obj_note_info);
 
 //|     blocks: List[BlockInput]
 //|     """A list of blocks to advance whether or not they are associated with a playing note.
@@ -291,6 +308,114 @@ MP_PROPERTY_GETTER(synthio_synthesizer_blocks_obj,
 //|     """Maximum polyphony of the synthesizer (read-only class property)"""
 //|
 
+//|     def low_pass_filter(cls, frequency: float, q_factor: float = 0.7071067811865475) -> Biquad:
+//|         """Construct a low-pass filter with the given parameters.
+//|
+//|         ``frequency``, called f0 in the cookbook, is the corner frequency in Hz
+//|         of the filter.
+//|
+//|         ``q_factor``, called ``Q`` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
+//|         """
+
+enum passfilter_arg_e { ARG_f0, ARG_Q };
+
+// M_PI is not part of the math.h standard and may not be defined
+// And by defining our own we can ensure it uses the correct const format.
+#define MP_PI MICROPY_FLOAT_CONST(3.14159265358979323846)
+
+static const mp_arg_t passfilter_properties[] = {
+    { MP_QSTR_frequency, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_ROM_NONE} },
+    { MP_QSTR_Q, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL } },
+};
+
+STATIC mp_obj_t synthio_synthesizer_lpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[MP_ARRAY_SIZE(passfilter_properties)];
+
+    mp_obj_t self_in = pos_args[0];
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_arg_parse_all(n_pos - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(passfilter_properties), passfilter_properties, args);
+
+    mp_float_t f0 = mp_arg_validate_type_float(args[ARG_f0].u_obj, MP_QSTR_f0);
+    mp_float_t Q =
+        args[ARG_Q].u_obj == MP_OBJ_NULL ? MICROPY_FLOAT_CONST(0.7071067811865475) :
+        mp_arg_validate_type_float(args[ARG_Q].u_obj, MP_QSTR_Q);
+
+    mp_float_t w0 = f0 / self->synth.sample_rate * 2 * MP_PI;
+
+    return common_hal_synthio_new_lpf(w0, Q);
+
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_lpf_fun_obj, 1, synthio_synthesizer_lpf);
+
+//|     def high_pass_filter(
+//|         cls, frequency: float, q_factor: float = 0.7071067811865475
+//|     ) -> Biquad:
+//|         """Construct a high-pass filter with the given parameters.
+//|
+//|         ``frequency``, called f0 in the cookbook, is the corner frequency in Hz
+//|         of the filter.
+//|
+//|         ``q_factor``, called ``Q`` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
+//|         """
+
+STATIC mp_obj_t synthio_synthesizer_hpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[MP_ARRAY_SIZE(passfilter_properties)];
+
+    mp_obj_t self_in = pos_args[0];
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_arg_parse_all(n_pos - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(passfilter_properties), passfilter_properties, args);
+
+    mp_float_t f0 = mp_arg_validate_type_float(args[ARG_f0].u_obj, MP_QSTR_f0);
+    mp_float_t Q =
+        args[ARG_Q].u_obj == MP_OBJ_NULL ? MICROPY_FLOAT_CONST(0.7071067811865475) :
+        mp_arg_validate_type_float(args[ARG_Q].u_obj, MP_QSTR_Q);
+
+    mp_float_t w0 = f0 / self->synth.sample_rate * 2 * MP_PI;
+
+    return common_hal_synthio_new_hpf(w0, Q);
+
+}
+
+//|     def band_pass_filter(
+//|         cls, frequency: float, q_factor: float = 0.7071067811865475
+//|     ) -> Biquad:
+//|         """Construct a band-pass filter with the given parameters.
+//|
+//|         ``frequency``, called f0 in the cookbook, is the center frequency in Hz
+//|         of the filter.
+//|
+//|         ``q_factor``, called ``Q`` in the cookbook.  Controls how peaked the response will be at the cutoff frequency. A large value makes the response more peaked.
+//|
+//|         The coefficients are scaled such that the filter has a 0dB peak gain.
+//|         """
+//|
+
+MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_hpf_fun_obj, 1, synthio_synthesizer_hpf);
+
+STATIC mp_obj_t synthio_synthesizer_bpf(size_t n_pos, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_arg_val_t args[MP_ARRAY_SIZE(passfilter_properties)];
+
+    mp_obj_t self_in = pos_args[0];
+    synthio_synthesizer_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_arg_parse_all(n_pos - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(passfilter_properties), passfilter_properties, args);
+
+    mp_float_t f0 = mp_arg_validate_type_float(args[ARG_f0].u_obj, MP_QSTR_f0);
+    mp_float_t Q =
+        args[ARG_Q].u_obj == MP_OBJ_NULL ? MICROPY_FLOAT_CONST(0.7071067811865475) :
+        mp_arg_validate_type_float(args[ARG_Q].u_obj, MP_QSTR_Q);
+
+    mp_float_t w0 = f0 / self->synth.sample_rate * 2 * MP_PI;
+
+    return common_hal_synthio_new_bpf(w0, Q);
+
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(synthio_synthesizer_bpf_fun_obj, 1, synthio_synthesizer_bpf);
+
 STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_press), MP_ROM_PTR(&synthio_synthesizer_press_obj) },
@@ -303,11 +428,15 @@ STATIC const mp_rom_map_elem_t synthio_synthesizer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&synthio_synthesizer___exit___obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_low_pass_filter), MP_ROM_PTR(&synthio_synthesizer_lpf_fun_obj) },
+    { MP_ROM_QSTR(MP_QSTR_high_pass_filter), MP_ROM_PTR(&synthio_synthesizer_hpf_fun_obj) },
+    { MP_ROM_QSTR(MP_QSTR_band_pass_filter), MP_ROM_PTR(&synthio_synthesizer_bpf_fun_obj) },
     // Properties
     { MP_ROM_QSTR(MP_QSTR_envelope), MP_ROM_PTR(&synthio_synthesizer_envelope_obj) },
     { MP_ROM_QSTR(MP_QSTR_sample_rate), MP_ROM_PTR(&synthio_synthesizer_sample_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_max_polyphony), MP_ROM_INT(CIRCUITPY_SYNTHIO_MAX_CHANNELS) },
     { MP_ROM_QSTR(MP_QSTR_pressed), MP_ROM_PTR(&synthio_synthesizer_pressed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_note_info), MP_ROM_PTR(&synthio_synthesizer_note_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_blocks), MP_ROM_PTR(&synthio_synthesizer_blocks_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_synthesizer_locals_dict, synthio_synthesizer_locals_dict_table);

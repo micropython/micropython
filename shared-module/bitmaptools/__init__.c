@@ -982,3 +982,71 @@ void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
 
     draw_circle(destination, x, y, radius, value);
 }
+
+void common_hal_bitmaptools_blit(displayio_bitmap_t *destination, displayio_bitmap_t *source, int16_t x, int16_t y,
+    int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_source_index, bool skip_source_index_none, uint32_t skip_dest_index,
+    bool skip_dest_index_none) {
+
+    if (destination->read_only) {
+        mp_raise_RuntimeError(translate("Read-only"));
+    }
+    // Copy region of "source" bitmap into "destination" bitmap at location x,y in the "destination"
+    // If skip_value is encountered in the source bitmap, it will not be copied.
+    // If skip_value is `None`, then all pixels are copied.
+    // This function assumes input checks were performed for pixel index entries.
+
+    // Update the dirty area
+    int16_t dirty_x_max = (x + (x2 - x1));
+    if (dirty_x_max > destination->width) {
+        dirty_x_max = destination->width;
+    }
+    int16_t dirty_y_max = y + (y2 - y1);
+    if (dirty_y_max > destination->height) {
+        dirty_y_max = destination->height;
+    }
+
+    displayio_area_t a = { x, y, dirty_x_max, dirty_y_max, NULL};
+    displayio_bitmap_set_dirty_area(destination, &a);
+
+    bool x_reverse = false;
+    bool y_reverse = false;
+
+    // Add reverse direction option to protect blitting of destination bitmap back into destination bitmap
+    if (x > x1) {
+        x_reverse = true;
+    }
+    if (y > y1) {
+        y_reverse = true;
+    }
+
+    // simplest version - use internal functions for get/set pixels
+    for (int16_t i = 0; i < (x2 - x1); i++) {
+
+        const int xs_index = x_reverse ? ((x2) - i - 1) : x1 + i; // x-index into the source bitmap
+        const int xd_index = x_reverse ? ((x + (x2 - x1)) - i - 1) : x + i; // x-index into the destination bitmap
+
+        if ((xd_index >= 0) && (xd_index < destination->width)) {
+            for (int16_t j = 0; j < (y2 - y1); j++) {
+
+                const int ys_index = y_reverse ? ((y2) - j - 1) : y1 + j;  // y-index into the source bitmap
+                const int yd_index = y_reverse ? ((y + (y2 - y1)) - j - 1) : y + j; // y-index into the destination bitmap
+
+                if ((yd_index >= 0) && (yd_index < destination->height)) {
+                    uint32_t value = common_hal_displayio_bitmap_get_pixel(source, xs_index, ys_index);
+                    if (skip_dest_index_none) { // if skip_dest_index is none, then only check source skip
+                        if ((skip_source_index_none) || (value != skip_source_index)) {   // write if skip_value_none is True
+                            displayio_bitmap_write_pixel(destination, xd_index, yd_index, value);
+                        }
+                    } else { // check dest_value index against skip_dest_index and skip if they match
+                        uint32_t dest_value = common_hal_displayio_bitmap_get_pixel(destination, xd_index, yd_index);
+                        if (dest_value != skip_dest_index) {
+                            if ((skip_source_index_none) || (value != skip_source_index)) {   // write if skip_value_none is True
+                                displayio_bitmap_write_pixel(destination, xd_index, yd_index, value);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

@@ -267,6 +267,12 @@
 /  for variable sector size mode and disk_ioctl() function needs to implement
 /  GET_SECTOR_SIZE command. */
 
+#ifdef MICROPY_FATFS_WINDOW_ALIGNMENT
+#define FF_WINDOW_ALIGNMENT   (MICROPY_FATFS_WINDOW_ALIGNMENT)
+#else
+#define FF_WINDOW_ALIGNMENT   1
+#endif
+
 
 #define FF_USE_TRIM     0
 /* This option switches support for ATA-TRIM. (0:Disable or 1:Enable)

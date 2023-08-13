@@ -28,6 +28,7 @@ $(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include sha
 SRC_BITMAP := \
 	shared/runtime/context_manager_helpers.c \
 	displayio_min.c \
+	shared-bindings/__future__/__init__.c \
 	shared-bindings/aesio/aes.c \
 	shared-bindings/aesio/__init__.c \
 	shared-bindings/audiocore/__init__.c \
@@ -45,6 +46,7 @@ SRC_BITMAP := \
 	shared-bindings/synthio/MidiTrack.c \
 	shared-bindings/synthio/LFO.c \
 	shared-bindings/synthio/Note.c \
+	shared-bindings/synthio/Biquad.c \
 	shared-bindings/synthio/Synthesizer.c \
 	shared-bindings/traceback/__init__.c \
 	shared-bindings/util.c \
@@ -70,6 +72,7 @@ SRC_BITMAP := \
 	shared-module/synthio/MidiTrack.c \
 	shared-module/synthio/LFO.c \
 	shared-module/synthio/Note.c \
+	shared-module/synthio/Biquad.c \
 	shared-module/synthio/Synthesizer.c \
 	shared-module/traceback/__init__.c \
 	shared-module/zlib/__init__.c \
@@ -83,6 +86,7 @@ CFLAGS += \
 	-DCIRCUITPY_AUDIOCORE_DEBUG=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
+	-DCIRCUITPY_FUTURE=1 \
 	-DCIRCUITPY_GIFIO=1 \
 	-DCIRCUITPY_OS_GETENV=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \

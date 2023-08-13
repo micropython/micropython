@@ -131,7 +131,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             context = self;
 
         } else {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         }
 
     } else {

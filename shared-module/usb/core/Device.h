@@ -32,6 +32,9 @@
 typedef struct {
     mp_obj_base_t base;
     uint8_t device_number;
+    uint8_t configuration_index; // not bConfigurationValue
+    uint8_t *configuration_descriptor; // Contains the length of the all descriptors.
+    uint8_t open_endpoints[8];
 } usb_core_device_obj_t;
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_USB_CORE_DEVICE_H

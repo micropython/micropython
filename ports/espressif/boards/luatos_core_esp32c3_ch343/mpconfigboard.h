@@ -24,21 +24,21 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+// Board setup
 
-#define MICROPY_HW_BOARD_NAME       "Adafruit Camera"
-#define MICROPY_HW_MCU_NAME         "ESP32S2"
+#define MICROPY_HW_BOARD_NAME       "Luatos Core-ESP32C3"
+#define MICROPY_HW_MCU_NAME         "ESP32-C3"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
-#define MICROPY_HW_NEOPIXEL_COUNT (1)
+// Status LED
+#define MICROPY_HW_LED_STATUS (&pin_GPIO12)
 
-#define MICROPY_HW_LED_STATUS (&pin_GPIO1)
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
 
-#define DEFAULT_I2C_BUS_SDA (&pin_GPIO33)
-#define DEFAULT_I2C_BUS_SCL (&pin_GPIO34)
+// Default bus pins
+#define DEFAULT_UART_BUS_RX         (&pin_GPIO20)
+#define DEFAULT_UART_BUS_TX         (&pin_GPIO21)
 
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
-
-#define DOUBLE_TAP_PIN (&pin_GPIO42)
+// Serial over UART
+#define CIRCUITPY_CONSOLE_UART_RX               DEFAULT_UART_BUS_RX
+#define CIRCUITPY_CONSOLE_UART_TX               DEFAULT_UART_BUS_TX

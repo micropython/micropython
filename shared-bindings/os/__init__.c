@@ -103,7 +103,7 @@ STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
     return common_hal_os_getenv(mp_obj_str_get_str(args[ARG_key].u_obj), args[ARG_default].u_obj);
     #else
-    return mp_const_none;
+    mp_raise_NotImplementedError(NULL);
     #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(os_getenv_obj, 1, os_getenv);

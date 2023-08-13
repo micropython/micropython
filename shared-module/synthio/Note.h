@@ -27,6 +27,7 @@
 #pragma once
 
 #include "shared-module/synthio/__init__.h"
+#include "shared-module/synthio/Biquad.h"
 #include "shared-module/synthio/LFO.h"
 #include "shared-bindings/synthio/__init__.h"
 
@@ -37,12 +38,14 @@ typedef struct synthio_note_obj {
 
     mp_float_t frequency, ring_frequency;
     mp_obj_t waveform_obj, envelope_obj, ring_waveform_obj;
+    mp_obj_t filter_obj;
+
+    biquad_filter_state filter_state;
 
     int32_t sample_rate;
 
     int32_t frequency_scaled;
     int32_t ring_frequency_scaled, ring_frequency_bent;
-    bool filter;
 
     mp_buffer_info_t waveform_buf;
     mp_buffer_info_t ring_waveform_buf;

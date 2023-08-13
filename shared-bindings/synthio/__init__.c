@@ -36,6 +36,7 @@
 #include "extmod/vfs_posix.h"
 
 #include "shared-bindings/synthio/__init__.h"
+#include "shared-bindings/synthio/Biquad.h"
 #include "shared-bindings/synthio/LFO.h"
 #include "shared-bindings/synthio/Math.h"
 #include "shared-bindings/synthio/MidiTrack.h"
@@ -43,6 +44,39 @@
 #include "shared-bindings/synthio/Synthesizer.h"
 
 #include "shared-module/synthio/LFO.h"
+
+//|
+//| """Support for multi-channel audio synthesis
+//|
+//| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
+//| """
+//|
+
+//| class EnvelopeState:
+//|     ATTACK: EnvelopeState
+//|     """The note is in its attack phase"""
+//|     DECAY: EnvelopeState
+//|     """The note is in its decay phase"""
+//|     SUSTAIN: EnvelopeState
+//|     """The note is in its sustain phase"""
+//|     RELEASE: EnvelopeState
+//|     """The note is in its release phase"""
+//|
+MAKE_ENUM_VALUE(synthio_note_state_type, note_state, ATTACK, SYNTHIO_ENVELOPE_STATE_ATTACK);
+MAKE_ENUM_VALUE(synthio_note_state_type, note_state, DECAY, SYNTHIO_ENVELOPE_STATE_DECAY);
+MAKE_ENUM_VALUE(synthio_note_state_type, note_state, SUSTAIN, SYNTHIO_ENVELOPE_STATE_SUSTAIN);
+MAKE_ENUM_VALUE(synthio_note_state_type, note_state, RELEASE, SYNTHIO_ENVELOPE_STATE_RELEASE);
+
+MAKE_ENUM_MAP(synthio_note_state) {
+    MAKE_ENUM_MAP_ENTRY(note_state, ATTACK),
+    MAKE_ENUM_MAP_ENTRY(note_state, DECAY),
+    MAKE_ENUM_MAP_ENTRY(note_state, SUSTAIN),
+    MAKE_ENUM_MAP_ENTRY(note_state, RELEASE),
+};
+
+STATIC MP_DEFINE_CONST_DICT(synthio_note_state_locals_dict, synthio_note_state_locals_table);
+MAKE_PRINTER(synthio, synthio_note_state);
+MAKE_ENUM_TYPE(synthio, EnvelopeState, synthio_note_state);
 
 #define default_attack_time (MICROPY_FLOAT_CONST(0.1))
 #define default_decay_time (MICROPY_FLOAT_CONST(0.05))
@@ -58,12 +92,6 @@ static const mp_arg_t envelope_properties[] = {
     { MP_QSTR_sustain_level, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = MP_OBJ_NULL } },
 };
 
-//|
-//| """Support for multi-channel audio synthesis
-//|
-//| At least 2 simultaneous notes are supported.  samd5x, mimxrt10xx and rp2040 platforms support up to 12 notes.
-//| """
-//|
 //| BlockInput = Union["Math", "LFO", float, None]
 //| """Blocks and Notes can take any of these types as inputs on certain attributes
 //|
@@ -309,10 +337,12 @@ MP_DEFINE_CONST_FUN_OBJ_VAR(synthio_lfo_tick_obj, 1, synthio_lfo_tick);
 
 STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_synthio) },
+    { MP_ROM_QSTR(MP_QSTR_Biquad), MP_ROM_PTR(&synthio_biquad_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_Math), MP_ROM_PTR(&synthio_math_type) },
     { MP_ROM_QSTR(MP_QSTR_MathOperation), MP_ROM_PTR(&synthio_math_operation_type) },
     { MP_ROM_QSTR(MP_QSTR_MidiTrack), MP_ROM_PTR(&synthio_miditrack_type) },
     { MP_ROM_QSTR(MP_QSTR_Note), MP_ROM_PTR(&synthio_note_type) },
+    { MP_ROM_QSTR(MP_QSTR_EnvelopeState), MP_ROM_PTR(&synthio_note_state_type) },
     { MP_ROM_QSTR(MP_QSTR_LFO), MP_ROM_PTR(&synthio_lfo_type) },
     { MP_ROM_QSTR(MP_QSTR_Synthesizer), MP_ROM_PTR(&synthio_synthesizer_type) },
     { MP_ROM_QSTR(MP_QSTR_from_file), MP_ROM_PTR(&synthio_from_file_obj) },

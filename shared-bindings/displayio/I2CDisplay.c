@@ -91,7 +91,7 @@ STATIC mp_obj_t displayio_i2cdisplay_obj_reset(mp_obj_t self_in) {
     displayio_i2cdisplay_obj_t *self = self_in;
 
     if (!common_hal_displayio_i2cdisplay_reset(self)) {
-        mp_raise_RuntimeError(translate("no reset pin available"));
+        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }

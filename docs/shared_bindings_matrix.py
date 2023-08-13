@@ -148,50 +148,21 @@ def get_board_mapping():
     return boards
 
 
-def read_mpconfig():
-    """Open 'circuitpy_mpconfig.mk' and return the contents."""
-    configs = []
-    cpy_mpcfg = get_circuitpython_root_dir() / "py" / "circuitpy_mpconfig.mk"
-    with open(cpy_mpcfg) as mpconfig:
-        configs = mpconfig.read()
-
-    return configs
-
-
 def build_module_map():
     """Establish the base of the JSON file, based on the contents from
-    `configs`. Base will contain module names, if they're part of
-    the `FULL_BUILD`, or their default value (0, 1, or a list of
-    modules that determine default [see audiocore, audiomixer, etc.]).
-
+    `configs`. Base contains the module name and the controlling C macro name.
     """
     base = dict()
     modules = get_bindings()
-    configs = read_mpconfig()
-    full_build = False
     for module in modules:
         full_name = module
         if module in ADDITIONAL_MODULES:
             search_identifier = ADDITIONAL_MODULES[module]
         else:
             search_identifier = "CIRCUITPY_" + module.lstrip("_").upper()
-        re_pattern = f"{re.escape(search_identifier)}\s*\??=\s*(.+)"
-        find_config = re.findall(re_pattern, configs)
-        if not find_config:
-            continue
-        find_config = ", ".join([x.strip("$()") for x in find_config])
-
-        full_build = int("CIRCUITPY_FULL_BUILD" in find_config)
-        if not full_build:
-            default_val = find_config
-        else:
-            default_val = "None"
 
         base[module] = {
             "name": full_name,
-            "full_build": str(full_build),
-            "default_value": default_val,
-            "excluded": {},
             "key": search_identifier,
         }
 
@@ -199,15 +170,14 @@ def build_module_map():
 
 
 def get_settings_from_makefile(port_dir, board_name):
-    """Invoke make in a mode which prints the database, then parse it for
-    settings.
+    """Invoke make to print the value of critical build settings
 
     This means that the effect of all Makefile directives is taken
     into account, without having to re-encode the logic that sets them
     in this script, something that has proved error-prone
     """
     contents = subprocess.run(
-        ["make", "-C", port_dir, f"BOARD={board_name}", "-qp", "print-CC"],
+        ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS"],
         encoding="utf-8",
         errors="replace",
         stdout=subprocess.PIPE,
@@ -223,9 +193,10 @@ def get_settings_from_makefile(port_dir, board_name):
 
     settings = {}
     for line in contents.stdout.split("\n"):
-        # Handle both = and := definitions.
-        m = re.match(r"^([A-Z][A-Z0-9_]*) :?= (.*)$", line)
-        if m:
+        if line.startswith('CFLAGS ='):
+            for m in re.findall('-D([A-Z][A-Z0-9_]*)=(\d+)', line):
+                settings[m[0]] = m[1]
+        elif m := re.match(r"^([A-Z][A-Z0-9_]*) = (.*)$", line):
             settings[m.group(1)] = m.group(2)
 
     return settings
@@ -268,6 +239,10 @@ def get_repository_url(directory):
     repository_urls[directory] = path
     return path
 
+def remove_prefix(s, prefix):
+    if not s.startswith(prefix):
+        raise ValueError(f"{s=} does not start with {prefix=}")
+    return s.removeprefix(prefix)
 
 def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
     """
@@ -280,7 +255,8 @@ def frozen_modules_from_dirs(frozen_mpy_dirs, withurl):
     """
     frozen_modules = []
     for frozen_path in filter(lambda x: x, frozen_mpy_dirs.split(" ")):
-        source_dir = get_circuitpython_root_dir() / frozen_path[7:]
+        frozen_path = remove_prefix(frozen_path, '../../')
+        source_dir = get_circuitpython_root_dir() / frozen_path
         url_repository = get_repository_url(source_dir)
         for sub in source_dir.glob("*"):
             if sub.name in FROZEN_EXCLUDES:

@@ -107,7 +107,10 @@ STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *cadata = mp_obj_str_get_str(args[ARG_cadata].u_obj);
+    const char *cadata = NULL;
+    if (args[ARG_cadata].u_obj != mp_const_none) {
+        cadata = mp_obj_str_get_str(args[ARG_cadata].u_obj);
+    }
 
     common_hal_ssl_sslcontext_load_verify_locations(self, cadata);
     return mp_const_none;

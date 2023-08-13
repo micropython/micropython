@@ -121,7 +121,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         &self->state_machine,
         program, program_len,
         44100 * 32 * 6, // Clock at 44.1 khz to warm the DAC up.
-        NULL, 0,
+        NULL, 0, // init
+        NULL, 0, // may_exec
         data, 1, 0, 0xffffffff, // out pin
         NULL, 0, // in pins
         0, 0, // in pulls
@@ -135,7 +136,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         false, // Wait for txstall
         false, 32, false, // in settings
         false, // Not user-interruptible.
-        0, -1); // wrap settings
+        0, -1, // wrap settings
+        PIO_ANY_OFFSET);
 
     self->playing = false;
     audio_dma_init(&self->dma);
