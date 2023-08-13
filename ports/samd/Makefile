@@ -56,7 +56,7 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
-MAKE_PIN_AF = boards/make-pin-table.py
+MAKE_PIN_AF = boards/make-pins.py
 PIN_AF_TABLE_CSV = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
 BOARD_PINS = $(BOARD_DIR)/pins.csv
 GEN_PIN_AF = pin_af_table.c
@@ -210,6 +210,6 @@ pin_af.c: $(BUILD)/$(GEN_PIN_AF) | $(HEADER_BUILD)
 
 $(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV) $(BOARD_PINS) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --board $(BOARD_PINS) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
+	$(Q)$(PYTHON) $(MAKE_PIN_AF) --af-csv $(PIN_AF_TABLE_CSV) --board-csv $(BOARD_PINS) --output-source $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
 
 include $(TOP)/py/mkrules.mk
