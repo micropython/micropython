@@ -123,7 +123,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             if (receiver_buffer != NULL) {
                 ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
             } else {
-                if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
+                if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size)) {
                     m_malloc_fail(receiver_buffer_size);
                 }
             }

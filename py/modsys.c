@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,6 +36,7 @@
 #include "py/smallint.h"
 #include "py/runtime.h"
 #include "py/persistentcode.h"
+#include "extmod/moduplatform.h"
 #include "genhdr/mpversion.h"
 
 #if MICROPY_PY_SYS_SETTRACE

@@ -183,7 +183,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt) {
             osMutexAcquire(bluetooth_connection_mutex_id, osWaitForever);
             connection = bleio_conn_handle_to_connection(
                 evt->data.evt_gatt_service.connection);
-            service = m_new_obj(bleio_service_obj_t, &bleio_service_type);
+            service = mp_obj_malloc(bleio_service_obj_t, &bleio_service_type);
             bleio_service_from_connection(service,
                 bleio_connection_new_from_internal(connection));
             service->is_remote = true;

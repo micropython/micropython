@@ -37,7 +37,8 @@
 #include "sl_sensor_hall.h"
 #include "sl_sensor_pressure.h"
 
-STATIC mp_obj_t sensor_init(busio_i2c_obj_t *i2c) {
+STATIC mp_obj_t sensor_init(mp_obj_t i2c_in) {
+    // busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(i2c_in);
     sl_status_t sc;
 
     if (!common_hal_mcu_pin_is_free(&pin_PC9)) {
