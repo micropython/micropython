@@ -108,16 +108,6 @@
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 
-// CIRCUITPY: native emitters not supported
-#define MICROPY_EMIT_X64            (!CIRCUITPY)
-#define MICROPY_EMIT_X86            (!CIRCUITPY)
-#define MICROPY_EMIT_THUMB          (!CIRCUITPY)
-#define MICROPY_EMIT_INLINE_THUMB   (!CIRCUITPY)
-#define MICROPY_EMIT_ARM            (!CIRCUITPY)
-#define MICROPY_EMIT_XTENSA         (!CIRCUITPY)
-#define MICROPY_EMIT_INLINE_XTENSA  (!CIRCUITPY)
-#define MICROPY_EMIT_XTENSAWIN      (!CIRCUITPY)
-
 #if !defined(MICROPY_EMIT_X64) && defined(__x86_64__)
     #define MICROPY_EMIT_X64        (1)
 #endif

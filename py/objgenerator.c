@@ -151,10 +151,10 @@ const mp_obj_type_t mp_type_native_gen_wrap = {
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
     #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = gen_attr,
+    .attr = mp_obj_fun_bc_attr,
     #endif
     MP_TYPE_EXTENDED_FIELDS(
-        .call = gen_wrap_call,
+        .call = native_gen_wrap_call,
         .unary_op = mp_generic_unary_op,
         ),
 };
