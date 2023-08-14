@@ -18,7 +18,6 @@ QSTR_DEFS = qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h
 
 MICROPY_FROZEN_MANIFEST      ?= $(BOARD_DIR)/manifest.py
-MICROPY_USER_FROZEN_MANIFEST ?= $(MICROPY_FROZEN_MANIFEST)
 FROZEN_MANIFEST              ?= $(MICROPY_FROZEN_MANIFEST)
 
 
@@ -42,10 +41,10 @@ include $(TOP)/extmod/extmod.mk
 # get path to this file
 MPY_MAIN_BUILD_DIR := $(dir $(MPY_DIR_OF_MAIN_MAKEFILE))$(BUILD)
 
-$(info MPY_PATH_TO_MAIN_MAKEFILE        : $(MPY_PATH_TO_MAIN_MAKEFILE))
-$(info MPY_DIR_OF_MAIN_MAKEFILE         : $(MPY_DIR_OF_MAIN_MAKEFILE))
-$(info MPY_MAIN_BUILD_DIR               : $(MPY_MAIN_BUILD_DIR))
-$(info CONFIG                           : $(CONFIG))
+# $(info MPY_PATH_TO_MAIN_MAKEFILE        : $(MPY_PATH_TO_MAIN_MAKEFILE))
+# $(info MPY_DIR_OF_MAIN_MAKEFILE         : $(MPY_DIR_OF_MAIN_MAKEFILE))
+# $(info MPY_MAIN_BUILD_DIR               : $(MPY_MAIN_BUILD_DIR))
+# $(info CONFIG                           : $(CONFIG))
 
 
 INC += -I.
@@ -55,10 +54,6 @@ INC += -I$(BUILD)
 ifeq ($(MICROPY_PSOC6_LWIP),1)
 	INC += -Ilwip_inc
 endif
-
-### for testing purposes only
-# USERMOD_DIR = $(TOP)/examples/usercmodule/cexample
-# include $(TOP)/examples/usercmodule/cexample/micropython.mk
 
 LD               = arm-none-eabi-gcc
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion -UMICROPY_USE_INTERNAL_PRINTF
@@ -210,24 +205,91 @@ build: mtb_get_build_flags $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN_BUILD_DIR)/fi
 
 all: build
 
+clean: mtb_clean
+
 rebuild: clean mtb_clean all
 
-ifndef SINGLE_TEST
-TESTS=-d psoc6
-else
-TESTS=$(SINGLE_TEST)
-endif
+TESTS ?=-d psoc6
+DEV0 ?= /dev/ttyACM0
+DEV1 ?= /dev/ttyACM1
 
 test: 
 	@:
 	$(info )
 	$(info Running PSoC6 tests)
-	$(Q) cd ../../tests ; ./run-tests.py --target psoc6 --device /dev/ttyACM0 $(TESTS)
+	$(Q) cd ../../tests ; ./run-tests.py --target psoc6 --device $(DEV0)  $(TESTS)
+
+
+MULTI_TESTS ?= $(shell cd ../../tests; find ./psoc6/multi/ -type f -name "*.py")
 
 test_multi: 
 	@:
 	$(info )
 	$(info Running PSoC6 multi tests)
-	$(Q) cd ../../tests ; ./run-multitests.py -i pyb:/dev/ttyACM0 -i pyb:/dev/ttyACM1 $(MULTI_TEST)
 
-.PHONY: build test test_multi program_multi 
+	$(Q) cd ../../tests ; ./run-multitests.py -i pyb:$(DEV0) -i pyb:$(DEV1) $(MULTI_TESTS)
+
+help:
+	@:
+	$(info )
+	$(info ----------)
+	$(info Basic flow)
+	$(info ----------)
+	$(info )
+	$(info Prior working on a specific board, it is required to initialise ONCE the)
+	$(info ModusToolbox setup and retrieve all necessary assets for the specified)
+	$(info board:)
+	$(info )
+	$(info $$ make mtb_init BOARD=<board>)
+	$(info )
+	$(info Then repeatedly build the firmware:)
+	$(info )
+	$(info  $$ make )
+	$(info )
+	$(info and flash the firmware on the device with:)
+	$(info )
+	$(info  $$ make program)
+	$(info )
+	$(info 'make program' will also build the .hex file if any changes occurred in the code.)
+	$(info )
+	$(info -------------)
+	$(info Build targets)
+	$(info -------------)
+	$(info )
+	$(info The default 'make' target is 'build' when called without arguments.)
+	$(info - build    Compile the MicroPython program binary file. )
+	$(info - clean    Remove the '/build' folders with all object files and intermediate build support files.)
+	$(info - rebuild  Clean before build.)
+	$(info )
+	$(info ---------------)
+	$(info Program targets)
+	$(info ---------------)
+	$(info )
+	$(info - program        Flash the board device with the built micropython firmware. )					
+	$(info - program_multi  Flash multiple board deviced. )
+	$(info Options: )
+	$(info - EXT_HEX_FILE   An external .hex file can be provided to the program targets, instead of building from the sources.) 
+	$(info )
+	$(info ------------)
+	$(info Test targets)
+	$(info ------------)
+	$(info )
+	$(info - test           Run the on-target test in tests/psoc6 folder. Uses /dev/ttyACM0.)
+	$(info ..               Optionally, pass TESTS variable for change the tests set. )
+	$(info - test_multi     Run multi-instance tests on-target test in tests/psoc6/multi folder.)
+	$(info ..               Uses /dev/ttyACM0 and /dev/ttyACM1.)
+	$(info ..               Optionally, pass MULTI_TESTS variable for change the tests set. )
+	$(info )
+	$(info --------------------)
+	$(info ModusToolbox targets)
+	$(info --------------------)
+	$(info )
+	$(info - mtb_init BOARD=<board>  Add the board support package required firmware assets, set the bsp  )
+	$(info ..                        as active in the ModusToolbox project, and retrieves all required additional )
+	$(info ..                        middleware assets for MicroPython. )
+	$(info - mtb_deinit              Clean all ModusToolbox shared and board support package dependencies assets.)
+	$(info - mtb_add_bsp             Add a board support package. Only the ones integrated in MicroPython are supported. )
+	$(info - mtb_set_bsp             Set the board as active in the ModusToolbox project. ) 
+
+
+.PHONY: build test test_multi program_multi help
