@@ -28,7 +28,6 @@ UNAME_S := $(shell uname -s)
 
 # include py core make definitions
 include $(TOP)/py/py.mk
-include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
 
@@ -225,6 +224,8 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
+	modos.c \
+	moduos_vfs.c \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
