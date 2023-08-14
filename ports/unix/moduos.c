@@ -31,14 +31,50 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+#if defined(MICROPY_UNIX_COVERAGE)
+#include "py/objstr.h"
+typedef int os_getenv_err_t;
+mp_obj_t common_hal_os_getenv(const char *key, mp_obj_t default_);
+os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t value_len);
+os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value);
+#endif
+
 STATIC mp_obj_t mp_uos_getenv(mp_obj_t var_in) {
+    #if defined(MICROPY_UNIX_COVERAGE)
+    mp_obj_t result = common_hal_os_getenv(mp_obj_str_get_str(var_in), mp_const_none);
+    if (result != mp_const_none) {
+        return result;
+    }
+    #endif
     const char *s = getenv(mp_obj_str_get_str(var_in));
     if (s == NULL) {
         return mp_const_none;
     }
     return mp_obj_new_str(s, strlen(s));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_getenv_obj, mp_uos_getenv);
+MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_getenv_obj, mp_uos_getenv);
+
+#if defined(MICROPY_UNIX_COVERAGE)
+STATIC mp_obj_t mp_uos_getenv_int(mp_obj_t var_in) {
+    mp_int_t value;
+    os_getenv_err_t result = common_hal_os_getenv_int(mp_obj_str_get_str(var_in), &value);
+    if (result == 0) {
+        return mp_obj_new_int(value);
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_getenv_int_obj, mp_uos_getenv_int);
+
+STATIC mp_obj_t mp_uos_getenv_str(mp_obj_t var_in) {
+    char buf[4096];
+    os_getenv_err_t result = common_hal_os_getenv_str(mp_obj_str_get_str(var_in), buf, sizeof(buf));
+    if (result == 0) {
+        return mp_obj_new_str_copy(&mp_type_str, (byte *)buf, strlen(buf));
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_getenv_str_obj, mp_uos_getenv_str);
+#endif
 
 STATIC mp_obj_t mp_uos_putenv(mp_obj_t key_in, mp_obj_t value_in) {
     const char *key = mp_obj_str_get_str(key_in);

@@ -107,6 +107,11 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     #if MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV
     { MP_ROM_QSTR(MP_QSTR_getenv), MP_ROM_PTR(&mp_uos_getenv_obj) },
+    #if defined(MICROPY_UNIX_COVERAGE)
+    { MP_ROM_QSTR(MP_QSTR_getenv_int), MP_ROM_PTR(&mp_uos_getenv_int_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getenv_str), MP_ROM_PTR(&mp_uos_getenv_str_obj) },
+    #endif
+
     { MP_ROM_QSTR(MP_QSTR_putenv), MP_ROM_PTR(&mp_uos_putenv_obj) },
     { MP_ROM_QSTR(MP_QSTR_unsetenv), MP_ROM_PTR(&mp_uos_unsetenv_obj) },
     #endif

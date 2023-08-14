@@ -1538,6 +1538,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_UJSON_SEPARATORS (1)
 #endif
 
+#ifndef MICROPY_PY_UOS
+#define MICROPY_PY_UOS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+#ifndef MICROPY_PY_UOS_STATVFS
+#define MICROPY_PY_UOS_STATVFS (MICROPY_PY_UOS)
+#endif
+
 #ifndef CIRCUITPY_ULAB
 #define CIRCUITPY_ULAB (0)
 #endif
