@@ -108,8 +108,11 @@ STATIC const mp_stream_p_t fileio_stream_p = {
 
 STATIC const mp_obj_type_t mp_type_stest_fileio = {
     { &mp_type_type },
-    .protocol = &fileio_stream_p,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &fileio_stream_p,
+        ),
 };
 
 // stream read returns non-blocking error
@@ -128,6 +131,7 @@ STATIC const mp_rom_map_elem_t rawfile_locals_dict_table2[] = {
 STATIC MP_DEFINE_CONST_DICT(rawfile_locals_dict2, rawfile_locals_dict_table2);
 
 STATIC const mp_stream_p_t textio_stream_p2 = {
+    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = stest_read2,
     .write = NULL,
     .is_text = true,
@@ -135,8 +139,11 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
 
 STATIC const mp_obj_type_t mp_type_stest_textio2 = {
     { &mp_type_type },
-    .protocol = &textio_stream_p2,
+    .flags = MP_TYPE_FLAG_EXTENDED,
     .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
+    MP_TYPE_EXTENDED_FIELDS(
+        .protocol = &textio_stream_p2,
+        ),
 };
 
 // str/bytes objects without a valid hash
@@ -571,47 +578,49 @@ STATIC mp_obj_t extra_coverage(void) {
 
     // ringbuf
     {
-        byte buf[100];
-        ringbuf_t ringbuf = {buf, sizeof(buf), 0, 0};
+        #define RINGBUF_SIZE 99
+
+        byte buf[RINGBUF_SIZE];
+        ringbuf_t ringbuf;
+        ringbuf_init(&ringbuf, &buf[0], sizeof(buf));
 
         mp_printf(&mp_plat_print, "# ringbuf\n");
 
         // Single-byte put/get with empty ringbuf.
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         ringbuf_put(&ringbuf, 22);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get(&ringbuf));
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
 
         // Two-byte put/get with empty ringbuf.
         ringbuf_put16(&ringbuf, 0xaa55);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
 
         // Two-byte put with full ringbuf.
-        for (int i = 0; i < 99; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE; ++i) {
             ringbuf_put(&ringbuf, i);
         }
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x11bb));
         // Two-byte put with one byte free.
         ringbuf_get(&ringbuf);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0x3377));
         ringbuf_get(&ringbuf);
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0xcc99));
-        for (int i = 0; i < 97; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE - 2; ++i) {
             ringbuf_get(&ringbuf);
         }
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
-        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_free(&ringbuf), ringbuf_avail(&ringbuf));
+        mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
 
         // Two-byte put with wrap around on first byte:
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
-        for (int i = 0; i < 99; ++i) {
+        ringbuf_clear(&ringbuf);
+        for (int i = 0; i < RINGBUF_SIZE; ++i) {
             ringbuf_put(&ringbuf, i);
             ringbuf_get(&ringbuf);
         }
@@ -619,9 +628,8 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
 
         // Two-byte put with wrap around on second byte:
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
-        for (int i = 0; i < 98; ++i) {
+        ringbuf_clear(&ringbuf);
+        for (int i = 0; i < RINGBUF_SIZE - 1; ++i) {
             ringbuf_put(&ringbuf, i);
             ringbuf_get(&ringbuf);
         }
@@ -629,13 +637,11 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
 
         // Two-byte get from empty ringbuf.
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
+        ringbuf_clear(&ringbuf);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
 
         // Two-byte get from ringbuf with one byte available.
-        ringbuf.iput = 0;
-        ringbuf.iget = 0;
+        ringbuf_clear(&ringbuf);
         ringbuf_put(&ringbuf, 0xaa);
         mp_printf(&mp_plat_print, "%d\n", ringbuf_get16(&ringbuf));
     }
