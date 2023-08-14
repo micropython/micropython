@@ -35,7 +35,7 @@ Functions
 
    Encode binary data in base64 format, as in `RFC 3548
    <https://tools.ietf.org/html/rfc3548.html>`_. Returns the encoded data
-   followed by a newline character if ``newline``is true, as a bytes object.
+   followed by a newline character if ``newline`` is true, as a bytes object.
 
 .. function:: crc32(data, value=0, /)
 

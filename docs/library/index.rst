@@ -1,15 +1,13 @@
 .. _micropython_lib:
 
-MicroPython libraries
-=====================
+Standard Libraries
+==================
 
-Python standard libraries and micro-libraries
----------------------------------------------
+Python standard libraries
+-------------------------
 
-The libraries below are inherited from MicroPython.
-They are similar to the standard Python libraries with the same name.
-They implement a subset of or a variant of the corresponding
-standard Python library.
+The libraries below implement a subset of the corresponding
+standard Python (CPython) library. They are implemented in C, not Python.
 
 CircuitPython's long-term goal is that code written in CircuitPython
 using Python standard libraries will be runnable on CPython without changes.
@@ -38,10 +36,22 @@ These libraries are not currently enabled in any CircuitPython build, but may be
    ctypes.rst
    select.rst
 
-Omitted functions in the ``string`` library
--------------------------------------------
+Omitted ``string`` functions
+----------------------------
 
 A few string operations are not enabled on small builds
 due to limited flash memory:
 ``string.center()``, ``string.partition()``, ``string.splitlines()``,
 ``string.reversed()``.
+
+
+CircuitPython/MicroPython-specific libraries
+--------------------------------------------
+
+Functionality specific to the CircuitPython/MicroPython implementations is available in
+the following libraries.
+
+.. toctree::
+   :maxdepth: 1
+
+   micropython.rst
