@@ -19,7 +19,7 @@ function set_mtb_tools_path {
 
 function export_path {
     mtb_tools_path=$(set_mtb_tools_path)
-    export PATH=${mtb_tools_path}/openocd/bin:${mtb_tools_path}/library-manager:${mtb_tools_path}/gcc/bin:$PATH
+    export PATH=${mtb_tools_path}/openocd/bin:${mtb_tools_path}/library-manager:${mtb_tools_path}/fw-loader/bin/:${mtb_tools_path}/gcc/bin:$PATH
 }
 
 function install_udev_rules {

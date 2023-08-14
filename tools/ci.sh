@@ -276,19 +276,19 @@ function ci_psoc6_setup {
 
 function ci_psoc6_build {
     board=$1
-    docker exec mtb-ci make mpy_mtb_init
+    docker exec mtb-ci make mtb_init BOARD=${board}
     docker exec mtb-ci make submodules
-    docker exec mtb-ci make BOARD=${board}
+    docker exec mtb-ci make
 }
 
 function ci_psoc6_deploy {
-    docker exec mtb-ci make mpy_program
+    docker exec mtb-ci make program
 }
 
 function ci_psoc6_flash_multiple_devices {
     # hex file including path with respect to micropython root
     hex_file=$1
-    docker exec mtb-ci make program_multi_ext_hex EXT_HEX_FILE=../../${hex_file}
+    docker exec mtb-ci make program_multi EXT_HEX_FILE=../../${hex_file}
 }
 
 function ci_psoc6_run_tests {
