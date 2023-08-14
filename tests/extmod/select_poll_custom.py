@@ -77,7 +77,26 @@ try:
 except OSError as er:
     print("OSError", er.errno)
 
+# Register then unregister a socket (a native stream), then test
+# that the Python object is still pollable.
+s2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+x.poll_state = _MP_STREAM_POLL_RD
+poller.register(s2)
+poller.unregister(s2)
+print_poll_output(poller.poll())
+
+# Test registering and unregistering multiple times.
+for _ in range(2):
+    poller.unregister(s)
+    poller.unregister(x)
+    poller.register(s2)
+    poller.register(s, select.POLLIN)
+    poller.register(x, select.POLLIN)
+    poller.unregister(s2)
+    print_poll_output(poller.poll())
+
+# Clean up.
 poller.unregister(x)
 poller.unregister(s)
-
+s2.close()
 s.close()

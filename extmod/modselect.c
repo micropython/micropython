@@ -88,8 +88,9 @@ typedef struct _poll_set_t {
 
     #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
     // Array of pollfd entries for objects that have a file descriptor.
-    unsigned short alloc;
-    unsigned short len;
+    unsigned short alloc; // memory allocated for pollfds
+    unsigned short max_used; // maximum number of used entries in pollfds
+    unsigned short used; // actual number of used entries in pollfds
     struct pollfd *pollfds;
     #endif
 } poll_set_t;
@@ -98,7 +99,8 @@ STATIC void poll_set_init(poll_set_t *poll_set, size_t n) {
     mp_map_init(&poll_set->map, n);
     #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
     poll_set->alloc = 0;
-    poll_set->len = 0;
+    poll_set->max_used = 0;
+    poll_set->used = 0;
     poll_set->pollfds = NULL;
     #endif
 }
@@ -142,29 +144,34 @@ STATIC void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
 
 STATIC struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
     struct pollfd *free_slot = NULL;
-    for (unsigned int i = 0; i < poll_set->len; ++i) {
-        struct pollfd *slot = &poll_set->pollfds[i];
-        if (slot->fd == -1) {
-            free_slot = slot;
-            break;
-        }
-    }
 
-    if (free_slot == NULL) {
-        if (poll_set->len >= poll_set->alloc) {
+    if (poll_set->used == poll_set->max_used) {
+        // No free slots below max_used, so expand max_used (and possibly allocate).
+        if (poll_set->max_used >= poll_set->alloc) {
             poll_set->pollfds = m_renew(struct pollfd, poll_set->pollfds, poll_set->alloc, poll_set->alloc + 4);
             poll_set->alloc += 4;
         }
-        free_slot = &poll_set->pollfds[poll_set->len++];
+        free_slot = &poll_set->pollfds[poll_set->max_used++];
+    } else {
+        // There should be a free slot below max_used.
+        for (unsigned int i = 0; i < poll_set->max_used; ++i) {
+            struct pollfd *slot = &poll_set->pollfds[i];
+            if (slot->fd == -1) {
+                free_slot = slot;
+                break;
+            }
+        }
+        assert(free_slot != NULL);
     }
 
     free_slot->fd = fd;
+    ++poll_set->used;
 
     return free_slot;
 }
 
 static inline bool poll_set_all_are_fds(poll_set_t *poll_set) {
-    return poll_set->map.used == poll_set->len;
+    return poll_set->map.used == poll_set->used;
 }
 
 #else
@@ -323,7 +330,7 @@ STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
         }
 
         // Call system poll for those objects that have a file descriptor.
-        int n_ready = poll(poll_set->pollfds, poll_set->len, t);
+        int n_ready = poll(poll_set->pollfds, poll_set->max_used, t);
 
         MP_THREAD_GIL_ENTER();
 
@@ -462,6 +469,7 @@ STATIC mp_obj_t poll_unregister(mp_obj_t self_in, mp_obj_t obj_in) {
         poll_obj_t *poll_obj = (poll_obj_t *)MP_OBJ_TO_PTR(elem->value);
         if (poll_obj->pollfd != NULL) {
             poll_obj->pollfd->fd = -1;
+            --self->poll_set.used;
         }
         elem->value = MP_OBJ_NULL;
     }
