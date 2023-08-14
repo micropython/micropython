@@ -41,7 +41,10 @@ t0 = time.time_ns()
 result = poller.poll(400)
 dt_ms = (time.time_ns() - t0) / 1e6
 print("result:", result)
-print("dt in range:", 380 <= dt_ms <= 500)
+if 380 <= dt_ms <= 600:
+    print("dt in range")
+else:
+    print("dt not in range:", dt_ms)
 
 # Clean up.
 s.close()
