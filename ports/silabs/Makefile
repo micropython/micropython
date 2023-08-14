@@ -138,7 +138,7 @@ $(OUTPUT_DIR)/firmware.bin: $(SILABS_BUILD)/$(PROJECTNAME).Makefile $(OUTPUT_DIR
 	@echo 'Done.'
 endif
 
-$(SILABS_BUILD)/$(PROJECTNAME).Makefile:
+$(SILABS_BUILD)/$(PROJECTNAME).Makefile: | $(HEADER_BUILD)/mpversion.h
 	+@$(MAKE) --no-print-directory slc-generate
 
 $(OUTPUT_DIR)/firmware.out: $(SILABS_BUILD)/pin_functions.h $(SILABS_BUILD)/pins.c $(OBJ) $(OBJS) $(LIB_FILES)
