@@ -29,13 +29,13 @@
 #include "py/pairheap.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_UASYNCIO
+
 #if CIRCUITPY && !(defined(__unix__) || defined(__APPLE__))
 #include "shared-bindings/supervisor/__init__.h"
 #endif
 
 #include "supervisor/shared/translate/translate.h"
-
-#if MICROPY_PY_UASYNCIO
 
 // Used when task cannot be guaranteed to be non-NULL.
 #define TASK_PAIRHEAP(task) ((task) ? &(task)->pairheap : NULL)
