@@ -120,7 +120,7 @@ STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         ", txbuf=%d"
         #endif
         #if MICROPY_HW_UART_RTSCTS
-        ", rts=%s, cts=%s"
+        ", rts=%q, cts=%q"
         #endif
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
@@ -129,8 +129,8 @@ STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         , self->write_buffer.size - 1
         #endif
         #if MICROPY_HW_UART_RTSCTS
-        , self->rts != 0xff ? pin_name(self->rts) : "None"
-        , self->cts != 0xff ? pin_name(self->cts) : "None"
+        , self->rts != 0xff ? pin_find_by_id(self->rts)->name : MP_QSTR_None
+        , self->cts != 0xff ? pin_find_by_id(self->cts)->name : MP_QSTR_None
         #endif
         );
 }

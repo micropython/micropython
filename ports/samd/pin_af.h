@@ -92,14 +92,11 @@ typedef struct _pwm_config_t {
 #define ALT_FCT_SERCOM1   2
 #define ALT_FCT_SERCOM2   3
 
-#if MICROPY_PY_MACHINE_PIN_BOARD_CPU
 extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
 extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
-#endif
 
 sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom);
 adc_config_t get_adc_config(int pin_id, int32_t flag);
 pwm_config_t get_pwm_config(int pin_id, int wanted_dev, uint8_t used_dev[]);
-const machine_pin_obj_t *get_pin_obj_ptr(int pin_id);
-const char *pin_name(int id);
+const machine_pin_obj_t *pin_find_by_id(int pin_id);
 const machine_pin_obj_t *pin_find(mp_obj_t pin);

@@ -89,8 +89,8 @@ STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     (void)kind;
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(print, "ADC(%s, device=%u, channel=%u, bits=%u, average=%u, vref=%d)",
-        pin_name(self->id), self->adc_config.device,
+    mp_printf(print, "ADC(%q, device=%u, channel=%u, bits=%u, average=%u, vref=%d)",
+        pin_find_by_id(self->id)->name, self->adc_config.device,
         self->adc_config.channel, self->bits, 1 << self->avg, self->vref);
 }
 
