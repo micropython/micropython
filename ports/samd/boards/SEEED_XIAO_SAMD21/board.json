@@ -6,7 +6,9 @@
     "features": [
         "USB-C"
     ],
-    "images": ["seeeduino-xiao.jpg"],
+    "images": [
+        "seeeduino-xiao.jpg"
+    ],
     "mcu": "samd21",
     "product": "Seeeduino XIAO (SAMD21)",
     "thumbnail": "",

@@ -4,9 +4,9 @@
     ],
     "docs": "",
     "features": [
-        "Grove",
+        "External Flash",
         "IMU",
-        "Infrared",
+        "JST-PH",
         "RGB LED",
         "USB-C",
         "WiFi"

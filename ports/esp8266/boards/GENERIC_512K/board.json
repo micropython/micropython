@@ -4,6 +4,7 @@
     ],
     "docs": "",
     "features": [
+        "External Flash",
         "WiFi"
     ],
     "id": "esp8266-512k",

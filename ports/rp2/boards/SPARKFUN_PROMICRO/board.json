@@ -4,10 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly",
-        "Castellated Pads",
+        "Dual-core",
+        "External Flash",
+        "JST-SH",
         "RGB LED",
-        "STEMMA QT/QWIIC",
         "USB-C"
     ],
     "images": [

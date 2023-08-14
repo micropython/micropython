@@ -486,15 +486,20 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     mp_uint_t ret = 0;
     uintptr_t saved_arg = 0;
     mp_obj_t sock = self->sock;
-    if (sock == MP_OBJ_NULL || (request != MP_STREAM_CLOSE && self->last_error != 0)) {
-        // Closed or error socket:
-        return MP_STREAM_POLL_NVAL;
-    }
 
     if (request == MP_STREAM_CLOSE) {
+        if (sock == MP_OBJ_NULL) {
+            // Already closed socket, do nothing.
+            return 0;
+        }
         self->sock = MP_OBJ_NULL;
         mbedtls_ssl_free(&self->ssl);
     } else if (request == MP_STREAM_POLL) {
+        if (sock == MP_OBJ_NULL || self->last_error != 0) {
+            // Closed or error socket, return NVAL flag.
+            return MP_STREAM_POLL_NVAL;
+        }
+
         // If the library signaled us that it needs reading or writing, only check that direction,
         // but save what the caller asked because we need to restore it later
         if (self->poll_mask && (arg & MP_STREAM_POLL_RDWR)) {
@@ -514,6 +519,10 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 }
             }
         }
+    } else {
+        // Unsupported ioctl.
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
     }
 
     // Pass all requests down to the underlying socket

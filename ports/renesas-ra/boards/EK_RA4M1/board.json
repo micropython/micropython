@@ -3,17 +3,12 @@
         "../deploy.md"
     ],
     "docs": "",
-    "features": [
-	"UART",
-	"SPI",
-	"I2C",
-	"ADC"
-    ],
+    "features": [],
     "id": "EK-RA4M1",
     "images": [
         "ek_ra4m1_board.jpg"
     ],
-    "mcu": "RA4M1",
+    "mcu": "ra4m1",
     "product": "EK-RA4M1",
     "thumbnail": "",
     "url": "https://www.renesas.com/products/microcontrollers-microprocessors/ra-cortex-m-mcus/ek-ra4m1-evaluation-kit-ra4m1-mcu-group",

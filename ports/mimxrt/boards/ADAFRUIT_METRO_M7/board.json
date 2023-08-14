@@ -4,16 +4,12 @@
     ],
     "docs": "",
     "features": [
-        "USB-C",
-        "SPI",
-        "I2C",
-        "UART",
+        "BLE",
+        "External Flash",
+        "JST-SH",
         "RGB LED",
-        "QSPI Flash",
-        "QWIIC",
-        "JLink",
-        "WiFi",
-        "BLE"
+        "USB-C",
+        "WiFi"
     ],
     "images": [
         "Metro_M7.jpg"

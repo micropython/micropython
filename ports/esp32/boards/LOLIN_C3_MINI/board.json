@@ -5,6 +5,7 @@
     "docs": "",
     "features": [
         "BLE",
+        "External Flash",
         "USB-C",
         "WiFi"
     ],
