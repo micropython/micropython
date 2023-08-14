@@ -460,7 +460,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
             // because the file will not exist.
         }
 
-        //CIRCUITPY
+        // CIRCUITPY
         // Loading a module thrashes the heap significantly so we explicitly clean up
         // afterwards.
         gc_collect();

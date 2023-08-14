@@ -104,7 +104,7 @@ STATIC void validate_timeout(mp_float_t timeout) {
 STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_BUSIO_UART
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size,
-           ARG_rts, ARG_cts, ARG_rs485_dir,ARG_rs485_invert};
+           ARG_rts, ARG_cts, ARG_rs485_dir, ARG_rs485_invert};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_rx, MP_ARG_OBJ, {.u_obj = mp_const_none} },

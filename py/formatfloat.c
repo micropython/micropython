@@ -1,5 +1,5 @@
 // CIRCUITPY: https://github.com/adafruit/circuitpython/pull/6722
-// post v1.19.1. Remove this comment during v1.20 merge. 
+// post v1.19.1. Remove this comment during v1.20 merge.
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *

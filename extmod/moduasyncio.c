@@ -266,7 +266,7 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[1] = self_in;
         } else if (attr == MP_QSTR_ph_key) {
             dest[0] = self->ph_key;
-        // CIRCUITPY provides __await__().
+            // CIRCUITPY provides __await__().
         } else if (attr == MP_QSTR___await__) {
             dest[0] = MP_OBJ_FROM_PTR(&task_await_obj);
             dest[1] = self_in;

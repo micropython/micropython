@@ -328,7 +328,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
             continue;
         }
 
-        uint16_t loudness[2] = {synth->envelope_state[chan].level,synth->envelope_state[chan].level};
+        uint16_t loudness[2] = {synth->envelope_state[chan].level, synth->envelope_state[chan].level};
 
         if (!synth_note_into_buffer(synth, chan, tmp_buffer32, dur, loudness)) {
             // for some other reason, such as being above nyquist, note

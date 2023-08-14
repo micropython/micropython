@@ -249,6 +249,7 @@ static_qstr_list = [
     "zip",
 ]
 
+
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
     hash = 5381
@@ -349,10 +350,12 @@ def parse_input_headers_with_translations(infiles):
 
     return qcfgs, qstrs, translations
 
+
 # Used externally by mpy-tool.py. Don't pass back translations.
 def parse_input_headers(infiles):
     qcfgs, qstrs, translations = parse_input_headers_with_translations(infiles)
     return (qcfgs, qstrs)
+
 
 def escape_bytes(qstr, qbytes):
     if all(32 <= ord(c) <= 126 and c != "\\" and c != '"' for c in qstr):
@@ -404,10 +407,10 @@ def print_qstr_data(qcfgs, qstrs, translations):
     print("// {} bytes worth of qstr".format(total_qstr_size))
 
 
-
 def do_work(infiles):
     qcfgs, qstrs, translations = parse_input_headers_with_translations(infiles)
     print_qstr_data(qcfgs, qstrs, translations)
+
 
 if __name__ == "__main__":
     import argparse

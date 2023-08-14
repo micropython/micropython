@@ -57,7 +57,7 @@ bool characteristic_buffer_on_ble_evt(uint16_t attribute,
                     }
                 }
             } else {
-                ringbuf_put_n(&bleio_characteristic_buffer_list.data[cindex]->ringbuf,data, len);
+                ringbuf_put_n(&bleio_characteristic_buffer_list.data[cindex]->ringbuf, data, len);
             }
             taskEXIT_CRITICAL();
 

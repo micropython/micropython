@@ -34,7 +34,7 @@
 // If we're building the minimal variant, ignore the rest of this file.
 #ifndef MICROPY_UNIX_MINIMAL
 
-//CIRCUITPY
+// CIRCUITPY
 #define CIRCUITPY_MICROPYTHON_ADVANCED (1)
 
 // If the variant did not set a feature level then configure a set of features.
@@ -108,7 +108,7 @@
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 
-//CIRCUITPY: native emitters not supported
+// CIRCUITPY: native emitters not supported
 #define MICROPY_EMIT_X64            (!CIRCUITPY)
 #define MICROPY_EMIT_X86            (!CIRCUITPY)
 #define MICROPY_EMIT_THUMB          (!CIRCUITPY)

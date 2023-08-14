@@ -273,7 +273,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, 
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
-        { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_write_value, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);

@@ -121,6 +121,7 @@ def write_out(fname, output):
         with open(args.output_dir + "/" + fname + "." + args.mode, "w") as f:
             f.write("\n".join(output) + "\n")
 
+
 def qstr_unescape(qstr):
     for name in name2codepoint:
         if "__" + name + "__" in qstr:

@@ -35,7 +35,7 @@ function ci_code_formatting_run {
 function ci_commit_formatting_run {
     git remote add upstream https://github.com/micropython/micropython.git
     git fetch --depth=100 upstream  master
-    # For a PR, upstream/master..HEAD ends with a merge commit into master, exlude that one.
+    # For a PR, upstream/master..HEAD ends with a merge commit into master, exclude that one.
     tools/verifygitlog.py -v upstream/master..HEAD --no-merges
 }
 

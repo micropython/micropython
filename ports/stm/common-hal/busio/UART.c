@@ -274,11 +274,11 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     }
 
     if (self->tx) {
-        reset_pin_number(self->tx->pin->port,self->tx->pin->number);
+        reset_pin_number(self->tx->pin->port, self->tx->pin->number);
         self->tx = NULL;
     }
     if (self->rx) {
-        reset_pin_number(self->rx->pin->port,self->rx->pin->number);
+        reset_pin_number(self->rx->pin->port, self->rx->pin->number);
         self->rx = NULL;
     }
 

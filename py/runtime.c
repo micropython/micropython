@@ -914,7 +914,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_ob
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-void __attribute__((noinline,)) mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
+void __attribute__((noinline, )) mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
@@ -1537,7 +1537,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     return mp_builtin___import__(5, args);
 }
 
-mp_obj_t __attribute__((noinline,)) mp_import_from(mp_obj_t module, qstr name) {
+mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
     mp_obj_t dest[2];
@@ -1689,7 +1689,7 @@ NORETURN MP_COLD void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const co
 
 NORETURN MP_COLD void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(exc_type, fmt, argptr);
     va_end(argptr);
 }
@@ -1712,7 +1712,7 @@ NORETURN MP_COLD void mp_raise_RuntimeError(const compressed_string_t *msg) {
 
 NORETURN MP_COLD void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_RuntimeError, fmt, argptr);
     va_end(argptr);
 }
@@ -1727,7 +1727,7 @@ NORETURN MP_COLD void mp_raise_IndexError(const compressed_string_t *msg) {
 
 NORETURN MP_COLD void mp_raise_IndexError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_IndexError, fmt, argptr);
     va_end(argptr);
 }
@@ -1738,7 +1738,7 @@ NORETURN MP_COLD void mp_raise_ValueError(const compressed_string_t *msg) {
 
 NORETURN MP_COLD void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_ValueError, fmt, argptr);
     va_end(argptr);
 }
@@ -1749,7 +1749,7 @@ NORETURN MP_COLD void mp_raise_TypeError(const compressed_string_t *msg) {
 
 NORETURN MP_COLD void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_TypeError, fmt, argptr);
     va_end(argptr);
 }
@@ -1768,7 +1768,7 @@ NORETURN MP_COLD void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
 
 NORETURN MP_COLD void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_OSError, fmt, argptr);
     va_end(argptr);
 }
@@ -1787,7 +1787,7 @@ NORETURN MP_COLD void mp_raise_NotImplementedError(const compressed_string_t *ms
 
 NORETURN MP_COLD void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
     va_end(argptr);
 }
@@ -1795,7 +1795,7 @@ NORETURN MP_COLD void mp_raise_NotImplementedError_varg(const compressed_string_
 
 NORETURN MP_COLD void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_OverflowError, fmt, argptr);
     va_end(argptr);
 }

@@ -165,11 +165,11 @@ void gc_init(void *start, void *end) {
     assert(MP_STATE_MEM(gc_pool_start) >= MP_STATE_MEM(gc_finaliser_table_start) + gc_finaliser_table_byte_len);
     #endif
 
-    // clear ATBs
+    // clear ATB's
     memset(MP_STATE_MEM(gc_alloc_table_start), 0, MP_STATE_MEM(gc_alloc_table_byte_len));
 
     #if MICROPY_ENABLE_FINALISER
-    // clear FTBs
+    // clear FTB's
     memset(MP_STATE_MEM(gc_finaliser_table_start), 0, gc_finaliser_table_byte_len);
     #endif
 
@@ -421,7 +421,7 @@ void gc_collect_root(void **ptrs, size_t len) {
     for (size_t i = 0; i < len; i++) {
         MICROPY_GC_HOOK_LOOP
         void *ptr = gc_get_ptr(ptrs, i);
-	// CIRCUITPY changed in PR #1816
+        // CIRCUITPY changed in PR #1816
         gc_mark(ptr);
     }
 }

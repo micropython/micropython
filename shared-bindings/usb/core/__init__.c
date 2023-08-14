@@ -54,7 +54,7 @@ NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...) {
         exception = mp_obj_new_exception(&mp_type_usb_core_USBError);
     } else {
         va_list argptr;
-        va_start(argptr,fmt);
+        va_start(argptr, fmt);
         exception = mp_obj_new_exception_msg_vlist(&mp_type_usb_core_USBError, fmt, argptr);
         va_end(argptr);
     }

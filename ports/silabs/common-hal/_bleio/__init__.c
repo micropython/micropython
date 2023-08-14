@@ -125,13 +125,13 @@ void sl_bt_on_event(sl_bt_msg_t *evt) {
             sl_bt_system_get_identity_address(&address, &address_type);
 
             snprintf((char *)device_name, 14 + 1,
-                "CIRCUITPY-%X%X",address.addr[1], address.addr[0]);
+                "CIRCUITPY-%X%X", address.addr[1], address.addr[0]);
             sl_bt_gatt_server_write_attribute_value(gattdb_device_name,
-                0,14,device_name);
+                0, 14, device_name);
 
-            sl_bt_sm_store_bonding_configuration(5,2);
+            sl_bt_sm_store_bonding_configuration(5, 2);
 
-            sl_bt_sm_configure(0x00,sl_bt_sm_io_capability_noinputnooutput);
+            sl_bt_sm_configure(0x00, sl_bt_sm_io_capability_noinputnooutput);
 
             sl_bt_sm_set_bondable_mode(1);
             break;
@@ -162,7 +162,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt) {
                 &evt->data.evt_scanner_legacy_advertisement_report.data);
 
             if (xscan_event != NULL) {
-                xEventGroupSetBits(xscan_event,1 << 0);
+                xEventGroupSetBits(xscan_event, 1 << 0);
             }
             break;
 
@@ -289,7 +289,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt) {
                     conn_state = RUNNING;
                     serv_idx = 0;
                     if (xdiscovery_event != NULL) {
-                        xEventGroupSetBits(xdiscovery_event,1 << 0);
+                        xEventGroupSetBits(xdiscovery_event, 1 << 0);
                     }
                 }
             }
@@ -338,7 +338,7 @@ void sl_bt_on_event(sl_bt_msg_t *evt) {
             break;
 
         case sl_bt_evt_sm_confirm_bonding_id:
-            sl_bt_sm_bonding_confirm(evt->data.evt_sm_confirm_bonding.connection,1);
+            sl_bt_sm_bonding_confirm(evt->data.evt_sm_confirm_bonding.connection, 1);
             break;
 
         case sl_bt_evt_sm_bonded_id:

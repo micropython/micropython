@@ -197,7 +197,8 @@ def main():
     cmd_parser.add_argument("-c", action="store_true", help="Format C code only")
     cmd_parser.add_argument("-p", action="store_true", help="Format Python code only")
     cmd_parser.add_argument("-v", action="store_true", help="Enable verbose output")
-    cmd_parser.add_argument("files", nargs="*", help="Run on specific globs")
+    cmd_parser.add_argument("--dry-run", action="store_true", help="Print, don't act")
+    cmd_parser.add_argument("files", nargs="+", help="Run on specific globs")
     args = cmd_parser.parse_args()
 
     if args.dry_run:
@@ -214,6 +215,11 @@ def main():
     def lang_files(exts):
         for file in files:
             if os.path.splitext(file)[1].lower() in exts:
+                yield file
+
+    def bindings_files():
+        for file in lang_files(C_EXTS):
+            if file.startswith("shared-bindings/") or "/bindings/" in file:
                 yield file
 
     # Run tool on N files at a time (to avoid making the command line too long).

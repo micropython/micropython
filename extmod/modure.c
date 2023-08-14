@@ -39,7 +39,7 @@
 
 #include "lib/re1.5/re1.5.h"
 
-//CIRCUITPY
+// CIRCUITPY
 #if MICROPY_PY_URE_DEBUG
 #define FLAG_DEBUG 0x1000
 #endif

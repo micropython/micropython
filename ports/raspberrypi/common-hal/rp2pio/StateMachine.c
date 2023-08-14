@@ -151,7 +151,7 @@ void reset_rp2pio_statemachine(void) {
         irq_handler_t int_handler = irq_get_exclusive_handler(irq);
         if (int_handler > 0) {
             irq_set_enabled(irq, false);
-            irq_remove_handler(irq,int_handler);
+            irq_remove_handler(irq, int_handler);
         }
     }
 }

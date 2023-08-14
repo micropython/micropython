@@ -102,7 +102,7 @@ STATIC mp_obj_t audiobusio_pdmin_make_new(const mp_obj_type_t *type, size_t n_ar
         { MP_QSTR_data_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_sample_rate,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 16000} },
         { MP_QSTR_bit_depth,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_mono,          MP_ARG_KW_ONLY | MP_ARG_BOOL,{.u_bool = true} },
+        { MP_QSTR_mono,          MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
         { MP_QSTR_oversample,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
         { MP_QSTR_startup_delay, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     };

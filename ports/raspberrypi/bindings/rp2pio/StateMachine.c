@@ -175,7 +175,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
            ARG_user_interruptible,
            ARG_wrap_target,
            ARG_wrap,
-           ARG_offset,};
+           ARG_offset, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_program, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_INT },

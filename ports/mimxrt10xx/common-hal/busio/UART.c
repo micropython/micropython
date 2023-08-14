@@ -47,7 +47,7 @@
 #if ENABLE_DEBUG_PRINTING
 #define DBGPrintf mp_printf
 #else
-#define DBGPrintf(p,...)
+#define DBGPrintf(p, ...)
 #endif
 
 

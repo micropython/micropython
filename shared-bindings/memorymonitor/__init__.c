@@ -45,7 +45,7 @@ MP_DEFINE_MEMORYMONITOR_EXCEPTION(AllocationError, Exception)
 
 NORETURN void mp_raise_memorymonitor_AllocationError(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_memorymonitor_AllocationError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);

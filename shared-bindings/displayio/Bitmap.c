@@ -207,7 +207,7 @@ STATIC mp_obj_t displayio_bitmap_obj_fill(mp_obj_t self_in, mp_obj_t value_obj) 
     displayio_bitmap_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
-    mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(mp_obj_get_int(value_obj), 0,(1u << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1,MP_QSTR_value);
+    mp_uint_t value = (mp_uint_t)mp_arg_validate_int_range(mp_obj_get_int(value_obj), 0, (1u << common_hal_displayio_bitmap_get_bits_per_value(self)) - 1, MP_QSTR_value);
     common_hal_displayio_bitmap_fill(self, value);
 
     return mp_const_none;

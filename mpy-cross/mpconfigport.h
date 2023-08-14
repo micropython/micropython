@@ -38,7 +38,7 @@
 #endif
 #endif
 
-//CIRCUITPY: native emitters not supported
+// CIRCUITPY: native emitters not supported
 #define MICROPY_EMIT_X64            (!CIRCUITPY)
 #define MICROPY_EMIT_X86            (!CIRCUITPY)
 #define MICROPY_EMIT_THUMB          (!CIRCUITPY)
