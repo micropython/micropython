@@ -184,6 +184,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     uint8_t newline = args[ARG_newline].u_bool;
+    check_not_unicode(pos_args[0]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(pos_args[0], &bufinfo, MP_BUFFER_READ);
 
