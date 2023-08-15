@@ -507,7 +507,7 @@ STATIC mp_int_t compute_ticks_from_dtg(uint32_t dtg) {
 }
 
 STATIC void config_deadtime(pyb_timer_obj_t *self, mp_int_t ticks, mp_int_t brk) {
-    TIM_BreakDeadTimeConfigTypeDef deadTimeConfig;
+    TIM_BreakDeadTimeConfigTypeDef deadTimeConfig = {0};
     deadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
     deadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
     deadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
