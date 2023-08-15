@@ -114,6 +114,8 @@ static void pppos_client_task(void *self_in) {
 
     self->client_task_handle = NULL;
     vTaskDelete(NULL);
+    for (;;) {
+    }
 }
 
 STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
