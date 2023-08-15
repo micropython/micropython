@@ -39,30 +39,25 @@
 
 #include "xtensa/hal.h"
 
-static void gc_collect_inner(int level) {
+// The level argument must be volatile to force the compiler to emit code that
+// will call this function recursively, to nest the C stack.
+static void gc_collect_inner(volatile unsigned int level) {
     if (level < XCHAL_NUM_AREGS / 8) {
+        // Go deeper on the stack to spill more registers from the register window.
         gc_collect_inner(level + 1);
-        if (level != 0) {
-            return;
-        }
-    }
-
-    if (level == XCHAL_NUM_AREGS / 8) {
-        // get the sp
+    } else {
+        // Deep enough so that all registers are on the C stack, now trace the stack.
         volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
         gc_collect_root((void **)sp, ((mp_uint_t)MP_STATE_THREAD(stack_top) - sp) / sizeof(uint32_t));
-        return;
     }
-
-    // trace root pointers from any threads
-    #if MICROPY_PY_THREAD
-    mp_thread_gc_others();
-    #endif
 }
 
 void gc_collect(void) {
     gc_collect_start();
     gc_collect_inner(0);
+    #if MICROPY_PY_THREAD
+    mp_thread_gc_others();
+    #endif
     gc_collect_end();
 }
 
