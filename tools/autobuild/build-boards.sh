@@ -92,6 +92,10 @@ function build_esp32_boards {
     build_boards modesp32.c $1 $2 bin elf map uf2 app-bin
 }
 
+function build_esp8266_boards {
+    build_boards modesp.c $1 $2 bin elf map
+}
+
 function build_mimxrt_boards {
     build_boards modmimxrt.c $1 $2 bin hex
 }
