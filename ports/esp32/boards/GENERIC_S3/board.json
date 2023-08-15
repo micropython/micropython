@@ -18,6 +18,6 @@
     "url": "https://www.espressif.com/en/products/modules",
     "vendor": "Espressif",
     "variants": {
-        "spiram-oct": "Support for Octal-SPIRAM"
+        "SPIRAM_OCT": "Support for Octal-SPIRAM"
     }
 }

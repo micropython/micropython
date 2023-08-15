@@ -3,7 +3,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.ble
 )
 
-if(MICROPY_BOARD_VARIANT STREQUAL "d2wd")
+if(MICROPY_BOARD_VARIANT STREQUAL "D2WD")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
         boards/GENERIC/sdkconfig.d2wd
@@ -14,7 +14,7 @@ if(MICROPY_BOARD_VARIANT STREQUAL "d2wd")
     )
 endif()
 
-if(MICROPY_BOARD_VARIANT STREQUAL "ota")
+if(MICROPY_BOARD_VARIANT STREQUAL "OTA")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
         boards/GENERIC/sdkconfig.ota
@@ -25,7 +25,7 @@ if(MICROPY_BOARD_VARIANT STREQUAL "ota")
     )
 endif()
 
-if(MICROPY_BOARD_VARIANT STREQUAL "spiram")
+if(MICROPY_BOARD_VARIANT STREQUAL "SPIRAM")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
         boards/sdkconfig.spiram
@@ -36,7 +36,7 @@ if(MICROPY_BOARD_VARIANT STREQUAL "spiram")
     )
 endif()
 
-if(MICROPY_BOARD_VARIANT STREQUAL "unicore")
+if(MICROPY_BOARD_VARIANT STREQUAL "UNICORE")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
         boards/GENERIC/sdkconfig.unicore

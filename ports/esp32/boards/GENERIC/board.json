@@ -17,11 +17,11 @@
     "thumbnail": "",
     "url": "https://www.espressif.com/en/products/modules",
     "variants": {
-        "idf3": "Compiled with IDF 3.x",
-        "d2wd": "ESP32 D2WD",
-        "spiram": "Support for SPIRAM / WROVER",
-        "unicore": "ESP32 Unicore",
-        "ota": "Support for OTA"
+        "IDF3": "Compiled with IDF 3.x",
+        "D2WD": "ESP32 D2WD",
+        "SPIRAM": "Support for SPIRAM / WROVER",
+        "UNICORE": "ESP32 Unicore",
+        "OTA": "Support for OTA"
     },
     "vendor": "Espressif"
 }
