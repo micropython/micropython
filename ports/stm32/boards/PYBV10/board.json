@@ -13,10 +13,10 @@
     "thumbnail": "",
     "url": "",
     "variants": {
-        "dp": "Double-precision float",
-        "dp-thread": "Double precision float + Threads",
-        "network": "Wiznet 5200 Driver",
-        "thread": "Threading"
+        "DP": "Double-precision float",
+        "DP_THREAD": "Double precision float + Threads",
+        "NETWORK": "Wiznet 5200 Driver",
+        "THREAD": "Threading"
     },
     "vendor": "George Robotics"
 }
