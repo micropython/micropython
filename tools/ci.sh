@@ -204,10 +204,10 @@ function ci_nrf_build {
     ports/nrf/drivers/bluetooth/download_ble_stack.sh s140_nrf52_6_1_1
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/nrf submodules
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10040
-    make ${MAKEOPTS} -C ports/nrf BOARD=microbit
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10056 SD=s140
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10090
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10040
+    make ${MAKEOPTS} -C ports/nrf BOARD=MICROBIT
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10056 SD=s140
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10090
 }
 
 ########################################################################################

@@ -4,7 +4,7 @@ MCU_SUB_VARIANT = nrf51822
 SOFTDEV_VERSION = 8.0.0
 
 ifneq ($(SD),)
-LD_FILES += boards/microbit/custom_nrf51822_s110_microbit.ld
+LD_FILES += boards/MICROBIT/custom_nrf51822_s110_microbit.ld
 FROZEN_MANIFEST ?=
 else
 MICROPY_VFS_LFS2 = 1
