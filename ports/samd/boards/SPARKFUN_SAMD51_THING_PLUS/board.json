@@ -14,7 +14,7 @@
     ],
     "mcu": "samd51",
     "variants": {
-        "wlan": "WiFi support using a ESP32 module with NINA firmware"
+        "WLAN": "WiFi support using a ESP32 module with NINA firmware"
     },
     "product": "Sparkfun SAMD51 Thing Plus",
     "thumbnail": "",

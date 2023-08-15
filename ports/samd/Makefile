@@ -13,7 +13,11 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+ifneq ($(BOARD_VARIANT),)
+BUILD ?= build-$(BOARD)-$(BOARD_VARIANT)
+else
 BUILD ?= build-$(BOARD)
+endif
 
 CROSS_COMPILE ?= arm-none-eabi-
 UF2CONV ?= $(TOP)/tools/uf2conv.py
@@ -193,9 +197,6 @@ OBJ += $(addprefix $(BUILD)/, $(ASF4_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
-
-query-variants:
-	$(ECHO) "VARIANTS:" $(BOARD_VARIANTS)
 
 all: $(BUILD)/firmware.uf2
 
