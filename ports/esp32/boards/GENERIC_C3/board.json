@@ -8,7 +8,6 @@
         "External Flash",
         "WiFi"
     ],
-    "id": "esp32c3",
     "images": [
         "esp32c3_devkitmini.jpg"
     ],
