@@ -589,6 +589,16 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
 
+    #if MICROPY_PY_SYS_TRACEBACKLIMIT
+    mp_int_t max_traceback = MP_OBJ_SMALL_INT_VALUE(MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]));
+    if (max_traceback <= 0) {
+        return;
+    } else if (self->traceback != NULL && self->traceback->len >= max_traceback * TRACEBACK_ENTRY_LEN) {
+        self->traceback->len -= TRACEBACK_ENTRY_LEN;
+        memmove(self->traceback->data, self->traceback->data + TRACEBACK_ENTRY_LEN, self->traceback->len * sizeof(self->traceback->data[0]));
+    }
+    #endif
+
     // Try to allocate memory for the traceback, with fallback to emergency traceback object
     if (self->traceback == NULL || self->traceback == (mp_obj_traceback_t *)&mp_const_empty_traceback_obj) {
         self->traceback = m_new_obj_maybe(mp_obj_traceback_t);
