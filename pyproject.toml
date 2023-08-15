@@ -48,4 +48,4 @@ max-complexity = 40
 
 # manifest.py files are evaluated with some global names pre-defined
 "**/manifest.py" = ["F821"]
-"ports/**/boards/manifest*.py" = ["F821"]
+"ports/**/boards/**/manifest_*.py" = ["F821"]
