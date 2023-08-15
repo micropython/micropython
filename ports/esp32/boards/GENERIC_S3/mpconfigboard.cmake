@@ -8,7 +8,7 @@ set(SDKCONFIG_DEFAULTS
     boards/GENERIC_S3/sdkconfig.board
 )
 
-if(MICROPY_BOARD_VARIANT STREQUAL "spiram-oct")
+if(MICROPY_BOARD_VARIANT STREQUAL "SPIRAM_OCT")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
         boards/sdkconfig.240mhz
