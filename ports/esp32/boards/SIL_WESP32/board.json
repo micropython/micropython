@@ -10,7 +10,6 @@
         "PoE",
         "WiFi"
     ],
-    "id": "wesp32",
     "images": [
         "wesp32-iso.jpg",
         "wesp32-top.jpg"

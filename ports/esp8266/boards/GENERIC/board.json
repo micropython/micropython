@@ -7,7 +7,6 @@
         "External Flash",
         "WiFi"
     ],
-    "id": "esp8266",
     "images": [],
     "mcu": "esp8266",
     "product": "ESP8266 with 2MiB+ flash",

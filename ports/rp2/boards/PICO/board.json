@@ -8,7 +8,6 @@
         "External Flash",
         "USB"
     ],
-    "id": "rp2-pico",
     "images": [
         "rp2-pico.jpg"
     ],
