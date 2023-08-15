@@ -8,12 +8,15 @@ ifdef BOARD_DIR
 # the path as the board name.
 BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
-# If not given on the command line, then default to GENERIC.
-BOARD ?= GENERIC
+# If not given on the command line, then default to ESP32_GENERIC.
+BOARD ?= ESP32_GENERIC
 BOARD_DIR ?= boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
+ifeq ($(findstring boards/GENERIC,$(BOARD_DIR)),boards/GENERIC)
+$(warning The GENERIC* boards have been renamed to ESP32_GENERIC*)
+endif
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
