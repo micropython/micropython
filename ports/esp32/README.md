@@ -93,7 +93,7 @@ $ make submodules
 $ make
 ```
 
-This will produce a combined `firmware.bin` image in the `build-GENERIC/`
+This will produce a combined `firmware.bin` image in the `build-ESP32_GENERIC/`
 subdirectory (this firmware image is made up of: bootloader.bin, partitions.bin
 and micropython.bin).
 
@@ -123,12 +123,12 @@ To flash the MicroPython firmware to your ESP32 use:
 $ make deploy
 ```
 
-The default ESP32 board build by the above commands is the `GENERIC` one, which
-should work on most ESP32 modules.  You can specify a different board by passing
-`BOARD=<board>` to the make commands, for example:
+The default ESP32 board build by the above commands is the `ESP32_GENERIC`
+one, which should work on most ESP32 modules.  You can specify a different
+board by passing `BOARD=<board>` to the make commands, for example:
 
 ```bash
-$ make BOARD=GENERIC_SPIRAM
+$ make BOARD=ESP32_GENERIC_S3
 ```
 
 Note: the above "make" commands are thin wrappers for the underlying `idf.py`
@@ -137,9 +137,24 @@ for example:
 
 ```bash
 $ idf.py build
-$ idf.py -D MICROPY_BOARD=GENERIC_SPIRAM build
+$ idf.py -D MICROPY_BOARD=ESP32_GENERIC build
 $ idf.py flash
 ```
+
+Some boards also support "variants", which are allow for small variations of
+an otherwise similar board. For example different flash sizes or features. For
+example to build the `OTA` variant of `ESP32_GENERIC`.
+
+```bash
+$ make BOARD=ESP32_GENERIC BOARD_VARIANT=OTA
+```
+
+or to enable octal-SPIRAM support for the `ESP32_GENERIC_S3` board:
+
+```bash
+$ make BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM_OCT
+```
+
 
 Getting a Python prompt on the device
 -------------------------------------
@@ -202,10 +217,10 @@ antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 Defining a custom ESP32 board
 -----------------------------
 
-The default ESP-IDF configuration settings are provided by the `GENERIC`
-board definition in the directory `boards/GENERIC`. For a custom configuration
+The default ESP-IDF configuration settings are provided by the `ESP32_GENERIC`
+board definition in the directory `boards/ESP32_GENERIC`. For a custom configuration
 you can define your own board directory.  Start a new board configuration by
-copying an existing one (like `GENERIC`) and modifying it to suit your board.
+copying an existing one (like `ESP32_GENERIC`) and modifying it to suit your board.
 
 MicroPython specific configuration values are defined in the board-specific
 `mpconfigboard.h` file, which is included by `mpconfigport.h`.  Additional

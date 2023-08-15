@@ -6,7 +6,7 @@ set(SDKCONFIG_DEFAULTS
 if(MICROPY_BOARD_VARIANT STREQUAL "D2WD")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
-        boards/GENERIC/sdkconfig.d2wd
+        boards/ESP32_GENERIC/sdkconfig.d2wd
     )
 
     list(APPEND MICROPY_DEF_BOARD
@@ -17,7 +17,7 @@ endif()
 if(MICROPY_BOARD_VARIANT STREQUAL "OTA")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
-        boards/GENERIC/sdkconfig.ota
+        boards/ESP32_GENERIC/sdkconfig.ota
     )
 
     list(APPEND MICROPY_DEF_BOARD
@@ -39,7 +39,7 @@ endif()
 if(MICROPY_BOARD_VARIANT STREQUAL "UNICORE")
     set(SDKCONFIG_DEFAULTS
         ${SDKCONFIG_DEFAULTS}
-        boards/GENERIC/sdkconfig.unicore
+        boards/ESP32_GENERIC/sdkconfig.unicore
     )
 
     list(APPEND MICROPY_DEF_BOARD

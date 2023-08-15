@@ -5,7 +5,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.usb
     boards/sdkconfig.ble
     boards/sdkconfig.spiram_sx
-    boards/GENERIC_S3/sdkconfig.board
+    boards/ESP32_GENERIC_S3/sdkconfig.board
 )
 
 if(MICROPY_BOARD_VARIANT STREQUAL "SPIRAM_OCT")
