@@ -299,6 +299,9 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_NVS), MP_ROM_PTR(&esp32_nvs_type) },
     { MP_ROM_QSTR(MP_QSTR_Partition), MP_ROM_PTR(&esp32_partition_type) },
+    #if MICROPY_PY_ESP32_PCNT
+    { MP_ROM_QSTR(MP_QSTR_PCNT), MP_ROM_PTR(&esp32_pcnt_type) },
+    #endif
     #if SOC_RMT_SUPPORTED
     { MP_ROM_QSTR(MP_QSTR_RMT), MP_ROM_PTR(&esp32_rmt_type) },
     #endif
