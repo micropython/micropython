@@ -757,7 +757,6 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
         bytearray(native_qstr_vals_len * env.arch.qstr_entry_size),
         env.arch.qstr_entry_size,
     )
-    env.sections.append(env.qstr_val_section)
 
     # Create section to contain mp_native_obj_table
     env.obj_table_section = Section(
@@ -765,7 +764,6 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
         bytearray(native_qstr_objs_len * env.arch.word_size),
         env.arch.word_size,
     )
-    env.sections.append(env.qstr_obj_section)
 
     # Resolve unknown symbols
     mp_fun_table_sec = Section(".external.mp_fun_table", b"", 0)
@@ -944,17 +942,6 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     # MPY: machine code
     out.write_bytes(env.full_text)
 
-    # MPY: n_qstr_link (assumes little endian)
-    out.write_uint(len(native_qstr_vals) + len(native_qstr_objs))
-    for q in range(len(native_qstr_vals)):
-        off = env.qstr_val_section.addr + q * env.arch.qstr_entry_size
-        out.write_uint(off << 2)
-        out.write_qstr(native_qstr_vals[q])
-    for q in range(len(native_qstr_objs)):
-        off = env.qstr_obj_section.addr + q * env.arch.word_size
-        out.write_uint(off << 2 | 3)
-        out.write_qstr(native_qstr_objs[q])
-
     # MPY: scope_flags
     scope_flags = MP_SCOPE_FLAG_VIPERRELOC
     if len(env.full_rodata):
@@ -967,7 +954,6 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     if len(env.full_rodata):
         rodata_const_table_idx = 1
         out.write_uint(len(env.full_rodata))
-        out.write_bytes(env.full_rodata)
     if len(env.full_bss):
         bss_const_table_idx = 2
         out.write_uint(len(env.full_bss))
