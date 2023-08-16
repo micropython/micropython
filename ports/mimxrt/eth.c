@@ -365,7 +365,15 @@ void eth_init_0(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
 
     uint32_t source_clock = eth_clock_init(eth_id, phy_clock);
 
-    eth_gpio_init(iomux_table_enet, ARRAY_SIZE(iomux_table_enet), ENET_RESET_PIN, ENET_INT_PIN);
+    const machine_pin_obj_t *reset_pin = NULL;
+    #if defined(pin_ENET_RESET)
+    reset_pin = pin_ENET_RESET;
+    #endif
+    const machine_pin_obj_t *int_pin = NULL;
+    #if defined(pin_ENET_INT)
+    int_pin = pin_ENET_INT;
+    #endif
+    eth_gpio_init(iomux_table_enet, ARRAY_SIZE(iomux_table_enet), reset_pin, int_pin);
 
     mp_hal_get_mac(0, hw_addr);
 
@@ -411,7 +419,15 @@ void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
 
     uint32_t source_clock = eth_clock_init(eth_id, phy_clock);
 
-    eth_gpio_init(iomux_table_enet_1, ARRAY_SIZE(iomux_table_enet_1), ENET_1_RESET_PIN, ENET_1_INT_PIN);
+    const machine_pin_obj_t *reset_pin = NULL;
+    #if defined(pin_ENET_1_INT)
+    reset_pin = pin_ENET_1_RESET;
+    #endif
+    const machine_pin_obj_t *int_pin = NULL;
+    #if defined(pin_ENET_1_INT)
+    int_pin = pin_ENET_1_INT;
+    #endif
+    eth_gpio_init(iomux_table_enet_1, ARRAY_SIZE(iomux_table_enet_1), reset_pin, int_pin);
 
     #if defined MIMXRT117x_SERIES
     NVIC_SetPriority(ENET_1G_MAC0_Tx_Rx_1_IRQn, IRQ_PRI_PENDSV);
