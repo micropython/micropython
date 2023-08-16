@@ -99,9 +99,19 @@ STATIC const int8_t usbd_msc_inquiry_data[36] = {
     0x00, // various flags
     0x00, // various flags
     0x00, // various flags
-    'M', 'i', 'c', 'r', 'o', 'P', 'y', ' ', // Manufacturer : 8 bytes
+    #ifdef MICROPY_HW_USB_MSC_MANUFACTURER
+    MICROPY_HW_USB_MSC_MANUFACTURER // Must be exactly 8 bytes with trailing comma, like below
+    // Example: #define MICROPY_HW_USB_MSC_MANUFACTURER 'A','C','M','E',' ',' ',' ',' ',
+    #else
+    'M', 'i', 'c', 'r', 'o', 'P', 'y', ' ', // Manufacturer : 8 bytes ("MicroPy ")
+    #endif
+    #ifdef MICROPY_HW_USB_MSC_PRODUCT
+    MICROPY_HW_USB_MSC_PRODUCT // Must be exactly 16 bytes with trailing comma, like below
+    // Example: #define MICROPY_HW_USB_MSC_PRODUCT 'M','y','B','o','a','r','d',' ','F','l','a','s','h',' ',' ',' ',
+    #else
     'p', 'y', 'b', 'o', 'a', 'r', 'd', ' ', // Product      : 16 Bytes
-    'F', 'l', 'a', 's', 'h', ' ', ' ', ' ',
+    'F', 'l', 'a', 's', 'h', ' ', ' ', ' ', // ("pyboard Flash   ")
+    #endif
     '1', '.', '0', '0',                     // Version      : 4 Bytes
 };
 
