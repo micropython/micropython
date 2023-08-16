@@ -1,5 +1,7 @@
 # cmake file for Raspberry Pi Pico W
 
+set(PICO_BOARD "pico_w")
+
 # The C malloc is needed by cyw43-driver Bluetooth
 set(MICROPY_C_HEAP_SIZE 4096)
 
