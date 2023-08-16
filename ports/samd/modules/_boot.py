@@ -1,6 +1,7 @@
 import gc
 import os
 import samd
+import sys
 
 bdev = samd.Flash()
 
@@ -13,7 +14,8 @@ except:
     fs_type.mkfs(bdev, progsize=256)
     vfs = fs_type(bdev, progsize=256)
 os.mount(vfs, "/")
+sys.path.append("/lib")
 
-del vfs, fs_type, bdev, os, samd
+del vfs, fs_type, bdev, os, samd, sys
 gc.collect()
 del gc
