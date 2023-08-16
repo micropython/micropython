@@ -8,12 +8,15 @@ ifdef BOARD_DIR
 # the path as the board name.
 BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
-# If not given on the command line, then default to PICO.
-BOARD ?= PICO
+# If not given on the command line, then default to RPI_PICO.
+BOARD ?= RPI_PICO
 BOARD_DIR ?= boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
+ifeq ($(findstring boards/PICO,$(BOARD_DIR)),boards/PICO)
+$(warning The PICO* boards have been renamed to RPI_PICO*)
+endif
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
