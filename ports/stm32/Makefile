@@ -116,7 +116,7 @@ AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
 
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
-CFLAGS += -DMP_CONFIGFILE='"mpconfigport_nanbox.h"'
+MPCONFIGPORT_H = mpconfigport_nanbox.h
 ifneq ($(MICROPY_FLOAT_IMPL),none)
 MICROPY_FLOAT_IMPL = double
 endif
