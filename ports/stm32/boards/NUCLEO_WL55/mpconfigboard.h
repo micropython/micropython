@@ -28,6 +28,13 @@
 #define MICROPY_HW_RTC_USE_LSE                  (1)
 #define MICROPY_HW_RTC_USE_US                   (1)
 
+// Use external 32MHz TCXO + PLL as system clock source
+// (If unset, board will use the internal MSI oscillator instead.)
+#define MICROPY_HW_CLK_USE_HSE                  (1)
+
+// HSE bypass for STM32WL5x means TCXO is powered from PB0_VDDTCXO pin
+#define MICROPY_HW_CLK_USE_BYPASS               (1)
+
 // UART buses
 #define MICROPY_HW_UART1_TX                     (pin_B6)    // Arduino D1, pin 7 on CN9
 #define MICROPY_HW_UART1_RX                     (pin_B7)    // Arduino D0, pin 8 on CN9

@@ -460,12 +460,70 @@ void SystemClock_Config(void) {
 #include "stm32wlxx_ll_utils.h"
 
 void SystemClock_Config(void) {
-    // Set flash latency
+    // Set flash latency (2 wait states, sysclk > 36MHz)
     LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
     while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2) {
     }
 
     LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+
+    #if MICROPY_HW_CLK_USE_HSE
+    // Enable the 32MHz external oscillator and 48MHZ SYSCLK via PLL
+
+    #if MICROPY_HW_CLK_USE_BYPASS
+    // Use "bypass power" option, port PB0_VDDTCXO supplies TCXO
+    // (STM32WL5x has no other HSE bypass mode.)
+
+    // "PB0 must be configured in analog mode prior enabling the HSE"
+    //
+    // Note: PB0 analog mode muxes PB0_VDDTCXO pin to the VDDTCXO regulator, set
+    // to default voltage of 1.7V.  Changing this voltage requires initializing
+    // the SUBGHZ radio and sending a Set_Tcxo command to it.
+    //
+    // For the Nucelo-WL55 board, ST uses the NDK "NT2016SF-32M-END5875A" TCXO
+    // which has no publicly available datasheet. However, the ST code for this
+    // board always keeps the pin at the default 1.7V voltage level so changing
+    // the level would only be needed if a different TCXO is used.
+    //
+    // (Note also that setting pin PB0 as a push-pull GPIO output is technically
+    // possible too, but 3.3V will be too high for many TCXOs.)
+    mp_hal_pin_config(pin_B0, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+
+    LL_RCC_HSE_EnableTcxo();
+
+    #endif // MICROPY_HW_CLK_USE_BYPASS
+
+    LL_RCC_HSE_Enable();
+    while (!LL_RCC_HSE_IsReady()) {
+        // Wait for HSE Ready signal
+    }
+
+    // Configure PLL for a 48MHz SYSCLK
+    #define PLLM (HSE_VALUE / 16000000) // VCO input 16MHz (recommended in ST docs)
+    #define PLLN (6) // 7*8MHz = 96MHz
+    #define PLLP (2) // f_P = 48MHz
+    #define PLLQ (2) // f_Q = 48MHz
+    #define PLLR (2) // f_R = 48MHz
+    RCC->PLLCFGR =
+        (PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
+            | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
+            | (PLLP - 1) << RCC_PLLCFGR_PLLP_Pos | RCC_PLLCFGR_PLLPEN
+            | PLLN << RCC_PLLCFGR_PLLN_Pos
+            | (PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
+            | LL_RCC_PLLSOURCE_HSE;
+
+    LL_RCC_PLL_Enable();
+    LL_RCC_PLL_EnableDomain_SYS();
+    while (!LL_RCC_PLL_IsReady()) {
+        // Wait for PLL to lock
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL) {
+        // Wait for system clock source to switch
+    }
+
+    #else // Use MSI as 48MHz source for SYSCLK
 
     // Enable MSI
     LL_RCC_MSI_Enable();
@@ -481,6 +539,8 @@ void SystemClock_Config(void) {
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_MSI);
     while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_MSI) {
     }
+
+    #endif // MICROPY_HW_CLK_USE_HSE
 
     // Set bus dividers
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
