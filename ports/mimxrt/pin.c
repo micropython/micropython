@@ -152,14 +152,6 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    // If pin is SMALL_INT
-    if (mp_obj_is_small_int(user_obj)) {
-        uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
-        if (value < num_board_pins) {
-            return machine_pin_board_pins[value];
-        }
-    }
-
     // See if the pin name matches a board pin
     pin_obj = pin_find_named_pin(&machine_pin_board_pins_locals_dict, user_obj);
     if (pin_obj) {

@@ -155,10 +155,6 @@
 #define ENET_PHY            KSZ8081
 #define ENET_PHY_OPS        phyksz8081_ops
 
-// 10/100 Ethernet PIN definitions
-#define ENET_RESET_PIN      &pin_GPIO_LPSR_12
-#define ENET_INT_PIN        &pin_GPIO_AD_12
-
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_DISP_B2_06_ENET_RX_DATA00, 0, 0x06u }, \
     { IOMUXC_GPIO_DISP_B2_07_ENET_RX_DATA01, 0, 0x06u }, \
