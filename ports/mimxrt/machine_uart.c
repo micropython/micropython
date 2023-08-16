@@ -146,6 +146,12 @@ void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t st
     }
 }
 
+static void  machine_uart_ensure_active(machine_uart_obj_t *uart) {
+    if (uart->lpuart->CTRL == 0) {
+        mp_raise_OSError(EIO);
+    }
+}
+
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, flow=%s, "
@@ -351,13 +357,14 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 // uart.deinit()
 STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    LPUART_Deinit(self->lpuart);
+    LPUART_SoftwareReset(self->lpuart);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
 
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_uart_ensure_active(self);
     size_t count = LPUART_TransferGetRxRingBufferLength(self->lpuart, &self->handle);
     return MP_OBJ_NEW_SMALL_INT(count);
 }
@@ -365,6 +372,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
 STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_uart_ensure_active(self);
     self->lpuart->CTRL |= 1 << LPUART_CTRL_SBK_SHIFT; // Set SBK bit
     self->lpuart->CTRL &= ~LPUART_CTRL_SBK_MASK; // Clear SBK bit
     return mp_const_none;
@@ -382,11 +390,11 @@ STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
-// Deinitialize all defined UARTs
+// Reset all defined UARTs
 void machine_uart_deinit_all(void) {
-    for (int i = 0; i < sizeof(uart_index_table); i++) {
+    for (int i = 0; i < MICROPY_HW_UART_NUM; i++) {
         if (uart_index_table[i] != 0) {
-            LPUART_Deinit(uart_base_ptr_table[uart_index_table[i]]);
+            LPUART_SoftwareReset(uart_base_ptr_table[uart_index_table[i]]);
         }
     }
 }
@@ -424,6 +432,8 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     size_t avail;
     size_t nget;
 
+    machine_uart_ensure_active(self);
+
     for (size_t received = 0; received < size;) {
         // Wait for the first/next character.
         while ((avail = LPUART_TransferGetRxRingBufferLength(self->lpuart, &self->handle)) <= 0) {
@@ -455,6 +465,8 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     size_t remaining = size;
     size_t offset = 0;
     uint8_t fifo_size = FSL_FEATURE_LPUART_FIFO_SIZEn(0);
+
+    machine_uart_ensure_active(self);
 
     // First check if a previous transfer is still ongoing,
     // then wait at least the number of remaining character times.
@@ -510,6 +522,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
+        machine_uart_ensure_active(self);
         uintptr_t flags = arg;
         ret = 0;
         if (flags & MP_STREAM_POLL_RD) {
