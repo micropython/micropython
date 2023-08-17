@@ -114,6 +114,11 @@ methods to enable over-the-air (OTA) updates.
 
     Sets the partition as the boot partition.
 
+    .. note:: Do not enter :func:`deepsleep<machine.deepsleep>` after changing
+       the OTA boot partition, without first performing a hard
+       :func:`reset<machine.reset>` or power cycle. This ensures the bootloader
+       will validate the new image before booting.
+
 .. method:: Partition.get_next_update()
 
     Gets the next update partition after this one, and returns a new Partition object.
