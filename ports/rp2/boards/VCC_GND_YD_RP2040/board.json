@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB-C",
+        "RGB LED"
+    ],
+    "images": [
+        "VCC_GND_YD_RP2040.png"
+    ],
+    "mcu": "rp2040",
+    "product": "VCC-GND Studio YD-RP2040",
+    "url": "http://vcc-gnd.com/",
+    "variants": {
+        "ydrp2040_flash_4mb": "4 MiB Flash",
+        "ydrp2040_flash_8mb": "8 MiB Flash",
+        "ydrp2040_flash_16mb": "16 MiB Flash"
+    },
+    "vendor": "VCC-GND Studio"
+}
