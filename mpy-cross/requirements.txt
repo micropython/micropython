@@ -1,0 +1,17 @@
+# Install wasmtime by default on supported 64-bit targets.
+wasmtime==11.0.0;(sys_platform == "linux" and platform_machine == "aarch64")
+wasmtime==11.0.0;(sys_platform == "linux" and platform_machine == "x86_64")
+wasmtime==11.0.0;(sys_platform == "darwin")
+wasmtime==11.0.0;(sys_platform == "win32" and platform_machine == "AMD64")
+
+# This will work just about anywhere but needs CPython
+# development headers installed (e.g. apt install python-dev).
+#pywasm3[pywasm3]==0.5.0
+
+# wasmer provide a universal "none" package that will install
+# anywhere that doesn't have a supported version. So it's always
+# safe to have as a dependency, it just might not actually
+# do anything if imported.
+#wasmer[wasmer]==1.1.0
+#wasmer-compiler-singlepass[wasmer]==1.1.0
+#wasmer-compiler-cranelift[wasmer]==1.1.0
