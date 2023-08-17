@@ -44,7 +44,7 @@
 //|         word_select: microcontroller.Pin,
 //|         data: microcontroller.Pin,
 //|         *,
-//|         main_clock: microcontroller.Pin = None,
+//|         main_clock: Optional[microcontroller.Pin] = None,
 //|         left_justified: bool = False
 //|     ) -> None:
 //|         """Create a I2SOut object associated with the given pins.

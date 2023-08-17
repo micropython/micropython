@@ -131,10 +131,12 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
     common_hal_reset_pin(self->data);
     self->data = NULL;
 
-    IOMUXC_GPR->GPR1 &= ~(IOMUXC_GPR_GPR1_SAI1_MCLK_DIR_MASK << (self->instance - 1));
+    if (self->mclk != NULL) {
+        IOMUXC_GPR->GPR1 &= ~(IOMUXC_GPR_GPR1_SAI1_MCLK_DIR_MASK << (self->instance - 1));
 
-    common_hal_reset_pin(self->mclk);
-    self->mclk = NULL;
+        common_hal_reset_pin(self->mclk);
+        self->mclk = NULL;
+    }
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
