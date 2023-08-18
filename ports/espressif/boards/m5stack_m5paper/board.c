@@ -60,10 +60,10 @@ void board_init(void) {
     //     1200000, // Baudrate
     //     0, // Polarity
     //     0); // Phase
-    
+
     // displayio_epaperdisplay_obj_t *display = &allocate_display()->epaper_display;
     // display->base.type = &displayio_epaperdisplay_type;
-    
+
     // common_hal_displayio_epaperdisplay_construct(
     //     display,
     //     bus,
@@ -96,5 +96,5 @@ void board_init(void) {
     //     true, // acep
     //     false,  // two_byte_sequence_length
     //     false  // address_little_endian
-    // ); 
+    // );
 }
