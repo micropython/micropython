@@ -1,9 +1,6 @@
-# XIAO ESP32 C3 MicroPython Helper Library
+# Seeed XIAO ESP32 C3 MicroPython Helper Library
 
 from micropython import const
-from machine import Pin
-
-# Pin Assignments
 
 # SPI
 SPI_MOSI = const(10)

@@ -6,7 +6,7 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.ble
     boards/sdkconfig.240mhz
     boards/sdkconfig.spiram_sx
-    boards/XIAO_ESP32S3/sdkconfig.board
+    boards/SEEED_XIAO_ESP32S3/sdkconfig.board
 )
 
 set(MICROPY_FROZEN_MANIFEST ${MICROPY_BOARD_DIR}/manifest.py)

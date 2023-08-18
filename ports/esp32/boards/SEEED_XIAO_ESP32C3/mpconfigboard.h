@@ -1,4 +1,4 @@
-#define MICROPY_HW_BOARD_NAME               "XIAO-ESP32C3"
+#define MICROPY_HW_BOARD_NAME               "Seeed XIAO ESP32C3"
 #define MICROPY_HW_MCU_NAME                 "ESP32-C3FN4"
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "XIAO-ESP32C3"
 

@@ -3,8 +3,6 @@
 from micropython import const
 from machine import Pin
 
-# Pin Assignments
-
 # SPI
 SPI_MOSI = const(9)
 SPI_MISO = const(8)
