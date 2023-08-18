@@ -738,6 +738,10 @@ extern const mp_obj_type_t mp_type_super;
 extern const mp_obj_type_t mp_type_gen_wrap;
 extern const mp_obj_type_t mp_type_native_gen_wrap;
 extern const mp_obj_type_t mp_type_gen_instance;
+// CIRCUITPY
+extern const mp_obj_type_t mp_type_coro_wrap;
+// CIRCUITPY
+extern const mp_obj_type_t mp_type_coro_instance;
 extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;
 extern const mp_obj_type_t mp_type_fun_builtin_2;

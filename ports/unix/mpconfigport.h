@@ -36,6 +36,7 @@
 
 // CIRCUITPY
 #define CIRCUITPY_MICROPYTHON_ADVANCED (1)
+#define MICROPY_PY_ASYNC_AWAIT (1)
 
 // If the variant did not set a feature level then configure a set of features.
 #ifndef MICROPY_CONFIG_ROM_LEVEL

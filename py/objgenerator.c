@@ -55,23 +55,23 @@ typedef struct _mp_obj_gen_instance_t {
     // mp_const_none: Not-running, no exception.
     // MP_OBJ_NULL: Running, no exception.
     // other: Not running, pending exception.
-    bool coroutine_generator;
     mp_obj_t pend_exc;
     mp_code_state_t code_state;
 } mp_obj_gen_instance_t;
 
 STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    // A generating function is just a bytecode function with type mp_type_gen_wrap
+    // A generating or coroutine function is just a bytecode function
+    // with type mp_type_gen_wrap or mp_type_coro_wrap.
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // bytecode prelude: get state size and exception stack size
     const uint8_t *ip = self_fun->bytecode;
     MP_BC_PRELUDE_SIG_DECODE(ip);
 
-    // allocate the generator object, with room for local stack and exception stack
+    // allocate the generator or coroutine object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, byte,
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t),
-        &mp_type_gen_instance);
+        self_fun->base.type == &mp_type_gen_wrap ? &mp_type_gen_instance : &mp_type_coro_instance);
 
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
@@ -84,6 +84,19 @@ const mp_obj_type_t mp_type_gen_wrap = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_generator,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_fun_bc_attr,
+    #endif
+    MP_TYPE_EXTENDED_FIELDS(
+        .call = gen_wrap_call,
+        .unary_op = mp_generic_unary_op,
+        ),
+};
+
+const mp_obj_type_t mp_type_coro_wrap = {
+    { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
+    .name = MP_QSTR_coroutine,
     #if MICROPY_PY_FUNCTION_ATTRS
     .attr = mp_obj_fun_bc_attr,
     #endif
@@ -167,20 +180,26 @@ const mp_obj_type_t mp_type_native_gen_wrap = {
 STATIC void gen_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    #if MICROPY_PY_ASYNC_AWAIT
-    if (self->coroutine_generator) {
-        mp_printf(print, "<%q object '%q' at %p>", MP_QSTR_coroutine, mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
-    } else {
-        mp_printf(print, "<%q object '%q' at %p>", MP_QSTR_generator, mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
-    }
-    #else
     mp_printf(print, "<generator object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
-    #endif
 }
+
+// CIRCUITPY
+#if MICROPY_PY_ASYNC_AWAIT
+STATIC void coro_instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    (void)kind;
+    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "<coroutine object '%q' at %p>", mp_obj_fun_get_name(MP_OBJ_FROM_PTR(self->code_state.fun_bc)), self);
+}
+#endif
 
 mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val) {
     MP_STACK_CHECK();
-    mp_check_self(mp_obj_is_type(self_in, &mp_type_gen_instance));
+    // CIRCUITPY
+    // note that self may have as its type either gen or coro,
+    // both of which are stored as an mp_obj_gen_instance_t .
+    mp_check_self(
+        mp_obj_is_type(self_in, &mp_type_gen_instance) ||
+        mp_obj_is_type(self_in, &mp_type_coro_instance));
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {
         // Trying to resume an already stopped generator.
@@ -188,7 +207,6 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         *ret_val = mp_const_none;
         return MP_VM_RETURN_NORMAL;
     }
-
     // Ensure the generator cannot be reentered during execution
     if (self->pend_exc == MP_OBJ_NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("generator already executing"));
@@ -285,6 +303,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, bool raise_stop_iteration) {
     mp_obj_t ret;
     switch (mp_obj_gen_resume(self_in, send_value, throw_value, &ret)) {
+
         case MP_VM_RETURN_NORMAL:
         default:
             // A normal return is a StopIteration, either raise it or return
@@ -307,12 +326,6 @@ STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_o
 }
 
 STATIC mp_obj_t gen_instance_iternext(mp_obj_t self_in) {
-    #if MICROPY_PY_ASYNC_AWAIT
-    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    if (self->coroutine_generator) {
-        mp_raise_TypeError(MP_ERROR_TEXT("'coroutine' object is not an iterator"));
-    }
-    #endif
     return gen_resume_and_raise(self_in, mp_const_none, MP_OBJ_NULL, false);
 }
 
@@ -322,21 +335,12 @@ STATIC mp_obj_t gen_instance_send(mp_obj_t self_in, mp_obj_t send_value) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(gen_instance_send_obj, gen_instance_send);
 
 #if MICROPY_PY_ASYNC_AWAIT
-STATIC mp_obj_t gen_instance_await(mp_obj_t self_in) {
-    mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
-    if (!self->coroutine_generator) {
-        // Pretend like a generator does not have this coroutine behavior.
-        // Pay no attention to the dir() behind the curtain
-        mp_raise_msg_varg(&mp_type_AttributeError, MP_ERROR_TEXT("type object '%q' has no attribute '%q'"),
-            MP_QSTR_generator, MP_QSTR___await__);
-    }
-    // You can directly call send on a coroutine generator or you can __await__ then send on the return of that.
-    return self;
+STATIC mp_obj_t coro_instance_await(mp_obj_t self_in) {
+    return self_in;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(gen_instance_await_obj, gen_instance_await);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(coro_instance_await_obj, coro_instance_await);
 #endif
 
-STATIC mp_obj_t gen_instance_close(mp_obj_t self_in);
 STATIC mp_obj_t gen_instance_throw(size_t n_args, const mp_obj_t *args) {
     // The signature of this function is: throw(type[, value[, traceback]])
     // CPython will pass all given arguments through the call chain and process them
@@ -408,9 +412,6 @@ STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
     #if MICROPY_PY_GENERATOR_PEND_THROW
     { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
     #endif
-    #if MICROPY_PY_ASYNC_AWAIT
-    { MP_ROM_QSTR(MP_QSTR___await__), MP_ROM_PTR(&gen_instance_await_obj) },
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
@@ -427,3 +428,35 @@ const mp_obj_type_t mp_type_gen_instance = {
         .iternext = gen_instance_iternext,
         ),
 };
+
+#if MICROPY_PY_ASYNC_AWAIT
+// CIRCUITPY
+// coroutine instance locals dict and type
+// same as generator, but with addition of __await()__.
+STATIC const mp_rom_map_elem_t coro_instance_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
+    #if MICROPY_PY_GENERATOR_PEND_THROW
+    { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
+    #endif
+    #if MICROPY_PY_ASYNC_AWAIT
+    { MP_ROM_QSTR(MP_QSTR___await__), MP_ROM_PTR(&coro_instance_await_obj) },
+    #endif
+};
+
+STATIC MP_DEFINE_CONST_DICT(coro_instance_locals_dict, coro_instance_locals_dict_table);
+
+const mp_obj_type_t mp_type_coro_instance = {
+    { &mp_type_type },
+    .flags = MP_TYPE_FLAG_EXTENDED,
+    .name = MP_QSTR_coroutine,
+    .print = coro_instance_print,
+    .locals_dict = (mp_obj_dict_t *)&coro_instance_locals_dict,
+    MP_TYPE_EXTENDED_FIELDS(
+        .unary_op = mp_generic_unary_op,
+        .getiter = mp_identity_getiter,
+        .iternext = gen_instance_iternext,
+        ),
+};
+#endif
