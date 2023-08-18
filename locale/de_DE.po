@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-07-19 21:06+0000\n"
+"PO-Revision-Date: 2023-08-12 10:50+0000\n"
 "Last-Translator: Luc <some_physics@live.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -1501,7 +1501,7 @@ msgstr "Kein laufende Aufzeichnung"
 
 #: shared-module/usb/core/Device.c
 msgid "No configuration set"
-msgstr ""
+msgstr "Keine Konfiguration vorhanden"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
@@ -2112,7 +2112,7 @@ msgstr "Zu viele Kanäle im sample."
 
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
-msgstr ""
+msgstr "Zu viele Display-Busse, displayio.release_displays() vergessen?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
@@ -2849,7 +2849,7 @@ msgstr "Kann Instanz nicht erstellen"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot delete array elements"
-msgstr ""
+msgstr "Array-Elemente können nicht gelöscht werden"
 
 #: py/runtime.c
 msgid "cannot import name %q"
@@ -3318,7 +3318,7 @@ msgstr "inline assembler muss eine function sein"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output dimensions differ"
-msgstr ""
+msgstr "Eingabe- und Ausgabedimensionen unterscheiden sich"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output shapes differ"
@@ -3764,7 +3764,7 @@ msgstr "nicht implementiert für komplexe dtype"
 
 #: extmod/ulab/code/numpy/bitwise.c
 msgid "not supported for input types"
-msgstr ""
+msgstr "nicht unterstützt für Eingabetypen"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3924,7 +3924,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for function"
-msgstr ""
+msgstr "out-Schlüsselwort wird nicht unterstützt für Funktion"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out must be a float dense array"
@@ -3932,11 +3932,11 @@ msgstr "Ausgabe muss ein floatdichtes Array sein"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be an ndarray"
-msgstr ""
+msgstr "out muss ein ndarray sein"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be of float dtype"
-msgstr ""
+msgstr "out muss vom Typ dtype sein"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
