@@ -68,6 +68,8 @@
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
+#include "shared-bindings/os/__init__.h"
+
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
 #endif
@@ -407,6 +409,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         #if CIRCUITPY_USB
         usb_setup_with_vm();
         #endif
+
+        // Make sure we are in the root directory before looking at files.
+        common_hal_os_chdir("/");
 
         // Check if a different run file has been allocated
         if (next_code_allocation) {
