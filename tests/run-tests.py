@@ -505,7 +505,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             {"basics/%s.py" % t for t in "gen_yield_from_close generator_name".split()}
         )  # require raise_varargs, generator name
         skip_tests.update(
-            {"basics/async_%s.py" % t for t in "with with2 with_break with_return".split()}
+            {"basics/async_%s.py" % t for t in "await with with2 with_break with_return".split()}
         )  # require async_with
         skip_tests.update(
             {"basics/%s.py" % t for t in "try_reraise try_reraise2".split()}
