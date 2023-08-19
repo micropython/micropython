@@ -154,7 +154,7 @@ void print_safe_mode_message(safe_mode_t reason) {
 
     switch (reason) {
         case SAFE_MODE_BROWNOUT:
-            message = translate("The power dipped. Make sure you are providing enough power.");
+            message = translate("Power dipped. Make sure you are providing enough power.");
             break;
         case SAFE_MODE_USER:
             #if defined(BOARD_USER_SAFE_MODE_ACTION)
@@ -228,7 +228,7 @@ void print_safe_mode_message(safe_mode_t reason) {
                 break;
         }
         serial_write_compressed(message);
-        serial_write_compressed(translate("\nPlease file an issue with your program at https://github.com/adafruit/circuitpython/issues."));
+        serial_write_compressed(translate("\nPlease file an issue with your program at github.com/adafruit/circuitpython/issues."));
     }
 
     // Always tell user how to get out of safe mode.
