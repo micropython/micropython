@@ -50,8 +50,8 @@ class UserFS:
 # these are the test .mpy files
 user_files = {
     "/mod0.mpy": b"",  # empty file
-    "/mod1.mpy": b"M",  # too short header
-    "/mod2.mpy": b"M\x00\x00\x00",  # bad version
+    "/mod1.mpy": b"C",  # too short header
+    "/mod2.mpy": b"C\x00\x00\x00",  # bad version
 }
 
 # create and mount a user filesystem

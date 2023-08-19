@@ -125,6 +125,7 @@ MP_PERSISTENT_OBJ_FLOAT = 8
 MP_PERSISTENT_OBJ_COMPLEX = 9
 MP_PERSISTENT_OBJ_TUPLE = 10
 
+# Circuitpython: this does not match upstream because we added MP_SCOPE_FLAG_ASYNC
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
@@ -1328,7 +1329,7 @@ def read_mpy(filename):
 
         # Read and verify the header.
         header = reader.read_bytes(4)
-        if header[0] != ord("M"):
+        if header[0] != ord("C"):
             raise MPYReadError(filename, "not a valid .mpy file")
         if header[1] != config.MPY_VERSION:
             raise MPYReadError(filename, "incompatible .mpy version")
@@ -1668,7 +1669,7 @@ def merge_mpy(compiled_modules, output_file):
             compiled_modules.insert(0, compiled_modules.pop(main_cm_idx))
 
         header = bytearray(4)
-        header[0] = ord("M")
+        header[0] = ord("C")
         header[1] = config.MPY_VERSION
         header[2] = config.native_arch << 2
         header[3] = config.mp_small_int_bits

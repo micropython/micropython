@@ -50,11 +50,11 @@ class UserFS:
 
 
 # these are the test .mpy files
-valid_header = bytes([77, 6, mpy_arch, 31])
+valid_header = bytes([ord("C"), 6, mpy_arch, 31])
 # fmt: off
 user_files = {
     # bad architecture
-    '/mod0.mpy': b'M\x06\xfc\x1f',
+    '/mod0.mpy': b'C\x06\xfc\x1f',
 
     # test loading of viper and asm
     '/mod1.mpy': valid_header + (
@@ -99,7 +99,7 @@ user_files = {
 
             b'\x22' # 4 bytes, no children, viper code
                 b'\x00\x00\x00\x00' # dummy machine code
-                b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
+                b'\xe0' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
                 b'\x06\x04' # rodata=6 bytes, bss=4 bytes
                 b'rodata' # rodata content
                 b'\x03\x01\x00' # dummy relocation of rodata

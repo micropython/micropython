@@ -748,7 +748,7 @@ def main():
         for filename in args.files:
             with open(filename, "rb") as f:
                 pyfile = f.read()
-                if filename.endswith(".mpy") and pyfile[0] == ord("M"):
+                if filename.endswith(".mpy") and pyfile[0] == ord("C"):
                     pyb.exec_("_injected_buf=" + repr(pyfile))
                     pyfile = _injected_import_hook_code
                 execbuffer(pyfile)

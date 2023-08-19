@@ -175,6 +175,12 @@ static inline mp_obj_t mp_obj_len_dyn(mp_obj_t o) {
     return mp_fun_table.call_function_n_kw(mp_fun_table.load_name(MP_QSTR_len), 1, &o);
 }
 
+static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
+    base->type = type;
+    return base;
+}
+
 /******************************************************************************/
 // General runtime functions
 

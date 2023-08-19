@@ -29,6 +29,7 @@
 
 // The first four must fit in 8 bits, see emitbc.c
 // The remaining must fit in 16 bits, see scope.h
+// and must match definitions in mpy-tool.py and mpy_ld.py
 #define MP_SCOPE_FLAG_ALL_SIG      (0x1f)
 #define MP_SCOPE_FLAG_GENERATOR    (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)

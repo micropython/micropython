@@ -66,7 +66,7 @@ If importing an .mpy file fails then try the following:
     print()
 
 * Check the validity of the .mpy file by inspecting the first two bytes of
-  the file.  The first byte should be an uppercase 'M' and the second byte
+  the file.  The first byte should be an uppercase 'C' and the second byte
   will be the version number, which should match the system version from above.
   If it doesn't match then rebuild the .mpy file.
 
@@ -144,7 +144,7 @@ The .mpy header is:
 ======  ================================
 size    field
 ======  ================================
-byte    value 0x4d (ASCII 'M')
+byte    value 0x43 (ASCII 'C')
 byte    .mpy version number
 byte    feature flags
 byte    number of bits in a small int

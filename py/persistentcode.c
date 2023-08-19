@@ -389,7 +389,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *context) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
-    if (header[0] != 'M'
+    if (header[0] != 'C'
         || header[1] != MPY_VERSION
         || MPY_FEATURE_DECODE_FLAGS(header[2]) != MPY_FEATURE_FLAGS
         || header[3] > MP_SMALL_INT_BITS) {
@@ -579,12 +579,12 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
 
 void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
     // header contains:
-    //  byte  'M'
+    //  byte  'C'
     //  byte  version
     //  byte  feature flags
     //  byte  number of bits in a small int
     byte header[4] = {
-        'M',
+        'C',
         MPY_VERSION,
         MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS_DYNAMIC),
         #if MICROPY_DYNAMIC_COMPILER

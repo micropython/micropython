@@ -47,9 +47,10 @@ MP_NATIVE_ARCH_ARMV7EMDP = 8
 MP_NATIVE_ARCH_XTENSA = 9
 MP_NATIVE_ARCH_XTENSAWIN = 10
 MP_PERSISTENT_OBJ_STR = 5
-MP_SCOPE_FLAG_VIPERRELOC = 0x10
-MP_SCOPE_FLAG_VIPERRODATA = 0x20
-MP_SCOPE_FLAG_VIPERBSS = 0x40
+# Circuitpython: this does not match upstream because we added MP_SCOPE_FLAG_ASYNC
+MP_SCOPE_FLAG_VIPERRELOC = 0x20
+MP_SCOPE_FLAG_VIPERRODATA = 0x40
+MP_SCOPE_FLAG_VIPERBSS = 0x80
 MP_SMALL_INT_BITS = 31
 
 # ELF constants
@@ -768,7 +769,8 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     # Resolve unknown symbols
     mp_fun_table_sec = Section(".external.mp_fun_table", b"", 0)
     fun_table = {
-        key: 67 + idx
+        # Circuitpython: this does not match upstream because we added an item in _mp_fnu_table_t
+        key: 68 + idx
         for idx, key in enumerate(
             [
                 "mp_type_type",
@@ -917,7 +919,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.open(fmpy)
 
     # MPY: header
-    out.write_bytes(bytearray([ord("M"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS]))
+    out.write_bytes(bytearray([ord("C"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS]))
 
     # MPY: n_qstr
     out.write_uint(1 + len(native_qstr_vals))
