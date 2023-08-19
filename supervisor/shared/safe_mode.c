@@ -209,7 +209,7 @@ void print_safe_mode_message(safe_mode_t reason) {
                 message = translate("Failed to write internal flash.");
                 break;
             case SAFE_MODE_HARD_FAULT:
-                message = translate("Fault detected by hardware.");
+                message = translate("Hard fault: memory access or instruction error.");
                 break;
             case SAFE_MODE_INTERRUPT_ERROR:
                 message = translate("Interrupt error.");
