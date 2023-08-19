@@ -71,7 +71,12 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     // allocate the generator or coroutine object, with room for local stack and exception stack
     mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, byte,
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t),
-        self_fun->base.type == &mp_type_gen_wrap ? &mp_type_gen_instance : &mp_type_coro_instance);
+        #if MICROPY_PY_ASYNC_AWAIT
+        self_fun->base.type == &mp_type_gen_wrap ? &mp_type_gen_instance : &mp_type_coro_instance
+        #else
+        &mp_type_gen_instance
+        #endif
+        );
 
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
@@ -198,8 +203,11 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     // note that self may have as its type either gen or coro,
     // both of which are stored as an mp_obj_gen_instance_t .
     mp_check_self(
-        mp_obj_is_type(self_in, &mp_type_gen_instance) ||
-        mp_obj_is_type(self_in, &mp_type_coro_instance));
+        mp_obj_is_type(self_in, &mp_type_gen_instance)
+        #if MICROPY_PY_ASYNC_AWAIT
+        || mp_obj_is_type(self_in, &mp_type_coro_instance)
+        #endif
+        );
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {
         // Trying to resume an already stopped generator.

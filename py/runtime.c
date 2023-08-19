@@ -1416,7 +1416,11 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
 
     // CIRCUITPY distinguishes generators and coroutines.
-    if (type == &mp_type_gen_instance || type == &mp_type_coro_instance) {
+    if (type == &mp_type_gen_instance
+        #if MICROPY_PY_ASYNC_AWAIT
+        || type == &mp_type_coro_instance
+        #endif
+        ) {
         return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);
     }
 

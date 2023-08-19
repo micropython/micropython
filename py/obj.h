@@ -741,7 +741,9 @@ extern const mp_obj_type_t mp_type_gen_instance;
 // CIRCUITPY
 extern const mp_obj_type_t mp_type_coro_wrap;
 // CIRCUITPY
+#if MICROPY_PY_ASYNC_AWAIT
 extern const mp_obj_type_t mp_type_coro_instance;
+#endif
 extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;
 extern const mp_obj_type_t mp_type_fun_builtin_2;
