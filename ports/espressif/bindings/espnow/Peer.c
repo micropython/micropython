@@ -55,11 +55,11 @@
 STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_mac, ARG_lmk, ARG_channel, ARG_interface, ARG_encrypted };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mac,      MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_lmk,      MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
-        { MP_QSTR_channel,  MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
-        { MP_QSTR_interface,MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
-        { MP_QSTR_encrypted,MP_ARG_BOOL | MP_ARG_KW_ONLY,{ .u_bool = false } },
+        { MP_QSTR_mac,       MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_lmk,       MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+        { MP_QSTR_channel,   MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
+        { MP_QSTR_interface, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
+        { MP_QSTR_encrypted, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
