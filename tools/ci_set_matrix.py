@@ -195,7 +195,7 @@ def set_boards(build_all: bool):
                     # Check supervisor files
                     # This is useful for limiting workflow changes to the relevant boards
                     if file.startswith("supervisor"):
-                        if file in settings["SRC_SUPERVISOR"]:
+                        if file in settings.get("SRC_SUPERVISOR", ""):
                             boards_to_build.add(board)
                             continue
 
