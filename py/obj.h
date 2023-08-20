@@ -736,7 +736,9 @@ extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
 extern const mp_obj_type_t mp_type_super;
 extern const mp_obj_type_t mp_type_gen_wrap;
+#if MICROPY_EMIT_NATIVE
 extern const mp_obj_type_t mp_type_native_gen_wrap;
+#endif
 extern const mp_obj_type_t mp_type_gen_instance;
 // CIRCUITPY
 #if MICROPY_PY_ASYNC_AWAIT
