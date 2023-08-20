@@ -73,6 +73,7 @@ typedef unsigned int uint;
 #define m_new_obj_var_maybe(obj_type, var_type, var_num) ((obj_type *)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num)))
 #if MICROPY_ENABLE_FINALISER
 #define m_new_obj_with_finaliser(type) ((type *)(m_malloc_with_finaliser(sizeof(type))))
+#define m_new_ll_obj_with_finaliser(type) m_new_obj_with_finaliser(type) // CIRCUITPY: clue to long-lived allocator
 #define m_new_obj_var_with_finaliser(type, var_type, var_num) ((type *)m_malloc_with_finaliser(sizeof(type) + sizeof(var_type) * (var_num)))
 #else
 #define m_new_obj_with_finaliser(type) m_new_obj(type)
