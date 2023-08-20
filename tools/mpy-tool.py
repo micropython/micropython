@@ -327,11 +327,9 @@ class Opcode:
         self.extra_arg = extra_arg
 
 
-# This definition of a small int covers all possible targets, in the sense that every
-# target can encode as a small int, an integer that passes this test.  The minimum is set
-# by MICROPY_OBJ_REPR_B on a 16-bit machine, where there are 14 bits for the small int.
+# CIRCUITPY: we assume MICROPY_OBJ_REPR_C
 def mp_small_int_fits(i):
-    return -0x2000 <= i <= 0x1FFF
+    return -0x4_000_000 <= i <= 0x3_FFF_FFF
 
 
 def mp_encode_uint(val, signed=False):
