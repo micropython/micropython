@@ -130,7 +130,10 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // Determine start of prelude.
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wcast-align"
     uintptr_t prelude_ptr_index = ((uintptr_t *)self_fun->bytecode)[0];
+    #pragma GCC diagnostic pop
     const uint8_t *prelude_ptr;
     if (prelude_ptr_index == 0) {
         prelude_ptr = (void *)self_fun->child_table;

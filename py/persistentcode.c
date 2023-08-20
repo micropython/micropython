@@ -87,10 +87,16 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
             size_t addr = read_uint(ri->reader);
             if ((addr & 1) == 0) {
                 // Point to somewhere in text
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wcast-align"
                 addr_to_adjust = &((uintptr_t *)text)[addr >> 1];
+                #pragma GCC diagnostic pop
             } else {
                 // Point to somewhere in rodata
+                #pragma GCC diagnostic push
+                #pragma GCC diagnostic ignored "-Wcast-align"
                 addr_to_adjust = &((uintptr_t *)ri->rodata)[addr >> 1];
+                #pragma GCC diagnostic pop
             }
         }
         op >>= 1;
