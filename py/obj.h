@@ -739,9 +739,11 @@ extern const mp_obj_type_t mp_type_gen_wrap;
 extern const mp_obj_type_t mp_type_native_gen_wrap;
 extern const mp_obj_type_t mp_type_gen_instance;
 // CIRCUITPY
-extern const mp_obj_type_t mp_type_coro_wrap;
-// CIRCUITPY
 #if MICROPY_PY_ASYNC_AWAIT
+extern const mp_obj_type_t mp_type_coro_wrap;
+#if MICROPY_EMIT_NATIVE
+extern const mp_obj_type_t mp_type_native_coro_wrap;
+#endif
 extern const mp_obj_type_t mp_type_coro_instance;
 #endif
 extern const mp_obj_type_t mp_type_fun_builtin_0;

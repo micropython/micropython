@@ -98,6 +98,7 @@ const mp_obj_type_t mp_type_gen_wrap = {
         ),
 };
 
+#if MICROPY_PY_ASYNC_AWAIT
 const mp_obj_type_t mp_type_coro_wrap = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
@@ -110,6 +111,7 @@ const mp_obj_type_t mp_type_coro_wrap = {
         .unary_op = mp_generic_unary_op,
         ),
 };
+#endif
 
 /******************************************************************************/
 // native generator wrapper
@@ -141,7 +143,13 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     MP_BC_PRELUDE_SIG_DECODE(ip);
 
     // Allocate the generator object, with room for local stack (exception stack not needed).
-    mp_obj_gen_instance_native_t *o = mp_obj_malloc_var(mp_obj_gen_instance_native_t, byte, n_state * sizeof(mp_obj_t), &mp_type_gen_instance);
+    mp_obj_gen_instance_native_t *o = mp_obj_malloc_var(mp_obj_gen_instance_native_t, byte, n_state * sizeof(mp_obj_t),
+        #if MICROPY_PY_ASYNC_AWAIT
+        (self_fun->base.type == &mp_type_native_gen_wrap) ? &mp_type_gen_instance : &mp_type_coro_instance
+        #else
+        &mp_type_gen_instance
+        #endif
+        );
 
     // Parse the input arguments and set up the code state
     o->pend_exc = mp_const_none;
@@ -176,6 +184,21 @@ const mp_obj_type_t mp_type_native_gen_wrap = {
         .unary_op = mp_generic_unary_op,
         ),
 };
+
+#if MICROPY_PY_ASYNC_AWAIT
+const mp_obj_type_t mp_type_native_coro_wrap = {
+    { &mp_type_type },
+    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
+    .name = MP_QSTR_coroutine,
+    #if MICROPY_PY_FUNCTION_ATTRS
+    .attr = mp_obj_fun_bc_attr,
+    #endif
+    MP_TYPE_EXTENDED_FIELDS(
+        .call = native_gen_wrap_call,
+        .unary_op = mp_generic_unary_op,
+        ),
+};
+#endif
 
 #endif // MICROPY_EMIT_NATIVE
 
