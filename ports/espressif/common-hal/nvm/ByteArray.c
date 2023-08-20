@@ -66,7 +66,7 @@ static esp_err_t get_bytes(nvs_handle_t handle, uint8_t **buf_out) {
         *buf_out = NULL;
         return result;
     }
-    buf = m_m_alloc(size); // this SHOULD be the same as
+    buf = m_malloc(size); // this SHOULD be the same as
     if (result == ESP_OK) {
         result = nvs_get_blob(handle, "data", buf, &size);
     } else {
