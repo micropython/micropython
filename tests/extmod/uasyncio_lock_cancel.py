@@ -10,6 +10,17 @@ except ImportError:
         raise SystemExit
 
 
+async def foo():
+    return 42
+
+
+try:
+    foo().__await__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
+
 async def task(i, lock, lock_flag):
     print("task", i, "start")
     try:

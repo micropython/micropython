@@ -10,6 +10,17 @@ except ImportError:
         raise SystemExit
 
 
+async def foo():
+    return 42
+
+
+try:
+    foo().__await__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
+
 def custom_handler(loop, context):
     print(repr(context["exception"]))
 

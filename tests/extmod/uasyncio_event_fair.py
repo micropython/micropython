@@ -11,6 +11,17 @@ except ImportError:
         raise SystemExit
 
 
+async def foo():
+    return 42
+
+
+try:
+    foo().__await__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
+
 async def task1(id):
     for i in range(4):
         print("sleep", id)

@@ -10,6 +10,17 @@ except ImportError:
         raise SystemExit
 
 
+async def foo():
+    return 42
+
+
+try:
+    foo().__await__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
+
 async def factorial(name, number):
     f = 1
     for i in range(2, number + 1):

@@ -14,6 +14,13 @@ async def foo():
     return 42
 
 
+try:
+    foo().__await__
+except AttributeError:
+    print("SKIP")
+    raise SystemExit
+
+
 async def main():
     # Call function directly via an await
     print(await foo())
