@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -155,19 +155,23 @@ const mp_obj_type_t mp_type_fun_builtin_var = {
 /******************************************************************************/
 /* byte code functions                                                        */
 
-qstr mp_obj_code_get_name(const byte *code_info) {
+STATIC qstr mp_obj_code_get_name(const mp_obj_fun_bc_t *fun, const byte *code_info) {
     MP_BC_PRELUDE_SIZE_DECODE(code_info);
-    #if MICROPY_PERSISTENT_CODE
-    return code_info[0] | (code_info[1] << 8);
-    #else
-    return mp_decode_uint_value(code_info);
+    mp_uint_t name = mp_decode_uint_value(code_info);
+    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+    name = fun->context->constants.qstr_table[name];
     #endif
+    return name;
 }
+
+#if MICROPY_EMIT_NATIVE
+STATIC const mp_obj_type_t mp_type_fun_native;
+#endif
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
     #if MICROPY_EMIT_NATIVE
-    if (fun->base.type == &mp_type_fun_native) {
+    if (fun->base.type == &mp_type_fun_native || fun->base.type == &mp_type_native_gen_wrap) {
         // TODO native functions don't have name stored
         return MP_QSTR_;
     }
@@ -175,14 +179,14 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
 
     const byte *bc = fun->bytecode;
     MP_BC_PRELUDE_SIG_DECODE(bc);
-    return mp_obj_code_get_name(bc);
+    return mp_obj_code_get_name(fun, bc);
 }
 
 #if MICROPY_CPYTHON_COMPAT
 STATIC void fun_bc_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(o_in);
-    mp_printf(print, "<function %q at %p>", mp_obj_fun_get_name(o_in), o);
+    mp_printf(print, "<function %q at 0x%p>", mp_obj_fun_get_name(o_in), o);
 }
 #endif
 
@@ -217,7 +221,6 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 
 #define INIT_CODESTATE(code_state, _fun_bc, _n_state, n_args, n_kw, args) \
     code_state->fun_bc = _fun_bc; \
-    code_state->ip = 0; \
     code_state->n_state = _n_state; \
     mp_setup_code_state(code_state, n_args, n_kw, args); \
     code_state->old_globals = mp_globals_get();
@@ -248,7 +251,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
-    mp_globals_set(self->globals);
+    mp_globals_set(self->context->module.globals);
 
     return code_state;
 }
@@ -293,7 +296,7 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_bc_call)(mp_obj_t self_in, size_t n_args, size
     INIT_CODESTATE(code_state, self, n_state, n_args, n_kw, args);
 
     // execute the byte code with the correct globals context
-    mp_globals_set(self->globals);
+    mp_globals_set(self->context->module.globals);
     mp_vm_return_kind_t vm_return_kind = mp_execute_bytecode(code_state, MP_OBJ_NULL);
     mp_globals_set(code_state->old_globals);
 
@@ -366,7 +369,7 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
     if (attr == MP_QSTR___globals__) {
         mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-        dest[0] = MP_OBJ_FROM_PTR(self->globals);
+        dest[0] = MP_OBJ_FROM_PTR(self->context->module.globals);
     }
 }
 #endif
@@ -387,25 +390,28 @@ const mp_obj_type_t mp_type_fun_bc = {
         ),
 };
 
-mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table) {
+mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_module_context_t *context, struct _mp_raw_code_t *const *child_table) {
     size_t n_def_args = 0;
     size_t n_extra_args = 0;
-    mp_obj_tuple_t *def_args = MP_OBJ_TO_PTR(def_args_in);
-    if (def_args_in != MP_OBJ_NULL) {
-        assert(mp_obj_is_type(def_args_in, &mp_type_tuple));
-        n_def_args = def_args->len;
-        n_extra_args = def_args->len;
+    mp_obj_tuple_t *def_pos_args = NULL;
+    mp_obj_t def_kw_args = MP_OBJ_NULL;
+    if (def_args != NULL && def_args[0] != MP_OBJ_NULL) {
+        assert(mp_obj_is_type(def_args[0], &mp_type_tuple));
+        def_pos_args = MP_OBJ_TO_PTR(def_args[0]);
+        n_def_args = def_pos_args->len;
+        n_extra_args = def_pos_args->len;
     }
-    if (def_kw_args != MP_OBJ_NULL) {
+    if (def_args != NULL && def_args[1] != MP_OBJ_NULL) {
+        assert(mp_obj_is_type(def_args[1], &mp_type_dict));
+        def_kw_args = def_args[1];
         n_extra_args += 1;
     }
-    mp_obj_fun_bc_t *o = m_new_obj_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args);
-    o->base.type = &mp_type_fun_bc;
-    o->globals = mp_globals_get();
+    mp_obj_fun_bc_t *o = mp_obj_malloc_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args, &mp_type_fun_bc);
     o->bytecode = code;
-    o->const_table = const_table;
-    if (def_args != NULL) {
-        memcpy(o->extra_args, def_args->items, n_def_args * sizeof(mp_obj_t));
+    o->context = context;
+    o->child_table = child_table;
+    if (def_pos_args != NULL) {
+        memcpy(o->extra_args, def_pos_args->items, n_def_args * sizeof(mp_obj_t));
     }
     if (def_kw_args != MP_OBJ_NULL) {
         o->extra_args[n_def_args] = def_kw_args;
@@ -420,12 +426,12 @@ mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args_in, mp_obj_t def_kw_args, const byt
 
 STATIC mp_obj_t PLACE_IN_ITCM(fun_native_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
-    mp_obj_fun_bc_t *self = self_in;
+    mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
     mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
     return fun(self_in, n_args, n_kw, args);
 }
 
-const mp_obj_type_t mp_type_fun_native = {
+STATIC const mp_obj_type_t mp_type_fun_native = {
     { &mp_type_type },
     .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_function,
@@ -435,10 +441,10 @@ const mp_obj_type_t mp_type_fun_native = {
         ),
 };
 
-mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table) {
-    mp_obj_fun_bc_t *o = mp_obj_new_fun_bc(def_args_in, def_kw_args, (const byte *)fun_data, const_table);
+mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
+    mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(mp_obj_new_fun_bc(def_args, (const byte *)fun_data, mc, child_table));
     o->base.type = &mp_type_fun_native;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 #endif // MICROPY_EMIT_NATIVE
@@ -546,12 +552,11 @@ STATIC const mp_obj_type_t mp_type_fun_asm = {
 };
 
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {
-    mp_obj_fun_asm_t *o = m_new_obj(mp_obj_fun_asm_t);
-    o->base.type = &mp_type_fun_asm;
+    mp_obj_fun_asm_t *o = mp_obj_malloc(mp_obj_fun_asm_t, &mp_type_fun_asm);
     o->n_args = n_args;
     o->fun_data = fun_data;
     o->type_sig = type_sig;
-    return o;
+    return MP_OBJ_FROM_PTR(o);
 }
 
 #endif // MICROPY_EMIT_INLINE_ASM

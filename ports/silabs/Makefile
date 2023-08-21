@@ -38,8 +38,6 @@ PY_GEN_PINS_SRC ?= tools/make_pins.py
 # SLC tool path
 SLC_PATH = $(realpath $(CURDIR))/tools/slc_cli_linux
 
-BUILD_VERBOSE ?= 1
-
 CFLAGS = $(INCLUDES) $(C_DEFS) $(C_FLAGS) \
 	-Wno-expansion-to-defined \
 	-Wno-unused-parameter \
@@ -95,22 +93,17 @@ endif
 SRC_S = boards/mp_efr32xg24_gchelper.s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-						  $(addprefix common-hal/, $(SRC_COMMON_HAL))
+			  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+		          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-							 $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
-							 $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
+			     $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+			     $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 # There may be duplicates between SRC_COMMON_HAL_EXPANDED and SRC_SHARED_MODULE_EXPANDED,
 # because a few modules have files both in common-hal/ and shared-module/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
-
-ifneq ($(FROZEN_MPY_DIR),)
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-endif
 
 OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_SHARED_MODULE_EXPANDED:.c=.o))
@@ -145,7 +138,7 @@ $(OUTPUT_DIR)/firmware.bin: $(SILABS_BUILD)/$(PROJECTNAME).Makefile $(OUTPUT_DIR
 	@echo 'Done.'
 endif
 
-$(SILABS_BUILD)/$(PROJECTNAME).Makefile:
+$(SILABS_BUILD)/$(PROJECTNAME).Makefile: | $(HEADER_BUILD)/mpversion.h
 	+@$(MAKE) --no-print-directory slc-generate
 
 $(OUTPUT_DIR)/firmware.out: $(SILABS_BUILD)/pin_functions.h $(SILABS_BUILD)/pins.c $(OBJ) $(OBJS) $(LIB_FILES)
@@ -181,38 +174,37 @@ endif
 	@sed -i 's/ autogen\// $(SILABS_BUILD)\/autogen\//g' $(SILABS_BUILD)/circuitpython_efr32.project.mak
 	@sed -i 's/-T"autogen\//-T"$(SILABS_BUILD)\/autogen\//g' $(SILABS_BUILD)/circuitpython_efr32.project.mak
 
-#Override ECHO
+# tools/slc_cli_linux/bin/slc-cli/developer/exporter_templates/arm_gcc/arm_gcc.Makefile defines
+# ECHO = @
+# which is not compatible with py/mkenv.mk:
+# ECHO = @echo
+# so override ECHO
 $(OBJS): ECHO =
-$(OBJS):
+#$(OBJS):
 
 $(OUTPUT_DIR)/%.o: %.c
-	@echo 'Building $<'
+	#@echo 'Building $<'
 	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CC) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) -c -o $@ $<
 
 $(OUTPUT_DIR)/%.o: %.cpp
-	@echo 'Building $<'
+	#@echo 'Building $<'
 	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OUTPUT_DIR)/%.o: %.cc
-	@echo 'Building $<'
+	#@echo 'Building $<'
 	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 $(OUTPUT_DIR)/%.o: %.s
-	@echo 'Building $<'
+	#@echo 'Building $<'
 	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CC) $(ASMFLAGS) -c -o $@ $<
+	@$(CC) $(ASMFLAGS) -c -o $@ $<
 
 $(OUTPUT_DIR)/%.o: %.S
-	@echo 'Building $<'
+	#@echo 'Building $<'
 	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CC) $(ASMFLAGS) -c -o $@ $<
+	@$(CC) $(ASMFLAGS) -c -o $@ $<
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

@@ -51,4 +51,4 @@ const mp_obj_module_t onewireio_module = {
     .globals = (mp_obj_dict_t *)&onewireio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_onewireio, onewireio_module, CIRCUITPY_ONEWIREIO);
+MP_REGISTER_MODULE(MP_QSTR_onewireio, onewireio_module);

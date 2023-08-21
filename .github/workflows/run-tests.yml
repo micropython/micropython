@@ -55,8 +55,6 @@ jobs:
       run: |
         make -C examples/natmod/features1
         make -C examples/natmod/features2
-        make -C examples/natmod/btree
-        make -C examples/natmod/framebuf
         make -C examples/natmod/uheapq
         make -C examples/natmod/urandom
         make -C examples/natmod/ure

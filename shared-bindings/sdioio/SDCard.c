@@ -84,8 +84,7 @@
 //|         ...
 
 STATIC mp_obj_t sdioio_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    sdioio_sdcard_obj_t *self = m_new_obj(sdioio_sdcard_obj_t);
-    self->base.type = &sdioio_SDCard_type;
+    sdioio_sdcard_obj_t *self = mp_obj_malloc(sdioio_sdcard_obj_t, &sdioio_SDCard_type);
     enum { ARG_clock, ARG_command, ARG_data, ARG_frequency, NUM_ARGS };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ },

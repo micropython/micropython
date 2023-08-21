@@ -141,4 +141,4 @@ const mp_obj_module_t dualbank_module = {
     .globals = (mp_obj_dict_t *)&dualbank_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_dualbank, dualbank_module, CIRCUITPY_DUALBANK);
+MP_REGISTER_MODULE(MP_QSTR_dualbank, dualbank_module);

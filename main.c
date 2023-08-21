@@ -420,8 +420,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         };
         #if CIRCUITPY_FULL_BUILD
         static const char *const double_extension_filenames[] = {
-            "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py"
+            "code.txt.py", "code.py.txt", "code.txt.txt", "code.py.py",
+            "main.txt.py", "main.py.txt", "main.txt.txt", "main.py.py"
         };
         #endif
 
@@ -997,9 +997,9 @@ int __attribute__((used)) main(void) {
 
     #if CIRCUITPY_BOOT_COUNTER
     // Increment counter before possibly entering safe mode
-    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj,0,1,&value_out);
+    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj, 0, 1, &value_out);
     ++value_out;
-    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj,0,&value_out,1);
+    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj, 0, &value_out, 1);
     #endif
 
     // Start the debug serial

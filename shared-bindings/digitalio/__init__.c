@@ -97,4 +97,4 @@ const mp_obj_module_t digitalio_module = {
     .globals = (mp_obj_dict_t *)&digitalio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_digitalio, digitalio_module, CIRCUITPY_DIGITALIO);
+MP_REGISTER_MODULE(MP_QSTR_digitalio, digitalio_module);

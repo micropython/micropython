@@ -91,8 +91,7 @@
 // TODO(tannewt): Support LSB SPI.
 STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_BUSIO_SPI
-    busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
-    self->base.type = &busio_spi_type;
+    busio_spi_obj_t *self = mp_obj_malloc(busio_spi_obj_t, &busio_spi_type);
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_half_duplex };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -319,7 +318,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
-        { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_write_value, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);

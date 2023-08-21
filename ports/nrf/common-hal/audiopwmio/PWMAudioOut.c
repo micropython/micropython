@@ -266,9 +266,9 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     mp_arg_validate_length_max(max_buffer_length, UINT16_MAX, MP_QSTR_buffer);
 
     uint16_t buffer_length = (uint16_t)max_buffer_length;
-    self->buffers[0] = m_malloc(buffer_length * 2 * sizeof(uint16_t), false);
+    self->buffers[0] = m_malloc(buffer_length * 2 * sizeof(uint16_t));
     if (!self->single_buffer) {
-        self->buffers[1] = m_malloc(buffer_length * 2 * sizeof(uint16_t), false);
+        self->buffers[1] = m_malloc(buffer_length * 2 * sizeof(uint16_t));
     }
 
 

@@ -319,7 +319,7 @@ STATIC const mp_rom_map_elem_t usb_core_device_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_product),          MP_ROM_PTR(&usb_core_device_product_obj) },
     { MP_ROM_QSTR(MP_QSTR_manufacturer),     MP_ROM_PTR(&usb_core_device_manufacturer_obj) },
 
-    { MP_ROM_QSTR(MP_QSTR_set_configuration),MP_ROM_PTR(&usb_core_device_set_configuration_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_configuration), MP_ROM_PTR(&usb_core_device_set_configuration_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),            MP_ROM_PTR(&usb_core_device_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_read),             MP_ROM_PTR(&usb_core_device_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_ctrl_transfer),    MP_ROM_PTR(&usb_core_device_ctrl_transfer_obj) },

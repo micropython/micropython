@@ -314,4 +314,4 @@ const mp_obj_module_t storage_module = {
     .globals = (mp_obj_dict_t *)&storage_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_storage, storage_module, CIRCUITPY_STORAGE);
+MP_REGISTER_MODULE(MP_QSTR_storage, storage_module);

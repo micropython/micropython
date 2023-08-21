@@ -1,15 +1,9 @@
-try:
-    import uerrno
-    import uos
-except ImportError:
-    print("missing u")
-    print("SKIP")
-    raise SystemExit
+import errno as uerrno
+import os as uos
 
 try:
     uos.VfsFat
 except AttributeError:
-    print("missing VfsFat")
     print("SKIP")
     raise SystemExit
 

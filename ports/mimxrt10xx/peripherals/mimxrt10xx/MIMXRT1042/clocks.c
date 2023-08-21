@@ -370,7 +370,7 @@ void clocks_init(void) {
     /* Set SAI3 MCLK3 clock source. */
     IOMUXC_SetSaiMClkClockSource(IOMUXC_GPR, kIOMUXC_GPR_SAI3MClk3Sel, 0);
     /* Set MQS configuration. */
-    IOMUXC_MQSConfig(IOMUXC_GPR,kIOMUXC_MqsPwmOverSampleRate32, 0);
+    IOMUXC_MQSConfig(IOMUXC_GPR, kIOMUXC_MqsPwmOverSampleRate32, 0);
     /* Set ENET Ref clock source. */
     IOMUXC_GPR->GPR1 &= ~IOMUXC_GPR_GPR1_ENET1_TX_CLK_DIR_MASK;
     /* Set GPT1 High frequency reference clock source. */

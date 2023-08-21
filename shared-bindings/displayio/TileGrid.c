@@ -139,8 +139,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
 
-    displayio_tilegrid_t *self = m_new_obj(displayio_tilegrid_t);
-    self->base.type = &displayio_tilegrid_type;
+    displayio_tilegrid_t *self = mp_obj_malloc(displayio_tilegrid_t, &displayio_tilegrid_type);
     common_hal_displayio_tilegrid_construct(self, native,
         bitmap_width / tile_width, bitmap_height / tile_height,
         pixel_shader, args[ARG_width].u_int, args[ARG_height].u_int,

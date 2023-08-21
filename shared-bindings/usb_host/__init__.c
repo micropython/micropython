@@ -82,4 +82,4 @@ const mp_obj_module_t usb_host_module = {
     .globals = (mp_obj_dict_t *)&usb_host_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usb_host, usb_host_module, CIRCUITPY_USB_HOST);
+MP_REGISTER_MODULE(MP_QSTR_usb_host, usb_host_module);

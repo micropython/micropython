@@ -112,9 +112,9 @@ mp_float_t common_hal_synthio_math_tick(mp_obj_t self_in) {
             }
             return c;
         case OP_MIN:
-            return MIN(a,MIN(b,c));
+            return MIN(a, MIN(b, c));
         case OP_MAX:
-            return MAX(a,MAX(b,c));
+            return MAX(a, MAX(b, c));
         case OP_ABS:
             break;
     }

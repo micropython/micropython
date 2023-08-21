@@ -31,3 +31,13 @@ print(s)
 r = re.compile(b"x")
 s = r.split(b"fooxbar")
 print(s)
+
+# using ^
+r = re.compile("^ab")
+s = r.split("abababcabab")
+print(s)
+
+# using ^ with |
+r = re.compile("^ab|cab")
+s = r.split("abababcabab")
+print(s)

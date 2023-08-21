@@ -103,7 +103,7 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     // #    */
 
 
-    int16_t x,y;
+    int16_t x, y;
 
     int16_t minx = dest_clip1_x;
     int16_t miny = dest_clip1_y;

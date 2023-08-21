@@ -73,14 +73,14 @@ STATIC uint32_t get_busclock(SPI_TypeDef *instance) {
 
 STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t *prescaler, uint32_t busclock) {
     static const uint32_t baud_map[8][2] = {
-        {2,SPI_BAUDRATEPRESCALER_2},
-        {4,SPI_BAUDRATEPRESCALER_4},
-        {8,SPI_BAUDRATEPRESCALER_8},
-        {16,SPI_BAUDRATEPRESCALER_16},
-        {32,SPI_BAUDRATEPRESCALER_32},
-        {64,SPI_BAUDRATEPRESCALER_64},
-        {128,SPI_BAUDRATEPRESCALER_128},
-        {256,SPI_BAUDRATEPRESCALER_256}
+        {2, SPI_BAUDRATEPRESCALER_2},
+        {4, SPI_BAUDRATEPRESCALER_4},
+        {8, SPI_BAUDRATEPRESCALER_8},
+        {16, SPI_BAUDRATEPRESCALER_16},
+        {32, SPI_BAUDRATEPRESCALER_32},
+        {64, SPI_BAUDRATEPRESCALER_64},
+        {128, SPI_BAUDRATEPRESCALER_128},
+        {256, SPI_BAUDRATEPRESCALER_256}
     };
     size_t i = 0;
     uint16_t divisor;
@@ -267,12 +267,12 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     reserved_spi[self->sck->periph_index - 1] = false;
     never_reset_spi[self->sck->periph_index - 1] = false;
 
-    reset_pin_number(self->sck->pin->port,self->sck->pin->number);
+    reset_pin_number(self->sck->pin->port, self->sck->pin->number);
     if (self->mosi != NULL) {
-        reset_pin_number(self->mosi->pin->port,self->mosi->pin->number);
+        reset_pin_number(self->mosi->pin->port, self->mosi->pin->number);
     }
     if (self->miso != NULL) {
-        reset_pin_number(self->miso->pin->port,self->miso->pin->number);
+        reset_pin_number(self->miso->pin->port, self->miso->pin->number);
     }
     self->sck = NULL;
     self->mosi = NULL;
@@ -379,7 +379,7 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
         mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive(&self->handle,
-        (uint8_t *)data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);
+        (uint8_t *)data_out, data_in, (uint16_t)len, HAL_MAX_DELAY);
     return result == HAL_OK;
 }
 

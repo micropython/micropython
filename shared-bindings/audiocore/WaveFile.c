@@ -79,8 +79,7 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
         arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
     }
 
-    audioio_wavefile_obj_t *self = m_new_obj(audioio_wavefile_obj_t);
-    self->base.type = &audioio_wavefile_type;
+    audioio_wavefile_obj_t *self = mp_obj_malloc(audioio_wavefile_obj_t, &audioio_wavefile_type);
     if (!mp_obj_is_type(arg, &mp_type_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }

@@ -79,7 +79,7 @@ bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
         uint32_t new_random;
         uint32_t start = HAL_GetTick();
         // the HAL function has a timeout, but it isn't long enough, and isn't adjustable
-        while (!(__HAL_RNG_GET_FLAG(&handle,RNG_FLAG_DRDY)) && ((HAL_GetTick() - start) < RNG_TIMEOUT)) {
+        while (!(__HAL_RNG_GET_FLAG(&handle, RNG_FLAG_DRDY)) && ((HAL_GetTick() - start) < RNG_TIMEOUT)) {
             ;
         }
         if (HAL_RNG_GenerateRandomNumber(&handle, &new_random) != HAL_OK) {

@@ -50,25 +50,25 @@ const mcu_pin_obj_t pin_PF08 = PIN(5, 8, NO_ADC);   // 144 only
 const mcu_pin_obj_t pin_PF09 = PIN(5, 9, NO_ADC);   // 144 only
 const mcu_pin_obj_t pin_PF10 = PIN(5, 10, NO_ADC); // 144 only
 
-const mcu_pin_obj_t pin_PC00 = PIN(2, 0, ADC_INPUT(ADC_1,10));
-const mcu_pin_obj_t pin_PC01 = PIN(2, 1, ADC_INPUT(ADC_1,11));
-const mcu_pin_obj_t pin_PC02 = PIN(2, 2, ADC_INPUT(ADC_1,12));
-const mcu_pin_obj_t pin_PC03 = PIN(2, 3, ADC_INPUT(ADC_1,13));
+const mcu_pin_obj_t pin_PC00 = PIN(2, 0, ADC_INPUT(ADC_1, 10));
+const mcu_pin_obj_t pin_PC01 = PIN(2, 1, ADC_INPUT(ADC_1, 11));
+const mcu_pin_obj_t pin_PC02 = PIN(2, 2, ADC_INPUT(ADC_1, 12));
+const mcu_pin_obj_t pin_PC03 = PIN(2, 3, ADC_INPUT(ADC_1, 13));
 
-const mcu_pin_obj_t pin_PA00 = PIN(0, 0, ADC_INPUT(ADC_1,0));
-const mcu_pin_obj_t pin_PA01 = PIN(0, 1, ADC_INPUT(ADC_1,1));
-const mcu_pin_obj_t pin_PA02 = PIN(0, 2, ADC_INPUT(ADC_1,2));
-const mcu_pin_obj_t pin_PA03 = PIN(0, 3, ADC_INPUT(ADC_1,3));
-const mcu_pin_obj_t pin_PA04 = PIN(0, 4, ADC_INPUT(ADC_1,4));
-const mcu_pin_obj_t pin_PA05 = PIN(0, 5, ADC_INPUT(ADC_1,5));
-const mcu_pin_obj_t pin_PA06 = PIN(0, 6, ADC_INPUT(ADC_1,6));
-const mcu_pin_obj_t pin_PA07 = PIN(0, 7, ADC_INPUT(ADC_1,7));
+const mcu_pin_obj_t pin_PA00 = PIN(0, 0, ADC_INPUT(ADC_1, 0));
+const mcu_pin_obj_t pin_PA01 = PIN(0, 1, ADC_INPUT(ADC_1, 1));
+const mcu_pin_obj_t pin_PA02 = PIN(0, 2, ADC_INPUT(ADC_1, 2));
+const mcu_pin_obj_t pin_PA03 = PIN(0, 3, ADC_INPUT(ADC_1, 3));
+const mcu_pin_obj_t pin_PA04 = PIN(0, 4, ADC_INPUT(ADC_1, 4));
+const mcu_pin_obj_t pin_PA05 = PIN(0, 5, ADC_INPUT(ADC_1, 5));
+const mcu_pin_obj_t pin_PA06 = PIN(0, 6, ADC_INPUT(ADC_1, 6));
+const mcu_pin_obj_t pin_PA07 = PIN(0, 7, ADC_INPUT(ADC_1, 7));
 
-const mcu_pin_obj_t pin_PC04 = PIN(2, 4, ADC_INPUT(ADC_1,14));
-const mcu_pin_obj_t pin_PC05 = PIN(2, 5, ADC_INPUT(ADC_1,15));
+const mcu_pin_obj_t pin_PC04 = PIN(2, 4, ADC_INPUT(ADC_1, 14));
+const mcu_pin_obj_t pin_PC05 = PIN(2, 5, ADC_INPUT(ADC_1, 15));
 
-const mcu_pin_obj_t pin_PB00 = PIN(1, 0, ADC_INPUT(ADC_1,8));
-const mcu_pin_obj_t pin_PB01 = PIN(1, 1, ADC_INPUT(ADC_1,9));
+const mcu_pin_obj_t pin_PB00 = PIN(1, 0, ADC_INPUT(ADC_1, 8));
+const mcu_pin_obj_t pin_PB01 = PIN(1, 1, ADC_INPUT(ADC_1, 9));
 const mcu_pin_obj_t pin_PB02 = PIN(1, 2, NO_ADC);
 
 const mcu_pin_obj_t pin_PF11 = PIN(5, 11, NO_ADC); // 144 only

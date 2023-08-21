@@ -24,3 +24,6 @@ try:
     print(binascii.b2a_base64(""))
 except TypeError:
     print("TypeError")
+
+print(binascii.b2a_base64(b"foobar", newline=True))
+print(binascii.b2a_base64(b"foobar", newline=False))

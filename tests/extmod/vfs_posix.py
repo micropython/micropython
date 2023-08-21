@@ -59,9 +59,10 @@ print(uos.listdir(temp_dir))
 vfs = uos.VfsPosix(temp_dir)
 print(list(i[0] for i in vfs.ilistdir(".")))
 
-# stat, statvfs
+# stat, statvfs (statvfs may not exist)
 print(type(vfs.stat(".")))
-print(type(vfs.statvfs(".")))
+if hasattr(vfs, "statvfs"):
+    assert type(vfs.statvfs(".")) is tuple
 
 # check types of ilistdir with str/bytes arguments
 print(type(list(vfs.ilistdir("."))[0][0]))
