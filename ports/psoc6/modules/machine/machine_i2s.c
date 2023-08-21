@@ -21,9 +21,28 @@
 #include "mplogger.h"
 #include "pins.h"
 
-#define MAX_I2S_PSOC6 (2)
-
 #if MICROPY_PY_MACHINE_I2S
+
+/* Note that we are not able to achieve the desired frequency, so we round up
+*  the frequency values to avoid mismatches */
+/* Master Clock (MCLK) Settings */
+#define MCLK_FREQ_HZ        4083000u    /* in Hz (Ideally 4.096 MHz) */
+#define MCLK_DUTY_CYCLE     50.0f       /* in %  */
+/* Clock Settings */
+#define AUDIO_SYS_CLOCK_HZ  98000000u   /* in Hz (Ideally 98.304 MHz) */
+/* PWM MCLK Pin */
+#define MCLK_PIN            P13_0
+/* Debounce delay for the button */
+#define DEBOUNCE_DELAY_MS   10u         /* in ms */
+/* HFCLK1 Clock Divider */
+#define HFCLK1_CLK_DIVIDER  4u
+
+void clock_init(void);
+
+cyhal_clock_t audio_clock;
+cyhal_clock_t pll_clock;
+cyhal_clock_t fll_clock;
+cyhal_clock_t system_clock;
 
 typedef enum {
     RX,
@@ -53,10 +72,6 @@ typedef struct _machine_i2s_obj_t {
     format_t format;
     int32_t rate;
     int32_t ibuf;
-    mp_obj_t callback_for_non_blocking;
-    io_mode_t io_mode;
-    uint8_t sm;
-    uint prog_offset;
 } machine_i2s_obj_t;
 
 STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -121,23 +136,22 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->bits = i2s_bits;
     self->format = i2s_format;
     self->rate = args[ARG_rate].u_int;
-    self->callback_for_non_blocking = MP_OBJ_NULL;
-    self->io_mode = BLOCKING;
 
+    clock_init();
+    cyhal_system_delay_ms(1);
 
-
-    if (i2s_mode == RX) {
-        cyhal_i2s_pins_t tx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd };
+    if (i2s_mode == TX) {
+        cyhal_i2s_pins_t tx_pins = { .sck = P13_1, .ws = P13_2, .data = P13_3, .mclk = NC };
         cyhal_i2s_config_t config =
         {
             .is_tx_slave = false,
             .is_rx_slave = false,
             .mclk_hz = 0,
             .channel_length = 32,
-            .word_length = self->bits,
-            .sample_rate_hz = self->rate,
+            .word_length = 32,
+            .sample_rate_hz = 16000,
         };
-        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, &tx_pins, NULL, &config, NULL);
+        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, &tx_pins, NULL, &config, &audio_clock);
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S initialisation failed with return code %lx !"), result);
         }
@@ -191,19 +205,60 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     i2s_mode_t i2s_id = mp_obj_get_int(args[0]);
-    if (i2s_id >= MAX_I2S_PSOC6) {
+    if (i2s_id != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
-    machine_i2s_obj_t *self;
-    if (MP_STATE_PORT(machine_i2s_obj[i2s_id]) == NULL) {
-        self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
-        MP_STATE_PORT(machine_i2s_obj[i2s_id]) = self;
-        self->i2s_id = i2s_id;
-    } else {
-        self = MP_STATE_PORT(machine_i2s_obj[i2s_id]);
-        machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
-    }
+    machine_i2s_obj_t *self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
+
+    // clock_init();
+
+    /* Wait for the MCLK to clock the audio codec */
+    // cyhal_system_delay_ms(1);
+
+//     const cyhal_i2s_pins_t i2s_pins = {
+//     .sck  = P13_1,
+//     .ws   = P13_2,
+//     .data = P13_3,
+//     .mclk = NC,
+// };
+// const cyhal_i2s_config_t i2s_config = {
+//     .is_tx_slave    = false,    /* TX is Master */
+//     .is_rx_slave    = false,    /* RX not used */
+//     .mclk_hz        = 0,        /* External MCLK not used */
+//     .channel_length = 32,       /* In bits */
+//     .word_length    = 32,       /* In bits */
+//     .sample_rate_hz = 16000,    /* In Hz */
+// };
+
+//       /* Initialize the User LED */
+//     cyhal_gpio_init(CYBSP_USER_LED, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, CYBSP_LED_STATE_OFF);
+
+//     /* Initialize the User Button */
+//     cyhal_gpio_init(CYBSP_USER_BTN, CYHAL_GPIO_DIR_INPUT, CYHAL_GPIO_DRIVE_PULLUP, CYBSP_BTN_OFF);
+
+//     /* Initialize the I2S */
+//     cy_rslt_t result=cyhal_i2s_init(&self->i2s_obj, &i2s_pins, NULL, &i2s_config, &audio_clock);
+//     if(result==CY_RSLT_SUCCESS)
+//     {
+//      printf("I2S initialisation succes\r\n");
+//      cyhal_gpio_write(CYBSP_USER_LED, CYBSP_LED_STATE_ON);
+//     }
+//     else
+//     {
+//      printf("fail\r\n");
+//      printf("%lx\r\n",result);
+//     }
+
+    // machine_i2s_obj_t *self;
+    // if (MP_STATE_PORT(machine_i2s_obj[i2s_id]) == NULL) {
+    //     self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
+    //     MP_STATE_PORT(machine_i2s_obj[i2s_id]) = self;
+    //     self->i2s_id = i2s_id;
+    // } else {
+    //     self = MP_STATE_PORT(machine_i2s_obj[i2s_id]);
+    //     machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
+    // }
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
     machine_i2s_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
@@ -219,7 +274,28 @@ STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
 
+void clock_init(void) {
+    /* Initialize the PLL */
+    cyhal_clock_reserve(&pll_clock, &CYHAL_CLOCK_PLL[0]);
+    cyhal_clock_set_frequency(&pll_clock, AUDIO_SYS_CLOCK_HZ, NULL);
+    cyhal_clock_set_enabled(&pll_clock, true, true);
 
+    /* Initialize the audio subsystem clock (HFCLK1) */
+    cyhal_clock_reserve(&audio_clock, &CYHAL_CLOCK_HF[1]);
+    cyhal_clock_set_source(&audio_clock, &pll_clock);
+
+    /* Drop HFCK1 frequency for power savings */
+    cyhal_clock_set_divider(&audio_clock, HFCLK1_CLK_DIVIDER);
+    cyhal_clock_set_enabled(&audio_clock, true, true);
+
+    /* Initialize the system clock (HFCLK0) */
+    cyhal_clock_reserve(&system_clock, &CYHAL_CLOCK_HF[0]);
+    cyhal_clock_set_source(&system_clock, &pll_clock);
+
+    /* Disable the FLL for power savings */
+    cyhal_clock_reserve(&fll_clock, &CYHAL_CLOCK_FLL);
+    cyhal_clock_set_enabled(&fll_clock, false, true);
+}
 
 
 STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
