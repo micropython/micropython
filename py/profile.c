@@ -169,6 +169,36 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         case MP_QSTR_co_names:
             dest[0] = MP_OBJ_FROM_PTR(o->dict_locals);
             break;
+        case MP_QSTR_co_argcount:
+            dest[0] = MP_OBJ_NEW_SMALL_INT(prelude->n_pos_args + prelude->n_kwonly_args);
+            break;
+        case MP_QSTR_co_varnames: {
+            uint8_t len_args = prelude->n_pos_args + prelude->n_kwonly_args;
+            if (len_args == 0) {
+                dest[0] = mp_const_empty_tuple;
+            } else {
+                mp_obj_tuple_t *names = MP_OBJ_TO_PTR(mp_obj_new_tuple(len_args, NULL));
+
+                // get pointer to arg_names array
+                const uint8_t *arg_names = rc->fun_data;
+                if (arg_names != NULL) {
+                    for (uint8_t i = 0; i < 3; i++) {
+                        arg_names = mp_decode_uint_skip(arg_names);
+                    }
+
+                    // get qstr for each function arg and add to list
+                    for (uint i = 0; i < len_args; i++) {
+                        qstr arg_qstr = mp_decode_uint(&arg_names);
+                        #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+                        arg_qstr = o->context->constants.qstr_table[arg_qstr];
+                        #endif
+                        names->items[i] = MP_OBJ_NEW_QSTR(arg_qstr);
+                    }
+                    dest[0] = MP_OBJ_FROM_PTR(names);
+                }
+            }
+            break;
+        }
         case MP_QSTR_co_lnotab:
             if (!o->lnotab) {
                 o->lnotab = raw_code_lnotab(rc);
