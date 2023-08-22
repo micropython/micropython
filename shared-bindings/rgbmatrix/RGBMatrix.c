@@ -189,7 +189,6 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         `framebufferio.FramebufferDisplay`.
 //|
 //|         :param int width: The overall width of the whole matrix in pixels. For a matrix with multiple panels in row, this is the width of a single panel times the number of panels across.
-//|         :param int height: The overall height of the whole matrix in pixels. For a matrix with multiple rows of panels, this is the height of a single panel times the number of panels down.
 //|         :param int tile: In a multi-row matrix, the number of rows of panels
 //|         :param int bit_depth: The color depth of the matrix. A value of 1 gives 8 colors, a value of 2 gives 64 colors, and so on. Increasing bit depth increases the CPU and RAM usage of the RGBMatrix, and may lower the panel refresh rate. The framebuffer is always in RGB565 format regardless of the bit depth setting
 //|         :param bool serpentine: In a multi-row matrix, True when alternate rows of panels are rotated 180°, which can reduce wiring length
@@ -200,7 +199,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         :param digitalio.DigitalInOut output_enable_pin: The matrix's output enable pin
 //|         :param bool doublebuffer: True if the output is double-buffered
 //|         :param Optional[WriteableBuffer] framebuffer: A pre-allocated framebuffer to use. If unspecified, a framebuffer is allocated
-//|
+//|         :param int height: The optional overall height of the whole matrix in pixels. This value is not required because it can be calculated as described above.
 //|         """
 
 STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
