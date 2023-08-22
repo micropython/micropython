@@ -25,8 +25,8 @@ regexes = [
     r"IOMUXC_(?P<pin>GPIO_DISP_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
     r"IOMUXC_(?P<pin>GPIO_LPSR_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
     r"IOMUXC_[SNVS_]*(?P<pin>WAKEUP[_DIG]*)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
-    r"IOMUXC_SNVS_(?P<pin>PMIC_ON_REQ)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
-    r"IOMUXC_SNVS_(?P<pin>PMIC_STBY_REQ)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_[SNVS_]*(?P<pin>PMIC_ON_REQ[_DIG]*)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_[SNVS_]*(?P<pin>PMIC_STBY_REQ[_DIG]*)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
     r"IOMUXC_(?P<pin>GPIO_SNVS_\d\d_DIG)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
 ]
 
@@ -152,7 +152,9 @@ class Pin(object):
                 "WAKEUP": "PIN_SNVS",
                 "WAKEUP_DIG": "PIN_SNVS",
                 "PMIC_ON_REQ": "PIN_SNVS",
+                "PMIC_ON_REQ_DIG": "PIN_SNVS",
                 "PMIC_STBY_REQ": "PIN_SNVS",
+                "PMIC_STBY_REQ_DIG": "PIN_SNVS",
             }
 
             print(
