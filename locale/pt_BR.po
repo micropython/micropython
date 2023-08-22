@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-10 23:51+0000\n"
+"PO-Revision-Date: 2023-08-22 21:28+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -440,7 +440,7 @@ msgstr "função externa 'yield'"
 
 #: py/compile.c
 msgid "* arg after **"
-msgstr ""
+msgstr "* arg após **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -2575,7 +2575,7 @@ msgstr "matriz/bytes são necessários no lado direito"
 
 #: py/asmxtensa.c
 msgid "asm overflow"
-msgstr ""
+msgstr "estouro asm"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2668,7 +2668,7 @@ msgstr "o buffer é pequeno demais para os bytes requisitados"
 
 #: py/emitbc.c
 msgid "bytecode overflow"
-msgstr ""
+msgstr "estouro bytecode"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
@@ -2829,7 +2829,7 @@ msgstr ""
 
 #: extmod/moduasyncio.c
 msgid "can't wait"
-msgstr ""
+msgstr "não vejo a hora"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -3271,7 +3271,7 @@ msgstr "importação * não está no nível do módulo"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy arch"
-msgstr ""
+msgstr "é incompatível com arquivo .mpy"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3745,7 +3745,7 @@ msgstr "não é um UUID com 128 bits"
 
 #: py/parse.c
 msgid "not a constant"
-msgstr ""
+msgstr "não é uma constante"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3992,11 +3992,11 @@ msgstr "a porta deve ser > = 0"
 
 #: py/compile.c
 msgid "positional arg after **"
-msgstr ""
+msgstr "arg posicional após **"
 
 #: py/compile.c
 msgid "positional arg after keyword arg"
-msgstr ""
+msgstr "arg posicional após o arg de palavra-chave"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4227,7 +4227,7 @@ msgstr "os tobytes podem ser invocados apenas nas matrizes densas"
 
 #: py/compile.c
 msgid "too many args"
-msgstr ""
+msgstr "args demais"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
