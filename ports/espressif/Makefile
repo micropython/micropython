@@ -353,7 +353,7 @@ endif
 # create the config headers
 .PHONY: do-sdkconfig
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
-Makefile: $(BUILD)/esp-idf/config/sdkconfig.h
+$(BUILD)/genhdr/qstr.i.last: $(BUILD)/esp-idf/config/sdkconfig.h
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
 	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja -DCIRCUITPY_ESPCAMERA=$(CIRCUITPY_ESPCAMERA)
 
