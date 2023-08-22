@@ -55,7 +55,7 @@ IGNORE_BOARD = {
 PATTERN_DOCS = (
     r"^(?:\.github|docs|extmod\/ulab)|"
     r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|\.readthedocs\.yml|conf\.py|requirements-doc\.txt)$|"
-    r"(?:-stubs|\.(?:md|MD|rst|RST))$"
+    r"(?:-stubs|\.(?:md|MD|mk|rst|RST)|/Makefile)$"
 )
 
 PATTERN_WINDOWS = {
