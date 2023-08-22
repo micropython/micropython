@@ -35,12 +35,9 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
-"\n"
-"Skicka in ett ärende med ditt program till https://github.com/adafruit/"
-"circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -407,10 +404,6 @@ msgstr "'break' utanför loop"
 msgid "'continue' outside loop"
 msgstr "'continue' utanför loop"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "objektet 'coroutine\" är inte en iterator"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' kräver minst 2 argument"
@@ -680,11 +673,6 @@ msgstr "Buffertelement måste vara fyra byte långa eller mindre"
 msgid "Buffer is not a bytearray."
 msgstr "Buffert är inte en bytearray."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Bufferten är för liten"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -703,6 +691,12 @@ msgstr "Bufferten måste vara en multipel av 512 byte"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffert är %d bytes för kort"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1051,10 +1045,6 @@ msgstr "Det gick inte att frigöra mutex, fel 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Det gick inte att skriva till intern flash."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr "Fel upptäckt av hårdvara."
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Filen finns redan"
@@ -1131,6 +1121,10 @@ msgstr "Grupp används redan"
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
 msgstr "Halvduplex SPI är inte implementerat"
+
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1791,6 +1785,10 @@ msgstr "Plus eventuella moduler i filsystemet\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygonen behöver minst 3 punkter"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefixbufferten måste finnas på heap"
@@ -2023,10 +2021,6 @@ msgstr "Ovanstående undantag var den direkta orsaken till följande undantag:"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "Längden på rgb_pins vara 6, 12, 18, 24 eller 30"
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
-msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2628,8 +2622,7 @@ msgstr "buffertstorleken måste matcha formatet"
 msgid "buffer slices must be of equal length"
 msgstr "buffertsegmenten måste vara lika långa"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "buffert för liten"
 
@@ -3924,11 +3917,6 @@ msgstr "parametrarna måste registreras i följd r0-r3"
 msgid "pixel coordinates out of bounds"
 msgstr "pixelkoordinater utanför gränserna"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-"pixel_shader måste vara displayio.Palette eller displayio.ColorConverter"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "filbevakning är inte tillgänglig på win32"
@@ -4240,7 +4228,7 @@ msgstr "typ '%q' är inte en acceptabel bastyp"
 msgid "type is not an acceptable base type"
 msgstr "typ är inte en acceptabel bastyp"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "typobjektet '%q' har inget attribut '%q'"
 
@@ -4436,6 +4424,31 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
+#~ msgstr ""
+#~ "\n"
+#~ "Skicka in ett ärende med ditt program till https://github.com/adafruit/"
+#~ "circuitpython/issues."
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "objektet 'coroutine\" är inte en iterator"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Bufferten är för liten"
+
+#~ msgid "Fault detected by hardware."
+#~ msgstr "Fel upptäckt av hårdvara."
+
+#~ msgid "The power dipped. Make sure you are providing enough power."
+#~ msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shader måste vara displayio.Palette eller displayio.ColorConverter"
 
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Skadad .mpy-fil"

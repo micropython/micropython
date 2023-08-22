@@ -37,12 +37,9 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
-"\n"
-"qǐng zài https://github.com/adafruit/circuitpython/issues tí jiāo nín de "
-"chéng xù wèn tí."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -409,10 +406,6 @@ msgstr "'break' wèiyú xúnhuán zhīwài"
 msgid "'continue' outside loop"
 msgstr "'continue' wèiyú xúnhuán zhīwài"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "'coroutine' duìxiàng búshì yígè diédàiqì"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' xūyào zhìshǎo 2 gè cānshù"
@@ -682,11 +675,6 @@ msgstr "huǎnchōngqū de yuánsù bìxū wéi 4 zìjié cháng huò gèngshǎo"
 msgid "Buffer is not a bytearray."
 msgstr "Huǎnchōng qū bùshì bytearray."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Huǎnchōng qū tài xiǎo"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -705,6 +693,12 @@ msgstr "Huǎnchōngqū bìxū shì 512 zìjié de bèishù"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Huǎnchōngqū tàiduǎn , mùqián zhǐyǒu %d zìjié"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1053,10 +1047,6 @@ msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Wúfǎ xiě rù nèibù shǎncún."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr "yìng jiàn jiǎn cè dào gù zhàng."
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Wénjiàn cúnzài"
@@ -1135,6 +1125,10 @@ msgstr "Jítuán yǐjīng shǐyòngguò"
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
 msgstr "wèi shí xiàn bàn shuāng gōng SPI"
+
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1795,6 +1789,10 @@ msgstr "Zài wénjiàn xìtǒng shàng tiānjiā rènhé mókuài\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Duōbiānxíng zhìshǎo xūyào 3 diǎn"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Qiánzhuì huǎnchōng qū bìxū zài duī shàng"
@@ -2027,10 +2025,6 @@ msgstr "shàng shù yì cháng shì yǐ xià yì cháng de zhí jiē yuán yīn:
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "Rgb_pins de chángdù bìxū wèi 6,12,18,24 huò 30"
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
-msgstr "lì liàng xià jiàng le. què bǎo nín tí gòng zú gòu de diàn lì."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2632,8 +2626,7 @@ msgstr "huǎnchōng qū dàxiǎo bìxū pǐpèi géshì"
 msgid "buffer slices must be of equal length"
 msgstr "huǎnchōng qū qiēpiàn bìxū chángdù xiāngděng"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "huǎnchōng qū tài xiǎo"
 
@@ -3927,10 +3920,6 @@ msgstr "cānshù bìxū shì xùliè r0 zhì r3 de dēngjì qì"
 msgid "pixel coordinates out of bounds"
 msgstr "xiàngsù zuòbiāo chāochū biānjiè"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "zài win32 shàng bù tí gōng wén jiàn tóu piào"
@@ -4245,7 +4234,7 @@ msgstr "lèixíng '%q' bùshì kě jiēshòu de jīchǔ lèixíng"
 msgid "type is not an acceptable base type"
 msgstr "lèixíng bùshì kě jiēshòu de jīchǔ lèixíng"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "lèixíng duìxiàng '%q' méiyǒu shǔxìng '%q'"
 
@@ -4441,6 +4430,31 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
+#~ msgstr ""
+#~ "\n"
+#~ "qǐng zài https://github.com/adafruit/circuitpython/issues tí jiāo nín de "
+#~ "chéng xù wèn tí."
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "'coroutine' duìxiàng búshì yígè diédàiqì"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Huǎnchōng qū tài xiǎo"
+
+#~ msgid "Fault detected by hardware."
+#~ msgstr "yìng jiàn jiǎn cè dào gù zhàng."
+
+#~ msgid "The power dipped. Make sure you are providing enough power."
+#~ msgstr "lì liàng xià jiàng le. què bǎo nín tí gòng zú gòu de diàn lì."
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter"
 
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "sǔnhuài de .mpy wénjiàn"

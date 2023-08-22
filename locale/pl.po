@@ -33,8 +33,8 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -395,10 +395,6 @@ msgstr "'break' poza pętlą"
 msgid "'continue' outside loop"
 msgstr "'continue' poza pętlą"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr ""
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' wymaga 2 lub więcej argumentów"
@@ -668,11 +664,6 @@ msgstr ""
 msgid "Buffer is not a bytearray."
 msgstr ""
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Bufor jest za mały"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -691,6 +682,12 @@ msgstr "Bufor musi być wielokrotnością 512 bajtów"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Bufor za krótki o %d bajtów"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1036,10 +1033,6 @@ msgstr "Nie udało się zwolnić blokady, błąd 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Nie udało się zapisać wewnętrznej pamięci flash."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr ""
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Plik istnieje"
@@ -1113,6 +1106,10 @@ msgstr "Grupa już używana"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1761,6 +1758,10 @@ msgstr "Oraz moduły w systemie plików\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Wielokąt musi mieć co najmniej 3 punkty"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr ""
@@ -1990,10 +1991,6 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2586,8 +2583,7 @@ msgstr "wielkość bufora musi pasować do formatu"
 msgid "buffer slices must be of equal length"
 msgstr "fragmenty bufora muszą mieć tę samą długość"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "zbyt mały bufor"
 
@@ -3873,11 +3869,6 @@ msgstr "parametry muszą być rejestrami w kolejności r0 do r3"
 msgid "pixel coordinates out of bounds"
 msgstr "współrzędne piksela poza zakresem"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-"pixel_shader musi być typu displayio.Palette lub dispalyio.ColorConverter"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4189,7 +4180,7 @@ msgstr "typ '%q' nie może być bazowy"
 msgid "type is not an acceptable base type"
 msgstr "typ nie może być bazowy"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "typ '%q' nie ma atrybutu '%q'"
 
@@ -4385,6 +4376,13 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Bufor jest za mały"
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shader musi być typu displayio.Palette lub dispalyio.ColorConverter"
 
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Uszkodzony plik .mpy"
