@@ -1,4 +1,4 @@
-# test that basic scheduling of tasks, and uasyncio.sleep_ms, does not use the heap
+# test that basic scheduling of tasks, and asyncio.sleep_ms, does not use the heap
 
 import micropython
 
@@ -13,13 +13,10 @@ except RuntimeError:
     raise SystemExit
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 async def task(id, n, t):

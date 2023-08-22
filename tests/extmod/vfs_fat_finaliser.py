@@ -1,9 +1,9 @@
 # Test VfsFat class and its finaliser
 
 try:
-    import uerrno, uos
+    import errno, os
 
-    uos.VfsFat
+    os.VfsFat
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -37,8 +37,8 @@ except MemoryError:
     raise SystemExit
 
 # Format block device and create VFS object
-uos.VfsFat.mkfs(bdev)
-vfs = uos.VfsFat(bdev)
+os.VfsFat.mkfs(bdev)
+vfs = os.VfsFat(bdev)
 
 # Here we test that opening a file with the heap locked fails correctly.  This
 # is a special case because file objects use a finaliser and allocating with a
