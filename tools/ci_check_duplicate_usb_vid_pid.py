@@ -63,6 +63,7 @@ DEFAULT_CLUSTERLIST = {
     ],
     "0x239A:0x102E": ["weact_studio_pico", "weact_studio_pico_16mb"],
     "0x303A:0x8166": ["yd_esp32_s3_n8r8", "yd_esp32_s3_n16r8"],
+    "0x2E8A:0x1020": [ "waveshare_rp2040_plus_4mb", "waveshare_rp2040_plus_16mb"],
 }
 
 cli_parser = argparse.ArgumentParser(
