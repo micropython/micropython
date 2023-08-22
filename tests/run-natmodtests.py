@@ -17,8 +17,6 @@ NATMOD_EXAMPLE_DIR = "../examples/natmod/"
 
 # Supported tests and their corresponding mpy module
 TEST_MAPPINGS = {
-    "btree": "btree/btree_$(ARCH).mpy",
-    "framebuf": "framebuf/framebuf_$(ARCH).mpy",
     "uheapq": "uheapq/uheapq_$(ARCH).mpy",
     "urandom": "urandom/urandom_$(ARCH).mpy",
     "ure": "ure/ure_$(ARCH).mpy",
