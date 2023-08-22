@@ -4,9 +4,7 @@
 import re
 
 def render_with_jinja(docname, source):
-    if "shared-bindings/support_matrix" in docname:
-        return True
-    if re.search('^\s+.. jinja$', source[0], re.M):
+    if re.search('^\s*.. jinja$', source[0], re.M):
         return True
     return False
 
