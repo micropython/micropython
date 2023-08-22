@@ -146,6 +146,10 @@ msgstr "%q используется"
 msgid "%q index out of range"
 msgstr "Индекс %q вне диапазона"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "Индексы %q должны быть целыми числами, а не %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "Инициализация %q не удалась"
@@ -221,7 +225,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -423,6 +427,10 @@ msgstr "'yield from' внутри асинхронной функции"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' вне функции"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -865,10 +873,6 @@ msgstr ""
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Файл .mpy поврежден"
-
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
 msgstr "Не удалось извлечь тактирование"
@@ -1174,14 +1178,6 @@ msgstr "Периферийное устройство I2C уже использ�
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr "Элементы буфера должны быть длиной <= 4 байта"
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. http://"
-"adafru.it/mpy-update для получения дополнительной информации."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1534,7 +1530,7 @@ msgstr "Нет in в программе"
 msgid "No in or out in program"
 msgstr "В программе отсутствует ввод или вывод"
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Нет поддержки длинных целых чисел (long integer)"
 
@@ -2557,6 +2553,10 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr ""
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
@@ -2646,6 +2646,10 @@ msgstr ""
 msgid "buffer too small for requested bytes"
 msgstr ""
 
+#: py/emitbc.c
+msgid "bytecode overflow"
+msgstr ""
+
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2691,13 +2695,18 @@ msgstr ""
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to complex"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
 msgstr ""
 
 #: py/objstr.c
@@ -2709,11 +2718,11 @@ msgid "can't convert complex to float"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to %q"
+msgid "can't convert to complex"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to complex"
+msgid "can't convert to float"
 msgstr ""
 
 #: py/runtime.c
@@ -2738,14 +2747,6 @@ msgstr ""
 
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
-msgstr ""
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr ""
-
-#: py/compile.c
-msgid "can't have multiple *x"
 msgstr ""
 
 #: py/emitnative.c
@@ -2800,6 +2801,10 @@ msgstr ""
 #: py/objstr.c
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
+msgstr ""
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -2896,10 +2901,6 @@ msgstr ""
 
 #: extmod/moduzlib.c
 msgid "compression header"
-msgstr ""
-
-#: py/parse.c
-msgid "constant must be an integer"
 msgstr ""
 
 #: py/emitnative.c
@@ -3238,7 +3239,11 @@ msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
+msgid "incompatible .mpy arch"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
 msgstr ""
 
 #: py/objstr.c
@@ -3265,6 +3270,10 @@ msgstr ""
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
+msgstr ""
+
+#: py/obj.c
+msgid "indices must be integers"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3400,10 +3409,6 @@ msgstr ""
 msgid "invalid exception"
 msgstr ""
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr ""
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr ""
@@ -3463,10 +3468,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr ""
-
-#: py/bc.c
-msgid "keywords must be strings"
 msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
@@ -3693,14 +3694,6 @@ msgstr ""
 msgid "non-hex digit found"
 msgstr ""
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr ""
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr ""
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr ""
@@ -3711,6 +3704,10 @@ msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
+msgstr ""
+
+#: py/parse.c
+msgid "not a constant"
 msgstr ""
 
 #: py/objstr.c
@@ -3951,6 +3948,14 @@ msgstr ""
 msgid "port must be >= 0"
 msgstr ""
 
+#: py/compile.c
+msgid "positional arg after **"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr ""
@@ -3977,6 +3982,11 @@ msgstr ""
 
 #: py/builtinimport.c
 msgid "relative import"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
 msgstr ""
 
 #: extmod/ulab/code/ndarray_operators.c
@@ -4173,6 +4183,10 @@ msgstr ""
 msgid "tobytes can be invoked for dense arrays only"
 msgstr ""
 
+#: py/compile.c
+msgid "too many args"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
@@ -4196,6 +4210,10 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
+msgstr ""
+
+#: py/obj.c
+msgid "tuple/list has wrong length"
 msgstr ""
 
 #: ports/espressif/common-hal/canio/CAN.c
@@ -4417,6 +4435,16 @@ msgstr "zi должно быть типа float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
 
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Файл .mpy поврежден"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. http://"
+#~ "adafru.it/mpy-update для получения дополнительной информации."
+
 #, c-format
 #~ msgid "Instruction %d shifts in more bits than pin count"
 #~ msgstr ""
@@ -4610,9 +4638,6 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #, c-format
 #~ msgid "No more than %d HID devices allowed"
 #~ msgstr "Допускается не более %d HID устройств"
-
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "Индексы %q должны быть целыми числами, а не %s"
 
 #~ msgid "Firmware image is invalid"
 #~ msgstr "Образ прошивки неправильный"

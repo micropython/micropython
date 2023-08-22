@@ -151,6 +151,10 @@ msgstr "%q används redan"
 msgid "%q index out of range"
 msgstr "Index %q ligger utanför intervallet"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "Indexet %q måste vara ett heltal, inte %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "%q init misslyckades"
@@ -228,7 +232,7 @@ msgstr "%q måste vara en matris av typen 'h'"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q måste vara av typen %q eller %q, inte %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q måste vara av typen %q, inte %q"
 
@@ -430,6 +434,10 @@ msgstr "'yield from' i async-funktion"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' utanför funktion"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -860,10 +868,6 @@ msgstr "Arrayer för koordinater har olika längd"
 msgid "Coordinate arrays types have different sizes"
 msgstr "Arrayer för koordinater har olika storlek"
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Skadad .mpy-fil"
-
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
 msgstr "Kunde inte hämta klocka"
@@ -1160,14 +1164,6 @@ msgstr "I2C-enhet används redan"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr "Antal element i buffert måste vara <= 4 byte"
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"Inkompatibel .mpy-fil. Uppdatera alla .mpy-filer. Se http://adafru.it/mpy-"
-"update för mer information."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1518,7 +1514,7 @@ msgstr "Inget in i programmet"
 msgid "No in or out in program"
 msgstr "Inget in eller ut i programmet"
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Inget stöd för långt heltal"
 
@@ -2548,6 +2544,10 @@ msgstr "matrisen är för stor"
 msgid "array/bytes required on right side"
 msgstr "array/bytes krävs på höger sida"
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "försök att läsa (arg)min/(arg)max av tom sekvens"
@@ -2637,6 +2637,10 @@ msgstr "buffert för liten"
 msgid "buffer too small for requested bytes"
 msgstr "buffert för liten för begärd längd"
 
+#: py/emitbc.c
+msgid "bytecode overflow"
+msgstr ""
+
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "bytelängd inte en multipel av storlek"
@@ -2682,7 +2686,7 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't cancel self"
 msgstr "kan inte avbryta sig själv"
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
 
@@ -2690,6 +2694,11 @@ msgstr "kan inte konvertera %q till %q"
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "kan inte konvertera %s till komplex"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
+msgstr "kan inte konvertera %s till float"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2700,12 +2709,12 @@ msgid "can't convert complex to float"
 msgstr "kan inte konvertera complex till float"
 
 #: py/obj.c
-msgid "can't convert to %q"
-msgstr "kan inte konvertera till %q"
-
-#: py/obj.c
 msgid "can't convert to complex"
 msgstr "kan inte konvertera till komplex"
+
+#: py/obj.c
+msgid "can't convert to float"
+msgstr "kan inte konvertera till float"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2730,14 +2739,6 @@ msgstr "kan inte göra binära op mellan '%q' och '%q'"
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
 msgstr "kan inte göra trunkerad division av komplext tal"
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr "kan inte ha flera **x"
-
-#: py/compile.c
-msgid "can't have multiple *x"
-msgstr "kan inte ha flera *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
@@ -2794,6 +2795,10 @@ msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 "kan inte byta från manuell fältspecifikation till automatisk fältnumrering"
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -2890,10 +2895,6 @@ msgstr "komplexa värden stöds inte"
 #: extmod/moduzlib.c
 msgid "compression header"
 msgstr "komprimeringsheader"
-
-#: py/parse.c
-msgid "constant must be an integer"
-msgstr "konstant måste vara ett heltal"
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -3236,8 +3237,12 @@ msgid "import * not at module level"
 msgstr "import * inte på modulnivå"
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
-msgstr "inkompatibel nativ .mpy-arkitektur"
+msgid "incompatible .mpy arch"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr "inkompatibel .mpy-fil"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3264,6 +3269,10 @@ msgstr "index måste vara tuple eller int"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index utanför intervallet"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "index måste vara heltal"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3398,10 +3407,6 @@ msgstr "ogiltig element_size %d, måste vara, 1, 2 eller 4"
 msgid "invalid exception"
 msgstr "Ogiltig exception"
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "ogiltigt format"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "ogiltig formatspecificerare"
@@ -3465,10 +3470,6 @@ msgstr ""
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
 "nyckelordsargument är ännu inte implementerade - använd vanliga argument"
-
-#: py/bc.c
-msgid "keywords must be strings"
-msgstr "nyckelord måste vara strängar"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3694,14 +3695,6 @@ msgstr "icke-standard argument följer standard argument"
 msgid "non-hex digit found"
 msgstr "icke-hexnummer hittade"
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr "icke nyckelord arg efter * / **"
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr "icke nyckelord arg efter nyckelord arg"
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr "Icke-noll timeout måste vara > 0.01"
@@ -3713,6 +3706,10 @@ msgstr "Icke-noll timeout måste vara >= intervall"
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "inte en 128-bitars UUID"
+
+#: py/parse.c
+msgid "not a constant"
+msgstr ""
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3953,6 +3950,14 @@ msgstr "pop från tom %q"
 msgid "port must be >= 0"
 msgstr "port måste vara >= 0"
 
+#: py/compile.c
+msgid "positional arg after **"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "pow() 3: e argument kan inte vara 0"
@@ -3980,6 +3985,11 @@ msgstr "verkliga och imaginära delar måste ha samma längd"
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relativ import"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "begärd längd %d men objektet har längden %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -4175,6 +4185,10 @@ msgstr "timestamp utom räckvidd för plattformens \"time_t\""
 msgid "tobytes can be invoked for dense arrays only"
 msgstr "tobyte kan enbart anropas för täta matriser"
 
+#: py/compile.c
+msgid "too many args"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "för många dimensioner"
@@ -4199,6 +4213,10 @@ msgstr "trapz är definierad för 1D-matriser med samma längd"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz är definierat för 1D-iterabla"
+
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "tupel/lista har fel längd"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4418,6 +4436,43 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Skadad .mpy-fil"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Inkompatibel .mpy-fil. Uppdatera alla .mpy-filer. Se http://adafru.it/mpy-"
+#~ "update för mer information."
+
+#~ msgid "can't convert to %q"
+#~ msgstr "kan inte konvertera till %q"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "kan inte ha flera **x"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "kan inte ha flera *x"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "konstant måste vara ett heltal"
+
+#~ msgid "incompatible native .mpy architecture"
+#~ msgstr "inkompatibel nativ .mpy-arkitektur"
+
+#~ msgid "invalid format"
+#~ msgstr "ogiltigt format"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "nyckelord måste vara strängar"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "icke nyckelord arg efter * / **"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "icke nyckelord arg efter nyckelord arg"
 
 #, c-format
 #~ msgid "Instruction %d shifts in more bits than pin count"
@@ -4766,21 +4821,11 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "invalid traceback"
 #~ msgstr "Ogilitig källspårning"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "Indexet %q måste vara ett heltal, inte %s"
-
 #~ msgid "WatchDogTimer.timeout must be greater than 0"
 #~ msgstr "WatchDogTimer.timeout måste vara större än 0"
 
-#~ msgid "indices must be integers"
-#~ msgstr "index måste vara heltal"
-
 #~ msgid "non-Device in %q"
 #~ msgstr "icke-enhet i %q"
-
-#, c-format
-#~ msgid "requested length %d but object has length %d"
-#~ msgstr "begärd längd %d men objektet har längden %d"
 
 #~ msgid "single '}' encountered in format string"
 #~ msgstr "Enkelt '}' påträffades i formatsträngen"
@@ -4790,9 +4835,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "timeout must be 0.0-100.0 seconds"
 #~ msgstr "timeout måste vara 0.0-100.0 sekunder"
-
-#~ msgid "tuple/list has wrong length"
-#~ msgstr "tupel/lista har fel längd"
 
 #~ msgid "unmatched '{' in format"
 #~ msgstr "omatchad '{' i format"
@@ -5523,9 +5565,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "Length must be non-negative"
 #~ msgstr "Length måste vara positiv"
 
-#~ msgid "incompatible .mpy file"
-#~ msgstr "inkompatibel .mpy-fil"
-
 #~ msgid "invalid decorator"
 #~ msgstr "ogiltig dekorator"
 
@@ -5855,9 +5894,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init __ () ska returnera None, inte '%s'"
 
-#~ msgid "can't convert %s to float"
-#~ msgstr "kan inte konvertera %s till float"
-
 #~ msgid "can't convert %s to int"
 #~ msgstr "kan inte konvertera %s till int"
 
@@ -5869,9 +5905,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "can't convert inf to int"
 #~ msgstr "kan inte konvertera inf till int"
-
-#~ msgid "can't convert to float"
-#~ msgstr "kan inte konvertera till float"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "objektet '%s' är inte en tupel eller lista"

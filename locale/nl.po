@@ -139,6 +139,10 @@ msgstr "%q in gebruik"
 msgid "%q index out of range"
 msgstr "%q index buiten bereik"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "%q indexen moeten integers zijn, niet %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr ""
@@ -214,7 +218,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -416,6 +420,10 @@ msgstr "'yield from' binnen asynchrone functie"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' buiten de functie"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -845,10 +853,6 @@ msgstr ""
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Corrupt .mpy bestand"
-
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
 msgstr "Kon klok niet ophalen"
@@ -1143,14 +1147,6 @@ msgstr ""
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"Incompatibel .mpy bestand. Update alle .mpy bestanden. Zie http://adafru.it/"
-"mpy-update voor meer informatie."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1498,7 +1494,7 @@ msgstr ""
 msgid "No in or out in program"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Geen lange integer ondersteuning"
 
@@ -2525,6 +2521,10 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "array/bytes vereist aan de rechterkant"
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "verzoek om (arg)min.(arg)max te krijgen van lege reeks"
@@ -2614,6 +2614,10 @@ msgstr "buffer te klein"
 msgid "buffer too small for requested bytes"
 msgstr "buffer te klein voor gevraagde bytes"
 
+#: py/emitbc.c
+msgid "bytecode overflow"
+msgstr ""
+
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr "bytes lengte is geen veelvoud van itemgrootte"
@@ -2660,7 +2664,7 @@ msgstr "kan niet toewijzen aan expressie"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan %q niet naar %q converteren"
 
@@ -2668,6 +2672,11 @@ msgstr "kan %q niet naar %q converteren"
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "kan %s niet converteren naar een complex"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
+msgstr "kan %s niet omzetten naar een float"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2678,12 +2687,12 @@ msgid "can't convert complex to float"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to %q"
-msgstr "kan niet naar %q converteren"
-
-#: py/obj.c
 msgid "can't convert to complex"
 msgstr "kan niet omzetten naar complex"
+
+#: py/obj.c
+msgid "can't convert to float"
+msgstr "kan niet omzetten naar float"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2708,14 +2717,6 @@ msgstr "kan geen een binaire operatie doen tussen '%q' en '%q'"
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
 msgstr "kan geen afgekapte deling doen van een comlex nummer"
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr "kan niet meerdere **x hebben"
-
-#: py/compile.c
-msgid "can't have multiple *x"
-msgstr "kan geen meerdere *x hebben"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
@@ -2770,6 +2771,10 @@ msgstr "kan niet schakelen tussen automatische en handmatige veld specificatie"
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr "kan niet schakelen tussen handmatige en automatische veld specificatie"
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -2866,10 +2871,6 @@ msgstr "complexe waardes niet ondersteund"
 #: extmod/moduzlib.c
 msgid "compression header"
 msgstr "compressie header"
-
-#: py/parse.c
-msgid "constant must be an integer"
-msgstr "constant moet een integer zijn"
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -3210,7 +3211,11 @@ msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
+msgid "incompatible .mpy arch"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
 msgstr ""
 
 #: py/objstr.c
@@ -3238,6 +3243,10 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index is buiten bereik"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "indices moeten integers zijn"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3372,10 +3381,6 @@ msgstr ""
 msgid "invalid exception"
 msgstr ""
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "ongeldig formaat"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "ongeldige formaatspecificatie"
@@ -3439,10 +3444,6 @@ msgstr ""
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
 "trefwoord argument(en) zijn niet geïmplementeerd, gebruik normale argumenten"
-
-#: py/bc.c
-msgid "keywords must be strings"
-msgstr "trefwoorden moeten van type string zijn"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3668,14 +3669,6 @@ msgstr "niet-standaard argument volgt op een standaard argument"
 msgid "non-hex digit found"
 msgstr "er werd een niet-hexadecimaal cijfer gevonden"
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr "niet-trefwoord argument na */**"
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr "niet-trefwoord argument na trefwoord argument"
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr ""
@@ -3687,6 +3680,10 @@ msgstr ""
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "geen 128-bit UUID"
+
+#: py/parse.c
+msgid "not a constant"
+msgstr ""
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3926,6 +3923,14 @@ msgstr "pop van een lege %q"
 msgid "port must be >= 0"
 msgstr ""
 
+#: py/compile.c
+msgid "positional arg after **"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "derde argument van pow() mag geen 0 zijn"
@@ -3953,6 +3958,11 @@ msgstr "reëel en imaginair deel moeten gelijke lengte hebben"
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relatieve import"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "gevraagde lengte is %d maar object heeft lengte %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -4148,6 +4158,10 @@ msgstr "timestamp buiten bereik voor platform time_t"
 msgid "tobytes can be invoked for dense arrays only"
 msgstr "tobytes kunnen alleen ingeroepen worden voor gesloten arrays"
 
+#: py/compile.c
+msgid "too many args"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
@@ -4172,6 +4186,10 @@ msgstr "trapz is gedefinieerd voor eendimensionale arrays van gelijke lengte"
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
+
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "tuple of lijst heeft onjuiste lengte"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4392,6 +4410,40 @@ msgstr "zi moet van type float zijn"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
 
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Corrupt .mpy bestand"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Incompatibel .mpy bestand. Update alle .mpy bestanden. Zie http://adafru."
+#~ "it/mpy-update voor meer informatie."
+
+#~ msgid "can't convert to %q"
+#~ msgstr "kan niet naar %q converteren"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "kan niet meerdere **x hebben"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "kan geen meerdere *x hebben"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "constant moet een integer zijn"
+
+#~ msgid "invalid format"
+#~ msgstr "ongeldig formaat"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "trefwoorden moeten van type string zijn"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "niet-trefwoord argument na */**"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "niet-trefwoord argument na trefwoord argument"
+
 #~ msgid "inputs are not iterable"
 #~ msgstr "invoer is niet itereerbaar"
 
@@ -4535,18 +4587,8 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "zero step"
 #~ msgstr "nul-stap"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "%q indexen moeten integers zijn, niet %s"
-
 #~ msgid "WatchDogTimer.timeout must be greater than 0"
 #~ msgstr "WatchDogTimer.timeout moet groter dan 0 zijn"
-
-#~ msgid "indices must be integers"
-#~ msgstr "indices moeten integers zijn"
-
-#, c-format
-#~ msgid "requested length %d but object has length %d"
-#~ msgstr "gevraagde lengte is %d maar object heeft lengte %d"
 
 #~ msgid "single '}' encountered in format string"
 #~ msgstr "enkele '}' aangetroffen in formaat tekenreeks (string)"
@@ -4556,9 +4598,6 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "timeout must be 0.0-100.0 seconds"
 #~ msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
-
-#~ msgid "tuple/list has wrong length"
-#~ msgstr "tuple of lijst heeft onjuiste lengte"
 
 #~ msgid "unmatched '{' in format"
 #~ msgstr "'{' zonder overeenkomst in formaat"
@@ -5413,9 +5452,6 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init __ () zou None moeten retouneren, niet '%s'"
 
-#~ msgid "can't convert %s to float"
-#~ msgstr "kan %s niet omzetten naar een float"
-
 #~ msgid "can't convert %s to int"
 #~ msgstr "kan %s niet omzetten naar een int"
 
@@ -5427,9 +5463,6 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "can't convert inf to int"
 #~ msgstr "kan inf niet omzetten naar int"
-
-#~ msgid "can't convert to float"
-#~ msgstr "kan niet omzetten naar float"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "object '%s' is geen tuple of lijst"

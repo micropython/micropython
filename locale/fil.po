@@ -140,6 +140,10 @@ msgstr "%q ay ginagamit"
 msgid "%q index out of range"
 msgstr "%q indeks wala sa sakop"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "%q indeks ay dapat integers, hindi %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr ""
@@ -215,7 +219,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -418,6 +422,10 @@ msgstr ""
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' sa labas ng function"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -847,10 +855,6 @@ msgstr ""
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
 
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr ""
-
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
 msgstr ""
@@ -1147,14 +1151,6 @@ msgstr ""
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-".mpy file hindi compatible. Maaring i-update lahat ng .mpy files. See http://"
-"adafru.it/mpy-update for more info."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1502,7 +1498,7 @@ msgstr ""
 msgid "No in or out in program"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr ""
 
@@ -2516,6 +2512,10 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "array/bytes kinakailangan sa kanang bahagi"
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
@@ -2606,6 +2606,10 @@ msgstr "masyadong maliit ang buffer"
 msgid "buffer too small for requested bytes"
 msgstr ""
 
+#: py/emitbc.c
+msgid "bytecode overflow"
+msgstr ""
+
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
 msgstr ""
@@ -2652,7 +2656,7 @@ msgstr "hindi ma i-assign sa expression"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2660,6 +2664,11 @@ msgstr ""
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "hindi ma-convert %s sa complex"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
+msgstr "hindi ma-convert %s sa int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2670,12 +2679,12 @@ msgid "can't convert complex to float"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to %q"
-msgstr ""
-
-#: py/obj.c
 msgid "can't convert to complex"
 msgstr "hindi ma-convert sa complex"
+
+#: py/obj.c
+msgid "can't convert to float"
+msgstr "hindi ma-convert sa float"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2701,14 +2710,6 @@ msgstr "hindi magawa ang binary op sa gitna ng '%q' at '%q'"
 msgid "can't do truncated division of a complex number"
 msgstr ""
 "hindi maaaring gawin ang truncated division ng isang kumplikadong numero"
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr "hindi puede ang maraming **x"
-
-#: py/compile.c
-msgid "can't have multiple *x"
-msgstr "hindi puede ang maraming *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
@@ -2767,6 +2768,10 @@ msgid ""
 msgstr ""
 "hindi mapalitan ang manual field specification sa awtomatikong field "
 "numbering"
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -2863,10 +2868,6 @@ msgstr "kumplikadong values hindi sinusuportahan"
 #: extmod/moduzlib.c
 msgid "compression header"
 msgstr "compression header"
-
-#: py/parse.c
-msgid "constant must be an integer"
-msgstr "constant ay dapat na integer"
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -3209,7 +3210,11 @@ msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
+msgid "incompatible .mpy arch"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
 msgstr ""
 
 #: py/objstr.c
@@ -3237,6 +3242,10 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index wala sa sakop"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "ang mga indeks ay dapat na integer"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3371,10 +3380,6 @@ msgstr ""
 msgid "invalid exception"
 msgstr ""
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "hindi wastong pag-format"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "mali ang format specifier"
@@ -3439,10 +3444,6 @@ msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
 "kindi pa ipinapatupad ang (mga) argument(s) ng keyword - gumamit ng normal "
 "args"
-
-#: py/bc.c
-msgid "keywords must be strings"
-msgstr "ang keywords dapat strings"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3668,14 +3669,6 @@ msgstr "non-default argument sumusunod sa default argument"
 msgid "non-hex digit found"
 msgstr "non-hex digit nahanap"
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr "non-keyword arg sa huli ng */**"
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr "non-keyword arg sa huli ng keyword arg"
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr ""
@@ -3686,6 +3679,10 @@ msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
+msgstr ""
+
+#: py/parse.c
+msgid "not a constant"
 msgstr ""
 
 #: py/objstr.c
@@ -3928,6 +3925,14 @@ msgstr ""
 msgid "port must be >= 0"
 msgstr ""
 
+#: py/compile.c
+msgid "positional arg after **"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
+msgstr ""
+
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
 msgstr "pow() 3rd argument ay hindi maaring 0"
@@ -3955,6 +3960,11 @@ msgstr ""
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relative import"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -4150,6 +4160,10 @@ msgstr "wala sa sakop ng timestamp ang platform time_t"
 msgid "tobytes can be invoked for dense arrays only"
 msgstr ""
 
+#: py/compile.c
+msgid "too many args"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
@@ -4174,6 +4188,10 @@ msgstr ""
 #: extmod/ulab/code/numpy/approx.c
 msgid "trapz is defined for 1D iterables"
 msgstr ""
+
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "mali ang haba ng tuple/list"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4394,6 +4412,34 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ ".mpy file hindi compatible. Maaring i-update lahat ng .mpy files. See "
+#~ "http://adafru.it/mpy-update for more info."
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "hindi puede ang maraming **x"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "hindi puede ang maraming *x"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "constant ay dapat na integer"
+
+#~ msgid "invalid format"
+#~ msgstr "hindi wastong pag-format"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "ang keywords dapat strings"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "non-keyword arg sa huli ng */**"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "non-keyword arg sa huli ng keyword arg"
+
 #~ msgid "No RX pin"
 #~ msgstr "Walang RX pin"
 
@@ -4442,24 +4488,11 @@ msgstr ""
 #~ msgid "zero step"
 #~ msgstr "zero step"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "%q indeks ay dapat integers, hindi %s"
-
-#~ msgid "indices must be integers"
-#~ msgstr "ang mga indeks ay dapat na integer"
-
-#, c-format
-#~ msgid "requested length %d but object has length %d"
-#~ msgstr "hiniling ang haba %d ngunit may haba ang object na %d"
-
 #~ msgid "single '}' encountered in format string"
 #~ msgstr "isang '}' nasalubong sa format string"
 
 #~ msgid "threshold must be in the range 0-65536"
 #~ msgstr "ang threshold ay dapat sa range 0-65536"
-
-#~ msgid "tuple/list has wrong length"
-#~ msgstr "mali ang haba ng tuple/list"
 
 #~ msgid "unmatched '{' in format"
 #~ msgstr "hindi tugma ang '{' sa format"
@@ -4821,9 +4854,6 @@ msgstr ""
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() dapat magbalink na None, hindi '%s'"
 
-#~ msgid "can't convert %s to float"
-#~ msgstr "hindi ma-convert %s sa int"
-
 #~ msgid "can't convert %s to int"
 #~ msgstr "hindi ma-convert %s sa int"
 
@@ -4835,9 +4865,6 @@ msgstr ""
 
 #~ msgid "can't convert inf to int"
 #~ msgstr "hindi ma i-convert inf sa int"
-
-#~ msgid "can't convert to float"
-#~ msgstr "hindi ma-convert sa float"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "object '%s' ay hindi tuple o list"
