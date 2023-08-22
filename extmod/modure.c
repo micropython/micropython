@@ -491,7 +491,7 @@ const mp_obj_module_t mp_module_ure = {
     .globals = (mp_obj_dict_t *)&mp_module_re_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ure, mp_module_ure);
+MP_REGISTER_MODULE(MP_QSTR_re, mp_module_ure);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

@@ -1,13 +1,9 @@
 try:
-    from uio import BytesIO
-    import umsgpack as msgpack
-except:
-    try:
-        from io import BytesIO
-        import msgpack
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    from io import BytesIO
+    import msgpack
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 b = BytesIO()
 msgpack.pack(False, s)

@@ -181,6 +181,6 @@ const mp_obj_module_t mp_module_uos = {
     .globals = (mp_obj_dict_t *)&os_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uos, mp_module_uos);
+MP_REGISTER_MODULE(MP_QSTR_os, mp_module_uos);
 
 #endif // MICROPY_PY_UOS

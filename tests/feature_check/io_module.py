@@ -1,6 +1,6 @@
 try:
-    import uio
+    import io
 
-    print("uio")
+    print("io")
 except ImportError:
     print("no")

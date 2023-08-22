@@ -355,9 +355,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output == b"TypeError\n":
             skip_revops = True
 
-        # Check if uio module exists, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, base_path, "uio_module.py")
-        if output != b"uio\n":
+        # Check if io module exists, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, base_path, "io_module.py")
+        if output != b"io\n":
             skip_io_module = True
 
         # Check if fstring feature is enabled, and skip such tests if it doesn't

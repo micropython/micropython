@@ -1,18 +1,18 @@
-# test utime.time_ns()
+# test time.time_ns()
 
 try:
-    import utime
+    import time
 
-    utime.sleep_us
-    utime.time_ns
+    time.sleep_us
+    time.time_ns
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 
-t0 = utime.time_ns()
-utime.sleep_us(5000)
-t1 = utime.time_ns()
+t0 = time.time_ns()
+time.sleep_us(5000)
+t1 = time.time_ns()
 
 # Check that time_ns increases.
 print(t0 < t1)

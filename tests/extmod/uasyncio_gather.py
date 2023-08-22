@@ -1,13 +1,10 @@
-# test uasyncio.gather() function
+# test asyncio.gather() function
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 async def foo():
