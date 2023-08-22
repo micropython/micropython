@@ -35,7 +35,22 @@
 #include "shared-bindings/util.h"
 
 //| class ShiftRegisterKeys:
-//|     """Manage a set of keys attached to an incoming shift register."""
+//|     """Manage a set of keys attached to an incoming shift register.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["keypad.ShiftRegisterKeys"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,

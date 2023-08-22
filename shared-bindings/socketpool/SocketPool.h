@@ -45,12 +45,17 @@ typedef enum {
 } socketpool_socketpool_addressfamily_t;
 
 typedef enum {
+    SOCKETPOOL_IPPROTO_IP = 0,
     SOCKETPOOL_IPPROTO_TCP = 6,
 } socketpool_socketpool_ipproto_t;
 
 typedef enum {
     SOCKETPOOL_TCP_NODELAY = 1,
 } socketpool_socketpool_tcpopt_t;
+
+typedef enum {
+    SOCKETPOOL_IP_MULTICAST_TTL = 5,
+} socketpool_socketpool_ipopt_t;
 
 typedef enum {
     SOCKETPOOL_EAI_NONAME  = -2,
