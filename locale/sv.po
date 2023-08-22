@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-10 23:51+0000\n"
+"PO-Revision-Date: 2023-08-22 21:28+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -437,7 +437,7 @@ msgstr "'yield' utanför funktion"
 
 #: py/compile.c
 msgid "* arg after **"
-msgstr ""
+msgstr "* arg efter **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -2546,7 +2546,7 @@ msgstr "array/bytes krävs på höger sida"
 
 #: py/asmxtensa.c
 msgid "asm overflow"
-msgstr ""
+msgstr "asm overflow"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2639,7 +2639,7 @@ msgstr "buffert för liten för begärd längd"
 
 #: py/emitbc.c
 msgid "bytecode overflow"
-msgstr ""
+msgstr "bytecode overflow"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
@@ -2798,7 +2798,7 @@ msgstr ""
 
 #: extmod/moduasyncio.c
 msgid "can't wait"
-msgstr ""
+msgstr "kan inte vänta"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -3238,7 +3238,7 @@ msgstr "import * inte på modulnivå"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy arch"
-msgstr ""
+msgstr "inkompatibel .mpy-arkitektur"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3709,7 +3709,7 @@ msgstr "inte en 128-bitars UUID"
 
 #: py/parse.c
 msgid "not a constant"
-msgstr ""
+msgstr "inte en konstant"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3952,11 +3952,11 @@ msgstr "port måste vara >= 0"
 
 #: py/compile.c
 msgid "positional arg after **"
-msgstr ""
+msgstr "positionsargument efter **"
 
 #: py/compile.c
 msgid "positional arg after keyword arg"
-msgstr ""
+msgstr "positionsargument efter nyckelord arg"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4187,7 +4187,7 @@ msgstr "tobyte kan enbart anropas för täta matriser"
 
 #: py/compile.c
 msgid "too many args"
-msgstr ""
+msgstr "för mpnga argument"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
