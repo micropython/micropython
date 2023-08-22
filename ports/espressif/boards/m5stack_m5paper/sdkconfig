@@ -36,7 +36,7 @@ CONFIG_SPIRAM_MEMTEST=y
 #
 # LWIP
 #
-CONFIG_LWIP_LOCAL_HOSTNAME="M5StaskCoreFire"
+CONFIG_LWIP_LOCAL_HOSTNAME="M5Paper"
 # end of LWIP
 
 # Uncomment (remove ###) to send ESP_LOG  output to TX/RX pins

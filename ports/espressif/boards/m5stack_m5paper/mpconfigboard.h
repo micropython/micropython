@@ -36,9 +36,8 @@
 #define CIRCUITPY_BOARD_SPI         (1)
 #define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO14, .mosi = &pin_GPIO12, .miso = &pin_GPIO13}}
 
-// GPIO16 & GPIO17 are used for PSRAM
-// #define CIRCUITPY_BOARD_UART        (1)
-// #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO17, .rx = &pin_GPIO16}}
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO19, .rx = &pin_GPIO18}}
 
 // For entering safe mode
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO39)
