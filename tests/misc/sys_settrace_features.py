@@ -22,7 +22,9 @@ def print_stacktrace(frame, level=0):
             frame.f_code.co_name,
             # Keep just the filename.
             "sys_settrace_" + frame.f_code.co_filename.split("sys_settrace_")[-1],
-            frame.f_lineno,
+            max(
+                1, frame.f_lineno
+            ),  # CPython 3.11 emits `0` where CPython 3.6 emits `1` for the "call" event corresponding to import.
         )
     )
 
