@@ -12,7 +12,7 @@ os.unsetenv("TEST_VARIABLE")
 print(os.getenv("TEST_VARIABLE"))
 print(os.getenv("TEST_VARIABLE", "TEST_DEFAULT_VALUE"))
 
-print(os.system("true"))
+print(os.system("exit 0"))
 
 rand = os.urandom(4)
 print(type(rand) is bytes, len(rand))
