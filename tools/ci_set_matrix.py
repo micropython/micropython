@@ -45,6 +45,7 @@ from shared_bindings_matrix import (
 # Files that never influence board builds
 IGNORE_BOARD = {
     ".devcontainer",
+    "conf.py",
     "docs",
     "tests",
     "tools/ci_changes_per_commit.py",
