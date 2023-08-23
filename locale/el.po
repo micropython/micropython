@@ -38,12 +38,9 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
-"\n"
-"Παρακαλώ δημιουργήστε ένα πρόβλημα στο https://github.com/adafruit/"
-"circuitpython/issues με το πρόγραμμά σας."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -408,10 +405,6 @@ msgstr "'break' εκτός επανάληψης"
 msgid "'continue' outside loop"
 msgstr "'continue' εκτός επανάληψης"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "'coroutine' αντικείμενο δεν μπορεί να χρησιμοποιηθεί σαν επαναλήπτης"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' απαιτεί τουλάχιστον 2 παραμέτρους"
@@ -681,11 +674,6 @@ msgstr "Στοιχεία του buffer πρέπει να είναι το πολ�
 msgid "Buffer is not a bytearray."
 msgstr "Το buffer δεν είναι ένα bytearray."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Πολύ μικρό buffer"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -704,6 +692,12 @@ msgstr "Buffer πρέπει να είναι πολλαπλάσιο των 512 by
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffer πολύ μικρό κατα %d bytes"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1057,10 +1051,6 @@ msgstr ""
 msgid "Failed to write internal flash."
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr ""
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr ""
@@ -1134,6 +1124,10 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1782,6 +1776,10 @@ msgstr ""
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr ""
@@ -2013,10 +2011,6 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2609,8 +2603,7 @@ msgstr ""
 msgid "buffer slices must be of equal length"
 msgstr ""
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
 
@@ -3895,10 +3888,6 @@ msgstr ""
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4210,7 +4199,7 @@ msgstr ""
 msgid "type is not an acceptable base type"
 msgstr ""
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr ""
 
@@ -4406,6 +4395,22 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
+#~ msgstr ""
+#~ "\n"
+#~ "Παρακαλώ δημιουργήστε ένα πρόβλημα στο https://github.com/adafruit/"
+#~ "circuitpython/issues με το πρόγραμμά σας."
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr ""
+#~ "'coroutine' αντικείμενο δεν μπορεί να χρησιμοποιηθεί σαν επαναλήπτης"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Πολύ μικρό buffer"
 
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Κατεστραμένο .mpy αρχείο"

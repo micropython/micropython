@@ -31,8 +31,8 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -393,10 +393,6 @@ msgstr "'break' buiten de loop"
 msgid "'continue' outside loop"
 msgstr "'continue' buiten de loop"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "'coroutine' object is geen iterator"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' vereist op zijn minst 2 argumenten"
@@ -666,11 +662,6 @@ msgstr ""
 msgid "Buffer is not a bytearray."
 msgstr "Buffer is geen bytearray."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Buffer is te klein"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -689,6 +680,12 @@ msgstr "Buffer moet een veelvoud van 512 bytes zijn"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffer is %d bytes te klein"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1035,10 +1032,6 @@ msgstr "Mislukt mutex los te laten, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Schrijven naar interne flash mislukt."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr ""
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Bestand bestaat"
@@ -1113,6 +1106,10 @@ msgstr "Groep al gebruikt"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1772,6 +1769,10 @@ msgstr "En iedere module in het bestandssysteem\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygon heeft op zijn minst 3 punten nodig"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefix buffer moet op de heap zijn"
@@ -2004,10 +2005,6 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "De lengte van rgb_pins moet 6, 12, 18, 24 of 30 zijn"
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
-msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2605,8 +2602,7 @@ msgstr "grootte van de buffer moet overeenkomen met het formaat"
 msgid "buffer slices must be of equal length"
 msgstr "buffer slices moeten van gelijke grootte zijn"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "buffer te klein"
 
@@ -3898,10 +3894,6 @@ msgstr "parameters moeten registers zijn in de volgorde r0 tot r3"
 msgid "pixel coordinates out of bounds"
 msgstr "pixel coördinaten buiten bereik"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr "pixel_shader moet displayio.Palette of displayio.ColorConverter zijn"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4213,7 +4205,7 @@ msgstr "type '%q' is geen aanvaardbaar basistype"
 msgid "type is not an acceptable base type"
 msgstr "type is geen aanvaardbaar basistype"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "objecttype '%q' heeft geen attribuut '%q'"
 
@@ -4409,6 +4401,16 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "'coroutine' object is geen iterator"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Buffer is te klein"
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shader moet displayio.Palette of displayio.ColorConverter zijn"
 
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Corrupt .mpy bestand"
