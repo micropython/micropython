@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-22 21:28+0000\n"
+"PO-Revision-Date: 2023-08-24 15:48+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0\n"
 
 #: main.c
 msgid ""
@@ -38,6 +38,9 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"Skapa ett ärende med ditt program på https://github.com/adafruit/"
+"circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -696,7 +699,7 @@ msgstr "Buffert är %d bytes för kort"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "Buffert för liten"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1124,7 +1127,7 @@ msgstr "Halvduplex SPI är inte implementerat"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
-msgstr ""
+msgstr "Hårt fel: minnesåtkomst eller instruktionsfel."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1786,8 +1789,9 @@ msgid "Polygon needs at least 3 points"
 msgstr "Polygonen behöver minst 3 punkter"
 
 #: supervisor/shared/safe_mode.c
+#, fuzzy
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
+msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
