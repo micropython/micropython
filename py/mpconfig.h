@@ -1718,7 +1718,7 @@ typedef double mp_float_t;
 
 // Whether to add finaliser code to ssl objects
 #ifndef MICROPY_PY_SSL_FINALISER
-#define MICROPY_PY_SSL_FINALISER (0)
+#define MICROPY_PY_SSL_FINALISER (MICROPY_ENABLE_FINALISER)
 #endif
 
 #ifndef MICROPY_PY_WEBSOCKET
