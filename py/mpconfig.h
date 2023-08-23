@@ -312,9 +312,11 @@
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #endif
 
-// Whether to support saving of persistent code
+// Whether to support saving of persistent code, i.e. for mpy-cross to
+// generate .mpy files. Enabling this enables additional metadata on raw code
+// objects which is also required for sys.settrace.
 #ifndef MICROPY_PERSISTENT_CODE_SAVE
-#define MICROPY_PERSISTENT_CODE_SAVE (0)
+#define MICROPY_PERSISTENT_CODE_SAVE (MICROPY_PY_SYS_SETTRACE)
 #endif
 
 // Whether to support saving persistent code to a file via mp_raw_code_save_file
@@ -2011,16 +2013,6 @@ typedef double mp_float_t;
 #else
 #undef MP_WARN_CAT
 #define MP_WARN_CAT(x) (NULL)
-#endif
-
-// Feature dependency check.
-#if MICROPY_PY_SYS_SETTRACE
-#if !MICROPY_PERSISTENT_CODE_SAVE
-#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_PERSISTENT_CODE_SAVE to be enabled"
-#endif
-#if MICROPY_COMP_CONST
-#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_COMP_CONST to be disabled"
-#endif
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

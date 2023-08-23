@@ -134,12 +134,6 @@ typedef long mp_off_t;
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
-// If settrace is enabled then we need code saving.
-#if MICROPY_PY_SYS_SETTRACE
-#define MICROPY_PERSISTENT_CODE_SAVE (1)
-#define MICROPY_COMP_CONST (0)
-#endif
-
 // Unix-specific configuration of machine.mem*.
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
