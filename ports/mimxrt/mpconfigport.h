@@ -67,7 +67,6 @@ uint32_t trng_random_u32(void);
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970               (1)
-#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS        (1)
 #define MICROPY_PY_TIME_INCLUDEFILE         "ports/mimxrt/modtime.c"
@@ -110,7 +109,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
-#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
 // #define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
 #define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
 // #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
