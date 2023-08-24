@@ -60,7 +60,7 @@ FW_TAG="-$FW_DATE-unstable-$FW_GIT"
 
 # build new firmware
 cd ports/cc3200
-${AUTODIR}/build-cc3200-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+build_cc3200_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
 build_esp8266_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp32

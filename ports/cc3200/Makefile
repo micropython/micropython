@@ -7,6 +7,8 @@ endif
 
 # Make 'release' the default build type
 BTYPE ?= release
+# Make the 'application' by default ('bootloader' can be built explicitly)
+BTARGET ?= application
 
 # Port for flashing firmware
 PORT ?= /dev/ttyUSB1
