@@ -1,5 +1,9 @@
 # Helpers for generating BLE advertising payloads.
 
+# A more fully-featured (and easier to use) version of this is implemented in
+# aioble. This code is provided just as a basic example. See
+# https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
+
 from micropython import const
 import struct
 import bluetooth
