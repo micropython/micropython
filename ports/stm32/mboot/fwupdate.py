@@ -3,7 +3,7 @@
 
 from micropython import const
 import struct, time
-import zlib, machine, stm
+import deflate, machine, stm
 
 # Constants to be used with update_mpy
 VFS_FAT = 1
@@ -36,7 +36,7 @@ def dfu_read(filename):
     if hdr == b"Dfu":
         pass
     elif hdr == b"\x1f\x8b\x08":
-        f = zlib.DecompIO(f, 16 + 15)
+        f = deflate.DeflateIO(f, deflate.GZIP)
     else:
         print("Invalid firmware", filename)
         return None
@@ -231,7 +231,7 @@ def update_app_elements(
     # Check firmware is of .dfu or .dfu.gz type
     try:
         with open(filename, "rb") as f:
-            hdr = zlib.DecompIO(f, 16 + 15).read(6)
+            hdr = deflate.DeflateIO(f, deflate.GZIP).read(6)
     except Exception:
         with open(filename, "rb") as f:
             hdr = f.read(6)
