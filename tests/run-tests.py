@@ -205,7 +205,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the test, possibly with redirected input
             try:
-                if "repl_" in test_file:
+                if os.path.basename(test_file).startswith("repl_"):
                     # Need to use a PTY to test command line editing
                     try:
                         import pty
