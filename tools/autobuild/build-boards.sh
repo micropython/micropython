@@ -88,6 +88,10 @@ function build_boards {
     done
 }
 
+function build_cc3200_boards {
+    build_boards hal/cc3200_hal.c $1 $2 zip
+}
+
 function build_esp32_boards {
     build_boards modesp32.c $1 $2 bin elf map uf2 app-bin
 }
