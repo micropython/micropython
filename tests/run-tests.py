@@ -176,20 +176,25 @@ def run_script_on_remote_target(pyb, args, test_file, is_special):
     return had_crash, output_mupy
 
 
-def run_micropython(pyb, args, test_file, is_special=False):
-    special_tests = (
+special_tests = [
+    base_path(file)
+    for file in (
         "micropython/meminfo.py",
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
         "thread/thread_exc2.py",
         "esp32/partition_ota.py",
     )
+]
+
+
+def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
     had_crash = False
     if pyb is None:
         # run on PC
         if (
-            test_file.startswith(("cmdline/", base_path("feature_check/")))
-            or test_file in special_tests
+            test_file_abspath.startswith((base_path("cmdline/"), base_path("feature_check/")))
+            or test_file_abspath in special_tests
         ):
             # special handling for tests of the unix cmdline program
             is_special = True
@@ -283,7 +288,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
                 mpy_modname = os.path.splitext(os.path.basename(mpy_filename))[0]
                 cmdlist.extend(["-m", mpy_modname])
             else:
-                cmdlist.append(os.path.abspath(test_file))
+                cmdlist.append(test_file_abspath)
 
             # run the actual test
             try:
@@ -316,7 +321,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
     if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
         return b"SKIP\n"
 
-    if is_special or test_file in special_tests:
+    if is_special or test_file_abspath in special_tests:
         # convert parts of the output that are not stable across runs
         with open(test_file + ".exp", "rb") as f:
             lines_exp = []
@@ -364,7 +369,8 @@ def run_feature_check(pyb, args, test_file):
     if pyb is not None and test_file.startswith("repl_"):
         # REPL feature tests will not run via pyboard because they require prompt interactivity
         return b""
-    return run_micropython(pyb, args, base_path("feature_check", test_file), is_special=True)
+    test_file_path = base_path("feature_check", test_file)
+    return run_micropython(pyb, args, test_file_path, test_file_path, is_special=True)
 
 
 class ThreadSafeCounter:
@@ -673,6 +679,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
+        test_file_abspath = os.path.abspath(test_file).replace("\\", "/")
 
         if args.filters:
             # Default verdict is the opposit of the first action
@@ -733,7 +740,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # run CPython to work out expected output
             try:
                 output_expected = subprocess.check_output(
-                    CPYTHON3_CMD + [os.path.abspath(test_file)],
+                    CPYTHON3_CMD + [test_file_abspath],
                     cwd=os.path.dirname(test_file),
                     stderr=subprocess.STDOUT,
                 )
@@ -750,7 +757,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             return
 
         # run MicroPython
-        output_mupy = run_micropython(pyb, args, test_file)
+        output_mupy = run_micropython(pyb, args, test_file, test_file_abspath)
 
         if output_mupy == b"SKIP\n":
             print("skip ", test_file)
