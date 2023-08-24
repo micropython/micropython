@@ -7,7 +7,9 @@
         "External Flash",
         "WiFi"
     ],
-    "images": [],
+    "images": [
+        "esp8266.jpg"
+    ],
     "mcu": "esp8266",
     "product": "ESP8266",
     "thumbnail": "",
