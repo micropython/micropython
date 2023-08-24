@@ -30,6 +30,7 @@
 #include "py/obj.h"
 
 extern const mp_obj_type_t machine_adc_type;
+extern const mp_obj_type_t machine_can_type;
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_pwm_type;
@@ -41,6 +42,7 @@ extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_wdt_type;
 
 void machine_adc_init(void);
+void machine_can_irq_deinit(void);
 void machine_pin_irq_deinit(void);
 void machine_pwm_deinit_all(void);
 void machine_uart_deinit_all(void);
