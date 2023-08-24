@@ -234,15 +234,18 @@ def update(debug, board, update_all):
                 print("  " * len(current_group), i, config_string.strip())
 
             target_reference = False
+            board_reference = False
             for referenced in item.referenced:
                 if referenced.name.startswith("IDF_TARGET"):
                     # print(item.name, "references", referenced.name)
                     target_reference = True
                     break
+                if referenced.name == "SPIRAM":
+                    board_reference = True
 
             if (not update_all and not matches_cp_default) or (
                 update_all
-                and matches_group(config_string, BOARD_SETTINGS)
+                and (matches_group(config_string, BOARD_SETTINGS) or board_reference)
                 and not matches_esp_default
             ):
                 print("  " * (len(current_group) + 1), "board")
