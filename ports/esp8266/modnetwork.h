@@ -1,2 +1,0 @@
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_phy_mode_obj);
