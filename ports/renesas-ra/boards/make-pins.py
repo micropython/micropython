@@ -1,258 +1,89 @@
 #!/usr/bin/env python
-"""Creates the pin file for the RAxxx."""
 
-from __future__ import print_function
-
-import argparse
+import os
+import re
 import sys
-import csv
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../../../tools"))
+import boardgen
 
 
-class PinAD(object):
-    def __init__(self, name, cpu_pin_name, pin_idx, bit, channel):
-        self._name = name
-        self._cpu_pin_name = cpu_pin_name
-        self._pin_idx = pin_idx
-        self._bit = bit
-        self._channel = channel
+class RenesasRaPin(boardgen.Pin):
+    def __init__(self, cpu_pin_name):
+        super().__init__(cpu_pin_name)
 
-    def cpu_pin_name(self):
-        return self._cpu_pin_name
+        self._port = int(cpu_pin_name[1], 16)
+        self._bit = int(cpu_pin_name[2:])
 
-    def name(self):
-        return self._name
+        self._adc_name = None
+        self._adc_bits = 0
+        self._adc_channel = 0
 
-    def bit(self):
-        return self._bit
+    def add_adc(self, adc):
+        # The previous version of make-pins.py handled len==4 to mean
+        # adc_bits=8, but this is not used in any of the current af.csv files,
+        # so this needs to be validated.
+        assert len(adc) == 5 and (adc.startswith("AN0") or adc.startswith("AN1"))
+        self._adc_name = adc
+        self._adc_bit = 12
+        self._adc_channel = int(adc[2:])
 
-    def channel(self):
-        return self._channel
+    # Called for each AF defined in the csv file for this pin.
+    def add_af(self, af_idx, af_name, af):
+        if af_idx == 0 and af:
+            assert af_name == "Analog"
+            self.add_adc(af)
 
-    def print(self, out_source):
-        print(
-            "const pin_ad_obj_t pin_{:s}_ad_obj = PIN_AD({:s}, {:d}, {:d}, {:d});".format(
-                self._cpu_pin_name, self._name, self._pin_idx, self._bit, self._channel
-            ),
-            file=out_source,
-        )
-        print("", file=out_source)
+    # Use the PIN() macro defined in ra_pin_prefix.c for defining the pin
+    # objects.
+    def definition(self):
+        # PIN(p_name, p_pin, p_adc)
+        adc = "&pin_{}_adc_obj".format(self.name()) if self._adc_name else "NULL"
+        return "PIN({:s}, {:d}, {:s})".format(self.name(), self._port * 16 + self._bit, adc)
 
-    def print_header(self, out_header):
-        n = self.cpu_pin_name()
-        print("extern const pin_ad_obj_t pin_{:s}_ad_obj;".format(n), file=out_header)
-        print("#define pin_{:s}_ad (&pin_{:s}_ad_obj)".format(n, n), file=out_header)
-
-
-class Pin(object):
-    def __init__(self, name, port, bit):
-        self._name = name
-        self._pin_idx = port * 16 + bit
-        self._pin_ad = []
-        self._board_pin = False
-        # print('// pin_{:s}_obj = PIN({:s}, {:d});'.format(self.name, self.name, self.pin))
-
-    def cpu_pin_name(self):
-        return self._name
-
-    def pin_ad(self):
-        return self._pin_ad
-
-    def is_board_pin(self):
-        return self._board_pin
-
-    def set_is_board_pin(self):
-        self._board_pin = True
-
-    def parse_ad(self, ad_str):
-        ad_bit = 0
-        ad_channel = 0
-        if (len(ad_str) == 5) and (ad_str[:3] == "AN0"):
-            ad_bit = 12
-            ad_channel = int(ad_str[2:])
-            self._pin_ad.append(PinAD(ad_str, self._name, self._pin_idx, ad_bit, ad_channel))
-        elif (len(ad_str) == 5) and (ad_str[:3] == "AN1"):
-            ad_bit = 12
-            ad_channel = int(ad_str[2:])
-            self._pin_ad.append(PinAD(ad_str, self._name, self._pin_idx, ad_bit, ad_channel))
-        elif ad_str[:2] == "AN":
-            ad_bit = 8
-            ad_channel = int(ad_str[2:4])
-            self._pin_ad.append(PinAD(ad_str, self._name, self._pin_idx, ad_bit, ad_channel))
-
-    def print(self, out_source):
-        pin_ad_name = "NULL"
-        for pin_ad in self._pin_ad:
-            pin_ad.print(out_source)
-            pin_ad_name = "pin_{:s}_ad".format(pin_ad.cpu_pin_name())
-        print(
-            "const machine_pin_obj_t pin_{:s}_obj = PIN({:s}, {:d}, {:s});".format(
-                self._name, self._name, self._pin_idx, pin_ad_name
-            ),
-            file=out_source,
-        )
-        print("", file=out_source)
-
-    def print_header(self, out_header):
-        n = self.cpu_pin_name()
-        print("extern const machine_pin_obj_t pin_{:s}_obj;".format(n), file=out_header)
-        print("#define pin_{:s} (&pin_{:s}_obj)".format(n, n), file=out_header)
-
-
-class NamedPin(object):
-    def __init__(self, name, pin):
-        self._name = name
-        self._pin = pin
-        # print('// NamedPin {:s}'.format(self._name))
-
-    def pin(self):
-        return self._pin
-
-    def name(self):
-        return self._name
-
-
-class Pins(object):
-    def __init__(self):
-        self.cpu_pins = []  # list of NamedPin objects
-        self.board_pins = []  # list of NamedPin objects
-
-    def find_pin(self, cpu_pin_name):
-        for named_pin in self.cpu_pins:
-            pin = named_pin.pin()
-            if pin.cpu_pin_name() == cpu_pin_name:
-                return pin
-
-    # rx63n_al.csv
-    # cpu_pin_name, cpu_pin_port, cpu_pin_bit
-    def parse_af_file(self, filename):
-        with open(filename, "r") as csvfile:
-            rows = csv.reader(csvfile)
-            for row in rows:
-                try:
-                    cpu_pin_name = row[0]
-                    cpu_pin_port = int(row[1], 16)
-                    cpu_pin_bit = int(row[2])
-                except:
-                    continue
-                pin = Pin(cpu_pin_name, cpu_pin_port, cpu_pin_bit)
-                self.cpu_pins.append(NamedPin(cpu_pin_name, pin))
-                pin.parse_ad(row[3])
-
-    # pins.csv
-    # named_pin, cpu_pin_name
-    def parse_board_file(self, filename):
-        with open(filename, "r") as csvfile:
-            rows = csv.reader(csvfile)
-            for row in rows:
-                try:
-                    board_pin_name = row[0]
-                    cpu_pin_name = row[1]
-                except:
-                    continue
-                pin = self.find_pin(cpu_pin_name)
-                if pin:
-                    pin.set_is_board_pin()
-                    self.board_pins.append(NamedPin(board_pin_name, pin))
-
-    def print_named(self, label, named_pins, out_source):
-        print(
-            "STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{".format(label),
-            file=out_source,
-        )
-        for named_pin in named_pins:
-            pin = named_pin.pin()
-            if pin.is_board_pin():
-                print(
-                    "  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&pin_{:s}_obj) }},".format(
-                        named_pin.name(), pin.cpu_pin_name()
-                    ),
-                    file=out_source,
-                )
-        print("};", file=out_source)
-        print(
-            "MP_DEFINE_CONST_DICT(pin_{:s}_pins_locals_dict, pin_{:s}_pins_locals_dict_table);".format(
-                label, label
-            ),
-            file=out_source,
-        )
-
-    def print(self, out_source):
-        for named_pin in self.cpu_pins:
-            pin = named_pin.pin()
-            if pin.is_board_pin():
-                pin.print(out_source)
-        self.print_named("cpu", self.cpu_pins, out_source)
-        print("", file=out_source)
-        self.print_named("board", self.board_pins, out_source)
-
-    def print_header(self, out_header):
-        for named_pin in self.cpu_pins:
-            pin = named_pin.pin()
-            if pin.is_board_pin():
-                pin.print_header(out_header)
-            pin_ads = pin.pin_ad()
-            for pin_ad in pin_ads:
-                pin_ad.print_header(out_header)
-        # provide #define's mapping board to cpu name
-        for named_pin in self.board_pins:
+    # This will be called at the start of the output (after the prefix). Use
+    # it to emit the ADC objects (via the PIN_ADC() macro).
+    def print_source(self, out_source):
+        # PIN_ADC(p_name, p_pin, adc_bit, adc_channel)
+        if self._adc_name:
             print(
-                "#define pyb_pin_{:s} pin_{:s}".format(
-                    named_pin.name(), named_pin.pin().cpu_pin_name()
+                "const machine_pin_adc_obj_t pin_{}_adc_obj = PIN_ADC({:s}, {:d}, {:d}, {:d});".format(
+                    self.name(),
+                    self._adc_name,
+                    self._port * 16 + self._bit,
+                    self._adc_bits,
+                    self._adc_channel,
                 ),
-                file=out_header,
+                file=out_source,
             )
 
-    def print_ad_hdr(self, out_ad_const):
-        for named_pin in self.cpu_pins:
-            pin = named_pin.pin()
-            if pin.is_board_pin():
-                pin_ads = pin.pin_ad()
-                for pin_ad in pin_ads:
-                    print(
-                        "  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_INT(GPIO_{:s}) }}, \n".format(
-                            pin_ad.name(), pin_ad.name()
-                        ),
-                        file=out_ad_const,
-                    )
+    # RA cpu names must be "PXNN", where X is hexadecimal port, NN is decimal bit offset.
+    @staticmethod
+    def validate_cpu_pin_name(cpu_pin_name):
+        boardgen.Pin.validate_cpu_pin_name(cpu_pin_name)
+
+        if not re.match("^P[0-9A-F][0-9][0-9]$", cpu_pin_name):
+            raise boardgen.PinGeneratorError("Invalid cpu pin name '{}'".format(cpu_pin_name))
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate board specific pin file")
-    parser.add_argument("--board-csv")
-    parser.add_argument("--af-csv")
-    parser.add_argument("--prefix")
-    parser.add_argument("--output-source")
-    parser.add_argument("--output-header")
-    parser.add_argument("--output-ad-const")
-    args = parser.parse_args()
+class RenesasRaPinGenerator(boardgen.PinGenerator):
+    def __init__(self):
+        # Use custom pin type above, and also enable the --af-csv argument so
+        # that add_af gets called on each pin.
+        super().__init__(
+            pin_type=RenesasRaPin,
+            enable_af=True,
+        )
 
-    pins = Pins()
+    # Override the default implementation just to change the default arguments.
+    def parse_af_csv(self, filename):
+        return super().parse_af_csv(filename, header_rows=1, pin_col=0, af_col=3)
 
-    with open(args.output_source, "w") as out_source:
-        print("// This file was automatically generated by make-pins.py", file=out_source)
-        print("//", file=out_source)
-        if args.af_csv:
-            print("// --af {:s}".format(args.af_csv), file=out_source)
-            pins.parse_af_file(args.af_csv)
-
-        if args.board_csv:
-            print("// --board {:s}".format(args.board_csv), file=out_source)
-            pins.parse_board_file(args.board_csv)
-
-        if args.prefix:
-            print("// --prefix {:s}".format(args.prefix), file=out_source)
-            print("", file=out_source)
-            with open(args.prefix, "r") as prefix_file:
-                print(prefix_file.read(), file=out_source)
-
-        pins.print(out_source)
-
-    with open(args.output_header, "w") as out_header:
-        pins.print_header(out_header)
-
-    with open(args.output_ad_const, "w") as out_ad_const:
-        pins.print_ad_hdr(out_ad_const)
+    # Renesas-specific behavior, we use pin_PNNN for the cpu names, but
+    # pyb_pin_FOO for the board names.
+    def board_name_define_prefix(self):
+        return "pyb_"
 
 
 if __name__ == "__main__":
-    main()
+    RenesasRaPinGenerator().main()
