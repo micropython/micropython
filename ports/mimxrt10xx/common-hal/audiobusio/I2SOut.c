@@ -74,12 +74,21 @@ STATIC void config_periph_pin(const mcu_periph_obj_t *periph) {
 // Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
-    const mcu_pin_obj_t *data, bool left_justified) {
+    const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
 
     int instance = -1;
     const mcu_periph_obj_t *bclk_periph = find_pin_function(mcu_i2s_tx_bclk_list, bit_clock, &instance, MP_QSTR_bit_clock);
     const mcu_periph_obj_t *sync_periph = find_pin_function(mcu_i2s_tx_sync_list, word_select, &instance, MP_QSTR_word_select);
     const mcu_periph_obj_t *data_periph = find_pin_function(mcu_i2s_tx_data0_list, data, &instance, MP_QSTR_data);
+
+    if (main_clock != NULL) {
+        const mcu_periph_obj_t *mclk_periph = find_pin_function(mcu_i2s_mclk_list, main_clock, &instance, MP_QSTR_main_clock);
+        self->mclk = main_clock;
+        claim_pin(main_clock);
+        config_periph_pin(mclk_periph);
+        IOMUXC_GPR->GPR1 |= IOMUXC_GPR_GPR1_SAI1_MCLK_DIR_MASK << (instance - 1);
+    }
+    self->instance = instance;
 
     sai_transceiver_t config;
     SAI_GetClassicI2SConfig(&config, 16, kSAI_Stereo, 1);
@@ -121,6 +130,13 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
 
     common_hal_reset_pin(self->data);
     self->data = NULL;
+
+    if (self->mclk != NULL) {
+        IOMUXC_GPR->GPR1 &= ~(IOMUXC_GPR_GPR1_SAI1_MCLK_DIR_MASK << (self->instance - 1));
+
+        common_hal_reset_pin(self->mclk);
+        self->mclk = NULL;
+    }
 }
 
 void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
