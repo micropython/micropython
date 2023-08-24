@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Jose David M <jquintana202020@gmail.com>\n"
+"Last-Translator: Pablo Martinez Bernal <elpekenin@elpekenin.dev>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -1840,8 +1840,7 @@ msgstr "El polígono necesita al menos 3 puntos"
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
-"Falta de potencia. Asegura que estás suministrando suficiente potencia."
+msgstr "Falta de potencia. Asegura que estás suministrando suficiente potencia."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
