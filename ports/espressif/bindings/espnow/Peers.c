@@ -118,8 +118,7 @@ STATIC mp_obj_t espnow_peers_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_b
 }
 
 espnow_peers_obj_t *espnow_peers_new(void) {
-    espnow_peers_obj_t *self = m_new_obj(espnow_peers_obj_t);
-    self->base.type = &espnow_peers_type;
+    espnow_peers_obj_t *self = mp_obj_malloc(espnow_peers_obj_t, &espnow_peers_type);
     self->list = mp_obj_new_list(0, NULL);
     return self;
 }

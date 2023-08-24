@@ -48,7 +48,7 @@ void common_hal_displayio_tilegrid_construct(displayio_tilegrid_t *self, mp_obj_
         }
         self->inline_tiles = true;
     } else {
-        self->tiles = (uint8_t *)m_malloc(total_tiles, false);
+        self->tiles = (uint8_t *)m_malloc(total_tiles);
         for (uint32_t i = 0; i < total_tiles; i++) {
             self->tiles[i] = default_tile;
         }

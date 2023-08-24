@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2016 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2016 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -325,67 +325,56 @@ MP_DEFINE_EXCEPTION(KeyboardInterrupt, BaseException)
 MP_DEFINE_EXCEPTION(ReloadException, BaseException)
 MP_DEFINE_EXCEPTION(GeneratorExit, BaseException)
 MP_DEFINE_EXCEPTION(Exception, BaseException)
-  #if MICROPY_PY_ASYNC_AWAIT
-MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
-  #endif
-MP_DEFINE_EXCEPTION(StopIteration, Exception)
-MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
-// MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
-MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
-MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
-MP_DEFINE_EXCEPTION(AssertionError, Exception)
-MP_DEFINE_EXCEPTION(AttributeError, Exception)
-// MP_DEFINE_EXCEPTION(BufferError, Exception)
-// MP_DEFINE_EXCEPTION(EnvironmentError, Exception) use OSError instead
-MP_DEFINE_EXCEPTION(EOFError, Exception)
-MP_DEFINE_EXCEPTION(ImportError, Exception)
-// MP_DEFINE_EXCEPTION(IOError, Exception) use OSError instead
-MP_DEFINE_EXCEPTION(LookupError, Exception)
-MP_DEFINE_EXCEPTION(IndexError, LookupError)
-MP_DEFINE_EXCEPTION(KeyError, LookupError)
-MP_DEFINE_EXCEPTION(MemoryError, Exception)
-MP_DEFINE_EXCEPTION(NameError, Exception)
-/*
-    MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
-    */
-MP_DEFINE_EXCEPTION(OSError, Exception)
-MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-MP_DEFINE_EXCEPTION(ConnectionError, OSError)
-MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
-/*
-      MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
-      MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
-      MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
-      */
-/*
-    MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
-    MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
-    MP_DEFINE_EXCEPTION(InterruptedError, OSError)
-    MP_DEFINE_EXCEPTION(IsADirectoryError, OSError)
-    MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
-    MP_DEFINE_EXCEPTION(PermissionError, OSError)
-    MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
-    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
-    MP_DEFINE_EXCEPTION(FileExistsError, OSError)
-    MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
-    MP_DEFINE_EXCEPTION(ReferenceError, Exception)
-    */
-MP_DEFINE_EXCEPTION(RuntimeError, Exception)
-MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
-MP_DEFINE_EXCEPTION(SyntaxError, Exception)
-MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
-/*
-      MP_DEFINE_EXCEPTION(TabError, IndentationError)
-      */
-// MP_DEFINE_EXCEPTION(SystemError, Exception)
-MP_DEFINE_EXCEPTION(TypeError, Exception)
-#if MICROPY_EMIT_NATIVE
-MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
+#if MICROPY_PY_ASYNC_AWAIT
+  MP_DEFINE_EXCEPTION(StopAsyncIteration, Exception)
 #endif
-MP_DEFINE_EXCEPTION(ValueError, Exception)
+  MP_DEFINE_EXCEPTION(StopIteration, Exception)
+  MP_DEFINE_EXCEPTION(ArithmeticError, Exception)
+    // MP_DEFINE_EXCEPTION(FloatingPointError, ArithmeticError)
+    MP_DEFINE_EXCEPTION(OverflowError, ArithmeticError)
+    MP_DEFINE_EXCEPTION(ZeroDivisionError, ArithmeticError)
+  MP_DEFINE_EXCEPTION(AssertionError, Exception)
+  MP_DEFINE_EXCEPTION(AttributeError, Exception)
+  // MP_DEFINE_EXCEPTION(BufferError, Exception)
+  // MP_DEFINE_EXCEPTION(EnvironmentError, Exception) use OSError instead
+  MP_DEFINE_EXCEPTION(EOFError, Exception)
+  MP_DEFINE_EXCEPTION(ImportError, Exception)
+  // MP_DEFINE_EXCEPTION(IOError, Exception) use OSError instead
+  MP_DEFINE_EXCEPTION(LookupError, Exception)
+    MP_DEFINE_EXCEPTION(IndexError, LookupError)
+    MP_DEFINE_EXCEPTION(KeyError, LookupError)
+  MP_DEFINE_EXCEPTION(MemoryError, Exception)
+  MP_DEFINE_EXCEPTION(NameError, Exception)
+    // MP_DEFINE_EXCEPTION(UnboundLocalError, NameError)
+  MP_DEFINE_EXCEPTION(OSError, Exception)
+    MP_DEFINE_EXCEPTION(ConnectionError, OSError)
+      MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
+      // MP_DEFINE_EXCEPTION(ConnectionAbortedError, ConnectionError)
+      // MP_DEFINE_EXCEPTION(ConnectionRefusedError, ConnectionError)
+      // MP_DEFINE_EXCEPTION(ConnectionResetError, ConnectionError)
+    // MP_DEFINE_EXCEPTION(FileExistsError, OSError)
+    MP_DEFINE_EXCEPTION(FileNotFoundError, OSError)
+    // MP_DEFINE_EXCEPTION(InterruptedError, OSError)
+    // MP_DEFINE_EXCEPTION(IsADirectoryError, OSError)
+    // MP_DEFINE_EXCEPTION(NotADirectoryError, OSError)
+    // MP_DEFINE_EXCEPTION(PermissionError, OSError)
+    // MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
+    // MP_DEFINE_EXCEPTION(ReferenceError, Exception)
+    MP_DEFINE_EXCEPTION(TimeoutError, OSError)
+  MP_DEFINE_EXCEPTION(RuntimeError, Exception)
+    MP_DEFINE_EXCEPTION(NotImplementedError, RuntimeError)
+  MP_DEFINE_EXCEPTION(SyntaxError, Exception)
+    MP_DEFINE_EXCEPTION(IndentationError, SyntaxError)
+      // MP_DEFINE_EXCEPTION(TabError, IndentationError)
+  // MP_DEFINE_EXCEPTION(SystemError, Exception)
+  MP_DEFINE_EXCEPTION(TypeError, Exception)
+#if MICROPY_EMIT_NATIVE
+    MP_DEFINE_EXCEPTION(ViperTypeError, TypeError)
+#endif
+  MP_DEFINE_EXCEPTION(ValueError, Exception)
 #if MICROPY_PY_BUILTINS_STR_UNICODE
-MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
-// TODO: Implement more UnicodeError subclasses which take arguments
+    MP_DEFINE_EXCEPTION(UnicodeError, ValueError)
+    //TODO: Implement more UnicodeError subclasses which take arguments
 #endif
 #if CIRCUITPY_ALARM
 MP_DEFINE_EXCEPTION(DeepSleepRequest, BaseException)
@@ -413,7 +402,7 @@ mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args) {
     assert(exc_type->make_new == mp_obj_exception_make_new);
-    return exc_type->make_new(exc_type, n_args, 0, args);
+    return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
 
 #if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
@@ -599,6 +588,16 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
+
+    #if MICROPY_PY_SYS_TRACEBACKLIMIT
+    mp_int_t max_traceback = MP_OBJ_SMALL_INT_VALUE(MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]));
+    if (max_traceback <= 0) {
+        return;
+    } else if (self->traceback != NULL && self->traceback->len >= max_traceback * TRACEBACK_ENTRY_LEN) {
+        self->traceback->len -= TRACEBACK_ENTRY_LEN;
+        memmove(self->traceback->data, self->traceback->data + TRACEBACK_ENTRY_LEN, self->traceback->len * sizeof(self->traceback->data[0]));
+    }
+    #endif
 
     // Try to allocate memory for the traceback, with fallback to emergency traceback object
     if (self->traceback == NULL || self->traceback == (mp_obj_traceback_t *)&mp_const_empty_traceback_obj) {

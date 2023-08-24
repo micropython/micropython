@@ -56,8 +56,7 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    bleio_address_obj_t *self = m_new_obj(bleio_address_obj_t);
-    self->base.type = &bleio_address_type;
+    bleio_address_obj_t *self = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
 
     const mp_obj_t address = args[ARG_address].u_obj;
     mp_buffer_info_t buf_info;

@@ -289,8 +289,8 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     self->buffer_length = sample_rate * buffer_length_ms
         * self->bytes_per_sample * self->channel_count / 1000;
     self->buffer_length = (self->buffer_length + 3) & ~3;
-    self->buffers[0] = m_malloc(self->buffer_length, false);
-    self->buffers[1] = m_malloc(self->buffer_length, false);
+    self->buffers[0] = m_malloc(self->buffer_length);
+    self->buffers[1] = m_malloc(self->buffer_length);
 
 
     audiosample_reset_buffer(self->sample, false, 0);

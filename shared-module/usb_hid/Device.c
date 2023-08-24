@@ -198,7 +198,7 @@ void common_hal_usb_hid_device_construct(usb_hid_device_obj_t *self, mp_obj_t re
 
     // Copy the raw descriptor bytes into a heap obj. We don't keep the Python descriptor object.
 
-    uint8_t *descriptor_bytes = gc_alloc(bufinfo.len, false, false);
+    uint8_t *descriptor_bytes = gc_alloc(bufinfo.len, false);
     memcpy(descriptor_bytes, bufinfo.buf, bufinfo.len);
     self->report_descriptor = descriptor_bytes;
 
@@ -255,12 +255,12 @@ void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self) {
         // which is an unusual case. Normally we can just pass the data directly with tud_hid_report().
         self->in_report_buffers[i] =
             self->in_report_lengths[i] > 0
-            ? gc_alloc(self->in_report_lengths[i], false, true /*long-lived*/)
+            ? gc_alloc(self->in_report_lengths[i], false)
             : NULL;
 
         self->out_report_buffers[i] =
             self->out_report_lengths[i] > 0
-            ? gc_alloc(self->out_report_lengths[i], false, true /*long-lived*/)
+            ? gc_alloc(self->out_report_lengths[i], false)
             : NULL;
     }
     memset(self->out_report_buffers_updated, 0, sizeof(self->out_report_buffers_updated));

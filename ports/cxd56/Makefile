@@ -198,8 +198,3 @@ flash-bootloader: $(SPRESENSE_SDK) $(FIRMWARE)
 	tools/flash_writer.py -s -c $(SERIAL) -d -b 115200 -n $(BOOTLOADER_FILES)
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

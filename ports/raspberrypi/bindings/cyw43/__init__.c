@@ -155,4 +155,4 @@ const mp_obj_module_t cyw43_module = {
     .globals = (mp_obj_dict_t *)&cyw43_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_cyw43, cyw43_module, CIRCUITPY_CYW43);
+MP_REGISTER_MODULE(MP_QSTR_cyw43, cyw43_module);

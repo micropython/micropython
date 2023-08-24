@@ -50,8 +50,7 @@ STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, args_in, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    qrio_qrdecoder_obj_t *self = m_new_obj(qrio_qrdecoder_obj_t);
-    self->base.type = &qrio_qrdecoder_type_obj;
+    qrio_qrdecoder_obj_t *self = mp_obj_malloc(qrio_qrdecoder_obj_t, &qrio_qrdecoder_type_obj);
     shared_module_qrio_qrdecoder_construct(self, args[ARG_width].u_int, args[ARG_height].u_int);
 
     return self;

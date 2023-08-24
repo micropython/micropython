@@ -47,4 +47,4 @@ const mp_obj_module_t is31fl3741_module = {
     .globals = (mp_obj_dict_t *)&is31fl3741_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_is31fl3741, is31fl3741_module, CIRCUITPY_IS31FL3741);
+MP_REGISTER_MODULE(MP_QSTR_is31fl3741, is31fl3741_module);

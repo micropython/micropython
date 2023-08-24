@@ -1,13 +1,10 @@
 # Test cancelling a task that is waiting on a task that just finishes.
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 async def sleep_task():

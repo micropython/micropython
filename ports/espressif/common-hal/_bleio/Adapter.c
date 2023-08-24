@@ -142,8 +142,7 @@ bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *s
         return NULL;
     }
 
-    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
+    bleio_address_obj_t *address = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
     common_hal_bleio_address_construct(address, address_bytes, BLEIO_ADDRESS_TYPE_RANDOM_STATIC);
     return address;
 }

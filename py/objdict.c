@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -584,8 +584,7 @@ STATIC const mp_obj_type_t mp_type_dict_view = {
 };
 
 STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
-    mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
-    o->base.type = &mp_type_dict_view;
+    mp_obj_dict_view_t *o = mp_obj_malloc(mp_obj_dict_view_t, &mp_type_dict_view);
     o->dict = dict;
     o->kind = kind;
     return MP_OBJ_FROM_PTR(o);

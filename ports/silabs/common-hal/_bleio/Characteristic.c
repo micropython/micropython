@@ -193,9 +193,9 @@ size_t common_hal_bleio_characteristic_get_value(
     if (common_hal_bleio_service_get_is_remote(self->service)) {
         // ble client gets characteristic value
         if (BT_GATT_CHRC_READ & self->props) {
-            sc = sl_bt_gatt_read_characteristic_value(conn_handle,self->handle);
+            sc = sl_bt_gatt_read_characteristic_value(conn_handle, self->handle);
             while (SL_STATUS_OK != sc && retry > 0) {
-                sc = sl_bt_gatt_read_characteristic_value(conn_handle,self->handle);
+                sc = sl_bt_gatt_read_characteristic_value(conn_handle, self->handle);
                 vTaskDelay(100 / portTICK_PERIOD_MS);
                 retry--;
             }
@@ -372,7 +372,7 @@ void common_hal_bleio_characteristic_add_descriptor(
 
 // Set the remote characteristic’s CCCD to enable or disable notification and indication.
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self,
-    bool notify,bool indicate) {
+    bool notify, bool indicate) {
 
     sl_status_t sc = SL_STATUS_FAIL;
 
@@ -383,7 +383,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self,
     indicate = 0;
     if (notify) {
         sc = sl_bt_gatt_set_characteristic_notification(conn_handle,
-            self->handle,sl_bt_gatt_notification);
+            self->handle, sl_bt_gatt_notification);
         if (SL_STATUS_OK != sc) {
             mp_raise_bleio_BluetoothError(translate("Notify fail"));
         }
@@ -391,7 +391,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self,
 
     if (indicate) {
         sc = sl_bt_gatt_set_characteristic_notification(conn_handle,
-            self->handle,sl_bt_gatt_indication);
+            self->handle, sl_bt_gatt_indication);
         if (SL_STATUS_OK != sc) {
             mp_raise_bleio_BluetoothError(translate("Indicate fail"));
         }
@@ -399,7 +399,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self,
 
     if (0 == notify && 0 == indicate) {
         sc = sl_bt_gatt_set_characteristic_notification(conn_handle,
-            self->handle,sl_bt_gatt_disable);
+            self->handle, sl_bt_gatt_disable);
         if (SL_STATUS_OK != sc) {
             mp_raise_bleio_BluetoothError(translate("Indicate fail"));
         }

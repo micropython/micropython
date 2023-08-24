@@ -35,7 +35,22 @@
 #include "shared-bindings/util.h"
 
 //| class KeyMatrix:
-//|     """Manage a 2D matrix of keys with row and column pins."""
+//|     """Manage a 2D matrix of keys with row and column pins.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["keypad.KeyMatrix"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -72,8 +87,7 @@
 
 STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_KEYPAD_KEYMATRIX
-    keypad_keymatrix_obj_t *self = m_new_obj(keypad_keymatrix_obj_t);
-    self->base.type = &keypad_keymatrix_type;
+    keypad_keymatrix_obj_t *self = mp_obj_malloc(keypad_keymatrix_obj_t, &keypad_keymatrix_type);
     enum { ARG_row_pins, ARG_column_pins, ARG_columns_to_anodes, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_row_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },

@@ -79,6 +79,10 @@ def main():
         submodules = ["extmod/ulab", "lib/", "tools/"]
     elif TARGET == "tests":
         submodules = ["extmod/ulab", "lib/", "tools/"]
+        submodules_tags = [
+            "frozen/Adafruit_CircuitPython_asyncio",
+            "frozen/Adafruit_CircuitPython_Ticks",
+        ]
     elif TARGET == "docs":
         # used in .readthedocs.yml to generate RTD
         submodules = ["extmod/ulab"]

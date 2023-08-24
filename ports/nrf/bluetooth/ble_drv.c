@@ -95,7 +95,7 @@ void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
     }
 
     // Add a new handler to the front of the list
-    ble_drv_evt_handler_entry_t *handler = m_new_ll(ble_drv_evt_handler_entry_t, 1);
+    ble_drv_evt_handler_entry_t *handler = m_new(ble_drv_evt_handler_entry_t, 1);
     ble_drv_add_event_handler_entry(handler, func, param);
 }
 

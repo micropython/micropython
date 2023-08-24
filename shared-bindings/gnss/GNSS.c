@@ -37,8 +37,7 @@
 //|         :param system: satellite system to use"""
 //|         ...
 STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    gnss_obj_t *self = m_new_obj(gnss_obj_t);
-    self->base.type = &gnss_type;
+    gnss_obj_t *self = mp_obj_malloc(gnss_obj_t, &gnss_type);
     enum { ARG_system };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_system, MP_ARG_REQUIRED | MP_ARG_OBJ },

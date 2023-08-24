@@ -141,8 +141,7 @@ STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_arg
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
 
-    gifio_ondiskgif_t *self = m_new_obj(gifio_ondiskgif_t);
-    self->base.type = &gifio_ondiskgif_type;
+    gifio_ondiskgif_t *self = mp_obj_malloc(gifio_ondiskgif_t, &gifio_ondiskgif_type);
     common_hal_gifio_ondiskgif_construct(self, MP_OBJ_TO_PTR(filename), args[ARG_use_palette].u_bool);
 
     return MP_OBJ_FROM_PTR(self);

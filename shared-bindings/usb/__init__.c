@@ -50,4 +50,4 @@ const mp_obj_module_t usb_module = {
     .globals = (mp_obj_dict_t *)&usb_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usb, usb_module, CIRCUITPY_USB_HOST);
+MP_REGISTER_MODULE(MP_QSTR_usb, usb_module);

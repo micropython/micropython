@@ -85,7 +85,7 @@ static int pulsein_interrupt_handler(int irq, FAR void *context, FAR void *arg) 
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
-    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }

@@ -40,8 +40,8 @@
 #include "py/runtime.h"
 
 STATIC mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj_t *target, uint8_t address, bool is_read, bool is_restart) {
-    i2ctarget_i2c_target_request_obj_t *self = m_new_obj(i2ctarget_i2c_target_request_obj_t);
-    self->base.type = &i2ctarget_i2c_target_request_type;
+    i2ctarget_i2c_target_request_obj_t *self =
+        mp_obj_malloc(i2ctarget_i2c_target_request_obj_t, &i2ctarget_i2c_target_request_type);
     self->target = target;
     self->address = address;
     self->is_read = is_read;
@@ -69,8 +69,7 @@ STATIC mp_obj_t mp_obj_new_i2ctarget_i2c_target_request(i2ctarget_i2c_target_obj
 //|         :param bool smbus: Use SMBUS timings if the hardware supports it"""
 //|         ...
 STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    i2ctarget_i2c_target_obj_t *self = m_new_obj(i2ctarget_i2c_target_obj_t);
-    self->base.type = &i2ctarget_i2c_target_type;
+    i2ctarget_i2c_target_obj_t *self = mp_obj_malloc(i2ctarget_i2c_target_obj_t, &i2ctarget_i2c_target_type);
     enum { ARG_scl, ARG_sda, ARG_addresses, ARG_smbus };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },

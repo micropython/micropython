@@ -73,8 +73,7 @@ static mp_obj_t gifio_gifwriter_make_new(const mp_obj_type_t *type, size_t n_arg
         own_file = true;
     }
 
-    gifio_gifwriter_t *self = m_new_obj(gifio_gifwriter_t);
-    self->base.type = &gifio_gifwriter_type;
+    gifio_gifwriter_t *self = mp_obj_malloc(gifio_gifwriter_t, &gifio_gifwriter_type);
     shared_module_gifio_gifwriter_construct(
         self,
         file,

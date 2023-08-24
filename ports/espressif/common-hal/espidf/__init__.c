@@ -198,4 +198,4 @@ void raise_esp_error(esp_err_t err) {
     mp_raise_msg_varg(exception_type, translate("%s error 0x%x"), group, err);
 }
 
-MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module, CIRCUITPY_ESPIDF);
+MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module);

@@ -172,9 +172,3 @@ $(BUILD)/firmware.disk.img.zip: $(BUILD)/kernel$(SUFFIX).img
 	$(Q)rm $(BUILD)/circuitpython-disk.img
 
 include $(TOP)/py/mkrules.mk
-
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

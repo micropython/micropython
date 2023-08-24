@@ -441,8 +441,9 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
+intersphinx_mapping = {"python": ('https://docs.python.org/3/', None),
                        "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None),
+                       "mcp2515": ('https://circuitpython.readthedocs.io/projects/mcp2515/en/latest/', None),
                        "typing": ('https://circuitpython.readthedocs.io/projects/adafruit-circuitpython-typing/en/latest/', None)}
 
 # Adapted from sphinxcontrib-redirects

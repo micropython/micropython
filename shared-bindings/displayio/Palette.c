@@ -59,8 +59,7 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_palette_t *self = m_new_obj(displayio_palette_t);
-    self->base.type = &displayio_palette_type;
+    displayio_palette_t *self = mp_obj_malloc(displayio_palette_t, &displayio_palette_type);
     common_hal_displayio_palette_construct(self, mp_arg_validate_int_range(args[ARG_color_count].u_int, 1, 32767, MP_QSTR_color_count), args[ARG_dither].u_bool);
 
     return MP_OBJ_FROM_PTR(self);

@@ -72,7 +72,7 @@ void PLACE_IN_ITCM(background_callback_add)(background_callback_t * cb, backgrou
     background_callback_add_core(cb);
 }
 
-bool inline background_callback_pending(void) {
+inline bool background_callback_pending(void) {
     return callback_head != NULL;
 }
 

@@ -68,8 +68,7 @@
 //|         """
 //|         ...
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
-    self->base.type = &busio_i2c_type;
+    busio_i2c_obj_t *self = mp_obj_malloc(busio_i2c_obj_t, &busio_i2c_type);
     enum { ARG_scl, ARG_sda, ARG_frequency, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },

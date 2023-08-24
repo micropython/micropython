@@ -89,8 +89,7 @@ STATIC mp_obj_t bitbangio_spi_make_new(const mp_obj_type_t *type, size_t n_args,
     const mcu_pin_obj_t *mosi = validate_obj_is_free_pin_or_none(args[ARG_MOSI].u_obj, MP_QSTR_mosi);
     const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj, MP_QSTR_miso);
 
-    bitbangio_spi_obj_t *self = m_new_obj(bitbangio_spi_obj_t);
-    self->base.type = &bitbangio_spi_type;
+    bitbangio_spi_obj_t *self = mp_obj_malloc(bitbangio_spi_obj_t, &bitbangio_spi_type);
     shared_module_bitbangio_spi_construct(self, clock, mosi, miso);
     return (mp_obj_t)self;
 }
@@ -274,7 +273,7 @@ STATIC mp_obj_t bitbangio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, 
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
-        { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_write_value, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     bitbangio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);

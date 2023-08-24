@@ -41,6 +41,8 @@
 //| """functions that an OS normally provides
 //|
 //| |see_cpython_module| :mod:`cpython:os`.
+//|
+//| .. jinja
 //| """
 //|
 //| import typing
@@ -88,7 +90,24 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 //| def getenv(key: str, default: Optional[str] = None) -> Optional[str]:
 //|     """Get the environment variable value for the given key or return ``default``.
 //|
-//|     This may load values from disk so cache the result instead of calling this often."""
+//|     This may load values from disk so cache the result instead of calling this often.
+//|
+//|     On boards that do not support ``settings.toml`` reading in the core, this function will raise NotImplementedError.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["os.getenv"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|     ...
 //|
 STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -300,4 +319,4 @@ const mp_obj_module_t os_module = {
     .globals = (mp_obj_dict_t *)&os_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_os, os_module, CIRCUITPY_OS);
+MP_REGISTER_MODULE(MP_QSTR_os, os_module);

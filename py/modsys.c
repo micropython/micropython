@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@
 
 #include "py/builtin.h"
 #include "py/objlist.h"
+#include "py/objmodule.h"
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "py/objint.h"
@@ -35,6 +36,8 @@
 #include "py/smallint.h"
 #include "py/runtime.h"
 #include "py/persistentcode.h"
+#include "extmod/moduplatform.h"
+#include "genhdr/mpversion.h"
 
 #if MICROPY_PY_SYS_SETTRACE
 #include "py/objmodule.h"
@@ -84,7 +87,7 @@ STATIC const qstr impl_fields[] = {
     MP_QSTR_name,
     MP_QSTR_version,
     #if MICROPY_PERSISTENT_CODE_LOAD
-    MP_QSTR_mpy,
+    MP_QSTR__mpy,
     #endif
 };
 STATIC MP_DEFINE_ATTRTUPLE(
@@ -119,6 +122,25 @@ STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_exit_obj, 0, 1, mp_sys_exit);
+
+STATIC mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
+    #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
+    void *stream_obj = &mp_sys_stdout_obj;
+    if (n_args > 1) {
+        mp_get_stream_raise(args[1], MP_STREAM_OP_WRITE);
+        stream_obj = MP_OBJ_TO_PTR(args[1]);
+    }
+
+    mp_print_t print = {stream_obj, mp_stream_write_adaptor};
+    mp_obj_print_exception(&print, args[0]);
+    #else
+    (void)n_args;
+    mp_obj_print_exception(&mp_plat_print, args[0]);
+    #endif
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_print_exception);
 
 #if MICROPY_PY_SYS_EXC_INFO
 STATIC mp_obj_t mp_sys_exc_info(void) {
@@ -164,6 +186,25 @@ STATIC mp_obj_t mp_sys_settrace(mp_obj_t obj) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_settrace_obj, mp_sys_settrace);
 #endif // MICROPY_PY_SYS_SETTRACE
+
+#if MICROPY_PY_SYS_ATTR_DELEGATION
+STATIC const uint16_t sys_mutable_keys[] = {
+    #if MICROPY_PY_SYS_PS1_PS2
+    MP_QSTR_ps1,
+    MP_QSTR_ps2,
+    #endif
+    #if MICROPY_PY_SYS_TRACEBACKLIMIT
+    MP_QSTR_tracebacklimit,
+    #endif
+    MP_QSTRnull,
+};
+
+STATIC void mp_module_sys_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(sys_mutable_keys) == MP_SYS_MUTABLE_NUM + 1);
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(MP_STATE_VM(sys_mutable)) == MP_SYS_MUTABLE_NUM);
+    mp_module_generic_attr(attr, dest, sys_mutable_keys, MP_STATE_VM(sys_mutable));
+}
+#endif
 
 STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
@@ -223,8 +264,14 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
      * Extensions to CPython
      */
 
+    { MP_ROM_QSTR(MP_QSTR_print_exception), MP_ROM_PTR(&mp_sys_print_exception_obj) },
     #if MICROPY_PY_SYS_ATEXIT
     { MP_ROM_QSTR(MP_QSTR_atexit), MP_ROM_PTR(&mp_sys_atexit_obj) },
+    #endif
+
+    #if MICROPY_PY_SYS_ATTR_DELEGATION
+    // Delegation of attr lookup.
+    MP_MODULE_ATTR_DELEGATION_ENTRY(&mp_module_sys_attr),
     #endif
 };
 
@@ -234,5 +281,7 @@ const mp_obj_module_t mp_module_sys = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_sys_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_sys, mp_module_sys);
 
 #endif

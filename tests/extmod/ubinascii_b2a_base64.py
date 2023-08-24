@@ -1,8 +1,5 @@
 try:
-    try:
-        import ubinascii as binascii
-    except ImportError:
-        import binascii
+    import binascii
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -24,3 +21,6 @@ try:
     print(binascii.b2a_base64(""))
 except TypeError:
     print("TypeError")
+
+print(binascii.b2a_base64(b"foobar", newline=True))
+print(binascii.b2a_base64(b"foobar", newline=False))

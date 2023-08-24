@@ -233,8 +233,7 @@ STATIC mp_obj_t supervisor_get_previous_traceback(void) {
     if (prev_traceback_allocation) {
         size_t len = strlen((const char *)prev_traceback_allocation->ptr);
         if (len > 0) {
-            mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
-            o->base.type = &mp_type_str;
+            mp_obj_str_t *o = mp_obj_malloc(mp_obj_str_t, &mp_type_str);
             o->len = len;
             // callers probably aren't going to compare this string, so skip computing the hash
             o->hash = 0;
@@ -356,4 +355,4 @@ const mp_obj_module_t supervisor_module = {
     .globals = (mp_obj_dict_t *)&supervisor_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_supervisor, supervisor_module, CIRCUITPY_SUPERVISOR);
+MP_REGISTER_MODULE(MP_QSTR_supervisor, supervisor_module);

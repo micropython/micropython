@@ -59,4 +59,4 @@ const mp_obj_module_t analogbufio_module = {
     .globals = (mp_obj_dict_t *)&analogbufio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_analogbufio, analogbufio_module, CIRCUITPY_ANALOGBUFIO);
+MP_REGISTER_MODULE(MP_QSTR_analogbufio, analogbufio_module);

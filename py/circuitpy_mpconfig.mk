@@ -61,6 +61,9 @@ CFLAGS += -DCIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE=$(CIRCUITPY_OPTIMIZE_PROPERTY
 MICROPY_PY_ASYNC_AWAIT ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DMICROPY_PY_ASYNC_AWAIT=$(MICROPY_PY_ASYNC_AWAIT)
 
+# unused by CIRCUITPYTHON
+MICROPY_ROM_TEXT_COMPRESSION = 0
+
 # uasyncio
 # By default, include uasyncio if async/await are available.
 MICROPY_PY_UASYNCIO ?= $(MICROPY_PY_ASYNC_AWAIT)
@@ -624,6 +627,6 @@ $(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
 
 $(BUILD)/manifest.py: $(BUILD)/frozen_mpy | $(TOP)/py/circuitpy_mpconfig.mk mpconfigport.mk boards/$(BOARD)/mpconfigboard.mk
 	$(ECHO) MKMANIFEST $(FROZEN_MPY_DIRS)
-	(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
+	$(Q)(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
 FROZEN_MANIFEST=$(BUILD)/manifest.py
 endif

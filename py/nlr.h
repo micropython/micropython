@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -177,7 +177,7 @@ NORETURN void nlr_jump_fail(void *val);
 
 #if !MICROPY_NLR_SETJMP
 #define nlr_push(val) \
-    assert(MP_STATE_THREAD(nlr_top) != val),nlr_push(val)
+    assert(MP_STATE_THREAD(nlr_top) != val), nlr_push(val)
 
 /*
 #define nlr_push(val) \

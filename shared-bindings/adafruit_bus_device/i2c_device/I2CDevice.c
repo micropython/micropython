@@ -66,8 +66,8 @@
 //|         """
 //|     ...
 STATIC mp_obj_t adafruit_bus_device_i2cdevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    adafruit_bus_device_i2cdevice_obj_t *self = m_new_obj(adafruit_bus_device_i2cdevice_obj_t);
-    self->base.type = &adafruit_bus_device_i2cdevice_type;
+    adafruit_bus_device_i2cdevice_obj_t *self =
+        mp_obj_malloc(adafruit_bus_device_i2cdevice_obj_t, &adafruit_bus_device_i2cdevice_type);
     enum { ARG_i2c, ARG_device_address, ARG_probe };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_i2c, MP_ARG_REQUIRED | MP_ARG_OBJ },

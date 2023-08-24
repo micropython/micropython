@@ -31,7 +31,7 @@
 #include <string.h>
 
 #ifndef NO_QSTR
-#include "genhdr/compression.generated.h"
+#include "genhdr/compressed_translations.generated.h"
 #endif
 
 #include "py/misc.h"

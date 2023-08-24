@@ -1,13 +1,10 @@
 try:
-    import uhashlib as hashlib
+    import hashlib
 except ImportError:
-    try:
-        import hashlib
-    except ImportError:
-        # This is neither uPy, nor cPy, so must be uPy with
-        # uhashlib module disabled.
-        print("SKIP")
-        raise SystemExit
+    # This is neither uPy, nor cPy, so must be uPy with
+    # hashlib module disabled.
+    print("SKIP")
+    raise SystemExit
 
 try:
     hashlib.sha1

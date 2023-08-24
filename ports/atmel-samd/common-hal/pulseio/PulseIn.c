@@ -159,7 +159,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         mp_raise_RuntimeError(translate("EXTINT channel already in use"));
     }
 
-    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }

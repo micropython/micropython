@@ -45,4 +45,4 @@ const mp_obj_module_t picodvi_module = {
     .globals = (mp_obj_dict_t *)&picodvi_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_picodvi, picodvi_module, CIRCUITPY_PICODVI);
+MP_REGISTER_MODULE(MP_QSTR_picodvi, picodvi_module);

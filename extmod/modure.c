@@ -1,7 +1,28 @@
-// Copyright (c) 2014 Paul Sokolovsky
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Paul Sokolovsky
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <stdio.h>
 #include <assert.h>
@@ -18,6 +39,7 @@
 
 #include "lib/re1.5/re1.5.h"
 
+// CIRCUITPY
 #if MICROPY_PY_URE_DEBUG
 #define FLAG_DEBUG 0x1000
 #endif
@@ -168,7 +190,7 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     }
     Subject subj;
     size_t len;
-    subj.begin = mp_obj_str_get_data(args[1], &len);
+    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     #if MICROPY_PY_URE_MATCH_SPAN_START_END && !(defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME)
 
@@ -231,7 +253,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     Subject subj;
     size_t len;
     const mp_obj_type_t *str_type = mp_obj_get_type(args[1]);
-    subj.begin = mp_obj_str_get_data(args[1], &len);
+    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
 
@@ -291,7 +313,7 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     size_t where_len;
     const char *where_str = mp_obj_str_get_data(where, &where_len);
     Subject subj;
-    subj.begin = where_str;
+    subj.begin_line = subj.begin = where_str;
     subj.end = subj.begin + where_len;
     int caps_num = (self->re.sub + 1) * 2;
 
@@ -421,8 +443,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     if (size == -1) {
         goto error;
     }
-    mp_obj_re_t *o = m_new_obj_var(mp_obj_re_t, char, size);
-    o->base.type = &re_type;
+    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, char, size, &re_type);
     #if MICROPY_PY_URE_DEBUG
     int flags = 0;
     if (n_args > 1) {
@@ -470,7 +491,7 @@ const mp_obj_module_t mp_module_ure = {
     .globals = (mp_obj_dict_t *)&mp_module_re_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_re, mp_module_ure, MICROPY_PY_URE);
+MP_REGISTER_MODULE(MP_QSTR_re, mp_module_ure);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

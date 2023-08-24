@@ -7,6 +7,24 @@ endif
 # Extra deps that need to happen before object compilation.
 OBJ_EXTRA_ORDER_DEPS =
 
+# Generate moduledefs.h.
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h
+
+ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
+# If compression is enabled, trigger the build of compressed.data.h...
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/compressed.data.h
+# ...and enable the MP_COMPRESSED_ROM_TEXT macro (used by MP_ERROR_TEXT).
+CFLAGS += -DMICROPY_ROM_TEXT_COMPRESSION=1
+endif
+
+# QSTR generation uses the same CFLAGS, with these modifications.
+QSTR_GEN_FLAGS = -DNO_QSTR
+# Note: := to force evalulation immediately.
+QSTR_GEN_CFLAGS := $(CFLAGS)
+QSTR_GEN_CFLAGS += $(QSTR_GEN_FLAGS)
+QSTR_GEN_CXXFLAGS := $(CXXFLAGS)
+QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
+
 # This file expects that OBJ contains a list of all of the object files.
 # The directory portion of each object file is used to locate the source
 # and should not contain any ..'s but rather be relative to the top of the
@@ -57,28 +75,18 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
-vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
-$(BUILD)/%.o: %.c | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/qstrdefs.enum.h
-	$(call compile_c)
-
-vpath %.cpp . $(TOP) $(USER_C_MODULES)
-$(BUILD)/%.o: %.cpp | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/qstrdefs.enum.h
-	$(call compile_cxx)
-
-QSTR_GEN_EXTRA_CFLAGS += -DNO_QSTR -x c
-
-# frozen.c and frozen_mpy.c are created in $(BUILD), so use our rule
-# for those as well.
-vpath %.c . $(BUILD)
+# frozen.c and frozen_mpy.c are created in $(BUILD), so add it to the vpath as well.
+vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES) $(BUILD)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
-QSTR_GEN_EXTRA_CFLAGS += -I$(BUILD)/tmp
+vpath %.cpp . $(TOP) $(USER_C_MODULES)
+$(BUILD)/%.o: %.cpp
+	$(call compile_cxx)
 
-vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES)
 $(BUILD)/%.pp: %.c
 	$(STEPECHO) "PreProcess $<"
-	$(Q)$(CPP) $(CFLAGS) -E -Wp,-C,-dD,-dI -o $@ $<
+	$(Q)$(CPP) $(CFLAGS) -Wp,-C,-dD,-dI -o $@ $<
 
 # The following rule uses | to create an order only prerequisite. Order only
 # prerequisites only get built if they don't exist. They don't cause timestamp
@@ -89,20 +97,45 @@ $(BUILD)/%.pp: %.c
 # the right .o's to get recompiled if the generated.h file changes. Adding
 # an order-only dependency to all of the .o's will cause the generated .h
 # to get built before we try to compile any of them.
-$(OBJ): | $(HEADER_BUILD)/mpversion.h
+$(OBJ): | $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/mpversion.h $(OBJ_EXTRA_ORDER_DEPS)
 
 # The logic for qstr regeneration (applied by makeqstrdefs.py) is:
 # - if anything in QSTR_GLOBAL_DEPENDENCIES is newer, then process all source files ($^)
 # - else, if list of newer prerequisites ($?) is not empty, then process just these ($?)
 # - else, process all source files ($^) [this covers "make -B" which can set $? to empty]
-$(HEADER_BUILD)/qstr.split: $(SRC_QSTR) $(SRC_QSTR_PREPROCESSOR) $(QSTR_GLOBAL_DEPENDENCIES) $(HEADER_BUILD)/moduledefs.h | $(HEADER_BUILD)/mpversion.h $(PY_SRC)/genlast.py
+# See more information about this process in docs/develop/qstr.rst.
+$(HEADER_BUILD)/qstr.i.last: $(SRC_QSTR) $(QSTR_GLOBAL_DEPENDENCIES) | $(QSTR_GLOBAL_REQUIREMENTS)
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/genlast.py $(HEADER_BUILD)/qstr $(if $(filter $?,$(QSTR_GLOBAL_DEPENDENCIES)),$^,$(if $?,$?,$^)) --  $(SRC_QSTR_PREPROCESSOR) -- $(CPP) $(QSTR_GEN_EXTRA_CFLAGS) $(CFLAGS)
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py pp $(CPP) output $(HEADER_BUILD)/qstr.i.last cflags $(QSTR_GEN_CFLAGS) cxxflags $(QSTR_GEN_CXXFLAGS) sources $^ dependencies $(QSTR_GLOBAL_DEPENDENCIES) changed_sources $?
+
+$(HEADER_BUILD)/qstr.split: $(HEADER_BUILD)/qstr.i.last
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split qstr $< $(HEADER_BUILD)/qstr _
 	$(Q)$(TOUCH) $@
 
-$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split $(PY_SRC)/makeqstrdefs.py
+$(QSTR_DEFS_COLLECTED): $(HEADER_BUILD)/qstr.split
 	$(STEPECHO) "GEN $@"
-	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat - $(HEADER_BUILD)/qstr $(QSTR_DEFS_COLLECTED)
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat qstr _ $(HEADER_BUILD)/qstr $@
+
+# Module definitions via MP_REGISTER_MODULE.
+$(HEADER_BUILD)/moduledefs.split: $(HEADER_BUILD)/qstr.i.last
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split module $< $(HEADER_BUILD)/module _
+	$(Q)$(TOUCH) $@
+
+$(HEADER_BUILD)/moduledefs.collected: $(HEADER_BUILD)/moduledefs.split
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat module _ $(HEADER_BUILD)/module $@
+
+# Compressed error strings.
+$(HEADER_BUILD)/compressed.split: $(HEADER_BUILD)/qstr.i.last
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split compress $< $(HEADER_BUILD)/compress _
+	$(Q)$(TOUCH) $@
+
+$(HEADER_BUILD)/compressed.collected: $(HEADER_BUILD)/compressed.split
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat compress _ $(HEADER_BUILD)/compress $@
 
 # $(sort $(var)) removes duplicates
 #
@@ -116,8 +149,6 @@ $(OBJ_DIRS):
 
 $(HEADER_BUILD):
 	$(Q)$(MKDIR) -p $@
-
-	$(MKDIR) -p $@
 
 ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
 # to automatically build mpy-cross, if needed
@@ -135,7 +166,7 @@ endif
 
 ifneq ($(FROZEN_MANIFEST),)
 # to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(FROZEN_MANIFEST) $(BUILD)/genhdr/qstrdefs.generated.h | $(MICROPY_MPYCROSS_DEPENDENCY) $(TOP)/tools/makemanifest.py
+$(BUILD)/frozen_content.c: $(BUILD)/genhdr/qstrdefs.generated.h $(FROZEN_MANIFEST) | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
 
@@ -204,7 +235,9 @@ print-def:
 	@$(CC) -E -Wp,-dM __empty__.c
 	@$(RM) -f __empty__.c
 
-tags:
-	ctags -e -R $(TOP)
-
 -include $(OBJ:.o=.P)
+
+# Print out the value of a make variable.
+# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
+print-%:
+	@echo $* = $($*)

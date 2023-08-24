@@ -8,6 +8,47 @@ Task B: factorial(3) = 6
 Task C: Compute factorial(4)...
 Task C: factorial(4) = 24
 [2, 6, 24]
+====
 start 2
 end 2
 [CancelledError(), 2]
+====
+start 1
+task_raise start 2
+end 1
+task_raise raise 2
+[1, ValueError(2,)]
+====
+task_loop start 1
+task_raise start 2
+task_loop loop 1
+task_raise raise 2
+ValueError(2,)
+False True
+====
+task_raise start 1
+task_raise start 2
+task_raise raise 1
+task_raise raise 2
+ValueError(1,)
+True True
+====
+gather_task
+start 1
+start 2
+====
+gather_task
+start 1
+start 2
+====
+gather_task
+start 1
+start 2
+end 1
+end 2
+====
+gather_task
+start 1
+start 2
+end 1
+end 2
