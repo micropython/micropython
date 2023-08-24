@@ -360,7 +360,7 @@ def run_micropython(pyb, args, test_file, is_special=False):
     return output_mupy
 
 
-def run_feature_check(pyb, args, base_path, test_file):
+def run_feature_check(pyb, args, test_file):
     if pyb is not None and test_file.startswith("repl_"):
         # REPL feature tests will not run via pyboard because they require prompt interactivity
         return b""
@@ -419,57 +419,57 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         # run-tests.py script itself so use base_path.
 
         # Check if micropython.native is supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "native_check.py")
+        output = run_feature_check(pyb, args, "native_check.py")
         if output != b"native\n":
             skip_native = True
 
         # Check if arbitrary-precision integers are supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "int_big.py")
+        output = run_feature_check(pyb, args, "int_big.py")
         if output != b"1000000000000000000000000000000000000000000000\n":
             skip_int_big = True
 
         # Check if bytearray is supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "bytearray.py")
+        output = run_feature_check(pyb, args, "bytearray.py")
         if output != b"bytearray\n":
             skip_bytearray = True
 
         # Check if set type (and set literals) is supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "set_check.py")
+        output = run_feature_check(pyb, args, "set_check.py")
         if output != b"{1}\n":
             skip_set_type = True
 
         # Check if slice is supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "slice.py")
+        output = run_feature_check(pyb, args, "slice.py")
         if output != b"slice\n":
             skip_slice = True
 
         # Check if async/await keywords are supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "async_check.py")
+        output = run_feature_check(pyb, args, "async_check.py")
         if output != b"async\n":
             skip_async = True
 
         # Check if const keyword (MicroPython extension) is supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "const.py")
+        output = run_feature_check(pyb, args, "const.py")
         if output != b"1\n":
             skip_const = True
 
         # Check if __rOP__ special methods are supported, and skip such tests if it's not
-        output = run_feature_check(pyb, args, base_path, "reverse_ops.py")
+        output = run_feature_check(pyb, args, "reverse_ops.py")
         if output == b"TypeError\n":
             skip_revops = True
 
         # Check if io module exists, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, base_path, "io_module.py")
+        output = run_feature_check(pyb, args, "io_module.py")
         if output != b"io\n":
             skip_io_module = True
 
         # Check if fstring feature is enabled, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, base_path, "fstring.py")
+        output = run_feature_check(pyb, args, "fstring.py")
         if output != b"a=1\n":
             skip_fstring = True
 
         # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, base_path, "inlineasm_thumb2.py")
+        output = run_feature_check(pyb, args, "inlineasm_thumb2.py")
         if output != b"thumb2\n":
             skip_tests.add("inlineasm/asmbcc.py")
             skip_tests.add("inlineasm/asmbitops.py")
@@ -484,23 +484,23 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("inlineasm/asmspecialregs.py")
 
         # Check if emacs repl is supported, and skip such tests if it's not
-        t = run_feature_check(pyb, args, base_path, "repl_emacs_check.py")
+        t = run_feature_check(pyb, args, "repl_emacs_check.py")
         if "True" not in str(t, "ascii"):
             skip_tests.add("cmdline/repl_emacs_keys.py")
 
         # Check if words movement in repl is supported, and skip such tests if it's not
-        t = run_feature_check(pyb, args, base_path, "repl_words_move_check.py")
+        t = run_feature_check(pyb, args, "repl_words_move_check.py")
         if "True" not in str(t, "ascii"):
             skip_tests.add("cmdline/repl_words_move.py")
 
-        upy_byteorder = run_feature_check(pyb, args, base_path, "byteorder.py")
-        upy_float_precision = run_feature_check(pyb, args, base_path, "float.py")
+        upy_byteorder = run_feature_check(pyb, args, "byteorder.py")
+        upy_float_precision = run_feature_check(pyb, args, "float.py")
         try:
             upy_float_precision = int(upy_float_precision)
         except ValueError:
             upy_float_precision = 0
-        has_complex = run_feature_check(pyb, args, base_path, "complex.py") == b"complex\n"
-        has_coverage = run_feature_check(pyb, args, base_path, "coverage.py") == b"coverage\n"
+        has_complex = run_feature_check(pyb, args, "complex.py") == b"complex\n"
+        has_coverage = run_feature_check(pyb, args, "coverage.py") == b"coverage\n"
         cpy_byteorder = subprocess.check_output(
             CPYTHON3_CMD + [base_path("feature_check/byteorder.py")]
         )
