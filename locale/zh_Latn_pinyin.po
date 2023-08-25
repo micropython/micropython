@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-07 14:52+0000\n"
+"PO-Revision-Date: 2023-08-25 16:38+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 #: main.c
 msgid ""
@@ -40,6 +40,8 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"qǐngzài github.com/adafruit/circuitpython/issues tíjiāo nínde chéngxù wèntí."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -270,19 +272,19 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
+msgstr "%q[%u] piānyí de wèishù duōyú yǐnjiǎo shù"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u] yíchū de wèishù duōyú yǐnjiǎo shù"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
-msgstr ""
+msgstr "%q[%u] shǐyòng éwài de yǐnjiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
+msgstr "%q[%u] děngdài jìshù zhīwài de shūrù"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -432,7 +434,7 @@ msgstr "'yield' wèiyú hánshù zhīwài"
 
 #: py/compile.c
 msgid "* arg after **"
-msgstr ""
+msgstr "* cānshùhòu **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -459,6 +461,10 @@ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -698,7 +704,7 @@ msgstr "Huǎnchōngqū tàiduǎn , mùqián zhǐyǒu %d zìjié"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "huǎnchōngqū tàixiǎo"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1128,7 +1134,7 @@ msgstr "wèi shí xiàn bàn shuāng gōng SPI"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
-msgstr ""
+msgstr "yìng gùzhàng: nèicún fǎngwèn huò zhǐlìng cuòwù."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1373,31 +1379,31 @@ msgstr "jiāohuàn biāozhì bù pǐpèi"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] reads pin(s)"
-msgstr ""
+msgstr "quēshǎo first_in_pin. %q[%u] dúqǔ yǐnjiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
-msgstr ""
+msgstr "quēshǎo first_in_pin. %q[%u] cóng yǐnjiǎo yírù"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] waits based on pin"
-msgstr ""
+msgstr "quēshǎo first_in_pin. %q[%u] jīyú yǐnjiǎo děngdài"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
-msgstr ""
+msgstr "quēshǎo first_out_pin. %q[%u] yí chūdào yǐnjiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] writes pin(s)"
-msgstr ""
+msgstr "quēshǎo first_out_pin. %q[%u] xiěrù yǐnjiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_set_pin. %q[%u] sets pin(s)"
-msgstr ""
+msgstr "quēshǎo first_set_pin. %q[%u] shèzhì yǐnjiǎo"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
-msgstr ""
+msgstr "quēshǎo jmp_pin. %q[%u] tiàodào yǐn jiǎoshàng"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1791,7 +1797,7 @@ msgstr "Duōbiānxíng zhìshǎo xūyào 3 diǎn"
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
+msgstr "gōnglǜ xiàjiàng. quèbǎo nín tígòng zúgòu de diànlì."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -1997,10 +2003,6 @@ msgstr "lì tǐ shēng zuǒ bì xū shì zài PWM tōng dào A"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
 msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "bù zhī chí tíng zhǐ AP."
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2387,14 +2389,6 @@ msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "Wú xiàn wǎng luò chǔ yú jiē rù diǎn mó shì."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "Wú xiàn wǎng luò chǔ yú gōng zuò zhàn mó shì."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
 msgstr "wú xiàn wǎng luò wèi qǐ yòng"
 
@@ -2544,7 +2538,7 @@ msgstr "yòu cè xūyào shùzǔ/zì jié"
 
 #: py/asmxtensa.c
 msgid "asm overflow"
-msgstr ""
+msgstr "gètǐ hé xiǎoxíng cāngkù guǎnlǐjú yìchū"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2636,7 +2630,7 @@ msgstr "huǎn chōng qū tài xiǎo, duì yú qǐng qiú de zì jié"
 
 #: py/emitbc.c
 msgid "bytecode overflow"
-msgstr ""
+msgstr "zìjiémǎ yìchū"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
@@ -2793,7 +2787,7 @@ msgstr "wúfǎ cóng shǒudòng zìduàn guīgé qiēhuàn dào zìdòng zìduà
 
 #: extmod/moduasyncio.c
 msgid "can't wait"
-msgstr ""
+msgstr "děngbùjí"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -3236,7 +3230,7 @@ msgstr "dǎo rù * bú zài mó kuài jí bié"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy arch"
-msgstr ""
+msgstr "bù jiānróng de .mpy gǒngmén"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3705,7 +3699,7 @@ msgstr "bùshì 128 wèi UUID"
 
 #: py/parse.c
 msgid "not a constant"
-msgstr ""
+msgstr "búshì chángshù"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3943,11 +3937,11 @@ msgstr "duān kǒu bì xū wéi >= 0"
 
 #: py/compile.c
 msgid "positional arg after **"
-msgstr ""
+msgstr "** zhīhòu de wèizhì cānshù"
 
 #: py/compile.c
 msgid "positional arg after keyword arg"
-msgstr ""
+msgstr "guānjiànzì cānshù hòude wèizhì cānshù"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4181,7 +4175,7 @@ msgstr "tobytes zhǐ néng duì mì jí shù zǔ diào yòng"
 
 #: py/compile.c
 msgid "too many args"
-msgstr ""
+msgstr "cānshù tàiduō"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
@@ -4430,6 +4424,15 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "bù zhī chí tíng zhǐ AP."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "Wú xiàn wǎng luò chǔ yú jiē rù diǎn mó shì."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "Wú xiàn wǎng luò chǔ yú gōng zuò zhàn mó shì."
 
 #~ msgid ""
 #~ "\n"

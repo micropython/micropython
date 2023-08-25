@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-22 21:28+0000\n"
+"PO-Revision-Date: 2023-08-24 15:48+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0\n"
 
 #: main.c
 msgid ""
@@ -38,6 +38,9 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"Registre um problema com o seu programa em github.com/adafruit/circuitpython/"
+"issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -461,6 +464,10 @@ msgstr "Um canal de interrupção de hardware já está em uso"
 msgid "ADC2 is being used by WiFi"
 msgstr "O ADC2 está sendo usado pelo WiFi"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -701,7 +708,7 @@ msgstr "O buffer é muito curto em %d bytes"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "Buffer pequeno demais"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1133,7 +1140,7 @@ msgstr "O SPI half duplex ainda não está implementado"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
-msgstr ""
+msgstr "Falha grave: acesso à memória ou erro de instrução."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1804,6 +1811,7 @@ msgstr "O Polígono precisa de pelo menos 3 pontos"
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
 msgstr ""
+"Falta de energia. Certifique-se que está fornecendo energia suficiente."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2012,10 +2020,6 @@ msgstr "O estéreo à esquerda deve estar no canal PWM A"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
 msgstr "O estéreo à direita deve estar no canal PWM B"
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "Não há suporte para a interrupção do AP."
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2409,14 +2413,6 @@ msgstr ""
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "O Wi-Fi está em modo de ponto de acesso."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "O Wi-Fi está em modo estação."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
@@ -4464,6 +4460,15 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Não há suporte para a interrupção do AP."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "O Wi-Fi está em modo de ponto de acesso."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "O Wi-Fi está em modo estação."
 
 #~ msgid ""
 #~ "\n"

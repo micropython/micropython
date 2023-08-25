@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-06 17:45+0000\n"
+"PO-Revision-Date: 2023-08-24 22:46+0000\n"
 "Last-Translator: Pablo Martinez Bernal <elpekenin@elpekenin.dev>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0\n"
 
 #: main.c
 msgid ""
@@ -40,6 +40,9 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"Por favor abre una issue con tu programa en github.com/adafruit/"
+"circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -269,19 +272,19 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
+msgstr "%q[%u] lee mas bits que la cantidad de pines"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u] escribe mas bits que la cantidad de pines"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
-msgstr ""
+msgstr "%q[%u] usa un pin extra"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
+msgstr "%q[%u] espera entrada fuera del contador"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -431,7 +434,7 @@ msgstr "'yield' fuera de una función"
 
 #: py/compile.c
 msgid "* arg after **"
-msgstr ""
+msgstr "* argumento tras **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -458,6 +461,10 @@ msgstr "Un canal de interrupción por hardware ya está en uso"
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 está siendo usado por WiFi"
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -700,7 +707,7 @@ msgstr "Buffer muy corto por %d bytes"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "Buffer demasiado pequeño"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1136,7 +1143,7 @@ msgstr "SPI Half Duplex no está implementado"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
-msgstr ""
+msgstr "Fallo grave: error de acceso a memoria o de instrucción."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1384,31 +1391,31 @@ msgstr "Inconsistencia en el flag de recambio"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] reads pin(s)"
-msgstr ""
+msgstr "Falta first_in_pin. %q[%u] lee pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
-msgstr ""
+msgstr "Falta first_in_pin. %q[%u] mueve desde pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] waits based on pin"
-msgstr ""
+msgstr "Falta first_in_pin. %q[%u] espera basado en un pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
-msgstr ""
+msgstr "Falta first_out_pin. %q[%u] mueve hacia pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] writes pin(s)"
-msgstr ""
+msgstr "Falta first_out_pin. %q[%u] escribe en pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_set_pin. %q[%u] sets pin(s)"
-msgstr ""
+msgstr "Falta first_set_pin. %q[%u] configura pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
-msgstr ""
+msgstr "Falta jmp_pin. %q[%u] salta en pin"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1806,6 +1813,7 @@ msgstr "El polígono necesita al menos 3 puntos"
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
 msgstr ""
+"Falta de potencia. Asegura que estás suministrando suficiente potencia."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2013,10 +2021,6 @@ msgstr "Estéreo izquierdo debe estar en el canal PWM A"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
 msgstr "Estéreo derecho debe estar en el canal PWM B"
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "Parar el AP no esta soportado."
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2410,14 +2414,6 @@ msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "Wifi est en modo de access point."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "Wifi esta en modo station."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
 msgstr "Wifi no esta activado"
 
@@ -2567,7 +2563,7 @@ msgstr "array/bytes requeridos en el lado derecho"
 
 #: py/asmxtensa.c
 msgid "asm overflow"
-msgstr ""
+msgstr "desborde de asm"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2659,7 +2655,7 @@ msgstr "búfer muy pequeño para los bytes solicitados"
 
 #: py/emitbc.c
 msgid "bytecode overflow"
-msgstr ""
+msgstr "desborde de bytecode"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
@@ -2821,7 +2817,7 @@ msgstr ""
 
 #: extmod/moduasyncio.c
 msgid "can't wait"
-msgstr ""
+msgstr "no se puede esperar"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -3260,7 +3256,7 @@ msgstr "import * no a nivel de módulo"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy arch"
-msgstr ""
+msgstr "arquitectura de .mpy incompatible"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
@@ -3732,7 +3728,7 @@ msgstr "no es 128-bit UUID"
 
 #: py/parse.c
 msgid "not a constant"
-msgstr ""
+msgstr "no es una constante"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3971,11 +3967,11 @@ msgstr "port debe ser be >= 0"
 
 #: py/compile.c
 msgid "positional arg after **"
-msgstr ""
+msgstr "argumento posicional tras **"
 
 #: py/compile.c
 msgid "positional arg after keyword arg"
-msgstr ""
+msgstr "argumento posicional tras argumento con nombre"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4207,7 +4203,7 @@ msgstr "tobytes solo pueden ser invocados por arrays densos"
 
 #: py/compile.c
 msgid "too many args"
-msgstr ""
+msgstr "demasiados argumentos"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
@@ -4456,6 +4452,15 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Parar el AP no esta soportado."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "Wifi est en modo de access point."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "Wifi esta en modo station."
 
 #~ msgid ""
 #~ "\n"
