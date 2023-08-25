@@ -50,6 +50,9 @@
 #define MP_NATIVE_TYPE_PTR16 (0x06)
 #define MP_NATIVE_TYPE_PTR32 (0x07)
 
+// Not use for viper, but for dynamic native modules
+#define MP_NATIVE_TYPE_QSTR (0x08)
+
 // Bytecode and runtime boundaries for unary ops
 #define MP_UNARY_OP_NUM_BYTECODE    (MP_UNARY_OP_NOT + 1)
 #define MP_UNARY_OP_NUM_RUNTIME     (MP_UNARY_OP_SIZEOF + 1)
