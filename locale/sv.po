@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-24 15:48+0000\n"
+"PO-Revision-Date: 2023-08-27 15:54+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 #: main.c
 msgid ""
@@ -463,7 +463,7 @@ msgstr "ADC2 används av WiFi"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
-msgstr ""
+msgstr "Kunde inte starta AP"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -1793,7 +1793,6 @@ msgid "Polygon needs at least 3 points"
 msgstr "Polygonen behöver minst 3 punkter"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "Power dipped. Make sure you are providing enough power."
 msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
 
