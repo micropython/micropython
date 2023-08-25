@@ -462,6 +462,10 @@ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -2000,10 +2004,6 @@ msgstr "lì tǐ shēng zuǒ bì xū shì zài PWM tōng dào A"
 msgid "Stereo right must be on PWM channel B"
 msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "bù zhī chí tíng zhǐ AP."
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "tí gòng qí zhōng yī monotonic_time huò epoch_time"
@@ -2387,14 +2387,6 @@ msgstr ""
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "Wú xiàn wǎng luò chǔ yú jiē rù diǎn mó shì."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "Wú xiàn wǎng luò chǔ yú gōng zuò zhàn mó shì."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
@@ -4432,6 +4424,15 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "bù zhī chí tíng zhǐ AP."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "Wú xiàn wǎng luò chǔ yú jiē rù diǎn mó shì."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "Wú xiàn wǎng luò chǔ yú gōng zuò zhàn mó shì."
 
 #~ msgid ""
 #~ "\n"

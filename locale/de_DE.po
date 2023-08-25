@@ -458,6 +458,10 @@ msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 wird vom WiFi benutzt"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -2003,10 +2007,6 @@ msgstr "Stereo links muss sich auf PWM-Kanal A befinden"
 msgid "Stereo right must be on PWM channel B"
 msgstr "Stereo rechts muss sich auf PWM-Kanal B befinden"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "Das Stoppen des AP wird nicht unterstützt."
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Gib entweder monotonic_time oder epoch_time an"
@@ -2401,14 +2401,6 @@ msgstr ""
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "Das Wifi ist im Accesspoint-Modus."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "Das Wifi ist im Station-Modus."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
@@ -4464,6 +4456,15 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Das Stoppen des AP wird nicht unterstützt."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "Das Wifi ist im Accesspoint-Modus."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "Das Wifi ist im Station-Modus."
 
 #~ msgid ""
 #~ "\n"

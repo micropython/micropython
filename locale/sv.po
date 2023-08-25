@@ -461,6 +461,10 @@ msgstr "En kanal för hårdvaruavbrott används redan"
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 används av WiFi"
 
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
+
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
@@ -1998,10 +2002,6 @@ msgstr "Vänster stereokanal måste använda PWM kanal A"
 msgid "Stereo right must be on PWM channel B"
 msgstr "Höger stereokanal måste använda PWM kanal B"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "Stoppa AP stöds inte."
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Ange en av monotonic_time eller epoch_time"
@@ -2385,14 +2385,6 @@ msgstr ""
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "WiFi är i accesspunktläge."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "WiFi är i stationsläge."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
@@ -4428,6 +4420,15 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Stoppa AP stöds inte."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "WiFi är i accesspunktläge."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "WiFi är i stationsläge."
 
 #~ msgid ""
 #~ "\n"
