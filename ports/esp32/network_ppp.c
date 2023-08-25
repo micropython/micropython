@@ -108,9 +108,10 @@ static void pppos_client_task(void *self_in) {
     ppp_if_obj_t *self = (ppp_if_obj_t *)self_in;
     uint8_t buf[256];
 
-    while (ulTaskNotifyTake(pdTRUE, 0) == 0) {
+    int len = 0;
+    while (ulTaskNotifyTake(pdTRUE, len <= 0) == 0) {
         int err;
-        int len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
+        len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
         if (len > 0) {
             pppos_input_tcpip(self->pcb, (u8_t *)buf, len);
         }
