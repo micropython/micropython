@@ -100,6 +100,9 @@ void check_esp_err_(esp_err_t code, const char *func, const int line, const char
 
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
+    #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_poll_rx();
+    #endif
     if ((poll_flags & MP_STREAM_POLL_RD) && stdin_ringbuf.iget != stdin_ringbuf.iput) {
         ret |= MP_STREAM_POLL_RD;
     }
@@ -111,6 +114,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
+        #if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+        usb_serial_jtag_poll_rx();
+        #endif
         int c = ringbuf_get(&stdin_ringbuf);
         if (c != -1) {
             return c;
