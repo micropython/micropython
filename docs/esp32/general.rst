@@ -50,8 +50,12 @@ For your convenience, some of technical specifications are provided below:
 * SPI: 4 SPI interfaces (one used for FlashROM)
 * I2C: 2 I2C (bitbang implementation available on any pins)
 * I2S: 2
+* CAN bus: 1
 * ADC: 12-bit SAR ADC up to 18 channels
 * DAC: 2 8-bit DACs
+* PCNT: up to 8 channels
+* PWM: up to 16 channels
+* MCPWM: up to 2 channels
 * RMT: 8 channels allowing accurate pulse transmit/receive
 * Programming: using BootROM bootloader from UART - due to external FlashROM
   and always-available BootROM bootloader, the ESP32 is not brickable
