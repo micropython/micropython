@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 """Generates the pins file for the CC3200."""
 
+# Do not use this as a reference for new ports. See tools/boardgen.py and e.g.
+# ports/stm32/boards/make-pins.py.
+
 from __future__ import print_function
 
 import argparse
