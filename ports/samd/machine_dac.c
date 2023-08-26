@@ -287,13 +287,13 @@ static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     }
     if (src.len >= 2) {
         int freq = mp_obj_get_int(args[2]);
+        if (self->tc_index == -1) {
+            self->tc_index = allocate_tc_instance();
+        }
         if (self->dma_channel == -1) {
             self->dma_channel = allocate_dma_channel();
             dma_init();
             dma_register_irq(self->dma_channel, dac_irq_handler);
-        }
-        if (self->tc_index == -1) {
-            self->tc_index = allocate_tc_instance();
         }
         // Configure TC; no need to check the return value
         configure_tc(self->tc_index, freq, 0);
