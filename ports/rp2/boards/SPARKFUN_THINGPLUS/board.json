@@ -5,13 +5,13 @@
     "docs": "",
     "features": [
         "Battery Charging",
-        "Dual-core",
-        "External Flash",
+        "Breadboard Friendly",
         "Feather",
-        "JST-SH",
+        "MicroSD",
         "RGB LED",
-        "USB-C",
-        "microSD"
+        "SPI Flash",
+        "STEMMA QT/QWIIC",
+        "USB-C"
     ],
     "images": [
         "17745-SparkFun_Thing_Plus_-_RP2040-01a.jpg"

@@ -4,12 +4,14 @@
     ],
     "docs": "",
     "features": [
-        "BLE",
+        "Micro USB",
+        "ADC",
         "DAC",
-        "External Flash",
         "RGB LED",
-        "USB",
-        "WiFi"
+        "QSPI Flash",
+        "WiFi",
+        "BLE",
+        "JLink"
     ],
     "images": [
         "metro_m4_express_airlift.jpg"

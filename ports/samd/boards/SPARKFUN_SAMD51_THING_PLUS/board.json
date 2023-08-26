@@ -5,9 +5,10 @@
     "docs": "",
     "features": [
         "Battery Charging",
-        "External Flash",
-        "JST-SH",
-        "USB"
+        "Breadboard Friendly",
+        "Micro USB",
+        "QWIIC",
+        "SPI Flash"
     ],
     "images": [
         "sparkfun_samd51_thing_plus.jpg"

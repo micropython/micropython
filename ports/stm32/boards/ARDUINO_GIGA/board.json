@@ -4,12 +4,11 @@
     ],
     "docs": "",
     "features": [
-        "BLE",
-        "Dual-core",
-        "External Flash",
-        "External RAM",
-        "USB",
-        "WiFi"
+        "8MB SDRAM",
+        "16MB Flash",
+        "Dual-core processor",
+        "USB Full speed",
+        "CYW43 WiFi/BT Module"
     ],
     "images": [
         "ABX00063_01.front_1000x750.jpg"

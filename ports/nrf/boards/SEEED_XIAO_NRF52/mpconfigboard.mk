@@ -3,7 +3,7 @@ MCU_VARIANT = nrf52
 MCU_SUB_VARIANT = nrf52840
 SOFTDEV_VERSION = 7.3.0
 SD=s140
-LD_FILES += boards/SEEED_XIAO_NRF52/XIAO_bootloader.ld boards/nrf52840_1M_256k.ld
+LD_FILES += boards/seeed_xiao_nrf52/XIAO_bootloader.ld boards/nrf52840_1M_256k.ld
 
 NRF_DEFINES += -DNRF52840_XXAA
 

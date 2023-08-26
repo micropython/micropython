@@ -4,15 +4,17 @@
     ],
     "docs": "",
     "features": [
-        "Audio Codec",
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioAmp",
+        "SPDIF",
         "CAN",
         "Camera",
-        "Ethernet",
-        "External Flash",
-        "External RAM",
-        "Microphone",
-        "USB",
-        "microSD"
+        "OpenSDA",
+        "JLink"
     ],
     "images": [
         "MIMXRT1064EVK-TOP.jpg"

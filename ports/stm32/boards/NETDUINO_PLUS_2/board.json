@@ -8,8 +8,8 @@
         "netduino_plus_2.jpg"
     ],
     "mcu": "stm32f4",
-    "product": "Netduino Plus 2",
+    "product": "NETDUINO_PLUS_2",
     "thumbnail": "",
     "url": "",
-    "vendor": "Netduino"
+    "vendor": ""
 }

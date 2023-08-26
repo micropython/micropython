@@ -4,8 +4,9 @@
     ],
     "docs": "",
     "features": [
-        "RGB LED",
-        "USB"
+        "Breadboard Friendly",
+        "Micro USB",
+        "RGB LED"
     ],
     "images": [
         "trinket_m0.jpg"

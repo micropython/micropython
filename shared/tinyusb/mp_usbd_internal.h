@@ -31,4 +31,8 @@
 extern const tusb_desc_device_t mp_usbd_desc_device_static;
 extern const uint8_t mp_usbd_desc_cfg_static[USBD_STATIC_DESC_LEN];
 
+#if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+const char *mp_usbd_internal_dynamic_descriptor_string_cb(uint8_t index);
+#endif
+
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_INTERNAL_H

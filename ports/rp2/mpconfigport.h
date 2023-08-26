@@ -43,6 +43,8 @@
 #define MICROPY_HW_ENABLE_USBDEV                (1)
 #endif
 
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1) // TODO: should probably disable this by default
+
 #if MICROPY_HW_ENABLE_USBDEV
 // Enable USB-CDC serial port
 #ifndef MICROPY_HW_USB_CDC

@@ -4,9 +4,9 @@
     ],
     "docs": "",
     "features": [
-        "External Flash",
+        "Micro USB",
         "RGB LED",
-        "USB"
+        "SPI Flash"
     ],
     "images": [
         "mini_sam_m4.jpg"

@@ -4,10 +4,13 @@
     ],
     "docs": "",
     "features": [
-        "Audio Codec",
-        "External Flash",
+        "MicroSD",
+        "MicroUSB",
         "Microphone",
-        "USB"
+        "AudioCodec",
+        "CAN",
+        "OpenSDA",
+        "JLink"
     ],
     "images": [
         "MIMXRT1015-EVK-TOP.jpg"

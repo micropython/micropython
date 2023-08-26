@@ -616,11 +616,6 @@
 #define MICROPY_GC_SPLIT_HEAP (0)
 #endif
 
-// Whether regions should be added/removed from the split heap as needed.
-#ifndef MICROPY_GC_SPLIT_HEAP_AUTO
-#define MICROPY_GC_SPLIT_HEAP_AUTO (0)
-#endif
-
 // Hook to run code during time consuming garbage collector operations
 // *i* is the loop index variable (e.g. can be used to run every x loops)
 #ifndef MICROPY_GC_HOOK_LOOP
@@ -1490,14 +1485,9 @@ typedef double mp_float_t;
 #define MICROPY_PY_ERRNO_ERRORCODE (1)
 #endif
 
-// Whether to provide "select" module
+// Whether to provide "select" module (baremetal implementation)
 #ifndef MICROPY_PY_SELECT
 #define MICROPY_PY_SELECT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
-#endif
-
-// Whether to enable POSIX optimisations in the "select" module (requires system poll)
-#ifndef MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
-#define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (0)
 #endif
 
 // Whether to enable the select() function in the "select" module (baremetal
@@ -1899,16 +1889,6 @@ typedef double mp_float_t;
 
 #ifndef MP_PLAT_FREE_EXEC
 #define MP_PLAT_FREE_EXEC(ptr, size) m_del(byte, ptr, size)
-#endif
-
-// Allocating new heap area at runtime requires port to be able to allocate from system heap
-#if MICROPY_GC_SPLIT_HEAP_AUTO
-#ifndef MP_PLAT_ALLOC_HEAP
-#define MP_PLAT_ALLOC_HEAP(size) malloc(size)
-#endif
-#ifndef MP_PLAT_FREE_HEAP
-#define MP_PLAT_FREE_HEAP(ptr) free(ptr)
-#endif
 #endif
 
 // This macro is used to do all output (except when MICROPY_PY_IO is defined)

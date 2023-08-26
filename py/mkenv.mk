@@ -42,7 +42,6 @@ SED = sed
 CAT = cat
 TOUCH = touch
 PYTHON = python3
-ZIP = zip
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc

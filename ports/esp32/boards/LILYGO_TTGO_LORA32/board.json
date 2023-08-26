@@ -5,11 +5,10 @@
     "docs": "",
     "features": [
         "BLE",
-        "Display",
-        "External Flash",
         "LoRa",
+        "OLED",
         "SDCard",
-        "USB",
+        "USB-MICRO",
         "WiFi"
     ],
     "images": [

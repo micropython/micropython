@@ -72,6 +72,8 @@
 #define CFG_TUD_MSC_BUFSIZE (MICROPY_FATFS_MAX_SS)
 #endif
 
+#define USBD_RHPORT (0) // Currently only one port is supported
+
 // Define static descriptor size and interface count based on the above config
 
 #define USBD_STATIC_DESC_LEN (TUD_CONFIG_DESC_LEN +                     \
@@ -120,7 +122,7 @@
 #elif CFG_TUD_CDC
 #define USBD_ITF_STATIC_MAX (USBD_ITF_CDC + 2)
 #define USBD_STR_STATIC_MAX (USBD_STR_CDC + 1)
-#define USBD_EP_STATIC_MAX (((EPNUM_CDC_EP_IN)&~TUSB_DIR_IN_MASK) + 1)
+#define USBD_EP_STATIC_MAX (((USBD_CDC_EP_IN)&~TUSB_DIR_IN_MASK) + 1)
 #else // !CFG_TUD_MSC && !CFG_TUD_CDC
 #define USBD_ITF_STATIC_MAX (0)
 #define USBD_STR_STATIC_MAX (0)

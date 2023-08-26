@@ -4,12 +4,15 @@
     ],
     "docs": "",
     "features": [
-        "BLE",
-        "Environment Sensor",
-        "IMU",
-        "Microphone",
-        "Secure Element",
-        "USB"
+        "Bluetooth 5.0",
+        "IMU LSM9DS1",
+        "Humidity sensor HTS221",
+        "Pressure sensor LPS22H",
+        "Proximity, Light, RGB sensor APDS-9960",
+        "Microphone MPM3610",
+        "Crypto IC ARM CC310",
+        "USB-MICRO",
+        "Breadboard Friendly"
     ],
     "images": [
         "ABX00031_01.iso_998x749.jpg"

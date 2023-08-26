@@ -4,7 +4,7 @@ MCU_SUB_VARIANT = nrf52840
 SOFTDEV_VERSION = 6.1.1
 SD=s140
 
-LD_FILES += boards/ARDUINO_NANO_33_BLE_SENSE/nano_bootloader.ld boards/nrf52840_1M_256k.ld
+LD_FILES += boards/arduino_nano_33_ble_sense/nano_bootloader.ld boards/nrf52840_1M_256k.ld
 
 NRF_DEFINES += -DNRF52840_XXAA
 

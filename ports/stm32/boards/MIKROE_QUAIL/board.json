@@ -6,8 +6,9 @@
     "features": [
         "mikroBUS"
     ],
+    "id": "MIKROE-QUAIL",
     "images": [
-        "quail_top.jpg"
+            "quail_top.jpg"
     ],
     "mcu": "stm32f4",
     "product": "MikroE Quail",

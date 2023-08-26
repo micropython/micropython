@@ -100,6 +100,8 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     mp_obj_t index, bool is_slice);
 const byte *find_subbytes(const byte *haystack, size_t hlen, const byte *needle, size_t nlen, int direction);
 
+#define MP_DEFINE_BYTES_OBJ(obj_name, target, len) mp_obj_str_t obj_name = {{&mp_type_bytes}, 0, (len), (const byte *)(target)}
+
 mp_obj_t mp_obj_bytes_hex(size_t n_args, const mp_obj_t *args, const mp_obj_type_t *type);
 mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data);
 

@@ -4,10 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "Display",
-        "External Flash",
-        "External RAM",
-        "JST-SH",
+        "Breadboard Friendly",
+        "OLED",
+        "SPIRAM",
+        "STEMMA QT/QWIIC",
         "USB-C",
         "WiFi"
     ],

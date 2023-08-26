@@ -4,12 +4,11 @@
     ],
     "docs": "",
     "features": [
-        "BLE",
-        "Dual-core",
-        "External Flash",
-        "Secure Element",
-        "USB",
-        "WiFi"
+        "16MB Flash",
+        "Dual-core processor",
+        "USB High Speed Phy",
+        "CYW43 WiFi/BT Module",
+        "NXP SE050 crypto device"
     ],
     "images": [
         "ABX00051_01.iso_1000x750.jpg"

@@ -4,8 +4,8 @@
     ],
     "docs": "",
     "features": [
-        "Dual-core",
-        "External Flash",
+        "Breadboard Friendly",
+        "Castellated Pads",
         "RGB LED",
         "USB-C"
     ],

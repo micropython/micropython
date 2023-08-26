@@ -1,4 +1,4 @@
-from machine import Pin, Signal
+from machine import Signal
 
 # 96Boards Carbon board
 # USR1 - User controlled led, connected to PD2

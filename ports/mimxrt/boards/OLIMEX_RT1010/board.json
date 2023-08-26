@@ -4,9 +4,11 @@
     ],
     "docs": "",
     "features": [
-        "External Flash",
-        "USB",
-        "microSD"
+        "MicroUSB",
+        "MicroSD",
+        "AudioCodec",
+        "SPDIF",
+        "JLink"
     ],
     "images": [
         "OLIMEX_RT1010Py.jpg"

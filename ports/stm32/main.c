@@ -86,7 +86,6 @@
 #include "servo.h"
 #include "dac.h"
 #include "can.h"
-#include "subghz.h"
 
 #if MICROPY_PY_THREAD
 STATIC pyb_thread_t pyb_thread_main;
@@ -404,9 +403,6 @@ void stm32_main(uint32_t reset_mode) {
     #if defined(STM32WB)
     rfcore_init();
     #endif
-    #if defined(STM32WL)
-    subghz_init();
-    #endif
     #if MICROPY_HW_SDRAM_SIZE
     sdram_init();
     bool sdram_valid = true;
@@ -653,9 +649,6 @@ soft_reset_exit:
 
     #if MICROPY_PY_BLUETOOTH
     mp_bluetooth_deinit();
-    #endif
-    #if defined(STM32WL)
-    subghz_deinit();
     #endif
     #if MICROPY_PY_NETWORK
     mod_network_deinit();

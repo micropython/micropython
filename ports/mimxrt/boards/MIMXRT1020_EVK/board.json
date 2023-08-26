@@ -4,14 +4,15 @@
     ],
     "docs": "",
     "features": [
-        "Audio Codec",
-        "CAN",
         "Ethernet",
-        "External Flash",
-        "External RAM",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
         "Microphone",
-        "USB",
-        "microSD"
+        "AudioCodec",
+        "CAN",
+        "OpenSDA",
+        "JLink"
     ],
     "images": [
         "MIMXRT-1020-EVKBD.jpg"

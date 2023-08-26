@@ -4,10 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "Dual-core",
-        "External Flash",
+        "Breadboard Friendly",
+        "Micro USB",
         "RGB LED",
-        "USB"
+        "SPI Flash"
     ],
     "images": [
         "4888-05.jpg"

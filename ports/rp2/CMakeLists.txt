@@ -26,7 +26,7 @@ set(MICROPY_PORT_DIR ${CMAKE_CURRENT_LIST_DIR})
 
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
-    set(MICROPY_BOARD RPI_PICO)
+    set(MICROPY_BOARD PICO)
 endif()
 
 # Set the board directory and check that it exists.
@@ -148,6 +148,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/readline/readline.c
     ${MICROPY_DIR}/shared/runtime/mpirq.c
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
+    ${MICROPY_DIR}/shared/tinyusb/mp_usbd.c
     ${MICROPY_PORT_DIR}/machine_adc.c
     ${MICROPY_PORT_DIR}/machine_i2c.c
     ${MICROPY_PORT_DIR}/machine_i2s.c

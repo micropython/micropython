@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [
-        "Dual-core",
-        "External Flash",
-        "RGB LED",
-        "USB"
+        "USB Stick form factor",
+        "Breadboard Friendly",
+        "Reset/User button",
+        "Red/green/orange/blue leds",
+        "1MB SPI Flash",
+        "USB-A"
     ],
     "images": [
         "pybstick-rp2040-26-broches-micropython-c.jpg"

@@ -16,7 +16,6 @@ poller.register(s)
 # "Registering a file descriptor that’s already registered is not an error,
 # and has the same effect as registering the descriptor exactly once."
 poller.register(s)
-poller.register(s, select.POLLIN | select.POLLOUT)
 
 # 2 args are mandatory unlike register()
 try:

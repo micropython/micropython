@@ -99,7 +99,12 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
             break;
         #endif
         default:
+            #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+            desc_str = mp_usbd_internal_dynamic_descriptor_string_cb(index);
+            break;
+            #else
             desc_str = NULL;
+            #endif
     }
 
     if (index != 0) {
@@ -121,6 +126,8 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
 }
 
 
+#if !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+
 const uint8_t *tud_descriptor_device_cb(void) {
     return (const void *)&mp_usbd_desc_device_static;
 }
@@ -130,4 +137,10 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
     return mp_usbd_desc_cfg_static;
 }
 
-#endif
+#else
+
+// If runtime device support is enabled, descriptor callbacks are implemented in usbd.c
+
+#endif // !MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+
+#endif // MICROPY_HW_ENABLE_USBDEV

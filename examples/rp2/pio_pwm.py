@@ -1,7 +1,5 @@
 # Example of using PIO for PWM, and fading the brightness of an LED
 
-# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
-
 from machine import Pin
 from rp2 import PIO, StateMachine, asm_pio
 from time import sleep

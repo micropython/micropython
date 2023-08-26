@@ -4,11 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "External Flash",
-        "External RAM",
-        "RGB LED",
-        "USB",
-        "microSD"
+        "MicroSD",
+        "MicroUSB",
+        "SDRAM",
+        "RGB LED"
     ],
     "images": [
         "main1.jpg"
@@ -17,5 +16,5 @@
     "product": "Arch Mix",
     "thumbnail": "",
     "url": "https://wiki.seeedstudio.com/Arch_Mix/",
-    "vendor": "Seeed Studio"
+    "vendor": "Seeed Technology Co.,Ltd."
 }

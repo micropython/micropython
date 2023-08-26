@@ -4,15 +4,17 @@
     ],
     "docs": "",
     "features": [
-        "Audio Codec",
+        "Ethernet",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
+        "Microphone",
+        "AudioCodec",
+        "SPDIF",
         "CAN",
         "Camera",
-        "Ethernet",
-        "External Flash",
-        "External RAM",
-        "Microphone",
-        "USB",
-        "microSD"
+        "OpenSDA",
+        "JLink"
     ],
     "images": [
         "X-MIMXRT1060-EVK-BOARD-BOTTOM.jpg"

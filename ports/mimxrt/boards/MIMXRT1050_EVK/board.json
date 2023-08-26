@@ -4,14 +4,16 @@
     ],
     "docs": "",
     "features": [
-        "Audio Codec",
-        "CAN",
         "Ethernet",
-        "External Flash",
-        "External RAM",
+        "SDRAM",
+        "MicroSD",
+        "MicroUSB",
         "Microphone",
-        "USB",
-        "microSD"
+        "AudioCodec",
+        "SPDIF",
+        "CAN",
+        "OpenSDA",
+        "JLink"
     ],
     "images": [
         "IMX_RT1050-EVKB_TOP-LR.jpg"
