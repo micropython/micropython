@@ -44,6 +44,12 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SD_MISO), MP_ROM_PTR(&pin_GPIO19)},
     { MP_ROM_QSTR(MP_QSTR_SD_CS),   MP_ROM_PTR(&pin_GPIO22)},
 
+    { MP_ROM_QSTR(MP_QSTR_SMPS_MODE), MP_ROM_PTR(&pin_CYW1) },
+
+    { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_CYW0) },
+
+    { MP_ROM_QSTR(MP_QSTR_VBUS_SENSE), MP_ROM_PTR(&pin_CYW2) },
+
     { MP_ROM_QSTR(MP_QSTR_I2S_WORD_SELECT), MP_ROM_PTR(&pin_GPIO26) },
     { MP_ROM_QSTR(MP_QSTR_GP26_A0), MP_ROM_PTR(&pin_GPIO26) },
     { MP_ROM_QSTR(MP_QSTR_GP26), MP_ROM_PTR(&pin_GPIO26) },
@@ -75,8 +81,6 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D2N), MP_ROM_PTR(&pin_GPIO12) },
     { MP_ROM_QSTR(MP_QSTR_D2P), MP_ROM_PTR(&pin_GPIO13) },
     { MP_ROM_QSTR(MP_QSTR_DV_HPD), MP_ROM_PTR(&pin_GPIO17) },
-
-    { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].framebuffer_display)},
 };
 
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);
