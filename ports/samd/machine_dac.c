@@ -290,13 +290,13 @@ static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
     }
     if (src.len >= 2) {
         int freq = mp_obj_get_int(args[2]);
+        if (self->tc_index == -1) {
+            self->tc_index = allocate_tc_instance();
+        }
         if (self->dma_channel == -1) {
             self->dma_channel = allocate_dma_channel();
             dma_init();
             dma_register_irq(self->dma_channel, dac_irq_handler);
-        }
-        if (self->tc_index == -1) {
-            self->tc_index = allocate_tc_instance();
         }
         // Configure TC; no need to check the return value
         configure_tc(self->tc_index, freq, 0);
@@ -366,18 +366,21 @@ static mp_obj_t dac_write_timed(size_t n_args, const mp_obj_t *args) {
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dac_write_timed_obj, 3, 4, dac_write_timed);
 
 static void dac_deinit_channel(dac_obj_t *self) {
-    self->initialized = false;
-    if (self->dma_channel >= 0) {
-        dac_stop_dma(self->dma_channel, true);
-        free_dma_channel(self->dma_channel);
-        self->dma_channel = -1;
+    if (self->initialized) {
+        self->initialized = false;
+
+        if (self->dma_channel >= 0) {
+            dac_stop_dma(self->dma_channel, true);
+            free_dma_channel(self->dma_channel);
+            self->dma_channel = -1;
+        }
+        if (self->tc_index >= 0) {
+            free_tc_instance(self->tc_index);
+            self->tc_index = -1;
+        }
+        self->callback = MP_OBJ_NULL;
+        self->busy = false;
     }
-    if (self->tc_index >= 0) {
-        free_tc_instance(self->tc_index);
-        self->tc_index = -1;
-    }
-    self->callback = MP_OBJ_NULL;
-    self->busy = false;
 }
 
 // Reset DAC and clear the DMA channel entries in the DAC objects.
