@@ -267,13 +267,13 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
     mp_get_buffer_raise(values, &src, MP_BUFFER_READ);
     if (src.len >= 2) {
         int freq = mp_obj_get_int(freq_in);
+        if (self->tc_index == -1) {
+            self->tc_index = allocate_tc_instance();
+        }
         if (self->dma_channel == -1) {
             self->dma_channel = allocate_dma_channel();
             dma_init();
             dma_register_irq(self->dma_channel, adc_irq_handler);
-        }
-        if (self->tc_index == -1) {
-            self->tc_index = allocate_tc_instance();
         }
         // Set the reference voltage. Default: external AREFA.
         adc->REFCTRL.reg = adc_vref_table[self->vref];
@@ -330,6 +330,8 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
         adc->SWTRIG.bit.START = 1;
         while (adc->INTFLAG.bit.RESRDY == 0) {
         }
+        // Wait a little bit allowing the ADC to settle.
+        mp_hal_delay_us(15);
 
         dma_desc[self->dma_channel].BTCTRL.reg =
             DMAC_BTCTRL_VALID | DMAC_BTCTRL_BLOCKACT_NOACT |
