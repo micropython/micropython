@@ -136,6 +136,8 @@ extern const dma_descr_t dma_SPI_3_TX;
 extern const dma_descr_t dma_SDIO_0;
 extern const dma_descr_t dma_I2C_4_TX;
 extern const dma_descr_t dma_I2C_4_RX;
+extern const dma_descr_t dma_SPI_SUBGHZ_TX;
+extern const dma_descr_t dma_SPI_SUBGHZ_RX;
 
 #endif
 

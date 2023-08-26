@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # Set the board if it's not already set.
 if(NOT MICROPY_BOARD)
-    set(MICROPY_BOARD GENERIC)
+    set(MICROPY_BOARD ESP32_GENERIC)
 endif()
 
 # Set the board directory and check that it exists.

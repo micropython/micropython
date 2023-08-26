@@ -1,5 +1,7 @@
 # Example using PIO to drive a set of WS2812 LEDs.
 
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
+
 import array, time
 from machine import Pin
 import rp2

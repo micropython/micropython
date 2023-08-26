@@ -1,5 +1,9 @@
 # flash LED #1 using inline assembler
 # this version is overly verbose and uses word stores
+#
+# ruff: noqa: F821 - @asm_thumb decorator adds names to function scope
+
+
 @micropython.asm_thumb
 def flash_led(r0):
     movw(r1, (stm.GPIOA + stm.GPIO_BSRRL) & 0xFFFF)

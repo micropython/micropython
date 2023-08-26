@@ -14,7 +14,8 @@
 #define MICROPY_PY_SOCKET                       (0)
 #define MICROPY_PY_NETWORK                      (0)
 #define MICROPY_PY_ONEWIRE                      (0)
-#define MICROPY_PY_STM                          (0)
+#define MICROPY_PY_STM                          (1) // for subghz radio functions
+#define MICROPY_PY_STM_CONST                    (0) // saves size, no named registers
 #define MICROPY_PY_PYB_LEGACY                   (0)
 #define MICROPY_PY_HEAPQ                        (0)
 
@@ -27,6 +28,13 @@
 // There is an external 32kHz oscillator
 #define MICROPY_HW_RTC_USE_LSE                  (1)
 #define MICROPY_HW_RTC_USE_US                   (1)
+
+// Use external 32MHz TCXO + PLL as system clock source
+// (If unset, board will use the internal MSI oscillator instead.)
+#define MICROPY_HW_CLK_USE_HSE                  (1)
+
+// HSE bypass for STM32WL5x means TCXO is powered from PB0_VDDTCXO pin
+#define MICROPY_HW_CLK_USE_BYPASS               (1)
 
 // UART buses
 #define MICROPY_HW_UART1_TX                     (pin_B6)    // Arduino D1, pin 7 on CN9
@@ -47,6 +55,10 @@
 #define MICROPY_HW_SPI1_SCK                     (pin_A5)    // Arduino D13, pin 6 on CN5
 #define MICROPY_HW_SPI1_MISO                    (pin_A6)    // Arduino D12, pin 5 on CN5
 #define MICROPY_HW_SPI1_MOSI                    (pin_A7)    // Arduino D11, pin 4 on CN5
+
+// SUBGHZSPI Internal radio SPI BUS
+#define MICROPY_HW_SUBGHZSPI_NAME               "SUBGHZ"
+#define MICROPY_HW_SUBGHZSPI_ID                 3
 
 // User switch; pressing the button makes the input go low
 #define MICROPY_HW_USRSW_PIN                    (pin_A0)

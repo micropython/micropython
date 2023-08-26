@@ -40,6 +40,10 @@
 #define MIN_BUFFER_SIZE  (32)
 #define MAX_BUFFER_SIZE  (32766)
 
+#define UART_HWCONTROL_RTS  (1)
+#define UART_HWCONTROL_CTS  (2)
+#define UART_HWCONTROL_MASK (UART_HWCONTROL_RTS | UART_HWCONTROL_CTS)
+
 #define UART_INVERT_TX (1)
 #define UART_INVERT_RX (2)
 #define UART_INVERT_MASK (UART_INVERT_TX | UART_INVERT_RX)
@@ -74,12 +78,18 @@ STATIC LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
 static const iomux_table_t iomux_table_uart[] = {
     IOMUX_TABLE_UART
 };
+static const iomux_table_t iomux_table_uart_cts_rts[] = {
+    IOMUX_TABLE_UART_CTS_RTS
+};
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
+STATIC const char *_flow_name[] = {"None", "RTS", "CTS", "RTS|CTS"};
 
 #define RX (iomux_table_uart[index + 1])
 #define TX (iomux_table_uart[index])
+#define RTS (iomux_table_uart_cts_rts[index + 1])
+#define CTS (iomux_table_uart_cts_rts[index])
 
 bool lpuart_set_iomux(int8_t uart) {
     int index = (uart - 1) * 2;
@@ -92,6 +102,33 @@ bool lpuart_set_iomux(int8_t uart) {
         IOMUXC_SetPinMux(RX.muxRegister, RX.muxMode, RX.inputRegister, RX.inputDaisy, RX.configRegister, 0U);
         IOMUXC_SetPinConfig(RX.muxRegister, RX.muxMode, RX.inputRegister, RX.inputDaisy, RX.configRegister,
             pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, PIN_DRIVE_6, RX.configRegister));
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool lpuart_set_iomux_rts(int8_t uart) {
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(iomux_table_uart) == MP_ARRAY_SIZE(iomux_table_uart_cts_rts));
+    int index = (uart - 1) * 2;
+
+    if (RTS.muxRegister != 0) {
+        IOMUXC_SetPinMux(RTS.muxRegister, RTS.muxMode, RTS.inputRegister, RTS.inputDaisy, RTS.configRegister, 0U);
+        IOMUXC_SetPinConfig(RTS.muxRegister, RTS.muxMode, RTS.inputRegister, RTS.inputDaisy, RTS.configRegister,
+            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_OUT, PIN_DRIVE_6, RTS.configRegister));
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool lpuart_set_iomux_cts(int8_t uart) {
+    int index = (uart - 1) * 2;
+
+    if (CTS.muxRegister != 0) {
+        IOMUXC_SetPinMux(CTS.muxRegister, CTS.muxMode, CTS.inputRegister, CTS.inputDaisy, CTS.configRegister, 0U);
+        IOMUXC_SetPinConfig(CTS.muxRegister, CTS.muxMode, CTS.inputRegister, CTS.inputDaisy, CTS.configRegister,
+            pin_generate_config(PIN_PULL_UP_100K, PIN_MODE_IN, PIN_DRIVE_6, CTS.configRegister));
         return true;
     } else {
         return false;
@@ -111,22 +148,24 @@ void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t st
 
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
+    mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, flow=%s, "
         "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
         self->id, self->config.baudRate_Bps, 8 - self->config.dataBitsCount,
         _parity_name[self->config.parityMode], self->config.stopBitCount + 1,
+        _flow_name[(self->config.enableTxCTS << 1) | self->config.enableRxRTS],
         self->handle.rxRingBufferSize, self->txbuf_len, self->timeout, self->timeout_char,
         _invert_name[self->invert]);
 }
 
 STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop,
+    enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_flow,
            ARG_timeout, ARG_timeout_char, ARG_invert, ARG_rxbuf, ARG_txbuf};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_flow, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1 } },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout_char, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -162,6 +201,27 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
     // Set stop bits if configured.
     if (args[ARG_stop].u_int > 0) {
         self->config.stopBitCount = args[ARG_stop].u_int - 1;
+    }
+
+    // Set flow if configured.
+    if (args[ARG_flow].u_int >= 0) {
+        if (args[ARG_flow].u_int & ~UART_HWCONTROL_MASK) {
+            mp_raise_ValueError(MP_ERROR_TEXT("bad flow mask"));
+        }
+
+        if (args[ARG_flow].u_int & UART_HWCONTROL_RTS) {
+            if (!lpuart_set_iomux_rts(uart_index_table[self->id])) {
+                mp_raise_ValueError(MP_ERROR_TEXT("rts not available"));
+            }
+            self->config.enableRxRTS = true;
+        }
+
+        if (args[ARG_flow].u_int & UART_HWCONTROL_CTS) {
+            if (!lpuart_set_iomux_cts(uart_index_table[self->id])) {
+                mp_raise_ValueError(MP_ERROR_TEXT("cts not available"));
+            }
+            self->config.enableTxCTS = true;
+        }
     }
 
     // Set timeout if configured.
@@ -288,6 +348,14 @@ STATIC mp_obj_t machine_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t 
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
 
+// uart.deinit()
+STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    LPUART_Deinit(self->lpuart);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
+
 STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t count = LPUART_TransferGetRxRingBufferLength(self->lpuart, &self->handle);
@@ -314,8 +382,18 @@ STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
+// Deinitialize all defined UARTs
+void machine_uart_deinit_all(void) {
+    for (int i = 0; i < sizeof(uart_index_table); i++) {
+        if (uart_index_table[i] != 0) {
+            LPUART_Deinit(uart_base_ptr_table[uart_index_table[i]]);
+        }
+    }
+}
+
 STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
 
@@ -327,6 +405,9 @@ STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
     { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
 
     { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },

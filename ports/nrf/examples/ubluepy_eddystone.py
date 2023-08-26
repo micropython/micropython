@@ -1,3 +1,4 @@
+from micropython import const
 from ubluepy import Peripheral, constants
 
 BLE_GAP_ADV_FLAG_LE_GENERAL_DISC_MODE = const(0x02)

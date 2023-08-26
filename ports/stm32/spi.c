@@ -62,6 +62,9 @@ STATIC SPI_HandleTypeDef SPIHandle5 = {.Instance = NULL};
 #if defined(MICROPY_HW_SPI6_SCK)
 STATIC SPI_HandleTypeDef SPIHandle6 = {.Instance = NULL};
 #endif
+#if defined(MICROPY_HW_SUBGHZSPI_ID)
+static SPI_HandleTypeDef SPIHandleSubGhz = {.Instance = NULL};
+#endif
 
 const spi_t spi_obj[6] = {
     #if defined(MICROPY_HW_SPI1_SCK)
@@ -76,6 +79,8 @@ const spi_t spi_obj[6] = {
     #endif
     #if defined(MICROPY_HW_SPI3_SCK)
     {&SPIHandle3, &dma_SPI_3_TX, &dma_SPI_3_RX},
+    #elif MICROPY_HW_SUBGHZSPI_ID == 3
+    {&SPIHandleSubGhz, &dma_SPI_SUBGHZ_TX, &dma_SPI_SUBGHZ_RX},
     #else
     {NULL, NULL, NULL},
     #endif
@@ -95,6 +100,10 @@ const spi_t spi_obj[6] = {
     {NULL, NULL, NULL},
     #endif
 };
+
+#if defined(MICROPY_HW_SUBGHZSPI_ID) && MICROPY_HW_SUBGHZSPI_ID != 3
+#error "spi_obj needs updating for new value of MICROPY_HW_SUBGHZSPI_ID"
+#endif
 
 #if defined(STM32H5) || defined(STM32H7)
 // STM32H5/H7 HAL requires SPI IRQs to be enabled and handled.
@@ -163,6 +172,9 @@ void spi_init0(void) {
     #if defined(MICROPY_HW_SPI6_SCK)
     SPIHandle6.Instance = SPI6;
     #endif
+    #if defined(MICROPY_HW_SUBGHZSPI_ID)
+    SPIHandleSubGhz.Instance = SUBGHZSPI;
+    #endif
 }
 
 int spi_find_index(mp_obj_t id) {
@@ -194,6 +206,10 @@ int spi_find_index(mp_obj_t id) {
         #ifdef MICROPY_HW_SPI6_NAME
         } else if (strcmp(port, MICROPY_HW_SPI6_NAME) == 0) {
             spi_id = 6;
+        #endif
+        #ifdef MICROPY_HW_SUBGHZSPI_NAME
+        } else if (strcmp(port, MICROPY_HW_SUBGHZSPI_NAME) == 0) {
+            spi_id = MICROPY_HW_SUBGHZSPI_ID;
         #endif
         } else {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("SPI(%s) doesn't exist"), port);
@@ -239,7 +255,7 @@ STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
     } else {
         return HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_SPI6);
     }
-    #else
+    #else // !STM32F0, !STM32G0, !STM32H
     #if defined(SPI2)
     if (spi->Instance == SPI2) {
         // SPI2 is on APB1
@@ -252,11 +268,20 @@ STATIC uint32_t spi_get_source_freq(SPI_HandleTypeDef *spi) {
         return HAL_RCC_GetPCLK1Freq();
     } else
     #endif
+    #if defined(MICROPY_HW_SUBGHZSPI_ID)
+    if (spi->Instance == SUBGHZSPI) {
+        // In STM32WL5x, SUBGHZSPI is PCLK3 which is same as HCLK3, no HCLK3->PCLK3 divider exists in clock tree
+        #if !defined(LL_APB3_GRP1_PERIPH_SUBGHZSPI)
+        #error "SPI needs updating for new SUBGHZSPI clock configuration"
+        #endif
+        return HAL_RCC_GetHCLK3Freq();
+    } else
+    #endif
     {
         // SPI1, SPI4, SPI5 and SPI6 are on APB2
         return HAL_RCC_GetPCLK2Freq();
     }
-    #endif
+    #endif // STM32F0, STM32G0, STM32H
 }
 
 // sets the parameters in the SPI_InitTypeDef struct
@@ -411,6 +436,12 @@ int spi_init(const spi_t *self, bool enable_nss_pin) {
         // enable the SPI clock
         __HAL_RCC_SPI6_CLK_ENABLE();
     #endif
+    #if defined(MICROPY_HW_SUBGHZSPI_ID)
+    } else if (spi->Instance == SUBGHZSPI) {
+        irqn = SUBGHZSPI_IRQn;
+        // pins remain all NULL, internal bus has no GPIO mappings
+        __HAL_RCC_SUBGHZSPI_CLK_ENABLE();
+    #endif
     } else {
         // SPI does not exist for this board (shouldn't get here, should be checked by caller)
         return -MP_EINVAL;
@@ -501,6 +532,14 @@ void spi_deinit(const spi_t *spi_obj) {
         __HAL_RCC_SPI6_RELEASE_RESET();
         __HAL_RCC_SPI6_CLK_DISABLE();
         HAL_NVIC_DisableIRQ(SPI6_IRQn);
+    #endif
+    #if defined(MICROPY_HW_SUBGHZSPI_ID)
+    } else if (spi->Instance == SUBGHZSPI) {
+        __HAL_RCC_SUBGHZSPI_FORCE_RESET();
+        __HAL_RCC_SUBGHZSPI_RELEASE_RESET();
+        __HAL_RCC_SUBGHZSPI_CLK_DISABLE();
+        HAL_NVIC_DisableIRQ(SUBGHZSPI_IRQn);
+
     #endif
     }
 }
@@ -659,6 +698,11 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     #if defined(SPI6)
     else if (spi->Instance == SPI6) {
         spi_num = 6;
+    }
+    #endif
+    #if defined(MICROPY_HW_SUBGHZSPI_ID)
+    else if (spi->Instance == SUBGHZSPI) {
+        spi_num = MICROPY_HW_SUBGHZSPI_ID;
     }
     #endif
 

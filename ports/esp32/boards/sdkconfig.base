@@ -49,6 +49,15 @@ CONFIG_LWIP_PPP_CHAP_SUPPORT=y
 # Use 4kiB output buffer instead of default 16kiB
 CONFIG_MBEDTLS_ASYMMETRIC_CONTENT_LEN=y
 
+# Allow mbedTLS to allocate from PSRAM or internal memory
+#
+# (The ESP-IDF default is internal-only, partly for physical security to prevent
+# possible information leakage from unencrypted PSRAM contents on the original
+# ESP32 - no PSRAM encryption on that chip. MicroPython doesn't support flash
+# encryption and is already storing the Python heap in PSRAM so this isn't a
+# significant factor in overall physical security.)
+CONFIG_MBEDTLS_DEFAULT_MEM_ALLOC=y
+
 # ULP coprocessor support
 # Only on: ESP32, ESP32S2, ESP32S3
 CONFIG_ULP_COPROC_ENABLED=y
@@ -58,7 +67,7 @@ CONFIG_ULP_COPROC_RESERVE_MEM=2040
 # For cmake build
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-4MiB.csv"
 
 # To reduce iRAM usage
 CONFIG_ESP32_WIFI_IRAM_OPT=n
