@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2018 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2018 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -228,8 +228,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
     const char *argtypes = mp_obj_str_get_str(argtypes_in);
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(argtypes_in));
-    mp_obj_ffifunc_t *o = m_new_obj_var(mp_obj_ffifunc_t, ffi_type *, nparams);
-    o->base.type = &ffifunc_type;
+    mp_obj_ffifunc_t *o = mp_obj_malloc_var(mp_obj_ffifunc_t, ffi_type *, nparams, &ffifunc_type);
 
     o->func = func;
     o->rettype = *rettype;
@@ -245,7 +244,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
 
     int res = ffi_prep_cif(&o->cif, FFI_DEFAULT_ABI, nparams, char2ffi_type(*rettype), o->params);
     if (res != FFI_OK) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Error in ffi_prep_cif"));
+        mp_raise_ValueError(MP_ERROR_TEXT("error in ffi_prep_cif"));
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -336,8 +335,7 @@ STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map
     const char *rettype = mp_obj_str_get_str(rettype_in);
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(paramtypes_in));
-    mp_obj_fficallback_t *o = m_new_obj_var(mp_obj_fficallback_t, ffi_type *, nparams);
-    o->base.type = &fficallback_type;
+    mp_obj_fficallback_t *o = mp_obj_malloc_var(mp_obj_fficallback_t, ffi_type *, nparams, &fficallback_type);
 
     o->clo = ffi_closure_alloc(sizeof(ffi_closure), &o->func);
 
@@ -376,8 +374,7 @@ STATIC mp_obj_t ffimod_var(mp_obj_t self_in, mp_obj_t vartype_in, mp_obj_t symna
     if (sym == NULL) {
         mp_raise_OSError(MP_ENOENT);
     }
-    mp_obj_ffivar_t *o = m_new_obj(mp_obj_ffivar_t);
-    o->base.type = &ffivar_type;
+    mp_obj_ffivar_t *o = mp_obj_malloc(mp_obj_ffivar_t, &ffivar_type);
 
     o->var = sym;
     o->type = *rettype;
@@ -410,8 +407,7 @@ STATIC mp_obj_t ffimod_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     if (mod == NULL) {
         mp_raise_OSError(errno);
     }
-    mp_obj_ffimod_t *o = m_new_obj(mp_obj_ffimod_t);
-    o->base.type = type;
+    mp_obj_ffimod_t *o = mp_obj_malloc(mp_obj_ffimod_t, type);
     o->handle = mod;
     return MP_OBJ_FROM_PTR(o);
 }

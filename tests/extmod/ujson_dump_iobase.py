@@ -1,14 +1,10 @@
-# test ujson.dump in combination with uio.IOBase
+# test json.dump in combination with io.IOBase
 
 try:
-    import uio as io
-    import ujson as json
+    import io, json
 except ImportError:
-    try:
-        import io, json
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 if not hasattr(io, "IOBase"):
     print("SKIP")

@@ -123,7 +123,7 @@ void common_hal_adafruit_pixelbuf_pixelbuf_set_brightness(mp_obj_t self_in, mp_f
         return;
     } else {
         if (self->pre_brightness_buffer == NULL) {
-            self->pre_brightness_buffer = m_malloc(pixel_len, false);
+            self->pre_brightness_buffer = m_malloc(pixel_len);
             memcpy(self->pre_brightness_buffer, self->post_brightness_buffer, pixel_len);
         }
         for (size_t i = 0; i < pixel_len; i++) {

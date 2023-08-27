@@ -137,8 +137,7 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, u
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("Wifi is not enabled"));
     }
-    wifi_scannednetworks_obj_t *scan = m_new_obj(wifi_scannednetworks_obj_t);
-    scan->base.type = &wifi_scannednetworks_type;
+    wifi_scannednetworks_obj_t *scan = mp_obj_malloc(wifi_scannednetworks_obj_t, &wifi_scannednetworks_type);
     mp_obj_t args[] = { mp_const_empty_tuple, MP_OBJ_NEW_SMALL_INT(16) };
     scan->results = mp_type_deque.make_new(&mp_type_deque, 2, 0, args);
     self->current_scan = scan;
@@ -158,11 +157,6 @@ void common_hal_wifi_radio_start_station(wifi_radio_obj_t *self) {
 void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
 
     cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
-    // This is wrong, but without this call the state of ITF_STA is still
-    // reported as CYW43_LINK_JOIN (by wifi_link_status) and CYW43_LINK_UP
-    // (by tcpip_link_status). However since ap disconnection isn't working
-    // either, this is not an issue.
-    cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
     const size_t timeout_ms = 500;
     uint64_t start = port_get_raw_ticks(NULL);
     uint64_t deadline = start + timeout_ms;
@@ -180,9 +174,15 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
         mp_raise_RuntimeError(translate("Wifi is not enabled"));
     }
 
-    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_DOWN) {
-        mp_raise_RuntimeError(translate("Wifi is in station mode."));
-    }
+    /* TODO: If the AP is stopped once it cannot be restarted.
+     * This means that if if the user does:
+     *
+     * wifi.radio.start_ap(...)
+     * wifi.radio.stop_ap()
+     * wifi.radio.start_ap(...)
+     *
+     * The second start_ap will fail.
+     */
 
     common_hal_wifi_radio_stop_ap(self);
 
@@ -190,10 +190,29 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     // Defaults to 1 if not set or invalid (i.e. 13)
     cyw43_wifi_ap_set_channel(&cyw43_state, (const uint32_t)channel);
 
-    cyw43_arch_enable_ap_mode((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+    if (password_len) {
+        cyw43_arch_enable_ap_mode((const char *)ssid, (const char *)password, CYW43_AUTH_WPA2_AES_PSK);
+    } else {
+        cyw43_arch_enable_ap_mode((const char *)ssid, NULL, CYW43_AUTH_OPEN);
+    }
 
     // TODO: Implement authmode check like in espressif
     bindings_cyw43_wifi_enforce_pm();
+
+    const size_t timeout_ms = 500;
+    uint64_t start = port_get_raw_ticks(NULL);
+    uint64_t deadline = start + timeout_ms;
+    while (port_get_raw_ticks(NULL) < deadline && (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_UP)) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
+        }
+    }
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_UP) {
+        common_hal_wifi_radio_stop_ap(self);
+        // This is needed since it leaves a broken AP up.
+        mp_raise_RuntimeError(translate("AP could not be started"));
+    }
 }
 
 bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self) {
@@ -205,19 +224,19 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
         mp_raise_RuntimeError(translate("wifi is not enabled"));
     }
 
-    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN) {
-        mp_raise_NotImplementedError(translate("Stopping AP is not supported."));
+    cyw43_arch_disable_ap_mode();
+
+    const size_t timeout_ms = 500;
+    uint64_t start = port_get_raw_ticks(NULL);
+    uint64_t deadline = start + timeout_ms;
+    while (port_get_raw_ticks(NULL) < deadline && (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN)) {
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            break;
+        }
     }
 
-    /*
-     * AP cannot be disconnected. cyw43_wifi_leave is broken.
-     * This code snippet should work, but doesn't.
-     *
-     * cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
-     * cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
-     *
-     * bindings_cyw43_wifi_enforce_pm();
-     */
+    bindings_cyw43_wifi_enforce_pm();
 }
 
 static bool connection_unchanged(wifi_radio_obj_t *self, const uint8_t *ssid, size_t ssid_len) {
@@ -236,10 +255,6 @@ static bool connection_unchanged(wifi_radio_obj_t *self, const uint8_t *ssid, si
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(translate("Wifi is not enabled"));
-    }
-
-    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN) {
-        mp_raise_RuntimeError(translate("Wifi is in access point mode."));
     }
 
     if (ssid_len > 32) {

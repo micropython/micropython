@@ -40,6 +40,13 @@ typedef enum {
 
 extern const mp_obj_type_t bitmaptools_dither_algorithm_type;
 
+typedef enum {
+    BITMAPTOOLS_BLENDMODE_NORMAL, BITMAPTOOLS_BLENDMODE_SCREEN,
+} bitmaptools_blendmode_t;
+
+extern const mp_obj_type_t bitmaptools_blendmode_type;
+extern const cp_enum_obj_t bitmaptools_blendmode_Normal_obj;
+
 void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16_t oy,
     int16_t dest_clip0_x, int16_t dest_clip0_y,
     int16_t dest_clip1_x, int16_t dest_clip1_y,
@@ -69,11 +76,16 @@ void common_hal_bitmaptools_draw_circle(displayio_bitmap_t *destination,
     int16_t radius,
     uint32_t value);
 
+void common_hal_bitmaptools_blit(displayio_bitmap_t *destination, displayio_bitmap_t *source, int16_t x, int16_t y,
+    int16_t x1, int16_t y1, int16_t x2, int16_t y2,
+    uint32_t skip_source_index, bool skip_source_index_none, uint32_t skip_dest_index, bool skip_dest_index_none);
+
 void common_hal_bitmaptools_draw_polygon(displayio_bitmap_t *destination, void *xs, void *ys, size_t points_len, int point_size, uint32_t value, bool close);
 void common_hal_bitmaptools_readinto(displayio_bitmap_t *self, mp_obj_t *file, int element_size, int bits_per_pixel, bool reverse_pixels_in_word, bool swap_bytes, bool reverse_rows);
 void common_hal_bitmaptools_arrayblit(displayio_bitmap_t *self, void *data, int element_size, int x1, int y1, int x2, int y2, bool skip_specified, uint32_t skip_index);
 void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bitmap_t *source_bitmap, displayio_colorspace_t colorspace, bitmaptools_dither_algorithm_t algorithm);
 
-void common_hal_bitmaptools_alphablend(displayio_bitmap_t *destination, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, mp_float_t factor1, mp_float_t factor2);
+void common_hal_bitmaptools_alphablend(displayio_bitmap_t *destination, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, mp_float_t factor1, mp_float_t factor2,
+    bitmaptools_blendmode_t blendmode, uint32_t skip_source1_index, bool skip_source1_index_none, uint32_t skip_source2_index, bool skip_source2_index_none);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BITMAPTOOLS__INIT__H

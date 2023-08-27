@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -190,6 +190,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         // Implemented by probing all possible qstrs with mp_load_method_maybe
         size_t nqstr = QSTR_TOTAL();
         for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
+            // CIRCUITPY changes #6539
             mp_obj_t dest[2] = {};
             mp_load_method_protected(args[0], i, dest, true);
             if (dest[0] != MP_OBJ_NULL) {
@@ -484,13 +485,13 @@ STATIC mp_obj_t mp_builtin_round(size_t n_args, const mp_obj_t *args) {
             return o_in;
         }
 
+        #if !MICROPY_PY_BUILTINS_ROUND_INT
+        mp_raise_NotImplementedError(NULL);
+        #else
         mp_int_t num_dig = mp_obj_get_int(args[1]);
         if (num_dig >= 0) {
             return o_in;
         }
-        #if !MICROPY_PY_BUILTINS_ROUND_INT
-        mp_raise_NotImplementedError(NULL);
-        #else
 
         mp_obj_t mult = mp_binary_op(MP_BINARY_OP_POWER, MP_OBJ_NEW_SMALL_INT(10), MP_OBJ_NEW_SMALL_INT(-num_dig));
         mp_obj_t half_mult = mp_binary_op(MP_BINARY_OP_FLOOR_DIVIDE, mult, MP_OBJ_NEW_SMALL_INT(2));
@@ -735,6 +736,9 @@ STATIC const mp_rom_map_elem_t mp_module_builtins_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_next), MP_ROM_PTR(&mp_builtin_next_obj) },
     { MP_ROM_QSTR(MP_QSTR_oct), MP_ROM_PTR(&mp_builtin_oct_obj) },
+    #if MICROPY_PY_IO
+    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_ord), MP_ROM_PTR(&mp_builtin_ord_obj) },
     { MP_ROM_QSTR(MP_QSTR_pow), MP_ROM_PTR(&mp_builtin_pow_obj) },
     { MP_ROM_QSTR(MP_QSTR_print), MP_ROM_PTR(&mp_builtin_print_obj) },
@@ -794,3 +798,5 @@ const mp_obj_module_t mp_module_builtins = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_builtins_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_builtins, mp_module_builtins);

@@ -53,7 +53,7 @@ void board_init(void) {
         // Delete code.Py, use main.py
         mp_import_stat_t stat_c = mp_import_stat("code.py");
         if (stat_c == MP_IMPORT_STAT_FILE) {
-            f_unlink(fatfs,"/code.py");
+            f_unlink(fatfs, "/code.py");
         }
     }
 

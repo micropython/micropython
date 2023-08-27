@@ -122,7 +122,7 @@ STATIC mp_obj_t paralleldisplay_parallelbus_obj_reset(mp_obj_t self_in) {
     paralleldisplay_parallelbus_obj_t *self = self_in;
 
     if (!common_hal_paralleldisplay_parallelbus_reset(self)) {
-        mp_raise_RuntimeError(translate("no reset pin available"));
+        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }

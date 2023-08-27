@@ -6,7 +6,7 @@ SIGNALS = {
     "LPI2C": ["SDA", "SCL"],
     "LPSPI": ["SCK", "SDO", "SDI"],
     "LPUART": ["RX", "TX", "RTS", "CTS"],
-    "I2S": ["RX_DATA0", "RX_SYNC", "TX_BCLK", "TX_DATA0", "TX_SYNC"],
+    "I2S": ["RX_DATA0", "RX_SYNC", "TX_BCLK", "TX_DATA0", "TX_SYNC", "MCLK"],
     "MQS": ["LEFT", "RIGHT"],
 }
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,15 @@ typedef struct _mp_arg_t {
     mp_arg_val_t defval;
 } mp_arg_t;
 
+struct _mp_sched_node_t;
+
+typedef void (*mp_sched_callback_t)(struct _mp_sched_node_t *);
+
+typedef struct _mp_sched_node_t {
+    mp_sched_callback_t callback;
+    struct _mp_sched_node_t *next;
+} mp_sched_node_t;
+
 // Tables mapping operator enums to qstrs, defined in objtype.c
 extern const byte mp_unary_op_method_name[];
 extern const byte mp_binary_op_method_name[];
@@ -80,6 +89,7 @@ void mp_sched_lock(void);
 void mp_sched_unlock(void);
 #define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
+bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback);
 #endif
 
 // extra printing method specifically for mp_obj_t's which are integral type
@@ -219,6 +229,7 @@ NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
 NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_AttributeError(const compressed_string_t *msg);
 NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
+NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError_varg(const compressed_string_t *msg, ...);

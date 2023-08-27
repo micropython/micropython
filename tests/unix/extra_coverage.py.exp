@@ -17,6 +17,25 @@ abc
 # GC
 0x0
 0x0
+# tracked allocation
+m_tracked_head = 0x0
+0 1
+1 1
+2 1
+3 1
+4 1
+5 1
+6 1
+7 1
+0 1
+1 1
+2 1
+3 1
+4 1
+5 1
+6 1
+7 1
+m_tracked_head = 0x0
 # vstr
 tests
 sts
@@ -27,32 +46,31 @@ RuntimeError:
 RuntimeError: 
 # repl
 ame__
-mport 
+port 
 
-builtins        micropython     _asyncio        _thread
-_uasyncio       aesio           array           audiocore
-audiomixer      binascii        bitmaptools     btree
-cexample        cmath           collections     cppexample
-displayio       errno           ffi             framebuf
-gc              hashlib         json            math
-qrio            rainbowio       re              struct
-synthio         sys             termios         traceback
-ubinascii       uctypes         uerrno          uheapq
-uio             ujson           ulab            ulab.numpy
-ulab.numpy.fft  ulab.numpy.linalg               ulab.scipy
+builtins        micropython     __future__      _asyncio
+_thread         aesio           array           audiocore
+audiomixer      binascii        bitmaptools     cexample
+cmath           collections     cppexample      displayio
+errno           gc              hashlib         heapq
+io              json            math            os
+qrio            rainbowio       random          re
+select          struct          synthio         sys
+termios         time            traceback       uctypes
+ulab            ulab.numpy      ulab.numpy.fft
+ulab.numpy.linalg               ulab.scipy
 ulab.scipy.linalg               ulab.scipy.optimize
 ulab.scipy.signal               ulab.scipy.special
-ulab.utils      uos             urandom         ure
-uselect         utime           utimeq          uzlib
-zlib
-ime
+ulab.utils      zlib
+me
 
-utime           utimeq
+rainbowio       random
 
 argv            atexit          byteorder       exc_info
 exit            getsizeof       implementation  maxsize
-modules         path            platform        stderr
-stdin           stdout          version         version_info
+modules         path            platform        print_exception
+ps1             ps2             stderr          stdin
+stdout          tracebacklimit  version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -180,4 +198,9 @@ frzstr_pkg2.mod
 frzmpy_pkg2.mod
 1
 ZeroDivisionError
+\
+
+X
+'\x1b'
+b'\x00\xff'
 NULL

@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -421,6 +421,53 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dict_update_obj, 1, dict_update);
 
+#if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+STATIC mp_obj_t dict_move_to_end(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    mp_obj_dict_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_validate_type(self, &mp_type_ordereddict, MP_QSTR_self);
+
+    // parse args
+    enum { ARG_key, ARG_last };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_key, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE } },
+        { MP_QSTR_last, MP_ARG_BOOL, {.u_bool = true } }
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t *key = args[ARG_key].u_obj;
+    bool last = args[ARG_last].u_bool;
+
+    mp_map_elem_t *elem = mp_map_lookup(&self->map, key, MP_MAP_LOOKUP);
+    if (!elem) {
+        mp_raise_type_arg(&mp_type_KeyError, key);
+    }
+
+    mp_map_elem_t tmp = *elem;
+    mp_map_elem_t *table = self->map.table;
+    mp_map_elem_t *dest, *move_begin, *move_dest;
+    size_t move_count;
+
+    if (last) {
+        mp_map_elem_t *top = &table[self->map.used];
+        dest = top - 1;
+        move_begin = elem + 1;
+        move_dest = elem;
+        move_count = top - move_begin;
+    } else {
+        dest = &table[0];
+        move_begin = table;
+        move_dest = table + 1;
+        move_count = elem - table;
+    }
+    memmove(move_dest, move_begin, move_count * sizeof(*elem));
+    *dest = tmp;
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dict_move_to_end_obj, 1, dict_move_to_end);
+#endif
+
 
 /******************************************************************************/
 /* dict views                                                                 */
@@ -537,8 +584,7 @@ STATIC const mp_obj_type_t mp_type_dict_view = {
 };
 
 STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
-    mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
-    o->base.type = &mp_type_dict_view;
+    mp_obj_dict_view_t *o = mp_obj_malloc(mp_obj_dict_view_t, &mp_type_dict_view);
     o->dict = dict;
     o->kind = kind;
     return MP_OBJ_FROM_PTR(o);
@@ -590,6 +636,9 @@ STATIC const mp_rom_map_elem_t dict_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&dict_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&dict_items_obj) },
     { MP_ROM_QSTR(MP_QSTR_keys), MP_ROM_PTR(&dict_keys_obj) },
+    #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
+    { MP_ROM_QSTR(MP_QSTR_move_to_end), MP_ROM_PTR(&dict_move_to_end_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&dict_pop_obj) },
     { MP_ROM_QSTR(MP_QSTR_popitem), MP_ROM_PTR(&dict_popitem_obj) },
     { MP_ROM_QSTR(MP_QSTR_setdefault), MP_ROM_PTR(&dict_setdefault_obj) },

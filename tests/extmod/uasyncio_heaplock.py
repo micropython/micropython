@@ -1,4 +1,4 @@
-# test that basic scheduling of tasks, and uasyncio.sleep_ms, does not use the heap
+# test that basic scheduling of tasks, and asyncio.sleep_ms, does not use the heap
 
 import micropython
 
@@ -13,13 +13,10 @@ except RuntimeError:
     raise SystemExit
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 async def task(id, n, t):
@@ -29,15 +26,15 @@ async def task(id, n, t):
 
 
 async def main():
-    t1 = asyncio.create_task(task(1, 4, 20))
-    t2 = asyncio.create_task(task(2, 2, 50))
+    t1 = asyncio.create_task(task(1, 4, 100))
+    t2 = asyncio.create_task(task(2, 2, 250))
 
     micropython.heap_lock()
 
     print("start")
-    await asyncio.sleep_ms(1)
+    await asyncio.sleep_ms(5)
     print("sleep")
-    await asyncio.sleep_ms(70)
+    await asyncio.sleep_ms(350)
     print("finish")
 
     micropython.heap_unlock()

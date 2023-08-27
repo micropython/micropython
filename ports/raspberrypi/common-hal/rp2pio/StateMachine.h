@@ -32,6 +32,8 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_pio/include/hardware/pio.h"
 
+enum { PIO_ANY_OFFSET = -1 };
+
 typedef struct sm_buf_info {
     mp_obj_t obj;
     mp_buffer_info_t info;
@@ -88,7 +90,7 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool claim_pins,
     bool interruptible,
     bool sideset_enable,
-    int wrap_target, int wrap);
+    int wrap_target, int wrap, int offset);
 
 uint8_t rp2pio_statemachine_program_offset(rp2pio_statemachine_obj_t *self);
 
@@ -97,6 +99,8 @@ void rp2pio_statemachine_dma_complete(rp2pio_statemachine_obj_t *self, int chann
 
 void rp2pio_statemachine_reset_ok(PIO pio, int sm);
 void rp2pio_statemachine_never_reset(PIO pio, int sm);
+
+uint8_t rp2pio_statemachine_find_pio(int program_size, int sm_count);
 
 extern const mp_obj_type_t rp2pio_statemachine_type;
 

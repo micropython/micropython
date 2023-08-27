@@ -83,8 +83,7 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
-    canio_can_obj_t *self = m_new_obj(canio_can_obj_t);
-    self->base.type = &canio_can_type;
+    canio_can_obj_t *self = mp_obj_malloc(canio_can_obj_t, &canio_can_type);
     common_hal_canio_can_construct(self, tx_pin, rx_pin, args[ARG_baudrate].u_int, args[ARG_loopback].u_bool, args[ARG_silent].u_bool);
 
     common_hal_canio_can_auto_restart_set(self, args[ARG_auto_restart].u_bool);

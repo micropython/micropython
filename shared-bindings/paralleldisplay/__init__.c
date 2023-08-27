@@ -48,4 +48,4 @@ const mp_obj_module_t paralleldisplay_module = {
     .globals = (mp_obj_dict_t *)&paralleldisplay_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_paralleldisplay, paralleldisplay_module, CIRCUITPY_PARALLELDISPLAY);
+MP_REGISTER_MODULE(MP_QSTR_paralleldisplay, paralleldisplay_module);

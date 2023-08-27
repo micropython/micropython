@@ -212,7 +212,7 @@ mp_obj_list_t splash_children = {
     .items = members,
 };
 #else
-mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_terminal_status_bar_text_grid,};
+mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_terminal_status_bar_text_grid, };
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
     .alloc = 2,

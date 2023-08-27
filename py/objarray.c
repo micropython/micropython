@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -838,8 +838,7 @@ mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n) {
 
 // Create bytearray which references specified memory area
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items) {
-    mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
-    o->base.type = &mp_type_bytearray;
+    mp_obj_array_t *o = mp_obj_malloc(mp_obj_array_t, &mp_type_bytearray);
     o->typecode = BYTEARRAY_TYPECODE;
     o->free = 0;
     o->len = n;

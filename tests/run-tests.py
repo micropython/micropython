@@ -203,16 +203,8 @@ def run_micropython(pyb, args, test_file, is_special=False):
                 rm_f(mpy_filename)
 
     else:
-        # run on pyboard
-        pyb.enter_raw_repl()
-        try:
-            output_mupy = pyb.execfile(test_file)
-        except pyboard.PyboardError as e:
-            had_crash = True
-            if not is_special and e.args[0] == "exception":
-                output_mupy = e.args[1] + e.args[2] + b"CRASH"
-            else:
-                output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
+        # run via pyboard interface
+        had_crash, output_mupy = run_script_on_remote_target(pyb, args, test_file, is_special)
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b"\r\n", b"\n")
@@ -363,9 +355,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output == b"TypeError\n":
             skip_revops = True
 
-        # Check if uio module exists, and skip such tests if it doesn't
-        output = run_feature_check(pyb, args, base_path, "uio_module.py")
-        if output != b"uio\n":
+        # Check if io module exists, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, base_path, "io_module.py")
+        if output != b"io\n":
             skip_io_module = True
 
         # Check if fstring feature is enabled, and skip such tests if it doesn't
@@ -436,7 +428,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if upy_float_precision < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
-        skip_tests.add("float/float_format_ints_doubleprec.py")
         skip_tests.add("float/float_parse_doubleprec.py")
 
     if not has_complex:
@@ -492,6 +483,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             for t in tests:
                 if t.startswith("basics/io_"):
                     skip_tests.add(t)
+        elif args.target == "renesas-ra":
+            skip_tests.add(
+                "extmod/utime_time_ns.py"
+            )  # RA fsp rtc function doesn't support nano sec info
         elif args.target == "qemu-arm":
             skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
 
@@ -520,6 +515,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/del_local.py")  # requires checking for unbound local
         skip_tests.add("basics/exception_chain.py")  # raise from is not supported
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
+        skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
         skip_tests.update(
@@ -538,6 +534,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "misc/print_exception.py"
         )  # because native doesn't have proper traceback info
         skip_tests.add("misc/sys_exc_info.py")  # sys.exc_info() is not supported for native
+        skip_tests.add("misc/sys_settrace_features.py")  # sys.settrace() not supported
+        skip_tests.add("misc/sys_settrace_generator.py")  # sys.settrace() not supported
+        skip_tests.add("misc/sys_settrace_loop.py")  # sys.settrace() not supported
         skip_tests.add(
             "micropython/emg_exc.py"
         )  # because native doesn't have proper traceback info
@@ -548,6 +547,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             "micropython/opt_level_lineno.py"
         )  # native doesn't have proper traceback info
         skip_tests.add("micropython/schedule.py")  # native code doesn't check pending events
+        skip_tests.add("stress/bytecode_limit.py")  # bytecode specific test
 
     def run_one_test(test_file):
         test_file = test_file.replace("\\", "/")
@@ -571,7 +571,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_endian = test_name.endswith("_endian")
         is_int_big = test_name.startswith("int_big") or test_name.endswith("_intbig")
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
-        is_set_type = test_name.startswith("set_") or test_name.startswith("frozenset")
+        is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
         is_async = test_name.startswith(("async_", "uasyncio_"))
         is_const = test_name.startswith("const")
@@ -818,13 +818,34 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
     )
-    EXTERNAL_TARGETS = ("pyboard", "wipy", "esp8266", "esp32", "minimal", "nrf")
+    EXTERNAL_TARGETS = (
+        "pyboard",
+        "wipy",
+        "esp8266",
+        "esp32",
+        "minimal",
+        "nrf",
+        "renesas-ra",
+        "rp2",
+    )
     if args.target in LOCAL_TARGETS or args.list_tests:
         pyb = None
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
         sys.path.append(base_path("../tools"))
         import pyboard
+
+        if not args.mpy_cross_flags:
+            if args.target == "esp8266":
+                args.mpy_cross_flags = "-march=xtensa"
+            elif args.target == "esp32":
+                args.mpy_cross_flags = "-march=xtensawin"
+            elif args.target == "rp2":
+                args.mpy_cross_flags = "-march=armv6m"
+            elif args.target == "pyboard":
+                args.mpy_cross_flags = "-march=armv7emsp"
+            else:
+                args.mpy_cross_flags = "-march=armv7m"
 
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
         pyb.enter_raw_repl()
@@ -842,7 +863,11 @@ the last matching regex is used:
             )
             if args.target == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "pyb", "pybnative", "inlineasm")
+                test_dirs += ("float", "stress", "pyb", "inlineasm")
+            elif args.target in ("renesas-ra"):
+                test_dirs += ("float", "inlineasm", "renesas-ra")
+            elif args.target == "rp2":
+                test_dirs += ("float", "stress", "inlineasm")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":

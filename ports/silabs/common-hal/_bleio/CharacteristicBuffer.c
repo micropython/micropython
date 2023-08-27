@@ -57,7 +57,7 @@ bool characteristic_buffer_on_ble_evt(uint16_t attribute,
                     }
                 }
             } else {
-                ringbuf_put_n(&bleio_characteristic_buffer_list.data[cindex]->ringbuf,data, len);
+                ringbuf_put_n(&bleio_characteristic_buffer_list.data[cindex]->ringbuf, data, len);
             }
             taskEXIT_CRITICAL();
 
@@ -87,7 +87,7 @@ void common_hal_bleio_characteristic_buffer_construct(
     mp_float_t timeout,
     size_t buffer_size) {
 
-    uint8_t *buffer = m_malloc(buffer_size, true);
+    uint8_t *buffer = m_malloc(buffer_size);
     _common_hal_bleio_characteristic_buffer_construct(self,
         characteristic,
         timeout,

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
-#include "py/gc_long_lived.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
 #if MICROPY_HW_ENABLE_USB
@@ -93,7 +92,11 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             #if MICROPY_MODULE_FROZEN_MPY
             if (exec_flags & EXEC_FLAG_SOURCE_IS_RAW_CODE) {
                 // source is a raw_code object, create the function
-                module_fun = mp_make_function_from_raw_code(source, MP_OBJ_NULL, MP_OBJ_NULL);
+                const mp_frozen_module_t *frozen = source;
+                mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
+                ctx->module.globals = mp_globals_get();
+                ctx->constants = frozen->constants;
+                module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
             } else
             #endif
             {
@@ -111,22 +114,15 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
                 }
                 // source is a lexer, parse and compile the script
                 qstr source_name = lex->source_name;
-                if (input_kind == MP_PARSE_FILE_INPUT) {
-                    mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
-                }
                 mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
                 module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
-                // Clear the parse tree because it has a heap pointer we don't need anymore.
-                *((uint32_t volatile *)&parse_tree.chunk) = 0;
                 #else
                 mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
                 #endif
             }
 
-            // If the code was loaded from a file it's likely to be running for a while so we'll long
-            // live it and collect any garbage before running.
+            // If the code was loaded from a file, collect any garbage before running.
             if (input_kind == MP_PARSE_FILE_INPUT) {
-                module_fun = make_obj_long_lived(module_fun, 6);
                 gc_collect();
             }
         }
@@ -493,7 +489,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
 
         vstr_add_byte(MP_STATE_VM(repl_line), '\n');
         repl.cont_line = true;
-        readline_note_newline("... ");
+        readline_note_newline(mp_repl_get_ps2());
         return 0;
 
     } else {
@@ -514,7 +510,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
 
         if (mp_repl_continue_with_input(vstr_null_terminated_str(MP_STATE_VM(repl_line)))) {
             vstr_add_byte(MP_STATE_VM(repl_line), '\n');
-            readline_note_newline("... ");
+            readline_note_newline(mp_repl_get_ps2());
             return 0;
         }
 
@@ -528,7 +524,7 @@ STATIC int pyexec_friendly_repl_process_char(int c) {
         vstr_reset(MP_STATE_VM(repl_line));
         repl.cont_line = false;
         repl.paste_mode = false;
-        readline_init(MP_STATE_VM(repl_line), ">>> ");
+        readline_init(MP_STATE_VM(repl_line), mp_repl_get_ps1());
         return 0;
     }
 }
@@ -725,7 +721,7 @@ friendly_repl_reset:
             // got a line with non-zero length, see if it needs continuing
             while (mp_repl_continue_with_input(vstr_null_terminated_str(&line))) {
                 vstr_add_byte(&line, '\n');
-                ret = readline(&line, "... ");
+                ret = readline(&line, mp_repl_get_ps2());
                 if (ret == CHAR_CTRL_C) {
                     // cancel everything
                     mp_hal_stdout_tx_str("\r\n");

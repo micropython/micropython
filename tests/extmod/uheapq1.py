@@ -1,11 +1,8 @@
 try:
-    import uheapq as heapq
-except:
-    try:
-        import heapq
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    import heapq
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 try:
     heapq.heappop([])

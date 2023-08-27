@@ -230,7 +230,7 @@ STATIC void alloc_search_result_cb(struct mdns_answer *answer, const char *varpa
 
     if ((flags & MDNS_SEARCH_RESULT_FIRST) != 0) {
         // first
-        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), 0, false);
+        mdns_remoteservice_obj_t *service = m_malloc(sizeof(mdns_remoteservice_obj_t));
         if (service == NULL) {
             // alloc fails
             mdns_search_stop(state->request_id);

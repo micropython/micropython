@@ -30,8 +30,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D11), MP_ROM_PTR(&pin_GPIO_05) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_GPIO_04) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LED),MP_ROM_PTR(&pin_GPIO_03) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D13),MP_ROM_PTR(&pin_GPIO_03) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO_03) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_GPIO_03) },
 
     // SD control
     { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CD), MP_ROM_PTR(&pin_GPIO_AD_11) },

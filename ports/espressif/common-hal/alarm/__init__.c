@@ -160,20 +160,20 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
             esp_sleep_wakeup_cause_t cause = _get_wakeup_cause(false);
             switch (cause) {
                 case ESP_SLEEP_WAKEUP_TIMER: {
-                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 case ESP_SLEEP_WAKEUP_GPIO: {
-                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 case ESP_SLEEP_WAKEUP_TOUCHPAD: {
-                    wake_alarm = alarm_touch_touchalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_touch_touchalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 #if CIRCUITPY_ESPULP
                 case ESP_SLEEP_WAKEUP_ULP: {
-                    wake_alarm = espulp_ulpalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = espulp_ulpalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 #endif

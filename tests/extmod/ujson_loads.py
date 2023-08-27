@@ -1,11 +1,8 @@
 try:
-    import ujson as json
+    import json
 except ImportError:
-    try:
-        import json
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 def my_print(o):

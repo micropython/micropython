@@ -29,4 +29,4 @@ const mp_obj_module_t gnss_module = {
     .globals = (mp_obj_dict_t *)&gnss_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_gnss, gnss_module, CIRCUITPY_GNSS);
+MP_REGISTER_MODULE(MP_QSTR_gnss, gnss_module);

@@ -58,8 +58,7 @@ STATIC mp_obj_t text_make_new(const mp_obj_type_t *type, size_t n_args,
     size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 5, 5, false);
 
-    text_obj_t *self = m_new_obj(text_obj_t);
-    self->base.type = type;
+    text_obj_t *self = mp_obj_malloc(text_obj_t, type);
 
     self->width = mp_obj_get_int(args[0]);
     self->height = mp_obj_get_int(args[1]);

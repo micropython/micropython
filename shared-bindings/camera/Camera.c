@@ -61,8 +61,7 @@
 //|         """Initialize camera."""
 //|         ...
 STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    camera_obj_t *self = m_new_obj(camera_obj_t);
-    self->base.type = &camera_type;
+    camera_obj_t *self = mp_obj_malloc(camera_obj_t, &camera_type);
     // No arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 

@@ -178,4 +178,4 @@ const mp_obj_module_t struct_module = {
     .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_struct, struct_module, CIRCUITPY_STRUCT);
+MP_REGISTER_MODULE(MP_QSTR_struct, struct_module);

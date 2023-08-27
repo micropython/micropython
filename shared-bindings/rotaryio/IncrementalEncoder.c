@@ -75,8 +75,7 @@ STATIC mp_obj_t rotaryio_incrementalencoder_make_new(const mp_obj_type_t *type, 
     const mcu_pin_obj_t *pin_a = validate_obj_is_free_pin(args[ARG_pin_a].u_obj, MP_QSTR_pin_a);
     const mcu_pin_obj_t *pin_b = validate_obj_is_free_pin(args[ARG_pin_b].u_obj, MP_QSTR_pin_b);
 
-    // Make long-lived because some implementations use a pointer to the object as interrupt-handler data.
-    rotaryio_incrementalencoder_obj_t *self = m_new_ll_obj_with_finaliser(rotaryio_incrementalencoder_obj_t);
+    rotaryio_incrementalencoder_obj_t *self = m_new_obj_with_finaliser(rotaryio_incrementalencoder_obj_t);
     self->base.type = &rotaryio_incrementalencoder_type;
 
     common_hal_rotaryio_incrementalencoder_construct(self, pin_a, pin_b);

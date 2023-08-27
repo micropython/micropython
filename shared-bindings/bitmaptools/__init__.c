@@ -273,6 +273,28 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom);
+
+//| class BlendMode:
+//|     """The blend mode for `alphablend` to operate use"""
+//|
+//|     Normal: BlendMode
+//|     """Blend with equal parts of the two source bitmaps"""
+//|
+//|     Screen: BlendMode
+//|     """Blend based on the value in each color channel. The result keeps the lighter colors and discards darker colors."""
+//|
+MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, Normal, BITMAPTOOLS_BLENDMODE_NORMAL);
+MAKE_ENUM_VALUE(bitmaptools_blendmode_type, bitmaptools_blendmode, Screen, BITMAPTOOLS_BLENDMODE_SCREEN);
+
+MAKE_ENUM_MAP(bitmaptools_blendmode) {
+    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, Normal),
+    MAKE_ENUM_MAP_ENTRY(bitmaptools_blendmode, Screen),
+};
+STATIC MP_DEFINE_CONST_DICT(bitmaptools_blendmode_locals_dict, bitmaptools_blendmode_locals_table);
+
+MAKE_PRINTER(bitmaptools, bitmaptools_blendmode);
+MAKE_ENUM_TYPE(bitmaptools, BlendMode, bitmaptools_blendmode);
+
 // requires at least 2 arguments (destination bitmap and source bitmap)
 
 //| def alphablend(
@@ -282,6 +304,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 //|     colorspace: displayio.Colorspace,
 //|     factor1: float = 0.5,
 //|     factor2: Optional[float] = None,
+//|     blendmode: Optional[BlendMode] = BlendMode.Normal,
+//|     skip_source1_index: Union[int, None] = None,
+//|     skip_source2_index: Union[int, None] = None,
 //| ) -> None:
 //|     """Alpha blend the two source bitmaps into the destination.
 //|
@@ -294,13 +319,16 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_rotozoom_obj, 0, bitmaptools_obj_rotozoom
 //|     :param float factor1: The proportion of bitmap 1 to mix in
 //|     :param float factor2: The proportion of bitmap 2 to mix in.  If specified as `None`, ``1-factor1`` is used.  Usually the proportions should sum to 1.
 //|     :param displayio.Colorspace colorspace: The colorspace of the bitmaps. They must all have the same colorspace.  Only the following colorspaces are permitted:  ``L8``, ``RGB565``, ``RGB565_SWAPPED``, ``BGR565`` and ``BGR565_SWAPPED``.
+//|     :param bitmaptools.BlendMode blendmode: The blend mode to use. Default is Normal.
+//|     :param int skip_source1_index: Bitmap palette or luminance index in source_bitmap_1 that will not be blended, set to None to blend all pixels
+//|     :param int skip_source2_index: Bitmap palette or luminance index in source_bitmap_2 that will not be blended, set to None to blend all pixels
 //|
 //|     For the L8 colorspace, the bitmaps must have a bits-per-value of 8.
 //|     For the RGB colorspaces, they must have a bits-per-value of 16."""
 //|
 
 STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {ARG_dest_bitmap, ARG_source_bitmap_1, ARG_source_bitmap_2, ARG_colorspace, ARG_factor_1, ARG_factor_2};
+    enum {ARG_dest_bitmap, ARG_source_bitmap_1, ARG_source_bitmap_2, ARG_colorspace, ARG_factor_1, ARG_factor_2, ARG_blendmode, ARG_skip_source1_index, ARG_skip_source2_index};
 
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL}},
@@ -309,6 +337,9 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
         {MP_QSTR_colorspace, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL}},
         {MP_QSTR_factor_1, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
         {MP_QSTR_factor_2, MP_ARG_OBJ, {.u_obj = MP_ROM_NONE}},
+        {MP_QSTR_blendmode, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = (void *)&bitmaptools_blendmode_Normal_obj}},
+        {MP_QSTR_skip_source1_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_skip_source2_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -321,6 +352,7 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
     mp_float_t factor2 = (args[ARG_factor_2].u_obj == mp_const_none) ? 1 - factor1 : mp_obj_get_float(args[ARG_factor_2].u_obj);
 
     displayio_colorspace_t colorspace = (displayio_colorspace_t)cp_enum_value(&displayio_colorspace_type, args[ARG_colorspace].u_obj, MP_QSTR_colorspace);
+    bitmaptools_blendmode_t blendmode = (bitmaptools_blendmode_t)cp_enum_value(&bitmaptools_blendmode_type, args[ARG_blendmode].u_obj, MP_QSTR_blendmode);
 
     if (destination->width != source1->width
         || destination->height != source1->height
@@ -352,7 +384,30 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
             mp_raise_ValueError(translate("Unsupported colorspace"));
     }
 
-    common_hal_bitmaptools_alphablend(destination, source1, source2, colorspace, factor1, factor2);
+    uint32_t skip_source1_index;
+    bool skip_source1_index_none; // flag whether skip_value was None
+
+    if (args[ARG_skip_source1_index].u_obj == mp_const_none) {
+        skip_source1_index = 0;
+        skip_source1_index_none = true;
+    } else {
+        skip_source1_index = mp_obj_get_int(args[ARG_skip_source1_index].u_obj);
+        skip_source1_index_none = false;
+    }
+
+    uint32_t skip_source2_index;
+    bool skip_source2_index_none; // flag whether skip_self_value was None
+
+    if (args[ARG_skip_source2_index].u_obj == mp_const_none) {
+        skip_source2_index = 0;
+        skip_source2_index_none = true;
+    } else {
+        skip_source2_index = mp_obj_get_int(args[ARG_skip_source2_index].u_obj);
+        skip_source2_index_none = false;
+    }
+
+    common_hal_bitmaptools_alphablend(destination, source1, source2, colorspace, factor1, factor2, blendmode, skip_source1_index,
+        skip_source1_index_none, skip_source2_index, skip_source2_index_none);
 
     return mp_const_none;
 }
@@ -949,6 +1004,132 @@ STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_a
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_circle);
 
+//| def blit(
+//|     dest_bitmap: displayio.Bitmap,
+//|     source_bitmap: displayio.Bitmap,
+//|     x: int,
+//|     y: int,
+//|     *,
+//|     x1: int,
+//|     y1: int,
+//|     x2: int,
+//|     y2: int,
+//|     skip_source_index: int,
+//|     skip_dest_index: int
+//| ) -> None:
+//|     """Inserts the source_bitmap region defined by rectangular boundaries
+//|     (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
+//|
+//|     :param bitmap dest_bitmap: Destination bitmap that the area will be copied into.
+//|     :param bitmap source_bitmap: Source bitmap that contains the graphical region to be copied
+//|     :param int x: Horizontal pixel location in bitmap where source_bitmap upper-left
+//|                   corner will be placed
+//|     :param int y: Vertical pixel location in bitmap where source_bitmap upper-left
+//|                   corner will be placed
+//|     :param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
+//|     :param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
+//|     :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|     :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|     :param int skip_source_index: bitmap palette index in the source that will not be copied,
+//|                            set to None to copy all pixels
+//|     :param int skip_dest_index: bitmap palette index in the destination bitmap that will not get overwritten
+//|                             by the pixels from the source"""
+//|     ...
+//|
+STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum {ARG_destination, ARG_source, ARG_x, ARG_y, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_source_index, ARG_skip_dest_index};
+    static const mp_arg_t allowed_args[] = {
+        {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
+        {MP_QSTR_x1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        {MP_QSTR_x2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->width
+        {MP_QSTR_y2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->height
+        {MP_QSTR_skip_source_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        {MP_QSTR_skip_dest_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    // mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // displayio_bitmap_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    displayio_bitmap_t *destination = mp_arg_validate_type(args[ARG_destination].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap);
+    // check_for_deinit(destination);
+
+    // Check x,y are within self (target) bitmap boundary
+    int16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, MAX(0, destination->width - 1), MP_QSTR_x);
+    int16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, MAX(0, destination->height - 1), MP_QSTR_y);
+
+
+    displayio_bitmap_t *source = mp_arg_validate_type(args[ARG_source].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
+
+
+    // ensure that the target bitmap (self) has at least as many `bits_per_value` as the source
+    if (destination->bits_per_value < source->bits_per_value) {
+        mp_raise_ValueError(translate("source palette too large"));
+    }
+
+    // Check x1,y1,x2,y2 are within source bitmap boundary
+    int16_t x1 = mp_arg_validate_int_range(args[ARG_x1].u_int, 0, MAX(0, source->width - 1), MP_QSTR_x1);
+    int16_t y1 = mp_arg_validate_int_range(args[ARG_y1].u_int, 0, MAX(0, source->height - 1), MP_QSTR_y1);
+    int16_t x2, y2;
+    // if x2 or y2 is None, then set as the maximum size of the source bitmap
+    if (args[ARG_x2].u_obj == mp_const_none) {
+        x2 = source->width;
+    } else {
+        x2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_x2].u_obj), 0, source->width, MP_QSTR_x2);
+    }
+    // int16_t y2;
+    if (args[ARG_y2].u_obj == mp_const_none) {
+        y2 = source->height;
+    } else {
+        y2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_y2].u_obj), 0, source->height, MP_QSTR_y2);
+    }
+
+    // Ensure x1 < x2 and y1 < y2
+    if (x1 > x2) {
+        int16_t temp = x2;
+        x2 = x1;
+        x1 = temp;
+    }
+    if (y1 > y2) {
+        int16_t temp = y2;
+        y2 = y1;
+        y1 = temp;
+    }
+
+    uint32_t skip_source_index;
+    bool skip_source_index_none; // flag whether skip_value was None
+
+    if (args[ARG_skip_source_index].u_obj == mp_const_none) {
+        skip_source_index = 0;
+        skip_source_index_none = true;
+    } else {
+        skip_source_index = mp_obj_get_int(args[ARG_skip_source_index].u_obj);
+        skip_source_index_none = false;
+    }
+
+    uint32_t skip_dest_index;
+    bool skip_dest_index_none; // flag whether skip_self_value was None
+
+    if (args[ARG_skip_dest_index].u_obj == mp_const_none) {
+        skip_dest_index = 0;
+        skip_dest_index_none = true;
+    } else {
+        skip_dest_index = mp_obj_get_int(args[ARG_skip_dest_index].u_obj);
+        skip_dest_index_none = false;
+    }
+
+    common_hal_bitmaptools_blit(destination, source, x, y, x1, y1, x2, y2, skip_source_index, skip_source_index_none, skip_dest_index,
+        skip_dest_index_none);
+
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_blit_obj, 1, bitmaptools_obj_blit);
+
+
 STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmaptools) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&bitmaptools_readinto_obj) },
@@ -960,7 +1141,9 @@ STATIC const mp_rom_map_elem_t bitmaptools_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_draw_line), MP_ROM_PTR(&bitmaptools_draw_line_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_polygon), MP_ROM_PTR(&bitmaptools_draw_polygon_obj) },
     { MP_ROM_QSTR(MP_QSTR_draw_circle), MP_ROM_PTR(&bitmaptools_draw_circle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_blit), MP_ROM_PTR(&bitmaptools_blit_obj) },
     { MP_ROM_QSTR(MP_QSTR_dither), MP_ROM_PTR(&bitmaptools_dither_obj) },
+    { MP_ROM_QSTR(MP_QSTR_BlendMode), MP_ROM_PTR(&bitmaptools_blendmode_type) },
     { MP_ROM_QSTR(MP_QSTR_DitherAlgorithm), MP_ROM_PTR(&bitmaptools_dither_algorithm_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmaptools_module_globals, bitmaptools_module_globals_table);
@@ -970,4 +1153,4 @@ const mp_obj_module_t bitmaptools_module = {
     .globals = (mp_obj_dict_t *)&bitmaptools_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_bitmaptools, bitmaptools_module, CIRCUITPY_BITMAPTOOLS);
+MP_REGISTER_MODULE(MP_QSTR_bitmaptools, bitmaptools_module);

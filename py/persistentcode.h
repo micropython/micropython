@@ -31,7 +31,7 @@
 #include "py/emitglue.h"
 
 // The current version of .mpy files
-#define MPY_VERSION 5
+#define MPY_VERSION 6
 
 // Macros to encode/decode flags to/from the feature byte
 #define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
@@ -42,15 +42,11 @@
 #define MPY_FEATURE_DECODE_ARCH(feat) ((feat) >> 2)
 
 // The feature flag bits encode the compile-time config options that affect
-// the generate bytecode. Note: position 0 is now unused
-// (formerly MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE).
-#define MPY_FEATURE_FLAGS ( \
-    ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
-    )
+// the generate bytecode. Note: no longer used.
+// (formerly MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE and MICROPY_PY_BUILTINS_STR_UNICODE).
+#define MPY_FEATURE_FLAGS (0)
 // This is a version of the flags that can be configured at runtime.
-#define MPY_FEATURE_FLAGS_DYNAMIC ( \
-    ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
-    )
+#define MPY_FEATURE_FLAGS_DYNAMIC (0)
 
 // Define the host architecture
 #if MICROPY_EMIT_X86
@@ -67,7 +63,7 @@
             #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
         #endif
     #else
-        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7M)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6M)
     #endif
     #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
 #elif MICROPY_EMIT_ARM
@@ -102,12 +98,26 @@ enum {
     MP_NATIVE_ARCH_XTENSAWIN,
 };
 
-mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
-mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
-mp_raw_code_t *mp_raw_code_load_file(const char *filename);
+enum {
+    MP_PERSISTENT_OBJ_FUN_TABLE = 0,
+    MP_PERSISTENT_OBJ_NONE,
+    MP_PERSISTENT_OBJ_FALSE,
+    MP_PERSISTENT_OBJ_TRUE,
+    MP_PERSISTENT_OBJ_ELLIPSIS,
+    MP_PERSISTENT_OBJ_STR,
+    MP_PERSISTENT_OBJ_BYTES,
+    MP_PERSISTENT_OBJ_INT,
+    MP_PERSISTENT_OBJ_FLOAT,
+    MP_PERSISTENT_OBJ_COMPLEX,
+    MP_PERSISTENT_OBJ_TUPLE,
+};
 
-void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print);
-void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename);
+mp_compiled_module_t mp_raw_code_load(mp_reader_t *reader, mp_module_context_t *ctx);
+mp_compiled_module_t mp_raw_code_load_mem(const byte *buf, size_t len, mp_module_context_t *ctx);
+mp_compiled_module_t mp_raw_code_load_file(const char *filename, mp_module_context_t *ctx);
+
+void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print);
+void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename);
 
 void mp_native_relocate(void *reloc, uint8_t *text, uintptr_t reloc_text);
 

@@ -64,11 +64,11 @@ void common_hal_digitalio_digitalinout_deinit(
 digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_input(
     digitalio_digitalinout_obj_t *self, digitalio_pull_t pull) {
     if (pull == PULL_NONE) {
-        GPIO_PinModeSet(self->pin->port,self->pin->number,gpioModeInput,1);
+        GPIO_PinModeSet(self->pin->port, self->pin->number, gpioModeInput, 1);
     } else if (pull == PULL_UP) {
-        GPIO_PinModeSet(self->pin->port,self->pin->number,gpioModeInputPull,1);
+        GPIO_PinModeSet(self->pin->port, self->pin->number, gpioModeInputPull, 1);
     } else {
-        GPIO_PinModeSet(self->pin->port,self->pin->number,gpioModeInputPull,0);
+        GPIO_PinModeSet(self->pin->port, self->pin->number, gpioModeInputPull, 0);
     }
     return DIGITALINOUT_OK;
 }
@@ -78,11 +78,11 @@ digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
     digitalio_digitalinout_obj_t *self, bool value,
     digitalio_drive_mode_t drive_mode) {
     if (drive_mode == DRIVE_MODE_OPEN_DRAIN) {
-        GPIO_PinModeSet(self->pin->port,self->pin->number,
-            gpioModeWiredAnd,value);
+        GPIO_PinModeSet(self->pin->port, self->pin->number,
+            gpioModeWiredAnd, value);
     } else {
-        GPIO_PinModeSet(self->pin->port,self->pin->number,
-            gpioModePushPull,value);
+        GPIO_PinModeSet(self->pin->port, self->pin->number,
+            gpioModePushPull, value);
     }
 
     if (value) {
@@ -97,7 +97,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_switch_to_output(
 // Get direction of the pin
 digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
     digitalio_digitalinout_obj_t *self) {
-    GPIO_Mode_TypeDef mode = GPIO_PinModeGet(self->pin->port,self->pin->number);
+    GPIO_Mode_TypeDef mode = GPIO_PinModeGet(self->pin->port, self->pin->number);
     if (mode >= gpioModePushPull) {
         return DIRECTION_OUTPUT;
     }
@@ -129,9 +129,9 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
     digitalio_digitalinout_obj_t *self,
     digitalio_drive_mode_t drive_mode) {
     if (drive_mode == DRIVE_MODE_OPEN_DRAIN) {
-        GPIO_PinModeSet(self->pin->port,self->pin->number,gpioModeWiredAnd,1);
+        GPIO_PinModeSet(self->pin->port, self->pin->number, gpioModeWiredAnd, 1);
     } else {
-        GPIO_PinModeSet(self->pin->port,self->pin->number,gpioModePushPull,1);
+        GPIO_PinModeSet(self->pin->port, self->pin->number, gpioModePushPull, 1);
     }
     return DIGITALINOUT_OK;
 }
@@ -139,7 +139,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_drive_mode(
 // Get drive mode
 digitalio_drive_mode_t common_hal_digitalio_digitalinout_get_drive_mode(
     digitalio_digitalinout_obj_t *self) {
-    GPIO_Mode_TypeDef mode = GPIO_PinModeGet(self->pin->port,self->pin->number);
+    GPIO_Mode_TypeDef mode = GPIO_PinModeGet(self->pin->port, self->pin->number);
     if (mode >= gpioModeWiredAnd) {
         return DRIVE_MODE_OPEN_DRAIN;
     }

@@ -33,7 +33,7 @@
 static const char *TAG = "ESP32S2_I2S_LCD";
 
 #define I2S_CHECK(a, str, ret) if (!(a)) {                                              \
-        ESP_LOGE(TAG,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str);       \
+        ESP_LOGE(TAG, "%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, str);       \
         return ret;                                                                   \
 }
 
@@ -401,7 +401,7 @@ i2s_lcd_handle_t i2s_lcd_driver_init(const i2s_lcd_config_t *config) {
 
     esp_err_t ret = lcd_cam_init(i2s_lcd_drv, config);
     if (ESP_OK != ret) {
-        ESP_LOGE(TAG,"%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, "i2s lcd driver initialize failed");
+        ESP_LOGE(TAG, "%s:%d (%s):%s", __FILE__, __LINE__, __FUNCTION__, "i2s lcd driver initialize failed");
         heap_caps_free(i2s_lcd_drv);
         return NULL;
     }

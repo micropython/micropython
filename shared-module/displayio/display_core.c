@@ -378,7 +378,7 @@ void displayio_display_core_collect_ptrs(displayio_display_core_t *self) {
 
 bool displayio_display_core_fill_area(displayio_display_core_t *self, displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {
     if (self->current_group != NULL) {
-        return displayio_group_fill_area(self->current_group,&self->colorspace, area, mask, buffer);
+        return displayio_group_fill_area(self->current_group, &self->colorspace, area, mask, buffer);
     }
     return false;
 }

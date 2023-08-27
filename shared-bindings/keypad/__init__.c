@@ -109,4 +109,4 @@ const mp_obj_module_t keypad_module = {
     .globals = (mp_obj_dict_t *)&keypad_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_keypad, keypad_module, CIRCUITPY_KEYPAD);
+MP_REGISTER_MODULE(MP_QSTR_keypad, keypad_module);

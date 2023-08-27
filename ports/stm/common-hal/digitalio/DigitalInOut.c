@@ -142,13 +142,13 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_pull(
 
     switch (pull) {
         case PULL_UP:
-            LL_GPIO_SetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number),LL_GPIO_PULL_UP);
+            LL_GPIO_SetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number), LL_GPIO_PULL_UP);
             break;
         case PULL_DOWN:
-            LL_GPIO_SetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number),LL_GPIO_PULL_DOWN);
+            LL_GPIO_SetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number), LL_GPIO_PULL_DOWN);
             break;
         case PULL_NONE:
-            LL_GPIO_SetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number),LL_GPIO_PULL_NO);
+            LL_GPIO_SetPinPull(pin_port(self->pin->port), pin_mask(self->pin->number), LL_GPIO_PULL_NO);
             break;
         default:
             break;

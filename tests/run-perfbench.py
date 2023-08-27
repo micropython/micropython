@@ -7,15 +7,13 @@
 import os
 import subprocess
 import sys
-import time
 import argparse
 from glob import glob
-from rich.live import Live
-from rich.console import Console
-from rich.table import Table
 
 sys.path.append("../tools")
 import pyboard
+
+prepare_script_for_target = __import__("run-tests").prepare_script_for_target
 
 # Paths for host executables
 if os.name == "nt":
@@ -41,7 +39,7 @@ def compute_stats(lst):
     return avg, var**0.5
 
 
-def run_script_on_target(target, script, run_command=None):
+def run_script_on_target(target, script):
     output = b""
     err = None
 
@@ -49,72 +47,53 @@ def run_script_on_target(target, script, run_command=None):
         # Run via pyboard interface
         try:
             target.enter_raw_repl()
-            start_ts = time.monotonic_ns()
             output = target.exec_(script)
-            if run_command:
-                start_ts = time.monotonic_ns()
-                output = target.exec_(run_command)
-            end_ts = time.monotonic_ns()
         except pyboard.PyboardError as er:
-            end_ts = time.monotonic_ns()
             err = er
-        finally:
-            target.exit_raw_repl()
     else:
         # Run local executable
         try:
-            if run_command:
-                script += run_command
-            start_ts = time.monotonic_ns()
             p = subprocess.run(
                 target, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, input=script
             )
-            end_ts = time.monotonic_ns()
             output = p.stdout
         except subprocess.CalledProcessError as er:
-            end_ts = time.monotonic_ns()
             err = er
 
-    return str(output.strip(), "ascii"), err, (end_ts - start_ts) // 1000
+    return str(output.strip(), "ascii"), err
 
 
 def run_feature_test(target, test):
     with open("feature_check/" + test + ".py", "rb") as f:
         script = f.read()
-    output, err, _ = run_script_on_target(target, script)
+    output, err = run_script_on_target(target, script)
     if err is None:
         return output
     else:
         return "CRASH: %r" % err
 
 
-def run_benchmark_on_target(target, script, run_command=None):
-    output, err, runtime_us = run_script_on_target(target, script, run_command)
+def run_benchmark_on_target(target, script):
+    output, err = run_script_on_target(target, script)
     if err is None:
+        if output == "SKIP":
+            return -1, -1, "SKIP"
         time, norm, result = output.split(None, 2)
         try:
-            return int(time), int(norm), result, runtime_us
+            return int(time), int(norm), result
         except ValueError:
-            return -1, -1, "CRASH: %r" % output, runtime_us
+            return -1, -1, "CRASH: %r" % output
     else:
-        return -1, -1, "CRASH: %r" % err, runtime_us
+        return -1, -1, "CRASH: %r" % err
 
 
-def run_benchmarks(console, target, param_n, param_m, n_average, test_list):
+def run_benchmarks(args, target, param_n, param_m, n_average, test_list):
     skip_complex = run_feature_test(target, "complex") != "complex"
     skip_native = run_feature_test(target, "native_check") != "native"
-
-    table = Table(show_header=True)
-    table.add_column("Test")
-    table.add_column("Time", justify="right")
-    table.add_column("Score", justify="right")
-    table.add_column("Ref Time", justify="right")
-
-    live = Live(table, console=console)
-    live.start()
+    target_had_error = False
 
     for test_file in sorted(test_list):
-        # print(test_file + ": ", end="")
+        print(test_file + ": ", end="")
 
         # Check if test should be skipped
         skip = (
@@ -124,8 +103,7 @@ def run_benchmarks(console, target, param_n, param_m, n_average, test_list):
             and test_file.find("viper_") != -1
         )
         if skip:
-            print("skip")
-            table.add_row(test_file, *(["skip"] * 6))
+            print("SKIP")
             continue
 
         # Create test script
@@ -133,24 +111,30 @@ def run_benchmarks(console, target, param_n, param_m, n_average, test_list):
             test_script = f.read()
         with open(BENCH_SCRIPT_DIR + "benchrun.py", "rb") as f:
             test_script += f.read()
-        bm_run = b"bm_run(%u, %u)\n" % (param_n, param_m)
+        test_script += b"bm_run(%u, %u)\n" % (param_n, param_m)
 
         # Write full test script if needed
         if 0:
             with open("%s.full" % test_file, "wb") as f:
                 f.write(test_script)
 
+        # Process script through mpy-cross if needed
+        if isinstance(target, pyboard.Pyboard) or args.via_mpy:
+            crash, test_script_target = prepare_script_for_target(args, script_text=test_script)
+            if crash:
+                print("CRASH:", test_script_target)
+                continue
+        else:
+            test_script_target = test_script
+
         # Run MicroPython a given number of times
         times = []
-        runtimes = []
         scores = []
         error = None
         result_out = None
         for _ in range(n_average):
-            self_time, norm, result, runtime_us = run_benchmark_on_target(
-                target, test_script, bm_run
-            )
-            if self_time < 0 or norm < 0:
+            time, norm, result = run_benchmark_on_target(target, test_script_target)
+            if time < 0 or norm < 0:
                 error = result
                 break
             if result_out is None:
@@ -158,43 +142,41 @@ def run_benchmarks(console, target, param_n, param_m, n_average, test_list):
             elif result != result_out:
                 error = "FAIL self"
                 break
-            times.append(self_time)
-            runtimes.append(runtime_us)
-            scores.append(1e6 * norm / self_time)
+            times.append(time)
+            scores.append(1e6 * norm / time)
 
         # Check result against truth if needed
         if error is None and result_out != "None":
-            _, _, result_exp, _ = run_benchmark_on_target(PYTHON_TRUTH, test_script, bm_run)
+            test_file_expected = test_file + ".exp"
+            if os.path.isfile(test_file_expected):
+                # Expected result is given by a file, so read that in
+                with open(test_file_expected) as f:
+                    result_exp = f.read().strip()
+            else:
+                # Run CPython to work out the expected result
+                _, _, result_exp = run_benchmark_on_target(PYTHON_TRUTH, test_script)
             if result_out != result_exp:
                 error = "FAIL truth"
 
         if error is not None:
-            print(test_file, error)
-            if error == "no matching params":
-                table.add_row(test_file, *([None] * 3))
-            else:
-                table.add_row(test_file, *(["error"] * 3))
+            if not error.startswith("SKIP"):
+                target_had_error = True
+            print(error)
         else:
             t_avg, t_sd = compute_stats(times)
-            r_avg, r_sd = compute_stats(runtimes)
             s_avg, s_sd = compute_stats(scores)
-            # print(
-            #     "{:.2f} {:.4f} {:.2f} {:.4f} {:.2f} {:.4f}".format(
-            #         t_avg, 100 * t_sd / t_avg, s_avg, 100 * s_sd / s_avg, r_avg, 100 * r_sd / r_avg
-            #     )
-            # )
-            table.add_row(
-                test_file,
-                f"{t_avg:.2f}±{100 * t_sd / t_avg:.1f}%",
-                f"{s_avg:.2f}±{100 * s_sd / s_avg:.1f}%",
-                f"{r_avg:.2f}±{100 * r_sd / r_avg:.1f}%",
+            print(
+                "{:.2f} {:.4f} {:.2f} {:.4f}".format(
+                    t_avg, 100 * t_sd / t_avg, s_avg, 100 * s_sd / s_avg
+                )
             )
             if 0:
                 print("  times: ", times)
                 print("  scores:", scores)
 
-        live.update(table, refresh=True)
-    live.stop()
+        sys.stdout.flush()
+
+    return target_had_error
 
 
 def parse_output(filename):
@@ -205,7 +187,7 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if l.find(": ") != -1 and l.find(": skip") == -1 and l.find("CRASH: ") == -1:
+            if l.find(": ") != -1 and l.find(": SKIP") == -1 and l.find("CRASH: ") == -1:
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
@@ -227,7 +209,7 @@ def compute_diff(file1, file2, diff_score):
     else:
         hdr = "N={} M={} vs N={} M={}".format(n1, m1, n2, m2)
     print(
-        "{:24} {:>10} -> {:>10}   {:>10}   {:>7}% (error%)".format(
+        "{:26} {:>10} -> {:>10}   {:>10}   {:>7}% (error%)".format(
             hdr, file1, file2, "diff", "diff"
         )
     )
@@ -248,7 +230,7 @@ def compute_diff(file1, file2, diff_score):
             percent = 100 * av_diff / av1
             percent_sd = 100 * sd_diff / av1
             print(
-                "{:24} {:10.2f} -> {:10.2f} : {:+10.2f} = {:+7.3f}% (+/-{:.2f}%)".format(
+                "{:26} {:10.2f} -> {:10.2f} : {:+10.2f} = {:+7.3f}% (+/-{:.2f}%)".format(
                     name, av1, av2, av_diff, percent, percent_sd
                 )
             )
@@ -276,6 +258,8 @@ def main():
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
     )
+    cmd_parser.add_argument("--via-mpy", action="store_true", help="compile code to .mpy first")
+    cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
     cmd_parser.add_argument("N", nargs=1, help="N parameter (approximate target CPU frequency)")
     cmd_parser.add_argument("M", nargs=1, help="M parameter (approximate target heap in kbytes)")
     cmd_parser.add_argument("files", nargs="*", help="input test files")
@@ -293,6 +277,8 @@ def main():
     n_average = int(args.average)
 
     if args.pyboard:
+        if not args.mpy_cross_flags:
+            args.mpy_cross_flags = "-march=armv7m"
         target = pyboard.Pyboard(args.device)
         target.enter_raw_repl()
     else:
@@ -311,14 +297,16 @@ def main():
     else:
         tests = sorted(args.files)
 
-    console = Console()
     print("N={} M={} n_average={}".format(N, M, n_average))
 
-    run_benchmarks(console, target, N, M, n_average, tests)
+    target_had_error = run_benchmarks(args, target, N, M, n_average, tests)
 
     if isinstance(target, pyboard.Pyboard):
         target.exit_raw_repl()
         target.close()
+
+    if target_had_error:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

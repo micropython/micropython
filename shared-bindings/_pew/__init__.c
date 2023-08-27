@@ -62,5 +62,3 @@ const mp_obj_module_t pew_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&pew_module_globals,
 };
-
-MP_REGISTER_MODULE(MP_QSTR__pew, pew_module, CIRCUITPY_PEW);

@@ -110,9 +110,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     pew_obj_t *pew = MP_STATE_VM(pew_singleton);
     if (!pew) {
-        pew = m_new_obj(pew_obj_t);
-        pew->base.type = &pewpew_type;
-        pew = gc_make_long_lived(pew);
+        pew = mp_obj_malloc(pew_obj_t, &pewpew_type);
         MP_STATE_VM(pew_singleton) = pew;
     }
 

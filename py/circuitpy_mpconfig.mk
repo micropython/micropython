@@ -26,6 +26,22 @@
 # Boards default to all modules enabled (with exceptions)
 # Manually disable by overriding in #mpconfigboard.mk
 
+# These Makefile variables are used to implement the "any" and "all" functions.
+# Note that these only work when the arguments expand to "0" and/or "1" but not
+# if they expand to other values like "yes", "/bin/sh", or "false".
+#
+# Make's "sort" will transform a mixed sequence of 0s and 1s to "0 1" (because
+# it also eliminates duplicates), or a non-mixed sequence of "0" or "1" to just
+# itself. Thus, if all the inputs are 1 then the first word will be 1; if any
+# of the inputs are 1, then the last word will be 1.
+enable-if-any=$(lastword $(sort $(1) 0))
+enable-if-all=$(firstword $(sort $(1) 1))
+
+# To use any/all, you "$(call)" it, with the values to test after a comma.
+# Usually the values are other $(CIRCUITPY_foo) variables. The definition
+# of CIRCUITPY_AUDIOCORE and CIRCUITPY_AUDIOMP3 below are typical of how
+# any/all are expected to be used.
+
 # Always on. Present here to help generate documentation module support matrix for "builtins".
 CIRCUITPY = 1
 CFLAGS += -DCIRCUITPY=$(CIRCUITPY)
@@ -44,6 +60,9 @@ CFLAGS += -DCIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE=$(CIRCUITPY_OPTIMIZE_PROPERTY
 # async/await language keyword support
 MICROPY_PY_ASYNC_AWAIT ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DMICROPY_PY_ASYNC_AWAIT=$(MICROPY_PY_ASYNC_AWAIT)
+
+# unused by CIRCUITPYTHON
+MICROPY_ROM_TEXT_COMPRESSION = 0
 
 # uasyncio
 # By default, include uasyncio if async/await are available.
@@ -95,16 +114,10 @@ CFLAGS += -DCIRCUITPY_AUDIOIO=$(CIRCUITPY_AUDIOIO)
 CIRCUITPY_AUDIOPWMIO ?= 0
 CFLAGS += -DCIRCUITPY_AUDIOPWMIO=$(CIRCUITPY_AUDIOPWMIO)
 
-ifndef CIRCUITPY_AUDIOCORE
-ifeq ($(CIRCUITPY_AUDIOPWMIO),1)
-CIRCUITPY_AUDIOCORE = $(CIRCUITPY_AUDIOPWMIO)
-else
-CIRCUITPY_AUDIOCORE = $(CIRCUITPY_AUDIOIO)
-endif
-endif
+CIRCUITPY_AUDIOCORE ?= $(call enable-if-any,$(CIRCUITPY_AUDIOPWMIO) $(CIRCUITPY_AUDIOIO) $(CIRCUITPY_AUDIOBUSIO))
 CFLAGS += -DCIRCUITPY_AUDIOCORE=$(CIRCUITPY_AUDIOCORE)
 
-CIRCUITPY_AUDIOMIXER ?= $(CIRCUITPY_AUDIOIO)
+CIRCUITPY_AUDIOMIXER ?= $(CIRCUITPY_AUDIOCORE)
 CFLAGS += -DCIRCUITPY_AUDIOMIXER=$(CIRCUITPY_AUDIOMIXER)
 
 ifndef CIRCUITPY_AUDIOCORE_DEBUG
@@ -112,13 +125,7 @@ CIRCUITPY_AUDIOCORE_DEBUG ?= 0
 endif
 CFLAGS += -DCIRCUITPY_AUDIOCORE_DEBUG=$(CIRCUITPY_AUDIOCORE_DEBUG)
 
-ifndef CIRCUITPY_AUDIOMP3
-ifeq ($(CIRCUITPY_FULL_BUILD),1)
-CIRCUITPY_AUDIOMP3 = $(CIRCUITPY_AUDIOCORE)
-else
-CIRCUITPY_AUDIOMP3 = 0
-endif
-endif
+CIRCUITPY_AUDIOMP3 ?= $(call enable-if-all,$(CIRCUITPY_FULL_BUILD) $(CIRCUITPY_AUDIOCORE))
 CFLAGS += -DCIRCUITPY_AUDIOMP3=$(CIRCUITPY_AUDIOMP3)
 
 CIRCUITPY_BINASCII ?= $(CIRCUITPY_FULL_BUILD)
@@ -200,15 +207,9 @@ endif
 CFLAGS += -DCIRCUITPY_PARALLELDISPLAY=$(CIRCUITPY_PARALLELDISPLAY)
 
 # bitmaptools and framebufferio rely on displayio
-ifeq ($(CIRCUITPY_DISPLAYIO),1)
-CIRCUITPY_BITMAPTOOLS ?= $(CIRCUITPY_FULL_BUILD)
-CIRCUITPY_FRAMEBUFFERIO ?= $(CIRCUITPY_FULL_BUILD)
-CIRCUITPY_VECTORIO ?= 1
-else
-CIRCUITPY_BITMAPTOOLS ?= 0
-CIRCUITPY_FRAMEBUFFERIO ?= 0
-CIRCUITPY_VECTORIO ?= 0
-endif
+CIRCUITPY_BITMAPTOOLS ?= $(call enable-if-all,$(CIRCUITPY_FULL_BUILD) $(CIRCUITPY_DISPLAYIO))
+CIRCUITPY_FRAMEBUFFERIO ?= $(call enable-if-all,$(CIRCUITPY_FULL_BUILD) $(CIRCUITPY_DISPLAYIO))
+CIRCUITPY_VECTORIO ?= $(CIRCUITPY_DISPLAYIO)
 CFLAGS += -DCIRCUITPY_BITMAPTOOLS=$(CIRCUITPY_BITMAPTOOLS)
 CFLAGS += -DCIRCUITPY_FRAMEBUFFERIO=$(CIRCUITPY_FRAMEBUFFERIO)
 CFLAGS += -DCIRCUITPY_VECTORIO=$(CIRCUITPY_VECTORIO)
@@ -255,12 +256,7 @@ CFLAGS += -DCIRCUITPY_FUTURE=$(CIRCUITPY_FUTURE)
 CIRCUITPY_GETPASS ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_GETPASS=$(CIRCUITPY_GETPASS)
 
-ifeq ($(CIRCUITPY_DISPLAYIO),1)
-#CIRCUITPY_GIFIO ?= $(CIRCUITPY_CAMERA)
-CIRCUITPY_GIFIO ?= 1
-else
-CIRCUITPY_GIFIO ?= 0
-endif
+CIRCUITPY_GIFIO ?= $(CIRCUITPY_DISPLAYIO)
 CFLAGS += -DCIRCUITPY_GIFIO=$(CIRCUITPY_GIFIO)
 
 CIRCUITPY_GNSS ?= 0
@@ -468,9 +464,7 @@ CFLAGS += -DCIRCUITPY_SYS=$(CIRCUITPY_SYS)
 CIRCUITPY_TERMINALIO ?= $(CIRCUITPY_DISPLAYIO)
 CFLAGS += -DCIRCUITPY_TERMINALIO=$(CIRCUITPY_TERMINALIO)
 
-ifeq ($(CIRCUITPY_DISPLAYIO),1)
-CIRCUITPY_FONTIO ?= $(CIRCUITPY_TERMINALIO)
-endif
+CIRCUITPY_FONTIO ?= $(call enable-if-all,$(CIRCUITPY_DISPLAYIO) $(CIRCUITPY_TERMINALIO))
 CFLAGS += -DCIRCUITPY_FONTIO=$(CIRCUITPY_FONTIO)
 
 CIRCUITPY_TIME ?= 1
@@ -525,6 +519,9 @@ CFLAGS += -DCIRCUITPY_USB_HOST=$(CIRCUITPY_USB_HOST)
 CIRCUITPY_USB_IDENTIFICATION ?= $(CIRCUITPY_USB)
 CFLAGS += -DCIRCUITPY_USB_IDENTIFICATION=$(CIRCUITPY_USB_IDENTIFICATION)
 
+CIRCUITPY_USB_KEYBOARD_WORKFLOW ?= $(CIRCUITPY_USB_HOST)
+CFLAGS += -DCIRCUITPY_USB_KEYBOARD_WORKFLOW=$(CIRCUITPY_USB_KEYBOARD_WORKFLOW)
+
 # MIDI is available by default, but is not turned on if there are fewer than 8 endpoints.
 CIRCUITPY_USB_MIDI ?= $(CIRCUITPY_USB)
 CFLAGS += -DCIRCUITPY_USB_MIDI=$(CIRCUITPY_USB_MIDI)
@@ -558,6 +555,9 @@ CFLAGS += -DCIRCUITPY_ZLIB=$(CIRCUITPY_ZLIB)
 # ulab numerics library
 CIRCUITPY_ULAB ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_ULAB=$(CIRCUITPY_ULAB)
+
+# whether to use -Os optimization on files in ulab
+CIRCUITPY_ULAB_OPTIMIZE_SIZE ?= 0
 
 # CIRCUITPY_VIDEOCORE is handled in the broadcom tree.
 # Only for Broadcom chips.
@@ -627,6 +627,6 @@ $(BUILD)/frozen_mpy: $(FROZEN_MPY_DIRS)
 
 $(BUILD)/manifest.py: $(BUILD)/frozen_mpy | $(TOP)/py/circuitpy_mpconfig.mk mpconfigport.mk boards/$(BOARD)/mpconfigboard.mk
 	$(ECHO) MKMANIFEST $(FROZEN_MPY_DIRS)
-	(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
+	$(Q)(cd $(BUILD)/frozen_mpy && find * -name \*.py -exec printf 'freeze_as_mpy("frozen_mpy", "%s")\n' {} \; )> $@.tmp && mv -f $@.tmp $@
 FROZEN_MANIFEST=$(BUILD)/manifest.py
 endif

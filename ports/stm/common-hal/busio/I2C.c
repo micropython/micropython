@@ -117,7 +117,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         I2Cx = mcu_i2c_banks[self->sda->periph_index - 1];
     } else {
         if (i2c_taken) {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         } else {
             raise_ValueError_invalid_pins();
         }
@@ -208,8 +208,8 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     reserved_i2c[self->sda->periph_index - 1] = false;
     never_reset_i2c[self->sda->periph_index - 1] = false;
 
-    reset_pin_number(self->sda->pin->port,self->sda->pin->number);
-    reset_pin_number(self->scl->pin->port,self->scl->pin->number);
+    reset_pin_number(self->sda->pin->port, self->sda->pin->number);
+    reset_pin_number(self->scl->pin->port, self->scl->pin->number);
     self->sda = NULL;
     self->scl = NULL;
 }

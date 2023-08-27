@@ -353,10 +353,10 @@ safe_mode_t port_init(void) {
     if (strcmp((char *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
         fine = ((uint16_t *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
     }
-    clock_init(BOARD_HAS_CRYSTAL, fine);
+    clock_init(BOARD_HAS_CRYSTAL, BOARD_XOSC_FREQ_HZ, BOARD_XOSC_IS_CRYSTAL, fine);
     #else
     // Use a default fine value
-    clock_init(BOARD_HAS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
+    clock_init(BOARD_HAS_CRYSTAL, BOARD_XOSC_FREQ_HZ, BOARD_XOSC_IS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
     #endif
 
     rtc_init();

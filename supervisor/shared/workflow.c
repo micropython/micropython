@@ -112,6 +112,9 @@ void supervisor_workflow_start(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
+    usb_keyboard_init();
+    #endif
 }
 
 FRESULT supervisor_workflow_mkdir_parents(FATFS *fs, char *path) {

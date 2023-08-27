@@ -1,7 +1,28 @@
-// Copyright (c) 2014-2018 Paul Sokolovsky
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014-2018 Paul Sokolovsky
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <assert.h>
 #include <string.h>
@@ -76,8 +97,7 @@ STATIC NORETURN void syntax_error(void) {
 
 STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
-    mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-    o->base.type = type;
+    mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
     o->addr = (void *)(uintptr_t)mp_obj_int_get_truncated(args[0]);
     o->desc = args[1];
     o->flags = LAYOUT_NATIVE;
@@ -444,8 +464,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     switch (agg_type) {
         case STRUCT: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = sub->items[1];
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -460,8 +479,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             MP_FALLTHROUGH
         }
         case PTR: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -533,8 +551,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
             } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[2];
                 o->addr = self->addr + size * index;
                 o->flags = self->flags;
@@ -551,8 +568,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
             } else {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[1];
                 o->addr = p + size * index;
                 o->flags = self->flags;
@@ -705,5 +721,7 @@ const mp_obj_module_t mp_module_uctypes = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uctypes_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_uctypes, mp_module_uctypes);
 
 #endif

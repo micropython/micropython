@@ -386,5 +386,5 @@ primary_display_bus_t *allocate_display_bus_or_raise(void) {
     if (result) {
         return result;
     }
-    mp_raise_RuntimeError(translate("Too many display busses"));
+    mp_raise_RuntimeError(translate("Too many display busses; forgot displayio.release_displays() ?"));
 }

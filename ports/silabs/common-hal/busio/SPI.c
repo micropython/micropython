@@ -95,7 +95,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 mp_raise_ValueError(translate("SPI init error"));
             }
         } else {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         }
     } else {
         raise_ValueError_invalid_pins();

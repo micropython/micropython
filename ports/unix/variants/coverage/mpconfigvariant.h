@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,20 @@
 // This config enables almost all possible features such that it can be used
 // for coverage testing.
 
+// Set base feature level.
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
 #define MICROPY_VFS                    (1)
 #define MICROPY_PY_UOS_VFS             (1)
 
+// Disable some features that come enabled by default with the feature level.
+#define MICROPY_PY_BUILTINS_EXECFILE            (0)
+#define MICROPY_PY_SYS_STDIO_BUFFER             (0)
+#define MICROPY_PY_USELECT                      (0)
+
+// Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
-#define MICROPY_OPT_MATH_FACTORIAL     (1)
+#define MICROPY_TRACKED_ALLOC           (1)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH (1)
 #define MICROPY_ENABLE_SCHEDULER       (1)
 #define MICROPY_READER_VFS             (1)
@@ -48,10 +57,12 @@
 #define MICROPY_PY_BUILTINS_HELP       (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES (1)
 #define MICROPY_PY_SYS_GETSIZEOF       (1)
+#define MICROPY_PY_SYS_TRACEBACKLIMIT  (1)
 #define MICROPY_PY_MATH_FACTORIAL      (1)
 #define MICROPY_PY_URANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_IO_BUFFEREDWRITER (1)
 #define MICROPY_PY_UASYNCIO            (1)
+#define MICROPY_PY_URANDOM_SEED_INIT_FUNC (mp_urandom_seed_init())
 #define MICROPY_PY_URE_DEBUG           (1)
 #define MICROPY_PY_URE_MATCH_GROUPS    (1)
 #define MICROPY_PY_URE_MATCH_SPAN_START_END (1)
@@ -66,9 +77,3 @@
 #define MICROPY_PY_UCRYPTOLIB          (1)
 #define MICROPY_PY_UCRYPTOLIB_CTR      (1)
 #define MICROPY_PY_MICROPYTHON_HEAP_LOCKED (1)
-#define MICROPY_CPYTHON_EXCEPTION_CHAIN (1)
-
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj

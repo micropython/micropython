@@ -48,6 +48,10 @@
 
 #define CIRCUITPY_PROCESSOR_COUNT           (2)
 
+#if CIRCUITPY_USB_HOST
+#define CIRCUITPY_USB_HOST_INSTANCE 1
+#endif
+
 // This also includes mpconfigboard.h.
 #include "py/circuitpy_mpconfig.h"
 
@@ -63,5 +67,12 @@
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_LWIP_ENTER
 #define MICROPY_PY_LWIP_EXIT    cyw43_arch_lwip_end();
 #endif
+
+// Protect the background queue with a lock because both cores may modify it.
+#include "pico/critical_section.h"
+extern critical_section_t background_queue_lock;
+#define CALLBACK_CRITICAL_BEGIN (critical_section_enter_blocking(&background_queue_lock))
+#define CALLBACK_CRITICAL_END (critical_section_exit(&background_queue_lock))
+
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

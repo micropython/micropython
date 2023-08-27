@@ -59,4 +59,4 @@ const mp_obj_module_t pixelmap_module = {
     .globals = (mp_obj_dict_t *)&pixelmap_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__pixelmap, pixelmap_module, CIRCUITPY_PIXELMAP);
+MP_REGISTER_MODULE(MP_QSTR__pixelmap, pixelmap_module);

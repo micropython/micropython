@@ -92,9 +92,9 @@ static inline void bb_spi_en(unsigned int en) {
 __attribute__((section(".ramtext")))
 static inline void bb_spi_irq_setie(unsigned int ie) {
     if (ie) {
-        csrs(mstatus,CSR_MSTATUS_MIE);
+        csrs(mstatus, CSR_MSTATUS_MIE);
     } else {
-        csrc(mstatus,CSR_MSTATUS_MIE);
+        csrc(mstatus, CSR_MSTATUS_MIE);
     }
 }
 
