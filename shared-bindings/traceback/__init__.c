@@ -95,7 +95,6 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
     mp_obj_exception_t *exc = mp_obj_exception_get_native(value);
     mp_obj_traceback_t *trace_backup = exc->traceback;
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
-
     mp_obj_exception_t *context_backup = exc->context;
     mp_obj_exception_t *cause_backup = exc->cause;
 
