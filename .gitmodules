@@ -340,4 +340,4 @@
 	url = https://github.com/bablokb/circuitpython-pcf85063a
 [submodule "frozen/Adafruit_CircuitPython_Wave"]
 	path = frozen/Adafruit_CircuitPython_Wave
-	url = http://github.com/adafruit/Adafruit_CircuitPython_Wave.git
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Wave.git

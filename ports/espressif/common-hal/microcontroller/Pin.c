@@ -38,7 +38,7 @@ STATIC uint64_t _skip_reset_once_pin_mask;
 STATIC uint64_t _preserved_pin_mask;
 STATIC uint64_t _in_use_pin_mask;
 
-// Bit mask of all pins that should never EVER be reset.
+// Bit mask of all pins that should never EVER be reset or used by user code.
 // Typically these are SPI flash and PSRAM control pins, and communication pins.
 // "Reset forbidden" is stronger than "never reset" below, which may only be temporary.
 static const uint64_t pin_mask_reset_forbidden =
@@ -97,6 +97,11 @@ static const uint64_t pin_mask_reset_forbidden =
     // Never ever reset USB pins.
     GPIO_SEL_19 |         // USB D-
     GPIO_SEL_20 |         // USB D+
+    #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Don't reset/use the IDF UART console.
+    GPIO_SEL_43 | // UART TX
+    GPIO_SEL_44 | // UART RX
     #endif
     #endif // ESP32S2, ESP32S3
 
@@ -244,7 +249,7 @@ void reset_all_pins(void) {
         }
         _reset_pin(i);
     }
-    _in_use_pin_mask = _never_reset_pin_mask;
+    _in_use_pin_mask = _never_reset_pin_mask | pin_mask_reset_forbidden;
     // Don't continue to skip resetting these pins.
     _skip_reset_once_pin_mask = 0;
 }
