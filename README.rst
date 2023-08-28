@@ -133,6 +133,8 @@ Behavior
       ``code.py`` **in the REPL anymore, as the REPL is a fresh vm.** CircuitPython's goal for this
       change includes reducing confusion about pins and memory being used.
    -  After the main code is finished the REPL can be entered by pressing any key.
+      - If the file ``repl.py`` exists, it is executed before the REPL Prompt is shown
+      - In safe mode this functionality is disabled, to ensure the REPL Prompt can always be reached
    -  Autoreload state will be maintained across reload.
 
 -  Adds a safe mode that does not run user code after a hard crash or brown out. This makes it
