@@ -48,7 +48,7 @@ CIRCUITPY_RE ?= 0
 CIRCUITPY_SDCARDIO ?= 0
 CIRCUITPY_SYNTHIO ?= 0
 CIRCUITPY_TOUCHIO_USE_NATIVE ?= 1
-CIRCUITPY_TRACEBACK = 0
+CIRCUITPY_TRACEBACK ?= 0
 CIRCUITPY_ULAB = 0
 CIRCUITPY_VECTORIO = 0
 CIRCUITPY_ZLIB = 0
@@ -61,7 +61,7 @@ CIRCUITPY_SAFEMODE_PY ?= 0
 CIRCUITPY_USB_IDENTIFICATION ?= 0
 endif
 
-MICROPY_PY_ASYNC_AWAIT = 0
+MICROPY_PY_ASYNC_AWAIT ?= 0
 
 # We don't have room for the fonts for terminalio for certain languages,
 # so turn off terminalio, and if it's off and displayio is on,
