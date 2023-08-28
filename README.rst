@@ -155,7 +155,7 @@ Behavior
 -  Re-runs ``code.py`` or other main file after file system writes by a workflow. (Disable with
    ``supervisor.disable_autoreload()``)
 -  Autoreload is disabled while the REPL is active.
--  ``code.py`` may also be named``code.txt``, ``main.py``, or ``main.txt``.
+-  ``code.py`` may also be named ``code.txt``, ``main.py``, or ``main.txt``.
 -  ``boot.py`` may also be named ``boot.txt``.
 -  ``safemode.py`` may also be named ``safemode.txt``.
 
