@@ -424,7 +424,8 @@ $(BUILD)/stage2.c: stage2.c.jinja gen_stage2.py | $(BUILD)/
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
-$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py | $(HEADER_BUILD)/
+QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/flash_info.h
+$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
