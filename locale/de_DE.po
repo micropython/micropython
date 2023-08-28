@@ -2429,6 +2429,10 @@ msgstr "Beide Knöpfe wurden beim Starten gedrückt."
 msgid "You pressed button A at start up."
 msgstr "Knopf A wurde beim Starten gedrückt."
 
+#: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
+msgid "You pressed button DOWN at start up."
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
 msgstr "Der BOOT-Knopf wurde beim Starten gedrückt"

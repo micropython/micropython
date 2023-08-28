@@ -2384,6 +2384,10 @@ msgstr ""
 msgid "You pressed button A at start up."
 msgstr ""
 
+#: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
+msgid "You pressed button DOWN at start up."
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
 msgstr ""

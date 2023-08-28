@@ -2440,6 +2440,10 @@ msgstr "Usted presionó ambos botones al iniciar."
 msgid "You pressed button A at start up."
 msgstr "Usted presionó el botón A al iniciar."
 
+#: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
+msgid "You pressed button DOWN at start up."
+msgstr ""
+
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
 msgstr "Usted presionó el botón BOOT al iniciar"
