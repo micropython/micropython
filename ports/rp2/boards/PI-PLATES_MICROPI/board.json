@@ -1,0 +1,25 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Pi-Plate Compatible",
+        "Data Acquisition",
+        "Micro USB",
+        "Real Time Clock",
+        "OLED Display",
+        "Temperature Sensor",
+        "LED Annunciators",
+        "microSD Storage"
+    ],
+    "id": "MICROpi",
+    "images": [
+        "MICROpi.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "MICROpi",
+    "thumbnail": "",
+    "url": "https://www.Pi-Plates.com/MICROpi/",
+    "vendor": "Pi-Plates"
+}
