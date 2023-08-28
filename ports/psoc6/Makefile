@@ -1,7 +1,13 @@
-# TODO: get active board from mtb-base-example makefile
-BOARD     ?= CY8CPROTO-062-4343W
+# get active board from mtb-lib makefile
+# mtb-lib makefile set TARGET board by using
+# "mtb_set_bsp" target or targets depending on it
+# as "mtb_init".
+MTB_LIB_DIR = mtb-libs
+MTB_LIB_MAKEFILE = $(MTB_LIB_DIR)/Makefile
+BOARD ?= $(shell egrep '^ *TARGET' $(MTB_LIB_MAKEFILE) | sed 's/^.*= *//g' | sed 's/APP_//')
 BOARD_DIR  = boards/$(BOARD)
 
+$(info Active PSoC6 board        : $(BOARD))
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
   $(error Invalid BOARD specified)
