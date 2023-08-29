@@ -934,6 +934,11 @@ STATIC int run_repl(safe_mode_t safe_mode) {
 
     autoreload_suspend(AUTORELOAD_SUSPEND_REPL);
 
+    if (get_safe_mode() == SAFE_MODE_NONE) {
+        const char *const filenames[] = { "repl.py" };
+        (void)maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
+    }
+
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
     // won't. This simplifies pin sharing because they won't be in use when
