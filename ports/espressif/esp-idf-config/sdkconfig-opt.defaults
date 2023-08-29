@@ -1,15 +1,41 @@
-# This file was generated using idf.py save-defconfig. It can be edited manually.
-# Espressif IoT Development Framework (ESP-IDF) Project Minimal Configuration
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Bootloader config
 #
 CONFIG_BOOTLOADER_LOG_LEVEL_NONE=y
+# end of Bootloader config
 
-CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_SILENT=y
+#
+# Compiler options
+#
 CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_SILENT=y
+# end of Compiler options
 
-CONFIG_ESP_CONSOLE_NONE=y
+#
+# Component config
+#
+#
+# Common ESP-related
+#
+# CONFIG_ESP_ERR_TO_NAME_LOOKUP is not set
+# end of Common ESP-related
 
-CONFIG_ESP_ERR_TO_NAME_LOOKUP=n
-
+#
+# ESP System Settings
+#
 CONFIG_ESP_SYSTEM_PANIC_SILENT_REBOOT=y
+CONFIG_ESP_CONSOLE_NONE=y
+# end of ESP System Settings
 
+#
+# Log output
+#
 CONFIG_LOG_DEFAULT_LEVEL_NONE=y
+# end of Log output
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

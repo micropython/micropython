@@ -340,15 +340,25 @@ $(BUILD)/esp-idf:
 
 TARGET_SDKCONFIG = esp-idf-config/sdkconfig-$(IDF_TARGET).defaults
 
+
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE), 2MB)
-	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
 else
 UF2_BOOTLOADER ?= $(CIRCUITPY_USB)
 ifeq ($(UF2_BOOTLOADER), 1)
-	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
 else
-	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
 endif
+endif
+FLASH_MODE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_MODE).defaults
+FLASH_SPEED_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_FREQ).defaults
+
+ifneq ($(CIRCUITPY_ESP_PSRAM_SIZE), 0)
+	PSRAM_SDKCONFIG = esp-idf-config/sdkconfig-psram.defaults
+	PSRAM_SIZE_SDKCONFIG = esp-idf-config/sdkconfig-psram-$(CIRCUITPY_ESP_PSRAM_SIZE).defaults
+	PSRAM_MODE_SDKCONFIG = esp-idf-config/sdkconfig-psram-$(CIRCUITPY_ESP_PSRAM_MODE).defaults
+	PSRAM_SPEED_SDKCONFIG = esp-idf-config/sdkconfig-psram-$(CIRCUITPY_ESP_PSRAM_FREQ).defaults
 endif
 
 ifeq ($(DEBUG), 1)
@@ -357,7 +367,7 @@ else
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-opt.defaults
 endif
 
-SDKCONFIGS := esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
+SDKCONFIGS := esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SIZE_SDKCONFIG);$(FLASH_MODE_SDKCONFIG);$(FLASH_SPEED_SDKCONFIG);$(PSRAM_SDKCONFIG);$(PSRAM_SIZE_SDKCONFIG);$(PSRAM_MODE_SDKCONFIG);$(PSRAM_SPEED_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
 ifneq ($(CIRCUITPY_BLEIO),0)
 	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
 endif
@@ -365,7 +375,7 @@ endif
 .PHONY: do-sdkconfig
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 QSTR_GLOBAL_REQUIREMENTS += $(BUILD)/esp-idf/config/sdkconfig.h
-$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
+$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig boards/$(BOARD)/mpconfigboard.mk CMakeLists.txt | $(BUILD)/esp-idf
 	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
 
 # build a lib
@@ -385,9 +395,10 @@ $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sd
 # run menuconfig and then remove standard settings
 menuconfig: $(BUILD)/esp-idf/config $(BUILD)/esp-idf/config/sdkconfig.h
 	$(Q)ninja -C $(BUILD)/esp-idf menuconfig
-	# Newer versions of the idf will have save-defconfig that will only include non-default values.
-	# We should use that when available. For now, we sort out everything.
 	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
+
+update-all-sdkconfigs: $(BUILD)/esp-idf/config/sdkconfig.h
+	python tools/update_sdkconfig.py --update_all --board=$(BOARD) --debug=$(DEBUG)
 
 BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
 BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
@@ -449,7 +460,26 @@ IDF_CMAKE_TARGETS = \
 PARTITION_TABLE_OFFSET = 0x8000
 FIRMWARE_OFFSET = 0x10000
 
-FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
+# Map the flash's run mode to flashing mode (only dual is supported by the early bootloaders).
+# https://github.com/espressif/esp-idf/blob/82cceabc6e6a0a2d8c40e2249bc59917cc5e577a/components/esptool_py/Kconfig.projbuild#L74-L87
+ifeq ($(CIRCUITPY_ESP_FLASH_MODE),dout)
+	ESPTOOLPY_FLASHMODE = "dout"
+endif
+ifeq ($(CIRCUITPY_ESP_FLASH_MODE),opi)
+	ESPTOOLPY_FLASHMODE = "dout"
+endif
+# Most modes can flash with dio
+ESPTOOLPY_FLASHMODE ?= "dio"
+
+# Cap the flash speed to 80m.
+# https://github.com/espressif/esp-idf/blob/82cceabc6e6a0a2d8c40e2249bc59917cc5e577a/components/esptool_py/Kconfig.projbuild#L74-L87
+ifeq ($(CIRCUITPY_ESP_FLASH_FREQ),120m)
+	ESPTOOLPY_FLASHFREQ = "80m"
+else
+	ESPTOOLPY_FLASHFREQ = $(CIRCUITPY_ESP_FLASH_FREQ)
+endif
+
+FLASH_FLAGS = --flash_mode $(ESPTOOLPY_FLASHMODE) --flash_freq $(ESPTOOLPY_FLASHFREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
 ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset --baud 921600
 

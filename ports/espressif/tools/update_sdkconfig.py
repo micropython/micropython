@@ -53,20 +53,41 @@ TARGET_SETTINGS = [
     "CONFIG_NIMBLE_PINNED_TO_CORE",
     "CONFIG_BT_NIMBLE_PINNED_TO_CORE",
     "CONFIG_BT_CTRL_PINNED_TO_CORE",
+    "CONFIG_SPIRAM_SPEED_2",
+    "CONFIG_SPIRAM_BANKSWITCH_ENABLE",  # For ESP32
 ]
 
 BOARD_SETTINGS = [
-    "CONFIG_SPIRAM",
-    "CONFIG_DEFAULT_PSRAM_",
-    "_SPIRAM_SUPPORT",
     "CONFIG_LWIP_LOCAL_HOSTNAME",
 ]
 
-FLASH_SETTINGS = [
+FLASH_SIZE_SETTINGS = [
     "CONFIG_ESPTOOLPY_FLASHSIZE",
     "CONFIG_PARTITION_TABLE_CUSTOM_FILENAME",
     "CONFIG_PARTITION_TABLE_FILENAME",
 ]
+
+FLASH_MODE_SETTINGS = [
+    "CONFIG_ESPTOOLPY_FLASHMODE_",
+    "CONFIG_ESPTOOLPY_OCT_FLASH",
+    "CONFIG_ESPTOOLPY_FLASH_SAMBLE_MODE_",
+]
+
+FLASH_FREQ_SETTINGS = [
+    "CONFIG_ESPTOOLPY_FLASHFREQ_",
+]
+
+PSRAM_SETTINGS = ["CONFIG_SPIRAM"]
+
+PSRAM_SIZE_SETTINGS = ["CONFIG_SPIRAM_TYPE_"]
+
+PSRAM_MODE_SETTINGS = ["CONFIG_SPIRAM_MODE_"]
+
+PSRAM_FREQ_SETTINGS = ["CONFIG_SPIRAM_SPEED_"]
+
+# Some settings are target dependent but we want to always include them anyway
+# because the files they are in will be used across targets.
+ALWAYS_INCLUDE = FLASH_MODE_SETTINGS + FLASH_FREQ_SETTINGS + PSRAM_FREQ_SETTINGS
 
 BLE_SETTINGS = ["CONFIG_BT_", "CONFIG_BLUEDROID_", "CONFIG_NIMBLE_", "CONFIG_SW_COEXIST_ENABLE"]
 
@@ -141,11 +162,27 @@ def update(debug, board, update_all):
     was likely modified by menuconfig."""
 
     board_make = pathlib.Path(f"boards/{board}/mpconfigboard.mk")
+    psram_size = "0"
     for line in board_make.read_text().split("\n"):
-        if line.startswith("IDF_TARGET"):
-            target = line.split("=")[1].strip()
-        elif line.startswith("CIRCUITPY_ESP_FLASH_SIZE"):
-            flash = line.split("=")[1].strip()
+        if "=" not in line or line.startswith("#"):
+            continue
+        key, value = line.split("=", maxsplit=1)
+        key = key.strip()
+        value = value.strip()
+        if key == "IDF_TARGET":
+            target = value
+        elif key == "CIRCUITPY_ESP_FLASH_SIZE":
+            flash_size = value
+        elif key == "CIRCUITPY_ESP_FLASH_MODE":
+            flash_mode = value
+        elif key == "CIRCUITPY_ESP_FLASH_FREQ":
+            flash_freq = value
+        elif key == "CIRCUITPY_ESP_PSRAM_SIZE":
+            psram_size = value
+        elif key == "CIRCUITPY_ESP_PSRAM_MODE":
+            psram_mode = value
+        elif key == "CIRCUITPY_ESP_PSRAM_FREQ":
+            psram_freq = value
 
     os.environ["IDF_TARGET"] = target
     os.environ[
@@ -161,24 +198,47 @@ def update(debug, board, update_all):
     input_config = pathlib.Path(f"build-{board}/esp-idf/sdkconfig")
     kconfig.load_config(input_config)
 
+    sdkconfigs = []
     default_config = pathlib.Path("esp-idf-config/sdkconfig.defaults")
+    sdkconfigs.append(default_config)
     if debug:
         opt_config = pathlib.Path("esp-idf-config/sdkconfig-debug.defaults")
     else:
         opt_config = pathlib.Path("esp-idf-config/sdkconfig-opt.defaults")
-    flash_config = pathlib.Path(f"esp-idf-config/sdkconfig-{flash}.defaults")
+    sdkconfigs.append(opt_config)
+    flash_size_config = pathlib.Path(f"esp-idf-config/sdkconfig-flash-{flash_size}.defaults")
+    flash_mode_config = pathlib.Path(f"esp-idf-config/sdkconfig-flash-{flash_mode}.defaults")
+    flash_freq_config = pathlib.Path(f"esp-idf-config/sdkconfig-flash-{flash_freq}.defaults")
+    sdkconfigs.extend((flash_size_config, flash_mode_config, flash_freq_config))
+
+    if psram_size != "0":
+        psram_config = pathlib.Path(f"esp-idf-config/sdkconfig-psram.defaults")
+        psram_size_config = pathlib.Path(f"esp-idf-config/sdkconfig-psram-{psram_size}.defaults")
+        psram_mode_config = pathlib.Path(f"esp-idf-config/sdkconfig-psram-{psram_mode}.defaults")
+        psram_freq_config = pathlib.Path(f"esp-idf-config/sdkconfig-psram-{psram_freq}.defaults")
+        sdkconfigs.extend((psram_config, psram_size_config, psram_mode_config, psram_freq_config))
     target_config = pathlib.Path(f"esp-idf-config/sdkconfig-{target}.defaults")
+    sdkconfigs.append(target_config)
     ble_config = pathlib.Path(f"esp-idf-config/sdkconfig-ble.defaults")
+    sdkconfigs.append(ble_config)
     board_config = pathlib.Path(f"boards/{board}/sdkconfig")
+    sdkconfigs.append(board_config)
 
     cp_kconfig_defaults = kconfiglib.Kconfig(kconfig_path)
-    for default_file in (default_config, opt_config, flash_config, target_config, ble_config):
+    for default_file in sdkconfigs:
         cp_kconfig_defaults.load_config(default_file, replace=False)
 
     board_settings = []
     last_board_group = None
-    flash_settings = []
-    last_flash_group = None
+    flash_size_settings = []
+    last_flash_size_group = None
+    flash_mode_settings = []
+    flash_freq_settings = []
+    psram_settings = []
+    last_psram_group = None
+    psram_size_settings = []
+    psram_mode_settings = []
+    psram_freq_settings = []
     opt_settings = []
     last_opt_group = None
     target_settings = []
@@ -222,7 +282,11 @@ def update(debug, board, update_all):
 
             config_string = item.config_string.strip()
             if not config_string:
-                continue
+                if matches_group("CONFIG_" + item.name, ALWAYS_INCLUDE):
+                    config_string = f"# CONFIG_{item.name} is not set"
+                    print(config_string)
+                else:
+                    continue
 
             if node.list:
                 pending_nodes.append(node.list)
@@ -234,33 +298,65 @@ def update(debug, board, update_all):
                 print("  " * len(current_group), i, config_string.strip())
 
             target_reference = False
-            board_reference = False
+            psram_reference = False
             for referenced in item.referenced:
                 if referenced.name.startswith("IDF_TARGET"):
                     # print(item.name, "references", referenced.name)
                     target_reference = True
                     break
                 if referenced.name == "SPIRAM":
-                    board_reference = True
+                    psram_reference = True
 
             if (not update_all and not matches_cp_default) or (
                 update_all
-                and (matches_group(config_string, BOARD_SETTINGS) or board_reference)
+                and matches_group(config_string, BOARD_SETTINGS)
                 and not matches_esp_default
             ):
                 print("  " * (len(current_group) + 1), "board")
                 last_board_group = add_group(board_settings, last_board_group, current_group)
                 board_settings.append(config_string)
-            elif update_all and not matches_esp_default:
-                if matches_group(config_string, OPT_SETTINGS):
+            elif update_all:
+                target_setting = target_reference or matches_group(config_string, TARGET_SETTINGS)
+                if matches_group(config_string, FLASH_SIZE_SETTINGS):
+                    print("  " * (len(current_group) + 1), "flash size")
+                    last_flash_size_group = add_group(
+                        flash_size_settings, last_flash_size_group, current_group
+                    )
+                    flash_size_settings.append(config_string)
+                elif matches_group(config_string, FLASH_MODE_SETTINGS):
+                    print("  " * (len(current_group) + 1), "flash mode")
+                    flash_mode_settings.append(config_string)
+                elif matches_group(config_string, FLASH_FREQ_SETTINGS):
+                    print("  " * (len(current_group) + 1), "flash freq")
+                    flash_freq_settings.append(config_string)
+                elif matches_group(config_string, PSRAM_SIZE_SETTINGS):
+                    print("  " * (len(current_group) + 1), "psram size")
+                    psram_size_settings.append(config_string)
+                elif matches_group(config_string, PSRAM_MODE_SETTINGS):
+                    print("  " * (len(current_group) + 1), "psram mode")
+                    psram_mode_settings.append(config_string)
+                elif matches_group(config_string, PSRAM_FREQ_SETTINGS) and not target_setting:
+                    # The ESP32S2 has two frequencies that aren't on the S3 or ESP32. So, put those
+                    # in target settings.
+                    print("  " * (len(current_group) + 1), "psram freq")
+                    psram_freq_settings.append(config_string)
+                elif matches_esp_default:
+                    # Always document the above settings. Settings below should
+                    # be non-default.
+                    pass
+                elif (
+                    (matches_group(config_string, PSRAM_SETTINGS) or psram_reference)
+                    and not target_reference
+                    and not target_setting
+                ):
+                    print("  " * (len(current_group) + 1), "psram shared")
+                    last_psram_group = add_group(psram_settings, last_psram_group, current_group)
+                    psram_settings.append(config_string)
+                elif matches_group(config_string, OPT_SETTINGS):
                     print("  " * (len(current_group) + 1), "opt")
                     last_opt_group = add_group(opt_settings, last_opt_group, current_group)
                     opt_settings.append(config_string)
-                elif matches_group(config_string, FLASH_SETTINGS):
-                    print("  " * (len(current_group) + 1), "flash")
-                    last_flash_group = add_group(flash_settings, last_flash_group, current_group)
-                    flash_settings.append(config_string)
-                elif target_reference or matches_group(config_string, TARGET_SETTINGS):
+                elif target_setting:
                     print("  " * (len(current_group) + 1), "target")
                     last_target_group = add_group(
                         target_settings, last_target_group, current_group
@@ -294,14 +390,22 @@ def update(debug, board, update_all):
 
     add_group(board_settings, last_board_group, current_group)
     add_group(opt_settings, last_opt_group, current_group)
-    add_group(flash_settings, last_flash_group, current_group)
+    add_group(flash_size_settings, last_flash_size_group, current_group)
+    add_group(psram_settings, last_psram_group, current_group)
     add_group(target_settings, last_target_group, current_group)
     add_group(ble_settings, last_ble_group, current_group)
     add_group(default_settings, last_default_group, current_group)
 
     board_config.write_text("\n".join(board_settings))
     if update_all:
-        flash_config.write_text("\n".join(flash_settings))
+        flash_size_config.write_text("\n".join(flash_size_settings))
+        flash_mode_config.write_text("\n".join(flash_mode_settings))
+        flash_freq_config.write_text("\n".join(flash_freq_settings))
+        if psram_size != "0":
+            psram_config.write_text("\n".join(psram_settings))
+            psram_size_config.write_text("\n".join(psram_size_settings))
+            psram_mode_config.write_text("\n".join(psram_mode_settings))
+            psram_freq_config.write_text("\n".join(psram_freq_settings))
         opt_config.write_text("\n".join(opt_settings))
         default_config.write_text("\n".join(default_settings))
         target_config.write_text("\n".join(target_settings))
