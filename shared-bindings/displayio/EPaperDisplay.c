@@ -206,7 +206,7 @@ STATIC mp_obj_t displayio_epaperdisplay_make_new(const mp_obj_type_t *type, size
     size_t refresh_buf_len = 0;
     mp_int_t refresh_command;
     if (mp_obj_get_int_maybe(refresh_obj, &refresh_command)) {
-        uint8_t *command_buf = m_malloc(3, true);
+        uint8_t *command_buf = m_malloc(3);
         command_buf[0] = refresh_command;
         command_buf[1] = 0;
         command_buf[2] = 0;

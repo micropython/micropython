@@ -269,13 +269,13 @@ bool common_hal_sdioio_sdcard_deinited(sdioio_sdcard_obj_t *self) {
 
 STATIC void never_reset_mcu_periph(const mcu_periph_obj_t *periph) {
     if (periph) {
-        never_reset_pin_number(periph->pin->port,periph->pin->number);
+        never_reset_pin_number(periph->pin->port, periph->pin->number);
     }
 }
 
 STATIC void reset_mcu_periph(const mcu_periph_obj_t *periph) {
     if (periph) {
-        reset_pin_number(periph->pin->port,periph->pin->number);
+        reset_pin_number(periph->pin->port, periph->pin->number);
     }
 }
 

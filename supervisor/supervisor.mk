@@ -85,6 +85,8 @@ else
     SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
   endif
 
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/devices.h
+SRC_QSTR += $(HEADER_BUILD)/devices.h
 $(HEADER_BUILD)/devices.h : ../../supervisor/shared/external_flash/devices.h.jinja ../../tools/gen_nvm_devices.py | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
@@ -226,7 +228,7 @@ endif
 USB_HIGHSPEED ?= 0
 CFLAGS += -DUSB_HIGHSPEED=$(USB_HIGHSPEED)
 
-$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 

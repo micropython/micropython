@@ -103,7 +103,10 @@ void i2sout_reset(void) {
 // Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
-    const mcu_pin_obj_t *data, bool left_justified) {
+    const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
+    if (main_clock != NULL) {
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_main_clock);
+    }
     if (bit_clock->number != word_select->number - 1) {
         mp_raise_ValueError(translate("Bit clock and word select must be sequential pins"));
     }

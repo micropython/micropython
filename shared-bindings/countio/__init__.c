@@ -35,4 +35,4 @@ const mp_obj_module_t countio_module = {
     .globals = (mp_obj_dict_t *)&countio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_countio, countio_module, CIRCUITPY_COUNTIO);
+MP_REGISTER_MODULE(MP_QSTR_countio, countio_module);

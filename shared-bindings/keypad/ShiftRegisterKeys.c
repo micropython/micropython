@@ -35,7 +35,22 @@
 #include "shared-bindings/util.h"
 
 //| class ShiftRegisterKeys:
-//|     """Manage a set of keys attached to an incoming shift register."""
+//|     """Manage a set of keys attached to an incoming shift register.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["keypad.ShiftRegisterKeys"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -85,8 +100,8 @@
 
 STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
-    keypad_shiftregisterkeys_obj_t *self = m_new_obj(keypad_shiftregisterkeys_obj_t);
-    self->base.type = &keypad_shiftregisterkeys_type;
+    keypad_shiftregisterkeys_obj_t *self =
+        mp_obj_malloc(keypad_shiftregisterkeys_obj_t, &keypad_shiftregisterkeys_type);
     enum { ARG_clock, ARG_data, ARG_latch, ARG_value_to_latch, ARG_key_count, ARG_value_when_pressed, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },

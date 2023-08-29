@@ -58,8 +58,8 @@ STATIC mp_obj_t canio_remote_transmission_request_make_new(const mp_obj_type_t *
         mp_raise_ValueError(translate("RemoteTransmissionRequests limited to 8 bytes"));
     }
 
-    canio_remote_transmission_request_obj_t *self = m_new_obj(canio_remote_transmission_request_obj_t);
-    self->base.type = &canio_remote_transmission_request_type;
+    canio_remote_transmission_request_obj_t *self =
+        mp_obj_malloc(canio_remote_transmission_request_obj_t, &canio_remote_transmission_request_type);
     common_hal_canio_remote_transmission_request_construct(self, args[ARG_id].u_int, length, args[ARG_extended].u_bool);
     return self;
 }

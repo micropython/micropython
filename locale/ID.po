@@ -33,8 +33,8 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -142,6 +142,10 @@ msgstr "%q sedang digunakan"
 msgid "%q index out of range"
 msgstr "%q indeks di luar batas"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "indeks %q harus bilangan bulat, bukan %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr ""
@@ -217,7 +221,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -392,10 +396,6 @@ msgstr "'break' diluar loop"
 msgid "'continue' outside loop"
 msgstr "'continue' diluar loop"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr ""
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' membutuhkan setidaknya 2 argumen"
@@ -419,6 +419,10 @@ msgstr "'yield from' di dalam fungsi async"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' diluar fungsi"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -445,6 +449,10 @@ msgstr "Sebuah channel hardware interrupt sedang digunakan"
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 sedang digunakan oleh WiFi"
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -661,11 +669,6 @@ msgstr ""
 msgid "Buffer is not a bytearray."
 msgstr "Buffer bukan bytearray."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Buffer terlalu kecil"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -684,6 +687,12 @@ msgstr ""
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffer terlalu pendek untuk %d byte"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -849,10 +858,6 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
-
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "File .mpy rusak"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -1036,10 +1041,6 @@ msgstr "Gagal melepaskan mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Gagal menulis flash internal."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr ""
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "File sudah ada"
@@ -1115,6 +1116,10 @@ msgstr "Grup sudah digunakan"
 msgid "Half duplex SPI is not implemented"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
@@ -1147,14 +1152,6 @@ msgstr ""
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"File .mpy tidak kompatibel. Perbarui semua file .mpy. Lihat http://adafru.it/"
-"mpy-update untuk info lebih lanjut."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1502,7 +1499,7 @@ msgstr ""
 msgid "No in or out in program"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Tidak ada dukungan bilangan bulat yang panjang"
 
@@ -1779,6 +1776,10 @@ msgstr "Tambahkan module apapun pada filesystem\n"
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Buffer awalan harus ada di heap"
@@ -1986,10 +1987,6 @@ msgstr ""
 msgid "Stereo right must be on PWM channel B"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr ""
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr ""
@@ -2012,10 +2009,6 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2371,14 +2364,6 @@ msgid "Wi-Fi: "
 msgstr ""
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
 msgstr ""
 
@@ -2526,6 +2511,10 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "diperlukan array/byte di sisi kanan"
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
@@ -2606,13 +2595,16 @@ msgstr "ukuran buffer harus sesuai dengan format"
 msgid "buffer slices must be of equal length"
 msgstr ""
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
+msgstr ""
+
+#: py/emitbc.c
+msgid "bytecode overflow"
 msgstr ""
 
 #: py/objarray.c
@@ -2660,13 +2652,18 @@ msgstr "tidak dapat menetapkan ke ekspresi"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to complex"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
 msgstr ""
 
 #: py/objstr.c
@@ -2678,11 +2675,11 @@ msgid "can't convert complex to float"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to %q"
+msgid "can't convert to complex"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to complex"
+msgid "can't convert to float"
 msgstr ""
 
 #: py/runtime.c
@@ -2708,14 +2705,6 @@ msgstr ""
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
 msgstr ""
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr "tidak bisa memiliki **x ganda"
-
-#: py/compile.c
-msgid "can't have multiple *x"
-msgstr "tidak bisa memiliki *x ganda"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
@@ -2769,6 +2758,10 @@ msgstr ""
 #: py/objstr.c
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
+msgstr ""
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -2866,10 +2859,6 @@ msgstr ""
 #: extmod/moduzlib.c
 msgid "compression header"
 msgstr "kompresi header"
-
-#: py/parse.c
-msgid "constant must be an integer"
-msgstr ""
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -3207,7 +3196,11 @@ msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
+msgid "incompatible .mpy arch"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
 msgstr ""
 
 #: py/objstr.c
@@ -3235,6 +3228,10 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index keluar dari jangkauan"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3369,10 +3366,6 @@ msgstr ""
 msgid "invalid exception"
 msgstr ""
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "format tidak valid"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr ""
@@ -3433,10 +3426,6 @@ msgstr ""
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr "argumen keyword belum diimplementasi - gunakan args normal"
-
-#: py/bc.c
-msgid "keywords must be strings"
-msgstr "keyword harus berupa string"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3662,14 +3651,6 @@ msgstr "argumen non-default mengikuti argumen standar(default)"
 msgid "non-hex digit found"
 msgstr "digit non-hex ditemukan"
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr "non-keyword arg setelah */**"
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr "non-keyword arg setelah keyword arg"
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr ""
@@ -3680,6 +3661,10 @@ msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
+msgstr ""
+
+#: py/parse.c
+msgid "not a constant"
 msgstr ""
 
 #: py/objstr.c
@@ -3896,10 +3881,6 @@ msgstr "parameter harus menjadi register dalam urutan r0 sampai r3"
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -3919,6 +3900,14 @@ msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after **"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
 msgstr ""
 
 #: py/objint_mpz.c
@@ -3948,6 +3937,11 @@ msgstr ""
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relative import"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr ""
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -4143,6 +4137,10 @@ msgstr ""
 msgid "tobytes can be invoked for dense arrays only"
 msgstr ""
 
+#: py/compile.c
+msgid "too many args"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
@@ -4168,6 +4166,10 @@ msgstr ""
 msgid "trapz is defined for 1D iterables"
 msgstr ""
 
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr ""
+
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
@@ -4190,7 +4192,7 @@ msgstr ""
 msgid "type is not an acceptable base type"
 msgstr ""
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr ""
 
@@ -4387,6 +4389,37 @@ msgstr "zi harus berjenis float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "Zi harus berbentuk (n_section, 2)"
 
+#~ msgid "Buffer is too small"
+#~ msgstr "Buffer terlalu kecil"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "File .mpy rusak"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "File .mpy tidak kompatibel. Perbarui semua file .mpy. Lihat http://adafru."
+#~ "it/mpy-update untuk info lebih lanjut."
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "tidak bisa memiliki **x ganda"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "tidak bisa memiliki *x ganda"
+
+#~ msgid "invalid format"
+#~ msgstr "format tidak valid"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "keyword harus berupa string"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "non-keyword arg setelah */**"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "non-keyword arg setelah keyword arg"
+
 #~ msgid "Too many display busses"
 #~ msgstr "Terlalu banyak tampilan bus"
 
@@ -4475,9 +4508,6 @@ msgstr "Zi harus berbentuk (n_section, 2)"
 
 #~ msgid "zero step"
 #~ msgstr "nol langkah"
-
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "indeks %q harus bilangan bulat, bukan %s"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "Untuk keluar, silahkan reset board tanpa "

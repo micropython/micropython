@@ -53,13 +53,13 @@
 
 #define ELF32_ST_BIND(i)   ((i) >> 4)
 #define ELF32_ST_TYPE(i)   ((i) & 0xf)
-#define ELF32_ST_INFO(b,t) (((b) << 4) | ((t) & 0xf))
+#define ELF32_ST_INFO(b, t) (((b) << 4) | ((t) & 0xf))
 
 /* Definitions for Elf32_Rel*::r_info */
 
 #define ELF32_R_SYM(i)    ((i) >> 8)
 #define ELF32_R_TYPE(i)   ((i) & 0xff)
-#define ELF32_R_INFO(s,t) (((s) << 8) | ((t) & 0xff))
+#define ELF32_R_INFO(s, t) (((s) << 8) | ((t) & 0xff))
 
 #define ELF_R_SYM(i)      ELF32_R_SYM(i)
 

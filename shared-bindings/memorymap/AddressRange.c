@@ -69,8 +69,7 @@ STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_
         mp_arg_validate_int_min(args[ARG_length].u_int, 1, MP_QSTR_length);
 
 
-    memorymap_addressrange_obj_t *self = m_new_obj(memorymap_addressrange_obj_t);
-    self->base.type = &memorymap_addressrange_type;
+    memorymap_addressrange_obj_t *self = mp_obj_malloc(memorymap_addressrange_obj_t, &memorymap_addressrange_type);
 
     common_hal_memorymap_addressrange_construct(self, (uint8_t *)start, length);
 

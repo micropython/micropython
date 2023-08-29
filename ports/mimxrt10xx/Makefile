@@ -224,10 +224,6 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 include $(TOP)/py/mkrules.mk
 
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)
 
 # Flash using jlink
 define jlink_script

@@ -86,7 +86,7 @@ void port_internal_flash_flush(void) {
             reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);
         }
         taskENTER_CRITICAL();
-        ret = MSC_WriteWord((uint32_t *)_flash_page_addr,_flash_cache,FLASH_PAGE_SIZE);
+        ret = MSC_WriteWord((uint32_t *)_flash_page_addr, _flash_cache, FLASH_PAGE_SIZE);
         taskEXIT_CRITICAL();
         if (mscReturnOk != ret) {
             reset_into_safe_mode(SAFE_MODE_FLASH_WRITE_FAIL);

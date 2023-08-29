@@ -111,8 +111,7 @@ STATIC mp_obj_t audioio_audioout_make_new(const mp_obj_type_t *type, size_t n_ar
         validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj, MP_QSTR_right_channel);
 
     // create AudioOut object from the given pin
-    audioio_audioout_obj_t *self = m_new_obj(audioio_audioout_obj_t);
-    self->base.type = &audioio_audioout_type;
+    audioio_audioout_obj_t *self = mp_obj_malloc(audioio_audioout_obj_t, &audioio_audioout_type);
     common_hal_audioio_audioout_construct(self, left_channel_pin, right_channel_pin, args[ARG_quiescent_value].u_int);
 
     return MP_OBJ_FROM_PTR(self);

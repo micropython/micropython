@@ -48,8 +48,7 @@ static mp_obj_t vectorio_polygon_make_new(const mp_obj_type_t *type, size_t n_ar
 
     mp_obj_t points_list = mp_arg_validate_type(args[ARG_points_list].u_obj, &mp_type_list, MP_QSTR_points);
 
-    vectorio_polygon_t *self = m_new_obj(vectorio_polygon_t);
-    self->base.type = &vectorio_polygon_type;
+    vectorio_polygon_t *self = mp_obj_malloc(vectorio_polygon_t, &vectorio_polygon_type);
 
     uint16_t color_index = args[ARG_color_index].u_int;
     common_hal_vectorio_polygon_construct(self, points_list, color_index);

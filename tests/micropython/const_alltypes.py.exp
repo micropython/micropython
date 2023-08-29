@@ -1,0 +1,12 @@
+123
+str
+b'bytes'
+(123, 'str', b'bytes')
+(None, False, True, Ellipsis, (), (123, 'str', b'bytes'))
+True
+True
+False
+False
+False
+False
+False

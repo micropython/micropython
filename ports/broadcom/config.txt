@@ -7,3 +7,4 @@ enable_jtag_gpio=1
 # hdmi_group=1
 # hdmi_mode=16
 gpu_mem=16
+kernel_address=0x100000

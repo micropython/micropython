@@ -291,8 +291,3 @@ flash: $(BUILD)/firmware.bin
 	dfu-util -a 0 --dfuse-address $(BOOTLOADER_OFFSET) -D $(BUILD)/firmware.bin
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

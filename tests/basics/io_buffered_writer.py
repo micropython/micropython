@@ -1,4 +1,4 @@
-import uio as io
+import io
 
 try:
     io.BytesIO

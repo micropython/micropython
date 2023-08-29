@@ -1,7 +1,28 @@
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-// SPDX-FileCopyrightText: Copyright (c) 2014-2019 Damien P. George
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014-2019 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <stdio.h>
 
@@ -112,6 +133,7 @@ typedef struct _ujson_stream_t {
     mp_obj_t stream_obj;
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     int errcode;
+    // CIRCUITPY
     mp_obj_t python_readinto[2 + 1];
     mp_obj_array_t bytearray_obj;
     size_t start;
@@ -135,6 +157,8 @@ STATIC byte ujson_stream_next(ujson_stream_t *s) {
     }
     return s->cur;
 }
+
+// CIRCUITPY
 
 // We read from an object's `readinto` method in chunks larger than the json
 // parser needs to reduce the number of function calls done.
@@ -375,6 +399,8 @@ STATIC mp_obj_t _mod_ujson_load(mp_obj_t stream_obj, bool return_first_json) {
         }
     }
 success:
+    // CIRCUITPY
+
     // It is legal for a stream to have contents after JSON.
     // E.g., A UART is not closed after receiving an object; in load() we will
     //   return the first complete JSON object, while in loads() we will retain
@@ -432,6 +458,6 @@ const mp_obj_module_t mp_module_ujson = {
     .globals = (mp_obj_dict_t *)&mp_module_ujson_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_json, mp_module_ujson, MICROPY_PY_UJSON);
+MP_REGISTER_MODULE(MP_QSTR_json, mp_module_ujson);
 
 #endif // MICROPY_PY_UJSON

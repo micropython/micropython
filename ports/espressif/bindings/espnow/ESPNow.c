@@ -78,8 +78,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     }
 
     // Allocate a new object
-    self = m_new_obj(espnow_obj_t);
-    self->base.type = &espnow_type;
+    self = mp_obj_malloc(espnow_obj_t, &espnow_type);
 
     // Construct the object
     common_hal_espnow_construct(self, args[ARG_buffer_size].u_int, args[ARG_phy_rate].u_int);
@@ -284,29 +283,29 @@ MP_PROPERTY_GETTER(espnow_peers_obj,
 
 STATIC const mp_rom_map_elem_t espnow_locals_dict_table[] = {
     // Context managers
-    { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&espnow___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),    MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),     MP_ROM_PTR(&espnow___exit___obj) },
 
     // Deinit the object
-    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&espnow_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),       MP_ROM_PTR(&espnow_deinit_obj) },
 
     // Send messages
-    { MP_ROM_QSTR(MP_QSTR_send),        MP_ROM_PTR(&espnow_send_obj) },
-    { MP_ROM_QSTR(MP_QSTR_send_success),MP_ROM_PTR(&espnow_send_success_obj)},
-    { MP_ROM_QSTR(MP_QSTR_send_failure),MP_ROM_PTR(&espnow_send_failure_obj)},
+    { MP_ROM_QSTR(MP_QSTR_send),         MP_ROM_PTR(&espnow_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send_success), MP_ROM_PTR(&espnow_send_success_obj)},
+    { MP_ROM_QSTR(MP_QSTR_send_failure), MP_ROM_PTR(&espnow_send_failure_obj)},
 
     // Read messages
-    { MP_ROM_QSTR(MP_QSTR_read),        MP_ROM_PTR(&espnow_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read_success),MP_ROM_PTR(&espnow_read_success_obj)},
-    { MP_ROM_QSTR(MP_QSTR_read_failure),MP_ROM_PTR(&espnow_read_failure_obj)},
+    { MP_ROM_QSTR(MP_QSTR_read),         MP_ROM_PTR(&espnow_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_success), MP_ROM_PTR(&espnow_read_success_obj)},
+    { MP_ROM_QSTR(MP_QSTR_read_failure), MP_ROM_PTR(&espnow_read_failure_obj)},
 
     // Config parameters
-    { MP_ROM_QSTR(MP_QSTR_set_pmk),     MP_ROM_PTR(&espnow_set_pmk_obj) },
-    { MP_ROM_QSTR(MP_QSTR_buffer_size), MP_ROM_PTR(&espnow_buffer_size_obj) },
-    { MP_ROM_QSTR(MP_QSTR_phy_rate),    MP_ROM_PTR(&espnow_phy_rate_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_pmk),      MP_ROM_PTR(&espnow_set_pmk_obj) },
+    { MP_ROM_QSTR(MP_QSTR_buffer_size),  MP_ROM_PTR(&espnow_buffer_size_obj) },
+    { MP_ROM_QSTR(MP_QSTR_phy_rate),     MP_ROM_PTR(&espnow_phy_rate_obj) },
 
     // Peer related properties
-    { MP_ROM_QSTR(MP_QSTR_peers),       MP_ROM_PTR(&espnow_peers_obj) },
+    { MP_ROM_QSTR(MP_QSTR_peers),        MP_ROM_PTR(&espnow_peers_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_locals_dict, espnow_locals_dict_table);
 

@@ -109,4 +109,4 @@ const mp_obj_module_t displayio_module = {
     .globals = (mp_obj_dict_t *)&displayio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module, CIRCUITPY_DISPLAYIO);
+MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module);

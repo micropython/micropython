@@ -208,8 +208,8 @@ void common_hal_busio_i2c_deinit(busio_i2c_obj_t *self) {
     reserved_i2c[self->sda->periph_index - 1] = false;
     never_reset_i2c[self->sda->periph_index - 1] = false;
 
-    reset_pin_number(self->sda->pin->port,self->sda->pin->number);
-    reset_pin_number(self->scl->pin->port,self->scl->pin->number);
+    reset_pin_number(self->sda->pin->port, self->sda->pin->number);
+    reset_pin_number(self->scl->pin->port, self->scl->pin->number);
     self->sda = NULL;
     self->scl = NULL;
 }

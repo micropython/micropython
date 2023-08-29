@@ -80,8 +80,7 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    audioio_rawsample_obj_t *self = m_new_obj(audioio_rawsample_obj_t);
-    self->base.type = &audioio_rawsample_type;
+    audioio_rawsample_obj_t *self = mp_obj_malloc(audioio_rawsample_obj_t, &audioio_rawsample_type);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
     uint8_t bytes_per_sample = 1;

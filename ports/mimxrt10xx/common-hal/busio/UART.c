@@ -47,7 +47,7 @@
 #if ENABLE_DEBUG_PRINTING
 #define DBGPrintf mp_printf
 #else
-#define DBGPrintf(p,...)
+#define DBGPrintf(p, ...)
 #endif
 
 
@@ -348,7 +348,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (self->rx != NULL) {
         if (receiver_buffer == NULL) {
-            self->ringbuf = gc_alloc(receiver_buffer_size, false, true /*long-lived*/);
+            self->ringbuf = gc_alloc(receiver_buffer_size, false);
         } else {
             self->ringbuf = receiver_buffer;
         }

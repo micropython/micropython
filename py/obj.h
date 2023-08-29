@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,8 +107,18 @@ static MP_INLINE bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 #if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
 #define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau MP_ROM_PTR(&mp_const_float_tau_obj)
+#define mp_const_float_inf MP_ROM_PTR(&mp_const_float_inf_obj)
+#define mp_const_float_nan MP_ROM_PTR(&mp_const_float_nan_obj)
+#endif
 extern const struct _mp_obj_float_t mp_const_float_e_obj;
 extern const struct _mp_obj_float_t mp_const_float_pi_obj;
+#if MICROPY_PY_MATH_CONSTANTS
+extern const struct _mp_obj_float_t mp_const_float_tau_obj;
+extern const struct _mp_obj_float_t mp_const_float_inf_obj;
+extern const struct _mp_obj_float_t mp_const_float_nan_obj;
+#endif
 
 #define mp_obj_is_float(o) mp_obj_is_type((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
@@ -142,8 +152,18 @@ static MP_INLINE bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 #if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR(&mp_const_float_e_obj)
 #define mp_const_float_pi MP_ROM_PTR(&mp_const_float_pi_obj)
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau MP_ROM_PTR(&mp_const_float_tau_obj)
+#define mp_const_float_inf MP_ROM_PTR(&mp_const_float_inf_obj)
+#define mp_const_float_nan MP_ROM_PTR(&mp_const_float_nan_obj)
+#endif
 extern const struct _mp_obj_float_t mp_const_float_e_obj;
 extern const struct _mp_obj_float_t mp_const_float_pi_obj;
+#if MICROPY_PY_MATH_CONSTANTS
+extern const struct _mp_obj_float_t mp_const_float_tau_obj;
+extern const struct _mp_obj_float_t mp_const_float_inf_obj;
+extern const struct _mp_obj_float_t mp_const_float_nan_obj;
+#endif
 
 #define mp_obj_is_float(o) mp_obj_is_type((o), &mp_type_float)
 mp_float_t mp_obj_float_get(mp_obj_t self_in);
@@ -165,6 +185,11 @@ static MP_INLINE bool mp_obj_is_small_int(mp_const_obj_t o) {
 #if MICROPY_PY_BUILTINS_FLOAT
 #define mp_const_float_e MP_ROM_PTR((mp_obj_t)(((0x402df854 & ~3) | 2) + 0x80800000))
 #define mp_const_float_pi MP_ROM_PTR((mp_obj_t)(((0x40490fdb & ~3) | 2) + 0x80800000))
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau MP_ROM_PTR((mp_obj_t)(((0x40c90fdb & ~3) | 2) + 0x80800000))
+#define mp_const_float_inf MP_ROM_PTR((mp_obj_t)(((0x7f800000 & ~3) | 2) + 0x80800000))
+#define mp_const_float_nan MP_ROM_PTR((mp_obj_t)(((0xffc00000 & ~3) | 2) + 0x80800000))
+#endif
 
 static MP_INLINE bool mp_obj_is_float(mp_const_obj_t o) {
     return (((mp_uint_t)(o)) & 3) == 2 && (((mp_uint_t)(o)) & 0xff800007) != 0x00000006;
@@ -229,6 +254,11 @@ static MP_INLINE bool mp_obj_is_immediate_obj(mp_const_obj_t o) {
 
 #define mp_const_float_e {((mp_obj_t)((uint64_t)0x4005bf0a8b145769 + 0x8004000000000000))}
 #define mp_const_float_pi {((mp_obj_t)((uint64_t)0x400921fb54442d18 + 0x8004000000000000))}
+#if MICROPY_PY_MATH_CONSTANTS
+#define mp_const_float_tau {((mp_obj_t)((uint64_t)0x401921fb54442d18 + 0x8004000000000000))}
+#define mp_const_float_inf {((mp_obj_t)((uint64_t)0x7ff0000000000000 + 0x8004000000000000))}
+#define mp_const_float_nan {((mp_obj_t)((uint64_t)0xfff8000000000000 + 0x8004000000000000))}
+#endif
 
 static MP_INLINE bool mp_obj_is_float(mp_const_obj_t o) {
     return ((uint64_t)(o) & 0xfffc000000000000) != 0;
@@ -419,9 +449,10 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // Declare a module as a builtin, processed by makemoduledefs.py
 // param module_name: MP_QSTR_<module name>
 // param obj_module: mp_obj_module_t instance
-// param enabled_define: used as `#if (enabled_define) around entry`
 
-#define MP_REGISTER_MODULE(module_name, obj_module, enabled_define)
+#ifndef NO_QSTR
+#define MP_REGISTER_MODULE(module_name, obj_module)
+#endif
 
 // Underlying map/hash table implementation (not dict object or map function)
 
@@ -437,11 +468,9 @@ typedef struct _mp_rom_map_elem_t {
 
 typedef struct _mp_map_t {
     size_t all_keys_are_qstrs : 1;
-    size_t is_fixed : 1;    // a fixed array that can't be modified; must also be ordered
-    size_t is_ordered : 1;  // an ordered array
-    size_t scanning : 1;    // true if we're in the middle of scanning linked dictionaries,
-                            // e.g., make_dict_long_lived()
-    size_t used : (8 * sizeof(size_t) - 4);
+    size_t is_fixed : 1;    // if set, table is fixed/read-only and can't be modified
+    size_t is_ordered : 1;  // if set, table is an ordered array, not a hash map
+    size_t used : (8 * sizeof(size_t) - 3);
     size_t alloc;
     mp_map_elem_t *table;
 } mp_map_t;
@@ -639,6 +668,7 @@ struct _mp_obj_full_type_t {
     mp_obj_base_t base;
     uint16_t flags;
     uint16_t name;
+    // A dict mapping qstrs to objects local methods/constants/etc.
     struct _mp_obj_dict_t *locals_dict;
     mp_make_new_fun_t make_new;
     mp_print_fun_t print;
@@ -706,17 +736,24 @@ extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
 extern const mp_obj_type_t mp_type_super;
 extern const mp_obj_type_t mp_type_gen_wrap;
+#if MICROPY_EMIT_NATIVE
 extern const mp_obj_type_t mp_type_native_gen_wrap;
+#endif
 extern const mp_obj_type_t mp_type_gen_instance;
+// CIRCUITPY
+#if MICROPY_PY_ASYNC_AWAIT
+extern const mp_obj_type_t mp_type_coro_wrap;
+#if MICROPY_EMIT_NATIVE
+extern const mp_obj_type_t mp_type_native_coro_wrap;
+#endif
+extern const mp_obj_type_t mp_type_coro_instance;
+#endif
 extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;
 extern const mp_obj_type_t mp_type_fun_builtin_2;
 extern const mp_obj_type_t mp_type_fun_builtin_3;
 extern const mp_obj_type_t mp_type_fun_builtin_var;
 extern const mp_obj_type_t mp_type_fun_bc;
-#if MICROPY_EMIT_NATIVE
-extern const mp_obj_type_t mp_type_fun_native;
-#endif
 extern const mp_obj_type_t mp_type_module;
 extern const mp_obj_type_t mp_type_staticmethod;
 extern const mp_obj_type_t mp_type_classmethod;
@@ -801,6 +838,12 @@ extern const struct _mp_obj_exception_t mp_static_GeneratorExit_obj;
 
 // General API for objects
 
+// Helper versions of m_new_obj when you need to immediately set base.type.
+// Implementing this as a call rather than inline saves 8 bytes per usage.
+#define mp_obj_malloc(struct_type, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type), obj_type))
+#define mp_obj_malloc_var(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
+
 // These macros are derived from more primitive ones and are used to
 // check for more specific object types.
 // Note: these are kept as macros because inline functions sometimes use much
@@ -858,10 +901,6 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
 #endif
 // Only use this string version from native MPY files with static error strings.
 mp_obj_t mp_obj_new_exception_msg_str(const mp_obj_type_t *exc_type, const char *msg);
-mp_obj_t mp_obj_new_fun_bc(mp_obj_t def_args, mp_obj_t def_kw_args, const byte *code, const mp_uint_t *const_table);
-mp_obj_t mp_obj_new_fun_native(mp_obj_t def_args_in, mp_obj_t def_kw_args, const void *fun_data, const mp_uint_t *const_table);
-mp_obj_t mp_obj_new_fun_viper(size_t n_args, const void *fun_data, mp_uint_t type_sig);
-mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig);
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun, bool is_coroutine);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
 mp_obj_t mp_obj_new_tuple(size_t n, const mp_obj_t *items);
@@ -1076,7 +1115,6 @@ typedef struct _mp_obj_fun_builtin_var_t {
 } mp_obj_fun_builtin_var_t;
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun);
-qstr mp_obj_code_get_name(const byte *code_info);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);

@@ -225,11 +225,11 @@ void common_hal_bleio_packet_buffer_construct(
     uint32_t *outgoing1 = NULL;
     uint32_t *outgoing2 = NULL;
     if (outgoing) {
-        outgoing1 = m_malloc(max_packet_size, false);
+        outgoing1 = m_malloc(max_packet_size);
         // Only allocate the second buffer if we are doing writes with responses.
         // Without responses, we just write as quickly as we can.
         if (outgoing == CHAR_PROP_WRITE) {
-            outgoing2 = m_malloc(max_packet_size, false);
+            outgoing2 = m_malloc(max_packet_size);
         }
 
     }

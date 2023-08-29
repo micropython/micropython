@@ -112,7 +112,7 @@ void common_hal_digitalio_digitalinout_set_value(
         }
     } else {
         hri_port_set_DIR_DIR_bf(PORT, port, pin_mask);
-        hri_port_clear_OUT_OUT_bf(PORT,port, pin_mask);
+        hri_port_clear_OUT_OUT_bf(PORT, port, pin_mask);
     }
 }
 

@@ -37,8 +37,8 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -146,6 +146,10 @@ msgstr "%q используется"
 msgid "%q index out of range"
 msgstr "Индекс %q вне диапазона"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "Индексы %q должны быть целыми числами, а не %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "Инициализация %q не удалась"
@@ -221,7 +225,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -396,10 +400,6 @@ msgstr "'break' вне цикла"
 msgid "'continue' outside loop"
 msgstr "'continue' вне цикла"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "Объект 'coroutine' не является итератором"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' требует как минимум 2 аргумента"
@@ -423,6 +423,10 @@ msgstr "'yield from' внутри асинхронной функции"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' вне функции"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr ""
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -449,6 +453,10 @@ msgstr "Канал аппаратного прерывания уже испол
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 используется WiFi"
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -669,11 +677,6 @@ msgstr "Элементы буфера должны иметь длину не б
 msgid "Buffer is not a bytearray."
 msgstr "Буфер не является байтовым массивом (bytearray)."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Буфер слишком мал"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -692,6 +695,12 @@ msgstr "Буфер должен быть кратен 512"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Буфер слишком короткий на %d байт"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -864,10 +873,6 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
-
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Файл .mpy поврежден"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -1055,10 +1060,6 @@ msgstr "Не удалось освободить mutex, ошибка 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Не удалось записать внутреннюю флэш-память."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr ""
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Файл существует"
@@ -1142,6 +1143,10 @@ msgstr "Группа уже используется"
 msgid "Half duplex SPI is not implemented"
 msgstr "Полудуплексный SPI не реализован"
 
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
@@ -1174,14 +1179,6 @@ msgstr "Периферийное устройство I2C уже использ�
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr "Элементы буфера должны быть длиной <= 4 байта"
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. http://"
-"adafru.it/mpy-update для получения дополнительной информации."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1534,7 +1531,7 @@ msgstr "Нет in в программе"
 msgid "No in or out in program"
 msgstr "В программе отсутствует ввод или вывод"
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Нет поддержки длинных целых чисел (long integer)"
 
@@ -1812,6 +1809,10 @@ msgstr ""
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr ""
@@ -2017,10 +2018,6 @@ msgstr ""
 msgid "Stereo right must be on PWM channel B"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr ""
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr ""
@@ -2044,10 +2041,6 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "Длина rgb_pins должна быть 6, 12, 18, 24 или 30"
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
-msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2402,14 +2395,6 @@ msgid "Wi-Fi: "
 msgstr ""
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
 msgstr ""
 
@@ -2557,6 +2542,10 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr ""
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
@@ -2637,13 +2626,16 @@ msgstr ""
 msgid "buffer slices must be of equal length"
 msgstr ""
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
+msgstr ""
+
+#: py/emitbc.c
+msgid "bytecode overflow"
 msgstr ""
 
 #: py/objarray.c
@@ -2691,13 +2683,18 @@ msgstr ""
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to complex"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
 msgstr ""
 
 #: py/objstr.c
@@ -2709,11 +2706,11 @@ msgid "can't convert complex to float"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to %q"
+msgid "can't convert to complex"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to complex"
+msgid "can't convert to float"
 msgstr ""
 
 #: py/runtime.c
@@ -2738,14 +2735,6 @@ msgstr ""
 
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
-msgstr ""
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr ""
-
-#: py/compile.c
-msgid "can't have multiple *x"
 msgstr ""
 
 #: py/emitnative.c
@@ -2800,6 +2789,10 @@ msgstr ""
 #: py/objstr.c
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
+msgstr ""
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -2896,10 +2889,6 @@ msgstr ""
 
 #: extmod/moduzlib.c
 msgid "compression header"
-msgstr ""
-
-#: py/parse.c
-msgid "constant must be an integer"
 msgstr ""
 
 #: py/emitnative.c
@@ -3238,7 +3227,11 @@ msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
+msgid "incompatible .mpy arch"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
 msgstr ""
 
 #: py/objstr.c
@@ -3265,6 +3258,10 @@ msgstr ""
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
+msgstr ""
+
+#: py/obj.c
+msgid "indices must be integers"
 msgstr ""
 
 #: extmod/ulab/code/ndarray.c
@@ -3400,10 +3397,6 @@ msgstr ""
 msgid "invalid exception"
 msgstr ""
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr ""
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr ""
@@ -3463,10 +3456,6 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
-msgstr ""
-
-#: py/bc.c
-msgid "keywords must be strings"
 msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
@@ -3693,14 +3682,6 @@ msgstr ""
 msgid "non-hex digit found"
 msgstr ""
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr ""
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr ""
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr ""
@@ -3711,6 +3692,10 @@ msgstr ""
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
+msgstr ""
+
+#: py/parse.c
+msgid "not a constant"
 msgstr ""
 
 #: py/objstr.c
@@ -3926,10 +3911,6 @@ msgstr ""
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -3949,6 +3930,14 @@ msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after **"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
 msgstr ""
 
 #: py/objint_mpz.c
@@ -3977,6 +3966,11 @@ msgstr ""
 
 #: py/builtinimport.c
 msgid "relative import"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
 msgstr ""
 
 #: extmod/ulab/code/ndarray_operators.c
@@ -4173,6 +4167,10 @@ msgstr ""
 msgid "tobytes can be invoked for dense arrays only"
 msgstr ""
 
+#: py/compile.c
+msgid "too many args"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
@@ -4198,6 +4196,10 @@ msgstr ""
 msgid "trapz is defined for 1D iterables"
 msgstr ""
 
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr ""
+
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
@@ -4220,7 +4222,7 @@ msgstr ""
 msgid "type is not an acceptable base type"
 msgstr ""
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr ""
 
@@ -4417,6 +4419,22 @@ msgstr "zi должно быть типа float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
 
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "Объект 'coroutine' не является итератором"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Буфер слишком мал"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Файл .mpy поврежден"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. http://"
+#~ "adafru.it/mpy-update для получения дополнительной информации."
+
 #, c-format
 #~ msgid "Instruction %d shifts in more bits than pin count"
 #~ msgstr ""
@@ -4610,9 +4628,6 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #, c-format
 #~ msgid "No more than %d HID devices allowed"
 #~ msgstr "Допускается не более %d HID устройств"
-
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "Индексы %q должны быть целыми числами, а не %s"
 
 #~ msgid "Firmware image is invalid"
 #~ msgstr "Образ прошивки неправильный"

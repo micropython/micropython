@@ -143,8 +143,7 @@ STATIC mp_obj_t espcamera_camera_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_int_t jpeg_quality = mp_arg_validate_int_range(args[ARG_jpeg_quality].u_int, 2, 55, MP_QSTR_jpeg_quality);
     mp_int_t framebuffer_count = mp_arg_validate_int_range(args[ARG_framebuffer_count].u_int, 1, 2, MP_QSTR_framebuffer_count);
 
-    espcamera_camera_obj_t *self = m_new_obj(espcamera_camera_obj_t);
-    self->base.type = &espcamera_camera_type;
+    espcamera_camera_obj_t *self = mp_obj_malloc(espcamera_camera_obj_t, &espcamera_camera_type);
     common_hal_espcamera_camera_construct(
         self,
         data_pins,

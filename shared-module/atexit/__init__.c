@@ -50,7 +50,7 @@ void shared_module_atexit_register(mp_obj_t *func, size_t n_args, const mp_obj_t
         .n_pos = 0,
         .n_kw = 0,
         .func = func,
-        .args = (n_args + n_kw_args) ? m_malloc((n_args + (n_kw_args * 2)) * sizeof(mp_obj_t), false) : NULL
+        .args = (n_args + n_kw_args) ? m_malloc((n_args + (n_kw_args * 2)) * sizeof(mp_obj_t)) : NULL
     };
     for (; cb.n_pos < n_args; cb.n_pos++) {
         cb.args[cb.n_pos] = pos_args[cb.n_pos];

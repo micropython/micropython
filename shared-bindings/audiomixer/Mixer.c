@@ -103,8 +103,8 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     if (bits_per_sample != 8 && bits_per_sample != 16) {
         mp_raise_ValueError(translate("bits_per_sample must be 8 or 16"));
     }
-    audiomixer_mixer_obj_t *self = m_new_obj_var(audiomixer_mixer_obj_t, mp_obj_t, voice_count);
-    self->base.type = &audiomixer_mixer_type;
+    audiomixer_mixer_obj_t *self =
+        mp_obj_malloc_var(audiomixer_mixer_obj_t, mp_obj_t, voice_count, &audiomixer_mixer_type);
     common_hal_audiomixer_mixer_construct(self, voice_count, args[ARG_buffer_size].u_int, bits_per_sample, args[ARG_samples_signed].u_bool, channel_count, sample_rate);
 
     for (int v = 0; v < voice_count; v++) {

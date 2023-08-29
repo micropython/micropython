@@ -143,7 +143,7 @@ void common_hal_espnow_init(espnow_obj_t *self) {
     }
 
     self->recv_buffer = m_new_obj(ringbuf_t);
-    if (!ringbuf_alloc(self->recv_buffer, self->recv_buffer_size, true)) {
+    if (!ringbuf_alloc(self->recv_buffer, self->recv_buffer_size /*, true*/)) {
         m_malloc_fail(self->recv_buffer_size);
     }
 

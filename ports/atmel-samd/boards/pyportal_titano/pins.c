@@ -29,7 +29,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_PB23) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_L), MP_ROM_PTR(&pin_PB23) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL),MP_ROM_PTR(&pin_PB22) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(&pin_PB22) },
 
     // LCD pins
     { MP_OBJ_NEW_QSTR(MP_QSTR_TFT_RESET), MP_ROM_PTR(&pin_PA00) },
@@ -65,17 +65,17 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_RX), MP_ROM_PTR(&pin_PB13) },
 
     // SPI
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI),MP_ROM_PTR(&pin_PA12) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SCK),MP_ROM_PTR(&pin_PA13) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_MISO),MP_ROM_PTR(&pin_PA14) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PA12) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_PA13) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PA14) },
 
     // I2C
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SDA),MP_ROM_PTR(&pin_PB02) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SCL),MP_ROM_PTR(&pin_PB03) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_PB02) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_PB03) },
 
     // SD Card
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS),MP_ROM_PTR(&pin_PB30) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CARD_DETECT),MP_ROM_PTR(&pin_PA01) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CS), MP_ROM_PTR(&pin_PB30) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_SD_CARD_DETECT), MP_ROM_PTR(&pin_PA01) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_STEMMA_I2C), MP_ROM_PTR(&board_i2c_obj) },

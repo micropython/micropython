@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-06 17:45+0000\n"
+"PO-Revision-Date: 2023-08-24 22:46+0000\n"
 "Last-Translator: Pablo Martinez Bernal <elpekenin@elpekenin.dev>\n"
 "Language-Team: \n"
 "Language: es\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0\n"
 
 #: main.c
 msgid ""
@@ -37,12 +37,12 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 "\n"
-"Por favor describa su problema en https://github.com/adafruit/circuitpython/"
-"issues."
+"Por favor abre una issue con tu programa en github.com/adafruit/"
+"circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -154,6 +154,10 @@ msgstr "%q está siendo utilizado"
 msgid "%q index out of range"
 msgstr "%q índice fuera de rango"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "%q indices deben ser enteros, no %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "%q inicializado fallido"
@@ -229,7 +233,7 @@ msgstr "%q debe ser una matriz de tipo 'h'"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q debe ser del tipo %q o %q, y no %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q debe ser del tipo %q, y no %q"
 
@@ -268,19 +272,19 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
+msgstr "%q[%u] lee mas bits que la cantidad de pines"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u] escribe mas bits que la cantidad de pines"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
-msgstr ""
+msgstr "%q[%u] usa un pin extra"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
+msgstr "%q[%u] espera entrada fuera del contador"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -404,10 +408,6 @@ msgstr "'break' fuera de un bucle"
 msgid "'continue' outside loop"
 msgstr "'continue' fuera de un bucle"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "el objeto 'coroutine' no es un iterador"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' requiere como mínimo 2 argumentos"
@@ -431,6 +431,10 @@ msgstr "'yield from' dentro de una función asincrónica"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' fuera de una función"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr "* argumento tras **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -457,6 +461,10 @@ msgstr "Un canal de interrupción por hardware ya está en uso"
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 está siendo usado por WiFi"
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -675,11 +683,6 @@ msgstr "Los elementos del buffer deben tener una longitud de 4 bytes o menos"
 msgid "Buffer is not a bytearray."
 msgstr "Buffer no es un bytearray."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Buffer es muy pequeño"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -699,6 +702,12 @@ msgstr "El buffer deber ser un múltiplo de 512 bytes"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffer muy corto por %d bytes"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr "Buffer demasiado pequeño"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -867,10 +876,6 @@ msgstr "Las matrices de coordenadas tienen diferentes longitudes"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr "Las matrices de coordenadas tienen diferentes tamaños"
-
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Archivo .mpy corrupto"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -1055,10 +1060,6 @@ msgstr "No se puede liberar el mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Error al escribir el flash interno."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr "Falló detectado por el hardware."
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "El archivo ya existe"
@@ -1140,6 +1141,10 @@ msgstr "Grupo ya está siendo utilizado"
 msgid "Half duplex SPI is not implemented"
 msgstr "SPI Half Duplex no está implementado"
 
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr "Fallo grave: error de acceso a memoria o de instrucción."
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
@@ -1174,14 +1179,6 @@ msgstr "Dispositivo I2C en uso"
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
 "Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte "
-"http://adafru.it/mpy-update para más información."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1394,31 +1391,31 @@ msgstr "Inconsistencia en el flag de recambio"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] reads pin(s)"
-msgstr ""
+msgstr "Falta first_in_pin. %q[%u] lee pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
-msgstr ""
+msgstr "Falta first_in_pin. %q[%u] mueve desde pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] waits based on pin"
-msgstr ""
+msgstr "Falta first_in_pin. %q[%u] espera basado en un pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
-msgstr ""
+msgstr "Falta first_out_pin. %q[%u] mueve hacia pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] writes pin(s)"
-msgstr ""
+msgstr "Falta first_out_pin. %q[%u] escribe en pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_set_pin. %q[%u] sets pin(s)"
-msgstr ""
+msgstr "Falta first_set_pin. %q[%u] configura pin(es)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
-msgstr ""
+msgstr "Falta jmp_pin. %q[%u] salta en pin"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1535,7 +1532,7 @@ msgstr "No hay \"in\" en el programa"
 msgid "No in or out in program"
 msgstr "No hay \"in\" o \"out\" en el programa"
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "No hay soporte de entero largo"
 
@@ -1813,6 +1810,11 @@ msgstr "Además de cualquier módulo en el sistema de archivos\n"
 msgid "Polygon needs at least 3 points"
 msgstr "El polígono necesita al menos 3 puntos"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+"Falta de potencia. Asegura que estás suministrando suficiente potencia."
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "El prefijo del buffer debe estar en el heap"
@@ -2020,10 +2022,6 @@ msgstr "Estéreo izquierdo debe estar en el canal PWM A"
 msgid "Stereo right must be on PWM channel B"
 msgstr "Estéreo derecho debe estar en el canal PWM B"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "Parar el AP no esta soportado."
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Suministre monotonic_time o epoch_time"
@@ -2048,11 +2046,6 @@ msgstr "La excepción fue la causa directa de la excepción siguiente:"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "La longitud de rgb_pins debe ser 6, 12, 18, 24, o 30"
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
-msgstr ""
-"La potencia calló. Asegúrese que está suministrando suficiente energía."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2421,14 +2414,6 @@ msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "Wifi est en modo de access point."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "Wifi esta en modo station."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
 msgstr "Wifi no esta activado"
 
@@ -2576,6 +2561,10 @@ msgstr "el arreglo es muy grande"
 msgid "array/bytes required on right side"
 msgstr "array/bytes requeridos en el lado derecho"
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr "desborde de asm"
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "Intendo de obteber (arg)min/(arg)max de secuencia vacía"
@@ -2656,14 +2645,17 @@ msgstr "el tamaño del buffer debe de coincidir con el formato"
 msgid "buffer slices must be of equal length"
 msgstr "Las secciones del buffer necesitan tener longitud igual"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "buffer demasiado pequeño"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "búfer muy pequeño para los bytes solicitados"
+
+#: py/emitbc.c
+msgid "bytecode overflow"
+msgstr "desborde de bytecode"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
@@ -2710,7 +2702,7 @@ msgstr "no se puede asignar a la expresión"
 msgid "can't cancel self"
 msgstr "no se puede cancelar a si mismo"
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "no puede convertir %q a %q"
 
@@ -2718,6 +2710,11 @@ msgstr "no puede convertir %q a %q"
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "no se puede convertir %s a complejo"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
+msgstr "no se puede convertir %s a float"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2728,12 +2725,12 @@ msgid "can't convert complex to float"
 msgstr "no se puede convertir complejo a float"
 
 #: py/obj.c
-msgid "can't convert to %q"
-msgstr "no puede convertir a %q"
-
-#: py/obj.c
 msgid "can't convert to complex"
 msgstr "no se puede convertir a complejo"
+
+#: py/obj.c
+msgid "can't convert to float"
+msgstr "no se puede convertir a float"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2758,14 +2755,6 @@ msgstr "no se puede hacer una operacion binaria entre '%q' y '%q'"
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
 msgstr "no se puede hacer la división truncada de un número complejo"
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr "no puede tener multiples *x"
-
-#: py/compile.c
-msgid "can't have multiple *x"
-msgstr "no puede tener multiples *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
@@ -2825,6 +2814,10 @@ msgid ""
 msgstr ""
 "no se puede cambiar de especificación de campo manual a numeración "
 "automática de campos"
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
+msgstr "no se puede esperar"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -2921,10 +2914,6 @@ msgstr "valores complejos no soportados"
 #: extmod/moduzlib.c
 msgid "compression header"
 msgstr "encabezado de compresión"
-
-#: py/parse.c
-msgid "constant must be an integer"
-msgstr "constant debe ser un entero"
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -3266,8 +3255,12 @@ msgid "import * not at module level"
 msgstr "import * no a nivel de módulo"
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
-msgstr "arquitectura nativa de .mpy incompatible"
+msgid "incompatible .mpy arch"
+msgstr "arquitectura de .mpy incompatible"
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr "archivo .mpy incompatible"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3294,6 +3287,10 @@ msgstr "el indice debe ser tuple o int"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index fuera de rango"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "indices deben ser enteros"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3428,10 +3425,6 @@ msgstr "el element_size %d,no es valido, debe ser 1,2 ó 4"
 msgid "invalid exception"
 msgstr "excepcion invalida"
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "formato inválido"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "especificador de formato inválido"
@@ -3495,10 +3488,6 @@ msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
 "argumento(s) por palabra clave aún no implementados - usa argumentos "
 "normales en su lugar"
-
-#: py/bc.c
-msgid "keywords must be strings"
-msgstr "palabras clave deben ser strings"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3725,16 +3714,6 @@ msgstr "argumento no predeterminado sigue argumento predeterminado"
 msgid "non-hex digit found"
 msgstr "digito non-hex encontrado"
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr "no deberia estar/tener agumento por palabra clave despues de */**"
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr ""
-"no deberia estar/tener agumento por palabra clave despues de argumento por "
-"palabra clave"
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr "el tiempo de espera non-zero deber ser > 0.01"
@@ -3746,6 +3725,10 @@ msgstr "el tiempo de espera non-zero debe ser >= intervalo"
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "no es 128-bit UUID"
+
+#: py/parse.c
+msgid "not a constant"
+msgstr "no es una constante"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3961,10 +3944,6 @@ msgstr "los parametros deben ser registros en secuencia del r0 al r3"
 msgid "pixel coordinates out of bounds"
 msgstr "coordenadas del pixel fuera de límites"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr "pixel_shader debe ser displayio.Palette o displayio.ColorConverter"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "el sondeo del archivo no esta disponible en win32"
@@ -3985,6 +3964,14 @@ msgstr "pop desde %q vacía"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
 msgstr "port debe ser be >= 0"
+
+#: py/compile.c
+msgid "positional arg after **"
+msgstr "argumento posicional tras **"
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
+msgstr "argumento posicional tras argumento con nombre"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4013,6 +4000,11 @@ msgstr "las partes reales e imaginarias deben ser de igual longitud"
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "import relativo"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "longitud solicitada %d pero el objeto tiene longitud %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -4209,6 +4201,10 @@ msgstr "timestamp fuera de rango para plataform time_t"
 msgid "tobytes can be invoked for dense arrays only"
 msgstr "tobytes solo pueden ser invocados por arrays densos"
 
+#: py/compile.c
+msgid "too many args"
+msgstr "demasiados argumentos"
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "demasiadas dimensiones"
@@ -4234,6 +4230,10 @@ msgstr "trapz está definido para arreglos 1D de igual tamaño"
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz está definido para iterables 1D"
 
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "tupla/lista tiene una longitud incorrecta"
+
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
@@ -4256,7 +4256,7 @@ msgstr "type '%q' no es un tipo de base aceptable"
 msgid "type is not an acceptable base type"
 msgstr "type no es un tipo de base aceptable"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "objeto de tipo '%q' no tiene atributo '%q'"
 
@@ -4452,6 +4452,79 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Parar el AP no esta soportado."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "Wifi est en modo de access point."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "Wifi esta en modo station."
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
+#~ msgstr ""
+#~ "\n"
+#~ "Por favor describa su problema en https://github.com/adafruit/"
+#~ "circuitpython/issues."
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "el objeto 'coroutine' no es un iterador"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Buffer es muy pequeño"
+
+#~ msgid "Fault detected by hardware."
+#~ msgstr "Falló detectado por el hardware."
+
+#~ msgid "The power dipped. Make sure you are providing enough power."
+#~ msgstr ""
+#~ "La potencia calló. Asegúrese que está suministrando suficiente energía."
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr "pixel_shader debe ser displayio.Palette o displayio.ColorConverter"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Archivo .mpy corrupto"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Archivo .mpy incompatible. Actualice todos los archivos .mpy. Consulte "
+#~ "http://adafru.it/mpy-update para más información."
+
+#~ msgid "can't convert to %q"
+#~ msgstr "no puede convertir a %q"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "no puede tener multiples *x"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "no puede tener multiples *x"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "constant debe ser un entero"
+
+#~ msgid "incompatible native .mpy architecture"
+#~ msgstr "arquitectura nativa de .mpy incompatible"
+
+#~ msgid "invalid format"
+#~ msgstr "formato inválido"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "palabras clave deben ser strings"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "no deberia estar/tener agumento por palabra clave despues de */**"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr ""
+#~ "no deberia estar/tener agumento por palabra clave despues de argumento "
+#~ "por palabra clave"
 
 #, c-format
 #~ msgid "Instruction %d shifts in more bits than pin count"
@@ -4783,21 +4856,11 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgid "zero step"
 #~ msgstr "paso cero"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "%q indices deben ser enteros, no %s"
-
 #~ msgid "WatchDogTimer.timeout must be greater than 0"
 #~ msgstr "WatchDogTimer.timeout debe ser mayor a 0"
 
-#~ msgid "indices must be integers"
-#~ msgstr "indices deben ser enteros"
-
 #~ msgid "non-Device in %q"
 #~ msgstr "hay un no-Device en %q"
-
-#, c-format
-#~ msgid "requested length %d but object has length %d"
-#~ msgstr "longitud solicitada %d pero el objeto tiene longitud %d"
 
 #~ msgid "single '}' encountered in format string"
 #~ msgstr "un solo '}' encontrado en format string"
@@ -4807,9 +4870,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 
 #~ msgid "timeout must be 0.0-100.0 seconds"
 #~ msgstr "el tiempo de espera debe ser 0.0-100.0 segundos"
-
-#~ msgid "tuple/list has wrong length"
-#~ msgstr "tupla/lista tiene una longitud incorrecta"
 
 #~ msgid "unmatched '{' in format"
 #~ msgstr "No coinciden '{' en format"
@@ -5479,9 +5539,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgid "Length must be non-negative"
 #~ msgstr "Length no deberia ser negativa"
 
-#~ msgid "incompatible .mpy file"
-#~ msgstr "archivo .mpy incompatible"
-
 #~ msgid "invalid decorator"
 #~ msgstr "decorador invalido"
 
@@ -5803,9 +5860,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init__() deberia devolver None, no '%s'"
 
-#~ msgid "can't convert %s to float"
-#~ msgstr "no se puede convertir %s a float"
-
 #~ msgid "can't convert %s to int"
 #~ msgstr "no se puede convertir %s a int"
 
@@ -5817,9 +5871,6 @@ msgstr "zi debe ser una forma (n_section,2)"
 
 #~ msgid "can't convert inf to int"
 #~ msgstr "no se puede convertir inf en int"
-
-#~ msgid "can't convert to float"
-#~ msgstr "no se puede convertir a float"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "el objeto '%s' no es una tupla o lista"

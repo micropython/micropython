@@ -55,13 +55,11 @@ jobs:
       run: |
         make -C examples/natmod/features1
         make -C examples/natmod/features2
-        make -C examples/natmod/btree
-        make -C examples/natmod/framebuf
         make -C examples/natmod/uheapq
         make -C examples/natmod/urandom
         make -C examples/natmod/ure
         make -C examples/natmod/uzlib
     - name: Test native modules
       if: matrix.test == 'all'
-      run: ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
+      run: ./run-natmodtests.py extmod/{uheapq*,ure*,uzlib*}.py
       working-directory: tests

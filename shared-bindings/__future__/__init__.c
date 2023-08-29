@@ -57,4 +57,4 @@ const mp_obj_module_t future_module = {
     .globals = (mp_obj_dict_t *)&future_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR___future__, future_module, CIRCUITPY_FUTURE);
+MP_REGISTER_MODULE(MP_QSTR___future__, future_module);

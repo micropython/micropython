@@ -8,4 +8,8 @@
 1
 1 2
 1 1
+(1, 'two', (b'three',))
 1 2 3 4 10
+1
+two
+(True, b'bytes', ())

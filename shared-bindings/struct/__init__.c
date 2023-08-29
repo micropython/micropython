@@ -92,7 +92,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
         // negative offsets are relative to the end of the buffer
         offset = (mp_int_t)bufinfo.len + offset;
         if (offset < 0) {
-            mp_raise_RuntimeError(translate("buffer too small"));
+            mp_raise_RuntimeError(translate("Buffer too small"));
         }
     }
     byte *p = (byte *)bufinfo.buf;
@@ -151,7 +151,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *pos_args, mp_m
         // negative offsets are relative to the end of the buffer
         offset = bufinfo.len + offset;
         if (offset < 0) {
-            mp_raise_RuntimeError(translate("buffer too small"));
+            mp_raise_RuntimeError(translate("Buffer too small"));
         }
     }
     p += offset;
@@ -178,4 +178,4 @@ const mp_obj_module_t struct_module = {
     .globals = (mp_obj_dict_t *)&mp_module_struct_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_struct, struct_module, CIRCUITPY_STRUCT);
+MP_REGISTER_MODULE(MP_QSTR_struct, struct_module);

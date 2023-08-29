@@ -60,6 +60,8 @@ ifdef STATIC_BUILD
 LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
+CFLAGS += -DCIRCUITPY=1
+
 # source files
 SRC_C += \
 	main.c \
@@ -78,6 +80,6 @@ endif
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
-$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
 
 include $(TOP)/py/mkrules.mk

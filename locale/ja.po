@@ -37,8 +37,8 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -146,6 +146,10 @@ msgstr "%qは使用中"
 msgid "%q index out of range"
 msgstr "%q インデックスは範囲外"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr ""
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "%qは初期化には失敗"
@@ -221,7 +225,7 @@ msgstr ""
 msgid "%q must be of type %q or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -396,10 +400,6 @@ msgstr "ループ外でのbreak"
 msgid "'continue' outside loop"
 msgstr "ループ外でのcontinue"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "'coroutine' オブジェクトはイテレータではありません"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data'には少なくとも2つの引数が必要"
@@ -425,6 +425,10 @@ msgid "'yield' outside function"
 msgstr "関数外でのyield"
 
 #: py/compile.c
+msgid "* arg after **"
+msgstr ""
+
+#: py/compile.c
 msgid "*x must be assignment target"
 msgstr "*xは代入先でなければなりません"
 
@@ -448,6 +452,10 @@ msgstr "ハードウェア割り込みチャネルは使用中"
 
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
+msgstr ""
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
 msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
@@ -665,11 +673,6 @@ msgstr ""
 msgid "Buffer is not a bytearray."
 msgstr "バッファがbytearrayではありません"
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "バッファが小さすぎます"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -688,6 +691,12 @@ msgstr "バッファは512の倍数でなければなりません"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "バッファが %d バイト足りません"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -850,10 +859,6 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
-
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "破損した .mpy ファイル"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -1037,10 +1042,6 @@ msgstr "ミューテックスの開放に失敗。エラー 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "内部フラッシュ書き込みに失敗"
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr ""
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "ファイルが存在します"
@@ -1116,6 +1117,10 @@ msgstr "グループはすでに使われています"
 msgid "Half duplex SPI is not implemented"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
@@ -1148,14 +1153,6 @@ msgstr ""
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr ""
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"非互換の.mpyファイル。全.mpyファイルを更新してください。詳細は http://adafru."
-"it/mpy-update を参照"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1503,7 +1500,7 @@ msgstr ""
 msgid "No in or out in program"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "long integerに対応していません"
 
@@ -1772,6 +1769,10 @@ msgstr ""
 msgid "Polygon needs at least 3 points"
 msgstr "ポリゴンには少なくとも3つの点が必要"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefixバッファはヒープ上になければなりません"
@@ -1976,10 +1977,6 @@ msgstr ""
 msgid "Stereo right must be on PWM channel B"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr ""
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr ""
@@ -2002,10 +1999,6 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2360,14 +2353,6 @@ msgid "Wi-Fi: "
 msgstr ""
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
 msgstr ""
 
@@ -2515,6 +2500,10 @@ msgstr ""
 msgid "array/bytes required on right side"
 msgstr "右辺にはarray/bytesが必要"
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
@@ -2595,13 +2584,16 @@ msgstr ""
 msgid "buffer slices must be of equal length"
 msgstr "バッファのスライスは同じ長さでなければなりません"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
+msgstr ""
+
+#: py/emitbc.c
+msgid "bytecode overflow"
 msgstr ""
 
 #: py/objarray.c
@@ -2649,13 +2641,18 @@ msgstr "式には代入できません"
 msgid "can't cancel self"
 msgstr ""
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "%qを%qに変換できません"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to complex"
+msgstr ""
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
 msgstr ""
 
 #: py/objstr.c
@@ -2667,11 +2664,11 @@ msgid "can't convert complex to float"
 msgstr ""
 
 #: py/obj.c
-msgid "can't convert to %q"
-msgstr "%q に変換できません"
+msgid "can't convert to complex"
+msgstr ""
 
 #: py/obj.c
-msgid "can't convert to complex"
+msgid "can't convert to float"
 msgstr ""
 
 #: py/runtime.c
@@ -2697,14 +2694,6 @@ msgstr ""
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
 msgstr "複素数の切り捨て除算はできません"
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr "複数の **x は持てません"
-
-#: py/compile.c
-msgid "can't have multiple *x"
-msgstr "複数の *x は持てません"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
@@ -2759,6 +2748,10 @@ msgstr ""
 msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr "手動と自動のフィールド指定は混在できません"
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
+msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -2857,10 +2850,6 @@ msgstr ""
 #: extmod/moduzlib.c
 msgid "compression header"
 msgstr "圧縮ヘッダー"
-
-#: py/parse.c
-msgid "constant must be an integer"
-msgstr "定数は整数でなければなりません"
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -3200,7 +3189,11 @@ msgid "import * not at module level"
 msgstr ""
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
+msgid "incompatible .mpy arch"
+msgstr ""
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
 msgstr ""
 
 #: py/objstr.c
@@ -3228,6 +3221,10 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "インデクスが範囲外"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "インデクスは整数でなければなりません"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3363,10 +3360,6 @@ msgstr ""
 msgid "invalid exception"
 msgstr ""
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr ""
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr ""
@@ -3427,10 +3420,6 @@ msgstr "joinには str/bytes (のうち自身と一致した型の) リストが
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr "キーワード引数は未実装。通常の引数を使ってください"
-
-#: py/bc.c
-msgid "keywords must be strings"
-msgstr "キーワードは文字列でなければなりません"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3656,14 +3645,6 @@ msgstr "デフォルト引数の後に通常の引数は置けません"
 msgid "non-hex digit found"
 msgstr "16進数以外の桁があります"
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr "*/** の後に非キーワード引数は置けません"
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr "キーワード引数の後に非キーワード引数は置けません"
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr ""
@@ -3675,6 +3656,10 @@ msgstr ""
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "128ビットのUUIDではありません"
+
+#: py/parse.c
+msgid "not a constant"
+msgstr ""
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3889,12 +3874,6 @@ msgstr ""
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-"pixel_shaderはdisplayio.Paletteかdisplayio.ColorConverterのどちらかでなければ"
-"なりません"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -3914,6 +3893,14 @@ msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after **"
+msgstr ""
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
 msgstr ""
 
 #: py/objint_mpz.c
@@ -3943,6 +3930,11 @@ msgstr "実数部と虚数部は同じ長さでなければなりません"
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "相対インポート"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "必要な長さは%dですがオブジェクトの長さは%d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -4138,6 +4130,10 @@ msgstr "timestampがプラットフォームのtime_tの範囲外"
 msgid "tobytes can be invoked for dense arrays only"
 msgstr ""
 
+#: py/compile.c
+msgid "too many args"
+msgstr ""
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr ""
@@ -4163,6 +4159,10 @@ msgstr "trapzは同じ長さの1次元arrayに対して定義されています"
 msgid "trapz is defined for 1D iterables"
 msgstr ""
 
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "タプル/リストの長さが正しくありません"
+
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
@@ -4185,7 +4185,7 @@ msgstr "型'%q'はベース型として使えません"
 msgid "type is not an acceptable base type"
 msgstr "この型はベース型にできません"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr ""
 
@@ -4382,6 +4382,48 @@ msgstr "ziはfloat値でなければなりません"
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "'coroutine' オブジェクトはイテレータではありません"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "バッファが小さすぎます"
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shaderはdisplayio.Paletteかdisplayio.ColorConverterのどちらかでなけ"
+#~ "ればなりません"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "破損した .mpy ファイル"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "非互換の.mpyファイル。全.mpyファイルを更新してください。詳細は http://"
+#~ "adafru.it/mpy-update を参照"
+
+#~ msgid "can't convert to %q"
+#~ msgstr "%q に変換できません"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "複数の **x は持てません"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "複数の *x は持てません"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "定数は整数でなければなりません"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "キーワードは文字列でなければなりません"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "*/** の後に非キーワード引数は置けません"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "キーワード引数の後に非キーワード引数は置けません"
+
 #~ msgid "Hardware busy, try alternative pins"
 #~ msgstr "ハードウェアビジー。代替のピンを試してください"
 
@@ -4497,13 +4539,6 @@ msgstr ""
 #~ msgid "WatchDogTimer.timeout must be greater than 0"
 #~ msgstr "WatchDogTimer.timeoutは0以上でなければなりません"
 
-#~ msgid "indices must be integers"
-#~ msgstr "インデクスは整数でなければなりません"
-
-#, c-format
-#~ msgid "requested length %d but object has length %d"
-#~ msgstr "必要な長さは%dですがオブジェクトの長さは%d"
-
 #~ msgid "single '}' encountered in format string"
 #~ msgstr "文字列フォーマット中に孤立した '}' があります"
 
@@ -4512,9 +4547,6 @@ msgstr ""
 
 #~ msgid "timeout must be 0.0-100.0 seconds"
 #~ msgstr "timeoutは0.0〜100.0秒でなければなりません"
-
-#~ msgid "tuple/list has wrong length"
-#~ msgstr "タプル/リストの長さが正しくありません"
 
 #~ msgid "unmatched '{' in format"
 #~ msgstr "書式中にマッチしない '{' があります"
