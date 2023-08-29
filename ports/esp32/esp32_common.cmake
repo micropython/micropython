@@ -69,6 +69,7 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_adc.c
     machine_adcblock.c
     machine_dac.c
+    machine_can.c
     machine_i2c.c
     machine_i2s.c
     machine_uart.c

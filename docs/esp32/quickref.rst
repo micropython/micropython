@@ -545,6 +545,30 @@ users is encouraged.  Based on this feedback, the I2S class API and implementati
 
 ESP32 has two I2S buses with id=0 and id=1
 
+CAN bus
+-------
+
+See :ref:`machine.CAN <machine.CAN>` ::
+
+The CAN driver is based on hardware implementation.
+Any available output-capablepins can be used for TX, RX, BUS-OFF, and CLKOUT signal lines.
+
+.. image:: img/twai_blockdiag.png
+
+The driver is accessed via the :ref:`machine.CAN <machine.CAN>` class::
+
+    from machine import CAN
+    can = CAN(0, tx=5, rx=4, mode=CAN.NORMAL, baudrate=500000)
+    can.setfilter(0, CAN.FILTER_ADDRESS, [0x102])  # set a filter to receive messages with id = 0x102
+    can.send([1,2,3], 0x102)    # send a message with id 123
+    can.recv()                  # receive message
+
+    can.any()                   # returns True if there are any message to receive
+    can.info()                  # get information about the controller’s error states and TX and RX buffers
+    can.deinit()                # turn off the can bus
+    can.clear_rx_queue()        # clear messages in the FIFO
+    can.clear_tx_queue()        # clear messages in the transmit buffer
+
 Real time clock (RTC)
 ---------------------
 
