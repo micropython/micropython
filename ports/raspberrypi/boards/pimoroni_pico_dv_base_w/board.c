@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Mark Komus
+ * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H
+#include "supervisor/board.h"
 
-mp_obj_t common_hal_zlib_decompress(mp_obj_t data, mp_int_t wbits);
-
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
