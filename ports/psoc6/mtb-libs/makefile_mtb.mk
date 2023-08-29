@@ -54,8 +54,7 @@ mtb_config_deps:
 	$(info mtb_deps_dir  : $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)deps/$(MTB_DEPS_DIRS)/)
 	$(Q) $(foreach DIR, $(MTB_DEPS_DIRS), $(shell cp -r $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)deps/$(DIR)/. $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)deps))
 
-
-mtb_get_libs:
+mtb_get_libs: mtb_config_deps
 	$(info )
 	$(info Retrieving ModusToolbox dependencies ...)
 	$(Q) $(MAKE) -C $(MTB_BASE_EXAMPLE_MAKEFILE_DIR) getlibs
@@ -77,6 +76,7 @@ mtb_deinit: mtb_clean
 	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -rf libs
 	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -rf bsps
 	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -rf ../mtb_shared
+	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -f deps/*
 
 # build MTB project
 mtb_build:
