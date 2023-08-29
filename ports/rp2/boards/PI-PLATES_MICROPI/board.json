@@ -4,14 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "Pi-Plate Compatible",
-        "Data Acquisition",
-        "Micro USB",
-        "Real Time Clock",
-        "OLED Display",
-        "Temperature Sensor",
-        "LED Annunciators",
-        "microSD Storage"
+        "USB",
+        "Display",
+        "Environment Sensor",
+        "microSD"
     ],
     "id": "MICROpi",
     "images": [
