@@ -262,6 +262,7 @@ Classes
    machine.ADC.rst
    machine.ADCBlock.rst
    machine.PWM.rst
+   machine.CAN.rst
    machine.UART.rst
    machine.SPI.rst
    machine.I2C.rst
