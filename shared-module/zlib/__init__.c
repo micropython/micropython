@@ -48,7 +48,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-mp_obj_t common_hal_zlib_decompress(mp_obj_t data, bool is_zlib) {
+mp_obj_t common_hal_zlib_decompress(mp_obj_t data, mp_int_t wbits) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
 
@@ -66,7 +66,12 @@ mp_obj_t common_hal_zlib_decompress(mp_obj_t data, bool is_zlib) {
     decomp->source_limit = (unsigned char *)bufinfo.buf + bufinfo.len;
     int st;
 
-    if (is_zlib) {
+    if (wbits >= 16) {
+        st = uzlib_gzip_parse_header(decomp);
+        if (st < 0) {
+            goto error;
+        }
+    } else if (wbits >= 0) {
         st = uzlib_zlib_parse_header(decomp);
         if (st < 0) {
             goto error;
