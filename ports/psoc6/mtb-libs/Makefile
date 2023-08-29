@@ -44,6 +44,11 @@ MTB_TYPE=COMBINED
 # and update or regenerate launch configurations for your IDE.
 TARGET=APP_CY8CPROTO-062-4343W
 
+# Board dependendencies
+ifeq ($(TARGET),APP_CY8CPROTO-062-4343W)
+NETWORK_ENABLE = 1
+endif
+
 # Name of application (used to derive name of final linked file).
 #
 # If APPNAME / LIBNAME is edited, ensure to update or regenerate launch
@@ -87,8 +92,9 @@ VERBOSE=
 # ... then code in directories named COMPONENT_foo and COMPONENT_bar will be
 # added to the build
 #
-COMPONENTS=FREERTOS LWIP MBEDTLS
-#LWIP MBEDTLS
+ifeq ($(NETWORK_ENABLE),1)
+COMPONENTS+=FREERTOS LWIP MBEDTLS
+endif
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
 DISABLE_COMPONENTS=
@@ -99,6 +105,7 @@ DISABLE_COMPONENTS=
 # by default, or otherwise not found by the build system.
 SOURCES=
 
+ifeq ($(NETWORK_ENABLE),1)
 # Custom configuration of mbedtls library.
 MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"mbedtls_config.h"'
 DEFINES=$(MBEDTLSFLAGS) CYBSP_WIFI_CAPABLE CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE
@@ -121,7 +128,7 @@ MBEDTLS_CONF_DIR = $(MPY_PSOC6_PORT_DIR)/mbedtls
 MBEDTLS_MPY_CONF_DIR = $(MPY_TOP_DIR)/extmod/mbedtls
 INCLUDES= $(LWIP_OPTS_DIR) $(MBEDTLS_CONF_DIR) $(MBEDTLS_MPY_CONF_DIR)
 #../mtb_shared/wifi-host-driver/release-v2.5.0/External/rtos ../mtb_shared/lwip/STABLE-2_1_2_RELEASE/src/include ../../lwip_inc
-
+endif
 # Add additional defines to the build process (without a leading -D).
 #DEFINES=CY_RETARGET_IO_CONVERT_LF_TO_CRLF=1 CY_WIFI_HOST_WAKE_SW_FORCE=0
 ## WPRINT_ENABLE_WHD_INFO WPRINT_ENABLE_WHD_DEBUG WPRINT_ENABLE_WHD_DATA_LOG WHD_IOCTL_LOG_ENABLE  LWIP_DEBUG
@@ -216,3 +223,4 @@ endif
 $(info Tools Directory: $(CY_TOOLS_DIR))
 
 include $(CY_TOOLS_DIR)/make/start.mk
+

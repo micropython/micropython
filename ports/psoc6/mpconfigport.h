@@ -29,14 +29,17 @@
 #include <stdint.h>
 
 #include "shared/runtime/interrupt_char.h"
+#include "mpconfigboard.h"
 
 
 // Control over Python builtins
 #define MICROPY_PY_IO_BUFFEREDWRITER            (1)
 #define MICROPY_PY_SELECT                       (1)
-#ifndef MICROPY_PY_SSL
-#define MICROPY_PY_SSL                          (1)
-#endif
+// TODO: Remove this
+// This is defined per board, and by the mpconfigboard.mk
+// #ifndef MICROPY_PY_SSL
+// #define MICROPY_PY_SSL                          (1)
+// #endif
 #define MICROPY_PY_IO                           (1)
 #define MICROPY_PY_IO_IOBASE                    (1)
 #define MICROPY_PY_BINASCII                     (1)
@@ -47,7 +50,6 @@
 #define MICROPY_PY_ARRAY                        (1)
 
 // Board and hardware specific configuration
-#define MICROPY_HW_MCU_NAME                     "PSoC62"
 #define MICROPY_HELPER_REPL                     (1)
 #define MICROPY_HW_ENABLE_UART_REPL             (0) // useful if there is no USB
 #define MICROPY_HW_ENABLE_USBDEV                (0)
@@ -149,7 +151,8 @@
 
 // By default networking should include sockets, ssl, websockets, webrepl
 
-#define MICROPY_PY_NETWORK                      (1)
+#if MICROPY_PY_NETWORK
+
 #define MICROPY_PY_SOCKET                       (1)
 #define MICROPY_PY_WEBSOCKET                    (1)
 #define MICROPY_PY_WEBREPL                      (1)
@@ -162,6 +165,8 @@ extern const struct _mp_obj_type_t mp_network_ifx_wcm_type;
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_IFX_WCM
 
+#endif
+
 // Miscellaneous settings
 #define MICROPY_MAKE_POINTER_CALLABLE(p)        ((void *)((mp_uint_t)(p) | 1))
 
@@ -172,19 +177,13 @@ typedef intptr_t mp_off_t;
 
 
 #define MICROPY_PY_BUILTINS_HELP_TEXT           psoc6_help_text
-
 #define MICROPY_USE_INTERNAL_PRINTF             (0)
-
 #define MICROPY_REPL_INFO                       (1)
 
 
 // TODO: helpful to abstract main.c ?
 // #define MICROPY_PORT_INIT_FUNC ??
 // #define MICROPY_PORT_DEINIT_FUNC ??
-
-
-// Potentially to be changed. Impact / improvements unclear !
-// #define MICROPY_OBJ_REPR                        (MICROPY_OBJ_REPR_A)
 
 
 #define MICROPY_EVENT_POLL_HOOK_FAST \
@@ -202,10 +201,6 @@ typedef intptr_t mp_off_t;
 // best_effort_wfe_or_timeout(make_timeout_time_ms(1));
 
 
-// PSoC6 port specific
-// set to 1 to enable filesystem to be loaded on external qspi flash
-// if set to 0, filesystem is located in an allotted area of internal flash of PSoC6
-#define MICROPY_ENABLE_EXT_QSPI_FLASH           (1)
 #define MICROPY_LOGGER_DEBUG                    (0)
 
 // extern void lwip_lock_acquire(void);
@@ -214,8 +209,3 @@ typedef intptr_t mp_off_t;
 // #define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
 // #define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
 // #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
-
-
-// Board specific settings.
-// DO NOT ADD ANY POT SPECIFIC OPTIONS BELOW THE FOLLOWING LINE !
-#include "mpconfigboard.h"

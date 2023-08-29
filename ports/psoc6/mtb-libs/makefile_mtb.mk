@@ -34,6 +34,27 @@ mtb_init: mtb_add_bsp mtb_set_bsp mtb_get_libs
 	$(info )
 	$(info Initializing ModusToolbox libs for board $(BOARD))
 
+# Choose the ModusToolbox deps according to board config parameters
+MTB_DEPS_DIRS = common
+ifeq ($(MICROPY_PY_NETWORK),1)
+MTB_DEPS_DIRS += network
+endif
+
+ifeq ($(MICROPY_PY_EXT_FLASH),1)
+MTB_DEPS_DIRS += ext_flash
+endif
+
+# The ModusToolbox expects all the .mtb files to be in the /deps folder.
+# The feature specific dependencies organized in folders are directly copied 
+# to the deps/ root folder
+mtb_config_deps:
+	@:
+	$(info )
+	$(info Configuring ModusToolbox dependencies ...)
+	$(info mtb_deps_dir  : $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)deps/$(MTB_DEPS_DIRS)/)
+	$(Q) $(foreach DIR, $(MTB_DEPS_DIRS), $(shell cp -r $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)deps/$(DIR)/. $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)deps))
+
+
 mtb_get_libs:
 	$(info )
 	$(info Retrieving ModusToolbox dependencies ...)
@@ -108,4 +129,4 @@ program_multi: attached_devs
 	$(foreach ATTACHED_TARGET, $(ATTACHED_TARGET_LIST), $(MAKE) program SERIAL_ADAPTER_CMD='adapter serial $(ATTACHED_TARGET)';)
 
 
-.PHONY: mtb_init mtb_deinit mtb_build mtb_get_build_flags program program_multi
+.PHONY: mtb_init mtb_deinit mtb_config_deps mtb_build mtb_get_build_flags program program_multi
