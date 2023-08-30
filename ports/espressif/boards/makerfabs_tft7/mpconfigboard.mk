@@ -1,5 +1,5 @@
-USB_VID = 0x303A
-USB_PID = 0x7003
+USB_VID = 0x239A
+USB_PID = 0x814A
 USB_PRODUCT = "MakerFabs-ESP32-S3-Parallel-TFT-With-Touch-7inch"
 USB_MANUFACTURER = "MakerFabs"
 
