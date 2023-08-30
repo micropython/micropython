@@ -137,7 +137,8 @@ def check_vid_pid(files, clusterlist):
             f"Duplicate VID/PID usage found!\n{duplicates}\n"
             f"If you are open source maker, then you can request a PID from http://pid.codes\n"
             f"For boards without native USB, you can request a Creator ID from https://github.com/creationid/creators/\n"
-            f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id"
+            f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id\n"
+            f"FAQ: Why does CircuitPython require a unique VID:PID for every board definition? https://learn.adafruit.com/how-to-add-a-new-board-to-circuitpython/frequently-asked-questions#faq-3130480"
         )
         sys.exit(duplicate_message)
 
