@@ -29,11 +29,13 @@
 
 int real_main(void);
 
-void main(void) {
+int main(void) {
     #ifdef CONFIG_CONSOLE_SUBSYS
     console_init();
     #else
     zephyr_getchar_init();
     #endif
     real_main();
+
+    return 0;
 }
