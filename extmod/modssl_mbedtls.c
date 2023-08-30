@@ -394,6 +394,7 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     return MP_OBJ_FROM_PTR(o);
 
 cleanup:
+    o->sock = MP_OBJ_NULL;
     mbedtls_ssl_free(&o->ssl);
     mbedtls_raise_error(ret);
 }
