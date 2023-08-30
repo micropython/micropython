@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-25 16:38+0000\n"
+"PO-Revision-Date: 2023-08-29 18:34+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -464,7 +464,7 @@ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
-msgstr ""
+msgstr "wúfǎ qǐdòng AP"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -2414,6 +2414,10 @@ msgstr "nín zài qǐ dòng shí àn xià le liǎng gè àn niǔ."
 #: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
 msgstr "nín zài qǐ dòng shí àn xià le àn niǔ A."
+
+#: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
+msgid "You pressed button DOWN at start up."
+msgstr "Nínzài qǐdòngshí ànxià le ànniǔ."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
