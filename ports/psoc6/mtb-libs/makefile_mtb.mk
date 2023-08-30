@@ -23,12 +23,12 @@ OPENOCD_HOME ?= $(MTB_HOME)/tools_3.0/openocd
 # $(info MPY_DIR_OF_MTB_ADAPTER_MAKEFILE  : $(MPY_DIR_OF_MTB_ADAPTER_MAKEFILE))
 
 # $(info MPY_MTB_MAIN_MAKEFILE            : $(MPY_MTB_MAIN_MAKEFILE))
-# $(info MPY_MTB_TARGET                   : $(MPY_MTB_TARGET))
+$(info MPY_MTB_TARGET                   : $(MPY_MTB_TARGET))
 # $(info MPY_MTB_CONFIG                   : $(MPY_MTB_CONFIG))
 # $(info MTB_LIB_NAME                     : $(MPY_MTB_LIB_NAME))
 
-# $(info MPY_MTB_BOARD_BUILD_DIR          : $(MPY_MTB_BOARD_BUILD_DIR))
-# $(info MPY_MTB_BOARD_BUILD_OUTPUT_DIR   : $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR))
+$(info MPY_MTB_BOARD_BUILD_DIR          : $(MPY_MTB_BOARD_BUILD_DIR))
+$(info MPY_MTB_BOARD_BUILD_OUTPUT_DIR   : $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR))
 
 mtb_init: mtb_add_bsp mtb_set_bsp mtb_get_libs
 	$(info )
@@ -47,6 +47,12 @@ endif
 # The ModusToolbox expects all the .mtb files to be in the /deps folder.
 # The feature specific dependencies organized in folders are directly copied 
 # to the deps/ root folder
+# In theory, the build inclusion/exclusion of components can be handled by the 
+# COMPONENTS variable of the ModusToolbox Makefile. T
+# This feature does not seem to scale well for this use case (Or better knowledge
+# on how to use it is required :|).
+# It seems easier to just explicitly include only those middleware assets 
+# and libraries required for a given bsp and its required MicroPython capabilities.
 mtb_config_deps:
 	@:
 	$(info )
@@ -70,19 +76,23 @@ mtb_set_bsp:
 	$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); library-manager-cli --project . --set-active-bsp APP_$(BOARD)
 
 # Remove MTB retrieved lib and dependencies
-mtb_deinit: mtb_clean
+mtb_deinit: clean
 	$(info )
 	$(info Removing mtb_shared and libs folder ...)
 	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -rf libs
 	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -rf bsps
 	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -rf ../mtb_shared
-	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); rm -f deps/*
+	-$(Q) cd $(MTB_BASE_EXAMPLE_MAKEFILE_DIR); find deps/ -maxdepth 1 -type f -delete 
+
+# Some of the configuration variables are passed to the ModusToolbox 
+# Makefile to include/exclude certain middleware libraries and components
+MPY_MTB_MAKE_VARS = MICROPY_PY_NETWORK=$(MICROPY_PY_NETWORK)
 
 # build MTB project
 mtb_build:
 	$(info )
 	$(info Building $(BOARD) in $(CONFIG) mode using MTB ...)
-	$(Q) $(MAKE) -C $(MTB_BASE_EXAMPLE_MAKEFILE_DIR) CONFIG=$(MPY_MTB_CONFIG) build
+	$(Q) $(MAKE) -C $(MTB_BASE_EXAMPLE_MAKEFILE_DIR) CONFIG=$(MPY_MTB_CONFIG) $(MPY_MTB_MAKE_VARS) build 
 
 
 mtb_clean:
@@ -98,9 +108,28 @@ mtb_get_build_flags: mtb_build
 	$(eval LIBS += $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR)/$(MPY_MTB_LIB_NAME))
 #	$(eval LIBS += $(MPY_MTB_LIBRARIES) $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR)/$(MPY_MTB_LIB_NAME))
 # TODO: hardcode this flags in a board a separate board folder or in the general board folder
-	$(eval CFLAGS +=  -mcpu=cortex-m4 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -DCOMPONENT_4343W -DCOMPONENT_APP_CY8CPROTO_062_4343W -DCOMPONENT_CAT1 -DCOMPONENT_CAT1A -DCOMPONENT_CM0P_SLEEP -DCOMPONENT_CM4 -DCOMPONENT_CM4_0 -DCOMPONENT_Debug -DCOMPONENT_GCC_ARM -DCOMPONENT_HCI_UART -DCOMPONENT_MURATA_1DX -DCOMPONENT_MW_ABSTRACTION_RTOS -DCOMPONENT_MW_CAT1CM0P -DCOMPONENT_MW_CLIB_SUPPORT -DCOMPONENT_MW_CMSIS -DCOMPONENT_MW_CONNECTIVITY_UTILITIES -DCOMPONENT_MW_CORE_LIB -DCOMPONENT_MW_CORE_MAKE -DCOMPONENT_MW_CY_MBEDTLS_ACCELERATION -DCOMPONENT_MW_FREERTOS -DCOMPONENT_MW_LWIP -DCOMPONENT_MW_LWIP_FREERTOS_INTEGRATION -DCOMPONENT_MW_LWIP_NETWORK_INTERFACE_INTEGRATION -DCOMPONENT_MW_MBEDTLS -DCOMPONENT_MW_MTB_HAL_CAT1 -DCOMPONENT_MW_MTB_PDL_CAT1 -DCOMPONENT_MW_RECIPE_MAKE_CAT1A -DCOMPONENT_MW_RETARGET_IO -DCOMPONENT_MW_SECURE_SOCKETS -DCOMPONENT_MW_SERIAL_FLASH -DCOMPONENT_MW_WHD_BSP_INTEGRATION -DCOMPONENT_MW_WIFI_CONNECTION_MANAGER -DCOMPONENT_MW_WIFI_CORE_FREERTOS_LWIP_MBEDTLS -DCOMPONENT_MW_WIFI_HOST_DRIVER -DCOMPONENT_MW_WPA3_EXTERNAL_SUPPLICANT -DCOMPONENT_PSOC6_02 -DCOMPONENT_SOFTFP -DCOMPONENT_WIFI_INTERFACE_SDIO -DCORE_NAME_CM4_0=1 -DCY8C624ABZI_S2D44 -DCYBSP_WIFI_CAPABLE -DCY_APPNAME_mtb_example_wifi_scan -DCY_RETARGET_IO_CONVERT_LF_TO_CRLF -DCY_RTOS_AWARE -DCY_SUPPORTS_DEVICE_VALIDATION -DCY_TARGET_BOARD=APP_CY8CPROTO_062_4343W -DCY_USING_HAL -DCY_WIFI_HOST_WAKE_SW_FORCE=0 -DDEBUG -DMBEDTLS_USER_CONFIG_FILE=mbedtls_user_config.h -DTARGET_APP_CY8CPROTO_062_4343W  -DCOMPONENT_FREERTOS  -DCOMPONENT_LWIP -DCOMPONENT_MBEDTLS)
+# python mtb_build_info.py ccxxflags build/APP_CY8CPROTO-062-4343W/Debug/.cycompiler
+#	$(eval CFLAGS_HARCODED =  -mcpu=cortex-m4 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -DCOMPONENT_4343W -DCOMPONENT_APP_CY8CPROTO_062_4343W -DCOMPONENT_CAT1 -DCOMPONENT_CAT1A -DCOMPONENT_CM0P_SLEEP -DCOMPONENT_CM4 -DCOMPONENT_CM4_0 -DCOMPONENT_Debug -DCOMPONENT_GCC_ARM -DCOMPONENT_HCI_UART -DCOMPONENT_MURATA_1DX -DCOMPONENT_MW_ABSTRACTION_RTOS -DCOMPONENT_MW_CAT1CM0P -DCOMPONENT_MW_CLIB_SUPPORT -DCOMPONENT_MW_CMSIS -DCOMPONENT_MW_CONNECTIVITY_UTILITIES -DCOMPONENT_MW_CORE_LIB -DCOMPONENT_MW_CORE_MAKE -DCOMPONENT_MW_CY_MBEDTLS_ACCELERATION -DCOMPONENT_MW_FREERTOS -DCOMPONENT_MW_LWIP -DCOMPONENT_MW_LWIP_FREERTOS_INTEGRATION -DCOMPONENT_MW_LWIP_NETWORK_INTERFACE_INTEGRATION -DCOMPONENT_MW_MBEDTLS -DCOMPONENT_MW_MTB_HAL_CAT1 -DCOMPONENT_MW_MTB_PDL_CAT1 -DCOMPONENT_MW_RECIPE_MAKE_CAT1A -DCOMPONENT_MW_RETARGET_IO -DCOMPONENT_MW_SECURE_SOCKETS -DCOMPONENT_MW_SERIAL_FLASH -DCOMPONENT_MW_WHD_BSP_INTEGRATION -DCOMPONENT_MW_WIFI_CONNECTION_MANAGER -DCOMPONENT_MW_WIFI_CORE_FREERTOS_LWIP_MBEDTLS -DCOMPONENT_MW_WIFI_HOST_DRIVER -DCOMPONENT_MW_WPA3_EXTERNAL_SUPPLICANT -DCOMPONENT_PSOC6_02 -DCOMPONENT_SOFTFP -DCOMPONENT_WIFI_INTERFACE_SDIO -DCORE_NAME_CM4_0=1 -DCY8C624ABZI_S2D44 -DCYBSP_WIFI_CAPABLE -DCY_APPNAME_mtb_example_wifi_scan -DCY_RETARGET_IO_CONVERT_LF_TO_CRLF -DCY_RTOS_AWARE -DCY_SUPPORTS_DEVICE_VALIDATION -DCY_TARGET_BOARD=APP_CY8CPROTO_062_4343W -DCY_USING_HAL -DCY_WIFI_HOST_WAKE_SW_FORCE=0 -DDEBUG -DMBEDTLS_USER_CONFIG_FILE=mbedtls_user_config.h -DTARGET_APP_CY8CPROTO_062_4343W  -DCOMPONENT_FREERTOS  -DCOMPONENT_LWIP -DCOMPONENT_MBEDTLS)
+
+# Mismatch between flags (CY8CPROTO-062-4343W):
+# harcoded:
+# (+)-DCOMPONENT_MW_WIFI_CORE_FREERTOS_LWIP_MBEDTLS 
+# (+)-DCY_APPNAME_mtb_example_wifi_scan
+# (+)-DMBEDTLS_USER_CONFIG_FILE=mbedtls_user_config.h
+# from script:
+# (+)-DCY_LIBNAME_libmtb 
+# (+)-DMBEDTLS_USER_CONFIG_FILE=mbedtls_config.h
+	$(eval CFLAGS_PYTHON += $(shell $(PYTHON) $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/mtb_build_info.py ccxxflags $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR)/.cycompiler ))
+	$(eval CFLAGS += $(CFLAGS_PYTHON))
+#  $(info CFLAGS ::: $(CFLAGS_HARCODED))
+	$(info CFLAGS_ ::: $(CFLAGS_PYTHON))
 	$(eval CXXFLAGS += $(CFLAGS))
-	$(eval LDFLAGS += -mcpu=cortex-m4 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -Wl,--gc-sections -T$(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/bsps/TARGET_APP_CY8CPROTO-062-4343W/COMPONENT_CM4/TOOLCHAIN_GCC_ARM/linker.ld -Wl,-Map,$(BUILD)/firmware.map -Wl,--start-group -Wl,--end-group -Wl,--print-memory-usage)
+# python mtb_build_info.py ldflags build/APP_CY8CPROTO-062-4343W/Debug/.cylinker
+	$(eval LDFLAGS_PY = $(shell $(PYTHON) $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/mtb_build_info.py ldflags $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR)/.cylinker $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)))
+	$(info LDFLAGS_PY ::: $(LDFLAGS_PY))
+# $(eval LDFLAGS += -mcpu=cortex-m4 --specs=nano.specs -mfloat-abi=softfp -mfpu=fpv4-sp-d16 -mthumb -ffunction-sections -fdata-sections -ffat-lto-objects -g -Wall -pipe -Wl,--gc-sections -T$(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/bsps/TARGET_APP_CY8CPROTO-062-4343W/COMPONENT_CM4/TOOLCHAIN_GCC_ARM/linker.ld -Wl,-Map,$(BUILD)/firmware.map -Wl,--start-group -Wl,--end-group -Wl,--print-memory-usage)
+	$(eval LDFLAGS += $(LDFLAGS_PY))
+# $(eval LDFLAGS += -Wl,-Map,$(BUILD)/firmware.map -Wl,--start-group -Wl,--end-group -Wl,--print-memory-usage)
 	$(eval QSTR_GEN_CFLAGS += $(INC) $(CFLAGS))
 
 attached_devs:

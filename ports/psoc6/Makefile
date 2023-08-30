@@ -76,6 +76,7 @@ ifeq ($(MICROPY_PSOC6_SSL_MBEDTLS),1)
 endif
 
 LDFLAGS += -Wl,--cref -Wl,--gc-sections
+LDFLAGS += -Wl,-Map,$(BUILD)/firmware.map  -Wl,--start-group -Wl,--end-group -Wl,--print-memory-usage
 
 
 # Tune for Debugging or Optimization

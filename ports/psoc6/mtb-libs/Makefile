@@ -44,10 +44,10 @@ MTB_TYPE=COMBINED
 # and update or regenerate launch configurations for your IDE.
 TARGET=APP_CY8CPROTO-063-BLE
 
-# Board dependendencies
-ifeq ($(TARGET),APP_CY8CPROTO-062-4343W)
-NETWORK_ENABLE = 1
-endif
+# # Board dependencies
+# ifeq ($(TARGET),APP_CY8CPROTO-062-4343W)
+# NETWORK_ENABLE = 1
+# endif
 
 # Name of application (used to derive name of final linked file).
 #
@@ -94,7 +94,7 @@ VERBOSE=
 #
 COMPONENTS+=FREERTOS
 
-ifeq ($(NETWORK_ENABLE),1)
+ifeq ($(MICROPY_PY_NETWORK),1)
 COMPONENTS+= LWIP MBEDTLS
 endif
 
@@ -109,7 +109,7 @@ SOURCES=
 
 DEFINES=CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE
 
-ifeq ($(NETWORK_ENABLE),1)
+ifeq ($(MICROPY_PY_NETWORK),1)
 # Custom configuration of mbedtls library.
 MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"mbedtls_config.h"'
 DEFINES+=$(MBEDTLSFLAGS) CYBSP_WIFI_CAPABLE 
