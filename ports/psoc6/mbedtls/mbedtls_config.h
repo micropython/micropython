@@ -29,6 +29,6 @@
 #include "mbedtls_config_common.h"
 // #endif
 
-// #undef MBEDTLS_ENTROPY_HARDWARE_ALT
+#undef MBEDTLS_ENTROPY_HARDWARE_ALT
 
 #endif /* PSOC6_MPY_MBEDTLS_USER_CONFIG_HEADER */

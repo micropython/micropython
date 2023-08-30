@@ -1,15 +1,5 @@
 // Board and hardware specific configuration
 #define MICROPY_HW_MCU_NAME                     "PSoC62"    
 #define MICROPY_HW_BOARD_NAME                   "CY8CPROTO-062-4343W"
-// #define MICROPY_HW_FLASH_STORAGE_BYTES          (0x200000)
 
-// Enable USB Mass Storage with FatFS filesystem.
-// #define MICROPY_HW_USB_MSC  (1)
-
-// PSoC6 port specific
-// set to 1 to enable filesystem to be loaded on external qspi flash
-// if set to 0, filesystem is located in an allotted area of internal flash of PSoC6
-#define MICROPY_ENABLE_EXT_QSPI_FLASH           (1)
-
-#define MICROPY_PY_NETWORK              (1)
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "CY8C-062-4343W"

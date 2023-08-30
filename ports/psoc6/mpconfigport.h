@@ -134,10 +134,6 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_RPATH                     (2)
 
-// set to 1 to enable filesystem to be loaded on external qspi flash
-// if set to 0, filesystem is located in an allotted area of internal flash of PSoC6
-#define MICROPY_ENABLE_EXT_QSPI_FLASH           (1)
-
 #define MICROPY_PY_CRYPTOLIB                    (1)
 #define MICROPY_PY_CRYPTOLIB_CTR                (1)
 #define MICROPY_PY_CRYPTOLIB_CONSTS             (1)

@@ -7,10 +7,8 @@
 
 // MTB includes
 #include "cybsp.h"
-#include "cybsp_wifi.h"
 #include "cy_retarget_io.h"
 #include "cyhal.h"
-#include "cy_wcm.h"
 
 // FreeRTOS header file
 #include <FreeRTOS.h>
@@ -27,6 +25,11 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "extmod/modnetwork.h"
+
+#if MICROPY_PY_NETWORK
+#include "cybsp_wifi.h"
+#include "cy_wcm.h"
+#endif
 
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"

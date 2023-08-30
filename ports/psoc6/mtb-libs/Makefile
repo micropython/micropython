@@ -42,7 +42,7 @@ MTB_TYPE=COMBINED
 # configurations. If TARGET is manually edited, ensure TARGET_<BSP>.mtb with a
 # valid URL exists in the application, run 'make getlibs' to fetch BSP contents
 # and update or regenerate launch configurations for your IDE.
-TARGET=APP_CY8CPROTO-063-BLE
+TARGET=APP_CY8CPROTO-062-4343W
 
 # # Board dependencies
 # ifeq ($(TARGET),APP_CY8CPROTO-062-4343W)
@@ -92,10 +92,10 @@ VERBOSE=
 # ... then code in directories named COMPONENT_foo and COMPONENT_bar will be
 # added to the build
 #
-COMPONENTS+=FREERTOS
+COMPONENTS+=FREERTOS MBEDTLS
 
 ifeq ($(MICROPY_PY_NETWORK),1)
-COMPONENTS+= LWIP MBEDTLS
+COMPONENTS+= LWIP
 endif
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
@@ -108,11 +108,10 @@ DISABLE_COMPONENTS=
 SOURCES=
 
 DEFINES=CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE
+DEFINES+=MBEDTLS_USER_CONFIG_FILE='"mbedtls_config.h"'
 
 ifeq ($(MICROPY_PY_NETWORK),1)
-# Custom configuration of mbedtls library.
-MBEDTLSFLAGS = MBEDTLS_USER_CONFIG_FILE='"mbedtls_config.h"'
-DEFINES+=$(MBEDTLSFLAGS) CYBSP_WIFI_CAPABLE 
+DEFINES+= CYBSP_WIFI_CAPABLE 
 
 # TODO: This is only for the CYCPROTO_BOARD??
 # CY8CPROTO-062-4343W board shares the same GPIO for the user button (USER BTN1)
@@ -120,23 +119,20 @@ DEFINES+=$(MBEDTLSFLAGS) CYBSP_WIFI_CAPABLE
 # interfacing with the user button, the SDIO interrupt to wake up the host is
 # disabled by setting CY_WIFI_HOST_WAKE_SW_FORCE to '0'.
 DEFINES+=CY_WIFI_HOST_WAKE_SW_FORCE=0
-
-# Logging options, but not yet working
-# DEFINES += LWIP_DEBUG=1 ENABLE_CONNECTIVITY_MIDDLEWARE_LOGS ENABLE_WCM_LOGS ENABLE_SECURE_SOCKETS_LOGS
+endif
 
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
 MPY_PSOC6_PORT_DIR = ../
 MPY_TOP_DIR = $(MPY_PSOC6_PORT_DIR)/../..
-LWIP_OPTS_DIR = $(MPY_PSOC6_PORT_DIR)/lwip_inc
 MBEDTLS_CONF_DIR = $(MPY_PSOC6_PORT_DIR)/mbedtls
 MBEDTLS_MPY_CONF_DIR = $(MPY_TOP_DIR)/extmod/mbedtls
-INCLUDES= $(LWIP_OPTS_DIR) $(MBEDTLS_CONF_DIR) $(MBEDTLS_MPY_CONF_DIR)
-#../mtb_shared/wifi-host-driver/release-v2.5.0/External/rtos ../mtb_shared/lwip/STABLE-2_1_2_RELEASE/src/include ../../lwip_inc
+INCLUDES+= $(MBEDTLS_CONF_DIR) $(MBEDTLS_MPY_CONF_DIR)
+
+ifeq ($(MICROPY_PY_NETWORK),1)
+LWIP_OPTS_DIR = $(MPY_PSOC6_PORT_DIR)/lwip_inc
+INCLUDES+= $(LWIP_OPTS_DIR)
 endif
-# Add additional defines to the build process (without a leading -D).
-#DEFINES=CY_RETARGET_IO_CONVERT_LF_TO_CRLF=1 CY_WIFI_HOST_WAKE_SW_FORCE=0
-## WPRINT_ENABLE_WHD_INFO WPRINT_ENABLE_WHD_DEBUG WPRINT_ENABLE_WHD_DATA_LOG WHD_IOCTL_LOG_ENABLE  LWIP_DEBUG
 
 # Select softfp or hardfp floating point. Default is softfp.
 VFP_SELECT=
