@@ -1,0 +1,3 @@
+- `factorial_example` is an example
+- `analogue_readings` is an external C module (stub for analogue readings) which is pulled into the Unix micropython port when using the `./build_ports.sh` script
+- `$(ROOT)/ports/esp32/mhm_custom_extensions/analogue_readings` is the ESP32 specific code for analogue readings

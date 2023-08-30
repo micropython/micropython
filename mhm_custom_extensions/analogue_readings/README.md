@@ -1,1 +1,1 @@
-Example of how to use an external C module - unused in production.
+Stub functions for the Unix micropython extensions - used in the embedded container.
