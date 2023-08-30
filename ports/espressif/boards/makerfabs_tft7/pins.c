@@ -49,16 +49,8 @@ STATIC const mp_rom_map_elem_t tft_table[] = {
 };
 MP_DEFINE_CONST_DICT(tft_dict, tft_table);
 
-#if 0
-Arduino_RPi_DPI_RGBPanel *gfx = new Arduino_RPi_DPI_RGBPanel(
-    bus,
-    800 /* width */, 0 /* hsync_polarity */, 210 /* hsync_front_porch */, 30 /* hsync_pulse_width */, 16 /* hsync_back_porch */,
-    480 /* height */, 0 /* vsync_polarity */, 22 /* vsync_front_porch */, 13 /* vsync_pulse_width */, 10 /* vsync_back_porch */,
-    1 /* pclk_active_neg */, 16000000 /* prefer_speed */, true /* auto_flush */);
-#endif
-
 STATIC const mp_rom_map_elem_t timings800_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_INT(16000000) },
+    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_INT(6500000) }, // nominal 16MHz, but display is unstable/tears at that frequency
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_INT(800) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_INT(480) },
     { MP_ROM_QSTR(MP_QSTR_hsync_pulse_width), MP_ROM_INT(30) },
@@ -69,7 +61,7 @@ STATIC const mp_rom_map_elem_t timings800_table[] = {
     { MP_ROM_QSTR(MP_QSTR_vsync_front_porch), MP_ROM_INT(22) },
     { MP_ROM_QSTR(MP_QSTR_vsync_back_porch), MP_ROM_INT(10) },
     { MP_ROM_QSTR(MP_QSTR_vsync_idle_low), MP_ROM_FALSE },
-    { MP_ROM_QSTR(MP_QSTR_de_active_high), MP_ROM_FALSE },
+    { MP_ROM_QSTR(MP_QSTR_de_idle_high), MP_ROM_FALSE },
     { MP_ROM_QSTR(MP_QSTR_pclk_active_high), MP_ROM_FALSE },
     { MP_ROM_QSTR(MP_QSTR_pclk_idle_high), MP_ROM_FALSE },
 };
