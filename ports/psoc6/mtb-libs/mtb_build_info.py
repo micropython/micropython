@@ -1,7 +1,5 @@
-# This script will parse the build output files to extract build flags from the ModusToolbox
-# build command that needs to be used as well in the MicroPython src builds.
-# Ideally, this flags would be retievable directly from a Makefile command or variable of
-# the ModusToolbox Makefile
+# This script is used to parse the ModusToolbox build output files to extract build flags
+# that needs to be used as well in the MicroPython sources build.
 
 import argparse, json, os
 
