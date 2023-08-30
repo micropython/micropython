@@ -1,4 +1,4 @@
-#include <analogue_readings.hpp>
+#include "analogue_readings.h"
 
 // Register the functions - has 0 arguments so using MP_DEFINE_CONST_FUN_OBJ_0
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(make_analogue_readings_obj, make_analogue_readings);

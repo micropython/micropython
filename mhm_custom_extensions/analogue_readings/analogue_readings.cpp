@@ -1,5 +1,5 @@
 extern "C" {
-#include <analogue_readings.hpp>
+#include "analogue_readings.h"
 
 mp_obj_t make_analogue_readings() {
     printf("doing test function\n");
