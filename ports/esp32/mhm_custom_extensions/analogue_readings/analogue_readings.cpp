@@ -1,5 +1,8 @@
 #include <iostream>
-#include <assert.h>
+#include <cassert>
+
+// https://en.cppreference.com/w/cpp/error/assert
+#define assertm(exp, msg) assert(((void)msg, exp))
 
 extern "C"
 {
@@ -30,7 +33,7 @@ CONSTANT_TYPE esp_partition_type_t PARTITION_TYPE = ESP_PARTITION_TYPE_DATA;
 CONSTANT_TYPE esp_partition_subtype_t PARTITION_SUBTYPE = ESP_PARTITION_SUBTYPE_DATA_SPIFFS;
 CONSTANT_TYPE char PARTITION_NAME[] = "storage";
 
-CONSTANT_TYPE int MAX_STATIC_BUFFER_SIZE = 2048; // not bytes, number of elements
+CONSTANT_TYPE int MAX_STATIC_BUFFER_SIZE = 1024; // not bytes, number of elements
 
 CONSTANT_TYPE int DEFAULT_VREF = 1100;   // use adc2_vref_to_gpio() to obtain a better estimate
 CONSTANT_TYPE int NO_OF_SAMPLES = 40000; // multisampling
@@ -105,8 +108,10 @@ readings_info read_analogue(int read_for_time_ms) {
         read_into_buffer(buffer, MAX_STATIC_BUFFER_SIZE, read_adc);
 
         // erase the range, then write to it
-        esp_partition_erase_range(partition, curr_offset_bytes, curr_read_size_bytes);
-        esp_partition_write(partition, curr_offset_bytes, buffer, curr_read_size_bytes);
+        esp_err_t ret = esp_partition_erase_range(partition, curr_offset_bytes, curr_read_size_bytes);
+        assertm(ret == ESP_OK, "Failed to erase range");
+        ret = esp_partition_write(partition, curr_offset_bytes, buffer, curr_read_size_bytes);
+        asssertm(ret == ESP_OK, "Failed to write to partition");
 
         curr_offset_bytes += curr_read_size_bytes;
         readings_made += curr_read_size;
@@ -140,12 +145,13 @@ void read_flash_to_buff(const esp_partition_t* partition, mp_obj_t list, int off
     {
         int curr_read_size = std::min(max_batch_size, MAX_STATIC_BUFFER_SIZE); // don't buffer overflow
 
-        esp_err_t ret = esp_partition_read(partition, curr_offset, buffer, MAX_STATIC_BUFFER_SIZE);
-        assert(ret == ESP_OK);
+        int read_size_bytes = curr_read_size * sizeof(reading_size);
+        esp_err_t ret = esp_partition_read(partition, curr_offset, buffer, read_size_bytes);
+        assertm(ret == ESP_OK, "Failed to read from partition");
 
         add_buff_items_to_list(buffer, curr_read_size, list);
 
-        curr_offset += MAX_STATIC_BUFFER_SIZE;
+        curr_offset += read_size_bytes;
         max_batch_size -= MAX_STATIC_BUFFER_SIZE;
     }
 }
@@ -165,7 +171,7 @@ mp_obj_t trigger_readings(mp_obj_t read_for_time_ms) {
 mp_obj_t read_batch(mp_obj_t batch_size, mp_obj_t offset)
 {
     int batch_size_num = mp_obj_get_int(batch_size);
-    int byte_offset = mp_obj_get_int(offset);
+    int byte_offset = mp_obj_get_int(offset) * sizeof(reading_size);
     mp_obj_t list = mp_obj_new_list(0, NULL);
 
     auto partition = get_partition();
