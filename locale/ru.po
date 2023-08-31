@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: xXx <xxx_xxx_xxxxxxxxx@mail.ru>\n"
+"Last-Translator: Deleted User <noreply+67923@weblate.org>\n"
 "Language-Team: none\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -862,8 +862,7 @@ msgstr "Невозможно изменить частоту на таймере
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
-msgstr ""
-"Невозможно проснуться по изменению логического уровня, только по уровню"
+msgstr "Невозможно проснуться по изменению логического уровня, только по уровню"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
@@ -1844,8 +1843,7 @@ msgstr "Полигону необходимо как минимум 3 точки
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
-"Мощность просела. Убедитесь, что вы обеспечиваете достаточную мощность."
+msgstr "Мощность просела. Убедитесь, что вы обеспечиваете достаточную мощность."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
