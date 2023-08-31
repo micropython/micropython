@@ -54,6 +54,8 @@ typedef enum {
     DEFLATEIO_FORMAT_MAX = DEFLATEIO_FORMAT_GZIP,
 } deflateio_format_t;
 
+// This is used when the wbits is unset in the DeflateIO constructor. Default
+// to the smallest window size (faster compression, less RAM usage, etc).
 const int DEFLATEIO_DEFAULT_WBITS = 8;
 
 typedef struct {
@@ -114,22 +116,30 @@ STATIC bool deflateio_init_read(mp_obj_deflateio_t *self) {
     // Don't modify self->window_bits as it may also be used for write.
     int wbits = self->window_bits;
 
-    // Parse the header if we're in NONE/ZLIB/GZIP modes.
-    if (self->format != DEFLATEIO_FORMAT_RAW) {
-        int header_wbits = wbits;
+    if (self->format == DEFLATEIO_FORMAT_RAW) {
+        if (wbits == 0) {
+            // The docs recommends always setting wbits explicitly when using
+            // RAW, but we still allow a default.
+            wbits = DEFLATEIO_DEFAULT_WBITS;
+        }
+    } else {
+        // Parse the header if we're in NONE/ZLIB/GZIP modes.
+        int header_wbits;
         int header_type = uzlib_parse_zlib_gzip_header(&self->read->decomp, &header_wbits);
-        if ((self->format == DEFLATEIO_FORMAT_ZLIB && header_type != UZLIB_HEADER_ZLIB) || (self->format == DEFLATEIO_FORMAT_GZIP && header_type != UZLIB_HEADER_GZIP)) {
+        if (header_type < 0) {
+            // Stream header was invalid.
             return false;
         }
-        if (wbits == 0 && header_wbits < 15) {
-            // If the header specified something lower than the default, then
-            // use that instead.
+        if ((self->format == DEFLATEIO_FORMAT_ZLIB && header_type != UZLIB_HEADER_ZLIB) || (self->format == DEFLATEIO_FORMAT_GZIP && header_type != UZLIB_HEADER_GZIP)) {
+            // Not what we expected.
+            return false;
+        }
+        // header_wbits will either be 15 (gzip) or 8-15 (zlib).
+        if (wbits == 0 || header_wbits < wbits) {
+            // If the header specified something lower, then use that instead.
+            // No point doing a bigger allocation than we need to.
             wbits = header_wbits;
         }
-    }
-
-    if (wbits == 0) {
-        wbits = DEFLATEIO_DEFAULT_WBITS;
     }
 
     size_t window_len = 1 << wbits;
@@ -163,6 +173,7 @@ STATIC bool deflateio_init_write(mp_obj_deflateio_t *self) {
 
     int wbits = self->window_bits;
     if (wbits == 0) {
+        // Same default wbits for all formats.
         wbits = DEFLATEIO_DEFAULT_WBITS;
     }
     size_t window_len = 1 << wbits;

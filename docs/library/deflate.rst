@@ -41,9 +41,15 @@ Classes
    to 1024 bytes. Valid values are ``5`` to ``15`` inclusive (corresponding to
    window sizes of 32 to 32k bytes).
 
-   If *wbits* is set to ``0`` (the default), then a window size of 256 bytes
-   will be used (corresponding to *wbits* set to ``8``), except when
-   :ref:`decompressing a zlib stream <deflate_wbits_zlib>`.
+   If *wbits* is set to ``0`` (the default), then for compression a window size
+   of 256 bytes will be used (as if *wbits* was set to 8). For decompression, it
+   depends on the format:
+
+   * ``RAW`` will use 256 bytes (corresponding to *wbits* set to 8).
+   * ``ZLIB`` (or ``AUTO`` with zlib detected) will use the value from the zlib
+     header.
+   * ``GZIP`` (or ``AUTO`` with gzip detected) will use 32 kilobytes
+     (corresponding to *wbits* set to 15).
 
    See the :ref:`window size <deflate_wbits>` notes below for more information
    about the window size, zlib, and gzip streams.
@@ -134,44 +140,43 @@ Deflate window size
 -------------------
 
 The window size limits how far back in the stream the (de)compressor can
-reference. Increasing the window size will improve compression, but will
-require more memory.
+reference. Increasing the window size will improve compression, but will require
+more memory and make the compressor slower.
 
-However, just because a given window size is used for compression, this does not
-mean that the stream will require the same size window for decompression, as
-the stream may not reference data as far back as the window allows (for example,
-if the length of the input is smaller than the window size).
+If an input stream was compressed a given window size, then `DeflateIO`
+using a smaller window size will fail mid-way during decompression with
+:exc:`OSError`, but only if a back-reference actually refers back further
+than the decompressor's window size. This means it may be possible to decompress
+with a smaller window size. For example, this would trivially be the case if the
+original uncompressed data is shorter than the window size.
 
-If the decompressor uses a smaller window size than necessary for the input data
-stream, it will fail mid-way through decompression with :exc:`OSError`.
+Decompression
+~~~~~~~~~~~~~
 
-.. _deflate_wbits_zlib:
+The zlib format includes a header which specifies the window size that was used
+to compress the data. This indicates the maximum window size required to
+decompress this stream. If this header value is less than the specified *wbits*
+value (or if *wbits* is unset), then the header value will be used.
 
-The zlib format includes a header which specifies the window size used to
-compress the data (which due to the above, may be larger than the size required
-for the decompressor).
+The gzip format does not include the window size in the header, and assumes that
+all gzip compressors (e.g. the ``gzip`` utility, or CPython's implementation of
+:class:`gzip.GzipFile`) use the maximum window size of 32kiB. For this reason,
+if the *wbits* parameter is not set, the decompressor will use a 32 kiB window
+size (corresponding to *wbits* set to 15). This means that to be able to
+decompress an arbitrary gzip stream, you must have at least this much RAM
+available. If you control the source data, consider instead using the zlib
+format with a smaller window size.
 
-If this header value is lower than the specified *wbits* value, then the header
-value will be used instead in order to reduce the memory allocation size. If
-the *wbits* parameter is zero (the default), then the header value will only be
-used if it is less than the maximum value of ``15`` (which is default value
-used by most compressors [#f1]_).
+The raw format has no header and therefore does not include any information
+about the window size. If *wbits* is not set, then it will default to a window
+size of 256 bytes, which may not be large enough for a given stream. Therefore
+it is recommended that you should always explicitly set *wbits* if using the raw
+format.
 
-In other words, if the source zlib stream has been compressed with a custom window
-size (i.e. less than ``15``), then using the default *wbits* parameter of zero
-will decompress any such stream.
+Compression
+~~~~~~~~~~~
 
-The gzip file format does not include the window size in the header.
-Additionally, most compressor libraries (including CPython's implementation
-of :class:`gzip.GzipFile`) will default to the maximum possible window size.
-This makes it difficult to decompress most gzip streams on MicroPython unless
-your board has a lot of free RAM.
-
-If you control the source of the compressed data, then prefer to use the zlib
-format, with a window size that is suitable for your target device.
-
-.. rubric:: Footnotes
-
-.. [#f1] The assumption here is that if the header value is the default used by
-   most compressors, then nothing is known about the likely required window
-   size and we should ignore it.
+For compression, MicroPython will default to a window size of 256 bytes for all
+formats. This provides a reasonable amount of compression with minimal memory
+usage and fast compression time, and will generate output that will work with
+any decompressor.
