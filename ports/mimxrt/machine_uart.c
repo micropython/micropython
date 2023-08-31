@@ -288,7 +288,18 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
             self->timeout_char = min_timeout_char;
         }
 
-        LPUART_Init(self->lpuart, &self->config, BOARD_BOOTCLOCKRUN_UART_CLK_ROOT);
+        #if defined(MIMXRT117x_SERIES)
+        // Use the Lpuart1 clock value, which is set for All UART devices.
+        LPUART_Init(self->lpuart, &self->config, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
+        #else
+        // For baud rates < 1000000 divide the clock by 10, supporting baud rates down to 50 baud.
+        if (self->config.baudRate_Bps > 1000000) {
+            CLOCK_SetDiv(kCLOCK_UartDiv, 0);
+        } else {
+            CLOCK_SetDiv(kCLOCK_UartDiv, 9);
+        }
+        LPUART_Init(self->lpuart, &self->config, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
+        #endif
         LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
         uint8_t *buffer = m_new(uint8_t, rxbuf_len + 1);
         LPUART_TransferStartRingBuffer(self->lpuart, &self->handle, buffer, rxbuf_len);
