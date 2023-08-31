@@ -126,7 +126,7 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
     int frequency, int width, int height,
     int hsync_pulse_width, int hsync_back_porch, int hsync_front_porch, bool hsync_idle_low,
     int vsync_pulse_width, int vsync_back_porch, int vsync_front_porch, bool vsync_idle_low,
-    bool de_idle_high, bool pclk_active_high, bool pclk_idle_high) {
+    bool de_idle_high, bool pclk_active_high, bool pclk_idle_high, int overscan_left) {
 
     if (num_red != 5 || num_green != 6 || num_blue != 5) {
         mp_raise_ValueError(translate("Must provide 5/6/5 RGB pins"));
@@ -149,7 +149,7 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
 
     esp_lcd_rgb_panel_config_t *cfg = &self->panel_config;
     cfg->timings.pclk_hz = frequency;
-    cfg->timings.h_res = width;
+    cfg->timings.h_res = width + overscan_left;
     cfg->timings.v_res = height;
     cfg->timings.hsync_pulse_width = hsync_pulse_width;
     cfg->timings.hsync_back_porch = hsync_back_porch;
@@ -206,13 +206,11 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
     esp_rgb_panel_t *_rgb_panel = __containerof(self->panel_handle, esp_rgb_panel_t, base);
 
     self->frequency = frequency;
+    self->row_stride = 2 * (width + overscan_left);
     self->refresh_rate = frequency / (width + hsync_front_porch + hsync_back_porch) / (height + vsync_front_porch + vsync_back_porch);
-    self->bufinfo.buf = _rgb_panel->fb;
-    self->bufinfo.len = 2 * width * height;
+    self->bufinfo.buf = (uint8_t *)_rgb_panel->fb + 2 * overscan_left; // first line starts ater overscan_left pixels
+    self->bufinfo.len = 2 * (cfg->timings.h_res * cfg->timings.v_res - overscan_left); // no overscan after last line
     self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
-
-    memset(self->bufinfo.buf, 0xaa, width * height);
-    memset(self->bufinfo.buf + width * height, 0x55, width * height);
 
 //  LCD_CAM.lcd_ctrl2.lcd_vsync_idle_pol = _vsync_polarity;
 //  LCD_CAM.lcd_ctrl2.lcd_hsync_idle_pol = _hsync_polarity;
@@ -245,6 +243,10 @@ mp_int_t common_hal_dotclockframebuffer_framebuffer_get_height(dotclockframebuff
 
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_frequency(dotclockframebuffer_framebuffer_obj_t *self) {
     return self->frequency;
+}
+
+mp_int_t common_hal_dotclockframebuffer_framebuffer_get_row_stride(dotclockframebuffer_framebuffer_obj_t *self) {
+    return self->row_stride;
 }
 
 void common_hal_dotclockframebuffer_framebuffer_refresh(dotclockframebuffer_framebuffer_obj_t *self) {

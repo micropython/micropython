@@ -62,6 +62,7 @@
 //|         de_idle_high: bool,
 //|         pclk_active_high: bool,
 //|         pclk_idle_high: bool,
+//|         overscan_left: int = 0,
 //|     ) -> None:
 //|         """Create a DotClockFramebuffer object associated with the given pins.
 //|
@@ -105,14 +106,20 @@
 //|         :param bool de_idle_high: True if the de signal is high in IDLE state
 //|         :param bool pclk_active_high: True if the display data is clocked out at the rising edge of dclk
 //|         :param bool pclk_idle_high: True if the dclk stays at high level in IDLE phase
+//|
+//|         :param int overscan_left: Allocate additional non-visible columns left of the first display column
 //|         """
+//|         #:param int overscan_top: Allocate additional non-visible rows above the first display row
+//|         #:param int overscan_right: Allocate additional non-visible columns right of the last display column
+//|         #:param int overscan_bottom: Allocate additional non-visible rows below the last display row
 //|         ...
 STATIC mp_obj_t dotclockframebuffer_framebuffer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_de, ARG_vsync, ARG_hsync, ARG_dclk, ARG_red, ARG_green, ARG_blue,
            ARG_frequency, ARG_width, ARG_height,
            ARG_hsync_pulse_width, ARG_hsync_back_porch, ARG_hsync_front_porch, ARG_hsync_idle_low,
            ARG_vsync_pulse_width, ARG_vsync_back_porch, ARG_vsync_front_porch, ARG_vsync_idle_low,
-           ARG_de_idle_high, ARG_pclk_active_high, ARG_pclk_idle_high, };
+           ARG_de_idle_high, ARG_pclk_active_high, ARG_pclk_idle_high,
+           ARG_overscan_left};
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_de, MP_ARG_OBJ | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, {.u_obj = mp_const_none } },
@@ -140,6 +147,8 @@ STATIC mp_obj_t dotclockframebuffer_framebuffer_make_new(const mp_obj_type_t *ty
         { MP_QSTR_de_idle_high, MP_ARG_BOOL | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, {.u_bool = false } },
         { MP_QSTR_pclk_active_high, MP_ARG_BOOL | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, {.u_bool = false } },
         { MP_QSTR_pclk_idle_high, MP_ARG_BOOL | MP_ARG_KW_ONLY | MP_ARG_REQUIRED, {.u_bool = false } },
+
+        { MP_QSTR_overscan_left, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0 } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -169,7 +178,8 @@ STATIC mp_obj_t dotclockframebuffer_framebuffer_make_new(const mp_obj_type_t *ty
         args[ARG_vsync_pulse_width].u_int, args[ARG_vsync_back_porch].u_int, args[ARG_vsync_front_porch].u_int, args[ARG_vsync_idle_low].u_bool,
         args[ARG_de_idle_high].u_bool,
         args[ARG_pclk_active_high].u_bool,
-        args[ARG_pclk_idle_high].u_bool
+        args[ARG_pclk_idle_high].u_bool,
+        args[ARG_overscan_left].u_int
         );
 
     return self;
@@ -243,6 +253,24 @@ MP_DEFINE_CONST_FUN_OBJ_1(dotclockframebuffer_framebuffer_get_height_obj, dotclo
 MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_height_obj,
     (mp_obj_t)&dotclockframebuffer_framebuffer_get_height_obj);
 
+//|     row_stride: int
+//|     """The row_stride of the display, in bytes
+//|
+//|     Due to overscan or alignment requirements, the memory address for row N+1 may not be exactly ``2*width`` bytes after the memory address for row N.
+//|     This property gives the stride in **bytes**.
+//|
+//|     On Espressif this value is **guaranteed** to be a multiple of the 2 (i.e., it is a whole number of pixels)"""
+//|
+STATIC mp_obj_t dotclockframebuffer_framebuffer_get_row_stride(mp_obj_t self_in) {
+    dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_row_stride(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(dotclockframebuffer_framebuffer_get_row_stride_obj, dotclockframebuffer_framebuffer_get_row_stride);
+
+MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_row_stride_obj,
+    (mp_obj_t)&dotclockframebuffer_framebuffer_get_row_stride_obj);
+
 STATIC mp_int_t dotclockframebuffer_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
@@ -300,6 +328,10 @@ STATIC void dotclockframebuffer_framebuffer_get_bufinfo(mp_obj_t self_in, mp_buf
     *bufinfo = self->bufinfo;
 }
 
+STATIC int dotclockframebuffer_framebuffer_get_row_stride_proto(mp_obj_t self_in) {
+    dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
+    return common_hal_dotclockframebuffer_framebuffer_get_row_stride(self);
+}
 
 STATIC const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
@@ -309,6 +341,7 @@ STATIC const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
     .get_width = dotclockframebuffer_framebuffer_get_width_proto,
     .get_height = dotclockframebuffer_framebuffer_get_height_proto,
     .get_color_depth = dotclockframebuffer_framebuffer_get_color_depth_proto,
+    .get_row_stride = dotclockframebuffer_framebuffer_get_row_stride_proto,
     .get_bytes_per_cell = dotclockframebuffer_framebuffer_get_bytes_per_cell_proto,
     .get_native_frames_per_second = dotclockframebuffer_framebuffer_get_native_frames_per_second_proto,
     .swapbuffers = dotclockframebuffer_framebuffer_swapbuffers,
@@ -319,6 +352,7 @@ STATIC const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
 STATIC const mp_rom_map_elem_t dotclockframebuffer_framebuffer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&dotclockframebuffer_framebuffer_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&dotclockframebuffer_framebuffer_height_obj) },
+    { MP_ROM_QSTR(MP_QSTR_row_stride), MP_ROM_PTR(&dotclockframebuffer_framebuffer_row_stride_obj) },
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&dotclockframebuffer_framebuffer_frequency_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh_rate), MP_ROM_PTR(&dotclockframebuffer_framebuffer_refresh_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&dotclockframebuffer_framebuffer_refresh_obj) },

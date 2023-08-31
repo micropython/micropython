@@ -37,6 +37,7 @@
 typedef struct dotclockframebuffer_framebuffer_obj {
     mp_obj_base_t base;
     mp_buffer_info_t bufinfo;
+    mp_int_t row_stride;
     uint32_t frequency, refresh_rate;
     uint64_t used_pins_mask;
     volatile int32_t frame_count;

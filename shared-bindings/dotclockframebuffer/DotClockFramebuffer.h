@@ -45,7 +45,8 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
     int frequency, int width, int height,
     int hsync_pulse_width, int hsync_back_porch, int hsync_front_porch, bool hsync_idle_low,
     int vsync_pulse_width, int vsync_back_porch, int vsync_front_porch, bool vsync_idle_low,
-    bool de_idle_high, bool pclk_active_high, bool pclk_idle_high);
+    bool de_idle_high, bool pclk_active_high, bool pclk_idle_high,
+    int overscan_left);
 
 void common_hal_dotclockframebuffer_framebuffer_deinit(dotclockframebuffer_framebuffer_obj_t *self);
 bool common_hal_dotclockframebuffer_framebuffer_deinitialized(dotclockframebuffer_framebuffer_obj_t *self);
@@ -54,4 +55,5 @@ mp_int_t common_hal_dotclockframebuffer_framebuffer_get_width(dotclockframebuffe
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_height(dotclockframebuffer_framebuffer_obj_t *self);
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_frequency(dotclockframebuffer_framebuffer_obj_t *self);
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_refresh_rate(dotclockframebuffer_framebuffer_obj_t *self);
+mp_int_t common_hal_dotclockframebuffer_framebuffer_get_row_stride(dotclockframebuffer_framebuffer_obj_t *self);
 void common_hal_dotclockframebuffer_framebuffer_refresh(dotclockframebuffer_framebuffer_obj_t *self);
