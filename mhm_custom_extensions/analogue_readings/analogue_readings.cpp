@@ -1,18 +1,19 @@
-extern "C" {
-#include <analogue_readings.hpp>
+#include <iostream>
 
-#define MAX_READINGS 16384
-STATIC int cnt = 0;
+extern "C"
+{
+#include "analouge_readings.h"
 
-mp_obj_t make_analogue_readings() {
-    mp_obj_t list = mp_obj_new_list(0, NULL);
-
-    for (int i = 0; i < MAX_READINGS; i++) {
-        mp_obj_list_append(list, mp_obj_new_int(i));
-        cnt += 1;
+    mp_obj_t trigger_readings()
+    {
+        std::cout << "Trigger readings stub\n";
+        return mp_const_none;
     }
 
-    return list;
-}
-
+    mp_obj_t read_batch(mp_obj_t batch_size, mp_obj_t offset)
+    {
+        std::cout << "Read batch stub\n";
+        mp_obj_t list = mp_obj_new_list(0, NULL);
+        return list;
+    }
 }
