@@ -1,7 +1,7 @@
 #include "analouge_readings.h"
 
-// Register the functions - has 0 arguments so using MP_DEFINE_CONST_FUN_OBJ_0
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(trigger_readings_obj, trigger_readings);
+// Register the functions - MP_DEFINE_CONST_FUN_OBJ_x, x=0 for 0 args, x=1 for 1 args etc 
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(trigger_readings_obj, trigger_readings);
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(read_batch_obj, read_batch);
 
 // Define all attributes of the module.
