@@ -4,10 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly",
+        "Dual-core",
         "RGB LED",
-        "SPI Flash",
-        "Micro USB"
+        "External Flash",
+        "USB"
     ],
     "images": [
         "../images/rp2040-shim-product.jpg"
