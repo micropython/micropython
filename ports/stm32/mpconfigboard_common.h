@@ -256,6 +256,21 @@
 #define MICROPY_HW_USB_INTERFACE_FS_STRING      "Pyboard Interface"
 #endif
 
+// Must be 8 bytes.
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING "MicroPy "
+#endif
+
+// Must be 16 bytes.
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING "pyboard Flash   "
+#endif
+
+// Must be 4 bytes.
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING "1.00"
+#endif
+
 // Amount of incoming buffer space for each CDC instance.
 // This must be 2 or greater, and a power of 2.
 #ifndef MICROPY_HW_USB_CDC_RX_DATA_SIZE
