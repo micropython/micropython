@@ -11,6 +11,7 @@ def dec2bcd(dec: int) -> int:
 
 class BM8563:
     ADDR = const(0x51)
+    time = (0, 0, 0, 0, 0, 0, 0)
 
     def __init__(self, i2c: I2C, address: int = ADDR):
         self._i2c = i2c
@@ -60,6 +61,7 @@ class BM8563:
         return time
 
     def set_time(self, time: tuple[int, int, int, int, int, int, int]):
+        self.time = time
         data = bytearray(7)
         # (year, month, day, weekday, hour, mins, sec)
 
@@ -94,3 +96,45 @@ class BM8563:
             wdata[i + 1] = data[i]
 
         self._i2c.writeto(self._addr, wdata)
+
+    def get_seconds(self) -> int:
+        return self.get_time()[6]
+
+    def set_seconds(self, seconds: int):
+        self.set_time((self.time[0], self.time[1], self.time[2], self.time[3], self.time[4], self.time[5], seconds))
+
+    def get_minutes(self) -> int:
+        return self.get_time()[5]
+
+    def set_minutes(self, minutes: int):
+        self.set_time((self.time[0], self.time[1], self.time[2], self.time[3], self.time[4], minutes, self.time[6]))
+
+    def get_hours(self) -> int:
+        return self.get_time()[4]
+
+    def set_hours(self, hours: int):
+        self.set_time((self.time[0], self.time[1], self.time[2], self.time[3], hours, self.time[5], self.time[6]))
+
+    def get_year(self) -> int:
+        return self.get_time()[0]
+
+    def set_year(self, year: int):
+        self.set_time((year, self.time[1], self.time[2], self.time[3], self.time[4], self.time[5], self.time[6]))
+
+    def get_month(self) -> int:
+        return self.get_time()[1]
+
+    def set_month(self, month: int):
+        self.set_time((self.time[0], month, self.time[2], self.time[3], self.time[4], self.time[5], self.time[6]))
+
+    def get_day(self) -> int:
+        return self.get_time()[2]
+
+    def set_day(self, day: int):
+        self.set_time((self.time[0], self.time[1], day, self.time[3], self.time[4], self.time[5], self.time[6]))
+
+    def get_weekday(self) -> int:
+        return self.get_time()[3]
+
+    def set_weekday(self, weekday: int):
+        self.set_time((self.time[0], self.time[1], self.time[2], weekday, self.time[4], self.time[5], self.time[6]))
