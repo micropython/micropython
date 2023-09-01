@@ -39,8 +39,9 @@ void board_init(void) {
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == 13) {
-        // Set D13 LED to output by default.
-        gpio_set_direction(pin_number, GPIO_MODE_DEF_OUTPUT);
+        // Set D13 LED to input when not in use
+        gpio_set_direction(pin_number, GPIO_MODE_DEF_INPUT);
+        gpio_set_pull_mode(pin_number, GPIO_PULLDOWN_ONLY);
         return true;
     }
 
