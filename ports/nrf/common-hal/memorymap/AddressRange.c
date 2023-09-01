@@ -95,7 +95,7 @@ uint32_t common_hal_memorymap_addressrange_get_length(const memorymap_addressran
 }
 
 
-bool common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_obj_t *self,
+void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_obj_t *self,
     uint32_t start_index, uint8_t *values, uint32_t len) {
     uint8_t *address = self->start_address + start_index;
     #pragma GCC diagnostic push
@@ -112,8 +112,6 @@ bool common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_ob
         memcpy(address, values, len);
     }
     #pragma GCC diagnostic pop
-
-    return true;
 }
 
 void common_hal_memorymap_addressrange_get_bytes(const memorymap_addressrange_obj_t *self,

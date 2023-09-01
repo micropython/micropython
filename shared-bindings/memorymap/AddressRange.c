@@ -51,23 +51,25 @@
 
 //|     def __init__(self, *, start, length) -> None:
 //|         """Constructs an address range starting at ``start`` and ending at
-//|         ``start + length``. An exception will be raised if any of the
+//|         ``start + length - 1``. An exception will be raised if any of the
 //|         addresses are invalid or protected."""
 //|         ...
 STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_start, ARG_length };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_UINT },
         { MP_QSTR_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    size_t start =
-        mp_arg_validate_int_min(args[ARG_start].u_int, 0, MP_QSTR_start);
+    size_t start = args[ARG_start].u_uint;
     size_t length =
         mp_arg_validate_int_min(args[ARG_length].u_int, 1, MP_QSTR_length);
-
+    // Check for address range wrap here as this can break port-specific code due to size_t overflow.
+    if (start + length - 1 < start) {
+        mp_raise_ValueError(translate("Address range wraps around"));
+    }
 
     memorymap_addressrange_obj_t *self = mp_obj_malloc(memorymap_addressrange_obj_t, &memorymap_addressrange_type);
 
@@ -104,7 +106,8 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|     def __getitem__(self, index: int) -> int:
 //|         """Returns the value(s) at the given index.
 //|
-//|         1, 2, 4 and 8 byte aligned reads will be done in one transaction.
+//|         1, 2, 4 and 8 byte aligned reads will be done in one transaction
+//|         when possible.
 //|         All others may use multiple transactions."""
 //|         ...
 //|     @overload
@@ -113,7 +116,8 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|     def __setitem__(self, index: int, value: int) -> None:
 //|         """Set the value(s) at the given index.
 //|
-//|         1, 2, 4 and 8 byte aligned writes will be done in one transaction.
+//|         1, 2, 4 and 8 byte aligned writes will be done in one transaction
+//|         when possible.
 //|         All others may use multiple transactions."""
 //|         ...
 //|
@@ -154,9 +158,7 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
                     mp_raise_NotImplementedError(translate("array/bytes required on right side"));
                 }
 
-                if (!common_hal_memorymap_addressrange_set_bytes(self, slice.start, src_items, src_len)) {
-                    mp_raise_RuntimeError(translate("Unable to write to address."));
-                }
+                common_hal_memorymap_addressrange_set_bytes(self, slice.start, src_items, src_len);
                 return mp_const_none;
                 #else
                 return MP_OBJ_NULL; // op not supported
@@ -184,9 +186,7 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
                 mp_arg_validate_int_range(byte_value, 0, 255, MP_QSTR_bytes);
 
                 uint8_t short_value = byte_value;
-                if (!common_hal_memorymap_addressrange_set_bytes(self, index, &short_value, 1)) {
-                    mp_raise_RuntimeError(translate("Unable to write to address."));
-                }
+                common_hal_memorymap_addressrange_set_bytes(self, index, &short_value, 1);
                 return mp_const_none;
             }
         }

@@ -45,6 +45,7 @@ typedef enum {
     MP_ARG_BOOL      = 0x001,
     MP_ARG_INT       = 0x002,
     MP_ARG_OBJ       = 0x003,
+    MP_ARG_UINT      = 0x004,
     MP_ARG_KIND_MASK = 0x0ff,
     MP_ARG_REQUIRED  = 0x100,
     MP_ARG_KW_ONLY   = 0x200,
@@ -53,6 +54,7 @@ typedef enum {
 typedef union _mp_arg_val_t {
     bool u_bool;
     mp_int_t u_int;
+    mp_uint_t u_uint;
     mp_obj_t u_obj;
     mp_rom_obj_t u_rom_obj;
 } mp_arg_val_t;
