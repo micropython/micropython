@@ -438,6 +438,11 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
     return MP_OBJ_SMALL_INT_VALUE(self_in);
 }
 
+mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {
+    return MP_OBJ_SMALL_INT_VALUE(self_in);
+}
+
+
 #endif // MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_NONE
 
 // This dispatcher function is expected to be independent of the implementation of long int
