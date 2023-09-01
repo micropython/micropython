@@ -34,9 +34,6 @@
 #include "modmachine.h"
 #include "mpbthciport.h"
 
-#include "fsl_lpuart.h"
-#include CLOCK_CONFIG_H
-
 #if MICROPY_PY_BLUETOOTH
 
 #define DEBUG_printf(...) // mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
@@ -111,9 +108,7 @@ int mp_bluetooth_hci_uart_deinit(void) {
 int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
     DEBUG_printf("mp_bluetooth_hci_uart_set_baudrate(%lu)\n", baudrate);
     if (mp_bthci_uart != MP_OBJ_NULL) {
-        // This struct is not public, so we use the base defined in board config files.
-        // machine_uart_obj_t uart = (machine_uart_obj_t *) MP_PTR_FROM_OBJ(mp_bthci_uart);
-        LPUART_SetBaudRate(MICROPY_HW_BLE_UART_BASE, baudrate, BOARD_BOOTCLOCKRUN_UART_CLK_ROOT);
+        machine_uart_set_baudrate(mp_bthci_uart, baudrate);
     }
     return 0;
 }

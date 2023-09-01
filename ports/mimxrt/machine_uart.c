@@ -33,6 +33,7 @@
 #include "fsl_lpuart.h"
 #include "fsl_iomuxc.h"
 #include CLOCK_CONFIG_H
+#include "modmachine.h"
 #include "pin.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
@@ -146,10 +147,32 @@ void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t st
     }
 }
 
-static void  machine_uart_ensure_active(machine_uart_obj_t *uart) {
+static void machine_uart_ensure_active(machine_uart_obj_t *uart) {
     if (uart->lpuart->CTRL == 0) {
         mp_raise_OSError(EIO);
     }
+}
+
+#if !defined(MIMXRT117x_SERIES)
+static inline void uart_set_clock_divider(uint32_t baudrate) {
+    // For baud rates < 460800 divide the clock by 10, supporting baud rates down to 50 baud.
+    if (baudrate >= 460800) {
+        CLOCK_SetDiv(kCLOCK_UartDiv, 0);
+    } else {
+        CLOCK_SetDiv(kCLOCK_UartDiv, 9);
+    }
+}
+#endif
+
+void machine_uart_set_baudrate(mp_obj_t uart_in, uint32_t baudrate) {
+    machine_uart_obj_t *uart = MP_OBJ_TO_PTR(uart_in);
+    #if defined(MIMXRT117x_SERIES)
+    // Use the Lpuart1 clock value, which is set for All UART devices.
+    LPUART_SetBaudRate(uart->lpuart, baudrate, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
+    #else
+    uart_set_clock_divider(baudrate);
+    LPUART_SetBaudRate(uart->lpuart, baudrate, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
+    #endif
 }
 
 STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -292,12 +315,7 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         // Use the Lpuart1 clock value, which is set for All UART devices.
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
         #else
-        // For baud rates < 1000000 divide the clock by 10, supporting baud rates down to 50 baud.
-        if (self->config.baudRate_Bps > 1000000) {
-            CLOCK_SetDiv(kCLOCK_UartDiv, 0);
-        } else {
-            CLOCK_SetDiv(kCLOCK_UartDiv, 9);
-        }
+        uart_set_clock_divider(self->config.baudRate_Bps);
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
         #endif
         LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
