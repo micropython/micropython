@@ -90,20 +90,17 @@ STATIC const uint8_t usbd_msc_vpd83[4] = {
     0x00, 0x00, // page length (additional bytes beyond this entry)
 };
 
-STATIC const int8_t usbd_msc_inquiry_data[36] = {
-    0x00, // peripheral qualifier; peripheral device type
-    0x80, // 0x00 for a fixed drive, 0x80 for a removable drive
-    0x02, // version
-    0x02, // response data format
-    (STANDARD_INQUIRY_DATA_LEN - 5), // additional length
-    0x00, // various flags
-    0x00, // various flags
-    0x00, // various flags
-    'M', 'i', 'c', 'r', 'o', 'P', 'y', ' ', // Manufacturer : 8 bytes
-    'p', 'y', 'b', 'o', 'a', 'r', 'd', ' ', // Product      : 16 Bytes
-    'F', 'l', 'a', 's', 'h', ' ', ' ', ' ',
-    '1', '.', '0', '0',                     // Version      : 4 Bytes
-};
+STATIC const int8_t usbd_msc_inquiry_data[STANDARD_INQUIRY_DATA_LEN] = \
+    "\x00"          // peripheral qualifier; peripheral device type
+    "\x80"          // 0x00 for a fixed drive, 0x80 for a removable drive
+    "\x02"          // version
+    "\x02"          // response data format
+    "\x1f"          // 0x1f = (STANDARD_INQUIRY_DATA_LEN - 5) = 0x24 - 5
+    "\x00\x00\x00"  // various flags
+    MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING   // 8 bytes
+    MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING  // 16 bytes
+    MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING // 4 bytes
+;
 
 // Set the logical units that will be exposed over MSC
 void usbd_msc_init_lu(size_t lu_n, const void *lu_data) {
@@ -209,6 +206,11 @@ STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_ou
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
+
+    // These strings must be padded to the expected length. (+1 here for null terminator).
+    MP_STATIC_ASSERT(sizeof(MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING) == 8 + 1);
+    MP_STATIC_ASSERT(sizeof(MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING) == 16 + 1);
+    MP_STATIC_ASSERT(sizeof(MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING) == 4 + 1);
 
     uint8_t alloc_len = params[3] << 8 | params[4];
     int len = MIN(sizeof(usbd_msc_inquiry_data), alloc_len);
