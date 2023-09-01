@@ -74,8 +74,8 @@ STATIC mp_obj_t bleio_characteristic_buffer_make_new(const mp_obj_type_t *type, 
 
     const mp_int_t buffer_size = mp_arg_validate_int_min(args[ARG_buffer_size].u_int, 1, MP_QSTR_buffer_size);
 
-    bleio_characteristic_buffer_obj_t *self = m_new_obj(bleio_characteristic_buffer_obj_t);
-    self->base.type = &bleio_characteristic_buffer_type;
+    bleio_characteristic_buffer_obj_t *self =
+        mp_obj_malloc(bleio_characteristic_buffer_obj_t, &bleio_characteristic_buffer_type);
 
     common_hal_bleio_characteristic_buffer_construct(self, characteristic, timeout, buffer_size);
 

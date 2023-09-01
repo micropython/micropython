@@ -68,6 +68,8 @@
 #include "shared-bindings/microcontroller/Processor.h"
 #include "shared-bindings/supervisor/Runtime.h"
 
+#include "shared-bindings/os/__init__.h"
+
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
 #endif
@@ -418,8 +420,8 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         };
         #if CIRCUITPY_FULL_BUILD
         static const char *const double_extension_filenames[] = {
-            "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py"
+            "code.txt.py", "code.py.txt", "code.txt.txt", "code.py.py",
+            "main.txt.py", "main.py.txt", "main.txt.txt", "main.py.py"
         };
         #endif
 
@@ -433,6 +435,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         #if CIRCUITPY_USB
         usb_setup_with_vm();
         #endif
+
+        // Make sure we are in the root directory before looking at files.
+        common_hal_os_chdir("/");
 
         // Check if a different run file has been allocated
         if (next_code_allocation) {
@@ -929,6 +934,11 @@ STATIC int run_repl(safe_mode_t safe_mode) {
 
     autoreload_suspend(AUTORELOAD_SUSPEND_REPL);
 
+    if (get_safe_mode() == SAFE_MODE_NONE) {
+        const char *const filenames[] = { "repl.py" };
+        (void)maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
+    }
+
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
     // won't. This simplifies pin sharing because they won't be in use when
@@ -992,9 +1002,9 @@ int __attribute__((used)) main(void) {
 
     #if CIRCUITPY_BOOT_COUNTER
     // Increment counter before possibly entering safe mode
-    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj,0,1,&value_out);
+    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj, 0, 1, &value_out);
     ++value_out;
-    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj,0,&value_out,1);
+    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj, 0, &value_out, 1);
     #endif
 
     // Start the debug serial

@@ -28,8 +28,9 @@ UNAME_S := $(shell uname -s)
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx lib/libffi
+GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
 
 INC +=  -I.
 INC +=  -I$(TOP)
@@ -224,8 +225,6 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	modos.c \
-	moduos_vfs.c \
 	modtime.c \
 	moduselect.c \
 	alloc.c \
@@ -264,7 +263,6 @@ ifneq ($(FROZEN_MANIFEST),)
 # freeze, then invoke make with FROZEN_MANIFEST=manifest.py (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
 CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
@@ -368,4 +366,4 @@ install: $(PROG)
 uninstall:
 	-rm $(BINDIR)/$(PROG)
 
-$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h

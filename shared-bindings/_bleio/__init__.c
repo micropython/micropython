@@ -68,7 +68,7 @@
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
 NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_BluetoothError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
@@ -93,7 +93,7 @@ NORETURN void mp_raise_bleio_RoleError(const compressed_string_t *msg) {
 MP_DEFINE_BLEIO_EXCEPTION(SecurityError, bleio_BluetoothError)
 NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_SecurityError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
@@ -203,4 +203,4 @@ const mp_obj_module_t bleio_module = {
     .globals = (mp_obj_dict_t *)&bleio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__bleio, bleio_module, CIRCUITPY_BLEIO);
+MP_REGISTER_MODULE(MP_QSTR__bleio, bleio_module);

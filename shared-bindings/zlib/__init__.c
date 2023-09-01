@@ -71,12 +71,12 @@
 //|     ...
 //|
 STATIC mp_obj_t zlib_decompress(size_t n_args, const mp_obj_t *args) {
-    bool is_zlib = true;
-    if (n_args > 1 && MP_OBJ_SMALL_INT_VALUE(args[1]) < 0) {
-        is_zlib = false;
+    mp_int_t wbits = 0;
+    if (n_args > 1) {
+        wbits = MP_OBJ_SMALL_INT_VALUE(args[1]);
     }
 
-    return common_hal_zlib_decompress(args[0], is_zlib);
+    return common_hal_zlib_decompress(args[0], wbits);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(zlib_decompress_obj, 1, 3, zlib_decompress);
 
@@ -92,4 +92,4 @@ const mp_obj_module_t zlib_module = {
     .globals = (mp_obj_dict_t *)&zlib_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_zlib, zlib_module, CIRCUITPY_ZLIB);
+MP_REGISTER_MODULE(MP_QSTR_zlib, zlib_module);

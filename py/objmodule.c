@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2015 Paul Sokolovsky
+ * Copyright (c) 2013-2019 Damien P. George
+ * Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,16 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/gc.h"
+#include "py/bc.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 
+#ifndef NO_QSTR
+// Only include module definitions when not doing qstr extraction, because the
+// qstr extraction stage also generates this module definition header file.
 #include "genhdr/moduledefs.h"
+#endif
 
 #if MICROPY_MODULE_BUILTIN_INIT
 STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj);
@@ -63,6 +67,21 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_printf(print, "<module '%s'>", module_name);
 }
 
+STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    #if MICROPY_MODULE_ATTR_DELEGATION
+    // Delegate lookup to a module's custom attr method (found in last lot of globals dict).
+    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_map_t *map = &self->globals->map;
+    if (map->table[map->alloc - 1].key == MP_OBJ_NEW_QSTR(MP_QSTRnull)) {
+        ((mp_attr_fun_t)MP_OBJ_TO_PTR(map->table[map->alloc - 1].value))(self_in, attr, dest);
+    }
+    #else
+    (void)self_in;
+    (void)attr;
+    (void)dest;
+    #endif
+}
+
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
@@ -75,29 +94,28 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
+            } else {
+                module_attr_try_delegation(self_in, attr, dest);
             }
         #endif
+        } else {
+            module_attr_try_delegation(self_in, attr, dest);
         }
     } else {
         // delete/store attribute
         mp_obj_dict_t *dict = self->globals;
         if (dict->map.is_fixed) {
-            mp_map_elem_t *elem = mp_map_lookup(&dict->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
             #if MICROPY_CAN_OVERRIDE_BUILTINS
             if (dict == &mp_module_builtins_globals) {
                 if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
-                    MP_STATE_VM(mp_module_builtins_override_dict) = gc_make_long_lived(MP_OBJ_TO_PTR(mp_obj_new_dict(1)));
+                    MP_STATE_VM(mp_module_builtins_override_dict) = MP_OBJ_TO_PTR(mp_obj_new_dict(1));
                 }
                 dict = MP_STATE_VM(mp_module_builtins_override_dict);
             } else
             #endif
-            // Return success if the given value is already in the dictionary. This is the case for
-            // native packages with native submodules.
-            if (elem != NULL && elem->value == dest[1]) {
-                dest[0] = MP_OBJ_NULL; // indicate success
-                return;
-            } else {
+            {
                 // can't delete or store to fixed map
+                module_attr_try_delegation(self_in, attr, dest);
                 return;
             }
         }
@@ -106,9 +124,7 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
         } else {
             // store attribute
-            mp_obj_t long_lived = MP_OBJ_FROM_PTR(gc_make_long_lived(MP_OBJ_TO_PTR(dest[1])));
-            // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
-            mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), long_lived);
+            mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), dest[1]);
         }
         dest[0] = MP_OBJ_NULL; // indicate success
     }
@@ -131,12 +147,12 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     }
 
     // create new module object
-    mp_obj_module_t *o = m_new_ll_obj(mp_obj_module_t);
-    o->base.type = &mp_type_module;
-    o->globals = gc_make_long_lived(MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE)));
+    mp_module_context_t *o = m_new_obj(mp_module_context_t);
+    o->module.base.type = &mp_type_module;
+    o->module.globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
     // store __name__ entry in the module
-    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->module.globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
     el->value = MP_OBJ_FROM_PTR(o);
@@ -161,102 +177,8 @@ void mp_obj_module_set_globals(mp_obj_t self_in, mp_obj_dict_t *globals) {
 // Global module table and related functions
 
 STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___main__), MP_ROM_PTR(&mp_module___main__) },
-    { MP_ROM_QSTR(MP_QSTR_builtins), MP_ROM_PTR(&mp_module_builtins) },
-    { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
-
-    #if MICROPY_PY_IO
-    #if CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) },
-    #else
-    { MP_ROM_QSTR(MP_QSTR_uio), MP_ROM_PTR(&mp_module_io) },
-    #endif
-    #endif
-    #if MICROPY_PY_COLLECTIONS
-    { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) },
-    #endif
-// CircuitPython: Now in shared-bindings/, so not defined here.
-    #if MICROPY_PY_STRUCT
-    { MP_ROM_QSTR(MP_QSTR_ustruct), MP_ROM_PTR(&mp_module_ustruct) },
-    #endif
-
-    #if MICROPY_PY_BUILTINS_FLOAT
-    #if MICROPY_PY_MATH
-    { MP_ROM_QSTR(MP_QSTR_math), MP_ROM_PTR(&mp_module_math) },
-    #endif
-    #if MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH
-    { MP_ROM_QSTR(MP_QSTR_cmath), MP_ROM_PTR(&mp_module_cmath) },
-    #endif
-    #endif
-    #if MICROPY_PY_SYS
-    { MP_ROM_QSTR(MP_QSTR_sys), MP_ROM_PTR(&mp_module_sys) },
-    #endif
-    #if MICROPY_PY_GC && MICROPY_ENABLE_GC
-    { MP_ROM_QSTR(MP_QSTR_gc), MP_ROM_PTR(&mp_module_gc) },
-    #endif
-    #if MICROPY_PY_THREAD
-    { MP_ROM_QSTR(MP_QSTR__thread), MP_ROM_PTR(&mp_module_thread) },
-    #endif
-
-    // extmod modules
-
-    // Modules included in CircuitPython are registered using MP_REGISTER_MODULE,
-    // and do not have the "u" prefix.
-
-    #if MICROPY_PY_UASYNCIO && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR__uasyncio), MP_ROM_PTR(&mp_module_uasyncio) },
-    #endif
-    #if MICROPY_PY_UERRNO && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_uerrno), MP_ROM_PTR(&mp_module_uerrno) },
-    #endif
-    #if MICROPY_PY_UCTYPES
-    { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
-    #endif
-    #if MICROPY_PY_UZLIB
-    { MP_ROM_QSTR(MP_QSTR_uzlib), MP_ROM_PTR(&mp_module_uzlib) },
-    #endif
-    #if MICROPY_PY_UJSON && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
-    #endif
-    #if MICROPY_PY_URE && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
-    #endif
-    #if MICROPY_PY_UHEAPQ
-    { MP_ROM_QSTR(MP_QSTR_uheapq), MP_ROM_PTR(&mp_module_uheapq) },
-    #endif
-    #if MICROPY_PY_UTIMEQ
-    { MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&mp_module_utimeq) },
-    #endif
-    #if MICROPY_PY_UHASHLIB
-    { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) },
-    #endif
-    #if MICROPY_PY_UBINASCII && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_ubinascii), MP_ROM_PTR(&mp_module_ubinascii) },
-    #endif
-    #if MICROPY_PY_URANDOM
-    { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_module_urandom) },
-    #endif
-    #if MICROPY_PY_USELECT
-    { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
-    #endif
-    #if MICROPY_PY_FRAMEBUF
-    { MP_ROM_QSTR(MP_QSTR_framebuf), MP_ROM_PTR(&mp_module_framebuf) },
-    #endif
-    #if MICROPY_PY_BTREE
-    { MP_ROM_QSTR(MP_QSTR_btree), MP_ROM_PTR(&mp_module_btree) },
-    #endif
-
-    // extra builtin modules as defined by a port
-    MICROPY_PORT_BUILTIN_MODULES
-
-    #ifdef MICROPY_REGISTERED_MODULES
     // builtin modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
-    #endif
-
-    #if defined(MICROPY_DEBUG_MODULES) && defined(MICROPY_PORT_BUILTIN_DEBUG_MODULES)
-    , MICROPY_PORT_BUILTIN_DEBUG_MODULES
-    #endif
 };
 
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
@@ -324,3 +246,19 @@ STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj) {
     }
 }
 #endif
+
+void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values) {
+    for (size_t i = 0; keys[i] != MP_QSTRnull; ++i) {
+        if (attr == keys[i]) {
+            if (dest[0] == MP_OBJ_NULL) {
+                // load attribute (MP_OBJ_NULL returned for deleted items)
+                dest[0] = values[i];
+            } else {
+                // delete or store (delete stores MP_OBJ_NULL)
+                values[i] = dest[1];
+                dest[0] = MP_OBJ_NULL; // indicate success
+            }
+            return;
+        }
+    }
+}

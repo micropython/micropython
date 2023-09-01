@@ -77,7 +77,7 @@ STATIC void install_all_match_filter(canio_listener_obj_t *self) {
     self->standard = true;
 }
 
-__attribute__((noinline,optimize("O0")))
+__attribute__((noinline, optimize("O0")))
 STATIC void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_obj_t **matches) {
     twai_ll_enter_reset_mode(&TWAI);
 
@@ -162,8 +162,8 @@ mp_obj_t common_hal_canio_listener_receive(canio_listener_obj_t *self) {
     bool rtr = self->message_in.rtr;
 
     int dlc = self->message_in.data_length_code;
-    canio_message_obj_t *message = m_new_obj(canio_message_obj_t);
-    message->base.type = rtr ? &canio_remote_transmission_request_type : &canio_message_type;
+    canio_message_obj_t *message =
+        mp_obj_malloc(canio_message_obj_t, rtr ? &canio_remote_transmission_request_type : &canio_message_type);
     message->extended = self->message_in.extd;
     message->id = self->message_in.identifier;
     message->size = dlc;

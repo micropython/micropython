@@ -103,7 +103,7 @@ void common_hal_bitmaptools_rotozoom(displayio_bitmap_t *self, int16_t ox, int16
     // #    */
 
 
-    int16_t x,y;
+    int16_t x, y;
 
     int16_t minx = dest_clip1_x;
     int16_t miny = dest_clip1_y;
@@ -861,26 +861,53 @@ void common_hal_bitmaptools_dither(displayio_bitmap_t *dest_bitmap, displayio_bi
     displayio_bitmap_set_dirty_area(dest_bitmap, &a);
 }
 
-void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, mp_float_t factor1, mp_float_t factor2) {
+void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitmap_t *source1, displayio_bitmap_t *source2, displayio_colorspace_t colorspace, mp_float_t factor1, mp_float_t factor2,
+    bitmaptools_blendmode_t blendmode, uint32_t skip_source1_index, bool skip_source1_index_none, uint32_t skip_source2_index, bool skip_source2_index_none) {
     displayio_area_t a = {0, 0, dest->width, dest->height, NULL};
     displayio_bitmap_set_dirty_area(dest, &a);
 
     int ifactor1 = (int)(factor1 * 256);
     int ifactor2 = (int)(factor2 * 256);
+    bool blend_source1, blend_source2;
 
     if (colorspace == DISPLAYIO_COLORSPACE_L8) {
         for (int y = 0; y < dest->height; y++) {
             uint8_t *dptr = (uint8_t *)(dest->data + y * dest->stride);
             uint8_t *sptr1 = (uint8_t *)(source1->data + y * source1->stride);
             uint8_t *sptr2 = (uint8_t *)(source2->data + y * source2->stride);
+            int pixel;
             for (int x = 0; x < dest->width; x++) {
-                // This is round(l1*f1 + l2*f2) & clip to range in fixed-point
-                int pixel = (*sptr1++ *ifactor1 + *sptr2++ *ifactor2 + 128) / 256;
+                blend_source1 = skip_source1_index_none || *sptr1 != (uint8_t)skip_source1_index;
+                blend_source2 = skip_source2_index_none || *sptr2 != (uint8_t)skip_source2_index;
+                if (blend_source1 && blend_source2) {
+                    // Premultiply by the alpha factor
+                    int sda = *sptr1++ *ifactor1;
+                    int sca = *sptr2++ *ifactor2;
+                    // Blend
+                    int blend;
+                    if (blendmode == BITMAPTOOLS_BLENDMODE_SCREEN) {
+                        blend = sca + sda - (sca * sda / 65536);
+                    } else {
+                        blend = sca + sda * (256 - ifactor2) / 256;
+                    }
+                    // Divide by the alpha factor
+                    pixel = (blend / (ifactor1 + ifactor2 - ifactor1 * ifactor2 / 256));
+                } else if (blend_source1) {
+                    // Apply iFactor1 to source1 only
+                    pixel = *sptr1++ *ifactor1 / 256;
+                } else if (blend_source2) {
+                    // Apply iFactor2 to source1 only
+                    pixel = *sptr2++ *ifactor2 / 256;
+                } else {
+                    // Use the destination value
+                    pixel = *dptr;
+                }
                 *dptr++ = MIN(255, MAX(0, pixel));
             }
         }
     } else {
         bool swap = (colorspace == DISPLAYIO_COLORSPACE_RGB565_SWAPPED) || (colorspace == DISPLAYIO_COLORSPACE_BGR565_SWAPPED);
+        uint16_t pixel;
         for (int y = 0; y < dest->height; y++) {
             uint16_t *dptr = (uint16_t *)(dest->data + y * dest->stride);
             uint16_t *sptr1 = (uint16_t *)(source1->data + y * source1->stride);
@@ -897,25 +924,69 @@ void common_hal_bitmaptools_alphablend(displayio_bitmap_t *dest, displayio_bitma
                 const int g_mask = 0x07e0;
                 const int b_mask = 0x001f; // (or r mask, if BGR)
 
-                // This is round(r1*f1 + r2*f2) & clip to range in fixed-point
-                // but avoiding shifting it down to start at bit 0
-                int r = ((spix1 & r_mask) * ifactor1
-                    + (spix2 & r_mask) * ifactor2 + r_mask / 2) / 256;
-                r = MIN(r_mask, MAX(0, r)) & r_mask;
+                blend_source1 = skip_source1_index_none || spix1 != (int)skip_source1_index;
+                blend_source2 = skip_source2_index_none || spix2 != (int)skip_source2_index;
 
-                // ditto
-                int g = ((spix1 & g_mask) * ifactor1
-                    + (spix2 & g_mask) * ifactor2 + g_mask / 2) / 256;
-                g = MIN(g_mask, MAX(0, g)) & g_mask;
+                if (blend_source1 && blend_source2) {
+                    // Blend based on the SVG alpha compositing specs
+                    // https://dev.w3.org/SVG/modules/compositing/master/#alphaCompositing
 
-                int b = ((spix1 & b_mask) * ifactor1
-                    + (spix2 & b_mask) * ifactor2 + b_mask / 2) / 256;
-                b = MIN(b_mask, MAX(0, b)) & b_mask;
+                    int ifactor_blend = ifactor1 + ifactor2 - ifactor1 * ifactor2 / 256;
 
-                uint16_t pixel = r | g | b;
-                if (swap) {
-                    pixel = __builtin_bswap16(pixel);
+                    // Premultiply the colors by the alpha factor
+                    int red_dca = ((spix1 & r_mask) >> 8) * ifactor1;
+                    int grn_dca = ((spix1 & g_mask) >> 3) * ifactor1;
+                    int blu_dca = ((spix1 & b_mask) << 3) * ifactor1;
+
+                    int red_sca = ((spix2 & r_mask) >> 8) * ifactor2;
+                    int grn_sca = ((spix2 & g_mask) >> 3) * ifactor2;
+                    int blu_sca = ((spix2 & b_mask) << 3) * ifactor2;
+
+                    int red_blend, grn_blend, blu_blend;
+                    if (blendmode == BITMAPTOOLS_BLENDMODE_SCREEN) {
+                        // Perform a screen blend Sca + Dca - Sca × Dca
+                        red_blend = red_sca + red_dca - (red_sca * red_dca / 65536);
+                        grn_blend = grn_sca + grn_dca - (grn_sca * grn_dca / 65536);
+                        blu_blend = blu_sca + blu_dca - (blu_sca * blu_dca / 65536);
+                    } else {
+                        // Perform a normal (src-over) blend
+                        red_blend = red_sca + red_dca * (256 - ifactor2) / 256;
+                        grn_blend = grn_sca + grn_dca * (256 - ifactor2) / 256;
+                        blu_blend = blu_sca + blu_dca * (256 - ifactor2) / 256;
+                    }
+
+                    // Divide by the alpha factor
+                    int r = ((red_blend / ifactor_blend) << 8) & r_mask;
+                    int g = ((grn_blend / ifactor_blend) << 3) & g_mask;
+                    int b = ((blu_blend / ifactor_blend) >> 3) & b_mask;
+
+                    // Clamp to the appropriate range
+                    r = MIN(r_mask, MAX(0, r)) & r_mask;
+                    g = MIN(g_mask, MAX(0, g)) & g_mask;
+                    b = MIN(b_mask, MAX(0, b)) & b_mask;
+
+                    pixel = r | g | b;
+
+                    if (swap) {
+                        pixel = __builtin_bswap16(pixel);
+                    }
+                } else if (blend_source1) {
+                    // Apply iFactor1 to source1 only
+                    int r = (spix1 & r_mask) * ifactor1 / 256;
+                    int g = (spix1 & g_mask) * ifactor1 / 256;
+                    int b = (spix1 & b_mask) * ifactor1 / 256;
+                    pixel = r | g | b;
+                } else if (blend_source2) {
+                    // Apply iFactor2 to source1 only
+                    int r = (spix2 & r_mask) * ifactor2 / 256;
+                    int g = (spix2 & g_mask) * ifactor2 / 256;
+                    int b = (spix2 & b_mask) * ifactor2 / 256;
+                    pixel = r | g | b;
+                } else {
+                    // Use the destination value
+                    pixel = *dptr;
                 }
+
                 *dptr++ = pixel;
             }
         }

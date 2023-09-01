@@ -19,6 +19,7 @@ Full Table of Contents
    :caption: API and Usage
 
    ../shared-bindings/index.rst
+   library/index.rst
    supported_ports.rst
    troubleshooting.rst
    libraries.rst
@@ -32,13 +33,12 @@ Full Table of Contents
    design_guide
    porting
    common_hal
+   reference/mpyfiles.rst
+   reference/glossary.rst
 
 .. toctree::
    :maxdepth: 2
-   :caption: MicroPython specific
-
-   library/index.rst
-   reference/glossary.rst
+   :caption: Python stand
 
 .. toctree::
    :maxdepth: 1

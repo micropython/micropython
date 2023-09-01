@@ -55,4 +55,4 @@ const mp_obj_module_t rainbowio_module = {
     .globals = (mp_obj_dict_t *)&rainbowio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_rainbowio, rainbowio_module, CIRCUITPY_RAINBOWIO);
+MP_REGISTER_MODULE(MP_QSTR_rainbowio, rainbowio_module);

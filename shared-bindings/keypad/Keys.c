@@ -35,7 +35,22 @@
 #include "shared-bindings/util.h"
 
 //| class Keys:
-//|     """Manage a set of independent keys."""
+//|     """Manage a set of independent keys.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["keypad.Keys"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -74,8 +89,7 @@
 
 STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_KEYPAD_KEYS
-    keypad_keys_obj_t *self = m_new_obj(keypad_keys_obj_t);
-    self->base.type = &keypad_keys_type;
+    keypad_keys_obj_t *self = mp_obj_malloc(keypad_keys_obj_t, &keypad_keys_type);
     enum { ARG_pins, ARG_value_when_pressed, ARG_pull, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },

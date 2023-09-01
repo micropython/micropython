@@ -1,15 +1,9 @@
-try:
-    import uerrno
-    import uos
-except ImportError:
-    print("missing u")
-    print("SKIP")
-    raise SystemExit
+import errno
+import os as os
 
 try:
-    uos.VfsFat
+    os.VfsFat
 except AttributeError:
-    print("missing VfsFat")
     print("SKIP")
     raise SystemExit
 
@@ -46,10 +40,10 @@ except MemoryError:
     print("SKIP")
     raise SystemExit
 
-uos.VfsFat.mkfs(bdev)
-vfs = uos.VfsFat(bdev)
-uos.mount(vfs, "/ramdisk")
-uos.chdir("/ramdisk")
+os.VfsFat.mkfs(bdev)
+vfs = os.VfsFat(bdev)
+os.mount(vfs, "/ramdisk")
+os.chdir("/ramdisk")
 
 vfs.label = "labelæ"
 # This label would normally be LABELÆ but our limited upper casing does "LABELæ"
@@ -57,22 +51,22 @@ print(vfs.label)
 
 # Check ASCII case-insensitivity
 vfs.mkdir("fooaz")
-print(uos.listdir(""))
+print(os.listdir(""))
 vfs.rmdir("fOOAZ")
 
 # Check ASCII case-insensitivity for long names (8+ characters)
 vfs.mkdir("123456789fooaz")
-print(uos.listdir(""))
+print(os.listdir(""))
 vfs.rmdir("123456789fOOAZ")
 
 # Characters outside of a-z are case sensitive.
 vfs.mkdir("extended_æ")
-print(uos.listdir(""))
+print(os.listdir(""))
 # Normally this would work ok. With our limited uppercasing, it won't.
 try:
     vfs.rmdir("extended_Æ")
 except OSError as e:
-    print(e.errno == uerrno.ENOENT)
+    print(e.errno == errno.ENOENT)
 
 vfs.rmdir("extended_æ")
 

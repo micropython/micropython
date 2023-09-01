@@ -87,4 +87,4 @@ const mp_obj_module_t rtc_module = {
     .globals = (mp_obj_dict_t *)&rtc_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_rtc, rtc_module, CIRCUITPY_RTC);
+MP_REGISTER_MODULE(MP_QSTR_rtc, rtc_module);

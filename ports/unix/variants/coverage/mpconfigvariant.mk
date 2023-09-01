@@ -8,6 +8,7 @@ CFLAGS += \
 	-Wformat -Wmissing-declarations -Wmissing-prototypes \
 	-Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	-DMICROPY_UNIX_COVERAGE \
+	-DMICROPY_CPYTHON_EXCEPTION_CHAIN=1 \
 	-DMODULE_CEXAMPLE_ENABLED=1 -DMODULE_CPPEXAMPLE_ENABLED=1
 
 LDFLAGS += -fprofile-arcs -ftest-coverage

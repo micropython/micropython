@@ -233,11 +233,11 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
             nrf_sleep_source_t cause = _get_wakeup_cause();
             switch (cause) {
                 case NRF_SLEEP_WAKEUP_TIMER: {
-                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 case NRF_SLEEP_WAKEUP_GPIO: {
-                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 default:

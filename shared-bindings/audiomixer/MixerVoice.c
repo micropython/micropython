@@ -46,8 +46,7 @@
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    audiomixer_mixervoice_obj_t *self = m_new_obj(audiomixer_mixervoice_obj_t);
-    self->base.type = &audiomixer_mixervoice_type;
+    audiomixer_mixervoice_obj_t *self = mp_obj_malloc(audiomixer_mixervoice_obj_t, &audiomixer_mixervoice_type);
 
     common_hal_audiomixer_mixervoice_construct(self);
 

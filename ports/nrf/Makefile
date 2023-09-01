@@ -313,8 +313,3 @@ $(BUILD)/firmware.espruino.zip: $(BUILD)/firmware.hex
 espruino-dfu-gen: $(BUILD)/firmware.espruino.zip
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

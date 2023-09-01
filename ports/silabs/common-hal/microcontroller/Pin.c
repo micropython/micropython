@@ -47,9 +47,9 @@ void reset_all_pins(void) {
 
     for (port_num = 0; port_num < GPIO_PORT_COUNT; port_num++) {
         for (pin_num = 0; pin_num < 16; pin_num++) {
-            if (GPIO_PORT_PIN_VALID(ports[port_num],pin_num)
+            if (GPIO_PORT_PIN_VALID(ports[port_num], pin_num)
                 && !(never_reset_pins[port_num] >> pin_num & 0x01)) {
-                GPIO_PinModeSet(ports[port_num], pin_num,gpioModeInput,1);
+                GPIO_PinModeSet(ports[port_num], pin_num, gpioModeInput, 1);
             }
         }
     }

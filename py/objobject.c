@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,7 @@ typedef struct _mp_obj_object_t {
 STATIC mp_obj_t object_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)args;
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    mp_obj_object_t *o = m_new_obj(mp_obj_object_t);
-    o->base.type = type;
+    mp_obj_object_t *o = mp_obj_malloc(mp_obj_object_t, type);
     return MP_OBJ_FROM_PTR(o);
 }
 

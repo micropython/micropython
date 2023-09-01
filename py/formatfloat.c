@@ -1,9 +1,11 @@
+// CIRCUITPY: https://github.com/adafruit/circuitpython/pull/6722
+// post v1.19.1. Remove this comment during v1.20 merge.
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

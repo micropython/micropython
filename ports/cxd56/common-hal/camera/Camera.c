@@ -184,7 +184,7 @@ size_t common_hal_camera_take_picture(camera_obj_t *self, uint8_t *buffer, size_
         mp_raise_ValueError(translate("Size not supported"));
     }
     if (!camera_check_buffer_length(width, height, format, len)) {
-        mp_raise_ValueError(translate("Buffer is too small"));
+        mp_raise_ValueError(translate("Buffer too small"));
     }
     if (!camera_check_format(format)) {
         mp_raise_ValueError(translate("Format not supported"));

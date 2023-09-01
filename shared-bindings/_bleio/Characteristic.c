@@ -141,8 +141,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
         user_description = mp_obj_str_get_str(args[ARG_user_description].u_obj);
     }
 
-    bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
-    characteristic->base.type = &bleio_characteristic_type;
+    bleio_characteristic_obj_t *characteristic =
+        mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
     // Range checking on max_length arg is done by the common_hal layer, because
     // it may vary depending on underlying BLE implementation.

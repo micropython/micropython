@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include "py/reader.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -394,7 +392,6 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
             if (is_char(lex, '\\')) {
                 next_char(lex);
                 unichar c = CUR_CHAR(lex);
-
                 if (is_raw) {
                     // raw strings allow escaping of quotes, but the backslash is also emitted
                     vstr_add_char(&lex->vstr, '\\');
@@ -476,25 +473,23 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     }
                 }
                 if (c != MP_LEXER_EOF) {
-                    if (MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) {
-                        if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
-                            vstr_add_char(&lex->vstr, c);
-                        } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
-                            vstr_add_byte(&lex->vstr, c);
-                        } else {
-                            // unicode character out of range
-                            // this raises a generic SyntaxError; could provide more info
-                            lex->tok_kind = MP_TOKEN_INVALID;
-                        }
-                    } else {
-                        // without unicode everything is just added as an 8-bit byte
-                        if (c < 0x100) {
-                            vstr_add_byte(&lex->vstr, c);
-                        } else {
-                            // 8-bit character out of range
-                            // this raises a generic SyntaxError; could provide more info
-                            lex->tok_kind = MP_TOKEN_INVALID;
-                        }
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
+                        // Valid unicode character in a str object.
+                        vstr_add_char(&lex->vstr, c);
+                    } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
+                        // Valid byte in a bytes object.
+                        vstr_add_byte(&lex->vstr, c);
+                    }
+                    #else
+                    if (c < 0x100) {
+                        // Without unicode everything is just added as an 8-bit byte.
+                        vstr_add_byte(&lex->vstr, c);
+                    }
+                    #endif
+                    else {
+                        // Character out of range; this raises a generic SyntaxError.
+                        lex->tok_kind = MP_TOKEN_INVALID;
                     }
                 }
             } else {
@@ -678,6 +673,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             skip_whitespace(lex, true);
 
         } while (is_string_or_bytes(lex));
+
     } else if (is_head_of_identifier(lex)) {
         lex->tok_kind = MP_TOKEN_NAME;
 

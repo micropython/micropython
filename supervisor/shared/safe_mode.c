@@ -127,7 +127,7 @@ void PLACE_IN_ITCM(safe_mode_on_next_reset)(safe_mode_t reason) {
 }
 
 // Don't inline this so it's easy to break on it from GDB.
-void __attribute__((noinline,)) PLACE_IN_ITCM(reset_into_safe_mode)(safe_mode_t reason) {
+void __attribute__((noinline, )) PLACE_IN_ITCM(reset_into_safe_mode)(safe_mode_t reason) {
     if (_safe_mode > SAFE_MODE_BROWNOUT && reason > SAFE_MODE_BROWNOUT) {
         while (true) {
             // This very bad because it means running in safe mode didn't save us. Only ignore brownout
@@ -154,7 +154,7 @@ void print_safe_mode_message(safe_mode_t reason) {
 
     switch (reason) {
         case SAFE_MODE_BROWNOUT:
-            message = translate("The power dipped. Make sure you are providing enough power.");
+            message = translate("Power dipped. Make sure you are providing enough power.");
             break;
         case SAFE_MODE_USER:
             #if defined(BOARD_USER_SAFE_MODE_ACTION)
@@ -209,7 +209,7 @@ void print_safe_mode_message(safe_mode_t reason) {
                 message = translate("Failed to write internal flash.");
                 break;
             case SAFE_MODE_HARD_FAULT:
-                message = translate("Fault detected by hardware.");
+                message = translate("Hard fault: memory access or instruction error.");
                 break;
             case SAFE_MODE_INTERRUPT_ERROR:
                 message = translate("Interrupt error.");
@@ -228,7 +228,7 @@ void print_safe_mode_message(safe_mode_t reason) {
                 break;
         }
         serial_write_compressed(message);
-        serial_write_compressed(translate("\nPlease file an issue with your program at https://github.com/adafruit/circuitpython/issues."));
+        serial_write_compressed(translate("\nPlease file an issue with your program at github.com/adafruit/circuitpython/issues."));
     }
 
     // Always tell user how to get out of safe mode.

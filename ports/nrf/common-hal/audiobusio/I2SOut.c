@@ -202,7 +202,10 @@ static void i2s_buffer_fill(audiobusio_i2sout_obj_t *self) {
 
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
-    const mcu_pin_obj_t *data, bool left_justified) {
+    const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
+    if (main_clock != NULL) {
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_main_clock);
+    }
     if (instance) {
         mp_raise_RuntimeError(translate("Device in use"));
     }
@@ -286,8 +289,8 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     self->buffer_length = sample_rate * buffer_length_ms
         * self->bytes_per_sample * self->channel_count / 1000;
     self->buffer_length = (self->buffer_length + 3) & ~3;
-    self->buffers[0] = m_malloc(self->buffer_length, false);
-    self->buffers[1] = m_malloc(self->buffer_length, false);
+    self->buffers[0] = m_malloc(self->buffer_length);
+    self->buffers[1] = m_malloc(self->buffer_length);
 
 
     audiosample_reset_buffer(self->sample, false, 0);

@@ -45,6 +45,7 @@ from shared_bindings_matrix import (
 # Files that never influence board builds
 IGNORE_BOARD = {
     ".devcontainer",
+    "conf.py",
     "docs",
     "tests",
     "tools/ci_changes_per_commit.py",
@@ -55,7 +56,7 @@ IGNORE_BOARD = {
 PATTERN_DOCS = (
     r"^(?:\.github|docs|extmod\/ulab)|"
     r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|\.readthedocs\.yml|conf\.py|requirements-doc\.txt)$|"
-    r"(?:-stubs|\.(?:md|MD|rst|RST))$"
+    r"(?:-stubs|\.(?:md|MD|mk|rst|RST)|/Makefile)$"
 )
 
 PATTERN_WINDOWS = {
@@ -195,7 +196,7 @@ def set_boards(build_all: bool):
                     # Check supervisor files
                     # This is useful for limiting workflow changes to the relevant boards
                     if file.startswith("supervisor"):
-                        if file in settings["SRC_SUPERVISOR"]:
+                        if file in settings.get("SRC_SUPERVISOR", ""):
                             boards_to_build.add(board)
                             continue
 

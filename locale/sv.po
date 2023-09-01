@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-04 16:42+0000\n"
+"PO-Revision-Date: 2023-08-29 18:34+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 #: main.c
 msgid ""
@@ -35,11 +35,11 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 "\n"
-"Skicka in ett ärende med ditt program till https://github.com/adafruit/"
+"Skapa ett ärende med ditt program på https://github.com/adafruit/"
 "circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
@@ -151,6 +151,10 @@ msgstr "%q används redan"
 msgid "%q index out of range"
 msgstr "Index %q ligger utanför intervallet"
 
+#: py/obj.c
+msgid "%q indices must be integers, not %s"
+msgstr "Indexet %q måste vara ett heltal, inte %s"
+
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
 msgstr "%q init misslyckades"
@@ -228,7 +232,7 @@ msgstr "%q måste vara en matris av typen 'h'"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q måste vara av typen %q eller %q, inte %q"
 
-#: py/argcheck.c py/obj.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q måste vara av typen %q, inte %q"
 
@@ -264,6 +268,22 @@ msgstr "%q, %q och %q måste vara lika långa"
 #: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
 msgstr "%q=%q"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts in more bits than pin count"
+msgstr "%q[%u] skiftar in fler bita än antal pinnar"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] shifts out more bits than pin count"
+msgstr "%q[%u] skiftar ut fler bits än antal pinnar"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] uses extra pin"
+msgstr "%q[%u] använder extra pinnar"
+
+#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+msgid "%q[%u] waits on input outside of count"
+msgstr "%q[%u] väntar på input utanför count"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -387,10 +407,6 @@ msgstr "'break' utanför loop"
 msgid "'continue' outside loop"
 msgstr "'continue' utanför loop"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "objektet 'coroutine\" är inte en iterator"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' kräver minst 2 argument"
@@ -414,6 +430,10 @@ msgstr "'yield from' i async-funktion"
 #: py/compile.c
 msgid "'yield' outside function"
 msgstr "'yield' utanför funktion"
+
+#: py/compile.c
+msgid "* arg after **"
+msgstr "* arg efter **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -440,6 +460,10 @@ msgstr "En kanal för hårdvaruavbrott används redan"
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr "ADC2 används av WiFi"
+
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr "Kunde inte starta AP"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -656,11 +680,6 @@ msgstr "Buffertelement måste vara fyra byte långa eller mindre"
 msgid "Buffer is not a bytearray."
 msgstr "Buffert är inte en bytearray."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Bufferten är för liten"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -679,6 +698,12 @@ msgstr "Bufferten måste vara en multipel av 512 byte"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Buffert är %d bytes för kort"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr "Buffert för liten"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -843,10 +868,6 @@ msgstr "Arrayer för koordinater har olika längd"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr "Arrayer för koordinater har olika storlek"
-
-#: py/persistentcode.c
-msgid "Corrupt .mpy file"
-msgstr "Skadad .mpy-fil"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -1031,10 +1052,6 @@ msgstr "Det gick inte att frigöra mutex, fel 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Det gick inte att skriva till intern flash."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr "Fel upptäckt av hårdvara."
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Filen finns redan"
@@ -1112,6 +1129,10 @@ msgstr "Grupp används redan"
 msgid "Half duplex SPI is not implemented"
 msgstr "Halvduplex SPI är inte implementerat"
 
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr "Hårt fel: minnesåtkomst eller instruktionsfel."
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
@@ -1144,14 +1165,6 @@ msgstr "I2C-enhet används redan"
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
 msgstr "Antal element i buffert måste vara <= 4 byte"
-
-#: py/persistentcode.c
-msgid ""
-"Incompatible .mpy file. Please update all .mpy files. See http://adafru.it/"
-"mpy-update for more info."
-msgstr ""
-"Inkompatibel .mpy-fil. Uppdatera alla .mpy-filer. Se http://adafru.it/mpy-"
-"update för mer information."
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1187,26 +1200,6 @@ msgstr "Indata tar för lång tid"
 #: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
 msgstr "Indata-/utdatafel"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts in more bits than pin count"
-msgstr "Instruktion %d skiftar fler bitar än antalet pinnar"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d shifts out more bits than pin count"
-msgstr "Instruktion %d skiftar fler bitar än antal pinnar"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d uses extra pin"
-msgstr "Instruktion %d använder extra pinne"
-
-#: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Instruction %d waits on input outside of count"
-msgstr "Instruktion %d väntar på inmatning utanför intervallet"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1380,39 +1373,32 @@ msgid "Mismatched swap flag"
 msgstr "Felaktig swapflagga"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-msgstr "Saknad first_in_pin. Instruktion %d läser pinnar"
+msgid "Missing first_in_pin. %q[%u] reads pin(s)"
+msgstr "Saknad first_in_pin. %q[%u] läser pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-msgstr "Saknad first_in_pin. Instruktion %d skiftar in från pinnar"
+msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
+msgstr "Saknad first_in_pin. %q[%u] skiftar in från pinne"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_in_pin. Instruction %d waits based on pin"
-msgstr "Saknad first_in_pin. Instruktion %d väntar baserat på pinne"
+msgid "Missing first_in_pin. %q[%u] waits based on pin"
+msgstr "Saknad first_in_pin. %q[%u] väntar baserat på pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-msgstr "Saknad first_out_pin. Instruktion %d skiftar ut till pinnar"
+msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
+msgstr "Saknad first_in_pin. %q[%u] skiftar ut från pinne"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-msgstr "Saknad first_out_pin. Instruktion %d skriver till pinnar"
+msgid "Missing first_out_pin. %q[%u] writes pin(s)"
+msgstr "Saknad first_out_pin. %q[%u] skriver pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-msgstr "Saknad first_set_pin. Instruktion %d sätter pinnar"
+msgid "Missing first_set_pin. %q[%u] sets pin(s)"
+msgstr "Saknad first_set_pin. %q[%u] sätter pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
-#, c-format
-msgid "Missing jmp_pin. Instruction %d jumps on pin"
-msgstr "Saknar jmp_pin. Instruktion %d hoppar på pin"
+msgid "Missing jmp_pin. %q[%u] jumps on pin"
+msgstr "Saknad jmp_pin. %q[%u] hoppar på pin"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1529,7 +1515,7 @@ msgstr "Inget in i programmet"
 msgid "No in or out in program"
 msgstr "Inget in eller ut i programmet"
 
-#: shared-bindings/time/__init__.c
+#: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
 msgstr "Inget stöd för långt heltal"
 
@@ -1806,6 +1792,10 @@ msgstr "Plus eventuella moduler i filsystemet\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygonen behöver minst 3 punkter"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Prefixbufferten måste finnas på heap"
@@ -2011,10 +2001,6 @@ msgstr "Vänster stereokanal måste använda PWM kanal A"
 msgid "Stereo right must be on PWM channel B"
 msgstr "Höger stereokanal måste använda PWM kanal B"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "Stoppa AP stöds inte."
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Ange en av monotonic_time eller epoch_time"
@@ -2038,10 +2024,6 @@ msgstr "Ovanstående undantag var den direkta orsaken till följande undantag:"
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "Längden på rgb_pins vara 6, 12, 18, 24 eller 30"
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
-msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2404,14 +2386,6 @@ msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "WiFi är i accesspunktläge."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "WiFi är i stationsläge."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
 msgstr "WiFi är inte aktiverat"
 
@@ -2437,6 +2411,10 @@ msgstr "Du tryckte ner båda knapparna vid start."
 #: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
 msgstr "Du tryckte ner knapp A vid start."
+
+#: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
+msgid "You pressed button DOWN at start up."
+msgstr "Du tryckte ner knapp NER vid start."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
@@ -2559,6 +2537,10 @@ msgstr "matrisen är för stor"
 msgid "array/bytes required on right side"
 msgstr "array/bytes krävs på höger sida"
 
+#: py/asmxtensa.c
+msgid "asm overflow"
+msgstr "asm overflow"
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "försök att läsa (arg)min/(arg)max av tom sekvens"
@@ -2639,14 +2621,17 @@ msgstr "buffertstorleken måste matcha formatet"
 msgid "buffer slices must be of equal length"
 msgstr "buffertsegmenten måste vara lika långa"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "buffert för liten"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
 msgstr "buffert för liten för begärd längd"
+
+#: py/emitbc.c
+msgid "bytecode overflow"
+msgstr "bytecode overflow"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
@@ -2693,7 +2678,7 @@ msgstr "kan inte tilldela uttryck"
 msgid "can't cancel self"
 msgstr "kan inte avbryta sig själv"
 
-#: py/obj.c py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "kan inte konvertera %q till %q"
 
@@ -2701,6 +2686,11 @@ msgstr "kan inte konvertera %q till %q"
 #, c-format
 msgid "can't convert %s to complex"
 msgstr "kan inte konvertera %s till komplex"
+
+#: py/obj.c
+#, c-format
+msgid "can't convert %s to float"
+msgstr "kan inte konvertera %s till float"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2711,12 +2701,12 @@ msgid "can't convert complex to float"
 msgstr "kan inte konvertera complex till float"
 
 #: py/obj.c
-msgid "can't convert to %q"
-msgstr "kan inte konvertera till %q"
-
-#: py/obj.c
 msgid "can't convert to complex"
 msgstr "kan inte konvertera till komplex"
+
+#: py/obj.c
+msgid "can't convert to float"
+msgstr "kan inte konvertera till float"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2741,14 +2731,6 @@ msgstr "kan inte göra binära op mellan '%q' och '%q'"
 #: py/objcomplex.c
 msgid "can't do truncated division of a complex number"
 msgstr "kan inte göra trunkerad division av komplext tal"
-
-#: py/compile.c
-msgid "can't have multiple **x"
-msgstr "kan inte ha flera **x"
-
-#: py/compile.c
-msgid "can't have multiple *x"
-msgstr "kan inte ha flera *x"
 
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
@@ -2805,6 +2787,10 @@ msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 "kan inte byta från manuell fältspecifikation till automatisk fältnumrering"
+
+#: extmod/moduasyncio.c
+msgid "can't wait"
+msgstr "kan inte vänta"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -2901,10 +2887,6 @@ msgstr "komplexa värden stöds inte"
 #: extmod/moduzlib.c
 msgid "compression header"
 msgstr "komprimeringsheader"
-
-#: py/parse.c
-msgid "constant must be an integer"
-msgstr "konstant måste vara ett heltal"
 
 #: py/emitnative.c
 msgid "conversion to object"
@@ -3247,8 +3229,12 @@ msgid "import * not at module level"
 msgstr "import * inte på modulnivå"
 
 #: py/persistentcode.c
-msgid "incompatible native .mpy architecture"
-msgstr "inkompatibel nativ .mpy-arkitektur"
+msgid "incompatible .mpy arch"
+msgstr "inkompatibel .mpy-arkitektur"
+
+#: py/persistentcode.c
+msgid "incompatible .mpy file"
+msgstr "inkompatibel .mpy-fil"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3275,6 +3261,10 @@ msgstr "index måste vara tuple eller int"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
 msgstr "index utanför intervallet"
+
+#: py/obj.c
+msgid "indices must be integers"
+msgstr "index måste vara heltal"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
@@ -3409,10 +3399,6 @@ msgstr "ogiltig element_size %d, måste vara, 1, 2 eller 4"
 msgid "invalid exception"
 msgstr "Ogiltig exception"
 
-#: extmod/modframebuf.c
-msgid "invalid format"
-msgstr "ogiltigt format"
-
 #: py/objstr.c
 msgid "invalid format specifier"
 msgstr "ogiltig formatspecificerare"
@@ -3476,10 +3462,6 @@ msgstr ""
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
 "nyckelordsargument är ännu inte implementerade - använd vanliga argument"
-
-#: py/bc.c
-msgid "keywords must be strings"
-msgstr "nyckelord måste vara strängar"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3705,14 +3687,6 @@ msgstr "icke-standard argument följer standard argument"
 msgid "non-hex digit found"
 msgstr "icke-hexnummer hittade"
 
-#: py/compile.c
-msgid "non-keyword arg after */**"
-msgstr "icke nyckelord arg efter * / **"
-
-#: py/compile.c
-msgid "non-keyword arg after keyword arg"
-msgstr "icke nyckelord arg efter nyckelord arg"
-
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr "Icke-noll timeout måste vara > 0.01"
@@ -3724,6 +3698,10 @@ msgstr "Icke-noll timeout måste vara >= intervall"
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
 msgstr "inte en 128-bitars UUID"
+
+#: py/parse.c
+msgid "not a constant"
+msgstr "inte en konstant"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3938,11 +3916,6 @@ msgstr "parametrarna måste registreras i följd r0-r3"
 msgid "pixel coordinates out of bounds"
 msgstr "pixelkoordinater utanför gränserna"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-"pixel_shader måste vara displayio.Palette eller displayio.ColorConverter"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "filbevakning är inte tillgänglig på win32"
@@ -3963,6 +3936,14 @@ msgstr "pop från tom %q"
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
 msgstr "port måste vara >= 0"
+
+#: py/compile.c
+msgid "positional arg after **"
+msgstr "positionsargument efter **"
+
+#: py/compile.c
+msgid "positional arg after keyword arg"
+msgstr "positionsargument efter nyckelord arg"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -3991,6 +3972,11 @@ msgstr "verkliga och imaginära delar måste ha samma längd"
 #: py/builtinimport.c
 msgid "relative import"
 msgstr "relativ import"
+
+#: py/obj.c
+#, c-format
+msgid "requested length %d but object has length %d"
+msgstr "begärd längd %d men objektet har längden %d"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "results cannot be cast to specified type"
@@ -4186,6 +4172,10 @@ msgstr "timestamp utom räckvidd för plattformens \"time_t\""
 msgid "tobytes can be invoked for dense arrays only"
 msgstr "tobyte kan enbart anropas för täta matriser"
 
+#: py/compile.c
+msgid "too many args"
+msgstr "för mpnga argument"
+
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
 msgstr "för många dimensioner"
@@ -4211,6 +4201,10 @@ msgstr "trapz är definierad för 1D-matriser med samma längd"
 msgid "trapz is defined for 1D iterables"
 msgstr "trapz är definierat för 1D-iterabla"
 
+#: py/obj.c
+msgid "tuple/list has wrong length"
+msgstr "tupel/lista har fel längd"
+
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
 msgid "twai_driver_install returned esp-idf error #%d"
@@ -4233,7 +4227,7 @@ msgstr "typ '%q' är inte en acceptabel bastyp"
 msgid "type is not an acceptable base type"
 msgstr "typ är inte en acceptabel bastyp"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "typobjektet '%q' har inget attribut '%q'"
 
@@ -4429,6 +4423,121 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Stoppa AP stöds inte."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "WiFi är i accesspunktläge."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "WiFi är i stationsläge."
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
+#~ msgstr ""
+#~ "\n"
+#~ "Skicka in ett ärende med ditt program till https://github.com/adafruit/"
+#~ "circuitpython/issues."
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "objektet 'coroutine\" är inte en iterator"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Bufferten är för liten"
+
+#~ msgid "Fault detected by hardware."
+#~ msgstr "Fel upptäckt av hårdvara."
+
+#~ msgid "The power dipped. Make sure you are providing enough power."
+#~ msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shader måste vara displayio.Palette eller displayio.ColorConverter"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Skadad .mpy-fil"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Inkompatibel .mpy-fil. Uppdatera alla .mpy-filer. Se http://adafru.it/mpy-"
+#~ "update för mer information."
+
+#~ msgid "can't convert to %q"
+#~ msgstr "kan inte konvertera till %q"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "kan inte ha flera **x"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "kan inte ha flera *x"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "konstant måste vara ett heltal"
+
+#~ msgid "incompatible native .mpy architecture"
+#~ msgstr "inkompatibel nativ .mpy-arkitektur"
+
+#~ msgid "invalid format"
+#~ msgstr "ogiltigt format"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "nyckelord måste vara strängar"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "icke nyckelord arg efter * / **"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "icke nyckelord arg efter nyckelord arg"
+
+#, c-format
+#~ msgid "Instruction %d shifts in more bits than pin count"
+#~ msgstr "Instruktion %d skiftar fler bitar än antalet pinnar"
+
+#, c-format
+#~ msgid "Instruction %d shifts out more bits than pin count"
+#~ msgstr "Instruktion %d skiftar fler bitar än antal pinnar"
+
+#, c-format
+#~ msgid "Instruction %d uses extra pin"
+#~ msgstr "Instruktion %d använder extra pinne"
+
+#, c-format
+#~ msgid "Instruction %d waits on input outside of count"
+#~ msgstr "Instruktion %d väntar på inmatning utanför intervallet"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+#~ msgstr "Saknad first_in_pin. Instruktion %d läser pinnar"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+#~ msgstr "Saknad first_in_pin. Instruktion %d skiftar in från pinnar"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
+#~ msgstr "Saknad first_in_pin. Instruktion %d väntar baserat på pinne"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+#~ msgstr "Saknad first_out_pin. Instruktion %d skiftar ut till pinnar"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+#~ msgstr "Saknad first_out_pin. Instruktion %d skriver till pinnar"
+
+#, c-format
+#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+#~ msgstr "Saknad first_set_pin. Instruktion %d sätter pinnar"
+
+#, c-format
+#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
+#~ msgstr "Saknar jmp_pin. Instruktion %d hoppar på pin"
 
 #~ msgid "inputs are not iterable"
 #~ msgstr "indata är inte iterbara"
@@ -4733,21 +4842,11 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "invalid traceback"
 #~ msgstr "Ogilitig källspårning"
 
-#~ msgid "%q indices must be integers, not %s"
-#~ msgstr "Indexet %q måste vara ett heltal, inte %s"
-
 #~ msgid "WatchDogTimer.timeout must be greater than 0"
 #~ msgstr "WatchDogTimer.timeout måste vara större än 0"
 
-#~ msgid "indices must be integers"
-#~ msgstr "index måste vara heltal"
-
 #~ msgid "non-Device in %q"
 #~ msgstr "icke-enhet i %q"
-
-#, c-format
-#~ msgid "requested length %d but object has length %d"
-#~ msgstr "begärd längd %d men objektet har längden %d"
 
 #~ msgid "single '}' encountered in format string"
 #~ msgstr "Enkelt '}' påträffades i formatsträngen"
@@ -4757,9 +4856,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "timeout must be 0.0-100.0 seconds"
 #~ msgstr "timeout måste vara 0.0-100.0 sekunder"
-
-#~ msgid "tuple/list has wrong length"
-#~ msgstr "tupel/lista har fel längd"
 
 #~ msgid "unmatched '{' in format"
 #~ msgstr "omatchad '{' i format"
@@ -5490,9 +5586,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "Length must be non-negative"
 #~ msgstr "Length måste vara positiv"
 
-#~ msgid "incompatible .mpy file"
-#~ msgstr "inkompatibel .mpy-fil"
-
 #~ msgid "invalid decorator"
 #~ msgstr "ogiltig dekorator"
 
@@ -5822,9 +5915,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "__init__() should return None, not '%s'"
 #~ msgstr "__init __ () ska returnera None, inte '%s'"
 
-#~ msgid "can't convert %s to float"
-#~ msgstr "kan inte konvertera %s till float"
-
 #~ msgid "can't convert %s to int"
 #~ msgstr "kan inte konvertera %s till int"
 
@@ -5836,9 +5926,6 @@ msgstr "zi måste vara i formen (n_section, 2)"
 
 #~ msgid "can't convert inf to int"
 #~ msgstr "kan inte konvertera inf till int"
-
-#~ msgid "can't convert to float"
-#~ msgstr "kan inte konvertera till float"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "objektet '%s' är inte en tupel eller lista"

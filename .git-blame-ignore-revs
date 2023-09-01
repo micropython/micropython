@@ -1,3 +1,15 @@
+#all: Reformat remaining C code that doesn't have a space after a comma.
+5b700b0af90591d6b1a2c087bb8de6b7f1bfdd2d
+
+# ports: Reformat more C and Python source code.
+5c32111fa0e31e451b0f1666bdf926be2fdfd82c
+
+# all: Update Python formatting to latest Black version 22.1.0.
+ab2923dfa1174dc177f0a90cb00a7e4ff87958d2
+
+# all: Update Python formatting to latest Black version 21.12b0.
+3770fab33449a5dadf8eb06edfae0767e75320a6
+
 # tools/gen-cpydiff.py: Fix formatting of doc strings for new Black.
 0f78c36c5aa458a954eed39a46942209107a553e
 

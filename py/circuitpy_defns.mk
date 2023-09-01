@@ -84,12 +84,6 @@ CFLAGS += -DCIRCUITPY_TRANSLATE_OBJECT=$(CIRCUITPY_TRANSLATE_OBJECT)
 ###
 # Handle frozen modules.
 
-ifneq ($(FROZEN_DIR),)
-# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
-# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen or FROZEN_MPY_DIRS="dir1 dir2"
 # (be sure to build from scratch).
@@ -714,7 +708,7 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 	subband.c \
 	trigtabs.c \
 )
-$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
+$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_MOD += $(addprefix lib/protomatter/src/, \

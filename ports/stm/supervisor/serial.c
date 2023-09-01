@@ -47,7 +47,7 @@ void port_serial_init(void) {
     huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     huart2.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&huart2) == HAL_OK) {
-        stm32f4_peripherals_status_led(1,1);
+        stm32f4_peripherals_status_led(1, 1);
     }
     #endif
 }
@@ -59,7 +59,7 @@ bool port_serial_connected(void) {
 char port_serial_read(void) {
     #if CPY_STM32F4
     uint8_t data;
-    HAL_UART_Receive(&huart2, &data, 1,500);
+    HAL_UART_Receive(&huart2, &data, 1, 500);
     return data;
     #else
     return -1;

@@ -46,8 +46,8 @@ static keypad_scanner_funcs_t shiftregisterkeys_funcs = {
 
 void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, const mcu_pin_obj_t *clock_pin, mp_uint_t num_data_pins, const mcu_pin_obj_t *data_pins[], const mcu_pin_obj_t *latch_pin, bool value_to_latch, mp_uint_t num_key_counts, size_t key_counts[], bool value_when_pressed, mp_float_t interval, size_t max_events) {
 
-    digitalio_digitalinout_obj_t *clock = m_new_obj(digitalio_digitalinout_obj_t);
-    clock->base.type = &digitalio_digitalinout_type;
+    digitalio_digitalinout_obj_t *clock =
+        mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
     common_hal_digitalio_digitalinout_construct(clock, clock_pin);
     common_hal_digitalio_digitalinout_switch_to_output(clock, false, DRIVE_MODE_PUSH_PULL);
     self->clock = clock;
@@ -72,10 +72,10 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
     // Allocate a tuple object with the data pins
     self->data_pins = mp_obj_new_tuple(num_data_pins, dios);
 
-    self->key_counts = (mp_uint_t *)gc_alloc(sizeof(mp_uint_t) * num_key_counts, false, false);
+    self->key_counts = (mp_uint_t *)m_malloc(sizeof(mp_uint_t) * num_key_counts);
     self->num_key_counts = num_key_counts;
 
-    // copy to a gc_alloc() and on the fly record pin with largest Shift register
+    // copy to an m_malloc() and on the fly record pin with largest Shift register
     mp_uint_t max = 0;
 
     for (mp_uint_t i = 0; i < self->num_key_counts; i++) {

@@ -6,7 +6,7 @@
 # which is to be tested, so should use minimal language functionality.
 #
 import sys
-import uos as os
+import os
 
 
 tests = ["basics", "micropython", "float", "import", "io", " misc", "unicode", "extmod", "unix"]

@@ -81,8 +81,7 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_int_t frequency = args[ARG_frequency].u_int;
     mp_int_t duty_cycle = args[ARG_duty_cycle].u_int;
 
-    pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
-    self->base.type = &pulseio_pulseout_type;
+    pulseio_pulseout_obj_t *self = mp_obj_malloc(pulseio_pulseout_obj_t, &pulseio_pulseout_type);
     common_hal_pulseio_pulseout_construct(self, pin, frequency, duty_cycle);
     return MP_OBJ_FROM_PTR(self);
 }

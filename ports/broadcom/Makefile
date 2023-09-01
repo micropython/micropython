@@ -171,10 +171,13 @@ $(BUILD)/firmware.disk.img.zip: $(BUILD)/kernel$(SUFFIX).img
 	$(Q)zip $@ $(BUILD)/circuitpython-disk.img
 	$(Q)rm $(BUILD)/circuitpython-disk.img
 
+.PHONY: $(BUILD)/rpiboot rpiboot
+rpiboot: $(BUILD)/rpiboot
+$(BUILD)/rpiboot: $(BUILD)/kernel$(SUFFIX).img
+	mkdir -vp $@
+	cp -vf $(BUILD)/kernel$(SUFFIX).img $@/
+	cp -vfr config.txt firmware/bootcode.bin firmware/fixup* firmware/start* firmware/*.dtb $@/
+	#sed -i -e "s/BOOT_UART=0/BOOT_UART=1/" $@/bootcode.bin $@/bootcode.bin
+	echo uart_2ndstage=1 >> $@/config.txt
+
 include $(TOP)/py/mkrules.mk
-
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

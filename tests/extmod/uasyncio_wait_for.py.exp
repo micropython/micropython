@@ -32,4 +32,31 @@ task_wait_for_cancel_ignore cancelled
 ignore cancel
 task_catch done
 ----------
+task_wait_for_cancel start
+cancel wait_for
+task start 5
+task_wait_for_cancel cancelled
+CancelledError()
+----------
+task_wait_for_cancel start
+task start 6
+cancel wait_for
+task end 6
+task_wait_for_cancel cancelled
+CancelledError()
+----------
+task_wait_for_cancel start
+task start 7
+task end 7
+cancel wait_for
+task_wait_for_cancel cancelled
+CancelledError()
+----------
+task_wait_for_cancel start
+task start 8
+task end 8
+cancel wait_for
+task_wait_for_cancel cancelled
+CancelledError()
+----------
 finish

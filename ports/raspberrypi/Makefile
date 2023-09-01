@@ -39,7 +39,7 @@ INC_CYW43 := \
 	-isystem sdk/src/rp2_common/pico_lwip/include/ \
 	-isystem sdk/src/rp2_common/pico_rand/include/ \
 
-CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DIGNORE_GPIO24 -DCYW43_LOGIC_DEBUG=0 -DCYW43_NETUTILS=1
+CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DIGNORE_GPIO24 -DCYW43_LOGIC_DEBUG=0 -DCYW43_NETUTILS=1 -DPICO_BUILD
 SRC_SDK_CYW43 := \
 	src/common/pico_sync/sem.c \
 	src/rp2_common/pico_async_context/async_context_base.c \
@@ -236,6 +236,7 @@ SRC_SDK := \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK) $(SRC_CYW43)): CFLAGS += -Wno-missing-prototypes -Wno-undef -Wno-unused-function -Wno-nested-externs -Wno-strict-prototypes -Wno-double-promotion -Wno-sign-compare -Wno-unused-variable -Wno-strict-overflow -Ilib/cyw43-driver
+$(BUILD)/sdk/src/rp2_common/pico_standard_link/crt0.o: CFLAGS += -Wno-undef
 
 SRC_C += \
 	boards/$(BOARD)/board.c \
@@ -423,7 +424,8 @@ $(BUILD)/stage2.c: stage2.c.jinja gen_stage2.py | $(BUILD)/
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
-$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py | $(HEADER_BUILD)/
+QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/flash_info.h
+$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
@@ -465,8 +467,3 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -f 0xe48bff56 -b 0x10000000 -c -o $@ $^
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

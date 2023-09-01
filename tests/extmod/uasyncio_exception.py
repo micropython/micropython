@@ -1,13 +1,10 @@
 # Test general exception handling
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 # main task raising an exception

@@ -82,6 +82,10 @@ MP_DEFINE_EXCEPTION(gaierror, OSError)
 //|     TCP_NODELAY: int
 //|
 //|     IPPROTO_TCP: int
+//|     IPPROTO_IP: int
+//|
+//|     IP_MULTICAST_TTL: int
+//|
 //|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM) -> socketpool.Socket:
 //|         """Create a new socket
 //|
@@ -182,6 +186,8 @@ STATIC const mp_rom_map_elem_t socketpool_socketpool_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(SOCKETPOOL_TCP_NODELAY) },
 
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(SOCKETPOOL_IPPROTO_TCP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(SOCKETPOOL_IPPROTO_IP) },
+    { MP_ROM_QSTR(MP_QSTR_IP_MULTICAST_TTL), MP_ROM_INT(SOCKETPOOL_IP_MULTICAST_TTL) },
 
     { MP_ROM_QSTR(MP_QSTR_EAI_NONAME), MP_ROM_INT(SOCKETPOOL_EAI_NONAME) },
 };

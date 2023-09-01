@@ -190,7 +190,7 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
     // Don't error if we're out of memory. Instead, truncate the tuple.
     uint8_t added = 0;
     while (next != NULL) {
-        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), GC_ALLOC_FLAG_HAS_FINALISER, false);
+        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), GC_ALLOC_FLAG_HAS_FINALISER);
         if (service == NULL) {
             if (added == 0) {
                 m_malloc_fail(sizeof(mdns_remoteservice_obj_t));
