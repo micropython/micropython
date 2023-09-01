@@ -79,46 +79,54 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
-#endif // MICROPY_INCLUDED_PY_MPPRINT_H
-
-// You can use several MP_PRN_LEVEL defines in separate _.c files
-#if defined(MP_PRN_LEVEL) && (MP_PRN_LEVEL > 0)
-// Debug messages during code developing with MP_PRN(level, ...) & MP_PRN_LEVEL.
-// An approximate hierarchy of debug levels MP_PRN_LEVEL is:
-#define MP_PRN_SUPPRESS 0 // SUPPRESS all messages. Use it in the release version.
-#define MP_PRN_CRITICAL 1 // For the most CRITICAL errors, often requiring a system reset. Use a message with this level, if possible, raising an exception.
-#define MP_PRN_ERROR 2 // ERROR requiring program restart, use message with this level before raising an exception.
-#define MP_PRN_WARNING 3 // WARNING, something went wrong, but you can fix it with additional operations in code right now or may ignore it.
-#define MP_PRN_INFO 4 // INFO, it is interesting and useful for understanding a bug.
-#define MP_PRN_DEBUG 5 // DEBUG, more detailed information, dig deeper.
-#define MP_PRN_TRACE 6 // TRACE, show a flow of the algorithm, like enter/exit a function.
+// Debug messages during code developing with MP_DEBUG_PRINT(level, ...) & MP_DEBUG_PRINT_LEVEL.
+// An approximate hierarchy of debug levels MP_DEBUG_PRINT_LEVEL is:
+#define MP_DEBUG_PRINT_SUPPRESS 0 // SUPPRESS all messages. Use it in the release version.
+#define MP_DEBUG_PRINT_CRITICAL 1 // For the most CRITICAL errors, often requiring a system reset. Use a message with this level, if possible, raising an exception.
+#define MP_DEBUG_PRINT_ERROR 2 // ERROR requiring program restart, use message with this level before raising an exception.
+#define MP_DEBUG_PRINT_WARNING 3 // WARNING, something went wrong, but you can fix it with additional operations in code right now or may ignore it.
+#define MP_DEBUG_PRINT_INFO 4 // INFO, it is interesting and useful for understanding a bug.
+#define MP_DEBUG_PRINT_DEBUG 5 // DEBUG, more detailed information, dig deeper.
+#define MP_DEBUG_PRINT_TRACE 6 // TRACE, show a flow of the algorithm, like enter/exit a function.
 // In reality, you may use your own classification of debug levels.
 
-#if defined(MP_PRN)
-#undef MP_PRN
+#endif // MICROPY_INCLUDED_PY_MPPRINT_H
+
+// This code is placed after `#endif // MICROPY_INCLUDED_PY_MPPRINT_H` to allow the developer
+// to use several local `MP_DEBUG_PRINT_LEVEL` definitions in separate _.c files.
+// This is not a typo or a bug.
+#if defined(MP_DEBUG_PRINT_LEVEL) && (MP_DEBUG_PRINT_LEVEL > 0)
+
+#if defined(MP_DEBUG_PRINT)
+#undef MP_DEBUG_PRINT
 #endif
 
-#define MP_PRN(level, ...) \
+#define MP_DEBUG_PRINT(level, ...) \
     do { \
-        if ((0 < level) && (level <= MP_PRN_LEVEL)) { \
-            mp_printf(MP_PYTHON_PRINTER, " MP_PRN_LEVEL=%d : ", level); \
+        if ((0 < level) && (level <= MP_DEBUG_PRINT_LEVEL)) { \
+            mp_printf(MP_PYTHON_PRINTER, " MP_DEBUG_PRINT_LEVEL=%d : ", level); \
             mp_printf(MP_PYTHON_PRINTER, __VA_ARGS__); \
             mp_printf(MP_PYTHON_PRINTER, "\t : FUNC=%s LINE=%d FILE=%s\n", __FUNCTION__, __LINE__, __FILE__); \
         } \
     } while (0);
+
 #else
-#define MP_PRN(level, ...)
+
+#define MP_DEBUG_PRINT(level, ...)
+
 #endif
 /*
 // How to use:
-// Set MP_PRN_LEVEL in developed *.C or *.CPP file, for example
-#define MP_PRN_LEVEL 1000 // show all messages
+// Set MP_DEBUG_PRINT_LEVEL in developed *.C or *.CPP file, for example
+#define MP_DEBUG_PRINT_LEVEL 1000 // show all messages
+// Include mpprint.h after defining the MP_DEBUG_PRINT_LEVEL
+#include "py/mpprint.h"
 
-// Add MP_PRN() macro in code, like
+// Add MP_DEBUG_PRINT() macro in code, like
 void foo(int arg) {
-    MP_PRN(MP_PRN_TRACE, "Enter foo()")
+    MP_DEBUG_PRINT(MP_DEBUG_PRINT_TRACE, "Enter foo()")
     if (arg < 0) {
-        MP_PRN(MP_PRN_WARNING, "arg=%d less zero", arg)
+        MP_DEBUG_PRINT(MP_DEBUG_PRINT_WARNING, "arg=%d less zero", arg)
         ...
     }
     ...
@@ -126,13 +134,15 @@ void foo(int arg) {
     ...
     // calculate value
     ...
-    MP_PRN(MP_PRN_INFO, "See a value=%d", value)
+    MP_DEBUG_PRINT(MP_DEBUG_PRINT_INFO, "See a value=%d", value)
     ...
-    MP_PRN(MP_PRN_TRACE, "Exit foo()")
+    MP_DEBUG_PRINT(MP_DEBUG_PRINT_TRACE, "Exit foo()")
 }
 
 // It is not a dogma. You may start debugging from level 3.
-#define MP_PRN_LEVEL 3
-// Then add MP_PRN(3, ...) and when gets too much messages then change some messages to the next level MP_PRN(4, ...), or MP_PRN(2, ...) etc.
-// Then you may change MP_PRN_LEVEL to 2(reduce printing), and finally to 0(supress printing).
+#define MP_DEBUG_PRINT_LEVEL 3
+// Then add MP_DEBUG_PRINT(3, ...) and when gets too much messages then change some messages to the next level MP_DEBUG_PRINT(4, ...), or MP_DEBUG_PRINT(2, ...) etc.
+// Then you may change MP_DEBUG_PRINT_LEVEL to 2(reduce printing), and finally to 0(supress printing).
+
+// Usually, you will debug one or two source files. Debug printing from other files is suppressed if MP_DEBUG_PRINT_LEVEL is 0 or undefined.
 */
