@@ -68,8 +68,8 @@ port_data = {
     "3": PortData("esp32", "esp32", "build-GENERIC/micropython.elf"),
     "x": PortData("mimxrt", "mimxrt", "build-TEENSY40/firmware.elf"),
     "e": PortData("renesas-ra", "renesas-ra", "build-EK_RA6M2/firmware.elf"),
-    "r": PortData("nrf", "nrf", "build-pca10040/firmware.elf"),
-    "p": PortData("rp2", "rp2", "build-PICO/firmware.elf"),
+    "r": PortData("nrf", "nrf", "build-PCA10040/firmware.elf"),
+    "p": PortData("rp2", "rp2", "build-RPI_PICO/firmware.elf"),
     "d": PortData("samd", "samd", "build-ADAFRUIT_ITSYBITSY_M4_EXPRESS/firmware.elf"),
 }
 
