@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-10-13 20:08+0000\n"
+"PO-Revision-Date: 2023-11-16 15:03+0000\n"
 "Last-Translator: xXx <xxx_xxx_xxxxxxxxx@mail.ru>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.1-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 #: main.c
 msgid ""
@@ -782,8 +782,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
-msgstr ""
-"Из глубокого сна может сигнализировать только по двум низким контактам."
+msgstr "Из глубокого сна может сигнализировать только по двум низким контактам."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -2706,8 +2705,7 @@ msgstr "Можно указать только одно неизвестное �
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
-msgstr ""
-"Не удается добавить специальный метод к уже имеющемуся подклассу классу"
+msgstr "Не удается добавить специальный метод к уже имеющемуся подклассу классу"
 
 #: py/compile.c
 msgid "can't assign to expression"
@@ -3019,8 +3017,7 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr ""
-"буфер назначения должен быть массивом типа «H» для битовой_глубины = 16"
+msgstr "буфер назначения должен быть массивом типа «H» для битовой_глубины = 16"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
