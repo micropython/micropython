@@ -94,9 +94,9 @@ void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_ob
             } else {
                 // Aligned access and length, use 32-bit writes
                 uint32_t *dest_addr32 = (uint32_t *)dest_addr;
-                size_t len32 = len >> 2;
-                for (size_t i = 0; i < len32; i++) {
-                    *dest_addr32++ = ((uint32_t *)values)[i << 2];
+                size_t access_count = len >> 2;
+                for (size_t i = 0; i < access_count; i++) {
+                    *dest_addr32++ = ((uint32_t *)values)[i];
                 }
             }
             break;
@@ -124,10 +124,10 @@ void common_hal_memorymap_addressrange_get_bytes(const memorymap_addressrange_ob
                 // Unaligned access or unaligned length not supported by RP2 for IO registers
                 mp_raise_RuntimeError(translate("Unable to access unaliged IO register"));
             } else {
-                // Aligned access and length, use 32-bit writes
+                // Aligned access and length, use 32-bit reads
                 uint32_t *src_addr32 = (uint32_t *)src_addr;
-                size_t len32 = len >> 2;
-                for (size_t i = 0; i < len32; i++) {
+                size_t access_count = len >> 2;
+                for (size_t i = 0; i < access_count; i++) {
                     ((uint32_t *)values)[i] = *src_addr32++;
                 }
             }
