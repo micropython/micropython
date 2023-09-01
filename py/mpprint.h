@@ -141,8 +141,8 @@ void foo(int arg) {
 
 // It is not a dogma. You may start debugging from level 3.
 #define MP_DEBUG_PRINT_LEVEL 3
-// Then add MP_DEBUG_PRINT(3, ...) and when gets too much messages then change some messages to the next level MP_DEBUG_PRINT(4, ...), or MP_DEBUG_PRINT(2, ...) etc.
-// Then you may change MP_DEBUG_PRINT_LEVEL to 2(reduce printing), and finally to 0(supress printing).
+// Then add MP_DEBUG_PRINT(3, ...) and when gets too many messages then change some messages to the next level MP_DEBUG_PRINT(4, ...), or MP_DEBUG_PRINT(2, ...) etc.
+// Then you may change MP_DEBUG_PRINT_LEVEL to 2(reduce printing), and finally to 0(suppress printing).
 
 // Usually, you will debug one or two source files. Debug printing from other files is suppressed if MP_DEBUG_PRINT_LEVEL is 0 or undefined.
 */
