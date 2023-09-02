@@ -40,7 +40,7 @@ _exc_context = {"message": "Task exception wasn't retrieved", "exception": None,
 
 
 # "Yield" once, then raise StopIteration
-class SingletonGenerator:
+class SleepHandler:
     def __init__(self):
         self.state = None
         self.exc = StopIteration()
@@ -59,9 +59,10 @@ class SingletonGenerator:
 
 
 # Pause task execution for the given time (integer in milliseconds, MicroPython extension)
-# Use a SingletonGenerator to do it without allocating on the heap
-def sleep_ms(t, sgen=SingletonGenerator()):
-    assert sgen.state is None
+# Try not to allocate a SleepHandler on the heap if possible.
+def sleep_ms(t, sgen=SleepHandler()):
+    if sgen.state is not None:  # the static one is busy
+        sgen = SleepHandler()
     sgen.state = ticks_add(ticks(), max(0, t))
     return sgen
 
