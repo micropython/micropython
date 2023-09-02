@@ -63,16 +63,36 @@ class TaskGroup:
             self._base_error = exc
 
         if et is not None:
-            if self._state < _s_aborting:
-                if et is core.CancelledError:
-                    # Handle "external" cancellation.
-                    propagate_cancellation_error = exc
+            if et is core.CancelledError:
+                # micropython doesn't have an uncancel counter
+                # if self._parent_cancel_requested and not self._parent_task.uncancel():
+                # Do nothing, i.e. swallow the error.
+                #   pass
+                # else:
+                propagate_cancellation_error = exc
 
-                # Otherwise the main task raised an error.
+            if self._state < _s_aborting:
+                #
+                #    async with TaskGroup() as g:
+                #        g.create_task(...)
+                #        await ...  # <- CancelledError
+                #
+                # or there's an exception in "async with":
+                #
+                #    async with TaskGroup() as g:
+                #        g.create_task(...)
+                #        1 / 0
+                #
                 self._abort()
 
+            # Tasks that didn't yet enter our _run_task wrapper
+            # get cancelled off immediately
+            for task in self._pending:
+                task.cancel()
+                self._tasks.discard(task)
+        # We use a while loop here because "self._on_completed"
         # can be cancelled multiple times if our parent task
-        # is being cancelled repeatedly (or even once, when
+        # gets cancelled repeatedly (or even once, when
         # our own cancellation is already in progress)
         while self._tasks:
             if self._on_completed is None:
@@ -82,7 +102,14 @@ class TaskGroup:
                 await self._on_completed.wait()
             except core.CancelledError as ex:
                 if self._state < _s_aborting:
-                    # Our parent task is being cancelled.
+                    # Our parent gets cancelled.
+                    #
+                    #    async def wrapper():
+                    #        async with TaskGroup() as g:
+                    #            g.create_task(foo)
+                    #
+                    # "wrapper" gets cancelled while "foo" is
+                    # still running.
                     propagate_cancellation_error = ex
                     self._abort()
 
@@ -93,6 +120,12 @@ class TaskGroup:
         if self._base_error is not None:
             # SystemExit and Keyboardinterrupt get propagated as they are
             raise self._base_error
+
+        if propagate_cancellation_error is not None:
+            # The wrapping task was cancelled; since we're done with
+            # closing all child tasks, just propagate the cancellation
+            # request now.
+            raise propagate_cancellation_error
 
         if et is not None and et is not core.CancelledError:
             self._errors.append(exc)
@@ -120,11 +153,11 @@ class TaskGroup:
                 me = EGroup("unhandled errors in a TaskGroup", errors)
             raise me
 
-        elif propagate_cancellation_error is not None:
-            # The wrapping task was cancelled; since we're done with
-            # closing all child tasks, just propagate the cancellation
-            # request now.
-            raise propagate_cancellation_error
+#       elif propagate_cancellation_error is not None:
+#           # The wrapping task was cancelled; since we're done with
+#           # closing all child tasks, just propagate the cancellation
+#           # request now.
+#           raise propagate_cancellation_error
 
     def create_task(self, coro):
         if self._state == _s_new:
@@ -157,15 +190,8 @@ class TaskGroup:
     def _abort(self):
         self._state = _s_aborting
 
-        # Tasks that didn't yet enter our _run_task wrapper
-        # get cancelled off directly
-        for t in self._pending:
-            t.cancel()
-            self._tasks.discard(t)
-        self._pending = set()
-
         for t in self._tasks:
-            if t is not core.cur_task and not t.done():
+            if not t.done():
                 t.cancel()
 
     async def _run_task(self, k, coro):
