@@ -121,12 +121,6 @@ class TaskGroup:
             # SystemExit and Keyboardinterrupt get propagated as they are
             raise self._base_error
 
-        if propagate_cancellation_error is not None:
-            # The wrapping task was cancelled; since we're done with
-            # closing all child tasks, just propagate the cancellation
-            # request now.
-            raise propagate_cancellation_error
-
         if et is not None and et is not core.CancelledError:
             self._errors.append(exc)
 
@@ -153,11 +147,11 @@ class TaskGroup:
                 me = EGroup("unhandled errors in a TaskGroup", errors)
             raise me
 
-#       elif propagate_cancellation_error is not None:
-#           # The wrapping task was cancelled; since we're done with
-#           # closing all child tasks, just propagate the cancellation
-#           # request now.
-#           raise propagate_cancellation_error
+        elif propagate_cancellation_error is not None:
+            # The wrapping task was cancelled; since we're done with
+            # closing all child tasks, just propagate the cancellation
+            # request now.
+            raise propagate_cancellation_error
 
     def create_task(self, coro):
         if self._state == _s_new:
