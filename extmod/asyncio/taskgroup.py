@@ -1,119 +1,76 @@
 # Adapted with permission from the EdgeDB project.
-# Adapted for MicroPython
+# MIT license; Adaption for MicroPython (c) 2023 Matthias Urlichs
 
-
-__all__ = ["TaskGroup"]
+from micropython import const
 
 from . import core
 from . import Event
 
-DEBUG = False
-
-
-class _TaskCancel:
-    # The purpose of this class is to process cancelling a task that has
-    # not even started, without performing surgery on uasyncio.
-    #
-    def __init__(self, tg, task):
-        self.tg = tg
-        self.task = task
-
-    def remove(self, task):
-        # Called while processing a cancellation of a task that has not yet
-        # run.
-        # The pending task is on the main run queue. uasyncio doesn't
-        # expect that at this point, thus we remove it.
-        core._task_queue.remove(task)
-        # It is also in the taskgroup's list of tasks.
-        tg = self.tg
-        tg._tasks.remove(task)
-        # Wake up the taskgroup if its last child just got terminated.
-        if tg._tasks and tg._on_completed is not None:
-            tg._on_completed.set()
-
-    def __bool__(self):
-        # Called when the uasyncio main loop determines whether to throw an
-        # exception into the new task.
-        # After this point the new task will definitely start, thus the
-        # "TaskGroup._run_task" wrapper will take over and we can remove
-        # this hack.
-        self.task.data = None
-        return False
+_DEBUG = const(False)
+_s_new = const(0)
+_s_entered = const(1)
+_s_exiting = const(2)
+_s_aborting = const(3)
 
 
 class TaskGroup:
     def __init__(self):
-        self._entered = False
-        self._exiting = False
-        self._aborting = False
+        self._state = _s_new
         self._loop = None
         self._parent_task = None
         self._parent_cancel_requested = False
         self._tasks = set()
+        self._pending = set()
         self._errors = []
         self._base_error = None
         self._on_completed = None
 
     def __repr__(self):
-        info = [""]
-        if self._tasks:
-            info.append(f"tasks={len(self._tasks)}")
-        if self._errors:
-            info.append(f"errors={len(self._errors)}")
-        if self._aborting:
-            info.append("cancelling")
-        elif self._entered:
-            info.append("entered")
-
-        info_str = " ".join(info)
-        return f"<TaskGroup{info_str}>"
+        if _DEBUG:
+            info = [""]
+            if self._tasks:
+                info.append("tasks=" + str(len(self._tasks)))
+            if self._errors:
+                info.append("errors={}" + str(len(self._errors)))
+            if self._state == _s_aborting:
+                info.append("cancelling")
+            elif self._state > _s_new:
+                info.append("entered")
+            return "<TaskGroup{}>".format(" ".join(info))
+        else:
+            return "<TaskGroup>"
 
     async def __aenter__(self):
-        if self._entered:
-            raise RuntimeError(f"TaskGroup {repr(self)} has been already entered")
-        self._entered = True
+        if self._state != _s_new:
+            raise RuntimeError("TaskGroup has been already entered")
+        self._state = _s_entered
 
         if self._loop is None:
             self._loop = core.get_event_loop()
 
         self._parent_task = core.current_task()
         if self._parent_task is None:
-            raise RuntimeError(f"TaskGroup {repr(self)} cannot determine the parent task")
+            raise RuntimeError("TaskGroup cannot determine the parent task")
 
         return self
 
     async def __aexit__(self, et, exc, tb):
-        self._exiting = True
+        if self._state == _s_entered:
+            self._state = _s_exiting
         propagate_cancellation_error = None
 
         if exc is not None and self._is_base_error(exc) and self._base_error is None:
             self._base_error = exc
 
         if et is not None:
-            if et is core.CancelledError:
-                # micropython doesn't have an uncancel counter
-                if self._parent_cancel_requested:
-                    # Do nothing, i.e. swallow the error.
-                    pass
-                else:
+            if self._state < _s_aborting:
+                if et is core.CancelledError:
+                    # Handle "external" cancellation.
                     propagate_cancellation_error = exc
 
-            if not self._aborting:
-                # Our parent task is being cancelled:
-                #
-                #    async with TaskGroup() as g:
-                #        g.create_task(...)
-                #        await ...  # <- CancelledError
-                #
-                # or there's an exception in "async with":
-                #
-                #    async with TaskGroup() as g:
-                #        g.create_task(...)
-                #        1 / 0
-                #
+                # Otherwise the main task raised an error.
                 self._abort()
 
-        # We use a while-loop here because the wait on "self._on_completed"
         # can be cancelled multiple times if our parent task
         # is being cancelled repeatedly (or even once, when
         # our own cancellation is already in progress)
@@ -124,15 +81,8 @@ class TaskGroup:
             try:
                 await self._on_completed.wait()
             except core.CancelledError as ex:
-                if not self._aborting:
-                    # Our parent task is being cancelled:
-                    #
-                    #    async def wrapper():
-                    #        async with TaskGroup() as g:
-                    #            g.create_task(foo)
-                    #
-                    # "wrapper" is being cancelled while "foo" is
-                    # still running.
+                if self._state < _s_aborting:
+                    # Our parent task is being cancelled.
                     propagate_cancellation_error = ex
                     self._abort()
 
@@ -141,24 +91,27 @@ class TaskGroup:
         assert not self._tasks
 
         if self._base_error is not None:
+            # SystemExit and Keyboardinterrupt get propagated as they are
             raise self._base_error
-
-        if propagate_cancellation_error is not None:
-            # The wrapping task was cancelled; since we're done with
-            # closing all child tasks, just propagate the cancellation
-            # request now.
-            raise propagate_cancellation_error
 
         if et is not None and et is not core.CancelledError:
             self._errors.append(exc)
 
         if self._errors:
+            # Exceptions are heavy objects that can have object
+            # cycles (bad for GC); let's not keep a reference to
+            # a bunch of them.
             errors = self._errors
             self._errors = None
 
             if len(errors) == 1:
                 me = errors[0]
             else:
+                if _DEBUG:
+                    import sys
+
+                    for err in errors:
+                        sys.print_exception(err)
                 EGroup = core.ExceptionGroup
                 for err in errors:
                     if not isinstance(err, Exception):
@@ -167,59 +120,65 @@ class TaskGroup:
                 me = EGroup("unhandled errors in a TaskGroup", errors)
             raise me
 
-        # at this point, if we're cancelled we don't propagate the
-        # exception. So, well, don't.
-        return et is core.CancelledError
+        elif propagate_cancellation_error is not None:
+            # The wrapping task was cancelled; since we're done with
+            # closing all child tasks, just propagate the cancellation
+            # request now.
+            raise propagate_cancellation_error
 
     def create_task(self, coro):
-        if not self._entered:
-            raise RuntimeError(f"TaskGroup {repr(self)} has not been entered")
-        if self._exiting and not self._tasks:
-            raise RuntimeError(f"TaskGroup {repr(self)} is finished")
+        if self._state == _s_new:
+            raise RuntimeError("TaskGroup has not been entered")
+        if self._state == _s_aborting and not self._tasks:
+            raise RuntimeError("TaskGroup is finished")
 
         k = [None]
         t = self._loop.create_task(self._run_task(k, coro))
-        t.data = _TaskCancel(self, t)
-        k[0] = t  # pass the task to itself
-
+        k[0] = t  # sigh
         self._tasks.add(t)
+        self._pending.add(t)
         return t
 
     def cancel(self):
-        # Extension (not in CPython): cancel a taskgroup
+        # Extension (not in CPython): kill off a whole taskgroup
         # TODO this waits for the parent to die before killing the child
         # tasks. Shouldn't that be the other way round?
         try:
             self._parent_task.cancel()
         except RuntimeError:
-            self._parent_cancel_requested = True
             raise core.CancelledError()
 
-    # Since Python 3.8 Tasks propagate all exceptions correctly,
-    # except for KeyboardInterrupt and SystemExit which are
-    # still considered special.
-
     def _is_base_error(self, exc: BaseException) -> bool:
+        # KeyboardInterrupt and SystemExit are "special": they should
+        # never be wrapped with a [Base]ExceptionGroup.
         assert isinstance(exc, BaseException)
         return isinstance(exc, (SystemExit, KeyboardInterrupt))
 
     def _abort(self):
-        self._aborting = True
+        self._state = _s_aborting
+
+        # Tasks that didn't yet enter our _run_task wrapper
+        # get cancelled off directly
+        for t in self._pending:
+            t.cancel()
+            self._tasks.discard(t)
+        self._pending = set()
 
         for t in self._tasks:
-            if not t.done():
+            if t is not core.cur_task and not t.done():
                 t.cancel()
 
     async def _run_task(self, k, coro):
         task = k[0]
         assert task is not None
+        self._pending.remove(task)
 
         try:
             await coro
         except core.CancelledError as e:
             exc = e
         except BaseException as e:
-            if DEBUG:
+            if _DEBUG:
                 import sys
 
                 sys.print_exception(e)
@@ -247,14 +206,14 @@ class TaskGroup:
             # it anyways.
             self._loop.call_exception_handler(
                 {
-                    "message": f"Task {repr(task)} has errored out but its parent task {self._parent_task} is already completed",
+                    "message": "Task has errored out but its parent is already completed",
                     "exception": exc,
                     "task": task,
                 }
             )
             return
 
-        if not self._aborting and not self._parent_cancel_requested:
+        if self._state < _s_aborting and not self._parent_cancel_requested:
             # If parent task *is not* being cancelled, it means that we want
             # to manually cancel it to abort whatever is being run right now
             # in the TaskGroup.  But we want to mark parent task as
