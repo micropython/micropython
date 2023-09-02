@@ -156,7 +156,9 @@ class TaskGroup:
     def create_task(self, coro):
         if self._state == _s_new:
             raise RuntimeError("TaskGroup has not been entered")
-        if self._state == _s_aborting and not self._tasks:
+        if self._state == _s_exiting and not self._tasks:
+            raise RuntimeError("TaskGroup is finished")
+        if self._state == _s_aborting:
             raise RuntimeError("TaskGroup is finished")
 
         k = [None]
