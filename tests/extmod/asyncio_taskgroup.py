@@ -760,6 +760,8 @@ async def test_taskgroup_24():
         async with asyncio.TaskGroup() as g:
             g.create_task(die())
             await asyncio.sleep(0.2)
+    except asyncio.CancelledError:
+        print("CANC")
     except ValueError:
         print("VAL")
     else:
@@ -770,6 +772,8 @@ async def test_taskgroup_24():
             g.create_task(die())
             g.create_task(nodie())
             await asyncio.sleep(0.2)
+    except asyncio.CancelledError:
+        print("CANC")
     except ValueError:
         print("VAL")
     else:
