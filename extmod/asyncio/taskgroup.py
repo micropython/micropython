@@ -148,7 +148,7 @@ class TaskGroup:
                 EGroup = core.ExceptionGroup
                 for err in errors:
                     if not isinstance(err, Exception):
-                        EGroup = core.baseExceptionGroup
+                        EGroup = core.BaseExceptionGroup
                         break
                 me = EGroup("unhandled errors in a TaskGroup", errors)
             raise me
