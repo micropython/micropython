@@ -10,7 +10,8 @@
         "USB"
     ],
     "images": [
-        "../images/rp2040-shim-product.jpg"
+        "rp2040-shim-product.jpg",
+        "RP2040-Shim-pinout.png"
     ],
     "mcu": "rp2040",
     "product": "RP2040-Shim",
