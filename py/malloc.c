@@ -185,7 +185,7 @@ void *m_realloc_maybe(void *ptr, size_t new_num_bytes, bool allow_move)
     #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
     DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, old_num_bytes, new_num_bytes, new_ptr);
     #else
-    DEBUG_printf("realloc %p, %d, %d : %p\n", ptr, new_num_bytes, new_ptr);
+    DEBUG_printf("realloc %p, %d : %p\n", ptr, new_num_bytes, new_ptr);
     #endif
     return new_ptr;
 }
