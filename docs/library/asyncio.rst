@@ -112,6 +112,76 @@ class Task
     ignore this exception.  Cleanup code may be run by trapping it, or via
     ``try ... finally``.
 
+class Taskgroup
+---------------
+
+See Nathaniel J. Smith's `essay on Structured Concurrency
+<https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/>`_
+for an introduction why you should use taskgroups instead of starting
+"naked" tasks.
+
+.. note::
+    His "nursery" objects are called "taskgroup" in asyncio; the
+    equivalent of a "go statement" is `Loop.create_task`.
+
+.. class:: Taskgroup()
+
+    This object is an async context managed holding a group of tasks.
+    Tasks can be added to the group using `Taskgroup.create_task`.
+
+    If a task belonging to the group fails, the remaining tasks in the
+    group are cancelled with an :exc:`asyncio.CancelledError` exception.
+    (This also holds for the code within the context manager's block.)
+    No further tasks can then be added to the group.
+
+    When there is no exception, leaving the context manager waits for
+    the taskgroup's member tasks to end before proceeding. It does not
+    cancel these tasks and does not prevent the creation of new tasks.
+
+.. method:: Taskgroup.create_task(coroutine)
+
+    Create a subtask that executes *coroutine* as part of this taskgroup.
+
+    Returns the new task.
+
+.. method:: Taskgroup.cancel()
+
+    Stop the taskgroup, i.e. cancel all its tasks.
+
+    This method is equivalent to cancelling the task responsible for the
+    body of the taskgroup, *if* that is what the task is currently doing.
+
+.. exception:: Cancelled
+
+    This exception is raised in a task whose taskgroup is being cancelled.
+
+    This is a subclass of ``BaseException``; it should never be caught.
+
+.. exception:: ExceptionGroup
+
+    If multiple subtasks raise exceptions in parallel, it's unclear which
+    of them should be propagated. Thus an `ExceptionGroup` exception
+    collects them and is raised instead.
+
+.. method:: ExceptionGroup.split(typ)
+
+    This method can be used to filter the exceptions within an exception group.
+    It returns two lists: the first contains those sub-exceptions which
+    match *typ*, the second those which do not.
+
+    *typ* can be an exception class, a list of exception classes, or a
+    callable that returns ``True`` if the exception passed to it should be
+    returned in the first list.
+
+    MicroPython does not support CPython 3.11's syntax for filtering handling
+    exception groups.
+
+.. exception:: BaseExceptionGroup
+
+    Like `ExceptionGroup`, but used if one of the sub-exceptions is not a
+    subclass of `Exception`.
+
+
 class Event
 -----------
 
@@ -215,9 +285,11 @@ TCP stream connections
 
 .. function:: start_server(callback, host, port, backlog=5, ssl=None)
 
-    Start a TCP server on the given *host* and *port*.  The *callback* will be
-    called with incoming, accepted connections, and be passed 2 arguments: reader
-    and writer streams for the connection.
+    Start a TCP server on the given *host* and *port*.  For each incoming,
+    accepted connection, *callback* will be called in a new task with
+    2 arguments: reader and writer streams for the connection.
+
+    If you use taskgroups, you should use `run_server` instead.
 
     If *ssl* is a `ssl.SSLContext` object, this context is used to create the transport.
 
@@ -225,11 +297,26 @@ TCP stream connections
 
     This is a coroutine.
 
+.. function:: run_server(callback, host, port, backlog=5, taskgroup=None)
+
+    Start a TCP server on the given *host* and *port*.  For each incoming,
+    accepted connection, *callback* will be called in a new task with
+    2 arguments: reader and writer streams for the connection.
+
+    The new task is started in *taskgroup*. An internal taskgroup will be
+    used if none is passed in.
+
+    This is a coroutine. It does not return unless cancelled.
+
+
 .. class:: Stream()
 
     This represents a TCP stream connection.  To minimise code this class implements
     both a reader and a writer, and both ``StreamReader`` and ``StreamWriter`` alias to
     this class.
+
+    This class should be used as an async context manager. Leaving the context
+    will close the connection.
 
 .. method:: Stream.get_extra_info(v)
 
@@ -239,6 +326,12 @@ TCP stream connections
 .. method:: Stream.close()
 
     Close the stream.
+
+    Depending on the stream's concrete implementation, this call may do
+    nothing. You should call the `wait_closed` coroutine immediately
+    afterwards.
+
+    Streams are closed implicitly when used as an async context manager.
 
 .. method:: Stream.wait_closed()
 
@@ -325,6 +418,8 @@ Event Loop
 .. method:: Loop.create_task(coro)
 
     Create a task from the given *coro* and return the new `Task` object.
+
+    You should not call this function when you're using taskgroups.
 
 .. method:: Loop.run_forever()
 
