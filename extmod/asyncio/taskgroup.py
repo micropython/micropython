@@ -116,6 +116,7 @@ class TaskGroup:
             self._on_completed = None
 
         assert not self._tasks
+        self._parent_task = None
 
         if self._base_error is not None:
             # SystemExit and Keyboardinterrupt get propagated as they are
@@ -169,9 +170,9 @@ class TaskGroup:
         return t
 
     def cancel(self):
-        # Extension (not in CPython): kill off a whole taskgroup
-        # TODO this waits for the parent to die before killing the child
-        # tasks. Shouldn't that be the other way round?
+        # Extension (not in CPython): Stop a whole taskgroup
+        if self._parent_task is None:
+            return
         try:
             self._parent_task.cancel()
         except RuntimeError:
