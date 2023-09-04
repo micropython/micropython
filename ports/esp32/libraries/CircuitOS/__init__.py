@@ -13,5 +13,6 @@ from .Devices.AHT20 import *
 from .Devices.LIS2DW12 import *
 from .Devices.AW9523 import *
 from .Devices.LSM6DS3TR import *
+from .Devices.BM8563 import BM8563
 
 from ._Matrix import *
