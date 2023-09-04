@@ -18,7 +18,7 @@ jobs:
   embedding:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: make -C examples/embedding -f micropython_embed.mk && make -C examples/embedding
     - name: Run

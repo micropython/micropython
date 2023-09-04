@@ -22,7 +22,7 @@ jobs:
   build_and_test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_qemu_arm_setup
     - name: Build and run test suite

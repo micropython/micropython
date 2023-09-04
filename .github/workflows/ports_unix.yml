@@ -23,7 +23,7 @@ jobs:
   minimal:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: source tools/ci.sh && ci_unix_minimal_build
     - name: Run main test suite
@@ -35,7 +35,7 @@ jobs:
   reproducible:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build with reproducible date
       run: source tools/ci.sh && ci_unix_minimal_build
       env:
@@ -46,7 +46,7 @@ jobs:
   standard:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: source tools/ci.sh && ci_unix_standard_build
     - name: Run main test suite
@@ -58,7 +58,7 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_unix_coverage_setup
     - name: Build
@@ -87,7 +87,7 @@ jobs:
   coverage_32bit:
     runs-on: ubuntu-20.04 # use 20.04 to get libffi-dev:i386
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_unix_32bit_setup
     - name: Build
@@ -105,7 +105,7 @@ jobs:
   nanbox:
     runs-on: ubuntu-20.04 # use 20.04 to get python2, and libffi-dev:i386
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_unix_32bit_setup
     - name: Build
@@ -119,7 +119,7 @@ jobs:
   float:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: source tools/ci.sh && ci_unix_float_build
     - name: Run main test suite
@@ -131,7 +131,7 @@ jobs:
   stackless_clang:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_unix_clang_setup
     - name: Build
@@ -145,7 +145,7 @@ jobs:
   float_clang:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_unix_clang_setup
     - name: Build
@@ -159,7 +159,7 @@ jobs:
   settrace:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: source tools/ci.sh && ci_unix_settrace_build
     - name: Run main test suite
@@ -171,7 +171,7 @@ jobs:
   settrace_stackless:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
       run: source tools/ci.sh && ci_unix_settrace_stackless_build
     - name: Run main test suite
@@ -183,7 +183,7 @@ jobs:
   macos:
     runs-on: macos-11.0
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
       with:
         python-version: '3.8'
@@ -198,7 +198,7 @@ jobs:
   qemu_mips:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_unix_qemu_mips_setup
     - name: Build
@@ -212,7 +212,7 @@ jobs:
   qemu_arm:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_unix_qemu_arm_setup
     - name: Build
