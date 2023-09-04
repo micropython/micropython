@@ -87,7 +87,7 @@ STATIC mp_obj_t mdac_write(mp_obj_t self_in, mp_obj_t value_in) {
     mdac_obj_t *self = self_in;
     int value = mp_obj_get_int(value_in);
     if (value < 0 || value > 255) {
-        mp_raise_ValueError(MP_ERROR_TEXT("value out of range"));
+        mp_raise_ValueError(MP_ERROR_TEXT("value out of range [0..255]"));
     }
 
     esp_err_t err = dac_output_voltage(self->dac_id, value);
@@ -98,8 +98,24 @@ STATIC mp_obj_t mdac_write(mp_obj_t self_in, mp_obj_t value_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mdac_write_obj, mdac_write);
 
+STATIC mp_obj_t mdac_deinit(mp_obj_t self_in) {
+    mdac_obj_t *self = self_in;
+    check_esp_err(dac_output_disable(self->dac_id));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(mdac_deinit_obj, mdac_deinit);
+
+// This called from Ctrl-D soft reboot
+void machine_dac_deinit_all(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(mdac_obj); i++) {
+        mdac_deinit((mdac_obj_t *)&mdac_obj[i]);
+    }
+}
+
 STATIC const mp_rom_map_elem_t mdac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mdac_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&mdac_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mdac_deinit_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mdac_locals_dict, mdac_locals_dict_table);

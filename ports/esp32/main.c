@@ -182,6 +182,9 @@ soft_reset_exit:
 
     // deinitialise peripherals
     machine_pwm_deinit_all();
+    #if MICROPY_PY_MACHINE_DAC
+    machine_dac_deinit_all();
+    #endif
     // TODO: machine_rmt_deinit_all();
     machine_pins_deinit();
     machine_deinit();
