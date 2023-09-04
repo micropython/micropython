@@ -223,6 +223,10 @@ static inline unsigned long mp_random_seed_init(void) {
 #define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_unix_begin_atomic_section(), 0xffffffff)
 #define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
 
+// Also enable RTOS support (really, OS in this case).
+#define MICROPY_PY_THREAD_RTOS (1)
+#endif // MICROPY_PY_THREAD
+
 #include <sched.h>
 
 // In lieu of a WFI(), slow down polling from being a tight loop.

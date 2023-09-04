@@ -34,6 +34,10 @@
 #error Unix HCI UART requires MICROPY_PY_THREAD
 #endif
 
+#if !MICROPY_PY_THREAD_RTOS
+#error Unix HCI UART requires MICROPY_PY_THREAD_RTOS
+#endif
+
 #include "extmod/modbluetooth.h"
 #include "extmod/mpbthci.h"
 
@@ -59,45 +63,24 @@ STATIC int uart_fd = -1;
 // Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
 extern bool mp_bluetooth_hci_poll(void);
 
-// For synchronous mode, we run all BLE stack code inside a scheduled task.
-// This task is scheduled periodically (every 1ms) by a background thread.
-
-// Allows the stack to tell us that we should stop trying to schedule.
+// Allows the stack to tell us that we should stop running the hci poll loop.
 extern bool mp_bluetooth_hci_active(void);
-
-// Prevent double-enqueuing of the scheduled task.
-STATIC volatile bool events_task_is_scheduled = false;
-
-STATIC mp_obj_t run_events_scheduled_task(mp_obj_t none_in) {
-    (void)none_in;
-    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-    events_task_is_scheduled = false;
-    MICROPY_END_ATOMIC_SECTION(atomic_state);
-    mp_bluetooth_hci_poll();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(run_events_scheduled_task_obj, run_events_scheduled_task);
 
 STATIC const useconds_t UART_POLL_INTERVAL_US = 1000;
 STATIC pthread_t hci_poll_thread_id;
 
+// We run the host stack periodically (every 1ms) by a background thread.
+// Because MICROPY_PY_THREAD_RTOS is enabled, when the host stack tries
+// to call into Python, it will use mp_thread_run_on_mp_thread to run
+// the callbacks on a Python thread.
 STATIC void *hci_poll_thread(void *arg) {
     (void)arg;
 
-    DEBUG_printf("hci_poll_thread: starting\n");
-
-    events_task_is_scheduled = false;
-
+    // TODO: Replace with select-readable on the uart with a 1ms timeout.
     while (mp_bluetooth_hci_active()) {
-        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-        if (!events_task_is_scheduled) {
-            events_task_is_scheduled = mp_sched_schedule(MP_OBJ_FROM_PTR(&run_events_scheduled_task_obj), mp_const_none);
-        }
-        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        mp_bluetooth_hci_poll();
         usleep(UART_POLL_INTERVAL_US);
     }
-
-    DEBUG_printf("hci_poll_thread: stopped\n");
 
     return NULL;
 }
