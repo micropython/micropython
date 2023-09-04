@@ -171,8 +171,8 @@ The following are functions available in the network module.
 
 .. function:: hostname([name])
 
-    Get or set the hostname that will identify this device on the network. It is
-    applied to all interfaces.
+    Get or set the hostname that will identify this device on the network. It will
+    be used by all interfaces.
 
     This hostname is used for:
      * Sending to the DHCP server in the client request. (If using DHCP)
@@ -181,6 +181,12 @@ The following are functions available in the network module.
     If the *name* parameter is provided, the hostname will be set to this value.
     If the function is called without parameters, it returns the current
     hostname.
+
+    A change in hostname is typically only applied during connection. For DHCP
+    this is because the hostname is part of the DHCP client request, and the
+    implementation of mDNS in most ports only initialises the hostname once
+    during connection. For this reason, you must set the hostname before
+    activating/connecting your network interfaces.
 
     The default hostname is typically the name of the board.
 
