@@ -907,103 +907,103 @@ MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_bluetooth, mp_module_bluetooth);
 // Port API
 // ----------------------------------------------------------------------------
 
-STATIC mp_obj_t invoke_irq_handler_run(uint16_t event,
-    const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
-    const uint8_t *addr,
-    const mp_obj_bluetooth_uuid_t *uuid,
-    const uint8_t **data, uint16_t *data_len, size_t n_data) {
+typedef struct _ble_event_tuple_args {
+    uint16_t event;
+    const mp_int_t *numeric;
+    size_t n_unsigned;
+    size_t n_signed;
+    const uint8_t *addr;
+    const mp_obj_bluetooth_uuid_t *uuid;
+    const uint8_t **data;
+    uint16_t *data_len;
+    size_t n_data;
+    mp_obj_t *result;
+} ble_event_tuple_args;
 
-    mp_obj_array_t mv_addr;
-    mp_obj_array_t mv_data[2];
-    assert(n_data <= 2);
-
-    mp_obj_tuple_t *data_tuple = mp_local_alloc(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t) * MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
-    data_tuple->base.type = &mp_type_tuple;
-    data_tuple->len = 0;
-
-    for (size_t i = 0; i < n_unsigned; ++i) {
-        data_tuple->items[data_tuple->len++] = MP_OBJ_NEW_SMALL_INT(numeric[i]);
-    }
-    if (addr) {
-        mp_obj_memoryview_init(&mv_addr, 'B', 0, 6, (void *)addr);
-        data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(&mv_addr);
-    }
-    for (size_t i = 0; i < n_signed; ++i) {
-        data_tuple->items[data_tuple->len++] = MP_OBJ_NEW_SMALL_INT(numeric[i + n_unsigned]);
-    }
-    #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
-    if (uuid) {
-        data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(uuid);
-    }
-    #endif
-
-    #if MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY
-    void *buf_to_free = NULL;
-    uint16_t buf_to_free_len = 0;
-    if (event == MP_BLUETOOTH_IRQ_GATTC_NOTIFY || event == MP_BLUETOOTH_IRQ_GATTC_INDICATE || event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT) {
-        if (n_data > 1) {
-            // Fragmented buffer, need to combine into a new heap-allocated buffer
-            // in order to pass to Python.
-            // Only gattc_on_data_available calls this code, so data and data_len are writable.
-            uint16_t total_len = 0;
-            for (size_t i = 0; i < n_data; ++i) {
-                total_len += data_len[i];
-            }
-            uint8_t *buf = m_new(uint8_t, total_len);
-            uint8_t *p = buf;
-            for (size_t i = 0; i < n_data; ++i) {
-                memcpy(p, data[i], data_len[i]);
-                p += data_len[i];
-            }
-            data[0] = buf;
-            data_len[0] = total_len;
-            n_data = 1;
-            buf_to_free = buf;
-            buf_to_free_len = total_len;
-        }
-    }
-    #endif
-
-    for (size_t i = 0; i < n_data; ++i) {
-        if (data[i]) {
-            mp_obj_memoryview_init(&mv_data[i], 'B', 0, data_len[i], (void *)data[i]);
-            data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(&mv_data[i]);
-        } else {
-            data_tuple->items[data_tuple->len++] = mp_const_none;
-        }
-    }
-
-    assert(data_tuple->len <= MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
-
-    mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
-    mp_obj_t result = mp_call_function_2(o->irq_handler, MP_OBJ_NEW_SMALL_INT(event), MP_OBJ_FROM_PTR(data_tuple));
-
-    #if MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY
-    if (buf_to_free != NULL) {
-        m_del(uint8_t, (uint8_t *)buf_to_free, buf_to_free_len);
-    }
-    #endif
-
-    mp_local_free(data_tuple);
-
-    return result;
-}
-
-STATIC mp_obj_t invoke_irq_handler_run_protected(uint16_t event,
-    const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
-    const uint8_t *addr,
-    const mp_obj_bluetooth_uuid_t *uuid,
-    const uint8_t **data, uint16_t *data_len, size_t n_data) {
+STATIC void invoke_irq_handler_protected(void *args_in) {
+    ble_event_tuple_args *args = args_in;
+    *args->result = mp_const_none;
 
     mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
     if (o->irq_handler == mp_const_none) {
-        return mp_const_none;
+        return;
     }
 
-    mp_obj_t result = mp_const_none;
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        result = invoke_irq_handler_run(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
+        mp_obj_array_t mv_addr;
+        mp_obj_array_t mv_data[2];
+        assert(args->n_data <= 2);
+
+        mp_obj_tuple_t *data_tuple = mp_local_alloc(sizeof(mp_obj_tuple_t) + sizeof(mp_obj_t) * MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
+        data_tuple->base.type = &mp_type_tuple;
+        data_tuple->len = 0;
+
+        for (size_t i = 0; i < args->n_unsigned; ++i) {
+            data_tuple->items[data_tuple->len++] = MP_OBJ_NEW_SMALL_INT(args->numeric[i]);
+        }
+        if (args->addr) {
+            mp_obj_memoryview_init(&mv_addr, 'B', 0, 6, (void *)args->addr);
+            data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(&mv_addr);
+        }
+        for (size_t i = 0; i < args->n_signed; ++i) {
+            data_tuple->items[data_tuple->len++] = MP_OBJ_NEW_SMALL_INT(args->numeric[i + args->n_unsigned]);
+        }
+        #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+        if (args->uuid) {
+            data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(args->uuid);
+        }
+        #endif
+
+        #if MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY
+        void *buf_to_free = NULL;
+        uint16_t buf_to_free_len = 0;
+        if (args->event == MP_BLUETOOTH_IRQ_GATTC_NOTIFY || args->event == MP_BLUETOOTH_IRQ_GATTC_INDICATE || args->event == MP_BLUETOOTH_IRQ_GATTC_READ_RESULT) {
+            if (args->n_data > 1) {
+                // Fragmented buffer, need to combine into a new heap-allocated buffer
+                // in order to pass to Python.
+                // Only gattc_on_data_available calls this code, so data and data_len are writable.
+                uint16_t total_len = 0;
+                for (size_t i = 0; i < args->n_data; ++i) {
+                    total_len += args->data_len[i];
+                }
+                uint8_t *buf = m_new(uint8_t, total_len);
+                uint8_t *p = buf;
+                for (size_t i = 0; i < args->n_data; ++i) {
+                    memcpy(p, args->data[i], args->data_len[i]);
+                    p += args->data_len[i];
+                }
+                args->data[0] = buf;
+                args->data_len[0] = total_len;
+                args->n_data = 1;
+                buf_to_free = buf;
+                buf_to_free_len = total_len;
+            }
+        }
+        #endif
+
+        for (size_t i = 0; i < args->n_data; ++i) {
+            if (args->data[i]) {
+                mp_obj_memoryview_init(&mv_data[i], 'B', 0, args->data_len[i], (void *)args->data[i]);
+                data_tuple->items[data_tuple->len++] = MP_OBJ_FROM_PTR(&mv_data[i]);
+            } else {
+                data_tuple->items[data_tuple->len++] = mp_const_none;
+            }
+        }
+
+        assert(data_tuple->len <= MICROPY_PY_BLUETOOTH_MAX_EVENT_DATA_TUPLE_LEN);
+
+        mp_obj_bluetooth_ble_t *o = MP_OBJ_TO_PTR(MP_STATE_VM(bluetooth));
+        *args->result = mp_call_function_2(o->irq_handler, MP_OBJ_NEW_SMALL_INT(args->event), MP_OBJ_FROM_PTR(data_tuple));
+
+        #if MICROPY_PY_BLUETOOTH_USE_GATTC_EVENT_DATA_REASSEMBLY
+        if (buf_to_free != NULL) {
+            m_del(uint8_t, (uint8_t *)buf_to_free, buf_to_free_len);
+        }
+        #endif
+
+        mp_local_free(data_tuple);
+
         nlr_pop();
     } else {
         // Uncaught exception, print it out.
@@ -1013,18 +1013,10 @@ STATIC mp_obj_t invoke_irq_handler_run_protected(uint16_t event,
         // Disable the BLE IRQ handler.
         o->irq_handler = mp_const_none;
     }
-
-    return result;
 }
 
-#if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS_WITH_INTERLOCK
-
-// On some systems the BLE event callbacks may occur on a system thread which is not
-// a MicroPython thread.  In such cases the callback must set up relevant MicroPython
-// state and obtain the GIL, to synchronised with the rest of the runtime.
-
-#if MICROPY_ENABLE_PYSTACK
-#error not supported
+#ifndef MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE
+#define MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE 4096
 #endif
 
 STATIC mp_obj_t invoke_irq_handler(uint16_t event,
@@ -1032,50 +1024,27 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
     const uint8_t *addr,
     const mp_obj_bluetooth_uuid_t *uuid,
     const uint8_t **data, uint16_t *data_len, size_t n_data) {
-
-    // This code may run on an existing MicroPython thread, or a non-MicroPython thread
-    // that's not using the mp_thread_get_state() value.  In the former case the state
-    // must be restored once this callback finishes.
-    mp_state_thread_t *ts_orig = mp_thread_get_state();
-
-    mp_state_thread_t ts;
-    if (ts_orig == NULL) {
-        mp_thread_set_state(&ts);
-        mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
-        mp_stack_set_limit(MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE - 1024);
-        ts.gc_lock_depth = 0;
-        ts.mp_pending_exception = MP_OBJ_NULL;
-        mp_locals_set(mp_state_ctx.thread.dict_locals); // set from the outer context
-        mp_globals_set(mp_state_ctx.thread.dict_globals); // set from the outer context
-        MP_THREAD_GIL_ENTER();
-    }
-
-    mp_sched_lock();
-    mp_obj_t result = invoke_irq_handler_run_protected(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
-    mp_sched_unlock();
-
-    if (ts_orig == NULL) {
-        MP_THREAD_GIL_EXIT();
-        mp_thread_set_state(ts_orig);
-    }
-
+    mp_obj_t result;
+    ble_event_tuple_args args = {
+        .result = &result,
+        .event = event,
+        .numeric = numeric,
+        .n_unsigned = n_unsigned,
+        .n_signed = n_signed,
+        .addr = addr,
+        .uuid = uuid,
+        .data = data,
+        .data_len = data_len,
+        .n_data = n_data,
+    };
+    // On bare-metal (e.g STM32), this will just invoke the callback directly,
+    // the host stack is already running in the scheduler. On ESP32, Unix, and
+    // Zephyr, we are currently in RTOS/OS task context, so this will run the
+    // callback on a MicroPython thread. If we're on an RTOS task, assume that
+    // at most 1k bytes of stack has been used already on the host stack.
+    mp_thread_run_on_mp_thread(invoke_irq_handler_protected, &args, MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE - 1024);
     return result;
 }
-
-#else
-
-// BLE event callbacks are called directly from the MicroPython runtime, so additional
-// synchronisation is not needed, and BLE event handlers can be called directly.
-
-STATIC mp_obj_t invoke_irq_handler(uint16_t event,
-    const mp_int_t *numeric, size_t n_unsigned, size_t n_signed,
-    const uint8_t *addr,
-    const mp_obj_bluetooth_uuid_t *uuid,
-    const uint8_t **data, uint16_t *data_len, size_t n_data) {
-    return invoke_irq_handler_run_protected(event, numeric, n_unsigned, n_signed, addr, uuid, data, data_len, n_data);
-}
-
-#endif
 
 #define NULL_NUMERIC NULL
 #define NULL_ADDR NULL
