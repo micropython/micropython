@@ -115,4 +115,17 @@ static inline int mp_thread_sem_value(mp_thread_sem_t *sem) {
 #define MP_THREAD_GIL_EXIT()
 #endif
 
+#if MICROPY_PY_THREAD && MICROPY_PY_THREAD_RTOS
+// Helper functions to assist with RTOS (or OS) threads/tasks that want to
+// call into the MicroPython VM. For example, a Unix pthread or FreeRTOS that
+// wants to execute Python code on a MicroPython thread. For example, on ESP32
+// the BLE host stack runs in a FreeRTOS task.
+typedef void (*mp_run_on_thread_function_t)(void *arg);
+void mp_thread_run_on_mp_thread(const mp_run_on_thread_function_t fn, void *arg, mp_uint_t stack_size);
+#else
+// When not using an RTOS (e.g. bare-metal STM32), all threads are MicroPython
+// threads.
+#define mp_thread_run_on_mp_thread(fn, arg, stack_size) fn(arg)
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MPTHREAD_H
