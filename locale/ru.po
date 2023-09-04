@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-09-03 02:59+0000\n"
+"PO-Revision-Date: 2023-09-05 20:12+0000\n"
 "Last-Translator: xXx <xxx_xxx_xxxxxxxxx@mail.ru>\n"
 "Language-Team: none\n"
 "Language: ru\n"
@@ -609,7 +609,7 @@ msgstr "Преобразование звука не реализовано"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr "AuthMode.OPEN не используется с паролем"
+msgstr "Режим авторизации.OPEN не используется с паролем"
 
 #: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
@@ -875,7 +875,7 @@ msgstr "Координатные массивы имеют разные длин
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
-msgstr "Типы координат имеют разные размеры"
+msgstr "Типы массивов координат имеют разные размеры"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
@@ -936,7 +936,7 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
-msgstr "Емкость места назначения меньше чем Destination_length."
+msgstr "Емкость места назначения меньше длины места назначения."
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -1005,7 +1005,7 @@ msgstr "Расширенные объявления с ответом скани
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is defined for ndarrays only"
-msgstr "FFT определено только для массивов nd"
+msgstr "FFT определено только для массивов ndarrays"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
@@ -1114,8 +1114,8 @@ msgstr ""
 #: shared-bindings/pwmio/PWMOut.c
 msgid "Frequency must match existing PWMOut using this timer"
 msgstr ""
-"Частота должна соответствовать существующему PWMOut с использованием этого "
-"таймера"
+"Частота должна соответствовать существующему выходу PWM с использованием "
+"этого таймера"
 
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
@@ -2001,7 +2001,7 @@ msgstr "Фрагменты не поддерживаются"
 #: ports/espressif/common-hal/socketpool/SocketPool.c
 #: ports/raspberrypi/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
-msgstr "Пул сокетов можно использовать только с wifi.radio"
+msgstr "SocketPool можно использовать только с wifi.radio"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
@@ -2518,11 +2518,11 @@ msgstr "arg — пустая последовательность"
 
 #: py/objobject.c
 msgid "arg must be user-type"
-msgstr "ARG должен быть пользовательского типа"
+msgstr "arg должен быть пользовательского типа"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr "Аргумент сортировки arg должен быть массивом nd"
+msgstr "аргумент сортировки должен быть аргументом массива ndarray"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort is not implemented for flattened arrays"
@@ -2547,7 +2547,7 @@ msgstr "аргумент должен быть '%q', а не '%q'"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/numpy/transform.c
 msgid "arguments must be ndarrays"
-msgstr "аргументы должны быть массивами"
+msgstr "Аргументы должны быть массивами ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
@@ -2572,11 +2572,15 @@ msgstr "Переполнение ASM"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr "Попытка получить (arg)min/(arg)max пустой последовательности"
+msgstr ""
+"Попытка получить (аргумент)минимальный/(аргумент)максимальный пустой "
+"последовательности"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
-msgstr "Попытка получить argmin/argmax пустой последовательности"
+msgstr ""
+"Попытка получить аргумент минимальный/аргумент максимальный пустой "
+"последовательности"
 
 #: py/objstr.c
 msgid "attributes not supported yet"
@@ -2833,7 +2837,7 @@ msgstr "Не удается привести выходные данные с п
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr "невозможно преобразовать комплекс в тип d"
+msgstr "не может превратить комплекс в dtype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
@@ -2904,7 +2908,7 @@ msgstr "Цветовой буфер должен быть буфером, кор
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
 msgstr ""
-"цветовой буфер должен быть предплечьем или массивом типа \"b\" или \"B\""
+"цветовой буфер должен быть байтом массива или массивом типа \"b\" или \"B\""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -2932,7 +2936,7 @@ msgstr "Аргументы свертки должны быть линейным
 
 #: extmod/ulab/code/numpy/filter.c
 msgid "convolve arguments must be ndarrays"
-msgstr "Аргументы свертки должны быть линейными массивами nd"
+msgstr "переплетение аргументов должно быть массивами ndarrays"
 
 #: extmod/ulab/code/numpy/filter.c
 msgid "convolve arguments must not be empty"
@@ -2987,7 +2991,7 @@ msgstr "По умолчанию не является функцией"
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
 msgstr ""
-"буфер назначения должен быть байтером или массивом типа \"B\" для "
+"буфер назначения должен быть байтоммассива или массивом типа \"B\" для "
 "бит_глубины = 8"
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -3000,7 +3004,7 @@ msgstr "последовательность обновления дикта и�
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "diff argument must be an ndarray"
-msgstr "Аргумент diff должен быть массивом nd"
+msgstr "аргумент DIFF должен быть массивом ndarray"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "differentiation order out of range"
@@ -3131,11 +3135,11 @@ msgstr "первый аргумент должен быть функцией"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr "первый аргумент должен быть кортежем из nd массивов"
+msgstr "Первый аргумент должен быть кортежом массива ndarrays"
 
 #: extmod/ulab/code/numpy/transform.c extmod/ulab/code/numpy/vector.c
 msgid "first argument must be an ndarray"
-msgstr "первый аргумент должен быть массивом nd"
+msgstr "Первым аргументом должен быть массивом ndarray"
 
 #: py/objtype.c
 msgid "first argument to super() must be type"
@@ -3143,7 +3147,7 @@ msgstr "первый аргумент супер() должен быть тип�
 
 #: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "first two arguments must be ndarrays"
-msgstr "первые два аргумента должны быть массивами nd"
+msgstr "Первые два аргумента должны быть массивами ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
@@ -3151,7 +3155,7 @@ msgstr "порядок сглаживания должен быть либо 'C'
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "flip argument must be an ndarray"
-msgstr "аргумент переворота должен быть массивом nd"
+msgstr "Флип -аргумент должен быть массивом ndarray"
 
 #: py/objint.c
 msgid "float too big"
@@ -3192,11 +3196,11 @@ msgstr "функция имеет один и тот же знак в конце
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr "функция определена только для массивов nd"
+msgstr "Функция определяется только для массивов ndarrays"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr "функция реализована только для массивов nd"
+msgstr "Функция реализована только для массивов ndarrays"
 
 #: py/argcheck.c
 #, c-format
@@ -3366,19 +3370,19 @@ msgstr "Вход должен быть 1- или 2-D"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr "входные данные должны быть 1D-массивом nd"
+msgstr "Ввод должен быть 1D массивом ndarray"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr "входные данные должны быть плотным массивом nd"
+msgstr "Ввод должен быть плотным массивом ndarray"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr "ввод должен быть массивом nd"
+msgstr "Ввод должен быть массивом ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr "входные данные должны быть массивом nd или скаляром"
+msgstr "Ввод должен быть массивом ndarray или скаляр"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
@@ -3390,8 +3394,7 @@ msgstr "Входные данные должны быть квадратной �
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "input must be tuple, list, range, or ndarray"
-msgstr ""
-"входные данные должны быть кортежем, списком, диапазоном или массивом nd"
+msgstr "Ввод должен быть кортеж, список, диапазон или массивом ndarray"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input vectors must be of equal length"
@@ -3544,7 +3547,7 @@ msgstr "mDNS уже инициализирован"
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
-msgstr "mDNS работает только со встроенным Wi-Fi"
+msgstr "mDNS работает только со встроенным WiFi"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3587,7 +3590,7 @@ msgstr "макситер должен быть > 0"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "median argument must be an ndarray"
-msgstr "Медианный аргумент должен быть массивом nd"
+msgstr "Средний аргумент должен быть массивом ndarray"
 
 #: py/runtime.c
 #, c-format
@@ -3656,7 +3659,7 @@ msgstr "родной урожай"
 
 #: extmod/ulab/code/ndarray.c
 msgid "ndarray length overflows"
-msgstr "Переполнение длины массива nd"
+msgstr "Переполнение длины массива ndarray"
 
 #: py/runtime.c
 #, c-format
@@ -3714,7 +3717,7 @@ msgstr "нет такого атрибута"
 #: ports/espressif/common-hal/_bleio/Connection.c
 #: ports/nrf/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
-msgstr "не-UUID найден в service_uuids_whitelist"
+msgstr "не-UUID найден в сервисе_uuids_белый список"
 
 #: py/compile.c
 msgid "non-default argument follows default argument"
@@ -3847,7 +3850,7 @@ msgstr "Поддерживается только моно"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "only ndarrays can be concatenated"
-msgstr "только nd массивы могут быть объединены"
+msgstr "только массивы ndarrays могут быть объединены"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
@@ -3879,7 +3882,7 @@ msgstr "операция определена только для 2D-масси�
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for ndarrays only"
-msgstr "операция определена только для массивов nd"
+msgstr "операция определена только для массивов ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
@@ -3887,7 +3890,7 @@ msgstr "операция реализована только для 1D логи�
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "operation is not implemented on ndarrays"
-msgstr "операция не реализована на массивах nd"
+msgstr "операция не реализована на массивах ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
@@ -3920,7 +3923,7 @@ msgstr "Out должен быть плотным массивом с плава�
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be an ndarray"
-msgstr "Входные данные должны быть массивом nd"
+msgstr "out должен быть массивом ndarray"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out must be of float dtype"
@@ -4041,7 +4044,7 @@ msgstr "rgb_pins[%d] не находится на том же порту что 
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "roll argument must be an ndarray"
-msgstr "Аргумент roll должен быть массивом nd"
+msgstr "аргумент roll должен быть массивом ndarray"
 
 #: py/objstr.c
 msgid "rsplit(None,n)"
@@ -4082,7 +4085,7 @@ msgstr "Знак не разрешен со спецификатором цел�
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
-msgstr "Размер определяется только для массивов nd"
+msgstr "размер определен только для массива ndarrays"
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
@@ -4106,11 +4109,11 @@ msgstr "Мягкая перезагрузка\n"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "sort argument must be an ndarray"
-msgstr "Аргумент сортировки должен быть массивом nd"
+msgstr "аргумент сортировки должен быть массивом ndarray"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos array must be of shape (n_section, 6)"
-msgstr "Массив SOS должен иметь форму (n_section, 6)"
+msgstr "Массив sos должен иметь форму (n_section, 6)"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "sos[:, 3] should be all ones"
@@ -4455,7 +4458,7 @@ msgstr "x Создать задачу не удалось"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
-msgstr "zi должен быть массивом nd"
+msgstr "зи, должно быть, массивом ndarray"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of float type"
