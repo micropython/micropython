@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         # Setting this to zero means fetch all history and tags,
         # which hatch-vcs can use to discover the version tag.
