@@ -30,10 +30,10 @@
 #include "pin.h"
 #include "pendsv.h"
 
+#if MICROPY_PY_NETWORK_CYW43
+
 #include "fsl_usdhc.h"
 #include "fsl_iomuxc.h"
-
-#if MICROPY_PY_NETWORK_CYW43
 
 #if MICROPY_HW_SDIO_SDMMC == 1
 #define SDMMC                       USDHC1
