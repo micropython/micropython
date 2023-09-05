@@ -69,6 +69,7 @@ user_files = {
     "/usermod1.py": b"print('in usermod1')\nimport usermod2",
     "/usermod2.py": b"print('in usermod2')",
     "/usermod3.py": b"syntax error",
+    "/usermod4.mpy": b"syntax error",
 }
 os.mount(UserFS(user_files), "/userfs")
 
@@ -85,6 +86,12 @@ try:
     import usermod3
 except SyntaxError:
     print("SyntaxError in usermod3")
+
+# import a .mpy file with a syntax error (file should be closed on error)
+try:
+    import usermod4
+except ValueError:
+    print("ValueError in usermod4")
 
 # unmount and undo path addition
 os.umount("/userfs")
