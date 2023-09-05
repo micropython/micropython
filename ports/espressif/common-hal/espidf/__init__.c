@@ -79,7 +79,7 @@ bool common_hal_espidf_set_reserved_psram(size_t amount) {
 supervisor_allocation *psram_for_idf;
 
 void common_hal_espidf_reserve_psram(void) {
-    #ifdef CONFIG_SPIRAM
+    #ifdef CONFIG_SPIRAM_USE_MEMMAP
     if (!psram_for_idf) {
         ESP_LOGI(TAG, "Reserving %d bytes of psram", reserved_psram);
         if (reserved_psram == 0) {

@@ -299,32 +299,7 @@ safe_mode_t port_init(void) {
     #endif
     #endif
 
-    #ifdef CONFIG_SPIRAM
-    {
-        intptr_t heap_start = common_hal_espidf_get_psram_start();
-        intptr_t heap_end = common_hal_espidf_get_psram_end();
-        size_t spiram_size = heap_end - heap_start;
-        if (spiram_size > 0) {
-            heap = (uint32_t *)heap_start;
-            heap_size = (heap_end - heap_start) / sizeof(uint32_t);
-        } else {
-            ESP_LOGE(TAG, "CONFIG_SPIRAM enabled but no spiram heap available");
-        }
-    }
-    #endif
-
     _never_reset_spi_ram_flash();
-
-    if (heap == NULL) {
-        size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
-        heap_size = MIN(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), heap_total / 2);
-        heap = malloc(heap_size);
-        heap_size = heap_size / sizeof(uint32_t);
-    }
-    if (heap == NULL) {
-        heap_size = 0;
-        return SAFE_MODE_NO_HEAP;
-    }
 
     esp_reset_reason_t reason = esp_reset_reason();
     switch (reason) {
@@ -342,6 +317,57 @@ safe_mode_t port_init(void) {
     }
 
     return SAFE_MODE_NONE;
+}
+
+safe_mode_t port_heap_init(safe_mode_t sm) {
+    mp_int_t reserved = 0;
+    if (filesystem_present() && common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
+        common_hal_espidf_set_reserved_psram(reserved);
+    }
+
+    #ifdef CONFIG_SPIRAM_USE_MEMMAP
+    {
+        intptr_t heap_start = common_hal_espidf_get_psram_start();
+        intptr_t heap_end = common_hal_espidf_get_psram_end();
+        size_t spiram_size = heap_end - heap_start;
+        if (spiram_size > 0) {
+            heap = (uint32_t *)heap_start;
+            heap_size = (heap_end - heap_start) / sizeof(uint32_t);
+            common_hal_espidf_reserve_psram();
+        } else {
+            ESP_LOGE(TAG, "CONFIG_SPIRAM_USE_MMAP enabled but no spiram heap available");
+        }
+    }
+    #elif CONFIG_SPIRAM_USE_CAPS_ALLOC
+    {
+        intptr_t psram_start = common_hal_espidf_get_psram_start();
+        intptr_t psram_end = common_hal_espidf_get_psram_end();
+        size_t psram_amount = psram_end - psram_start;
+        size_t biggest_block = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
+        size_t try_alloc = MIN(biggest_block, psram_amount - common_hal_espidf_get_reserved_psram());
+        heap = heap_caps_malloc(try_alloc, MALLOC_CAP_SPIRAM);
+
+        if (heap) {
+            heap_size = try_alloc;
+        } else {
+            ESP_LOGE(TAG, "CONFIG_SPIRAM_USE_CAPS_ALLOC but no spiram heap available");
+        }
+    }
+    #endif
+
+    if (heap == NULL) {
+        size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
+        heap_size = MIN(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), heap_total / 2);
+        heap = malloc(heap_size);
+        heap_size = heap_size / sizeof(uint32_t);
+    }
+    if (heap == NULL) {
+        heap_size = 0;
+        return SAFE_MODE_NO_HEAP;
+    }
+
+    return sm;
+
 }
 
 void reset_port(void) {
@@ -533,11 +559,6 @@ void port_idle_until_interrupt(void) {
 
 void port_post_boot_py(bool heap_valid) {
     if (!heap_valid && filesystem_present()) {
-        mp_int_t reserved;
-        if (common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
-            common_hal_espidf_set_reserved_psram(reserved);
-        }
-        common_hal_espidf_reserve_psram();
     }
 }
 
