@@ -197,6 +197,11 @@ void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in) {
     mp_locals_set(ctx->locals);
 }
 
+void mp_call_function_1_from_nlr_jump_callback(void *ctx_in) {
+    nlr_jump_callback_node_call_function_1_t *ctx = ctx_in;
+    ctx->func(ctx->arg);
+}
+
 mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {
     // logic: search locals, globals, builtins
     DEBUG_OP_printf("load name %s\n", qstr_str(qst));
