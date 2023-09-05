@@ -14,8 +14,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 5.0.1-dev\n"
 
 #: main.c
@@ -104,13 +104,17 @@ msgstr ""
 "%d"
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -759,7 +763,8 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
-msgstr "Из глубокого сна может сигнализировать только по двум низким контактам."
+msgstr ""
+"Из глубокого сна может сигнализировать только по двум низким контактам."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -839,7 +844,8 @@ msgstr "Невозможно изменить частоту на таймере
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
-msgstr "Невозможно проснуться по изменению логического уровня, только по уровню"
+msgstr ""
+"Невозможно проснуться по изменению логического уровня, только по уровню"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
@@ -1815,7 +1821,8 @@ msgstr "Полигону необходимо как минимум 3 точки
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr "Мощность просела. Убедитесь, что вы обеспечиваете достаточную мощность."
+msgstr ""
+"Мощность просела. Убедитесь, что вы обеспечиваете достаточную мощность."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2701,7 +2708,8 @@ msgstr "Можно указать только одно неизвестное �
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
-msgstr "Не удается добавить специальный метод к уже имеющемуся подклассу классу"
+msgstr ""
+"Не удается добавить специальный метод к уже имеющемуся подклассу классу"
 
 #: py/compile.c
 msgid "can't assign to expression"
@@ -2996,7 +3004,8 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr "буфер назначения должен быть массивом типа «H» для битовой_глубины = 16"
+msgstr ""
+"буфер назначения должен быть массивом типа «H» для битовой_глубины = 16"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
@@ -3038,7 +3047,7 @@ msgstr "пусто"
 msgid "empty file"
 msgstr "пустой файл"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "пустая куча"
 
@@ -3999,10 +4008,6 @@ msgstr "pow() с 3 аргументами требует целых чисел"
 msgid "pull masks conflict with direction masks"
 msgstr "Маски вытягивания конфликтуют с масками направления"
 
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "Переполнение очереди"
-
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr "Необработанные F-строки не поддерживаются"
@@ -4467,6 +4472,9 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "queue overflow"
+#~ msgstr "Переполнение очереди"
 
 #~ msgid "'coroutine' object is not an iterator"
 #~ msgstr "Объект 'coroutine' не является итератором"

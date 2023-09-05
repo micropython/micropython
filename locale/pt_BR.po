@@ -102,13 +102,17 @@ msgstr ""
 "não %d"
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -3034,7 +3038,7 @@ msgstr "vazio"
 msgid "empty file"
 msgstr "arquivo vazio"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "a área de alocação dinâmica de variáveis (heap) está vazia"
 
@@ -3998,10 +4002,6 @@ msgstr "o pow() com 3 argumentos requer números inteiros"
 msgid "pull masks conflict with direction masks"
 msgstr "puxe as máscaras em conflito com as máscaras de direção"
 
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "estouro de fila"
-
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr "os f-strings brutos não são suportados"
@@ -4464,6 +4464,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "queue overflow"
+#~ msgstr "estouro de fila"
 
 #~ msgid "Stopping AP is not supported."
 #~ msgstr "Não há suporte para a interrupção do AP."

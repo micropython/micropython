@@ -103,13 +103,17 @@ msgstr ""
 "bù shì %d"
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -3005,7 +3009,7 @@ msgstr "kòngxián"
 msgid "empty file"
 msgstr "kōng de wénjiàn"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "kōng yīn yīnxiào"
 
@@ -3959,10 +3963,6 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 msgid "pull masks conflict with direction masks"
 msgstr "lā kǒu zhào yǔ fāng xiàng miàn mó chōng tū"
 
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "duìliè yìchū"
-
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr "bù zhī chí yuán shǐ f-strings"
@@ -4428,6 +4428,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "queue overflow"
+#~ msgstr "duìliè yìchū"
 
 #~ msgid "Stopping AP is not supported."
 #~ msgstr "bù zhī chí tíng zhǐ AP."
