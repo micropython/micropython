@@ -75,6 +75,9 @@ typedef struct _gc_info_t {
     size_t num_1block;
     size_t num_2block;
     size_t max_block;
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    size_t max_new_split;
+    #endif
 } gc_info_t;
 
 void gc_info(gc_info_t *info);
