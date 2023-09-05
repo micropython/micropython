@@ -258,18 +258,8 @@ void supervisor_web_workflow_status(void) {
 }
 #endif
 
-bool supervisor_start_web_workflow(void) {
+bool supervisor_start_web_workflow(bool reload) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
-
-    // Skip starting the workflow if we're not starting from power on or reset.
-    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
-    if (reset_reason != RESET_REASON_POWER_ON &&
-        reset_reason != RESET_REASON_RESET_PIN &&
-        reset_reason != RESET_REASON_DEEP_SLEEP_ALARM &&
-        reset_reason != RESET_REASON_UNKNOWN &&
-        reset_reason != RESET_REASON_SOFTWARE) {
-        return false;
-    }
 
     char ssid[33];
     char password[64];
@@ -287,11 +277,6 @@ bool supervisor_start_web_workflow(void) {
         return false;
     }
 
-    result = common_hal_os_getenv_str("CIRCUITPY_WEB_INSTANCE_NAME", web_instance_name, sizeof(web_instance_name));
-    if (result != GETENV_OK || web_instance_name[0] == '\0') {
-        strcpy(web_instance_name, MICROPY_HW_BOARD_NAME);
-    }
-
     if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
         common_hal_wifi_init(false);
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, true);
@@ -303,6 +288,7 @@ bool supervisor_start_web_workflow(void) {
     // We can all connect again because it will return early if we're already connected to the
     // network. If we are connected to a different network, then it will disconnect before
     // attempting to connect to the given network.
+
     _wifi_status = common_hal_wifi_radio_connect(
         &common_hal_wifi_radio_obj, (uint8_t *)ssid, strlen(ssid), (uint8_t *)password, strlen(password),
         0, 8, NULL, 0);
@@ -312,12 +298,36 @@ bool supervisor_start_web_workflow(void) {
         return false;
     }
 
-    // (leaves new_port unchanged on any failure)
-    (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &web_api_port);
+    // Skip starting the workflow if we're not starting from power on or reset.
+    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
+    if (reset_reason != RESET_REASON_POWER_ON &&
+        reset_reason != RESET_REASON_RESET_PIN &&
+        reset_reason != RESET_REASON_DEEP_SLEEP_ALARM &&
+        reset_reason != RESET_REASON_UNKNOWN &&
+        reset_reason != RESET_REASON_SOFTWARE) {
+        return false;
+    }
 
-    bool first_start = pool.base.type != &socketpool_socketpool_type;
+    bool initialized = pool.base.type == &socketpool_socketpool_type;
 
-    if (first_start) {
+    if (!initialized && !reload) {
+        result = common_hal_os_getenv_str("CIRCUITPY_WEB_INSTANCE_NAME", web_instance_name, sizeof(web_instance_name));
+        if (result != GETENV_OK || web_instance_name[0] == '\0') {
+            strcpy(web_instance_name, MICROPY_HW_BOARD_NAME);
+        }
+
+        // (leaves new_port unchanged on any failure)
+        (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &web_api_port);
+
+        const size_t api_password_len = sizeof(_api_password) - 1;
+        result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
+        if (result == GETENV_OK) {
+            _api_password[0] = ':';
+            _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
+        } else { // Skip starting web-workflow when no password is passed.
+            return false;
+        }
+
         pool.base.type = &socketpool_socketpool_type;
         common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
@@ -327,43 +337,42 @@ bool supervisor_start_web_workflow(void) {
         websocket_init();
     }
 
-    if (!common_hal_socketpool_socket_get_closed(&active)) {
-        common_hal_socketpool_socket_close(&active);
-    }
+    initialized = pool.base.type == &socketpool_socketpool_type;
 
-    #if CIRCUITPY_MDNS
-    // Try to start MDNS if the user deinited it.
-    if (mdns.base.type != &mdns_server_type ||
-        common_hal_mdns_server_deinited(&mdns)) {
-        mdns_server_construct(&mdns, true);
-        mdns.base.type = &mdns_server_type;
-        if (!common_hal_mdns_server_deinited(&mdns)) {
-            common_hal_mdns_server_set_instance_name(&mdns, web_instance_name);
+    if (initialized){
+        if (!common_hal_socketpool_socket_get_closed(&active)) {
+            common_hal_socketpool_socket_close(&active);
         }
-    }
-    if (!common_hal_mdns_server_deinited(&mdns)) {
-        common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
-    }
-    #endif
 
-    const size_t api_password_len = sizeof(_api_password) - 1;
-    result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
-    if (result == GETENV_OK) {
-        _api_password[0] = ':';
-        _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
-    }
+        #if CIRCUITPY_MDNS
+        // Try to start MDNS if the user deinited it.
+        if (mdns.base.type != &mdns_server_type ||
+            common_hal_mdns_server_deinited(&mdns) ||
+            reload) { // Always reconstruct on reload, since we don't know if the net changed.
+            mdns_server_construct(&mdns, true);
+            mdns.base.type = &mdns_server_type;
+            if (!common_hal_mdns_server_deinited(&mdns)) {
+                common_hal_mdns_server_set_instance_name(&mdns, web_instance_name);
+            }
+        }
+        if (!common_hal_mdns_server_deinited(&mdns)) {
+            common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+        }
+        #endif
 
-    if (common_hal_socketpool_socket_get_closed(&listening)) {
-        socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
-        common_hal_socketpool_socket_settimeout(&listening, 0);
-        // Bind to any ip. (Not checking for failures)
-        common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
-        common_hal_socketpool_socket_listen(&listening, 1);
+        if (common_hal_socketpool_socket_get_closed(&listening)) {
+            socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+            common_hal_socketpool_socket_settimeout(&listening, 0);
+            // Bind to any ip. (Not checking for failures)
+            common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
+            common_hal_socketpool_socket_listen(&listening, 1);
+        }
+        // Wake polling thread (maybe)
+        socketpool_socket_poll_resume();
+        #endif
+        return true;
     }
-    // Wake polling thread (maybe)
-    socketpool_socket_poll_resume();
-    #endif
-    return true;
+    return false;
 }
 
 void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
