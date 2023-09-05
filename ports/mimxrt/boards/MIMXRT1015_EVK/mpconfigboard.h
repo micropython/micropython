@@ -10,6 +10,7 @@
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_high(pin))
 
 #define MICROPY_HW_NUM_PIN_IRQS (3 * 32)
+#define MICROPY_PY_MACHINE_SDCARD    (0)
 
 // Define mapping logical UART # to hardware UART #
 // RX/TX      HW-UART    Logical UART
