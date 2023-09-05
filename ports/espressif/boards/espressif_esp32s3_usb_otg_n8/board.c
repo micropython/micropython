@@ -116,10 +116,6 @@ void board_init(void) {
         true, // backlight_on_high
         false, // SH1107_addressing
         50000); // backlight pwm frequency
-
-    #if CIRCUITPY_DEBUG
-    common_hal_never_reset_pin(DEFAULT_UART_BUS_TX);
-    #endif
 }
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
