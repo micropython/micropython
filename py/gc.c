@@ -701,6 +701,11 @@ void gc_info(gc_info_t *info) {
 
     info->used *= BYTES_PER_BLOCK;
     info->free *= BYTES_PER_BLOCK;
+
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    info->max_new_split = gc_get_max_new_split();
+    #endif
+
     GC_EXIT();
 }
 
@@ -1159,7 +1164,7 @@ void gc_dump_info(const mp_print_t *print) {
     mp_printf(print, "GC: total: %u, used: %u, free: %u",
         (uint)info.total, (uint)info.used, (uint)info.free);
     #if MICROPY_GC_SPLIT_HEAP_AUTO
-    mp_printf(print, ", max new split: %u", (uint)gc_get_max_new_split());
+    mp_printf(print, ", max new split: %u", (uint)info.max_new_split);
     #endif
     mp_printf(print, "\n No. of 1-blocks: %u, 2-blocks: %u, max blk sz: %u, max free sz: %u\n",
         (uint)info.num_1block, (uint)info.num_2block, (uint)info.max_block, (uint)info.max_free);
