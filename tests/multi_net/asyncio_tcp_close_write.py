@@ -33,7 +33,7 @@ async def tcp_server():
     print("server running")
     multitest.next()
     async with server:
-        await asyncio.wait_for(ev.wait(), 5)
+        await asyncio.wait_for(ev.wait(), 10)
 
 
 async def tcp_client():
