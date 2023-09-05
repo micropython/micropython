@@ -17,9 +17,6 @@ MPY_MTB_BOARD_BUILD_OUTPUT_DIR := $(MPY_MTB_BOARD_BUILD_DIR)/$(MPY_MTB_TARGET)/$
 
 MPY_MTB_LIB_NAME       = $(file < $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR)/artifact.rsp)
 
-MTB_HOME     ?= $(HOME)/ModusToolbox
-OPENOCD_HOME ?= $(MTB_HOME)/tools_3.0/openocd
-
 # $(info MPY_DIR_OF_MTB_ADAPTER_MAKEFILE  : $(MPY_DIR_OF_MTB_ADAPTER_MAKEFILE))
 
 # $(info MPY_MTB_MAIN_MAKEFILE            : $(MPY_MTB_MAIN_MAKEFILE))
@@ -30,7 +27,7 @@ OPENOCD_HOME ?= $(MTB_HOME)/tools_3.0/openocd
 # $(info MPY_MTB_BOARD_BUILD_DIR          : $(MPY_MTB_BOARD_BUILD_DIR))
 # $(info MPY_MTB_BOARD_BUILD_OUTPUT_DIR   : $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR))
 
-mtb_init: mtb_add_bsp mtb_set_bsp mtb_get_libs
+mtb_init: mtb_deinit mtb_add_bsp mtb_set_bsp mtb_get_libs
 	$(info )
 	$(info Initializing ModusToolbox libs for board $(BOARD))
 
@@ -125,11 +122,23 @@ else
 HEX_FILE = $(EXT_HEX_FILE)
 endif
 
+MTB_HOME     ?= $(HOME)/ModusToolbox
+OPENOCD_HOME ?= $(MTB_HOME)/tools_3.0/openocd
+
+# Selection of openocd cfg files based on board
+OPENOCD_CFG_SEARCH = $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/bsps/TARGET_APP_$(BOARD)/config/GeneratedSource
+
+ifeq ($(BOARD),CY8CPROTO-062-4343W)
+OPENOCD_TARGET_CFG=psoc6_2m.cfg
+else ifeq ($(BOARD),CY8CPROTO-063-BLE)
+OPENOCD_TARGET_CFG=psoc6.cfg
+endif
+
 program: $(PROG_DEPS)
 	@:
 	$(info )
 	$(info Programming using openocd ...)
-	openocd -s $(OPENOCD_HOME)/scripts -s $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/bsps/TARGET_APP_$(BOARD)/config/GeneratedSource -c "source [find interface/kitprog3.cfg]; $(SERIAL_ADAPTER_CMD) ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program $(HEX_FILE) verify reset exit;"
+	openocd -s $(OPENOCD_HOME)/scripts -s $(OPENOCD_CFG_SEARCH) -c "source [find interface/kitprog3.cfg]; $(SERIAL_ADAPTER_CMD) ; source [find target/$(OPENOCD_TARGET_CFG)]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program $(HEX_FILE) verify reset exit;"
 	$(info Programming done.)
 
 program_multi: attached_devs
