@@ -56,15 +56,6 @@ Functions
     two most useful ones are predefined as `esp32.HEAP_DATA` for data heap regions and
     `esp32.HEAP_EXEC` for executable regions as used by the native code emitter.
 
-    Free IDF heap memory in the `esp32.HEAP_DATA` region is available to be
-    automatically added to the MicroPython heap to prevent a MicroPython
-    allocation from failing. However, the information returned here is otherwise
-    *not* useful to troubleshoot Python allocation failures, use
-    `micropython.mem_info()` instead. The "max new split" value in
-    `micropython.mem_info()` output corresponds to the largest free block of
-    ESP-IDF heap that could be automatically added on demand to the MicroPython
-    heap.
-
     The return value is a list of 4-tuples, where each 4-tuple corresponds to one heap
     and contains: the total bytes, the free bytes, the largest free block, and
     the minimum free seen over time.
@@ -74,6 +65,21 @@ Functions
         >>> import esp32; esp32.idf_heap_info(esp32.HEAP_DATA)
         [(240, 0, 0, 0), (7288, 0, 0, 0), (16648, 4, 4, 4), (79912, 35712, 35512, 35108),
          (15072, 15036, 15036, 15036), (113840, 0, 0, 0)]
+
+    .. note:: Free IDF heap memory in the `esp32.HEAP_DATA` region is available
+       to be automatically added to the MicroPython heap to prevent a
+       MicroPython allocation from failing. However, the information returned
+       here is otherwise *not* useful to troubleshoot Python allocation
+       failures. :func:`micropython.mem_info()` and :func:`gc.mem_free()` should
+       be used instead:
+
+       The "max new split" value in :func:`micropython.mem_info()` output
+       corresponds to the largest free block of ESP-IDF heap that could be
+       automatically added on demand to the MicroPython heap.
+
+       The result of :func:`gc.mem_free()` is the total of the current "free"
+       and "max new split" values printed by :func:`micropython.mem_info()`.
+
 
 Flash partitions
 ----------------
