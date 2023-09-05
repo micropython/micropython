@@ -24,11 +24,12 @@
  * THE SOFTWARE.
  */
 
-#if MICROPY_PY_MACHINE_SDCARD
-
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
+
+#if MICROPY_PY_MACHINE_SDCARD
+
 #include "ticks.h"
 
 #if defined(MIMXRT1170x_SERIES)
