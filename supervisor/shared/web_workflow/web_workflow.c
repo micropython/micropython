@@ -315,6 +315,15 @@ bool supervisor_start_web_workflow(void) {
     // (leaves new_port unchanged on any failure)
     (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &web_api_port);
 
+    const size_t api_password_len = sizeof(_api_password) - 1;
+    result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
+    if (result == GETENV_OK) {
+        _api_password[0] = ':';
+        _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
+    } else {
+        return false;
+    }
+
     bool first_start = pool.base.type != &socketpool_socketpool_type;
 
     if (first_start) {
@@ -345,13 +354,6 @@ bool supervisor_start_web_workflow(void) {
         common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
     }
     #endif
-
-    const size_t api_password_len = sizeof(_api_password) - 1;
-    result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
-    if (result == GETENV_OK) {
-        _api_password[0] = ':';
-        _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
-    }
 
     if (common_hal_socketpool_socket_get_closed(&listening)) {
         socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
