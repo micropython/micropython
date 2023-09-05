@@ -1023,6 +1023,9 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 }
 
 mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
+    // Set exception handler to free the lexer if an exception is raised.
+    MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, mp_lexer_free, lex);
+    nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
 
     // initialise parser and allocate memory for its stacks
 
@@ -1370,8 +1373,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
 
-    // we also free the lexer on behalf of the caller
-    mp_lexer_free(lex);
+    // Deregister exception handler and free the lexer.
+    nlr_pop_jump_callback(true);
 
     return parser.tree;
 }
