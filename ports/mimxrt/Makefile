@@ -152,7 +152,7 @@ ifeq ($(MICROPY_HW_SDRAM_AVAIL),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_semc.c
 endif
 
-ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
 
