@@ -29,6 +29,13 @@
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
+// For use with mp_call_function_1_from_nlr_jump_callback.
+#define MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, f, a) \
+    nlr_jump_callback_node_call_function_1_t ctx = { \
+        .func = (void (*)(void *))(f), \
+        .arg = (a), \
+    }
+
 typedef enum {
     MP_VM_RETURN_NORMAL,
     MP_VM_RETURN_YIELD,
@@ -72,6 +79,13 @@ typedef struct _nlr_jump_callback_node_globals_locals_t {
     mp_obj_dict_t *globals;
     mp_obj_dict_t *locals;
 } nlr_jump_callback_node_globals_locals_t;
+
+// For use with mp_call_function_1_from_nlr_jump_callback.
+typedef struct _nlr_jump_callback_node_call_function_1_t {
+    nlr_jump_callback_node_t callback;
+    void (*func)(void *);
+    void *arg;
+} nlr_jump_callback_node_call_function_1_t;
 
 // Tables mapping operator enums to qstrs, defined in objtype.c
 extern const byte mp_unary_op_method_name[];
@@ -121,6 +135,7 @@ static inline void mp_globals_set(mp_obj_dict_t *d) {
 }
 
 void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in);
+void mp_call_function_1_from_nlr_jump_callback(void *ctx_in);
 
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
