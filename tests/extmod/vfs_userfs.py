@@ -68,6 +68,7 @@ user_files = {
     "/data.txt": b"some data in a text file",
     "/usermod1.py": b"print('in usermod1')\nimport usermod2",
     "/usermod2.py": b"print('in usermod2')",
+    "/usermod3.py": b"syntax error",
 }
 os.mount(UserFS(user_files), "/userfs")
 
@@ -78,6 +79,12 @@ print(f.read())
 # import files from the user filesystem
 sys.path.append("/userfs")
 import usermod1
+
+# import a .py file with a syntax error (file should be closed on error)
+try:
+    import usermod3
+except SyntaxError:
+    print("SyntaxError in usermod3")
 
 # unmount and undo path addition
 os.umount("/userfs")
