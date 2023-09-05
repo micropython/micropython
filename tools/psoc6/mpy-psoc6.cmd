@@ -79,12 +79,24 @@ exit /b 0
 
 :mpy_firmware_deploy
 
-    Rem Board is yet unused. In future the suitable target .cfg selection needs to be based on the board.
     set board=%~1
     set hex_file=%~2
+    set serial_adapter_sn=%~3
+
+    if "%board%" == "CY8CPROTO-062-4343W" (
+        call set target_cfg=psoc6_2m.cfg
+    ) else if "%board%" == "CY8CPROTO-063-BLE" (
+        call set target_cfg=psoc6.cfg
+    )
+
+    if [%serial_adapter_sn%] == [] (
+        call set serial_adapter_opt=
+    ) else (
+        call set serial_adapter_opt="adapter serial %serial_adapter_sn%"
+    )
 
     echo Deploying Micropython...
-    openocd.exe -s openocd\scripts -s openocd\board -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program %hex_file% verify reset exit;"
+    openocd.exe -s openocd\scripts -s openocd\board -c "source [find interface/kitprog3.cfg]; %serial_adapter_opt% ; source [find target/%target_cfg%]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program %hex_file% verify reset exit;"
 
 exit /b 0
 
@@ -151,19 +163,22 @@ exit /b 0
     Rem Board selection
     set board=%~1
     set board_list[0]=CY8CPROTO-062-4343W
+    set board_list[1]=CY8CPROTO-063-BLE
     if [%board%]==[] (
         echo:
         echo       Supported MicroPython PSoC6 boards
         echo +---------+-----------------------------------+
         echo ^|   ID    ^|              Board                ^|
         echo +---------+-----------------------------------+
-        echo ^|   0     ^|  CY8CPROTO-062-4343W (default^)    ^|
+        echo ^|   0     ^|  CY8CPROTO-062-4343W              ^|
+        echo +---------+-----------------------------------+
+        echo ^|   1     ^|  CY8CPROTO-063-BLE                ^|
         echo +---------+-----------------------------------+
         echo:
-        echo No user selection required. Only one choice.
-        set /a board_index=0
+        @REM echo No user selection required. Only one choice.
+        @REM set /a board_index=0
         echo:
-        Rem set  /p/( "board_index=Please type the desired board ID. " --> Uncomment and remove preselection above when more options are available
+        set  /p/( board_index="Please type the desired board ID.")
         call set board=%%board_list[!board_index!]%%
     )
     echo MicroPython PSoC6 Board  :: %board%
@@ -212,19 +227,22 @@ exit /b 0
     Rem Board selection
     set board=%~1
     set board_list[0]=CY8CPROTO-062-4343W
+    set board_list[1]=CY8CPROTO-063-BLE
     if [%board%]==[] (
         echo:
         echo       Supported MicroPython PSoC6 boards
         echo +---------+-----------------------------------+
         echo ^|   ID    ^|              Board                ^|
         echo +---------+-----------------------------------+
-        echo ^|   0     ^|  CY8CPROTO-062-4343W (default^)    ^|
+        echo ^|   0     ^|  CY8CPROTO-062-4343W              ^|
+        echo +---------+-----------------------------------+
+        echo ^|   1     ^|  CY8CPROTO-063-BLE                ^|
         echo +---------+-----------------------------------+
         echo:
-        echo No user selection required. Only one choice.
-        set /a board_index=0
+        @REM echo No user selection required. Only one choice.
+        @REM set /a board_index=0
         echo:
-        Rem set  /p/( "board_index=Please type the desired board ID. " --> Uncomment and remove preselection above when more options are available
+        set  /p/( board_index="Please type the desired board ID.")
         call set board=%%board_list[!board_index!]%%
     )
     echo MicroPython PSoC6 Board  :: %board%

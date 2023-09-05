@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ###################
 # Script Functions
 ###################
@@ -49,9 +51,22 @@ function help {
 function mpy_firmware_deploy {
     board=$1
     hex_file=$2
+    serial_adapter_sn=$3
+
+    if [  "$board" = "CY8CPROTO-062-4343W" ]; then 
+        target_cfg=psoc6_2m.cfg
+    elif [  "$board" = "CY8CPROTO-063-BLE" ]; then
+        target_cfg=psoc6.cfg
+    fi
+
+    if [  "$serial_adapter_sn" = "" ]; then
+        serial_adapter_opt=
+    else
+        serial_adapter_opt="adapter serial ${serial_adapter_sn}"
+    fi
 
     echo Deploying firmware...
-    openocd -s openocd\scripts -s openocd/board -c "source [find interface/kitprog3.cfg]; ; source [find target/psoc6_2m.cfg]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program ${hex_file} verify reset exit;"
+    openocd -s openocd/scripts -s openocd/board -c "source [find interface/kitprog3.cfg]; ${serial_adapter_opt} ; source [find target/${target_cfg}]; psoc6 allow_efuse_program off; psoc6 sflash_restrictions 1; program ${hex_file} verify reset exit;"
 }
 
 function mpy_firmware_download {
@@ -124,7 +139,8 @@ board=""
 
 function select_board {
     board=$1
-    board_list=(CY8CPROTO-062-4343W)
+    board_list=(CY8CPROTO-062-4343W \
+                CY8CPROTO-063-BLE)
 
     if [ "$board" = "" ]; then
         echo ''
@@ -132,18 +148,22 @@ function select_board {
         echo '+---------+-----------------------------------+'
         echo '|   ID    |              Board                |'
         echo '+---------+-----------------------------------+'
-        echo '|   0     |  CY8CPROTO-062-4343W (default)    |'
+        echo '|   0     |  CY8CPROTO-062-4343W              |'
+        echo '+---------+-----------------------------------+'
+        echo '|   1     |  CY8CPROTO-063-BLE                |'
         echo '+---------+-----------------------------------+'
         echo ''
-        echo 'No user selection required. Only one choice.'
         
         board_index=0
         echo ''
 
         # Uncomment and remove preselection above when more options are available
-        # echo Please type the desired board ID. 
-        # read board_index
-
+        echo Please type the desired board ID. 
+        read board_index
+        if [ "$board_index" -lt 0 ] || [ "$board_index" -gt 1 ]; then
+            echo "error: board ID not valid"
+            exit 1
+        fi
         board=${board_list[${board_index}]}
     fi  
 
@@ -259,7 +279,7 @@ case $1 in
         mpy_device_setup $2 $3 $4
         ;;
    "firmware-deploy")
-        mpy_firmware_deploy $2 $3
+        mpy_firmware_deploy $2 $3 $4
         ;;
     "device-erase")
         mpy_device_erase $2 $3
