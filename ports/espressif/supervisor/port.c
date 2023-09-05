@@ -246,16 +246,17 @@ safe_mode_t port_init(void) {
 
     circuitpython_task = xTaskGetCurrentTaskHandle();
 
+    #if !defined(DEBUG)
+    #define DEBUG (0)
+    #endif
+
     // Send the ROM output out of the UART. This includes early logs.
-    #ifdef DEBUG
+    #if DEBUG
     ets_install_uart_printf();
     #endif
 
     heap = NULL;
-
-    #ifndef DEBUG
-    #define DEBUG (0)
-    #endif
+    heap_size = 0;
 
     #define pin_GPIOn(n) pin_GPIO##n
     #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
