@@ -20,7 +20,7 @@ exit /b 0
 exit /b 0
 
 :cmd_firmware_deploy
-    call :mpy_firmware_deploy %2 %3
+    call :mpy_firmware_deploy %2 %3 %4
 exit /b 0
 
 :cmd_device_erase
@@ -175,10 +175,18 @@ exit /b 0
         echo ^|   1     ^|  CY8CPROTO-063-BLE                ^|
         echo +---------+-----------------------------------+
         echo:
-        @REM echo No user selection required. Only one choice.
-        @REM set /a board_index=0
-        echo:
-        set  /p/( board_index="Please type the desired board ID.")
+        set /P board_index=Please type the desired board ID:
+
+        if !board_index! LSS 0 (
+            echo error: board ID not valid
+            exit /b 1
+        )
+
+        if !board_index! GTR 1 (
+            echo error: board ID not valid
+            exit /b 1
+        )
+
         call set board=%%board_list[!board_index!]%%
     )
     echo MicroPython PSoC6 Board  :: %board%
@@ -239,10 +247,18 @@ exit /b 0
         echo ^|   1     ^|  CY8CPROTO-063-BLE                ^|
         echo +---------+-----------------------------------+
         echo:
-        @REM echo No user selection required. Only one choice.
-        @REM set /a board_index=0
-        echo:
-        set  /p/( board_index="Please type the desired board ID.")
+        set /P board_index=Please type the desired board ID:
+
+        if !board_index! LSS 0 (
+            echo error: board ID not valid
+            exit /b 1
+        )
+
+        if !board_index! GTR 1 (
+            echo error: board ID not valid
+            exit /b 1
+        )
+
         call set board=%%board_list[!board_index!]%%
     )
     echo MicroPython PSoC6 Board  :: %board%
