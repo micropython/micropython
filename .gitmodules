@@ -338,3 +338,6 @@
 [submodule "frozen/Adafruit_CircuitPython_Wave"]
 	path = frozen/Adafruit_CircuitPython_Wave
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Wave.git
+[submodule "lib/certificates"]
+	path = lib/certificates
+	url = https://github.com/adafruit/certificates
