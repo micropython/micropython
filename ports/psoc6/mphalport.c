@@ -16,7 +16,7 @@
 
 
 // port-specific includes
-#include "drivers/machine/psoc6_gpio.h"
+#include "modules/machine/machine_pin.h"
 #include "modules/machine/pins.h"
 
 extern cyhal_rtc_t psoc6_rtc;
@@ -105,7 +105,6 @@ void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
 void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
     gpio_set_value(pin);
 }
-
 
 int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
     return gpio_get_value(pin);

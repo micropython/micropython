@@ -14,7 +14,6 @@
 
 
 // port-specific includes
-#include "drivers/machine/psoc6_gpio.h"
 #include "drivers/machine/psoc6_i2c.h"
 #include "modmachine.h"
 #include "mplogger.h"

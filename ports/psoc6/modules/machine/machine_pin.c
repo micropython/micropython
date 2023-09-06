@@ -5,11 +5,12 @@
 
 // port-specific includes
 #include "modmachine.h"
-#include "drivers/machine/psoc6_gpio.h"
+#include "machine_pin.h"
 #include "pins.h"
 #include "extmod/virtpin.h"
 #include "mplogger.h"
-
+#include "cyhal.h"
+#include "cy_gpio.h"
 
 // enums to map MPY parameters to CYHAL params to avoid confusion
 // these are used as returns from functions and comparisons to MP_QSTRs in mapping functions
@@ -34,6 +35,111 @@ static const mp_arg_t allowed_args[] = {
     {MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_OBJ,    {.u_rom_obj = MP_ROM_NONE}},
     {MP_QSTR_alt,   MP_ARG_KW_ONLY | MP_ARG_INT,    {.u_int = HSIOM_GPIO_FUNC}},  // default value of HSIOM set to GPIO mode of pin.
 };
+
+
+// Note: Used to define gpio value QSTRs
+// Note: not in MPY guidelines but may needed later for board-specific active-low/active-high pins
+#define GPIO_STATE_ON                   (0U)
+#define GPIO_STATE_OFF                  (1U)
+
+
+// function to get cypdl drive modes, correlated to cyhal drive modes in file: cyhal_gpio.c
+// Note: drive modes are enumed in cy_gpio.h and are also distinguished for pins with input buffer on or off (configured as input or output respectively)
+uint32_t gpio_get_drive(uint32_t pin) {
+    return Cy_GPIO_GetDrivemode(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+}
+
+// function to check if pin is in mode Pin.OPEN_DRAIN.
+// drive comparisons done with PDL drive modes since wrapped function is from PDL (not HAL)
+// Note: MPY only allows OPEN DRAIN and DRIVE LOW (0/Z) mode to be set from the machine.Pin class methods, as per ts documentations, -
+// but in some applications (such as i2c etc), the application internally might also set OPEN DRAIN and DRIVE HIGH (1/Z) mode. Hence both the modes -
+// must be checked for, while checking for open drain.
+// Additionally, open drain can be implemented with the GPIO INPUT BUFFER on or off, hence both of those cases must be checked too.
+// More info on pg. 245 of PSoC_6_MCU_PSoC_62_Architecture_Technical_Reference_Manual_v8_EN
+STATIC bool gpio_is_open_drain(uint32_t pin) {
+    if (gpio_get_drive(pin) == CY_GPIO_DM_OD_DRIVESLOW || gpio_get_drive(pin) == CY_GPIO_DM_OD_DRIVESHIGH || gpio_get_drive(pin) == CY_GPIO_DM_OD_DRIVESLOW_IN_OFF || gpio_get_drive(pin) == CY_GPIO_DM_OD_DRIVESHIGH_IN_OFF) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// function to check if pin is in mode Pin.OUT; TODO: can be also implemented by checking input buffer on/off
+STATIC bool gpio_is_out(uint32_t pin) {
+    if (gpio_get_drive(pin) == CY_GPIO_DM_STRONG_IN_OFF) { // pin cfgd as o/p drive so Input buffer is off.
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// function to check if pin is in mode Pin.IN; TODO: can be also implemented by checking input buffer on/off
+STATIC bool gpio_is_in(uint32_t pin) {
+    if (gpio_get_drive(pin) == CY_GPIO_DM_HIGHZ) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// function to check if pin has pull Pin.PULL_UP
+STATIC bool gpio_is_pull_up(uint32_t pin) {
+    if (gpio_get_drive(pin) == CY_GPIO_DM_PULLUP_IN_OFF || gpio_get_drive(pin) == CY_GPIO_DM_PULLUP) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// function to check if pin has pull Pin.PULL_DOWN
+STATIC bool gpio_is_pull_down(uint32_t pin) {
+    if (gpio_get_drive(pin) == CY_GPIO_DM_PULLDOWN_IN_OFF || gpio_get_drive(pin) == CY_GPIO_DM_PULLDOWN) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+// function to check Pin.value
+uint8_t gpio_get_value(uint32_t pin) {
+    if (gpio_is_out(pin)) { // if Pin.Mode is Pin.OUT, read output driver
+        return Cy_GPIO_ReadOut(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+    } else { // if Pin.Mode is Pin.IN, read pin.
+        return Cy_GPIO_Read(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+    }
+}
+
+// function to call Pin.value only for pins with mode Pin.IN; used for __call__ function
+// uses mp_const_none type for None/undefined return
+STATIC int8_t gpio_get_value_call(uint32_t pin) {
+    if (gpio_is_in(pin)) { // if Pin.Mode is Pin.IN, return current pin input value
+        return Cy_GPIO_Read(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+    } else if (gpio_is_out(pin)) { // if Pin.Mode is Pin.OUT, then return is undefined
+        return -1; // undefined
+    } else { // Pin.Mode is Pin.OPEN_DRAIN
+        if (Cy_GPIO_ReadOut(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin)) == 0) {  // if 0 is driven in open_drain, then undefined
+            return -1;     // undefined
+        } else {
+            return Cy_GPIO_Read(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+        }
+    }
+}
+
+// function to set Pin.value to 1; sets the output buffer which drives the output driver
+void gpio_set_value(uint32_t pin) {
+    return Cy_GPIO_Set(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+}
+
+// function to set Pin.value to 0; clear the output buffer which drives the output driver
+void gpio_clear_value(uint32_t pin) {
+    return Cy_GPIO_Clr(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+}
+
+// function to toggle Pin.value; toggle the output buffer which drives the output driver
+void gpio_toggle_value(uint32_t pin) {
+    return Cy_GPIO_Inv(CYHAL_GET_PORTADDR(pin), CYHAL_GET_PIN(pin));
+}
+
 
 // Mandatory MPY functions
 // Pin.__call__
@@ -73,7 +179,8 @@ STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
     mplogger_print("machine pin print\n");
 
     machine_pin_obj_t *self = self_in;
-    en_hsiom_sel_t pin_func = pin_get_hsiom_func(self->pin_addr);
+    en_hsiom_sel_t pin_func = Cy_GPIO_GetHSIOM(CYHAL_GET_PORTADDR(self->pin_addr), CYHAL_GET_PIN(self->pin_addr));
+    // en_hsiom_sel_t pin_func = pin_get_hsiom_func(self->pin_addr);
     qstr mode_qstr = MP_QSTR_None; // TODO: compare with rp2, init value needed here due to "-werror=maybe-uninitialized"
     qstr pull_qstr = MP_QSTR_None;
     uint8_t pin_value = -1;
@@ -127,8 +234,8 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     } else {
         value = 1; // initially hold pin high (LED inactive)
     }
-    gpio_pin_dir_t direction = CYHAL_GPIO_DIR_OUTPUT; // initially set as output
-    gpio_pin_drive_mode_t drive = CYHAL_GPIO_DRIVE_PULLUPDOWN; // initially set both pull up-down (safe for both IN-OUT)
+    cyhal_gpio_direction_t direction = CYHAL_GPIO_DIR_OUTPUT; // initially set as output
+    cyhal_gpio_drive_mode_t drive = CYHAL_GPIO_DRIVE_PULLUPDOWN; // initially set both pull up-down (safe for both IN-OUT)
     // Note: cyhal drive modes are in an enum here: cyhal_gpio.h; also described in the header
     // check for direction and set drive accordingly
     if (args[ARG_mode].u_obj != mp_const_none) {
@@ -191,11 +298,13 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // see line 569 onwards in gpio_psoc6_02_124_bga.h
 
     // call the cyhal function with params gathered/processed above
-    gpio_init_rslt result = gpio_init(self->pin_addr, direction, drive, value);
+    cyhal_gpio_free(self->pin_addr);
+    cy_rslt_t result = cyhal_gpio_init(self->pin_addr, direction, drive, value);
+    // gpio_init_rslt result = gpio_init(self->pin_addr, direction, drive, value);
     // params can be found in enums here: cyhal_gpio.h
     mplogger_print("Direction: %d, Drive:%d, Value:%d\n", direction, drive, value);
 
-    if (result != gpio_init_success) {
+    if (result != CY_RSLT_SUCCESS) {
         mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("CYHAL GPIO error: Init unsuccessful\n"));
     }
     return mp_const_none;
