@@ -325,7 +325,7 @@ safe_mode_t port_heap_init(safe_mode_t sm) {
         common_hal_espidf_set_reserved_psram(reserved);
     }
 
-    #ifdef CONFIG_SPIRAM_USE_MEMMAP
+    #if defined(CONFIG_SPIRAM_USE_MEMMAP)
     {
         intptr_t heap_start = common_hal_espidf_get_psram_start();
         intptr_t heap_end = common_hal_espidf_get_psram_end();
@@ -338,7 +338,7 @@ safe_mode_t port_heap_init(safe_mode_t sm) {
             ESP_LOGE(TAG, "CONFIG_SPIRAM_USE_MMAP enabled but no spiram heap available");
         }
     }
-    #elif CONFIG_SPIRAM_USE_CAPS_ALLOC
+    #elif defined(CONFIG_SPIRAM_USE_CAPS_ALLOC)
     {
         intptr_t psram_start = common_hal_espidf_get_psram_start();
         intptr_t psram_end = common_hal_espidf_get_psram_end();
