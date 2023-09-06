@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-09-05 20:12+0000\n"
-"Last-Translator: xXx <xxx_xxx_xxxxxxxxx@mail.ru>\n"
+"PO-Revision-Date: 2023-09-06 13:57+0000\n"
+"Last-Translator: Jeff Epler <jepler@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 5.0.1-dev\n"
 
 #: main.c
@@ -2521,7 +2521,7 @@ msgstr "arange: не удается вычислить длину"
 
 #: py/modbuiltins.c
 msgid "arg is an empty sequence"
-msgstr "arg — пустая последовательность"
+msgstr "arg - пустая последовательность"
 
 #: py/objobject.c
 msgid "arg must be user-type"
@@ -3507,7 +3507,7 @@ msgstr ""
 #: py/argcheck.c
 msgid "keyword argument(s) not yet implemented - use normal args instead"
 msgstr ""
-"Аргументы ключевого слова еще не реализованы — вместо этого используйте "
+"Аргументы ключевого слова еще не реализованы - вместо этого используйте "
 "обычные аргументы"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
