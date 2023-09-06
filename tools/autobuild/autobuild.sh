@@ -60,9 +60,9 @@ FW_TAG="-$FW_DATE-unstable-$FW_GIT"
 
 # build new firmware
 cd ports/cc3200
-${AUTODIR}/build-cc3200-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+build_cc3200_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp8266
-${AUTODIR}/build-esp8266-latest.sh ${FW_TAG} ${LOCAL_FIRMWARE}
+build_esp8266_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../esp32
 (source ${IDF_PATH_V50}/export.sh && build_esp32_boards ${FW_TAG} ${LOCAL_FIRMWARE})
 cd ../mimxrt
@@ -77,7 +77,6 @@ cd ../samd
 build_samd_boards ${FW_TAG} ${LOCAL_FIRMWARE}
 cd ../stm32
 build_stm32_boards ${FW_TAG} ${LOCAL_FIRMWARE}
-${AUTODIR}/build-stm32-extra.sh ${FW_TAG} ${LOCAL_FIRMWARE}
 
 popd
 

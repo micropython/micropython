@@ -5,16 +5,16 @@
     "docs": "",
     "features": [
         "Battery Charging",
+        "External Flash",
+        "External RAM",
+        "JST-SH",
         "RGB LED",
-        "SPIRAM",
-        "STEMMA QT/QWIIC",
         "USB-C",
         "WiFi"
     ],
     "features_non_filterable": [
         "TinyPICO Compatible"
     ],
-    "id": "tinys2",
     "images": [
         "TinyS2+Product+Shot.jpg"
     ],

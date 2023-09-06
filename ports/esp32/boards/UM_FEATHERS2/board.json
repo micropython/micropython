@@ -5,17 +5,17 @@
     "docs": "",
     "features": [
         "Battery Charging",
+        "External Flash",
+        "External RAM",
         "Feather",
+        "JST-SH",
         "RGB LED",
-        "SPIRAM",
-        "STEMMA QT/QWIIC",
         "USB-C",
         "WiFi"
     ],
     "features_non_filterable": [
         "Second LDO"
     ],
-    "id": "featherS2",
     "images": [
         "unexpectedmaker_feathers2.jpg"
     ],

@@ -71,6 +71,7 @@ library.
    json.rst
    math.rst
    os.rst
+   platform.rst
    random.rst
    re.rst
    select.rst

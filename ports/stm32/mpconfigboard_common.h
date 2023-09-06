@@ -32,9 +32,14 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
-// Whether to include the stm module, with peripheral register constants
+// Whether to include the stm module
 #ifndef MICROPY_PY_STM
 #define MICROPY_PY_STM (1)
+#endif
+
+// Whether to include named register constants in the stm module
+#ifndef MICROPY_PY_STM_CONST
+#define MICROPY_PY_STM_CONST (MICROPY_PY_STM)
 #endif
 
 // Whether to include the pyb module
@@ -471,7 +476,11 @@
 #define MICROPY_HW_RCC_HSI_STATE (RCC_HSI_OFF)
 #define MICROPY_HW_RCC_FLAG_HSxRDY (RCC_FLAG_HSERDY)
 #if MICROPY_HW_CLK_USE_BYPASS
+#if !defined(STM32WL)
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_BYPASS)
+#else
+#define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_BYPASS_PWR)
+#endif
 #else
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_ON)
 #endif

@@ -4,12 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "MicroUSB",
+        "Audio Codec",
+        "External Flash",
         "Microphone",
-        "AudioCodec",
-        "SPDIF",
-        "OpenSDA",
-        "JLink"
+        "USB"
     ],
     "images": [
         "i.MXRT1010-TOP.jpg"

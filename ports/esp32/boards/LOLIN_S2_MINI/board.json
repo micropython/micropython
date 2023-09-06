@@ -4,7 +4,8 @@
     ],
     "docs": "",
     "features": [
-        "SPIRAM",
+        "External Flash",
+        "External RAM",
         "USB-C",
         "WiFi"
     ],

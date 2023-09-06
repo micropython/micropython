@@ -60,51 +60,62 @@ set(MICROPY_SOURCE_EXTMOD
 
 if(MICROPY_PY_BTREE)
     set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
+    string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/berkeley-db-1.xx)
 
-    add_library(micropy_extmod_btree OBJECT
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_conv.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_debug.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_delete.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_get.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_open.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_overflow.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_page.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_put.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_search.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_seq.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_split.c
-        ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_utils.c
-        ${MICROPY_LIB_BERKELEY_DIR}/mpool/mpool.c
-    )
+    if(ECHO_SUBMODULES)
+        # No-op, we're just doing submodule/variant discovery.
+        # Cannot run the add_library/target_include_directories rules (even though
+        # the build won't run) because IDF will attempt verify the files exist.
+    elseif(NOT EXISTS ${MICROPY_LIB_BERKELEY_DIR}/README)
+        # Regular build, submodule not initialised -- fail with a clear error.
+        message(FATAL_ERROR " MICROPY_PY_BTREE is enabled but the berkeley-db submodule is not initialised.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
+    else()
+        # Regular build, we have the submodule.
+        add_library(micropy_extmod_btree OBJECT
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_close.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_conv.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_debug.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_delete.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_get.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_open.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_overflow.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_page.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_put.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_search.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_seq.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_split.c
+            ${MICROPY_LIB_BERKELEY_DIR}/btree/bt_utils.c
+            ${MICROPY_LIB_BERKELEY_DIR}/mpool/mpool.c
+        )
 
-    target_include_directories(micropy_extmod_btree PRIVATE
-        ${MICROPY_LIB_BERKELEY_DIR}/PORT/include
-    )
+        target_include_directories(micropy_extmod_btree PRIVATE
+            ${MICROPY_LIB_BERKELEY_DIR}/PORT/include
+        )
 
-    target_compile_definitions(micropy_extmod_btree PRIVATE
-        __DBINTERFACE_PRIVATE=1
-        mpool_error=printf
-        abort=abort_
-        "virt_fd_t=void*"
-    )
+        target_compile_definitions(micropy_extmod_btree PRIVATE
+            __DBINTERFACE_PRIVATE=1
+            mpool_error=printf
+            abort=abort_
+            "virt_fd_t=void*"
+        )
 
-    # The include directories and compile definitions below are needed to build
-    # modbtree.c and should be added to the main MicroPython target.
+        # The include directories and compile definitions below are needed to build
+        # modbtree.c and should be added to the main MicroPython target.
 
-    list(APPEND MICROPY_INC_CORE
-        "${MICROPY_LIB_BERKELEY_DIR}/PORT/include"
-    )
+        list(APPEND MICROPY_INC_CORE
+            "${MICROPY_LIB_BERKELEY_DIR}/PORT/include"
+        )
 
-    list(APPEND MICROPY_DEF_CORE
-        MICROPY_PY_BTREE=1
-        __DBINTERFACE_PRIVATE=1
-        "virt_fd_t=void*"
-    )
+        list(APPEND MICROPY_DEF_CORE
+            MICROPY_PY_BTREE=1
+            __DBINTERFACE_PRIVATE=1
+            "virt_fd_t=void*"
+        )
 
-    list(APPEND MICROPY_SOURCE_EXTMOD
-        ${MICROPY_EXTMOD_DIR}/modbtree.c
-    )
+        list(APPEND MICROPY_SOURCE_EXTMOD
+            ${MICROPY_EXTMOD_DIR}/modbtree.c
+        )
+    endif()
 endif()
 
 # Library for mbedtls

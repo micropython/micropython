@@ -59,6 +59,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_SCHEDULER_DEPTH             (8)
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
 #define MICROPY_VFS                         (1)
 
 // Control over Python builtins
@@ -67,7 +68,6 @@ uint32_t trng_random_u32(void);
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970               (1)
-#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS        (1)
 #define MICROPY_PY_TIME_INCLUDEFILE         "ports/mimxrt/modtime.c"
@@ -110,7 +110,6 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_WEBSOCKET                (MICROPY_PY_LWIP)
 #define MICROPY_PY_WEBREPL                  (MICROPY_PY_LWIP)
 #define MICROPY_PY_LWIP_SOCK_RAW            (MICROPY_PY_LWIP)
-#define MICROPY_PY_SSL_FINALISER            (MICROPY_PY_SSL)
 // #define MICROPY_PY_HASHLIB_MD5              (MICROPY_PY_SSL)
 #define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
 // #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
@@ -119,6 +118,14 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
 #define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
+#define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
+#endif
+
+#ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
+#endif
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
@@ -145,23 +152,6 @@ __attribute__((always_inline)) static inline uint32_t disable_irq(void) {
     return state;
 }
 
-static inline uint32_t raise_irq_pri(uint32_t pri) {
-    uint32_t basepri = __get_BASEPRI();
-    // If non-zero, the processor does not process any exception with a
-    // priority value greater than or equal to BASEPRI.
-    // When writing to BASEPRI_MAX the write goes to BASEPRI only if either:
-    //   - Rn is non-zero and the current BASEPRI value is 0
-    //   - Rn is non-zero and less than the current BASEPRI value
-    pri <<= (8 - __NVIC_PRIO_BITS);
-    __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
-    return basepri;
-}
-
-// "basepri" should be the value returned from raise_irq_pri
-static inline void restore_irq_pri(uint32_t basepri) {
-    __set_BASEPRI(basepri);
-}
-
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
@@ -172,12 +162,20 @@ extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH
 #endif
 
+#if MICROPY_PY_NETWORK_CYW43
+extern const struct _mp_obj_type_t mp_network_cyw43_type;
+#define MICROPY_HW_NIC_CYW43                { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&mp_network_cyw43_type) },
+#else
+#define MICROPY_HW_NIC_CYW43
+#endif
+
 #ifndef MICROPY_BOARD_NETWORK_INTERFACES
 #define MICROPY_BOARD_NETWORK_INTERFACES
 #endif
 
 #define MICROPY_PORT_NETWORK_INTERFACES \
     MICROPY_HW_NIC_ETH  \
+    MICROPY_HW_NIC_CYW43 \
     MICROPY_BOARD_NETWORK_INTERFACES \
 
 #ifndef MICROPY_BOARD_ROOT_POINTERS

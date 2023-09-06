@@ -43,6 +43,11 @@
 #include "lwip/dhcp.h"
 #include "lwip/apps/mdns.h"
 
+#if MICROPY_PY_NETWORK_CYW43
+#include "extmod/network_cyw43.h"
+#include "lib/cyw43-driver/src/cyw43.h"
+#endif
+
 // Poll lwIP every 128ms
 #define LWIP_TICK(tick) (((tick) & ~(SYSTICK_DISPATCH_NUM_SLOTS - 1) & 0x7f) == 0)
 
@@ -59,6 +64,16 @@ void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {
     if (LWIP_TICK(ticks_ms)) {
         pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, pyb_lwip_poll);
     }
+
+    #if MICROPY_PY_NETWORK_CYW43
+    if (cyw43_poll) {
+        if (cyw43_sleep != 0) {
+            if (--cyw43_sleep == 0) {
+                pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+            }
+        }
+    }
+    #endif
 }
 
 #endif // MICROPY_PY_LWIP

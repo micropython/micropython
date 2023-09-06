@@ -129,9 +129,9 @@ function ci_esp32_build {
     make ${MAKEOPTS} -C ports/esp32 \
         USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
         FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
-    make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_C3
-    make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
-    make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S3
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
 
     # Test building native .mpy with xtensawin architecture.
     ci_native_mpy_modules_build xtensawin
@@ -155,9 +155,9 @@ function ci_esp8266_path {
 function ci_esp8266_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp8266 submodules
-    make ${MAKEOPTS} -C ports/esp8266
-    make ${MAKEOPTS} -C ports/esp8266 BOARD=GENERIC_512K
-    make ${MAKEOPTS} -C ports/esp8266 BOARD=GENERIC_1M
+    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC
+    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_512K
+    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_1M
 }
 
 ########################################################################################
@@ -204,10 +204,10 @@ function ci_nrf_build {
     ports/nrf/drivers/bluetooth/download_ble_stack.sh s140_nrf52_6_1_1
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/nrf submodules
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10040
-    make ${MAKEOPTS} -C ports/nrf BOARD=microbit
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10056 SD=s140
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10090
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10040
+    make ${MAKEOPTS} -C ports/nrf BOARD=MICROBIT
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10056 SD=s140
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10090
 }
 
 ########################################################################################
@@ -272,8 +272,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/rp2 submodules
     make ${MAKEOPTS} -C ports/rp2
-    make ${MAKEOPTS} -C ports/rp2 BOARD=PICO_W submodules
-    make ${MAKEOPTS} -C ports/rp2 BOARD=PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO
 
@@ -425,6 +425,7 @@ function ci_native_mpy_modules_build {
     make -C examples/natmod/features1 ARCH=$arch
     make -C examples/natmod/features2 ARCH=$arch
     make -C examples/natmod/features3 ARCH=$arch
+    make -C examples/natmod/features4 ARCH=$arch
     make -C examples/natmod/btree ARCH=$arch
     make -C examples/natmod/deflate ARCH=$arch
     make -C examples/natmod/framebuf ARCH=$arch

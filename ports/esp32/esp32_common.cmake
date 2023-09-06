@@ -11,6 +11,9 @@ endif()
 # Include core source components.
 include(${MICROPY_DIR}/py/py.cmake)
 
+# CMAKE_BUILD_EARLY_EXPANSION is set during the component-discovery phase of
+# `idf.py build`, so none of the extmod/usermod (and in reality, most of the
+# micropython) rules need to happen. Specifically, you cannot invoke add_library.
 if(NOT CMAKE_BUILD_EARLY_EXPANSION)
     # Enable extmod components that will be configured by extmod.cmake.
     # A board may also have enabled additional components.
@@ -167,6 +170,7 @@ set(MICROPY_CROSS_FLAGS -march=xtensawin)
 # Set compile options for this port.
 target_compile_definitions(${MICROPY_TARGET} PUBLIC
     ${MICROPY_DEF_CORE}
+    ${MICROPY_DEF_BOARD}
     MICROPY_ESP_IDF_4=1
     MICROPY_VFS_FAT=1
     MICROPY_VFS_LFS2=1

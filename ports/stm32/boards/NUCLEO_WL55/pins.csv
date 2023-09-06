@@ -14,7 +14,8 @@
 ,PA13
 ,PA14
 ,PA15
-,PB0
+# in the default board configuration, PB0 must stay muxed to analog for HSE VDDTCXO function
+,-PB0
 ,PB1
 ,PB2
 ,PB3
@@ -33,9 +34,9 @@
 ,PC0
 ,PC1
 ,PC2
-,PC3
-,PC4
-,PC5
+FE_CTRL3,PC3
+FE_CTRL1,PC4
+FE_CTRL2,PC5
 ,PC6
 SW,PA0
 SW1,PA0

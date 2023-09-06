@@ -4,10 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly",
-        "Castellated Pads",
+        "Dual-core",
         "Ethernet",
-        "Micro USB"
+        "External Flash",
+        "USB"
     ],
     "images": [
         "W5500-EVB-Pico.jpg"

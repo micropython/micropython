@@ -60,6 +60,8 @@ PATHS = [
 EXCLUSIONS = [
     # The cc3200 port is not fully formatted yet.
     "ports/cc3200/*/*.[ch]",
+    # ESP-IDF downloads 3rd party code.
+    "ports/esp32/managed_components/*",
     # The nrf port is not fully formatted yet.
     "ports/nrf/boards/*.[ch]",
     "ports/nrf/device/*.[ch]",
@@ -88,6 +90,7 @@ EXCLUSIONS = [
 TOP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 UNCRUSTIFY_CFG = os.path.join(TOP, "tools/uncrustify.cfg")
+PYPROJECT_TOML = os.path.join(TOP, "pyproject.toml")
 
 C_EXTS = (
     ".c",
@@ -206,7 +209,7 @@ def main():
 
     # Format Python files with black.
     if format_py:
-        command = ["black", "--fast", "--line-length=99"]
+        command = ["black", "--fast", "--config={}".format(PYPROJECT_TOML)]
         if args.v:
             command.append("-v")
         else:

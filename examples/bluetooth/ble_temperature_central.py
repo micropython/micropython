@@ -1,5 +1,11 @@
 # This example finds and connects to a BLE temperature sensor (e.g. the one in ble_temperature.py).
 
+# This example demonstrates the low-level bluetooth module. For most
+# applications, we recommend using the higher-level aioble library which takes
+# care of all IRQ handling and connection management. See
+# https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
+# and in particular the temp_client.py example included with aioble.
+
 import bluetooth
 import random
 import struct

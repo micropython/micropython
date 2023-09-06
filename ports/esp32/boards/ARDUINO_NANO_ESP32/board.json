@@ -5,9 +5,10 @@
     "docs": "",
     "features": [
         "BLE",
-        "WiFi",
+        "External Flash",
+        "RGB LED",
         "USB-C",
-        "RGB LED"
+        "WiFi"
     ],
     "images": [
         "ABX00092_01.iso_1000x750.jpg"

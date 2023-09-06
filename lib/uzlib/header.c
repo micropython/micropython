@@ -108,6 +108,10 @@ int uzlib_parse_zlib_gzip_header(uzlib_uncomp_t *d, int *wbits)
         d->checksum_type = UZLIB_CHKSUM_CRC;
         d->checksum = ~0;
 
+        /* gzip does not include the window size in the header, as it is expected that a
+           compressor will use wbits=15 (32kiB).*/
+        *wbits = 15;
+
         return UZLIB_HEADER_GZIP;
     } else {
        /* check checksum */

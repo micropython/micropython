@@ -23,6 +23,12 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_AD_02_LPUART4_TXD }, { IOMUXC_GPIO_AD_01_LPUART4_RXD },
 
+#define IOMUX_TABLE_UART_CTS_RTS \
+    { IOMUXC_GPIO_08_LPUART1_CTS_B }, { IOMUXC_GPIO_07_LPUART1_RTS_B }, \
+    { IOMUXC_GPIO_AD_14_LPUART3_CTS_B }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_14_LPUART4_CTS_B }, { 0 },
+
 #define MICROPY_HW_SPI_INDEX { 1 }
 
 #define IOMUX_TABLE_SPI \

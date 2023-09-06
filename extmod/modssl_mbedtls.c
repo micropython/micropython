@@ -168,6 +168,12 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_debug_set_threshold(3);
     #endif
 
+    // Whenever the PSA interface is used (if MBEDTLS_PSA_CRYPTO), psa_crypto_init() needs to be called before any TLS related operations.
+    // TLSv1.3 depends on the PSA interface, TLSv1.2 only uses the PSA stack if MBEDTLS_USE_PSA_CRYPTO is defined.
+    #if defined(MBEDTLS_SSL_PROTO_TLS1_3) || defined(MBEDTLS_USE_PSA_CRYPTO)
+    psa_crypto_init();
+    #endif
+
     const byte seed[] = "upy";
     int ret = mbedtls_ctr_drbg_seed(&self->ctr_drbg, mbedtls_entropy_func, &self->entropy, seed, sizeof(seed));
     if (ret != 0) {
@@ -394,6 +400,7 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     return MP_OBJ_FROM_PTR(o);
 
 cleanup:
+    o->sock = MP_OBJ_NULL;
     mbedtls_ssl_free(&o->ssl);
     mbedtls_raise_error(ret);
 }
@@ -436,6 +443,14 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
         // renegotiation.
         ret = MP_EWOULDBLOCK;
         o->poll_mask = MP_STREAM_POLL_WR;
+    #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+    } else if (ret == MBEDTLS_ERR_SSL_RECEIVED_NEW_SESSION_TICKET) {
+        // It appears a new session ticket being issued by the server right after
+        // completed handshake is not uncommon and shouldn't be treated as fatal.
+        // mbedtls itself states "This error code is experimental and may be
+        // changed or removed without notice."
+        ret = MP_EWOULDBLOCK;
+    #endif
     } else {
         o->last_error = ret;
     }
@@ -486,15 +501,20 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     mp_uint_t ret = 0;
     uintptr_t saved_arg = 0;
     mp_obj_t sock = self->sock;
-    if (sock == MP_OBJ_NULL || (request != MP_STREAM_CLOSE && self->last_error != 0)) {
-        // Closed or error socket:
-        return MP_STREAM_POLL_NVAL;
-    }
 
     if (request == MP_STREAM_CLOSE) {
+        if (sock == MP_OBJ_NULL) {
+            // Already closed socket, do nothing.
+            return 0;
+        }
         self->sock = MP_OBJ_NULL;
         mbedtls_ssl_free(&self->ssl);
     } else if (request == MP_STREAM_POLL) {
+        if (sock == MP_OBJ_NULL || self->last_error != 0) {
+            // Closed or error socket, return NVAL flag.
+            return MP_STREAM_POLL_NVAL;
+        }
+
         // If the library signaled us that it needs reading or writing, only check that direction,
         // but save what the caller asked because we need to restore it later
         if (self->poll_mask && (arg & MP_STREAM_POLL_RDWR)) {
@@ -514,6 +534,10 @@ STATIC mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
                 }
             }
         }
+    } else {
+        // Unsupported ioctl.
+        *errcode = MP_EINVAL;
+        return MP_STREAM_ERROR;
     }
 
     // Pass all requests down to the underlying socket

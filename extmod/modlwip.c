@@ -1377,7 +1377,8 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
 
     switch (opt) {
         // level: SOL_SOCKET
-        case SOF_REUSEADDR: {
+        case SOF_REUSEADDR:
+        case SOF_BROADCAST: {
             mp_int_t val = mp_obj_get_int(args[3]);
             // Options are common for UDP and TCP pcb's.
             if (val) {
@@ -1786,6 +1787,7 @@ STATIC const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(1) },
     { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SOF_REUSEADDR) },
+    { MP_ROM_QSTR(MP_QSTR_SO_BROADCAST), MP_ROM_INT(SOF_BROADCAST) },
 
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },

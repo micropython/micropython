@@ -24,6 +24,10 @@ regexes = [
     r"IOMUXC_(?P<pin>GPIO_EMC_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
     r"IOMUXC_(?P<pin>GPIO_DISP_B\d_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
     r"IOMUXC_(?P<pin>GPIO_LPSR_\d\d)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_[SNVS_]*(?P<pin>WAKEUP[_DIG]*)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_SNVS_(?P<pin>PMIC_ON_REQ)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_SNVS_(?P<pin>PMIC_STBY_REQ)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
+    r"IOMUXC_(?P<pin>GPIO_SNVS_\d\d_DIG)_(?P<function>\w+) (?P<muxRegister>\w+), (?P<muxMode>\w+), (?P<inputRegister>\w+), (?P<inputDaisy>\w+), (?P<configRegister>\w+)",
 ]
 
 
@@ -118,10 +122,43 @@ class Pin(object):
             self.print_pin_af()
             self.print_pin_adc()
 
+            options = {
+                "GPIO_LPSR_00": "PIN_LPSR",
+                "GPIO_LPSR_01": "PIN_LPSR",
+                "GPIO_LPSR_02": "PIN_LPSR",
+                "GPIO_LPSR_03": "PIN_LPSR",
+                "GPIO_LPSR_04": "PIN_LPSR",
+                "GPIO_LPSR_05": "PIN_LPSR",
+                "GPIO_LPSR_06": "PIN_LPSR",
+                "GPIO_LPSR_07": "PIN_LPSR",
+                "GPIO_LPSR_08": "PIN_LPSR",
+                "GPIO_LPSR_09": "PIN_LPSR",
+                "GPIO_LPSR_10": "PIN_LPSR",
+                "GPIO_LPSR_11": "PIN_LPSR",
+                "GPIO_LPSR_12": "PIN_LPSR",
+                "GPIO_LPSR_13": "PIN_LPSR",
+                "GPIO_LPSR_14": "PIN_LPSR",
+                "GPIO_LPSR_15": "PIN_LPSR",
+                "GPIO_SNVS_00_DIG": "PIN_SNVS",
+                "GPIO_SNVS_01_DIG": "PIN_SNVS",
+                "GPIO_SNVS_02_DIG": "PIN_SNVS",
+                "GPIO_SNVS_03_DIG": "PIN_SNVS",
+                "GPIO_SNVS_04_DIG": "PIN_SNVS",
+                "GPIO_SNVS_05_DIG": "PIN_SNVS",
+                "GPIO_SNVS_06_DIG": "PIN_SNVS",
+                "GPIO_SNVS_07_DIG": "PIN_SNVS",
+                "GPIO_SNVS_08_DIG": "PIN_SNVS",
+                "GPIO_SNVS_09_DIG": "PIN_SNVS",
+                "WAKEUP": "PIN_SNVS",
+                "WAKEUP_DIG": "PIN_SNVS",
+                "PMIC_ON_REQ": "PIN_SNVS",
+                "PMIC_STBY_REQ": "PIN_SNVS",
+            }
+
             print(
                 "const machine_pin_obj_t pin_{0} = {1}({0}, {2}, {3}, pin_{0}_af, {4}, {5});\n".format(
                     self.name,
-                    "PIN_LPSR" if "LPSR" in self.name else "PIN",
+                    options.get(self.name, "PIN"),
                     self.gpio,
                     int(self.pin),
                     len(self.adc_fns),
@@ -232,9 +269,6 @@ class Pins(object):
                 gpio, pin = row[6].split("_")
                 pin_number = pin.lstrip("IO")
                 pin = Pin(pad, gpio, pin_number, idx=idx)
-
-                if any(s in pad for s in ("SNVS", "WAKEUP")):
-                    continue
 
                 # Parse alternate functions
                 af_idx = 0

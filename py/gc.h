@@ -35,7 +35,13 @@ void gc_init(void *start, void *end);
 #if MICROPY_GC_SPLIT_HEAP
 // Used to add additional memory areas to the heap.
 void gc_add(void *start, void *end);
-#endif
+
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+// Port must implement this function to return the maximum available block of
+// RAM to allocate a new heap area into using MP_PLAT_ALLOC_HEAP.
+size_t gc_get_max_new_split(void);
+#endif // MICROPY_GC_SPLIT_HEAP_AUTO
+#endif // MICROPY_GC_SPLIT_HEAP
 
 // These lock/unlock functions can be nested.
 // They can be used to prevent the GC from allocating/freeing.
