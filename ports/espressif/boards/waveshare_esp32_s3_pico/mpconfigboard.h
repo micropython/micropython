@@ -33,3 +33,6 @@
 
 #define DEFAULT_UART_BUS_RX         (&pin_GPIO44)
 #define DEFAULT_UART_BUS_TX         (&pin_GPIO43)
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO18)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO17)
