@@ -17,7 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        board: [CY8CPROTO-062-4343W]
+        board: 
+          - CY8CPROTO-062-4343W
+          - CY8CPROTO-063-BLE
     outputs:
       commit_sha: ${{ steps.commit_sha.outputs.sha_short }}
 
@@ -48,7 +50,8 @@ jobs:
     needs: server-build
     strategy:
       matrix:
-        board: [CY8CPROTO-062-4343W]
+        board:
+          - CY8CPROTO-062-4343W
     steps:
     - uses: actions/checkout@v3
     - name: Download binaries
@@ -86,7 +89,9 @@ jobs:
     needs: [server-build, on-target-test]
     strategy:
       matrix:
-        board: [CY8CPROTO-062-4343W]
+        board: 
+          - CY8CPROTO-062-4343W
+          - CY8CPROTO-063-BLE
     if: startsWith(github.ref, 'refs/tags/v') && github.repository_owner == 'infineon'
     steps:
     - name: Download binaries
