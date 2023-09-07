@@ -14,17 +14,50 @@
 
 
 // port-specific includes
-#include "drivers/machine/psoc6_i2c.h"
 #include "modmachine.h"
 #include "mplogger.h"
 #include "pins.h"
-
 
 #define DEFAULT_I2C_FREQ     (400000)
 #define MICROPY_HW_I2C_SCL   (CYBSP_I2C_SCL)
 #define MICROPY_HW_I2C_SDA   (CYBSP_I2C_SDA)
 #define PSOC_I2C_MASTER_MODE (CYHAL_I2C_MODE_MASTER)
 
+typedef struct _machine_i2c_obj_t {
+    mp_obj_base_t base;
+    cyhal_i2c_t i2c_obj;
+    uint8_t i2c_id;
+    uint8_t scl;
+    uint8_t sda;
+    uint32_t freq;
+} machine_i2c_obj_t;
+
+STATIC cy_rslt_t i2c_init(machine_i2c_obj_t *machine_i2c_obj) {
+    // free first in case object has been initialized before
+    cyhal_i2c_free(&machine_i2c_obj->i2c_obj);
+
+    // Define the I2C master configuration structure
+    cyhal_i2c_cfg_t i2c_master_config =
+    {
+        CYHAL_I2C_MODE_MASTER,
+        0, // address is not used for master mode
+        machine_i2c_obj->freq
+    };
+
+    // Initialize I2C master, set the SDA and SCL pins and assign a new clock
+    cy_rslt_t result = cyhal_i2c_init(&machine_i2c_obj->i2c_obj, machine_i2c_obj->sda, machine_i2c_obj->scl, NULL);
+
+    return result == CY_RSLT_SUCCESS ? cyhal_i2c_configure(&machine_i2c_obj->i2c_obj, &i2c_master_config)
+                                     : result;
+}
+
+STATIC cy_rslt_t i2c_read(cyhal_i2c_t *i2c_obj, uint16_t addr, uint8_t *buf, size_t len, uint32_t timeout, bool send_stop) {
+    return cyhal_i2c_master_read(i2c_obj, addr, buf, len, timeout, send_stop);
+}
+
+STATIC cy_rslt_t i2c_write(cyhal_i2c_t *i2c_obj, uint16_t addr, uint8_t *buf, size_t len, uint32_t timeout, bool send_stop) {
+    return cyhal_i2c_master_write(i2c_obj, addr, buf, len, timeout, send_stop);
+}
 
 extern mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
 
