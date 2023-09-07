@@ -1043,7 +1043,7 @@ int __attribute__((used)) main(void) {
     }
 
     // We maybe can't initialize the heap until here, because on espressif port we need to be able to check for reserved psram in settings.toml
-    // (but it's OK if this is a no-op due to the heap beinig initialized in port_init())
+    // (but it's OK if this is a no-op due to the heap being initialized in port_init())
     set_safe_mode(port_heap_init(get_safe_mode()));
 
     #if CIRCUITPY_ALARM
