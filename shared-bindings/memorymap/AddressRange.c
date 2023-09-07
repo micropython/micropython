@@ -97,7 +97,8 @@ STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_
     } else if (mp_obj_is_type(args[ARG_start].u_obj, &mp_type_int)) {
         start = mp_obj_int_get_uint_checked(args[ARG_start].u_obj);
     } else {
-        mp_raise_TypeError(translate("start must be an int"));
+        mp_obj_t arg = mp_unary_op(MP_UNARY_OP_INT, args[ARG_start].u_obj);
+        start = mp_obj_int_get_uint_checked(arg);
     }
     size_t length =
         mp_arg_validate_int_min(args[ARG_length].u_int, 1, MP_QSTR_length);

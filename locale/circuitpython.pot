@@ -2137,10 +2137,6 @@ msgid "UUID value is not str, int or byte buffer"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
-msgid "Unable to access unaliged IO register"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
 msgstr ""
 
@@ -4050,10 +4046,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
-msgstr ""
-
-#: shared-bindings/memorymap/AddressRange.c
-msgid "start must be an int"
 msgstr ""
 
 #: py/objstr.c
