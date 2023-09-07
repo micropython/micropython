@@ -43,6 +43,11 @@ extern uint32_t _ebss;
 
 safe_mode_t port_init(void);
 
+// If the port does not initialize the heap during port_init(), it must provide
+// this function which is called after CIRCUITPY is mounted.
+// If not required, a default (weak) implementation that does nothing is used.
+safe_mode_t port_heap_init(safe_mode_t);
+
 // Reset the microcontroller completely.
 void reset_cpu(void) NORETURN;
 

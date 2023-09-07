@@ -1042,6 +1042,10 @@ int __attribute__((used)) main(void) {
         set_safe_mode(SAFE_MODE_NO_CIRCUITPY);
     }
 
+    // We maybe can't initialize the heap until here, because on espressif port we need to be able to check for reserved psram in settings.toml
+    // (but it's OK if this is a no-op due to the heap being initialized in port_init())
+    set_safe_mode(port_heap_init(get_safe_mode()));
+
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any.
     // common_hal_alarm_record_wake_alarm() should return a static, non-heap object
@@ -1169,6 +1173,13 @@ void gc_collect(void) {
 
 // Ports may provide an implementation of this function if it is needed
 MP_WEAK void port_gc_collect() {
+}
+
+// A port may initialize the heap in port_init but if it cannot (for instance
+// in espressif it must be done after CIRCUITPY is mounted) then it must provde
+// an implementation of this function.
+MP_WEAK safe_mode_t port_heap_init(safe_mode_t safe_mode_in) {
+    return safe_mode_in;
 }
 
 void NORETURN nlr_jump_fail(void *val) {
