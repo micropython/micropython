@@ -56,6 +56,17 @@ STATIC inline void pwm_pin_free(machine_pwm_obj_t *pwm_obj) {
     pin_phy_free(pwm_obj->pin);
 }
 
+typedef struct _machine_pwm_obj_t {
+    mp_obj_base_t base;
+    cyhal_pwm_t pwm_obj;
+    bool active;
+    uint8_t pin;
+    uint32_t fz;
+    uint8_t duty_type;
+    mp_float_t duty;
+    bool invert;
+} machine_pwm_obj_t;
+
 enum {
     VALUE_NOT_SET = -1,
     DUTY_NOT_SET = 0,
