@@ -90,7 +90,7 @@ void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_ob
         case IO:
             if ((size_t)dest_addr & 0x03 || len & 0x03) {
                 // Unaligned access or unaligned length not supported by RP2 for IO registers
-                mp_raise_RuntimeError(translate("Unable to access unaliged IO register"));
+                mp_raise_RuntimeError(translate("Unable to access unaligned IO register"));
             } else {
                 // Aligned access and length, use 32-bit writes
                 uint32_t *dest_addr32 = (uint32_t *)dest_addr;

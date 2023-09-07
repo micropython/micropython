@@ -2140,6 +2140,10 @@ msgstr ""
 msgid "Unable to access unaliged IO register"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to access unaligned IO register"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
@@ -4046,6 +4050,10 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
+#: shared-bindings/memorymap/AddressRange.c
+msgid "start must be an int"
 msgstr ""
 
 #: py/objstr.c

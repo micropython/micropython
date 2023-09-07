@@ -45,7 +45,6 @@ typedef enum {
     MP_ARG_BOOL      = 0x001,
     MP_ARG_INT       = 0x002,
     MP_ARG_OBJ       = 0x003,
-    MP_ARG_UINT      = 0x004,
     MP_ARG_KIND_MASK = 0x0ff,
     MP_ARG_REQUIRED  = 0x100,
     MP_ARG_KW_ONLY   = 0x200,
