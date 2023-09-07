@@ -30,6 +30,7 @@
 #include "hardware/flash.h"
 #include "hardware/spi.h"
 #include "hardware/sync.h"
+#include "hardware/vreg.h"
 #include "pico/binary_info.h"
 #include "pico/multicore.h"
 #include "mpconfigboard.h"
@@ -56,6 +57,15 @@
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
 #define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#endif
+
+// RP2 specific clock & vreg configuration
+#ifndef MICROPY_HW_CLOCK_KHZ
+#define MICROPY_HW_CLOCK_KHZ                    133000
+#endif
+
+#ifndef MICROPY_HW_VREG_VOLTAGE
+#define MICROPY_HW_VREG_VOLTAGE                 VREG_VOLTAGE_DEFAULT
 #endif
 
 // Memory allocation policies
