@@ -53,7 +53,6 @@ typedef enum {
 typedef union _mp_arg_val_t {
     bool u_bool;
     mp_int_t u_int;
-    mp_uint_t u_uint;
     mp_obj_t u_obj;
     mp_rom_obj_t u_rom_obj;
 } mp_arg_val_t;
