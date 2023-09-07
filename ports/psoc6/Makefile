@@ -128,7 +128,6 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	)
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
-	machine/psoc6_pwm.c \
 	machine/psoc6_system.c  \
 	)
 

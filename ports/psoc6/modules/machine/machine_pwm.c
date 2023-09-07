@@ -3,11 +3,21 @@
 #include "modmachine.h"
 
 // port-specific includes
-#include "drivers/machine/psoc6_pwm.h"
 #include "mplogger.h"
 #include "pins.h"
 
 extern mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
+
+typedef struct _machine_pwm_obj_t {
+    mp_obj_base_t base;
+    cyhal_pwm_t pwm_obj;
+    bool active;
+    uint8_t pin;
+    uint32_t fz;
+    uint8_t duty_type;
+    mp_float_t duty;
+    bool invert;
+} machine_pwm_obj_t;
 
 enum {
     VALUE_NOT_SET = -1,
@@ -17,6 +27,19 @@ enum {
 };
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+
+STATIC cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
+    return cyhal_pwm_set_duty_cycle(pwm_obj, duty_cycle * 100, fz); // duty_cycle in percentage
+}
+
+STATIC cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
+    return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width * 1000);
+}
+
+STATIC cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj) {
+    return cyhal_pwm_init_adv(&machine_pwm_obj->pwm_obj, machine_pwm_obj->pin, NC, CYHAL_PWM_LEFT_ALIGN, true, 0, true, NULL); // complimentary pin set as not connected
+}
+
 
 // To check whether the PWM is active
 STATIC void pwm_is_active(machine_pwm_obj_t *self) {
@@ -68,7 +91,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     if (args[ARG_invert].u_int != VALUE_NOT_SET) {
         self->invert = args[ARG_invert].u_int;
         if (self->invert == 1) {
-            pwm_deinit(&self->pwm_obj);
+            cyhal_pwm_free(&self->pwm_obj);
             cy_rslt_t result = pwm_advanced_init(self);
             if (result != CY_RSLT_SUCCESS) {
                 mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM initialisation failed with return code %lx ! and invert output is not available"), result);
@@ -77,7 +100,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
             self->duty = ((1) - ((self->duty) / 65535)) * 65535;
         }
     }
-    pwm_start(&self->pwm_obj);
+    cyhal_pwm_start(&self->pwm_obj);
 }
 
 STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -97,7 +120,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->invert = -1;
 
     // Initialize PWM
-    cy_rslt_t result = pwm_init(self);
+    cy_rslt_t result = cyhal_pwm_init(&self->pwm_obj, self->pin, NULL);
 
     // To check whether PWM init is successful
     if (result != CY_RSLT_SUCCESS) {
@@ -113,7 +136,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
-    pwm_deinit(&self->pwm_obj);
+    cyhal_pwm_free(&self->pwm_obj);
     self->active = 0;
 }
 
