@@ -479,8 +479,13 @@ msgstr "O endereço deve ter %d bytes de comprimento"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 #: ports/nrf/common-hal/memorymap/AddressRange.c
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Intervalo de endereços não permitido"
+
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Address range wraps around"
+msgstr ""
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -2202,6 +2207,10 @@ msgstr "A cadeia de caracteres UUID não 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgid "UUID value is not str, int or byte buffer"
 msgstr "O valor UUID não é um buffer str, int ou byte"
 
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to access unaligned IO register"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
@@ -2255,13 +2264,13 @@ msgstr "Não foi possível iniciar o controlador ADC DMA, ErrorCode:%d"
 msgid "Unable to start mDNS query"
 msgstr "Não é possível iniciar a consulta mDNS"
 
-#: shared-bindings/memorymap/AddressRange.c
-msgid "Unable to write to address."
-msgstr "Não é possível gravar no endereço."
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Não é possível gravar no nvm."
+
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to write to read-only memory"
+msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -4469,6 +4478,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "Não é possível gravar no endereço."
 
 #~ msgid "queue overflow"
 #~ msgstr "estouro de fila"

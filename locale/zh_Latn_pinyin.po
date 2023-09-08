@@ -477,8 +477,13 @@ msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 #: ports/nrf/common-hal/memorymap/AddressRange.c
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "bù yǔn xǔ de dì zhǐ fàn wéi"
+
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Address range wraps around"
+msgstr ""
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -2179,6 +2184,10 @@ msgstr "UUID Zìfú chuàn bùshì 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgid "UUID value is not str, int or byte buffer"
 msgstr "UUID zhí bùshì str,int huò zì jié huǎnchōng qū"
 
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to access unaligned IO register"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
@@ -2232,13 +2241,13 @@ msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
 msgid "Unable to start mDNS query"
 msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
-#: shared-bindings/memorymap/AddressRange.c
-msgid "Unable to write to address."
-msgstr "Wú fǎ xiě rù dì zhǐ."
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Wúfǎ xiě rù nvm."
+
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to write to read-only memory"
+msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -4433,6 +4442,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "Wú fǎ xiě rù dì zhǐ."
 
 #~ msgid "queue overflow"
 #~ msgstr "duìliè yìchū"
