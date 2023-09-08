@@ -206,7 +206,15 @@ def update(debug, board, update_all):
     else:
         opt_config = pathlib.Path("esp-idf-config/sdkconfig-opt.defaults")
     sdkconfigs.append(opt_config)
-    flash_size_config = pathlib.Path(f"esp-idf-config/sdkconfig-flash-{flash_size}.defaults")
+    size_options = ""
+    if flash_size == "2MB":
+        size_options = "-no-ota-no-uf2"
+    elif target in ("esp32", "esp32c3"):
+        # These boards don't have native USB.
+        size_options = "-no-uf2"
+    flash_size_config = pathlib.Path(
+        f"esp-idf-config/sdkconfig-flash-{flash_size}{size_options}.defaults"
+    )
     flash_mode_config = pathlib.Path(f"esp-idf-config/sdkconfig-flash-{flash_mode}.defaults")
     flash_freq_config = pathlib.Path(f"esp-idf-config/sdkconfig-flash-{flash_freq}.defaults")
     sdkconfigs.extend((flash_size_config, flash_mode_config, flash_freq_config))
