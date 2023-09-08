@@ -222,7 +222,8 @@ def update(debug, board, update_all):
     ble_config = pathlib.Path(f"esp-idf-config/sdkconfig-ble.defaults")
     sdkconfigs.append(ble_config)
     board_config = pathlib.Path(f"boards/{board}/sdkconfig")
-    sdkconfigs.append(board_config)
+    # Don't include the board file in cp defaults. The board may have custom
+    # overrides.
 
     cp_kconfig_defaults = kconfiglib.Kconfig(kconfig_path)
     for default_file in sdkconfigs:
@@ -297,9 +298,10 @@ def update(debug, board, update_all):
             matches_cp_default = cp_kconfig_defaults.syms[item.name].str_value == item.str_value
             matches_esp_default = sym_default(item)
 
-            print_debug = not matches_esp_default
+            print_debug = not matches_esp_default or (not update_all and not matches_cp_default)
             if print_debug:
                 print("  " * len(current_group), i, config_string.strip())
+                print("default", cp_kconfig_defaults.syms[item.name].str_value, item.str_value)
 
             # Some files are `rsource`d into another kconfig with $IDF_TARGET as
             # part of the path. kconfiglib doesn't show this as a reference so

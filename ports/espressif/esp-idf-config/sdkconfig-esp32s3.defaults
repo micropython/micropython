@@ -7,17 +7,65 @@
 #
 # Bluetooth
 #
+CONFIG_BT_ENABLED=y
+CONFIG_BT_NIMBLE_ENABLED=y
 #
 # NimBLE Options
 #
+CONFIG_BT_NIMBLE_LOG_LEVEL_NONE=y
 CONFIG_BT_NIMBLE_PINNED_TO_CORE_1=y
+CONFIG_BT_NIMBLE_NVS_PERSIST=y
+#
+# Memory Settings
+#
+CONFIG_BT_NIMBLE_ACL_BUF_COUNT=20
+CONFIG_BT_NIMBLE_HCI_EVT_BUF_SIZE=70
+# end of Memory Settings
+
+CONFIG_BT_NIMBLE_EXT_ADV=y
 # end of NimBLE Options
+
+#
+# Controller Options
+#
+# CONFIG_BT_CTRL_BLE_SCAN_DUPL is not set
+# end of Controller Options
 
 # end of Bluetooth
 
 #
+# Driver Configurations
+#
+#
+# PCNT Configuration
+#
+CONFIG_PCNT_SUPPRESS_DEPRECATE_WARN=y
+# end of PCNT Configuration
+
+#
+# RMT Configuration
+#
+CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
+# end of RMT Configuration
+
+#
+# I2S Configuration
+#
+CONFIG_I2S_SUPPRESS_DEPRECATE_WARN=y
+# end of I2S Configuration
+
+# end of Driver Configurations
+
+#
 # ESP System Settings
 #
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+#
+# Memory
+#
+CONFIG_ESP32S3_RTCDATA_IN_FAST_MEM=y
+# end of Memory
+
 CONFIG_ESP_MAIN_TASK_AFFINITY_CPU1=y
 # end of ESP System Settings
 
@@ -32,6 +80,7 @@ CONFIG_ESP_IPC_TASK_STACK_SIZE=1536
 #
 CONFIG_ESP32_WIFI_STATIC_RX_BUFFER_NUM=4
 CONFIG_ESP32_WIFI_DYNAMIC_RX_BUFFER_NUM=8
+CONFIG_ESP32_WIFI_CACHE_TX_BUFFER_NUM=16
 CONFIG_ESP32_WIFI_DYNAMIC_TX_BUFFER_NUM=16
 # CONFIG_ESP32_WIFI_NVS_ENABLED is not set
 # end of Wi-Fi
@@ -39,6 +88,7 @@ CONFIG_ESP32_WIFI_DYNAMIC_TX_BUFFER_NUM=16
 #
 # Ultra Low Power (ULP) Co-processor
 #
+CONFIG_ULP_COPROC_ENABLED=y
 CONFIG_ULP_COPROC_RESERVE_MEM=8176
 # end of Ultra Low Power (ULP) Co-processor
 

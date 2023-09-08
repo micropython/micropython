@@ -25,24 +25,6 @@ CONFIG_ADC_SUPPRESS_DEPRECATE_WARN=y
 CONFIG_GPTIMER_SUPPRESS_DEPRECATE_WARN=y
 # end of GPTimer Configuration
 
-#
-# PCNT Configuration
-#
-CONFIG_PCNT_SUPPRESS_DEPRECATE_WARN=y
-# end of PCNT Configuration
-
-#
-# RMT Configuration
-#
-CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
-# end of RMT Configuration
-
-#
-# I2S Configuration
-#
-CONFIG_I2S_SUPPRESS_DEPRECATE_WARN=y
-# end of I2S Configuration
-
 # end of Driver Configurations
 
 #
@@ -54,13 +36,6 @@ CONFIG_ESP_TLS_SERVER=y
 #
 # ESP System Settings
 #
-CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
-#
-# Memory
-#
-CONFIG_ESP32S3_RTCDATA_IN_FAST_MEM=y
-# end of Memory
-
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
 # CONFIG_ESP_TASK_WDT_INIT is not set
 # end of ESP System Settings
@@ -111,12 +86,6 @@ CONFIG_MBEDTLS_SSL_PROTO_DTLS=y
 # CONFIG_SPI_FLASH_YIELD_DURING_ERASE is not set
 CONFIG_SPI_FLASH_WRITE_CHUNK_SIZE=4096
 # end of SPI Flash driver
-
-#
-# Ultra Low Power (ULP) Co-processor
-#
-CONFIG_ULP_COPROC_ENABLED=y
-# end of Ultra Low Power (ULP) Co-processor
 
 #
 # Camera configuration

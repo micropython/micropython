@@ -400,6 +400,9 @@ menuconfig: $(BUILD)/esp-idf/config $(BUILD)/esp-idf/config/sdkconfig.h
 update-all-sdkconfigs: $(BUILD)/esp-idf/config/sdkconfig.h
 	python tools/update_sdkconfig.py --update_all --board=$(BOARD) --debug=$(DEBUG)
 
+update-board-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
+	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
+
 BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
 BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 ifeq ($(IDF_TARGET),esp32)

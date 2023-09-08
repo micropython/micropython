@@ -1,10 +1,58 @@
-# This file was generated using idf.py save-defconfig. It can be edited manually.
-# Espressif IoT Development Framework (ESP-IDF) Project Minimal Configuration
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# Driver Configurations
+#
+#
+# PCNT Configuration
+#
+CONFIG_PCNT_SUPPRESS_DEPRECATE_WARN=y
+# end of PCNT Configuration
+
+#
+# RMT Configuration
+#
+CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
+# end of RMT Configuration
+
+#
+# I2S Configuration
+#
+CONFIG_I2S_SUPPRESS_DEPRECATE_WARN=y
+# end of I2S Configuration
+
+# end of Driver Configurations
+
+#
+# ESP System Settings
+#
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+#
+# Cache config
 #
 CONFIG_ESP32S2_INSTRUCTION_CACHE_16KB=y
 CONFIG_ESP32S2_DATA_CACHE_16KB=y
+# end of Cache config
 
+#
+# Memory
+#
 CONFIG_ESP32S2_RTCDATA_IN_FAST_MEM=y
+# end of Memory
 
+# end of ESP System Settings
+
+#
+# Ultra Low Power (ULP) Co-processor
+#
 CONFIG_ULP_COPROC_ENABLED=y
 CONFIG_ULP_COPROC_RESERVE_MEM=8176
+# end of Ultra Low Power (ULP) Co-processor
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration
