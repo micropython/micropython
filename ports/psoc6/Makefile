@@ -127,10 +127,6 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
 	)
 
-DRIVERS_SRC_C += $(addprefix drivers/,\
-	machine/psoc6_system.c  \
-	)
-
 MOD_SRC_C += $(addprefix modules/,\
 	gc/modgc.c \
 	\
