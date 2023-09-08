@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-08-14 01:48+0000\n"
+"PO-Revision-Date: 2023-09-10 08:50+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0-dev\n"
+"X-Generator: Weblate 5.0.1-dev\n"
 
 #: main.c
 msgid ""
@@ -39,6 +39,9 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -433,7 +436,7 @@ msgstr "'yield' outside function"
 
 #: py/compile.c
 msgid "* arg after **"
-msgstr ""
+msgstr "* arg after **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -463,7 +466,7 @@ msgstr "ADC2 is being used by WiFi"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
-msgstr ""
+msgstr "AP could not be started"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -478,7 +481,7 @@ msgstr "Address range not allowed"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
-msgstr ""
+msgstr "Address range wraps around"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -708,7 +711,7 @@ msgstr "Buffer too short by %d bytes"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "Buffer too small"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1132,7 +1135,7 @@ msgstr "Half duplex SPI is not implemented"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
-msgstr ""
+msgstr "Hard fault: memory access or instruction error."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1406,7 +1409,7 @@ msgstr "Must be a %q subclass."
 
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 msgid "Must provide 5/6/5 RGB pins"
-msgstr ""
+msgstr "Must provide 5/6/5 RGB pins"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
@@ -1796,7 +1799,7 @@ msgstr "Polygon needs at least 3 points"
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
+msgstr "Power dipped. Make sure you are providing enough power."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2169,7 +2172,7 @@ msgstr "UUID value is not str, int or byte buffer"
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
-msgstr ""
+msgstr "Unable to access unaligned IO register"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -2230,7 +2233,7 @@ msgstr "Unable to write to nvm."
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to write to read-only memory"
-msgstr ""
+msgstr "Unable to write to read-only memory"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -2417,7 +2420,7 @@ msgstr "You pressed button A at start up."
 
 #: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
 msgid "You pressed button DOWN at start up."
-msgstr ""
+msgstr "You pressed button DOWN at start up."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
@@ -2542,7 +2545,7 @@ msgstr "array/bytes required on right side"
 
 #: py/asmxtensa.c
 msgid "asm overflow"
-msgstr ""
+msgstr "asm overflow"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2634,7 +2637,7 @@ msgstr "Buffer too small for requested bytes"
 
 #: py/emitbc.c
 msgid "bytecode overflow"
-msgstr ""
+msgstr "bytecode overflow"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
@@ -2693,7 +2696,7 @@ msgstr "can't convert %s to complex"
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to float"
-msgstr ""
+msgstr "can't convert %s to float"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2709,7 +2712,7 @@ msgstr "can't convert to complex"
 
 #: py/obj.c
 msgid "can't convert to float"
-msgstr ""
+msgstr "can't convert to float"
 
 #: py/runtime.c
 msgid "can't convert to int"
@@ -2793,7 +2796,7 @@ msgstr ""
 
 #: extmod/moduasyncio.c
 msgid "can't wait"
-msgstr ""
+msgstr "can't wait"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -3231,11 +3234,11 @@ msgstr "import * not at module level"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy arch"
-msgstr ""
+msgstr "incompatible .mpy arch"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "incompatible .mpy file"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3699,7 +3702,7 @@ msgstr "not a 128-bit UUID"
 
 #: py/parse.c
 msgid "not a constant"
-msgstr ""
+msgstr "not a constant"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3937,11 +3940,11 @@ msgstr "port must be >= 0"
 
 #: py/compile.c
 msgid "positional arg after **"
-msgstr ""
+msgstr "positional arg after **"
 
 #: py/compile.c
 msgid "positional arg after keyword arg"
-msgstr ""
+msgstr "positional arg after keyword arg"
 
 #: py/objint_mpz.c
 msgid "pow() 3rd argument cannot be 0"
@@ -4168,7 +4171,7 @@ msgstr "tobytes can be invoked for dense arrays only"
 
 #: py/compile.c
 msgid "too many args"
-msgstr ""
+msgstr "too many args"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
