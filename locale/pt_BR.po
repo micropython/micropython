@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-09-08 18:28+0000\n"
+"PO-Revision-Date: 2023-09-10 08:50+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -485,7 +485,7 @@ msgstr "Intervalo de endereços não permitido"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
-msgstr ""
+msgstr "O intervalo de endereços envolve"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -2209,7 +2209,7 @@ msgstr "O valor UUID não é um buffer str, int ou byte"
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
-msgstr ""
+msgstr "Não foi possível acessar o registro IO não solicitado"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -2270,7 +2270,7 @@ msgstr "Não é possível gravar no nvm."
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to write to read-only memory"
-msgstr ""
+msgstr "Não foi possível escrever na memória de somente leitura"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
