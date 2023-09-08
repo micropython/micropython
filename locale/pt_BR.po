@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-29 18:34+0000\n"
+"PO-Revision-Date: 2023-09-08 18:28+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1425,7 +1425,7 @@ msgstr "Deve ser uma subclasse %q."
 
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 msgid "Must provide 5/6/5 RGB pins"
-msgstr ""
+msgstr "É preciso fornecer os pinos RGB 5/6/5"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
