@@ -248,6 +248,9 @@ def update(debug, board, update_all):
     default_settings = []
     last_default_group = None
 
+    target_kconfig_snippets = set()
+    target_symbols = set()
+
     current_group = []
 
     for sym in kconfig.unique_defined_syms:
@@ -282,11 +285,11 @@ def update(debug, board, update_all):
 
             config_string = item.config_string.strip()
             if not config_string:
-                if matches_group("CONFIG_" + item.name, ALWAYS_INCLUDE):
+                cp_sym = cp_kconfig_defaults.syms[item.name]
+                if cp_sym.str_value == "n":
                     config_string = f"# CONFIG_{item.name} is not set"
-                    print(config_string)
                 else:
-                    continue
+                    config_string = ""
 
             if node.list:
                 pending_nodes.append(node.list)
@@ -294,14 +297,51 @@ def update(debug, board, update_all):
             matches_cp_default = cp_kconfig_defaults.syms[item.name].str_value == item.str_value
             matches_esp_default = sym_default(item)
 
-            if not matches_esp_default:
+            print_debug = not matches_esp_default
+            if print_debug:
                 print("  " * len(current_group), i, config_string.strip())
 
-            target_reference = False
+            # Some files are `rsource`d into another kconfig with $IDF_TARGET as
+            # part of the path. kconfiglib doesn't show this as a reference so
+            # we have to look ourselves.
+            target_reference = target in item.name_and_loc
+            if target_reference:
+                loc = item.name_and_loc.split("defined at ")[1].split(":")[0].replace(target, "*")
+                if loc not in target_kconfig_snippets:
+                    differing_keys = set()
+                    shared_keys = {}
+                    first = True
+                    for path in pathlib.Path(".").glob(loc):
+                        kc = kconfiglib.Kconfig(path)
+                        all_file_syms = set()
+                        for sym in kc.unique_defined_syms:
+                            all_file_syms.add(sym)
+                            if sym.name in differing_keys:
+                                continue
+                            if first:
+                                shared_keys[sym.name] = sym.str_value
+                            elif (
+                                sym.name not in shared_keys
+                                or shared_keys[sym.name] != sym.str_value
+                            ):
+                                differing_keys.add(sym.name)
+                                if sym.name in shared_keys:
+                                    del shared_keys[sym.name]
+                        # Any settings missing from a file are *not* shared.
+                        shared_syms = set(shared_keys.keys())
+                        for missing in shared_syms - all_file_syms:
+                            differing_keys.add(missing)
+                            del shared_keys[missing]
+                        first = False
+                    target_kconfig_snippets.add(loc)
+                    target_symbols = target_symbols.union(differing_keys)
             psram_reference = False
             for referenced in item.referenced:
                 if referenced.name.startswith("IDF_TARGET"):
-                    # print(item.name, "references", referenced.name)
+                    target_reference = True
+                    break
+                if referenced.name in target_symbols:
+                    # Implicit target symbols
                     target_reference = True
                     break
                 if referenced.name == "SPIRAM":
@@ -335,20 +375,22 @@ def update(debug, board, update_all):
                 elif matches_group(config_string, PSRAM_MODE_SETTINGS):
                     print("  " * (len(current_group) + 1), "psram mode")
                     psram_mode_settings.append(config_string)
-                elif matches_group(config_string, PSRAM_FREQ_SETTINGS) and not target_setting:
-                    # The ESP32S2 has two frequencies that aren't on the S3 or ESP32. So, put those
-                    # in target settings.
+                elif (
+                    matches_group(config_string, PSRAM_FREQ_SETTINGS)
+                    and "26M" not in config_string
+                    and "20M" not in config_string
+                ):
+                    # The ESP32S2 has two frequencies (20M and 26M) that aren't on the S3 or ESP32.
+                    # So, put those in target settings.
                     print("  " * (len(current_group) + 1), "psram freq")
                     psram_freq_settings.append(config_string)
                 elif matches_esp_default:
+                    if print_debug:
+                        print("  " * (len(current_group) + 1), "default")
                     # Always document the above settings. Settings below should
                     # be non-default.
                     pass
-                elif (
-                    (matches_group(config_string, PSRAM_SETTINGS) or psram_reference)
-                    and not target_reference
-                    and not target_setting
-                ):
+                elif matches_group(config_string, PSRAM_SETTINGS) or psram_reference:
                     print("  " * (len(current_group) + 1), "psram shared")
                     last_psram_group = add_group(psram_settings, last_psram_group, current_group)
                     psram_settings.append(config_string)
@@ -373,12 +415,11 @@ def update(debug, board, update_all):
                     )
                     default_settings.append(config_string)
 
-        elif kconfiglib.expr_value(node.dep):
+        else:
             if item is kconfiglib.COMMENT:
                 print("comment", repr(item))
             elif item is kconfiglib.MENU:
-                # This menu isn't visible so skip to the next node.
-                if kconfiglib.expr_value(node.visibility) and node.list:
+                if node.list:
                     current_group.append(node.prompt[0])
                     pending_nodes.append(None)
                     pending_nodes.append(node.list)
@@ -398,10 +439,16 @@ def update(debug, board, update_all):
 
     board_config.write_text("\n".join(board_settings))
     if update_all:
+        # Add empty strings to get trailing newlines
+        flash_mode_settings.append("")
+        flash_freq_settings.append("")
         flash_size_config.write_text("\n".join(flash_size_settings))
         flash_mode_config.write_text("\n".join(flash_mode_settings))
         flash_freq_config.write_text("\n".join(flash_freq_settings))
         if psram_size != "0":
+            psram_size_settings.append("")
+            psram_mode_settings.append("")
+            psram_freq_settings.append("")
             psram_config.write_text("\n".join(psram_settings))
             psram_size_config.write_text("\n".join(psram_size_settings))
             psram_mode_config.write_text("\n".join(psram_mode_settings))
@@ -409,7 +456,8 @@ def update(debug, board, update_all):
         opt_config.write_text("\n".join(opt_settings))
         default_config.write_text("\n".join(default_settings))
         target_config.write_text("\n".join(target_settings))
-        ble_config.write_text("\n".join(ble_settings))
+        if ble_settings:
+            ble_config.write_text("\n".join(ble_settings))
 
 
 if __name__ == "__main__":

@@ -16,7 +16,31 @@
 # CONFIG_TWAI_ERRATA_FIX_RX_FIFO_CORRUPT is not set
 # end of TWAI Configuration
 
+#
+# PCNT Configuration
+#
+CONFIG_PCNT_SUPPRESS_DEPRECATE_WARN=y
+# end of PCNT Configuration
+
+#
+# RMT Configuration
+#
+CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
+# end of RMT Configuration
+
+#
+# I2S Configuration
+#
+CONFIG_I2S_SUPPRESS_DEPRECATE_WARN=y
+# end of I2S Configuration
+
 # end of Driver Configurations
+
+#
+# ESP System Settings
+#
+CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y
+# end of ESP System Settings
 
 #
 # IPC (Inter-Processor Call)
@@ -47,6 +71,7 @@ CONFIG_SPI_FLASH_SUPPORT_TH_CHIP=y
 #
 # Ultra Low Power (ULP) Co-processor
 #
+CONFIG_ULP_COPROC_ENABLED=y
 CONFIG_ULP_COPROC_RESERVE_MEM=4080
 # end of Ultra Low Power (ULP) Co-processor
 
