@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-09-08 12:22+0000\n"
+"PO-Revision-Date: 2023-09-10 08:50+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -482,7 +482,7 @@ msgstr "Adressintervallet är inte tillåtet"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
-msgstr ""
+msgstr "Adressintervall ger överflödesfel"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -2183,7 +2183,7 @@ msgstr "UUID-värdet är inte str, int eller byte-buffert"
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
-msgstr ""
+msgstr "Kan inte komma åt ojusterat IO-register"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -2244,7 +2244,7 @@ msgstr "Det gick inte att skriva till nvm."
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to write to read-only memory"
-msgstr ""
+msgstr "Kan inte skriva till skrivskyddat minne"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
