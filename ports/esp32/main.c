@@ -53,6 +53,7 @@
 #include "usb.h"
 #include "usb_serial_jtag.h"
 #include "modmachine.h"
+#include "extmod/modnetwork.h"
 #include "modnetwork.h"
 #include "mpthreadport.h"
 
@@ -97,6 +98,9 @@ void mp_task(void *pvParameter) {
     uart_stdout_init();
     #endif
     machine_init();
+    #if MICROPY_PY_NETWORK
+    mod_network_init();
+    #endif
 
     esp_err_t err = esp_event_loop_create_default();
     if (err != ESP_OK) {
@@ -184,6 +188,9 @@ soft_reset_exit:
     machine_deinit();
     #if MICROPY_PY_SOCKET_EVENTS
     socket_events_deinit();
+    #endif
+    #if MICROPY_PY_NETWORK
+    mod_network_deinit();
     #endif
 
     mp_deinit();

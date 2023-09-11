@@ -77,6 +77,7 @@
 #endif
 #define MICROPY_PY_NETWORK_INCLUDEFILE "ports/esp8266/modnetwork.h"
 #define MICROPY_PY_NETWORK_MODULE_GLOBALS_INCLUDEFILE "ports/esp8266/modnetwork_globals.h"
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
 #define MICROPY_PY_WEBSOCKET        (1)
 #define MICROPY_PY_ONEWIRE          (1)
 #define MICROPY_PY_WEBREPL          (1)

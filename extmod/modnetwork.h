@@ -56,10 +56,13 @@
 extern char mod_network_country_code[2];
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
-#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (16)
+// DHCP has a 64-byte limit on the `sname` field which includes the
+// terminating null byte, while mDNS references DNS's 63-character limit.
+// DHCP: https://datatracker.ietf.org/doc/html/rfc2131#page-10
+// mDNS: https://datatracker.ietf.org/doc/html/rfc6762#appendix-C
+// DNS: https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.4
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (63)
 #endif
-
-extern char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN];
 
 #if MICROPY_PY_LWIP
 struct netif;
@@ -110,9 +113,14 @@ typedef struct _mod_network_socket_obj_t {
 
 #endif // MICROPY_PY_LWIP / MICROPY_PORT_NETWORK_INTERFACES
 
-#ifdef MICROPY_PORT_NETWORK_INTERFACES
 void mod_network_init(void);
 void mod_network_deinit(void);
+
+const char *mod_network_get_hostname(void);
+mp_obj_t mod_network_get_hostname_obj(void);
+void mod_network_set_hostname_obj(mp_obj_t value);
+
+#ifdef MICROPY_PORT_NETWORK_INTERFACES
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
 #endif

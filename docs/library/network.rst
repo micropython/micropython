@@ -188,7 +188,17 @@ The following are functions available in the network module.
     during connection. For this reason, you must set the hostname before
     activating/connecting your network interfaces.
 
+    The length of the hostname is limited to 63 characters [#f1]_, unless
+    further limited by the port (e.g. ESP32 and ESP8266 limit to 32 characters).
+    If the given name does not fit, a `ValueError` is raised.
+
     The default hostname is typically the name of the board.
+
+.. [#f1] `DHCP <https://datatracker.ietf.org/doc/html/rfc2131#page-10>`_ has a
+    64-byte limit on the ``sname`` field which includes the terminating null
+    byte, while `mDNS <https://datatracker.ietf.org/doc/html/rfc6762#appendix-C>`_
+    references `DNS's <https://datatracker.ietf.org/doc/html/rfc1035#section-2.3.4>`_
+    63-character limit
 
 .. function:: phy_mode([mode])
 

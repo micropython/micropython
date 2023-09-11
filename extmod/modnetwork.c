@@ -35,7 +35,7 @@
 #if MICROPY_PY_NETWORK
 
 #include "shared/netutils/netutils.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 // So that CYW43_LINK_xxx constants are available to MICROPY_PORT_NETWORK_INTERFACES.
@@ -56,17 +56,48 @@ char mod_network_country_code[2] = "XX";
 #error "MICROPY_PY_NETWORK_HOSTNAME_DEFAULT must be set in mpconfigport.h or mpconfigboard.h"
 #endif
 
-char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN] = MICROPY_PY_NETWORK_HOSTNAME_DEFAULT;
+// We store the hostname override in a qstr so that its allocation is handled
+// by the QSTR pool and we can safely pass a pointer to it to the network
+// stack without worrying about the GC collecting the string data.
+STATIC qstr mod_network_hostname_override = MP_QSTRnull;
 
-#ifdef MICROPY_PORT_NETWORK_INTERFACES
+const char *mod_network_get_hostname(void) {
+    if (mod_network_hostname_override != MP_QSTRnull) {
+        return qstr_str(mod_network_hostname_override);
+    } else {
+        return MICROPY_PY_NETWORK_HOSTNAME_DEFAULT;
+    }
+}
+
+mp_obj_t mod_network_get_hostname_obj(void) {
+    if (mod_network_hostname_override != MP_QSTRnull) {
+        return MP_OBJ_NEW_QSTR(mod_network_hostname_override);
+    } else {
+        MP_STATIC_ASSERT((sizeof(MICROPY_PY_NETWORK_HOSTNAME_DEFAULT) - 1) <= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN);
+        return mp_obj_new_str(MICROPY_PY_NETWORK_HOSTNAME_DEFAULT, strlen(MICROPY_PY_NETWORK_HOSTNAME_DEFAULT));
+    }
+}
+
+void mod_network_set_hostname_obj(mp_obj_t value) {
+    size_t len;
+    mp_obj_str_get_data(value, &len);
+    if (len > MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+        mp_raise_ValueError(NULL);
+    }
+    mod_network_hostname_override = mp_obj_str_get_qstr(value);
+}
 
 void mod_network_init(void) {
+    #ifdef MICROPY_PORT_NETWORK_INTERFACES
     mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
+    #endif
 }
 
 void mod_network_deinit(void) {
+    mod_network_hostname_override = MP_QSTRnull;
 }
 
+#ifdef MICROPY_PORT_NETWORK_INTERFACES
 void mod_network_register_nic(mp_obj_t nic) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
         if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
@@ -118,14 +149,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj, 0, 1, network_count
 
 STATIC mp_obj_t network_hostname(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        return mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
+        return mod_network_get_hostname_obj();
     } else {
-        size_t len;
-        const char *str = mp_obj_str_get_data(args[0], &len);
-        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
-            mp_raise_ValueError(NULL);
-        }
-        strcpy(mod_network_hostname, str);
+        mod_network_set_hostname_obj(args[0]);
         return mp_const_none;
     }
 }

@@ -40,6 +40,7 @@
 #define USE_US_TIMER 1
 
 #include "extmod/misc.h"
+#include "extmod/modnetwork.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "gccollect.h"
@@ -66,6 +67,9 @@ STATIC void mp_reset(void) {
     pin_init0();
     readline_init0();
     dupterm_task_init();
+    #if MICROPY_PY_NETWORK
+    mod_network_init();
+    #endif
 
     // Activate UART(0) on dupterm slot 1 for the REPL
     {
@@ -93,6 +97,11 @@ STATIC void mp_reset(void) {
 void soft_reset(void) {
     gc_sweep_all();
     mp_hal_stdout_tx_str("MPY: soft reboot\r\n");
+
+    #if MICROPY_PY_NETWORK
+    mod_network_deinit();
+    #endif
+
     mp_hal_delay_us(10000); // allow UART to flush output
     mp_reset();
     #if MICROPY_REPL_EVENT_DRIVEN
