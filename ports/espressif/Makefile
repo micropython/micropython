@@ -275,8 +275,8 @@ SRC_CAMERA := \
 	$(wildcard common-hal/espcamera/*.c) \
 	$(wildcard bindings/espcamera/*.c)
 SRC_C += $(SRC_CAMERA)
-CFLAGS += -isystem esp32-camera/driver/include
-CFLAGS += -isystem esp32-camera/conversions/include
+CFLAGS += -isystem esp-camera/driver/include
+CFLAGS += -isystem esp-camera/conversions/include
 endif
 
 ifneq ($(CIRCUITPY_ESPIDF),0)
@@ -436,7 +436,7 @@ ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal
 endif
 
 ifneq ($(CIRCUITPY_ESPCAMERA),0)
-ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp32-camera/libesp32-camera.a
+ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp-camera/libesp-camera.a
 #$(error $(ESP_IDF_COMPONENTS_EXPANDED))
 endif
 
