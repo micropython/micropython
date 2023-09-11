@@ -298,7 +298,7 @@ def update(debug, board, update_all):
                 if cp_sym.str_value == "n":
                     config_string = f"# CONFIG_{item.name} is not set"
                 else:
-                    config_string = ""
+                    continue
 
             if node.list:
                 pending_nodes.append(node.list)
@@ -309,7 +309,6 @@ def update(debug, board, update_all):
             print_debug = not matches_esp_default or (not update_all and not matches_cp_default)
             if print_debug:
                 print("  " * len(current_group), i, config_string.strip())
-                print("default", cp_kconfig_defaults.syms[item.name].str_value, item.str_value)
 
             # Some files are `rsource`d into another kconfig with $IDF_TARGET as
             # part of the path. kconfiglib doesn't show this as a reference so

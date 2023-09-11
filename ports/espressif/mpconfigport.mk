@@ -48,7 +48,6 @@ CIRCUITPY_WIFI ?= 1
 # Conditionally turn off modules/features
 ifeq ($(IDF_TARGET),esp32)
 # Modules
-CIRCUITPY_BLEIO = 0
 CIRCUITPY_RGBMATRIX = 0
 # Features
 CIRCUITPY_USB = 0
