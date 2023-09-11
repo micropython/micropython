@@ -66,7 +66,14 @@
 
 // MicroPython runs as a task under FreeRTOS
 #define MP_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
+
+// MicroPython task size
+#ifdef MICROPY_TASK_STACK_SIZE
+#define MP_TASK_STACK_SIZE      MICROPY_TASK_STACK_SIZE
+#else 
 #define MP_TASK_STACK_SIZE      (16 * 1024)
+#endif
+
 
 // Set the margin for detecting stack overflow, depending on the CPU architecture.
 #if CONFIG_IDF_TARGET_ESP32C3
