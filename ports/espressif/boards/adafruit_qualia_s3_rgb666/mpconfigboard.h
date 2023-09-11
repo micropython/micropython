@@ -26,7 +26,7 @@
 
 // Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "Adafruit-ESP32-S3-RGB-TFT-Experiment"
+#define MICROPY_HW_BOARD_NAME       "Adafruit-Qualia-S3-RGB666"
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
