@@ -113,7 +113,7 @@ STATIC const machine_pin_obj_t *machine_pin_find(mp_obj_t pin_in) {
     // Try to find the pin in the board pins dict.
     if (mp_obj_is_str(pin_in)) {
         const machine_pin_obj_t *self = machine_pin_find_named(&machine_pin_board_pins_locals_dict, pin_in);
-        if (self->base.type != NULL) {
+        if (self && self->base.type != NULL) {
             return self;
         }
     }
