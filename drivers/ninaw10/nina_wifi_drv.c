@@ -684,6 +684,14 @@ int nina_ioctl(uint32_t cmd, size_t len, uint8_t *buf, uint32_t iface) {
                 return -1;
             }
             break;
+        case NINA_CMD_GET_ANALOG_READ: {
+            if (len != 2 || nina_send_command_read_vals(NINA_CMD_GET_ANALOG_READ,
+                1, ARG_8BITS, NINA_ARGS(ARG_BYTE(buf[0])),
+                1, ARG_8BITS, NINA_VALS({(uint16_t *)&len, buf})) != 0) {
+                return -1;
+            }
+            break;
+        }
         default:
             return 0;
     }
