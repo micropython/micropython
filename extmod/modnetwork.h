@@ -56,7 +56,7 @@
 extern char mod_network_country_code[2];
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
-#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (16)
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (64)
 #endif
 
 extern char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN];
