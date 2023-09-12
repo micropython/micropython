@@ -1382,9 +1382,9 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             mp_int_t val = mp_obj_get_int(args[3]);
             // Options are common for UDP and TCP pcb's.
             if (val) {
-                ip_set_option(socket->pcb.tcp, SOF_REUSEADDR);
+                ip_set_option(socket->pcb.tcp, opt);
             } else {
-                ip_reset_option(socket->pcb.tcp, SOF_REUSEADDR);
+                ip_reset_option(socket->pcb.tcp, opt);
             }
             break;
         }
