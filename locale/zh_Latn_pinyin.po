@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-29 18:34+0000\n"
+"PO-Revision-Date: 2023-09-13 17:49+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -483,7 +483,7 @@ msgstr "bù yǔn xǔ de dì zhǐ fàn wéi"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
-msgstr ""
+msgstr "dìzhǐ fànwéi huánrào"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -1421,7 +1421,7 @@ msgstr "Bìxū shì %q zi lèi."
 
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 msgid "Must provide 5/6/5 RGB pins"
-msgstr ""
+msgstr "bìxū tígòng 5/6/5RGB yǐnjiǎo"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
@@ -2186,7 +2186,7 @@ msgstr "UUID zhí bùshì str,int huò zì jié huǎnchōng qū"
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
-msgstr ""
+msgstr "wúfǎ fǎngwèn wèi duìqí de IO jìcúnqì"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -2247,7 +2247,7 @@ msgstr "Wúfǎ xiě rù nvm."
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to write to read-only memory"
-msgstr ""
+msgstr "wúfǎ xiěrù zhǐdú nèicún"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
