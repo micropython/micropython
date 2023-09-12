@@ -32,12 +32,6 @@
 #include "soc/usb_serial_jtag_struct.h"
 
 void board_init(void) {
-    // Debug UART
-    #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO20);
-    common_hal_never_reset_pin(&pin_GPIO21);
-    #endif
-
     // This board has LEDs connected to the USB pins
     USB_SERIAL_JTAG.conf0.usb_pad_enable = 0;
     USB_SERIAL_JTAG.conf0.dp_pullup = 0;

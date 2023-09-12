@@ -144,9 +144,6 @@
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
 	branch = release/v4.4-circuitpython
-[submodule "ports/espressif/certificates/nina-fw"]
-	path = lib/certificates/nina-fw
-	url = https://github.com/adafruit/nina-fw.git
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]
 	path = frozen/Adafruit_CircuitPython_ST7789
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ST7789
@@ -345,3 +342,6 @@
 	path = ports/raspberrypi/lib/Pico-PIO-USB
 	url = https://github.com/sekigon-gonnoc/Pico-PIO-USB.git
 	branch = main
+[submodule "lib/certificates"]
+	path = lib/certificates
+	url = https://github.com/adafruit/certificates

@@ -31,7 +31,8 @@
 
 #define MICROPY_HW_NEOPIXEL         (&pin_GPIO21)
 
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
-
 #define DEFAULT_UART_BUS_RX         (&pin_GPIO12)
 #define DEFAULT_UART_BUS_TX         (&pin_GPIO11)
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO18)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO17)
