@@ -86,6 +86,12 @@ CONFIG_ESP32_WIFI_DYNAMIC_TX_BUFFER_NUM=16
 # end of Wi-Fi
 
 #
+# Newlib
+#
+CONFIG_NEWLIB_NANO_FORMAT=y
+# end of Newlib
+
+#
 # Ultra Low Power (ULP) Co-processor
 #
 CONFIG_ULP_COPROC_ENABLED=y

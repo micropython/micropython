@@ -135,7 +135,7 @@ ifeq ($(DEBUG), 1)
 	# You may want to enable these flags to make setting breakpoints easier.
 	# CFLAGS += -fno-inline -fno-ipa-sra
 else
-	CFLAGS += -DNDEBUG -ggdb3
+	CFLAGS += -DNDEBUG
 	# RISC-V is larger than xtensa
 	# Use -Os for RISC-V when it overflows
 	ifeq ($(IDF_TARGET_ARCH),riscv)
@@ -149,6 +149,11 @@ endif
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT) -Werror=missing-prototypes
+
+# Most current ESPs have nano versions of newlib in ROM so we use them.
+ifneq ($(IDF_TARGET),esp32c6)
+	CFLAGS += --specs=nano.specs
+endif
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls
@@ -412,8 +417,12 @@ endif
 ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc esp_app_format esp_common esp_event esp_hw_support esp_netif esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
 ifneq ($(CIRCUITPY_BLEIO),0)
 	ESP_IDF_COMPONENTS_LINK += bt
+	ifeq ($(IDF_TARGET),esp32)
+	BINARY_BLOBS += esp-idf/components/bt/controller/lib_esp32/$(IDF_TARGET)/libbtdm_app.a
+	else
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
-	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+					esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+	endif
 endif
 ifneq ($(CIRCUITPY_ESPULP),0)
 	ESP_IDF_COMPONENTS_LINK += ulp

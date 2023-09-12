@@ -47,6 +47,12 @@ CONFIG_ESP32S2_RTCDATA_IN_FAST_MEM=y
 # end of ESP System Settings
 
 #
+# Newlib
+#
+CONFIG_NEWLIB_NANO_FORMAT=y
+# end of Newlib
+
+#
 # Ultra Low Power (ULP) Co-processor
 #
 CONFIG_ULP_COPROC_ENABLED=y

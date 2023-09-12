@@ -57,6 +57,12 @@ CONFIG_ESP32_WIFI_CACHE_TX_BUFFER_NUM=16
 # end of Wi-Fi
 
 #
+# Newlib
+#
+CONFIG_NEWLIB_NANO_FORMAT=y
+# end of Newlib
+
+#
 # SPI Flash driver
 #
 #

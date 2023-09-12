@@ -49,6 +49,12 @@ CONFIG_I2S_SUPPRESS_DEPRECATE_WARN=y
 
 # end of Driver Configurations
 
+#
+# Newlib
+#
+CONFIG_NEWLIB_NANO_FORMAT=y
+# end of Newlib
+
 # end of Component config
 
 # end of Espressif IoT Development Framework Configuration
