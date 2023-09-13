@@ -133,13 +133,14 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->rate = args[ARG_rate].u_int;
     self->ibuf = args[ARG_ibuf].u_int;
     self->callback_for_non_blocking = MP_OBJ_NULL;
+    self->io_mode = BLOCKING;
 
     clock_init();
     cyhal_system_delay_ms(1);
 
     if (i2s_mode == TX) {
-        cyhal_i2s_pins_t tx_pins = { .sck = P13_1, .ws = P13_2, .data = P13_3, .mclk = NC };
-        cyhal_i2s_config_t config =
+        cyhal_i2s_pins_t tx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
+        cyhal_i2s_config_t tx_config =
         {
             .is_tx_slave = false,
             .is_rx_slave = false,
@@ -148,24 +149,24 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
             .word_length = self->bits,
             .sample_rate_hz = self->rate,
         };
-        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, &tx_pins, NULL, &config, &audio_clock);
+        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, &tx_pins, NULL, &tx_config, &audio_clock);
         if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S initialisation failed with return code %lx !"), result);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S tx initialisation failed with return code %lx !"), result);
         }
     } else {
-        cyhal_i2s_pins_t rx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd };
-        cyhal_i2s_config_t config =
+        cyhal_i2s_pins_t rx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
+        cyhal_i2s_config_t rx_config =
         {
             .is_tx_slave = false,
-            .is_rx_slave = true,
+            .is_rx_slave = false,
             .mclk_hz = 0,
             .channel_length = 32,
             .word_length = self->bits,
             .sample_rate_hz = self->rate,
         };
-        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, NULL, &rx_pins, &config, NULL);
+        cy_rslt_t result = cyhal_i2s_init(&self->i2s_obj, NULL, &rx_pins, &rx_config, &audio_clock);
         if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S initialisation failed with return code %lx !"), result);
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S rx initialisation failed with return code %lx !"), result);
         }
     }
 
@@ -226,35 +227,37 @@ STATIC mp_obj_t machine_i2s_readinto(mp_obj_t self_in, mp_obj_t buf_in) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result;
     if (self->mode != RX) {
-      mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("I2S operation not supported"));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("I2S operation not supported"));
     }
-    // get the buffer to write from
+    // get the buffer to read from
     mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+    mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_RW);
 
-    if (self->io_mode == NON_BLOCKING) { 
-        result = cyhal_i2s_read_async(&self->i2s_obj,bufinfo.buf, bufinfo.len); 
-        if(result != CY_RSLT_SUCCESS)
-        {
-           mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S read failed with return code %lx !"), result);
+    if (self->io_mode == NON_BLOCKING) {
+        cyhal_i2s_start_rx(&self->i2s_obj);
+        result = cyhal_i2s_read_async(&self->i2s_obj, bufinfo.buf, bufinfo.len);
+        if (result != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S read failed with return code %lx !"), result);
+        }
+    } else { // blocking or asyncio mode(asyncio - yet to implement)
+        mp_printf(&mp_plat_print, "len1=%d\n", bufinfo.len);
+        cyhal_i2s_start_rx(&self->i2s_obj);
+        result = cyhal_i2s_read(&self->i2s_obj, bufinfo.buf, &bufinfo.len);
+        mp_printf(&mp_plat_print, "len=%d\n", bufinfo.len);
+        if (result != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S read failed with return code %lx !"), result);
         }
     }
-    else { // blocking or asyncio mode(asyncio - yet to implement)
-        result = cyhal_i2s_read(&self->i2s_obj,bufinfo.buf, &bufinfo.len);
-        if(result != CY_RSLT_SUCCESS)
-        {
-           mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S read failed with return code %lx !"), result);
-        } 
-    }
-    return MP_OBJ_NEW_SMALL_INT(bufinfo.len);  
+    return MP_OBJ_NEW_SMALL_INT(bufinfo.len);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_readinto_obj, machine_i2s_readinto);
 
 STATIC mp_obj_t machine_i2s_write(mp_obj_t self_in, mp_obj_t buf_in) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    cy_rslt_t result_write;
 
     if (self->mode != TX) {
-       mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("I2S operation not supported"));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("I2S operation not supported"));
     }
 
     // get the buffer to write from
@@ -262,10 +265,25 @@ STATIC mp_obj_t machine_i2s_write(mp_obj_t self_in, mp_obj_t buf_in) {
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
 
     if (self->io_mode == NON_BLOCKING) {
-        
-    
+
+        /* Start the I2S TX */
+        cyhal_i2s_start_tx(&self->i2s_obj);
+        /* Initiate a transfer */
+        result_write = cyhal_i2s_write_async(&self->i2s_obj, bufinfo.buf, bufinfo.len);
+        if (result_write != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S write failed with return code %lx !"), result_write);
+        }
+
+
     } else { // blocking or asyncio mode
-       
+
+        /* Start the I2S TX */
+        cyhal_i2s_start_tx(&self->i2s_obj);
+        /* Initiate a transfer */
+        result_write = cyhal_i2s_write(&self->i2s_obj, bufinfo.buf, &bufinfo.len);
+        if (result_write != CY_RSLT_SUCCESS) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S write failed with return code %lx !"), result_write);
+        }
     }
     return MP_OBJ_NEW_SMALL_INT(bufinfo.len);
 }
@@ -279,21 +297,22 @@ STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
 
     if (handler != mp_const_none) {
         self->io_mode = NON_BLOCKING;
-        if(self->mode == RX)
-            {
-    /* Register a callback and set the callback argument to be a pointer to the I2S object,
-    * so that we can easily reference it from the callback handler.
-    */
-        //cyhal_i2s_register_callback(&i2s, &i2s_event_handler_receive, &i2s);
-        /* Subscribe to the async complete event so that we can queue up another transfer when this one completes */
-        //cyhal_i2s_enable_event(&i2s, CYHAL_I2S_ASYNC_RX_COMPLETE, CYHAL_ISR_PRIORITY_DEFAULT, true);
-        /* Configure asynchronous transfers to use DMA to free up the CPU during transfers */
-        //cyhal_i2s_set_async_mode(&i2s, CYHAL_ASYNC_DMA, CYHAL_DMA_PRIORITY_DEFAULT);
-            }
-        else
-            {
-
-            }
+        if (self->mode == RX) {
+            /* Register a callback and set the callback argument to be a pointer to the I2S object,
+            * so that we can easily reference it from the callback handler.
+            */
+            // cyhal_i2s_register_callback(&i2s, &i2s_event_handler_receive, &i2s);
+            /* Subscribe to the async complete event so that we can queue up another transfer when this one completes */
+            // cyhal_i2s_enable_event(&i2s, CYHAL_I2S_ASYNC_RX_COMPLETE, CYHAL_ISR_PRIORITY_DEFAULT, true);
+            /* Configure asynchronous transfers to use DMA to free up the CPU during transfers */
+            // cyhal_i2s_set_async_mode(&i2s, CYHAL_ASYNC_DMA, CYHAL_DMA_PRIORITY_DEFAULT);
+        } else {
+            // cyhal_i2s_register_callback(&i2s, &i2s_event_handler_transmit_streaming, &i2s);
+            /* Subscribe to the async complete event so that we can queue up another transfer when this one completes */
+            // cyhal_i2s_enable_event(&i2s, CYHAL_I2S_ASYNC_TX_COMPLETE, CYHAL_ISR_PRIORITY_DEFAULT, true);
+            /* Configure asynchronous transfers to use DMA to free up the CPU during transfers */
+            // cyhal_i2s_set_async_mode(&i2s, CYHAL_ASYNC_DMA, CYHAL_DMA_PRIORITY_DEFAULT);
+        }
 
     } else {
         self->io_mode = BLOCKING;
@@ -309,7 +328,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
 STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buf, ARG_bits, ARG_shift};
     static const mp_arg_t allowed_args[] = {
-     //   { MP_QSTR_buf,    MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        // { MP_QSTR_buf,    MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_bits,   MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_shift, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
