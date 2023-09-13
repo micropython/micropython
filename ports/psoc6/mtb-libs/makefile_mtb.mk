@@ -110,7 +110,7 @@ mtb_get_build_flags: mtb_build
 
 attached_devs:
 	@:
-	$(eval ATTACHED_TARGET_LIST = $(shell fw-loader --device-list | sed -n -e 's/[0-9]: KitProg3 CMSIS-DAP BULK-//' -e 's/FW Version[^0-9]*\(\([0-9]\.\)\{0,4\}[0-9][^.]\).*//p'| sed -n 's/^[ \t]*//p'))
+	$(eval ATTACHED_TARGET_LIST = $(shell $(PYTHON) $(TOP)/tools/psoc6/get-devs.py serial-number))
 	$(eval ATTACHED_TARGETS_NUMBER = $(words $(ATTACHED_TARGET_LIST)))
 	$(info Number of attached targets : $(ATTACHED_TARGETS_NUMBER))
 	$(info List of attached targets : $(ATTACHED_TARGET_LIST))
