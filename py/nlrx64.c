@@ -35,6 +35,11 @@
 
 __attribute__((used)) unsigned int nlr_push_tail(nlr_buf_t *nlr);
 
+#if !MICROPY_NLR_OS_WINDOWS && defined(__GNUC__) && !defined(__clang__)
+// nlr_push prelude should never push ebp onto the stack (gcc-only attribute)
+__attribute__((optimize("omit-frame-pointer")))
+#endif
+
 unsigned int nlr_push(nlr_buf_t *nlr) {
     (void)nlr;
 
