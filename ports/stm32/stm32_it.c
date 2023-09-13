@@ -1015,6 +1015,14 @@ void UART10_IRQHandler(void) {
 }
 #endif
 
+#if defined(USART10)
+void USART10_IRQHandler(void) {
+    IRQ_ENTER(USART10_IRQn);
+    uart_irq_handler(10);
+    IRQ_EXIT(USART10_IRQn);
+}
+#endif
+
 #endif
 
 #if defined(LPUART1)
