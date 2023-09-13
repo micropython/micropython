@@ -54,7 +54,7 @@ extern const mp_obj_type_t mcu_pin_type;
 
 #define NO_TOUCH_CHANNEL TOUCH_PAD_MAX
 
-// This macro is used to simplify pin definition in boards/<board>/pins.c
+// This macro is used to simplify pin definition in peripherals/<chip>/pins.c
 #define PIN(p_number, p_adc_index, p_adc_channel, p_touch_channel) \
     { \
         { &mcu_pin_type }, \
