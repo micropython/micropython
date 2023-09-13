@@ -108,9 +108,7 @@ size_t common_hal_espidf_get_total_psram(void) {
 
 intptr_t common_hal_espidf_get_psram_start(void) {
     #ifdef CONFIG_SPIRAM
-    if (esp_psram_is_initialized()) {
-        return SOC_EXTRAM_DATA_LOW;
-    }
+    return (intptr_t)esp_psram_get_address();
     #endif
     return 0;
 }
@@ -118,7 +116,7 @@ intptr_t common_hal_espidf_get_psram_start(void) {
 intptr_t common_hal_espidf_get_psram_end(void) {
     #ifdef CONFIG_SPIRAM
     if (esp_psram_is_initialized()) {
-        return SOC_EXTRAM_DATA_LOW + psram_size_usable();
+        return common_hal_espidf_get_psram_start() + psram_size_usable();
     }
     #endif
     return 0;
