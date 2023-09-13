@@ -43,7 +43,7 @@ STATIC void handle_radio_irq() {
     // subghz_irq(handler) to re-enable when needed.
     HAL_NVIC_DisableIRQ(SUBGHZ_Radio_IRQn);
 
-    mp_obj_t callback = MP_STATE_PORT(subghz_callback);
+    mp_obj_t callback = MP_ROOT_POINTER(subghz_callback);
     if (callback != mp_const_none) {
         mp_sched_lock();
         gc_lock();
@@ -80,11 +80,11 @@ void subghz_init(void) {
     while (__HAL_RCC_GET_FLAG(RCC_FLAG_RFRST) != 0) {
     }
 
-    MP_STATE_PORT(subghz_callback) = mp_const_none;
+    MP_ROOT_POINTER(subghz_callback) = mp_const_none;
 }
 
 void subghz_deinit(void) {
-    MP_STATE_PORT(subghz_callback) = mp_const_none;
+    MP_ROOT_POINTER(subghz_callback) = mp_const_none;
     NVIC_DisableIRQ(SUBGHZ_Radio_IRQn);
     __HAL_RCC_SUBGHZ_RADIO_FORCE_RESET();
     __HAL_RCC_SUBGHZ_RADIO_RELEASE_RESET();
@@ -104,7 +104,7 @@ STATIC mp_obj_t subghz_cs(mp_obj_t value) {
 MP_DEFINE_CONST_FUN_OBJ_1(subghz_cs_obj, subghz_cs);
 
 STATIC mp_obj_t subghz_irq(mp_obj_t handler) {
-    MP_STATE_PORT(subghz_callback) = handler;
+    MP_ROOT_POINTER(subghz_callback) = handler;
 
     if (mp_obj_is_true(handler)) {
         HAL_NVIC_ClearPendingIRQ(SUBGHZ_Radio_IRQn);

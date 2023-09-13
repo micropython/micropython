@@ -581,7 +581,7 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
     // if memory allocation fails (eg because gc is locked), just return
 
     #if MICROPY_PY_SYS_TRACEBACKLIMIT
-    mp_int_t max_traceback = MP_OBJ_SMALL_INT_VALUE(MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]));
+    mp_int_t max_traceback = MP_OBJ_SMALL_INT_VALUE(MP_ROOT_POINTER(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]));
     if (max_traceback <= 0) {
         return;
     } else if (self->traceback_data != NULL && self->traceback_len >= max_traceback * TRACEBACK_ENTRY_LEN) {

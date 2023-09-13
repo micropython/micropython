@@ -91,8 +91,8 @@
 STATIC bool pin_class_debug;
 
 void pin_init0(void) {
-    MP_STATE_PORT(pin_class_mapper) = mp_const_none;
-    MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
+    MP_ROOT_POINTER(pin_class_mapper) = mp_const_none;
+    MP_ROOT_POINTER(pin_class_map_dict) = mp_const_none;
     pin_class_debug = false;
 }
 
@@ -113,8 +113,8 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
-        mp_obj_t o = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
+    if (MP_ROOT_POINTER(pin_class_mapper) != mp_const_none) {
+        mp_obj_t o = mp_call_function_1(MP_ROOT_POINTER(pin_class_mapper), user_obj);
         if (o != mp_const_none) {
             if (!mp_obj_is_type(o, &pin_type)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("Pin.mapper didn't return a Pin object"));
@@ -132,8 +132,8 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         // other lookup methods.
     }
 
-    if (MP_STATE_PORT(pin_class_map_dict) != mp_const_none) {
-        mp_map_t *pin_map_map = mp_obj_dict_get_map(MP_STATE_PORT(pin_class_map_dict));
+    if (MP_ROOT_POINTER(pin_class_map_dict) != mp_const_none) {
+        mp_map_t *pin_map_map = mp_obj_dict_get_map(MP_ROOT_POINTER(pin_class_map_dict));
         mp_map_elem_t *elem = mp_map_lookup(pin_map_map, user_obj, MP_MAP_LOOKUP);
         if (elem != NULL && elem->value != MP_OBJ_NULL) {
             mp_obj_t o = elem->value;
@@ -280,10 +280,10 @@ STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_
 /// Get or set the pin mapper function.
 STATIC mp_obj_t pin_mapper(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
-        MP_STATE_PORT(pin_class_mapper) = args[1];
+        MP_ROOT_POINTER(pin_class_mapper) = args[1];
         return mp_const_none;
     }
-    return MP_STATE_PORT(pin_class_mapper);
+    return MP_ROOT_POINTER(pin_class_mapper);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mapper_fun_obj, 1, 2, pin_mapper);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, MP_ROM_PTR(&pin_mapper_fun_obj));
@@ -292,10 +292,10 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, MP_ROM_PTR(&pin_mapper_fu
 /// Get or set the pin mapper dictionary.
 STATIC mp_obj_t pin_map_dict(size_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
-        MP_STATE_PORT(pin_class_map_dict) = args[1];
+        MP_ROOT_POINTER(pin_class_map_dict) = args[1];
         return mp_const_none;
     }
-    return MP_STATE_PORT(pin_class_map_dict);
+    return MP_ROOT_POINTER(pin_class_map_dict);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, MP_ROM_PTR(&pin_map_dict_fun_obj));

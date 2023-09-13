@@ -213,8 +213,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-#define MP_STATE_PORT               MP_STATE_VM
-
 #define MICROPY_MPHALPORT_H         "windows_mphal.h"
 
 // We need to provide a declaration/definition of alloca()

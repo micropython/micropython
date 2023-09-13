@@ -61,27 +61,27 @@ char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN] = MICROPY_PY_NETW
 #ifdef MICROPY_PORT_NETWORK_INTERFACES
 
 void mod_network_init(void) {
-    mp_obj_list_init(&MP_STATE_PORT(mod_network_nic_list), 0);
+    mp_obj_list_init(&MP_ROOT_POINTER(mod_network_nic_list), 0);
 }
 
 void mod_network_deinit(void) {
 }
 
 void mod_network_register_nic(mp_obj_t nic) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-        if (MP_STATE_PORT(mod_network_nic_list).items[i] == nic) {
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mod_network_nic_list).len; i++) {
+        if (MP_ROOT_POINTER(mod_network_nic_list).items[i] == nic) {
             // nic already registered
             return;
         }
     }
     // nic not registered so add to list
-    mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list)), nic);
+    mp_obj_list_append(MP_OBJ_FROM_PTR(&MP_ROOT_POINTER(mod_network_nic_list)), nic);
 }
 
 mp_obj_t mod_network_find_nic(const uint8_t *ip) {
     // find a NIC that is suited to given IP address
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_ROOT_POINTER(mod_network_nic_list).items[i];
         // TODO check IP suitability here
         // mod_network_nic_protocol_t *nic_protocol = (mod_network_nic_protocol_t *)MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(nic), protocol);
         return nic;
@@ -91,7 +91,7 @@ mp_obj_t mod_network_find_nic(const uint8_t *ip) {
 }
 
 STATIC mp_obj_t network_route(void) {
-    return MP_OBJ_FROM_PTR(&MP_STATE_PORT(mod_network_nic_list));
+    return MP_OBJ_FROM_PTR(&MP_ROOT_POINTER(mod_network_nic_list));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(network_route_obj, network_route);
 

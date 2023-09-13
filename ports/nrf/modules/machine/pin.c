@@ -113,10 +113,10 @@ STATIC bool pin_class_debug;
 #endif
 
 void pin_init0(void) {
-    MP_STATE_PORT(pin_class_mapper) = mp_const_none;
-    MP_STATE_PORT(pin_class_map_dict) = mp_const_none;
+    MP_ROOT_POINTER(pin_class_mapper) = mp_const_none;
+    MP_ROOT_POINTER(pin_class_map_dict) = mp_const_none;
     for (int i = 0; i < NUM_OF_PINS; i++) {
-        MP_STATE_PORT(pin_irq_handlers)[i] = mp_const_none;
+        MP_ROOT_POINTER(pin_irq_handlers)[i] = mp_const_none;
     }
     // Initialize GPIOTE if not done yet.
     if (!nrfx_gpiote_is_init()) {
@@ -152,8 +152,8 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         return pin_obj;
     }
 
-    if (MP_STATE_PORT(pin_class_mapper) != mp_const_none) {
-        pin_obj = mp_call_function_1(MP_STATE_PORT(pin_class_mapper), user_obj);
+    if (MP_ROOT_POINTER(pin_class_mapper) != mp_const_none) {
+        pin_obj = mp_call_function_1(MP_ROOT_POINTER(pin_class_mapper), user_obj);
         if (pin_obj != mp_const_none) {
             if (!mp_obj_is_type(pin_obj, &pin_type)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("Pin.mapper didn't return a Pin object"));
@@ -171,8 +171,8 @@ const pin_obj_t *pin_find(mp_obj_t user_obj) {
         // other lookup methods.
     }
 
-    if (MP_STATE_PORT(pin_class_map_dict) != mp_const_none) {
-        mp_map_t *pin_map_map = mp_obj_dict_get_map(MP_STATE_PORT(pin_class_map_dict));
+    if (MP_ROOT_POINTER(pin_class_map_dict) != mp_const_none) {
+        mp_map_t *pin_map_map = mp_obj_dict_get_map(MP_ROOT_POINTER(pin_class_map_dict));
         mp_map_elem_t *elem = mp_map_lookup(pin_map_map, user_obj, MP_MAP_LOOKUP);
         if (elem != NULL && elem->value != NULL) {
             pin_obj = elem->value;
@@ -292,10 +292,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_on_obj, pin_on);
 /// Get or set the pin mapper function.
 STATIC mp_obj_t pin_mapper(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
-        MP_STATE_PORT(pin_class_mapper) = args[1];
+        MP_ROOT_POINTER(pin_class_mapper) = args[1];
         return mp_const_none;
     }
-    return MP_STATE_PORT(pin_class_mapper);
+    return MP_ROOT_POINTER(pin_class_mapper);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mapper_fun_obj, 1, 2, pin_mapper);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, (mp_obj_t)&pin_mapper_fun_obj);
@@ -304,10 +304,10 @@ STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_mapper_obj, (mp_obj_t)&pin_mapper_fun
 /// Get or set the pin mapper dictionary.
 STATIC mp_obj_t pin_map_dict(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args > 1) {
-        MP_STATE_PORT(pin_class_map_dict) = args[1];
+        MP_ROOT_POINTER(pin_class_map_dict) = args[1];
         return mp_const_none;
     }
-    return MP_STATE_PORT(pin_class_map_dict);
+    return MP_ROOT_POINTER(pin_class_map_dict);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_map_dict_fun_obj, 1, 2, pin_map_dict);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(pin_map_dict_obj, (mp_obj_t)&pin_map_dict_fun_obj);
@@ -494,7 +494,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 
 
 STATIC void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
-    mp_obj_t pin_handler = MP_STATE_PORT(pin_irq_handlers)[pin];
+    mp_obj_t pin_handler = MP_ROOT_POINTER(pin_irq_handlers)[pin];
     mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
     const pin_obj_t *pin_obj  = pin_find(pin_number);
 
@@ -529,7 +529,7 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         nrfx_gpiote_in_init(pin, &config, pin_common_irq_handler);
     }
 
-    MP_STATE_PORT(pin_irq_handlers)[pin] = args[ARG_handler].u_obj;
+    MP_ROOT_POINTER(pin_irq_handlers)[pin] = args[ARG_handler].u_obj;
 
     nrfx_gpiote_in_event_enable(pin, true);
 

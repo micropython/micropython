@@ -730,7 +730,7 @@ mp_obj_t pyb_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
     }
 
     // set the callback
-    MP_STATE_PORT(pyb_extint_callback)[EXTI_RTC_WAKEUP] = callback;
+    MP_ROOT_POINTER(pyb_extint_callback)[EXTI_RTC_WAKEUP] = callback;
 
     // disable register write protection
     RTC->WPR = 0xca;

@@ -392,15 +392,15 @@ STATIC mp_obj_t pyb_uart_make_new(const mp_obj_type_t *type, size_t n_args, size
     }
 
     pyb_uart_obj_t *self;
-    if (MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] == NULL) {
+    if (MP_ROOT_POINTER(pyb_uart_obj_all)[uart_id - 1] == NULL) {
         // create new UART object
         self = m_new0(pyb_uart_obj_t, 1);
         self->base.type = &pyb_uart_type;
         self->uart_id = uart_id;
-        MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1] = self;
+        MP_ROOT_POINTER(pyb_uart_obj_all)[uart_id - 1] = self;
     } else {
         // reference existing UART object
-        self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
+        self = MP_ROOT_POINTER(pyb_uart_obj_all)[uart_id - 1];
     }
 
     if (n_args > 1 || n_kw > 0) {

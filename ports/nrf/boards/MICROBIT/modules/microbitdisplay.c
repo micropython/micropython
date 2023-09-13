@@ -66,8 +66,8 @@ void microbit_display_show(microbit_display_obj_t *display, microbit_image_obj_t
 mp_obj_t microbit_display_show_func(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     // Cancel any animations.
-    MP_STATE_PORT(async_data)[0] = NULL;
-    MP_STATE_PORT(async_data)[1] = NULL;
+    MP_ROOT_POINTER(async_data)[0] = NULL;
+    MP_ROOT_POINTER(async_data)[1] = NULL;
 
     static const mp_arg_t show_allowed_args[] = {
         { MP_QSTR_image,    MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -141,8 +141,8 @@ STATIC void async_stop(void) {
     async_tick = 0;
     async_delay = 1000;
     async_clear = false;
-    MP_STATE_PORT(async_data)[0] = NULL;
-    MP_STATE_PORT(async_data)[1] = NULL;
+    MP_ROOT_POINTER(async_data)[0] = NULL;
+    MP_ROOT_POINTER(async_data)[1] = NULL;
     wakeup_event = true;
 }
 
@@ -286,7 +286,7 @@ static int32_t callback(void) {
 }
 
 static void draw_object(mp_obj_t obj) {
-    microbit_display_obj_t *display = (microbit_display_obj_t*)MP_STATE_PORT(async_data)[0];
+    microbit_display_obj_t *display = (microbit_display_obj_t*)MP_ROOT_POINTER(async_data)[0];
     if (obj == MP_OBJ_STOP_ITERATION) {
         if (async_clear) {
             microbit_display_show(&microbit_display_obj, BLANK_IMAGE);
@@ -319,7 +319,7 @@ static void microbit_display_update(void) {
     switch (async_mode) {
         case ASYNC_MODE_ANIMATION:
         {
-            if (MP_STATE_PORT(async_data)[0] == NULL || MP_STATE_PORT(async_data)[1] == NULL) {
+            if (MP_ROOT_POINTER(async_data)[0] == NULL || MP_ROOT_POINTER(async_data)[1] == NULL) {
                 async_stop();
                 break;
             }
@@ -376,13 +376,13 @@ void microbit_display_tick(void) {
 
 void microbit_display_animate(microbit_display_obj_t *self, mp_obj_t iterable, mp_int_t delay, bool clear, bool wait) {
     // Reset the repeat state.
-    MP_STATE_PORT(async_data)[0] = NULL;
-    MP_STATE_PORT(async_data)[1] = NULL;
+    MP_ROOT_POINTER(async_data)[0] = NULL;
+    MP_ROOT_POINTER(async_data)[1] = NULL;
     async_iterator = mp_getiter(iterable, NULL);
     async_delay = delay;
     async_clear = clear;
-    MP_STATE_PORT(async_data)[0] = self; // so it doesn't get GC'd
-    MP_STATE_PORT(async_data)[1] = async_iterator;
+    MP_ROOT_POINTER(async_data)[0] = self; // so it doesn't get GC'd
+    MP_ROOT_POINTER(async_data)[1] = async_iterator;
     wakeup_event = false;
     mp_obj_t obj = mp_iternext_allow_raise(async_iterator);
     draw_object(obj);

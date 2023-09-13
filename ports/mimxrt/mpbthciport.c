@@ -92,7 +92,7 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     };
 
     mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 1, 5, args);
-    MP_STATE_PORT(mp_bthci_uart) = mp_bthci_uart;
+    MP_ROOT_POINTER(mp_bthci_uart) = mp_bthci_uart;
 
     // Start the HCI polling to process any initial events/packets.
     mp_bluetooth_hci_start_polling();

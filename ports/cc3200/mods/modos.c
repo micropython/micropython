@@ -67,8 +67,8 @@ STATIC os_term_dup_obj_t os_term_dup_obj;
 void osmount_unmount_all (void) {
     //TODO
     /*
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mount_obj_list).len; i++) {
-        os_fs_mount_t *mount_obj = ((os_fs_mount_t *)(MP_STATE_PORT(mount_obj_list).items[i]));
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mount_obj_list).len; i++) {
+        os_fs_mount_t *mount_obj = ((os_fs_mount_t *)(MP_ROOT_POINTER(mount_obj_list).items[i]));
         unmount(mount_obj);
     }
     */
@@ -122,15 +122,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
 STATIC mp_obj_t os_dupterm(uint n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        if (MP_STATE_PORT(os_term_dup_obj) == MP_OBJ_NULL) {
+        if (MP_ROOT_POINTER(os_term_dup_obj) == MP_OBJ_NULL) {
             return mp_const_none;
         } else {
-            return MP_STATE_PORT(os_term_dup_obj)->stream_o;
+            return MP_ROOT_POINTER(os_term_dup_obj)->stream_o;
         }
     } else {
         mp_obj_t stream_o = args[0];
         if (stream_o == mp_const_none) {
-            MP_STATE_PORT(os_term_dup_obj) = MP_OBJ_NULL;
+            MP_ROOT_POINTER(os_term_dup_obj) = MP_OBJ_NULL;
         } else {
             if (!mp_obj_is_type(stream_o, &pyb_uart_type)) {
                 // must be a stream-like object providing at least read and write methods
@@ -138,7 +138,7 @@ STATIC mp_obj_t os_dupterm(uint n_args, const mp_obj_t *args) {
                 mp_load_method(stream_o, MP_QSTR_write, os_term_dup_obj.write);
             }
             os_term_dup_obj.stream_o = stream_o;
-            MP_STATE_PORT(os_term_dup_obj) = &os_term_dup_obj;
+            MP_ROOT_POINTER(os_term_dup_obj) = &os_term_dup_obj;
         }
         return mp_const_none;
     }

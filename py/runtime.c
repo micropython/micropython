@@ -119,19 +119,19 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PERSISTENT_CODE_TRACK_RELOC_CODE
-    MP_STATE_VM(track_reloc_code_list) = MP_OBJ_NULL;
+    MP_ROOT_POINTER(track_reloc_code_list) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_OS_DUPTERM
     for (size_t i = 0; i < MICROPY_PY_OS_DUPTERM; ++i) {
-        MP_STATE_VM(dupterm_objs[i]) = MP_OBJ_NULL;
+        MP_ROOT_POINTER(dupterm_objs[i]) = MP_OBJ_NULL;
     }
     #endif
 
     #if MICROPY_VFS
     // initialise the VFS sub-system
-    MP_STATE_VM(vfs_cur) = NULL;
-    MP_STATE_VM(vfs_mount_table) = NULL;
+    MP_ROOT_POINTER(vfs_cur) = NULL;
+    MP_ROOT_POINTER(vfs_mount_table) = NULL;
     #endif
 
     #if MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
@@ -148,12 +148,12 @@ void mp_init(void) {
     #endif // MICROPY_PY_SYS_PATH_ARGV_DEFAULTS
 
     #if MICROPY_PY_SYS_ATEXIT
-    MP_STATE_VM(sys_exitfunc) = mp_const_none;
+    MP_ROOT_POINTER(sys_exitfunc) = mp_const_none;
     #endif
 
     #if MICROPY_PY_SYS_PS1_PS2
-    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PS1]) = MP_OBJ_NEW_QSTR(MP_QSTR__gt__gt__gt__space_);
-    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PS2]) = MP_OBJ_NEW_QSTR(MP_QSTR__dot__dot__dot__space_);
+    MP_ROOT_POINTER(sys_mutable[MP_SYS_MUTABLE_PS1]) = MP_OBJ_NEW_QSTR(MP_QSTR__gt__gt__gt__space_);
+    MP_ROOT_POINTER(sys_mutable[MP_SYS_MUTABLE_PS2]) = MP_OBJ_NEW_QSTR(MP_QSTR__dot__dot__dot__space_);
     #endif
 
     #if MICROPY_PY_SYS_SETTRACE
@@ -163,11 +163,11 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PY_SYS_TRACEBACKLIMIT
-    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]) = MP_OBJ_NEW_SMALL_INT(1000);
+    MP_ROOT_POINTER(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]) = MP_OBJ_NEW_SMALL_INT(1000);
     #endif
 
     #if MICROPY_PY_BLUETOOTH
-    MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
+    MP_ROOT_POINTER(bluetooth) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_THREAD_GIL

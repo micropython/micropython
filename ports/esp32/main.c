@@ -115,7 +115,7 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     readline_init0();
 
-    MP_STATE_PORT(native_code_pointers) = MP_OBJ_NULL;
+    MP_ROOT_POINTER(native_code_pointers) = MP_OBJ_NULL;
 
     // initialise peripherals
     machine_pins_init();
@@ -155,7 +155,7 @@ soft_reset_exit:
 
     #if MICROPY_ESPNOW
     espnow_deinit(mp_const_none);
-    MP_STATE_PORT(espnow_singleton) = NULL;
+    MP_ROOT_POINTER(espnow_singleton) = NULL;
     #endif
 
     machine_timer_deinit_all();
@@ -165,10 +165,10 @@ soft_reset_exit:
     #endif
 
     // Free any native code pointers that point to iRAM.
-    if (MP_STATE_PORT(native_code_pointers) != MP_OBJ_NULL) {
+    if (MP_ROOT_POINTER(native_code_pointers) != MP_OBJ_NULL) {
         size_t len;
         mp_obj_t *items;
-        mp_obj_list_get(MP_STATE_PORT(native_code_pointers), &len, &items);
+        mp_obj_list_get(MP_ROOT_POINTER(native_code_pointers), &len, &items);
         for (size_t i = 0; i < len; ++i) {
             heap_caps_free(MP_OBJ_TO_PTR(items[i]));
         }
@@ -220,10 +220,10 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     if (p == NULL) {
         m_malloc_fail(len);
     }
-    if (MP_STATE_PORT(native_code_pointers) == MP_OBJ_NULL) {
-        MP_STATE_PORT(native_code_pointers) = mp_obj_new_list(0, NULL);
+    if (MP_ROOT_POINTER(native_code_pointers) == MP_OBJ_NULL) {
+        MP_ROOT_POINTER(native_code_pointers) = mp_obj_new_list(0, NULL);
     }
-    mp_obj_list_append(MP_STATE_PORT(native_code_pointers), MP_OBJ_TO_PTR(p));
+    mp_obj_list_append(MP_ROOT_POINTER(native_code_pointers), MP_OBJ_TO_PTR(p));
     if (reloc) {
         mp_native_relocate(reloc, buf, (uintptr_t)p);
     }

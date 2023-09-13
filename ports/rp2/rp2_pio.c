@@ -82,7 +82,7 @@ STATIC void pio_irq0(PIO pio) {
     pio->irq = ints >> 8;
 
     // Call handler if it is registered, for PIO irqs.
-    rp2_pio_irq_obj_t *irq = MP_STATE_PORT(rp2_pio_irq_obj[PIO_NUM(pio)]);
+    rp2_pio_irq_obj_t *irq = MP_ROOT_POINTER(rp2_pio_irq_obj[PIO_NUM(pio)]);
     if (irq != NULL && (ints & irq->trigger)) {
         irq->flags = ints & irq->trigger;
         mp_irq_handler(&irq->base);
@@ -90,7 +90,7 @@ STATIC void pio_irq0(PIO pio) {
 
     // Call handler if it is registered, for StateMachine irqs.
     for (size_t i = 0; i < 4; ++i) {
-        rp2_state_machine_irq_obj_t *irq = MP_STATE_PORT(rp2_state_machine_irq_obj[PIO_NUM(pio) * 4 + i]);
+        rp2_state_machine_irq_obj_t *irq = MP_ROOT_POINTER(rp2_state_machine_irq_obj[PIO_NUM(pio) * 4 + i]);
         if (irq != NULL && ((ints >> (8 + i)) & irq->trigger)) {
             irq->flags = 1;
             mp_irq_handler(&irq->base);
@@ -143,8 +143,8 @@ STATIC void rp2_pio_remove_all_managed_programs(PIO pio) {
 
 void rp2_pio_init(void) {
     // Set up interrupts.
-    memset(MP_STATE_PORT(rp2_pio_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_pio_irq_obj)));
-    memset(MP_STATE_PORT(rp2_state_machine_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_state_machine_irq_obj)));
+    memset(MP_ROOT_POINTER(rp2_pio_irq_obj), 0, sizeof(MP_ROOT_POINTER(rp2_pio_irq_obj)));
+    memset(MP_ROOT_POINTER(rp2_state_machine_irq_obj), 0, sizeof(MP_ROOT_POINTER(rp2_state_machine_irq_obj)));
     irq_set_exclusive_handler(PIO0_IRQ_0, pio0_irq0);
     irq_set_exclusive_handler(PIO1_IRQ_0, pio1_irq0);
 }
@@ -354,7 +354,7 @@ STATIC mp_obj_t rp2_pio_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get the IRQ object.
-    rp2_pio_irq_obj_t *irq = MP_STATE_PORT(rp2_pio_irq_obj[PIO_NUM(self->pio)]);
+    rp2_pio_irq_obj_t *irq = MP_ROOT_POINTER(rp2_pio_irq_obj[PIO_NUM(self->pio)]);
 
     // Allocate the IRQ object if it doesn't already exist.
     if (irq == NULL) {
@@ -364,7 +364,7 @@ STATIC mp_obj_t rp2_pio_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         irq->base.parent = MP_OBJ_FROM_PTR(self);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
-        MP_STATE_PORT(rp2_pio_irq_obj[PIO_NUM(self->pio)]) = irq;
+        MP_ROOT_POINTER(rp2_pio_irq_obj[PIO_NUM(self->pio)]) = irq;
     }
 
     if (n_args > 1 || kw_args->used != 0) {
@@ -426,7 +426,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 STATIC mp_uint_t rp2_pio_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     rp2_pio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    rp2_pio_irq_obj_t *irq = MP_STATE_PORT(rp2_pio_irq_obj[PIO_NUM(self->pio)]);
+    rp2_pio_irq_obj_t *irq = MP_ROOT_POINTER(rp2_pio_irq_obj[PIO_NUM(self->pio)]);
     irq_set_enabled(self->irq, false);
     irq->flags = 0;
     irq->trigger = new_trigger;
@@ -436,7 +436,7 @@ STATIC mp_uint_t rp2_pio_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
 
 STATIC mp_uint_t rp2_pio_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     rp2_pio_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    rp2_pio_irq_obj_t *irq = MP_STATE_PORT(rp2_pio_irq_obj[PIO_NUM(self->pio)]);
+    rp2_pio_irq_obj_t *irq = MP_ROOT_POINTER(rp2_pio_irq_obj[PIO_NUM(self->pio)]);
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return irq->flags;
     } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
@@ -824,7 +824,7 @@ STATIC mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, m
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     // Get the IRQ object.
-    rp2_state_machine_irq_obj_t *irq = MP_STATE_PORT(rp2_state_machine_irq_obj[self->id]);
+    rp2_state_machine_irq_obj_t *irq = MP_ROOT_POINTER(rp2_state_machine_irq_obj[self->id]);
 
     // Allocate the IRQ object if it doesn't already exist.
     if (irq == NULL) {
@@ -834,7 +834,7 @@ STATIC mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, m
         irq->base.parent = MP_OBJ_FROM_PTR(self);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
-        MP_STATE_PORT(rp2_state_machine_irq_obj[self->id]) = irq;
+        MP_ROOT_POINTER(rp2_state_machine_irq_obj[self->id]) = irq;
     }
 
     if (n_args > 1 || kw_args->used != 0) {
@@ -889,7 +889,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 STATIC mp_uint_t rp2_state_machine_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    rp2_state_machine_irq_obj_t *irq = MP_STATE_PORT(rp2_state_machine_irq_obj[PIO_NUM(self->pio)]);
+    rp2_state_machine_irq_obj_t *irq = MP_ROOT_POINTER(rp2_state_machine_irq_obj[PIO_NUM(self->pio)]);
     irq_set_enabled(self->irq, false);
     irq->flags = 0;
     irq->trigger = new_trigger;
@@ -899,7 +899,7 @@ STATIC mp_uint_t rp2_state_machine_irq_trigger(mp_obj_t self_in, mp_uint_t new_t
 
 STATIC mp_uint_t rp2_state_machine_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    rp2_state_machine_irq_obj_t *irq = MP_STATE_PORT(rp2_state_machine_irq_obj[PIO_NUM(self->pio)]);
+    rp2_state_machine_irq_obj_t *irq = MP_ROOT_POINTER(rp2_state_machine_irq_obj[PIO_NUM(self->pio)]);
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return irq->flags;
     } else if (info_type == MP_IRQ_INFO_TRIGGERS) {

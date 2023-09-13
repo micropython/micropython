@@ -70,7 +70,7 @@ enum {
     ASYNC_MUSIC_STATE_ARTICULATE,
 };
 
-#define music_data MP_STATE_PORT(modmusic_music_data)
+#define music_data MP_ROOT_POINTER(modmusic_music_data)
 
 extern volatile uint32_t ticks;
 

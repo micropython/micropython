@@ -71,7 +71,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n
 
 void machine_timer_deinit_all(void) {
     // Disable, deallocate and remove all timers from list
-    machine_timer_obj_t **t = &MP_STATE_PORT(machine_timer_obj_head);
+    machine_timer_obj_t **t = &MP_ROOT_POINTER(machine_timer_obj_head);
     while (*t != NULL) {
         machine_timer_disable(*t);
         machine_timer_obj_t *next = (*t)->next;
@@ -95,7 +95,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     machine_timer_obj_t *self = NULL;
 
     // Check whether the timer is already initialized, if so use it
-    for (machine_timer_obj_t *t = MP_STATE_PORT(machine_timer_obj_head); t; t = t->next) {
+    for (machine_timer_obj_t *t = MP_ROOT_POINTER(machine_timer_obj_head); t; t = t->next) {
         if (t->group == group && t->index == index) {
             self = t;
             break;
@@ -108,8 +108,8 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         self->index = index;
 
         // Add the timer to the linked-list of timers
-        self->next = MP_STATE_PORT(machine_timer_obj_head);
-        MP_STATE_PORT(machine_timer_obj_head) = self;
+        self->next = MP_ROOT_POINTER(machine_timer_obj_head);
+        MP_ROOT_POINTER(machine_timer_obj_head) = self;
     }
 
     if (n_args > 1 || n_kw > 0) {

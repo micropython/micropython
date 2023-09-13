@@ -227,7 +227,7 @@ void pyb_usb_init0(void) {
         usb_device.usbd_cdc_itf[i].attached_to_repl = false;
     }
     #if MICROPY_HW_USB_HID
-    MP_STATE_PORT(pyb_hid_report_desc) = MP_OBJ_NULL;
+    MP_ROOT_POINTER(pyb_hid_report_desc) = MP_OBJ_NULL;
     #endif
 
     pyb_usb_vcp_init0();
@@ -583,7 +583,7 @@ STATIC mp_obj_t pyb_usb_mode(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         hid_info.report_desc_len = bufinfo.len;
 
         // need to keep a copy of this so report_desc does not get GC'd
-        MP_STATE_PORT(pyb_hid_report_desc) = items[4];
+        MP_ROOT_POINTER(pyb_hid_report_desc) = items[4];
     }
     #endif
 
@@ -642,19 +642,19 @@ STATIC bool pyb_usb_vcp_irq_scheduled[MICROPY_HW_USB_CDC_NUM];
 
 STATIC void pyb_usb_vcp_init0(void) {
     for (size_t i = 0; i < MICROPY_HW_USB_CDC_NUM; ++i) {
-        MP_STATE_PORT(pyb_usb_vcp_irq)[i] = mp_const_none;
+        MP_ROOT_POINTER(pyb_usb_vcp_irq)[i] = mp_const_none;
         pyb_usb_vcp_irq_scheduled[i] = false;
     }
 
     // Activate USB_VCP(0) on dupterm slot 1 for the REPL
-    MP_STATE_VM(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[0]);
+    MP_ROOT_POINTER(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[0]);
     usb_vcp_attach_to_repl(&pyb_usb_vcp_obj[0], true);
 }
 
 STATIC mp_obj_t pyb_usb_vcp_irq_run(mp_obj_t self_in) {
     pyb_usb_vcp_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t idx = self->cdc_itf->cdc_idx;
-    mp_obj_t callback = MP_STATE_PORT(pyb_usb_vcp_irq)[idx];
+    mp_obj_t callback = MP_ROOT_POINTER(pyb_usb_vcp_irq)[idx];
     pyb_usb_vcp_irq_scheduled[idx] = false;
     if (callback != mp_const_none && usbd_cdc_rx_num(self->cdc_itf)) {
         mp_call_function_1(callback, self_in);
@@ -666,7 +666,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_usb_vcp_irq_run_obj, pyb_usb_vcp_irq_run);
 void usbd_cdc_rx_event_callback(usbd_cdc_itf_t *cdc) {
     uint8_t idx = cdc->cdc_idx;
     mp_obj_t self = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[idx]);
-    mp_obj_t callback = MP_STATE_PORT(pyb_usb_vcp_irq)[idx];
+    mp_obj_t callback = MP_ROOT_POINTER(pyb_usb_vcp_irq)[idx];
     if (callback != mp_const_none && !pyb_usb_vcp_irq_scheduled[idx]) {
         pyb_usb_vcp_irq_scheduled[idx] = mp_sched_schedule(MP_OBJ_FROM_PTR(&pyb_usb_vcp_irq_run_obj), self);
     }
@@ -851,7 +851,7 @@ STATIC mp_obj_t pyb_usb_vcp_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         }
 
         // Reconfigure the IRQ.
-        MP_STATE_PORT(pyb_usb_vcp_irq)[self->cdc_itf->cdc_idx] = handler;
+        MP_ROOT_POINTER(pyb_usb_vcp_irq)[self->cdc_itf->cdc_idx] = handler;
     }
 
     return mp_const_none;

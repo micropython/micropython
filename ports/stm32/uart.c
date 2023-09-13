@@ -162,17 +162,17 @@ void uart_init0(void) {
 
 // unregister all interrupt sources
 void uart_deinit_all(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all)); i++) {
-        pyb_uart_obj_t *uart_obj = MP_STATE_PORT(pyb_uart_obj_all)[i];
+    for (int i = 0; i < MP_ARRAY_SIZE(MP_ROOT_POINTER(pyb_uart_obj_all)); i++) {
+        pyb_uart_obj_t *uart_obj = MP_ROOT_POINTER(pyb_uart_obj_all)[i];
         if (uart_obj != NULL && !uart_obj->is_static) {
             uart_deinit(uart_obj);
-            MP_STATE_PORT(pyb_uart_obj_all)[i] = NULL;
+            MP_ROOT_POINTER(pyb_uart_obj_all)[i] = NULL;
         }
     }
 }
 
 bool uart_exists(int uart_id) {
-    if (uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(pyb_uart_obj_all))) {
+    if (uart_id > MP_ARRAY_SIZE(MP_ROOT_POINTER(pyb_uart_obj_all))) {
         // safeguard against pyb_uart_obj_all array being configured too small
         return false;
     }
@@ -1126,7 +1126,7 @@ void uart_tx_strn(pyb_uart_obj_t *uart_obj, const char *str, uint len) {
 // - On STM32F4 the IRQ flags are cleared by reading SR then DR.
 void uart_irq_handler(mp_uint_t uart_id) {
     // get the uart object
-    pyb_uart_obj_t *self = MP_STATE_PORT(pyb_uart_obj_all)[uart_id - 1];
+    pyb_uart_obj_t *self = MP_ROOT_POINTER(pyb_uart_obj_all)[uart_id - 1];
 
     if (self == NULL) {
         // UART object has not been set, so we can't do anything, not

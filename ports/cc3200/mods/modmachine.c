@@ -125,7 +125,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC mp_obj_t machine_main(mp_obj_t main) {
     if (mp_obj_is_str(main)) {
-        MP_STATE_PORT(machine_config_main) = main;
+        MP_ROOT_POINTER(machine_config_main) = main;
     } else {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }

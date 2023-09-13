@@ -131,7 +131,7 @@ const mp_obj_type_t esp_espnow_type;
 // If state == INITIALISED check the device has been initialised.
 // Raises OSError if not initialised and state == INITIALISED.
 static esp_espnow_obj_t *_get_singleton() {
-    return MP_STATE_PORT(espnow_singleton);
+    return MP_ROOT_POINTER(espnow_singleton);
 }
 
 static esp_espnow_obj_t *_get_singleton_initialised() {
@@ -154,7 +154,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     // garbage collected.
     // NOTE: on soft reset the espnow_singleton MUST be set to NULL and the
     // ESP-NOW functions de-initialised (see main.c).
-    esp_espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
+    esp_espnow_obj_t *self = MP_ROOT_POINTER(espnow_singleton);
     if (self != NULL) {
         return self;
     }
@@ -171,7 +171,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     #endif // MICROPY_ESPNOW_RSSI
 
     // Set the global singleton pointer for the espnow protocol.
-    MP_STATE_PORT(espnow_singleton) = self;
+    MP_ROOT_POINTER(espnow_singleton) = self;
 
     return self;
 }

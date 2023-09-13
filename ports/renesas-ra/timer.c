@@ -57,7 +57,7 @@ typedef struct _pyb_timer_obj_t {
     pyb_timer_channel_obj_t *channel;
     #endif
 } pyb_timer_obj_t;
-#define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
+#define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_ROOT_POINTER(pyb_timer_obj_all))
 
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
 STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
@@ -68,14 +68,14 @@ static const int ra_agt_timer_ch[TIMER_SIZE] = {1, 2};
 
 void timer_init0(void) {
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        MP_STATE_PORT(pyb_timer_obj_all)[i] = NULL;
+        MP_ROOT_POINTER(pyb_timer_obj_all)[i] = NULL;
     }
 }
 
 // unregister all interrupt sources
 void timer_deinit(void) {
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[i];
+        pyb_timer_obj_t *tim = MP_ROOT_POINTER(pyb_timer_obj_all)[i];
         if (tim != NULL) {
             pyb_timer_deinit(MP_OBJ_FROM_PTR(tim));
         }
@@ -153,17 +153,17 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_int_t tim_id = mp_obj_get_int(args[0]);
     // create new Timer object
     pyb_timer_obj_t *tim;
-    if (MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] == NULL) {
+    if (MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1] == NULL) {
         // create new Timer object
         tim = m_new_obj(pyb_timer_obj_t);
         memset(tim, 0, sizeof(*tim));
         tim->base.type = &pyb_timer_type;
         tim->tim_id = tim_id;
         tim->callback = mp_const_none;
-        MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] = tim;
+        MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1] = tim;
     } else {
         // reference existing Timer object
-        tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
+        tim = MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1];
     }
     if (n_args > 1 || n_kw > 0) {
         // start the peripheral
@@ -544,7 +544,7 @@ void timer_irq_handler(void *param) {
     uint tim_id = *(uint *)param;
     if ((tim_id != 0) && (tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM)) {
         // get the timer object
-        pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
+        pyb_timer_obj_t *tim = MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1];
 
         if (tim == NULL) {
             // do nohting

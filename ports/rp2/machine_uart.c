@@ -359,10 +359,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
         // Allocate the RX/TX buffers.
         ringbuf_alloc(&(self->read_buffer), rxbuf_len + 1);
-        MP_STATE_PORT(rp2_uart_rx_buffer[self->uart_id]) = self->read_buffer.buf;
+        MP_ROOT_POINTER(rp2_uart_rx_buffer[self->uart_id]) = self->read_buffer.buf;
 
         ringbuf_alloc(&(self->write_buffer), txbuf_len + 1);
-        MP_STATE_PORT(rp2_uart_tx_buffer[self->uart_id]) = self->write_buffer.buf;
+        MP_ROOT_POINTER(rp2_uart_tx_buffer[self->uart_id]) = self->write_buffer.buf;
 
         // Set the irq handler.
         if (self->uart_id == 0) {
@@ -414,8 +414,8 @@ STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
         irq_set_enabled(UART1_IRQ, false);
     }
     self->baudrate = 0;
-    MP_STATE_PORT(rp2_uart_rx_buffer[self->uart_id]) = NULL;
-    MP_STATE_PORT(rp2_uart_tx_buffer[self->uart_id]) = NULL;
+    MP_ROOT_POINTER(rp2_uart_rx_buffer[self->uart_id]) = NULL;
+    MP_ROOT_POINTER(rp2_uart_tx_buffer[self->uart_id]) = NULL;
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);

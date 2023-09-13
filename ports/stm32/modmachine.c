@@ -229,7 +229,7 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // free space on flash
     {
         #if MICROPY_VFS_FAT
-        for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+        for (mp_vfs_mount_t *vfs = MP_ROOT_POINTER(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
             if (strncmp("/flash", vfs->str, vfs->len) == 0) {
                 // assumes that it's a FatFs filesystem
                 fs_user_mount_t *vfs_fat = MP_OBJ_TO_PTR(vfs->obj);

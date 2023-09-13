@@ -111,7 +111,7 @@ void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
                 return;
             }
             #endif
-            machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
+            machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[index]);
             if (irq != NULL) {
                 irq->flags = irq->trigger;
                 mp_irq_handler(&irq->base);
@@ -174,12 +174,12 @@ void GPIO6_Combined_16_31_IRQHandler(void) {
 
 // Deinit all pin IRQ handlers.
 void machine_pin_irq_deinit(void) {
-    for (int i = 0; i < ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects)); ++i) {
-        machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[i]);
+    for (int i = 0; i < ARRAY_SIZE(MP_ROOT_POINTER(machine_pin_irq_objects)); ++i) {
+        machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[i]);
         if (irq != NULL) {
             machine_pin_obj_t *self = MP_OBJ_TO_PTR(irq->base.parent);
             GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
-            MP_STATE_PORT(machine_pin_irq_objects[i]) = NULL;
+            MP_ROOT_POINTER(machine_pin_irq_objects[i]) = NULL;
         }
     }
 }
@@ -399,15 +399,15 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     // Get the IRQ object.
     uint32_t gpio_nr = GPIO_get_instance(self->gpio);
     uint32_t index = GET_PIN_IRQ_INDEX(gpio_nr, self->pin);
-    if (index >= ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects))) {
+    if (index >= ARRAY_SIZE(MP_ROOT_POINTER(machine_pin_irq_objects))) {
         mp_raise_ValueError(MP_ERROR_TEXT("IRQ not supported on given Pin"));
     }
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
+    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[index]);
 
     if (args[ARG_handler].u_obj == mp_const_none) {
         // remove the IRQ from the table, leave it to gc to free it.
         GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
-        MP_STATE_PORT(machine_pin_irq_objects[index]) = NULL;
+        MP_ROOT_POINTER(machine_pin_irq_objects[index]) = NULL;
         return mp_const_none;
     }
 
@@ -419,7 +419,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         irq->base.parent = MP_OBJ_FROM_PTR(self);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
-        MP_STATE_PORT(machine_pin_irq_objects[index]) = irq;
+        MP_ROOT_POINTER(machine_pin_irq_objects[index]) = irq;
     }
 
     if (n_args > 1 || kw_args->used != 0) {
@@ -537,7 +537,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t gpio_nr = GPIO_get_instance(self->gpio);
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[GET_PIN_IRQ_INDEX(gpio_nr, self->pin)]);
+    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[GET_PIN_IRQ_INDEX(gpio_nr, self->pin)]);
     uint32_t irq_num = self->pin < 16 ? GPIO_combined_low_irqs[gpio_nr] : GPIO_combined_high_irqs[gpio_nr];
     DisableIRQ(irq_num);
     irq->flags = 0;
@@ -554,7 +554,7 @@ STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger
 STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t gpio_nr = GPIO_get_instance(self->gpio);
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[GET_PIN_IRQ_INDEX(gpio_nr, self->pin)]);
+    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[GET_PIN_IRQ_INDEX(gpio_nr, self->pin)]);
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return irq->flags;
     } else if (info_type == MP_IRQ_INFO_TRIGGERS) {

@@ -61,15 +61,15 @@ void mp_unix_alloc_exec(size_t min_size, void **ptr, size_t *size) {
     mmap_region_t *rg = m_new_obj(mmap_region_t);
     rg->ptr = *ptr;
     rg->len = min_size;
-    rg->next = MP_STATE_VM(mmap_region_head);
-    MP_STATE_VM(mmap_region_head) = rg;
+    rg->next = MP_ROOT_POINTER(mmap_region_head);
+    MP_ROOT_POINTER(mmap_region_head) = rg;
 }
 
 void mp_unix_free_exec(void *ptr, size_t size) {
     munmap(ptr, size);
 
     // unlink the mmap'd region from the list
-    for (mmap_region_t **rg = (mmap_region_t **)&MP_STATE_VM(mmap_region_head); *rg != NULL; *rg = (*rg)->next) {
+    for (mmap_region_t **rg = (mmap_region_t **)&MP_ROOT_POINTER(mmap_region_head); *rg != NULL; *rg = (*rg)->next) {
         if ((*rg)->ptr == ptr) {
             mmap_region_t *next = (*rg)->next;
             m_del_obj(mmap_region_t, *rg);
@@ -80,7 +80,7 @@ void mp_unix_free_exec(void *ptr, size_t size) {
 }
 
 void mp_unix_mark_exec(void) {
-    for (mmap_region_t *rg = MP_STATE_VM(mmap_region_head); rg != NULL; rg = rg->next) {
+    for (mmap_region_t *rg = MP_ROOT_POINTER(mmap_region_head); rg != NULL; rg = rg->next) {
         gc_collect_root(rg->ptr, rg->len / sizeof(mp_uint_t));
     }
 }

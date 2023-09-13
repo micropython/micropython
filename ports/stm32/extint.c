@@ -276,7 +276,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid ExtInt Pull: %d"), pull);
     }
 
-    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[v_line];
+    mp_obj_t *cb = &MP_ROOT_POINTER(pyb_extint_callback)[v_line];
     if (!override_callback_obj && *cb != mp_const_none && callback_obj != mp_const_none) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ExtInt vector %d is already in use"), v_line);
     }
@@ -322,7 +322,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
     uint32_t line = pin->pin;
 
     // Check if the ExtInt line is already in use by another Pin/ExtInt
-    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
+    mp_obj_t *cb = &MP_ROOT_POINTER(pyb_extint_callback)[line];
     if (*cb != mp_const_none && MP_OBJ_FROM_PTR(pin) != pyb_extint_callback_arg[line]) {
         if (mp_obj_is_small_int(pyb_extint_callback_arg[line])) {
             mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("ExtInt vector %d is already in use"), line);
@@ -373,7 +373,7 @@ void extint_register_pin(const pin_obj_t *pin, uint32_t mode, bool hard_irq, mp_
 void extint_set(const pin_obj_t *pin, uint32_t mode) {
     uint32_t line = pin->pin;
 
-    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
+    mp_obj_t *cb = &MP_ROOT_POINTER(pyb_extint_callback)[line];
 
     extint_disable(line);
 
@@ -697,10 +697,10 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 void extint_init0(void) {
     for (int i = 0; i < PYB_EXTI_NUM_VECTORS; i++) {
-        if (MP_STATE_PORT(pyb_extint_callback)[i] == MP_OBJ_SENTINEL) {
+        if (MP_ROOT_POINTER(pyb_extint_callback)[i] == MP_OBJ_SENTINEL) {
             continue;
         }
-        MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
+        MP_ROOT_POINTER(pyb_extint_callback)[i] = mp_const_none;
         pyb_extint_mode[i] = EXTI_Mode_Interrupt;
     }
 }
@@ -710,7 +710,7 @@ void Handle_EXTI_Irq(uint32_t line) {
     if (__HAL_GPIO_EXTI_GET_FLAG(1 << line)) {
         __HAL_GPIO_EXTI_CLEAR_FLAG(1 << line);
         if (line < EXTI_NUM_VECTORS) {
-            mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
+            mp_obj_t *cb = &MP_ROOT_POINTER(pyb_extint_callback)[line];
             #if MICROPY_PY_NETWORK_CYW43 && defined(pyb_pin_WL_HOST_WAKE)
             if (pyb_extint_callback_arg[line] == MP_OBJ_FROM_PTR(pyb_pin_WL_HOST_WAKE)) {
                 if (cyw43_poll) {

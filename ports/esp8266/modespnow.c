@@ -166,7 +166,7 @@ mp_obj_t espnow_deinit(mp_obj_t _) {
         self->recv_buffer = NULL;
         self->tx_packets = self->tx_responses;
     }
-    MP_STATE_PORT(espnow_buffer) = NULL;
+    MP_ROOT_POINTER(espnow_buffer) = NULL;
     return mp_const_none;
 }
 
@@ -181,7 +181,7 @@ STATIC mp_obj_t espnow_active(size_t n_args, const mp_obj_t *args) {
             if (self->recv_buffer == NULL) {    // Already initialised
                 self->recv_buffer = m_new_obj(ringbuf_t);
                 ringbuf_alloc(self->recv_buffer, self->recv_buffer_size);
-                MP_STATE_PORT(espnow_buffer) = self->recv_buffer;
+                MP_ROOT_POINTER(espnow_buffer) = self->recv_buffer;
                 esp_now_init();
                 esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
                 esp_now_register_recv_cb(recv_cb);

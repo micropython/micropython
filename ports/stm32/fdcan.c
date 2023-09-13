@@ -346,7 +346,7 @@ STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
     mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
     byte *state;
 
-    self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
+    self = MP_ROOT_POINTER(pyb_can_obj_all)[can_id - 1];
 
     CAN_TypeDef *can = self->can.Instance;
 

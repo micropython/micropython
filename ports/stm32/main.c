@@ -124,7 +124,7 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     };
 
     if (mp_obj_is_str(pos_args[0])) {
-        MP_STATE_PORT(pyb_config_main) = pos_args[0];
+        MP_ROOT_POINTER(pyb_config_main) = pos_args[0];
 
         // parse args
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -261,7 +261,7 @@ STATIC bool init_sdcard_fs(void) {
             }
             vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
             vfs->next = NULL;
-            for (mp_vfs_mount_t **m = &MP_STATE_VM(vfs_mount_table);; m = &(*m)->next) {
+            for (mp_vfs_mount_t **m = &MP_ROOT_POINTER(vfs_mount_table);; m = &(*m)->next) {
                 if (*m == NULL) {
                     *m = vfs;
                     break;
@@ -282,7 +282,7 @@ STATIC bool init_sdcard_fs(void) {
             {
                 if (first_part) {
                     // use SD card as current directory
-                    MP_STATE_PORT(vfs_cur) = vfs;
+                    MP_ROOT_POINTER(vfs_cur) = vfs;
                 }
             }
             first_part = false;
@@ -439,8 +439,8 @@ void stm32_main(uint32_t reset_mode) {
     uart_init(&pyb_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
     uart_set_rxbuf(&pyb_uart_repl_obj, sizeof(pyb_uart_repl_rxbuf), pyb_uart_repl_rxbuf);
     uart_attach_to_repl(&pyb_uart_repl_obj, true);
-    MP_STATE_PORT(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
-    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
+    MP_ROOT_POINTER(pyb_uart_obj_all)[MICROPY_HW_UART_REPL - 1] = &pyb_uart_repl_obj;
+    MP_ROOT_POINTER(pyb_stdio_uart) = &pyb_uart_repl_obj;
     #endif
 
     spi_init0();
@@ -568,7 +568,7 @@ soft_reset:
     }
 
     // reset config variables; they should be set by boot.py
-    MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
+    MP_ROOT_POINTER(pyb_config_main) = MP_OBJ_NULL;
 
     // Run optional frozen boot code.
     #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
@@ -676,9 +676,9 @@ soft_reset_exit:
     #endif
 
     #if defined(MICROPY_HW_UART_REPL)
-    MP_STATE_PORT(pyb_stdio_uart) = &pyb_uart_repl_obj;
+    MP_ROOT_POINTER(pyb_stdio_uart) = &pyb_uart_repl_obj;
     #else
-    MP_STATE_PORT(pyb_stdio_uart) = NULL;
+    MP_ROOT_POINTER(pyb_stdio_uart) = NULL;
     #endif
 
     MICROPY_BOARD_END_SOFT_RESET(&state);

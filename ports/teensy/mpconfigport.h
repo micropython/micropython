@@ -39,8 +39,6 @@ extern const struct _mp_obj_module_t pyb_module;
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_pyb), MP_ROM_PTR(&pyb_module) }, \
 
-#define MP_STATE_PORT MP_STATE_VM
-
 // type definitions for the specific machine
 
 #define UINT_FMT "%u"

@@ -114,7 +114,7 @@
 #define SET_TOP(val) *sp = (val)
 
 #if MICROPY_PY_SYS_EXC_INFO
-#define CLEAR_SYS_EXC_INFO() MP_STATE_VM(cur_exception) = NULL;
+#define CLEAR_SYS_EXC_INFO() MP_ROOT_POINTER(cur_exception) = NULL;
 #else
 #define CLEAR_SYS_EXC_INFO()
 #endif
@@ -1369,7 +1369,7 @@ exception_handler:
             // exception occurred
 
             #if MICROPY_PY_SYS_EXC_INFO
-            MP_STATE_VM(cur_exception) = nlr.ret_val;
+            MP_ROOT_POINTER(cur_exception) = nlr.ret_val;
             #endif
 
             #if SELECTIVE_EXC_IP

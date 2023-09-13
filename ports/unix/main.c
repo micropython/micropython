@@ -542,7 +542,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
             MP_OBJ_NEW_QSTR(MP_QSTR__slash_),
         };
         mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
-        MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+        MP_ROOT_POINTER(vfs_cur) = MP_ROOT_POINTER(vfs_mount_table);
     }
     #endif
 
@@ -743,8 +743,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     #if MICROPY_PY_SYS_ATEXIT
     // Beware, the sys.settrace callback should be disabled before running sys.atexit.
-    if (mp_obj_is_callable(MP_STATE_VM(sys_exitfunc))) {
-        mp_call_function_0(MP_STATE_VM(sys_exitfunc));
+    if (mp_obj_is_callable(MP_ROOT_POINTER(sys_exitfunc))) {
+        mp_call_function_0(MP_ROOT_POINTER(sys_exitfunc));
     }
     #endif
 

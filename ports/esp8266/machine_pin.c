@@ -95,7 +95,7 @@ void pin_init0(void) {
     ETS_GPIO_INTR_DISABLE();
     ETS_GPIO_INTR_ATTACH(pin_intr_handler_part1, NULL);
     // disable all interrupts
-    memset(&MP_STATE_PORT(pin_irq_handler)[0], 0, 16 * sizeof(mp_obj_t));
+    memset(&MP_ROOT_POINTER(pin_irq_handler)[0], 0, 16 * sizeof(mp_obj_t));
     for (int p = 0; p < 16; ++p) {
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << p);
         SET_TRIGGER(p, 0);
@@ -113,7 +113,7 @@ void MP_FASTCODE(pin_intr_handler_part2)(uint32_t status) {
     status &= 0xffff;
     for (int p = 0; status; ++p, status >>= 1) {
         if (status & 1) {
-            mp_obj_t handler = MP_STATE_PORT(pin_irq_handler)[p];
+            mp_obj_t handler = MP_ROOT_POINTER(pin_irq_handler)[p];
             if (handler != MP_OBJ_NULL) {
                 mp_sched_schedule(handler, MP_OBJ_FROM_PTR(&pyb_pin_obj[p]));
             }
@@ -401,7 +401,7 @@ STATIC mp_obj_t pyb_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
             trigger = 0;
         }
         ETS_GPIO_INTR_DISABLE();
-        MP_STATE_PORT(pin_irq_handler)[self->phys_port] = handler;
+        MP_ROOT_POINTER(pin_irq_handler)[self->phys_port] = handler;
         SET_TRIGGER(self->phys_port, trigger);
         GPIO_REG_WRITE(GPIO_STATUS_W1TC_ADDRESS, 1 << self->phys_port);
         ETS_GPIO_INTR_ENABLE();

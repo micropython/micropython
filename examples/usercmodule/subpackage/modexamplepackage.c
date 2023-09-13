@@ -50,10 +50,10 @@ STATIC mp_obj_t example_package_f(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(example_package_f_obj, example_package_f);
 
 STATIC mp_obj_t example_package___init__(void) {
-    if (!MP_STATE_VM(example_package_initialised)) {
+    if (!MP_ROOT_POINTER(example_package_initialised)) {
         // __init__ for builtins is called each time the module is imported,
         //   so ensure that initialisation only happens once.
-        MP_STATE_VM(example_package_initialised) = true;
+        MP_ROOT_POINTER(example_package_initialised) = true;
         mp_printf(&mp_plat_print, "example_package.__init__\n");
     }
     return mp_const_none;

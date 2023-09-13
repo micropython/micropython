@@ -587,8 +587,8 @@ STATIC mp_obj_t mod_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {
 
     if (!have_ip) {
         // find a NIC that can do a name lookup
-        for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
-            mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+        for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mod_network_nic_list).len; i++) {
+            mp_obj_t nic = MP_ROOT_POINTER(mod_network_nic_list).items[i];
             mod_network_nic_protocol_t *nic_protocol = (mod_network_nic_protocol_t *)MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(nic), protocol);
             if (nic_protocol->gethostbyname != NULL) {
                 int ret = nic_protocol->gethostbyname(nic, host, hlen, out_ip);

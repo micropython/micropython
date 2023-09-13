@@ -103,7 +103,7 @@ void mp_js_init(int heap_size) {
             MP_OBJ_NEW_QSTR(qstr_from_str("/")),
         };
         mp_vfs_mount(2, args, (mp_map_t *)&mp_const_empty_map);
-        MP_STATE_VM(vfs_cur) = MP_STATE_VM(vfs_mount_table);
+        MP_ROOT_POINTER(vfs_cur) = MP_ROOT_POINTER(vfs_mount_table);
     }
     #endif
 }

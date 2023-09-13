@@ -35,8 +35,8 @@
 
 #if MICROPY_PY_SYS_PS1_PS2
 const char *mp_repl_get_psx(unsigned int entry) {
-    if (mp_obj_is_str(MP_STATE_VM(sys_mutable)[entry])) {
-        return mp_obj_str_get_str(MP_STATE_VM(sys_mutable)[entry]);
+    if (mp_obj_is_str(MP_ROOT_POINTER(sys_mutable)[entry])) {
+        return mp_obj_str_get_str(MP_ROOT_POINTER(sys_mutable)[entry]);
     } else {
         return "";
     }

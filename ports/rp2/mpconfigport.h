@@ -212,8 +212,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
 
-#define MP_STATE_PORT MP_STATE_VM
-
 // Miscellaneous settings
 
 #ifndef MICROPY_HW_USB_VID

@@ -50,12 +50,12 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods;
 const mp_obj_base_t machine_pin_obj_template = {&machine_pin_type};
 
 void machine_pin_deinit(void) {
-    for (machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_list); irq != NULL; irq = irq->next) {
+    for (machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_list); irq != NULL; irq = irq->next) {
         machine_pin_obj_t *pin = MP_OBJ_TO_PTR(irq->base.parent);
         gpio_pin_interrupt_configure(pin->port, pin->pin, GPIO_INT_DISABLE);
         gpio_remove_callback(pin->port, &irq->callback);
     }
-    MP_STATE_PORT(machine_pin_irq_list) = NULL;
+    MP_ROOT_POINTER(machine_pin_irq_list) = NULL;
 }
 
 STATIC void gpio_callback_handler(const struct device *port, struct gpio_callback *cb, gpio_port_pins_t pins) {
@@ -205,7 +205,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     if (self->irq == NULL) {
         machine_pin_irq_obj_t *irq;
-        for (irq = MP_STATE_PORT(machine_pin_irq_list); irq != NULL; irq = irq->next) {
+        for (irq = MP_ROOT_POINTER(machine_pin_irq_list); irq != NULL; irq = irq->next) {
             machine_pin_obj_t *irq_pin = MP_OBJ_TO_PTR(irq->base.parent);
             if (irq_pin->port == self->port && irq_pin->pin == self->pin) {
                 break;
@@ -214,13 +214,13 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         if (irq == NULL) {
             irq = m_new_obj(machine_pin_irq_obj_t);
             mp_irq_init(&irq->base, &machine_pin_irq_methods, MP_OBJ_FROM_PTR(self));
-            irq->next = MP_STATE_PORT(machine_pin_irq_list);
+            irq->next = MP_ROOT_POINTER(machine_pin_irq_list);
             gpio_init_callback(&irq->callback, gpio_callback_handler, BIT(self->pin));
             int ret = gpio_add_callback(self->port, &irq->callback);
             if (ret != 0) {
                 mp_raise_OSError(-ret);
             }
-            MP_STATE_PORT(machine_pin_irq_list) = irq;
+            MP_ROOT_POINTER(machine_pin_irq_list) = irq;
         }
         self->irq = irq;
     }

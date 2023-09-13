@@ -71,11 +71,11 @@ STATIC void *m_malloc_bluetooth(size_t size) {
     size += sizeof(mp_bluetooth_nimble_malloc_t);
     mp_bluetooth_nimble_malloc_t *alloc = m_malloc0(size);
     alloc->size = size;
-    alloc->next = MP_STATE_PORT(bluetooth_nimble_memory);
+    alloc->next = MP_ROOT_POINTER(bluetooth_nimble_memory);
     if (alloc->next) {
         alloc->next->prev = alloc;
     }
-    MP_STATE_PORT(bluetooth_nimble_memory) = alloc;
+    MP_ROOT_POINTER(bluetooth_nimble_memory) = alloc;
     return alloc->data;
 }
 
@@ -91,7 +91,7 @@ STATIC void m_free_bluetooth(void *ptr) {
     if (alloc->prev) {
         alloc->prev->next = alloc->next;
     } else {
-        MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
+        MP_ROOT_POINTER(bluetooth_nimble_memory) = NULL;
     }
     m_free(alloc
     #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
@@ -104,7 +104,7 @@ STATIC void m_free_bluetooth(void *ptr) {
 // If it isn't, that means that it's from a previous soft-reset cycle.
 STATIC bool is_valid_nimble_malloc(void *ptr) {
     DEBUG_MALLOC_printf("NIMBLE is_valid_nimble_malloc(%p)\n", ptr);
-    mp_bluetooth_nimble_malloc_t *alloc = MP_STATE_PORT(bluetooth_nimble_memory);
+    mp_bluetooth_nimble_malloc_t *alloc = MP_ROOT_POINTER(bluetooth_nimble_memory);
     while (alloc) {
         DEBUG_MALLOC_printf("NIMBLE   checking: %p\n", alloc->data);
         if (alloc->data == ptr) {

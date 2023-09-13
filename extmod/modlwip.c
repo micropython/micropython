@@ -118,15 +118,15 @@ sio_fd_t sio_open(u8_t dvnum) {
 }
 
 void sio_send(u8_t c, sio_fd_t fd) {
-    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    mp_obj_type_t *type = mp_obj_get_type(MP_ROOT_POINTER(lwip_slip_stream));
     int error;
-    type->stream_p->write(MP_STATE_VM(lwip_slip_stream), &c, 1, &error);
+    type->stream_p->write(MP_ROOT_POINTER(lwip_slip_stream), &c, 1, &error);
 }
 
 u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len) {
-    mp_obj_type_t *type = mp_obj_get_type(MP_STATE_VM(lwip_slip_stream));
+    mp_obj_type_t *type = mp_obj_get_type(MP_ROOT_POINTER(lwip_slip_stream));
     int error;
-    mp_uint_t out_sz = type->stream_p->read(MP_STATE_VM(lwip_slip_stream), data, len, &error);
+    mp_uint_t out_sz = type->stream_p->read(MP_ROOT_POINTER(lwip_slip_stream), data, len, &error);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(error)) {
             return 0;
@@ -143,7 +143,7 @@ STATIC mp_obj_t lwip_slip_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw,
 
     lwip_slip_obj.base.type = &lwip_slip_type;
 
-    MP_STATE_VM(lwip_slip_stream) = args[0];
+    MP_ROOT_POINTER(lwip_slip_stream) = args[0];
 
     ip_addr_t iplocal, ipremote;
     if (!ipaddr_aton(mp_obj_str_get_str(args[1]), &iplocal)) {

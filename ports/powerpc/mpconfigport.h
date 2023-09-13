@@ -110,8 +110,6 @@ typedef long mp_off_t;
 #define MICROPY_HW_BOARD_NAME "bare-metal"
 #define MICROPY_HW_MCU_NAME "POWERPC"
 
-#define MP_STATE_PORT MP_STATE_VM
-
 // powerpc64 gcc doesn't seem to define these
 // These are pointers, so make them 64 bit types
 typedef long intptr_t;

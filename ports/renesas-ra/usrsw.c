@@ -104,8 +104,8 @@ mp_obj_t pyb_switch_value(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
 
 STATIC mp_obj_t switch_callback(mp_obj_t line) {
-    if (MP_STATE_PORT(pyb_switch_callback) != mp_const_none) {
-        mp_call_function_0(MP_STATE_PORT(pyb_switch_callback));
+    if (MP_ROOT_POINTER(pyb_switch_callback) != mp_const_none) {
+        mp_call_function_0(MP_ROOT_POINTER(pyb_switch_callback));
     }
     return mp_const_none;
 }
@@ -115,7 +115,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(switch_callback_obj, switch_callback);
 /// Register the given function to be called when the switch is pressed down.
 /// If `fun` is `None`, then it disables the callback.
 mp_obj_t pyb_switch_callback(mp_obj_t self_in, mp_obj_t callback) {
-    MP_STATE_PORT(pyb_switch_callback) = callback;
+    MP_ROOT_POINTER(pyb_switch_callback) = callback;
     // Init the EXTI each time this function is called, since the EXTI
     // may have been disabled by an exception in the interrupt, or the
     // user disabling the line explicitly.

@@ -125,8 +125,8 @@ int mp_bluetooth_init(void) {
     mp_bluetooth_deinit();
 
     // Allocate memory for state.
-    MP_STATE_PORT(bluetooth_zephyr_root_pointers) = m_new0(mp_bluetooth_zephyr_root_pointers_t, 1);
-    mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db);
+    MP_ROOT_POINTER(bluetooth_zephyr_root_pointers) = m_new0(mp_bluetooth_zephyr_root_pointers_t, 1);
+    mp_bluetooth_gatts_db_create(&MP_ROOT_POINTER(bluetooth_zephyr_root_pointers)->gatts_db);
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
     mp_bluetooth_zephyr_gap_scan_state = MP_BLUETOOTH_ZEPHYR_GAP_SCAN_STATE_INACTIVE;
@@ -169,7 +169,7 @@ void mp_bluetooth_deinit(void) {
     // state as suspended so it can be correctly reactivated later.
     mp_bluetooth_zephyr_ble_state = MP_BLUETOOTH_ZEPHYR_BLE_STATE_SUSPENDED;
 
-    MP_STATE_PORT(bluetooth_zephyr_root_pointers) = NULL;
+    MP_ROOT_POINTER(bluetooth_zephyr_root_pointers) = NULL;
 }
 
 bool mp_bluetooth_is_active(void) {
@@ -281,7 +281,7 @@ int mp_bluetooth_gatts_register_service_begin(bool append) {
     }
 
     // Reset the gatt characteristic value db.
-    mp_bluetooth_gatts_db_reset(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db);
+    mp_bluetooth_gatts_db_reset(MP_ROOT_POINTER(bluetooth_zephyr_root_pointers)->gatts_db);
 
     return MP_EOPNOTSUPP;
 }
@@ -305,7 +305,7 @@ int mp_bluetooth_gatts_read(uint16_t value_handle, const uint8_t **value, size_t
     if (!mp_bluetooth_is_active()) {
         return ERRNO_BLUETOOTH_NOT_ACTIVE;
     }
-    return mp_bluetooth_gatts_db_read(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, value_handle, value, value_len);
+    return mp_bluetooth_gatts_db_read(MP_ROOT_POINTER(bluetooth_zephyr_root_pointers)->gatts_db, value_handle, value, value_len);
 }
 
 int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t value_len, bool send_update) {
@@ -315,7 +315,7 @@ int mp_bluetooth_gatts_write(uint16_t value_handle, const uint8_t *value, size_t
     if (send_update) {
         return MP_EOPNOTSUPP;
     }
-    return mp_bluetooth_gatts_db_write(MP_STATE_PORT(bluetooth_zephyr_root_pointers)->gatts_db, value_handle, value, value_len);
+    return mp_bluetooth_gatts_db_write(MP_ROOT_POINTER(bluetooth_zephyr_root_pointers)->gatts_db, value_handle, value, value_len);
 }
 
 int mp_bluetooth_gatts_notify_indicate(uint16_t conn_handle, uint16_t value_handle, int gatts_op, const uint8_t *value, size_t value_len) {

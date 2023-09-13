@@ -145,7 +145,7 @@ typedef struct _pyb_timer_obj_t {
 TIM_HandleTypeDef TIM5_Handle;
 TIM_HandleTypeDef TIM6_Handle;
 
-#define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_STATE_PORT(pyb_timer_obj_all))
+#define PYB_TIMER_OBJ_ALL_NUM MP_ARRAY_SIZE(MP_ROOT_POINTER(pyb_timer_obj_all))
 
 STATIC mp_obj_t pyb_timer_deinit(mp_obj_t self_in);
 STATIC mp_obj_t pyb_timer_callback(mp_obj_t self_in, mp_obj_t callback);
@@ -153,14 +153,14 @@ STATIC mp_obj_t pyb_timer_channel_callback(mp_obj_t self_in, mp_obj_t callback);
 
 void timer_init0(void) {
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        MP_STATE_PORT(pyb_timer_obj_all)[i] = NULL;
+        MP_ROOT_POINTER(pyb_timer_obj_all)[i] = NULL;
     }
 }
 
 // unregister all interrupt sources
 void timer_deinit(void) {
     for (uint i = 0; i < PYB_TIMER_OBJ_ALL_NUM; i++) {
-        pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[i];
+        pyb_timer_obj_t *tim = MP_ROOT_POINTER(pyb_timer_obj_all)[i];
         if (tim != NULL) {
             pyb_timer_deinit(MP_OBJ_FROM_PTR(tim));
         }
@@ -995,7 +995,7 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
     }
 
     pyb_timer_obj_t *tim;
-    if (MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] == NULL) {
+    if (MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1] == NULL) {
         // create new Timer object
         tim = m_new_obj(pyb_timer_obj_t);
         memset(tim, 0, sizeof(*tim));
@@ -1010,10 +1010,10 @@ STATIC mp_obj_t pyb_timer_make_new(const mp_obj_type_t *type, size_t n_args, siz
         uint32_t ti = tim_instance_table[tim_id - 1];
         tim->tim.Instance = (TIM_TypeDef *)(ti & 0xffffff00);
         tim->irqn = ti & 0xff;
-        MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1] = tim;
+        MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1] = tim;
     } else {
         // reference existing Timer object
-        tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
+        tim = MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1];
     }
 
     if (n_args > 1 || n_kw > 0) {
@@ -1727,7 +1727,7 @@ STATIC void timer_handle_irq_channel(pyb_timer_obj_t *tim, uint8_t channel, mp_o
 void timer_irq_handler(uint tim_id) {
     if (tim_id - 1 < PYB_TIMER_OBJ_ALL_NUM) {
         // get the timer object
-        pyb_timer_obj_t *tim = MP_STATE_PORT(pyb_timer_obj_all)[tim_id - 1];
+        pyb_timer_obj_t *tim = MP_ROOT_POINTER(pyb_timer_obj_all)[tim_id - 1];
 
         if (tim == NULL) {
             // Timer object has not been set, so we can't do anything.

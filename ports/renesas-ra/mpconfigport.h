@@ -151,8 +151,6 @@
 #define MICROPY_PORT_CONSTANTS \
     MACHINE_BUILTIN_MODULE_CONSTANTS \
 
-#define MP_STATE_PORT MP_STATE_VM
-
 // type definitions for the specific machine
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((uint32_t)(p) | 1))
