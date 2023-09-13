@@ -251,7 +251,7 @@ void SystemClock_Config(void) {
     powerctrl_config_systick();
 
     // USB clock configuration, either HSI48 or PLL3.
-    #if 1
+    #if MICROPY_HW_ENABLE_USB && !MICROPY_HW_CLK_USE_PLL3_FOR_USB
 
     // Enable HSI48.
     LL_RCC_HSI48_Enable();
@@ -267,7 +267,7 @@ void SystemClock_Config(void) {
         | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
     CRS->CR = 0x20 << CRS_CR_TRIM_Pos | CRS_CR_AUTOTRIMEN | CRS_CR_CEN;
 
-    #else
+    #elif MICROPY_HW_ENABLE_USB && MICROPY_HW_CLK_USE_PLL3_FOR_USB
 
     // Configure PLL3 for use by USB at Q=48MHz.
     LL_RCC_PLL3_SetSource(LL_RCC_PLL3SOURCE_HSE);
