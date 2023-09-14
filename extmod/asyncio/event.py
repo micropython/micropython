@@ -49,7 +49,7 @@ try:
         def ioctl(self, req, flags):
             if req == 3:  # MP_STREAM_POLL
                 return self.state * flags
-            return None
+            return -1  # Other requests are unsupported
 
         def set(self):
             self.state = 1
