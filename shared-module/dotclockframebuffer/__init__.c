@@ -47,6 +47,10 @@ void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexp
     while (!common_hal_busio_i2c_try_lock(bus->bus)) {
         RUN_BACKGROUND_TASKS;
     }
+
+    // ensure deasserted CS and idle CLK
+    pin_change(bus, /* set */ bus->cs_mask, /* clear */ bus->clk_mask);
+
     for (uint32_t i = 0; i < init_sequence_len; /* NO INCREMENT */) {
         uint8_t *cmd = init_sequence + i;
         uint8_t data_size = *(cmd + 1);
@@ -57,8 +61,10 @@ void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexp
         ioexpander_bus_send(bus, true, cmd, 1);
         ioexpander_bus_send(bus, false, data, data_size);
 
+        // idle CLK
+        pin_change(bus, 0, /* clear */ bus->clk_mask);
         // deassert CS
-        pin_change(bus, /* set */ bus->cs_mask, /* clear */ 0);
+        pin_change(bus, /* set */ bus->cs_mask, 0);
 
         uint16_t delay_length_ms = 10;
         if (delay) {
