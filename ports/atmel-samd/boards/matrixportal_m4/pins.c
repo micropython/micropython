@@ -1,3 +1,4 @@
+#include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 
 STATIC const mp_rom_obj_tuple_t matrix_addr_tuple = {
