@@ -65,7 +65,7 @@ def udevadm_get_kitprog3_attached_devs():
         for line in udevadm_output_lines:
             attr = re.search('ATTRS{serial}=="[a-zA-Z0-9]*"', str(line))
             if attr is not None:
-                sn = attr.group().removeprefix("ATTRS{serial}==")
+                sn = attr.group()[len("ATTRS{serial}==") :]
                 sn = sn.strip('"')
                 return sn
 
