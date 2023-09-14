@@ -190,7 +190,8 @@ void common_hal_wifi_init(bool user_initiated) {
         &self->handler_instance_got_ip));
 
     wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
-    #ifdef CONFIG_IDF_TARGET_ESP32
+    #ifdef CONFIG_ESP32_WIFI_NVS_ENABLED
+    // Generally we don't use this because we store ssid and passwords ourselves in the filesystem.
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         // NVS partition was truncated and needs to be erased
@@ -210,7 +211,7 @@ void common_hal_wifi_init(bool user_initiated) {
         if (gc_alloc_possible()) {
             raise_esp_error(result);
         }
-        ESP_LOGE(TAG, "WiFi error code: %d", result);
+        ESP_LOGE(TAG, "WiFi error code: %x", result);
         return;
     }
     // set station mode to avoid the default SoftAP
