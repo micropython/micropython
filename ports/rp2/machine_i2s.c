@@ -230,7 +230,7 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in);
 
 void machine_i2s_init0(void) {
     for (uint8_t i = 0; i < MAX_I2S_RP2; i++) {
-        MP_ROOT_POINTER(machine_i2s_obj[i]) = NULL;
+        MP_ROOT_POINTER(machine_i2s_obj)[i] = NULL;
     }
 }
 
@@ -730,7 +730,7 @@ STATIC void dma_irq_handler(uint8_t irq_index) {
         return;
     }
 
-    machine_i2s_obj_t *self = MP_ROOT_POINTER(machine_i2s_obj[irq_index]);
+    machine_i2s_obj_t *self = MP_ROOT_POINTER(machine_i2s_obj)[irq_index];
     if (self == NULL) {
         // This should never happen
         return;
@@ -896,12 +896,12 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     }
 
     machine_i2s_obj_t *self;
-    if (MP_ROOT_POINTER(machine_i2s_obj[i2s_id]) == NULL) {
+    if (MP_ROOT_POINTER(machine_i2s_obj)[i2s_id] == NULL) {
         self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
-        MP_ROOT_POINTER(machine_i2s_obj[i2s_id]) = self;
+        MP_ROOT_POINTER(machine_i2s_obj)[i2s_id] = self;
         self->i2s_id = i2s_id;
     } else {
-        self = MP_ROOT_POINTER(machine_i2s_obj[i2s_id]);
+        self = MP_ROOT_POINTER(machine_i2s_obj)[i2s_id];
         machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
     }
 

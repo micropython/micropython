@@ -124,7 +124,7 @@ void mp_init(void) {
 
     #if MICROPY_PY_OS_DUPTERM
     for (size_t i = 0; i < MICROPY_PY_OS_DUPTERM; ++i) {
-        MP_ROOT_POINTER(dupterm_objs[i]) = MP_OBJ_NULL;
+        MP_ROOT_POINTER(dupterm_objs)[i] = MP_OBJ_NULL;
     }
     #endif
 
@@ -152,8 +152,8 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PY_SYS_PS1_PS2
-    MP_ROOT_POINTER(sys_mutable[MP_SYS_MUTABLE_PS1]) = MP_OBJ_NEW_QSTR(MP_QSTR__gt__gt__gt__space_);
-    MP_ROOT_POINTER(sys_mutable[MP_SYS_MUTABLE_PS2]) = MP_OBJ_NEW_QSTR(MP_QSTR__dot__dot__dot__space_);
+    MP_ROOT_POINTER(sys_mutable)[MP_SYS_MUTABLE_PS1] = MP_OBJ_NEW_QSTR(MP_QSTR__gt__gt__gt__space_);
+    MP_ROOT_POINTER(sys_mutable)[MP_SYS_MUTABLE_PS2] = MP_OBJ_NEW_QSTR(MP_QSTR__dot__dot__dot__space_);
     #endif
 
     #if MICROPY_PY_SYS_SETTRACE
@@ -163,7 +163,7 @@ void mp_init(void) {
     #endif
 
     #if MICROPY_PY_SYS_TRACEBACKLIMIT
-    MP_ROOT_POINTER(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]) = MP_OBJ_NEW_SMALL_INT(1000);
+    MP_ROOT_POINTER(sys_mutable)[MP_SYS_MUTABLE_TRACEBACKLIMIT] = MP_OBJ_NEW_SMALL_INT(1000);
     #endif
 
     #if MICROPY_PY_BLUETOOTH

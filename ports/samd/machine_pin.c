@@ -293,7 +293,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     // Get the IRQ object.
     uint8_t eic_id = get_pin_obj_ptr(self->pin_id)->eic;
-    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[eic_id]);
+    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects)[eic_id];
     if (irq != NULL && irq->pin_id != self->pin_id) {
         mp_raise_ValueError(MP_ERROR_TEXT("IRQ already used"));
     }
@@ -307,7 +307,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
         irq->pin_id = 0xff;
-        MP_ROOT_POINTER(machine_pin_irq_objects[eic_id]) = irq;
+        MP_ROOT_POINTER(machine_pin_irq_objects)[eic_id] = irq;
     }
     // (Re-)configure the irq.
     if (n_args > 1 || kw_args->used != 0) {
@@ -384,7 +384,7 @@ void pin_irq_deinit_all(void) {
 
     EIC->INTENCLR.reg = 0xffff;  // Disable all interrupts from the EIC.
     for (int i = 0; i < 16; i++) { // Clear all irq object pointers
-        MP_ROOT_POINTER(machine_pin_irq_objects[i]) = NULL;
+        MP_ROOT_POINTER(machine_pin_irq_objects)[i] = NULL;
     }
     // Disable all irq's at the NVIC controller
     #if defined(MCU_SAMD21)
@@ -405,7 +405,7 @@ void EIC_Handler() {
         if (isr & mask) {
             EIC_occured = true;
             EIC->INTFLAG.reg |= mask; // clear the ISR flag
-            machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[eic_id]);
+            machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects)[eic_id];
             if (irq != NULL) {
                 irq->flags = irq->trigger;
                 mp_irq_handler(&irq->base);
@@ -481,7 +481,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 static uint8_t find_eic_id(int pin) {
     for (int eic_id = 0; eic_id < 16; eic_id++) {
-        machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[eic_id]);
+        machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects)[eic_id];
         if (irq != NULL && irq->pin_id == pin) {
             return eic_id;
         }
@@ -493,7 +493,7 @@ STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t eic_id = find_eic_id(self->pin_id);
     if (eic_id != 0xff) {
-        machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[eic_id]);
+        machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects)[eic_id];
         EIC->INTENCLR.reg |= (1 << eic_id);
         irq->flags = 0;
         irq->trigger = new_trigger;
@@ -506,7 +506,7 @@ STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t eic_id = find_eic_id(self->pin_id);
     if (eic_id != 0xff) {
-        machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects[eic_id]);
+        machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_objects)[eic_id];
         if (info_type == MP_IRQ_INFO_FLAGS) {
             return irq->flags;
         } else if (info_type == MP_IRQ_INFO_TRIGGERS) {

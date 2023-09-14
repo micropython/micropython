@@ -76,7 +76,7 @@ void machine_pins_init(void) {
         gpio_install_isr_service(0);
         did_install = true;
     }
-    memset(&MP_ROOT_POINTER(machine_pin_irq_handler[0]), 0, sizeof(MP_ROOT_POINTER(machine_pin_irq_handler)));
+    memset(&MP_ROOT_POINTER(machine_pin_irq_handler)[0], 0, sizeof(MP_ROOT_POINTER(machine_pin_irq_handler)));
 }
 
 void machine_pins_deinit(void) {

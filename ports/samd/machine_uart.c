@@ -86,7 +86,7 @@ void sercom_deinit_all(void) {
         uart->USART.INTENCLR.reg = 0xff;
         sercom_register_irq(i, NULL);
         sercom_enable(uart, 0);
-        MP_ROOT_POINTER(sercom_table[i]) = NULL;
+        MP_ROOT_POINTER(sercom_table)[i] = NULL;
     }
 }
 #endif
@@ -113,7 +113,7 @@ STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
 }
 
 void common_uart_irq_handler(int uart_id) {
-    machine_uart_obj_t *self = MP_ROOT_POINTER(sercom_table[uart_id]);
+    machine_uart_obj_t *self = MP_ROOT_POINTER(sercom_table)[uart_id];
     // Handle IRQ
     if (self != NULL) {
         Sercom *uart = sercom_instance[self->id];
@@ -401,7 +401,7 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     self->cts = 0xff;
     #endif
     self->new = true;
-    MP_ROOT_POINTER(sercom_table[uart_id]) = self;
+    MP_ROOT_POINTER(sercom_table)[uart_id] = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);

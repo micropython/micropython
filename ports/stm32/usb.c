@@ -647,7 +647,7 @@ STATIC void pyb_usb_vcp_init0(void) {
     }
 
     // Activate USB_VCP(0) on dupterm slot 1 for the REPL
-    MP_ROOT_POINTER(dupterm_objs[1]) = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[0]);
+    MP_ROOT_POINTER(dupterm_objs)[1] = MP_OBJ_FROM_PTR(&pyb_usb_vcp_obj[0]);
     usb_vcp_attach_to_repl(&pyb_usb_vcp_obj[0], true);
 }
 

@@ -64,7 +64,7 @@ extern Sercom *sercom_instance[];
 
 void common_spi_irq_handler(int spi_id) {
     // handle Sercom IRQ RXC
-    machine_spi_obj_t *self = MP_ROOT_POINTER(sercom_table[spi_id]);
+    machine_spi_obj_t *self = MP_ROOT_POINTER(sercom_table)[spi_id];
     // Handle IRQ
     if (self != NULL) {
         Sercom *spi = sercom_instance[self->id];
@@ -255,7 +255,7 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     self->sck = 0xff;
 
     self->new = true;
-    MP_ROOT_POINTER(sercom_table[spi_id]) = self;
+    MP_ROOT_POINTER(sercom_table)[spi_id] = self;
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
@@ -270,7 +270,7 @@ STATIC void machine_sercom_deinit(mp_obj_base_t *self_in) {
     spi->SPI.INTENCLR.reg = 0xff;
     sercom_enable(spi, 0);
     // clear table entry of spi
-    MP_ROOT_POINTER(sercom_table[self->id]) = NULL;
+    MP_ROOT_POINTER(sercom_table)[self->id] = NULL;
 }
 
 STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
