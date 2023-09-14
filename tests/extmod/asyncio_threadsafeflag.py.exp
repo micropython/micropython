@@ -9,8 +9,6 @@ yield
 task 2
 set event
 yield
-schedule
-schedule done
 wait task
 task 2 done
 ----

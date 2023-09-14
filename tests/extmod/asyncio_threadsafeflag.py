@@ -16,17 +16,6 @@ except AttributeError:
     raise SystemExit
 
 
-try:
-    # Unix port can't select/poll on user-defined types.
-    import select
-
-    poller = select.poll()
-    poller.register(asyncio.ThreadSafeFlag())
-except TypeError:
-    print("SKIP")
-    raise SystemExit
-
-
 async def task(id, flag):
     print("task", id)
     await flag.wait()
@@ -34,9 +23,7 @@ async def task(id, flag):
 
 
 def set_from_schedule(flag):
-    print("schedule")
     flag.set()
-    print("schedule done")
 
 
 async def main():
