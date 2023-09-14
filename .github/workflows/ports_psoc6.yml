@@ -63,7 +63,7 @@ jobs:
     - name: Setup devices
       run: |
         cp mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/firmware.hex .
-        source tools/ci.sh && ci_psoc6_flash_multiple_devices ${{ matrix.board }} firmware.hex ${{ runner.name }}-devs.yml
+        source tools/ci.sh && ci_psoc6_flash_multiple_devices ${{ matrix.board }} firmware.hex tools/psoc6/${{ runner.name }}-devs.yml
     - name: Run psoc6 multi test
       run: | 
         cd tests
