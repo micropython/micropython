@@ -85,19 +85,19 @@ static mp_sched_node_t mp_wifi_connpoll_node;
 
 STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
     (void)node;
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_wifi_sockpoll_list)->len; i++) {
-        mod_network_socket_obj_t *socket = MP_STATE_PORT(mp_wifi_sockpoll_list)->items[i];
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mp_wifi_sockpoll_list)->len; i++) {
+        mod_network_socket_obj_t *socket = MP_ROOT_POINTER(mp_wifi_sockpoll_list)->items[i];
         uint8_t flags = 0;
         if (socket->callback == MP_OBJ_NULL || nina_socket_poll(socket->fileno, &flags) < 0) {
             // remove from poll list on error.
             socket->callback = MP_OBJ_NULL;
-            mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
+            mp_obj_list_remove(MP_ROOT_POINTER(mp_wifi_sockpoll_list), socket);
         } else if (flags) {
             mp_call_function_1(socket->callback, MP_OBJ_FROM_PTR(socket));
             if (flags & SOCKET_POLL_ERR) {
                 // remove from poll list on error.
                 socket->callback = MP_OBJ_NULL;
-                mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
+                mp_obj_list_remove(MP_ROOT_POINTER(mp_wifi_sockpoll_list), socket);
             }
         }
     }
@@ -138,7 +138,7 @@ STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
 }
 
 STATIC mp_obj_t network_ninaw10_timer_callback(mp_obj_t none_in) {
-    if (MP_STATE_PORT(mp_wifi_sockpoll_list) != MP_OBJ_NULL && MP_STATE_PORT(mp_wifi_sockpoll_list)->len) {
+    if (MP_ROOT_POINTER(mp_wifi_sockpoll_list) != MP_OBJ_NULL && MP_ROOT_POINTER(mp_wifi_sockpoll_list)->len) {
         mp_sched_schedule_node(&mp_wifi_sockpoll_node, network_ninaw10_poll_sockets);
     }
     return mp_const_none;
@@ -190,19 +190,19 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
                     NINA_FW_VER_MIN_MAJOR, NINA_FW_VER_MIN_MINOR, NINA_FW_VER_MIN_PATCH, semver[NINA_FW_VER_MAJOR_OFFS] - 48,
                     semver[NINA_FW_VER_MINOR_OFFS] - 48, semver[NINA_FW_VER_PATCH_OFFS] - 48);
             }
-            MP_STATE_PORT(mp_wifi_sockpoll_list) = mp_obj_new_list(0, NULL);
-            if (MP_STATE_PORT(mp_wifi_timer) == MP_OBJ_NULL) {
+            MP_ROOT_POINTER(mp_wifi_sockpoll_list) = mp_obj_new_list(0, NULL);
+            if (MP_ROOT_POINTER(mp_wifi_timer) == MP_OBJ_NULL) {
                 // Start sockets poll timer
                 mp_obj_t timer_args[] = {
                     MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_OBJ_NEW_SMALL_INT(10),
                     MP_OBJ_NEW_QSTR(MP_QSTR_callback), MP_OBJ_FROM_PTR(&network_ninaw10_timer_callback_obj),
                 };
-                MP_STATE_PORT(mp_wifi_timer) = MP_OBJ_TYPE_GET_SLOT(&machine_timer_type, make_new)((mp_obj_t)&machine_timer_type, 0, 2, timer_args);
+                MP_ROOT_POINTER(mp_wifi_timer) = MP_OBJ_TYPE_GET_SLOT(&machine_timer_type, make_new)((mp_obj_t)&machine_timer_type, 0, 2, timer_args);
             }
         } else {
             nina_deinit();
-            MP_STATE_PORT(mp_wifi_timer) = MP_OBJ_NULL;
-            MP_STATE_PORT(mp_wifi_sockpoll_list) = MP_OBJ_NULL;
+            MP_ROOT_POINTER(mp_wifi_timer) = MP_OBJ_NULL;
+            MP_ROOT_POINTER(mp_wifi_sockpoll_list) = MP_OBJ_NULL;
         }
         self->active = active;
         return mp_const_none;
@@ -531,7 +531,7 @@ STATIC void network_ninaw10_socket_close(mod_network_socket_obj_t *socket) {
     if (socket->callback != MP_OBJ_NULL) {
         mp_sched_lock();
         socket->callback = MP_OBJ_NULL;
-        mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
+        mp_obj_list_remove(MP_ROOT_POINTER(mp_wifi_sockpoll_list), socket);
         mp_sched_unlock();
     }
     if (socket->fileno >= 0) {
@@ -740,7 +740,7 @@ STATIC int network_ninaw10_socket_setsockopt(mod_network_socket_obj_t *socket, m
         mp_sched_lock();
         socket->callback = (void *)optval;
         if (socket->callback != MP_OBJ_NULL) {
-            mp_obj_list_append(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
+            mp_obj_list_append(MP_ROOT_POINTER(mp_wifi_sockpoll_list), socket);
         }
         mp_sched_unlock();
         return 0;

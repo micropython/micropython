@@ -149,7 +149,7 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
 
 void machine_i2s_init0() {
     for (i2s_port_t p = 0; p < I2S_NUM_AUTO; p++) {
-        MP_STATE_PORT(machine_i2s_obj)[p] = NULL;
+        MP_ROOT_POINTER(machine_i2s_obj)[p] = NULL;
     }
 }
 
@@ -510,13 +510,13 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     }
 
     machine_i2s_obj_t *self;
-    if (MP_STATE_PORT(machine_i2s_obj)[port] == NULL) {
+    if (MP_ROOT_POINTER(machine_i2s_obj)[port] == NULL) {
         self = m_new_obj_with_finaliser(machine_i2s_obj_t);
         self->base.type = &machine_i2s_type;
-        MP_STATE_PORT(machine_i2s_obj)[port] = self;
+        MP_ROOT_POINTER(machine_i2s_obj)[port] = self;
         self->port = port;
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[port];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[port];
         machine_i2s_deinit(self);
     }
 

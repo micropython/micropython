@@ -164,7 +164,7 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
 
 void machine_i2s_init0() {
     for (uint8_t i = 0; i < MICROPY_HW_MAX_I2S; i++) {
-        MP_STATE_PORT(machine_i2s_obj)[i] = NULL;
+        MP_ROOT_POINTER(machine_i2s_obj)[i] = NULL;
     }
 }
 
@@ -597,9 +597,9 @@ void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {
 void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
     if (hi2s->Instance == I2S1) {
-        self = MP_STATE_PORT(machine_i2s_obj)[0];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[0];
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[1];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[1];
     }
 
     // bottom half of buffer now filled,
@@ -616,9 +616,9 @@ void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
 void HAL_I2S_RxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
     if (hi2s->Instance == I2S1) {
-        self = MP_STATE_PORT(machine_i2s_obj)[0];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[0];
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[1];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[1];
     }
 
     // top half of buffer now filled,
@@ -636,9 +636,9 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
 
     if (hi2s->Instance == I2S1) {
-        self = MP_STATE_PORT(machine_i2s_obj)[0];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[0];
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[1];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[1];
     }
 
     // for non-blocking operation, this IRQ-based callback handles
@@ -655,9 +655,9 @@ void HAL_I2S_TxCpltCallback(I2S_HandleTypeDef *hi2s) {
 void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
     machine_i2s_obj_t *self;
     if (hi2s->Instance == I2S1) {
-        self = MP_STATE_PORT(machine_i2s_obj)[0];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[0];
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[1];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[1];
     }
 
     // for non-blocking operation, this IRQ-based callback handles
@@ -858,12 +858,12 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     }
 
     machine_i2s_obj_t *self;
-    if (MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] == NULL) {
+    if (MP_ROOT_POINTER(machine_i2s_obj)[i2s_id_zero_base] == NULL) {
         self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
-        MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] = self;
+        MP_ROOT_POINTER(machine_i2s_obj)[i2s_id_zero_base] = self;
         self->i2s_id = i2s_id;
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[i2s_id_zero_base];
         machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
     }
 

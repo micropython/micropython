@@ -321,15 +321,15 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     }
 
     machine_uart_obj_t *self;
-    if (MP_STATE_PORT(machine_uart_obj_all)[uart_id] == NULL) {
+    if (MP_ROOT_POINTER(machine_uart_obj_all)[uart_id] == NULL) {
         // create new UART object
         self = m_new0(machine_uart_obj_t, 1);
         self->base.type = &machine_uart_type;
         self->uart_id = uart_id;
-        MP_STATE_PORT(machine_uart_obj_all)[uart_id] = self;
+        MP_ROOT_POINTER(machine_uart_obj_all)[uart_id] = self;
     } else {
         // reference existing UART object
-        self = MP_STATE_PORT(machine_uart_obj_all)[uart_id];
+        self = MP_ROOT_POINTER(machine_uart_obj_all)[uart_id];
     }
 
     // start the peripheral

@@ -303,8 +303,6 @@ long unsigned int rng_generate_random_word(void);
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
 
-#define MP_STATE_PORT MP_STATE_VM
-
 #if MICROPY_HW_USB_CDC
 #include "device/usbd.h"
 #define MICROPY_HW_USBDEV_TASK_HOOK extern void tud_task(void); tud_task();

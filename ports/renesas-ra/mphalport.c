@@ -48,8 +48,8 @@ NORETURN void mp_hal_raise(HAL_StatusTypeDef status) {
 
 MP_WEAK uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     uintptr_t ret = 0;
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        mp_obj_t pyb_stdio_uart = MP_OBJ_FROM_PTR(MP_STATE_PORT(pyb_stdio_uart));
+    if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL) {
+        mp_obj_t pyb_stdio_uart = MP_OBJ_FROM_PTR(MP_ROOT_POINTER(pyb_stdio_uart));
         int errcode;
         const mp_stream_p_t *stream_p = mp_get_stream(pyb_stdio_uart);
         ret = stream_p->ioctl(pyb_stdio_uart, MP_STREAM_POLL, poll_flags, &errcode);
@@ -66,8 +66,8 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
         #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
         flash_cache_commit();
         #endif
-        if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
-            return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
+        if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL && uart_rx_any(MP_ROOT_POINTER(pyb_stdio_uart))) {
+            return uart_rx_char(MP_ROOT_POINTER(pyb_stdio_uart));
         }
         int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
@@ -78,8 +78,8 @@ MP_WEAK int mp_hal_stdin_rx_chr(void) {
 }
 
 MP_WEAK void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL) {
+        uart_tx_strn(MP_ROOT_POINTER(pyb_stdio_uart), str, len);
     }
     mp_os_dupterm_tx_strn(str, len);
 }

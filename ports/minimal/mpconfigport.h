@@ -41,5 +41,3 @@ typedef long mp_off_t;
 #define MICROPY_MIN_USE_STM32_MCU (1)
 #define MICROPY_HEAP_SIZE      (2048) // heap size 2 kilobytes
 #endif
-
-#define MP_STATE_PORT MP_STATE_VM

@@ -278,17 +278,17 @@ AT_NONCACHEABLE_SECTION_ALIGN(STATIC edma_tcd_t edmaTcd[MICROPY_HW_I2S_NUM], 32)
 // called on processor reset
 void machine_i2s_init0() {
     for (uint8_t i = 0; i < MICROPY_HW_I2S_NUM; i++) {
-        MP_STATE_PORT(machine_i2s_obj)[i] = NULL;
+        MP_ROOT_POINTER(machine_i2s_obj)[i] = NULL;
     }
 }
 
 // called on soft reboot
 void machine_i2s_deinit_all(void) {
     for (uint8_t i = 0; i < MICROPY_HW_I2S_NUM; i++) {
-        machine_i2s_obj_t *i2s_obj = MP_STATE_PORT(machine_i2s_obj)[i];
+        machine_i2s_obj_t *i2s_obj = MP_ROOT_POINTER(machine_i2s_obj)[i];
         if (i2s_obj != NULL) {
             machine_i2s_deinit(i2s_obj);
-            MP_STATE_PORT(machine_i2s_obj)[i] = NULL;
+            MP_ROOT_POINTER(machine_i2s_obj)[i] = NULL;
         }
     }
 }
@@ -1005,13 +1005,13 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     uint8_t i2s_id_zero_base = i2s_id - 1;
 
     machine_i2s_obj_t *self;
-    if (MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] == NULL) {
+    if (MP_ROOT_POINTER(machine_i2s_obj)[i2s_id_zero_base] == NULL) {
         self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
-        MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base] = self;
+        MP_ROOT_POINTER(machine_i2s_obj)[i2s_id_zero_base] = self;
         self->i2s_id = i2s_id;
         self->edmaTcd = &edmaTcd[i2s_id_zero_base];
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[i2s_id_zero_base];
+        self = MP_ROOT_POINTER(machine_i2s_obj)[i2s_id_zero_base];
         machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
     }
 

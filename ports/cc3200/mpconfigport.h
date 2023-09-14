@@ -137,8 +137,6 @@
 #define MICROPY_PORT_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_machine),     MP_ROM_PTR(&mp_module_machine) },  \
 
-#define MP_STATE_PORT MP_STATE_VM
-
 // type definitions for the specific machine
 #define MICROPY_MAKE_POINTER_CALLABLE(p)            ((void *)((mp_uint_t)(p) | 1))
 #define MP_SSIZE_MAX                                (0x7FFFFFFF)

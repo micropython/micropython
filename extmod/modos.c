@@ -67,7 +67,7 @@
 // Sync all filesystems.
 STATIC mp_obj_t mp_os_sync(void) {
     #if MICROPY_VFS_FAT
-    for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+    for (mp_vfs_mount_t *vfs = MP_ROOT_POINTER(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
     }

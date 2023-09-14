@@ -137,6 +137,17 @@ typedef struct _mp_state_mem_t {
     #endif
 } mp_state_mem_t;
 
+// Put the registered root pointers in a sub-structure so that they need to be
+// accessed using MP_ROOT_POINTER (and MP_STATE_VM doesn't work by accident).
+typedef struct _mp_state_root_ {
+    // Include any root pointers registered with MP_REGISTER_ROOT_POINTER().
+    #ifndef NO_QSTR
+    // Only include root pointer definitions when not doing qstr extraction, because
+    // the qstr extraction stage also generates the root pointers header file.
+    #include "genhdr/root_pointers.h"
+    #endif
+} mp_state_root_t;
+
 // This structure hold runtime and VM information.  It includes a section
 // which contains root pointers that must be scanned by the GC.
 typedef struct _mp_state_vm_t {
@@ -183,12 +194,8 @@ typedef struct _mp_state_vm_t {
     mp_obj_dict_t *mp_module_builtins_override_dict;
     #endif
 
-    // Include any root pointers registered with MP_REGISTER_ROOT_POINTER().
-    #ifndef NO_QSTR
-    // Only include root pointer definitions when not doing qstr extraction, because
-    // the qstr extraction stage also generates the root pointers header file.
-    #include "genhdr/root_pointers.h"
-    #endif
+    // Sub-structure for MP_REGISTER_ROOT_POINTER entries.
+    mp_state_root_t root;
 
     //
     // END ROOT POINTER SECTION
@@ -303,15 +310,24 @@ typedef struct _mp_state_ctx_t {
 
 extern mp_state_ctx_t mp_state_ctx;
 
+// For accessing anything in mp_state_vm_t.
 #define MP_STATE_VM(x) (mp_state_ctx.vm.x)
+
+// For accessing anything defined with MP_REGISTER_ROOT_POINTER.
+#define MP_ROOT_POINTER(x) (mp_state_ctx.vm.root.x)
+
 #define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
+
+// For accessing anything in the main thread's mp_state_thread_t.
 #define MP_STATE_MAIN_THREAD(x) (mp_state_ctx.thread.x)
 
 #if MICROPY_PY_THREAD
 extern mp_state_thread_t *mp_thread_get_state(void);
+// For accessing anything in the thread-local version of mp_state_thread_t.
 #define MP_STATE_THREAD(x) (mp_thread_get_state()->x)
 #define mp_thread_is_main_thread() (mp_thread_get_state() == &mp_state_ctx.thread)
 #else
+// When threading is disabled, use the main thread's mp_state_thread_t.
 #define MP_STATE_THREAD(x)  MP_STATE_MAIN_THREAD(x)
 #define mp_thread_is_main_thread() (true)
 #endif

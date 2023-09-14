@@ -173,8 +173,6 @@ The following is an example of an ``mpconfigport.h`` file:
    #define MICROPY_HW_BOARD_NAME "example-board"
    #define MICROPY_HW_MCU_NAME   "unknown-cpu"
 
-   #define MP_STATE_PORT MP_STATE_VM
-
 This configuration file contains machine-specific configurations including aspects like if different
 MicroPython features should be enabled e.g. ``#define MICROPY_ENABLE_GC (1)``. Making this Setting
 ``(0)`` disables the feature.

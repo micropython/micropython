@@ -152,7 +152,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_pri
 
 #if MICROPY_PY_SYS_EXC_INFO
 STATIC mp_obj_t mp_sys_exc_info(void) {
-    mp_obj_t cur_exc = MP_OBJ_FROM_PTR(MP_STATE_VM(cur_exception));
+    mp_obj_t cur_exc = MP_OBJ_FROM_PTR(MP_ROOT_POINTER(cur_exception));
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(3, NULL));
 
     if (cur_exc == MP_OBJ_NULL) {
@@ -180,8 +180,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_getsizeof_obj, mp_sys_getsizeof);
 #if MICROPY_PY_SYS_ATEXIT
 // atexit(callback): Callback is called when sys.exit is called.
 STATIC mp_obj_t mp_sys_atexit(mp_obj_t obj) {
-    mp_obj_t old = MP_STATE_VM(sys_exitfunc);
-    MP_STATE_VM(sys_exitfunc) = obj;
+    mp_obj_t old = MP_ROOT_POINTER(sys_exitfunc);
+    MP_ROOT_POINTER(sys_exitfunc) = obj;
     return old;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_atexit_obj, mp_sys_atexit);
@@ -231,8 +231,8 @@ STATIC const uint16_t sys_mutable_keys[] = {
 
 void mp_module_sys_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     MP_STATIC_ASSERT(MP_ARRAY_SIZE(sys_mutable_keys) == MP_SYS_MUTABLE_NUM + 1);
-    MP_STATIC_ASSERT(MP_ARRAY_SIZE(MP_STATE_VM(sys_mutable)) == MP_SYS_MUTABLE_NUM);
-    mp_module_generic_attr(attr, dest, sys_mutable_keys, MP_STATE_VM(sys_mutable));
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(MP_ROOT_POINTER(sys_mutable)) == MP_SYS_MUTABLE_NUM);
+    mp_module_generic_attr(attr, dest, sys_mutable_keys, MP_ROOT_POINTER(sys_mutable));
 }
 #endif
 
@@ -240,7 +240,7 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_sys) },
 
     #if MICROPY_PY_SYS_ARGV
-    { MP_ROM_QSTR(MP_QSTR_argv), MP_ROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)) },
+    { MP_ROM_QSTR(MP_QSTR_argv), MP_ROM_PTR(&MP_ROOT_POINTER(mp_sys_argv_obj)) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_version), MP_ROM_PTR(&mp_sys_version_obj) },
     { MP_ROM_QSTR(MP_QSTR_version_info), MP_ROM_PTR(&mp_sys_version_info_obj) },

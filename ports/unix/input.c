@@ -108,8 +108,8 @@ void prompt_write_history(void) {
         vstr_printf(&vstr, "%s/.micropython.history", home);
         int fd = open(vstr_null_terminated_str(&vstr), O_CREAT | O_TRUNC | O_WRONLY, 0644);
         if (fd != -1) {
-            for (int i = MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)) - 1; i >= 0; i--) {
-                const char *line = MP_STATE_PORT(readline_hist)[i];
+            for (int i = MP_ARRAY_SIZE(MP_ROOT_POINTER(readline_hist)) - 1; i >= 0; i--) {
+                const char *line = MP_ROOT_POINTER(readline_hist)[i];
                 if (line != NULL) {
                     while (write(fd, line, strlen(line)) == -1 && errno == EINTR) {
                     }

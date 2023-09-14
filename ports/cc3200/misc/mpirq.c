@@ -58,7 +58,7 @@ STATIC uint8_t mp_irq_priorities[] = { INT_PRIORITY_LVL_7, INT_PRIORITY_LVL_6, I
  ******************************************************************************/
 void mp_irq_init0 (void) {
     // initialize the callback objects list
-    mp_obj_list_init(&MP_STATE_PORT(mp_irq_obj_list), 0);
+    mp_obj_list_init(&MP_ROOT_POINTER(mp_irq_obj_list), 0);
 }
 
 mp_obj_t mp_irq_new (mp_obj_t parent, mp_obj_t handler, const mp_irq_methods_t *methods) {
@@ -69,13 +69,13 @@ mp_obj_t mp_irq_new (mp_obj_t parent, mp_obj_t handler, const mp_irq_methods_t *
     self->isenabled = true;
     // remove it in case it was already registered
     mp_irq_remove(parent);
-    mp_obj_list_append(&MP_STATE_PORT(mp_irq_obj_list), self);
+    mp_obj_list_append(&MP_ROOT_POINTER(mp_irq_obj_list), self);
     return self;
 }
 
 mp_irq_obj_t *mp_irq_find (mp_obj_t parent) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_irq_obj_list).len; i++) {
-        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_STATE_PORT(mp_irq_obj_list).items[i]));
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mp_irq_obj_list).len; i++) {
+        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_ROOT_POINTER(mp_irq_obj_list).items[i]));
         if (callback_obj->parent == parent) {
             return callback_obj;
         }
@@ -85,8 +85,8 @@ mp_irq_obj_t *mp_irq_find (mp_obj_t parent) {
 
 void mp_irq_wake_all (void) {
     // re-enable all active callback objects one by one
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_irq_obj_list).len; i++) {
-        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_STATE_PORT(mp_irq_obj_list).items[i]));
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mp_irq_obj_list).len; i++) {
+        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_ROOT_POINTER(mp_irq_obj_list).items[i]));
         if (callback_obj->isenabled) {
             callback_obj->methods->enable(callback_obj->parent);
         }
@@ -95,8 +95,8 @@ void mp_irq_wake_all (void) {
 
 void mp_irq_disable_all (void) {
     // re-enable all active callback objects one by one
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_irq_obj_list).len; i++) {
-        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_STATE_PORT(mp_irq_obj_list).items[i]));
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(mp_irq_obj_list).len; i++) {
+        mp_irq_obj_t *callback_obj = ((mp_irq_obj_t *)(MP_ROOT_POINTER(mp_irq_obj_list).items[i]));
         callback_obj->methods->disable(callback_obj->parent);
     }
 }
@@ -104,7 +104,7 @@ void mp_irq_disable_all (void) {
 void mp_irq_remove (const mp_obj_t parent) {
     mp_irq_obj_t *callback_obj;
     if ((callback_obj = mp_irq_find(parent))) {
-        mp_obj_list_remove(&MP_STATE_PORT(mp_irq_obj_list), callback_obj);
+        mp_obj_list_remove(&MP_ROOT_POINTER(mp_irq_obj_list), callback_obj);
     }
 }
 

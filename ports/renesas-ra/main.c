@@ -121,7 +121,7 @@ STATIC mp_obj_t pyb_main(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_a
     };
 
     if (mp_obj_is_str(pos_args[0])) {
-        MP_STATE_PORT(pyb_config_main) = pos_args[0];
+        MP_ROOT_POINTER(pyb_config_main) = pos_args[0];
 
         // parse args
         mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -249,9 +249,9 @@ int main(void) {
     uart_init(&machine_uart_repl_obj, MICROPY_HW_UART_REPL_BAUD, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, 0);
     uart_set_rxbuf(&machine_uart_repl_obj, sizeof(machine_uart_repl_rxbuf), machine_uart_repl_rxbuf);
     uart_attach_to_repl(&machine_uart_repl_obj, true);
-    MP_STATE_PORT(machine_uart_obj_all)[MICROPY_HW_UART_REPL] = &machine_uart_repl_obj;
+    MP_ROOT_POINTER(machine_uart_obj_all)[MICROPY_HW_UART_REPL] = &machine_uart_repl_obj;
     #if RA_EARLY_PRINT
-    MP_STATE_PORT(pyb_stdio_uart) = &machine_uart_repl_obj;
+    MP_ROOT_POINTER(pyb_stdio_uart) = &machine_uart_repl_obj;
     #endif
     #endif
 
@@ -293,9 +293,9 @@ soft_reset:
     // by boot.py must be set after boot.py is run.
 
     #if defined(MICROPY_HW_UART_REPL)
-    MP_STATE_PORT(pyb_stdio_uart) = &machine_uart_repl_obj;
+    MP_ROOT_POINTER(pyb_stdio_uart) = &machine_uart_repl_obj;
     #else
-    MP_STATE_PORT(pyb_stdio_uart) = NULL;
+    MP_ROOT_POINTER(pyb_stdio_uart) = NULL;
     #endif
 
     readline_init0();
@@ -321,7 +321,7 @@ soft_reset:
     }
 
     // reset config variables; they should be set by boot.py
-    MP_STATE_PORT(pyb_config_main) = MP_OBJ_NULL;
+    MP_ROOT_POINTER(pyb_config_main) = MP_OBJ_NULL;
 
     // Run optional frozen boot code.
     #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE

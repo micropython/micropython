@@ -106,7 +106,7 @@ STATIC void gpio_irq(void) {
                 if (intr & 0xf) {
                     uint32_t gpio = 8 * i + j;
                     gpio_acknowledge_irq(gpio, intr & 0xf);
-                    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[gpio]);
+                    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_obj)[gpio];
                     if (irq != NULL && (intr & irq->trigger)) {
                         irq->flags = intr & irq->trigger;
                         mp_irq_handler(&irq->base);
@@ -119,7 +119,7 @@ STATIC void gpio_irq(void) {
 }
 
 void machine_pin_init(void) {
-    memset(MP_STATE_PORT(machine_pin_irq_obj), 0, sizeof(MP_STATE_PORT(machine_pin_irq_obj)));
+    memset(MP_ROOT_POINTER(machine_pin_irq_obj), 0, sizeof(MP_ROOT_POINTER(machine_pin_irq_obj)));
     irq_add_shared_handler(IO_IRQ_BANK0, gpio_irq, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
     irq_set_enabled(IO_IRQ_BANK0, true);
     #if MICROPY_HW_PIN_EXT_COUNT
@@ -424,7 +424,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
 STATIC machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
     // Get the IRQ object.
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[pin]);
+    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_obj)[pin];
 
     // Allocate the IRQ object if it doesn't already exist.
     if (irq == NULL) {
@@ -434,7 +434,7 @@ STATIC machine_pin_irq_obj_t *machine_pin_get_irq(mp_hal_pin_obj_t pin) {
         irq->base.parent = MP_OBJ_FROM_PTR(machine_pin_cpu_pins[pin]);
         irq->base.handler = mp_const_none;
         irq->base.ishard = false;
-        MP_STATE_PORT(machine_pin_irq_obj[pin]) = irq;
+        MP_ROOT_POINTER(machine_pin_irq_obj)[pin] = irq;
     }
     return irq;
 }
@@ -569,7 +569,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
+    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_obj)[self->id];
     gpio_set_irq_enabled(self->id, GPIO_IRQ_ALL, false);
     irq->flags = 0;
     irq->trigger = new_trigger;
@@ -579,7 +579,7 @@ STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger
 
 STATIC mp_uint_t machine_pin_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_obj[self->id]);
+    machine_pin_irq_obj_t *irq = MP_ROOT_POINTER(machine_pin_irq_obj)[self->id];
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return irq->flags;
     } else if (info_type == MP_IRQ_INFO_TRIGGERS) {

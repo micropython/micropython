@@ -174,7 +174,7 @@ soft_reset:
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
 
     // reset config variables; they should be set by boot.py
-    MP_STATE_PORT(machine_config_main) = MP_OBJ_NULL;
+    MP_ROOT_POINTER(machine_config_main) = MP_OBJ_NULL;
 
     if (!safeboot) {
         // run boot.py
@@ -198,10 +198,10 @@ soft_reset:
         // run the main script from the current directory.
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
             const char *main_py;
-            if (MP_STATE_PORT(machine_config_main) == MP_OBJ_NULL) {
+            if (MP_ROOT_POINTER(machine_config_main) == MP_OBJ_NULL) {
                 main_py = "main.py";
             } else {
-                main_py = mp_obj_str_get_str(MP_STATE_PORT(machine_config_main));
+                main_py = mp_obj_str_get_str(MP_ROOT_POINTER(machine_config_main));
             }
             int ret = pyexec_file_if_exists(main_py);
             if (ret & PYEXEC_FORCED_EXIT) {
@@ -335,11 +335,11 @@ STATIC void mptask_init_sflash_filesystem(void) {
     vfs->len = 6;
     vfs->obj = MP_OBJ_FROM_PTR(vfs_fat);
     vfs->next = NULL;
-    MP_STATE_VM(vfs_mount_table) = vfs;
+    MP_ROOT_POINTER(vfs_mount_table) = vfs;
 
     // The current directory is used as the boot up directory.
     // It is set to the internal flash filesystem by default.
-    MP_STATE_PORT(vfs_cur) = vfs;
+    MP_ROOT_POINTER(vfs_cur) = vfs;
 
     // create /flash/sys, /flash/lib and /flash/cert if they don't exist
     if (FR_OK != f_chdir(&vfs_fat->fatfs, "/sys")) {

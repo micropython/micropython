@@ -100,7 +100,7 @@ uint extint_irq_no[EXTI_NUM_VECTORS];
 
 void extint_callback(void *param) {
     uint irq_no = *((uint *)param);
-    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[irq_no];
+    mp_obj_t *cb = &MP_ROOT_POINTER(pyb_extint_callback)[irq_no];
     if (*cb != mp_const_none) {
         mp_sched_lock();
         // When executing code within a handler we must lock the GC to prevent
@@ -142,7 +142,7 @@ uint extint_register(mp_obj_t pin_obj, uint32_t mode, uint32_t pull, mp_obj_t ca
         (pull != MP_HAL_PIN_PULL_UP)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid ExtInt Pull: %d"), pull);
     }
-    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[v_line];
+    mp_obj_t *cb = &MP_ROOT_POINTER(pyb_extint_callback)[v_line];
     if (!override_callback_obj && *cb != mp_const_none && callback_obj != mp_const_none) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ExtInt vector %d is already in use"), v_line);
     }
@@ -185,7 +185,7 @@ void extint_register_pin(const machine_pin_obj_t *pin, uint32_t mode, bool hard_
     }
 
     // Check if the ExtInt line is already in use by another Pin/ExtInt
-    mp_obj_t *cb = &MP_STATE_PORT(pyb_extint_callback)[line];
+    mp_obj_t *cb = &MP_ROOT_POINTER(pyb_extint_callback)[line];
     if (*cb != mp_const_none && MP_OBJ_FROM_PTR(pin) != pyb_extint_callback_arg[line]) {
         if (mp_obj_is_small_int(pyb_extint_callback_arg[line])) {
             mp_raise_msg_varg(&mp_type_OSError, MP_ERROR_TEXT("ExtInt vector %d is already in use"), line);
@@ -387,7 +387,7 @@ void extint_init0(void) {
     ra_icu_init();
     ra_icu_deinit();
     for (int i = 0; i < PYB_EXTI_NUM_VECTORS; i++) {
-        MP_STATE_PORT(pyb_extint_callback)[i] = mp_const_none;
+        MP_ROOT_POINTER(pyb_extint_callback)[i] = mp_const_none;
     }
 }
 

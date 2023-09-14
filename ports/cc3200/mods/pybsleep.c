@@ -155,7 +155,7 @@ void pyb_sleep_pre_init (void) {
 
 void pyb_sleep_init0 (void) {
     // initialize the sleep objects list
-    mp_obj_list_init(&MP_STATE_PORT(pyb_sleep_obj_list), 0);
+    mp_obj_list_init(&MP_ROOT_POINTER(pyb_sleep_obj_list), 0);
 
     // register and enable the PRCM interrupt
     osi_InterruptRegister(INT_PRCM, (P_OSI_INTR_ENTRY)PRCMInterruptHandler, INT_PRIORITY_LVL_1);
@@ -216,13 +216,13 @@ void pyb_sleep_add (const mp_obj_t obj, WakeUpCB_t wakeup) {
     sleep_obj->wakeup = wakeup;
     // remove it in case it was already registered
     pyb_sleep_remove (obj);
-    mp_obj_list_append(&MP_STATE_PORT(pyb_sleep_obj_list), sleep_obj);
+    mp_obj_list_append(&MP_ROOT_POINTER(pyb_sleep_obj_list), sleep_obj);
 }
 
 void pyb_sleep_remove (const mp_obj_t obj) {
     pyb_sleep_obj_t *sleep_obj;
     if ((sleep_obj = pyb_sleep_find(obj))) {
-        mp_obj_list_remove(&MP_STATE_PORT(pyb_sleep_obj_list), sleep_obj);
+        mp_obj_list_remove(&MP_ROOT_POINTER(pyb_sleep_obj_list), sleep_obj);
     }
 }
 
@@ -305,9 +305,9 @@ pybsleep_wake_reason_t pyb_sleep_get_wake_reason (void) {
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 STATIC pyb_sleep_obj_t *pyb_sleep_find (mp_obj_t obj) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_sleep_obj_list).len; i++) {
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(pyb_sleep_obj_list).len; i++) {
         // search for the object and then remove it
-        pyb_sleep_obj_t *sleep_obj = ((pyb_sleep_obj_t *)(MP_STATE_PORT(pyb_sleep_obj_list).items[i]));
+        pyb_sleep_obj_t *sleep_obj = ((pyb_sleep_obj_t *)(MP_ROOT_POINTER(pyb_sleep_obj_list).items[i]));
         if (sleep_obj->obj == obj) {
             return sleep_obj;
         }
@@ -520,8 +520,8 @@ STATIC void PRCMInterruptHandler (void) {
 }
 
 STATIC void pyb_sleep_obj_wakeup (void) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_sleep_obj_list).len; i++) {
-        pyb_sleep_obj_t *sleep_obj = ((pyb_sleep_obj_t *)MP_STATE_PORT(pyb_sleep_obj_list).items[i]);
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(pyb_sleep_obj_list).len; i++) {
+        pyb_sleep_obj_t *sleep_obj = ((pyb_sleep_obj_t *)MP_ROOT_POINTER(pyb_sleep_obj_list).items[i]);
         sleep_obj->wakeup(sleep_obj->obj);
     }
 }

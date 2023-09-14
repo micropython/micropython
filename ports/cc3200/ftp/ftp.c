@@ -1071,7 +1071,7 @@ static ftp_result_t ftp_list_dir (char *list, uint32_t maxlistsize, uint32_t *li
 #endif
         if (ftp_data.listroot) {
             // root directory "hack"
-            mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+            mp_vfs_mount_t *vfs = MP_ROOT_POINTER(vfs_mount_table);
             int i = ftp_data.volcount;
             while (vfs != NULL && i != 0) {
                 vfs = vfs->next;

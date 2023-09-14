@@ -123,7 +123,7 @@ STATIC void TIMER3BIntHandler(void);
  DEFINE PUBLIC FUNCTIONS
  ******************************************************************************/
 void timer_init0 (void) {
-    mp_obj_list_init(&MP_STATE_PORT(pyb_timer_channel_obj_list), 0);
+    mp_obj_list_init(&MP_ROOT_POINTER(pyb_timer_channel_obj_list), 0);
 }
 
 /******************************************************************************
@@ -146,8 +146,8 @@ STATIC int pyb_timer_channel_irq_flags (mp_obj_t self_in) {
 }
 
 STATIC pyb_timer_channel_obj_t *pyb_timer_channel_find (uint32_t timer, uint16_t channel_n) {
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_timer_channel_obj_list).len; i++) {
-        pyb_timer_channel_obj_t *ch = ((pyb_timer_channel_obj_t *)(MP_STATE_PORT(pyb_timer_channel_obj_list).items[i]));
+    for (mp_uint_t i = 0; i < MP_ROOT_POINTER(pyb_timer_channel_obj_list).len; i++) {
+        pyb_timer_channel_obj_t *ch = ((pyb_timer_channel_obj_t *)(MP_ROOT_POINTER(pyb_timer_channel_obj_list).items[i]));
         // any 32-bit timer must be matched by any of its 16-bit versions
         if (ch->timer->timer == timer && ((ch->channel & TIMER_A) == channel_n || (ch->channel & TIMER_B) == channel_n)) {
             return ch;
@@ -159,7 +159,7 @@ STATIC pyb_timer_channel_obj_t *pyb_timer_channel_find (uint32_t timer, uint16_t
 STATIC void pyb_timer_channel_remove (pyb_timer_channel_obj_t *ch) {
     pyb_timer_channel_obj_t *channel;
     if ((channel = pyb_timer_channel_find(ch->timer->timer, ch->channel))) {
-        mp_obj_list_remove(&MP_STATE_PORT(pyb_timer_channel_obj_list), channel);
+        mp_obj_list_remove(&MP_ROOT_POINTER(pyb_timer_channel_obj_list), channel);
         // unregister it with the sleep module
         pyb_sleep_remove((const mp_obj_t)channel);
     }
@@ -168,7 +168,7 @@ STATIC void pyb_timer_channel_remove (pyb_timer_channel_obj_t *ch) {
 STATIC void pyb_timer_channel_add (pyb_timer_channel_obj_t *ch) {
     // remove it in case it already exists
     pyb_timer_channel_remove(ch);
-    mp_obj_list_append(&MP_STATE_PORT(pyb_timer_channel_obj_list), ch);
+    mp_obj_list_append(&MP_ROOT_POINTER(pyb_timer_channel_obj_list), ch);
     // register it with the sleep module
     pyb_sleep_add((const mp_obj_t)ch, (WakeUpCB_t)timer_channel_init);
 }

@@ -132,8 +132,6 @@
 #define MICROPY_PY_PLATFORM                 (1)
 #define MICROPY_PLATFORM_VERSION            "ASF4"
 
-#define MP_STATE_PORT MP_STATE_VM
-
 // Additional entries for use with pendsv_schedule_dispatch.
 #ifndef MICROPY_BOARD_PENDSV_ENTRIES
 #define MICROPY_BOARD_PENDSV_ENTRIES

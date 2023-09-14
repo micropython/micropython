@@ -87,7 +87,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(os_uname_obj, os_uname);
 /// Sync all filesystems.
 STATIC mp_obj_t os_sync(void) {
     #if MICROPY_VFS_FAT
-    for (mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
+    for (mp_vfs_mount_t *vfs = MP_ROOT_POINTER(vfs_mount_table); vfs != NULL; vfs = vfs->next) {
         // this assumes that vfs->obj is fs_user_mount_t with block device functions
         disk_ioctl(MP_OBJ_TO_PTR(vfs->obj), CTRL_SYNC, NULL);
     }
@@ -118,16 +118,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 // TODO should accept any object with read/write methods.
 STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        if (MP_STATE_PORT(board_stdio_uart) == NULL) {
+        if (MP_ROOT_POINTER(board_stdio_uart) == NULL) {
             return mp_const_none;
         } else {
-            return MP_STATE_PORT(board_stdio_uart);
+            return MP_ROOT_POINTER(board_stdio_uart);
         }
     } else {
         if (args[0] == mp_const_none) {
-            MP_STATE_PORT(board_stdio_uart) = NULL;
+            MP_ROOT_POINTER(board_stdio_uart) = NULL;
         } else if (mp_obj_get_type(args[0]) == &machine_uart_type) {
-            MP_STATE_PORT(board_stdio_uart) = args[0];
+            MP_ROOT_POINTER(board_stdio_uart) = args[0];
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("need a UART object"));
         }

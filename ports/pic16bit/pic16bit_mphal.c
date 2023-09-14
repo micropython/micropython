@@ -32,7 +32,7 @@
 static int interrupt_char;
 
 void mp_hal_init(void) {
-    MP_STATE_PORT(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
+    MP_ROOT_POINTER(keyboard_interrupt_obj) = mp_obj_new_exception(&mp_type_KeyboardInterrupt);
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {

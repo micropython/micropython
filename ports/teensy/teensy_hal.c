@@ -28,12 +28,12 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         if (usb_vcp_rx_num()) {
             ret |= MP_STREAM_POLL_RD;
         }
-        if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
+        if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL && uart_rx_any(MP_ROOT_POINTER(pyb_stdio_uart))) {
             ret |= MP_STREAM_POLL_RD;
         }
     }
     if (poll_flags & MP_STREAM_POLL_WR) {
-        if (MP_STATE_PORT(pyb_stdio_uart) != NULL || usb_vcp_is_enabled()) {
+        if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL || usb_vcp_is_enabled()) {
             ret |= MP_STREAM_POLL_WR;
         }
     }
@@ -45,8 +45,8 @@ int mp_hal_stdin_rx_chr(void) {
         byte c;
         if (usb_vcp_recv_byte(&c) != 0) {
             return c;
-        } else if (MP_STATE_PORT(pyb_stdio_uart) != NULL && uart_rx_any(MP_STATE_PORT(pyb_stdio_uart))) {
-            return uart_rx_char(MP_STATE_PORT(pyb_stdio_uart));
+        } else if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL && uart_rx_any(MP_ROOT_POINTER(pyb_stdio_uart))) {
+            return uart_rx_char(MP_ROOT_POINTER(pyb_stdio_uart));
         }
         __WFI();
     }
@@ -57,8 +57,8 @@ void mp_hal_stdout_tx_str(const char *str) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
-        uart_tx_strn(MP_STATE_PORT(pyb_stdio_uart), str, len);
+    if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL) {
+        uart_tx_strn(MP_ROOT_POINTER(pyb_stdio_uart), str, len);
     }
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn(str, len);
@@ -67,9 +67,9 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
     // send stdout to UART and USB CDC VCP
-    if (MP_STATE_PORT(pyb_stdio_uart) != NULL) {
+    if (MP_ROOT_POINTER(pyb_stdio_uart) != NULL) {
         void uart_tx_strn_cooked(pyb_uart_obj_t *uart_obj, const char *str, uint len);
-        uart_tx_strn_cooked(MP_STATE_PORT(pyb_stdio_uart), str, len);
+        uart_tx_strn_cooked(MP_ROOT_POINTER(pyb_stdio_uart), str, len);
     }
     if (usb_vcp_is_enabled()) {
         usb_vcp_send_strn_cooked(str, len);

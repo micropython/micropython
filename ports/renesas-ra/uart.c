@@ -64,7 +64,7 @@ static void set_kbd_interrupt(uint32_t ch, void *keyex) {
 #endif
 
 static void uart_rx_cb(uint32_t ch, int d) {
-    machine_uart_obj_t *self = MP_STATE_PORT(machine_uart_obj_all)[ch];
+    machine_uart_obj_t *self = MP_ROOT_POINTER(machine_uart_obj_all)[ch];
     if (self == NULL) {
         // UART object has not been set, so we can't do anything, not
         // even disable the IRQ.  This should never happen.
@@ -86,17 +86,17 @@ void uart_init0(void) {
 
 // unregister all interrupt sources
 void uart_deinit_all(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(machine_uart_obj_all)); i++) {
-        machine_uart_obj_t *uart_obj = MP_STATE_PORT(machine_uart_obj_all)[i];
+    for (int i = 0; i < MP_ARRAY_SIZE(MP_ROOT_POINTER(machine_uart_obj_all)); i++) {
+        machine_uart_obj_t *uart_obj = MP_ROOT_POINTER(machine_uart_obj_all)[i];
         if (uart_obj != NULL && !uart_obj->is_static) {
             uart_deinit(uart_obj);
-            MP_STATE_PORT(machine_uart_obj_all)[i] = NULL;
+            MP_ROOT_POINTER(machine_uart_obj_all)[i] = NULL;
         }
     }
 }
 
 bool uart_exists(int uart_id) {
-    if (uart_id > MP_ARRAY_SIZE(MP_STATE_PORT(machine_uart_obj_all))) {
+    if (uart_id > MP_ARRAY_SIZE(MP_ROOT_POINTER(machine_uart_obj_all))) {
         // safeguard against machine_uart_obj_all array being configured too small
         return false;
     }

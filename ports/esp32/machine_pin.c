@@ -76,7 +76,7 @@ void machine_pins_init(void) {
         gpio_install_isr_service(0);
         did_install = true;
     }
-    memset(&MP_STATE_PORT(machine_pin_irq_handler[0]), 0, sizeof(MP_STATE_PORT(machine_pin_irq_handler)));
+    memset(&MP_ROOT_POINTER(machine_pin_irq_handler)[0], 0, sizeof(MP_ROOT_POINTER(machine_pin_irq_handler)));
 }
 
 void machine_pins_deinit(void) {
@@ -89,7 +89,7 @@ void machine_pins_deinit(void) {
 
 STATIC void machine_pin_isr_handler(void *arg) {
     machine_pin_obj_t *self = arg;
-    mp_obj_t handler = MP_STATE_PORT(machine_pin_irq_handler)[PIN_OBJ_INDEX(self)];
+    mp_obj_t handler = MP_ROOT_POINTER(machine_pin_irq_handler)[PIN_OBJ_INDEX(self)];
     mp_sched_schedule(handler, MP_OBJ_FROM_PTR(self));
     mp_hal_wake_main_task_from_isr();
 }
@@ -332,7 +332,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
                 trigger = 0;
             }
             gpio_isr_handler_remove(PIN_OBJ_INDEX(self));
-            MP_STATE_PORT(machine_pin_irq_handler)[PIN_OBJ_INDEX(self)] = handler;
+            MP_ROOT_POINTER(machine_pin_irq_handler)[PIN_OBJ_INDEX(self)] = handler;
             gpio_set_intr_type(PIN_OBJ_INDEX(self), trigger);
             gpio_isr_handler_add(PIN_OBJ_INDEX(self), machine_pin_isr_handler, (void *)self);
         }

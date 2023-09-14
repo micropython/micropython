@@ -52,7 +52,7 @@ enum { ESEQ_NONE, ESEQ_ESC, ESEQ_ESC_BRACKET, ESEQ_ESC_BRACKET_DIGIT, ESEQ_ESC_O
 #endif
 
 void readline_init0(void) {
-    memset(MP_STATE_PORT(readline_hist), 0, MICROPY_READLINE_HISTORY_SIZE * sizeof(const char*));
+    memset(MP_ROOT_POINTER(readline_hist), 0, MICROPY_READLINE_HISTORY_SIZE * sizeof(const char*));
 }
 
 STATIC char *str_dup_maybe(const char *str) {
@@ -337,12 +337,12 @@ backward_kill_word:
 up_arrow_key:
 #endif
                 // up arrow
-                if (rl.hist_cur + 1 < MICROPY_READLINE_HISTORY_SIZE && MP_STATE_PORT(readline_hist)[rl.hist_cur + 1] != NULL) {
+                if (rl.hist_cur + 1 < MICROPY_READLINE_HISTORY_SIZE && MP_ROOT_POINTER(readline_hist)[rl.hist_cur + 1] != NULL) {
                     // increase hist num
                     rl.hist_cur += 1;
                     // set line to history
                     rl.line->len = rl.orig_line_len;
-                    vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
+                    vstr_add_str(rl.line, MP_ROOT_POINTER(readline_hist)[rl.hist_cur]);
                     // set redraw parameters
                     redraw_step_back = rl.cursor_pos - rl.orig_line_len;
                     redraw_from_cursor = true;
@@ -359,7 +359,7 @@ down_arrow_key:
                     // set line to history
                     vstr_cut_tail_bytes(rl.line, rl.line->len - rl.orig_line_len);
                     if (rl.hist_cur >= 0) {
-                        vstr_add_str(rl.line, MP_STATE_PORT(readline_hist)[rl.hist_cur]);
+                        vstr_add_str(rl.line, MP_ROOT_POINTER(readline_hist)[rl.hist_cur]);
                     }
                     // set redraw parameters
                     redraw_step_back = rl.cursor_pos - rl.orig_line_len;
@@ -567,16 +567,16 @@ int readline(vstr_t *line, const char *prompt) {
 
 void readline_push_history(const char *line) {
     if (line[0] != '\0'
-        && (MP_STATE_PORT(readline_hist)[0] == NULL
-            || strcmp(MP_STATE_PORT(readline_hist)[0], line) != 0)) {
+        && (MP_ROOT_POINTER(readline_hist)[0] == NULL
+            || strcmp(MP_ROOT_POINTER(readline_hist)[0], line) != 0)) {
         // a line which is not empty and different from the last one
         // so update the history
         char *most_recent_hist = str_dup_maybe(line);
         if (most_recent_hist != NULL) {
             for (int i = MICROPY_READLINE_HISTORY_SIZE - 1; i > 0; i--) {
-                MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];
+                MP_ROOT_POINTER(readline_hist)[i] = MP_ROOT_POINTER(readline_hist)[i - 1];
             }
-            MP_STATE_PORT(readline_hist)[0] = most_recent_hist;
+            MP_ROOT_POINTER(readline_hist)[0] = most_recent_hist;
         }
     }
 }

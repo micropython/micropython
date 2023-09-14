@@ -142,12 +142,12 @@ void mp_hal_delay_ms(mp_uint_t delay) {
 }
 
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    if (MP_STATE_PORT(os_term_dup_obj)) {
-        if (mp_obj_is_type(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
-            uart_tx_strn(MP_STATE_PORT(os_term_dup_obj)->stream_o, str, len);
+    if (MP_ROOT_POINTER(os_term_dup_obj)) {
+        if (mp_obj_is_type(MP_ROOT_POINTER(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
+            uart_tx_strn(MP_ROOT_POINTER(os_term_dup_obj)->stream_o, str, len);
         } else {
-            MP_STATE_PORT(os_term_dup_obj)->write[2] = mp_obj_new_str_of_type(&mp_type_str, (const byte *)str, len);
-            mp_call_method_n_kw(1, 0, MP_STATE_PORT(os_term_dup_obj)->write);
+            MP_ROOT_POINTER(os_term_dup_obj)->write[2] = mp_obj_new_str_of_type(&mp_type_str, (const byte *)str, len);
+            mp_call_method_n_kw(1, 0, MP_ROOT_POINTER(os_term_dup_obj)->write);
         }
     }
     // and also to telnet
@@ -159,14 +159,14 @@ int mp_hal_stdin_rx_chr(void) {
         // read telnet first
         if (telnet_rx_any()) {
             return telnet_rx_char();
-        } else if (MP_STATE_PORT(os_term_dup_obj)) { // then the stdio_dup
-            if (mp_obj_is_type(MP_STATE_PORT(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
-                if (uart_rx_any(MP_STATE_PORT(os_term_dup_obj)->stream_o)) {
-                    return uart_rx_char(MP_STATE_PORT(os_term_dup_obj)->stream_o);
+        } else if (MP_ROOT_POINTER(os_term_dup_obj)) { // then the stdio_dup
+            if (mp_obj_is_type(MP_ROOT_POINTER(os_term_dup_obj)->stream_o, &pyb_uart_type)) {
+                if (uart_rx_any(MP_ROOT_POINTER(os_term_dup_obj)->stream_o)) {
+                    return uart_rx_char(MP_ROOT_POINTER(os_term_dup_obj)->stream_o);
                 }
             } else {
-                MP_STATE_PORT(os_term_dup_obj)->read[2] = mp_obj_new_int(1);
-                mp_obj_t data = mp_call_method_n_kw(1, 0, MP_STATE_PORT(os_term_dup_obj)->read);
+                MP_ROOT_POINTER(os_term_dup_obj)->read[2] = mp_obj_new_int(1);
+                mp_obj_t data = mp_call_method_n_kw(1, 0, MP_ROOT_POINTER(os_term_dup_obj)->read);
                 // data len is > 0
                 if (mp_obj_is_true(data)) {
                     mp_buffer_info_t bufinfo;

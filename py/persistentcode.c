@@ -354,10 +354,10 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
             // to trace.  This is because native functions can start inside `buf` and so
             // it's possible that the only GC-reachable pointers are pointers inside `buf`.
             // So put this `buf` on a list of reachable root pointers.
-            if (MP_STATE_PORT(track_reloc_code_list) == MP_OBJ_NULL) {
-                MP_STATE_PORT(track_reloc_code_list) = mp_obj_new_list(0, NULL);
+            if (MP_ROOT_POINTER(track_reloc_code_list) == MP_OBJ_NULL) {
+                MP_ROOT_POINTER(track_reloc_code_list) = mp_obj_new_list(0, NULL);
             }
-            mp_obj_list_append(MP_STATE_PORT(track_reloc_code_list), MP_OBJ_FROM_PTR(fun_data));
+            mp_obj_list_append(MP_ROOT_POINTER(track_reloc_code_list), MP_OBJ_FROM_PTR(fun_data));
             #endif
             // Do the relocations.
             mp_native_relocate(&ri, fun_data, (uintptr_t)fun_data);

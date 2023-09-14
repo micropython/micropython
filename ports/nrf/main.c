@@ -170,7 +170,7 @@ soft_reset:
             MP_OBJ_NEW_SMALL_INT(0),
             MP_OBJ_NEW_SMALL_INT(115200),
         };
-        MP_STATE_PORT(board_stdio_uart) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
+        MP_ROOT_POINTER(board_stdio_uart) = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, MP_ARRAY_SIZE(args), 0, args);
     }
     #endif
 
@@ -211,12 +211,12 @@ soft_reset:
         sdcard_init_vfs(vfs);
 
         // put the sd device in slot 1 (it will be unused at this point)
-        MP_STATE_PORT(fs_user_mount)[1] = vfs;
+        MP_ROOT_POINTER(fs_user_mount)[1] = vfs;
 
         FRESULT res = f_mount(&vfs->fatfs, vfs->str, 1);
         if (res != FR_OK) {
             printf("MPY: can't mount SD card\n");
-            MP_STATE_PORT(fs_user_mount)[1] = NULL;
+            MP_ROOT_POINTER(fs_user_mount)[1] = NULL;
             m_del_obj(fs_user_mount_t, vfs);
         } else {
             // TODO these should go before the /flash entries in the path

@@ -120,8 +120,8 @@ STATIC const mp_obj_t pyb_uart_def_pin[PYB_NUM_UARTS][2] = { {&pin_GP1, &pin_GP2
  ******************************************************************************/
 void uart_init0 (void) {
     // save references of the UART objects, to prevent the read buffers from being trashed by the gc
-    MP_STATE_PORT(pyb_uart_objs)[0] = &pyb_uart_obj[0];
-    MP_STATE_PORT(pyb_uart_objs)[1] = &pyb_uart_obj[1];
+    MP_ROOT_POINTER(pyb_uart_objs)[0] = &pyb_uart_obj[0];
+    MP_ROOT_POINTER(pyb_uart_objs)[1] = &pyb_uart_obj[1];
 }
 
 uint32_t uart_rx_any(pyb_uart_obj_t *self) {
@@ -249,7 +249,7 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
         MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
         while (UARTCharsAvail(self->reg)) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
-            if (MP_STATE_PORT(os_term_dup_obj) && MP_STATE_PORT(os_term_dup_obj)->stream_o == self && data == mp_interrupt_char) {
+            if (MP_ROOT_POINTER(os_term_dup_obj) && MP_ROOT_POINTER(os_term_dup_obj)->stream_o == self && data == mp_interrupt_char) {
                 // raise an exception when interrupts are finished
                 mp_sched_keyboard_interrupt();
             } else { // there's always a read buffer available

@@ -103,7 +103,7 @@ static inline void mp_sched_run_pending(void) {
 
     // Run at most one pending Python callback.
     if (!mp_sched_empty()) {
-        mp_sched_item_t item = MP_STATE_VM(sched_queue)[MP_STATE_VM(sched_idx)];
+        mp_sched_item_t item = MP_ROOT_POINTER(sched_queue)[MP_STATE_VM(sched_idx)];
         MP_STATE_VM(sched_idx) = IDX_MASK(MP_STATE_VM(sched_idx) + 1);
         --MP_STATE_VM(sched_len);
         MICROPY_END_ATOMIC_SECTION(atomic_state);
@@ -163,8 +163,8 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
         }
         uint8_t iput = IDX_MASK(MP_STATE_VM(sched_idx) + MP_STATE_VM(sched_len)++);
-        MP_STATE_VM(sched_queue)[iput].func = function;
-        MP_STATE_VM(sched_queue)[iput].arg = arg;
+        MP_ROOT_POINTER(sched_queue)[iput].func = function;
+        MP_ROOT_POINTER(sched_queue)[iput].arg = arg;
         MICROPY_SCHED_HOOK_SCHEDULED;
         ret = true;
     } else {

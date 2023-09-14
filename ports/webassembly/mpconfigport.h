@@ -89,8 +89,6 @@ typedef long mp_off_t;
 #define MICROPY_HW_BOARD_NAME "JS"
 #define MICROPY_HW_MCU_NAME "Emscripten"
 
-#define MP_STATE_PORT MP_STATE_VM
-
 #if MICROPY_VFS
 // _GNU_SOURCE must be defined to get definitions of DT_xxx symbols from dirent.h.
 #define _GNU_SOURCE

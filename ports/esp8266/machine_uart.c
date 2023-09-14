@@ -169,10 +169,10 @@ STATIC void pyb_uart_init_helper(pyb_uart_obj_t *self, size_t n_args, const mp_o
         byte *buf;
         if (len <= UART0_STATIC_RXBUF_LEN) {
             buf = uart_ringbuf_array;
-            MP_STATE_PORT(uart0_rxbuf) = NULL; // clear any old pointer
+            MP_ROOT_POINTER(uart0_rxbuf) = NULL; // clear any old pointer
         } else {
             buf = m_new(byte, len);
-            MP_STATE_PORT(uart0_rxbuf) = buf; // retain root pointer
+            MP_ROOT_POINTER(uart0_rxbuf) = buf; // retain root pointer
         }
         uart0_set_rxbuf(buf, len);
     }

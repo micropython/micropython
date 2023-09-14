@@ -187,8 +187,6 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 #define MICROPY_BOARD_PENDSV_ENTRIES
 #endif
 
-#define MP_STATE_PORT MP_STATE_VM
-
 // Miscellaneous settings
 #ifndef  MICROPY_EVENT_POLL_HOOK
 #define MICROPY_EVENT_POLL_HOOK \

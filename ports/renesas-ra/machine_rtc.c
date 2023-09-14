@@ -291,7 +291,7 @@ mp_obj_t machine_rtc_wakeup(size_t n_args, const mp_obj_t *args) {
         callback = args[2];
     }
     // set the callback
-    MP_STATE_PORT(pyb_extint_callback)[EXTI_RTC_WAKEUP] = callback;
+    MP_ROOT_POINTER(pyb_extint_callback)[EXTI_RTC_WAKEUP] = callback;
     pyb_extint_callback_arg[EXTI_RTC_WAKEUP] = MP_OBJ_NEW_SMALL_INT(EXTI_RTC_WAKEUP);
     rtc_wakeup_param = EXTI_RTC_WAKEUP;
     if (enable) {

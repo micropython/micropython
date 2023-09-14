@@ -33,14 +33,14 @@
 #if MICROPY_HW_ENABLE_CAN
 
 void can_init0(void) {
-    for (uint i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all)); i++) {
-        MP_STATE_PORT(pyb_can_obj_all)[i] = NULL;
+    for (uint i = 0; i < MP_ARRAY_SIZE(MP_ROOT_POINTER(pyb_can_obj_all)); i++) {
+        MP_ROOT_POINTER(pyb_can_obj_all)[i] = NULL;
     }
 }
 
 void can_deinit_all(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(MP_STATE_PORT(pyb_can_obj_all)); i++) {
-        pyb_can_obj_t *can_obj = MP_STATE_PORT(pyb_can_obj_all)[i];
+    for (int i = 0; i < MP_ARRAY_SIZE(MP_ROOT_POINTER(pyb_can_obj_all)); i++) {
+        pyb_can_obj_t *can_obj = MP_ROOT_POINTER(pyb_can_obj_all)[i];
         if (can_obj != NULL) {
             can_deinit(can_obj);
         }
@@ -318,7 +318,7 @@ STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
     mp_obj_t irq_reason = MP_OBJ_NEW_SMALL_INT(0);
     byte *state;
 
-    self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
+    self = MP_ROOT_POINTER(pyb_can_obj_all)[can_id - 1];
 
     if (fifo_id == CAN_FIFO0) {
         callback = self->rxcallback0;
@@ -355,7 +355,7 @@ STATIC void can_rx_irq_handler(uint can_id, uint fifo_id) {
 }
 
 STATIC void can_sce_irq_handler(uint can_id) {
-    pyb_can_obj_t *self = MP_STATE_PORT(pyb_can_obj_all)[can_id - 1];
+    pyb_can_obj_t *self = MP_ROOT_POINTER(pyb_can_obj_all)[can_id - 1];
     if (self) {
         self->can.Instance->MSR = CAN_MSR_ERRI;
         uint32_t esr = self->can.Instance->ESR;
