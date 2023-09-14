@@ -218,12 +218,20 @@ void SystemClock_Config(void) {
 
     // Configure PLL1 for use as system clock.
     LL_RCC_PLL1_ConfigDomain_SYS(pll1_source, MICROPY_HW_CLK_PLLM, MICROPY_HW_CLK_PLLN, MICROPY_HW_CLK_PLLP);
-    LL_RCC_PLL1_SetQ(MICROPY_HW_CLK_PLLQ);
-    LL_RCC_PLL1_SetR(MICROPY_HW_CLK_PLLR);
     LL_RCC_PLL1_SetFRACN(MICROPY_HW_CLK_PLLFRAC);
     LL_RCC_PLL1_SetVCOInputRange(MICROPY_HW_CLK_PLLVCI_LL);
     LL_RCC_PLL1_SetVCOOutputRange(MICROPY_HW_CLK_PLLVCO_LL);
     LL_RCC_PLL1P_Enable();
+
+    #if defined(MICROPY_HW_CLK_PLLQ)
+    LL_RCC_PLL1_SetQ(MICROPY_HW_CLK_PLLQ);
+    LL_RCC_PLL1Q_Enable();
+    #endif
+
+    #if defined(MICROPY_HW_CLK_PLLR)
+    LL_RCC_PLL1_SetR(MICROPY_HW_CLK_PLLR);
+    LL_RCC_PLL1R_Enable();
+    #endif
 
     // Enable PLL1.
     LL_RCC_PLL1_Enable();
