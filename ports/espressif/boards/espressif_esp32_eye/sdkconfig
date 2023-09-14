@@ -5,17 +5,6 @@
 # Component config
 #
 #
-# Hardware Settings
-#
-#
-# Sleep Config
-#
-CONFIG_ESP_SLEEP_PSRAM_LEAKAGE_WORKAROUND=y
-# end of Sleep Config
-
-# end of Hardware Settings
-
-#
 # Camera configuration
 #
 CONFIG_OV7670_SUPPORT=y

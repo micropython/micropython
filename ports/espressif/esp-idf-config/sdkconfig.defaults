@@ -58,6 +58,12 @@ CONFIG_LWIP_TCP_RTO_TIME=3000
 #
 CONFIG_MBEDTLS_SSL_OUT_CONTENT_LEN=2048
 #
+# mbedTLS v3.x related
+#
+# CONFIG_MBEDTLS_SSL_KEEP_PEER_CERTIFICATE is not set
+# end of mbedTLS v3.x related
+
+#
 # Certificate Bundle
 #
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_NONE=y
@@ -65,7 +71,6 @@ CONFIG_MBEDTLS_CUSTOM_CERTIFICATE_BUNDLE=y
 CONFIG_MBEDTLS_CUSTOM_CERTIFICATE_BUNDLE_PATH="../../lib/certificates/data/roots.pem"
 # end of Certificate Bundle
 
-CONFIG_MBEDTLS_TLS_CLIENT_ONLY=y
 #
 # TLS Key Exchange Methods
 #

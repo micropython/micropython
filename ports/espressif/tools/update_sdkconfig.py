@@ -163,6 +163,7 @@ def update(debug, board, update_all):
 
     board_make = pathlib.Path(f"boards/{board}/mpconfigboard.mk")
     psram_size = "0"
+    uf2_bootloader = None
     for line in board_make.read_text().split("\n"):
         if "=" not in line or line.startswith("#"):
             continue
@@ -171,6 +172,8 @@ def update(debug, board, update_all):
         value = value.strip()
         if key == "IDF_TARGET":
             target = value
+            if uf2_bootloader is None:
+                uf2_bootloader = target not in ("esp32", "esp32c3")
         elif key == "CIRCUITPY_ESP_FLASH_SIZE":
             flash_size = value
         elif key == "CIRCUITPY_ESP_FLASH_MODE":
@@ -183,6 +186,8 @@ def update(debug, board, update_all):
             psram_mode = value
         elif key == "CIRCUITPY_ESP_PSRAM_FREQ":
             psram_freq = value
+        elif key == "UF2_BOOTLOADER":
+            uf2_bootloader = not (value == "0")
 
     os.environ["IDF_TARGET"] = target
     os.environ[
@@ -209,7 +214,7 @@ def update(debug, board, update_all):
     size_options = ""
     if flash_size == "2MB":
         size_options = "-no-ota-no-uf2"
-    elif target in ("esp32", "esp32c3"):
+    elif not uf2_bootloader:
         # These boards don't have native USB.
         size_options = "-no-uf2"
     flash_size_config = pathlib.Path(

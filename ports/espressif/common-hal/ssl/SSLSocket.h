@@ -38,7 +38,6 @@ typedef struct ssl_sslsocket_obj {
     mp_obj_base_t base;
     socketpool_socket_obj_t *sock;
     esp_tls_t *tls;
-    esp_tls_error_handle_t tls_error_handle;
     ssl_sslcontext_obj_t *ssl_context;
     esp_tls_cfg_t ssl_config;
 } ssl_sslsocket_obj_t;

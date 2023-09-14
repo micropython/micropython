@@ -24,12 +24,6 @@ CONFIG_ESP32_REV_MIN_FULL=300
 CONFIG_ESP_REV_MIN_FULL=300
 # end of Chip revision
 
-#
-# Sleep Config
-#
-CONFIG_ESP_SLEEP_PSRAM_LEAKAGE_WORKAROUND=y
-# end of Sleep Config
-
 # end of Hardware Settings
 
 #

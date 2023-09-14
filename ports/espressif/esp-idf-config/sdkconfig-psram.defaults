@@ -5,17 +5,6 @@
 # Component config
 #
 #
-# Hardware Settings
-#
-#
-# Sleep Config
-#
-# CONFIG_ESP_SLEEP_PSRAM_LEAKAGE_WORKAROUND is not set
-# end of Sleep Config
-
-# end of Hardware Settings
-
-#
 # ESP PSRAM
 #
 CONFIG_SPIRAM=y

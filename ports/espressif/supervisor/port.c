@@ -251,7 +251,7 @@ safe_mode_t port_init(void) {
 
     // Send the ROM output out of the UART. This includes early logs.
     #if DEBUG
-    ets_install_uart_printf();
+    esp_rom_install_uart_printf();
     #endif
 
     heap = NULL;

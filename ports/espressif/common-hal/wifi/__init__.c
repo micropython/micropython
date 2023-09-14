@@ -32,6 +32,7 @@
 #include "shared-bindings/wifi/Monitor.h"
 #include "shared-bindings/wifi/Radio.h"
 
+#include "py/gc.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
 
@@ -162,8 +163,8 @@ void common_hal_wifi_init(bool user_initiated) {
     if (!wifi_ever_inited) {
         ESP_ERROR_CHECK(esp_netif_init());
         ESP_ERROR_CHECK(esp_event_loop_create_default());
+        wifi_ever_inited = true;
     }
-    wifi_ever_inited = true;
 
     self->netif = esp_netif_create_default_wifi_sta();
     self->ap_netif = esp_netif_create_default_wifi_ap();
@@ -201,9 +202,16 @@ void common_hal_wifi_init(bool user_initiated) {
     #endif
     esp_err_t result = esp_wifi_init(&config);
     if (result == ESP_ERR_NO_MEM) {
-        mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
+        if (gc_alloc_possible()) {
+            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
+        }
+        ESP_LOGE(TAG, "Failed to allocate Wifi memory");
     } else if (result != ESP_OK) {
-        raise_esp_error(result);
+        if (gc_alloc_possible()) {
+            raise_esp_error(result);
+        }
+        ESP_LOGE(TAG, "WiFi error code: %d", result);
+        return;
     }
     // set station mode to avoid the default SoftAP
     common_hal_wifi_radio_start_station(self);
