@@ -289,9 +289,9 @@ function ci_psoc6_flash_multiple_devices {
     board=$1
     # hex file including path with respect to micropython root
     hex_file=$2
-    dev_files=$3
+    devs_file=$3
 
-    docker exec mtb-ci make program_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=${dev_files}
+    docker exec mtb-ci make program_multi BOARD=${board} EXT_HEX_FILE=../../${hex_file} DEVS_FILE=../../${devs_file}
 }
 
 function ci_psoc6_run_tests {
