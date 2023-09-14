@@ -159,7 +159,11 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         parameter is specified and is not 0, it is checked against the calculated
 //|         height.
 //|
-//|         Up to 30 RGB pins and 8 address pins are supported.
+//|         Tiled matrices, those with more than one panel, must be laid out `in a specific order, as detailed in the guide
+//|         <https://learn.adafruit.com/rgb-led-matrices-matrix-panels-with-circuitpython/advanced-multiple-panels>`_.
+//|
+//|         At least 6 RGB pins and 5 address pins are supported, for common panels with up to 64 rows of pixels.
+//|         Some microcontrollers may support more, up to a soft limit of 30 RGB pins and 8 address pins.
 //|
 //|         The RGB pins must be within a single "port" and performance and memory
 //|         usage are best when they are all within "close by" bits of the port.
