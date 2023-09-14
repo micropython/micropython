@@ -192,6 +192,14 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         A RGBMatrix is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`.
 //|
+//|         On boards designed for use with RGBMatrix panels, `board.MTX_ADDRESS` is a tuple of all the address pins, and `board.MTX_COMMON` is a dictionary with ``rgb_pins``, ``clock_pin``, ``latch_pin``, and ``output_enable_pin``.
+//|         For panels that use fewer than the maximum number of address pins, "slice" the ``MTX_ADDRESS`` to get the correct number of address pins.
+//|         Using these board properties makes calling the constructor simpler and more portable:
+//|
+//|         .. code-block:: python
+//|
+//|             matrix = rgbmatrix.RGBMatrix(..., addr_pins=board.MTX_ADDRESS[:4], **board.MTX_COMMON)
+//|
 //|         :param int width: The overall width of the whole matrix in pixels. For a matrix with multiple panels in row, this is the width of a single panel times the number of panels across.
 //|         :param int tile: In a multi-row matrix, the number of rows of panels
 //|         :param int bit_depth: The color depth of the matrix. A value of 1 gives 8 colors, a value of 2 gives 64 colors, and so on. Increasing bit depth increases the CPU and RAM usage of the RGBMatrix, and may lower the panel refresh rate. The framebuffer is always in RGB565 format regardless of the bit depth setting
