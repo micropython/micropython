@@ -108,9 +108,22 @@ mtb_get_build_flags: mtb_build
 	$(eval LDFLAGS += $(shell $(PYTHON) $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)/mtb_build_info.py ldflags $(MPY_MTB_BOARD_BUILD_OUTPUT_DIR)/.cylinker $(MTB_BASE_EXAMPLE_MAKEFILE_DIR)))
 	$(eval QSTR_GEN_CFLAGS += $(INC) $(CFLAGS))
 
+# When multiple types of boards are connected, a devs file needs to be provided.
+# When working locally, if a "local-devs.yml" file is placed in "tools/psoc6"
+# it will be used
+ifneq ($(DEVS_FILE),)
+MULTI_BOARD_DEVS_OPTS = -b $(BOARD) -y $(DEVS_FILE)
+else 
+DFLT_LOCAL_DEVS_FILE_NAME = local-devs.yml
+LOCAL_DEVS_FILE=$(TOP)/tools/psoc6/$(DFLT_LOCAL_DEVS_FILE_NAME)
+ifneq (,$(wildcard $(LOCAL_DEVS_FILE)))
+MULTI_BOARD_DEVS_OPTS = -b $(BOARD) -y $(LOCAL_DEVS_FILE)
+endif
+endif
+
 attached_devs:
 	@:
-	$(eval ATTACHED_TARGET_LIST = $(shell $(PYTHON) $(TOP)/tools/psoc6/get-devs.py serial-number))
+	$(eval ATTACHED_TARGET_LIST = $(shell $(PYTHON) $(TOP)/tools/psoc6/get-devs.py serial-number $(MULTI_BOARD_DEVS_OPTS)))
 	$(eval ATTACHED_TARGETS_NUMBER = $(words $(ATTACHED_TARGET_LIST)))
 	$(info Number of attached targets : $(ATTACHED_TARGETS_NUMBER))
 	$(info List of attached targets : $(ATTACHED_TARGET_LIST))
