@@ -188,4 +188,11 @@ void raise_esp_error(esp_err_t err) {
     mp_raise_msg_varg(exception_type, translate("%s error 0x%x"), group, err);
 }
 
+void cp_check_esp_error(esp_err_t err) {
+    if (err == ESP_OK) {
+        return;
+    }
+    raise_esp_error(err);
+}
+
 MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module);
