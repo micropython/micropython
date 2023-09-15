@@ -53,4 +53,4 @@ typedef struct {
     uint32_t clk_mask;
 } dotclockframebuffer_ioexpander_spi_bus;
 
-void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexpander_spi_bus *bus, uint8_t *init_sequence, uint16_t init_sequence_len);
+void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexpander_spi_bus *bus, const uint8_t *init_sequence, uint16_t init_sequence_len);

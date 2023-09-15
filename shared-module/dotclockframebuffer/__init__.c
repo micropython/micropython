@@ -43,7 +43,7 @@ static void ioexpander_bus_send(dotclockframebuffer_ioexpander_spi_bus *bus,
 //  * CPOL=CPHA=0
 //  * CS deasserted after each init sequence step, but not otherwise just like
 //    displayio fourwire bus without data_as_commands
-void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexpander_spi_bus *bus, uint8_t *init_sequence, uint16_t init_sequence_len) {
+void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexpander_spi_bus *bus, const uint8_t *init_sequence, uint16_t init_sequence_len) {
     while (!common_hal_busio_i2c_try_lock(bus->bus)) {
         RUN_BACKGROUND_TASKS;
     }
@@ -52,11 +52,11 @@ void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexp
     pin_change(bus, /* set */ bus->cs_mask, /* clear */ bus->clk_mask);
 
     for (uint32_t i = 0; i < init_sequence_len; /* NO INCREMENT */) {
-        uint8_t *cmd = init_sequence + i;
+        const uint8_t *cmd = init_sequence + i;
         uint8_t data_size = *(cmd + 1);
         bool delay = (data_size & DELAY) != 0;
         data_size &= ~DELAY;
-        uint8_t *data = cmd + 2;
+        const uint8_t *data = cmd + 2;
 
         ioexpander_bus_send(bus, true, cmd, 1);
         ioexpander_bus_send(bus, false, data, data_size);
