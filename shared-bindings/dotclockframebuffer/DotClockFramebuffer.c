@@ -166,8 +166,6 @@ STATIC mp_obj_t dotclockframebuffer_framebuffer_make_new(const mp_obj_type_t *ty
     validate_list_is_free_pins(MP_QSTR_green, green_pins, (mp_int_t)MP_ARRAY_SIZE(green_pins), args[ARG_green].u_obj, &num_green);
     validate_list_is_free_pins(MP_QSTR_blue, blue_pins, (mp_int_t)MP_ARRAY_SIZE(blue_pins), args[ARG_blue].u_obj, &num_blue);
 
-    mp_printf(&mp_plat_print, "#red=%d #green=%d #blue=%d\n", num_red, num_green, num_blue);
-
     dotclockframebuffer_framebuffer_obj_t *self = &allocate_display_bus_or_raise()->dotclock;
     self->base.type = &dotclockframebuffer_framebuffer_type;
 
