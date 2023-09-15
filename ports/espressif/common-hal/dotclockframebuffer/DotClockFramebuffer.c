@@ -48,7 +48,7 @@
 #include "common-hal/espidf/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "components/driver/include/driver/gpio.h"
+#include "components/driver/gpio/include/driver/gpio.h"
 #include "components/esp_rom/include/esp_rom_gpio.h"
 #include "components/hal/esp32s3/include/hal/lcd_ll.h"
 #include "components/hal/include/hal/gpio_hal.h"

@@ -32,10 +32,6 @@
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO18)
 
-// UART pins attached to the USB-serial converter chip
-#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO43)
-#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO44)
-
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO4) // also DBLTAP
 
 #define DOUBLE_TAP_PIN (&pin_GPIO4) // also NEOPIXEL

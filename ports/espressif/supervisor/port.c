@@ -284,7 +284,7 @@ safe_mode_t port_init(void) {
     #endif
 
     #if ENABLE_JTAG
-    ESP_LOGI(TAG, "Marking JTAG pins never_reset")
+    ESP_LOGI(TAG, "Marking JTAG pins never_reset");
     // JTAG
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO4);

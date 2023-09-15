@@ -28,7 +28,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/busio/UART.h"
 
-#include "components/driver/include/driver/uart.h"
+#include "components/driver/uart/include/driver/uart.h"
 
 #include "mpconfigport.h"
 #include "shared/readline/readline.h"

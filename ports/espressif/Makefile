@@ -32,6 +32,12 @@ IDF_TARGET_ARCH = xtensa
 CROSS_COMPILE = xtensa-$(IDF_TARGET)-elf-
 endif
 
+ifeq ($(IDF_TARGET),esp32s3)
+BT_IDF_TARGET = esp32c3
+else
+BT_IDF_TARGET = $(IDF_TARGET)
+endif
+
 #######################################
 # CFLAGS
 #######################################
@@ -52,19 +58,29 @@ INC += \
 	-isystem esp-idf/components/app_update/include \
 	-isystem esp-idf/components/bootloader_support/include \
 	-isystem esp-idf/components/bootloader_support/bootloader_flash/include \
-	-isystem esp-idf/components/bt/include/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/bt/include/$(BT_IDF_TARGET)/include \
 	-isystem esp-idf/components/bt/host/nimble/esp-hci/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/controller/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/gap/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/util/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/transport/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/porting/nimble/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/porting/npl/freertos/include \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/deprecated \
+	-isystem esp-idf/components/driver/gpio/include \
+	-isystem esp-idf/components/driver/i2c/include \
+	-isystem esp-idf/components/driver/i2s/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/driver/ledc/include \
+	-isystem esp-idf/components/driver/spi/include \
+	-isystem esp-idf/components/driver/temperature_sensor/include \
+	-isystem esp-idf/components/driver/touch_sensor/include \
+	-isystem esp-idf/components/driver/touch_sensor/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/driver/twai/include \
 	-isystem esp-idf/components/efuse/include \
 	-isystem esp-idf/components/efuse/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
@@ -85,6 +101,7 @@ INC += \
 	-isystem esp-idf/components/esp_wifi/include \
 	-isystem esp-idf/components/freertos/esp_additions/include \
 	-isystem esp-idf/components/freertos/esp_additions/include/freertos \
+	-isystem esp-idf/components/freertos/esp_additions/arch/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include/freertos \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/portable/$(IDF_TARGET_ARCH)/include \
@@ -95,7 +112,9 @@ INC += \
 	-isystem esp-idf/components/log/include \
 	-isystem esp-idf/components/lwip/include \
 	-isystem esp-idf/components/lwip/lwip/src/include \
-	-isystem esp-idf/components/lwip/port/esp32/include \
+	-isystem esp-idf/components/lwip/port/include \
+	-isystem esp-idf/components/lwip/port/esp32xx/include \
+	-isystem esp-idf/components/lwip/port/freertos/include \
 	-isystem esp-idf/components/mbedtls/esp_crt_bundle/include \
 	-isystem esp-idf/components/mbedtls/mbedtls/include \
 	-isystem esp-idf/components/mbedtls/port/include \
@@ -408,13 +427,13 @@ update-all-sdkconfigs: $(BUILD)/esp-idf/config/sdkconfig.h
 update-board-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
 
-BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
-BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
+BINARY_WIFI_BLOBS = libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
+BINARY_BLOBS = esp-idf/components/esp_coex/lib/$(IDF_TARGET)/libcoexist.a esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
 ifeq ($(IDF_TARGET),esp32)
 BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/librtc.a
 endif
 
-ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc esp_app_format esp_common esp_event esp_hw_support esp_netif esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc esp_app_format esp_coex esp_common esp_event esp_hw_support esp_mm esp_netif esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
 ifneq ($(CIRCUITPY_BLEIO),0)
 	ESP_IDF_COMPONENTS_LINK += bt
 	ifeq ($(IDF_TARGET),esp32)
