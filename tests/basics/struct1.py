@@ -20,6 +20,10 @@ print(struct.pack("<h", 1))
 print(struct.pack(">h", 1))
 print(struct.pack("<b", 1))
 print(struct.pack(">b", 1))
+print(struct.pack("<?", True))
+print(struct.pack(">?", True))
+print(struct.pack("<c", b"\x01"))
+print(struct.pack(">c", b"\x01"))
 print(struct.pack("<x"))
 print(struct.pack(">x"))
 
@@ -41,6 +45,30 @@ print(struct.unpack(">bxI3xH", b"\x01\0\0\0\0\x02\0\0\0\0\x03"))
 s = struct.pack("BHBI", 10, 100, 200, 300)
 v = struct.unpack("BHBI", s)
 print(v == (10, 100, 200, 300))
+
+# Pascal string behavior
+print(struct.pack("B3pB", 99, b"", 98))
+print(struct.pack("B3pB", 99, b"A", 98))
+print(struct.pack("B3pB", 99, b"AB", 98))
+print(struct.pack("B3pB", 99, b"ABC", 98))
+print(struct.pack("B3pB", 99, b"ABCDEF", 98))
+
+print(struct.pack("B1pB", 99, b"", 98))
+print(struct.pack("B1pB", 99, b"A", 98))
+print(struct.pack("B1pB", 99, b"AB", 98))
+
+print(struct.pack("B0pB", 99, b"", 98))
+print(struct.pack("B0pB", 99, b"A", 98))
+print(struct.pack("B0pB", 99, b"AB", 98))
+
+print(struct.unpack("B3pB", b"c\x00ABb"))
+print(struct.unpack("B3pB", b"c\x01ABb"))
+print(struct.unpack("B3pB", b"c\x02ABb"))
+print(struct.unpack("B3pB", b"c\x03ABb"))
+print(struct.unpack("B3pB", b"c\x04ABb"))
+
+print(struct.unpack("B1pB", b"c\x00ABb"))
+print(struct.unpack("B1pB", b"c\x01ABb"))
 
 # network byte order
 print(struct.pack('!i', 123))
