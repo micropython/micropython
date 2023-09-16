@@ -327,7 +327,7 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
         case 'c': {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(val_in, &bufinfo, MP_BUFFER_READ);
-            val = *(byte*)bufinfo.buf;
+            val = *(byte *)bufinfo.buf;
             break;
         }
         #if MICROPY_PY_BUILTINS_FLOAT
@@ -396,12 +396,12 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
             ((mp_obj_t *)p)[index] = val_in;
             break;
         case '?':
-            ((unsigned char*)p)[index] = mp_obj_is_true(val_in) ? 1 : 0;
+            ((unsigned char *)p)[index] = mp_obj_is_true(val_in) ? 1 : 0;
             break;
         case 'c': {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(val_in, &bufinfo, MP_BUFFER_READ);
-            ((byte*)p)[index] = *(byte*)bufinfo.buf;
+            ((byte *)p)[index] = *(byte *)bufinfo.buf;
             break;
         }
         default:

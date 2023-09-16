@@ -94,7 +94,7 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
 
         if (*fmt == 'x') {
             size += cnt;
-        } else if (*fmt == 's'|| *fmt == 'p') {
+        } else if (*fmt == 's' || *fmt == 'p') {
             total_cnt += 1;
             size += cnt;
         } else {
@@ -171,8 +171,9 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
                 }
                 read_size = *p++;
                 cnt--;
-                if (read_size > cnt)
+                if (read_size > cnt) {
                     read_size = cnt;
+                }
             }
             item = mp_obj_new_bytes(p, read_size);
             p += cnt;
@@ -216,16 +217,16 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
                 if (*fmt == 'p') {
                     cnt--;
                 }
-            mp_uint_t to_copy = cnt;
-            if (bufinfo.len < to_copy) {
-                to_copy = bufinfo.len;
-            }
+                mp_uint_t to_copy = cnt;
+                if (bufinfo.len < to_copy) {
+                    to_copy = bufinfo.len;
+                }
                 if (*fmt == 'p') {
                     *p++ = to_copy;
                 }
-            memcpy(p, bufinfo.buf, to_copy);
-            memset(p + to_copy, 0, cnt - to_copy);
-            p += cnt;
+                memcpy(p, bufinfo.buf, to_copy);
+                memset(p + to_copy, 0, cnt - to_copy);
+                p += cnt;
             }
         } else {
             // If we run out of args then we just finish; CPython would raise struct.error
