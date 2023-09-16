@@ -94,7 +94,7 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
 
         if (*fmt == 'x') {
             size += cnt;
-        } else if (*fmt == 's') {
+        } else if (*fmt == 's'|| *fmt == 'p') {
             total_cnt += 1;
             size += cnt;
         } else {
@@ -163,8 +163,18 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
         mp_obj_t item;
         if (*fmt == 'x') {
             p += cnt;
-        } else if (*fmt == 's') {
-            item = mp_obj_new_bytes(p, cnt);
+        } else if (*fmt == 's' || *fmt == 'p') {
+            mp_uint_t read_size = cnt;
+            if (*fmt == 'p') {
+                if (cnt == 0) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("buffer too small"));
+                }
+                read_size = *p++;
+                cnt--;
+                if (read_size > cnt)
+                    read_size = cnt;
+            }
+            item = mp_obj_new_bytes(p, read_size);
             p += cnt;
             res->items[i++] = item;
         } else {
@@ -199,16 +209,24 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
         if (*fmt == 'x') {
             memset(p, 0, cnt);
             p += cnt;
-        } else if (*fmt == 's') {
+        } else if (*fmt == 's' || *fmt == 'p') {
             mp_buffer_info_t bufinfo;
             mp_get_buffer_raise(args[i++], &bufinfo, MP_BUFFER_READ);
+            if (cnt != 0) {
+                if (*fmt == 'p') {
+                    cnt--;
+                }
             mp_uint_t to_copy = cnt;
             if (bufinfo.len < to_copy) {
                 to_copy = bufinfo.len;
             }
+                if (*fmt == 'p') {
+                    *p++ = to_copy;
+                }
             memcpy(p, bufinfo.buf, to_copy);
             memset(p + to_copy, 0, cnt - to_copy);
             p += cnt;
+            }
         } else {
             // If we run out of args then we just finish; CPython would raise struct.error
             while (cnt-- && i < n_args) {
