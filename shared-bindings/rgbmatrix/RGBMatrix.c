@@ -192,8 +192,8 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         A RGBMatrix is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`.
 //|
-//|         On boards designed for use with RGBMatrix panels, `board.MTX_ADDRESS` is a tuple of all the address pins, and `board.MTX_COMMON` is a dictionary with ``rgb_pins``, ``clock_pin``, ``latch_pin``, and ``output_enable_pin``.
-//|         For panels that use fewer than the maximum number of address pins, "slice" the ``MTX_ADDRESS`` to get the correct number of address pins.
+//|         On boards designed for use with RGBMatrix panels, ``board.MTX_ADDRESS`` is a tuple of all the address pins, and ``board.MTX_COMMON`` is a dictionary with ``rgb_pins``, ``clock_pin``, ``latch_pin``, and ``output_enable_pin``.
+//|         For panels that use fewer than the maximum number of address pins, "slice" ``MTX_ADDRESS`` to get the correct number of address pins.
 //|         Using these board properties makes calling the constructor simpler and more portable:
 //|
 //|         .. code-block:: python
