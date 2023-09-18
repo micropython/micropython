@@ -1,5 +1,6 @@
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
+#include "shared-module/displayio/__init__.h"
 
 STATIC const mp_rom_obj_tuple_t tft_r_pins = {
     {&mp_type_tuple},
@@ -65,7 +66,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(DEFAULT_I2C_BUS_SCL) },
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(DEFAULT_I2C_BUS_SDA) },
 
-    { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].display)}
+    { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].display) },
 
     // boot mode button can be used in SW as well
     { MP_ROM_QSTR(MP_QSTR_BUTTON), MP_ROM_PTR(&pin_GPIO0) },
