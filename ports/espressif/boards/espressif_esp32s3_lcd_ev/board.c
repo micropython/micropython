@@ -80,7 +80,7 @@ static const uint8_t display_init_sequence[] = {
     0x3a, 1, 0x66,
     0x3a, 1, 0x66,
     0x11, 0x80, 120,
-    0x29, 0x80, 20
+    0x29, 0x0
 };
 
 static const mcu_pin_obj_t *red_pins[] = {
@@ -122,25 +122,27 @@ void board_init(void) {
         true
         );
 
-    busio_i2c_obj_t *i2c = common_hal_board_create_i2c(0);
+    busio_i2c_obj_t i2c;
+    i2c.base.type = &busio_i2c_type;
+    common_hal_busio_i2c_construct(&i2c, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000, 255);
     const int i2c_device_address = 32;
 
-    common_hal_busio_i2c_try_lock(i2c);
+    common_hal_busio_i2c_try_lock(&i2c);
 
     {
         uint8_t buf[2] = {3, 0xf1}; // set GPIO direction
-        common_hal_busio_i2c_write(i2c, i2c_device_address, buf, sizeof(buf));
+        common_hal_busio_i2c_write(&i2c, i2c_device_address, buf, sizeof(buf));
     }
 
     {
         uint8_t buf[2] = {2, 0}; // set all output pins low initially
-        common_hal_busio_i2c_write(i2c, i2c_device_address, buf, sizeof(buf));
+        common_hal_busio_i2c_write(&i2c, i2c_device_address, buf, sizeof(buf));
     }
 
-    common_hal_busio_i2c_unlock(i2c);
+    common_hal_busio_i2c_unlock(&i2c);
 
     dotclockframebuffer_ioexpander_spi_bus spibus = {
-        .bus = i2c,
+        .bus = &i2c,
         .i2c_device_address = i2c_device_address,
         .i2c_write_size = 2,
         .addr_reg_shadow = { .u32 = 1 }, // GPIO data at register 1
@@ -151,6 +153,7 @@ void board_init(void) {
 
     dotclockframebuffer_ioexpander_send_init_sequence(&spibus, display_init_sequence, sizeof(display_init_sequence));
 
+    common_hal_busio_i2c_deinit(&i2c);
 }
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
