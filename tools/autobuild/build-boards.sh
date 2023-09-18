@@ -109,7 +109,7 @@ function build_nrf_boards {
 }
 
 function build_renesas_ra_boards {
-    build_boards ra_it.c $1 $2 hex
+    build_boards ra_it.c $1 $2 bin hex
 }
 
 function build_rp2_boards {
