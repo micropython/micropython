@@ -66,15 +66,14 @@ void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexp
         // deassert CS
         pin_change(bus, /* set */ bus->cs_mask, 0);
 
-        uint16_t delay_length_ms = 10;
         if (delay) {
             data_size++;
-            delay_length_ms = *(cmd + 1 + data_size);
+            uint16_t delay_length_ms = *(cmd + 1 + data_size);
             if (delay_length_ms == 255) {
                 delay_length_ms = 500;
             }
+            mp_hal_delay_ms(delay_length_ms);
         }
-        mp_hal_delay_ms(delay_length_ms);
         i += 2 + data_size;
     }
     common_hal_busio_i2c_unlock(bus->bus);
