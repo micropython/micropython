@@ -159,7 +159,11 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         parameter is specified and is not 0, it is checked against the calculated
 //|         height.
 //|
-//|         Up to 30 RGB pins and 8 address pins are supported.
+//|         Tiled matrices, those with more than one panel, must be laid out `in a specific order, as detailed in the guide
+//|         <https://learn.adafruit.com/rgb-led-matrices-matrix-panels-with-circuitpython/advanced-multiple-panels>`_.
+//|
+//|         At least 6 RGB pins and 5 address pins are supported, for common panels with up to 64 rows of pixels.
+//|         Some microcontrollers may support more, up to a soft limit of 30 RGB pins and 8 address pins.
 //|
 //|         The RGB pins must be within a single "port" and performance and memory
 //|         usage are best when they are all within "close by" bits of the port.
@@ -188,12 +192,20 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         A RGBMatrix is often used in conjunction with a
 //|         `framebufferio.FramebufferDisplay`.
 //|
+//|         On boards designed for use with RGBMatrix panels, ``board.MTX_ADDRESS`` is a tuple of all the address pins, and ``board.MTX_COMMON`` is a dictionary with ``rgb_pins``, ``clock_pin``, ``latch_pin``, and ``output_enable_pin``.
+//|         For panels that use fewer than the maximum number of address pins, "slice" ``MTX_ADDRESS`` to get the correct number of address pins.
+//|         Using these board properties makes calling the constructor simpler and more portable:
+//|
+//|         .. code-block:: python
+//|
+//|             matrix = rgbmatrix.RGBMatrix(..., addr_pins=board.MTX_ADDRESS[:4], **board.MTX_COMMON)
+//|
 //|         :param int width: The overall width of the whole matrix in pixels. For a matrix with multiple panels in row, this is the width of a single panel times the number of panels across.
 //|         :param int tile: In a multi-row matrix, the number of rows of panels
 //|         :param int bit_depth: The color depth of the matrix. A value of 1 gives 8 colors, a value of 2 gives 64 colors, and so on. Increasing bit depth increases the CPU and RAM usage of the RGBMatrix, and may lower the panel refresh rate. The framebuffer is always in RGB565 format regardless of the bit depth setting
 //|         :param bool serpentine: In a multi-row matrix, True when alternate rows of panels are rotated 180°, which can reduce wiring length
-//|         :param Sequence[digitalio.DigitalInOut] rgb_pins: The matrix's RGB pins
-//|         :param Sequence[digitalio.DigitalInOut] addr_pins: The matrix's address pins
+//|         :param Sequence[digitalio.DigitalInOut] rgb_pins: The matrix's RGB pins in the order ``(R1,G1,B1,R2,G2,B2...)``
+//|         :param Sequence[digitalio.DigitalInOut] addr_pins: The matrix's address pins in the order ``(A,B,C,D...)``
 //|         :param digitalio.DigitalInOut clock_pin: The matrix's clock pin
 //|         :param digitalio.DigitalInOut latch_pin: The matrix's latch pin
 //|         :param digitalio.DigitalInOut output_enable_pin: The matrix's output enable pin
