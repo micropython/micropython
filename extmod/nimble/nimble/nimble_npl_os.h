@@ -32,6 +32,8 @@
 #include <stdint.h>
 #include <limits.h>
 
+#include "py/mpthread.h"
+
 // --- Configuration of NimBLE data structures --------------------------------
 
 // This is used at runtime to align allocations correctly.
@@ -78,11 +80,11 @@ struct ble_npl_callout {
 };
 
 struct ble_npl_mutex {
-    volatile uint8_t locked;
+    mp_thread_mutex_t mutex;
 };
 
 struct ble_npl_sem {
-    volatile uint16_t count;
+    mp_thread_sem_t sem;
 };
 
 // --- Called by the MicroPython port -----------------------------------------

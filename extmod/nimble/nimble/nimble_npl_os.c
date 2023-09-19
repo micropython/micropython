@@ -298,27 +298,22 @@ void ble_npl_event_set_arg(struct ble_npl_event *ev, void *arg) {
 
 ble_npl_error_t ble_npl_mutex_init(struct ble_npl_mutex *mu) {
     DEBUG_MUTEX_printf("ble_npl_mutex_init(%p)\n", mu);
-    mu->locked = 0;
+    mp_thread_mutex_init_recursive(&mu->mutex);
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_mutex_pend(struct ble_npl_mutex *mu, ble_npl_time_t timeout) {
-    DEBUG_MUTEX_printf("ble_npl_mutex_pend(%p, %u) locked=%u\n", mu, (uint)timeout, (uint)mu->locked);
-
-    // All NimBLE code is executed by the scheduler (and is therefore
-    // implicitly mutexed) so this mutex implementation is a no-op.
-
-    ++mu->locked;
-
+    DEBUG_MUTEX_printf("ble_npl_mutex_pend(%p, %u)\n", mu, (uint)timeout);
+    if (!mp_thread_mutex_lock(&mu->mutex, 1)) {
+        printf("FAILED TO LOCK\n");
+        assert(0);
+    }
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_mutex_release(struct ble_npl_mutex *mu) {
-    DEBUG_MUTEX_printf("ble_npl_mutex_release(%p) locked=%u\n", mu, (uint)mu->locked);
-    assert(mu->locked > 0);
-
-    --mu->locked;
-
+    DEBUG_MUTEX_printf("ble_npl_mutex_release(%p)\n", mu);
+    mp_thread_mutex_unlock(&mu->mutex);
     return BLE_NPL_OK;
 }
 
@@ -327,12 +322,12 @@ ble_npl_error_t ble_npl_mutex_release(struct ble_npl_mutex *mu) {
 
 ble_npl_error_t ble_npl_sem_init(struct ble_npl_sem *sem, uint16_t tokens) {
     DEBUG_SEM_printf("ble_npl_sem_init(%p, %u)\n", sem, (uint)tokens);
-    sem->count = tokens;
+    mp_thread_sem_init(&sem->sem, tokens);
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout) {
-    DEBUG_SEM_printf("ble_npl_sem_pend(%p, %u) count=%u\n", sem, (uint)timeout, (uint)sem->count);
+    DEBUG_SEM_printf("ble_npl_sem_pend(%p, %u) tokens=%u\n", sem, (uint)timeout, (uint)ble_npl_sem_get_count(sem));
 
     // This is only called by NimBLE in ble_hs_hci_cmd_tx to synchronously
     // wait for an HCI ACK. The corresponding ble_npl_sem_release is called
@@ -340,36 +335,32 @@ ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout
     // extmod/nimble/hal/hal_uart.c). So this loop needs to run only the HCI
     // UART processing but not run any events.
 
-    if (sem->count == 0) {
-        uint32_t t0 = mp_hal_ticks_ms();
-        while (sem->count == 0 && mp_hal_ticks_ms() - t0 < timeout) {
-            if (sem->count != 0) {
-                break;
-            }
+    uint32_t t0 = mp_hal_ticks_ms();
 
-            mp_bluetooth_nimble_hci_uart_wfi();
+    while (true) {
+        if (mp_thread_sem_wait(&sem->sem, false)) {
+            return BLE_NPL_OK;
         }
 
-        if (sem->count == 0) {
-            DEBUG_SEM_printf("ble_npl_sem_pend: semaphore timeout\n");
+        if (mp_hal_ticks_ms() - t0 > timeout) {
             return BLE_NPL_TIMEOUT;
         }
 
-        DEBUG_SEM_printf("ble_npl_sem_pend: acquired in %u ms\n", (int)(mp_hal_ticks_ms() - t0));
+        mp_bluetooth_nimble_hci_uart_wfi();
     }
-    sem->count -= 1;
+
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_sem_release(struct ble_npl_sem *sem) {
     DEBUG_SEM_printf("ble_npl_sem_release(%p)\n", sem);
-    sem->count += 1;
+    mp_thread_sem_post(&sem->sem);
     return BLE_NPL_OK;
 }
 
 uint16_t ble_npl_sem_get_count(struct ble_npl_sem *sem) {
     DEBUG_SEM_printf("ble_npl_sem_get_count(%p)\n", sem);
-    return sem->count;
+    return mp_thread_sem_value(&sem->sem);
 }
 
 /******************************************************************************/
@@ -502,17 +493,12 @@ void ble_npl_time_delay(ble_npl_time_t ticks) {
 
 // This is used anywhere NimBLE modifies global data structures.
 
-// Currently all NimBLE code is invoked by the scheduler so there is no
-// concurrency. In the future we may wish to make HCI UART processing happen
-// asynchronously (e.g. on RX IRQ), so the port can implement these macros
-// accordingly.
-
 uint32_t ble_npl_hw_enter_critical(void) {
     DEBUG_CRIT_printf("ble_npl_hw_enter_critical()\n");
-    return 0;
+    return MICROPY_BEGIN_ATOMIC_SECTION();
 }
 
 void ble_npl_hw_exit_critical(uint32_t atomic_state) {
-    (void)atomic_state;
     DEBUG_CRIT_printf("ble_npl_hw_exit_critical(%u)\n", (uint)atomic_state);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
