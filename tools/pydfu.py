@@ -624,7 +624,7 @@ def main():
     if args.path:
         if str(args.path).endswith(".bin"):
             if not args.address:
-                return
+                raise ValueError("Address must be specified using -a when uploading binary")
             addr = str(args.address)
             if addr.startswith("0x") or addr.startswith("0X"):
                 addr = int(addr, 16)
