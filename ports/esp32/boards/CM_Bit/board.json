@@ -1,0 +1,16 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Bit",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32s3",
+    "features": [
+        "USB-C"
+    ],
+    "deploy": [
+        "../deploy_s3.md"
+    ]
+}
