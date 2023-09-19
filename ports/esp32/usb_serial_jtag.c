@@ -65,10 +65,8 @@ static void usb_serial_jtag_isr_handler(void *arg) {
 }
 
 void usb_serial_jtag_init(void) {
-    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT |
-        USB_SERIAL_JTAG_INTR_SOF);
-    usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT |
-        USB_SERIAL_JTAG_INTR_SOF);
+    usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+    usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
     ESP_ERROR_CHECK(esp_intr_alloc(ETS_USB_SERIAL_JTAG_INTR_SOURCE, ESP_INTR_FLAG_LEVEL1,
         usb_serial_jtag_isr_handler, NULL, NULL));
 }
