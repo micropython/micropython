@@ -44,9 +44,28 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
 mp_uint_t mp_thread_get_id(void);
 void mp_thread_start(void);
 void mp_thread_finish(void);
+
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex);
+void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex);
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait);
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
+
+#else // !MICROPY_PY_THREAD
+
+// When threading is disabled, provide no-op implementation of mp_thread_mutex_t.
+
+typedef struct {
+} mp_thread_mutex_t;
+
+static inline void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
+}
+static inline void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex) {
+}
+static inline int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
+    return 0;
+}
+static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
+}
 
 #endif // MICROPY_PY_THREAD
 

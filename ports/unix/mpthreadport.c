@@ -298,6 +298,13 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     pthread_mutex_init(mutex, NULL);
 }
 
+void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex) {
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(mutex, &attr);
+}
+
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     int ret;
     if (wait) {
