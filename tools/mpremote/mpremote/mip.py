@@ -13,6 +13,8 @@ from .commands import CommandError, show_progress_bar
 
 _PACKAGE_INDEX = "https://micropython.org/pi/v2"
 
+allowed_mip_url_prefixes = ("http://", "https://", "github:", "gitlab:")
+
 
 # This implements os.makedirs(os.dirname(path))
 def _ensure_path_exists(transport, path):
@@ -78,16 +80,25 @@ def _download_file(transport, url, dest):
 
 
 def _install_json(transport, package_json_url, index, target, version, mpy):
-    try:
-        with urllib.request.urlopen(_rewrite_url(package_json_url, version)) as response:
-            package_json = json.load(response)
-    except urllib.error.HTTPError as e:
-        if e.status == 404:
-            raise CommandError(f"Package not found: {package_json_url}")
-        else:
-            raise CommandError(f"Error {e.status} requesting {package_json_url}")
-    except urllib.error.URLError as e:
-        raise CommandError(f"{e.reason} requesting {package_json_url}")
+    if package_json_url.startswith(allowed_mip_url_prefixes):
+        try:
+            with urllib.request.urlopen(_rewrite_url(package_json_url, version)) as response:
+                package_json = json.load(response)
+        except urllib.error.HTTPError as e:
+            if e.status == 404:
+                raise CommandError(f"Package not found: {package_json_url}")
+            else:
+                raise CommandError(f"Error {e.status} requesting {package_json_url}")
+        except urllib.error.URLError as e:
+            raise CommandError(f"{e.reason} requesting {package_json_url}")
+    elif package_json_url.endswith(".json"):
+        try:
+            with open(package_json_url, "r") as f:
+                package_json = json.load(f)
+        except OSError:
+            raise CommandError(f"Error opening {package_json_url}")
+    else:
+        raise CommandError(f"Invalid url for package: {package_json_url}")
     for target_path, short_hash in package_json.get("hashes", ()):
         fs_target_path = target + "/" + target_path
         file_url = f"{index}/file/{short_hash[:2]}/{short_hash}"
@@ -100,12 +111,7 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
 
 
 def _install_package(transport, package, index, target, version, mpy):
-    if (
-        package.startswith("http://")
-        or package.startswith("https://")
-        or package.startswith("github:")
-        or package.startswith("gitlab:")
-    ):
+    if package.startswith(allowed_mip_url_prefixes):
         if package.endswith(".py") or package.endswith(".mpy"):
             print(f"Downloading {package} to {target}")
             _download_file(
@@ -118,6 +124,8 @@ def _install_package(transport, package, index, target, version, mpy):
                     package += "/"
                 package += "package.json"
             print(f"Installing {package} to {target}")
+    elif package.endswith(".json"):
+        pass
     else:
         if not version:
             version = "latest"
