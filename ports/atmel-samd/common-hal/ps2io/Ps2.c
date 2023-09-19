@@ -43,7 +43,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/ps2io/Ps2.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define STATE_IDLE 0
 #define STATE_RECV 1

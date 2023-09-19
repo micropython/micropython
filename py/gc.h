@@ -28,6 +28,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "py/mpprint.h"
 
 #include "py/mpconfig.h"
 #include "py/mpstate.h"
@@ -47,6 +48,11 @@
 
 void gc_init(void *start, void *end);
 void gc_deinit(void);
+
+#if MICROPY_GC_SPLIT_HEAP
+// Used to add additional memory areas to the heap.
+void gc_add(void *start, void *end);
+#endif
 
 // These lock/unlock functions can be nested.
 // They can be used to prevent the GC from allocating/freeing.
@@ -92,7 +98,7 @@ typedef struct _gc_info_t {
 } gc_info_t;
 
 void gc_info(gc_info_t *info);
-void gc_dump_info(void);
-void gc_dump_alloc_table(void);
+void gc_dump_info(const mp_print_t *print);
+void gc_dump_alloc_table(const mp_print_t *print);
 
 #endif // MICROPY_INCLUDED_PY_GC_H

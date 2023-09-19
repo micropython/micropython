@@ -38,7 +38,6 @@
 #include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class SPI:
 //|     """A 3-4 wire serial protocol

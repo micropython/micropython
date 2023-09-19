@@ -108,6 +108,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN    (1)
 #define MICROPY_PY_ATTRTUPLE             (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY    (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX    (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE    (1)
 #define MICROPY_PY_BUILTINS_FILTER       (1)
 #define MICROPY_PY_BUILTINS_HELP         (1)
@@ -444,7 +445,7 @@ struct _supervisor_allocation_node;
     vstr_t *repl_line; \
     mp_obj_t pew_singleton; \
     mp_obj_t rtc_time_source; \
-    const char *readline_hist[8]; \
+    const char *readline_hist[MICROPY_READLINE_HISTORY_SIZE]; \
     struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void background_callback_run_all(void);

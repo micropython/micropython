@@ -32,7 +32,6 @@
 #include "py/objproperty.h"
 #include "shared/runtime/context_manager_helpers.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/gifio/OnDiskGif.h"
 
 //| class OnDiskGif:

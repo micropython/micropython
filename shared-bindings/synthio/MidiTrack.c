@@ -33,7 +33,6 @@
 #include "shared-bindings/util.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 #include "shared-bindings/synthio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class MidiTrack:
 //|     """Simple MIDI synth"""

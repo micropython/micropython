@@ -37,7 +37,6 @@
 #include "shared-bindings/synthio/Synthesizer.h"
 #include "shared-bindings/synthio/LFO.h"
 #include "shared-bindings/synthio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| NoteSequence = Sequence[Union[int, Note]]
 //| """A sequence of notes, which can each be integer MIDI note numbers or `Note` objects"""

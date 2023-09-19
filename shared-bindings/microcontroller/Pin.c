@@ -31,7 +31,6 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Pin:
 //|     """Identifies an IO pin on the microcontroller."""

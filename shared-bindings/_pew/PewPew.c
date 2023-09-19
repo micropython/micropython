@@ -32,7 +32,6 @@
 #include "shared-bindings/util.h"
 #include "PewPew.h"
 #include "common-hal/_pew/PewPew.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PewPew:
 //|     """This is an internal module to be used by the ``pew.py`` library from

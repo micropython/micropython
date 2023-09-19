@@ -37,7 +37,6 @@
 #include "samd/adc.h"
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_adc_sync.h"

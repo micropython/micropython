@@ -30,7 +30,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 // I2C timing specs for the H7 and F7

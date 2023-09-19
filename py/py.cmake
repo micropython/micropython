@@ -53,6 +53,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/mpz.c
     ${MICROPY_PY_DIR}/nativeglue.c
     ${MICROPY_PY_DIR}/nlr.c
+    ${MICROPY_PY_DIR}/nlrmips.c
     ${MICROPY_PY_DIR}/nlrpowerpc.c
     ${MICROPY_PY_DIR}/nlrsetjmp.c
     ${MICROPY_PY_DIR}/nlrthumb.c

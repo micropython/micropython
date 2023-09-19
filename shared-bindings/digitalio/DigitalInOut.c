@@ -41,7 +41,6 @@
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 #if CIRCUITPY_CYW43
 #include "bindings/cyw43/__init__.h"

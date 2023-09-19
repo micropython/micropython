@@ -33,7 +33,6 @@
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PinAlarm:
 //|     """Trigger an alarm when a pin changes state."""

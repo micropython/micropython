@@ -36,7 +36,6 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """functions that an OS normally provides
 //|

@@ -4,34 +4,15 @@
 
 #include "re1.5.h"
 
+// Matches: DSWdsw
+#define MATCH_NAMED_CLASS_CHAR(c) (((c) | 0x20) == 'd' || ((c) | 0x24) == 'w')
+
 #define INSERT_CODE(at, num, pc) \
     ((code ? memmove(code + at + num, code + at, pc - at) : 0), pc += num)
 #define REL(at, to) (to - at - 2)
 #define EMIT(at, byte) (code ? (code[at] = byte) : (at))
 #define EMIT_CHECKED(at, byte) (_emit_checked(at, code, byte, &err))
 #define PC (prog->bytelen)
-
-static char unescape(char c) {
-    switch (c) {
-        case 'a':
-            return '\a';
-        case 'b':
-            return '\b';
-        case 'f':
-            return '\f';
-        case 'n':
-            return '\n';
-        case 'r':
-            return '\r';
-        case 't':
-            return '\t';
-        case 'v':
-            return '\v';
-        default:
-            return c;
-    }
-}
-
 
 static void _emit_checked(int at, char *code, int val, bool *err) {
     *err |= val != (int8_t)val;
@@ -53,16 +34,14 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         case '\\':
             re++;
             if (!*re) return NULL; // Trailing backslash
-            term = PC;
-            if ((*re | 0x20) == 'd' || (*re | 0x20) == 's' || (*re | 0x20) == 'w') {
+            if (MATCH_NAMED_CLASS_CHAR(*re)) {
+                term = PC;
                 EMIT(PC++, NamedClass);
                 EMIT(PC++, *re);
-            } else {
-                EMIT(PC++, Char);
-                EMIT(PC++, unescape(*re));
+                prog->len++;
+                break;
             }
-            prog->len++;
-            break;
+            MP_FALLTHROUGH
         default:
             term = PC;
             EMIT(PC++, Char);
@@ -87,27 +66,25 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             PC++; // Skip # of pair byte
             prog->len++;
             for (cnt = 0; *re != ']'; re++, cnt++) {
-                if (!*re) return NULL;
-                const char *b = re;
-                if (*re == '\\') {
-                    re += 1;
-                    if (!*re) return NULL; // Trailing backslash
-                    EMIT(PC++, unescape(*re));
-                } else {
-                    EMIT(PC++, *re);
+                char c = *re;
+                if (c == '\\') {
+                    ++re;
+                    c = *re;
+                    if (MATCH_NAMED_CLASS_CHAR(c)) {
+                        c = RE15_CLASS_NAMED_CLASS_INDICATOR;
+                        goto emit_char_pair;
+                    else {
+                        // CIRCUITPY TODO: handle unescape here again PR #1544
+                    }
                 }
+                if (!c) return NULL;
                 if (re[1] == '-' && re[2] != ']') {
                     re += 2;
-                } else {
-                    re = b;
                 }
-                if (*re == '\\') {
-                    re += 1;
-                    if (!*re) return NULL; // Trailing backslash
-                    EMIT(PC++, unescape(*re));
-                } else {
-                    EMIT(PC++, *re);
-                }
+            emit_char_pair:
+                EMIT(PC++, c);
+                EMIT(PC++, *re);
+                // CIRCUITPY TODO handle unescape here again PR #1544
             }
             EMIT_CHECKED(term + 1, cnt);
             break;
@@ -255,6 +232,7 @@ int re1_5_compilecode(ByteProg *prog, const char *re)
     return 0;
 }
 
+// CIRCUITPY debug as main program
 #if defined(DEBUG_COMPILECODE)
 #include <assert.h>
 void re1_5_fatal(char *x) {

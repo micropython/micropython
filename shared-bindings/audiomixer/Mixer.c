@@ -34,7 +34,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Mixer:
 //|     """Mixes one or more audio samples together into one sample."""

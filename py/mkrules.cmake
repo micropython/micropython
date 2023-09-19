@@ -11,6 +11,9 @@ set(MICROPY_QSTRDEFS_GENERATED "${MICROPY_GENHDR_DIR}/qstrdefs.generated.h")
 set(MICROPY_MODULEDEFS_SPLIT "${MICROPY_GENHDR_DIR}/moduledefs.split")
 set(MICROPY_MODULEDEFS_COLLECTED "${MICROPY_GENHDR_DIR}/moduledefs.collected")
 set(MICROPY_MODULEDEFS "${MICROPY_GENHDR_DIR}/moduledefs.h")
+set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
+set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
+set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
 
 # Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
 # manifest handling is at the end of this file.
@@ -46,23 +49,18 @@ target_sources(${MICROPY_TARGET} PRIVATE
     ${MICROPY_MPVERSION}
     ${MICROPY_QSTRDEFS_GENERATED}
     ${MICROPY_MODULEDEFS}
+    ${MICROPY_ROOT_POINTERS}
 )
 
 # Command to force the build of another command
 
-add_custom_command(
-    OUTPUT MICROPY_FORCE_BUILD
-    COMMENT ""
-    COMMAND echo -n
-)
-
 # Generate mpversion.h
 
-add_custom_command(
-    OUTPUT ${MICROPY_MPVERSION}
+add_custom_target(
+    BUILD_VERSION_HEADER ALL
+    BYPRODUCTS ${MICROPY_MPVERSION}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${MICROPY_GENHDR_DIR}
     COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/py/makeversionhdr.py ${MICROPY_MPVERSION}
-    DEPENDS MICROPY_FORCE_BUILD
 )
 
 # Generate qstrs
@@ -139,6 +137,31 @@ add_custom_command(
     DEPENDS ${MICROPY_MODULEDEFS_COLLECTED}
 )
 
+# Generate root_pointers.h
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS_SPLIT}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py split root_pointer ${MICROPY_GENHDR_DIR}/qstr.i.last ${MICROPY_GENHDR_DIR}/root_pointer _
+    COMMAND touch ${MICROPY_ROOT_POINTERS_SPLIT}
+    DEPENDS ${MICROPY_QSTRDEFS_LAST}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS_COLLECTED}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/makeqstrdefs.py cat root_pointer _ ${MICROPY_GENHDR_DIR}/root_pointer ${MICROPY_ROOT_POINTERS_COLLECTED}
+    DEPENDS ${MICROPY_ROOT_POINTERS_SPLIT}
+    VERBATIM
+    COMMAND_EXPAND_LISTS
+)
+
+add_custom_command(
+    OUTPUT ${MICROPY_ROOT_POINTERS}
+    COMMAND ${Python3_EXECUTABLE} ${MICROPY_PY_DIR}/make_root_pointers.py ${MICROPY_ROOT_POINTERS_COLLECTED} > ${MICROPY_ROOT_POINTERS}
+    DEPENDS ${MICROPY_ROOT_POINTERS_COLLECTED} ${MICROPY_PY_DIR}/make_root_pointers.py
+)
+
 # Build frozen code if enabled
 
 if(MICROPY_FROZEN_MANIFEST)
@@ -151,7 +174,12 @@ if(MICROPY_FROZEN_MANIFEST)
     # Note: target_compile_definitions already added earlier.
 
     if(NOT MICROPY_LIB_DIR)
-        set(MICROPY_LIB_DIR ${MICROPY_DIR}/../micropython-lib)
+        string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/micropython-lib)
+        set(MICROPY_LIB_DIR ${MICROPY_DIR}/lib/micropython-lib)
+    endif()
+
+    if(NOT (${ECHO_SUBMODULES}) AND NOT EXISTS ${MICROPY_LIB_DIR}/README.md)
+        message(FATAL_ERROR " micropython-lib not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
     # If MICROPY_MPYCROSS is not explicitly defined in the environment (which
@@ -159,7 +187,7 @@ if(MICROPY_FROZEN_MANIFEST)
     # to automatically build mpy-cross if needed.
     set(MICROPY_MPYCROSS $ENV{MICROPY_MPYCROSS})
     if(NOT MICROPY_MPYCROSS)
-        set(MICROPY_MPYCROSS_DEPENDENCY ${MICROPY_DIR}/mpy-cross/mpy-cross)
+        set(MICROPY_MPYCROSS_DEPENDENCY ${MICROPY_DIR}/mpy-cross/build/mpy-cross)
         if(NOT MICROPY_MAKE_EXECUTABLE)
             set(MICROPY_MAKE_EXECUTABLE make)
         endif()
@@ -169,11 +197,13 @@ if(MICROPY_FROZEN_MANIFEST)
         )
     endif()
 
-    add_custom_command(
-        OUTPUT ${MICROPY_FROZEN_CONTENT}
-        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} -v "MPY_DIR=${MICROPY_DIR}" -v "MPY_LIB_DIR=${MICROPY_LIB_DIR}" -v "PORT_DIR=${MICROPY_PORT_DIR}" -v "BOARD_DIR=${MICROPY_BOARD_DIR}" -b "${CMAKE_BINARY_DIR}" -f${MICROPY_CROSS_FLAGS} ${MICROPY_FROZEN_MANIFEST}
-        DEPENDS MICROPY_FORCE_BUILD
+    add_custom_target(
+        BUILD_FROZEN_CONTENT ALL
+        BYPRODUCTS ${MICROPY_FROZEN_CONTENT}
+        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} -v "MPY_DIR=${MICROPY_DIR}" -v "MPY_LIB_DIR=${MICROPY_LIB_DIR}" -v "PORT_DIR=${MICROPY_PORT_DIR}" -v "BOARD_DIR=${MICROPY_BOARD_DIR}" -b "${CMAKE_BINARY_DIR}" -f${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
+        DEPENDS
             ${MICROPY_QSTRDEFS_GENERATED}
+            ${MICROPY_ROOT_POINTERS}
             ${MICROPY_MPYCROSS_DEPENDENCY}
         VERBATIM
     )
@@ -182,6 +212,15 @@ endif()
 # Update submodules
 if(ECHO_SUBMODULES)
     # If cmake is run with GIT_SUBMODULES defined on command line, process the port / board
-    # settings then print the final GIT_SUBMODULES variable as a fatal error and exit.
-    message(FATAL_ERROR "GIT_SUBMODULES=${GIT_SUBMODULES}")
+    # settings then print the final GIT_SUBMODULES variable and exit.
+    # Note: the GIT_SUBMODULES is done via echo rather than message, as message splits
+    # the output onto multiple lines
+    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "GIT_SUBMODULES=${GIT_SUBMODULES}")
+    message(FATAL_ERROR "Done")
+endif()
+
+# Display BOARD_VARIANTS
+if(ECHO_BOARD_VARIANTS)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E echo "BOARD_VARIANTS=${BOARD_VARIANTS}")
+    message(FATAL_ERROR "Done")
 endif()

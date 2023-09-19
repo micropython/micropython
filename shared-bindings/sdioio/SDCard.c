@@ -38,7 +38,6 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class SDCard:
 //|     """SD Card Block Interface with SDIO

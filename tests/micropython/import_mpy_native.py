@@ -1,16 +1,18 @@
-# test importing of .mpy files with native code (x64 only)
+# test importing of .mpy files with native code
 
 try:
-    import sys, uio, uos
+    import sys, io, os
 
-    uio.IOBase
-    uos.mount
+    sys.implementation._mpy
+    io.IOBase
+    os.mount
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 mpy_arch = sys.implementation._mpy >> 8
-if mpy_arch == 0:
+if mpy_arch >> 2 == 0:
+    # This system does not support .mpy files containing native code
     print("SKIP")
     raise SystemExit
 
@@ -50,11 +52,11 @@ class UserFS:
 
 
 # these are the test .mpy files
-valid_header = bytes([ord("C"), 6, mpy_arch, 31])
+valid_header = bytes([77, 6, mpy_arch, 31])
 # fmt: off
 user_files = {
-    # bad architecture
-    '/mod0.mpy': b'C\x06\xfc\x1f',
+    # bad architecture (mpy_arch needed for sub-version)
+    '/mod0.mpy': bytes([77, 6, 0xfc | mpy_arch, 31]),
 
     # test loading of viper and asm
     '/mod1.mpy': valid_header + (
@@ -99,7 +101,7 @@ user_files = {
 
             b'\x22' # 4 bytes, no children, viper code
                 b'\x00\x00\x00\x00' # dummy machine code
-                b'\xe0' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
+                b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
                 b'\x06\x04' # rodata=6 bytes, bss=4 bytes
                 b'rodata' # rodata content
                 b'\x03\x01\x00' # dummy relocation of rodata
@@ -109,7 +111,7 @@ user_files = {
 
 # create and mount a user filesystem
 uos.mount(UserFS(user_files), "/userfs")
-sys.path.append("/userfs")
+usys.path.append("/userfs")
 
 # import .mpy files from the user filesystem
 for i in range(len(user_files)):
@@ -122,4 +124,4 @@ for i in range(len(user_files)):
 
 # unmount and undo path addition
 uos.umount("/userfs")
-sys.path.pop()
+usys.path.pop()

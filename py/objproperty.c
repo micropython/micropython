@@ -87,12 +87,13 @@ STATIC const mp_rom_map_elem_t property_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(property_locals_dict, property_locals_dict_table);
 
-const mp_obj_type_t mp_type_property = {
-    { &mp_type_type },
-    .name = MP_QSTR_property,
-    .make_new = property_make_new,
-    .locals_dict = (mp_obj_dict_t *)&property_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_property,
+    MP_QSTR_property,
+    MP_TYPE_FLAG_NONE,
+    make_new, property_make_new,
+    locals_dict, &property_locals_dict
+    );
 
 #if MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE
 extern const mp_obj_property_t __property_getter_start, __property_getter_end, __property_getset_start, __property_getset_end;

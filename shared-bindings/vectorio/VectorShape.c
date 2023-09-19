@@ -1,4 +1,3 @@
-
 #include "shared-module/vectorio/__init__.h"
 #include "shared-bindings/vectorio/VectorShape.h"
 #include "shared-bindings/vectorio/Circle.h"
@@ -16,7 +15,6 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 // shape: The shape implementation to draw.

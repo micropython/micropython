@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2017 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 #include "py/objtuple.h"
 #include "py/runtime.h"
-#include "py/objtype.h"
 
-#include "supervisor/shared/translate/translate.h"
+// type check is done on getiter method to allow tuple, namedtuple, attrtuple
+#define mp_obj_is_tuple_compatible(o) (mp_obj_get_type(o)->getiter == mp_obj_tuple_getiter)
 
 /******************************************************************************/
 /* tuple                                                                      */
@@ -111,7 +111,7 @@ STATIC mp_obj_t tuple_cmp_helper(mp_uint_t op, mp_obj_t self_in, mp_obj_t anothe
     mp_check_self(mp_obj_is_tuple_compatible(self_in));
     const mp_obj_type_t *another_type = mp_obj_get_type(another_in);
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-    if (mp_type_get_getiter_slot(another_type) != mp_obj_tuple_getiter) {
+    if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(another_type, iter) != mp_obj_tuple_getiter) {
         // Slow path for user subclasses
         another_in = mp_obj_cast_to_native_base(another_in, MP_OBJ_FROM_PTR(&mp_type_tuple));
         if (another_in == MP_OBJ_NULL) {
@@ -165,6 +165,7 @@ mp_obj_t mp_obj_tuple_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
             if (n <= 0) {
                 return mp_const_empty_tuple;
             }
+            // CIRCUITPY
             size_t new_len = mp_seq_multiply_len(o->len, n);
             mp_obj_tuple_t *s = MP_OBJ_TO_PTR(mp_obj_new_tuple(new_len, NULL));
             mp_seq_multiply(o->items, sizeof(*o->items), o->len, n, s->items);
@@ -230,20 +231,18 @@ STATIC const mp_rom_map_elem_t tuple_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(tuple_locals_dict, tuple_locals_dict_table);
 
-const mp_obj_type_t mp_type_tuple = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_tuple,
-    .print = mp_obj_tuple_print,
-    .make_new = mp_obj_tuple_make_new,
-    .locals_dict = (mp_obj_dict_t *)&tuple_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_obj_tuple_unary_op,
-        .binary_op = mp_obj_tuple_binary_op,
-        .subscr = mp_obj_tuple_subscr,
-        .getiter = mp_obj_tuple_getiter,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_tuple,
+    MP_QSTR_tuple,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_tuple_make_new,
+    print, mp_obj_tuple_print,
+    unary_op, mp_obj_tuple_unary_op,
+    binary_op, mp_obj_tuple_binary_op,
+    subscr, mp_obj_tuple_subscr,
+    iter, mp_obj_tuple_getiter,
+    locals_dict, &tuple_locals_dict
+    );
 
 // the zero-length tuple
 const mp_obj_tuple_t mp_const_empty_tuple_obj = {{&mp_type_tuple}, 0};

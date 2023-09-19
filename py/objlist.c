@@ -31,8 +31,6 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
 STATIC mp_obj_list_t *list_new(size_t n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
@@ -468,20 +466,19 @@ STATIC const mp_rom_map_elem_t list_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(list_locals_dict, list_locals_dict_table);
 
-const mp_obj_type_t mp_type_list = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_list,
-    .print = list_print,
-    .make_new = list_make_new,
-    .locals_dict = (mp_obj_dict_t *)&list_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = list_unary_op,
-        .binary_op = list_binary_op,
-        .subscr = list_subscr,
-        .getiter = list_getiter,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_list,
+    MP_QSTR_list,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_list_make_new,
+    print, list_print,
+    unary_op, list_unary_op,
+    binary_op, list_binary_op,
+    subscr, list_subscr,
+    iter, list_getiter,
+    locals_dict, &list_locals_dict
+    );
+
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n) {
     o->base.type = &mp_type_list;

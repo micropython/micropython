@@ -1,9 +1,15 @@
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
+ * This file provides functions for configuring the clocks.
+ *
  * The MIT License (MIT)
  *
+<<<<<<<< HEAD:ports/mimxrt10xx/common-hal/audiobusio/I2SOut.h
  * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+========
+ * Copyright (c) 2022 Robert Hammelrath
+>>>>>>>> v1.20.0:ports/samd/clock_config.h
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +30,7 @@
  * THE SOFTWARE.
  */
 
+<<<<<<<< HEAD:ports/mimxrt10xx/common-hal/audiobusio/I2SOut.h
 #pragma once
 
 // Some boards don't implement I2SOut, so suppress any routines from here.
@@ -42,3 +49,11 @@ typedef struct {
 } audiobusio_i2sout_obj_t;
 
 #endif
+========
+void init_clocks(uint32_t cpu_freq);
+void set_cpu_freq(uint32_t cpu_freq);
+uint32_t get_cpu_freq(void);
+uint32_t get_peripheral_freq(void);
+void check_usb_recovery_mode(void);
+void enable_sercom_clock(int id);
+>>>>>>>> v1.20.0:ports/samd/clock_config.h

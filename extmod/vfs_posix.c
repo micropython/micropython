@@ -31,11 +31,17 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_posix.h"
 
-#if defined(MICROPY_VFS_POSIX) && MICROPY_VFS_POSIX
+#if MICROPY_VFS_POSIX
 
+#if !MICROPY_ENABLE_FINALISER
+#error "MICROPY_VFS_POSIX requires MICROPY_ENABLE_FINALISER"
+#endif
+
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <dirent.h>
 #ifdef _MSC_VER
 #include <direct.h> // For mkdir etc.
@@ -138,7 +144,7 @@ STATIC mp_obj_t vfs_posix_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode
     if (!mp_obj_is_small_int(path_in)) {
         path_in = vfs_posix_get_path_obj(self, path_in);
     }
-    return mp_vfs_posix_file_open(&mp_type_textio, path_in, mode_in);
+    return mp_vfs_posix_file_open(&mp_type_vfs_posix_textio, path_in, mode_in);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(vfs_posix_open_obj, vfs_posix_open);
 
@@ -162,6 +168,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_getcwd_obj, vfs_posix_getcwd);
 typedef struct _vfs_posix_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
+    mp_fun_1_t finaliser;
     bool is_str;
     DIR *dir;
 } vfs_posix_ilistdir_it_t;
@@ -185,7 +192,7 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
         MP_THREAD_GIL_ENTER();
         const char *fn = dirent->d_name;
 
-        if (fn[0] == '.' && (fn[1] == 0 || fn[1] == '.')) {
+        if (fn[0] == '.' && (fn[1] == 0 || (fn[1] == '.' && fn[2] == 0))) {
             // skip . and ..
             continue;
         }
@@ -226,10 +233,22 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_iternext(mp_obj_t self_in) {
     }
 }
 
+STATIC mp_obj_t vfs_posix_ilistdir_it_del(mp_obj_t self_in) {
+    vfs_posix_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->dir != NULL) {
+        MP_THREAD_GIL_EXIT();
+        closedir(self->dir);
+        MP_THREAD_GIL_ENTER();
+    }
+    return mp_const_none;
+}
+
 STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
-    vfs_posix_ilistdir_it_t *iter = mp_obj_malloc(vfs_posix_ilistdir_it_t, &mp_type_polymorph_iter);
+    vfs_posix_ilistdir_it_t *iter = m_new_obj_with_finaliser(vfs_posix_ilistdir_it_t);
+    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
     iter->iternext = vfs_posix_ilistdir_it_iternext;
+    iter->finaliser = vfs_posix_ilistdir_it_del;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;
     const char *path = vfs_posix_get_path_str(self, path_in);
     if (path[0] == '\0') {
@@ -378,19 +397,16 @@ STATIC const mp_rom_map_elem_t vfs_posix_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(vfs_posix_locals_dict, vfs_posix_locals_dict_table);
 
 STATIC const mp_vfs_proto_t vfs_posix_proto = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_vfs)
     .import_stat = mp_vfs_posix_import_stat,
 };
 
-const mp_obj_type_t mp_type_vfs_posix = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_VfsPosix,
-    .locals_dict = (mp_obj_dict_t *)&vfs_posix_locals_dict,
-    .make_new = vfs_posix_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &vfs_posix_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_posix,
+    MP_QSTR_VfsPosix,
+    MP_TYPE_FLAG_NONE,
+    make_new, vfs_posix_make_new,
+    protocol, &vfs_posix_proto,
+    locals_dict, &vfs_posix_locals_dict
+    );
 
 #endif // MICROPY_VFS_POSIX

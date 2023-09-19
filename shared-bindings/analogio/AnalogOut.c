@@ -34,7 +34,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AnalogOut:
 //|     """Output analog values (a specific voltage).

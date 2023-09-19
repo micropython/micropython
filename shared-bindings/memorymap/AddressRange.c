@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/memorymap/AddressRange.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AddressRange:
 //|     r"""Presents a range of addresses as a bytearray.

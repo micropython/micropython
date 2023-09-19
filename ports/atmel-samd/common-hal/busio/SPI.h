@@ -3,7 +3,11 @@
  *
  * The MIT License (MIT)
  *
+<<<<<<<< HEAD:ports/atmel-samd/common-hal/busio/SPI.h
  * Copyright (c) 2016 Scott Shawcroft
+========
+ * Copyright (c) 2022 Blake W. Felt & Angus Gratton
+>>>>>>>> v1.20.0:shared/tinyusb/mp_usbd.c
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +28,7 @@
  * THE SOFTWARE.
  */
 
+<<<<<<<< HEAD:ports/atmel-samd/common-hal/busio/SPI.h
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
 
@@ -43,3 +48,22 @@ typedef struct {
 } busio_spi_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_SPI_H
+========
+#include <stdlib.h>
+
+#include "py/mpconfig.h"
+
+#if MICROPY_HW_ENABLE_USBDEV
+
+#ifndef NO_QSTR
+#include "tusb.h" // TinyUSB is not avaiable when running the string preprocessor
+#include "device/usbd.h"
+#include "device/usbd_pvt.h"
+#endif
+
+void usbd_task(void) {
+    tud_task_ext(0, false);
+}
+
+#endif
+>>>>>>>> v1.20.0:shared/tinyusb/mp_usbd.c

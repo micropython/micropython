@@ -84,17 +84,16 @@ STATIC mp_obj_t bool_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
     return mp_binary_op(op, MP_OBJ_NEW_SMALL_INT(value), rhs_in);
 }
 
-const mp_obj_type_t mp_type_bool = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED, // can match all numeric types
-    .name = MP_QSTR_bool,
-    .print = bool_print,
-    .make_new = bool_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = bool_unary_op,
-        .binary_op = bool_binary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    // can match all numeric types
+    mp_type_bool,
+    MP_QSTR_bool,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    make_new, bool_make_new,
+    print, bool_print,
+    unary_op, bool_unary_op,
+    binary_op, bool_binary_op
+    );
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS
 const mp_obj_bool_t mp_const_false_obj = {{&mp_type_bool}, false};

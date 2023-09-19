@@ -33,7 +33,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class I2SOut:
 //|     """Output an I2S audio signal"""

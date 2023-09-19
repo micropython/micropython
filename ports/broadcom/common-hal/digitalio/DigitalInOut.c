@@ -32,7 +32,6 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "peripherals/broadcom/gpio.h"
 

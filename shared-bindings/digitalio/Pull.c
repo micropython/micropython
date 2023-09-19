@@ -26,7 +26,6 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/Pull.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Pull:
 //|     """Defines the pull of a digital input pin"""

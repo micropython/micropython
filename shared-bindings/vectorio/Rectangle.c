@@ -7,7 +7,6 @@
 
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Rectangle:
 //|     def __init__(

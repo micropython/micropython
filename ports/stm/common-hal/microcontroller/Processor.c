@@ -32,7 +32,6 @@
 #endif
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include STM32_HAL_H
 

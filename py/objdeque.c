@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_COLLECTIONS_DEQUE
 
@@ -157,15 +156,13 @@ STATIC const mp_rom_map_elem_t deque_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(deque_locals_dict, deque_locals_dict_table);
 
-const mp_obj_type_t mp_type_deque = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_deque,
-    .make_new = deque_make_new,
-    .locals_dict = (mp_obj_dict_t *)&deque_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = deque_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_deque,
+    MP_QSTR_deque,
+    MP_TYPE_FLAG_NONE,
+    make_new, deque_make_new,
+    unary_op, deque_unary_op,
+    locals_dict, &deque_locals_dict
+    );
 
 #endif // MICROPY_PY_COLLECTIONS_DEQUE

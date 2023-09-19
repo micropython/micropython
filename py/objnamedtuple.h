@@ -28,7 +28,6 @@
 
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
@@ -36,7 +35,9 @@
 #if MICROPY_PY_COLLECTIONS
 
 typedef struct _mp_obj_namedtuple_type_t {
-    mp_obj_full_type_t base;
+    // This is a mp_obj_type_t with eight slots.
+    mp_obj_empty_type_t base;
+    void *slots[8];
     size_t n_fields;
     qstr fields[];
 } mp_obj_namedtuple_type_t;

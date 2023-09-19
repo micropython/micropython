@@ -3,7 +3,11 @@
  *
  * The MIT License (MIT)
  *
+<<<<<<<< HEAD:ports/atmel-samd/common-hal/i2ctarget/I2CTarget.h
  * Copyright (c) 2018 Noralf Trønnes
+========
+ * Copyright (c) 2013, 2014 Damien P. George
+>>>>>>>> v1.20.0:ports/samd/pendsv.h
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +27,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_SAMD_PENDSV_H
+#define MICROPY_INCLUDED_SAMD_PENDSV_H
 
+<<<<<<<< HEAD:ports/atmel-samd/common-hal/i2ctarget/I2CTarget.h
 #ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_TARGET_H
 #define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_TARGET_H
 
@@ -43,3 +50,19 @@ typedef struct {
 } i2ctarget_i2c_target_obj_t;
 
 #endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_BUSIO_I2C_TARGET_H
+========
+enum {
+    PENDSV_DISPATCH_SOFT_TIMER,  // For later & for having at least one entry
+    MICROPY_BOARD_PENDSV_ENTRIES
+    PENDSV_DISPATCH_MAX
+};
+
+#define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
+
+typedef void (*pendsv_dispatch_t)(void);
+
+void pendsv_init(void);
+void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
+
+#endif // MICROPY_INCLUDED_SAMD_PENDSV_H
+>>>>>>>> v1.20.0:ports/samd/pendsv.h

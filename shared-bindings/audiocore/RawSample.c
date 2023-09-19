@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/audiocore/RawSample.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class RawSample:
 //|     """A raw audio sample buffer in memory"""

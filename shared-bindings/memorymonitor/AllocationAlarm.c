@@ -31,7 +31,6 @@
 #include "py/runtime0.h"
 #include "shared-bindings/memorymonitor/AllocationAlarm.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AllocationAlarm:
 //|     def __init__(self, *, minimum_block_count: int = 1) -> None:

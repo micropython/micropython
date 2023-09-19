@@ -31,8 +31,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_UZLIB
 
 #define UZLIB_CONF_PARANOID_CHECKS (1)
@@ -138,22 +136,19 @@ STATIC const mp_rom_map_elem_t decompio_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(decompio_locals_dict, decompio_locals_dict_table);
 #endif
 
-#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_stream_p_t decompio_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = decompio_read,
 };
 
-STATIC const mp_obj_type_t decompio_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_DecompIO,
-    .make_new = decompio_make_new,
-    .locals_dict = (void *)&decompio_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &decompio_stream_p,
-        ),
-};
+#if !MICROPY_ENABLE_DYNRUNTIME
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    decompio_type,
+    MP_QSTR_DecompIO,
+    MP_TYPE_FLAG_NONE,
+    make_new, decompio_make_new,
+    protocol, &decompio_stream_p,
+    locals_dict, &decompio_locals_dict
+    );
 #endif
 
 STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {

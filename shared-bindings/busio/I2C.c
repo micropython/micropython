@@ -35,7 +35,6 @@
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class I2C:
 //|     """Two wire serial protocol"""

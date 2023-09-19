@@ -32,7 +32,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 STATIC void delay(bitbangio_i2c_obj_t *self) {
     // We need to use an accurate delay to get acceptable I2C

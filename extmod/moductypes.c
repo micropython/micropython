@@ -32,8 +32,6 @@
 #include "py/objtuple.h"
 #include "py/binary.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_UCTYPES
 
 // The uctypes module allows defining the layout of a raw data structure (using
@@ -192,7 +190,7 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
             // but scalar structure field is lowered into native Python int, so all
             // type info is lost. So, we cannot say if it's scalar type description,
             // or such lowered scalar.
-            mp_raise_TypeError(MP_ERROR_TEXT("cannot unambiguously get sizeof scalar"));
+            mp_raise_TypeError(MP_ERROR_TEXT("can't unambiguously get sizeof scalar"));
         }
         syntax_error();
     }
@@ -504,8 +502,8 @@ STATIC void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_obj_t value) {
-    mp_obj_uctypes_struct_t *self = mp_obj_cast_to_native_base(base_in, &uctypes_struct_type);
+STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+    mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (value == MP_OBJ_NULL) {
         // delete
@@ -561,7 +559,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
             }
 
         } else if (agg_type == PTR) {
-            byte *p = *(void **)(void *)self->addr;
+            byte *p = *(void **)self->addr;
             if (mp_obj_is_small_int(t->items[1])) {
                 uint val_type = GET_TYPE(MP_OBJ_SMALL_INT_VALUE(t->items[1]), VAL_TYPE_BITS);
                 return get_aligned(val_type, p, index);
@@ -590,7 +588,7 @@ STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
                 uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
                 if (agg_type == PTR) {
-                    byte *p = *(void **)(void *)self->addr;
+                    byte *p = *(void **)self->addr;
                     return mp_obj_new_int((mp_int_t)(uintptr_t)p);
                 }
             }
@@ -636,19 +634,17 @@ STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
-STATIC const mp_obj_type_t uctypes_struct_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_struct,
-    .print = uctypes_struct_print,
-    .make_new = uctypes_struct_make_new,
-    .attr = uctypes_struct_attr,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = uctypes_struct_subscr,
-        .unary_op = uctypes_struct_unary_op,
-        .buffer_p = { .get_buffer = uctypes_get_buffer },
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uctypes_struct_type,
+    MP_QSTR_struct,
+    MP_TYPE_FLAG_NONE,
+    make_new, uctypes_struct_make_new,
+    print, uctypes_struct_print,
+    attr, uctypes_struct_attr,
+    subscr, uctypes_struct_subscr,
+    unary_op, uctypes_struct_unary_op,
+    buffer, uctypes_get_buffer
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uctypes) },

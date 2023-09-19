@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class MixerVoice:
 //|     """Voice objects used with Mixer

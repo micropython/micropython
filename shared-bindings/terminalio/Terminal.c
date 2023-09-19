@@ -35,7 +35,6 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "shared-bindings/fontio/BuiltinFont.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Terminal:
 //|     """Display a character stream with a TileGrid

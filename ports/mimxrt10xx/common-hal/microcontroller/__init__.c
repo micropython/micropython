@@ -36,9 +36,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
-#include "supervisor/linker.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "pins.h"
 

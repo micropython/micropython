@@ -34,24 +34,46 @@ endif
 ifneq ($(USER_C_MODULES),)
 # pre-define USERMOD variables as expanded so that variables are immediate
 # expanded as they're added to them
-SRC_USERMOD :=
+
+# C/C++ files that are included in the QSTR/module build
+SRC_USERMOD_C :=
 SRC_USERMOD_CXX :=
+# Other C/C++ files (e.g. libraries or helpers)
+SRC_USERMOD_LIB_C :=
+SRC_USERMOD_LIB_CXX :=
+# Optionally set flags
 CFLAGS_USERMOD :=
 CXXFLAGS_USERMOD :=
 LDFLAGS_USERMOD :=
+
+# Backwards compatibility with older user c modules that set SRC_USERMOD
+# added to SRC_USERMOD_C below
+SRC_USERMOD :=
+
 $(foreach module, $(wildcard $(USER_C_MODULES)/*/micropython.mk), \
     $(eval USERMOD_DIR = $(patsubst %/,%,$(dir $(module))))\
     $(info Including User C Module from $(USERMOD_DIR))\
 	$(eval include $(module))\
 )
 
-SRC_MOD += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD))
-SRC_MOD_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_CXX))
-CFLAGS_MOD += $(CFLAGS_USERMOD)
-CXXFLAGS_MOD += $(CXXFLAGS_USERMOD)
-LDFLAGS_MOD += $(LDFLAGS_USERMOD)
-endif
+SRC_USERMOD_C += $(SRC_USERMOD)
 
+SRC_USERMOD_PATHFIX_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_C))
+SRC_USERMOD_PATHFIX_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_CXX))
+SRC_USERMOD_PATHFIX_LIB_C += $(patsubst $(USER_C_MODULES)/%.c,%.c,$(SRC_USERMOD_LIB_C))
+SRC_USERMOD_PATHFIX_LIB_CXX += $(patsubst $(USER_C_MODULES)/%.cpp,%.cpp,$(SRC_USERMOD_LIB_CXX))
+
+CFLAGS += $(CFLAGS_USERMOD)
+CXXFLAGS += $(CXXFLAGS_USERMOD)
+LDFLAGS += $(LDFLAGS_USERMOD)
+
+SRC_QSTR += $(SRC_USERMOD_PATHFIX_C) $(SRC_USERMOD_PATHFIX_CXX)
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_C:.c=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_CXX:.cpp=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_C:.c=.o))
+PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_CXX:.cpp=.o))
+
+// CIRCUITPY
 ifeq ($(CIRCUITPY_ULAB),1)
 ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
 SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
@@ -70,6 +92,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	nlrx64.o \
 	nlrthumb.o \
 	nlraarch64.o \
+	nlrmips.o \
 	nlrpowerpc.o \
 	nlrxtensa.o \
 	nlrsetjmp.o \
@@ -118,7 +141,6 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	warning.o \
 	profile.o \
 	map.o \
-	enum.o \
 	obj.o \
 	objarray.o \
 	objattrtuple.o \
@@ -155,12 +177,10 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	objstr.o \
 	objstrunicode.o \
 	objstringio.o \
-	objtraceback.o \
 	objtuple.o \
 	objtype.o \
 	objzip.o \
 	opmethods.o \
-	proto.o \
 	sequence.o \
 	stream.o \
 	binary.o \
@@ -187,38 +207,11 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	frozenmod.o \
 	)
 
-PY_EXTMOD_O_BASENAME = \
-	extmod/moduasyncio.o \
-	extmod/moductypes.o \
-	extmod/modujson.o \
-	extmod/moduos.o \
-	extmod/modure.o \
-	extmod/moduzlib.o \
-	extmod/moduheapq.o \
-	extmod/modutimeq.o \
-	extmod/moduhashlib.o \
-	extmod/modubinascii.o \
-	extmod/modurandom.o \
-	extmod/moduselect.o \
-	extmod/vfs.o \
-	extmod/vfs_blockdev.o \
-	extmod/vfs_reader.o \
-	extmod/vfs_posix.o \
-	extmod/vfs_posix_file.o \
-	extmod/vfs_fat.o \
-	extmod/vfs_fat_diskio.o \
-	extmod/vfs_fat_file.o \
-	extmod/vfs_lfs.o \
-	extmod/utime_mphal.o \
-	shared/libc/abort_.o \
-	shared/libc/printf.o \
-
 # prepend the build destination prefix to the py object files
 PY_CORE_O = $(addprefix $(BUILD)/, $(PY_CORE_O_BASENAME))
-PY_EXTMOD_O = $(addprefix $(BUILD)/, $(PY_EXTMOD_O_BASENAME))
 
 # this is a convenience variable for ports that want core, extmod and frozen code
-PY_O = $(PY_CORE_O) $(PY_EXTMOD_O)
+PY_O += $(PY_CORE_O)
 
 # object file for frozen code specified via a manifest
 ifneq ($(FROZEN_MANIFEST),)
@@ -227,14 +220,13 @@ endif
 
 # Sources that may contain qstrings
 SRC_QSTR_IGNORE = py/nlr%
-SRC_QSTR += $(SRC_MOD) $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c)) $(PY_EXTMOD_O_BASENAME:.o=.c)
+SRC_QSTR += $(filter-out $(SRC_QSTR_IGNORE),$(PY_CORE_O_BASENAME:.o=.c))
 
 # Anything that depends on FORCE will be considered out-of-date
 FORCE:
 .PHONY: FORCE
 
 $(HEADER_BUILD)/mpversion.h: FORCE | $(HEADER_BUILD)
-	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeversionhdr.py $@
 
 # mpconfigport.mk is optional, but changes to it may drastically change
@@ -256,29 +248,15 @@ $(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
 
-// CIRCUITPY: for translations
-$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
-	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
-
-# translations-*.c is generated as a side-effect of building compressed_translations.generated.h
-# Specifying both in a single rule actually causes the rule to be run twice!
-# This alternative makes it run just once.
-# Another alternative is "grouped targets" (`a b &: c`), available in GNU make 4.3 and later.
-# TODO: use grouped targets when we expect GNU make >= 4.3 is pervasive.
-$(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compressed_translations.generated.h
-	@true
-
-$(HEADER_BUILD)/compressed_translations.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.generated.h
-	$(STEPECHO) "GEN $@"
-	$(Q)mkdir -p $(PY_BUILD)
-	$(Q)$(PYTHON) $(PY_SRC)/maketranslationdata.py --compression_filename $(HEADER_BUILD)/compressed_translations.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo --translation_filename $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/qstrdefs.preprocessed.h
-
-PY_CORE_O += $(PY_BUILD)/translations-$(TRANSLATION).o
-
 # build a list of registered modules for py/objmodule.c.
 $(HEADER_BUILD)/moduledefs.h: $(HEADER_BUILD)/moduledefs.collected
-	@$(STEPECHO) "GEN $@"
+	@$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makemoduledefs.py $< > $@
+
+# build a list of registered root pointers for py/mpstate.h.
+$(HEADER_BUILD)/root_pointers.h: $(HEADER_BUILD)/root_pointers.collected $(PY_SRC)/make_root_pointers.py
+	@$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/make_root_pointers.py $< > $@
 
 # Standard C functions like memset need to be compiled with special flags so
 # the compiler does not optimise these functions in terms of themselves.
@@ -289,25 +267,11 @@ $(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 # that the function preludes are of a minimal and predictable form.
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
-# CIRCUITPY: separate SUPEROPT for gc.o and vm.o
 # optimising gc for speed; 5ms down to 4ms on pybv2
-ifndef SUPEROPT_GC
-  SUPEROPT_GC = 1
-endif
-
-ifeq ($(SUPEROPT_GC),1)
 $(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
-endif
 
 # optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
-ifndef SUPEROPT_VM
-  SUPEROPT_VM = 1
-endif
-
-ifeq ($(SUPEROPT_VM),1)
 $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
-endif
-
 # Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
 # may require disabling tail jump optimization. This will make sure that
 # each opcode has its own dispatching jump which will improve branch

@@ -148,17 +148,62 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     }
 }
 
-// Note: encoding is ignored for now; it's also not a valid kwarg for CPython's FileIO,
-// but by adding it here we can use one single mp_arg_t array for open() and FileIO's constructor
-STATIC const mp_arg_t file_open_args[] = {
-    { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_rom_obj = MP_ROM_NONE} },
-    { MP_QSTR_mode, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_QSTR(MP_QSTR_r)} },
-    { MP_QSTR_encoding, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_rom_obj = MP_ROM_NONE} },
+// TODO gc hook to close the file if not already closed
+
+STATIC const mp_rom_map_elem_t vfs_fat_rawfile_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
+    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
+    { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&file_obj___exit___obj) },
 };
 #define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
-// CIRCUITPY is more careful about validating the open mode.
-STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_arg_val_t *args) {
+STATIC MP_DEFINE_CONST_DICT(vfs_fat_rawfile_locals_dict, vfs_fat_rawfile_locals_dict_table);
+
+STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
+    .read = file_obj_read,
+    .write = file_obj_write,
+    .ioctl = file_obj_ioctl,
+};
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_fat_fileio,
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, file_obj_print,
+    protocol, &vfs_fat_fileio_stream_p,
+    locals_dict, &vfs_fat_rawfile_locals_dict
+    );
+
+STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
+    .read = file_obj_read,
+    .write = file_obj_write,
+    .ioctl = file_obj_ioctl,
+    .is_text = true,
+};
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_vfs_fat_textio,
+    MP_QSTR_TextIOWrapper,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, file_obj_print,
+    protocol, &vfs_fat_textio_stream_p,
+    locals_dict, &vfs_fat_rawfile_locals_dict
+    );
+
+// Factory function for I/O stream classes
+STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_in) {
+    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
+
+    const mp_obj_type_t *type = &mp_type_vfs_fat_textio;
     int mode = 0;
     const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
     uint32_t rwxa_count = 0;
@@ -222,6 +267,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
         m_del_obj(pyb_file_obj_t, o);
         mp_raise_OSError_errno_str(fresult_to_errno_table[res], args[0].u_obj);
     }
+    // CIRCUITPY does fast seek.
     // If we're reading, turn on fast seek.
     if (mode == FA_READ) {
         // One call to determine how much space we need.
@@ -249,87 +295,6 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
 
     return MP_OBJ_FROM_PTR(o);
 }
-
-STATIC mp_obj_t file_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    mp_arg_parse_all_kw_array(n_args, n_kw, args, FILE_OPEN_NUM_ARGS, file_open_args, arg_vals);
-    return file_open(NULL, type, arg_vals);
-}
-
-// TODO gc hook to close the file if not already closed
-
-STATIC const mp_rom_map_elem_t vfs_fat_rawfile_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR_seek), MP_ROM_PTR(&mp_stream_seek_obj) },
-    { MP_ROM_QSTR(MP_QSTR_tell), MP_ROM_PTR(&mp_stream_tell_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&file_obj___exit___obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(vfs_fat_rawfile_locals_dict, vfs_fat_rawfile_locals_dict_table);
-
-#if MICROPY_PY_IO_FILEIO
-STATIC const mp_stream_p_t vfs_fat_fileio_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
-    .read = file_obj_read,
-    .write = file_obj_write,
-    .ioctl = file_obj_ioctl,
-};
-
-const mp_obj_type_t mp_type_vfs_fat_fileio = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_FileIO,
-    .print = file_obj_print,
-    .make_new = file_obj_make_new,
-    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &vfs_fat_fileio_stream_p,
-        ),
-};
-#endif
-
-STATIC const mp_stream_p_t vfs_fat_textio_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
-    .read = file_obj_read,
-    .write = file_obj_write,
-    .ioctl = file_obj_ioctl,
-    .is_text = true,
-};
-
-const mp_obj_type_t mp_type_vfs_fat_textio = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_TextIOWrapper,
-    .print = file_obj_print,
-    .make_new = file_obj_make_new,
-    .locals_dict = (mp_obj_dict_t *)&vfs_fat_rawfile_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &vfs_fat_textio_stream_p,
-        ),
-};
-
-// Factory function for I/O stream classes
-STATIC mp_obj_t fatfs_builtin_open_self(mp_obj_t self_in, mp_obj_t path, mp_obj_t mode) {
-    // TODO: analyze buffering args and instantiate appropriate type
-    fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_arg_val_t arg_vals[FILE_OPEN_NUM_ARGS];
-    arg_vals[0].u_obj = path;
-    arg_vals[1].u_obj = mode;
-    arg_vals[2].u_obj = mp_const_none;
-    return file_open(self, &mp_type_vfs_fat_textio, arg_vals);
-}
-MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_open_obj, fatfs_builtin_open_self);
+MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_open_obj, fat_vfs_open);
 
 #endif // MICROPY_VFS && MICROPY_VFS_FAT

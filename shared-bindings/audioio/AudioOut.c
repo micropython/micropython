@@ -34,7 +34,6 @@
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AudioOut:
 //|     """Output an analog audio signal"""

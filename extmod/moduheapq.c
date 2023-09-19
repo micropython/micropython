@@ -27,8 +27,6 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_UHEAPQ
 
 // the algorithm here is modelled on CPython's heapq.py

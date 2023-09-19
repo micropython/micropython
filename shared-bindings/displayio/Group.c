@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Group:
 //|     """Manage a group of sprites and groups and how they are inter-related."""

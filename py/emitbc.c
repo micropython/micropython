@@ -47,7 +47,11 @@ struct _emit_t {
     byte dummy_data[DUMMY_DATA_SIZE];
 
     pass_kind_t pass : 8;
-    mp_uint_t last_emit_was_return_value : 8;
+
+    // Set to true if the code generator should suppress emitted code due to it
+    // being dead code.  This can happen when opcodes immediately follow an
+    // unconditional flow control (eg jump or raise).
+    bool suppress;
 
     int stack_size;
 
@@ -141,6 +145,9 @@ STATIC void emit_write_code_info_bytes_lines(emit_t *emit, mp_uint_t bytes_to_sk
 // all functions must go through this one to emit byte code
 STATIC uint8_t *emit_get_cur_to_write_bytecode(void *emit_in, size_t num_bytes_to_write) {
     emit_t *emit = emit_in;
+    if (emit->suppress) {
+        return emit->dummy_data;
+    }
     if (emit->pass < MP_PASS_EMIT) {
         emit->bytecode_offset += num_bytes_to_write;
         return emit->dummy_data;
@@ -223,6 +230,10 @@ STATIC void emit_write_bytecode_byte_child(emit_t *emit, int stack_adj, byte b, 
 STATIC void emit_write_bytecode_byte_label(emit_t *emit, int stack_adj, byte b1, mp_uint_t label) {
     mp_emit_bc_adjust_stack_size(emit, stack_adj);
 
+    if (emit->suppress) {
+        return;
+    }
+
     // Determine if the jump offset is signed or unsigned, based on the opcode.
     const bool is_signed = b1 <= MP_BC_POP_JUMP_IF_FALSE;
 
@@ -272,7 +283,7 @@ STATIC void emit_write_bytecode_byte_label(emit_t *emit, int stack_adj, byte b1,
 void mp_emit_bc_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scope) {
     emit->pass = pass;
     emit->stack_size = 0;
-    emit->last_emit_was_return_value = false;
+    emit->suppress = false;
     emit->scope = scope;
     emit->last_source_line_offset = 0;
     emit->last_source_line = 1;
@@ -397,10 +408,6 @@ bool mp_emit_bc_end_pass(emit_t *emit) {
     return true;
 }
 
-bool mp_emit_bc_last_emit_was_return_value(emit_t *emit) {
-    return emit->last_emit_was_return_value;
-}
-
 void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
     if (emit->pass == MP_PASS_SCOPE) {
         return;
@@ -410,7 +417,6 @@ void mp_emit_bc_adjust_stack_size(emit_t *emit, mp_int_t delta) {
     if (emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-    emit->last_emit_was_return_value = false;
 }
 
 void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
@@ -433,6 +439,10 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
 }
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
+    // Assiging a label ends any dead-code region, and all following opcodes
+    // should be emitted (until another unconditional flow control).
+    emit->suppress = false;
+
     mp_emit_bc_adjust_stack_size(emit, 0);
     if (emit->pass == MP_PASS_SCOPE) {
         return;
@@ -596,6 +606,7 @@ void mp_emit_bc_rot_three(emit_t *emit) {
 
 void mp_emit_bc_jump(emit_t *emit, mp_uint_t label) {
     emit_write_bytecode_byte_label(emit, 0, MP_BC_JUMP, label);
+    emit->suppress = true;
 }
 
 void mp_emit_bc_pop_jump_if(emit_t *emit, bool cond, mp_uint_t label) {
@@ -629,6 +640,7 @@ void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_dept
         emit_write_bytecode_byte_label(emit, 0, MP_BC_UNWIND_JUMP, label & ~MP_EMIT_BREAK_FROM_FOR);
         emit_write_bytecode_raw_byte(emit, ((label & MP_EMIT_BREAK_FROM_FOR) ? 0x80 : 0) | except_depth);
     }
+    emit->suppress = true;
 }
 
 void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind) {
@@ -670,6 +682,7 @@ void mp_emit_bc_for_iter_end(emit_t *emit) {
 void mp_emit_bc_pop_except_jump(emit_t *emit, mp_uint_t label, bool within_exc_handler) {
     (void)within_exc_handler;
     emit_write_bytecode_byte_label(emit, 0, MP_BC_POP_EXCEPT_JUMP, label);
+    emit->suppress = true;
 }
 
 void mp_emit_bc_unary_op(emit_t *emit, mp_unary_op_t op) {
@@ -773,7 +786,7 @@ void mp_emit_bc_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_ke
 
 void mp_emit_bc_return_value(emit_t *emit) {
     emit_write_bytecode_byte(emit, -1, MP_BC_RETURN_VALUE);
-    emit->last_emit_was_return_value = true;
+    emit->suppress = true;
 }
 
 void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
@@ -781,6 +794,7 @@ void mp_emit_bc_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     MP_STATIC_ASSERT(MP_BC_RAISE_LAST + 2 == MP_BC_RAISE_FROM);
     assert(n_args <= 2);
     emit_write_bytecode_byte(emit, -n_args, MP_BC_RAISE_LAST + n_args);
+    emit->suppress = true;
 }
 
 void mp_emit_bc_yield(emit_t *emit, int kind) {
@@ -806,7 +820,6 @@ const emit_method_table_t emit_bc_method_table = {
 
     mp_emit_bc_start_pass,
     mp_emit_bc_end_pass,
-    mp_emit_bc_last_emit_was_return_value,
     mp_emit_bc_adjust_stack_size,
     mp_emit_bc_set_source_line,
 

@@ -32,7 +32,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Shape:
 //|     """Represents a shape made by defining boundaries that may be mirrored."""

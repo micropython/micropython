@@ -29,8 +29,6 @@
 
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_UHASHLIB
 
 #if MICROPY_SSL_MBEDTLS
@@ -111,7 +109,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, 32);
     mbedtls_sha256_finish_ret((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 #else
@@ -154,7 +152,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
     sha256_final((CRYAL_SHA256_CTX *)self->state, (byte *)vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -168,12 +166,13 @@ STATIC const mp_rom_map_elem_t uhashlib_sha256_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha256_locals_dict, uhashlib_sha256_locals_dict_table);
 
-STATIC const mp_obj_type_t uhashlib_sha256_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_sha256,
-    .make_new = uhashlib_sha256_make_new,
-    .locals_dict = (void *)&uhashlib_sha256_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uhashlib_sha256_type,
+    MP_QSTR_sha256,
+    MP_TYPE_FLAG_NONE,
+    make_new, uhashlib_sha256_make_new,
+    locals_dict, &uhashlib_sha256_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_UHASHLIB_SHA1
@@ -207,7 +206,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, SHA1_SIZE);
     SHA1_Final((byte *)vstr.buf, (SHA1_CTX *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -248,7 +247,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     vstr_init_len(&vstr, 20);
     mbedtls_sha1_finish_ret((mbedtls_sha1_context *)self->state, (byte *)vstr.buf);
     mbedtls_sha1_free((mbedtls_sha1_context *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -261,12 +260,13 @@ STATIC const mp_rom_map_elem_t uhashlib_sha1_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha1_locals_dict, uhashlib_sha1_locals_dict_table);
 
-STATIC const mp_obj_type_t uhashlib_sha1_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_sha1,
-    .make_new = uhashlib_sha1_make_new,
-    .locals_dict = (void *)&uhashlib_sha1_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uhashlib_sha1_type,
+    MP_QSTR_sha1,
+    MP_TYPE_FLAG_NONE,
+    make_new, uhashlib_sha1_make_new,
+    locals_dict, &uhashlib_sha1_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_UHASHLIB_MD5
@@ -300,7 +300,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, MD5_SIZE);
     MD5_Final((byte *)vstr.buf, (MD5_CTX *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif // MICROPY_SSL_AXTLS
 
@@ -341,7 +341,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     vstr_init_len(&vstr, 16);
     mbedtls_md5_finish_ret((mbedtls_md5_context *)self->state, (byte *)vstr.buf);
     mbedtls_md5_free((mbedtls_md5_context *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif // MICROPY_SSL_MBEDTLS
 
@@ -354,12 +354,13 @@ STATIC const mp_rom_map_elem_t uhashlib_md5_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_md5_locals_dict, uhashlib_md5_locals_dict_table);
 
-STATIC const mp_obj_type_t uhashlib_md5_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_md5,
-    .make_new = uhashlib_md5_make_new,
-    .locals_dict = (void *)&uhashlib_md5_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uhashlib_md5_type,
+    MP_QSTR_md5,
+    MP_TYPE_FLAG_NONE,
+    make_new, uhashlib_md5_make_new,
+    locals_dict, &uhashlib_md5_locals_dict
+    );
 #endif // MICROPY_PY_UHASHLIB_MD5
 
 STATIC const mp_rom_map_elem_t mp_module_uhashlib_globals_table[] = {
