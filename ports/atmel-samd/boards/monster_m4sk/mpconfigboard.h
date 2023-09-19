@@ -1,5 +1,6 @@
 #define MICROPY_HW_BOARD_NAME "Adafruit Monster M4SK"
-#define MICROPY_HW_MCU_NAME "samd51j19"
+// Board is mislabeled as SAMD51J19.
+#define MICROPY_HW_MCU_NAME "samd51g19"
 
 #define CIRCUITPY_MCU_FAMILY samd51
 
