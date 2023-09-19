@@ -173,7 +173,7 @@ def update(debug, board, update_all):
         if key == "IDF_TARGET":
             target = value
             if uf2_bootloader is None:
-                uf2_bootloader = target not in ("esp32", "esp32c3")
+                uf2_bootloader = target not in ("esp32", "esp32c3", "esp32c6", "esp32h2")
         elif key == "CIRCUITPY_ESP_FLASH_SIZE":
             flash_size = value
         elif key == "CIRCUITPY_ESP_FLASH_MODE":

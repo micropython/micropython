@@ -230,7 +230,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_config.stop_bits = UART_STOP_BITS_2;
     }
     // uart_set_stop_bits(self->uart_num, stop_bits);
-    uart_config.source_clk = UART_SCLK_APB; // guessing here...
+    uart_config.source_clk = UART_SCLK_DEFAULT;
 
     // config all in one?
     if (uart_param_config(self->uart_num, &uart_config) != ESP_OK) {

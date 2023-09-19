@@ -60,11 +60,15 @@ static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
     // reset interrupt
     timg_dev_t *device = self->timer.group ? &(TIMERG1) : &(TIMERG0);
 
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP > 1
     if (self->timer.idx) {
         device->int_clr_timers.t1_int_clr = 1;
     } else {
-        device->int_clr_timers.t0_int_clr = 1;
-    }
+    #endif
+    device->int_clr_timers.t0_int_clr = 1;
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP > 1
+}
+    #endif
 
     #if defined(CONFIG_IDF_TARGET_ESP32S3)
     device->hw_timer[self->timer.idx].config.tn_alarm_en = 1;

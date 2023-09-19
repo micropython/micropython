@@ -152,7 +152,7 @@
 	url = https://github.com/espressif/esp-iot-solution.git
 [submodule "ports/espressif/esp-camera"]
 	path = ports/espressif/esp-camera
-	url = https://github.com/espressif/esp32-camera.git
+	url = https://github.com/adafruit/esp32-camera.git
 	branch = circuitpython
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]
 	path = frozen/Adafruit_CircuitPython_ST7789
