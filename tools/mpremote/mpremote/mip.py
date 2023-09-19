@@ -7,6 +7,7 @@ import urllib.request
 import json
 import tempfile
 import os
+import os.path
 
 from .commands import CommandError, show_progress_bar
 
@@ -64,22 +65,33 @@ def _rewrite_url(url, branch=None):
 
 
 def _download_file(transport, url, dest):
-    try:
-        with urllib.request.urlopen(url) as src:
-            data = src.read()
-            print("Installing:", dest)
-            _ensure_path_exists(transport, dest)
-            transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
-    except urllib.error.HTTPError as e:
-        if e.status == 404:
-            raise CommandError(f"File not found: {url}")
-        else:
-            raise CommandError(f"Error {e.status} requesting {url}")
-    except urllib.error.URLError as e:
-        raise CommandError(f"{e.reason} requesting {url}")
+    if url.startswith(allowed_mip_url_prefixes):
+        try:
+            with urllib.request.urlopen(url) as src:
+                data = src.read()
+        except urllib.error.HTTPError as e:
+            if e.status == 404:
+                raise CommandError(f"File not found: {url}")
+            else:
+                raise CommandError(f"Error {e.status} requesting {url}")
+        except urllib.error.URLError as e:
+            raise CommandError(f"{e.reason} requesting {url}")
+    else:
+        if "\\" in url:
+            raise CommandError(f'Use "/" instead of "\\" in file URLs: {url!r}\n')
+        try:
+            with open(url, "rb") as f:
+                data = f.read()
+        except OSError as e:
+            raise CommandError(f"{e.strerror} opening {url}")
+
+    print("Installing:", dest)
+    _ensure_path_exists(transport, dest)
+    transport.fs_writefile(dest, data, progress_callback=show_progress_bar)
 
 
 def _install_json(transport, package_json_url, index, target, version, mpy):
+    base_url = ""
     if package_json_url.startswith(allowed_mip_url_prefixes):
         try:
             with urllib.request.urlopen(_rewrite_url(package_json_url, version)) as response:
@@ -91,12 +103,14 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
                 raise CommandError(f"Error {e.status} requesting {package_json_url}")
         except urllib.error.URLError as e:
             raise CommandError(f"{e.reason} requesting {package_json_url}")
+        base_url = package_json_url.rpartition("/")[0]
     elif package_json_url.endswith(".json"):
         try:
             with open(package_json_url, "r") as f:
                 package_json = json.load(f)
         except OSError:
             raise CommandError(f"Error opening {package_json_url}")
+        base_url = os.path.dirname(package_json_url)
     else:
         raise CommandError(f"Invalid url for package: {package_json_url}")
     for target_path, short_hash in package_json.get("hashes", ()):
@@ -105,6 +119,8 @@ def _install_json(transport, package_json_url, index, target, version, mpy):
         _download_file(transport, file_url, fs_target_path)
     for target_path, url in package_json.get("urls", ()):
         fs_target_path = target + "/" + target_path
+        if base_url and not url.startswith(allowed_mip_url_prefixes):
+            url = f"{base_url}/{url}"  # Relative URLs
         _download_file(transport, _rewrite_url(url, version), fs_target_path)
     for dep, dep_version in package_json.get("deps", ()):
         _install_package(transport, dep, index, target, dep_version, mpy)

@@ -96,6 +96,18 @@ The ``--target=path``, ``--no-mpy``, and ``--index`` arguments can be set::
     $ mpremote mip install --no-mpy pkgname
     $ mpremote mip install --index https://host/pi pkgname
 
+:term:`mpremote` can also install packages from files stored on the host's local
+filesystem::
+
+    $ mpremote mip install path/to/pkg.py
+    $ mpremote mip install path/to/app/package.json
+    $ mpremote mip install \\path\\to\\pkg.py
+
+This is especially useful for testing packages during development and for
+installing packages from local clones of GitHub repositories. Note that URLs in
+``package.json`` files must use forward slashes ("/") as directory separators,
+even on Windows, so that they are compatible with installing from the web.
+
 Installing packages manually
 ----------------------------
 
@@ -116,12 +128,25 @@ To write a "self-hosted" package that can be downloaded by ``mip`` or
 ``mpremote``, you need a static webserver (or GitHub) to host either a
 single .py file, or a ``package.json`` file alongside your .py files.
 
-A typical ``package.json`` for an example ``mlx90640`` library looks like::
+An example ``mlx90640`` library hosted on GitHub could be installed with::
+
+    $ mpremote mip install github:org/micropython-mlx90640
+
+The layout for the package on GitHub might look like::
+
+    https://github.com/org/micropython-mlx90640/
+        package.json
+        mlx90640/
+            __init__.py
+            utils.py
+
+The ``package.json`` specifies the location of files to be installed and other
+dependencies::
 
     {
       "urls": [
-        ["mlx90640/__init__.py", "github:org/micropython-mlx90640/mlx90640/__init__.py"],
-        ["mlx90640/utils.py", "github:org/micropython-mlx90640/mlx90640/utils.py"]
+        ["mlx90640/__init__.py", "mlx90640/__init__.py"],
+        ["mlx90640/utils.py", "mlx90640/utils.py"]
       ],
       "deps": [
         ["collections-defaultdict", "latest"],
@@ -132,9 +157,20 @@ A typical ``package.json`` for an example ``mlx90640`` library looks like::
       "version": "0.2"
     }
 
-This includes two files, hosted at a GitHub repo named
-``org/micropython-mlx90640``, which install into the ``mlx90640`` directory on
-the device. It depends on ``collections-defaultdict`` and ``os-path`` which will
+The ``urls`` list specifies the files to be installed according to::
+
+    "urls": [
+        [destination_path, source_url]
+        ...
+
+where ``destination_path`` is the location and name of the file to be installed
+on the device and ``source_url`` is the URL of the file to be installed. The
+source URL would usually be specified relative to the directory containing the
+``package.json`` file, but can also be an absolute URL, eg::
+
+    ["mlx90640/utils.py", "github:org/micropython-mlx90640/mlx90640/utils.py"]
+
+The package depends on ``collections-defaultdict`` and ``os-path`` which will
 be installed automatically from the :term:`micropython-lib`. The third
 dependency installs the content as defined by the ``package.json`` file of the
 ``main`` branch of the GitHub repo ``org/micropython-additions``.
