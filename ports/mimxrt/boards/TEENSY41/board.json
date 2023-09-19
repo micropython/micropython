@@ -4,9 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "MicroSD",
         "Ethernet",
-        "Breadboard Friendly"
+        "External Flash",
+        "USB",
+        "microSD"
     ],
     "images": [
         "teensy41_4.jpg"

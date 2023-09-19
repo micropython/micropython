@@ -115,33 +115,11 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-function ci_esp32_setup_helper {
+function ci_esp32_idf50_setup {
     pip3 install pyelftools
     git clone https://github.com/espressif/esp-idf.git
-    git -C esp-idf checkout $1
-    git -C esp-idf submodule update --init \
-        components/bt/host/nimble/nimble \
-        components/esp_wifi \
-        components/esptool_py/esptool \
-        components/lwip/lwip \
-        components/mbedtls/mbedtls
-    if [ -d esp-idf/components/bt/controller/esp32 ]; then
-        git -C esp-idf submodule update --init \
-            components/bt/controller/lib_esp32 \
-            components/bt/controller/lib_esp32c3_family
-    else
-        git -C esp-idf submodule update --init \
-            components/bt/controller/lib
-    fi
+    git -C esp-idf checkout v5.0.2
     ./esp-idf/install.sh
-}
-
-function ci_esp32_idf402_setup {
-    ci_esp32_setup_helper v4.0.2
-}
-
-function ci_esp32_idf44_setup {
-    ci_esp32_setup_helper v4.4
 }
 
 function ci_esp32_build {
@@ -151,15 +129,9 @@ function ci_esp32_build {
     make ${MAKEOPTS} -C ports/esp32 \
         USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
         FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
-    if [ -d $IDF_PATH/components/esp32c3 ]; then
-        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_C3
-    fi
-    if [ -d $IDF_PATH/components/esp32s2 ]; then
-        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S2
-    fi
-    if [ -d $IDF_PATH/components/esp32s3 ]; then
-        make ${MAKEOPTS} -C ports/esp32 BOARD=GENERIC_S3
-    fi
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
 
     # Test building native .mpy with xtensawin architecture.
     ci_native_mpy_modules_build xtensawin
@@ -183,9 +155,9 @@ function ci_esp8266_path {
 function ci_esp8266_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp8266 submodules
-    make ${MAKEOPTS} -C ports/esp8266
-    make ${MAKEOPTS} -C ports/esp8266 BOARD=GENERIC_512K
-    make ${MAKEOPTS} -C ports/esp8266 BOARD=GENERIC_1M
+    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC
+    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_512K
+    make ${MAKEOPTS} -C ports/esp8266 BOARD=ESP8266_GENERIC BOARD_VARIANT=FLASH_1M
 }
 
 ########################################################################################
@@ -232,10 +204,10 @@ function ci_nrf_build {
     ports/nrf/drivers/bluetooth/download_ble_stack.sh s140_nrf52_6_1_1
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/nrf submodules
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10040
-    make ${MAKEOPTS} -C ports/nrf BOARD=microbit
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10056 SD=s140
-    make ${MAKEOPTS} -C ports/nrf BOARD=pca10090
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10040
+    make ${MAKEOPTS} -C ports/nrf BOARD=MICROBIT
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10056 SD=s140
+    make ${MAKEOPTS} -C ports/nrf BOARD=PCA10090
 }
 
 ########################################################################################
@@ -277,6 +249,7 @@ function ci_qemu_arm_build {
 
 function ci_renesas_ra_setup {
     ci_gcc_arm_setup
+    sudo apt-get install protobuf-c-compiler
 }
 
 function ci_renesas_ra_board_build {
@@ -287,6 +260,8 @@ function ci_renesas_ra_board_build {
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA6M1
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4M1
     make ${MAKEOPTS} -C ports/renesas-ra BOARD=EK_RA4W1
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=ARDUINO_PORTENTA_C33 submodules
+    make ${MAKEOPTS} -C ports/renesas-ra BOARD=ARDUINO_PORTENTA_C33
 }
 
 ########################################################################################
@@ -300,8 +275,8 @@ function ci_rp2_build {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/rp2 submodules
     make ${MAKEOPTS} -C ports/rp2
-    make ${MAKEOPTS} -C ports/rp2 clean
-    make ${MAKEOPTS} -C ports/rp2 USER_C_MODULES=../../examples/usercmodule/micropython.cmake
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W submodules
+    make ${MAKEOPTS} -C ports/rp2 BOARD=RPI_PICO_W USER_C_MODULES=../../examples/usercmodule/micropython.cmake
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO submodules
     make ${MAKEOPTS} -C ports/rp2 BOARD=W5100S_EVB_PICO
 
@@ -358,6 +333,7 @@ function ci_stm32_nucleo_build {
 
     # Test building various MCU families, some with additional options.
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_F091RC
+    make ${MAKEOPTS} -C ports/stm32 BOARD=STM32H573I_DK
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_H743ZI COPT=-O2 CFLAGS_EXTRA='-DMICROPY_PY_THREAD=1'
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L073RZ
     make ${MAKEOPTS} -C ports/stm32 BOARD=NUCLEO_L476RG DEBUG=1
@@ -452,12 +428,13 @@ function ci_native_mpy_modules_build {
     make -C examples/natmod/features1 ARCH=$arch
     make -C examples/natmod/features2 ARCH=$arch
     make -C examples/natmod/features3 ARCH=$arch
+    make -C examples/natmod/features4 ARCH=$arch
     make -C examples/natmod/btree ARCH=$arch
+    make -C examples/natmod/deflate ARCH=$arch
     make -C examples/natmod/framebuf ARCH=$arch
     make -C examples/natmod/heapq ARCH=$arch
     make -C examples/natmod/random ARCH=$arch
     make -C examples/natmod/re ARCH=$arch
-    make -C examples/natmod/zlib ARCH=$arch
 }
 
 function ci_native_mpy_modules_32bit_build {
@@ -523,7 +500,7 @@ function ci_unix_coverage_run_mpy_merge_tests {
 
 function ci_unix_coverage_run_native_mpy_tests {
     MICROPYPATH=examples/natmod/features2 ./ports/unix/build-coverage/micropython -m features2
-    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,framebuf*,heapq*,random*,re*,zlib*}.py)
+    (cd tests && ./run-natmodtests.py "$@" extmod/{btree*,deflate*,framebuf*,heapq*,random*,re*}.py)
 }
 
 function ci_unix_32bit_setup {

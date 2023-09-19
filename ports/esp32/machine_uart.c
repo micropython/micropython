@@ -34,20 +34,21 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mphal.h"
 #include "modmachine.h"
 #include "uart.h"
 
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-#define UART_INV_TX UART_INVERSE_TXD
-#define UART_INV_RX UART_INVERSE_RXD
-#define UART_INV_RTS UART_INVERSE_RTS
-#define UART_INV_CTS UART_INVERSE_CTS
+#if SOC_UART_SUPPORT_XTAL_CLK
+// Works independently of APB frequency, on ESP32C3, ESP32S3.
+#define UART_SOURCE_CLK UART_SCLK_XTAL
 #else
+#define UART_SOURCE_CLK UART_SCLK_DEFAULT
+#endif
+
 #define UART_INV_TX UART_SIGNAL_TXD_INV
 #define UART_INV_RX UART_SIGNAL_RXD_INV
 #define UART_INV_RTS UART_SIGNAL_RTS_INV
 #define UART_INV_CTS UART_SIGNAL_CTS_INV
-#endif
 
 #define UART_INV_MASK (UART_INV_TX | UART_INV_RX | UART_INV_RTS | UART_INV_CTS)
 
@@ -58,10 +59,10 @@ typedef struct _machine_uart_obj_t {
     uint8_t bits;
     uint8_t parity;
     uint8_t stop;
-    int8_t tx;
-    int8_t rx;
-    int8_t rts;
-    int8_t cts;
+    gpio_num_t tx;
+    gpio_num_t rx;
+    gpio_num_t rts;
+    gpio_num_t cts;
     uint16_t txbuf;
     uint16_t rxbuf;
     uint16_t timeout;       // timeout waiting for first char (in ms)
@@ -133,10 +134,10 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
-        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UART_PIN_NO_CHANGE} },
+        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_txbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_rxbuf, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -152,9 +153,11 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
 
     if (args[ARG_txbuf].u_int >= 0 || args[ARG_rxbuf].u_int >= 0) {
         // must reinitialise driver to change the tx/rx buffer size
+        #if MICROPY_HW_ENABLE_UART_REPL
         if (self->uart_num == MICROPY_HW_UART_REPL) {
             mp_raise_ValueError(MP_ERROR_TEXT("UART buffer size is fixed"));
         }
+        #endif
 
         if (args[ARG_txbuf].u_int >= 0) {
             self->txbuf = args[ARG_txbuf].u_int;
@@ -164,7 +167,8 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         }
         uart_config_t uartcfg = {
             .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-            .rx_flow_ctrl_thresh = 0
+            .rx_flow_ctrl_thresh = 0,
+            .source_clk = UART_SOURCE_CLK,
         };
         uint32_t baudrate;
         uart_get_baudrate(self->uart_num, &baudrate);
@@ -184,22 +188,22 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
     uart_get_baudrate(self->uart_num, &baudrate);
 
-    uart_set_pin(self->uart_num, args[ARG_tx].u_int, args[ARG_rx].u_int, args[ARG_rts].u_int, args[ARG_cts].u_int);
-    if (args[ARG_tx].u_int != UART_PIN_NO_CHANGE) {
-        self->tx = args[ARG_tx].u_int;
+    if (args[ARG_tx].u_obj != MP_OBJ_NULL) {
+        self->tx = machine_pin_get_id(args[ARG_tx].u_obj);
     }
 
-    if (args[ARG_rx].u_int != UART_PIN_NO_CHANGE) {
-        self->rx = args[ARG_rx].u_int;
+    if (args[ARG_rx].u_obj != MP_OBJ_NULL) {
+        self->rx = machine_pin_get_id(args[ARG_rx].u_obj);
     }
 
-    if (args[ARG_rts].u_int != UART_PIN_NO_CHANGE) {
-        self->rts = args[ARG_rts].u_int;
+    if (args[ARG_rts].u_obj != MP_OBJ_NULL) {
+        self->rts = machine_pin_get_id(args[ARG_rts].u_obj);
     }
 
-    if (args[ARG_cts].u_int != UART_PIN_NO_CHANGE) {
-        self->cts = args[ARG_cts].u_int;
+    if (args[ARG_cts].u_obj != MP_OBJ_NULL) {
+        self->cts = machine_pin_get_id(args[ARG_cts].u_obj);
     }
+    uart_set_pin(self->uart_num, self->tx, self->rx, self->rts, self->cts);
 
     // set data bits
     switch (args[ARG_bits].u_int) {
@@ -273,9 +277,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
         uint32_t char_time_ms = 12000 / baudrate + 1;
         uint32_t rx_timeout = self->timeout_char / char_time_ms;
         if (rx_timeout < 1) {
-            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 0)
             uart_set_rx_full_threshold(self->uart_num, 1);
-            #endif
             uart_set_rx_timeout(self->uart_num, 1);
         } else {
             uart_set_rx_timeout(self->uart_num, rx_timeout);
@@ -317,12 +319,9 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0
+        .rx_flow_ctrl_thresh = 0,
+        .source_clk = UART_SOURCE_CLK,
     };
-    #if SOC_UART_SUPPORT_XTAL_CLK
-    // works independently of APB frequency
-    uartcfg.source_clk = UART_SCLK_XTAL; // ESP32C3, ESP32S3
-    #endif
 
     // create instance
     machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
@@ -356,8 +355,11 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
         #endif
     }
 
+    #if MICROPY_HW_ENABLE_UART_REPL
     // Only reset the driver if it's not the REPL UART.
-    if (uart_num != MICROPY_HW_UART_REPL) {
+    if (uart_num != MICROPY_HW_UART_REPL)
+    #endif
+    {
         // Remove any existing configuration
         uart_driver_delete(self->uart_num);
 
@@ -470,7 +472,16 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
         time_to_wait = pdMS_TO_TICKS(self->timeout);
     }
 
+    bool release_gil = time_to_wait > 0;
+    if (release_gil) {
+        MP_THREAD_GIL_EXIT();
+    }
+
     int bytes_read = uart_read_bytes(self->uart_num, buf_in, size, time_to_wait);
+
+    if (release_gil) {
+        MP_THREAD_GIL_ENTER();
+    }
 
     if (bytes_read <= 0) {
         *errcode = MP_EAGAIN;

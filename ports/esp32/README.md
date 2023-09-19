@@ -22,14 +22,13 @@ Initial development of this ESP32 port was sponsored in part by Microbric Pty Lt
 Setting up ESP-IDF and the build environment
 --------------------------------------------
 
-MicroPython on ESP32 requires the Espressif IDF version 4 (IoT development
+MicroPython on ESP32 requires the Espressif IDF version 5 (IoT development
 framework, aka SDK).  The ESP-IDF includes the libraries and RTOS needed to
 manage the ESP32 microcontroller, as well as a way to manage the required
 build environment and toolchains needed to build the firmware.
 
 The ESP-IDF changes quickly and MicroPython only supports certain versions.
-Currently MicroPython supports v4.0.2, v4.1.1, v4.2.2, v4.3.2 and v4.4,
-although other IDF v4 versions may also work.
+Currently MicroPython supports only v5.0.2.
 
 To install the ESP-IDF the full instructions can be found at the
 [Espressif Getting Started guide](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#installation-step-by-step).
@@ -47,10 +46,10 @@ The steps to take are summarised below.
 To check out a copy of the IDF use git clone:
 
 ```bash
-$ git clone -b v4.0.2 --recursive https://github.com/espressif/esp-idf.git
+$ git clone -b v5.0.2 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-You can replace `v4.0.2` with `v4.2.2` or `v4.4` or any other supported version.
+You can replace `v5.0.2` with any other supported version.
 (You don't need a full recursive clone; see the `ci_esp32_setup` function in
 `tools/ci.sh` in this repository for more detailed set-up commands.)
 
@@ -59,7 +58,7 @@ MicroPython and update the submodules using:
 
 ```bash
 $ cd esp-idf
-$ git checkout v4.2
+$ git checkout v5.0.2
 $ git submodule update --init --recursive
 ```
 
@@ -74,11 +73,6 @@ $ source export.sh   # (or export.bat on Windows)
 
 The `install.sh` step only needs to be done once. You will need to source
 `export.sh` for every new session.
-
-**Note:** If you are building MicroPython for the ESP32-S2, ESP32-C3 or ESP32-S3,
-please ensure you are using the following required IDF versions:
-- ESP32-S3 currently requires `v4.4` or later.
-- ESP32-S2 and ESP32-C3 require `v4.3.1` or later.
 
 Building the firmware
 ---------------------
@@ -99,7 +93,7 @@ $ make submodules
 $ make
 ```
 
-This will produce a combined `firmware.bin` image in the `build-GENERIC/`
+This will produce a combined `firmware.bin` image in the `build-ESP32_GENERIC/`
 subdirectory (this firmware image is made up of: bootloader.bin, partitions.bin
 and micropython.bin).
 
@@ -129,12 +123,12 @@ To flash the MicroPython firmware to your ESP32 use:
 $ make deploy
 ```
 
-The default ESP32 board build by the above commands is the `GENERIC` one, which
-should work on most ESP32 modules.  You can specify a different board by passing
-`BOARD=<board>` to the make commands, for example:
+The default ESP32 board build by the above commands is the `ESP32_GENERIC`
+one, which should work on most ESP32 modules.  You can specify a different
+board by passing `BOARD=<board>` to the make commands, for example:
 
 ```bash
-$ make BOARD=GENERIC_SPIRAM
+$ make BOARD=ESP32_GENERIC_S3
 ```
 
 Note: the above "make" commands are thin wrappers for the underlying `idf.py`
@@ -143,9 +137,24 @@ for example:
 
 ```bash
 $ idf.py build
-$ idf.py -D MICROPY_BOARD=GENERIC_SPIRAM build
+$ idf.py -D MICROPY_BOARD=ESP32_GENERIC build
 $ idf.py flash
 ```
+
+Some boards also support "variants", which are allow for small variations of
+an otherwise similar board. For example different flash sizes or features. For
+example to build the `OTA` variant of `ESP32_GENERIC`.
+
+```bash
+$ make BOARD=ESP32_GENERIC BOARD_VARIANT=OTA
+```
+
+or to enable octal-SPIRAM support for the `ESP32_GENERIC_S3` board:
+
+```bash
+$ make BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM_OCT
+```
+
 
 Getting a Python prompt on the device
 -------------------------------------
@@ -208,10 +217,10 @@ antenna = machine.Pin(16, machine.Pin.OUT, value=0)
 Defining a custom ESP32 board
 -----------------------------
 
-The default ESP-IDF configuration settings are provided by the `GENERIC`
-board definition in the directory `boards/GENERIC`. For a custom configuration
+The default ESP-IDF configuration settings are provided by the `ESP32_GENERIC`
+board definition in the directory `boards/ESP32_GENERIC`. For a custom configuration
 you can define your own board directory.  Start a new board configuration by
-copying an existing one (like `GENERIC`) and modifying it to suit your board.
+copying an existing one (like `ESP32_GENERIC`) and modifying it to suit your board.
 
 MicroPython specific configuration values are defined in the board-specific
 `mpconfigboard.h` file, which is included by `mpconfigport.h`.  Additional

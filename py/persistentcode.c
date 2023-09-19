@@ -391,6 +391,10 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 }
 
 void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
+    // Set exception handler to close the reader if an exception is raised.
+    MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, reader->close, reader->data);
+    nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
+
     byte header[4];
     read_bytes(reader, header, sizeof(header));
     byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
@@ -435,7 +439,8 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
     cm->n_obj = n_obj;
     #endif
 
-    reader->close(reader->data);
+    // Deregister exception handler and close the reader.
+    nlr_pop_jump_callback(true);
 }
 
 void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *context) {

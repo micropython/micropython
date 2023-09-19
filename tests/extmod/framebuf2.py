@@ -48,7 +48,7 @@ printbuf()
 
 w2 = 2
 h2 = 3
-buf2 = bytearray(w2 * h2 // 4)
+buf2 = bytearray(h2 * ((w2 + 3) // 4))
 fbuf2 = framebuf.FrameBuffer(buf2, w2, h2, framebuf.GS2_HMSB)
 
 # blit

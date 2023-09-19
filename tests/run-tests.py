@@ -567,7 +567,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                     for t in "bytearray le native_le ptr_le ptr_native_le sizeof sizeof_native array_assign_le array_assign_native_le".split()
                 }
             )  # requires uctypes
-            skip_tests.add("extmod/zlibd_decompress.py")  # requires zlib
             skip_tests.add("extmod/heapq1.py")  # heapq not supported by WiPy
             skip_tests.add("extmod/random_basic.py")  # requires random
             skip_tests.add("extmod/random_extra.py")  # requires random
@@ -624,10 +623,10 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
-        skip_tests.add("extmod/uasyncio_event.py")  # unknown issue
-        skip_tests.add("extmod/uasyncio_lock.py")  # requires async with
-        skip_tests.add("extmod/uasyncio_micropython.py")  # unknown issue
-        skip_tests.add("extmod/uasyncio_wait_for.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_event.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_lock.py")  # requires async with
+        skip_tests.add("extmod/asyncio_micropython.py")  # unknown issue
+        skip_tests.add("extmod/asyncio_wait_for.py")  # unknown issue
         skip_tests.add("misc/features.py")  # requires raise_varargs
         skip_tests.add(
             "misc/print_exception.py"
@@ -672,7 +671,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         is_bytearray = test_name.startswith("bytearray") or test_name.endswith("_bytearray")
         is_set_type = test_name.startswith(("set_", "frozenset")) or test_name.endswith("_set")
         is_slice = test_name.find("slice") != -1 or test_name in misc_slice_tests
-        is_async = test_name.startswith(("async_", "uasyncio_"))
+        is_async = test_name.startswith(("async_", "asyncio_"))
         is_const = test_name.startswith("const")
         is_io_module = test_name.startswith("io_")
         is_fstring = test_name.startswith("string_fstring")
@@ -710,7 +709,9 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             # run CPython to work out expected output
             try:
                 output_expected = subprocess.check_output(
-                    CPYTHON3_CMD + [os.path.abspath(test_file)], cwd=os.path.dirname(test_file)
+                    CPYTHON3_CMD + [os.path.abspath(test_file)],
+                    cwd=os.path.dirname(test_file),
+                    stderr=subprocess.STDOUT,
                 )
                 if args.write_exp:
                     with open(test_file_expected, "wb") as f:

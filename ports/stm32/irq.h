@@ -155,6 +155,8 @@ static inline void restore_irq_pri(uint32_t state) {
 
 #define IRQ_PRI_CAN             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
 
+#define IRQ_PRI_SUBGHZ_RADIO    NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 8, 0)
+
 #define IRQ_PRI_SPI             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 8, 0)
 
 // Interrupt priority for non-special timers.

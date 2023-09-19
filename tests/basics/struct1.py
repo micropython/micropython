@@ -20,6 +20,8 @@ print(struct.pack("<h", 1))
 print(struct.pack(">h", 1))
 print(struct.pack("<b", 1))
 print(struct.pack(">b", 1))
+print(struct.pack("<x"))
+print(struct.pack(">x"))
 
 print(struct.pack("<bI", -128, 256))
 print(struct.pack(">bI", -128, 256))
@@ -28,6 +30,13 @@ print(struct.calcsize("100sI"))
 print(struct.calcsize("97sI"))
 print(struct.unpack("<6sH", b"foo\0\0\0\x12\x34"))
 print(struct.pack("<6sH", b"foo", 10000))
+
+print(struct.calcsize("7xx"))
+print(struct.pack("7xx"))
+
+print(struct.calcsize(">bxI3xH"))
+print(struct.pack(">bxI3xH", 1, 2, 3))
+print(struct.unpack(">bxI3xH", b"\x01\0\0\0\0\x02\0\0\0\0\x03"))
 
 s = struct.pack("BHBI", 10, 100, 200, 300)
 v = struct.unpack("BHBI", s)

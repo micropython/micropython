@@ -61,9 +61,9 @@
 // - a FreeRTOS task is created to implement the asynchronous background operations
 // - a FreeRTOS queue is used to transfer the supplied buffer to the background task
 //
-// Mode3: Uasyncio
+// Mode3: Asyncio
 // - implements the stream protocol
-// - uasyncio mode is enabled when the ioctl() function is called
+// - asyncio mode is enabled when the ioctl() function is called
 // - the I2S event queue is used to detect that I2S samples can be read or written from/to DMA memory
 //
 // The samples contained in the app buffer supplied for the readinto() and write() methods have the following convention:
@@ -102,7 +102,7 @@ typedef enum {
 typedef enum {
     BLOCKING,
     NON_BLOCKING,
-    UASYNCIO
+    ASYNCIO
 } io_mode_t;
 
 typedef enum {
@@ -148,7 +148,7 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
 };
 
 void machine_i2s_init0() {
-    for (i2s_port_t p = 0; p < I2S_NUM_MAX; p++) {
+    for (i2s_port_t p = 0; p < I2S_NUM_AUTO; p++) {
         MP_STATE_PORT(machine_i2s_obj)[p] = NULL;
     }
 }
@@ -240,7 +240,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
     // copy audio samples from DMA memory to the app buffer
     // audio samples are read from DMA memory in chunks
     // loop, reading and copying chunks until the app buffer is filled
-    // For uasyncio mode, the loop will make an early exit if DMA memory becomes empty
+    // For asyncio mode, the loop will make an early exit if DMA memory becomes empty
     // Example:
     //   a MicroPython I2S object is configured for 16-bit mono (2 bytes per audio sample).
     //   For every frame coming from DMA (8 bytes), 2 bytes are "cherry picked" and
@@ -257,7 +257,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
         size_t num_bytes_received_from_dma = 0;
 
         TickType_t delay;
-        if (self->io_mode == UASYNCIO) {
+        if (self->io_mode == ASYNCIO) {
             delay = 0; // stop i2s_read() operation if DMA memory becomes empty
         } else {
             delay = portMAX_DELAY;  // block until supplied buffer is filled
@@ -269,15 +269,6 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
             num_bytes_requested_from_dma,
             &num_bytes_received_from_dma,
             delay);
-
-        // the following is a workaround for a bug in ESP-IDF v4.4
-        // https://github.com/espressif/esp-idf/issues/8121
-        #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
-        if ((delay != portMAX_DELAY) && (ret == ESP_ERR_TIMEOUT)) {
-            ret = ESP_OK;
-        }
-        #endif
-
         check_esp_err(ret);
 
         // process the transform buffer one frame at a time.
@@ -307,7 +298,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
 
         num_bytes_needed_from_dma -= num_bytes_received_from_dma;
 
-        if ((self->io_mode == UASYNCIO) && (num_bytes_received_from_dma < num_bytes_requested_from_dma)) {
+        if ((self->io_mode == ASYNCIO) && (num_bytes_received_from_dma < num_bytes_requested_from_dma)) {
             // Unable to fill the entire app buffer from DMA memory.  This indicates all DMA RX buffers are empty.
             // Clear the I2S event queue so ioctl() indicates that the I2S object cannot currently
             // supply more audio samples
@@ -327,32 +318,23 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
     size_t num_bytes_written = 0;
 
     TickType_t delay;
-    if (self->io_mode == UASYNCIO) {
+    if (self->io_mode == ASYNCIO) {
         delay = 0;  // stop i2s_write() operation if DMA memory becomes full
     } else {
         delay = portMAX_DELAY;  // block until supplied buffer is emptied
     }
 
     esp_err_t ret = i2s_write(self->port, appbuf->buf, appbuf->len, &num_bytes_written, delay);
-
-    // the following is a workaround for a bug in ESP-IDF v4.4
-    // https://github.com/espressif/esp-idf/issues/8121
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
-    if ((delay != portMAX_DELAY) && (ret == ESP_ERR_TIMEOUT)) {
-        ret = ESP_OK;
-    }
-    #endif
-
     check_esp_err(ret);
 
-    if ((self->io_mode == UASYNCIO) && (num_bytes_written < appbuf->len)) {
+    if ((self->io_mode == ASYNCIO) && (num_bytes_written < appbuf->len)) {
         // Unable to empty the entire app buffer into DMA memory.  This indicates all DMA TX buffers are full.
         // Clear the I2S event queue so ioctl() indicates that the I2S object cannot currently
         // accept more audio samples
         xQueueReset(self->i2s_event_queue);
 
         // Undo the swap transformation as the buffer has not been completely emptied.
-        // The uasyncio stream writer will use the same buffer in a future write call.
+        // The asyncio stream writer will use the same buffer in a future write call.
         if ((self->bits == I2S_BITS_PER_SAMPLE_32BIT) && (self->format == STEREO)) {
             swap_32_bit_stereo_channels(appbuf);
         }
@@ -410,9 +392,9 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     //
 
     // are Pins valid?
-    int8_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_sck].u_obj);
-    int8_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_ws].u_obj);
-    int8_t sd = args[ARG_sd].u_obj == MP_OBJ_NULL ? -1 : mp_hal_get_pin_obj(args[ARG_sd].u_obj);
+    int8_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sck].u_obj);
+    int8_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_ws].u_obj);
+    int8_t sd = args[ARG_sd].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sd].u_obj);
 
     // is Mode valid?
     i2s_mode_t mode = args[ARG_mode].u_int;
@@ -467,10 +449,8 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     i2s_config.use_apll = false;
     i2s_config.tx_desc_auto_clear = true;
     i2s_config.fixed_mclk = 0;
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
-    i2s_config.mclk_multiple = I2S_MCLK_MULTIPLE_DEFAULT;
+    i2s_config.mclk_multiple = I2S_MCLK_MULTIPLE_256;
     i2s_config.bits_per_chan = 0;
-    #endif
 
     // I2S queue size equals the number of DMA buffers
     check_esp_err(i2s_driver_install(self->port, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
@@ -487,9 +467,7 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     #endif
 
     i2s_pin_config_t pin_config;
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 4)
     pin_config.mck_io_num = I2S_PIN_NO_CHANGE;
-    #endif
     pin_config.bck_io_num = self->sck;
     pin_config.ws_io_num = self->ws;
 
@@ -527,7 +505,7 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     i2s_port_t port = mp_obj_get_int(args[0]);
-    if (port < 0 || port >= I2S_NUM_MAX) {
+    if (port < 0 || port >= I2S_NUM_AUTO) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
@@ -729,7 +707,7 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
         // send the descriptor to the task that handles non-blocking mode
         xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
         return size;
-    } else { // blocking or uasyncio mode
+    } else { // blocking or asyncio mode
         mp_buffer_info_t appbuf;
         appbuf.buf = (void *)buf_in;
         appbuf.len = size;
@@ -759,7 +737,7 @@ STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
         // send the descriptor to the task that handles non-blocking mode
         xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
         return size;
-    } else { // blocking or uasyncio mode
+    } else { // blocking or asyncio mode
         mp_buffer_info_t appbuf;
         appbuf.buf = (void *)buf_in;
         appbuf.len = size;
@@ -772,7 +750,7 @@ STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     mp_uint_t flags = arg;
-    self->io_mode = UASYNCIO; // a call to ioctl() is an indication that uasyncio is being used
+    self->io_mode = ASYNCIO; // a call to ioctl() is an indication that asyncio is being used
 
     if (request == MP_STREAM_POLL) {
         ret = 0;
@@ -841,6 +819,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_i2s_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_MAX]);
+MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_AUTO]);
 
 #endif // MICROPY_PY_MACHINE_I2S

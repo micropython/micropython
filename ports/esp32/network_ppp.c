@@ -32,6 +32,7 @@
 #include "py/stream.h"
 #include "shared/netutils/netutils.h"
 #include "modmachine.h"
+#include "ppp_set_auth.h"
 
 #include "netif/ppp/ppp.h"
 #include "netif/ppp/pppos.h"
@@ -113,6 +114,8 @@ static void pppos_client_task(void *self_in) {
 
     self->client_task_handle = NULL;
     vTaskDelete(NULL);
+    for (;;) {
+    }
 }
 
 STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
@@ -265,11 +268,56 @@ STATIC mp_obj_t ppp_isconnected(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
 
+STATIC mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (n_args != 1 && kwargs->used != 0) {
+        mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
+    }
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (kwargs->used != 0) {
+        for (size_t i = 0; i < kwargs->alloc; i++) {
+            if (mp_map_slot_is_filled(kwargs, i)) {
+                switch (mp_obj_str_get_qstr(kwargs->table[i].key)) {
+                    default:
+                        break;
+                }
+            }
+        }
+        return mp_const_none;
+    }
+
+    if (n_args != 2) {
+        mp_raise_TypeError(MP_ERROR_TEXT("can query only one param"));
+    }
+
+    mp_obj_t val = mp_const_none;
+
+    switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_ifname: {
+            if (self->pcb != NULL) {
+                struct netif *pppif = ppp_netif(self->pcb);
+                char ifname[NETIF_NAMESIZE + 1] = {0};
+                netif_index_to_name(netif_get_index(pppif), ifname);
+                if (ifname[0] != 0) {
+                    val = mp_obj_new_str((char *)ifname, strlen(ifname));
+                }
+            }
+            break;
+        }
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+
+    return val;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ppp_config_obj, 1, ppp_config);
+
 STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&ppp_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&ppp_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&ppp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ppp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&ppp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&ppp_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ppp_delete_obj) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_NONE), MP_ROM_INT(PPPAUTHTYPE_NONE) },

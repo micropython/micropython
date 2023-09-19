@@ -5,11 +5,11 @@
     "docs": "",
     "features": [
         "Battery Charging",
-        "Breadboard Friendly",
+        "Dual-core",
+        "External Flash",
         "Feather",
+        "JST-SH",
         "RGB LED",
-        "SPI Flash",
-        "STEMMA QT/QWIIC",
         "USB-C"
     ],
     "images": [

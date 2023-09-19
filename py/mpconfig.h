@@ -312,9 +312,11 @@
 #define MICROPY_PERSISTENT_CODE_LOAD (0)
 #endif
 
-// Whether to support saving of persistent code
+// Whether to support saving of persistent code, i.e. for mpy-cross to
+// generate .mpy files. Enabling this enables additional metadata on raw code
+// objects which is also required for sys.settrace.
 #ifndef MICROPY_PERSISTENT_CODE_SAVE
-#define MICROPY_PERSISTENT_CODE_SAVE (0)
+#define MICROPY_PERSISTENT_CODE_SAVE (MICROPY_PY_SYS_SETTRACE)
 #endif
 
 // Whether to support saving persistent code to a file via mp_raw_code_save_file
@@ -614,6 +616,11 @@
 // Whether the garbage-collected heap can be split over multiple memory areas.
 #ifndef MICROPY_GC_SPLIT_HEAP
 #define MICROPY_GC_SPLIT_HEAP (0)
+#endif
+
+// Whether regions should be added/removed from the split heap as needed.
+#ifndef MICROPY_GC_SPLIT_HEAP_AUTO
+#define MICROPY_GC_SPLIT_HEAP_AUTO (0)
 #endif
 
 // Hook to run code during time consuming garbage collector operations
@@ -1485,9 +1492,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_ERRNO_ERRORCODE (1)
 #endif
 
-// Whether to provide "select" module (baremetal implementation)
+// Whether to provide "select" module
 #ifndef MICROPY_PY_SELECT
 #define MICROPY_PY_SELECT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to enable POSIX optimisations in the "select" module (requires system poll)
+#ifndef MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
+#define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (0)
 #endif
 
 // Whether to enable the select() function in the "select" module (baremetal
@@ -1541,8 +1553,8 @@ typedef double mp_float_t;
 
 // Extended modules
 
-#ifndef MICROPY_PY_UASYNCIO
-#define MICROPY_PY_UASYNCIO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#ifndef MICROPY_PY_ASYNCIO
+#define MICROPY_PY_ASYNCIO (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 #ifndef MICROPY_PY_UCTYPES
@@ -1555,8 +1567,14 @@ typedef double mp_float_t;
 #define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
 #endif
 
-#ifndef MICROPY_PY_ZLIB
-#define MICROPY_PY_ZLIB (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+// Whether to provide "deflate" module (decompression-only by default)
+#ifndef MICROPY_PY_DEFLATE
+#define MICROPY_PY_DEFLATE (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
+
+// Whether to provide compression support in "deflate" module
+#ifndef MICROPY_PY_DEFLATE_COMPRESS
+#define MICROPY_PY_DEFLATE_COMPRESS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_FULL_FEATURES)
 #endif
 
 #ifndef MICROPY_PY_JSON
@@ -1633,7 +1651,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_BINASCII (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Depends on MICROPY_PY_ZLIB
+// Depends on MICROPY_PY_DEFLATE
 #ifndef MICROPY_PY_BINASCII_CRC32
 #define MICROPY_PY_BINASCII_CRC32 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
@@ -1700,7 +1718,7 @@ typedef double mp_float_t;
 
 // Whether to add finaliser code to ssl objects
 #ifndef MICROPY_PY_SSL_FINALISER
-#define MICROPY_PY_SSL_FINALISER (0)
+#define MICROPY_PY_SSL_FINALISER (MICROPY_ENABLE_FINALISER)
 #endif
 
 #ifndef MICROPY_PY_WEBSOCKET
@@ -1718,6 +1736,11 @@ typedef double mp_float_t;
 // Whether to provide the low-level "_onewire" module
 #ifndef MICROPY_PY_ONEWIRE
 #define MICROPY_PY_ONEWIRE (0)
+#endif
+
+// Whether to provide the "platform" module
+#ifndef MICROPY_PY_PLATFORM
+#define MICROPY_PY_PLATFORM (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
 /*****************************************************************************/
@@ -1880,6 +1903,16 @@ typedef double mp_float_t;
 #define MP_PLAT_FREE_EXEC(ptr, size) m_del(byte, ptr, size)
 #endif
 
+// Allocating new heap area at runtime requires port to be able to allocate from system heap
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+#ifndef MP_PLAT_ALLOC_HEAP
+#define MP_PLAT_ALLOC_HEAP(size) malloc(size)
+#endif
+#ifndef MP_PLAT_FREE_HEAP
+#define MP_PLAT_FREE_HEAP(ptr) free(ptr)
+#endif
+#endif
+
 // This macro is used to do all output (except when MICROPY_PY_IO is defined)
 #ifndef MP_PLAT_PRINT_STRN
 #define MP_PLAT_PRINT_STRN(str, len) mp_hal_stdout_tx_strn_cooked(str, len)
@@ -1980,16 +2013,6 @@ typedef double mp_float_t;
 #else
 #undef MP_WARN_CAT
 #define MP_WARN_CAT(x) (NULL)
-#endif
-
-// Feature dependency check.
-#if MICROPY_PY_SYS_SETTRACE
-#if !MICROPY_PERSISTENT_CODE_SAVE
-#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_PERSISTENT_CODE_SAVE to be enabled"
-#endif
-#if MICROPY_COMP_CONST
-#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_COMP_CONST to be disabled"
-#endif
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

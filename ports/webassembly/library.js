@@ -27,7 +27,7 @@
 mergeInto(LibraryManager.library, {
     mp_js_write: function(ptr, len) {
         const buffer = HEAPU8.subarray(ptr, ptr + len)
-        if (typeof window === 'undefined') {
+        if (ENVIRONMENT_IS_NODE) {
             process.stdout.write(buffer);
         } else {
             const printEvent = new CustomEvent('micropython-print', { detail: buffer });
@@ -40,7 +40,7 @@ mergeInto(LibraryManager.library, {
     },
 
     mp_js_hook: function() {
-        if (typeof window === 'undefined') {
+        if (ENVIRONMENT_IS_NODE) {
             var mp_interrupt_char = Module.ccall('mp_hal_get_interrupt_char', 'number', ['number'], ['null']);
             var fs = require('fs');
 

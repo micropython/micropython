@@ -21,11 +21,11 @@ NATMOD_EXAMPLE_DIR = "../examples/natmod/"
 # Supported tests and their corresponding mpy module
 TEST_MAPPINGS = {
     "btree": "btree/btree_$(ARCH).mpy",
+    "deflate": "deflate/deflate_$(ARCH).mpy",
     "framebuf": "framebuf/framebuf_$(ARCH).mpy",
     "heapq": "heapq/heapq_$(ARCH).mpy",
     "random": "random/random_$(ARCH).mpy",
     "re": "re/re_$(ARCH).mpy",
-    "zlib": "zlib/zlib_$(ARCH).mpy",
 }
 
 # Code to allow a target MicroPython to import an .mpy from RAM

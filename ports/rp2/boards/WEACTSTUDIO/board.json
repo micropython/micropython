@@ -4,8 +4,8 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly",
-        "SPI Flash",
+        "Dual-core",
+        "External Flash",
         "USB-C"
     ],
     "images": [
@@ -15,9 +15,9 @@
     "product": "WeAct Studio RP2040",
     "url": "https://github.com/WeActTC/WeActStudio.RP2040CoreBoard",
     "variants": {
-        "flash_2mb": "2 MiB Flash",
-        "flash_4mb": "4 MiB Flash",
-        "flash_8mb": "8 MiB Flash"
+        "FLASH_2MB": "2 MiB Flash",
+        "FLASH_4MB": "4 MiB Flash",
+        "FLASH_8MB": "8 MiB Flash"
     },
     "vendor": "WeAct"
 }

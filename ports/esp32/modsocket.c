@@ -46,7 +46,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
-#include "mdns.h"
 #include "modnetwork.h"
 
 #include "lwip/sockets.h"
@@ -58,6 +57,10 @@
 #define SOCKET_POLL_US (100000)
 #define MDNS_QUERY_TIMEOUT_MS (5000)
 #define MDNS_LOCAL_SUFFIX ".local"
+
+#ifndef NO_QSTR
+#include "mdns.h"
+#endif
 
 enum {
     SOCKET_STATE_NEW,
@@ -164,11 +167,7 @@ static int _socket_getaddrinfo3(const char *nodename, const char *servname,
         memcpy(nodename_no_local, nodename, nodename_len - local_len);
         nodename_no_local[nodename_len - local_len] = '\0';
 
-        #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-        struct ip4_addr addr = {0};
-        #else
         esp_ip4_addr_t addr = {0};
-        #endif
 
         esp_err_t err = mdns_query_a(nodename_no_local, MDNS_QUERY_TIMEOUT_MS, &addr);
         if (err != ESP_OK) {
@@ -387,9 +386,22 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
 
     switch (opt) {
         // level: SOL_SOCKET
-        case SO_REUSEADDR: {
+        case SO_REUSEADDR:
+        case SO_BROADCAST: {
             int val = mp_obj_get_int(args[3]);
             int ret = lwip_setsockopt(self->fd, SOL_SOCKET, opt, &val, sizeof(int));
+            if (ret != 0) {
+                mp_raise_OSError(errno);
+            }
+            break;
+        }
+
+        case SO_BINDTODEVICE: {
+            size_t len;
+            const char *val = mp_obj_str_get_data(args[3], &len);
+            char ifname[NETIF_NAMESIZE] = {0};
+            memcpy(&ifname, val, len);
+            int ret = lwip_setsockopt(self->fd, SOL_SOCKET, opt, &ifname, NETIF_NAMESIZE);
             if (ret != 0) {
                 mp_raise_OSError(errno);
             }
@@ -836,7 +848,7 @@ STATIC mp_obj_t esp_socket_initialize() {
     static int initialized = 0;
     if (!initialized) {
         ESP_LOGI("modsocket", "Initializing");
-        tcpip_adapter_init();
+        esp_netif_init();
         initialized = 1;
     }
     return mp_const_none;
@@ -859,6 +871,8 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(IPPROTO_IP) },
     { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(SOL_SOCKET) },
     { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SO_REUSEADDR) },
+    { MP_ROM_QSTR(MP_QSTR_SO_BROADCAST), MP_ROM_INT(SO_BROADCAST) },
+    { MP_ROM_QSTR(MP_QSTR_SO_BINDTODEVICE), MP_ROM_INT(SO_BINDTODEVICE) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
 };
 

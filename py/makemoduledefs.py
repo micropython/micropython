@@ -106,10 +106,13 @@ def generate_module_delegations(delegations):
     if not delegations:
         return
 
-    print("\n#define MICROPY_MODULE_DELEGATIONS \\")
+    print()
+    for obj_module, fun_name in delegations:
+        print("extern void {}(mp_obj_t self_in, qstr attr, mp_obj_t *dest);".format(fun_name))
+    print("#define MICROPY_MODULE_DELEGATIONS \\")
     for obj_module, fun_name in delegations:
         print(
-            "    {{ MP_ROM_PTR(&{obj_module}), {fun_name} }},".format(
+            "    {{ MP_ROM_PTR(&{obj_module}), {fun_name} }}, \\".format(
                 obj_module=obj_module, fun_name=fun_name
             )
         )

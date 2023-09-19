@@ -17,6 +17,10 @@ def check_bootsec():
 
 def fs_corrupted():
     import time
+    import micropython
+
+    # Allow this loop to be stopped via Ctrl-C.
+    micropython.kbd_intr(3)
 
     while 1:
         print(
@@ -33,8 +37,12 @@ by firmware programming).
 def setup():
     check_bootsec()
     print("Performing initial setup")
-    os.VfsLfs2.mkfs(bdev)
-    vfs = os.VfsLfs2(bdev)
+    if bdev.info()[4] == "vfs":
+        os.VfsLfs2.mkfs(bdev)
+        vfs = os.VfsLfs2(bdev)
+    elif bdev.info()[4] == "ffat":
+        os.VfsFat.mkfs(bdev)
+        vfs = os.VfsFat(bdev)
     os.mount(vfs, "/")
     with open("boot.py", "w") as f:
         f.write(

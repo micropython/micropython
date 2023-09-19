@@ -7,6 +7,9 @@
 #define MICROPY_HW_I2C0_SCL                 (9)
 #define MICROPY_HW_I2C0_SDA                 (8)
 
+#define MICROPY_HW_I2C1_SCL                 (15)
+#define MICROPY_HW_I2C1_SDA                 (16)
+
 #define MICROPY_HW_SPI1_MOSI                (35)
 #define MICROPY_HW_SPI1_MISO                (37)
 #define MICROPY_HW_SPI1_SCK                 (36)

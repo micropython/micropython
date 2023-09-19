@@ -4,17 +4,17 @@
     ],
     "docs": "",
     "features": [
-        "Battery Charging",
         "BLE",
+        "Battery Charging",
+        "External Flash",
+        "External RAM",
         "RGB LED",
-        "SPIRAM",
         "USB-C",
         "WiFi"
     ],
     "features_non_filterable": [
         "TinyPICO Compatible"
     ],
-    "id": "tinypico",
     "images": [
         "tinypico-v2-both.jpg"
     ],
@@ -23,7 +23,7 @@
     "thumbnail": "",
     "url": "https://www.tinypico.com/",
     "variants": {
-        "idf3": "Compiled with IDF 3.x"
+        "IDF3": "Compiled with IDF 3.x"
     },
     "vendor": "Unexpected Maker"
 }

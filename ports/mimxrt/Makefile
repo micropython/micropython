@@ -216,6 +216,7 @@ SRC_C += \
 	pendsv.c \
 	pin.c \
 	sdcard.c \
+	sdio.c \
 	systick.c \
 	ticks.c \
 	tusb_port.c \
@@ -261,6 +262,14 @@ ifeq ($(MICROPY_HW_BOARD_FLASH_FILES),1)
     SRC_HAL_C += $(BOARD_DIR)/$(FLEXSPI_FLASH_TYPE)_config.c
 else
     SRC_HAL_C += hal/$(FLEXSPI_FLASH_TYPE)_config.c
+endif
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+SRC_C += mpbthciport.c
+endif # MICROPY_PY_BLUETOOTH
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+SRC_C += mpnimbleport.c
 endif
 
 # Math library source files
@@ -332,7 +341,7 @@ CFLAGS += \
 	-D__STARTUP_INITIALIZE_RAMFUNCTION \
 	-DBOARD_$(BOARD) \
 	-DBOARD_FLASH_SIZE=$(MICROPY_HW_FLASH_SIZE) \
-	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT \
+	-DCFG_TUSB_MCU=OPT_MCU_MIMXRT1XXX \
 	-DCLOCK_CONFIG_H='<boards/$(MCU_SERIES)_clock_config.h>' \
 	-DCPU_$(MCU_SERIES)$(MCU_CORE) \
 	-DCPU_$(MCU_VARIANT) \
@@ -397,6 +406,10 @@ CFLAGS += \
 	-DFSL_FEATURE_PHYKSZ8081_USE_RMII50M_MODE=1
 endif
 
+ifdef MICROPY_HW_FLASH_CLK
+	CFLAGS += -DMICROPY_HW_FLASH_CLK=$(MICROPY_HW_FLASH_CLK)
+endif
+
 CFLAGS += $(CFLAGS_EXTRA)
 
 MPY_CROSS_FLAGS += -march=armv7m
@@ -444,6 +457,7 @@ OBJ += $(PY_O)
 OBJ += $(LIBM_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SS:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_TINYUSB_C:.c=.o))

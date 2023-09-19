@@ -32,19 +32,9 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_mac.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
-
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/rtc.h"
-#include "esp32/clk.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/rtc.h"
-#include "esp32s2/clk.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rtc.h"
-#include "esp32s3/clk.h"
-#endif
 
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -79,7 +69,7 @@ int esp_clk_cpu_freq(void);
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        return mp_obj_new_int(esp_clk_cpu_freq());
+        return mp_obj_new_int(esp_rom_get_cpu_ticks_per_us() * 1000000);
     } else {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
@@ -110,7 +100,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (ret != ESP_OK) {
             mp_raise_ValueError(NULL);
         }
-        while (esp_clk_cpu_freq() != freq * 1000000) {
+        while (esp_rom_get_cpu_ticks_per_us() != freq) {
             vTaskDelay(1);
         }
         return mp_const_none;
@@ -217,6 +207,13 @@ STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0,  machine_reset_cause);
 
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
+    for (;;) {
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
+
 void machine_init(void) {
     is_soft_reset = 0;
 }
@@ -286,6 +283,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_lightsleep), MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) },

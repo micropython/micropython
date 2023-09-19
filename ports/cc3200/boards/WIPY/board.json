@@ -5,13 +5,11 @@
     "docs": "https://docs.pycom.io/datasheets/development/wipy3/",
     "features": [
         "BLE",
-        "Breadboard Friendly",
-        "MicroSD",
+        "External Flash",
         "RGB LED",
-        "SPI Flash",
-        "WiFi"
+        "WiFi",
+        "microSD"
     ],
-    "id": "wipy",
     "images": [
         "wipy.jpg"
     ],

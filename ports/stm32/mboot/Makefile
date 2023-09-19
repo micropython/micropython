@@ -105,7 +105,7 @@ LIB_SRC_C += \
 	lib/oofatfs/ffunicode.c \
 	lib/uzlib/adler32.c \
 	lib/uzlib/crc32.c \
-	lib/uzlib/tinfgzip.c \
+	lib/uzlib/header.c \
 	lib/uzlib/tinflate.c
 
 SRC_C += \
@@ -152,12 +152,14 @@ endif
 
 $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal.c \
 	hal_cortex.c \
 	hal_dma.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_pcd.c \
 	hal_pcd_ex.c \
+	hal_pwr_ex.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
 	ll_usb.c \

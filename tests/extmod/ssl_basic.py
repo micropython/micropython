@@ -33,7 +33,7 @@ except OSError as er:
 ss = ssl.wrap_socket(TestSocket(), server_side=1, do_handshake=0)
 
 # print
-print(repr(ss)[:12])
+print(ss)
 
 # setblocking() propagates call to the underlying stream object
 ss.setblocking(False)

@@ -4,8 +4,6 @@
 CONFIG_IDF_FIRMWARE_CHIP_ID=0x0000
 
 # Compiler options: use -O2 and disable assertions to improve performance
-# (CONFIG_COMPILER_OPTIMIZATION_LEVEL_RELEASE is for IDF 4.0.2)
-CONFIG_COMPILER_OPTIMIZATION_LEVEL_RELEASE=y
 CONFIG_COMPILER_OPTIMIZATION_PERF=y
 CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_DISABLE=y
 
@@ -15,16 +13,21 @@ CONFIG_APP_EXCLUDE_PROJECT_NAME_VAR=y
 
 # Bootloader config
 CONFIG_BOOTLOADER_LOG_LEVEL_WARN=y
+CONFIG_BOOTLOADER_SKIP_VALIDATE_IN_DEEP_SLEEP=y
 
 # Change default log level to "ERROR" (instead of "INFO")
 CONFIG_LOG_DEFAULT_LEVEL_INFO=n
 CONFIG_LOG_DEFAULT_LEVEL_ERROR=y
 CONFIG_LOG_DEFAULT_LEVEL=1
 
-# ESP32-specific
+# Main XTAL Config
+# Only on: ESP32
+CONFIG_XTAL_FREQ_AUTO=y
+
+# ESP System Settings
+# Only on: ESP32, ESP32S3
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=n
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=n
-CONFIG_ESP32_XTAL_FREQ_AUTO=y
 
 # Power Management
 CONFIG_PM_ENABLE=y
@@ -44,23 +47,43 @@ CONFIG_LWIP_PPP_PAP_SUPPORT=y
 CONFIG_LWIP_PPP_CHAP_SUPPORT=y
 
 # SSL
-# Use 4kiB output buffer instead of default 16kiB (because IDF heap is fragmented in 4.0)
+# Use 4kiB output buffer instead of default 16kiB
 CONFIG_MBEDTLS_ASYMMETRIC_CONTENT_LEN=y
 
+# Allow mbedTLS to allocate from PSRAM or internal memory
+#
+# (The ESP-IDF default is internal-only, partly for physical security to prevent
+# possible information leakage from unencrypted PSRAM contents on the original
+# ESP32 - no PSRAM encryption on that chip. MicroPython doesn't support flash
+# encryption and is already storing the Python heap in PSRAM so this isn't a
+# significant factor in overall physical security.)
+CONFIG_MBEDTLS_DEFAULT_MEM_ALLOC=y
+
 # ULP coprocessor support
-CONFIG_ESP32_ULP_COPROC_ENABLED=y
-CONFIG_ESP32_ULP_COPROC_RESERVE_MEM=2040
+# Only on: ESP32, ESP32S2, ESP32S3
+CONFIG_ULP_COPROC_ENABLED=y
+CONFIG_ULP_COPROC_TYPE_FSM=y
+CONFIG_ULP_COPROC_RESERVE_MEM=2040
 
 # For cmake build
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_PARTITION_TABLE_CUSTOM=y
-CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-4MiB.csv"
 
 # To reduce iRAM usage
 CONFIG_ESP32_WIFI_IRAM_OPT=n
 CONFIG_ESP32_WIFI_RX_IRAM_OPT=n
 
-# ADC calibration
+# Legacy ADC Calibration Configuration
+# Only on: ESP32
 CONFIG_ADC_CAL_EFUSE_TP_ENABLE=y
 CONFIG_ADC_CAL_EFUSE_VREF_ENABLE=y
 CONFIG_ADC_CAL_LUT_ENABLE=y
+
+# UART Configuration
+CONFIG_UART_ISR_IN_IRAM=y
+
+# IDF 5 deprecated
+CONFIG_ADC_SUPPRESS_DEPRECATE_WARN=y
+CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
+CONFIG_I2S_SUPPRESS_DEPRECATE_WARN=y

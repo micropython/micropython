@@ -4,17 +4,25 @@ ifdef BOARD_DIR
 # the path as the board name.
 BOARD ?= $(notdir $(BOARD_DIR:/=))
 else
-# If not given on the command line, then default to GENERIC.
-BOARD ?= GENERIC
+# If not given on the command line, then default to ESP8266_GENERIC.
+BOARD ?= ESP8266_GENERIC
 BOARD_DIR ?= boards/$(BOARD)
 endif
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
+ifeq ($(findstring boards/GENERIC,$(BOARD_DIR)),boards/GENERIC)
+$(warning The GENERIC* boards have been renamed to ESP8266_GENERIC)
+endif
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
-# If the build directory is not given, make it reflect the board name.
+# If the build directory is not given, make it reflect the board name (and
+# optionally the board variant).
+ifneq ($(BOARD_VARIANT),)
+BUILD ?= build-$(BOARD)-$(BOARD_VARIANT)
+else
 BUILD ?= build-$(BOARD)
+endif
 
 include ../../py/mkenv.mk
 
@@ -40,7 +48,7 @@ include $(TOP)/extmod/extmod.mk
 
 GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx
 
-FWBIN = $(BUILD)/firmware-combined.bin
+FWBIN = $(BUILD)/firmware.bin
 PORT ?= /dev/ttyACM0
 BAUD ?= 115200
 FLASH_MODE ?= qio
@@ -202,7 +210,7 @@ FROZEN_EXTRA_DEPS = $(CONFVARS_FILE)
 
 .PHONY: deploy
 
-deploy: $(BUILD)/firmware-combined.bin
+deploy: $(FWBIN)
 	$(ECHO) "Writing $< to the board"
 	$(Q)esptool.py --port $(PORT) --baud $(BAUD) write_flash --verify --flash_size=$(FLASH_SIZE) --flash_mode=$(FLASH_MODE) 0 $<
 
@@ -213,19 +221,25 @@ erase:
 reset:
 	echo -e "\r\nimport machine; machine.reset()\r\n" >$(PORT)
 
+ifeq ($(BOARD_VARIANT),OTA)
+$(FWBIN): $(BUILD)/firmware.elf
+	$(ECHO) "Create $@"
+	$(Q)esptool.py elf2image $^
+	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $(BUILD)/firmware-ota.bin
+
+	$(Q)cat $(YAOTA8266)/yaota8266.bin $(BUILD)/firmware-ota.bin > $@
+	$(Q)$(PYTHON) $(YAOTA8266)/ota-client/ota_client.py sign $@
+else
 $(FWBIN): $(BUILD)/firmware.elf
 	$(ECHO) "Create $@"
 	$(Q)esptool.py elf2image $^
 	$(Q)$(PYTHON) makeimg.py $(BUILD)/firmware.elf-0x00000.bin $(BUILD)/firmware.elf-0x[0-5][1-f]000.bin $@
+endif
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
 	$(Q)$(SIZE) $@
-
-ota:
-	rm -f $(BUILD)/firmware.elf $(BUILD)/firmware.elf*.bin
-	$(MAKE) LD_FILES=boards/esp8266_ota.ld FWBIN=$(BUILD)/firmware-ota.bin
 
 include $(TOP)/py/mkrules.mk
 

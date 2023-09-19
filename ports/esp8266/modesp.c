@@ -201,8 +201,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
 STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    esp_apa102_write(mp_obj_get_pin_obj(clockPin)->phys_port,
-        mp_obj_get_pin_obj(dataPin)->phys_port,
+    esp_apa102_write(mp_obj_get_pin(clockPin),
+        mp_obj_get_pin(dataPin),
         (uint8_t *)bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }

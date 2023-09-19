@@ -75,7 +75,7 @@ STATIC mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_MBEDTLS
 
-#if MBEDTLS_VERSION_NUMBER < 0x02070000
+#if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
 #define mbedtls_sha256_starts_ret mbedtls_sha256_starts
 #define mbedtls_sha256_update_ret mbedtls_sha256_update
 #define mbedtls_sha256_finish_ret mbedtls_sha256_finish
@@ -203,7 +203,7 @@ STATIC mp_obj_t hashlib_sha1_digest(mp_obj_t self_in) {
 
 #if MICROPY_SSL_MBEDTLS
 
-#if MBEDTLS_VERSION_NUMBER < 0x02070000
+#if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
 #define mbedtls_sha1_starts_ret mbedtls_sha1_starts
 #define mbedtls_sha1_update_ret mbedtls_sha1_update
 #define mbedtls_sha1_finish_ret mbedtls_sha1_finish

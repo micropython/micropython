@@ -43,6 +43,8 @@
 #define MICROPY_PLATFORM_ARCH   "x86"
 #elif defined(__xtensa__)
 #define MICROPY_PLATFORM_ARCH   "xtensa"
+#elif defined(__riscv)
+#define MICROPY_PLATFORM_ARCH   "riscv"
 #else
 #define MICROPY_PLATFORM_ARCH   ""
 #endif

@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
     #endif
     #endif
 
-    #if MICROPY_PY_NETWORK_CYW43
+    #if MICROPY_PY_NETWORK_CYW43 || MICROPY_PY_BLUETOOTH_CYW43
     {
         cyw43_init(&cyw43_state);
         cyw43_irq_init();

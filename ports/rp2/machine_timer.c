@@ -57,7 +57,12 @@ STATIC int64_t alarm_callback(alarm_id_t id, void *user_data) {
 STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     qstr mode = self->mode == TIMER_MODE_ONE_SHOT ? MP_QSTR_ONE_SHOT : MP_QSTR_PERIODIC;
-    mp_printf(print, "Timer(mode=%q, period=%u, tick_hz=1000000)", mode, self->delta_us);
+    mp_printf(print, "Timer(mode=%q, tick_hz=1000000, period=", mode);
+    if (self->delta_us <= 0xffffffff) {
+        mp_printf(print, "%u)", (uint32_t)self->delta_us);
+    } else {
+        mp_printf(print, "%u000)", (uint32_t)(self->delta_us / 1000));
+    }
 }
 
 STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

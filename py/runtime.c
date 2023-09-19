@@ -69,11 +69,10 @@ void mp_init(void) {
     // no pending exceptions to start with
     MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
     #if MICROPY_ENABLE_SCHEDULER
+    // no pending callbacks to start with
+    MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
     #if MICROPY_SCHEDULER_STATIC_NODES
-    if (MP_STATE_VM(sched_head) == NULL) {
-        // no pending callbacks to start with
-        MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
-    } else {
+    if (MP_STATE_VM(sched_head) != NULL) {
         // pending callbacks are on the list, eg from before a soft reset
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
@@ -196,6 +195,11 @@ void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in) {
     nlr_jump_callback_node_globals_locals_t *ctx = ctx_in;
     mp_globals_set(ctx->globals);
     mp_locals_set(ctx->locals);
+}
+
+void mp_call_function_1_from_nlr_jump_callback(void *ctx_in) {
+    nlr_jump_callback_node_call_function_1_t *ctx = ctx_in;
+    ctx->func(ctx->arg);
 }
 
 mp_obj_t MICROPY_WRAP_MP_LOAD_NAME(mp_load_name)(qstr qst) {

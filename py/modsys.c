@@ -336,7 +336,7 @@ MP_REGISTER_ROOT_POINTER(mp_obj_t sys_exitfunc);
 #if MICROPY_PY_SYS_ATTR_DELEGATION
 // Contains mutable sys attributes.
 MP_REGISTER_ROOT_POINTER(mp_obj_t sys_mutable[MP_SYS_MUTABLE_NUM]);
-MP_REGISTER_MODULE_DELEGATION(mp_module_sys, &mp_module_sys_attr);
+MP_REGISTER_MODULE_DELEGATION(mp_module_sys, mp_module_sys_attr);
 #endif
 
 #endif // MICROPY_PY_SYS

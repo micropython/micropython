@@ -32,9 +32,14 @@
 /*****************************************************************************/
 // Feature settings with defaults
 
-// Whether to include the stm module, with peripheral register constants
+// Whether to include the stm module
 #ifndef MICROPY_PY_STM
 #define MICROPY_PY_STM (1)
+#endif
+
+// Whether to include named register constants in the stm module
+#ifndef MICROPY_PY_STM_CONST
+#define MICROPY_PY_STM_CONST (MICROPY_PY_STM)
 #endif
 
 // Whether to include the pyb module
@@ -339,6 +344,16 @@
 #define MICROPY_HW_MAX_UART (5) // UART1-5 + LPUART1
 #define MICROPY_HW_MAX_LPUART (1)
 
+// Configuration for STM32H5 series
+#elif defined(STM32H5)
+
+#define MP_HAL_UNIQUE_ID_ADDRESS (mp_hal_unique_id_address)
+#define PYB_EXTI_NUM_VECTORS (58)
+#define MICROPY_HW_MAX_I2C (4)
+#define MICROPY_HW_MAX_TIMER (17)
+#define MICROPY_HW_MAX_UART (12)
+#define MICROPY_HW_MAX_LPUART (1)
+
 // Configuration for STM32H7A3/B3 series
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
     defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
@@ -461,7 +476,11 @@
 #define MICROPY_HW_RCC_HSI_STATE (RCC_HSI_OFF)
 #define MICROPY_HW_RCC_FLAG_HSxRDY (RCC_FLAG_HSERDY)
 #if MICROPY_HW_CLK_USE_BYPASS
+#if !defined(STM32WL)
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_BYPASS)
+#else
+#define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_BYPASS_PWR)
+#endif
 #else
 #define MICROPY_HW_RCC_HSE_STATE (RCC_HSE_ON)
 #endif
@@ -574,7 +593,9 @@
 #endif
 
 // Whether the USB peripheral is device-only, or multiple OTG
-#if defined(STM32G4) || defined(STM32L0) || defined(STM32L432xx) || defined(STM32WB)
+// For STM32G0 and STM32H5 the USB peripheral supports device and host mode,
+// but otherwise acts like a non-multi-OTG peripheral.
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L1) || defined(STM32L432xx) || defined(STM32WB)
 #define MICROPY_HW_USB_IS_MULTI_OTG (0)
 #else
 #define MICROPY_HW_USB_IS_MULTI_OTG (1)

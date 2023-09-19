@@ -67,6 +67,8 @@ used during the build process and is not part of the compiled source code.
             /hal (BSD-3-clause)
             /simplelink (BSD-3-clause)
             /FreeRTOS (GPL-2.0 with FreeRTOS exception)
+        /esp32
+            /ppp_set_auth.* (Apache-2.0)
         /stm32
             /usbd*.c (MCD-ST Liberty SW License Agreement V2)
             /stm32_it.* (MIT + BSD-3-clause)

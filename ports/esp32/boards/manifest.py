@@ -1,5 +1,5 @@
 freeze("$(PORT_DIR)/modules")
-include("$(MPY_DIR)/extmod/uasyncio")
+include("$(MPY_DIR)/extmod/asyncio")
 
 package("ST7735", base_path="$(PORT_DIR)/libraries")
 package("ILI9341", base_path="$(PORT_DIR)/libraries")

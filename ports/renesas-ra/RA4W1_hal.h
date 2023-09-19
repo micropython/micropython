@@ -31,8 +31,11 @@
 // #include "hal_data.h"
 #include "bsp_api.h"
 #include "common_data.h"
+#if defined(USE_DBG_PRINT)
+#include RA_CFG_H
+#endif
 
-#define SCI_CH      0
+#define SCI_CH      DEFAULT_DBG_CH
 #define SCI_BAUD    115200
 #define UART_CH     SCI_CH
 #define UART_TxStr  sci_tx_str
@@ -56,8 +59,10 @@
 
 #include "ra_config.h"
 #include "ra_adc.h"
+#include "ra_dac.h"
 #include "ra_flash.h"
 #include "ra_gpio.h"
+#include "ra_gpt.h"
 #include "ra_i2c.h"
 #include "ra_icu.h"
 #include "ra_init.h"

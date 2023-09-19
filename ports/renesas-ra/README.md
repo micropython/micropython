@@ -6,9 +6,9 @@ Currently supported features are:
 - Filesystem on the internal flash using FatFs.
 - `time` module with sleep, time, and ticks functions.
 - `os` module with VFS support.
-- `machine` module with the following classes: `Pin`, `ADC`, `I2C`, `SPI`,
-   `SoftI2C`, `SoftSPI`, `UART`, `RTC`
-- sdcard driver if frozen driver is installed.
+- `machine` module with the following classes: `Pin`, `ADC`, `PWM`, `DAC`, `I2C`,
+  `SPI`, `SoftI2C`, `SoftSPI`, `UART`, `RTC`, `SDCard`.
+- `sdcard` module for MCUs without native `machine.SDCard` support.
 
 Currently supported board product names are:
 
@@ -39,6 +39,11 @@ utilities.  The default compiler is `arm-none-eabi-gcc`, which is available for
 Linux, Mac and Windows hosts via https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads.
 The compiler can be changed using the `CROSS_COMPILE` variable
 when invoking `make`.
+
+* Protocol buffer compiler
+Building for the `ARDUINO_PORTENTA_C33` board will build the `esp_hosted` driver, that depends
+on the Protocol Buffer Compiler being installed. On Debian/Ubuntu, this can be installed with
+`sudo apt-get install protobuf-compiler`.
 
 * Obtain submodules
 First the submodules must be obtained using:

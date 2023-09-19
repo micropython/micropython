@@ -106,14 +106,9 @@
 #define MICROPY_PY_CRYPTOLIB           (1)
 #endif
 
-// Use the posix implementation of the "select" module (unless the variant
-// specifically asks for the MicroPython version).
-#ifndef MICROPY_PY_SELECT
-#define MICROPY_PY_SELECT              (0)
-#endif
-#ifndef MICROPY_PY_SELECT_POSIX
-#define MICROPY_PY_SELECT_POSIX        (!MICROPY_PY_SELECT)
-#endif
+// The "select" module is enabled by default, but disable select.select().
+#define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (1)
+#define MICROPY_PY_SELECT_SELECT       (0)
 
 // Enable the "websocket" module.
 #define MICROPY_PY_WEBSOCKET           (1)
