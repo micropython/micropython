@@ -1,4 +1,10 @@
-import binascii, network, time
+import binascii, time
+
+try:
+    import network
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 channel_default = 9
 channel_new = 5

@@ -1,9 +1,18 @@
 """
 ADCBlock test for the PSoC6 port.
 """
+import os
 from machine import Pin, ADCBlock
 
-pin = Pin("P10_3")
+# Allocate pin based on board
+machine = os.uname().machine
+if "CY8CPROTO-062-4343W" in machine:
+    pin_name = "P10_3"
+elif "CY8CPROTO-063-BLE" in machine:
+    print("SKIP")
+    raise SystemExit
+
+pin = Pin(pin_name)
 
 # Negative tests
 try:
