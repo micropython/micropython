@@ -129,10 +129,6 @@ def get_devices_port(board=None, devs_yml=None):
     return port_list
 
 
-if __name__ == "__main__":
-    pass
-
-
 def parser():
     def main_parser_func(args):
         parser.print_help()
