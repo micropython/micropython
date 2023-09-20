@@ -33,6 +33,7 @@ BSP_DONT_REMOVE const fsp_vector_t g_vector_table[BSP_ICU_VECTOR_MAX_ENTRIES] BS
     [26] = spi_txi_isr,         /* SPI1 TXI (Transmit buffer empty) */
     [27] = spi_tei_isr,         /* SPI1 TEI (Transmission complete event) */
     [28] = spi_eri_isr,         /* SPI1 ERI (Error) */
+    [29] = r_icu_isr,         /* ICU IRQ2 (External pin interrupt 2) */
 };
 const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] =
 {
@@ -65,5 +66,6 @@ const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENT
     [26] = BSP_PRV_IELS_ENUM(EVENT_SPI1_TXI),         /* SPI1 TXI (Transmit buffer empty) */
     [27] = BSP_PRV_IELS_ENUM(EVENT_SPI1_TEI),         /* SPI1 TEI (Transmission complete event) */
     [28] = BSP_PRV_IELS_ENUM(EVENT_SPI1_ERI),         /* SPI1 ERI (Error) */
+    [29] = BSP_PRV_IELS_ENUM(EVENT_ICU_IRQ2),         /* ICU IRQ2 (External pin interrupt 2) */
 };
 #endif
