@@ -994,21 +994,6 @@ STATIC bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     #endif
     return false;
 }
-
-STATIC bool map_has_special_accessors(const mp_map_t *map) {
-    if (map == NULL) {
-        return false;
-    }
-    for (size_t i = 0; i < map->alloc; i++) {
-        if (mp_map_slot_is_filled(map, i)) {
-            const mp_map_elem_t *elem = &map->table[i];
-            if (check_for_special_accessors(elem->key, elem->value)) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 #endif
 
 STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -1370,7 +1355,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // Looked up native __init__ so defer to it
             dest[0] = MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj);
             dest[1] = self->obj;
-        // CIRCUITPY better support for properties
+            // CIRCUITPY better support for properties
         } else {
             mp_obj_t member = dest[0];
             // changes to mp_obj_instance_load_attr may require changes
