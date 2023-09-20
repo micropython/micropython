@@ -1,7 +1,13 @@
+$(error not supposed to be used??)
+# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
+#
+# SPDX-License-Identifier: MIT
+
 include ../py/mkenv.mk
 
 # define main target
-PROG = mpy-cross
+
+PROG ?= mpy-cross
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
@@ -13,15 +19,21 @@ UNAME_S := $(shell uname -s)
 include $(TOP)/py/py.mk
 
 INC += -I.
-INC += -I$(BUILD)
 INC += -I$(TOP)
+INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith
-CFLAGS += $(INC) $(CWARN) -std=gnu99 $(COPT) $(CFLAGS_EXTRA)
+CWARN += -Wpointer-arith -Wuninitialized
+CFLAGS = $(INC) $(CWARN) -std=gnu99 $(CFLAGS_MOD) $(COPT) $(CFLAGS_EXTRA)
 CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
-CFLAGS += -DCIRCUITPY
+
+# Build a static executable.
+# Useful for Windows builds, etc., that must run on multiple operating system versions.
+ifdef STATIC_BUILD
+CFLAGS += -static -static-libgcc -static-libstdc++
+endif
+
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -43,10 +55,16 @@ else
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
-LDFLAGS += $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+LDFLAGS = $(LDFLAGS_MOD) $(LDFLAGS_ARCH) -lm $(LDFLAGS_EXTRA)
+
+ifdef STATIC_BUILD
+LDFLAGS += -static -static-libgcc -static-libstdc++
+endif
+
+CFLAGS += -DCIRCUITPY=1
 
 # source files
-SRC_C = \
+SRC_C += \
 	main.c \
 	gccollect.c \
 	shared/runtime/gchelper_generic.c \
@@ -54,10 +72,13 @@ SRC_C = \
 	supervisor/stub/stack.c \
 	supervisor/shared/translate/translate.c
 
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
+
+
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
-	SRC_C += ports/windows/fmode.c
+	SRC_C += fmode.c
 endif
 
 OBJ = $(PY_CORE_O)
