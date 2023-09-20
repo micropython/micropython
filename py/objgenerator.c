@@ -100,13 +100,13 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 #if MICROPY_PY_ASYNC_AWAIT
 MP_DEFINE_CONST_OBJ_TYPE(
-   mp_type_coro_wrap,
-   MP_QSTR_coroutine,
-   MP_TYPE_FLAG_BINDS_SELF,
-   GEN_WRAP_TYPE_ATTR
-   call, gen_wrap_call,
-   unary_op, mp_generic_unary_op
-   );
+    mp_type_coro_wrap,
+    MP_QSTR_coroutine,
+    MP_TYPE_FLAG_BINDS_SELF,
+    GEN_WRAP_TYPE_ATTR
+    call, gen_wrap_call,
+    unary_op, mp_generic_unary_op
+    );
 #endif
 
 /******************************************************************************/
@@ -189,13 +189,13 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 #if MICROPY_PY_ASYNC_AWAIT
 MP_DEFINE_CONST_OBJ_TYPE(
-   mp_type_native_coro_wrap,
-   MP_QSTR_coroutine,
-   MP_TYPE_FLAG_BINDS_SELF,
-   GEN_WRAP_TYPE_ATTR
-   call, native_gen_wrap_call,
-   unary_op, mp_generic_unary_op
-   );
+    mp_type_native_coro_wrap,
+    MP_QSTR_coroutine,
+    MP_TYPE_FLAG_BINDS_SELF,
+    GEN_WRAP_TYPE_ATTR
+    call, native_gen_wrap_call,
+    unary_op, mp_generic_unary_op
+    );
 #endif
 
 #endif // MICROPY_EMIT_NATIVE
@@ -454,3 +454,30 @@ MP_DEFINE_CONST_OBJ_TYPE(
     iter, gen_instance_iternext,
     locals_dict, &gen_instance_locals_dict
     );
+
+#if MICROPY_PY_ASYNC_AWAIT
+// CIRCUITPY
+// coroutine instance locals dict and type
+// same as generator, but with addition of __await()__.
+STATIC const mp_rom_map_elem_t coro_instance_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&gen_instance_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&gen_instance_send_obj) },
+    { MP_ROM_QSTR(MP_QSTR_throw), MP_ROM_PTR(&gen_instance_throw_obj) },
+    #if MICROPY_PY_GENERATOR_PEND_THROW
+    { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
+    #endif
+    { MP_ROM_QSTR(MP_QSTR___await__), MP_ROM_PTR(&coro_instance_await_obj) },
+};
+
+STATIC MP_DEFINE_CONST_DICT(coro_instance_locals_dict, coro_instance_locals_dict_table);
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_coro_instance,
+    MP_QSTR_coroutine,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    print, coro_instance_print,
+    unary_op, mp_generic_unary_op,
+    iter, gen_instance_iternext,
+    locals_dict, &coro_instance_locals_dict
+    );
+#endif
