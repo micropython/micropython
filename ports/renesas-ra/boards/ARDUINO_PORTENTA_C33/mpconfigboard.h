@@ -98,9 +98,10 @@ void PORTENTA_C33_board_enter_bootloader(void);
 // WiFi config.
 #define MICROPY_HW_WIFI_SPI_ID          (1)
 #define MICROPY_HW_WIFI_SPI_CS          (pin_P104)
-#define MICROPY_HW_WIFI_SPI_BAUDRATE    (30 * 1000 * 1000)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE    (25 * 1000 * 1000)
 #define MICROPY_HW_WIFI_DATAREADY       (pin_P803)
 #define MICROPY_HW_WIFI_HANDSHAKE       (pin_P806)
+#define MICROPY_HW_WIFI_IRQ_PIN         (MICROPY_HW_WIFI_DATAREADY)
 
 // ESP hosted control pins
 #define MICROPY_HW_ESP_HOSTED_RESET     (pin_P804)
