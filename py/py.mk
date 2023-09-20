@@ -81,8 +81,9 @@ CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -DULAB_HAS_USER_MODULE=
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
 ifeq ($(CIRCUITPY_ULAB_OPTIMIZE_SIZE),1)
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Os
-endif
-endif
+endif # CIRCUITPY_ULAB_OPTIMIZE_SIZE
+endif # CIRCUITPY_ULAB
+endif # USER_C_MODULES
 
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
