@@ -158,6 +158,15 @@ STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
     #endif
 }
 
+mp_obj_exception_t *mp_obj_exception_get_native(mp_obj_t self_in) {
+    assert(mp_obj_is_exception_instance(self_in));
+    if (mp_obj_is_native_exception_instance(self_in)) {
+        return MP_OBJ_TO_PTR(self_in);
+    } else {
+        return MP_OBJ_TO_PTR(((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0]);
+    }
+}
+
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_exception_t *o = MP_OBJ_TO_PTR(o_in);
     mp_print_kind_t k = kind & ~PRINT_EXC_SUBCLASS;
