@@ -1003,11 +1003,11 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
 #define mp_obj_new_exception_msg(exc_type, msg) mp_obj_new_exception(exc_type)
 #define mp_obj_new_exception_msg_varg(exc_type, ...) mp_obj_new_exception(exc_type)
 #else
-mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);  // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 #endif
 #ifdef va_start
-mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list arg); // same fmt restrictions as above
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list arg);  // same fmt restrictions as above
 #endif
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);
