@@ -28,6 +28,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "supervisor/linker.h" // CIRUCITPY: PLACE_IN_ITCM
+
 #include "py/runtime.h"
 #include "py/builtin.h"
 #include "py/objtype.h"

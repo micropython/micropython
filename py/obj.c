@@ -29,6 +29,8 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#include "supervisor/linker.h" // CIRUCITPY: PLACE_IN_TCM
+
 #include "shared/runtime/interrupt_char.h"
 #include "py/obj.h"
 #include "py/objtype.h"

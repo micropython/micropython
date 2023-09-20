@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "supervisor/linker.h" // CIRCUITPY: PLACE_IN_ITCM
+
 #include "py/gc.h"
 #include "py/runtime.h"
 
@@ -304,7 +306,7 @@ STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
 // topmost block on the stack and repeat with that one.
 // CIRCUITPY: We don't instrument these functions because they occur a lot during GC and
 #if MICROPY_GC_SPLIT_HEAP
-STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark_subtree)(mp_state_mem_area_t *area, size_t block)
+STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark_subtree)(mp_state_mem_area_t * area, size_t block)
 #else
 STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark_subtree)(size_t block)
 #endif
@@ -615,11 +617,11 @@ void gc_info(gc_info_t *info) {
 }
 
 bool gc_alloc_possible(void) {
-        #if MICROPY_GC_SPLIT_HEAP
-        return MP_STATE_MEM(gc_last_free_area) != 0;
-        #else
-        area = &MP_STATE_MEM(area) != 0;
-        #endif
+    #if MICROPY_GC_SPLIT_HEAP
+    return MP_STATE_MEM(gc_last_free_area) != 0;
+    #else
+    return MP_STATE_MEM(area).gc_pool_start != 0;
+    #endif
 }
 
 void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
@@ -774,7 +776,7 @@ found:
 
     #if CIRCUITPY_MEMORYMONITOR
     memorymonitor_track_allocation(end_block - start_block + 1);
-     #endif
+    #endif
 
     return ret_ptr;
 }

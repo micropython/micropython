@@ -28,6 +28,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "supervisor/linker.h" // CIRCUITPY: PLACE_IN_ITCM
+
 #include "py/mpstate.h"
 #include "py/qstr.h"
 #include "py/gc.h"

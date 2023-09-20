@@ -28,6 +28,8 @@
 #include <string.h>
 #include <assert.h>
 
+#include "supervisor/linker.h" // CIRUCITPY: PLACE_IN_ITCM
+
 #include "py/objtuple.h"
 #include "py/objfun.h"
 #include "py/runtime.h"
