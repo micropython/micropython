@@ -970,6 +970,8 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 #define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, binary_op) == mp_obj_str_binary_op))
 bool mp_obj_is_dict_or_ordereddict(mp_obj_t o);
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
+// type check is done on iter method to allow tuple, namedtuple, attrtuple
+#define mp_obj_is_tuple_compatible(o) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o), iter) == mp_obj_tuple_getiter)
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict);
 static inline mp_obj_t mp_obj_new_bool(mp_int_t x) {
