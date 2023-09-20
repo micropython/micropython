@@ -250,6 +250,25 @@ $(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
 
+# CIRCUITPY: for translations
+$(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
+	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
+
+# translations-*.c is generated as a side-effect of building compressed_translations.generated.h
+# Specifying both in a single rule actually causes the rule to be run twice!
+# This alternative makes it run just once.
+# Another alternative is "grouped targets" (`a b &: c`), available in GNU make 4.3 and later.
+# TODO: use grouped targets when we expect GNU make >= 4.3 is pervasive.
+$(PY_BUILD)/translations-$(TRANSLATION).c: $(HEADER_BUILD)/compressed_translations.generated.h
+	@true
+
+$(HEADER_BUILD)/compressed_translations.generated.h: $(PY_SRC)/maketranslationdata.py $(HEADER_BUILD)/$(TRANSLATION).mo $(HEADER_BUILD)/qstrdefs.generated.h
+	$(STEPECHO) "GEN $@"
+	$(Q)mkdir -p $(PY_BUILD)
+	$(Q)$(PYTHON) $(PY_SRC)/maketranslationdata.py --compression_filename $(HEADER_BUILD)/compressed_translations.generated.h --translation $(HEADER_BUILD)/$(TRANSLATION).mo --translation_filename $(PY_BUILD)/translations-$(TRANSLATION).c $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/qstrdefs.preprocessed.h
+
+PY_CORE_O += $(PY_BUILD)/translations-$(TRANSLATION).o
+
 # build a list of registered modules for py/objmodule.c.
 $(HEADER_BUILD)/moduledefs.h: $(HEADER_BUILD)/moduledefs.collected
 	@$(ECHO) "GEN $@"
