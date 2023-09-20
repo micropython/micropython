@@ -293,6 +293,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(dict_copy_obj, mp_obj_dict_copy);
 #if MICROPY_PY_BUILTINS_DICT_FROMKEYS
 // this is a classmethod
 STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
+    mp_obj_type_t *type = MP_OBJ_TO_PTR(args[0]);
     mp_obj_t iter = mp_getiter(args[1], NULL);
     mp_obj_t value = mp_const_none;
     mp_obj_t next = MP_OBJ_NULL;
