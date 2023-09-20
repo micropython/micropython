@@ -467,7 +467,7 @@ STATIC mp_obj_t array_append(mp_obj_t self_in, mp_obj_t arg) {
     self->free--;
     return mp_const_none; // return None, as per CPython
 }
-MP_DEFINE_CONST_FUN_OBJ_2(mp_obj_array_append_obj, array_append);
+MP_DEFINE_CONST_FUN_OBJ_2(array_append_obj, array_append);
 
 STATIC mp_obj_t array_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     // self is not a memoryview, so we don't need to use (& TYPECODE_MASK)
