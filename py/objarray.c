@@ -767,7 +767,7 @@ STATIC const mp_rom_map_elem_t bytearray_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(bytearray_locals_dict, bytearray_locals_dict_table);
+MP_DEFINE_CONST_DICT(bytearray_locals_dict, bytearray_locals_dict_table);
 #endif
 
 
