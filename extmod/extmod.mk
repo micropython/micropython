@@ -2,24 +2,8 @@
 # and provides rules to build 3rd-party components for extmod modules.
 
 SRC_EXTMOD_C += \
-	extmod/machine_bitstream.c \
-	extmod/machine_i2c.c \
-	extmod/machine_mem.c \
-	extmod/machine_pinbase.c \
-	extmod/machine_pulse.c \
-	extmod/machine_pwm.c \
-	extmod/machine_signal.c \
-	extmod/machine_spi.c \
-	extmod/machine_timer.c \
-	extmod/modbluetooth.c \
-	extmod/modbtree.c \
-	extmod/modframebuf.c \
-	extmod/modlwip.c \
-	extmod/modnetwork.c \
-	extmod/modonewire.c \
 	extmod/moduasyncio.c \
 	extmod/modubinascii.c \
-	extmod/moducryptolib.c \
 	extmod/moductypes.c \
 	extmod/moduhashlib.c \
 	extmod/moduheapq.c \
@@ -29,18 +13,7 @@ SRC_EXTMOD_C += \
 	extmod/modurandom.c \
 	extmod/modure.c \
 	extmod/moduselect.c \
-	extmod/modusocket.c \
-	extmod/modussl_axtls.c \
-	extmod/modussl_mbedtls.c \
-	extmod/modutimeq.c \
-	extmod/moduwebsocket.c \
 	extmod/moduzlib.c \
-	extmod/modwebrepl.c \
-	extmod/network_cyw43.c \
-	extmod/network_lwip.c \
-	extmod/network_ninaw10.c \
-	extmod/network_wiznet5k.c \
-	extmod/uos_dupterm.c \
 	extmod/utime_mphal.c \
 	extmod/vfs.c \
 	extmod/vfs_blockdev.c \
