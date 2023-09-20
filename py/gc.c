@@ -252,8 +252,8 @@ void gc_add(void *start, void *end) {
 void gc_deinit(void) {
     // Run any finalisers before we stop using the heap.
     gc_sweep_all();
-
-    MP_STATE_MEM(area) = 0;
+    MP_STATIC_ASSERT(!MICROPY_GC_SPLIT_HEAP);
+    memset(&MP_STATE_MEM(area), 0, sizeof(MP_STATE_MEM(area)));
 }
 
 void gc_lock(void) {
@@ -773,6 +773,7 @@ found:
 
     #if EXTENSIVE_HEAP_PROFILING
     gc_dump_alloc_table(&mp_plat_print);
+    #endif
 
     #if CIRCUITPY_MEMORYMONITOR
     memorymonitor_track_allocation(end_block - start_block + 1);
