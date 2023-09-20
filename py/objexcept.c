@@ -503,7 +503,7 @@ STATIC void exc_add_strn(void *data, const char *str, size_t len) {
     pr->len += len;
 }
 
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
@@ -511,7 +511,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, mp_rom_err
     return exc;
 }
 
-mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list args) {
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list ap) {
     assert(fmt != NULL);
 
     // Check that the given type is an exception type
@@ -564,7 +564,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_er
     o_str->hash = 0; // will be computed only if string object is accessed
     #else
     o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
-    #endif    
+    #endif
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
@@ -573,7 +573,7 @@ mp_obj_t mp_obj_new_exception_msg_str(const mp_obj_type_t *exc_type, const char 
     assert(msg != NULL);
 
     // Check that the given type is an exception type
-    assert(exc_type->make_new == mp_obj_exception_make_new);
+    assert(MP_OBJ_TYPE_GET_SLOT_OR_NULL(exc_type, make_new) == mp_obj_exception_make_new);
 
     // Try to allocate memory for the message
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
