@@ -1024,10 +1024,20 @@ __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __AL
 };
 
 static const uint8_t dev_descr[0x12] = {
-    0x12, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x40,
+    0x12, // bLength
+    0x01, // bDescriptorType: Device
+    0x00, 0x01, // USB version: 1.00
+    0x00, // bDeviceClass
+    0x00, // bDeviceSubClass
+    0x00, // bDeviceProtocol
+    0x40, // bMaxPacketSize
     LOBYTE(MBOOT_USB_VID), HIBYTE(MBOOT_USB_VID),
     LOBYTE(MBOOT_USB_PID), HIBYTE(MBOOT_USB_PID),
-    0x00, 0x22, 0x01, 0x02, 0x03, 0x01
+    0x00, 0x22, // bcdDevice: 22.00
+    0x01, // iManufacturer
+    0x02, // iProduct
+    0x03, // iSerialNumber
+    0x01, // bNumConfigurations: 1
 };
 
 // This may be modified by USBD_GetDescriptor
