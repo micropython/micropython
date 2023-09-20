@@ -13,11 +13,11 @@ import pathlib
 import datetime
 import subprocess
 
-// CIRCUITPY: use external script
+# CIRCUITPY: use external script
 tools_describe = str(pathlib.Path(__file__).parent.parent / "tools/describe")
 
 
-def get_version_info_from_git():
+def get_version_info_from_git(repo_path):
     # Python 2.6 doesn't have check_output, so check for that
     try:
         subprocess.check_output
@@ -28,7 +28,11 @@ def get_version_info_from_git():
     # Note: git describe doesn't work if no tag is available
     try:
         git_tag = subprocess.check_output(
-            [tools_describe], stderr=subprocess.STDOUT, universal_newlines=True, shell=True
+            [tools_describe],
+            cwd=repo_path,
+            shell=True,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
         ).strip()
     except subprocess.CalledProcessError as er:
         if er.returncode == 128:
@@ -85,9 +89,9 @@ If you cloned from a fork, fetch the tags from adafruit/circuitpython as follows
     )
 
 
-def make_version_header(filename):
+def make_version_header(repo_path, filename):
     # Get version info using git (required)
-    info = get_version_info_from_git()
+    info = get_version_info_from_git(repo_path)
     if info is None:
         cannot_determine_version()
     git_tag, git_hash, ver = info
