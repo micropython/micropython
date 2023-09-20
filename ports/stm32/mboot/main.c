@@ -966,7 +966,9 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
 
 typedef struct _pyb_usbdd_obj_t {
     bool started;
+    #if USE_USB_POLLING
     bool tx_pending;
+    #endif
     USBD_HandleTypeDef hUSBDDevice;
 
     uint8_t bRequest;
@@ -1160,7 +1162,9 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
         // device-to-host request
         int len = dfu_handle_tx(self->bRequest, self->wValue, self->wLength, self->tx_buf, USB_XFER_SIZE);
         if (len >= 0) {
+            #if USE_USB_POLLING
             self->tx_pending = true;
+            #endif
             USBD_CtlSendData(&self->hUSBDDevice, self->tx_buf, len);
         }
     }
@@ -1168,9 +1172,10 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
 }
 
 static uint8_t pyb_usbdd_EP0_TxSent(USBD_HandleTypeDef *pdev) {
+    #if USE_USB_POLLING
     pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     self->tx_pending = false;
-    #if !USE_USB_POLLING
+    #else
     // Process now that we have sent a response
     dfu_process();
     #endif
@@ -1243,7 +1248,9 @@ static int pyb_usbdd_detect_port(void) {
 
 static void pyb_usbdd_init(pyb_usbdd_obj_t *self, int phy_id) {
     self->started = false;
+    #if USE_USB_POLLING
     self->tx_pending = false;
+    #endif
     USBD_HandleTypeDef *usbd = &self->hUSBDDevice;
     usbd->id = phy_id;
     usbd->dev_state = USBD_STATE_DEFAULT;
