@@ -25,8 +25,10 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 
 #include "py/builtin.h"
+#include "py/obj.h"
 #include "py/stackctrl.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -166,6 +168,96 @@ STATIC mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
 #endif
 
+#if MICROPY_ENABLE_MEM_FUNCTIONS
+
+STATIC mp_obj_t mp_micropython_memmove(size_t n_args, const mp_obj_t *args) {
+    enum { ARG_dest, ARG_dest_idx, ARG_src, ARG_src_idx, ARG_len }; // len is optional
+    mp_buffer_info_t src, dest;
+    mp_int_t src_idx, dest_idx, len, max_len;
+
+    mp_get_buffer_raise(args[ARG_dest], &dest, MP_BUFFER_WRITE);
+    mp_get_buffer_raise(args[ARG_src], &src, MP_BUFFER_READ);
+    dest_idx = mp_obj_get_int(args[ARG_dest_idx]);
+    src_idx = mp_obj_get_int(args[ARG_src_idx]);
+
+    // similar to slice syntax, negative indexes are relative to the end
+    if (dest_idx < 0) {
+        dest_idx += dest.len;
+    }
+    if (src_idx < 0) {
+        src_idx += src.len;
+    }
+
+    if (dest_idx < 0 || src_idx < 0 || (size_t)dest_idx >= dest.len || (size_t)src_idx >= src.len) {
+        // TODO: Maybe it's better to emulate slice syntax here and have ranges
+        // past the end silently truncate to the end?
+        mp_raise_type(&mp_type_IndexError); // TODO: ValueError? IndexError is what equivalent Python code would raise
+    }
+
+    // The most bytes we can move
+    max_len = MIN(dest.len - dest_idx, src.len - src_idx);
+
+    if (n_args > ARG_len) {
+        len = mp_obj_get_int(args[ARG_len]);
+        if (len < 0 || len > max_len) {
+            // TODO: maybe better to truncate here as well?
+            mp_raise_type(&mp_type_IndexError); // TODO: ValueError? see above
+        }
+    } else {
+        len = max_len;
+    }
+
+    memmove((char *)dest.buf + dest_idx, (char *)src.buf + src_idx, len);
+
+    return mp_obj_new_int(len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_memmove_obj, 4, 5, mp_micropython_memmove);
+
+STATIC mp_obj_t mp_micropython_memset(size_t n_args, const mp_obj_t *args) {
+    enum { ARG_dest, ARG_dest_idx, ARG_c, ARG_len };
+    mp_buffer_info_t dest;
+    mp_int_t dest_idx = 0;
+    uint8_t c = 0;
+    mp_int_t len;
+
+    mp_get_buffer_raise(args[ARG_dest], &dest, MP_BUFFER_WRITE);
+    if (n_args > ARG_dest_idx) {
+        dest_idx = mp_obj_get_int(args[ARG_dest_idx]);
+
+        if (dest_idx < 0) {
+            // Like slice syntax, negative value indexes from the end
+            dest_idx += dest.len;
+        }
+
+        if (dest_idx < 0 || (size_t)dest_idx >= dest.len) {
+            mp_raise_type(&mp_type_IndexError); // TODO: ValueError? see above
+        }
+    }
+
+    if (n_args > ARG_c) {
+        // To save code size, don't range-check if c is a single byte integer,
+        // out of range values are truncated and then used.
+        c = mp_obj_get_int(args[ARG_c]);
+    }
+
+    if (n_args > ARG_len) {
+        len = mp_obj_get_int(args[ARG_len]);
+        if (len < 0 || (size_t)len > dest.len - dest_idx) {
+            mp_raise_type(&mp_type_IndexError); // TODO: ValueError? see above
+        }
+    } else {
+        len = dest.len - dest_idx;
+    }
+
+    memset((char *)dest.buf + dest_idx, c, len);
+
+    return mp_obj_new_int(len);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_memset_obj, 1, 4, mp_micropython_memset);
+
+#endif
+
+
 STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
     { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
@@ -202,6 +294,10 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #endif
     #if MICROPY_ENABLE_SCHEDULER
     { MP_ROM_QSTR(MP_QSTR_schedule), MP_ROM_PTR(&mp_micropython_schedule_obj) },
+    #endif
+    #if MICROPY_ENABLE_MEM_FUNCTIONS
+    { MP_ROM_QSTR(MP_QSTR_memmove), MP_ROM_PTR(&mp_micropython_memmove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_memset), MP_ROM_PTR(&mp_micropython_memset_obj) },
     #endif
 };
 
