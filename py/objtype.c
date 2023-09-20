@@ -102,7 +102,7 @@ STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args
     if (n_kw) {
         memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
     }
-    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, 0, args + 1);
+    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args - 1, 0, pos_args + 1);
     m_del(mp_obj_t, args2, n_args + 2 * n_kw);
 
     return mp_const_none;
