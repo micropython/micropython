@@ -35,6 +35,7 @@
 
 #include "py/parsenum.h"
 #include "py/compile.h"
+#include "py/mperrno.h"
 #include "py/objstr.h"
 #include "py/objtuple.h"
 #include "py/objlist.h"
@@ -1279,11 +1280,11 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             return;
         }
     #if MICROPY_PY_BUILTINS_PROPERTY
-    } else if (type->locals_dict != NULL) {
+    } else if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
         // generic method lookup
         // this is a lookup in the object (ie not class or type)
-        assert(type->locals_dict->base.type == &mp_type_dict); // Micro Python restriction, for now
-        mp_map_t *locals_map = &type->locals_dict->map;
+        assert(MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->base.type == &mp_type_dict); // Micro Python restriction, for now
+        mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         // If base is MP_OBJ_NULL, we looking at the class itself, not an instance.
         if (elem != NULL && mp_obj_is_type(elem->value, &mp_type_property) && base != MP_OBJ_NULL) {
@@ -1737,7 +1738,7 @@ NORETURN MP_COLD void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
     } else {
-        nlr_raise(mp_obj_new_exception_msg_str(exc_type, msg));
+        nlr_raise(mp_obj_new_exception_msg_varg(exc_type, MP_ERROR_TEXT("%s"), msg));
     }
 }
 
@@ -1873,8 +1874,4 @@ NORETURN MP_COLD void mp_raise_recursion_depth(void) {
     mp_raise_RuntimeError(MP_ERROR_TEXT("maximum recursion depth exceeded"));
 }
 #endif
-
-NORETURN MP_COLD void mp_raise_ZeroDivisionError(void) {
-    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
-}
 #endif
