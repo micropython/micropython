@@ -182,7 +182,7 @@ endif
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls
 else ifeq ($(IDF_TARGET_ARCH),riscv)
-CFLAGS += -march=rv32imc
+CFLAGS += -march=rv32imac_zicsr_zifencei
 endif
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority

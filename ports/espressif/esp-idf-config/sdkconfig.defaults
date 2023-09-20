@@ -28,6 +28,12 @@ CONFIG_GPTIMER_SUPPRESS_DEPRECATE_WARN=y
 # end of Driver Configurations
 
 #
+# PHY
+#
+# CONFIG_ESP_PHY_CALIBRATION_AND_DATA_STORAGE is not set
+# end of PHY
+
+#
 # ESP System Settings
 #
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=16384
