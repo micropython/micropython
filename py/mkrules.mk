@@ -192,7 +192,7 @@ endif
 ifneq ($(PROG),)
 # Build a standalone executable (unix does this)
 
-# The executable should have an .exe extension for builds targetting 'pure'
+# The executable should have an .exe extension for builds targeting 'pure'
 # Windows, i.e. msvc or mingw builds, but not when using msys or cygwin's gcc.
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
