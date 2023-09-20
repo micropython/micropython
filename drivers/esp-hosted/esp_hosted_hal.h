@@ -68,6 +68,7 @@ typedef enum {
 // Note A default machine-based implementation is provided in esp_hosted_hal.c.
 int esp_hosted_hal_init(uint32_t mode);
 int esp_hosted_hal_deinit(void);
+void esp_hosted_hal_irq_enable(bool enable);
 bool esp_hosted_hal_data_ready(void);
 int esp_hosted_hal_atomic_enter(void);
 int esp_hosted_hal_atomic_exit(void);
