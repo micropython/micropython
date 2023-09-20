@@ -341,7 +341,9 @@ typedef const char *mp_rom_error_text_t;
 // Might add more types of compressed text in the future.
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.
 // CIRCUITPY: MP_ERROR_TEXT() -> translate()
-#if !CIRCUITPY
+#if CIRCUITPY
+#include "supervisor/shared/translate/translate.h"
+#else
 #define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
 #endif
 
