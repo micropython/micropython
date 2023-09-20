@@ -1398,6 +1398,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_STRUCT (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
 #endif
 
+// Whether to provide non-standard typecodes in "struct" module
+#ifndef MICROPY_NONSTANDARD_TYPECODES
+#define MICROPY_NONSTANDARD_TYPECODES (1)
+#endif
+
 // Whether to provide "sys" module
 #ifndef MICROPY_PY_SYS
 #define MICROPY_PY_SYS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES)
