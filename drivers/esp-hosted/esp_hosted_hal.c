@@ -37,6 +37,9 @@
 #include "modmachine.h"
 #include "extmod/machine_spi.h"
 #include "mpconfigboard.h"
+#ifdef MICROPY_HW_WIFI_LED
+#include "led.h"
+#endif
 
 #include "esp_hosted_hal.h"
 #include "esp_hosted_wifi.h"
@@ -44,6 +47,9 @@
 extern void mod_network_poll_events(void);
 
 STATIC mp_obj_t esp_hosted_pin_irq_callback(mp_obj_t self_in) {
+    #ifdef MICROPY_HW_WIFI_LED
+    led_toggle(MICROPY_HW_WIFI_LED);
+    #endif
     mod_network_poll_events();
     return mp_const_none;
 }
