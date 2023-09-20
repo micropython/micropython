@@ -920,15 +920,11 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.open(fmpy)
 
     # MPY: header
-<<<<<<< ours
-    out.write_bytes(bytearray([ord("C"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS]))
-=======
     out.write_bytes(
         bytearray(
-            [ord("M"), MPY_VERSION, env.arch.mpy_feature | MPY_SUB_VERSION, MP_SMALL_INT_BITS]
+            [ord("C"), MPY_VERSION, env.arch.mpy_feature | MPY_SUB_VERSION, MP_SMALL_INT_BITS]
         )
     )
->>>>>>> theirs
 
     # MPY: n_qstr
     out.write_uint(1 + len(native_qstr_vals))
