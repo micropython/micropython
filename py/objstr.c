@@ -262,7 +262,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         vstr_t vstr;
         vstr_init_len(&vstr, len);
         memset(vstr.buf, 0, len);
-        return mp_obj_new_bytes_from_vstr(&mp_type_bytes, &vstr);
+        return mp_obj_new_bytes_from_vstr(&vstr);
     }
 
     // CIRCUITPY
@@ -379,7 +379,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         vstr_t vstr;
         vstr_init_len(&vstr, new_len);
         mp_seq_multiply(lhs_data, sizeof(*lhs_data), lhs_len, n, vstr.buf);
-        return mp_obj_new_str_from_vstr(lhs_type, &vstr);
+        return mp_obj_new_str_of_type(lhs_type, (const byte *)vstr.buf, vstr.len);
     }
 
     // From now on all operations allow:
