@@ -271,6 +271,11 @@ msgstr ""
 msgid "%q[%u] waits on input outside of count"
 msgstr ""
 
+#: py/runtime.c
+#, c-format
+msgid "%s"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
