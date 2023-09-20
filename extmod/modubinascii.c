@@ -34,10 +34,6 @@
 
 #if MICROPY_PY_UBINASCII
 
-#if MICROPY_PY_BUILTINS_BYTES_HEX
-STATIC mp_obj_t bytes_hex_as_bytes(size_t n_args, const mp_obj_t *args) {
-    return mp_obj_bytes_hex(n_args, args, &mp_type_bytes);
-
 static void check_not_unicode(const mp_obj_t arg) {
     #if MICROPY_CPYTHON_COMPAT
     if (mp_obj_is_str(arg)) {
@@ -45,6 +41,12 @@ static void check_not_unicode(const mp_obj_t arg) {
     }
     #endif
 }
+
+#if MICROPY_PY_BUILTINS_BYTES_HEX
+STATIC mp_obj_t bytes_hex_as_bytes(size_t n_args, const mp_obj_t *args) {
+    return mp_obj_bytes_hex(n_args, args, &mp_type_bytes);
+}
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_hex_as_bytes_obj, 1, 2, bytes_hex_as_bytes);
 
 STATIC mp_obj_t bytes_fromhex_bytes(mp_obj_t data) {
@@ -244,6 +246,7 @@ static uint32_t from_uzlib_crc32(const void *data, unsigned int length, uint32_t
     return crc /* ^ 0xffffffff*/;
 }
 
+#if MICROPY_PY_UBINASCII_CRC32
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
