@@ -139,7 +139,7 @@ def run(args):
 
 def show_help():
     print("usage: verifygitlog.py [-v -n -h --check-file] ...")
-    print("-v  : increase verbosity, can be speficied multiple times")
+    print("-v  : increase verbosity, can be specified multiple times")
     print("-n  : do not print multi-line suggestions")
     print("-h  : print this help message and exit")
     print(
