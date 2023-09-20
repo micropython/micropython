@@ -107,7 +107,7 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
 }
 
 mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(mpz_num_bits(&self->mpz));
 }
