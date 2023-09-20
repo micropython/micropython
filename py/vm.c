@@ -1169,13 +1169,7 @@ unwind_return:
                 ENTRY(MP_BC_RAISE_LAST): {
                     MARK_EXC_IP_SELECTIVE();
                     // search for the inner-most previous exception, to reraise it
-                    mp_obj_t obj = MP_OBJ_NULL;
-                    for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; --e) {
-                        if (e->prev_exc != NULL) {
-                            obj = MP_OBJ_FROM_PTR(e->prev_exc);
-                            break;
-                        }
-                    }
+                    mp_obj_t obj = get_active_exception(exc_sp, exc_stack);
                     if (obj == MP_OBJ_NULL) {
                         obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no active exception to reraise"));
                     }
@@ -1185,14 +1179,30 @@ unwind_return:
                 ENTRY(MP_BC_RAISE_OBJ): {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = mp_make_raise_obj(TOP());
+                    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                    mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
+                    if (active_exception != MP_OBJ_NULL && active_exception != obj) {
+                        mp_store_attr(obj, MP_QSTR___context__, active_exception);
+                    }
+                    #endif
                     RAISE(obj);
                 }
 
                 ENTRY(MP_BC_RAISE_FROM): {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_warning(NULL, "exception chaining not supported");
-                    sp--; // ignore (pop) "from" argument
+                    mp_obj_t cause = POP();
                     mp_obj_t obj = mp_make_raise_obj(TOP());
+                    #if MICROPY_CPYTHON_EXCEPTION_CHAIN
+                    // search for the inner-most previous exception, to chain it
+                    mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
+                    if (active_exception != MP_OBJ_NULL && active_exception != obj) {
+                        mp_store_attr(obj, MP_QSTR___context__, active_exception);
+                    }
+                    mp_store_attr(obj, MP_QSTR___cause__, cause);
+                    #else
+                    (void)cause;
+                    mp_warning(NULL, "exception chaining not supported");
+                    #endif
                     RAISE(obj);
                 }
 
@@ -1360,7 +1370,6 @@ pending_exception_check:
                     MARK_EXC_IP_SELECTIVE();
                     mp_handle_pending(true);
                 }
-                #endif
 
                 #if MICROPY_PY_THREAD_GIL
                 #if MICROPY_PY_THREAD_GIL_VM_DIVISOR
