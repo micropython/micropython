@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_l496zg.jpg"
+    ],
+    "mcu": "stm32l4",
+    "product": "Nucleo L496ZG",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}
