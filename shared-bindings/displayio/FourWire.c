@@ -165,9 +165,10 @@ STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_fourwire_locals_dict, displayio_fourwire_locals_dict_table);
 
-const mp_obj_type_t displayio_fourwire_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FourWire,
-    .make_new = displayio_fourwire_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_fourwire_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_fourwire_type,
+    MP_QSTR_FourWire,
+    MP_TYPE_FLAG_NONE,
+    make_new, displayio_fourwire_make_new,
+    locals_dict, &displayio_fourwire_locals_dict
+    );

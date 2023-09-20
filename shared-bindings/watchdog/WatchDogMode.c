@@ -91,9 +91,10 @@ STATIC void watchdog_watchdogmode_print(const mp_print_t *print, mp_obj_t self_i
         runmode);
 }
 
-const mp_obj_type_t watchdog_watchdogmode_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WatchDogMode,
-    .print = watchdog_watchdogmode_print,
-    .locals_dict = (mp_obj_t)&watchdog_watchdogmode_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    watchdog_watchdogmode_type,
+    MP_QSTR_WatchDogMode,
+    MP_TYPE_FLAG_NONE,
+    print, watchdog_watchdogmode_print,
+    locals_dict, &watchdog_watchdogmode_locals_dict
+    );

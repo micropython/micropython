@@ -200,13 +200,11 @@ STATIC const audiosample_p_t audioio_wavefile_proto = {
 };
 
 
-const mp_obj_type_t audioio_wavefile_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WaveFile,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audioio_wavefile_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audioio_wavefile_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audioio_wavefile_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audioio_wavefile_type,
+    MP_QSTR_WaveFile,
+    MP_TYPE_FLAG_NONE,
+    make_new, audioio_wavefile_make_new,
+    locals_dict, &audioio_wavefile_locals_dict,
+    protocol, &audioio_wavefile_proto
+    );

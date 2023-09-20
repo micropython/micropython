@@ -131,9 +131,10 @@ STATIC const mp_rom_map_elem_t alarm_time_timealarm_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(alarm_time_timealarm_locals_dict, alarm_time_timealarm_locals_dict_table);
 
-const mp_obj_type_t alarm_time_timealarm_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_TimeAlarm,
-    .make_new = alarm_time_timealarm_make_new,
-    .locals_dict = (mp_obj_t)&alarm_time_timealarm_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    alarm_time_timealarm_type,
+    MP_QSTR_TimeAlarm,
+    MP_TYPE_FLAG_NONE,
+    make_new, alarm_time_timealarm_make_new,
+    locals_dict, &alarm_time_timealarm_locals_dict
+    );

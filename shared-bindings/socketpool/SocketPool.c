@@ -188,12 +188,13 @@ STATIC const mp_rom_map_elem_t socketpool_socketpool_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(socketpool_socketpool_locals_dict, socketpool_socketpool_locals_dict_table);
 
-const mp_obj_type_t socketpool_socketpool_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SocketPool,
-    .make_new = socketpool_socketpool_make_new,
-    .locals_dict = (mp_obj_dict_t *)&socketpool_socketpool_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    socketpool_socketpool_type,
+    MP_QSTR_SocketPool,
+    MP_TYPE_FLAG_NONE,
+    make_new, socketpool_socketpool_make_new,
+    locals_dict, &socketpool_socketpool_locals_dict
+    );
 
 MP_WEAK
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketpool_obj_t *self, const char *host) {

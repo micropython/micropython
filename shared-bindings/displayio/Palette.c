@@ -215,15 +215,14 @@ STATIC const mp_rom_map_elem_t displayio_palette_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_locals_dict_table);
 
-const mp_obj_type_t displayio_palette_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Palette,
-    .make_new = displayio_palette_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_palette_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = palette_subscr,
-        .unary_op = group_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_palette_type,
+    MP_QSTR_Palette,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, displayio_palette_make_new,
+    locals_dict, &displayio_palette_locals_dict,
+    subscr, palette_subscr,
+    unary_op, group_unary_op,
+    iter, mp_obj_new_generic_iterator
+
+    );

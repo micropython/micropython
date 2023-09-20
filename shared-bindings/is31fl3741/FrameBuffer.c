@@ -292,14 +292,12 @@ STATIC mp_int_t is31fl3741_FrameBuffer_get_buffer(mp_obj_t self_in, mp_buffer_in
     return 0;
 }
 
-const mp_obj_type_t is31fl3741_FrameBuffer_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_is31fl3741,
-    .locals_dict = (mp_obj_dict_t *)&is31fl3741_FrameBuffer_locals_dict,
-    .make_new = is31fl3741_FrameBuffer_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .buffer_p = { .get_buffer = is31fl3741_FrameBuffer_get_buffer, },
-        .protocol = &is31fl3741_FrameBuffer_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    is31fl3741_FrameBuffer_type,
+    MP_QSTR_is31fl3741,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &is31fl3741_FrameBuffer_locals_dict,
+    make_new, is31fl3741_FrameBuffer_make_new,
+    buffer, is31fl3741_FrameBuffer_get_buffer,
+    protocol, &is31fl3741_FrameBuffer_proto
+    );

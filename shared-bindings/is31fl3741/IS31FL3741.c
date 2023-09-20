@@ -172,9 +172,10 @@ STATIC const mp_rom_map_elem_t is31fl3741_IS31FL3741_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(is31fl3741_IS31FL3741_locals_dict, is31fl3741_IS31FL3741_locals_dict_table);
 
-const mp_obj_type_t is31fl3741_IS31FL3741_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_is31fl3741,
-    .locals_dict = (mp_obj_dict_t *)&is31fl3741_IS31FL3741_locals_dict,
-    .make_new = is31fl3741_IS31FL3741_make_new,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    is31fl3741_IS31FL3741_type,
+    MP_QSTR_is31fl3741,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &is31fl3741_IS31FL3741_locals_dict,
+    make_new, is31fl3741_IS31FL3741_make_new
+    );

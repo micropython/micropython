@@ -192,14 +192,12 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
     }
 }
 
-const mp_obj_type_t memorymap_addressrange_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_AddressRange,
-    .make_new = memorymap_addressrange_make_new,
-    .locals_dict = (mp_obj_t)&memorymap_addressrange_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = memorymap_addressrange_subscr,
-        .unary_op = memorymap_addressrange_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    memorymap_addressrange_type,
+    MP_QSTR_AddressRange,
+    MP_TYPE_FLAG_NONE,
+    make_new, memorymap_addressrange_make_new,
+    locals_dict, (mp_obj_t)&memorymap_addressrange_locals_dict,
+    subscr, memorymap_addressrange_subscr,
+    unary_op, memorymap_addressrange_unary_op
+    );

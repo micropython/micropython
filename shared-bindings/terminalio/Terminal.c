@@ -139,15 +139,13 @@ STATIC const mp_stream_p_t terminalio_terminal_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t terminalio_terminal_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Terminal,
-    .make_new = terminalio_terminal_make_new,
-    .locals_dict = (mp_obj_dict_t *)&terminalio_terminal_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &terminalio_terminal_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    terminalio_terminal_type,
+    MP_QSTR_Terminal,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, terminalio_terminal_make_new,
+    locals_dict, (mp_obj_dict_t *)&terminalio_terminal_locals_dict,
+    getiter, mp_identity_getiter,
+    iternext, mp_stream_unbuffered_iter,
+    protocol, &terminalio_terminal_stream_p
+    );

@@ -92,9 +92,10 @@ STATIC void mcu_runmode_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         runmode);
 }
 
-const mp_obj_type_t mcu_runmode_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RunMode,
-    .print = mcu_runmode_print,
-    .locals_dict = (mp_obj_dict_t *)&mcu_runmode_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mcu_runmode_type,
+    MP_QSTR_RunMode,
+    MP_TYPE_FLAG_NONE,
+    print, mcu_runmode_print,
+    locals_dict, &mcu_runmode_locals_dict
+    );

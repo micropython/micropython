@@ -174,13 +174,11 @@ STATIC const audiosample_p_t audioio_rawsample_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)audioio_rawsample_get_buffer_structure,
 };
 
-const mp_obj_type_t audioio_rawsample_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RawSample,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audioio_rawsample_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audioio_rawsample_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audioio_rawsample_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audioio_rawsample_type,
+    MP_QSTR_RawSample,
+    MP_TYPE_FLAG_NONE,
+    make_new, audioio_rawsample_make_new,
+    locals_dict, &audioio_rawsample_locals_dict,
+    protocol, &audioio_rawsample_proto
+    );

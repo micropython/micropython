@@ -136,9 +136,10 @@ STATIC const mp_rom_map_elem_t canio_remote_transmission_request_locals_dict_tab
 };
 STATIC MP_DEFINE_CONST_DICT(canio_remote_transmission_request_locals_dict, canio_remote_transmission_request_locals_dict_table);
 
-const mp_obj_type_t canio_remote_transmission_request_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RemoteTransmissionRequest,
-    .make_new = canio_remote_transmission_request_make_new,
-    .locals_dict = (mp_obj_t)&canio_remote_transmission_request_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    canio_remote_transmission_request_type,
+    MP_QSTR_RemoteTransmissionRequest,
+    MP_TYPE_FLAG_NONE,
+    make_new, canio_remote_transmission_request_make_new,
+    locals_dict, &canio_remote_transmission_request_locals_dict
+    );

@@ -1226,7 +1226,6 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun);
 
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
-mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
 
 // Generic iterator that uses unary op and subscr to iterate over a native type. It will be slower
 // than a custom iterator but applies broadly.

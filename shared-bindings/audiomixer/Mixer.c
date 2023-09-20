@@ -272,13 +272,11 @@ STATIC const audiosample_p_t audiomixer_mixer_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)audiomixer_mixer_get_buffer_structure,
 };
 
-const mp_obj_type_t audiomixer_mixer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Mixer,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audiomixer_mixer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiomixer_mixer_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audiomixer_mixer_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiomixer_mixer_type,
+    MP_QSTR_Mixer,
+    MP_TYPE_FLAG_NONE,
+    make_new, audiomixer_mixer_make_new,
+    locals_dict, &audiomixer_mixer_locals_dict,
+    protocol, &audiomixer_mixer_proto
+    );

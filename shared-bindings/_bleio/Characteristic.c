@@ -325,9 +325,10 @@ STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in
     }
 }
 
-const mp_obj_type_t bleio_characteristic_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Characteristic,
-    .print = bleio_characteristic_print,
-    .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_characteristic_type,
+    MP_QSTR_Characteristic,
+    MP_TYPE_FLAG_NONE,
+    print, bleio_characteristic_print,
+    locals_dict, &bleio_characteristic_locals_dict
+    );

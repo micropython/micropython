@@ -268,9 +268,10 @@ STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiobusio_i2sout_locals_dict, audiobusio_i2sout_locals_dict_table);
 
-const mp_obj_type_t audiobusio_i2sout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2SOut,
-    .make_new = audiobusio_i2sout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiobusio_i2sout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiobusio_i2sout_type,
+    MP_QSTR_I2SOut,
+    MP_TYPE_FLAG_NONE,
+    make_new, audiobusio_i2sout_make_new,
+    locals_dict, &audiobusio_i2sout_locals_dict
+    );

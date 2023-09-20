@@ -185,13 +185,12 @@ STATIC const audiosample_p_t synthio_miditrack_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)synthio_miditrack_get_buffer_structure,
 };
 
-const mp_obj_type_t synthio_miditrack_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MidiTrack,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = synthio_miditrack_make_new,
-    .locals_dict = (mp_obj_dict_t *)&synthio_miditrack_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &synthio_miditrack_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    synthio_miditrack_type,
+    MP_QSTR_MidiTrack,
+    MP_TYPE_FLAG_NONE,
+    flags, MP_TYPE_FLAG_EXTENDED,
+    make_new, synthio_miditrack_make_new,
+    locals_dict, &synthio_miditrack_locals_dict,
+    protocol, &synthio_miditrack_proto
+    );

@@ -153,9 +153,10 @@ STATIC const mp_rom_map_elem_t audiomixer_mixervoice_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiomixer_mixervoice_locals_dict, audiomixer_mixervoice_locals_dict_table);
 
-const mp_obj_type_t audiomixer_mixervoice_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MixerVoice,
-    .make_new = audiomixer_mixervoice_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiomixer_mixervoice_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiomixer_mixervoice_type,
+    MP_QSTR_MixerVoice,
+    MP_TYPE_FLAG_NONE,
+    make_new, audiomixer_mixervoice_make_new,
+    locals_dict, &audiomixer_mixervoice_locals_dict
+    );

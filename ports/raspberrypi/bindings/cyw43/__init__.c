@@ -52,15 +52,14 @@ void bindings_cyw43_wifi_enforce_pm() {
 //|     in :py:mod:`board`. A `CywPin` can be used as a DigitalInOut, but not with other
 //|     peripherals such as `PWMOut`."""
 //|
-const mp_obj_type_t cyw43_pin_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_CywPin,
-    .print = shared_bindings_microcontroller_pin_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    cyw43_pin_type,
+     MP_TYPE_FLAG_EXTENDED,
+    MP_TYPE_FLAG_NONE,
+    name, MP_QSTR_CywPin,
+    print, shared_bindings_microcontroller_pin_print,
+    unary_op, mp_generic_unary_op,
+    );
 
 //| PM_STANDARD: int
 //| """The standard power management mode"""

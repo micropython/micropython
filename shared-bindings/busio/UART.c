@@ -446,23 +446,20 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .pyserial_readinto_compatibility = true,
 };
 
-const mp_obj_type_t busio_uart_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_UART,
-    .make_new = busio_uart_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &uart_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, busio_uart_make_new,
+    locals_dict, &busio_uart_locals_dict,
+    iter,  mp_stream_unbuffered_iter
+    );
 #else
-const mp_obj_type_t busio_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .make_new = busio_uart_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_NONE,
+    make_new, busio_uart_make_new,
+    locals_dict, &busio_uart_locals_dict
+    );
 #endif  // CIRCUITPY_BUSIO_UART

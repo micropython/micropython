@@ -123,15 +123,13 @@ espnow_peers_obj_t *espnow_peers_new(void) {
     return self;
 }
 
-const mp_obj_type_t espnow_peers_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Peers,
-    .print = espnow_peers_print,
-    .locals_dict = (mp_obj_t)&espnow_peers_locals_dict,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = espnow_peers_unary_op,
-        .subscr = espnow_peers_subscr,
-        .getiter = espnow_peers_getiter,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espnow_peers_type,
+    MP_QSTR_Peers,
+    MP_TYPE_FLAG_NONE,
+    print, espnow_peers_print,
+    locals_dict, &espnow_peers_locals_dict,
+    unary_op, espnow_peers_unary_op,
+    subscr, espnow_peers_subscr,
+    getiter, espnow_peers_getiter
+    );

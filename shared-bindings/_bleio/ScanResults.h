@@ -3,13 +3,9 @@
  *
  * The MIT License (MIT)
  *
-<<<<<<<< HEAD:shared-bindings/_bleio/ScanResults.h
  * Copyright (c) 2019 Dan Halbert for Adafruit Industries
  * Copyright (c) 2018 Artur Pacholec
  * Copyright (c) 2017 Glenn Ruben Bakke
-========
- * Copyright (c) 2022 Blake W. Felt & Angus Gratton
->>>>>>>> v1.20.0:shared/tinyusb/mp_usbd.h
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +26,6 @@
  * THE SOFTWARE.
  */
 
-<<<<<<<< HEAD:shared-bindings/_bleio/ScanResults.h
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H
 
@@ -42,18 +37,3 @@ extern const mp_obj_type_t bleio_scanresults_type;
 mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_BLEIO_SCANRESULTS_H
-========
-#ifndef MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_H
-#define MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_H
-
-#include "py/obj.h"
-
-// Call instead of tud_task()
-void mp_usbd_task(void);
-
-// Function to be implemented in port code.
-// Can write a string up to MICROPY_HW_USB_DESC_STR_MAX characters long, plus terminating byte.
-extern void mp_usbd_port_get_serial_number(char *buf);
-
-#endif // MICROPY_INCLUDED_SHARED_TINYUSB_USBD_H
->>>>>>>> v1.20.0:shared/tinyusb/mp_usbd.h

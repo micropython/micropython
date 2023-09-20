@@ -1064,12 +1064,13 @@ STATIC mp_obj_t _EVE_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC const mp_obj_type_t _EVE_type = {
-    { &mp_type_type },
-    .name = MP_QSTR__EVE,
-    .make_new = _EVE_make_new,
-    .locals_dict = (void *)&_EVE_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    _EVE_type,
+    MP_QSTR__EVE,
+    MP_TYPE_FLAG_NONE,
+    make_new, _EVE_make_new,
+    locals_dict, &_EVE_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t mp_module__eve_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__eve) },
