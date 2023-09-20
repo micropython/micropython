@@ -366,6 +366,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     bitbangio_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
-    make_new,bitbangio_i2c_make_new,
+    make_new, bitbangio_i2c_make_new,
     locals_dict, &bitbangio_i2c_locals_dict
     );

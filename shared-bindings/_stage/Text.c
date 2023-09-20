@@ -109,5 +109,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Text,
     MP_TYPE_FLAG_NONE,
     make_new, text_make_new,
-    locals_dict,&text_locals_dict
+    locals_dict, &text_locals_dict
     );
