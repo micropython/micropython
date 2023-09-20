@@ -34,10 +34,11 @@
 #include "py/mpstate.h"
 #include "py/misc.h"
 
+#if !MICROPY_GC_SPLIT_HEAP
 #define HEAP_PTR(ptr) ( \
-    MP_STATE_MEM(gc_pool_start) != 0                     /* Not on the heap if it isn't inited */ \
-    && ptr >= (void *)MP_STATE_MEM(gc_pool_start)        /* must be above start of pool */ \
-    && ptr < (void *)MP_STATE_MEM(gc_pool_end)           /* must be below end of pool */ \
+    MP_STATE_MEM(area).gc_pool_start != 0                     /* Not on the heap if it isn't inited */ \
+    && ptr >= (void *)MP_STATE_MEM(area).gc_pool_start        /* must be above start of pool */ \
+    && ptr < (void *)MP_STATE_MEM(area).gc_pool_end           /* must be below end of pool */ \
     )
 
 // ptr should be of type void*
@@ -45,6 +46,7 @@
     ((uintptr_t)(ptr) & (MICROPY_BYTES_PER_GC_BLOCK - 1)) == 0          /* must be aligned on a block */ \
     && HEAP_PTR(ptr) \
     )
+#endif
 
 void gc_init(void *start, void *end);
 void gc_deinit(void);
