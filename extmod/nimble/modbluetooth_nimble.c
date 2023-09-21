@@ -270,8 +270,6 @@ STATIC void set_random_address(bool nrpa) {
 #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 // For ble_hs_pvcy_set_our_irk
 #include "nimble/host/src/ble_hs_pvcy_priv.h"
-// For ble_hs_hci_util_rand
-#include "nimble/host/src/ble_hs_hci_priv.h"
 // For ble_hs_misc_restore_irks
 #include "nimble/host/src/ble_hs_priv.h"
 
@@ -299,7 +297,7 @@ STATIC int load_irk(void) {
     } else {
         DEBUG_printf("load_irk: Generating new IRK.\n");
         uint8_t rand_irk[16];
-        rc = ble_hs_hci_util_rand(rand_irk, 16);
+        rc = ble_hs_hci_rand(rand_irk, 16);
         if (rc) {
             return rc;
         }
@@ -531,12 +529,12 @@ STATIC int central_gap_event_cb(struct ble_gap_event *event, void *arg) {
 // TODO: In the future if a port ever needs to customise these functions
 // then investigate using MP_WEAK or splitting them out to another .c file.
 
-#include "transport/uart/ble_hci_uart.h"
+#include "nimble/transport.h"
 
 void mp_bluetooth_nimble_port_hci_init(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_init (nimble default)\n");
-    // This calls mp_bluetooth_hci_uart_init (via ble_hci_uart_init --> hal_uart_config --> mp_bluetooth_hci_uart_init).
-    ble_hci_uart_init();
+    // This calls mp_bluetooth_hci_uart_init (via ble_transport_hs_init --> hal_uart_config --> mp_bluetooth_hci_uart_init).
+    ble_transport_ll_init();
     mp_bluetooth_hci_controller_init();
 }
 
@@ -618,19 +616,19 @@ int mp_bluetooth_init(void) {
     MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
     #endif
 
-    // Allow port (ESP32) to override NimBLE's HCI init.
-    // Otherwise default implementation above calls ble_hci_uart_init().
-    mp_bluetooth_nimble_port_hci_init();
-
-    // Static initialization is complete, can start processing events.
-    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
-
     // Initialise NimBLE memory and data structures.
     DEBUG_printf("mp_bluetooth_init: nimble_port_init\n");
     nimble_port_init();
 
+    // Allow port (ESP32) to override NimBLE's HCI init.
+    // Otherwise default implementation above calls ble_transport_hs_init().
+    mp_bluetooth_nimble_port_hci_init();
+
     // Make sure that the HCI UART and event handling task is running.
     mp_bluetooth_nimble_port_start();
+
+    // Static initialization is complete, can start processing events.
+    mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
 
     // Run the scheduler while we wait for stack startup.
     // On non-ringbuffer builds (NimBLE on STM32/Unix) this will also poll the UART and run the event queue.

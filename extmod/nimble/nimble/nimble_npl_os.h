@@ -62,13 +62,11 @@ struct ble_npl_event {
     ble_npl_event_fn *fn;
     void *arg;
     bool pending;
-    struct ble_npl_event *prev;
     struct ble_npl_event *next;
 };
 
 struct ble_npl_eventq {
     struct ble_npl_event *head;
-    struct ble_npl_eventq *nextq;
 };
 
 struct ble_npl_callout {
@@ -89,8 +87,7 @@ struct ble_npl_sem {
 
 // --- Called by the MicroPython port -----------------------------------------
 
-void mp_bluetooth_nimble_os_eventq_run_all(void);
-void mp_bluetooth_nimble_os_callout_process(void);
+void mp_bluetooth_nimble_run_host_stack(void);
 
 // --- Must be provided by the MicroPython port -------------------------------
 

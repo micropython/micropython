@@ -353,7 +353,10 @@ SRC_C += mpbthciport.c
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-SRC_C += mpnimbleport.c
+# Use the common scheduler-based implementation of mpnimbleport.c.
+SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
+	mpnimbleport_scheduler.c \
+	)
 endif
 
 SRC_O += \

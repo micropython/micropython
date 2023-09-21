@@ -65,8 +65,14 @@ void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
 // This task is scheduled periodically via a timer, or immediately after UART RX IRQ.
 STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
     (void)node;
+
+    // Provided by either mpnimbleport.c or mpbtstackport.c.
+    extern bool mp_bluetooth_run_hci_uart(void);
+    extern bool mp_bluetooth_run_host_stack(void);
+
     // This will process all buffered HCI UART data, and run any callouts or events.
-    mp_bluetooth_hci_poll();
+    mp_bluetooth_run_hci_uart();
+    mp_bluetooth_run_host_stack();
 }
 
 // Called periodically (systick) or directly (e.g. UART RX IRQ) in order to

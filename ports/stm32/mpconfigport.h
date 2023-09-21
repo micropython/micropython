@@ -298,7 +298,7 @@ static inline mp_uint_t disable_irq(void) {
 #endif
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
-#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (0)// MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
 // We need an implementation of the log2 function which is not a macro

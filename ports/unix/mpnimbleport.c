@@ -33,42 +33,51 @@
 #include "nimble/nimble_npl.h"
 
 #include "extmod/nimble/modbluetooth_nimble.h"
-#include "extmod/nimble/hal/hal_uart.h"
+#include "extmod/nimble/transport/uart_ll.h"
 
 #define DEBUG_printf(...) // printf(__VA_ARGS__)
 
-// Called by the UART polling thread in mpbthciport.c.
-bool mp_bluetooth_hci_poll(void) {
-    // DEBUG_printf("mp_bluetooth_hci_poll (unix nimble) %d\n", mp_bluetooth_nimble_ble_state);
-
-    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
-        DEBUG_printf("mp_bluetooth_hci_poll (unix nimble) -- shutdown\n");
-        return false;
-    }
-
-    if (mp_bluetooth_nimble_ble_state >= MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
-        // Run any timers.
-        mp_bluetooth_nimble_os_callout_process();
-
-        // Process incoming UART data, and run events as they are generated.
-        mp_bluetooth_nimble_hci_uart_process(true);
-
-        // Run any remaining events (e.g. if there was no UART data).
-        mp_bluetooth_nimble_os_eventq_run_all();
-    }
-
-    return true;
-}
+extern pthread_mutex_t nimble_mutex;
 
 bool mp_bluetooth_hci_active(void) {
     return mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF;
 }
 
+bool mp_bluetooth_run_hci_uart(void) {
+    if (!mp_bluetooth_hci_active()) {
+        return false;
+    }
+
+    if (mp_bluetooth_nimble_ble_state >= MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
+        mp_bluetooth_nimble_hci_uart_process();
+    }
+
+    return true;
+}
+
+bool mp_bluetooth_run_host_stack(void) {
+    if (!mp_bluetooth_hci_active()) {
+        return false;
+    }
+
+    if (mp_bluetooth_nimble_ble_state >= MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC) {
+        // Run any timers and pending events in the queue.
+        mp_bluetooth_nimble_run_host_stack();
+    }
+
+    return true;
+}
+
 // Extra port-specific helpers.
 void mp_bluetooth_nimble_hci_uart_wfi(void) {
-    // This is called while NimBLE is waiting in ble_npl_sem_pend, i.e. waiting for an HCI ACK.
-    // Do not need to run events here, only processing incoming HCI data.
-    mp_bluetooth_nimble_hci_uart_process(false);
+    // pthread_mutex_lock(&nimble_mutex);
+    // // This is called while NimBLE is waiting in ble_npl_sem_pend, i.e. waiting for an HCI ACK.
+    // // Do not need to run events here, only processing incoming HCI data.
+    // mp_bluetooth_nimble_hci_uart_process(false);
+    // pthread_mutex_unlock(&nimble_mutex);
+    // mp_bluetooth_hci_poll(true);
+
+    sched_yield();
 }
 
 #endif // MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_NIMBLE

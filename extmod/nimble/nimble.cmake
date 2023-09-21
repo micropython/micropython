@@ -15,12 +15,13 @@ target_include_directories(micropy_extmod_nimble INTERFACE
     ${NIMBLE_LIB_DIR}/nimble/host/store/ram/include
     ${NIMBLE_LIB_DIR}/nimble/host/util/include
     ${NIMBLE_LIB_DIR}/nimble/include
-    ${NIMBLE_LIB_DIR}/nimble/transport/uart/include
+    ${NIMBLE_LIB_DIR}/nimble/transport/include
+    ${NIMBLE_LIB_DIR}/nimble/transport/common/hci_h4/include
     ${NIMBLE_LIB_DIR}/porting/nimble/include
 )
 
 target_sources(micropy_extmod_nimble INTERFACE
-    ${NIMBLE_EXTMOD_DIR}/hal/hal_uart.c
+    ${NIMBLE_EXTMOD_DIR}/transport/uart_ll.c
     ${NIMBLE_EXTMOD_DIR}/nimble/nimble_npl_os.c
     ${NIMBLE_LIB_DIR}/ext/tinycrypt/src/aes_encrypt.c
     ${NIMBLE_LIB_DIR}/ext/tinycrypt/src/cmac_mode.c
@@ -60,7 +61,6 @@ target_sources(micropy_extmod_nimble INTERFACE
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_l2cap_coc.c
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_l2cap_sig.c
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_l2cap_sig_cmd.c
-    ${NIMBLE_LIB_DIR}/nimble/host/src/ble_monitor.c
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_sm.c
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_sm_alg.c
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_sm_cmd.c
@@ -70,7 +70,8 @@ target_sources(micropy_extmod_nimble INTERFACE
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_store_util.c
     ${NIMBLE_LIB_DIR}/nimble/host/src/ble_uuid.c
     ${NIMBLE_LIB_DIR}/nimble/host/util/src/addr.c
-    ${NIMBLE_LIB_DIR}/nimble/transport/uart/src/ble_hci_uart.c
+    ${NIMBLE_LIB_DIR}/nimble/transport/src/transport.c
+    ${NIMBLE_LIB_DIR}/nimble/transport/common/hci_h4/src/hci_h4.c
     ${NIMBLE_LIB_DIR}/porting/nimble/src/endian.c
     ${NIMBLE_LIB_DIR}/porting/nimble/src/mem.c
     ${NIMBLE_LIB_DIR}/porting/nimble/src/nimble_port.c

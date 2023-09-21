@@ -56,7 +56,7 @@
 
 // Pairing and bonding enabled by default, but can be disabled by a port.
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-#define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (1)
+#define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (0)
 #endif
 
 // Optionally enable support for the `hci_cmd` function allowing

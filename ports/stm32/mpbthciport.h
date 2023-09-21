@@ -45,10 +45,4 @@ static inline void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
     MICROPY_BOARD_BT_HCI_POLL_IN_MS(ms);
 }
 
-// Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
-// Request new data from the uart and pass to the stack, and run pending events/callouts.
-// This is a low-level function and should not be called directly, use
-// mp_bluetooth_hci_poll_now/mp_bluetooth_hci_poll_in_ms instead.
-void mp_bluetooth_hci_poll(void);
-
 #endif // MICROPY_INCLUDED_STM32_MPBTHCIPORT_H

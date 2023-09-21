@@ -48,6 +48,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <poll.h>
 
 #define DEBUG_printf(...) // printf(__VA_ARGS__)
 
@@ -61,26 +62,59 @@ uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 STATIC int uart_fd = -1;
 
 // Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
-extern bool mp_bluetooth_hci_poll(void);
+extern bool mp_bluetooth_run_hci_uart(void);
+extern bool mp_bluetooth_run_host_stack(void);
 
 // Allows the stack to tell us that we should stop running the hci poll loop.
 extern bool mp_bluetooth_hci_active(void);
 
-STATIC const useconds_t UART_POLL_INTERVAL_US = 1000;
-STATIC pthread_t hci_poll_thread_id;
+STATIC const useconds_t UART_POLL_INTERVAL_MS = 200;
+STATIC const useconds_t TIMER_POLL_INTERVAL_MS = 1;
+STATIC pthread_t hci_uart_poll_thread_id;
+STATIC pthread_t hci_event_poll_thread_id;
+
+// This simulates a UART RX irq that delivers incoming UART data into the host
+// stack as it arrives.
+STATIC void *hci_uart_poll_thread(void *arg) {
+    (void)arg;
+
+    DEBUG_printf("hci_uart_poll_thread: start\n");
+
+    while (mp_bluetooth_hci_active()) {
+        // Wait for the UART to become readable (or closed).
+        struct pollfd fd = { .fd = uart_fd, .events = POLLIN | POLLHUP };
+        int ret = poll(&fd, 1, UART_POLL_INTERVAL_MS);
+        if (ret > 0 && (fd.revents & POLLIN)) {
+            mp_bluetooth_run_hci_uart();
+        }
+    }
+
+    DEBUG_printf("~hci_uart_poll_thread\n");
+
+    return NULL;
+}
 
 // We run the host stack periodically (every 1ms) by a background thread.
 // Because MICROPY_PY_THREAD_RTOS is enabled, when the host stack tries
 // to call into Python, it will use mp_thread_run_on_mp_thread to run
 // the callbacks on a Python thread.
-STATIC void *hci_poll_thread(void *arg) {
+STATIC void *hci_event_poll_thread(void *arg) {
     (void)arg;
 
-    // TODO: Replace with select-readable on the uart with a 1ms timeout.
+    DEBUG_printf("hci_event_poll_thread: start\n");
+
     while (mp_bluetooth_hci_active()) {
-        mp_bluetooth_hci_poll();
-        usleep(UART_POLL_INTERVAL_US);
+        // TODO: A potential optimisation here would be to immediately wake up
+        // hci_event_poll_thread when the UART thread receives data, which
+        // would decrease the latency of responding to the incoming UART data,
+        // and allow a longer (more efficient) sleep interval. Alternatively,
+        // this could know more about the stack's internals (e.g. length of
+        // queue or next timer event).
+        usleep(TIMER_POLL_INTERVAL_MS * 1000);
+        mp_bluetooth_run_host_stack();
     }
+
+    DEBUG_printf("~hci_event_poll_thread\n");
 
     return NULL;
 }
@@ -131,6 +165,8 @@ STATIC int configure_uart(void) {
     return 0;
 }
 
+pthread_mutex_t nimble_mutex;
+
 // HCI UART bindings.
 int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     (void)port;
@@ -162,11 +198,17 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
         return -1;
     }
 
-    // Create a thread to run the polling loop.
-    pthread_attr_t attr;
-    pthread_attr_init(&attr);
-    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    pthread_create(&hci_poll_thread_id, &attr, &hci_poll_thread, NULL);
+    pthread_mutexattr_t nimble_mutex_attr;
+    pthread_mutexattr_init(&nimble_mutex_attr);
+    pthread_mutexattr_settype(&nimble_mutex_attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&nimble_mutex, &nimble_mutex_attr);
+
+    // Create a threads to run the uart and the host stack.
+    pthread_attr_t joinable_attr;
+    pthread_attr_init(&joinable_attr);
+    pthread_attr_setdetachstate(&joinable_attr, PTHREAD_CREATE_JOINABLE);
+    pthread_create(&hci_uart_poll_thread_id, &joinable_attr, &hci_uart_poll_thread, NULL);
+    pthread_create(&hci_event_poll_thread_id, &joinable_attr, &hci_event_poll_thread, NULL);
 
     return 0;
 }
@@ -175,15 +217,19 @@ int mp_bluetooth_hci_uart_deinit(void) {
     DEBUG_printf("mp_bluetooth_hci_uart_deinit\n");
 
     if (uart_fd == -1) {
+        DEBUG_printf("--> nothing to do\n");
         return 0;
     }
-
-    // Wait for the poll loop to terminate when the state is set to OFF.
-    pthread_join(hci_poll_thread_id, NULL);
 
     // Close the UART.
     close(uart_fd);
     uart_fd = -1;
+
+    // Wait for the uart + host stack threads to terminate when the state is set to OFF.
+    pthread_join(hci_uart_poll_thread_id, NULL);
+    pthread_join(hci_event_poll_thread_id, NULL);
+
+    DEBUG_printf("~mp_bluetooth_hci_uart_deinit\n");
 
     return 0;
 }
