@@ -200,7 +200,7 @@ STATIC mp_obj_t esp32_partition_writeblocks(size_t n_args, const mp_obj_t *args)
                     check_esp_err(esp_partition_write(self->part, addr, self->cache, o));
                 }
                 if (top_addr < addr + NATIVE_BLOCK_SIZE_BYTES) {
-                    check_esp_err(esp_partition_write(self->part, top_addr, self->cache, addr + NATIVE_BLOCK_SIZE_BYTES - top_addr));
+                    check_esp_err(esp_partition_write(self->part, top_addr, self->cache + (top_addr - addr), addr + NATIVE_BLOCK_SIZE_BYTES - top_addr));
                 }
                 o = 0;
                 addr += NATIVE_BLOCK_SIZE_BYTES;
