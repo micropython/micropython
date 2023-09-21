@@ -65,8 +65,15 @@ reassemble_packet = bytearray()
 
 with open(sys.argv[1], "r") as f:
     for line in f:
-        line = line.strip()
-        m = re.match("([<>]) \\[ *([0-9]+)\\] ([A-Fa-f0-9:]+)", line)
+        # Remove color formatting.
+        line = line.strip().encode()
+        if line[0] == ord("\x1b"):
+            line = line[7:]
+        if len(line) >= 4 and line[-4] == ord("\x1b"):
+            line = line[:-4]
+        line = line.decode()
+
+        m = re.match("([<>]) \\[ *([0-9]+)\\] (?:[TR]X: )?([A-Fa-f0-9:]+)", line)
         if not m:
             continue
 
