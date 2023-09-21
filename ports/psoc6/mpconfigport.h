@@ -60,7 +60,8 @@
 // #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
 #define MICROPY_ENABLE_GC                       (1)
-#define MICROPY_GC_HEAP_SIZE                    (256 * 1024)
+// #define MICROPY_GC_HEAP_SIZE                    (256 * 1024) //256 kb sectors -> 1 sector (0.25 of 2 MB flash)
+#define MICROPY_GC_HEAP_SIZE                    (128 * 1024) // 32 kb
 
 #define MICROPY_MEM_STATS                       (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE      (1)
