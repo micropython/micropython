@@ -36,3 +36,5 @@ typedef struct {
     // Track if this object owns access to the underlying MDNS service.
     bool inited;
 } mdns_server_obj_t;
+
+void mdns_server_deinit_singleton(void);
