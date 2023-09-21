@@ -103,7 +103,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
 
     adc_cali_scheme_ver_t supported_schemes;
     adc_cali_check_scheme(&supported_schemes);
-    adc_cali_scheme_ver_t calibration_scheme;
+    adc_cali_scheme_ver_t calibration_scheme = 0;
     adc_cali_handle_t calibration;
 
     #if defined(ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED) && ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
@@ -124,7 +124,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
             .atten = ATTENUATION,
             .bitwidth = DATA_WIDTH,
             #ifdef CONFIG_IDF_TARGET_ESP32
-            .default_vref = DEFAULT_VREF;
+            .default_vref = DEFAULT_VREF,
             #endif
         };
         if (adc_cali_create_scheme_line_fitting(&config, &calibration) == ESP_OK) {

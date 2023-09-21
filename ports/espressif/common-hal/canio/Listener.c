@@ -39,7 +39,7 @@
 
 #include "hal/twai_ll.h"
 
-#if SOC_TWAI_CONTROLLER_NUM > 1 || !defined(TWAI)
+#if !defined(TWAI) && defined(TWAI0)
 #define TWAI TWAI0
 #endif
 

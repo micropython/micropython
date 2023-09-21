@@ -77,6 +77,7 @@ INC += \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/deprecated \
+	-isystem esp-idf/components/driver/dac/include \
 	-isystem esp-idf/components/driver/gpio/include \
 	-isystem esp-idf/components/driver/i2c/include \
 	-isystem esp-idf/components/driver/i2s/include \
