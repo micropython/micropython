@@ -39,7 +39,8 @@
 
 #include "hal/twai_ll.h"
 
-#if !defined(TWAI) && defined(TWAI0)
+// There is no logic that dictates TWAI vs TWAI0
+#if defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32C6)
 #define TWAI TWAI0
 #endif
 
