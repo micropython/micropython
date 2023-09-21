@@ -208,7 +208,7 @@ void common_hal_analogbufio_bufferedin_deinit(analogbufio_bufferedin_obj_t *self
 
 static bool check_valid_data(const adc_digi_output_data_t *data, const mcu_pin_obj_t *pin, adc_digi_convert_mode_t convert_mode, adc_digi_output_format_t output_format) {
     unsigned int unit;
-    #if CONFIG_IDF_TARGET_ESP32C6 || CONFIG_IDF_TARGET_ESP32H2
+    #if SOC_ADC_PERIPH_NUM == 1
     unit = 0;
     #else
     unit = data->type2.unit;

@@ -87,7 +87,7 @@
 #endif
 
 #include "soc/efuse_reg.h"
-#if defined(CONFIG_IDF_TARGET_ESP3H2) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#if defined(SOC_LP_AON_SUPPORTED)
 #include "soc/lp_aon_reg.h"
 #define CP_SAVED_WORD_REGISTER LP_AON_STORE0_REG
 #else

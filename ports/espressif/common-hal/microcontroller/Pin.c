@@ -150,6 +150,31 @@ static const uint64_t pin_mask_reset_forbidden =
     #endif
     #endif // ESP32C6
 
+    #if defined(CONFIG_IDF_TARGET_ESP32H2)
+    // Never ever reset pins used to communicate with the in-package SPI flash.
+    GPIO_SEL_15 |
+    GPIO_SEL_16 |
+    GPIO_SEL_17 |
+    GPIO_SEL_18 |
+    GPIO_SEL_19 |
+    GPIO_SEL_20 |
+    GPIO_SEL_21 |
+    // It isn't clear what these are used for but they aren't broken out for
+    // user use.
+    GPIO_SEL_6 |
+    GPIO_SEL_7 |
+    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
+    // Never ever reset serial/JTAG communication pins.
+    GPIO_SEL_26 |         // USB D-
+    GPIO_SEL_27 |         // USB D+
+    #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Never reset debug UART/console pins.
+    GPIO_SEL_23 |
+    GPIO_SEL_24 |
+    #endif
+    #endif // ESP32C6
+
     #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     // Never ever reset pins used to communicate with SPI flash and PSRAM.
     GPIO_SEL_19 |         // USB D-
@@ -278,7 +303,7 @@ void preserve_pin_number(gpio_num_t pin_number) {
         _preserved_pin_mask |= PIN_BIT(pin_number);
     }
     if (_preserved_pin_mask) {
-        #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
+        #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
         // Allow pin holds to work during deep sleep. This increases power consumption noticeably
         // during deep sleep, so enable holds only if we actually are holding some pins.
         // 270uA or so extra current is consumed even with no pins held.
@@ -327,7 +352,7 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 void reset_all_pins(void) {
     // Undo deep sleep holds in case we woke up from deep sleep.
     // We still need to unhold individual pins, which is done by _reset_pin.
-    #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
+    #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     gpio_deep_sleep_hold_dis();
     #endif
 

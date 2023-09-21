@@ -80,6 +80,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 
     #if defined(CONFIG_IDF_TARGET_ESP32)
     uint32_t mac_address_part = REG_READ(EFUSE_BLK0_RDATA1_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_0_REG);
     #else
     uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_0_REG);
     #endif
@@ -95,6 +97,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     // and 16 in the high order word
     #if defined(CONFIG_IDF_TARGET_ESP32)
     mac_address_part = REG_READ(EFUSE_BLK0_RDATA2_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_1_REG);
     #else
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
     #endif
