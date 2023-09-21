@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_MPTHREAD_H
 #define MICROPY_INCLUDED_PY_MPTHREAD_H
 
+#include <stdbool.h>
+
 #include "py/mpconfig.h"
 
 #if MICROPY_PY_THREAD
@@ -50,9 +52,15 @@ void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex);
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait);
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
 
+void mp_thread_sem_init(mp_thread_sem_t *sem, mp_uint_t value);
+bool mp_thread_sem_wait(mp_thread_sem_t *sem, bool wait);
+void mp_thread_sem_post(mp_thread_sem_t *sem);
+int mp_thread_sem_value(mp_thread_sem_t *sem);
+
 #else // !MICROPY_PY_THREAD
 
-// When threading is disabled, provide no-op implementation of mp_thread_mutex_t.
+// When threading is disabled, provide no-op implementation of
+// mp_thread_mutex_t and mp_thread_sem_t.
 
 typedef struct {
 } mp_thread_mutex_t;
@@ -62,9 +70,38 @@ static inline void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
 static inline void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex) {
 }
 static inline int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
-    return 0;
+    return 1;
 }
 static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
+}
+
+typedef struct {
+    volatile mp_uint_t value;
+} mp_thread_sem_t;
+
+static inline void mp_thread_sem_init(mp_thread_sem_t *sem, mp_uint_t value) {
+    sem->value = value;
+}
+static inline bool mp_thread_sem_wait(mp_thread_sem_t *sem, bool wait) {
+    if (wait) {
+        while (sem->value == 0) {
+        }
+        --sem->value;
+        return true;
+    } else {
+        if (sem->value == 0) {
+            return false;
+        } else {
+            --sem->value;
+            return true;
+        }
+    }
+}
+static inline void mp_thread_sem_post(mp_thread_sem_t *sem) {
+    ++sem->value;
+}
+static inline int mp_thread_sem_value(mp_thread_sem_t *sem) {
+    return sem->value;
 }
 
 #endif // MICROPY_PY_THREAD
