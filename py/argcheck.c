@@ -27,8 +27,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "supervisor/linker.h" // PLACE_IN_ITCM
-
 #include "py/runtime.h"
 
 void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig) {

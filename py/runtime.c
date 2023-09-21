@@ -31,8 +31,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "supervisor/linker.h" // PLACE_IN_ITCM
-
 #include "py/parsenum.h"
 #include "py/compile.h"
 #include "py/mperrno.h"

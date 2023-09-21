@@ -29,8 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "supervisor/linker.h" // CIRCUITPY: PLACE_IN_ITCM
-
 #include "py/gc.h"
 #include "py/runtime.h"
 

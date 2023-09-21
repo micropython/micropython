@@ -27,8 +27,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "supervisor/linker.h" // CIRUCITPY: PLACE_IN_ITCM
-
 #include "py/nlr.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"

@@ -24,8 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/linker.h" // PLACE_IN_ITCM
-
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
