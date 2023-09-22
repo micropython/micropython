@@ -52,7 +52,6 @@ STATIC mp_obj_t namedtuple_asdict(mp_obj_t self_in) {
     mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
     // make it an OrderedDict
-    mp_obj_dict_t *dictObj = MP_OBJ_TO_PTR(dict);
     dictObj->base.type = &mp_type_ordereddict;
     dictObj->map.is_ordered = 1;
     #else
