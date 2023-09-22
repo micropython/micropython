@@ -87,7 +87,13 @@
 #endif
 
 #include "soc/efuse_reg.h"
+#if defined(SOC_LP_AON_SUPPORTED)
+#include "soc/lp_aon_reg.h"
+#define CP_SAVED_WORD_REGISTER LP_AON_STORE0_REG
+#else
 #include "soc/rtc_cntl_reg.h"
+#define CP_SAVED_WORD_REGISTER RTC_CNTL_STORE0_REG
+#endif
 #include "soc/spi_pins.h"
 
 #include "bootloader_flash_config.h"
@@ -284,7 +290,7 @@ safe_mode_t port_init(void) {
     #endif
 
     #if ENABLE_JTAG
-    ESP_LOGI(TAG, "Marking JTAG pins never_reset")
+    ESP_LOGI(TAG, "Marking JTAG pins never_reset");
     // JTAG
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO4);
@@ -451,7 +457,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-    #ifndef CONFIG_IDF_TARGET_ESP32C3
+    #ifndef CONFIG_IDF_TARGET_ARCH_RISCV
     esp_backtrace_print(100);
     #endif
     esp_restart();
@@ -491,13 +497,12 @@ bool port_has_fixed_stack(void) {
     return true;
 }
 
-// Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
-    REG_WRITE(RTC_CNTL_STORE0_REG, value);
+    REG_WRITE(CP_SAVED_WORD_REGISTER, value);
 }
 
 uint32_t port_get_saved_word(void) {
-    return REG_READ(RTC_CNTL_STORE0_REG);
+    return REG_READ(CP_SAVED_WORD_REGISTER);
 }
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {

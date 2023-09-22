@@ -95,7 +95,9 @@ def check_vid_pid(files, clusterlist):
     if duplicates are found, and lists the duplicates.
     """
 
-    usb_pattern = re.compile(r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3)$", flags=re.M)
+    usb_pattern = re.compile(
+        r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3|esp32c6|esp32h2)$", flags=re.M
+    )
 
     usb_ids = defaultdict(set)
     for board_config in files:

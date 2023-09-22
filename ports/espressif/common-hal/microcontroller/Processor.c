@@ -65,17 +65,7 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    return CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    return CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-    return CONFIG_ESP32S2_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    return CONFIG_ESP32S3_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #else
-    #error No known CONFIG_IDF_TARGET_xxx found
-    #endif
+    return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ * 1000000;
 }
 
 STATIC uint8_t swap_nibbles(uint8_t v) {
@@ -90,6 +80,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 
     #if defined(CONFIG_IDF_TARGET_ESP32)
     uint32_t mac_address_part = REG_READ(EFUSE_BLK0_RDATA1_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_0_REG);
     #else
     uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_0_REG);
     #endif
@@ -105,6 +97,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     // and 16 in the high order word
     #if defined(CONFIG_IDF_TARGET_ESP32)
     mac_address_part = REG_READ(EFUSE_BLK0_RDATA2_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_1_REG);
     #else
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
     #endif

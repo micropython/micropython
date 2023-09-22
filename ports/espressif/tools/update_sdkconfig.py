@@ -164,6 +164,7 @@ def update(debug, board, update_all):
     board_make = pathlib.Path(f"boards/{board}/mpconfigboard.mk")
     psram_size = "0"
     uf2_bootloader = None
+    ble_enabled = None
     for line in board_make.read_text().split("\n"):
         if "=" not in line or line.startswith("#"):
             continue
@@ -173,7 +174,12 @@ def update(debug, board, update_all):
         if key == "IDF_TARGET":
             target = value
             if uf2_bootloader is None:
-                uf2_bootloader = target not in ("esp32", "esp32c3")
+                uf2_bootloader = target not in ("esp32", "esp32c3", "esp32c6", "esp32h2")
+            if ble_enabled is None:
+                ble_enabled = target not in (
+                    "esp32",
+                    "esp32s2",
+                )  # ESP32 is disabled by us. S2 doesn't support it.
         elif key == "CIRCUITPY_ESP_FLASH_SIZE":
             flash_size = value
         elif key == "CIRCUITPY_ESP_FLASH_MODE":
@@ -188,6 +194,8 @@ def update(debug, board, update_all):
             psram_freq = value
         elif key == "UF2_BOOTLOADER":
             uf2_bootloader = not (value == "0")
+        elif key == "CIRCUITPY_BLEIO":
+            ble_enabled = not (value == "0")
 
     os.environ["IDF_TARGET"] = target
     os.environ[
@@ -232,8 +240,9 @@ def update(debug, board, update_all):
         sdkconfigs.extend((psram_config, psram_size_config, psram_mode_config, psram_freq_config))
     target_config = pathlib.Path(f"esp-idf-config/sdkconfig-{target}.defaults")
     sdkconfigs.append(target_config)
-    ble_config = pathlib.Path(f"esp-idf-config/sdkconfig-ble.defaults")
-    sdkconfigs.append(ble_config)
+    if ble_enabled:
+        ble_config = pathlib.Path(f"esp-idf-config/sdkconfig-ble.defaults")
+        sdkconfigs.append(ble_config)
     board_config = pathlib.Path(f"boards/{board}/sdkconfig")
     # Don't include the board file in cp defaults. The board may have custom
     # overrides.
@@ -349,15 +358,29 @@ def update(debug, board, update_all):
                         first = False
                     target_kconfig_snippets.add(loc)
                     target_symbols = target_symbols.union(differing_keys)
+
+            # kconfig settings can be set by others. item.referenced doesn't
+            # know this. So we collect all things that reference this using
+            # rev_dep.
+            all_references = set(item.referenced)
+            to_unpack = [item.rev_dep]
+            while to_unpack:
+                rdep = to_unpack.pop()
+                if isinstance(rdep, tuple):
+                    to_unpack.extend(rdep)
+                elif isinstance(rdep, int):
+                    # skip logic
+                    pass
+                else:
+                    all_references.add(rdep)
+                    all_references.update(rdep.referenced)
             psram_reference = False
-            for referenced in item.referenced:
+            for referenced in all_references:
                 if referenced.name.startswith("IDF_TARGET"):
                     target_reference = True
-                    break
                 if referenced.name in target_symbols:
                     # Implicit target symbols
                     target_reference = True
-                    break
                 if referenced.name == "SPIRAM":
                     psram_reference = True
 

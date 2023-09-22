@@ -30,7 +30,7 @@
 
 #include "py/mphal.h"
 
-#include "components/driver/include/driver/gpio.h"
+#include "components/driver/gpio/include/driver/gpio.h"
 #include "components/hal/include/hal/gpio_hal.h"
 
 STATIC uint64_t _never_reset_pin_mask;
@@ -59,15 +59,18 @@ STATIC uint64_t _in_use_pin_mask;
 #define GPIO_SEL_18             (BIT(18))                   /*!< Pin 18 selected */
 #define GPIO_SEL_19             (BIT(19))                   /*!< Pin 19 selected */
 #define GPIO_SEL_20             (BIT(20))                   /*!< Pin 20 selected */
+#if SOC_GPIO_PIN_COUNT > 21
 #define GPIO_SEL_21             (BIT(21))                   /*!< Pin 21 selected */
-#if defined(CONFIG_IDF_TARGET_ESP32)
+#endif
+#if SOC_GPIO_PIN_COUNT > 22
 #define GPIO_SEL_22             (BIT(22))                   /*!< Pin 22 selected */
 #define GPIO_SEL_23             (BIT(23))                   /*!< Pin 23 selected */
-
+#define GPIO_SEL_24             (BIT(24))                   /*!< Pin 24 selected */
 #define GPIO_SEL_25             (BIT(25))                   /*!< Pin 25 selected */
-#endif
 #define GPIO_SEL_26             (BIT(26))                   /*!< Pin 26 selected */
 #define GPIO_SEL_27             (BIT(27))                   /*!< Pin 27 selected */
+#endif
+#if SOC_GPIO_PIN_COUNT > 28
 #define GPIO_SEL_28             (BIT(28))                   /*!< Pin 28 selected */
 #define GPIO_SEL_29             (BIT(29))                   /*!< Pin 29 selected */
 #define GPIO_SEL_30             (BIT(30))                   /*!< Pin 30 selected */
@@ -80,6 +83,7 @@ STATIC uint64_t _in_use_pin_mask;
 #define GPIO_SEL_37             ((uint64_t)PIN_BIT(37))     /*!< Pin 37 selected */
 #define GPIO_SEL_38             ((uint64_t)PIN_BIT(38))     /*!< Pin 38 selected */
 #define GPIO_SEL_39             ((uint64_t)PIN_BIT(39))     /*!< Pin 39 selected */
+#endif
 #if SOC_GPIO_PIN_COUNT > 40
 #define GPIO_SEL_40             ((uint64_t)PIN_BIT(40))     /*!< Pin 40 selected */
 #define GPIO_SEL_41             ((uint64_t)PIN_BIT(41))     /*!< Pin 41 selected */
@@ -88,10 +92,10 @@ STATIC uint64_t _in_use_pin_mask;
 #define GPIO_SEL_44             ((uint64_t)PIN_BIT(44))     /*!< Pin 44 selected */
 #define GPIO_SEL_45             ((uint64_t)PIN_BIT(45))     /*!< Pin 45 selected */
 #define GPIO_SEL_46             ((uint64_t)PIN_BIT(46))     /*!< Pin 46 selected */
-#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#endif
+#if SOC_GPIO_PIN_COUNT > 47
 #define GPIO_SEL_47             ((uint64_t)PIN_BIT(47))     /*!< Pin 47 selected */
 #define GPIO_SEL_48             ((uint64_t)PIN_BIT(48))     /*!< Pin 48 selected */
-#endif
 #endif
 
 // Bit mask of all pins that should never EVER be reset.
@@ -125,6 +129,51 @@ static const uint64_t pin_mask_reset_forbidden =
     GPIO_SEL_21 |
     #endif
     #endif // ESP32C3
+
+    #if defined(CONFIG_IDF_TARGET_ESP32C6)
+    // Never ever reset pins used to communicate with SPI flash.
+    GPIO_SEL_24 |         // SPICS0
+    GPIO_SEL_25 |         // SPIQ
+    GPIO_SEL_26 |         // SPIWP
+    GPIO_SEL_28 |         // SPIHD
+    GPIO_SEL_29 |         // SPICLK
+    GPIO_SEL_30 |         // SPID
+    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
+    // Never ever reset serial/JTAG communication pins.
+    GPIO_SEL_12 |         // USB D-
+    GPIO_SEL_13 |         // USB D+
+    #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Never reset debug UART/console pins.
+    GPIO_SEL_16 |
+    GPIO_SEL_17 |
+    #endif
+    #endif // ESP32C6
+
+    #if defined(CONFIG_IDF_TARGET_ESP32H2)
+    // Never ever reset pins used to communicate with the in-package SPI flash.
+    GPIO_SEL_15 |
+    GPIO_SEL_16 |
+    GPIO_SEL_17 |
+    GPIO_SEL_18 |
+    GPIO_SEL_19 |
+    GPIO_SEL_20 |
+    GPIO_SEL_21 |
+    // It isn't clear what these are used for but they aren't broken out for
+    // user use.
+    GPIO_SEL_6 |
+    GPIO_SEL_7 |
+    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
+    // Never ever reset serial/JTAG communication pins.
+    GPIO_SEL_26 |         // USB D-
+    GPIO_SEL_27 |         // USB D+
+    #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Never reset debug UART/console pins.
+    GPIO_SEL_23 |
+    GPIO_SEL_24 |
+    #endif
+    #endif // ESP32C6
 
     #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     // Never ever reset pins used to communicate with SPI flash and PSRAM.
@@ -254,10 +303,12 @@ void preserve_pin_number(gpio_num_t pin_number) {
         _preserved_pin_mask |= PIN_BIT(pin_number);
     }
     if (_preserved_pin_mask) {
+        #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
         // Allow pin holds to work during deep sleep. This increases power consumption noticeably
         // during deep sleep, so enable holds only if we actually are holding some pins.
         // 270uA or so extra current is consumed even with no pins held.
         gpio_deep_sleep_hold_en();
+        #endif
     }
 }
 
@@ -301,7 +352,9 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 void reset_all_pins(void) {
     // Undo deep sleep holds in case we woke up from deep sleep.
     // We still need to unhold individual pins, which is done by _reset_pin.
+    #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     gpio_deep_sleep_hold_dis();
+    #endif
 
     for (uint8_t i = 0; i < GPIO_PIN_COUNT; i++) {
         uint32_t iomux_address = GPIO_PIN_MUX_REG[i];

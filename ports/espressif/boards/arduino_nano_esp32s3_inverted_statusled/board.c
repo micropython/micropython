@@ -27,15 +27,7 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/include/driver/gpio.h"
-
-void board_init(void) {
-    // Debug UART
-    #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-    #endif
-}
+#include "components/driver/gpio/include/driver/gpio.h"
 
 bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
     if (pin_number == 13) {

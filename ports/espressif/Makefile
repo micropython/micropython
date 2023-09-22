@@ -27,9 +27,21 @@ include ../../py/circuitpy_mkenv.mk
 ifeq ($(IDF_TARGET),esp32c3)
 IDF_TARGET_ARCH = riscv
 CROSS_COMPILE = riscv32-esp-elf-
+else ifeq ($(IDF_TARGET),esp32c6)
+IDF_TARGET_ARCH = riscv
+CROSS_COMPILE = riscv32-esp-elf-
+else ifeq ($(IDF_TARGET),esp32h2)
+IDF_TARGET_ARCH = riscv
+CROSS_COMPILE = riscv32-esp-elf-
 else
 IDF_TARGET_ARCH = xtensa
 CROSS_COMPILE = xtensa-$(IDF_TARGET)-elf-
+endif
+
+ifeq ($(IDF_TARGET),esp32s3)
+BT_IDF_TARGET = esp32c3
+else
+BT_IDF_TARGET = $(IDF_TARGET)
 endif
 
 #######################################
@@ -52,23 +64,35 @@ INC += \
 	-isystem esp-idf/components/app_update/include \
 	-isystem esp-idf/components/bootloader_support/include \
 	-isystem esp-idf/components/bootloader_support/bootloader_flash/include \
-	-isystem esp-idf/components/bt/include/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/bt/include/$(BT_IDF_TARGET)/include \
 	-isystem esp-idf/components/bt/host/nimble/esp-hci/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/controller/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/services/gap/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/host/util/include \
+	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/transport/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/porting/nimble/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/porting/npl/freertos/include \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
 	-isystem esp-idf/components/driver/deprecated \
+	-isystem esp-idf/components/driver/dac/include \
+	-isystem esp-idf/components/driver/gpio/include \
+	-isystem esp-idf/components/driver/i2c/include \
+	-isystem esp-idf/components/driver/i2s/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/driver/ledc/include \
+	-isystem esp-idf/components/driver/spi/include \
+	-isystem esp-idf/components/driver/temperature_sensor/include \
+	-isystem esp-idf/components/driver/touch_sensor/include \
+	-isystem esp-idf/components/driver/touch_sensor/$(IDF_TARGET)/include \
+	-isystem esp-idf/components/driver/twai/include \
 	-isystem esp-idf/components/efuse/include \
 	-isystem esp-idf/components/efuse/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
-	-isystem esp-idf/components/esp_adc/deprecated/include \
+	-isystem esp-idf/components/esp_adc/include \
+	-isystem esp-idf/components/esp_adc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/esp_app_format/include \
 	-isystem esp-idf/components/esp_common/include \
 	-isystem esp-idf/components/esp_event/include \
@@ -85,6 +109,7 @@ INC += \
 	-isystem esp-idf/components/esp_wifi/include \
 	-isystem esp-idf/components/freertos/esp_additions/include \
 	-isystem esp-idf/components/freertos/esp_additions/include/freertos \
+	-isystem esp-idf/components/freertos/esp_additions/arch/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include/freertos \
 	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/portable/$(IDF_TARGET_ARCH)/include \
@@ -95,7 +120,9 @@ INC += \
 	-isystem esp-idf/components/log/include \
 	-isystem esp-idf/components/lwip/include \
 	-isystem esp-idf/components/lwip/lwip/src/include \
-	-isystem esp-idf/components/lwip/port/esp32/include \
+	-isystem esp-idf/components/lwip/port/include \
+	-isystem esp-idf/components/lwip/port/esp32xx/include \
+	-isystem esp-idf/components/lwip/port/freertos/include \
 	-isystem esp-idf/components/mbedtls/esp_crt_bundle/include \
 	-isystem esp-idf/components/mbedtls/mbedtls/include \
 	-isystem esp-idf/components/mbedtls/port/include \
@@ -153,12 +180,13 @@ CFLAGS += $(INC) -Werror -Wall -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_D
 # Most current ESPs have nano versions of newlib in ROM so we use them.
 ifneq ($(IDF_TARGET),esp32c6)
 	CFLAGS += --specs=nano.specs
+	LDFLAGS += -T$(IDF_TARGET).rom.newlib-nano.ld
 endif
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls
 else ifeq ($(IDF_TARGET_ARCH),riscv)
-CFLAGS += -march=rv32imc
+CFLAGS += -march=rv32imac_zicsr_zifencei
 endif
 
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
@@ -173,7 +201,6 @@ LDFLAGS += \
 	-T$(IDF_TARGET).rom.ld \
 	-T$(IDF_TARGET).rom.api.ld \
 	-T$(IDF_TARGET).rom.libgcc.ld \
-	-T$(IDF_TARGET).rom.newlib-nano.ld \
 	-Wl,-Bstatic \
 	-Wl,--no-warn-mismatch \
 	-Wl,--build-id=none \
@@ -189,6 +216,20 @@ LDFLAGS += \
 	-Tesp32c3.rom.newlib.ld \
 	-Tesp32c3.rom.version.ld \
 	-Tesp32c3.rom.eco3.ld
+else ifeq ($(IDF_TARGET),esp32c6)
+LDFLAGS += \
+	-Tesp32c6.rom.phy.ld \
+	-Tesp32c6.rom.pp.ld \
+	-Tesp32c6.rom.net80211.ld \
+	-Tesp32c6.rom.newlib.ld \
+	-Tesp32c6.rom.coexist.ld \
+	-Tesp32c6.rom.heap.ld \
+	-Tesp32c6.rom.wdt.ld
+else ifeq ($(IDF_TARGET),esp32h2)
+LDFLAGS += \
+	-Tesp32h2.rom.heap.ld \
+	-Tesp32h2.rom.newlib.ld \
+	-Tesp32h2.rom.wdt.ld
 else ifeq ($(IDF_TARGET),esp32s2)
 LDFLAGS += \
 	-T$(IDF_TARGET).rom.newlib-data.ld \
@@ -203,7 +244,7 @@ endif
 LIBS := -lgcc -lc -lstdc++
 
 # Use toolchain libm if we're not using our own.
-ifndef INTERNAL_LIBM
+ifneq ($(INTERNAL_LIBM),1)
 LIBS += -lm
 endif
 
@@ -243,12 +284,16 @@ SRC_C += \
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 
-ifeq ($(IDF_TARGET),esp32c3)
+ifneq ($(CIRCUITPY_ESP_USB_SERIAL_JTAG),0)
 SRC_C += supervisor/usb_serial_jtag.c
-else
-SRC_C += \
-	peripherals/pcnt.c \
-	peripherals/touch.c
+endif
+
+ifneq ($(CIRCUITPY_COUNTIO),0)
+SRC_C += peripherals/pcnt.c
+endif
+
+ifneq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),0)
+SRC_C += peripherals/touch.c
 endif
 
 ifneq ($(CIRCUITPY_USB),0)
@@ -408,20 +453,41 @@ update-all-sdkconfigs: $(BUILD)/esp-idf/config/sdkconfig.h
 update-board-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
 
-BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
-BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
+BINARY_WIFI_BLOBS = libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
+BINARY_BLOBS = esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libphy.a
+ifneq ($(CIRCUITPY_WIFI),0)
+	BINARY_BLOBS += esp-idf/components/esp_coex/lib/$(IDF_TARGET)/libcoexist.a $(addprefix esp-idf/components/esp_wifi/lib/$(IDF_TARGET)/, $(BINARY_WIFI_BLOBS))
+endif
 ifeq ($(IDF_TARGET),esp32)
 BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/librtc.a
 endif
 
-ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc esp_app_format esp_common esp_event esp_hw_support esp_netif esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc esp_app_format esp_common esp_event esp_hw_support esp_mm esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer freertos hal heap log newlib nvs_flash pthread soc spi_flash vfs
+ifneq ($(CIRCUITPY_WIFI),0)
+	ESP_IDF_COMPONENTS_LINK += esp_coex esp_netif esp-tls esp_wifi lwip mbedtls mdns wpa_supplicant
+endif
 ifneq ($(CIRCUITPY_BLEIO),0)
+	BLE_IMPL_esp32 := esp32
+	BLE_IMPL_esp32s3 := esp32c3
+	BLE_IMPL_esp32c2 := libble
+	BLE_IMPL_esp32c3 := esp32c3
+	BLE_IMPL_esp32c6 := libble
+	BLE_IMPL_esp32h2 := libble
+	BLE_IMPL = $(BLE_IMPL_$(IDF_TARGET))
+
 	ESP_IDF_COMPONENTS_LINK += bt
-	ifeq ($(IDF_TARGET),esp32)
-	BINARY_BLOBS += esp-idf/components/bt/controller/lib_esp32/$(IDF_TARGET)/libbtdm_app.a
-	else
+	ifeq ($(BLE_IMPL),esp32)
+		BINARY_BLOBS += esp-idf/components/bt/controller/lib_esp32/$(IDF_TARGET)/libbtdm_app.a
+	endif
+
+	ifeq ($(BLE_IMPL),esp32c3)
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
 					esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+	endif
+
+	ifeq ($(BLE_IMPL),libble)
+	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
+					esp-idf/components/bt/controller/lib_$(IDF_TARGET)/$(IDF_TARGET)-bt-lib/libble_app.a
 	endif
 endif
 ifneq ($(CIRCUITPY_ESPULP),0)
@@ -450,10 +516,15 @@ ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp-camera/libesp-camera
 endif
 
 ifneq ($(VALID_BOARD),)
+# From esp-idf/components/bootloader/Kconfig.projbuild
 # BOOTLOADER_OFFSET is determined by chip type, based on the ROM bootloader, and is not changeable.
 ifeq ($(IDF_TARGET),esp32)
 BOOTLOADER_OFFSET = 0x1000
+else ifeq ($(IDF_TARGET),esp32h2)
+BOOTLOADER_OFFSET = 0x0
 else ifeq ($(IDF_TARGET),esp32c3)
+BOOTLOADER_OFFSET = 0x0
+else ifeq ($(IDF_TARGET),esp32c6)
 BOOTLOADER_OFFSET = 0x0
 else ifeq ($(IDF_TARGET),esp32s3)
 BOOTLOADER_OFFSET = 0x0

@@ -56,12 +56,14 @@
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #define ADC_RESULT_BYTE     2
 #define ADC_CONV_LIMIT_EN   0
-#elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32H2)
+#elif defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
 #define ADC_RESULT_BYTE     4
 #define ADC_CONV_LIMIT_EN   0
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #define ADC_RESULT_BYTE     4
 #define ADC_CONV_LIMIT_EN   0
+#else
+#error No known CONFIG_IDF_TARGET_xxx found
 #endif
 
 static void start_dma(analogbufio_bufferedin_obj_t *self, adc_digi_convert_mode_t *convert_mode, adc_digi_output_format_t *output_format);
@@ -205,7 +207,12 @@ void common_hal_analogbufio_bufferedin_deinit(analogbufio_bufferedin_obj_t *self
 }
 
 static bool check_valid_data(const adc_digi_output_data_t *data, const mcu_pin_obj_t *pin, adc_digi_convert_mode_t convert_mode, adc_digi_output_format_t output_format) {
-    unsigned int unit = data->type2.unit;
+    unsigned int unit;
+    #if SOC_ADC_PERIPH_NUM == 1
+    unit = 0;
+    #else
+    unit = data->type2.unit;
+    #endif
     if (output_format == ADC_DIGI_OUTPUT_FORMAT_TYPE2) {
         if (data->type2.channel >= SOC_ADC_CHANNEL_NUM(unit)) {
             return false;
