@@ -107,7 +107,7 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     common_hal_audiomixer_mixer_construct(self, voice_count, args[ARG_buffer_size].u_int, bits_per_sample, args[ARG_samples_signed].u_bool, channel_count, sample_rate);
 
     for (int v = 0; v < voice_count; v++) {
-        self->voice[v] = audiomixer_mixervoice_type.make_new(&audiomixer_mixervoice_type, 0, 0, NULL);
+        self->voice[v] = MP_OBJ_TYPE_GET_SLOT(&audiomixer_mixervoice_type, make_new)(&audiomixer_mixervoice_type, 0, 0, NULL);
         common_hal_audiomixer_mixervoice_set_parent(self->voice[v], self);
     }
     self->voice_tuple = mp_obj_new_tuple(self->voice_count, self->voice);
