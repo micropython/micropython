@@ -810,7 +810,16 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #define MEMORYVIEW_TYPE_ATTR
 #endif
 
-#if MICROPY_PY_BUILTINS_BYTES_HEX
+#if MICROPY_CPYTHON_COMPAT // CIRCUITPY provides csat
+STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_cast), MP_ROM_PTR(&memoryview_cast_obj) },
+    #if MICROPY_PY_BUILTINS_BYTES_HEX
+    { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&mp_obj_bytes_hex_as_str_obj) },
+    #endif
+};
+MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table);
+#define MEMORYVIEW_TYPE_LOCALS_DICT locals_dict, &memoryview_locals_dict,
+#elif MICROPY_PY_BUILTINS_BYTES_HEX
 #define MEMORYVIEW_TYPE_LOCALS_DICT locals_dict, &mp_obj_memoryview_locals_dict,
 #else
 #define MEMORYVIEW_TYPE_LOCALS_DICT
