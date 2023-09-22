@@ -189,7 +189,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     synthio_miditrack_type,
     MP_QSTR_MidiTrack,
     MP_TYPE_FLAG_NONE,
-    flags, MP_TYPE_FLAG_EXTENDED,
     make_new, synthio_miditrack_make_new,
     locals_dict, &synthio_miditrack_locals_dict,
     protocol, &synthio_miditrack_proto
