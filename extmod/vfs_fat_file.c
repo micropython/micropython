@@ -205,7 +205,7 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
 
     const mp_obj_type_t *type = &mp_type_vfs_fat_textio;
     int mode = 0;
-    const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
+    const char *mode_s = mp_obj_str_get_str(mode_in);
     uint32_t rwxa_count = 0;
     uint32_t bt_count = 0;
     uint32_t plus_count = 0;
@@ -252,8 +252,8 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
         mp_arg_error_invalid(MP_QSTR_mode);
     }
 
-    assert(vfs != NULL);
-    if ((mode & FA_WRITE) != 0 && !filesystem_is_writable_by_python(vfs)) {
+    assert(self != NULL);
+    if ((mode & FA_WRITE) != 0 && !filesystem_is_writable_by_python(self)) {
         mp_raise_OSError(MP_EROFS);
     }
 
@@ -261,11 +261,11 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
     o->base.type = type;
 
-    const char *fname = mp_obj_str_get_str(args[0].u_obj);
-    FRESULT res = f_open(&vfs->fatfs, &o->fp, fname, mode);
+    const char *fname = mp_obj_str_get_str(path_in);
+    FRESULT res = f_open(&self->fatfs, &o->fp, fname, mode);
     if (res != FR_OK) {
         m_del_obj(pyb_file_obj_t, o);
-        mp_raise_OSError_errno_str(fresult_to_errno_table[res], args[0].u_obj);
+        mp_raise_OSError_errno_str(fresult_to_errno_table[res], path_in);
     }
     // CIRCUITPY does fast seek.
     // If we're reading, turn on fast seek.

@@ -136,6 +136,7 @@ STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(fat_vfs_mkfs_obj, MP_ROM_PTR(&fat_vfs_mk
 typedef struct _mp_vfs_fat_ilistdir_it_t {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
+    mp_fun_1_t finaliser;
     bool is_str;
     FF_DIR dir;
 } mp_vfs_fat_ilistdir_it_t;
