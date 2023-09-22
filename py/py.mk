@@ -112,6 +112,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	compile.o \
 	emitcommon.o \
 	emitbc.o \
+	enum.o \
 	asmbase.o \
 	asmx64.o \
 	emitnx64.o \
@@ -129,6 +130,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	formatfloat.o \
 	parsenumbase.o \
 	parsenum.o \
+	proto.o \
 	emitglue.o \
 	persistentcode.o \
 	runtime.o \
