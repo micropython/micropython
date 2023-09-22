@@ -128,11 +128,18 @@ STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
 #define SLICE_TYPE_ATTR_OR_LOCALS_DICT
 #endif
 
+#if MICROPY_PY_BUILTINS_SLICE_INDICES || MICROPY_PY_BUILTINS_SLICE_ATTRS
+#define SLICE_MAKE_NEW make_new, slice_make_new,
+#else
+#define SLICE_MAKE_NEW
+#endif
+
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_slice,
     MP_QSTR_slice,
     MP_TYPE_FLAG_NONE,
     SLICE_TYPE_ATTR_OR_LOCALS_DICT
+    SLICE_MAKE_NEW
     print, slice_print
     );
 
