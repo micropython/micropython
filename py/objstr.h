@@ -117,4 +117,7 @@ extern const mp_obj_dict_t mp_obj_bytearray_locals_dict;
 extern const mp_obj_dict_t mp_obj_array_locals_dict;
 #endif
 
+// CIRCUITPY
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
+
 #endif // MICROPY_INCLUDED_PY_OBJSTR_H

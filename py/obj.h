@@ -994,6 +994,7 @@ mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr); // input data must be vali
 mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items);
+mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n); // CIRCUITPY
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
@@ -1032,6 +1033,7 @@ mp_obj_t mp_obj_cast_to_native_base(mp_obj_t self_in, mp_const_obj_t native_type
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
+void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit);
 
 bool mp_obj_is_true(mp_obj_t arg);
 bool mp_obj_is_callable(mp_obj_t o_in);
