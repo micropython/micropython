@@ -73,7 +73,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
                     if (MATCH_NAMED_CLASS_CHAR(c)) {
                         c = RE15_CLASS_NAMED_CLASS_INDICATOR;
                         goto emit_char_pair;
-                    else {
+                    } else {
                         // CIRCUITPY TODO: handle unescape here again PR #1544
                     }
                 }
