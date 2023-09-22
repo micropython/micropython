@@ -399,14 +399,14 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
-    if (header[0] != 'M'
+    byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
+    if (header[0] != 'C'
         || header[1] != MPY_VERSION
         || (arch != MP_NATIVE_ARCH_NONE && MPY_FEATURE_DECODE_SUB_VERSION(header[2]) != MPY_SUB_VERSION)
         || header[3] > MP_SMALL_INT_BITS) {
         mp_raise_ValueError(MP_ERROR_TEXT("incompatible .mpy file"));
     }
     if (MPY_FEATURE_DECODE_ARCH(header[2]) != MP_NATIVE_ARCH_NONE) {
-        byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
         if (!MPY_FEATURE_ARCH_TEST(arch)) {
             if (MPY_FEATURE_ARCH_TEST(MP_NATIVE_ARCH_NONE)) {
                 // On supported ports this can be resolved by enabling feature, eg
@@ -442,8 +442,6 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
     #endif
 
     reader->close(reader->data);
-
-    return cm2;
 }
 
 void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *context) {
