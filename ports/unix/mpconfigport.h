@@ -257,3 +257,5 @@ static inline unsigned long mp_urandom_seed_init(void) {
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
+
+#define RUN_BACKGROUND_TASKS ((void)0) // CIRCUITPY
