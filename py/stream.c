@@ -481,7 +481,7 @@ mp_obj_t mp_stream_flush(mp_obj_t self) {
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_flush_obj, stream_flush);
+MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_flush_obj, mp_stream_flush);
 
 STATIC mp_obj_t stream_ioctl(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
