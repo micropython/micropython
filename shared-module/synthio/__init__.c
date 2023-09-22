@@ -511,7 +511,7 @@ mp_float_t synthio_block_slot_get(synthio_block_slot_t *slot) {
 
     block->last_tick = synthio_global_tick;
     // previously verified by call to mp_proto_get in synthio_block_assign_slot
-    const synthio_block_proto_t *p = mp_type_get_protocol_slot(mp_obj_get_type(slot->obj));
+    const synthio_block_proto_t *p = MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(slot->obj), protocol);
     mp_float_t value = p->tick(slot->obj);
     block->value = value;
     return value;
