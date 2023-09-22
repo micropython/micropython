@@ -85,6 +85,7 @@ void mp_reader_new_file(mp_reader_t *reader, const char *filename) {
     reader->data = rf;
     reader->readbyte = mp_reader_vfs_readbyte;
     reader->close = mp_reader_vfs_close;
+    reader->readbytes = NULL;
 }
 
 #endif // MICROPY_READER_VFS

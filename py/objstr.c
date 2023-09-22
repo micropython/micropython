@@ -2252,12 +2252,12 @@ STATIC mp_obj_t mp_obj_new_str_type_from_vstr(const mp_obj_type_t *type, vstr_t 
     }
 
     byte *data;
-    if (vstr->len + 1 == vstr->alloc) {
+    if (vstr->alloc == vstr->len + 1) {
         data = (byte *)vstr->buf;
     } else {
         data = (byte *)m_renew(char, vstr->buf, vstr->alloc, vstr->len + 1);
+        data[vstr->len] = '\0'; // add null byte
     }
-    data[vstr->len] = '\0'; // add null byte
     vstr->buf = NULL;
     vstr->alloc = 0;
     #if MICROPY_PY_BUILTINS_BYTEARRAY

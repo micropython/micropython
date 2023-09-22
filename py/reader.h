@@ -37,6 +37,7 @@ typedef struct _mp_reader_t {
     void *data;
     mp_uint_t (*readbyte)(void *data);
     void (*close)(void *data);
+    byte *(*readbytes)(void *data, int n_bytes); // shortcut for reading from ROM, no malloc/free needed
 } mp_reader_t;
 
 void mp_reader_new_mem(mp_reader_t *reader, const byte *buf, size_t len, size_t free_len);

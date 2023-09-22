@@ -58,6 +58,7 @@ extern const char mp_frozen_str_content[];
 #include "py/emitglue.h"
 
 extern const mp_frozen_module_t *const mp_frozen_mpy_content[];
+mp_import_stat_t (*mp_find_dynamic_frozen)(const char *str, int *frozen_type, void **data) = NULL;
 
 #endif // MICROPY_MODULE_FROZEN_MPY
 
@@ -129,7 +130,7 @@ mp_import_stat_t mp_find_frozen_module(const char *str, int *frozen_type, void *
         name += entry_len + 1;
     }
 
-    return MP_IMPORT_STAT_NO_EXIST;
+    return mp_find_dynamic_frozen?mp_find_dynamic_frozen(str, frozen_type, data):MP_IMPORT_STAT_NO_EXIST;
 }
 
 #endif // MICROPY_MODULE_FROZEN

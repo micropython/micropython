@@ -162,11 +162,16 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
         return len >> 1;
     }
     len >>= 1;
-    char *str = m_new(char, len);
-    read_bytes(reader, (byte *)str, len);
-    read_byte(reader); // read and discard null terminator
-    qstr qst = qstr_from_strn(str, len);
-    m_del(char, str, len);
+    qstr qst;
+    if (reader->readbytes) {
+        qst = qstr_from_strn((const char *)reader->readbytes(reader->data, len + 1), len);
+    } else {
+        char *str = m_new(char, len);
+        read_bytes(reader, (byte *)str, len);
+        read_byte(reader); // read and discard null terminator
+        qst = qstr_from_strn(str, len);
+        m_del(char, str, len);
+    }
     return qst;
 }
 
@@ -198,8 +203,13 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
             return MP_OBJ_FROM_PTR(tuple);
         }
         vstr_t vstr;
-        vstr_init_len(&vstr, len);
-        read_bytes(reader, (byte *)vstr.buf, len);
+        if (reader->readbytes) {
+            vstr_init_fixed_buf(&vstr, len + 1, (char *)reader->readbytes(reader->data, len));
+            vstr.len = len;
+        } else {
+            vstr_init_len(&vstr, len);
+            read_bytes(reader, (byte *)vstr.buf, len);
+        }
         if (obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
             if (obj_type == MP_PERSISTENT_OBJ_STR) {
@@ -238,18 +248,25 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
     #endif
 
     if (kind == MP_CODE_BYTECODE) {
-        // Allocate memory for the bytecode
-        fun_data = m_new(uint8_t, fun_data_len);
-        // Load bytecode
-        read_bytes(reader, fun_data, fun_data_len);
+        if (reader->readbytes) {
+            fun_data = reader->readbytes(reader->data, fun_data_len);
+        } else {
+            // Allocate memory for the bytecode
+            fun_data = m_new(uint8_t, fun_data_len);
+            // Load bytecode
+            read_bytes(reader, fun_data, fun_data_len);
+        }
 
     #if MICROPY_EMIT_MACHINE_CODE
     } else {
         // Allocate memory for native data and load it
-        size_t fun_alloc;
-        MP_PLAT_ALLOC_EXEC(fun_data_len, (void **)&fun_data, &fun_alloc);
-        read_bytes(reader, fun_data, fun_data_len);
-
+        if (reader->readbytes) {
+            fun_data = reader->readbytes(reader->data, fun_data_len);
+        } else {
+            size_t fun_alloc;
+            MP_PLAT_ALLOC_EXEC(fun_data_len, (void **)&fun_data, &fun_alloc);
+            read_bytes(reader, fun_data, fun_data_len);
+        }
         if (kind == MP_CODE_NATIVE_PY) {
             // Read prelude offset within fun_data, and extract scope flags.
             prelude_offset = read_uint(reader);

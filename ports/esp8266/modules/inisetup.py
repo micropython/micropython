@@ -3,11 +3,61 @@ import network
 from flashbdev import bdev
 
 
-def wifi():
-    import binascii
+def read_all(fn):
+    with open(fn, "rb") as fp:
+        while fp.read(256):
+            pass
 
+
+def fwupdate(fn, erase_all=False, safe_check=True, verbose=True):
+    import esp
+
+    # get number of blocks
+    fw_size = rem_fs = os.stat(fn)[6]
+    esp.set_dfu(0, fw_size)
+    read_all(fn)
+
+    # allocate buffer for storing sector numbers and offsets
+    nblks = esp.get_blks(False)
+    blk_buf = esp.set_dfu(nblks, fw_size)
+    if not blk_buf:
+        raise MemoryError(f"Out of memory")
+
+    # dig out block numbers and offsets using LFS2 hook
+    esp.set_dfu(0, fw_size)
+    read_all(fn)
+
+    if safe_check:
+        blks = esp.get_blks(True)
+        if blks is None:
+            raise Exception("No blocks data found")
+        blks, offs = blks
+        esp.set_dfu(-1, fw_size)
+        if verbose:
+            print(f"Verifying sector data:{blks}\n{offs}")
+        with open(fn, "rb") as fp:
+            for ii, blkid in enumerate(blks):
+                sz = min(rem_fs, 4096 - offs[ii])
+                L2 = esp.flash_read(esp.flash_user_start() + blkid * 4096 + offs[ii], sz)
+                L1 = fp.read(sz)
+                if L1 != L2:
+                    raise Exception(f"Data is different at N={ii} blkid={blkid}")
+                del L1, L2
+                rem_fs -= sz
+                if verbose:
+                    print(f"{ii}/{len(blks)}", end="\r")
+        esp.set_dfu(len(blks), fw_size)
+        del blks, offs
+        if verbose:
+            print("Success, starting firmware update ...")
+
+    esp.DFU(erase_all)
+
+
+def wifi():
     ap_if = network.WLAN(network.AP_IF)
-    ssid = b"MicroPython-%s" % binascii.hexlify(ap_if.config("mac")[-3:])
+    ap_if.active(True)
+    ssid = "MicroPython-" + ap_if.config("mac")[-3:].hex()
     ap_if.config(ssid=ssid, security=network.AUTH_WPA_WPA2_PSK, key=b"micropythoN")
 
 

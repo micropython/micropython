@@ -261,6 +261,7 @@ STATIC void mp_reader_new_stdin(mp_reader_t *reader, mp_reader_stdin_t *reader_s
     reader->data = reader_stdin;
     reader->readbyte = mp_reader_stdin_readbyte;
     reader->close = mp_reader_stdin_close;
+    reader->readbytes = NULL;
 }
 
 STATIC int do_reader_stdin(int c) {
