@@ -33,9 +33,8 @@
 // Enable extra Unix features.
 #include "../mpconfigvariant_common.h"
 
-// Enable testing of split heap.
-#define MICROPY_GC_SPLIT_HEAP          (1)
-#define MICROPY_GC_SPLIT_HEAP_N_HEAPS  (4)
+// CIRCUITPY: Disable testing of split heap.
+#define MICROPY_GC_SPLIT_HEAP          (0)
 
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
