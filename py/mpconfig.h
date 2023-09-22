@@ -809,6 +809,19 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ERROR_PRINTER (&mp_plat_print)
 #endif
 
+// CIRCUITPY
+// Whether to support chained exceptions
+#ifndef MICROPY_CPYTHON_EXCEPTION_CHAIN
+#define MICROPY_CPYTHON_EXCEPTION_CHAIN (0)
+#endif
+
+// CIRCUITPY
+// Whether the statically allocated GeneratorExit exception may be const
+#ifndef MICROPY_CONST_GENERATOREXIT_OBJ
+#define MICROPY_CONST_GENERATOREXIT_OBJ (!MICROPY_CPYTHON_EXCEPTION_CHAIN)
+#endif
+
+
 // Float and complex implementation
 #define MICROPY_FLOAT_IMPL_NONE (0)
 #define MICROPY_FLOAT_IMPL_FLOAT (1)
