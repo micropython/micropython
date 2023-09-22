@@ -50,6 +50,7 @@ max-complexity = 40
 # manifest.py files are evaluated with some global names pre-defined
 "**/manifest.py" = ["F821"]
 "ports/**/boards/**/manifest_*.py" = ["F821"]
+"ports/**/mcu/**/manifest_*.py" = ["F821"]
 
 [tool.ruff.format]
 # Exclude third-party code, and exclude the following tests:
