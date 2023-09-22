@@ -749,7 +749,7 @@ STATIC const mp_rom_map_elem_t array_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(array_locals_dict, array_locals_dict_table);
+MP_DEFINE_CONST_DICT(mp_obj_array_locals_dict, array_locals_dict_table);
 #endif
 
 #if MICROPY_PY_BUILTINS_BYTEARRAY
