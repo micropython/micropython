@@ -126,10 +126,8 @@ STATIC mp_obj_t mathop_call(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_o
 STATIC MP_DEFINE_CONST_DICT(synthio_math_operation_locals_dict, synthio_math_operation_locals_table);
 MAKE_PRINTER(synthio, synthio_math_operation);
 MAKE_ENUM_TYPE(synthio, MathOperation, synthio_math_operation,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = mathop_call,
-        ));
+    call, mathop_call
+    );
 
 //| class Math:
 //|     """An arithmetic block
