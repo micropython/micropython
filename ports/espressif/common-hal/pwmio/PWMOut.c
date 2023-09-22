@@ -28,7 +28,8 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"
-#include "components/driver/include/driver/ledc.h"
+#include "driver/ledc.h"
+#include "soc/soc.h"
 
 #define INDEX_EMPTY 0xFF
 
@@ -40,7 +41,7 @@ STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
 
 STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
     uint32_t duty_bits = 0;
-    uint32_t interval = LEDC_APB_CLK_HZ / frequency;
+    uint32_t interval = APB_CLK_FREQ / frequency;
     for (size_t i = 0; i < 32; i++) {
         if (!(interval >> i)) {
             duty_bits = i - 1;

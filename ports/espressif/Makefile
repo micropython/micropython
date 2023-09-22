@@ -51,6 +51,7 @@ INC += \
 	-isystem esp-idf \
 	-isystem esp-idf/components/app_update/include \
 	-isystem esp-idf/components/bootloader_support/include \
+	-isystem esp-idf/components/bootloader_support/bootloader_flash/include \
 	-isystem esp-idf/components/bt/include/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/bt/host/nimble/esp-hci/include \
 	-isystem esp-idf/components/bt/host/nimble/nimble/nimble/controller/include \
@@ -62,28 +63,31 @@ INC += \
 	-isystem esp-idf/components/bt/host/nimble/nimble/porting/npl/freertos/include \
 	-isystem esp-idf/components/bt/host/nimble/port/include \
 	-isystem esp-idf/components/driver/include \
+	-isystem esp-idf/components/driver/deprecated \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/efuse/include \
 	-isystem esp-idf/components/efuse/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/$(IDF_TARGET)/include \
-	-isystem esp-idf/components/esp_adc_cal/include \
+	-isystem esp-idf/components/esp_adc/deprecated/include \
+	-isystem esp-idf/components/esp_app_format/include \
 	-isystem esp-idf/components/esp_common/include \
 	-isystem esp-idf/components/esp_event/include \
 	-isystem esp-idf/components/esp_hw_support/include \
 	-isystem esp-idf/components/esp_hw_support/include/soc \
-	-isystem esp-idf/components/esp_ipc/include \
 	-isystem esp-idf/components/esp_netif/include \
+	-isystem esp-idf/components/esp_partition/include \
 	-isystem esp-idf/components/esp_pm/include \
+	-isystem esp-idf/components/esp_psram/include \
 	-isystem esp-idf/components/esp_ringbuf/include \
 	-isystem esp-idf/components/esp_rom/include \
 	-isystem esp-idf/components/esp_system/include \
 	-isystem esp-idf/components/esp_timer/include \
 	-isystem esp-idf/components/esp_wifi/include \
-	-isystem esp-idf/components/freertos/include \
-	-isystem esp-idf/components/freertos/include/freertos \
-	-isystem esp-idf/components/freertos/include/esp_additions \
-	-isystem esp-idf/components/freertos/include/esp_additions/freertos \
-	-isystem esp-idf/components/freertos/port/$(IDF_TARGET_ARCH)/include \
+	-isystem esp-idf/components/freertos/esp_additions/include \
+	-isystem esp-idf/components/freertos/esp_additions/include/freertos \
+	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include \
+	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/include/freertos \
+	-isystem esp-idf/components/freertos/FreeRTOS-Kernel/portable/$(IDF_TARGET_ARCH)/include \
 	-isystem esp-idf/components/hal/include \
 	-isystem esp-idf/components/hal/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/hal/platform_port/include \
@@ -100,13 +104,13 @@ INC += \
 	-isystem esp-idf/components/soc/include \
 	-isystem esp-idf/components/soc/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/spi_flash/include \
+	-isystem esp-idf/components/ulp/ulp_fsm/include \
+	-isystem esp-idf/components/ulp/ulp_riscv/include \
+	-isystem esp-idf/components/ulp/ulp_common/include \
+	-isystem esp-idf/components/ulp/ulp_common/include/$(IDF_TARGET) \
 	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/include \
-	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include
-
-# See https://github.com/espressif/esp-idf/issues/6906
-ifeq ($(IDF_TARGET),esp32c3)
-CFLAGS += -include "esp32c3_fix.h"
-endif
+	-isystem esp-idf/components/$(IDF_TARGET_ARCH)/$(IDF_TARGET)/include \
+	-isystem esp-protocols/components/mdns/include
 
 CFLAGS += \
 	-DHAVE_CONFIG_H \
@@ -131,7 +135,7 @@ ifeq ($(DEBUG), 1)
 	# You may want to enable these flags to make setting breakpoints easier.
 	# CFLAGS += -fno-inline -fno-ipa-sra
 else
-	CFLAGS += -DNDEBUG -ggdb3
+	CFLAGS += -DNDEBUG
 	# RISC-V is larger than xtensa
 	# Use -Os for RISC-V when it overflows
 	ifeq ($(IDF_TARGET_ARCH),riscv)
@@ -145,6 +149,11 @@ endif
 CFLAGS += $(OPTIMIZATION_FLAGS)
 
 CFLAGS += $(INC) -Werror -Wall -std=gnu11 -Wl,--gc-sections $(BASE_CFLAGS) $(C_DEFS) $(CFLAGS_MOD) $(COPT) -Werror=missing-prototypes
+
+# Most current ESPs have nano versions of newlib in ROM so we use them.
+ifneq ($(IDF_TARGET),esp32c6)
+	CFLAGS += --specs=nano.specs
+endif
 
 ifeq ($(IDF_TARGET_ARCH),xtensa)
 CFLAGS += -mlongcalls
@@ -232,22 +241,15 @@ SRC_C += \
 	peripherals/timer.c \
 	peripherals/$(IDF_TARGET)/pins.c
 
-ifneq ($(IDF_TARGET),esp32c3)
+SRC_C += $(wildcard common-hal/espidf/*.c)
+
+ifeq ($(IDF_TARGET),esp32c3)
+SRC_C += supervisor/usb_serial_jtag.c
+else
 SRC_C += \
 	peripherals/pcnt.c \
 	peripherals/touch.c
-ifeq ($(IDF_TARGET),esp32s2)
-SRC_C += \
-	i2s_lcd_esp32s2_driver.c
 endif
-endif
-
-ifeq ($(IDF_TARGET),esp32c3)
-SRC_C += \
-	supervisor/usb_serial_jtag.c
-endif
-
-$(BUILD)/i2s_lcd_esp32s2_driver.o: CFLAGS += -Wno-sign-compare
 
 ifneq ($(CIRCUITPY_USB),0)
 SRC_C += lib/tinyusb/src/portable/espressif/esp32sx/dcd_esp32sx.c
@@ -255,6 +257,17 @@ endif
 
 ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
+endif
+
+ifneq ($(CIRCUITPY_PARALLELDISPLAY),0)
+ifeq ($(IDF_TARGET),esp32s3)
+LCD_SRC = 8080_lcd_$(IDF_TARGET)
+else
+LCD_SRC = i2s_lcd_$(IDF_TARGET)_driver
+endif
+SRC_C += esp-iot-solution/components/bus/$(LCD_SRC).c
+$(BUILD)/esp-iot-solution/components/bus/$(LCD_SRC).o: CFLAGS += -Wno-sign-compare
+CFLAGS += -isystem esp-iot-solution/components/bus/include
 endif
 
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
@@ -267,8 +280,8 @@ SRC_CAMERA := \
 	$(wildcard common-hal/espcamera/*.c) \
 	$(wildcard bindings/espcamera/*.c)
 SRC_C += $(SRC_CAMERA)
-CFLAGS += -isystem esp32-camera/driver/include
-CFLAGS += -isystem esp32-camera/conversions/include
+CFLAGS += -isystem esp-camera/driver/include
+CFLAGS += -isystem esp-camera/conversions/include
 endif
 
 ifneq ($(CIRCUITPY_ESPIDF),0)
@@ -290,8 +303,6 @@ SRC_ULP := \
 	$(wildcard common-hal/espulp/*.c) \
 	$(wildcard bindings/espulp/*.c)
 SRC_C += $(SRC_ULP)
-CFLAGS += -isystem esp-idf/components/ulp/include
-CFLAGS += -isystem esp-idf/components/ulp/ulp_riscv/include
 endif
 
 SRC_COMMON_HAL_EXPANDED = \
@@ -334,15 +345,25 @@ $(BUILD)/esp-idf:
 
 TARGET_SDKCONFIG = esp-idf-config/sdkconfig-$(IDF_TARGET).defaults
 
+
 ifeq ($(CIRCUITPY_ESP_FLASH_SIZE), 2MB)
-	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
+	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-ota-no-uf2.defaults
 else
 UF2_BOOTLOADER ?= $(CIRCUITPY_USB)
 ifeq ($(UF2_BOOTLOADER), 1)
-	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
+	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE).defaults
 else
-	FLASH_SDKCONFIG ?= esp-idf-config/sdkconfig-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
+	FLASH_SIZE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_SIZE)-no-uf2.defaults
 endif
+endif
+FLASH_MODE_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_MODE).defaults
+FLASH_SPEED_SDKCONFIG ?= esp-idf-config/sdkconfig-flash-$(CIRCUITPY_ESP_FLASH_FREQ).defaults
+
+ifneq ($(CIRCUITPY_ESP_PSRAM_SIZE), 0)
+	PSRAM_SDKCONFIG = esp-idf-config/sdkconfig-psram.defaults
+	PSRAM_SIZE_SDKCONFIG = esp-idf-config/sdkconfig-psram-$(CIRCUITPY_ESP_PSRAM_SIZE).defaults
+	PSRAM_MODE_SDKCONFIG = esp-idf-config/sdkconfig-psram-$(CIRCUITPY_ESP_PSRAM_MODE).defaults
+	PSRAM_SPEED_SDKCONFIG = esp-idf-config/sdkconfig-psram-$(CIRCUITPY_ESP_PSRAM_FREQ).defaults
 endif
 
 ifeq ($(DEBUG), 1)
@@ -351,7 +372,7 @@ else
 	DEBUG_SDKCONFIG = esp-idf-config/sdkconfig-opt.defaults
 endif
 
-SDKCONFIGS := esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
+SDKCONFIGS := esp-idf-config/sdkconfig.defaults;$(DEBUG_SDKCONFIG);$(FLASH_SIZE_SDKCONFIG);$(FLASH_MODE_SDKCONFIG);$(FLASH_SPEED_SDKCONFIG);$(PSRAM_SDKCONFIG);$(PSRAM_SIZE_SDKCONFIG);$(PSRAM_MODE_SDKCONFIG);$(PSRAM_SPEED_SDKCONFIG);$(TARGET_SDKCONFIG);boards/$(BOARD)/sdkconfig
 ifneq ($(CIRCUITPY_BLEIO),0)
 	SDKCONFIGS := esp-idf-config/sdkconfig-ble.defaults;$(SDKCONFIGS)
 endif
@@ -359,7 +380,7 @@ endif
 .PHONY: do-sdkconfig
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 QSTR_GLOBAL_REQUIREMENTS += $(BUILD)/esp-idf/config/sdkconfig.h
-$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig CMakeLists.txt | $(BUILD)/esp-idf
+$(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig boards/$(BOARD)/mpconfigboard.mk CMakeLists.txt | $(BUILD)/esp-idf
 	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
 
 # build a lib
@@ -379,8 +400,12 @@ $(BUILD)/esp-idf/partition_table/partition-table.bin: $(BUILD)/esp-idf/config/sd
 # run menuconfig and then remove standard settings
 menuconfig: $(BUILD)/esp-idf/config $(BUILD)/esp-idf/config/sdkconfig.h
 	$(Q)ninja -C $(BUILD)/esp-idf menuconfig
-	# Newer versions of the idf will have save-defconfig that will only include non-default values.
-	# We should use that when available. For now, we sort out everything.
+	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
+
+update-all-sdkconfigs: $(BUILD)/esp-idf/config/sdkconfig.h
+	python tools/update_sdkconfig.py --update_all --board=$(BOARD) --debug=$(DEBUG)
+
+update-board-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 	python tools/update_sdkconfig.py --board=$(BOARD) --debug=$(DEBUG)
 
 BINARY_WIFI_BLOBS = libcoexist.a libcore.a libespnow.a libmesh.a libnet80211.a libpp.a libsmartconfig.a libwapi.a
@@ -389,14 +414,21 @@ ifeq ($(IDF_TARGET),esp32)
 BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/librtc.a
 endif
 
-ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc_cal esp_common esp_event esp_hw_support esp_ipc esp_netif esp_pm esp_phy esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
+ESP_IDF_COMPONENTS_LINK = $(IDF_TARGET_ARCH) app_update bootloader_support driver efuse esp_adc esp_app_format esp_common esp_event esp_hw_support esp_netif esp_partition esp_phy esp_pm esp_ringbuf esp_rom esp_system esp_timer esp-tls esp_wifi freertos hal heap log lwip mbedtls mdns newlib nvs_flash pthread soc spi_flash vfs wpa_supplicant
 ifneq ($(CIRCUITPY_BLEIO),0)
 	ESP_IDF_COMPONENTS_LINK += bt
+	ifeq ($(IDF_TARGET),esp32)
+	BINARY_BLOBS += esp-idf/components/bt/controller/lib_esp32/$(IDF_TARGET)/libbtdm_app.a
+	else
 	BINARY_BLOBS += esp-idf/components/esp_phy/lib/$(IDF_TARGET)/libbtbb.a \
-	                esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+					esp-idf/components/bt/controller/lib_esp32c3_family/$(IDF_TARGET)/libbtdm_app.a
+	endif
 endif
 ifneq ($(CIRCUITPY_ESPULP),0)
 	ESP_IDF_COMPONENTS_LINK += ulp
+endif
+ifneq ($(CIRCUITPY_ESP_PSRAM_SIZE),0)
+	ESP_IDF_COMPONENTS_LINK += esp_psram
 endif
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
 	ESP_IDF_COMPONENTS_LINK += esp_lcd
@@ -413,7 +445,7 @@ ESP_IDF_COMPONENTS_EXPANDED += esp-idf/components/xtensa/$(IDF_TARGET)/libxt_hal
 endif
 
 ifneq ($(CIRCUITPY_ESPCAMERA),0)
-ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp32-camera/libesp32-camera.a
+ESP_IDF_COMPONENTS_EXPANDED += $(BUILD)/esp-idf/esp-idf/esp-camera/libesp-camera.a
 #$(error $(ESP_IDF_COMPONENTS_EXPANDED))
 endif
 
@@ -440,9 +472,26 @@ IDF_CMAKE_TARGETS = \
 PARTITION_TABLE_OFFSET = 0x8000
 FIRMWARE_OFFSET = 0x10000
 
-ESP_AUTOGEN_LD = $(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/$(IDF_TARGET)_out.ld $(BUILD)/esp-idf/esp-idf/$(IDF_TARGET)/ld/$(IDF_TARGET).project.ld
+# Map the flash's run mode to flashing mode (only dual is supported by the early bootloaders).
+# https://github.com/espressif/esp-idf/blob/82cceabc6e6a0a2d8c40e2249bc59917cc5e577a/components/esptool_py/Kconfig.projbuild#L74-L87
+ifeq ($(CIRCUITPY_ESP_FLASH_MODE),dout)
+	ESPTOOLPY_FLASHMODE = "dout"
+endif
+ifeq ($(CIRCUITPY_ESP_FLASH_MODE),opi)
+	ESPTOOLPY_FLASHMODE = "dout"
+endif
+# Most modes can flash with dio
+ESPTOOLPY_FLASHMODE ?= "dio"
 
-FLASH_FLAGS = --flash_mode $(CIRCUITPY_ESP_FLASH_MODE) --flash_freq $(CIRCUITPY_ESP_FLASH_FREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
+# Cap the flash speed to 80m.
+# https://github.com/espressif/esp-idf/blob/82cceabc6e6a0a2d8c40e2249bc59917cc5e577a/components/esptool_py/Kconfig.projbuild#L74-L87
+ifeq ($(CIRCUITPY_ESP_FLASH_FREQ),120m)
+	ESPTOOLPY_FLASHFREQ = "80m"
+else
+	ESPTOOLPY_FLASHFREQ = $(CIRCUITPY_ESP_FLASH_FREQ)
+endif
+
+FLASH_FLAGS = --flash_mode $(ESPTOOLPY_FLASHMODE) --flash_freq $(ESPTOOLPY_FLASHFREQ) --flash_size $(CIRCUITPY_ESP_FLASH_SIZE)
 
 ESPTOOL_FLAGS ?= --before=default_reset --after=no_reset --baud 921600
 
@@ -460,7 +509,7 @@ esp-idf-stamp: $(BUILD)/esp-idf/config/sdkconfig.h
 
 $(BUILD)/firmware.elf: $(OBJ) | esp-idf-stamp $(IDF_CMAKE_TARGETS)
 	$(STEPECHO) "LINK $@"
-	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(BUILD)/esp-idf/esp-idf/newlib/libnewlib.a  -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -Wl,--start-group $(LIBS) -Wl,--end-group $(BUILD)/esp-idf/esp-idf/pthread/libpthread.a  -u __cxx_fatal_exception
+	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(ESP_IDF_COMPONENTS_EXPANDED) $(BINARY_BLOBS) $(MBEDTLS_COMPONENTS_LINK_EXPANDED) $(LIBS) -Wl,--end-group -u newlib_include_pthread_impl -u ld_include_highint_hdl -u __cxx_fatal_exception
 
 $(BUILD)/circuitpython-firmware.bin: $(BUILD)/firmware.elf | tools/build_memory_info.py
 	$(STEPECHO) "Create $@"

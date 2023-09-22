@@ -36,54 +36,19 @@
 #include "hal/lcd_ll.h"
 #include "soc/lcd_periph.h"
 
-// extract from esp-idf esp_lcd_rgb_panel.c
-typedef struct
-{
-    esp_lcd_panel_t base;                                      // Base class of generic lcd panel
-    int panel_id;                                              // LCD panel ID
-    lcd_hal_context_t hal;                                     // Hal layer object
-    size_t data_width;                                         // Number of data lines (e.g. for RGB565, the data width is 16)
-    size_t sram_trans_align;                                   // Alignment for framebuffer that allocated in SRAM
-    size_t psram_trans_align;                                  // Alignment for framebuffer that allocated in PSRAM
-    int disp_gpio_num;                                         // Display control GPIO, which is used to perform action like "disp_off"
-    intr_handle_t intr;                                        // LCD peripheral interrupt handle
-    esp_pm_lock_handle_t pm_lock;                              // Power management lock
-    size_t num_dma_nodes;                                      // Number of DMA descriptors that used to carry the frame buffer
-    uint8_t *fb;                                               // Frame buffer
-    size_t fb_size;                                            // Size of frame buffer
-    int data_gpio_nums[SOC_LCD_RGB_DATA_WIDTH];                // GPIOs used for data lines, we keep these GPIOs for action like "invert_color"
-    size_t resolution_hz;                                      // Peripheral clock resolution
-    esp_lcd_rgb_timing_t timings;                              // RGB timing parameters (e.g. pclk, sync pulse, porch width)
-    gdma_channel_handle_t dma_chan;                            // DMA channel handle
-    esp_lcd_rgb_panel_frame_trans_done_cb_t on_frame_trans_done; // Callback, invoked after frame trans done
-    void *user_ctx;                                            // Reserved user's data of callback functions
-    int x_gap;                                                 // Extra gap in x coordinate, it's used when calculate the flush window
-    int y_gap;                                                 // Extra gap in y coordinate, it's used when calculate the flush window
-    struct
-    {
-        unsigned int disp_en_level : 1; // The level which can turn on the screen by `disp_gpio_num`
-        unsigned int stream_mode : 1; // If set, the LCD transfers data continuously, otherwise, it stops refreshing the LCD when transaction done
-        unsigned int fb_in_psram : 1; // Whether the frame buffer is in PSRAM
-    } flags;
-    dma_descriptor_t dma_nodes[]; // DMA descriptor pool of size `num_dma_nodes`
-} esp_rgb_panel_t;
-
-
 #include "esp_log.h"
 #define TAG "LCD"
 
 #include "components/esp_rom/include/esp_rom_sys.h"
 
-
+#include "bindings/espidf/__init__.h"
 #include "py/objarray.h"
 #include "shared-bindings/dotclockframebuffer/DotClockFramebuffer.h"
 #include "common-hal/dotclockframebuffer/DotClockFramebuffer.h"
-#include "bindings/espidf/__init__.h"
+#include "common-hal/espidf/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
 #include "components/driver/include/driver/gpio.h"
-#include "components/driver/include/driver/periph_ctrl.h"
-#include "components/driver/include/esp_private/gdma.h"
 #include "components/esp_rom/include/esp_rom_gpio.h"
 #include "components/hal/esp32s3/include/hal/lcd_ll.h"
 #include "components/hal/include/hal/gpio_hal.h"
@@ -170,6 +135,7 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
     cfg->vsync_gpio_num = valid_pin(vsync, MP_QSTR_vsync);
     cfg->de_gpio_num = valid_pin(de, MP_QSTR_de);
     cfg->pclk_gpio_num = valid_pin(dclk, MP_QSTR_dclk);
+    cfg->clk_src = LCD_CLK_SRC_DEFAULT;
 
     cfg->data_gpio_nums[0] = valid_pin(blue[0], MP_QSTR_blue);
     cfg->data_gpio_nums[1] = valid_pin(blue[1], MP_QSTR_blue);
@@ -193,22 +159,24 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
     cfg->disp_gpio_num = GPIO_NUM_NC;
 
     cfg->flags.disp_active_low = 0;
-    cfg->flags.relax_on_idle = 0;
+    cfg->flags.refresh_on_demand = 0;
     cfg->flags.fb_in_psram = 1; // allocate frame buffer in PSRAM
 
-    ESP_ERROR_CHECK(esp_lcd_new_rgb_panel(&self->panel_config, &self->panel_handle));
-    ESP_ERROR_CHECK(esp_lcd_panel_reset(self->panel_handle));
-    ESP_ERROR_CHECK(esp_lcd_panel_init(self->panel_handle));
+    esp_err_t ret = esp_lcd_new_rgb_panel(&self->panel_config, &self->panel_handle);
+    cp_check_esp_error(ret);
+    cp_check_esp_error(esp_lcd_panel_reset(self->panel_handle));
+    cp_check_esp_error(esp_lcd_panel_init(self->panel_handle));
 
     uint16_t color = 0;
-    ESP_ERROR_CHECK(self->panel_handle->draw_bitmap(self->panel_handle, 0, 0, 1, 1, &color));
+    cp_check_esp_error(self->panel_handle->draw_bitmap(self->panel_handle, 0, 0, 1, 1, &color));
 
-    esp_rgb_panel_t *_rgb_panel = __containerof(self->panel_handle, esp_rgb_panel_t, base);
+    void *fb;
+    cp_check_esp_error(esp_lcd_rgb_panel_get_frame_buffer(self->panel_handle, 1, &fb));
 
     self->frequency = frequency;
     self->row_stride = 2 * (width + overscan_left);
     self->refresh_rate = frequency / (width + hsync_front_porch + hsync_back_porch) / (height + vsync_front_porch + vsync_back_porch);
-    self->bufinfo.buf = (uint8_t *)_rgb_panel->fb + 2 * overscan_left; // first line starts ater overscan_left pixels
+    self->bufinfo.buf = (uint8_t *)fb + 2 * overscan_left; // first line starts after overscan_left pixels
     self->bufinfo.len = 2 * (cfg->timings.h_res * cfg->timings.v_res - overscan_left); // no overscan after last line
     self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
 

@@ -36,8 +36,8 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "py/runtime.h"
 
-#include "i2s_lcd_driver.h"
 #include "driver/gpio.h"
+
 /*
  *  Current pin limitations for ESP32-S2 ParallelBus:
  *   - data0 pin must be byte aligned
@@ -166,11 +166,12 @@ bool common_hal_paralleldisplay_parallelbus_bus_free(mp_obj_t obj) {
 
 bool common_hal_paralleldisplay_parallelbus_begin_transaction(mp_obj_t obj) {
     paralleldisplay_parallelbus_obj_t *self = MP_OBJ_TO_PTR(obj);
-    bool r = i2s_lcd_acquire_nonblocking(self->handle, 1);
-    if (r) {
+    bool lock_acquired = false;
+    i2s_lcd_acquire_nonblocking(self->handle, 1, &lock_acquired);
+    if (lock_acquired) {
         gpio_set_level(self->config.pin_num_cs, false);
     }
-    return r;
+    return lock_acquired;
 }
 
 void common_hal_paralleldisplay_parallelbus_send(mp_obj_t obj, display_byte_type_t byte_type,

@@ -61,7 +61,7 @@ CONFIG_HAL_ASSERTION_EQUALS_SYSTEM=y
 # Hardware Abstraction Layer (HAL) and Low Level (LL)
 #
 # CONFIG_HAL_ASSERTION_DISABLE is not set
-# CONFIG_HAL_ASSERTION_SILIENT is not set
+# CONFIG_HAL_ASSERTION_SILENT is not set
 # CONFIG_HAL_ASSERTION_ENABLE is not set
 CONFIG_HAL_DEFAULT_ASSERTION_LEVEL=2
 # end of Hardware Abstraction Layer (HAL) and Low Level (LL)

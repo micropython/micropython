@@ -50,7 +50,7 @@ extern const mp_obj_type_t mcu_pin_type;
 #define NO_PIN (GPIO_NUM_NC)
 
 #define NO_ADC 0
-#define NO_ADC_CHANNEL ADC_CHANNEL_MAX
+#define NO_ADC_CHANNEL SOC_ADC_MAX_CHANNEL_NUM
 
 #define NO_TOUCH_CHANNEL TOUCH_PAD_MAX
 

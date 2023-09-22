@@ -1,0 +1,21 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# ESP PSRAM
+#
+CONFIG_SPIRAM=y
+#
+# SPI RAM config
+#
+CONFIG_SPIRAM_USE_MEMMAP=y
+# end of SPI RAM config
+
+# end of ESP PSRAM
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

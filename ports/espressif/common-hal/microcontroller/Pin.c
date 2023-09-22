@@ -38,7 +38,63 @@ STATIC uint64_t _skip_reset_once_pin_mask;
 STATIC uint64_t _preserved_pin_mask;
 STATIC uint64_t _in_use_pin_mask;
 
-// Bit mask of all pins that should never EVER be reset or used by user code.
+#define GPIO_SEL_0              (BIT(0))                    /*!< Pin 0 selected */
+#define GPIO_SEL_1              (BIT(1))                    /*!< Pin 1 selected */
+#define GPIO_SEL_2              (BIT(2))                    /*!< Pin 2 selected */
+#define GPIO_SEL_3              (BIT(3))                    /*!< Pin 3 selected */
+#define GPIO_SEL_4              (BIT(4))                    /*!< Pin 4 selected */
+#define GPIO_SEL_5              (BIT(5))                    /*!< Pin 5 selected */
+#define GPIO_SEL_6              (BIT(6))                    /*!< Pin 6 selected */
+#define GPIO_SEL_7              (BIT(7))                    /*!< Pin 7 selected */
+#define GPIO_SEL_8              (BIT(8))                    /*!< Pin 8 selected */
+#define GPIO_SEL_9              (BIT(9))                    /*!< Pin 9 selected */
+#define GPIO_SEL_10             (BIT(10))                   /*!< Pin 10 selected */
+#define GPIO_SEL_11             (BIT(11))                   /*!< Pin 11 selected */
+#define GPIO_SEL_12             (BIT(12))                   /*!< Pin 12 selected */
+#define GPIO_SEL_13             (BIT(13))                   /*!< Pin 13 selected */
+#define GPIO_SEL_14             (BIT(14))                   /*!< Pin 14 selected */
+#define GPIO_SEL_15             (BIT(15))                   /*!< Pin 15 selected */
+#define GPIO_SEL_16             (BIT(16))                   /*!< Pin 16 selected */
+#define GPIO_SEL_17             (BIT(17))                   /*!< Pin 17 selected */
+#define GPIO_SEL_18             (BIT(18))                   /*!< Pin 18 selected */
+#define GPIO_SEL_19             (BIT(19))                   /*!< Pin 19 selected */
+#define GPIO_SEL_20             (BIT(20))                   /*!< Pin 20 selected */
+#define GPIO_SEL_21             (BIT(21))                   /*!< Pin 21 selected */
+#if defined(CONFIG_IDF_TARGET_ESP32)
+#define GPIO_SEL_22             (BIT(22))                   /*!< Pin 22 selected */
+#define GPIO_SEL_23             (BIT(23))                   /*!< Pin 23 selected */
+
+#define GPIO_SEL_25             (BIT(25))                   /*!< Pin 25 selected */
+#endif
+#define GPIO_SEL_26             (BIT(26))                   /*!< Pin 26 selected */
+#define GPIO_SEL_27             (BIT(27))                   /*!< Pin 27 selected */
+#define GPIO_SEL_28             (BIT(28))                   /*!< Pin 28 selected */
+#define GPIO_SEL_29             (BIT(29))                   /*!< Pin 29 selected */
+#define GPIO_SEL_30             (BIT(30))                   /*!< Pin 30 selected */
+#define GPIO_SEL_31             (BIT(31))                   /*!< Pin 31 selected */
+#define GPIO_SEL_32             ((uint64_t)PIN_BIT(32))     /*!< Pin 32 selected */
+#define GPIO_SEL_33             ((uint64_t)PIN_BIT(33))     /*!< Pin 33 selected */
+#define GPIO_SEL_34             ((uint64_t)PIN_BIT(34))     /*!< Pin 34 selected */
+#define GPIO_SEL_35             ((uint64_t)PIN_BIT(35))     /*!< Pin 35 selected */
+#define GPIO_SEL_36             ((uint64_t)PIN_BIT(36))     /*!< Pin 36 selected */
+#define GPIO_SEL_37             ((uint64_t)PIN_BIT(37))     /*!< Pin 37 selected */
+#define GPIO_SEL_38             ((uint64_t)PIN_BIT(38))     /*!< Pin 38 selected */
+#define GPIO_SEL_39             ((uint64_t)PIN_BIT(39))     /*!< Pin 39 selected */
+#if SOC_GPIO_PIN_COUNT > 40
+#define GPIO_SEL_40             ((uint64_t)PIN_BIT(40))     /*!< Pin 40 selected */
+#define GPIO_SEL_41             ((uint64_t)PIN_BIT(41))     /*!< Pin 41 selected */
+#define GPIO_SEL_42             ((uint64_t)PIN_BIT(42))     /*!< Pin 42 selected */
+#define GPIO_SEL_43             ((uint64_t)PIN_BIT(43))     /*!< Pin 43 selected */
+#define GPIO_SEL_44             ((uint64_t)PIN_BIT(44))     /*!< Pin 44 selected */
+#define GPIO_SEL_45             ((uint64_t)PIN_BIT(45))     /*!< Pin 45 selected */
+#define GPIO_SEL_46             ((uint64_t)PIN_BIT(46))     /*!< Pin 46 selected */
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define GPIO_SEL_47             ((uint64_t)PIN_BIT(47))     /*!< Pin 47 selected */
+#define GPIO_SEL_48             ((uint64_t)PIN_BIT(48))     /*!< Pin 48 selected */
+#endif
+#endif
+
+// Bit mask of all pins that should never EVER be reset.
 // Typically these are SPI flash and PSRAM control pins, and communication pins.
 // "Reset forbidden" is stronger than "never reset" below, which may only be temporary.
 static const uint64_t pin_mask_reset_forbidden =

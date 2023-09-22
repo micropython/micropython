@@ -35,7 +35,7 @@
 #include "shared-bindings/util.h"
 #include "common-hal/microcontroller/Pin.h"
 
-#include "esp32-camera/driver/private_include/cam_hal.h"
+#include "esp-camera/driver/private_include/cam_hal.h"
 
 #if !CONFIG_SPIRAM
 #error espcamera only works on boards configured with spiram, disable it in mpconfigboard.mk

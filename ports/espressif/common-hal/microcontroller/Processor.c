@@ -41,21 +41,23 @@
 #include "soc/efuse_reg.h"
 
 #if !defined(CONFIG_IDF_TARGET_ESP32)
-#include "driver/temp_sensor.h"
+#include "driver/temperature_sensor.h"
 #endif
 
 float common_hal_mcu_processor_get_temperature(void) {
-    float tsens_out;
+    float tsens_value;
     #if defined(CONFIG_IDF_TARGET_ESP32)
     return NAN;
     #else
-    temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT(); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
-    temp_sensor_set_config(temp_sensor);
-    temp_sensor_start();
-    temp_sensor_read_celsius(&tsens_out);
-    temp_sensor_stop();
+    temperature_sensor_handle_t temp_sensor = NULL;
+    temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
+    temperature_sensor_install(&temp_sensor_config, &temp_sensor);
+    temperature_sensor_enable(temp_sensor);
+    temperature_sensor_get_celsius(temp_sensor, &tsens_value);
+    temperature_sensor_disable(temp_sensor);
+    temperature_sensor_uninstall(temp_sensor);
     #endif
-    return tsens_out;
+    return tsens_value;
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
