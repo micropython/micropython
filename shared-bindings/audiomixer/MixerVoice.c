@@ -64,7 +64,7 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
 STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -105,7 +105,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixervoice_get_level_obj, audiomixer_mixerv
 STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_level };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_level,     MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_level,     MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
     };
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

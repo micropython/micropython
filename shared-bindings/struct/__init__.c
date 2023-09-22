@@ -132,8 +132,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_obj, 2, 3, struct_unpack);
 STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_format, ARG_buffer, ARG_offset };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_format, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_format, MP_ARG_REQUIRED | MP_ARG_OBJ, {} },
+        { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {} },
         { MP_QSTR_offset, MP_ARG_INT, {.u_int = 0} },
     };
 
