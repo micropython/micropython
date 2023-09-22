@@ -568,43 +568,6 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const com
     mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
     return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
 }
-
-mp_obj_t mp_obj_new_exception_msg_str(const mp_obj_type_t *exc_type, const char *msg) {
-    assert(msg != NULL);
-
-    // Check that the given type is an exception type
-    assert(MP_OBJ_TYPE_GET_SLOT_OR_NULL(exc_type, make_new) == mp_obj_exception_make_new);
-
-    // Try to allocate memory for the message
-    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-
-    #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
-    // If memory allocation failed and there is an emergency buffer then try to use
-    // that buffer to store the string object and its data (at least 16 bytes for
-    // the string data), reserving room at the start for the traceback and 1-tuple.
-    if (o_str == NULL
-        && mp_emergency_exception_buf_size >= EMG_BUF_STR_OFFSET + sizeof(mp_obj_str_t) + 16) {
-        o_str = (mp_obj_str_t *)((uint8_t *)MP_STATE_VM(mp_emergency_exception_buf)
-            + EMG_BUF_STR_OFFSET);
-    }
-    #endif
-
-    if (o_str == NULL) {
-        // No memory for the string object so create the exception with no args
-        return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
-    }
-
-    // Assume the message is statically allocated.
-    o_str->len = strlen(msg);
-    o_str->data = (const byte *)msg;
-
-    // Create the string object and call mp_obj_exception_make_new to create the exception
-    o_str->base.type = &mp_type_str;
-    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
-    mp_obj_t arg = MP_OBJ_FROM_PTR(o_str);
-    return mp_obj_exception_make_new(exc_type, 1, 0, &arg);
-}
-
 #endif
 
 // return true if the given object is an exception type
