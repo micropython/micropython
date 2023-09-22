@@ -119,5 +119,6 @@ extern const mp_obj_dict_t mp_obj_array_locals_dict;
 
 // CIRCUITPY
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_decode_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_obj_bytes_hex_as_str_obj);
 
 #endif // MICROPY_INCLUDED_PY_OBJSTR_H

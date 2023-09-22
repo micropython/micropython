@@ -2040,7 +2040,7 @@ mp_obj_t mp_obj_bytes_fromhex(mp_obj_t type_in, mp_obj_t data) {
 STATIC mp_obj_t bytes_hex_as_str(size_t n_args, const mp_obj_t *args) {
     return mp_obj_bytes_hex(n_args, args, &mp_type_str);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_hex_as_str_obj, 1, 2, bytes_hex_as_str);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_obj_bytes_hex_as_str_obj, 1, 2, bytes_hex_as_str);
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(bytes_fromhex_obj, mp_obj_bytes_fromhex);
 STATIC MP_DEFINE_CONST_CLASSMETHOD_OBJ(bytes_fromhex_classmethod_obj, MP_ROM_PTR(&bytes_fromhex_obj));
@@ -2073,7 +2073,7 @@ STATIC const mp_rom_map_elem_t array_bytearray_str_bytes_locals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_extend), MP_ROM_PTR(&mp_obj_array_extend_obj) },
     #endif
     #if MICROPY_PY_BUILTINS_BYTES_HEX
-    { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&bytes_hex_as_str_obj) },
+    { MP_ROM_QSTR(MP_QSTR_hex), MP_ROM_PTR(&mp_obj_bytes_hex_as_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_fromhex), MP_ROM_PTR(&bytes_fromhex_classmethod_obj) },
     #endif
     #if MICROPY_CPYTHON_COMPAT
@@ -2160,7 +2160,8 @@ MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_array_locals_dict,
     TABLE_ENTRIES_ARRAY);
 #endif
 
-#if MICROPY_PY_BUILTINS_MEMORYVIEW && MICROPY_PY_BUILTINS_BYTES_HEX
+// CIRCUITPY: hex() but no cast()
+#if MICROPY_PY_BUILTINS_MEMORYVIEW && MICROPY_PY_BUILTINS_BYTES_HEX && !MICROPY_CPYTHON_COMPAT
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_memoryview_locals_dict,
     array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY,
     1); // Just the "hex" entry.

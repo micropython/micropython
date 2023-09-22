@@ -396,8 +396,10 @@ static mp_obj_t generatorexit(void) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     MP_STATIC_ASSERT(!MICROPY_CONST_GENERATOREXIT_OBJ);
     mp_obj_exception_initialize0(&mp_static_GeneratorExit_obj, &mp_type_GeneratorExit);
-    #endif
+    return MP_OBJ_FROM_PTR(&mp_static_GeneratorExit_obj);
+    #else
     return MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj);
+    #endif
 }
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
