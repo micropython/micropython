@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#pragma once
+
 // Options to control how MicroPython is built for this port, overriding
 // defaults in py/mpconfig.h. This file is mostly about configuring the
 // features to work on Unix-like systems, see mpconfigvariant.h (and
