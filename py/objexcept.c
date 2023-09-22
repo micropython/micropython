@@ -285,7 +285,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
         #if MICROPY_CONST_GENERATOREXIT_OBJ
-        if (self == &mp_static_GeneratorExit_obj) {
+        if (self == &mp_const_GeneratorExit_obj) {
             mp_raise_AttributeError(MP_ERROR_TEXT("can't set attribute"));
         }
         #endif

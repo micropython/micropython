@@ -1441,7 +1441,7 @@ unwind_loop:
             if ( true
                 // CIRCUITPY
                 #if MICROPY_CONST_GENERATOREXIT_OBJ
-                && nlr.ret_val != &mp_static_GeneratorExit_obj
+                && nlr.ret_val != &mp_const_GeneratorExit_obj
                 #endif
                 && *code_state->ip != MP_BC_END_FINALLY
                 && *code_state->ip != MP_BC_RAISE_LAST) {

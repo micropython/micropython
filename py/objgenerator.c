@@ -39,7 +39,7 @@
 // CIRCUITPY: https://github.com/adafruit/circuitpython/pull/7069 fix
 #if MICROPY_CONST_GENERATOREXIT_OBJ
 const
-mp_obj_exception_t mp_static_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
+mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
 #else
 static
 mp_obj_exception_t mp_static_GeneratorExit_obj;
@@ -397,7 +397,7 @@ static mp_obj_t generatorexit(void) {
     MP_STATIC_ASSERT(!MICROPY_CONST_GENERATOREXIT_OBJ);
     mp_obj_exception_initialize0(&mp_static_GeneratorExit_obj, &mp_type_GeneratorExit);
     #endif
-    return MP_OBJ_FROM_PTR(&mp_static_GeneratorExit_obj);
+    return MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj);
 }
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
