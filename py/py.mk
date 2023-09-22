@@ -73,7 +73,7 @@ PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_CXX:.cpp=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_C:.c=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_CXX:.cpp=.o))
 
-// CIRCUITPY
+# CIRCUITPY
 ifeq ($(CIRCUITPY_ULAB),1)
 ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
 SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
