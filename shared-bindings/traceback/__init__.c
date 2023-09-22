@@ -158,7 +158,7 @@ STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_ar
     vstr_t vstr;
     vstr_init_print(&vstr, 0, &print);
     traceback_exception_common(false, &print, n_args, pos_args, kw_args);
-    mp_obj_t output = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    mp_obj_t output = mp_obj_new_str_from_vstr(&vstr);
     return mp_obj_new_list(1, &output);
 }
 

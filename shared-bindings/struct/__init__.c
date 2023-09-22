@@ -73,7 +73,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     memset(p, 0, size);
     byte *end_p = &p[size];
     shared_modules_struct_pack_into(args[0], p, end_p, n_args - 1, &args[1]);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 

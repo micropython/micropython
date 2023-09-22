@@ -392,7 +392,7 @@ mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t d
     handle_getenv_error(result, mp_raise_msg_varg);
 
     if (quoted) {
-        return mp_obj_new_str_from_vstr(&mp_type_str, &buf);
+        return mp_obj_new_str_from_vstr(&buf);
     } else {
         return mp_parse_num_integer(buf.buf, buf.len, 0, NULL);
     }
