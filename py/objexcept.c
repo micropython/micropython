@@ -115,7 +115,7 @@ bool mp_obj_is_native_exception_instance(mp_obj_t self_in) {
     return MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(self_in), make_new) == mp_obj_exception_make_new;
 }
 
-mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
+mp_obj_exception_t *mp_obj_exception_get_native(mp_obj_t self_in) {
     assert(mp_obj_is_exception_instance(self_in));
     if (mp_obj_is_native_exception_instance(self_in)) {
         return MP_OBJ_TO_PTR(self_in);
@@ -156,15 +156,6 @@ STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
         }
     }
     #endif
-}
-
-mp_obj_exception_t *mp_obj_exception_get_native(mp_obj_t self_in) {
-    assert(mp_obj_is_exception_instance(self_in));
-    if (mp_obj_is_native_exception_instance(self_in)) {
-        return MP_OBJ_TO_PTR(self_in);
-    } else {
-        return MP_OBJ_TO_PTR(((mp_obj_instance_t *)MP_OBJ_TO_PTR(self_in))->subobj[0]);
-    }
 }
 
 void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
@@ -271,7 +262,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 // Get exception "value" - that is, first argument, or None
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
-    mp_obj_exception_t *self = get_native_exception(self_in);
+    mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
     if (self->args->len == 0) {
         return mp_const_none;
     } else {
@@ -647,7 +638,7 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type) {
 // traceback handling functions
 
 void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
-    mp_obj_exception_t *self = get_native_exception(self_in);
+    mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
     // just set the traceback to the empty traceback object
     // we don't want to call any memory management functions here
     self->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
@@ -660,7 +651,7 @@ void mp_obj_exception_clear_traceback(mp_obj_t self_in) {
 }
 
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block) {
-    mp_obj_exception_t *self = get_native_exception(self_in);
+    mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
 
     // append this traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return
