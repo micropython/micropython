@@ -13,7 +13,11 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
 endif
 
+ifneq ($(BOARD_VARIANT),)
+BUILD ?= build-$(BOARD)-$(BOARD_VARIANT)
+else
 BUILD ?= build-$(BOARD)
+endif
 
 CROSS_COMPILE ?= arm-none-eabi-
 UF2CONV ?= $(TOP)/tools/uf2conv.py
