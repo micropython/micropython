@@ -34,7 +34,6 @@
 
 #define CIRCUITPY_BOARD_I2C         (1)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO36, .sda = &pin_GPIO35}}
- 
 
 #define CIRCUITPY_BOARD_SPI         (1)
 #define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO5, .mosi = &pin_GPIO4, .miso = &pin_GPIO6}}
@@ -43,4 +42,3 @@
 // #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO5, .rx = &pin_GPIO16}}
 
 #define DOUBLE_TAP_PIN (&pin_GPIO6)
-
