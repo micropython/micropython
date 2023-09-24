@@ -1,9 +1,9 @@
 /*
- * This file is part of the MicroPython project, http://micropython.org/
+ * This file is part of the Micro Python project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 microDev
+ * Copyright (c) 2023 MicroDev
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_WATCHDOG___INIT___H
+#define MICROPY_INCLUDED_SHARED_MODULE_WATCHDOG___INIT___H
 
-#include "py/obj.h"
+extern void watchdog_reset(void);
 
-#include "shared-module/watchdog/__init__.h"
-
-#include "shared-bindings/watchdog/WatchDogMode.h"
-#include "shared-bindings/watchdog/WatchDogTimer.h"
-
-struct _watchdog_watchdogtimer_obj_t {
-    mp_obj_base_t base;
-    mp_float_t timeout;
-    watchdog_watchdogmode_t mode;
-};
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_WATCHDOG___INIT___H

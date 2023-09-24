@@ -26,8 +26,6 @@
 
 #include "py/runtime.h"
 
-#include "shared/runtime/pyexec.h"
-
 #include "shared-bindings/watchdog/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
@@ -47,19 +45,6 @@ void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
     }
     hw_clear_bits(&watchdog_hw->ctrl, WATCHDOG_CTRL_ENABLE_BITS);
     self->mode = WATCHDOGMODE_NONE;
-}
-
-void watchdog_reset(void) {
-    watchdog_watchdogtimer_obj_t *self = &common_hal_mcu_watchdogtimer_obj;
-    if (self->mode == WATCHDOGMODE_RESET) {
-        mp_obj_t exception = pyexec_result()->exception;
-        if (exception != MP_OBJ_NULL &&
-            exception != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) &&
-            exception != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
-            return;
-        }
-    }
-    common_hal_watchdog_deinit(self);
 }
 
 mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {

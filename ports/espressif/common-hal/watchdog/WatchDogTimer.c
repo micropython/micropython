@@ -26,8 +26,6 @@
 
 #include "py/runtime.h"
 
-#include "shared/runtime/pyexec.h"
-
 #include "shared-bindings/watchdog/__init__.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
@@ -66,19 +64,6 @@ void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
     if (esp_task_wdt_delete(NULL) == ESP_OK && esp_task_wdt_deinit() == ESP_OK) {
         self->mode = WATCHDOGMODE_NONE;
     }
-}
-
-void watchdog_reset(void) {
-    watchdog_watchdogtimer_obj_t *self = &common_hal_mcu_watchdogtimer_obj;
-    if (self->mode == WATCHDOGMODE_RESET) {
-        mp_obj_t exception = pyexec_result()->exception;
-        if (exception != MP_OBJ_NULL &&
-            exception != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)) &&
-            exception != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
-            return;
-        }
-    }
-    common_hal_watchdog_deinit(self);
 }
 
 static void wdt_config(uint32_t timeout, watchdog_watchdogmode_t mode) {

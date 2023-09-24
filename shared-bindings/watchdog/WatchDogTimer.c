@@ -71,8 +71,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watch
 //|
 //|         :raises RuntimeError: if the watchdog timer cannot be disabled on this platform.
 //|
-//|         .. note:: This is deprecated in ``8.1.0`` and will be removed in ``9.0.0``.
-//|             Set watchdog `mode` to `WatchDogMode.NONE` instead.
+//|         .. note:: This is deprecated in ``9.0.0`` and will be removed in ``10.0.0``.
+//|             Set watchdog `mode` to `None` instead.
 //|
 //|         """
 //|         ...
@@ -107,16 +107,17 @@ MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
     (mp_obj_t)&watchdog_watchdogtimer_get_timeout_obj,
     (mp_obj_t)&watchdog_watchdogtimer_set_timeout_obj);
 
-//|     mode: WatchDogMode
-//|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
+//|     mode: Optional[WatchDogMode]
+//|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode` or `None` when
+//|     the timer is disabled.
 //|
 //|     Setting a `WatchDogMode` activates the WatchDog::
 //|
-//|       from microcontroller import watchdog as w
+//|       from microcontroller import watchdog
 //|       from watchdog import WatchDogMode
 //|
-//|       w.timeout = 5
-//|       w.mode = WatchDogMode.RESET
+//|       watchdog.timeout = 5
+//|       watchdog.mode = WatchDogMode.RESET
 //|
 //|
 //|     Once set, the `WatchDogTimer` will perform the specified action if the timer expires."""
@@ -129,7 +130,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_get_mode_obj, watchdog_watchdog
 
 STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t obj) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_watchdog_set_mode(self, cp_enum_value(&watchdog_watchdogmode_type, obj, MP_QSTR_mode));
+    watchdog_watchdogmode_t mode = (obj == mp_const_none) ? WATCHDOGMODE_NONE : cp_enum_value(&watchdog_watchdogmode_type, obj, MP_QSTR_mode);
+    common_hal_watchdog_set_mode(self, mode);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_mode_obj, watchdog_watchdogtimer_obj_set_mode);

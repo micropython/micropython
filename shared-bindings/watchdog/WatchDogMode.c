@@ -28,15 +28,11 @@
 
 #include "shared-bindings/watchdog/WatchDogMode.h"
 
-MAKE_ENUM_VALUE(watchdog_watchdogmode_type, watchdogmode, NONE, WATCHDOGMODE_NONE);
 MAKE_ENUM_VALUE(watchdog_watchdogmode_type, watchdogmode, RAISE, WATCHDOGMODE_RAISE);
 MAKE_ENUM_VALUE(watchdog_watchdogmode_type, watchdogmode, RESET, WATCHDOGMODE_RESET);
 
 //| class WatchDogMode:
 //|     """Run state of the watchdog timer."""
-//|
-//|     NONE: WatchDogMode
-//|     """The `WatchDogTimer` is disabled."""
 //|
 //|     RAISE: WatchDogMode
 //|     """Raise an exception when the `WatchDogTimer` expires."""
@@ -45,7 +41,6 @@ MAKE_ENUM_VALUE(watchdog_watchdogmode_type, watchdogmode, RESET, WATCHDOGMODE_RE
 //|     """Reset the system when the `WatchDogTimer` expires."""
 //|
 MAKE_ENUM_MAP(watchdog_watchdogmode) {
-    MAKE_ENUM_MAP_ENTRY(watchdogmode, NONE),
     MAKE_ENUM_MAP_ENTRY(watchdogmode, RAISE),
     MAKE_ENUM_MAP_ENTRY(watchdogmode, RESET),
 };
