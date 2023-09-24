@@ -25,10 +25,6 @@
  */
 
 #include "supervisor/board.h"
-#include "mpconfigboard.h"
-#include "shared-bindings/microcontroller/Pin.h"
-
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
-
 
