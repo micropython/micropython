@@ -50,6 +50,10 @@
 #define UART_INVERT_RX (2)
 #define UART_INVERT_MASK (UART_INVERT_TX | UART_INVERT_RX)
 
+#define UART_IRQ_RXIDLE  (1)
+#define UART_IRQ_TXIDLE  (2)
+#define MP_UART_ALLOWED_FLAGS (UART_IRQ_RXIDLE | UART_IRQ_TXIDLE)
+
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     struct _lpuart_handle handle;
@@ -63,6 +67,9 @@ typedef struct _machine_uart_obj_t {
     uint8_t *txbuf;
     uint16_t txbuf_len;
     bool new;
+    uint16_t mp_irq_trigger;   // user IRQ trigger mask
+    uint16_t mp_irq_flags;     // user IRQ active IRQ flags
+    mp_irq_obj_t *mp_irq_obj;  // user IRQ object
 } machine_uart_obj_t;
 
 typedef struct _iomux_table_t {
@@ -137,11 +144,21 @@ bool lpuart_set_iomux_cts(int8_t uart) {
 
 void LPUART_UserCallback(LPUART_Type *base, lpuart_handle_t *handle, status_t status, void *userData) {
     machine_uart_obj_t *self = userData;
-    if (kStatus_LPUART_TxIdle == status) {
+
+    uint16_t mp_irq_flags = 0;
+    if (status == kStatus_LPUART_TxIdle) {
         self->tx_status = kStatus_LPUART_TxIdle;
+        mp_irq_flags = UART_IRQ_TXIDLE;
+    } else if (status == kStatus_LPUART_IdleLineDetected) {
+        mp_irq_flags = UART_IRQ_RXIDLE;
+    }
+    // Check the flags to see if the user handler should be called
+    if (self->mp_irq_trigger & mp_irq_flags) {
+        self->mp_irq_flags = mp_irq_flags;
+        mp_irq_handler(self->mp_irq_obj);
     }
 
-    if (kStatus_LPUART_RxRingBufferOverrun == status) {
+    if (status == kStatus_LPUART_RxRingBufferOverrun) {
         ; // Ringbuffer full, deassert RTS if flow control is enabled
     }
 }
@@ -170,16 +187,18 @@ void machine_uart_set_baudrate(mp_obj_t uart_in, uint32_t baudrate) {
     { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RXIDLE), MP_ROM_INT(UART_IRQ_RXIDLE) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(UART_IRQ_TXIDLE) }, \
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, flow=%s, "
-        "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
+        "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s, irq=%d)",
         self->id, self->config.baudRate_Bps, 8 - self->config.dataBitsCount,
         _parity_name[self->config.parityMode], self->config.stopBitCount + 1,
         _flow_name[(self->config.enableTxCTS << 1) | self->config.enableRxRTS],
         self->handle.rxRingBufferSize, self->txbuf_len, self->timeout, self->timeout_char,
-        _invert_name[self->invert]);
+        _invert_name[self->invert], self->mp_irq_trigger);
 }
 
 static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -313,11 +332,16 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         #else
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
         #endif
+        self->config.rxIdleType = kLPUART_IdleTypeStartBit;
+        self->config.rxIdleConfig = kLPUART_IdleCharacter4;
+        LPUART_Init(self->lpuart, &self->config, BOARD_BOOTCLOCKRUN_UART_CLK_ROOT);
         LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
         uint8_t *buffer = m_new(uint8_t, rxbuf_len + 1);
         LPUART_TransferStartRingBuffer(self->lpuart, &self->handle, buffer, rxbuf_len);
         self->txbuf = m_new(uint8_t, txbuf_len); // Allocate the TX buffer.
         self->txbuf_len = txbuf_len;
+
+        LPUART_EnableInterrupts(self->lpuart, kLPUART_IdleLineInterruptEnable);
 
         // The Uart supports inverting, but not the fsl API, so it has to coded directly
         // And it has to be done after LPUART_Init.
@@ -356,6 +380,8 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     self->timeout = 1;
     self->timeout_char = 1;
     self->new = true;
+    self->mp_irq_obj = NULL;
+
     LPUART_GetDefaultConfig(&self->config);
 
     // Configure board-specific pin MUX based on the hardware device number.
@@ -399,6 +425,55 @@ void machine_uart_deinit_all(void) {
             LPUART_SoftwareReset(uart_base_ptr_table[uart_index_table[i]]);
         }
     }
+}
+
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->mp_irq_trigger = new_trigger;
+    return 0;
+}
+
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+static const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};
+
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+
+    if (any_args) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
+        }
+
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+    }
+
+    return self->mp_irq_obj;
 }
 
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
