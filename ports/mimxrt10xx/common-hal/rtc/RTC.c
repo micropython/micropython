@@ -35,8 +35,8 @@
 #include "common-hal/rtc/RTC.h"
 #include "supervisor/shared/translate/translate.h"
 
-#include "fsl_snvs_hp.h"
-#include "fsl_snvs_lp.h"
+#include "sdk/drivers/snvs_hp/fsl_snvs_hp.h"
+#include "sdk/drivers/snvs_lp/fsl_snvs_lp.h"
 
 void rtc_init(void) {
     snvs_hp_rtc_config_t hpconfig;

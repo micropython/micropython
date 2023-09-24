@@ -41,6 +41,8 @@
 //| """functions that an OS normally provides
 //|
 //| |see_cpython_module| :mod:`cpython:os`.
+//|
+//| .. jinja
 //| """
 //|
 //| import typing
@@ -88,7 +90,24 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_getcwd_obj, os_getcwd);
 //| def getenv(key: str, default: Optional[str] = None) -> Optional[str]:
 //|     """Get the environment variable value for the given key or return ``default``.
 //|
-//|     This may load values from disk so cache the result instead of calling this often."""
+//|     This may load values from disk so cache the result instead of calling this often.
+//|
+//|     On boards that do not support ``settings.toml`` reading in the core, this function will raise NotImplementedError.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["os.getenv"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|     ...
 //|
 STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -103,7 +122,7 @@ STATIC mp_obj_t os_getenv(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
 
     return common_hal_os_getenv(mp_obj_str_get_str(args[ARG_key].u_obj), args[ARG_default].u_obj);
     #else
-    return mp_const_none;
+    mp_raise_NotImplementedError(NULL);
     #endif
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(os_getenv_obj, 1, os_getenv);
@@ -241,7 +260,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(os_sync_obj, os_sync);
 //|     """Returns a string of *size* random bytes based on a hardware True Random
 //|     Number Generator. When not available, it will raise a NotImplementedError.
 //|
-//|     **Limitations:** Not yet available on nRF. Not available on SAMD21 due to lack of hardware.
+//|     **Limitations:** Not available on SAMD21 due to lack of hardware.
 //|     """
 //|     ...
 //|
@@ -300,4 +319,4 @@ const mp_obj_module_t os_module = {
     .globals = (mp_obj_dict_t *)&os_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_os, os_module, CIRCUITPY_OS);
+MP_REGISTER_MODULE(MP_QSTR_os, os_module);

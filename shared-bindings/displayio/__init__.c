@@ -57,11 +57,15 @@
 //| <https://learn.adafruit.com/circuitpython-display-support-using-displayio>`_.
 //| """
 
+//| CIRCUITPYTHON_TERMINAL: Group
+//| """The `displayio.Group` that is the displayed serial terminal (REPL)."""
+//|
+
 //| import paralleldisplay
 //|
 
 //| def release_displays() -> None:
-//|     """Releases any actively used displays so their busses and pins can be used again. This will also
+//|     """Releases any actively used displays so their buses and pins can be used again. This will also
 //|     release the builtin display on boards that have one. You will need to reinitialize it yourself
 //|     afterwards. This may take seconds to complete if an active EPaperDisplay is refreshing.
 //|
@@ -105,4 +109,4 @@ const mp_obj_module_t displayio_module = {
     .globals = (mp_obj_dict_t *)&displayio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module, CIRCUITPY_DISPLAYIO);
+MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module);

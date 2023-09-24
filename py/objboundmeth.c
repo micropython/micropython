@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,8 +111,7 @@ STATIC const mp_obj_type_t mp_type_bound_meth = {
 };
 
 mp_obj_t mp_obj_new_bound_meth(mp_obj_t meth, mp_obj_t self) {
-    mp_obj_bound_meth_t *o = m_new_obj(mp_obj_bound_meth_t);
-    o->base.type = &mp_type_bound_meth;
+    mp_obj_bound_meth_t *o = mp_obj_malloc(mp_obj_bound_meth_t, &mp_type_bound_meth);
     o->meth = meth;
     o->self = self;
     return MP_OBJ_FROM_PTR(o);

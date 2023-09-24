@@ -46,10 +46,6 @@ typedef struct {
     uint16_t refresh_sequence_len;
     uint16_t start_up_time_ms;
     uint16_t refresh_time;
-    uint16_t set_column_window_command;
-    uint16_t set_row_window_command;
-    uint16_t set_current_column_command;
-    uint16_t set_current_row_command;
     uint16_t write_black_ram_command;
     uint16_t write_color_ram_command;
     uint8_t hue;

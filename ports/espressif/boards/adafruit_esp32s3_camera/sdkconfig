@@ -1,0 +1,22 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="espressif-esp32s3"
+# end of LWIP
+
+#
+# Camera configuration
+#
+# CONFIG_OV7725_SUPPORT is not set
+# CONFIG_OV3660_SUPPORT is not set
+# end of Camera configuration
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

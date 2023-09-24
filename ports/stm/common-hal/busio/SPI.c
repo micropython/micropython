@@ -73,14 +73,14 @@ STATIC uint32_t get_busclock(SPI_TypeDef *instance) {
 
 STATIC uint32_t stm32_baud_to_spi_div(uint32_t baudrate, uint16_t *prescaler, uint32_t busclock) {
     static const uint32_t baud_map[8][2] = {
-        {2,SPI_BAUDRATEPRESCALER_2},
-        {4,SPI_BAUDRATEPRESCALER_4},
-        {8,SPI_BAUDRATEPRESCALER_8},
-        {16,SPI_BAUDRATEPRESCALER_16},
-        {32,SPI_BAUDRATEPRESCALER_32},
-        {64,SPI_BAUDRATEPRESCALER_64},
-        {128,SPI_BAUDRATEPRESCALER_128},
-        {256,SPI_BAUDRATEPRESCALER_256}
+        {2, SPI_BAUDRATEPRESCALER_2},
+        {4, SPI_BAUDRATEPRESCALER_4},
+        {8, SPI_BAUDRATEPRESCALER_8},
+        {16, SPI_BAUDRATEPRESCALER_16},
+        {32, SPI_BAUDRATEPRESCALER_32},
+        {64, SPI_BAUDRATEPRESCALER_64},
+        {128, SPI_BAUDRATEPRESCALER_128},
+        {256, SPI_BAUDRATEPRESCALER_256}
     };
     size_t i = 0;
     uint16_t divisor;
@@ -160,7 +160,7 @@ STATIC int check_pins(busio_spi_obj_t *self,
     }
 
     if (spi_taken) {
-        mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
     } else {
         raise_ValueError_invalid_pin();
     }
@@ -267,12 +267,12 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
     reserved_spi[self->sck->periph_index - 1] = false;
     never_reset_spi[self->sck->periph_index - 1] = false;
 
-    reset_pin_number(self->sck->pin->port,self->sck->pin->number);
+    reset_pin_number(self->sck->pin->port, self->sck->pin->number);
     if (self->mosi != NULL) {
-        reset_pin_number(self->mosi->pin->port,self->mosi->pin->number);
+        reset_pin_number(self->mosi->pin->port, self->mosi->pin->number);
     }
     if (self->miso != NULL) {
-        reset_pin_number(self->miso->pin->port,self->miso->pin->number);
+        reset_pin_number(self->miso->pin->port, self->miso->pin->number);
     }
     self->sck = NULL;
     self->mosi = NULL;
@@ -347,7 +347,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     const uint8_t *data, size_t len) {
     if (self->mosi == NULL) {
-        mp_raise_ValueError(translate("No MOSI pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
     HAL_StatusTypeDef result = HAL_SPI_Transmit(&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
     return result == HAL_OK;
@@ -356,9 +356,9 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     uint8_t *data, size_t len, uint8_t write_value) {
     if (self->miso == NULL && !self->half_duplex) {
-        mp_raise_ValueError(translate("No MISO pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     } else if (self->half_duplex && self->mosi == NULL) {
-        mp_raise_ValueError(translate("No MOSI pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
     }
     HAL_StatusTypeDef result = HAL_OK;
     if ((!self->half_duplex && self->mosi == NULL) || (self->half_duplex && self->mosi != NULL && self->miso == NULL)) {
@@ -372,11 +372,14 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
 
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     const uint8_t *data_out, uint8_t *data_in, size_t len) {
-    if (self->miso == NULL || self->mosi == NULL) {
-        mp_raise_ValueError(translate("Missing MISO or MOSI pin"));
+    if (self->mosi == NULL && data_out != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+    }
+    if (self->miso == NULL && data_in != NULL) {
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
     }
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive(&self->handle,
-        (uint8_t *)data_out, data_in, (uint16_t)len,HAL_MAX_DELAY);
+        (uint8_t *)data_out, data_in, (uint16_t)len, HAL_MAX_DELAY);
     return result == HAL_OK;
 }
 

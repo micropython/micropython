@@ -47,6 +47,32 @@
 //|        import memorymap
 //|        rtc_slow_mem = memorymap.AddressRange(start=0x50000000, length=0x2000)
 //|        rtc_slow_mem[0:3] = b"\xcc\x10\x00"
+//|
+//|     Example I/O register usage on RP2040::
+//|
+//|        import binascii
+//|        import board
+//|        import digitalio
+//|        import memorymap
+//|
+//|        def rp2040_set_pad_drive(p, d):
+//|            pads_bank0 = memorymap.AddressRange(start=0x4001C000, length=0x4000)
+//|            pad_ctrl = int.from_bytes(pads_bank0[p*4+4:p*4+8], "little")
+//|            # Pad control register is updated using an MP-safe atomic XOR
+//|            pad_ctrl ^= (d << 4)
+//|            pad_ctrl &= 0x00000030
+//|            pads_bank0[p*4+0x3004:p*4+0x3008] = pad_ctrl.to_bytes(4, "little")
+//|
+//|        def rp2040_get_pad_drive(p):
+//|            pads_bank0 = memorymap.AddressRange(start=0x4001C000, length=0x4000)
+//|            pad_ctrl = int.from_bytes(pads_bank0[p*4+4:p*4+8], "little")
+//|            return (pad_ctrl >> 4) & 0x3
+//|
+//|        # set GPIO16 pad drive strength to 12 mA
+//|        rp2040_set_pad_drive(16, 3)
+//|
+//|        # print GPIO16 pad drive strength
+//|        print(rp2040_get_pad_drive(16))
 //|     """
 
 //|     def __init__(self, *, start, length) -> None:
@@ -57,20 +83,31 @@
 STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_start, ARG_length };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_start, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_length, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    size_t start =
-        mp_arg_validate_int_min(args[ARG_start].u_int, 0, MP_QSTR_start);
+    // Argument start is a pointer into the address map, so we validate it here because a
+    // signed int argument will overflow if it is in the upper half of the map.
+    size_t start;
+    if (mp_obj_is_small_int(args[ARG_start].u_obj)) {
+        start = MP_OBJ_SMALL_INT_VALUE(args[ARG_start].u_obj);
+    } else if (mp_obj_is_type(args[ARG_start].u_obj, &mp_type_int)) {
+        start = mp_obj_int_get_uint_checked(args[ARG_start].u_obj);
+    } else {
+        mp_obj_t arg = mp_unary_op(MP_UNARY_OP_INT, args[ARG_start].u_obj);
+        start = mp_obj_int_get_uint_checked(arg);
+    }
     size_t length =
         mp_arg_validate_int_min(args[ARG_length].u_int, 1, MP_QSTR_length);
+    // Check for address range wrap here as this can break port-specific code due to size_t overflow.
+    if (start + length - 1 < start) {
+        mp_raise_ValueError(translate("Address range wraps around"));
+    }
 
-
-    memorymap_addressrange_obj_t *self = m_new_obj(memorymap_addressrange_obj_t);
-    self->base.type = &memorymap_addressrange_type;
+    memorymap_addressrange_obj_t *self = mp_obj_malloc(memorymap_addressrange_obj_t, &memorymap_addressrange_type);
 
     common_hal_memorymap_addressrange_construct(self, (uint8_t *)start, length);
 
@@ -105,7 +142,8 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|     def __getitem__(self, index: int) -> int:
 //|         """Returns the value(s) at the given index.
 //|
-//|         1, 2, 4 and 8 byte aligned reads will be done in one transaction.
+//|         1, 2, 4 and 8 byte aligned reads will be done in one transaction
+//|         when possible.
 //|         All others may use multiple transactions."""
 //|         ...
 //|     @overload
@@ -114,7 +152,8 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|     def __setitem__(self, index: int, value: int) -> None:
 //|         """Set the value(s) at the given index.
 //|
-//|         1, 2, 4 and 8 byte aligned writes will be done in one transaction.
+//|         1, 2, 4 and 8 byte aligned writes will be done in one transaction
+//|         when possible.
 //|         All others may use multiple transactions."""
 //|         ...
 //|
@@ -155,9 +194,7 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
                     mp_raise_NotImplementedError(translate("array/bytes required on right side"));
                 }
 
-                if (!common_hal_memorymap_addressrange_set_bytes(self, slice.start, src_items, src_len)) {
-                    mp_raise_RuntimeError(translate("Unable to write to address."));
-                }
+                common_hal_memorymap_addressrange_set_bytes(self, slice.start, src_items, src_len);
                 return mp_const_none;
                 #else
                 return MP_OBJ_NULL; // op not supported
@@ -185,9 +222,7 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
                 mp_arg_validate_int_range(byte_value, 0, 255, MP_QSTR_bytes);
 
                 uint8_t short_value = byte_value;
-                if (!common_hal_memorymap_addressrange_set_bytes(self, index, &short_value, 1)) {
-                    mp_raise_RuntimeError(translate("Unable to write to address."));
-                }
+                common_hal_memorymap_addressrange_set_bytes(self, index, &short_value, 1);
                 return mp_const_none;
             }
         }

@@ -25,11 +25,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "shared-bindings/microcontroller/__init__.h"
+#include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "shared-bindings/microcontroller/__init__.h"
 
-STATIC bool claimed_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
-STATIC bool never_reset_pins[IOMUXC_SW_PAD_CTL_PAD_COUNT];
+#include "py/gc.h"
+
+STATIC bool claimed_pins[PAD_COUNT];
+STATIC bool never_reset_pins[PAD_COUNT];
 
 // Default is that no pins are forbidden to reset.
 MP_WEAK const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
@@ -52,10 +55,10 @@ STATIC bool _reset_forbidden(const mcu_pin_obj_t *pin) {
 // and GPIO port and number, used to store claimed and reset tagging. The two number
 // systems are not related and one cannot determine the other without a pin object
 void reset_all_pins(void) {
-    for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
+    for (uint8_t i = 0; i < PAD_COUNT; i++) {
         claimed_pins[i] = never_reset_pins[i];
     }
-    for (uint8_t i = 0; i < IOMUXC_SW_PAD_CTL_PAD_COUNT; i++) {
+    for (uint8_t i = 0; i < PAD_COUNT; i++) {
         mcu_pin_obj_t *pin = mcu_pin_globals.map.table[i].value;
         if (never_reset_pins[pin->mux_idx]) {
             continue;
@@ -84,8 +87,14 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
         return;
     }
 
+    disable_pin_change_interrupt(pin);
     never_reset_pins[pin->mux_idx] = false;
     claimed_pins[pin->mux_idx] = false;
+
+    // This should never be true, but protect against it anyway.
+    if (pin->mux_reg == 0) {
+        return;
+    }
     *(uint32_t *)pin->mux_reg = pin->mux_reset;
     *(uint32_t *)pin->cfg_reg = pin->pad_reset;
 }
@@ -115,4 +124,20 @@ void claim_pin(const mcu_pin_obj_t *pin) {
 
 void common_hal_mcu_pin_reset_number(uint8_t pin_no) {
     common_hal_reset_pin((mcu_pin_obj_t *)(mcu_pin_globals.map.table[pin_no].value));
+}
+
+const mcu_periph_obj_t *find_pin_function_sz(const mcu_periph_obj_t *list, size_t sz, const mcu_pin_obj_t *pin, int *instance, uint16_t name) {
+    if (!pin) {
+        return NULL;
+    }
+    for (size_t i = 0; i < sz; i++) {
+        if (*instance != -1 && *instance != list[i].bank_idx) {
+            continue;
+        }
+        if (pin == list[i].pin) {
+            *instance = list[i].bank_idx;
+            return &list[i];
+        }
+    }
+    mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
 }

@@ -30,6 +30,7 @@ from collections import defaultdict
 from sphinx.transforms import SphinxTransform
 from docutils import nodes
 from sphinx import addnodes
+from sphinx.ext import intersphinx
 
 tools_describe = str(pathlib.Path(__file__).parent / "tools/describe")
 
@@ -77,6 +78,7 @@ needs_sphinx = '1.3'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    "sphinxcontrib.jquery",
     'sphinxcontrib.rsvgconverter',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
@@ -215,6 +217,7 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/usb",
                     "ports/raspberrypi/sdk",
                     "ports/raspberrypi/lib",
+                    "ports/silabs",
                     "ports/stm/st_driver",
                     "ports/stm/packages",
                     "ports/stm/peripherals",
@@ -263,19 +266,9 @@ rst_epilog = """
 
 # -- Options for HTML output ----------------------------------------------
 
-# on_rtd is whether we are on readthedocs.org
-on_rtd = os.environ.get('READTHEDOCS', None) == 'True'
-
-if not on_rtd:  # only import and set the theme if we're building docs locally
-    try:
-        import sphinx_rtd_theme
-        html_theme = 'sphinx_rtd_theme'
-        html_theme_path = [sphinx_rtd_theme.get_html_theme_path(), '.']
-    except:
-        html_theme = 'default'
-        html_theme_path = ['.']
-else:
-    html_theme_path = ['.']
+import sphinx_rtd_theme
+html_theme = 'sphinx_rtd_theme'
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path(), '.']
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -438,8 +431,10 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {"cpython": ('https://docs.python.org/3/', None),
-                       "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None)}
+intersphinx_mapping = {"python": ('https://docs.python.org/3/', None),
+                       "register": ('https://circuitpython.readthedocs.io/projects/register/en/latest/', None),
+                       "mcp2515": ('https://circuitpython.readthedocs.io/projects/mcp2515/en/latest/', None),
+                       "typing": ('https://circuitpython.readthedocs.io/projects/adafruit-circuitpython-typing/en/latest/', None)}
 
 # Adapted from sphinxcontrib-redirects
 from sphinx.builders import html as builders
@@ -481,6 +476,26 @@ def generate_redirects(app):
             with open(redirected_filename, 'w') as f:
                 f.write(TEMPLATE % urllib.parse.quote(to_path, '#/'))
 
+def adafruit_typing_workaround(app, env, node, contnode):
+    # Sphinx marks a requesting node that uses circuitpython-typing
+    # as looking for a "class" definition, but unfortunately
+    # Sphinx doesn't recognize TypeAlias based types usefully from
+    # the typing library.
+    # (see: https://github.com/sphinx-doc/sphinx/issues/8934)
+    # Instead, it categorizes these types as "data".
+    # (see: python -m sphinx.ext.intersphinx \
+    #   https://docs.circuitpython.org/projects/adafruit-circuitpython-typing/en/latest/objects.inv)
+    # This workaround traps missing references, checks if
+    # they are likely to be in the circuitpython_typing package,
+    # and changes the requesting type from "class" to "data" if
+    # needed, and re-tries the reference resolver.
+    ref = node.get("reftarget", None)
+    if ref and ref.startswith("circuitpython_typing."):
+        dtype = node.get("reftype", None)
+        if dtype != "data":
+            node.attributes.update({"reftype": "data"})
+            return intersphinx.missing_reference(app, env, node, contnode)
+
 
 class CoreModuleTransform(SphinxTransform):
     default_priority = 870
@@ -517,4 +532,5 @@ def setup(app):
     app.add_js_file("filter.js")
     app.add_config_value('redirects_file', 'redirects', 'env')
     app.connect('builder-inited', generate_redirects)
+    app.connect('missing-reference', adafruit_typing_workaround)
     app.add_transform(CoreModuleTransform)

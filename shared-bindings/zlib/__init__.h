@@ -27,6 +27,6 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H
 
-mp_obj_t common_hal_zlib_decompress(mp_obj_t data, bool is_zlib);
+mp_obj_t common_hal_zlib_decompress(mp_obj_t data, mp_int_t wbits);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_ZLIB___INIT___H

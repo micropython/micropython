@@ -47,8 +47,7 @@ mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pix
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_shape);
     }
 
-    vectorio_vector_shape_t *self = m_new_obj(vectorio_vector_shape_t);
-    self->base.type = &vectorio_vector_shape_type;
+    vectorio_vector_shape_t *self = mp_obj_malloc(vectorio_vector_shape_t, &vectorio_vector_shape_type);
     common_hal_vectorio_vector_shape_construct(self,
         ishape, pixel_shader, x, y
         );
@@ -226,7 +225,7 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_pixel_shader(mp_obj_t wrapper_shap
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
 
     if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
-        mp_raise_TypeError(translate("pixel_shader must be displayio.Palette or displayio.ColorConverter"));
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
     common_hal_vectorio_vector_shape_set_pixel_shader(self, pixel_shader);

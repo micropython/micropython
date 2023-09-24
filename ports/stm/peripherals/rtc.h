@@ -36,7 +36,7 @@
 
 uint32_t stm32_peripherals_get_rtc_freq(void);
 void stm32_peripherals_rtc_init(void);
-uint64_t stm32_peripherals_rtc_raw_ticks(uint8_t *subticks);
+uint64_t stm32_peripherals_rtc_monotonic_ticks(uint8_t *subticks);
 
 void stm32_peripherals_rtc_assign_wkup_callback(void (*callback)(void));
 void stm32_peripherals_rtc_set_wakeup_mode_seconds(uint32_t seconds);

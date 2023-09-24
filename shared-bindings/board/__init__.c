@@ -43,7 +43,7 @@
 //| Common container for board base pin names. These will vary from board to
 //| board so don't expect portability when using this module.
 //|
-//| Another common use of this module is to use serial communciation buses with
+//| Another common use of this module is to use serial communication buses with
 //| the default pins and settings.  For more information about serial communcication
 //| in CircuitPython, see the :mod:`busio`.
 //|
@@ -119,4 +119,4 @@ const mp_obj_module_t board_module = {
     .globals = (mp_obj_dict_t *)&board_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_board, board_module, CIRCUITPY_BOARD);
+MP_REGISTER_MODULE(MP_QSTR_board, board_module);

@@ -61,7 +61,6 @@ TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  fetch-submodules	to fetch dependencies from submodules, run this right after you clone the repo"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
@@ -84,6 +83,8 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  fetch-all-submodules	to fetch submodules for all ports"
+	@echo "  remove-all-submodules	remove all submodules, including files and .git/ data"
 
 clean:
 	rm -rf $(BUILDDIR)/*
@@ -266,7 +267,7 @@ stubs:
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst
 	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
-	@(cd circuitpython-stubs && $(PYTHON) setup.py -q sdist)
+	@$(PYTHON) -m build circuitpython-stubs
 
 .PHONY: check-stubs
 check-stubs: stubs
@@ -324,10 +325,15 @@ clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
 
-# This update will fail because the commits we need aren't the latest on the
-# branch. We can ignore that though because we fix it with the second command.
-# (Only works for git servers that allow sha fetches.)
-.PHONY: fetch-submodules
-fetch-submodules:
-	git submodule update --init -N --depth 1 || true
-	git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1'
+.PHONY: fetch-all-submodules
+fetch-all-submodules:
+	tools/fetch-submodules.sh
+
+.PHONY: remove-all-submodules
+remove-all-submodules:
+	git submodule deinit -f --all
+	rm -rf .git/modules/*
+
+.PHONY: fetch-tags
+fetch-tags:
+	git fetch --tags --recurse-submodules=no --shallow-since="2023-02-01" https://github.com/adafruit/circuitpython HEAD

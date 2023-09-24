@@ -38,11 +38,26 @@ internal_memory = {
         ("Internal SRAM 1", (0x3FC8_0000, 0x4037_8000), 416 * 1024),
         ("Internal SRAM 2", (0x3FCF_0000,), 64 * 1024),
     ],
+    "esp32c2": [
+        # Name, Start, Length
+        ("Internal SRAM 0", (0x4037_C000,), 16 * 1024),
+        ("Internal SRAM 1", (0x3FCA_0000, 0x4038_0000), 256 * 1024),
+    ],
     "esp32c3": [
         # Name, Start, Length
         ("RTC Fast Memory", (0x5000_0000,), 8 * 1024),
         ("Internal SRAM 0", (0x4037_C000,), 16 * 1024),
         ("Internal SRAM 1", (0x3FC8_0000, 0x4038_0000), 384 * 1024),
+    ],
+    "esp32c6": [
+        # Name, Start, Length
+        ("LP SRAM", (0x5000_0000,), 16 * 1024),
+        ("HP SRAM", (0x4080_0000,), 512 * 1024),
+    ],
+    "esp32h2": [
+        # Name, Start, Length
+        ("LP SRAM", (0x5000_0000,), 4 * 1024),
+        ("HP SRAM", (0x4080_0000,), 320 * 1024),
     ],
 }
 
@@ -73,7 +88,9 @@ with open(sys.argv[2], "r") as f:
                 ota = None
                 app = None
                 for partition in csv.reader(f):
-                    if partition[0][0] == "#":
+                    if not partition:  # empty row
+                        continue
+                    if partition[0].startswith("#"):
                         continue
                     subtype = partition[2].strip()
                     if subtype == "factory":

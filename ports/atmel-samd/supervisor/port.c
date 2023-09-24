@@ -307,7 +307,7 @@ safe_mode_t port_init(void) {
     // because it was hard enough to figure out, and maybe there's
     // a mistake that could make it work in the future.
     #if 0
-    // Designate QSPI memory mapped region as not cachable.
+    // Designate QSPI memory mapped region as not cacheable.
 
     // Turn off MPU in case it is on.
     MPU->CTRL = 0;
@@ -320,7 +320,7 @@ safe_mode_t port_init(void) {
         0b011 << MPU_RASR_AP_Pos |     // full read/write access for privileged and user mode
             0b000 << MPU_RASR_TEX_Pos | // caching not allowed, strongly ordered
             1 << MPU_RASR_S_Pos |      // sharable
-            0 << MPU_RASR_C_Pos |      // not cachable
+            0 << MPU_RASR_C_Pos |      // not cacheable
             0 << MPU_RASR_B_Pos |      // not bufferable
             0b10111 << MPU_RASR_SIZE_Pos | // 16MB region size
             1 << MPU_RASR_ENABLE_Pos   // enable this region
@@ -353,10 +353,10 @@ safe_mode_t port_init(void) {
     if (strcmp((char *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
         fine = ((uint16_t *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
     }
-    clock_init(BOARD_HAS_CRYSTAL, fine);
+    clock_init(BOARD_HAS_CRYSTAL, BOARD_XOSC_FREQ_HZ, BOARD_XOSC_IS_CRYSTAL, fine);
     #else
     // Use a default fine value
-    clock_init(BOARD_HAS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
+    clock_init(BOARD_HAS_CRYSTAL, BOARD_XOSC_FREQ_HZ, BOARD_XOSC_IS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
     #endif
 
     rtc_init();

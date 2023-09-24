@@ -35,7 +35,7 @@
 #include <stdbool.h>
 
 #include "fsl_iomuxc.h"
-#include "fsl_pwm.h"
+#include "sdk/drivers/pwm/fsl_pwm.h"
 #include "py/obj.h"
 
 extern const mp_obj_type_t mcu_pin_type;
@@ -72,12 +72,24 @@ typedef struct {
         .pad_reset = p_pad_reset, \
     }
 
+typedef void (gpio_change_interrupt_t)(void *data);
+void disable_pin_change_interrupt(const mcu_pin_obj_t *pin);
+void enable_pin_change_interrupt(const mcu_pin_obj_t *pin, gpio_change_interrupt_t func, void *data);
+
 #ifdef MIMXRT1011_SERIES
 #include "MIMXRT1011/pins.h"
+#elif defined(MIMXRT1015_SERIES)
+#include "MIMXRT1015/pins.h"
 #elif defined(MIMXRT1021_SERIES)
 #include "MIMXRT1021/pins.h"
+#elif defined(MIMXRT1042_SERIES)
+#include "MIMXRT1042/pins.h"
+#elif defined(MIMXRT1052_SERIES)
+#include "MIMXRT1052/pins.h"
 #elif defined(MIMXRT1062_SERIES)
 #include "MIMXRT1062/pins.h"
+#elif defined(MIMXRT1176_cm7_SERIES)
+#include "MIMXRT1176/pins.h"
 #endif
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PINS_H

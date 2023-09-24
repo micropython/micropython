@@ -222,14 +222,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         if (NULL != receiver_buffer) {
             self->buffer = receiver_buffer;
         } else {
-            // Initially allocate the UART's buffer in the long-lived part of the
-            // heap.  UARTs are generally long-lived objects, but the "make long-
-            // lived" machinery is incapable of moving internal pointers like
-            // self->buffer, so do it manually.  (However, as long as internal
-            // pointers like this are NOT moved, allocating the buffer
-            // in the long-lived pool is not strictly necessary)
-
-            self->buffer = (uint8_t *)gc_alloc(self->buffer_length * sizeof(uint8_t), false, true);
+            self->buffer = (uint8_t *)gc_alloc(self->buffer_length * sizeof(uint8_t), false);
             if (self->buffer == NULL) {
                 common_hal_busio_uart_deinit(self);
                 m_malloc_fail(self->buffer_length * sizeof(uint8_t));
@@ -241,7 +234,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (usart_async_init(usart_desc_p, sercom, self->buffer, self->buffer_length, NULL) != ERR_NONE) {
-        mp_raise_RuntimeError(translate("UART init"));
+        mp_raise_RuntimeError(NULL);
     }
 
     // usart_async_init() sets a number of defaults based on a prototypical SERCOM
@@ -396,7 +389,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx_pin == NO_PIN) {
-        mp_raise_ValueError(translate("No RX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.
@@ -453,7 +446,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx_pin == NO_PIN) {
-        mp_raise_ValueError(translate("No TX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.

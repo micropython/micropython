@@ -67,8 +67,8 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     self->width = read_word(bmp_header, 9);
     self->height = read_word(bmp_header, 11);
 
-    displayio_colorconverter_t *colorconverter = m_new_obj(displayio_colorconverter_t);
-    colorconverter->base.type = &displayio_colorconverter_type;
+    displayio_colorconverter_t *colorconverter =
+        mp_obj_malloc(displayio_colorconverter_t, &displayio_colorconverter_type);
     common_hal_displayio_colorconverter_construct(colorconverter, false, DISPLAYIO_COLORSPACE_RGB888);
     self->colorconverter = colorconverter;
 
@@ -88,15 +88,14 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
             number_of_colors = 1 << bits_per_pixel;
         }
 
-        displayio_palette_t *palette = m_new_obj(displayio_palette_t);
-        palette->base.type = &displayio_palette_type;
+        displayio_palette_t *palette = mp_obj_malloc(displayio_palette_t, &displayio_palette_type);
         common_hal_displayio_palette_construct(palette, number_of_colors, false);
 
         if (number_of_colors > 1) {
             uint16_t palette_size = number_of_colors * sizeof(uint32_t);
             uint16_t palette_offset = 0xe + header_size;
 
-            uint32_t *palette_data = m_malloc(palette_size, false);
+            uint32_t *palette_data = m_malloc(palette_size);
 
             f_rewind(&self->file->fp);
             f_lseek(&self->file->fp, palette_offset);

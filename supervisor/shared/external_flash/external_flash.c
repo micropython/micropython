@@ -97,7 +97,7 @@ static bool write_flash(uint32_t address, const uint8_t *data, uint32_t data_len
     if (flash_device == NULL) {
         return false;
     }
-    // Don't bother writing if the data is all 1s. Thats equivalent to the flash
+    // Don't bother writing if the data is all 1s. That's equivalent to the flash
     // state after an erase.
     if (!flash_device->no_erase_cmd) {
         // Only do this if the device has an erase command
@@ -371,7 +371,7 @@ static bool allocate_ram_cache(void) {
         return false;
     }
 
-    MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
+    MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t));
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
     }
@@ -382,7 +382,7 @@ static bool allocate_ram_cache(void) {
     bool success = true;
     for (i = 0; i < blocks_per_sector; i++) {
         for (j = 0; j < pages_per_block; j++) {
-            uint8_t *page_cache = m_malloc_maybe(SPI_FLASH_PAGE_SIZE, false);
+            uint8_t *page_cache = m_malloc_maybe(SPI_FLASH_PAGE_SIZE);
             if (page_cache == NULL) {
                 success = false;
                 break;

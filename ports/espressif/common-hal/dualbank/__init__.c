@@ -31,6 +31,7 @@
 
 #include "esp_log.h"
 #include "esp_ota_ops.h"
+#include "esp_app_format.h"
 
 static const esp_partition_t *update_partition = NULL;
 static esp_ota_handle_t update_handle = 0;
@@ -59,10 +60,10 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
         update_partition = esp_ota_get_next_update_partition(NULL);
         assert(update_partition != NULL);
 
-        ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
+        ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08lu)",
             running->type, running->subtype, running->address);
 
-        ESP_LOGI(TAG, "Writing partition type %d subtype %d (offset 0x%08x)\n",
+        ESP_LOGI(TAG, "Writing partition type %d subtype %d (offset 0x%08lu)\n",
             update_partition->type, update_partition->subtype, update_partition->address);
     }
 

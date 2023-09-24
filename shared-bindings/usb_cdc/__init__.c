@@ -142,4 +142,4 @@ void usb_cdc_set_data(mp_obj_t serial_obj) {
     set_module_dict_entry(MP_ROM_QSTR(MP_QSTR_data), serial_obj);
 }
 
-MP_REGISTER_MODULE(MP_QSTR_usb_cdc, usb_cdc_module, CIRCUITPY_USB_CDC);
+MP_REGISTER_MODULE(MP_QSTR_usb_cdc, usb_cdc_module);

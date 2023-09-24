@@ -132,6 +132,7 @@ Sub *update(Sub*, int, const char*);
 void decref(Sub*);
 
 struct Subject {
+	const char *begin_line;
 	const char *begin;
 	const char *end;
 };

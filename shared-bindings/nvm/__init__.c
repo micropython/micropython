@@ -51,4 +51,4 @@ const mp_obj_module_t nvm_module = {
     .globals = (mp_obj_dict_t *)&nvm_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_nvm, nvm_module, CIRCUITPY_NVM);
+MP_REGISTER_MODULE(MP_QSTR_nvm, nvm_module);

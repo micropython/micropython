@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,7 @@
 
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objproperty.h"
 #include "py/objstr.h"
 #include "py/objarray.h"
 
@@ -253,12 +254,14 @@ STATIC mp_obj_t memoryview_make_new(const mp_obj_type_t *type_in, size_t n_args,
 STATIC mp_obj_t memoryview_cast(const mp_obj_t self_in, const mp_obj_t typecode_in) {
     mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
     const char *typecode = mp_obj_str_get_str(typecode_in);
-    size_t element_size = mp_binary_get_size('@', typecode[0], NULL);
-    size_t bytelen = self->len * mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
-    if (bytelen % element_size != 0) {
+    size_t new_element_size = mp_binary_get_size('@', typecode[0], NULL);
+    size_t old_element_size = mp_binary_get_size('@', self->typecode & ~MP_OBJ_ARRAY_TYPECODE_FLAG_RW, NULL);
+    size_t bytelen = self->len * old_element_size;
+    if (bytelen % new_element_size != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("memoryview: length is not a multiple of itemsize"));
     }
-    mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / element_size, self->items));
+    mp_obj_array_t *result = MP_OBJ_TO_PTR(mp_obj_new_memoryview(*typecode, bytelen / new_element_size, self->items));
+    result->memview_offset = (self->memview_offset * old_element_size) / new_element_size;
 
     // test if the object can be written to
     if (self->typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW) {
@@ -270,15 +273,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(memoryview_cast_obj, memoryview_cast);
 #endif
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-STATIC void memoryview_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
-    if (dest[0] != MP_OBJ_NULL) {
-        return;
-    }
-    if (attr == MP_QSTR_itemsize) {
-        mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
-        dest[0] = MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
-    }
+STATIC mp_obj_t memoryview_itemsize_get(mp_obj_t self_in) {
+    mp_obj_array_t *self = MP_OBJ_TO_PTR(self_in);
+    return MP_OBJ_NEW_SMALL_INT(mp_binary_get_size('@', self->typecode & TYPECODE_MASK, NULL));
 }
+MP_DEFINE_CONST_FUN_OBJ_1(memoryview_itemsize_get_obj, memoryview_itemsize_get);
+
+MP_PROPERTY_GETTER(memoryview_itemsize_obj, (mp_obj_t)&memoryview_itemsize_get_obj);
 #endif
 
 #endif
@@ -785,9 +786,14 @@ const mp_obj_type_t mp_type_bytearray = {
 
 #if MICROPY_PY_BUILTINS_MEMORYVIEW
 
-#if MICROPY_CPYTHON_COMPAT
+#if MICROPY_CPYTHON_COMPAT || MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
 STATIC const mp_rom_map_elem_t memoryview_locals_dict_table[] = {
+    #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_cast), MP_ROM_PTR(&memoryview_cast_obj) },
+    #endif
+    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
+    { MP_ROM_QSTR(MP_QSTR_itemsize), MP_ROM_PTR(&memoryview_itemsize_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(memoryview_locals_dict, memoryview_locals_dict_table);
@@ -798,11 +804,8 @@ const mp_obj_type_t mp_type_memoryview = {
     .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
     .name = MP_QSTR_memoryview,
     .make_new = memoryview_make_new,
-    #if MICROPY_CPYTHON_COMPAT
+    #if MICROPY_CPYTHON_COMPAT || MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
     .locals_dict = (mp_obj_dict_t *)&memoryview_locals_dict,
-    #endif
-    #if MICROPY_PY_BUILTINS_MEMORYVIEW_ITEMSIZE
-    .attr = memoryview_attr,
     #endif
     MP_TYPE_EXTENDED_FIELDS(
         .getiter = array_iterator_new,
@@ -835,8 +838,7 @@ mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n) {
 
 // Create bytearray which references specified memory area
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items) {
-    mp_obj_array_t *o = m_new_obj(mp_obj_array_t);
-    o->base.type = &mp_type_bytearray;
+    mp_obj_array_t *o = mp_obj_malloc(mp_obj_array_t, &mp_type_bytearray);
     o->typecode = BYTEARRAY_TYPECODE;
     o->free = 0;
     o->len = n;

@@ -77,6 +77,8 @@
 //|
 //| Tutorial for UART:
 //| https://learn.adafruit.com/circuitpython-essentials/circuitpython-uart-serial
+//|
+//| .. jinja
 //| """
 
 STATIC const mp_rom_map_elem_t busio_module_globals_table[] = {
@@ -93,4 +95,4 @@ const mp_obj_module_t busio_module = {
     .globals = (mp_obj_dict_t *)&busio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_busio, busio_module, CIRCUITPY_BUSIO);
+MP_REGISTER_MODULE(MP_QSTR_busio, busio_module);

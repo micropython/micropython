@@ -35,7 +35,7 @@
 #define TAG "espidf"
 
 #ifdef CONFIG_SPIRAM
-#include "esp32/spiram.h"
+#include "esp_psram.h"
 #include "esp_heap_caps.h"
 #include "esp_heap_caps_init.h"
 #include "soc/soc.h"
@@ -44,14 +44,13 @@
 #else
 #define esp_himem_reserved_area_size() (0)
 #endif
-bool ok_to_reserve_psram = true;
 size_t reserved_psram = DEFAULT_RESERVED_PSRAM;
 #endif
 
 static size_t psram_size_usable(void) {
     #ifdef CONFIG_SPIRAM
     /* PSRAM chip may be larger than the size we can map into address space */
-    size_t s = MIN(esp_spiram_get_size(), SOC_EXTRAM_DATA_SIZE);
+    size_t s = MIN(esp_psram_get_size(), SOC_EXTRAM_DATA_SIZE);
     return s - esp_himem_reserved_area_size();
     #else
     return 0;
@@ -60,10 +59,7 @@ static size_t psram_size_usable(void) {
 
 bool common_hal_espidf_set_reserved_psram(size_t amount) {
     #ifdef CONFIG_SPIRAM
-    if (!esp_spiram_is_initialized()) {
-        return false;
-    }
-    if (!ok_to_reserve_psram) {
+    if (!esp_psram_is_initialized()) {
         return false;
     }
     if (amount > psram_size_usable()) {
@@ -79,7 +75,7 @@ bool common_hal_espidf_set_reserved_psram(size_t amount) {
 supervisor_allocation *psram_for_idf;
 
 void common_hal_espidf_reserve_psram(void) {
-    #ifdef CONFIG_SPIRAM
+    #ifdef CONFIG_SPIRAM_USE_MEMMAP
     if (!psram_for_idf) {
         ESP_LOGI(TAG, "Reserving %d bytes of psram", reserved_psram);
         if (reserved_psram == 0) {
@@ -112,20 +108,14 @@ size_t common_hal_espidf_get_total_psram(void) {
 
 intptr_t common_hal_espidf_get_psram_start(void) {
     #ifdef CONFIG_SPIRAM
-    if (esp_spiram_is_initialized()) {
-        #ifdef CONFIG_IDF_TARGET_ESP32
-        return SOC_EXTRAM_DATA_LOW;
-        #else
-        return SOC_EXTRAM_DATA_HIGH - psram_size_usable();
-        #endif
-    }
+    return (intptr_t)esp_psram_get_address();
     #endif
     return 0;
 }
 
 intptr_t common_hal_espidf_get_psram_end(void) {
     #ifdef CONFIG_SPIRAM
-    if (esp_spiram_is_initialized()) {
+    if (esp_psram_is_initialized()) {
         return common_hal_espidf_get_psram_start() + psram_size_usable();
     }
     #endif
@@ -198,4 +188,11 @@ void raise_esp_error(esp_err_t err) {
     mp_raise_msg_varg(exception_type, translate("%s error 0x%x"), group, err);
 }
 
-MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module, CIRCUITPY_ESPIDF);
+void cp_check_esp_error(esp_err_t err) {
+    if (err == ESP_OK) {
+        return;
+    }
+    raise_esp_error(err);
+}
+
+MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module);

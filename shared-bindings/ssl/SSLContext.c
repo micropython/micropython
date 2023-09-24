@@ -45,8 +45,7 @@
 STATIC mp_obj_t ssl_sslcontext_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
-    ssl_sslcontext_obj_t *s = m_new_obj(ssl_sslcontext_obj_t);
-    s->base.type = &ssl_sslcontext_type;
+    ssl_sslcontext_obj_t *s = mp_obj_malloc(ssl_sslcontext_obj_t, &ssl_sslcontext_type);
 
     common_hal_ssl_sslcontext_construct(s);
 
@@ -101,14 +100,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_cert_chain_obj, 1, ssl_ssl
 STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_cadata };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_cadata, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_cadata, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *cadata = mp_obj_str_get_str(args[ARG_cadata].u_obj);
+    const char *cadata = NULL;
+    if (args[ARG_cadata].u_obj != mp_const_none) {
+        cadata = mp_obj_str_get_str(args[ARG_cadata].u_obj);
+    }
 
     common_hal_ssl_sslcontext_load_verify_locations(self, cadata);
     return mp_const_none;

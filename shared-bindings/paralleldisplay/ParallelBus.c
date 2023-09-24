@@ -39,7 +39,7 @@
 
 //| class ParallelBus:
 //|     """Manage updating a display over 8-bit parallel bus in the background while Python code runs. This
-//|     protocol may be refered to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
+//|     protocol may be referred to as 8080-I Series Parallel Interface in datasheets. It doesn't handle
 //|     display initialization."""
 //|
 //|     def __init__(
@@ -122,7 +122,7 @@ STATIC mp_obj_t paralleldisplay_parallelbus_obj_reset(mp_obj_t self_in) {
     paralleldisplay_parallelbus_obj_t *self = self_in;
 
     if (!common_hal_paralleldisplay_parallelbus_reset(self)) {
-        mp_raise_RuntimeError(translate("no reset pin available"));
+        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }

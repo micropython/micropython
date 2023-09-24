@@ -62,12 +62,15 @@ STATIC void claim_and_never_reset_pins(mp_obj_t seq) {
 }
 
 STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_t rgb_pin_count, bool allow_inefficient) {
-    uint32_t port = clock_pin / 32;
-    uint32_t bit_mask = 1 << (clock_pin % 32);
-
     if (rgb_pin_count <= 0 || rgb_pin_count % 6 != 0 || rgb_pin_count > 30) {
         mp_raise_ValueError_varg(translate("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
     }
+
+// Most ports have a strict requirement for how the rgbmatrix pins are laid
+// out; these two micros don't. Special-case it here.
+    #if !defined(CONFIG_IDF_TARGET_ESP32S3) && !defined(CONFIG_IDF_TARGET_ESP32S2)
+    uint32_t port = clock_pin / 32;
+    uint32_t bit_mask = 1 << (clock_pin % 32);
 
     for (uint8_t i = 0; i < rgb_pin_count; i++) {
         uint32_t pin_port = rgb_pins[i] / 32;
@@ -130,6 +133,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
             translate("Pinout uses %d bytes per element, which consumes more than the ideal %d bytes.  If this cannot be avoided, pass allow_inefficient=True to the constructor"),
             bytes_per_element, ideal_bytes_per_element);
     }
+    #endif
 }
 
 //|     def __init__(
@@ -182,7 +186,21 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 //|         flicker during updates.
 //|
 //|         A RGBMatrix is often used in conjunction with a
-//|         `framebufferio.FramebufferDisplay`."""
+//|         `framebufferio.FramebufferDisplay`.
+//|
+//|         :param int width: The overall width of the whole matrix in pixels. For a matrix with multiple panels in row, this is the width of a single panel times the number of panels across.
+//|         :param int tile: In a multi-row matrix, the number of rows of panels
+//|         :param int bit_depth: The color depth of the matrix. A value of 1 gives 8 colors, a value of 2 gives 64 colors, and so on. Increasing bit depth increases the CPU and RAM usage of the RGBMatrix, and may lower the panel refresh rate. The framebuffer is always in RGB565 format regardless of the bit depth setting
+//|         :param bool serpentine: In a multi-row matrix, True when alternate rows of panels are rotated 180°, which can reduce wiring length
+//|         :param Sequence[digitalio.DigitalInOut] rgb_pins: The matrix's RGB pins
+//|         :param Sequence[digitalio.DigitalInOut] addr_pins: The matrix's address pins
+//|         :param digitalio.DigitalInOut clock_pin: The matrix's clock pin
+//|         :param digitalio.DigitalInOut latch_pin: The matrix's latch pin
+//|         :param digitalio.DigitalInOut output_enable_pin: The matrix's output enable pin
+//|         :param bool doublebuffer: True if the output is double-buffered
+//|         :param Optional[WriteableBuffer] framebuffer: A pre-allocated framebuffer to use. If unspecified, a framebuffer is allocated
+//|         :param int height: The optional overall height of the whole matrix in pixels. This value is not required because it can be calculated as described above.
+//|         """
 
 STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_width, ARG_bit_depth, ARG_rgb_list, ARG_addr_list,
@@ -236,12 +254,6 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
 
     preflight_pins_or_throw(clock_pin, rgb_pins, rgb_count, true);
 
-    mp_obj_t framebuffer = args[ARG_framebuffer].u_obj;
-    if (framebuffer == mp_const_none) {
-        int bufsize = 2 * width * computed_height;
-        framebuffer = mp_obj_new_bytearray_of_zeros(bufsize);
-    }
-
     common_hal_rgbmatrix_rgbmatrix_construct(self,
         width,
         bit_depth,
@@ -249,7 +261,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
         addr_count, addr_pins,
         clock_pin, latch_pin, output_enable_pin,
         args[ARG_doublebuffer].u_bool,
-        framebuffer, tile, args[ARG_serpentine].u_bool, NULL);
+        args[ARG_framebuffer].u_obj, tile, args[ARG_serpentine].u_bool, NULL);
 
     claim_and_never_reset_pins(args[ARG_rgb_list].u_obj);
     claim_and_never_reset_pins(args[ARG_addr_list].u_obj);
@@ -294,7 +306,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t va
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError(translate("Brightness must be 0-1.0"));
+        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
     common_hal_rgbmatrix_rgbmatrix_set_paused(self, brightness <= 0);
 
@@ -353,7 +365,6 @@ STATIC MP_DEFINE_CONST_DICT(rgbmatrix_rgbmatrix_locals_dict, rgbmatrix_rgbmatrix
 
 STATIC void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
     rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-    check_for_deinit(self);
 
     *bufinfo = self->bufinfo;
 }

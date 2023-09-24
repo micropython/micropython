@@ -95,7 +95,7 @@ void pulsein_reset(void) {
 
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin,
     uint16_t maxlen, bool idle_state) {
-    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }
@@ -123,7 +123,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     rmt_config_t config = RMT_DEFAULT_CONFIG_RX(pin->number, channel);
     config.rx_config.filter_en = true;
     config.rx_config.idle_threshold = 30000; // 30*3=90ms idle required to register a sequence
-    config.clk_div = 240; // All measurements are divided by 3 to accomodate 65ms pulses
+    config.clk_div = 240; // All measurements are divided by 3 to accommodate 65ms pulses
     rmt_config(&config);
     rmt_driver_install(channel, 1000, 0); // TODO: pick a more specific buffer size?
 

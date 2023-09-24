@@ -35,6 +35,8 @@
 #include "fsl_clock.h"
 #include "fsl_iomuxc.h"
 
+#include "board.h"
+
 #include "clocks.h"
 
 #define BOARD_XTAL0_CLK_HZ 24000000U /*!< Board xtal0 frequency in Hz */

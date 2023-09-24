@@ -1,7 +1,28 @@
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-// SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013, 2014 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include "py/mpconfig.h"
 #if MICROPY_VFS && MICROPY_VFS_FAT
@@ -136,6 +157,7 @@ STATIC const mp_arg_t file_open_args[] = {
 };
 #define FILE_OPEN_NUM_ARGS MP_ARRAY_SIZE(file_open_args)
 
+// CIRCUITPY is more careful about validating the open mode.
 STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_arg_val_t *args) {
     int mode = 0;
     const char *mode_s = mp_obj_str_get_str(args[1].u_obj);
@@ -210,7 +232,7 @@ STATIC mp_obj_t file_open(fs_user_mount_t *vfs, const mp_obj_type_t *type, mp_ar
         DWORD size = (temp_table[0] + 1) * 2;
 
         // Now allocate the size and construct the map.
-        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD), false);
+        o->fp.cltbl = m_malloc_maybe(size * sizeof(DWORD));
         if (o->fp.cltbl != NULL) {
             o->fp.cltbl[0] = size;
             res = f_lseek(&o->fp, CREATE_LINKMAP);

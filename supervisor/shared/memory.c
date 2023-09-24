@@ -77,6 +77,8 @@ enum {
             // Maximum needs of one display: max(4 if RGBMATRIX, 1 if SHARPDISPLAY, 0)
             #if CIRCUITPY_RGBMATRIX
             4
+            #elif CIRCUITPY_PICODVI
+            2
             #elif CIRCUITPY_SHARPDISPLAY
             1
             #else
@@ -210,7 +212,7 @@ static supervisor_allocation_node *allocate_memory_node(uint32_t length, bool hi
             if (!node) {
                 // 4. GC allocation?
                 if (movable && gc_alloc_possible()) {
-                    node = m_malloc_maybe(sizeof(supervisor_allocation_node) + length, true);
+                    node = m_malloc_maybe(sizeof(supervisor_allocation_node) + length);
                     if (node) {
                         node->next = MP_STATE_VM(first_embedded_allocation);
                         MP_STATE_VM(first_embedded_allocation) = node;

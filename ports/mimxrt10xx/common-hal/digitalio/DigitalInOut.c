@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-#include "fsl_gpio.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
@@ -40,14 +40,16 @@
 
 #define IOMUXC_SW_MUX_CTL_PAD_MUX_MODE_ALT5 5U
 
-STATIC void pin_config(const mcu_pin_obj_t *pin, bool open_drain, digitalio_pull_t pull) {
+void pin_config(const mcu_pin_obj_t *pin, bool open_drain, digitalio_pull_t pull) {
     IOMUXC_SetPinConfig(0, 0, 0, 0, pin->cfg_reg,
-        IOMUXC_SW_PAD_CTL_PAD_HYS(1)
-        | IOMUXC_SW_PAD_CTL_PAD_PUS((pull == PULL_UP) ? 2 : 0)
-        | IOMUXC_SW_PAD_CTL_PAD_PUE(pull != PULL_NONE)
+        IOMUXC_SW_PAD_CTL_PAD_PUS((pull == PULL_UP) ? 2 : 0)
+        #if IMXRT10XX
+        | IOMUXC_SW_PAD_CTL_PAD_HYS(1)
         | IOMUXC_SW_PAD_CTL_PAD_PKE(1)
-        | IOMUXC_SW_PAD_CTL_PAD_ODE(open_drain)
         | IOMUXC_SW_PAD_CTL_PAD_SPEED(2)
+        #endif
+        | IOMUXC_SW_PAD_CTL_PAD_PUE(pull != PULL_NONE)
+        | IOMUXC_SW_PAD_CTL_PAD_ODE(open_drain)
         | IOMUXC_SW_PAD_CTL_PAD_DSE(1)
         | IOMUXC_SW_PAD_CTL_PAD_SRE(0));
 }
@@ -118,7 +120,12 @@ digitalio_direction_t common_hal_digitalio_digitalinout_get_direction(
 
 void common_hal_digitalio_digitalinout_set_value(
     digitalio_digitalinout_obj_t *self, bool value) {
-    GPIO_PinWrite(self->pin->gpio, self->pin->number, value);
+    GPIO_Type *gpio = self->pin->gpio;
+    if (value) {
+        gpio->DR_SET = 1 << self->pin->number;
+    } else {
+        gpio->DR_CLEAR = 1 << self->pin->number;
+    }
 }
 
 bool common_hal_digitalio_digitalinout_get_value(

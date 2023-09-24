@@ -90,8 +90,7 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    digitalio_digitalinout_obj_t *self = m_new_obj(digitalio_digitalinout_obj_t);
-    self->base.type = &digitalio_digitalinout_type;
+    digitalio_digitalinout_obj_t *self = mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
 
     const mcu_pin_obj_t *pin = common_hal_digitalio_validate_pin(args[0]);
     common_hal_digitalio_digitalinout_construct(self, pin);
@@ -125,7 +124,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj___exit__(size_t n_args, const mp_obj_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(digitalio_digitalinout_obj___exit___obj, 4, 4, digitalio_digitalinout_obj___exit__);
 
-STATIC void check_for_deinit(digitalio_digitalinout_obj_t *self) {
+STATIC inline void check_for_deinit(digitalio_digitalinout_obj_t *self) {
     if (common_hal_digitalio_digitalinout_deinited(self)) {
         raise_deinited_error();
     }

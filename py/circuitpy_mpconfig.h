@@ -55,12 +55,22 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_BEGIN_ATOMIC_SECTION() (common_hal_mcu_disable_interrupts(), 0)
 #define MICROPY_END_ATOMIC_SECTION(state) ((void)state, common_hal_mcu_enable_interrupts())
 
+// MicroPython-only options not used by CircuitPython, but present in various files
+// inherited from MicroPython, especially in extmod/
+#define MICROPY_ENABLE_DYNRUNTIME        (0)
+#define MICROPY_PY_BLUETOOTH             (0)
+#define MICROPY_PY_LWIP_SLIP             (0)
+#define MICROPY_PY_OS_DUPTERM            (0)
+#define MICROPY_ROM_TEXT_COMPRESSION     (0)
+#define MICROPY_VFS_LFS1                 (0)
+#define MICROPY_VFS_LFS2                 (0)
+
 // Sorted alphabetically for easy finding.
 //
 // default is 128; consider raising to reduce fragmentation.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT   (16)
-// default is 512.
-#define MICROPY_ALLOC_PATH_MAX           (256)
+// default is 512. Longest path in .py bundle as of June 6th, 2023 is 73 characters.
+#define MICROPY_ALLOC_PATH_MAX           (96)
 #define MICROPY_CAN_OVERRIDE_BUILTINS    (1)
 #define MICROPY_COMP_CONST               (1)
 #define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
@@ -73,6 +83,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_ENABLE_DOC_STRING        (0)
 #define MICROPY_ENABLE_FINALISER         (1)
 #define MICROPY_ENABLE_GC                (1)
+#define MICROPY_ENABLE_PYSTACK           (1)
 #define MICROPY_TRACKED_ALLOC            (CIRCUITPY_SSL_MBEDTLS)
 #define MICROPY_ENABLE_SOURCE_LINE       (1)
 #define MICROPY_EPOCH_IS_1970            (1)
@@ -96,7 +107,6 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_ARRAY                 (CIRCUITPY_ARRAY)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN    (1)
 #define MICROPY_PY_ATTRTUPLE             (1)
-
 #define MICROPY_PY_BUILTINS_BYTEARRAY    (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE    (1)
 #define MICROPY_PY_BUILTINS_FILTER       (1)
@@ -144,7 +154,6 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_QSTR_BYTES_IN_HASH       (1)
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
-#define MICROPY_ENABLE_PYSTACK           (1)
 #define CIRCUITPY_SETTABLE_PYSTACK       (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
@@ -205,7 +214,6 @@ typedef long mp_off_t;
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio
 
-#define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open_obj mp_vfs_open_obj
 
 
@@ -253,6 +261,10 @@ typedef long mp_off_t;
 
 #ifndef MICROPY_FATFS_EXFAT
 #define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
+#endif
+
+#ifndef MICROPY_FF_MKFS_FAT32
+#define MICROPY_FF_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
 #endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
@@ -389,7 +401,7 @@ extern const struct _mp_obj_module_t nvm_module;
 // Native modules that are weak links can be accessed directly
 // by prepending their name with an underscore. This list should correspond to
 // MICROPY_PORT_BUILTIN_MODULE_WEAK_LINKS, assuming you want the native modules
-// to be accessible when overriden.
+// to be accessible when overridden.
 
 #define MICROPY_PORT_BUILTIN_MODULE_ALT_NAMES
 
@@ -435,8 +447,8 @@ struct _supervisor_allocation_node;
     const char *readline_hist[8]; \
     struct _supervisor_allocation_node *first_embedded_allocation; \
 
-void supervisor_run_background_tasks_if_tick(void);
-#define RUN_BACKGROUND_TASKS (supervisor_run_background_tasks_if_tick())
+void background_callback_run_all(void);
+#define RUN_BACKGROUND_TASKS (background_callback_run_all())
 
 #define MICROPY_VM_HOOK_LOOP RUN_BACKGROUND_TASKS;
 #define MICROPY_VM_HOOK_RETURN RUN_BACKGROUND_TASKS;
@@ -478,13 +490,6 @@ void supervisor_run_background_tasks_if_tick(void);
 #endif
 
 #define CIRCUITPY_VERBOSE_BLE 0
-
-// This trades ~1k flash space (1) for that much in RAM plus the cost to compute
-// the values once on init (0). Only turn it off, when you really need the flash
-// space and are willing to trade the RAM.
-#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
-#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
-#endif
 
 // Display the Blinka logo in the REPL on displayio displays.
 #ifndef CIRCUITPY_REPL_LOGO
@@ -583,6 +588,18 @@ void supervisor_run_background_tasks_if_tick(void);
 #define MICROPY_WRAP_MP_EXECUTE_BYTECODE PLACE_IN_ITCM
 #endif
 
+#ifndef MICROPY_WRAP_MP_LOAD_GLOBAL
+#define MICROPY_WRAP_MP_LOAD_GLOBAL PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_LOAD_NAME
+#define MICROPY_WRAP_MP_LOAD_NAME PLACE_IN_ITCM
+#endif
+
+#ifndef MICROPY_WRAP_MP_OBJ_GET_TYPE
+#define MICROPY_WRAP_MP_OBJ_GET_TYPE PLACE_IN_ITCM
+#endif
+
 #ifndef CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
 #define CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY (0)
 #endif
@@ -593,6 +610,12 @@ void supervisor_run_background_tasks_if_tick(void);
 
 #ifndef CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
+#endif
+
+// Align the internal sector buffer. Useful when it is passed into TinyUSB for
+// loads.
+#ifndef MICROPY_FATFS_WINDOW_ALIGNMENT
+#define MICROPY_FATFS_WINDOW_ALIGNMENT CIRCUITPY_TUSB_MEM_ALIGN
 #endif
 
 #define FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY (1)

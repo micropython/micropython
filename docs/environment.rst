@@ -60,6 +60,12 @@ CIRCUITPY_BLE_NAME
 ~~~~~~~~~~~~~~~~~~
 Default BLE name the board advertises as, including for the BLE workflow.
 
+CIRCUITPY_PYSTACK_SIZE
+~~~~~~~~~~~~~~~~~~~~~~
+Sets the size of the python stack. Must be a multiple of 4. The default value is currently 1536.
+Increasing the stack reduces the size of the heap available to python code.
+Used to avoid "Pystack exhausted" errors when the code can't be reworked to avoid it.
+
 CIRCUITPY_RESERVED_PSRAM
 ~~~~~~~~~~~~~~~~~~~~~~~~
 On boards with Espressif microcontrollers with PSRAM (also called SPIRAM), permanently reserve a portion of PSRAM for use by esp-idf.
@@ -73,6 +79,10 @@ Password required to make modifications to the board from the Web Workflow.
 CIRCUITPY_WEB_API_PORT
 ~~~~~~~~~~~~~~~~~~~~~~
 TCP port number used for the web HTTP API. Defaults to 80 when omitted.
+
+CIRCUITPY_WEB_INSTANCE_NAME
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name the board advertises as for the WEB workflow. Defaults to human readable board name if omitted.
 
 CIRCUITPY_WIFI_PASSWORD
 ~~~~~~~~~~~~~~~~~~~~~~~

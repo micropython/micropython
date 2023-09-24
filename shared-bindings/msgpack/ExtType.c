@@ -37,8 +37,7 @@
 //|         :param int code: type code in range 0~127.
 //|         :param bytes data: representation."""
 STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    mod_msgpack_extype_obj_t *self = m_new_obj(mod_msgpack_extype_obj_t);
-    self->base.type = &mod_msgpack_exttype_type;
+    mod_msgpack_extype_obj_t *self = mp_obj_malloc(mod_msgpack_extype_obj_t, &mod_msgpack_exttype_type);
     enum { ARG_code, ARG_data };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_code, MP_ARG_INT | MP_ARG_REQUIRED },

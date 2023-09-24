@@ -41,6 +41,10 @@
 //|                 if pin_counter.count >= 100:
 //|                     pin_counter.reset()
 //|                 print(pin_counter.count)
+//|
+//|         **Limitations:** On RP2040, `Counter` uses the PWM peripheral, and
+//|         is limited to using PWM channel B pins due to hardware restrictions.
+//|         See the pin assignments for your board to see which pins can be used.
 //|         """
 //|         ...
 STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
@@ -56,8 +60,7 @@ STATIC mp_obj_t countio_counter_make_new(const mp_obj_type_t *type, size_t n_arg
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj, MP_QSTR_pin);
     const countio_edge_t edge = validate_edge(args[ARG_edge].u_obj, MP_QSTR_edge);
     const digitalio_pull_t pull = validate_pull(args[ARG_pull].u_obj, MP_QSTR_pull);
-    // Make long-lived because some implementations use a pointer to the object as interrupt-handler data.
-    countio_counter_obj_t *self = m_new_ll_obj(countio_counter_obj_t);
+    countio_counter_obj_t *self = m_new_obj_with_finaliser(countio_counter_obj_t);
     self->base.type = &countio_counter_type;
 
     common_hal_countio_counter_construct(self, pin, edge, pull);
@@ -134,6 +137,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(countio_counter_reset_obj, countio_counter_reset);
 STATIC const mp_rom_map_elem_t countio_counter_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&countio_counter_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&countio_counter_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&countio_counter___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&countio_counter_count_obj) },

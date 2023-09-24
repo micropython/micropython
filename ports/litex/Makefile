@@ -133,10 +133,14 @@ SRC_QSTR_PREPROCESSOR +=
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.dfu
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/firmware.elf: invalid-board
+else
 $(BUILD)/firmware.elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $^ -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(LD_FILE) $(BUILD)
+endif
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -153,8 +157,3 @@ $(BUILD)/firmware.dfu: $(BUILD)/firmware.bin
 	$(PYTHON) $(TOP)/tools/dfu.py -b $^ -D 0x1209:0x5bf0 "$(BUILD)/firmware.dfu"
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

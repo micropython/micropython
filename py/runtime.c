@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2018 Paul Sokolovsky
+ * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2014-2018 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,11 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <unistd.h>
 
 #include "py/parsenum.h"
 #include "py/compile.h"
@@ -61,13 +62,23 @@ const mp_obj_module_t mp_module___main__ = {
     .globals = (mp_obj_dict_t *)&MP_STATE_VM(dict_main),
 };
 
+MP_REGISTER_MODULE(MP_QSTR___main__, mp_module___main__);
+
 void mp_init(void) {
     qstr_init();
 
     // no pending exceptions to start with
     MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
     #if MICROPY_ENABLE_SCHEDULER
-    MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+    #if MICROPY_SCHEDULER_STATIC_NODES
+    if (MP_STATE_VM(sched_head) == NULL) {
+        // no pending callbacks to start with
+        MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
+    } else {
+        // pending callbacks are on the list, eg from before a soft reset
+        MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
+    }
+    #endif
     MP_STATE_VM(sched_idx) = 0;
     MP_STATE_VM(sched_len) = 0;
     #endif
@@ -135,10 +146,23 @@ void mp_init(void) {
     MP_STATE_VM(sys_exitfunc) = mp_const_none;
     #endif
 
+    #if MICROPY_PY_SYS_PS1_PS2
+    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PS1]) = MP_OBJ_NEW_QSTR(MP_QSTR__gt__gt__gt__space_);
+    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PS2]) = MP_OBJ_NEW_QSTR(MP_QSTR__dot__dot__dot__space_);
+    #endif
+
     #if MICROPY_PY_SYS_SETTRACE
     MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
     MP_STATE_THREAD(prof_callback_is_executing) = false;
     MP_STATE_THREAD(current_code_state) = NULL;
+    #endif
+
+    #if MICROPY_PY_SYS_TRACEBACKLIMIT
+    MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]) = MP_OBJ_NEW_SMALL_INT(1000);
+    #endif
+
+    #if MICROPY_PY_BLUETOOTH
+    MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
     #endif
 
     #if MICROPY_PY_THREAD_GIL
@@ -201,7 +225,7 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     return elem->value;
 }
 
-mp_obj_t mp_load_build_class(void) {
+mp_obj_t __attribute__((noinline)) mp_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
     #if MICROPY_CAN_OVERRIDE_BUILTINS
     if (MP_STATE_VM(mp_module_builtins_override_dict) != NULL) {
@@ -414,7 +438,7 @@ mp_obj_t MICROPY_WRAP_MP_BINARY_OP(mp_binary_op)(mp_binary_op_t op, mp_obj_t lhs
                     } else {
                         // standard precision is enough for right-shift
                         if (rhs_val >= (mp_int_t)(sizeof(lhs_val) * MP_BITS_PER_BYTE)) {
-                            // Shifting to big amounts is underfined behavior
+                            // Shifting to big amounts is undefined behavior
                             // in C and is CPU-dependent; propagate sign bit.
                             rhs_val = sizeof(lhs_val) * MP_BITS_PER_BYTE - 1;
                         }
@@ -686,12 +710,11 @@ void PLACE_IN_ITCM(mp_call_prepare_args_n_kw_var)(bool have_self, size_t n_args_
     if (have_self) {
         self = *args++; // may be MP_OBJ_NULL
     }
-    uint n_args = n_args_n_kw & 0xff;
-    uint n_kw = (n_args_n_kw >> 8) & 0xff;
-    mp_obj_t pos_seq = args[n_args + 2 * n_kw]; // may be MP_OBJ_NULL
-    mp_obj_t kw_dict = args[n_args + 2 * n_kw + 1]; // may be MP_OBJ_NULL
+    size_t n_args = n_args_n_kw & 0xff;
+    size_t n_kw = (n_args_n_kw >> 8) & 0xff;
+    mp_uint_t star_args = MP_OBJ_SMALL_INT_VALUE(args[n_args + 2 * n_kw]);
 
-    DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, seq=%p, dict=%p)\n", fun, self, n_args, n_kw, args, pos_seq, kw_dict);
+    DEBUG_OP_printf("call method var (fun=%p, self=%p, n_args=%u, n_kw=%u, args=%p, map=%u)\n", fun, self, n_args, n_kw, args, star_args);
 
     // We need to create the following array of objects:
     //     args[0 .. n_args]  unpacked(pos_seq)  args[n_args .. n_args + 2 * n_kw]  unpacked(kw_dict)
@@ -699,19 +722,40 @@ void PLACE_IN_ITCM(mp_call_prepare_args_n_kw_var)(bool have_self, size_t n_args_
 
     // The new args array
     mp_obj_t *args2;
-    uint args2_alloc;
-    uint args2_len = 0;
+    size_t args2_alloc;
+    size_t args2_len = 0;
+
+    // Try to get a hint for unpacked * args length
+    ssize_t list_len = 0;
+
+    if (star_args != 0) {
+        for (size_t i = 0; i < n_args; i++) {
+            if ((star_args >> i) & 1) {
+                mp_obj_t len = mp_obj_len_maybe(args[i]);
+                if (len != MP_OBJ_NULL) {
+                    // -1 accounts for 1 of n_args occupied by this arg
+                    list_len += mp_obj_get_int(len) - 1;
+                }
+            }
+        }
+    }
 
     // Try to get a hint for the size of the kw_dict
-    uint kw_dict_len = 0;
-    if (kw_dict != MP_OBJ_NULL && mp_obj_is_type(kw_dict, &mp_type_dict)) {
-        kw_dict_len = mp_obj_dict_len(kw_dict);
+    ssize_t kw_dict_len = 0;
+
+    for (size_t i = 0; i < n_kw; i++) {
+        mp_obj_t key = args[n_args + i * 2];
+        mp_obj_t value = args[n_args + i * 2 + 1];
+        if (key == MP_OBJ_NULL && value != MP_OBJ_NULL && mp_obj_is_type(value, &mp_type_dict)) {
+            // -1 accounts for 1 of n_kw occupied by this arg
+            kw_dict_len += mp_obj_dict_len(value) - 1;
+        }
     }
 
     // Extract the pos_seq sequence to the new args array.
     // Note that it can be arbitrary iterator.
-    if (pos_seq == MP_OBJ_NULL) {
-        // no sequence
+    if (star_args == 0) {
+        // no star args to unpack
 
         // allocate memory for the new array of args
         args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len);
@@ -725,33 +769,11 @@ void PLACE_IN_ITCM(mp_call_prepare_args_n_kw_var)(bool have_self, size_t n_args_
         // copy the fixed pos args
         mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
         args2_len += n_args;
-
-    } else if (mp_obj_is_type(pos_seq, &mp_type_tuple) || mp_obj_is_type(pos_seq, &mp_type_list)) {
-        // optimise the case of a tuple and list
-
-        // get the items
-        size_t len;
-        mp_obj_t *items;
-        mp_obj_get_array(pos_seq, &len, &items);
-
-        // allocate memory for the new array of args
-        args2_alloc = 1 + n_args + len + 2 * (n_kw + kw_dict_len);
-        args2 = mp_nonlocal_alloc(args2_alloc * sizeof(mp_obj_t));
-
-        // copy the self
-        if (self != MP_OBJ_NULL) {
-            args2[args2_len++] = self;
-        }
-
-        // copy the fixed and variable position args
-        mp_seq_cat(args2 + args2_len, args, n_args, items, len, mp_obj_t);
-        args2_len += n_args + len;
-
     } else {
-        // generic iterator
+        // at least one star arg to unpack
 
         // allocate memory for the new array of args
-        args2_alloc = 1 + n_args + 2 * (n_kw + kw_dict_len) + 3;
+        args2_alloc = 1 + n_args + list_len + 2 * (n_kw + kw_dict_len);
         args2 = mp_nonlocal_alloc(args2_alloc * sizeof(mp_obj_t));
 
         // copy the self
@@ -759,84 +781,118 @@ void PLACE_IN_ITCM(mp_call_prepare_args_n_kw_var)(bool have_self, size_t n_args_
             args2[args2_len++] = self;
         }
 
-        // copy the fixed position args
-        mp_seq_copy(args2 + args2_len, args, n_args, mp_obj_t);
-        args2_len += n_args;
+        for (size_t i = 0; i < n_args; i++) {
+            mp_obj_t arg = args[i];
+            if ((star_args >> i) & 1) {
+                // star arg
+                if (mp_obj_is_type(arg, &mp_type_tuple) || mp_obj_is_type(arg, &mp_type_list)) {
+                    // optimise the case of a tuple and list
 
-        // extract the variable position args from the iterator
-        mp_obj_iter_buf_t iter_buf;
-        mp_obj_t iterable = mp_getiter(pos_seq, &iter_buf);
-        mp_obj_t item;
-        while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            if (args2_len >= args2_alloc) {
-                args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), args2_alloc * 2 * sizeof(mp_obj_t));
-                args2_alloc *= 2;
+                    // get the items
+                    size_t len;
+                    mp_obj_t *items;
+                    mp_obj_get_array(arg, &len, &items);
+
+                    // copy the items
+                    assert(args2_len + len <= args2_alloc);
+                    mp_seq_copy(args2 + args2_len, items, len, mp_obj_t);
+                    args2_len += len;
+                } else {
+                    // generic iterator
+
+                    // extract the variable position args from the iterator
+                    mp_obj_iter_buf_t iter_buf;
+                    mp_obj_t iterable = mp_getiter(arg, &iter_buf);
+                    mp_obj_t item;
+                    while ((item = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+                        if (args2_len >= args2_alloc) {
+                            args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t),
+                                args2_alloc * 2 * sizeof(mp_obj_t));
+                            args2_alloc *= 2;
+                        }
+                        args2[args2_len++] = item;
+                    }
+                }
+            } else {
+                // normal argument
+                assert(args2_len < args2_alloc);
+                args2[args2_len++] = arg;
             }
-            args2[args2_len++] = item;
         }
     }
 
     // The size of the args2 array now is the number of positional args.
-    uint pos_args_len = args2_len;
+    size_t pos_args_len = args2_len;
 
-    // Copy the fixed kw args.
-    mp_seq_copy(args2 + args2_len, args + n_args, 2 * n_kw, mp_obj_t);
-    args2_len += 2 * n_kw;
+    // ensure there is still enough room for kw args
+    if (args2_len + 2 * (n_kw + kw_dict_len) > args2_alloc) {
+        size_t new_alloc = args2_len + 2 * (n_kw + kw_dict_len);
+        args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t),
+            new_alloc * sizeof(mp_obj_t));
+        args2_alloc = new_alloc;
+    }
 
-    // Extract (key,value) pairs from kw_dict dictionary and append to args2.
-    // Note that it can be arbitrary iterator.
-    if (kw_dict == MP_OBJ_NULL) {
-        // pass
-    } else if (mp_obj_is_type(kw_dict, &mp_type_dict)) {
-        // dictionary
-        mp_map_t *map = mp_obj_dict_get_map(kw_dict);
-        assert(args2_len + 2 * map->used <= args2_alloc); // should have enough, since kw_dict_len is in this case hinted correctly above
-        for (size_t i = 0; i < map->alloc; i++) {
-            if (mp_map_slot_is_filled(map, i)) {
-                // the key must be a qstr, so intern it if it's a string
-                mp_obj_t key = map->table[i].key;
-                if (!mp_obj_is_qstr(key)) {
-                    key = mp_obj_str_intern_checked(key);
+    // Copy the kw args.
+    for (size_t i = 0; i < n_kw; i++) {
+        mp_obj_t kw_key = args[n_args + i * 2];
+        mp_obj_t kw_value = args[n_args + i * 2 + 1];
+        if (kw_key == MP_OBJ_NULL) {
+            // double-star args
+            if (mp_obj_is_type(kw_value, &mp_type_dict)) {
+                // dictionary
+                mp_map_t *map = mp_obj_dict_get_map(kw_value);
+                // should have enough, since kw_dict_len is in this case hinted correctly above
+                assert(args2_len + 2 * map->used <= args2_alloc);
+                for (size_t j = 0; j < map->alloc; j++) {
+                    if (mp_map_slot_is_filled(map, j)) {
+                        // the key must be a qstr, so intern it if it's a string
+                        mp_obj_t key = map->table[j].key;
+                        if (!mp_obj_is_qstr(key)) {
+                            key = mp_obj_str_intern_checked(key);
+                        }
+                        args2[args2_len++] = key;
+                        args2[args2_len++] = map->table[j].value;
+                    }
                 }
-                args2[args2_len++] = key;
-                args2[args2_len++] = map->table[i].value;
-            }
-        }
-    } else {
-        // generic mapping:
-        // - call keys() to get an iterable of all keys in the mapping
-        // - call __getitem__ for each key to get the corresponding value
+            } else {
+                // generic mapping:
+                // - call keys() to get an iterable of all keys in the mapping
+                // - call __getitem__ for each key to get the corresponding value
 
-        // get the keys iterable
-        mp_obj_t dest[3];
-        mp_load_method(kw_dict, MP_QSTR_keys, dest);
-        mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), NULL);
+                // get the keys iterable
+                mp_obj_t dest[3];
+                mp_load_method(kw_value, MP_QSTR_keys, dest);
+                mp_obj_t iterable = mp_getiter(mp_call_method_n_kw(0, 0, dest), NULL);
 
-        mp_obj_t key;
-        while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
-            // expand size of args array if needed
-            if (args2_len + 1 >= args2_alloc) {
-                uint new_alloc = args2_alloc * 2;
-                if (new_alloc < 4) {
-                    new_alloc = 4;
+                mp_obj_t key;
+                while ((key = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
+                    // expand size of args array if needed
+                    if (args2_len + 1 >= args2_alloc) {
+                        size_t new_alloc = args2_alloc * 2;
+                        args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
+                        args2_alloc = new_alloc;
+                    }
+
+                    // the key must be a qstr, so intern it if it's a string
+                    if (!mp_obj_is_qstr(key)) {
+                        key = mp_obj_str_intern_checked(key);
+                    }
+
+                    // get the value corresponding to the key
+                    mp_load_method(kw_value, MP_QSTR___getitem__, dest);
+                    dest[2] = key;
+                    mp_obj_t value = mp_call_method_n_kw(1, 0, dest);
+
+                    // store the key/value pair in the argument array
+                    args2[args2_len++] = key;
+                    args2[args2_len++] = value;
                 }
-                args2 = mp_nonlocal_realloc(args2, args2_alloc * sizeof(mp_obj_t), new_alloc * sizeof(mp_obj_t));
-                args2_alloc = new_alloc;
             }
-
-            // the key must be a qstr, so intern it if it's a string
-            if (!mp_obj_is_qstr(key)) {
-                key = mp_obj_str_intern_checked(key);
-            }
-
-            // get the value corresponding to the key
-            mp_load_method(kw_dict, MP_QSTR___getitem__, dest);
-            dest[2] = key;
-            mp_obj_t value = mp_call_method_n_kw(1, 0, dest);
-
-            // store the key/value pair in the argument array
-            args2[args2_len++] = key;
-            args2[args2_len++] = value;
+        } else {
+            // normal kwarg
+            assert(args2_len + 2 <= args2_alloc);
+            args2[args2_len++] = kw_key;
+            args2[args2_len++] = kw_value;
         }
     }
 
@@ -858,7 +914,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_ob
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-void mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
+void __attribute__((noinline, )) mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
         mp_obj_t *seq_items;
@@ -905,7 +961,7 @@ too_long:
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-void mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
+void __attribute__((noinline)) mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     size_t num_left = num_in & 0xff;
     size_t num_right = (num_in >> 8) & 0xff;
     DEBUG_OP_printf("unpack ex " UINT_FMT " " UINT_FMT "\n", num_left, num_right);
@@ -1018,8 +1074,7 @@ STATIC const mp_obj_type_t mp_type_checked_fun = {
 };
 
 STATIC mp_obj_t mp_obj_new_checked_fun(const mp_obj_type_t *type, mp_obj_t fun) {
-    mp_obj_checked_fun_t *o = m_new_obj(mp_obj_checked_fun_t);
-    o->base.type = &mp_type_checked_fun;
+    mp_obj_checked_fun_t *o = mp_obj_malloc(mp_obj_checked_fun_t, &mp_type_checked_fun);
     o->type = type;
     o->fun = fun;
     return MP_OBJ_FROM_PTR(o);
@@ -1360,7 +1415,12 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
 
-    if (type == &mp_type_gen_instance) {
+    // CIRCUITPY distinguishes generators and coroutines.
+    if (type == &mp_type_gen_instance
+        #if MICROPY_PY_ASYNC_AWAIT
+        || type == &mp_type_coro_instance
+        #endif
+        ) {
         return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);
     }
 
@@ -1482,7 +1542,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     return mp_builtin___import__(5, args);
 }
 
-mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
+mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
     mp_obj_t dest[2];
@@ -1528,7 +1588,7 @@ mp_obj_t mp_import_from(mp_obj_t module, qstr name) {
     #endif
 }
 
-void mp_import_all(mp_obj_t module) {
+void __attribute__((noinline)) mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
 
     // TODO: Support __all__
@@ -1588,7 +1648,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
 
 #endif // MICROPY_ENABLE_COMPILER
 
-NORETURN void m_malloc_fail(size_t num_bytes) {
+NORETURN MP_COLD void m_malloc_fail(size_t num_bytes) {
     DEBUG_printf("memory allocation failed, allocating %u bytes\n", (uint)num_bytes);
     #if MICROPY_ENABLE_GC
     if (gc_is_locked()) {
@@ -1601,25 +1661,25 @@ NORETURN void m_malloc_fail(size_t num_bytes) {
 
 #if MICROPY_ERROR_REPORTING == MICROPY_ERROR_REPORTING_NONE
 
-NORETURN void mp_raise_type(const mp_obj_type_t *exc_type) {
+NORETURN MP_COLD void mp_raise_type(const mp_obj_type_t *exc_type) {
     nlr_raise(mp_obj_new_exception(exc_type));
 }
 
-NORETURN void mp_raise_ValueError_no_msg(void) {
+NORETURN MP_COLD void mp_raise_ValueError_no_msg(void) {
     mp_raise_type(&mp_type_ValueError);
 }
 
-NORETURN void mp_raise_TypeError_no_msg(void) {
+NORETURN MP_COLD void mp_raise_TypeError_no_msg(void) {
     mp_raise_type(&mp_type_TypeError);
 }
 
-NORETURN void mp_raise_NotImplementedError_no_msg(void) {
+NORETURN MP_COLD void mp_raise_NotImplementedError_no_msg(void) {
     mp_raise_type(&mp_type_NotImplementedError);
 }
 
 #else
 
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
     } else {
@@ -1627,19 +1687,19 @@ NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_strin
     }
 }
 
-NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr) {
+NORETURN MP_COLD void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr) {
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(exc_type, fmt, argptr);
     nlr_raise(exception);
 }
 
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(exc_type, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char *msg) {
+NORETURN MP_COLD void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char *msg) {
     if (msg == NULL) {
         nlr_raise(mp_obj_new_exception(exc_type));
     } else {
@@ -1647,56 +1707,63 @@ NORETURN void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char *msg) {
     }
 }
 
-NORETURN void mp_raise_AttributeError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_AttributeError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_AttributeError, msg);
 }
 
-NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_RuntimeError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_RuntimeError, msg);
 }
 
-NORETURN void mp_raise_ImportError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...) {
+    va_list argptr;
+    va_start(argptr, fmt);
+    mp_raise_msg_vlist(&mp_type_RuntimeError, fmt, argptr);
+    va_end(argptr);
+}
+
+NORETURN MP_COLD void mp_raise_ImportError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_ImportError, msg);
 }
 
-NORETURN void mp_raise_IndexError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_IndexError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_IndexError, msg);
 }
 
-NORETURN void mp_raise_IndexError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_IndexError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_IndexError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN void mp_raise_ValueError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_ValueError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_ValueError, msg);
 }
 
-NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_ValueError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN void mp_raise_TypeError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_TypeError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_TypeError, msg);
 }
 
-NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_TypeError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_OSError_msg(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_OSError, msg);
 }
 
-NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
+NORETURN MP_COLD void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
     mp_obj_t args[2] = {
         MP_OBJ_NEW_SMALL_INT(errno_),
         str,
@@ -1704,44 +1771,45 @@ NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str) {
     nlr_raise(mp_obj_new_exception_args(&mp_type_OSError, 2, args));
 }
 
-NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_OSError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN void mp_raise_ConnectionError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_ConnectionError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_ConnectionError, msg);
 }
 
-NORETURN void mp_raise_BrokenPipeError(void) {
+NORETURN MP_COLD void mp_raise_BrokenPipeError(void) {
     mp_raise_type_arg(&mp_type_BrokenPipeError, MP_OBJ_NEW_SMALL_INT(MP_EPIPE));
 }
 
-NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg) {
+NORETURN MP_COLD void mp_raise_NotImplementedError(const compressed_string_t *msg) {
     mp_raise_msg(&mp_type_NotImplementedError, msg);
 }
 
-NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_NotImplementedError, fmt, argptr);
     va_end(argptr);
 }
 
 
-NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
+NORETURN MP_COLD void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_raise_msg_vlist(&mp_type_OverflowError, fmt, argptr);
     va_end(argptr);
 }
 
-NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
+NORETURN MP_COLD void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg) {
     nlr_raise(mp_obj_new_exception_arg1(exc_type, arg));
 }
 
+// Leave this as not COLD because it is used by iterators in normal execution.
 NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
     if (arg == MP_OBJ_NULL) {
         mp_raise_type(&mp_type_StopIteration);
@@ -1750,18 +1818,18 @@ NORETURN void mp_raise_StopIteration(mp_obj_t arg) {
     }
 }
 
-NORETURN void mp_raise_OSError(int errno_) {
+NORETURN MP_COLD void mp_raise_OSError(int errno_) {
     mp_raise_type_arg(&mp_type_OSError, MP_OBJ_NEW_SMALL_INT(errno_));
 }
 
 #endif
 
 #if MICROPY_STACK_CHECK || MICROPY_ENABLE_PYSTACK
-NORETURN void mp_raise_recursion_depth(void) {
+NORETURN MP_COLD void mp_raise_recursion_depth(void) {
     mp_raise_RuntimeError(MP_ERROR_TEXT("maximum recursion depth exceeded"));
 }
 #endif
 
-NORETURN void mp_raise_ZeroDivisionError(void) {
+NORETURN MP_COLD void mp_raise_ZeroDivisionError(void) {
     mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("division by zero"));
 }

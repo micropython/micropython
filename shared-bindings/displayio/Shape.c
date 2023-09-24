@@ -62,8 +62,7 @@ STATIC mp_obj_t displayio_shape_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_int_t width = mp_arg_validate_int_min(args[ARG_width].u_int, 1, MP_QSTR_width);
     mp_int_t height = mp_arg_validate_int_min(args[ARG_height].u_int, 1, MP_QSTR_height);
 
-    displayio_shape_t *self = m_new_obj(displayio_shape_t);
-    self->base.type = &displayio_shape_type;
+    displayio_shape_t *self = mp_obj_malloc(displayio_shape_t, &displayio_shape_type);
     common_hal_displayio_shape_construct(self,
         width,
         height,
@@ -82,8 +81,8 @@ STATIC mp_obj_t displayio_shape_obj_set_boundary(size_t n_args, const mp_obj_t *
     (void)n_args;
     displayio_shape_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_int_t y = mp_arg_validate_type_int(args[1], MP_QSTR_y);
-    mp_int_t start_x = mp_arg_validate_type_int(args[1], MP_QSTR_start_x);
-    mp_int_t end_x = mp_arg_validate_type_int(args[1], MP_QSTR_end_x);
+    mp_int_t start_x = mp_arg_validate_type_int(args[2], MP_QSTR_start_x);
+    mp_int_t end_x = mp_arg_validate_type_int(args[3], MP_QSTR_end_x);
     common_hal_displayio_shape_set_boundary(self, y, start_x, end_x);
 
     return mp_const_none;

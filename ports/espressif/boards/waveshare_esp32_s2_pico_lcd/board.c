@@ -51,7 +51,7 @@ uint8_t display_init_sequence[] = {
     0xC5, 0x01, 0x0E, // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x20, 0x00, // _INVOFF
     0x36, 0x01, 0x18, // _MADCTL bottom to top refresh
-    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
+    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 cycle osc equalie,
     // fix on VTL
     0x3A, 0x01, 0x05, // COLMOD - 16bit color
     0xE0, 0x10, 0x02, 0x1C, 0x07, 0x12, 0x37, 0x32, 0x29, 0x2D, 0x29, 0x25, 0x2B, 0x39, 0x00, 0x01, 0x03, 0x10, // _GMCTRP1 Gamma
@@ -64,7 +64,8 @@ uint8_t display_init_sequence[] = {
 };
 
 static void display_init(void) {
-    busio_spi_obj_t *spi = &displays[0].fourwire_bus.inline_bus;
+    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    busio_spi_obj_t *spi = &bus->inline_bus;
 
     common_hal_busio_spi_construct(
         spi,
@@ -75,7 +76,6 @@ static void display_init(void) {
 
     common_hal_busio_spi_never_reset(spi);
 
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
     bus->base.type = &displayio_fourwire_type;
 
     common_hal_displayio_fourwire_construct(
@@ -89,7 +89,7 @@ static void display_init(void) {
         0               // phase
         );
 
-    displayio_display_obj_t *display = &displays[0].display;
+    displayio_display_obj_t *display = &allocate_display()->display;
     display->base.type = &displayio_display_type;
 
     common_hal_displayio_display_construct(
@@ -126,12 +126,6 @@ static void display_init(void) {
 
 
 void board_init(void) {
-    // Debug UART
-    #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-    #endif /* DEBUG */
-
     // Display
     display_init();
 }

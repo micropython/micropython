@@ -1,7 +1,28 @@
-// Copyright (c) 2014-2016 Paul Sokolovsky
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014-2016 Paul Sokolovsky
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <stdio.h>
 #include <string.h>
@@ -51,15 +72,14 @@ STATIC int read_src_stream(TINF_DATA *data) {
 STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ);
-    mp_obj_decompio_t *o = m_new_obj(mp_obj_decompio_t);
-    o->base.type = type;
+    mp_obj_decompio_t *o = mp_obj_malloc(mp_obj_decompio_t, type);
     memset(&o->decomp, 0, sizeof(o->decomp));
     o->decomp.readSource = read_src_stream;
     o->src_stream = args[0];
     o->eof = false;
 
     mp_int_t dict_opt = 0;
-    int dict_sz;
+    uint dict_sz;
     if (n_args > 1) {
         dict_opt = mp_obj_get_int(args[1]);
     }
@@ -76,7 +96,10 @@ STATIC mp_obj_t decompio_make_new(const mp_obj_type_t *type, size_t n_args, size
         header_error:
             mp_raise_ValueError(MP_ERROR_TEXT("compression header"));
         }
-        dict_sz = 1 << dict_opt;
+        // RFC 1950 section 2.2:
+        // CINFO is the base-2 logarithm of the LZ77 window size,
+        // minus eight (CINFO=7 indicates a 32K window size)
+        dict_sz = 1 << (dict_opt + 8);
     } else {
         dict_sz = 1 << -dict_opt;
     }
@@ -92,12 +115,13 @@ STATIC mp_uint_t decompio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *er
     }
 
     o->decomp.dest = buf;
-    o->decomp.dest_limit = (unsigned char *)buf + size;
+    o->decomp.dest_limit = (byte *)buf + size;
     int st = uzlib_uncompress_chksum(&o->decomp);
     if (st == TINF_DONE) {
         o->eof = true;
     }
     if (st < 0) {
+        DEBUG_printf("uncompress error=" INT_FMT "\n", st);
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }
@@ -146,17 +170,23 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
 
     decomp->dest = dest_buf;
     decomp->dest_limit = dest_buf + dest_buf_size;
-    DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", decomp->destSize);
+    DEBUG_printf("uzlib: Initial out buffer: " UINT_FMT " bytes\n", dest_buf_size);
     decomp->source = bufinfo.buf;
-    decomp->source_limit = (unsigned char *)bufinfo.buf + bufinfo.len;
-    int st;
-    bool is_zlib = true;
+    decomp->source_limit = (byte *)bufinfo.buf + bufinfo.len;
 
-    if (n_args > 1 && MP_OBJ_SMALL_INT_VALUE(args[1]) < 0) {
-        is_zlib = false;
+    int st;
+    mp_int_t wbits = 0;
+
+    if (n_args > 1) {
+        wbits = MP_OBJ_SMALL_INT_VALUE(args[1]);
     }
 
-    if (is_zlib) {
+    if (wbits >= 16) {
+        st = uzlib_gzip_parse_header(decomp);
+        if (st < 0) {
+            goto error;
+        }
+    } else if (wbits >= 0) {
         st = uzlib_zlib_parse_header(decomp);
         if (st < 0) {
             goto error;
@@ -175,7 +205,7 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
         dest_buf = m_renew(byte, dest_buf, dest_buf_size, dest_buf_size + 256);
         dest_buf_size += 256;
         decomp->dest = dest_buf + offset;
-        decomp->dest_limit = dest_buf + offset + 256;
+        decomp->dest_limit = decomp->dest + 256;
     }
 
     mp_uint_t final_sz = decomp->dest - dest_buf;
@@ -203,6 +233,9 @@ const mp_obj_module_t mp_module_uzlib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uzlib_globals,
 };
+
+
+MP_REGISTER_MODULE(MP_QSTR_zlib, mp_module_uzlib);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

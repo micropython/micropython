@@ -32,6 +32,7 @@
 #include "common-hal/ssl/SSLContext.h"
 
 #include "components/esp-tls/esp_tls.h"
+#include "components/lwip/lwip/src/include/lwip/sockets.h"
 
 typedef struct ssl_sslsocket_obj ssl_sslsocket_obj_t;
 
@@ -48,3 +49,5 @@ typedef struct {
 } socketpool_socket_obj_t;
 
 void socket_user_reset(void);
+// Unblock workflow socket select thread (platform specific)
+void socketpool_socket_poll_resume(void);

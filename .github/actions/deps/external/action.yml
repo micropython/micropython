@@ -30,16 +30,14 @@ runs:
     # espressif
     - name: Get espressif toolchain
       if: inputs.port == 'espressif'
-      run: sudo apt-get install -y ninja-build
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build
       shell: bash
     - name: Install IDF tools
       if: inputs.port == 'espressif'
       run: |
-        echo "Installing ESP-IDF tools"
-        $IDF_PATH/tools/idf_tools.py --non-interactive install required
-        $IDF_PATH/tools/idf_tools.py --non-interactive install cmake
-        echo "Installing Python environment and packages"
-        $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
+        $IDF_PATH/install.sh
         rm -rf $IDF_TOOLS_PATH/dist
       shell: bash
     - name: Set environment

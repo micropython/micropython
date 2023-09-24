@@ -1,0 +1,18 @@
+id: custom_brd2704a_cp_support
+label: CircuitPython BRD2704A support
+description: >
+  CircuitPython Board support for BRD2704A.
+package: custom
+category: Custom
+quality: production
+root_path: ../boards/sparkfun_thingplus_matter_mgm240p_brd2704a
+include:
+  - path: ''
+    file_list:
+      - path: mpconfigboard.h
+source:
+  - path: board.c
+provides:
+  - name: custom_brd2704a_cp_support
+requires:
+  - name: mgm240pb32vna

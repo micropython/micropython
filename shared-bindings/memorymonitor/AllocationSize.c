@@ -62,8 +62,8 @@
 //|         """
 //|         ...
 STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
-    memorymonitor_allocationsize_obj_t *self = m_new_obj(memorymonitor_allocationsize_obj_t);
-    self->base.type = &memorymonitor_allocationsize_type;
+    memorymonitor_allocationsize_obj_t *self =
+        m_new_obj(memorymonitor_allocationsize_obj_t, &memorymonitor_allocationsize_type);
 
     common_hal_memorymonitor_allocationsize_construct(self);
 

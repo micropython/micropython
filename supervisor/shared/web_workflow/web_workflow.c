@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// Include strchrnul()
+#define _GNU_SOURCE
+
 #include <stdarg.h>
 #include <string.h>
 
@@ -49,6 +52,7 @@
 
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
+#include "lib/oofatfs/diskio.h"
 
 #if CIRCUITPY_MDNS
 #include "shared-bindings/mdns/RemoteService.h"
@@ -84,8 +88,8 @@ typedef struct {
     char destination[256];
     char header_key[64];
     char header_value[256];
-    // We store the origin so we can reply back with it.
-    char origin[64];
+    char origin[64];        // We store the origin so we can reply back with it.
+    char host[64];          // We store the host to check against origin.
     size_t content_length;
     size_t offset;
     uint64_t timestamp_ms;
@@ -124,6 +128,7 @@ static socketpool_socket_obj_t active;
 static _request active_request;
 
 static char _api_password[64];
+static char web_instance_name[50];
 
 // Store the encoded IP so we don't duplicate work.
 static uint32_t _encoded_ip = 0;
@@ -253,24 +258,15 @@ void supervisor_web_workflow_status(void) {
 }
 #endif
 
-void supervisor_start_web_workflow(void) {
+bool supervisor_start_web_workflow(bool reload) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
-
-    // Skip starting the workflow if we're not starting from power on or reset.
-    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
-    if (reset_reason != RESET_REASON_POWER_ON &&
-        reset_reason != RESET_REASON_RESET_PIN &&
-        reset_reason != RESET_REASON_UNKNOWN &&
-        reset_reason != RESET_REASON_SOFTWARE) {
-        return;
-    }
 
     char ssid[33];
     char password[64];
 
     os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
     if (result != GETENV_OK) {
-        return;
+        return false;
     }
 
     result = common_hal_os_getenv_str("CIRCUITPY_WIFI_PASSWORD", password, sizeof(password));
@@ -278,7 +274,7 @@ void supervisor_start_web_workflow(void) {
         // if password is unspecified, assume an open network
         password[0] = '\0';
     } else if (result != GETENV_OK) {
-        return;
+        return false;
     }
 
     if (!common_hal_wifi_radio_get_enabled(&common_hal_wifi_radio_obj)) {
@@ -292,24 +288,46 @@ void supervisor_start_web_workflow(void) {
     // We can all connect again because it will return early if we're already connected to the
     // network. If we are connected to a different network, then it will disconnect before
     // attempting to connect to the given network.
+
     _wifi_status = common_hal_wifi_radio_connect(
         &common_hal_wifi_radio_obj, (uint8_t *)ssid, strlen(ssid), (uint8_t *)password, strlen(password),
         0, 8, NULL, 0);
 
     if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
         common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
-        return;
+        return false;
     }
 
-    mp_int_t new_port = web_api_port;
-    // (leaves new_port unchanged on any failure)
-    (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &new_port);
+    // Skip starting the workflow if we're not starting from power on or reset.
+    const mcu_reset_reason_t reset_reason = common_hal_mcu_processor_get_reset_reason();
+    if (reset_reason != RESET_REASON_POWER_ON &&
+        reset_reason != RESET_REASON_RESET_PIN &&
+        reset_reason != RESET_REASON_DEEP_SLEEP_ALARM &&
+        reset_reason != RESET_REASON_UNKNOWN &&
+        reset_reason != RESET_REASON_SOFTWARE) {
+        return false;
+    }
 
-    bool first_start = pool.base.type != &socketpool_socketpool_type;
-    bool port_changed = new_port != web_api_port;
+    bool initialized = pool.base.type == &socketpool_socketpool_type;
 
-    if (first_start) {
-        port_changed = false;
+    if (!initialized && !reload) {
+        result = common_hal_os_getenv_str("CIRCUITPY_WEB_INSTANCE_NAME", web_instance_name, sizeof(web_instance_name));
+        if (result != GETENV_OK || web_instance_name[0] == '\0') {
+            strcpy(web_instance_name, MICROPY_HW_BOARD_NAME);
+        }
+
+        // (leaves new_port unchanged on any failure)
+        (void)common_hal_os_getenv_int("CIRCUITPY_WEB_API_PORT", &web_api_port);
+
+        const size_t api_password_len = sizeof(_api_password) - 1;
+        result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
+        if (result == GETENV_OK) {
+            _api_password[0] = ':';
+            _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
+        } else { // Skip starting web-workflow when no password is passed.
+            return false;
+        }
+
         pool.base.type = &socketpool_socketpool_type;
         common_hal_socketpool_socketpool_construct(&pool, &common_hal_wifi_radio_obj);
 
@@ -318,42 +336,42 @@ void supervisor_start_web_workflow(void) {
 
         websocket_init();
     }
-    #if CIRCUITPY_MDNS
-    // Try to start MDNS if the user deinited it.
-    if (mdns.base.type != &mdns_server_type ||
-        common_hal_mdns_server_deinited(&mdns)) {
-        mdns_server_construct(&mdns, true);
-        mdns.base.type = &mdns_server_type;
-        if (!common_hal_mdns_server_deinited(&mdns)) {
-            common_hal_mdns_server_set_instance_name(&mdns, MICROPY_HW_BOARD_NAME);
+
+    initialized = pool.base.type == &socketpool_socketpool_type;
+
+    if (initialized){
+        if (!common_hal_socketpool_socket_get_closed(&active)) {
+            common_hal_socketpool_socket_close(&active);
         }
-    }
-    #endif
-    if (port_changed) {
-        common_hal_socketpool_socket_close(&listening);
-    }
-    if (first_start || port_changed) {
-        web_api_port = new_port;
+
         #if CIRCUITPY_MDNS
+        // Try to start MDNS if the user deinited it.
+        if (mdns.base.type != &mdns_server_type ||
+            common_hal_mdns_server_deinited(&mdns)) {
+            mdns_server_construct(&mdns, true);
+            mdns.base.type = &mdns_server_type;
+            if (!common_hal_mdns_server_deinited(&mdns)) {
+                common_hal_mdns_server_set_instance_name(&mdns, web_instance_name);
+            }
+        }
         if (!common_hal_mdns_server_deinited(&mdns)) {
             common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
         }
         #endif
-        socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
-        common_hal_socketpool_socket_settimeout(&listening, 0);
-        // Bind to any ip.
-        common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
-        common_hal_socketpool_socket_listen(&listening, 1);
-    }
 
-
-    const size_t api_password_len = sizeof(_api_password) - 1;
-    result = common_hal_os_getenv_str("CIRCUITPY_WEB_API_PASSWORD", _api_password + 1, api_password_len);
-    if (result == GETENV_OK) {
-        _api_password[0] = ':';
-        _base64_in_place(_api_password, strlen(_api_password), sizeof(_api_password) - 1);
+        if (common_hal_socketpool_socket_get_closed(&listening)) {
+            socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+            common_hal_socketpool_socket_settimeout(&listening, 0);
+            // Bind to any ip. (Not checking for failures)
+            common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
+            common_hal_socketpool_socket_listen(&listening, 1);
+        }
+        // Wake polling thread (maybe)
+        socketpool_socket_poll_resume();
+        #endif
+        return true;
     }
-    #endif
+    return false;
 }
 
 void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
@@ -448,49 +466,37 @@ static bool _endswith(const char *str, const char *suffix) {
     return strcmp(str + (strlen(str) - strlen(suffix)), suffix) == 0;
 }
 
-const char *ok_hosts[] = {
-    "127.0.0.1",
-    "localhost",
-};
+const char http_scheme[] = "http://";
+#define PREFIX_HTTP_LEN (sizeof(http_scheme) - 1)
 
-static bool _origin_ok(const char *origin) {
-    const char *http = "http://";
-
-    // note: redirected requests send an Origin of "null" and will be caught by this
-    if (strncmp(origin, http, strlen(http)) != 0) {
-        return false;
-    }
-    // These are prefix checks up to : so that any port works.
-    // TODO: Support DHCP hostname in addition to MDNS.
-    const char *end;
-    #if CIRCUITPY_MDNS
-    if (!common_hal_mdns_server_deinited(&mdns)) {
-        const char *local = ".local";
-        const char *hostname = common_hal_mdns_server_get_hostname(&mdns);
-        end = origin + strlen(http) + strlen(hostname) + strlen(local);
-        if (strncmp(origin + strlen(http), hostname, strlen(hostname)) == 0 &&
-            strncmp(origin + strlen(http) + strlen(hostname), local, strlen(local)) == 0 &&
-            (end[0] == '\0' || end[0] == ':')) {
-            return true;
-        }
-    }
-    #endif
-
-    _update_encoded_ip();
-    end = origin + strlen(http) + strlen(_our_ip_encoded);
-    if (strncmp(origin + strlen(http), _our_ip_encoded, strlen(_our_ip_encoded)) == 0 &&
-        (end[0] == '\0' || end[0] == ':')) {
+static bool _origin_ok(_request *request) {
+    // Origin may be 'null'
+    if (request->origin[0] == '\0') {
         return true;
     }
-
-    for (size_t i = 0; i < MP_ARRAY_SIZE(ok_hosts); i++) {
-        // Allows any port
-        end = origin + strlen(http) + strlen(ok_hosts[i]);
-        if (strncmp(origin + strlen(http), ok_hosts[i], strlen(ok_hosts[i])) == 0
-            && (end[0] == '\0' || end[0] == ':')) {
+    // Origin has http prefix?
+    if (strncmp(request->origin, http_scheme, PREFIX_HTTP_LEN) != 0) {
+        // Not HTTP scheme request - ok
+        request->origin[0] = '\0';
+        return true;
+    }
+    // Host given?
+    if (request->host[0] != '\0') {
+        // OK if host and origin match (fqdn + port #)
+        if (strcmp(request->host, &request->origin[PREFIX_HTTP_LEN]) == 0) {
+            return true;
+        }
+        // DEBUG: OK if origin is 'localhost' (ignoring port #)
+        char *cptr = strchrnul(&request->origin[PREFIX_HTTP_LEN], ':');
+        char csave = *cptr; // NULL or colon
+        *cptr = '\0';
+        if (strcmp(&request->origin[PREFIX_HTTP_LEN], "localhost") == 0) {
+            // Restore removed colon if non-null host terminator
+            *cptr = csave;
             return true;
         }
     }
+    // Otherwise deny request
     return false;
 }
 
@@ -511,8 +517,8 @@ static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
     _send_strs(socket,
         "Access-Control-Allow-Credentials: true\r\n",
         "Vary: Origin, Accept, Upgrade\r\n",
-        "Access-Control-Allow-Origin: ", request->origin, "\r\n",
-        NULL);
+        "Access-Control-Allow-Origin: ",
+        (request->origin[0] == '\0') ? "*" : request->origin, "\r\n", NULL);
 }
 
 static void _reply_continue(socketpool_socket_obj_t *socket, _request *request) {
@@ -796,24 +802,26 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     mp_print_t _socket_print = {socket, _print_chunk};
 
     const char *hostname = "";
+    const char *instance_name = "";
     #if CIRCUITPY_MDNS
     if (!common_hal_mdns_server_deinited(&mdns)) {
         hostname = common_hal_mdns_server_get_hostname(&mdns);
+        instance_name = common_hal_mdns_server_get_instance_name(&mdns);
     }
     #endif
     _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
     mp_printf(&_socket_print,
-        "{\"web_api_version\": 1, "
+        "{\"web_api_version\": 2, "
         "\"version\": \"" MICROPY_GIT_TAG "\", "
         "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
-        "\"board_name\": \"" MICROPY_HW_BOARD_NAME "\", "
+        "\"board_name\": \"%s\", "
         "\"mcu_name\": \"" MICROPY_HW_MCU_NAME "\", "
         "\"board_id\": \"" CIRCUITPY_BOARD_ID "\", "
         "\"creator_id\": %u, "
         "\"creation_id\": %u, "
         "\"hostname\": \"%s\", "
-        "\"port\": %d, ", CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
+        "\"port\": %d, ", instance_name, CIRCUITPY_CREATOR_ID, CIRCUITPY_CREATION_ID, hostname, web_api_port, _our_ip_encoded);
     #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
     uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
     common_hal_mcu_processor_get_uid(raw_id);
@@ -827,6 +835,32 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
 }
+
+static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request *request) {
+    _send_str(socket, OK_JSON);
+    _cors_header(socket, request);
+    _send_str(socket, "\r\n");
+    mp_print_t _socket_print = {socket, _print_chunk};
+
+    DWORD free_clusters;
+    FATFS *fs = filesystem_circuitpy();
+    FRESULT blk_result = f_getfree(fs, &free_clusters);
+    uint16_t block_size;
+    if (blk_result == FR_OK) {
+        disk_ioctl(fs, GET_SECTOR_SIZE, &block_size);
+    }
+
+    uint16_t total_size = fs->n_fatent - 2;
+
+    mp_printf(&_socket_print,
+        "{\"free\": %d, "
+        "\"block_size\": %d, "
+        "\"total\": %d}", free_clusters * block_size, block_size, total_size * block_size);
+
+    // Empty chunk signals the end of the response.
+    _send_chunk(socket, "");
+}
+
 
 // FATFS has a two second timestamp resolution but the BLE API allows for nanosecond resolution.
 // This function truncates the time the time to a resolution storable by FATFS and fills in the
@@ -968,7 +1002,7 @@ STATIC_FILE(edit_js);
 STATIC_FILE(style_css);
 STATIC_FILE(serial_html);
 STATIC_FILE(serial_js);
-STATIC_FILE(blinka_16x16_ico);
+STATIC_FILE(blinka_32x32_ico);
 
 static void _reply_static(socketpool_socket_obj_t *socket, _request *request, const uint8_t *response, size_t response_len, const char *content_type) {
     uint32_t total_length = response_len;
@@ -1052,7 +1086,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         #else
         _reply_missing(socket, request);
         #endif
-    } else if (strlen(request->origin) > 0 && !_origin_ok(request->origin)) {
+    } else if (!_origin_ok(request)) {
         _reply_forbidden(socket, request);
     } else if (strncmp(request->path, "/fs/", 4) == 0) {
         if (strcasecmp(request->method, "OPTIONS") == 0) {
@@ -1228,6 +1262,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _reply_with_devices_json(socket, request);
         } else if (strcmp(path, "/version.json") == 0) {
             _reply_with_version_json(socket, request);
+        } else if (strcmp(path, "/diskinfo.json") == 0) {
+            _reply_with_diskinfo_json(socket, request);
         } else if (strcmp(path, "/serial/") == 0) {
             if (!request->authenticated) {
                 if (_api_password[0] != '\0') {
@@ -1263,7 +1299,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
         } else if (strcmp(request->path, "/favicon.ico") == 0) {
             // TODO: Autogenerate this based on the blinka bitmap and change the
             // palette based on MAC address.
-            _REPLY_STATIC(socket, request, blinka_16x16_ico);
+            _REPLY_STATIC(socket, request, blinka_32x32_ico);
         } else {
             _reply_missing(socket, request);
         }
@@ -1274,6 +1310,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
 static void _reset_request(_request *request) {
     request->state = STATE_METHOD;
     request->origin[0] = '\0';
+    request->host[0] = '\0';
     request->content_length = 0;
     request->offset = 0;
     request->timestamp_ms = 0;
@@ -1293,9 +1330,15 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     uint8_t c;
     // This code assumes header lines are terminated with \r\n
     while (more && !error) {
+
         int len = socketpool_socket_recv_into(socket, &c, 1);
         if (len != 1) {
             more = false;
+            if (len == 0 || len == -MP_ENOTCONN) {
+                // Disconnect - clear 'in-progress'
+                _reset_request(request);
+                common_hal_socketpool_socket_close(socket);
+            }
             break;
         }
         if (!request->in_progress) {
@@ -1376,6 +1419,8 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                         request->redirect = strncmp(request->header_value, cp_local, strlen(cp_local)) == 0 &&
                             (strlen(request->header_value) == strlen(cp_local) ||
                                 request->header_value[strlen(cp_local)] == ':');
+                        strncpy(request->host, request->header_value, sizeof(request->host) - 1);
+                        request->host[sizeof(request->host) - 1] = '\0';
                     } else if (strcasecmp(request->header_key, "Content-Length") == 0) {
                         request->content_length = strtoul(request->header_value, NULL, 10);
                     } else if (strcasecmp(request->header_key, "Expect") == 0) {
@@ -1383,7 +1428,8 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
                     } else if (strcasecmp(request->header_key, "Accept") == 0) {
                         request->json = strcasecmp(request->header_value, "application/json") == 0;
                     } else if (strcasecmp(request->header_key, "Origin") == 0) {
-                        strcpy(request->origin, request->header_value);
+                        strncpy(request->origin, request->header_value, sizeof(request->origin) - 1);
+                        request->origin[sizeof(request->origin) - 1] = '\0';
                     } else if (strcasecmp(request->header_key, "X-Timestamp") == 0) {
                         request->timestamp_ms = strtoull(request->header_value, NULL, 10);
                     } else if (strcasecmp(request->header_key, "Upgrade") == 0) {
@@ -1422,6 +1468,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     }
     bool reload = _reply(socket, request);
     _reset_request(request);
+    common_hal_socketpool_socket_close(socket);
     autoreload_resume(AUTORELOAD_SUSPEND_WEB);
     if (reload) {
         autoreload_trigger();
@@ -1429,45 +1476,52 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
 }
 
 
-void supervisor_web_workflow_background(void) {
-    // Track if we have more to do. For example, we should start processing a
-    // request immediately after we accept the socket.
-    bool more_to_do = true;
-    while (more_to_do) {
-        more_to_do = false;
+void supervisor_web_workflow_background(void *data) {
+    while (true) {
         // If we have a request in progress, continue working on it. Do this first
         // so that we can accept another socket after finishing this request.
         if (common_hal_socketpool_socket_get_connected(&active)) {
             _process_request(&active, &active_request);
+            if (active_request.in_progress) {
+                break;
+            }
         } else {
-            // Close the active socket if it is no longer connected.
-            common_hal_socketpool_socket_close(&active);
+            // Close the active socket if necessary
+            if (!common_hal_socketpool_socket_get_closed(&active)) {
+                common_hal_socketpool_socket_close(&active);
+            }
         }
-
         // Otherwise, see if we have another socket to accept.
         if ((!common_hal_socketpool_socket_get_connected(&active) ||
              (!active_request.in_progress && !active_request.new_socket)) &&
             !common_hal_socketpool_socket_get_closed(&listening)) {
             uint32_t ip;
             uint32_t port;
+            if (!common_hal_socketpool_socket_get_closed(&active)) {
+                common_hal_socketpool_socket_close(&active);
+            }
             int newsoc = socketpool_socket_accept(&listening, (uint8_t *)&ip, &port, &active);
             if (newsoc == -EBADF) {
                 common_hal_socketpool_socket_close(&listening);
-                return;
+                break;
             }
             if (newsoc > 0) {
                 common_hal_socketpool_socket_settimeout(&active, 0);
-
                 _reset_request(&active_request);
                 // Mark new sockets, otherwise we may accept another before the first
                 // could start its request.
                 active_request.new_socket = true;
-                more_to_do = true;
+                continue;
             }
+            break;
         }
-
         websocket_background();
+        break;
     }
+    // Resume polling
+    socketpool_socket_poll_resume();
+
+    return;
 }
 
 void supervisor_stop_web_workflow(void) {

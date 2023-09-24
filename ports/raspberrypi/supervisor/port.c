@@ -76,6 +76,8 @@
 #include "tusb.h"
 #include <cmsis_compiler.h>
 
+critical_section_t background_queue_lock;
+
 extern volatile bool mp_msc_enabled;
 
 STATIC void _tick_callback(uint alarm_num);
@@ -104,28 +106,32 @@ safe_mode_t port_init(void) {
     _binary_info();
     // Set brown out.
 
+    // Load from the XIP memory space that doesn't cache. That way we don't
+    // evict anything else. The code we're loading is linked to the RAM address
+    // anyway.
+    size_t nocache = 0x03000000;
+
     // Copy all of the "tightly coupled memory" code and data to run from RAM.
     // This lets us use the 16k cache for dynamically used data and code.
     // We must do this before we try and call any of its code or load the data.
+    uint32_t *itcm_flash_copy = (uint32_t *)(((size_t)&_ld_itcm_flash_copy) | nocache);
     for (uint32_t i = 0; i < ((size_t)&_ld_itcm_size) / 4; i++) {
-        (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];
-        // Now zero it out to evict the line from the XIP cache. Without this,
-        // it'll stay in the XIP cache anyway.
-        (&_ld_itcm_flash_copy)[i] = 0x0;
+        (&_ld_itcm_destination)[i] = itcm_flash_copy[i];
     }
 
     // Copy all of the data to run from DTCM.
+    uint32_t *dtcm_flash_copy = (uint32_t *)(((size_t)&_ld_dtcm_data_flash_copy) | nocache);
     for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_data_size) / 4; i++) {
-        (&_ld_dtcm_data_destination)[i] = (&_ld_dtcm_data_flash_copy)[i];
-        // Now zero it out to evict the line from the XIP cache. Without this,
-        // it'll stay in the XIP cache anyway.
-        (&_ld_dtcm_data_flash_copy)[i] = 0x0;
+        (&_ld_dtcm_data_destination)[i] = dtcm_flash_copy[i];
     }
 
     // Clear DTCM bss.
     for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_bss_size) / 4; i++) {
         (&_ld_dtcm_bss_start)[i] = 0;
     }
+
+    // Set up the critical section to protect the background task queue.
+    critical_section_init(&background_queue_lock);
 
     #if CIRCUITPY_CYW43
     never_reset_pin_number(23);
@@ -232,14 +238,14 @@ bool port_has_fixed_stack(void) {
 }
 
 // From the linker script
-extern uint32_t __HeapLimit;
-extern uint32_t __StackTop;
+extern uint32_t _ld_cp_dynamic_mem_start;
+extern uint32_t _ld_cp_dynamic_mem_end;
 uint32_t *port_stack_get_limit(void) {
-    return &__HeapLimit;
+    return &_ld_cp_dynamic_mem_start;
 }
 
 uint32_t *port_stack_get_top(void) {
-    return &__StackTop;
+    return &_ld_cp_dynamic_mem_end;
 }
 
 uint32_t *port_heap_get_bottom(void) {
@@ -250,16 +256,19 @@ uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
-extern uint32_t __scratch_x_start__;
+uint32_t __uninitialized_ram(saved_word);
 void port_set_saved_word(uint32_t value) {
-    __scratch_x_start__ = value;
+    // Store in RAM because the watchdog scratch registers don't survive
+    // resetting by pulling the RUN pin low.
+    saved_word = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return __scratch_x_start__;
+    return saved_word;
 }
 
 static volatile bool ticks_enabled;
+static volatile bool _woken_up;
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
     uint64_t microseconds = time_us_64();
@@ -271,6 +280,7 @@ STATIC void _tick_callback(uint alarm_num) {
         supervisor_tick();
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), 977));
     }
+    _woken_up = true;
 }
 
 // Enable 1/1024 second tick.
@@ -294,11 +304,12 @@ void port_interrupt_after_ticks(uint32_t ticks) {
     if (!ticks_enabled) {
         hardware_alarm_set_target(0, delayed_by_us(get_absolute_time(), ticks * 977));
     }
+    _woken_up = false;
 }
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!background_callback_pending() && !tud_task_event_ready()) {
+    if (!background_callback_pending() && !tud_task_event_ready() && !tuh_task_event_ready() && !_woken_up) {
         __DSB();
         __WFI();
     }
@@ -309,14 +320,12 @@ void port_idle_until_interrupt(void) {
  * \brief Default interrupt handler for unused IRQs.
  */
 extern void HardFault_Handler(void); // provide a prototype to avoid a missing-prototypes diagnostic
-__attribute__((used)) void HardFault_Handler(void) {
-    #ifdef ENABLE_MICRO_TRACE_BUFFER
-    // Turn off the micro trace buffer so we don't fill it up in the infinite
-    // loop below.
-    REG_MTB_MASTER = 0x00000000 + 6;
-    #endif
-
-    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+__attribute__((used)) void __not_in_flash_func(HardFault_Handler)(void) {
+    // Only safe mode from core 0 which is running CircuitPython. Core 1 faulting
+    // should not be fatal to CP. (Fingers crossed.)
+    if (get_core_num() == 0) {
+        reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+    }
     while (true) {
         asm ("nop;");
     }

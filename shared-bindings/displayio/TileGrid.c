@@ -139,8 +139,7 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
 
-    displayio_tilegrid_t *self = m_new_obj(displayio_tilegrid_t);
-    self->base.type = &displayio_tilegrid_type;
+    displayio_tilegrid_t *self = mp_obj_malloc(displayio_tilegrid_t, &displayio_tilegrid_type);
     common_hal_displayio_tilegrid_construct(self, native,
         bitmap_width / tile_width, bitmap_height / tile_height,
         pixel_shader, args[ARG_width].u_int, args[ARG_height].u_int,
@@ -351,7 +350,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_pixel_shader_obj, displayio_til
 STATIC mp_obj_t displayio_tilegrid_obj_set_pixel_shader(mp_obj_t self_in, mp_obj_t pixel_shader) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
-        mp_raise_TypeError(translate("pixel_shader must be displayio.Palette or displayio.ColorConverter"));
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
     common_hal_displayio_tilegrid_set_pixel_shader(self, pixel_shader);

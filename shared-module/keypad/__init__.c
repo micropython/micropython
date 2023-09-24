@@ -101,13 +101,12 @@ void keypad_deregister_scanner(keypad_scanner_obj_t *scanner) {
 
 void keypad_construct_common(keypad_scanner_obj_t *self, mp_float_t interval, size_t max_events) {
     size_t key_count = common_hal_keypad_generic_get_key_count(self);
-    self->currently_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
-    self->previously_pressed = (bool *)gc_alloc(sizeof(bool) * key_count, false, false);
+    self->currently_pressed = (bool *)m_malloc(sizeof(bool) * key_count);
+    self->previously_pressed = (bool *)m_malloc(sizeof(bool) * key_count);
 
     self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
 
-    keypad_eventqueue_obj_t *events = m_new_obj(keypad_eventqueue_obj_t);
-    events->base.type = &keypad_eventqueue_type;
+    keypad_eventqueue_obj_t *events = mp_obj_malloc(keypad_eventqueue_obj_t, &keypad_eventqueue_type);
     common_hal_keypad_eventqueue_construct(events, max_events);
     self->events = events;
 

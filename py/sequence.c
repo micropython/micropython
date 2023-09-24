@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -171,7 +171,7 @@ bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, size_t len1, const mp
             continue;
         }
 
-        // Othewise, if they are not equal, we can have final decision based on them
+        // Otherwise, if they are not equal, we can have final decision based on them
         if (op == MP_BINARY_OP_EQUAL) {
             // In particular, if we are checking for equality, here're the answer
             return false;

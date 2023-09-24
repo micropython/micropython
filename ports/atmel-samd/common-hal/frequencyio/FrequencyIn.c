@@ -156,7 +156,7 @@ void frequencyin_interrupt_handler(uint8_t index) {
             }
 
             // Check if we've reached the upper limit of detection
-            if (!supervisor_background_tasks_ok() || self->errored_too_fast) {
+            if (!supervisor_background_ticks_ok() || self->errored_too_fast) {
                 self->errored_too_fast = true;
                 frequencyin_emergency_cancel_capture(i);
             }
@@ -482,7 +482,7 @@ uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj
         float time_each_event = self->factor / self->frequency; // get the time for each event during actual period
         float capture_diff = self->factor - self->capture_period; // get the difference of actual and base periods
         // we only need to adjust if the capture_diff can contain 1 or more events
-        // if so, we add how many events could have occured during the diff time
+        // if so, we add how many events could have occurred during the diff time
         if (time_each_event > capture_diff) {
             frequency_adjustment = capture_diff / time_each_event;
         }

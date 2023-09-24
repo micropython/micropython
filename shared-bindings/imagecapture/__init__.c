@@ -50,4 +50,4 @@ const mp_obj_module_t imagecapture_module = {
     .globals = (mp_obj_dict_t *)&imagecapture_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_imagecapture, imagecapture_module, CIRCUITPY_IMAGECAPTURE);
+MP_REGISTER_MODULE(MP_QSTR_imagecapture, imagecapture_module);

@@ -35,7 +35,7 @@ extern "C" {
 
 /**
  * @brief   How many milliseconds of audio can fit in the audio buffer(s).
- * Interrupts for recieved data fire at half this duration / twice the frequency.
+ * Interrupts for received data fire at half this duration / twice the frequency.
  */
 #ifndef MEMS_AUDIO_MS_BUFFER
 #define MEMS_AUDIO_MS_BUFFER (1)

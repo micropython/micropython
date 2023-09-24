@@ -11,7 +11,7 @@
 
 //| """Support for edge counting
 //|
-//| The `countio` module contains logic to read and count edge transistions
+//| The `countio` module contains logic to read and count edge transitions
 //|
 //| For more information on the applications of counting edges, see
 //| `this Learn Guide on sequential circuits
@@ -35,4 +35,4 @@ const mp_obj_module_t countio_module = {
     .globals = (mp_obj_dict_t *)&countio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_countio, countio_module, CIRCUITPY_COUNTIO);
+MP_REGISTER_MODULE(MP_QSTR_countio, countio_module);

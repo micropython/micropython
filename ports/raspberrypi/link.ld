@@ -21,13 +21,16 @@
     __stack (== StackTop)
 */
 
+firmware_size = DEFINED(firmware_size) ? firmware_size : 1020K ;
+
 MEMORY
 {
-    FLASH_FIRMWARE (rx) : ORIGIN = 0x10000000, LENGTH = 1020k
+    FLASH_FIRMWARE (rx) : ORIGIN = 0x10000000, LENGTH = firmware_size
     /* Followed by: 4kB of NVRAM and at least 1024kB of CIRCUITPY */
     RAM (rwx) : ORIGIN =  0x20000000, LENGTH = 256k
-    SCRATCH_X (rwx) : ORIGIN = 0x20040000, LENGTH = 4k
-    SCRATCH_Y (rwx) : ORIGIN = 0x20041000, LENGTH = 4k
+    SCRATCH_Y (rwx) : ORIGIN = 0x20040000, LENGTH = 4k
+    /* X is used by core 1 so we put it last. */
+    SCRATCH_X (rwx) : ORIGIN = 0x20041000, LENGTH = 4k
 }
 
 ENTRY(_entry_point)
@@ -77,7 +80,9 @@ SECTIONS
         *(.property_getset)
         __property_getset_end = .;
 
-        *(EXCLUDE_FILE(*libgcc.a: *libc.a:*lib_a-mem*.o *libm.a:) .text*)
+        *(EXCLUDE_FILE(*libgcc.a: *libc.a:*lib_a-mem*.o *libm.a: *interp.o *divider.o *tusb_fifo.o *mem_ops_aeabi.o *usbh.o) .text*)
+        /* Allow everything in usbh.o except tuh_task_event_ready because we read it from core 1. */
+        *usbh.o (.text.[_uphc]* .text.tuh_[cmvied]* .text.tuh_task_ext*)
         *(.fini)
         /* Pull all c'tors into .text */
         *crtbegin.o(.ctors)
@@ -137,7 +142,7 @@ SECTIONS
         __data_start__ = .;
         *(vtable)
 
-        *(.time_critical*)
+        *(EXCLUDE_FILE(*tmds_encode.o) .time_critical*)
 
         /* remaining .text and .rodata; i.e. stuff we exclude above because we want it in RAM */
         *(.text*)
@@ -166,7 +171,7 @@ SECTIONS
         . = ALIGN(4);
         /* init data */
         PROVIDE_HIDDEN (__init_array_start = .);
-        KEEP(*(SORT(.init_array.*)))
+        KEEP(*(SORT(.init_array*)))
         KEEP(*(.init_array))
         PROVIDE_HIDDEN (__init_array_end = .);
 
@@ -206,7 +211,7 @@ SECTIONS
     _ld_dtcm_data_flash_copy = LOADADDR(.dtcm_data);
     _ld_dtcm_data_size = SIZEOF(.dtcm_data);
 
-    .dtcm_bss :
+    .dtcm_bss (NOLOAD) :
     {
         . = ALIGN(4);
 
@@ -222,23 +227,6 @@ SECTIONS
         *(.uninitialized_data*)
     } > RAM
 
-    /* Start and end symbols must be word-aligned */
-    .scratch_x : {
-        __scratch_x_start__ = .;
-        *(.scratch_x.*)
-        . = ALIGN(4);
-        __scratch_x_end__ = .;
-    } > SCRATCH_X AT > FLASH_FIRMWARE
-    __scratch_x_source__ = LOADADDR(.scratch_x);
-
-    .scratch_y : {
-        __scratch_y_start__ = .;
-        *(.scratch_y.*)
-        . = ALIGN(4);
-        __scratch_y_end__ = .;
-    } > SCRATCH_Y AT > FLASH_FIRMWARE
-    __scratch_y_source__ = LOADADDR(.scratch_y);
-
     .bss  : {
         . = ALIGN(4);
         __bss_start__ = .;
@@ -252,9 +240,30 @@ SECTIONS
     {
         __end__ = .;
         end = __end__;
+        _ld_cp_dynamic_mem_start = .;
         *(.heap*)
         __HeapLimit = .;
     } > RAM
+
+    /* Start and end symbols must be word-aligned */
+    .scratch_x : {
+        __scratch_x_start__ = .;
+        *(.scratch_x.*)
+        *tmds_encode.o (.time_critical*)
+        *timer.o (.text.hardware_alarm_irq_handler)
+        . = ALIGN(4);
+        __scratch_x_end__ = .;
+    } > SCRATCH_X AT > FLASH_FIRMWARE
+    __scratch_x_source__ = LOADADDR(.scratch_x);
+
+    .scratch_y : {
+        __scratch_y_start__ = .;
+        /* Don't put anything into scratch y because CircuitPython manages it and uses it for core 0 stack.
+        /* *(.scratch_y.*) */
+        . = ALIGN(4);
+        __scratch_y_end__ = .;
+    } > SCRATCH_Y AT > FLASH_FIRMWARE
+    __scratch_y_source__ = LOADADDR(.scratch_y);
 
     /* .stack*_dummy section doesn't contains any symbols. It is only
      * used for linker to calculate size of stack sections, and assign
@@ -269,6 +278,7 @@ SECTIONS
     {
         *(.stack1*)
     } > SCRATCH_X
+
     .stack_dummy (COPY):
     {
         *(.stack*)
@@ -282,6 +292,7 @@ SECTIONS
     __StackLimit = ORIGIN(RAM) + LENGTH(RAM);
     __StackOneTop = ORIGIN(SCRATCH_X) + LENGTH(SCRATCH_X);
     __StackTop = ORIGIN(SCRATCH_Y) + LENGTH(SCRATCH_Y);
+    _ld_cp_dynamic_mem_end = __StackTop;
     __StackOneBottom = __StackOneTop - SIZEOF(.stack1_dummy);
     __StackBottom = __StackTop - SIZEOF(.stack_dummy);
     PROVIDE(__stack = __StackTop);

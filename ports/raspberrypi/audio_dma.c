@@ -37,7 +37,7 @@
 
 #include "src/rp2_common/hardware_irq/include/hardware/irq.h"
 
-#if CIRCUITPY_AUDIOPWMIO || CIRCUITPY_AUDIOBUSIO
+#if CIRCUITPY_AUDIOCORE
 
 void audio_dma_reset(void) {
     for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
@@ -386,6 +386,27 @@ bool audio_dma_get_paused(audio_dma_t *dma) {
     uint32_t control = dma_hw->ch[dma->channel[0]].ctrl_trig;
 
     return (control & DMA_CH0_CTRL_TRIG_EN_BITS) == 0;
+}
+
+uint32_t audio_dma_pause_all(void) {
+    uint32_t result = 0;
+    for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
+        audio_dma_t *dma = MP_STATE_PORT(playing_audio)[channel];
+        if (dma != NULL && !audio_dma_get_paused(dma)) {
+            audio_dma_pause(dma);
+            result |= (1 << channel);
+        }
+    }
+    return result;
+}
+
+void audio_dma_unpause_mask(uint32_t channel_mask) {
+    for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
+        audio_dma_t *dma = MP_STATE_PORT(playing_audio)[channel];
+        if (dma != NULL && (channel_mask & (1 << channel))) {
+            audio_dma_resume(dma);
+        }
+    }
 }
 
 void audio_dma_init(audio_dma_t *dma) {

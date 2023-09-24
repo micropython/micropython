@@ -32,8 +32,6 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/Pin.h"
-#include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
 #include "supervisor/shared/translate/translate.h"
 
@@ -48,8 +46,7 @@
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    audiomixer_mixervoice_obj_t *self = m_new_obj(audiomixer_mixervoice_obj_t);
-    self->base.type = &audiomixer_mixervoice_type;
+    audiomixer_mixervoice_obj_t *self = mp_obj_malloc(audiomixer_mixervoice_obj_t, &audiomixer_mixervoice_type);
 
     common_hal_audiomixer_mixervoice_construct(self);
 
@@ -115,7 +112,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    float level = mp_obj_get_float(args[ARG_level].u_obj);
+    mp_float_t level = mp_obj_get_float(args[ARG_level].u_obj);
 
     if (level > 1 || level < 0) {
         mp_raise_ValueError(translate("level must be between 0 and 1"));

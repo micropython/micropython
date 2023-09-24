@@ -67,11 +67,9 @@ jobs:
       run: echo "HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
     - name: Set base sha (pull)
       if: github.event_name == 'pull_request'
-      run: |
-        git fetch --no-tags --no-recurse-submodules --depth=$((DEPTH + 1)) origin $HEAD_SHA
-        echo "BASE_SHA=$(git rev-list $HEAD_SHA --skip=$DEPTH --max-count=1)" >> $GITHUB_ENV
+      run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
       env:
-        DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
+        SHA: ${{ steps.get-last-commit-with-checks.outputs.commit_sha || github.event.pull_request.base.sha }}
     - name: Set head sha (push)
       if: github.event_name == 'push'
       run: echo "HEAD_SHA=${{ github.event.after }}" >> $GITHUB_ENV
@@ -80,16 +78,11 @@ jobs:
       run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
       env:
         SHA: ${{ github.event.before }}
-    - name: Get changes
-      id: get-changes
-      if: env.BASE_SHA && env.HEAD_SHA
-      run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
     - name: Set matrix
       id: set-matrix
       run: python3 -u ci_set_matrix.py
       working-directory: tools
       env:
-        CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
   tests:
@@ -181,6 +174,7 @@ jobs:
       uses: ./.github/actions/deps/submodules
     - name: Install dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install -y latexmk librsvg2-bin texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
         pip install -r requirements-doc.txt
     - name: Build and Validate Stubs
@@ -215,7 +209,7 @@ jobs:
         TWINE_USERNAME: ${{ secrets.pypi_username }}
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
-        # setup.py sdist was run by 'make stubs'
+        # python -m build was run by 'make stubs'
         [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
         [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
 

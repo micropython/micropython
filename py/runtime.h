@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,15 @@ typedef struct _mp_arg_t {
     mp_arg_val_t defval;
 } mp_arg_t;
 
+struct _mp_sched_node_t;
+
+typedef void (*mp_sched_callback_t)(struct _mp_sched_node_t *);
+
+typedef struct _mp_sched_node_t {
+    mp_sched_callback_t callback;
+    struct _mp_sched_node_t *next;
+} mp_sched_node_t;
+
 // Tables mapping operator enums to qstrs, defined in objtype.c
 extern const byte mp_unary_op_method_name[];
 extern const byte mp_binary_op_method_name[];
@@ -80,13 +89,14 @@ void mp_sched_lock(void);
 void mp_sched_unlock(void);
 #define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
+bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback);
 #endif
 
 // extra printing method specifically for mp_obj_t's which are integral type
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 
 void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig);
-static inline void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
+static MP_INLINE void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
     mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
 }
 void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
@@ -103,6 +113,9 @@ mp_int_t mp_arg_validate_int_max(mp_int_t i, mp_int_t j, qstr arg_name);
 mp_int_t mp_arg_validate_int_range(mp_int_t i, mp_int_t min, mp_int_t max, qstr arg_name);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_arg_validate_obj_float_non_negative(mp_obj_t float_in, mp_float_t default_for_null, qstr arg_name);
+mp_float_t mp_arg_validate_obj_float_range(mp_obj_t float_in, mp_int_t min, mp_int_t max, qstr arg_name);
+mp_float_t mp_arg_validate_float_range(mp_float_t float_in, mp_int_t min, mp_int_t max, qstr arg_name);
+mp_float_t mp_arg_validate_type_float(mp_obj_t obj, qstr arg_name);
 #endif
 mp_uint_t mp_arg_validate_length_min(mp_uint_t length, mp_uint_t min, qstr arg_name);
 mp_uint_t mp_arg_validate_length_max(mp_uint_t length, mp_uint_t max, qstr arg_name);
@@ -115,16 +128,16 @@ mp_obj_t mp_arg_validate_type_or_none(mp_obj_t obj, const mp_obj_type_t *type, q
 mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name);
 mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name);
 
-static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_locals_get)(void) {
+static MP_INLINE mp_obj_dict_t *mp_locals_get(void) {
     return MP_STATE_THREAD(dict_locals);
 }
-static inline void PLACE_IN_ITCM(mp_locals_set)(mp_obj_dict_t * d) {
+static MP_INLINE void mp_locals_set(mp_obj_dict_t *d) {
     MP_STATE_THREAD(dict_locals) = d;
 }
-static inline mp_obj_dict_t *PLACE_IN_ITCM(mp_globals_get)(void) {
+static MP_INLINE mp_obj_dict_t *mp_globals_get(void) {
     return MP_STATE_THREAD(dict_globals);
 }
-static inline void PLACE_IN_ITCM(mp_globals_set)(mp_obj_dict_t * d) {
+static MP_INLINE void mp_globals_set(mp_obj_dict_t *d) {
     MP_STATE_THREAD(dict_globals) = d;
 }
 
@@ -181,7 +194,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATIO
 mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
-static inline mp_obj_t mp_make_stop_iteration(mp_obj_t o) {
+static MP_INLINE mp_obj_t mp_make_stop_iteration(mp_obj_t o) {
     MP_STATE_THREAD(stop_iteration_arg) = o;
     return MP_OBJ_STOP_ITERATION;
 }
@@ -216,6 +229,7 @@ NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
 NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_AttributeError(const compressed_string_t *msg);
 NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
+NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError_varg(const compressed_string_t *msg, ...);

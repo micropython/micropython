@@ -140,4 +140,4 @@ const mp_obj_module_t neopixel_write_module = {
     .globals = (mp_obj_dict_t *)&neopixel_write_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_neopixel_write, neopixel_write_module, CIRCUITPY_NEOPIXEL_WRITE);
+MP_REGISTER_MODULE(MP_QSTR_neopixel_write, neopixel_write_module);

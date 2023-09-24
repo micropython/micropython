@@ -95,7 +95,6 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enable
     }
 
     if (enabled) {
-        esp_nimble_hci_and_controller_init();
         nimble_port_init();
         // ble_hs_cfg.reset_cb = blecent_on_reset;
         ble_hs_cfg.sync_cb = _on_sync;
@@ -142,8 +141,7 @@ bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *s
         return NULL;
     }
 
-    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
+    bleio_address_obj_t *address = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
     common_hal_bleio_address_construct(address, address_bytes, BLEIO_ADDRESS_TYPE_RANDOM_STATIC);
     return address;
 }
@@ -221,7 +219,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
-            mp_raise_bleio_BluetoothError(translate("Scan already in progess. Stop with stop_scan."));
+            mp_raise_bleio_BluetoothError(translate("Scan already in progress. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }

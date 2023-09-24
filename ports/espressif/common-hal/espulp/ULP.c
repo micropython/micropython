@@ -28,7 +28,6 @@
 #include "bindings/espulp/ULP.h"
 
 #include "py/runtime.h"
-
 #include "shared-bindings/microcontroller/Pin.h"
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
@@ -36,11 +35,11 @@
 #define ULP_COPROC_RESERVE_MEM (CONFIG_ESP32_ULP_COPROC_RESERVE_MEM)
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
 #include "esp32s2/ulp.h"
-#include "esp32s2/ulp_riscv.h"
+#include "ulp_riscv.h"
 #define ULP_COPROC_RESERVE_MEM (CONFIG_ESP32S2_ULP_COPROC_RESERVE_MEM)
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
 #include "esp32s3/ulp.h"
-#include "esp32s3/ulp_riscv.h"
+#include "ulp_riscv.h"
 #define ULP_COPROC_RESERVE_MEM (CONFIG_ESP32S3_ULP_COPROC_RESERVE_MEM)
 #endif
 
@@ -56,7 +55,7 @@ void espulp_reset(void) {
 }
 
 void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t pin_mask) {
-    if (length > ULP_COPROC_RESERVE_MEM) {
+    if (length > CONFIG_ULP_COPROC_RESERVE_MEM) {
         mp_raise_ValueError(translate("Program too long"));
     }
 
@@ -91,16 +90,18 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
     ulp_set_wakeup_period(0, 20000);
 
     switch (self->arch) {
+        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
         case FSM:
             ulp_load_binary(0, (const uint8_t *)program, length);
             ulp_run(0);
             break;
+        #endif
+        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
         case RISCV:
-            #ifndef CONFIG_IDF_TARGET_ESP32
             ulp_riscv_load_binary((const uint8_t *)program, length);
             ulp_riscv_run();
             break;
-            #endif
+        #endif
         default:
             mp_raise_NotImplementedError(NULL);
             break;
@@ -108,22 +109,23 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
 }
 
 void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
-    #ifdef CONFIG_IDF_TARGET_ESP32
-    mp_raise_NotImplementedError(NULL);
-    #else
-    // To-do idf v5.0: use following functions
-    // ulp_riscv_timer_stop();
-    // ulp_riscv_halt();
-
-    // stop the ulp timer so that it doesn't restart the cpu
-    CLEAR_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
-
-    // suspends the ulp operation
-    SET_PERI_REG_MASK(RTC_CNTL_COCPU_CTRL_REG, RTC_CNTL_COCPU_DONE);
-
-    // resets the processor
-    SET_PERI_REG_MASK(RTC_CNTL_COCPU_CTRL_REG, RTC_CNTL_COCPU_SHUT_RESET_EN);
-    #endif
+    switch (self->arch) {
+        /*
+        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
+        case FSM:
+            break;
+        #endif
+        */
+        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
+        case RISCV:
+            ulp_riscv_timer_stop();
+            ulp_riscv_halt();
+            break;
+        #endif
+        default:
+            mp_raise_NotImplementedError(NULL);
+            break;
+    }
 
     // Release pins we were using.
     for (uint8_t i = 0; i < 32; i++) {
@@ -141,11 +143,19 @@ void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self, espulp_architecture
         mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_ULP);
     }
 
-    #ifdef CONFIG_IDF_TARGET_ESP32
-    if (self->arch == RISCV) {
-        mp_raise_NotImplementedError(NULL);
+    switch (arch) {
+        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
+        case FSM:
+            break;
+        #endif
+        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
+        case RISCV:
+            break;
+        #endif
+        default:
+            mp_raise_NotImplementedError(NULL);
+            break;
     }
-    #endif
 
     self->arch = arch;
     self->inited = true;

@@ -1,0 +1,73 @@
+# Silicon Labs Project Configuration Tools: slcp, v0, Component selection file.
+description: |
+  A project structure used as a configuration for CircuitPython + Custom Bluetooth + Standard DMP (Dynamic Multiprotocol) applications. It runs on top of FreeRTOS and multiprotocol RAIL utilizing IEEE 802.15.4 standard protocol.
+filter:
+- name: Capability
+  value: [Multiprotocol]
+- name: Device Type
+  value: [SoC]
+- name: Project Difficulty
+  value: [Advanced]
+- name: Wireless Technology
+  value: [Bluetooth]
+package: Bluetooth
+quality: production
+tag: ['hardware:rf:band:2400', 'hardware:device:ram:64']
+sdk: {id: gecko_sdk, version: 4.2.1}
+toolchain_settings: []
+sdk_extension:
+- id: cp_efr32
+  version: 1.0.0
+component:
+- {id: bluetooth_feature_nvm}
+- {id: bluetooth_feature_gatt_server}
+- {id: bluetooth_feature_sm}
+- {id: mpu}
+- {id: bluetooth_feature_legacy_advertiser}
+- {id: bluetooth_feature_legacy_scanner}
+- {id: gatt_configuration}
+- {id: freertos}
+- {id: bluetooth_stack}
+- {id: bluetooth_feature_gatt}
+- {id: uartdrv_core}
+- {id: i2cspm_core}
+- {id: spidrv_core}
+- {id: pwm_core}
+- {id: emlib_usart}
+- {id: emlib_vdac}
+- {id: emlib_iadc}
+- {id: nvm3_lib}
+- {id: nvm3_default}
+- {id: tempdrv}
+- {id: sleeptimer}
+- {id: emlib_wdog}
+- {id: bluetooth_feature_connection}
+- {id: bluetooth_feature_dynamic_gattdb}
+- {id: bluetooth_feature_system}
+- {id: bluetooth_feature_scanner}
+- {id: component_catalog}
+- {id: app_assert}
+requires:
+- condition: [brd2601b]
+  name: custom_brd2601b_cp_support
+- condition: [brd2704a]
+  name: custom_brd2704a_cp_support
+- condition: [brd2703a]
+  name: custom_brd2703a_cp_support
+configuration:
+- {name: SL_SLEEPTIMER_WALLCLOCK_CONFIG, value: '1'}
+- {name: NVM3_DEFAULT_MAX_OBJECT_SIZE, value: '512'}
+- {name: SL_STACK_SIZE, value: '2752'}
+- {name: SL_HEAP_SIZE, value: '11000'}
+- name: SL_POWER_MANAGER_LOWEST_EM_ALLOWED
+  value: '1'
+- {name: configTOTAL_HEAP_SIZE, value: '8192'}
+- {name: configTIMER_TASK_PRIORITY, value: '55'}
+- {name: configTIMER_TASK_STACK_DEPTH, value: '160'}
+- condition: [psa_crypto]
+  name: SL_PSA_KEY_USER_SLOT_COUNT
+  value: '0'
+- {name: APP_LOG_PREFIX_ENABLE, value: '0'}
+ui_hints:
+  highlight:
+  - {path: config/btconf/gatt_configuration.btconf}

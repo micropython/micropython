@@ -58,8 +58,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
 
     mp_arg_validate_length_range(data.len, 0, 8, MP_QSTR_data);
 
-    canio_message_obj_t *self = m_new_obj(canio_message_obj_t);
-    self->base.type = &canio_message_type;
+    canio_message_obj_t *self = mp_obj_malloc(canio_message_obj_t, &canio_message_type);
     common_hal_canio_message_construct(self, args[ARG_id].u_int, data.buf, data.len, args[ARG_extended].u_bool);
     return self;
 }

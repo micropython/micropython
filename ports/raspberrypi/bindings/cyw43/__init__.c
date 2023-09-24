@@ -84,7 +84,7 @@ const mp_obj_type_t cyw43_pin_type = {
 //|     The low 4 bits, ``m``, are the power management mode:
 //|      * 0: disabled
 //|      * 1: aggressive power saving which reduces wifi throughput
-//|      * 2: Power saving with high througput
+//|      * 2: Power saving with high throughput
 //|
 //|     The next 8 bits, ``r``, specify "the maximum time to wait before going back to sleep" for power management mode 2. The units of ``r`` are 10ms.
 //|
@@ -155,4 +155,4 @@ const mp_obj_module_t cyw43_module = {
     .globals = (mp_obj_dict_t *)&cyw43_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_cyw43, cyw43_module, CIRCUITPY_CYW43);
+MP_REGISTER_MODULE(MP_QSTR_cyw43, cyw43_module);

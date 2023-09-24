@@ -36,25 +36,30 @@
 
 #include "fsl_device_registers.h"
 
+#if CIRCUITPY_AUDIOBUSIO
+#include "common-hal/audiobusio/__init__.h"
+#endif
+
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/SPI.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-#include "reset.h"
-
-#include "supervisor/background_callback.h"
-
 #if CIRCUITPY_PEW
 #include "shared-module/_pew/PewPew.h"
 #endif
+
+#include "reset.h"
+
+#include "supervisor/background_callback.h"
+#include "supervisor/linker.h"
 #include "supervisor/shared/tick.h"
 
 #include "clocks.h"
 
-#include "fsl_gpio.h"
-#include "fsl_lpuart.h"
+#include "sdk/drivers/igpio/fsl_gpio.h"
+#include "sdk/drivers/lpuart/fsl_lpuart.h"
 
 // Device memories must be accessed in order.
 #define DEVICE 2
@@ -84,11 +89,13 @@ extern uint32_t _ld_stack_top;
 
 extern uint32_t __isr_vector[];
 
+extern uint32_t _ld_ocram_start;
 extern uint32_t _ld_ocram_bss_start;
 extern uint32_t _ld_ocram_bss_size;
 extern uint32_t _ld_ocram_data_destination;
 extern uint32_t _ld_ocram_data_size;
 extern uint32_t _ld_ocram_data_flash_copy;
+extern uint32_t _ld_ocram_end;
 extern uint32_t _ld_dtcm_bss_start;
 extern uint32_t _ld_dtcm_bss_size;
 extern uint32_t _ld_dtcm_data_destination;
@@ -97,15 +104,24 @@ extern uint32_t _ld_dtcm_data_flash_copy;
 extern uint32_t _ld_itcm_destination;
 extern uint32_t _ld_itcm_size;
 extern uint32_t _ld_itcm_flash_copy;
+extern uint32_t _ld_isr_destination;
+extern uint32_t _ld_isr_size;
+extern uint32_t _ld_isr_flash_copy;
 
 extern void main(void);
 
 // This replaces the Reset_Handler in startup_*.S and SystemInit in system_*.c.
+// Turn off optimize("no-tree-loop-distribute-patterns") so that this isn't replaced
+// by calls to memcpy because we're copying it over now.
 void Reset_Handler(void);
-__attribute__((used, naked)) void Reset_Handler(void) {
+__attribute__((used, naked, no_instrument_function, optimize("no-tree-loop-distribute-patterns"))) void Reset_Handler(void) {
     __disable_irq();
-    SCB->VTOR = (uint32_t)&__isr_vector;
+    // Set the VTOR to the flash copy since we haven't copied it into RAM.
+    SCB->VTOR = (uint32_t)&_ld_isr_flash_copy;
     __set_MSP((uint32_t)&_ld_stack_top);
+
+    // Turn off any residual ITM outputs.
+    ITM->TER = 0;
 
     /* Disable I cache and D cache */
     SCB_DisableICache();
@@ -115,24 +131,39 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     // then the return will jump to an invalid address.
     // Configure FlexRAM. The e is one block of ITCM (0b11) and DTCM (0b10). The rest is two OCRAM
     // (0b01). We shift in zeroes for all unimplemented banks.
-    IOMUXC_GPR->GPR17 = (0xe5555555) >> (32 - 2 * FSL_FEATURE_FLEXRAM_INTERNAL_RAM_TOTAL_BANK_NUMBERS);
+    uint32_t flexram_config = (0xe5555555) >> (32 - 2 * FSL_FEATURE_FLEXRAM_INTERNAL_RAM_TOTAL_BANK_NUMBERS);
+    // imxrt1176 splits the config across two registers.
+    #ifdef IOMUXC_GPR_GPR17_FLEXRAM_BANK_CFG_LOW_MASK
+    IOMUXC_GPR->GPR17 = flexram_config & IOMUXC_GPR_GPR17_FLEXRAM_BANK_CFG_LOW_MASK;
+    IOMUXC_GPR->GPR18 = (flexram_config >> 16) & IOMUXC_GPR_GPR18_FLEXRAM_BANK_CFG_HIGH_MASK;
+    #else
+    IOMUXC_GPR->GPR17 = flexram_config;
+    #endif
 
     // Switch from FlexRAM fuse config to the IOMUXC values.
     IOMUXC_GPR->GPR16 |= IOMUXC_GPR_GPR16_FLEXRAM_BANK_CFG_SEL(1);
 
     // Let the core know the TCM sizes changed.
+    #ifdef IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK
     uint32_t current_gpr14 = IOMUXC_GPR->GPR14;
     current_gpr14 &= ~IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ_MASK;
     current_gpr14 |= IOMUXC_GPR_GPR14_CM7_CFGDTCMSZ(0x6);
     current_gpr14 &= ~IOMUXC_GPR_GPR14_CM7_CFGITCMSZ_MASK;
     current_gpr14 |= IOMUXC_GPR_GPR14_CM7_CFGITCMSZ(0x6);
     IOMUXC_GPR->GPR14 = current_gpr14;
+    #endif
+
+    // Enable FlexRAM interrupts on invalid access.
+    FLEXRAM->INT_STAT_EN = FLEXRAM_INT_STAT_EN_ITCM_ERR_STAT_EN(1) |
+        FLEXRAM_INT_STAT_EN_DTCM_ERR_STAT_EN(1) |
+        FLEXRAM_INT_STAT_EN_OCRAM_ERR_STAT_EN(1);
 
     #if ((__FPU_PRESENT == 1) && (__FPU_USED == 1))
     SCB->CPACR |= ((3UL << 10 * 2) | (3UL << 11 * 2));  /* set CP10, CP11 Full Access */
     #endif /* ((__FPU_PRESENT == 1) && (__FPU_USED == 1)) */
 
     /* Disable Watchdog Power Down Counter */
+    #if defined(RTWDOG)
     WDOG1->WMCR &= ~WDOG_WMCR_PDE_MASK;
     WDOG2->WMCR &= ~WDOG_WMCR_PDE_MASK;
 
@@ -142,6 +173,32 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     RTWDOG->CNT = 0xD928C520U; /* 0xD928C520U is the update key */
     RTWDOG->TOVAL = 0xFFFF;
     RTWDOG->CS = (uint32_t)((RTWDOG->CS) & ~RTWDOG_CS_EN_MASK) | RTWDOG_CS_UPDATE_MASK;
+    #endif
+
+    #if defined(RTWDOG3)
+    if ((WDOG1->WCR & WDOG_WCR_WDE_MASK) != 0U) {
+        WDOG1->WCR &= ~(uint16_t)WDOG_WCR_WDE_MASK;
+    }
+    if ((WDOG2->WCR & WDOG_WCR_WDE_MASK) != 0U) {
+        WDOG2->WCR &= ~(uint16_t)WDOG_WCR_WDE_MASK;
+    }
+    if ((RTWDOG3->CS & RTWDOG_CS_CMD32EN_MASK) != 0U) {
+        RTWDOG3->CNT = 0xD928C520U; /* 0xD928C520U is the update key */
+    } else {
+        RTWDOG3->CNT = 0xC520U;
+        RTWDOG3->CNT = 0xD928U;
+    }
+    RTWDOG3->TOVAL = 0xFFFF;
+    RTWDOG3->CS = (uint32_t)((RTWDOG3->CS) & ~RTWDOG_CS_EN_MASK) | RTWDOG_CS_UPDATE_MASK;
+    if ((RTWDOG4->CS & RTWDOG_CS_CMD32EN_MASK) != 0U) {
+        RTWDOG4->CNT = 0xD928C520U; /* 0xD928C520U is the update key */
+    } else {
+        RTWDOG4->CNT = 0xC520U;
+        RTWDOG4->CNT = 0xD928U;
+    }
+    RTWDOG4->TOVAL = 0xFFFF;
+    RTWDOG4->CS = (uint32_t)((RTWDOG4->CS) & ~RTWDOG_CS_EN_MASK) | RTWDOG_CS_UPDATE_MASK;
+    #endif
 
     /* Disable Systick which might be enabled by bootrom */
     if (SysTick->CTRL & SysTick_CTRL_ENABLE_Msk) {
@@ -157,6 +214,13 @@ __attribute__((used, naked)) void Reset_Handler(void) {
         (&_ld_itcm_destination)[i] = (&_ld_itcm_flash_copy)[i];
     }
 
+    for (uint32_t i = 0; i < ((size_t)&_ld_isr_size) / 4; i++) {
+        (&_ld_isr_destination)[i] = (&_ld_isr_flash_copy)[i];
+    }
+
+    // Now that we've copied the ISR table over, use that VTOR.
+    SCB->VTOR = (uint32_t)&_ld_isr_destination;
+
     // The first number in RBAR is the region number. When searching for a policy, the region with
     // the highest number wins. If none match, then the default policy set at enable applies.
 
@@ -170,14 +234,22 @@ __attribute__((used, naked)) void Reset_Handler(void) {
 
     // FlexSPI2 is 0x70000000
 
-    // This the first 1MB of flash is the bootloader and CircuitPython read-only data.
-    MPU->RBAR = ARM_MPU_RBAR(10, 0x60000000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_1MB);
+    // This the first portion (1MB, 2MB or 4MB) of flash is the bootloader and CircuitPython read-only data.
+    #if !defined(FlexSPI_AMBA_BASE)
+    #define FlexSPI_AMBA_BASE FlexSPI1_AMBA_BASE
+    #endif
+    MPU->RBAR = ARM_MPU_RBAR(10, FlexSPI_AMBA_BASE);
+    uint32_t region_size = ARM_MPU_REGION_SIZE_32B;
+    uint32_t code_size = ((uint32_t)&_ld_filesystem_start) - FlexSPI_AMBA_BASE;
+    while (code_size > (1u << (region_size + 1))) {
+        region_size += 1;
+    }
+    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, region_size);
 
     // The remainder of flash is the fat filesystem which could have code on it too. Make sure that
     // we set the region to the minimal size so that bad data doesn't get speculatively fetched.
     // Thanks to Damien for the tip!
-    uint32_t region_size = ARM_MPU_REGION_SIZE_32B;
+    region_size = ARM_MPU_REGION_SIZE_32B;
     uint32_t filesystem_size = &_ld_filesystem_end - &_ld_filesystem_start;
     while (filesystem_size > (1u << (region_size + 1))) {
         region_size += 1;
@@ -189,7 +261,7 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     uint32_t subregion_size = (1u << (region_size + 1)) / 8;
     uint8_t subregion_mask = (0xff00 >> (remainder / subregion_size)) & 0xff;
 
-    MPU->RBAR = ARM_MPU_RBAR(11, 0x60100000U);
+    MPU->RBAR = ARM_MPU_RBAR(11, (size_t)&_ld_filesystem_start);
     MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, subregion_mask, region_size);
 
     // This the ITCM. Set it to read-only because we've loaded everything already and it's easy to
@@ -204,12 +276,18 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     // This is OCRAM. We mark it as shareable so that it isn't cached. This makes USB work at the
     // cost of 1/4 speed OCRAM accesses. It will leave more room for caching data from the flash
     // too which might be a net win.
-    MPU->RBAR = ARM_MPU_RBAR(14, 0x20200000U);
-    MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
+    MPU->RBAR = ARM_MPU_RBAR(14, ((uint32_t)&_ld_ocram_start));
+    MPU->RASR = ARM_MPU_RASR(NO_EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, NO_SUBREGIONS, ARM_MPU_REGION_SIZE_512KB);
 
+    #if IMXRT10XX
     // We steal 64k from FlexRAM for ITCM and DTCM so disable those memory regions here.
-    MPU->RBAR = ARM_MPU_RBAR(15, 0x20280000U);
+    // We use 64k from FlexRAM for ITCM and DTCM so disable those memory regions here.
+    MPU->RBAR = ARM_MPU_RBAR(15, ((uint32_t)&_ld_ocram_end));
     MPU->RASR = ARM_MPU_RASR(EXECUTION, ARM_MPU_AP_FULL, NORMAL, NOT_SHAREABLE, CACHEABLE, BUFFERABLE, 0x80, ARM_MPU_REGION_SIZE_512KB);
+    #else
+    // On the iMX RT 11xx OCRAM is not flexram (for now). So no need to mask it off.
+    #endif
+
 
     /* Enable MPU */
     ARM_MPU_Enable(MPU_CTRL_PRIVDEFENA_Msk);
@@ -239,13 +317,101 @@ __attribute__((used, naked)) void Reset_Handler(void) {
     }
 
     __enable_irq();
+
     main();
 }
 
+void __attribute__((no_instrument_function, section(".itcm.profile_enter"), long_call)) __cyg_profile_func_enter(void *this_fn,
+    void *call_site) {
+    if ((ITM->TER & (1 << 3)) == 0) {
+        return;
+    }
+    uint32_t addr = (uint32_t)this_fn;
+    while (ITM->PORT[3U].u32 == 0UL) {
+        // addr |= 1;
+    }
+    ITM->PORT[3].u32 = addr;
+}
+
+void __attribute__((no_instrument_function, section(".itcm.profile_exit"), long_call)) __cyg_profile_func_exit(void *this_fn,
+    void *call_site) {
+    if ((ITM->TER & (1 << 4)) == 0) {
+        return;
+    }
+    uint32_t addr = (uint32_t)this_fn;
+    while (ITM->PORT[4U].u32 == 0UL) {
+        // addr |= 1;
+    }
+    ITM->PORT[4].u32 = addr;
+}
+
 safe_mode_t port_init(void) {
+    #if IMXRT10XX
     CLOCK_SetMode(kCLOCK_ModeRun);
+    #endif
 
     clocks_init();
+
+    // Turn on the DWT so that neopixel_write can use CYCCNT for timing.
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CTRL = 0x2 << DWT_CTRL_SYNCTAP_Pos | DWT_CTRL_CYCCNTENA_Msk;
+
+    // Enable SWO if needed.
+    #if CIRCUITPY_SWO_TRACE
+
+    // Turn on the 528 MHz clock to the TPIU.
+    CLOCK_EnableClock(kCLOCK_Trace); /* Make these edits*/
+    /* Set TRACE_PODF. */
+    CLOCK_SetDiv(kCLOCK_TraceDiv, 0); /* Make these edits*/
+    /* Set Trace clock source. */
+    CLOCK_SetMux(kCLOCK_TraceMux, 0); /* Make these edits*/
+
+    ITM->TCR = ITM_TCR_TSENA_Msk | ITM_TCR_ITMENA_Msk | ITM_TCR_SYNCENA_Msk | ITM_TCR_DWTENA_Msk;
+
+    // Run at 2.75 mbaud. CP2102N says it can do up to 3.
+    // Base clock is 528 mhz (not 500 like the core).
+    // TPI->ACPR = 191;
+    // Run at 1 mbaud so that USB isn't bottlenecked.
+    TPI->ACPR = 527;
+    TPI->SPPR = 0x2; // NRZ aka UART
+    TPI->FFCR = 0;
+
+    IOMUXC_SetPinMux( /* Add these lines*/
+        IOMUXC_GPIO_AD_09_ARM_TRACE_SWO,
+        0U);
+    IOMUXC_SetPinConfig( /* Add these lines*/
+        IOMUXC_GPIO_AD_09_ARM_TRACE_SWO,
+        0x00F9U);
+
+    // Enable ports 0-4:
+    // * 0 is serial output
+    // *
+    // * 3 is addresses of functions beginning.
+    // * 4 is addresses of functions ending.
+    ITM->TER |= 0x1f;
+    ITM->PORT[0].u8 = 'C';
+    ITM->PORT[0].u8 = 'P';
+    ITM->PORT[0].u8 = '\n';
+    #endif
+
+    // Set all peripheral interrupt priorities to the lowest priority by default.
+    for (uint16_t i = 0; i < NUMBER_OF_INT_VECTORS; i++) {
+        NVIC_SetPriority(i, (1UL << __NVIC_PRIO_BITS) - 1UL);
+    }
+    #ifdef MIMXRT1042_SERIES
+    #define USB_OTG1_IRQn USB_OTG_IRQn
+    #endif
+    NVIC_SetPriority(USB_OTG1_IRQn, 1);
+    #ifdef USBPHY2
+    NVIC_SetPriority(USB_OTG2_IRQn, 1);
+    #endif
+
+    NVIC_SetPriority(FLEXRAM_IRQn, 0);
+    NVIC_EnableIRQ(FLEXRAM_IRQn);
+
+    // Priorities 8+ will be disabled during flash operations. To run during
+    // flash operations, ensure all code is in RAM (not flash) and set the
+    // priority < 8.
 
     #if CIRCUITPY_RTC
     rtc_init();
@@ -253,7 +419,21 @@ safe_mode_t port_init(void) {
 
     // Always enable the SNVS interrupt. The GPC won't wake us up unless at least one interrupt is
     // enabled. It won't occur very often so it'll be low overhead.
+    #if IMXRT11XX
+    NVIC_EnableIRQ(SNVS_HP_NON_TZ_IRQn);
+    #else
     NVIC_EnableIRQ(SNVS_HP_WRAPPER_IRQn);
+    #endif
+
+    #if IMXRT11XX
+    /* Save SRSR to another register so we can read it later. */
+    SRC->GPR[11] = SRC->SRSR;
+    SRC->SRSR = 0xFFFFFFFFU;
+
+    if ((SRC->GPR[11] & SRC_SRSR_M7_LOCKUP_M7_MASK) != 0) {
+        return SAFE_MODE_HARD_FAULT;
+    }
+    #endif
 
     // Note that `reset_port` CANNOT GO HERE, unlike other ports, because `board_init` hasn't been
     // run yet, which uses `never_reset` to protect critical pins from being reset by  `reset_port`.
@@ -266,15 +446,16 @@ safe_mode_t port_init(void) {
 }
 
 void reset_port(void) {
+    #if CIRCUITPY_BUSIO
     spi_reset();
+    #endif
 
     #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
     audioout_reset();
     #endif
     #if CIRCUITPY_AUDIOBUSIO
-    i2sout_reset();
-    // pdmin_reset();
+    i2s_reset();
     #endif
 
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
@@ -305,7 +486,7 @@ void reset_to_bootloader(void) {
     reset();
 }
 
-void reset_cpu(void) {
+void PLACE_IN_ITCM(reset_cpu)(void) {
     reset();
 }
 
@@ -332,7 +513,7 @@ uint32_t *port_heap_get_top(void) {
 }
 
 // Place the word into the low power section of the SNVS.
-void port_set_saved_word(uint32_t value) {
+void PLACE_IN_ITCM(port_set_saved_word)(uint32_t value) {
     SNVS->LPGPR[1] = value;
 }
 
@@ -353,9 +534,15 @@ uint64_t port_get_raw_ticks(uint8_t *subticks) {
     return ticks / 32;
 }
 
+#if IMXRT10XX
 void SNVS_HP_WRAPPER_IRQHandler(void);
 __attribute__((used))
-void SNVS_HP_WRAPPER_IRQHandler(void) {
+void PLACE_IN_ITCM(SNVS_HP_WRAPPER_IRQHandler)(void) {
+#else
+void SNVS_HP_NON_TZ_IRQHandler(void);
+__attribute__((used))
+void PLACE_IN_ITCM(SNVS_HP_NON_TZ_IRQHandler)(void) {
+    #endif
     if ((SNVS->HPSR & SNVS_HPSR_PI_MASK) != 0) {
         supervisor_tick();
         SNVS->HPSR = SNVS_HPSR_PI_MASK;
@@ -408,50 +595,53 @@ void port_idle_until_interrupt(void) {
 
     common_hal_mcu_disable_interrupts();
     if (!background_callback_pending()) {
+        #if IMXRT11XX
+        NVIC_ClearPendingIRQ(SNVS_HP_NON_TZ_IRQn);
+        #else
         NVIC_ClearPendingIRQ(SNVS_HP_WRAPPER_IRQn);
+        #endif
         __WFI();
     }
     common_hal_mcu_enable_interrupts();
 }
 
-/**
- * \brief Default interrupt handler for unused IRQs.
- */
+// Catch faults where the memory access violates MPU settings.
 void MemManage_Handler(void);
-__attribute__((used)) void MemManage_Handler(void) {
+__attribute__((used)) void PLACE_IN_ITCM(MemManage_Handler)(void) {
     reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
 }
 
-/**
- * \brief Default interrupt handler for unused IRQs.
- */
 void BusFault_Handler(void);
-__attribute__((used)) void BusFault_Handler(void) {
+__attribute__((used)) void PLACE_IN_ITCM(BusFault_Handler)(void) {
     reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
 }
 
-/**
- * \brief Default interrupt handler for unused IRQs.
- */
 void UsageFault_Handler(void);
-__attribute__((used)) void UsageFault_Handler(void) {
+__attribute__((used)) void PLACE_IN_ITCM(UsageFault_Handler)(void) {
     reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");
     }
 }
 
-/**
- * \brief Default interrupt handler for unused IRQs.
- */
+// Default fault handler.
 void HardFault_Handler(void);
-__attribute__((used)) void HardFault_Handler(void) {
+__attribute__((used)) void PLACE_IN_ITCM(HardFault_Handler)(void) {
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+    while (true) {
+        asm ("nop;");
+    }
+}
+
+// Catch access errors to FlexRAM (if the MPU didn't catch it first.)
+void FLEXRAM_IRQHandler(void);
+__attribute__((used)) void PLACE_IN_ITCM(FLEXRAM_IRQHandler)(void) {
     reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
     while (true) {
         asm ("nop;");

@@ -84,7 +84,12 @@ void watchdog_reset(void) {
 static void wdt_config(uint32_t timeout, watchdog_watchdogmode_t mode) {
     // enable panic hanler in WATCHDOGMODE_RESET mode
     // initialize Task Watchdog Timer (TWDT)
-    if (esp_task_wdt_init(timeout, mode == WATCHDOGMODE_RESET) != ESP_OK) {
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = timeout,
+        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,    // Bitmask of all cores
+        .trigger_panic = (mode == WATCHDOGMODE_RESET),
+    };
+    if (esp_task_wdt_init(&twdt_config) != ESP_OK) {
         mp_raise_msg(&mp_type_MemoryError, NULL);
     }
     esp_task_wdt_add(NULL);

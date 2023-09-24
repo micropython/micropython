@@ -37,6 +37,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     // internal devices interrupt
     { MP_ROM_QSTR(MP_QSTR_SYS_INT), MP_ROM_PTR(&pin_GPIO35) },
 
+    // pmu AXP192
+    { MP_ROM_QSTR(MP_QSTR_PMU_N_VBUSEN), MP_ROM_PTR(&pin_GPIO27) },
+
     // pdm microphone
     { MP_ROM_QSTR(MP_QSTR_PDM_MIC_CLK), MP_ROM_PTR(&pin_GPIO0) },
     { MP_ROM_QSTR(MP_QSTR_PDM_MIC_DATA), MP_ROM_PTR(&pin_GPIO34) },

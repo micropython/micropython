@@ -72,7 +72,7 @@ STATIC void close_file(file_arg *active_file) {
     // nothing
 }
 STATIC bool is_eof(file_arg *active_file) {
-    return f_eof(active_file);
+    return f_eof(active_file) || f_error(active_file);
 }
 
 // Return 0 if there is no next character (EOF).
@@ -316,7 +316,7 @@ STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, si
 
 STATIC void print_dont_raise(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_vcprintf(&mp_plat_print, fmt, argptr);
     mp_printf(&mp_plat_print, "\n");
     va_end(argptr);

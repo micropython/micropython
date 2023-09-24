@@ -215,13 +215,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         if (receiver_buffer != NULL) {
             ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
         } else {
-            // Initially allocate the UART's buffer in the long-lived part of the
-            // heap.  UARTs are generally long-lived objects, but the "make long-
-            // lived" machinery is incapable of moving internal pointers like
-            // self->buffer, so do it manually.  (However, as long as internal
-            // pointers like this are NOT moved, allocating the buffer
-            // in the long-lived pool is not strictly necessary)
-            if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
+            if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size)) {
                 nrfx_uarte_uninit(self->uarte);
                 m_malloc_fail(receiver_buffer_size);
             }
@@ -290,7 +284,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (nrf_uarte_rx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED) {
-        mp_raise_ValueError(translate("No RX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
     }
 
     uint64_t start_ticks = supervisor_ticks_ms64();
@@ -340,7 +334,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (nrf_uarte_tx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED) {
-        mp_raise_ValueError(translate("No TX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
     }
 
     if (len == 0) {
@@ -352,7 +346,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
     if (!nrfx_is_in_ram(data)) {
         // Allocate long strings on the heap.
         if (len > 128 && gc_alloc_possible()) {
-            tx_buf = (uint8_t *)gc_alloc(len, false, false);
+            tx_buf = (uint8_t *)m_malloc(len);
         } else {
             tx_buf = alloca(len);
         }

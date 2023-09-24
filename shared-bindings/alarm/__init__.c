@@ -71,7 +71,7 @@
 
 //| wake_alarm: Optional[circuitpython_typing.Alarm]
 //| """The most recently triggered alarm. If CircuitPython was sleeping, the alarm that woke it from sleep.
-//| If no alarm occured since the last hard reset or soft restart, value is ``None``.
+//| If no alarm occurred since the last hard reset or soft restart, value is ``None``.
 //| """
 //|
 
@@ -312,4 +312,4 @@ MP_WEAK void common_hal_alarm_pretending_deep_sleep(void) {
     port_idle_until_interrupt();
 }
 
-MP_REGISTER_MODULE(MP_QSTR_alarm, alarm_module, CIRCUITPY_ALARM);
+MP_REGISTER_MODULE(MP_QSTR_alarm, alarm_module);

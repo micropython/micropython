@@ -36,8 +36,8 @@
 #include "hal/gpio_ll.h"
 #include "esp_debug_helpers.h"
 
-#include "components/driver/include/driver/rtc_io.h"
-#include "components/freertos/include/freertos/FreeRTOS.h"
+#include "driver/rtc_io.h"
+#include "freertos/FreeRTOS.h"
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {

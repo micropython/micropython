@@ -98,7 +98,10 @@ void i2sout_reset(void) {
 // Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
-    const mcu_pin_obj_t *data, bool left_justified) {
+    const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
+    if (main_clock != NULL) {
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_main_clock);
+    }
     uint8_t serializer = 0xff;
     uint8_t bc_clock_unit = 0xff;
     uint8_t ws_clock_unit = 0xff;

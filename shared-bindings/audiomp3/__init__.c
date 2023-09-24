@@ -33,7 +33,7 @@
 
 //| """Support for MP3-compressed audio files
 //|
-//| For more infomration about working with MP3 files in CircuitPython,
+//| For more information about working with MP3 files in CircuitPython,
 //| see `this CircuitPython Essentials Learn guide page
 //| <https://learn.adafruit.com/circuitpython-essentials/circuitpython-mp3-audio>`_.
 //| """
@@ -50,4 +50,4 @@ const mp_obj_module_t audiomp3_module = {
     .globals = (mp_obj_dict_t *)&audiomp3_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_audiomp3, audiomp3_module, CIRCUITPY_AUDIOMP3);
+MP_REGISTER_MODULE(MP_QSTR_audiomp3, audiomp3_module);

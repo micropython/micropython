@@ -187,8 +187,10 @@ MP_PROPERTY_GETSET(supervisor_runtime_ble_workflow_obj,
     (mp_obj_t)&supervisor_runtime_set_ble_workflow_obj);
 
 //|     next_stack_limit: int
-//|     """The size of the stack for the next vm run. If its too large, the default will be used."""
+//|     """The size of the stack for the next vm run. If its too large, the default will be used.
 //|
+//|     **Limitations**: Stack size is fixed at startup on the ``espressif`` port; setting this will have no effect.
+//|     """
 STATIC mp_obj_t supervisor_runtime_get_next_stack_limit(mp_obj_t self) {
     return mp_obj_new_int(get_next_stack_size());
 }
@@ -197,7 +199,11 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_next_stack_limit_obj, superviso
 STATIC mp_obj_t supervisor_runtime_set_next_stack_limit(mp_obj_t self, mp_obj_t size_obj) {
     mp_int_t size = mp_obj_get_int(size_obj);
     mp_arg_validate_int_min(size, 256, MP_QSTR_size);
-    set_next_stack_size(size);
+    if (!set_next_stack_size(size)) {
+        mp_raise_msg_varg(&mp_type_AttributeError,
+            MP_ERROR_TEXT("can't set attribute '%q'"),
+            MP_QSTR_next_stack_limit);
+    }
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(supervisor_runtime_set_next_stack_limit_obj, supervisor_runtime_set_next_stack_limit);

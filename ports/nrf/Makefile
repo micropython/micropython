@@ -208,11 +208,15 @@ UF2_FAMILY_ID_nrf52833 = 0x621E937A
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.combined.hex
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/firmware.elf: invalid-board
+else
 $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
 	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE) $(BUILD)
+endif
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -241,7 +245,7 @@ FLASHER ?=
 
 ifeq ($(FLASHER),)
 
-# Also update to bootloader settting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
+# Also update to bootloader setting to validate application and skip checksum ( app valid = 0x0001, crc = 0x0000 )
 flash: $(BUILD)/firmware.hex
 	nrfjprog --program $< --sectorerase -f $(MCU_VARIANT)
 	nrfjprog --erasepage $(BOOT_SETTING_ADDR) -f $(MCU_VARIANT)
@@ -309,8 +313,3 @@ $(BUILD)/firmware.espruino.zip: $(BUILD)/firmware.hex
 espruino-dfu-gen: $(BUILD)/firmware.espruino.zip
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

@@ -87,7 +87,8 @@ MP_WEAK void post_usb_init(void) {
 void usb_init(void) {
     init_usb_hardware();
 
-    tusb_init();
+    // Only init device. Host gets inited by the `usb_host` module common-hal.
+    tud_init(TUD_OPT_RHPORT);
 
     post_usb_init();
 
@@ -123,7 +124,7 @@ void usb_set_defaults(void) {
 };
 
 #if CIRCUITPY_USB_IDENTIFICATION
-supervisor_allocation *usb_identification_allocation;
+supervisor_allocation *usb_identification_allocation = NULL;
 #endif
 
 // Some dynamic USB data must be saved after boot.py. How much is needed?
@@ -199,7 +200,7 @@ void usb_disconnect(void) {
 
 void usb_background(void) {
     if (usb_enabled()) {
-        #if CFG_TUSB_OS == OPT_OS_NONE
+        #if CFG_TUSB_OS == OPT_OS_NONE || CFG_TUSB_OS == OPT_OS_PICO
         tud_task();
         #if CIRCUITPY_USB_HOST
         tuh_task();
@@ -220,18 +221,22 @@ static void usb_background_do(void *unused) {
     usb_background();
 }
 
-void usb_background_schedule(void) {
+void PLACE_IN_ITCM(usb_background_schedule)(void) {
     background_callback_add(&usb_callback, usb_background_do, NULL);
 }
 
-void usb_irq_handler(int instance) {
+void PLACE_IN_ITCM(usb_irq_handler)(int instance) {
+    #if CFG_TUSB_MCU != OPT_MCU_RP2040
+    // For rp2040, IRQ handler is already installed and invoked automatically
     if (instance == CIRCUITPY_USB_DEVICE_INSTANCE) {
         tud_int_handler(instance);
-    } else if (instance == CIRCUITPY_USB_HOST_INSTANCE) {
-        #if CIRCUITPY_USB_HOST
-        tuh_int_handler(instance);
-        #endif
     }
+    #if CIRCUITPY_USB_HOST
+    else if (instance == CIRCUITPY_USB_HOST_INSTANCE) {
+        tuh_int_handler(instance);
+    }
+    #endif
+    #endif
 
     usb_background_schedule();
 }

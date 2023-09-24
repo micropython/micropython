@@ -47,8 +47,7 @@
 
 STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
     size_t n_kw, const mp_obj_t *all_args) {
-    aesio_aes_obj_t *self = m_new_obj(aesio_aes_obj_t);
-    self->base.type = &aesio_aes_type;
+    aesio_aes_obj_t *self = mp_obj_malloc(aesio_aes_obj_t, &aesio_aes_type);
 
     enum { ARG_key, ARG_mode, ARG_IV, ARG_counter, ARG_segment_size };
     static const mp_arg_t allowed_args[] = {
@@ -170,7 +169,7 @@ STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
 //|
 //|         For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
 //|         buffers must be a multiple of 16 bytes, and must be equal length.  For
-//|         CTX mode, there are no restrictions."""
+//|         CTR mode, there are no restrictions."""
 //|         ...
 STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t self_in, mp_obj_t src, mp_obj_t dest) {
     aesio_aes_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -192,7 +191,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj, aesio_aes_encrypt_i
 //|         """Decrypt the buffer from ``src`` into ``dest``.
 //|         For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
 //|         buffers must be a multiple of 16 bytes, and must be equal length.  For
-//|         CTX mode, there are no restrictions."""
+//|         CTR mode, there are no restrictions."""
 //|         ...
 //|
 STATIC mp_obj_t aesio_aes_decrypt_into(mp_obj_t self_in, mp_obj_t src, mp_obj_t dest) {

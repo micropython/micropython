@@ -63,7 +63,7 @@
 //|         """
 //|         Configure and initialize a camera with the given properties
 //|
-//|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``settings.toml`` be large enough to hold the camera frambuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError or an IDFError, this probably indicates the setting is too small and should be increased.
+//|         This driver requires that the ``CIRCUITPY_RESERVED_PSRAM`` in ``settings.toml`` be large enough to hold the camera framebuffer(s). Generally, boards with built-in cameras will have a default setting that is large enough. If the constructor raises a MemoryError or an IDFError, this probably indicates the setting is too small and should be increased.
 //|
 //|
 //|         .. important::
@@ -89,7 +89,7 @@
 //|         :param reset_pin: The reset input to the camera module
 //|         :param pixel_format: The pixel format of the captured image
 //|         :param frame_size: The size of captured image
-//|         :param jpeg_quality: For `PixelFormat.JPEG`, the quality. Higher numbers increase quality. If the quality is too high, the JPEG data will be larger than the availalble buffer size and the image will be unusable or truncated. The exact range of appropriate values depends on the sensor and must be determined empirically.
+//|         :param jpeg_quality: For `PixelFormat.JPEG`, the quality. Higher numbers increase quality. If the quality is too high, the JPEG data will be larger than the available buffer size and the image will be unusable or truncated. The exact range of appropriate values depends on the sensor and must be determined empirically.
 //|         :param framebuffer_count: The number of framebuffers (1 for single-buffered and 2 for double-buffered)
 //|         :param grab_mode: When to grab a new frame
 //|         """
@@ -143,8 +143,7 @@ STATIC mp_obj_t espcamera_camera_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_int_t jpeg_quality = mp_arg_validate_int_range(args[ARG_jpeg_quality].u_int, 2, 55, MP_QSTR_jpeg_quality);
     mp_int_t framebuffer_count = mp_arg_validate_int_range(args[ARG_framebuffer_count].u_int, 1, 2, MP_QSTR_framebuffer_count);
 
-    espcamera_camera_obj_t *self = m_new_obj(espcamera_camera_obj_t);
-    self->base.type = &espcamera_camera_type;
+    espcamera_camera_obj_t *self = mp_obj_malloc(espcamera_camera_obj_t, &espcamera_camera_type);
     common_hal_espcamera_camera_construct(
         self,
         data_pins,

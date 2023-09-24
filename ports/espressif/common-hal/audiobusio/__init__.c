@@ -37,9 +37,9 @@
 
 #define I2S_QUEUE_SIZE (3)
 
-static i2s_t *i2s_instance[I2S_NUM_MAX];
-static QueueHandle_t i2s_queues[I2S_NUM_MAX];
-static TaskHandle_t i2s_tasks[I2S_NUM_MAX];
+static i2s_t *i2s_instance[I2S_NUM_AUTO];
+static QueueHandle_t i2s_queues[I2S_NUM_AUTO];
+static TaskHandle_t i2s_tasks[I2S_NUM_AUTO];
 
 void port_i2s_allocate_i2s0(void) {
     if (!i2s_instance[0]) {
@@ -64,7 +64,7 @@ static int8_t port_i2s_allocate(void) {
 }
 
 void port_i2s_reset_instance(int i) {
-    assert(i >= 0 && i < I2S_NUM_MAX);
+    assert(i >= 0 && i < I2S_NUM_AUTO);
     if (i2s_tasks[i]) {
         vTaskDelete(i2s_tasks[i]);
     }
@@ -75,7 +75,7 @@ void port_i2s_reset_instance(int i) {
 }
 
 void i2s_reset(void) {
-    for (int i = 0; i < I2S_NUM_MAX; i++) {
+    for (int i = 0; i < I2S_NUM_AUTO; i++) {
         port_i2s_reset_instance(i);
     }
 }
@@ -83,7 +83,7 @@ void i2s_reset(void) {
 #define I2S_WRITE_DELAY pdMS_TO_TICKS(1)
 
 static void i2s_fill_buffer(i2s_t *self) {
-    if (self->instance < 0 || self->instance >= I2S_NUM_MAX) {
+    if (self->instance < 0 || self->instance >= I2S_NUM_AUTO) {
         return;
     }
 #define STACK_BUFFER_SIZE (4096)

@@ -34,12 +34,6 @@
 #include "supervisor/filesystem.h"
 
 void board_init(void) {
-    // Debug UART
-    #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-    #endif /* DEBUG */
-
     mp_import_stat_t stat_b = mp_import_stat("boot.py");
     if (stat_b != MP_IMPORT_STAT_FILE) {
         FATFS *fatfs = filesystem_circuitpy();
@@ -53,7 +47,7 @@ void board_init(void) {
         // Delete code.Py, use main.py
         mp_import_stat_t stat_c = mp_import_stat("code.py");
         if (stat_c == MP_IMPORT_STAT_FILE) {
-            f_unlink(fatfs,"/code.py");
+            f_unlink(fatfs, "/code.py");
         }
     }
 

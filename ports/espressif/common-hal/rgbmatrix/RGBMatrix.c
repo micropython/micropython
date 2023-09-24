@@ -31,7 +31,7 @@
 #include "peripherals/timer.h"
 
 void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {
-    const timer_config_t config = {
+    static const timer_config_t config = {
         .alarm_en = false,
         .counter_en = false,
         .intr_type = TIMER_INTR_LEVEL,
@@ -43,6 +43,7 @@ void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {
     timer_index_t *timer = malloc(sizeof(timer_index_t));
     bool res = peripherals_timer_init(&config, timer);
     if (!res) {
+        free(timer);
         return NULL;
     }
     peripherals_timer_never_reset(timer);
@@ -52,6 +53,11 @@ void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {
 extern bool _PM_esp32timerCallback(void *arg);
 
 void common_hal_rgbmatrix_timer_enable(void *ptr) {
+    timer_index_t *timer = (timer_index_t *)ptr;
+    if (timer->idx == TIMER_MAX) {
+        return;
+    }
+    timer_start(timer->group, timer->idx);
 }
 
 void common_hal_rgbmatrix_timer_disable(void *ptr) {
@@ -60,8 +66,6 @@ void common_hal_rgbmatrix_timer_disable(void *ptr) {
         return;
     }
     timer_pause(timer->group, timer->idx);
-    timer_disable_intr(timer->group, timer->idx);
-    timer_isr_callback_remove(timer->group, timer->idx);
 }
 
 void common_hal_rgbmatrix_timer_free(void *ptr) {
@@ -70,6 +74,8 @@ void common_hal_rgbmatrix_timer_free(void *ptr) {
         return;
     }
     common_hal_rgbmatrix_timer_disable(ptr);
+    timer_disable_intr(timer->group, timer->idx);
+    timer_isr_callback_remove(timer->group, timer->idx);
     peripherals_timer_deinit(timer);
-    timer->idx = TIMER_MAX;
+    free(timer);
 }

@@ -106,7 +106,4 @@ const mp_obj_module_t i2ctarget_module = {
     .globals = (mp_obj_dict_t *)&i2ctarget_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_i2ctarget, i2ctarget_module, CIRCUITPY_I2CTARGET);
-
-// TODO: Remove for CircuitPython 9.0.0
-MP_REGISTER_MODULE(MP_QSTR_i2cperipheral, i2ctarget_module, CIRCUITPY_I2CTARGET);
+MP_REGISTER_MODULE(MP_QSTR_i2ctarget, i2ctarget_module);

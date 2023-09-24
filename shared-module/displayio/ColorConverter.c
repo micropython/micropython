@@ -55,6 +55,13 @@ uint16_t displayio_colorconverter_compute_rgb565(uint32_t color_rgb888) {
     return r5 << 11 | g6 << 5 | b5;
 }
 
+uint8_t displayio_colorconverter_compute_rgb332(uint32_t color_rgb888) {
+    uint32_t r3 = (color_rgb888 >> 21);
+    uint32_t g3 = (color_rgb888 >> 13) & 0x7;
+    uint32_t b2 = (color_rgb888 >> 6) & 0x3;
+    return r3 << 5 | g3 << 2 | b2;
+}
+
 uint8_t displayio_colorconverter_compute_rgbd(uint32_t color_rgb888) {
     uint32_t r1 = (color_rgb888 >> 23) & 0x1;
     uint32_t g1 = (color_rgb888 >> 15) & 0x1;
@@ -256,23 +263,23 @@ uint32_t displayio_colorconverter_convert_pixel(displayio_colorspace_t colorspac
 void displayio_convert_color(const _displayio_colorspace_t *colorspace, bool dither, const displayio_input_pixel_t *input_pixel, displayio_output_pixel_t *output_color) {
     uint32_t pixel = input_pixel->pixel;
     if (dither) {
-        uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y));
-        uint8_t randg = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x + 33,input_pixel->tile_y));
-        uint8_t randb = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x,input_pixel->tile_y + 33));
+        uint8_t randr = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x, input_pixel->tile_y));
+        uint8_t randg = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x + 33, input_pixel->tile_y));
+        uint8_t randb = (displayio_colorconverter_dither_noise_2(input_pixel->tile_x, input_pixel->tile_y + 33));
 
         uint32_t r8 = (pixel >> 16);
         uint32_t g8 = (pixel >> 8) & 0xff;
         uint32_t b8 = pixel & 0xff;
 
         if (colorspace->depth == 16) {
-            b8 = MIN(255,b8 + (randb & 0x07));
-            r8 = MIN(255,r8 + (randr & 0x07));
-            g8 = MIN(255,g8 + (randg & 0x03));
+            b8 = MIN(255, b8 + (randb & 0x07));
+            r8 = MIN(255, r8 + (randr & 0x07));
+            g8 = MIN(255, g8 + (randg & 0x03));
         } else {
             int bitmask = 0xFF >> colorspace->depth;
-            b8 = MIN(255,b8 + (randb & bitmask));
-            r8 = MIN(255,r8 + (randr & bitmask));
-            g8 = MIN(255,g8 + (randg & bitmask));
+            b8 = MIN(255, b8 + (randb & bitmask));
+            r8 = MIN(255, r8 + (randr & bitmask));
+            g8 = MIN(255, g8 + (randg & bitmask));
         }
         pixel = r8 << 16 | g8 << 8 | b8;
     }
@@ -307,6 +314,11 @@ void displayio_convert_color(const _displayio_colorspace_t *colorspace, bool dit
         return;
     } else if (colorspace->depth == 32) {
         output_color->pixel = pixel;
+        output_color->opaque = true;
+        return;
+    } else if (colorspace->depth == 8 && !colorspace->grayscale) {
+        uint8_t packed = displayio_colorconverter_compute_rgb332(pixel);
+        output_color->pixel = packed;
         output_color->opaque = true;
         return;
     } else if (colorspace->depth == 4) {

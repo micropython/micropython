@@ -24,7 +24,7 @@ PORT_DEPS = {
     "cxd56": ["extmod/ulab/", "lib/tinyusb/"],
     "espressif": [
         "extmod/ulab/",
-        "lib/certificates/nina-fw/",
+        "lib/certificates/",
         "lib/protomatter/",
         "lib/quirc/",
         "lib/tinyusb/",
@@ -37,12 +37,13 @@ PORT_DEPS = {
         "lib/adafruit_floppy/",
         "lib/mbedtls/",
         "lib/mp3/",
-        "lib/certificates/nina-fw/",
+        "lib/certificates/",
         "lib/protomatter/",
         "lib/quirc/",
         "lib/tinyusb/",
         "data/nvm.toml/",
     ],
+    "silabs": ["extmod/ulab/", "data/nvm.toml/"],
     "stm": ["extmod/ulab/", "lib/mp3/", "lib/protomatter/", "lib/tinyusb/", "data/nvm.toml/"]
     # omit unix which is part of the "test" target below
 }
@@ -78,6 +79,10 @@ def main():
         submodules = ["extmod/ulab", "lib/", "tools/"]
     elif TARGET == "tests":
         submodules = ["extmod/ulab", "lib/", "tools/"]
+        submodules_tags = [
+            "frozen/Adafruit_CircuitPython_asyncio",
+            "frozen/Adafruit_CircuitPython_Ticks",
+        ]
     elif TARGET == "docs":
         # used in .readthedocs.yml to generate RTD
         submodules = ["extmod/ulab"]
@@ -86,7 +91,11 @@ def main():
         submodules = ["tools/"]  # for huffman
     elif TARGET == "windows":
         # This builds one board from a number of ports so fill out a bunch of submodules
-        submodules = ["extmod/ulab", "lib/", "tools/", "ports/", "data/nvm.toml"]
+        for port in ("atmel-samd", "nrf", "raspberrypi", "stm"):
+            submodules.append(f"ports/{port}")
+            submodules.extend(PORT_DEPS[port])
+        unique_submodules = set(submodules)
+        submodules = list(unique_submodules)
     elif TARGET == "website":
         submodules = ["tools/adabot/"]
         submodules_tags = ["frozen/"]

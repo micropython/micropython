@@ -38,6 +38,7 @@ void common_hal_adafruit_bus_device_spidevice_construct(adafruit_bus_device_spid
     self->polarity = polarity;
     self->phase = phase;
     self->extra_clocks = extra_clocks;
+    // May be mp_const_none if CS not used.
     self->chip_select = cs;
     self->cs_active_value = cs_active_value;
 }
@@ -66,14 +67,14 @@ mp_obj_t common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spid
         mp_call_method_n_kw(0, 4, dest);
     }
 
-    if (self->chip_select != MP_OBJ_NULL) {
+    if (self->chip_select != mp_const_none) {
         common_hal_digitalio_digitalinout_set_value(MP_OBJ_TO_PTR(self->chip_select), self->cs_active_value);
     }
     return self->spi;
 }
 
 void common_hal_adafruit_bus_device_spidevice_exit(adafruit_bus_device_spidevice_obj_t *self) {
-    if (self->chip_select != MP_OBJ_NULL) {
+    if (self->chip_select != mp_const_none) {
         common_hal_digitalio_digitalinout_set_value(MP_OBJ_TO_PTR(self->chip_select), !(self->cs_active_value));
     }
 

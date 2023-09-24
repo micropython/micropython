@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 // For reference, arm/thumb callee save regs are:
 //      r4-r11, r13=sp
 
+// CIRCUITPY: added returns_twice
 __attribute__((naked, returns_twice)) unsigned int nlr_push(nlr_buf_t *nlr) {
 
     __asm volatile (

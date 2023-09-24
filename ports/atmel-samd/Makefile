@@ -59,6 +59,7 @@ INC += -I. \
 ifeq ($(CHIP_FAMILY), samd21)
 PERIPHERALS_CHIP_FAMILY=samd21
 OPTIMIZATION_FLAGS ?= -Os
+
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_SAMD21 -DCFG_TUD_MIDI_RX_BUFSIZE=128 -DCFG_TUD_CDC_RX_BUFSIZE=128 -DCFG_TUD_MIDI_TX_BUFSIZE=128 -DCFG_TUD_CDC_TX_BUFSIZE=128 -DCFG_TUD_MSC_BUFSIZE=512
 endif
@@ -101,24 +102,23 @@ ifeq ($(DEBUG), 1)
   endif
 else
   CFLAGS += -DNDEBUG
+
+  # Do a default shrink for small builds, including all SAMD21 builds.
   # -finline-limit can shrink the image size.
   # -finline-limit=80 or so is similar to not having it on.
   # There is no simple default value, though.
-
-  # Do a default shrink for small builds.
-  ifndef CFLAGS_INLINE_LIMIT
-    ifeq ($(CIRCUITPY_FULL_BUILD),0)
-      CFLAGS_INLINE_LIMIT = 50
+  ifeq ($(CIRCUITPY_FULL_BUILD),0)
+    CFLAGS += -finline-limit=45
+  else
+    ifeq ($(CHIP_FAMILY), samd21)
+      # max-inline-insns-auto increases the size of SAMD51 builds.
+      CFLAGS += -finline-limit=45 --param max-inline-insns-auto=110
     endif
   endif
 
-  ifdef CFLAGS_INLINE_LIMIT
-    CFLAGS += -finline-limit=$(CFLAGS_INLINE_LIMIT)
-  endif
-
-  ifeq ($(CIRCUITPY_FULL_BUILD),0)
-    CFLAGS += --param inline-unit-growth=15 --param max-inline-insns-auto=20
-  endif
+  # We used to do this but it seems to not reduce space any more, at least in gcc 11.
+  # Leave it here, commented out, just for reference.
+  # --param inline-unit-growth=15
 
   ifdef CFLAGS_BOARD
     CFLAGS += $(CFLAGS_BOARD)
@@ -171,7 +171,10 @@ endif
 # we know is ok. It's not clear how to give the compiler the info it needs so
 # disable the checks for now.
 # See: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578
+GCCVERSIONGTEQ11 := $(shell expr `$(CC) -dumpversion` \>= 11)
+ifeq ($(GCC_VERSION_GTEQ_11),1)
 CFLAGS += -Wno-stringop-overread -Wno-stringop-overflow
+endif
 
 LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 
@@ -349,11 +352,13 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
-SRC_QSTR += $(HEADER_BUILD)/sdiodata.h
+QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/sdiodata.h
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/sioddata.h
 $(HEADER_BUILD)/sdiodata.h: tools/mksdiodata.py | $(HEADER_BUILD)
 	$(Q)$(PYTHON) $< > $@
 
 SRC_QSTR += $(HEADER_BUILD)/candata.h
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/candata.h
 $(HEADER_BUILD)/candata.h: tools/mkcandata.py | $(HEADER_BUILD)
 	$(Q)$(PYTHON) $< > $@
 
@@ -363,11 +368,15 @@ SRC_QSTR_PREPROCESSOR += peripherals/samd/$(PERIPHERALS_CHIP_FAMILY)/clocks.c
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/firmware.elf: invalid-board
+else
 $(BUILD)/firmware.elf: $(OBJ) $(GENERATED_LD_FILE)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
-	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
 	$(Q)$(SIZE) $@ | $(PYTHON) $(TOP)/tools/build_memory_info.py $(GENERATED_LD_FILE) $(BUILD)
+endif
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(STEPECHO) "Create $@"
@@ -378,8 +387,3 @@ $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(TOP)/tools/uf2/utils/uf2conv.py -b $(BOOTLOADER_SIZE) -c -o $@ $^
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

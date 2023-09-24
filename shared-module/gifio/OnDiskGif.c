@@ -26,14 +26,15 @@
 
 #include "shared-bindings/gifio/OnDiskGif.h"
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/Palette.h"
 
 #include <string.h>
 
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
+
 static int32_t GIFReadFile(GIFFILE *pFile, uint8_t *pBuf, int32_t iLen) {
-    // mp_printf(&mp_plat_print, "GifReadFile len %d ", iLen);
     uint32_t iBytesRead;
     iBytesRead = iLen;
     pyb_file_obj_t *f = pFile->fHandle;
@@ -49,18 +50,15 @@ static int32_t GIFReadFile(GIFFILE *pFile, uint8_t *pBuf, int32_t iLen) {
         mp_raise_OSError(MP_EIO);
     }
     pFile->iPos = f->fp.fptr;
-    // mp_printf(&mp_plat_print, " now at %d\n", pFile->iPos);
 
     return bytes_read;
 } /* GIFReadFile() */
 
 static int32_t GIFSeekFile(GIFFILE *pFile, int32_t iPosition) {
-    // mp_printf(&mp_plat_print, "GifSeekFile %d ", iPosition);
     pyb_file_obj_t *f = pFile->fHandle;
 
     f_lseek(&f->fp, iPosition);
     pFile->iPos = f->fp.fptr;
-    // mp_printf(&mp_plat_print, " now at %d\n", pFile->iPos);
     return pFile->iPos;
 } /* GIFSeekFile() */
 
@@ -70,10 +68,25 @@ static void GIFDraw(GIFDRAW *pDraw) {
     // The palette is either RGB565 or the original 24-bit RGB values
     // depending on the pixel type selected with gif.begin()
 
-    displayio_bitmap_t *bitmap = (displayio_bitmap_t *)pDraw->pUser;
+    gifio_ondiskgif_t *ondiskgif = (gifio_ondiskgif_t *)pDraw->pUser;
+    displayio_bitmap_t *bitmap = ondiskgif->bitmap;
+    displayio_palette_t *palette = ondiskgif->palette;
 
-    uint8_t *s;
-    uint16_t *d;
+    // Update the palette if we have one in RGB888
+    if (palette != NULL) {
+        uint8_t *pPal = pDraw->pPalette24;
+        for (int p = 0; p < 256; p++) {
+            uint8_t r = *pPal++;
+            uint8_t g = *pPal++;
+            uint8_t b = *pPal++;
+            uint32_t color = (r << 16) + (g << 8) + b;
+            common_hal_displayio_palette_set_color(palette, p, color);
+            common_hal_displayio_palette_make_opaque(palette, p); // Transparency can change frame to frame
+        }
+        if (pDraw->ucHasTransparency) {
+            common_hal_displayio_palette_make_transparent(palette, pDraw->ucTransparent);
+        }
+    }
 
     int iWidth = pDraw->iWidth;
     if (iWidth + pDraw->iX > bitmap->width) {
@@ -86,11 +99,6 @@ static void GIFDraw(GIFDRAW *pDraw) {
 
     int32_t row_start = (pDraw->y + pDraw->iY) * bitmap->stride;
     uint32_t *row = bitmap->data + row_start;
-    s = pDraw->pPixels;
-    d = (uint16_t *)row;
-
-    uint16_t *pPal;
-    pPal = (uint16_t *)pDraw->pPalette;
 
     if (pDraw->ucDisposalMethod == 2) { // restore to background color
         // Not supported currently. Need to reset the area the previous frame occupied
@@ -100,31 +108,53 @@ static void GIFDraw(GIFDRAW *pDraw) {
         // To workaround clear the gif.bitmap object yourself as required.
     }
 
-    uint8_t c, ucTransparent = pDraw->ucTransparent;
-    d += pDraw->iX;
-    if (pDraw->ucHasTransparency == 1) {
+    if (palette != NULL) {
+        uint8_t *s = pDraw->pPixels;
+        uint8_t *d = (uint8_t *)row;
+
+        d += pDraw->iX;
         for (int x = 0; x < iWidth; x++)
         {
-            c = *s++;
-            if (c != ucTransparent) {
-                *d = pPal[c];
-            }
-            d++;
+            *d++ = *s++;
         }
     } else {
-        for (int x = 0; x < iWidth; x++)
-        {
-            c = *s++;
-            *d++ = pPal[c];
+        // No palette writing RGB565_SWAPPED right to bitmap buffer
+        uint8_t *s = pDraw->pPixels;
+        ;
+        uint16_t *d = (uint16_t *)row;
+
+        uint16_t *pPal;
+        pPal = (uint16_t *)pDraw->pPalette;
+
+        uint8_t c, ucTransparent = pDraw->ucTransparent;
+        d += pDraw->iX;
+        if (pDraw->ucHasTransparency == 1) {
+            for (int x = 0; x < iWidth; x++)
+            {
+                c = *s++;
+                if (c != ucTransparent) {
+                    *d = pPal[c];
+                }
+                d++;
+            }
+        } else {
+            for (int x = 0; x < iWidth; x++)
+            {
+                c = *s++;
+                *d++ = pPal[c];
+            }
         }
     }
 }
 
-void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_t *file) {
-    // mp_printf(&mp_plat_print, "Begin OnDiskGif\n");
+void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_t *file, bool use_palette) {
     self->file = file;
 
-    GIF_begin(&self->gif, GIF_PALETTE_RGB565_BE);
+    if (use_palette == true) {
+        GIF_begin(&self->gif, GIF_PALETTE_RGB888);
+    } else {
+        GIF_begin(&self->gif, GIF_PALETTE_RGB565_BE);
+    }
 
     self->gif.iError = GIF_SUCCESS;
     self->gif.pfnRead = GIFReadFile;
@@ -139,12 +169,28 @@ void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_
 
     int result = GIF_init(&self->gif);
     if (result != 1) {
-        mp_arg_error_invalid(MP_QSTR_file);
+        switch (self->gif.iError) {
+            case GIF_TOO_WIDE:
+                mp_raise_ValueError_varg(translate("%q must be <= %d"), MP_QSTR_width, MAX_WIDTH);
+                break;
+            default:
+                mp_arg_error_invalid(MP_QSTR_file);
+                break;
+        }
     }
 
-    displayio_bitmap_t *bitmap = m_new_obj(displayio_bitmap_t);
-    bitmap->base.type = &displayio_bitmap_type;
-    common_hal_displayio_bitmap_construct(bitmap, self->gif.iCanvasWidth, self->gif.iCanvasHeight, 16);
+    int bpp = 16;
+    if (use_palette == true) {
+        displayio_palette_t *palette = mp_obj_malloc(displayio_palette_t, &displayio_palette_type);
+        common_hal_displayio_palette_construct(palette, 256, false);
+        self->palette = palette;
+        bpp = 8;
+    } else {
+        self->palette = NULL;
+    }
+
+    displayio_bitmap_t *bitmap = mp_obj_malloc(displayio_bitmap_t, &displayio_bitmap_type);
+    common_hal_displayio_bitmap_construct(bitmap, self->gif.iCanvasWidth, self->gif.iCanvasHeight, bpp);
     self->bitmap = bitmap;
 
     GIFINFO info;
@@ -153,8 +199,17 @@ void common_hal_gifio_ondiskgif_construct(gifio_ondiskgif_t *self, pyb_file_obj_
     self->frame_count = info.iFrameCount;
     self->min_delay = info.iMinDelay;
     self->max_delay = info.iMaxDelay;
+}
 
-    // mp_printf(&mp_plat_print, "GIF_init returned %d %x\n", result, bitmap->data);
+void common_hal_gifio_ondiskgif_deinit(gifio_ondiskgif_t *self) {
+    self->file = NULL;
+    common_hal_displayio_bitmap_deinit(self->bitmap);
+    self->bitmap = NULL;
+    self->palette = NULL;
+}
+
+bool common_hal_gifio_ondiskgif_deinited(gifio_ondiskgif_t *self) {
+    return self->bitmap == NULL;
 }
 
 uint16_t common_hal_gifio_ondiskgif_get_height(gifio_ondiskgif_t *self) {
@@ -167,6 +222,13 @@ uint16_t common_hal_gifio_ondiskgif_get_width(gifio_ondiskgif_t *self) {
 
 mp_obj_t common_hal_gifio_ondiskgif_get_bitmap(gifio_ondiskgif_t *self) {
     return MP_OBJ_FROM_PTR(self->bitmap);
+}
+
+mp_obj_t common_hal_gifio_ondiskgif_get_palette(gifio_ondiskgif_t *self) {
+    if (self->palette == NULL) {
+        return mp_const_none;
+    }
+    return MP_OBJ_FROM_PTR(self->palette);
 }
 
 int32_t common_hal_gifio_ondiskgif_get_duration(gifio_ondiskgif_t *self) {
@@ -187,7 +249,8 @@ int32_t common_hal_gifio_ondiskgif_get_max_delay(gifio_ondiskgif_t *self) {
 
 uint32_t common_hal_gifio_ondiskgif_next_frame(gifio_ondiskgif_t *self, bool setDirty) {
     int nextDelay = 0;
-    int result = GIF_playFrame(&self->gif, &nextDelay, self->bitmap);
+    int result = 0;
+    result = GIF_playFrame(&self->gif, &nextDelay, self);
 
     if ((result >= 0) && (setDirty)) {
         displayio_area_t dirty_area = {

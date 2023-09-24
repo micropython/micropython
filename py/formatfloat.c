@@ -1,9 +1,11 @@
+// CIRCUITPY: https://github.com/adafruit/circuitpython/pull/6722
+// post v1.19.1. Remove this comment during v1.20 merge.
 /*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +41,7 @@
   Routine for converting a arbitrary floating
   point number into a string.
 
-  The code in this funcion was inspired from Fred Bayer's pdouble.c.
+  The code in this function was inspired from Fred Bayer's pdouble.c.
   Since pdouble.c was released as Public Domain, I'm releasing this
   code as public domain as well.
 
@@ -390,7 +392,7 @@ int mp_format_float(FPTYPE f, char *buf, size_t buf_size, char fmt, int prec, ch
         --dec;
         --num_digits_left;
         if (digit_index <= 0) {
-            // Once we get below 1.0, we scale up f instead of calculting
+            // Once we get below 1.0, we scale up f instead of calculating
             // negative powers of 10 in u_base.  This provides better
             // renditions of exact decimals like 1/16 etc.
             f *= FPCONST(10.0);

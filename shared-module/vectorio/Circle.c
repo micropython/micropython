@@ -23,7 +23,7 @@ void common_hal_vectorio_circle_set_on_dirty(vectorio_circle_t *self, vectorio_e
 
 uint32_t common_hal_vectorio_circle_get_pixel(void *obj, int16_t x, int16_t y) {
     vectorio_circle_t *self = obj;
-    int16_t radius = abs(self->radius);
+    int16_t radius = self->radius;
     x = abs(x);
     y = abs(y);
     if (x + y <= radius) {

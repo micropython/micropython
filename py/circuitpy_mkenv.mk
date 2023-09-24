@@ -24,22 +24,10 @@
 
 # Common Makefile items that can be shared across CircuitPython ports.
 
-# Select the board to build for.
-define show_board_error
-$(info Valid boards:)
-$(shell printf '%s\n' $(patsubst boards/%/mpconfigboard.mk,%,$(wildcard boards/*/mpconfigboard.mk)) | column -xc $$(tput cols || echo 80) 1>&2)
-$(error Rerun with $(MAKE) BOARD=<board>)
-endef
-
-ifeq ($(BOARD),)
-    $(info No BOARD specified)
-    $(call show_board_error)
-else
-  ifeq ($(wildcard boards/$(BOARD)/.),)
-    $(info Invalid BOARD specified)
-    $(call show_board_error)
-  endif
-endif
+ALL_BOARDS_IN_PORT := $(patsubst boards/%/mpconfigboard.mk,%,$(wildcard boards/*/mpconfigboard.mk))
+# An incorrect BOARD might have been specified, so check against the list.
+# There is deliberately no space after the :=
+VALID_BOARD :=$(filter $(BOARD),$(ALL_BOARDS_IN_PORT))
 
 # If the flash PORT is not given, use the default /dev/tty.SLAB_USBtoUART.
 PORT ?= /dev/tty.SLAB_USBtoUART
@@ -47,16 +35,22 @@ PORT ?= /dev/tty.SLAB_USBtoUART
 # If the build directory is not given, make it reflect the board name.
 BUILD ?= build-$(BOARD)
 
+# First makefile with targets. Defines the default target.
 include ../../py/mkenv.mk
 
-# Board-specific
+# Board-specific. Skip if the rule requested is not board-specific.
+ifneq ($(VALID_BOARD),)
 include boards/$(BOARD)/mpconfigboard.mk
+endif
 
 # Port-specific
 include mpconfigport.mk
 
+# Also board-specific. Skip if the rule requested is not board-specific.
+ifneq ($(VALID_BOARD),)
 # CircuitPython-specific
 include $(TOP)/py/circuitpy_mpconfig.mk
+endif
 
 # qstr definitions (must come before including py.mk)
 QSTR_DEFS = qstrdefsport.h
