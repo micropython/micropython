@@ -29,3 +29,4 @@ CIRCUITPY_DISPLAYIO = 1
 # FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Register
 # FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_FakeRequests
 # FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
+
