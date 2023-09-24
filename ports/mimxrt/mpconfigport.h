@@ -114,6 +114,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_UART             (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/mimxrt/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
+#define MICROPY_PY_MACHINE_UART_IRQ         (1)
 #define MICROPY_PY_ONEWIRE                  (1)
 
 // fatfs configuration used in ffconf.h
