@@ -10,7 +10,7 @@ STATIC MP_DEFINE_BYTES_OBJ(i2c_init_byte_obj,
     );
 
 STATIC const mp_rom_map_elem_t tft_io_expander_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_i2c_address), MP_ROM_INT(0x3F)},
+    { MP_ROM_QSTR(MP_QSTR_i2c_address), MP_ROM_INT(0x38)},
     { MP_ROM_QSTR(MP_QSTR_gpio_address), MP_ROM_INT(1)},
     { MP_ROM_QSTR(MP_QSTR_gpio_data_len), MP_ROM_INT(1)},
     { MP_ROM_QSTR(MP_QSTR_gpio_data), MP_ROM_INT(0xFD)},
