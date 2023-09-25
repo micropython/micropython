@@ -43,6 +43,10 @@
 #include "supervisor/spi_flash_api.h"
 #include "py/mpconfig.h"
 
+#if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+#include "shared-bindings/dotclockframebuffer/DotClockFramebuffer.h"
+#endif
+
 #if CIRCUITPY_SHARPDISPLAY
 #include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
@@ -133,6 +137,10 @@ void common_hal_displayio_release_displays(void) {
             common_hal_displayio_fourwire_deinit(&display_buses[i].fourwire_bus);
         } else if (bus_type == &displayio_i2cdisplay_type) {
             common_hal_displayio_i2cdisplay_deinit(&display_buses[i].i2cdisplay_bus);
+        #if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+        } else if (bus_type == &dotclockframebuffer_framebuffer_type) {
+            common_hal_dotclockframebuffer_framebuffer_deinit(&display_buses[i].dotclock);
+        #endif
         #if CIRCUITPY_PARALLELDISPLAY
         } else if (bus_type == &paralleldisplay_parallelbus_type) {
             common_hal_paralleldisplay_parallelbus_deinit(&display_buses[i].parallel_bus);
