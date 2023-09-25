@@ -33,6 +33,9 @@
 #include "shared-bindings/framebufferio/FramebufferDisplay.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
+#include "boards/espressif_esp32s3_lcd_ev/board.h"
+
+#define MP_DEFINE_BYTES_OBJ(obj_name, bin) mp_obj_str_t obj_name = {{&mp_type_bytes}, 0, sizeof(bin) - 1, (const byte *)bin}
 
 static const uint8_t display_init_sequence[] = {
     0xf0, 5, 0x55, 0xaa, 0x52, 0x08, 0x00,
@@ -80,8 +83,17 @@ static const uint8_t display_init_sequence[] = {
     0x3a, 1, 0x66,
     0x3a, 1, 0x66,
     0x11, 0x80, 120,
-    0x29, 0x0
+    0x29, 0x0,
+    0, // trailing NUL for Python bytes() representation
 };
+MP_DEFINE_BYTES_OBJ(display_init_byte_obj, display_init_sequence);
+
+static const char i2c_bus_init_sequence[] = {
+    2, 3, 0xf1, // set GPIO direction
+    2, 2, 0, // disable all output inversion
+    0, // trailing NUL for Python bytes() representation
+};
+MP_DEFINE_BYTES_OBJ(i2c_init_byte_obj, i2c_bus_init_sequence);
 
 static const mcu_pin_obj_t *red_pins[] = {
     &pin_GPIO1, &pin_GPIO2, &pin_GPIO42, &pin_GPIO41, &pin_GPIO40
@@ -103,7 +115,7 @@ void board_init(void) {
         /* hsync */ &pin_GPIO46,
         /* dclk */ &pin_GPIO9,
         /* data */ red_pins, MP_ARRAY_SIZE(red_pins), green_pins, MP_ARRAY_SIZE(green_pins), blue_pins, MP_ARRAY_SIZE(blue_pins),
-        /* frequency */ 6500000,
+        /* frequency */ 12000000,
         /* width x height */ 480, 480,
         /* horizontal: pulse, back &  front porch, idle */ 13, 20, 40, false,
         /* vertical: pulse, back &  front porch, idle */ 15, 20, 40, false,
@@ -127,20 +139,6 @@ void board_init(void) {
     common_hal_busio_i2c_construct(&i2c, DEFAULT_I2C_BUS_SCL, DEFAULT_I2C_BUS_SDA, 400000, 255);
     const int i2c_device_address = 32;
 
-    common_hal_busio_i2c_try_lock(&i2c);
-
-    {
-        uint8_t buf[2] = {3, 0xf1}; // set GPIO direction
-        common_hal_busio_i2c_write(&i2c, i2c_device_address, buf, sizeof(buf));
-    }
-
-    {
-        uint8_t buf[2] = {2, 0}; // set all output pins low initially
-        common_hal_busio_i2c_write(&i2c, i2c_device_address, buf, sizeof(buf));
-    }
-
-    common_hal_busio_i2c_unlock(&i2c);
-
     dotclockframebuffer_ioexpander_spi_bus spibus = {
         .bus = &i2c,
         .i2c_device_address = i2c_device_address,
@@ -151,7 +149,9 @@ void board_init(void) {
             .clk_mask = 0x100 << 2,
     };
 
-    dotclockframebuffer_ioexpander_send_init_sequence(&spibus, display_init_sequence, sizeof(display_init_sequence));
+    static const mp_buffer_info_t bufinfo_display_init = { (void *)display_init_sequence, sizeof(display_init_sequence) - 1 };
+    static const mp_buffer_info_t bufinfo_i2c_bus_init = { (void *)i2c_bus_init_sequence, sizeof(i2c_bus_init_sequence) - 1 };
+    dotclockframebuffer_ioexpander_send_init_sequence(&spibus, &bufinfo_i2c_bus_init, &bufinfo_display_init);
 
     common_hal_busio_i2c_deinit(&i2c);
 }

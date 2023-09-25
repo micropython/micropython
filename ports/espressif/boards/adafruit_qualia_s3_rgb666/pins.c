@@ -73,9 +73,8 @@ MP_DEFINE_CONST_DICT(tft_dict, tft_table);
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
-    { MP_ROM_QSTR(MP_QSTR_TFT), MP_ROM_PTR(&tft_dict) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_PINS), MP_ROM_PTR(&tft_dict) },
     { MP_ROM_QSTR(MP_QSTR_TFT_IO_EXPANDER), MP_ROM_PTR(&tft_io_expander_dict) },
-
     { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(MICROPY_HW_NEOPIXEL) },
 
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO43) },
