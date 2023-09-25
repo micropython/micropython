@@ -12,12 +12,12 @@ extern void adc_obj_deinit(machine_adc_obj_t *adc);
 machine_adcblock_obj_t *adc_block[MAX_BLOCKS] = {NULL};
 
 const adc_block_channel_pin_map_t adc_block_pin_map[] = {
-    {ADCBLOCK0, 0, PIN_P10_0},
-    {ADCBLOCK0, 1, PIN_P10_1},
-    {ADCBLOCK0, 2, PIN_P10_2},
-    {ADCBLOCK0, 3, PIN_P10_3},
-    {ADCBLOCK0, 4, PIN_P10_4},
-    {ADCBLOCK0, 5, PIN_P10_5}
+    {ADCBLOCK0, 0, CYHAL_GET_GPIO(CYHAL_PORT_10, 0)},
+    {ADCBLOCK0, 1, CYHAL_GET_GPIO(CYHAL_PORT_10, 1)},
+    {ADCBLOCK0, 2, CYHAL_GET_GPIO(CYHAL_PORT_10, 2)},
+    {ADCBLOCK0, 3, CYHAL_GET_GPIO(CYHAL_PORT_10, 3)},
+    {ADCBLOCK0, 4, CYHAL_GET_GPIO(CYHAL_PORT_10, 4)},
+    {ADCBLOCK0, 5, CYHAL_GET_GPIO(CYHAL_PORT_10, 5)}
 }; // will belong to only a particular bsp
 
 /******************************************************************************/

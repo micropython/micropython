@@ -13,15 +13,35 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
   $(error Invalid BOARD specified)
 endif
 
+# Supporting variables for make-pins.py script execution
+MAKE_PINS_CSV = ./boards/make-pins-csv.py
+MAKE_PINS = ./boards/make-pins.py
+
+ifeq ($(BOARD), CY8CPROTO-062-4343W)
+PIN_PACKAGE_FILE = cyhal_psoc6_02_124_bga.h
+endif
+ifeq ($(BOARD), CY8CPROTO-063-BLE)
+PIN_PACKAGE_FILE = cyhal_psoc6_01_116_bga_ble.h #ToDo: Check the right file and replace
+endif
+
+#ToDo: Post adding af functionality, refactor to minimize dependent variables in py script if possible
+GEN_PINS_SRC := ./build/pins_$(BOARD).c
+HEADER_BUILD := ./build/genhdr
+GEN_PINS_HDR := ./build/genhdr/pins.h
+GEN_PINS_QSTR := ./build/pins_qstr.h
+BOARD_PINS := ./pins.csv 
+BOARD_AF_PINS := ./pins_af.csv
+PREFIX_FILE := ./psoc6_prefix.c
 
 # get path to this file
 MPY_PATH_TO_MAIN_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
 MPY_DIR_OF_MAIN_MAKEFILE  := $(dir $(MPY_PATH_TO_MAIN_MAKEFILE))
 
-
+# Files that are generated and needed before the QSTR build.
+QSTR_GENERATED_HEADERS = build/pins_qstr.h
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h
+QSTR_DEFS = qstrdefsport.h $(QSTR_GENERATED_HEADERS)
+QSTR_GLOBAL_DEPENDENCIES += $(BOARD_DIR)/mpconfigboard.h $(QSTR_GENERATED_HEADERS)
 
 MICROPY_FROZEN_MANIFEST      ?= $(BOARD_DIR)/manifest.py
 FROZEN_MANIFEST              ?= $(MICROPY_FROZEN_MANIFEST)
@@ -93,6 +113,22 @@ endif
 
 
 $(info Compiling in $(CONFIG) mode !)
+
+# Rule to generate pins.csv
+make_pins_csv:
+	@echo "Generating $@"
+	$(PYTHON) $(MAKE_PINS_CSV) --gen-pin-for $(PIN_PACKAGE_FILE) --save-pins-csv-at $(BOARD_PINS) --save-pins-af-csv-at $(BOARD_AF_PINS)
+	$(MAKE) make_pins
+
+make_pins: $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR)
+$(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR): $(BOARD_PINS) $(MAKE_PINS) $(BOARD_AF_PINS) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(PYTHON) $(MAKE_PINS) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
+
+clean_csv:
+	rm -rf $(BOARD_PINS) $(BOARD_AF_PINS)
+
+$(OBJ): | $(GEN_PINS_HDR)
 
 
 # Flags for optional C++ source code
@@ -176,7 +212,7 @@ OBJ += $(addprefix $(BUILD)/, $(MOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
-
+OBJ += $(GEN_PINS_SRC:.c=.o)
 # switch for debug mode, also added to mpconfigport.h
 # TODO: keep the more suitable one, delete the other
 MP_LOGGER_DEBUG ?= 0
@@ -184,7 +220,6 @@ MP_LOGGER_DEBUG ?= 0
 ifeq ($(MP_LOGGER_DEBUG), 1)
    CFLAGS += -DMICROPY_LOGGER_DEBUG=1
 endif
-
 
 $(MPY_MAIN_BUILD_DIR)/firmware.elf: $(OBJ) $(MPY_MTB_LIBRARIES) $(LIBS)
 	$(info )
@@ -202,12 +237,9 @@ $(MPY_MAIN_BUILD_DIR)/firmware.hex: $(MPY_MAIN_BUILD_DIR)/firmware.elf
 # include adapter makefile
 include mtb-libs/makefile_mtb.mk
 
-# include py core make definitions
-include $(TOP)/py/mkrules.mk
-
 MPY_CROSS_FLAGS += -march=armv7m
 
-build: mtb_get_build_flags $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN_BUILD_DIR)/firmware.hex
+build: mtb_get_build_flags make_pins_csv $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN_BUILD_DIR)/firmware.hex clean_csv
 
 all: build
 
@@ -298,4 +330,7 @@ help:
 	$(info - mtb_set_bsp             Set the board as active in the ModusToolbox project. ) 
 
 
-.PHONY: build test test_multi program_multi help
+.PHONY: build test test_multi program_multi help make_pins_csv make_pins clean_csv
+
+# include py core make definitions
+include $(TOP)/py/mkrules.mk
