@@ -41,6 +41,10 @@ ifeq ($(MICROPY_PY_EXT_FLASH),1)
 MTB_DEPS_DIRS += ext_flash
 endif
 
+ifeq ($(MICROPY_PY_SSL), 1)
+MTB_DEPS_DIRS += crypto
+endif
+
 # The ModusToolbox expects all the .mtb files to be in the /deps folder.
 # The feature specific dependencies organized in folders are directly copied 
 # to the deps/ root folder
@@ -83,7 +87,7 @@ mtb_deinit: clean
 
 # Some of the configuration variables are passed to the ModusToolbox 
 # Makefile to include/exclude certain middleware libraries and components
-MPY_MTB_MAKE_VARS = MICROPY_PY_NETWORK=$(MICROPY_PY_NETWORK)
+MPY_MTB_MAKE_VARS = MICROPY_PY_NETWORK=$(MICROPY_PY_NETWORK) MICROPY_PY_SSL=$(MICROPY_PY_SSL)
 
 # build MTB project
 mtb_build:

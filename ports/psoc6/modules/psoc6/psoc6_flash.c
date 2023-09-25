@@ -44,7 +44,7 @@
 
 #elif defined(CYBLE_416045_02_device)
 #define DEVICE_FLASH_SIZE           (0x00100000)   // 1MB
-#define DEVICE_FLASH_BASE_ADDRESS   (0x100A0000)   // Where is this value coming from??
+#define DEVICE_FLASH_BASE_ADDRESS   (0x100E0000)   // Where is this value coming from??
 
 #else
 #error "MCU not supported."
@@ -52,9 +52,6 @@
 
 
 #define FLASH_BASE_TRUE   (0x10000000)
-
-// #define FLASH_BASE        (0x101A0000)
-// #define FLASH_SIZE        (0x00200000 - (FLASH_BASE - FLASH_BASE_TRUE))
 
 #define FLASH_BASE        DEVICE_FLASH_BASE_ADDRESS
 #define FLASH_SIZE        (DEVICE_FLASH_SIZE - (FLASH_BASE - FLASH_BASE_TRUE))

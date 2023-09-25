@@ -35,11 +35,6 @@
 // Control over Python builtins
 #define MICROPY_PY_IO_BUFFEREDWRITER            (1)
 #define MICROPY_PY_SELECT                       (1)
-// TODO: Remove this
-// This is defined per board, and by the mpconfigboard.mk
-// #ifndef MICROPY_PY_SSL
-// #define MICROPY_PY_SSL                          (1)
-// #endif
 #define MICROPY_PY_IO                           (1)
 #define MICROPY_PY_IO_IOBASE                    (1)
 #define MICROPY_PY_BINASCII                     (1)
@@ -60,8 +55,9 @@
 // #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint32_t
 #define MICROPY_ENABLE_GC                       (1)
-// #define MICROPY_GC_HEAP_SIZE                    (256 * 1024) //256 kb sectors -> 1 sector (0.25 of 2 MB flash)
-#define MICROPY_GC_HEAP_SIZE                    (128 * 1024) // 32 kb
+#define MICROPY_ENABLE_FINALISER                (1)
+
+
 
 #define MICROPY_MEM_STATS                       (1)
 #define MICROPY_MALLOC_USES_ALLOCATED_SIZE      (1)
@@ -135,14 +131,10 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE             437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_FATFS_RPATH                     (2)
 
-#define MICROPY_PY_CRYPTOLIB                    (1)
-#define MICROPY_PY_CRYPTOLIB_CTR                (1)
-#define MICROPY_PY_CRYPTOLIB_CONSTS             (1)
+#define MICROPY_PY_CRYPTOLIB                    (MICROPY_PY_SSL)
+#define MICROPY_PY_CRYPTOLIB_CTR                (MICROPY_PY_SSL)
+#define MICROPY_PY_CRYPTOLIB_CONSTS             (MICROPY_PY_SSL)
 
-#define MICROPY_PY_HASHLIB                      (1)
-#define MICROPY_PY_HASHLIB_MD5                  (1)
-#define MICROPY_PY_HASHLIB_SHA1                 (1)
-#define MICROPY_PY_HASHLIB_SHA256               (1)
 
 #define MP_STATE_PORT MP_STATE_VM
 

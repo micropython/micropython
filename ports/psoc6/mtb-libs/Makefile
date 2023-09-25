@@ -92,10 +92,14 @@ VERBOSE=
 # ... then code in directories named COMPONENT_foo and COMPONENT_bar will be
 # added to the build
 #
-COMPONENTS+=FREERTOS MBEDTLS
+COMPONENTS+=FREERTOS
 
 ifeq ($(MICROPY_PY_NETWORK),1)
 COMPONENTS+= LWIP
+endif
+
+ifeq ($(MICROPY_PY_SSL),1)
+COMPONENTS+=MBEDTLS
 endif
 
 # Like COMPONENTS, but disable optional code that was enabled by default.
@@ -108,7 +112,7 @@ DISABLE_COMPONENTS=
 SOURCES=
 
 DEFINES=CY_RETARGET_IO_CONVERT_LF_TO_CRLF CY_RTOS_AWARE
-DEFINES+=MBEDTLS_USER_CONFIG_FILE='"mbedtls_config.h"'
+
 
 ifeq ($(MICROPY_PY_NETWORK),1)
 DEFINES+= CYBSP_WIFI_CAPABLE 
@@ -121,13 +125,21 @@ DEFINES+= CYBSP_WIFI_CAPABLE
 DEFINES+=CY_WIFI_HOST_WAKE_SW_FORCE=0
 endif
 
+ifeq ($(MICROPY_PY_SSL),1)
+DEFINES+=MBEDTLS_USER_CONFIG_FILE='"mbedtls_config.h"'
+endif
+
 # Like SOURCES, but for include directories. Value should be paths to
 # directories (without a leading -I).
+
 MPY_PSOC6_PORT_DIR = ../
 MPY_TOP_DIR = $(MPY_PSOC6_PORT_DIR)/../..
+
+ifeq ($(MICROPY_PY_SSL),1)
 MBEDTLS_CONF_DIR = $(MPY_PSOC6_PORT_DIR)/mbedtls
 MBEDTLS_MPY_CONF_DIR = $(MPY_TOP_DIR)/extmod/mbedtls
 INCLUDES+= $(MBEDTLS_CONF_DIR) $(MBEDTLS_MPY_CONF_DIR)
+endif
 
 ifeq ($(MICROPY_PY_NETWORK),1)
 LWIP_OPTS_DIR = $(MPY_PSOC6_PORT_DIR)/lwip_inc
