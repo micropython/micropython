@@ -1,6 +1,27 @@
 #include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
 
+#define MP_DEFINE_BYTES_OBJ(obj_name, bin) mp_obj_str_t obj_name = {{&mp_type_bytes}, 0, sizeof(bin) - 1, (const byte *)bin}
+
+STATIC MP_DEFINE_BYTES_OBJ(i2c_init_byte_obj,
+    "\2\2\0"    // set data inversion register (no inversions)
+    "\2\1\xfe"  // set output data (CLK idle low, all others high)
+    "\2\3\x78"  // set direction register (cs, mosi, clk, reset as outputs)
+    );
+
+STATIC const mp_rom_map_elem_t tft_io_expander_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_i2c_address), MP_ROM_INT(0x3F)},
+    { MP_ROM_QSTR(MP_QSTR_gpio_address), MP_ROM_INT(1)},
+    { MP_ROM_QSTR(MP_QSTR_gpio_data_len), MP_ROM_INT(1)},
+    { MP_ROM_QSTR(MP_QSTR_gpio_data), MP_ROM_INT(0xFD)},
+    { MP_ROM_QSTR(MP_QSTR_cs_bit), MP_ROM_INT(1)},
+    { MP_ROM_QSTR(MP_QSTR_mosi_bit), MP_ROM_INT(7)},
+    { MP_ROM_QSTR(MP_QSTR_clk_bit), MP_ROM_INT(0)},
+    { MP_ROM_QSTR(MP_QSTR_reset_bit), MP_ROM_INT(2)},
+    { MP_ROM_QSTR(MP_QSTR_i2c_init_sequence), &i2c_init_byte_obj},
+};
+MP_DEFINE_CONST_DICT(tft_io_expander_dict, tft_io_expander_table);
+
 STATIC const mp_rom_obj_tuple_t tft_r_pins = {
     {&mp_type_tuple},
     5,
@@ -53,6 +74,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_TFT), MP_ROM_PTR(&tft_dict) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_IO_EXPANDER), MP_ROM_PTR(&tft_io_expander_dict) },
 
     { MP_ROM_QSTR(MP_QSTR_NEOPIXEL), MP_ROM_PTR(MICROPY_HW_NEOPIXEL) },
 
