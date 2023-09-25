@@ -39,15 +39,17 @@
 //|
 //| def ioexpander_send_init_sequence(
 //|     bus: busio.I2C,
+//|     init_sequence: ReadableBuffer,
+//|     *,
+//|     i2c_init_sequence: ReadableBuffer,
 //|     i2c_address: int,
-//|     reg_addr: int,
-//|     gpio_data_len: Length,
 //|     gpio_address: int,
+//|     gpio_data_len: Length,
 //|     gpio_data: int,
 //|     cs_bit: int,
 //|     mosi_bit: int,
 //|     clk_bit: int,
-//|     init_sequence: ReadableBuffer,
+//|     reset_bit: Optional[int],
 //| ):
 //|     """Send a displayio-style initialization sequence over an I2C I/O expander
 //|
@@ -60,30 +62,41 @@
 //|
 //|     Normally this function is used via a convenience library that is specific to the display & I/O expander in use.
 //|
+//|     If the board has an integrated I/O expander, ``**board.TFT_IO_EXPANDER`` expands to the proper arguments starting with ``gpio_address``.
+//|     Note that this may include the ``i2c_init_sequence`` argument which can change the direction & value of I/O expander pins.
+//|     If this is undesirable, take a copy of ``TFT_IO_EXPANDER`` and change or remove the ``i2c_init_sequence`` key.
+//|
+//|     If the board has an integrated display that requires an initialization sequence, ``board.TFT_INIT_SEQUENCE`` is the initialization string for the display.
+//|
 //|     :param busio.I2C bus: The I2C bus where the I/O expander resides
-//|     :param busio.i2c_address: int: The I2C bus address of the I/O expander
+//|     :param int busio.i2c_address: The I2C bus address of the I/O expander
+//|     :param ReadableBuffer init_sequence: The initialization sequence to send to the display
 //|     :param int gpio_address: The address portion of the I2C transaction (1 byte)
 //|     :param int gpio_data_len: The size of the data portion of the I2C transaction, 1 or 2 bytes
 //|     :param int gpio_data: The output value for all GPIO bits other than cs, mosi, and clk (needed because GPIO expanders may be unable to read back the current output value)
 //|     :param int cs_bit: The bit number (from 0 to 7, or from 0 to 15) of the chip select bit in the GPIO register
 //|     :param int mosi_value: The bit number (from 0 to 7, or from 0 to 15) of the data out bit in the GPIO register
 //|     :param int clk_value: The bit number (from 0 to 7, or from 0 to 15) of the clock out bit in the GPIO register
+//|     :param Optional[int] reset_value: The bit number (from 0 to 7, or from 0 to 15) of the display reset bit in the GPIO register
+//|     :param Optional[ReadableBuffer] i2c_init_sequence: An initialization sequence to send to the I2C expander
 //|     """
 //|
 
 STATIC mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_bus, ARG_i2c_address, ARG_gpio_address, ARG_gpio_data_len, ARG_gpio_data, ARG_cs_bit, ARG_mosi_bit, ARG_clk_bit, ARG_init_sequence, NUM_ARGS };
+    enum { ARG_bus, ARG_init_sequence, ARG_i2c_address, ARG_gpio_address, ARG_gpio_data_len, ARG_gpio_data, ARG_cs_bit, ARG_mosi_bit, ARG_clk_bit, ARG_reset_bit, ARG_i2c_init_sequence, NUM_ARGS };
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bus, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_i2c_address, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_gpio_address, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_gpio_data_len, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_gpio_data, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_cs_bit, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_mosi_bit, MP_ARG_REQUIRED | MP_ARG_INT },
-        { MP_QSTR_clk_bit, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_init_sequence, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_i2c_address, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_gpio_address, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_gpio_data_len, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_gpio_data, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_cs_bit, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_mosi_bit, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_clk_bit, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_reset_bit, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+        { MP_QSTR_i2c_init_sequence, MP_ARG_KW_ONLY | MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -99,8 +112,8 @@ STATIC mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos
     mp_int_t mosi_bit = args[ARG_mosi_bit].u_int;
     mp_int_t clk_bit = args[ARG_clk_bit].u_int;
 
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo, MP_BUFFER_READ);
+    mp_buffer_info_t bufinfo_display_init_sequence;
+    mp_get_buffer_raise(args[ARG_init_sequence].u_obj, &bufinfo_display_init_sequence, MP_BUFFER_READ);
 
     mp_arg_validate_int_range(i2c_address, 0, 127, MP_QSTR_i2c_address);
     mp_arg_validate_int_range(gpio_data_len, 1, 2, MP_QSTR_gpio_dat_len);
@@ -110,6 +123,16 @@ STATIC mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos
     mp_arg_validate_int_range(mosi_bit, 0, max_bit, MP_QSTR_mosi_bit);
     mp_arg_validate_int_range(clk_bit, 0, max_bit, MP_QSTR_clk_bit);
     mp_arg_validate_int_range(gpio_data, 0, (1 << (max_bit * 8)) - 1, MP_QSTR_gpio_data);
+    mp_int_t reset_mask = 0;
+    if (args[ARG_reset_bit].u_obj != MP_ROM_NONE) {
+        mp_int_t reset_bit = mp_arg_validate_int_range(mp_arg_validate_type_int(args[ARG_reset_bit].u_obj, MP_QSTR_reset_bit), 0, max_bit, MP_QSTR_reset_bit);
+        reset_mask = (1 << reset_bit);
+    }
+
+    mp_buffer_info_t bufinfo_i2c_init_sequence = {};
+    if (args[ARG_i2c_init_sequence].u_obj != mp_const_none) {
+        mp_get_buffer_raise(args[ARG_i2c_init_sequence].u_obj, &bufinfo_i2c_init_sequence, MP_BUFFER_READ);
+    }
 
     dotclockframebuffer_ioexpander_spi_bus b = {
         .bus = bus_obj,
@@ -120,9 +143,10 @@ STATIC mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos
         .cs_mask = 0x100 << cs_bit,
             .mosi_mask = 0x100 << mosi_bit,
             .clk_mask = 0x100 << clk_bit,
+            .reset_mask = reset_mask,
     };
 
-    dotclockframebuffer_ioexpander_send_init_sequence(&b, bufinfo.buf, bufinfo.len);
+    dotclockframebuffer_ioexpander_send_init_sequence(&b, &bufinfo_i2c_init_sequence, &bufinfo_display_init_sequence);
     return mp_const_none;
 }
 

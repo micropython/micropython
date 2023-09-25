@@ -43,15 +43,37 @@ static void ioexpander_bus_send(dotclockframebuffer_ioexpander_spi_bus *bus,
 //  * CPOL=CPHA=0
 //  * CS deasserted after each init sequence step, but not otherwise just like
 //    displayio fourwire bus without data_as_commands
-void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexpander_spi_bus *bus, const uint8_t *init_sequence, uint16_t init_sequence_len) {
+void dotclockframebuffer_ioexpander_send_init_sequence(dotclockframebuffer_ioexpander_spi_bus *bus, const mp_buffer_info_t *i2c_bus_init, const mp_buffer_info_t *display_init) {
     while (!common_hal_busio_i2c_try_lock(bus->bus)) {
         RUN_BACKGROUND_TASKS;
     }
 
-    // ensure deasserted CS and idle CLK
-    pin_change(bus, /* set */ bus->cs_mask, /* clear */ bus->clk_mask);
+    // send i2c init sequence
+    {
+        size_t init_sequence_len = i2c_bus_init->len;
+        const uint8_t *init_sequence = i2c_bus_init->buf;
 
-    for (uint32_t i = 0; i < init_sequence_len; /* NO INCREMENT */) {
+        for (size_t i = 0; i < init_sequence_len; /* NO INCREMENT */) {
+            uint8_t data_size = init_sequence[i];
+            const uint8_t *data_ptr = &init_sequence[i + 1];
+            (void)common_hal_busio_i2c_write(bus->bus, bus->i2c_device_address, data_ptr, data_size);
+            i = i + data_size + 1;
+        }
+    }
+
+    // ensure deasserted CS and idle CLK (and set other pins according to addr_reg_shadow); enter reset mode if applicable
+    pin_change(bus, /* set */ bus->cs_mask, /* clear */ bus->clk_mask | bus->reset_mask);
+
+    if (bus->reset_mask) {
+        mp_hal_delay_ms(10); // reset pulse length
+        pin_change(bus, /* set */ bus->reset_mask, /* clear */ 0);
+        mp_hal_delay_ms(100); // display start-up time
+    }
+
+    size_t init_sequence_len = display_init->len;
+    const uint8_t *init_sequence = display_init->buf;
+
+    for (size_t i = 0; i < init_sequence_len; /* NO INCREMENT */) {
         const uint8_t *cmd = init_sequence + i;
         uint8_t data_size = *(cmd + 1);
         bool delay = (data_size & DELAY) != 0;
