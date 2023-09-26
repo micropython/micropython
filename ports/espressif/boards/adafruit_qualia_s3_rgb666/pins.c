@@ -3,14 +3,15 @@
 
 #define MP_DEFINE_BYTES_OBJ(obj_name, bin) mp_obj_str_t obj_name = {{&mp_type_bytes}, 0, sizeof(bin) - 1, (const byte *)bin}
 
-STATIC MP_DEFINE_BYTES_OBJ(i2c_init_byte_obj,
-    "\2\2\0"    // set data inversion register (no inversions)
-    "\2\1\xfe"  // set output data (CLK idle low, all others high)
-    "\2\3\x78"  // set direction register (cs, mosi, clk, reset as outputs)
-    );
+static const char i2c_bus_init_sequence[] = {
+    2, 3, 0x78, // set GPIO direction
+    2, 2, 0, // disable all output inversion
+    0, // trailing NUL for python bytes() representation
+};
+STATIC MP_DEFINE_BYTES_OBJ(i2c_init_byte_obj, i2c_bus_init_sequence);
 
 STATIC const mp_rom_map_elem_t tft_io_expander_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_i2c_address), MP_ROM_INT(0x38)},
+    { MP_ROM_QSTR(MP_QSTR_i2c_address), MP_ROM_INT(0x3f)},
     { MP_ROM_QSTR(MP_QSTR_gpio_address), MP_ROM_INT(1)},
     { MP_ROM_QSTR(MP_QSTR_gpio_data_len), MP_ROM_INT(1)},
     { MP_ROM_QSTR(MP_QSTR_gpio_data), MP_ROM_INT(0xFD)},
