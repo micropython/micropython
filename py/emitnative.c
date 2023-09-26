@@ -745,7 +745,7 @@ STATIC void adjust_stack(emit_t *emit, mp_int_t stack_size_delta) {
     if (emit->pass > MP_PASS_SCOPE && emit->stack_size > emit->scope->stack_size) {
         emit->scope->stack_size = emit->stack_size;
     }
-    #ifdef DEBUG_PRINT
+    #if DEBUG_PRINT
     DEBUG_printf("  adjust_stack; stack_size=%d+%d; stack now:", emit->stack_size - stack_size_delta, stack_size_delta);
     for (int i = 0; i < emit->stack_size; i++) {
         stack_info_t *si = &emit->stack_info[i];
