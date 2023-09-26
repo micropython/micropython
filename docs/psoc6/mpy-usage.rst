@@ -15,11 +15,7 @@ the USB-UART interface from the on-board debugger.
 
 REPL stands for Read Evaluate Print Loop, and is the name given to the interactive MicroPython
 prompt that you can access on the PSoC6™ board. Using the REPL is by far the easiest way to test out your
-<<<<<<< HEAD
 code and run commands. This is equivalent to running the *python* command (without passing a script) in the command line terminal of your machine.
-=======
-code and run commands. This is equivalent to running the *python* commmand (without passing a script) in the command line terminal of your machine.
->>>>>>> 57a502306 (docs: Added docs and docs conf for PSoC6 port.)
 
 Use your preferred serial terminal software to connect to the board. Examples of serial
 terminal tools are `Putty <https://www.putty.org/>`_, which works for Windows and
@@ -85,11 +81,7 @@ The filesystem is described in the section below with some examples.
 The MicroPython filesystem
 ---------------------------
 
-<<<<<<< HEAD
 The PSoC6™ port offers both the ``FAT`` and ``LFS2`` filesystems, implemented in :ref:`MicroPython <filesystem>`. However, given its stability and reliability, the ``LFS2`` filesystem is selected as default. In addition, the filesystem is located, by default on the External Flash which has a capacity of 512 Mb (64 MB). 
-=======
-The PSoC6™ port offers both the ``FAT`` and ``LFS2`` filesystems, implemented in :ref:`MicroPython <filesystem>`. However, given its stabilty and reliability, the ``LFS2`` filesystem is selected as default. In addition, the filesystem is located, by default on the External Flash which has a capacity of 512 Mb (64 MB). 
->>>>>>> 57a502306 (docs: Added docs and docs conf for PSoC6 port.)
 
 The filesystem is mounted with the help of frozen scripts, located in the ``ports/psoc6/freeze`` directory. The default mount point of the filesystem is the ``/flash`` directory, which serves as its root. 
 
