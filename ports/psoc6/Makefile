@@ -17,13 +17,6 @@ endif
 MAKE_PINS_CSV = ./boards/make-pins-csv.py
 MAKE_PINS = ./boards/make-pins.py
 
-ifeq ($(BOARD), CY8CPROTO-062-4343W)
-PIN_PACKAGE_FILE = cyhal_psoc6_02_124_bga.h
-endif
-ifeq ($(BOARD), CY8CPROTO-063-BLE)
-PIN_PACKAGE_FILE = cyhal_psoc6_01_116_bga_ble.h #ToDo: Check the right file and replace
-endif
-
 #ToDo: Post adding af functionality, refactor to minimize dependent variables in py script if possible
 GEN_PINS_SRC := ./build/pins_$(BOARD).c
 HEADER_BUILD := ./build/genhdr
@@ -243,7 +236,7 @@ build: mtb_get_build_flags make_pins_csv $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN
 
 all: build
 
-clean: mtb_clean
+#clean: mtb_clean
 
 rebuild: clean mtb_clean all
 
