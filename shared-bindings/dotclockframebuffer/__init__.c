@@ -126,7 +126,7 @@ STATIC mp_obj_t ioexpander_send_init_sequence(size_t n_args, const mp_obj_t *pos
     mp_int_t reset_mask = 0;
     if (args[ARG_reset_bit].u_obj != MP_ROM_NONE) {
         mp_int_t reset_bit = mp_arg_validate_int_range(mp_arg_validate_type_int(args[ARG_reset_bit].u_obj, MP_QSTR_reset_bit), 0, max_bit, MP_QSTR_reset_bit);
-        reset_mask = (1 << reset_bit);
+        reset_mask = 0x100 << reset_bit;
     }
 
     mp_buffer_info_t bufinfo_i2c_init_sequence = {};
