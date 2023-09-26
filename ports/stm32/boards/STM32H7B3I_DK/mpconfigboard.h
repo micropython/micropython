@@ -39,20 +39,20 @@
 // SMPS configuration
 #define MICROPY_HW_PWR_SMPS_CONFIG  (PWR_DIRECT_SMPS_SUPPLY)
 
-#if 0
+#if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 // 512MBit external OSPI flash, used for either the filesystem or XIP memory mapped
 #define MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2 (29)
 #define MICROPY_HW_OSPIFLASH_CS     (pin_G6)
-#define MICROPY_HW_OSPIFLASH_CLK    (pin_B2)
+#define MICROPY_HW_OSPIFLASH_SCK    (pin_B2)
 #define MICROPY_HW_OSPIFLASH_DQS    (pin_C5)
-#define MICROPY_HW_OSPIFLASH_IO0    (pin_P8)
+#define MICROPY_HW_OSPIFLASH_IO0    (pin_D11)
 #define MICROPY_HW_OSPIFLASH_IO1    (pin_F9)
 #define MICROPY_HW_OSPIFLASH_IO2    (pin_F7)
 #define MICROPY_HW_OSPIFLASH_IO3    (pin_F6)
 #define MICROPY_HW_OSPIFLASH_IO4    (pin_C1)
 #define MICROPY_HW_OSPIFLASH_IO5    (pin_H3)
-#define MICROPY_HW_OSPIFLASH_IO6    (pin_D6)
-#define MICROPY_HW_OSPIFLASH_IO7    (pin_G14)
+#define MICROPY_HW_OSPIFLASH_IO6    (pin_G9)
+#define MICROPY_HW_OSPIFLASH_IO7    (pin_D7)
 #endif
 
 // UART buses
