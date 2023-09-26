@@ -304,17 +304,6 @@ ifneq ($(CIRCUITPY_BLEIO),0)
 SRC_C += common-hal/_bleio/ble_events.c
 endif
 
-ifneq ($(CIRCUITPY_PARALLELDISPLAY),0)
-ifeq ($(IDF_TARGET),esp32s3)
-LCD_SRC = 8080_lcd_$(IDF_TARGET)
-else
-LCD_SRC = i2s_lcd_$(IDF_TARGET)_driver
-endif
-SRC_C += esp-iot-solution/components/bus/$(LCD_SRC).c
-$(BUILD)/esp-iot-solution/components/bus/$(LCD_SRC).o: CFLAGS += -Wno-sign-compare
-CFLAGS += -isystem esp-iot-solution/components/bus/include
-endif
-
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
 CFLAGS += -isystem esp-idf/components/esp_lcd/include
 CFLAGS += -isystem esp-idf/components/esp_lcd/interface

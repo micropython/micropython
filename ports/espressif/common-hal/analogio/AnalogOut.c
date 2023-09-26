@@ -96,7 +96,9 @@ void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
 void analogout_reset(void) {
     #ifdef SOC_DAC_SUPPORTED
     for (uint8_t c = 0; c < SOC_DAC_CHAN_NUM; c++) {
-        dac_oneshot_del_channel(_active_handles[c]);
+        if (_active_handles[c] != NULL) {
+            dac_oneshot_del_channel(_active_handles[c]);
+        }
         _active_handles[c] = NULL;
     }
     #endif

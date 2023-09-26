@@ -147,9 +147,6 @@
 [submodule "ports/espressif/esp-protocols"]
 	path = ports/espressif/esp-protocols
 	url = https://github.com/espressif/esp-protocols.git
-[submodule "ports/espressif/esp-iot-solution"]
-	path = ports/espressif/esp-iot-solution
-	url = https://github.com/espressif/esp-iot-solution.git
 [submodule "ports/espressif/esp-camera"]
 	path = ports/espressif/esp-camera
 	url = https://github.com/adafruit/esp32-camera.git
