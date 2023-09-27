@@ -74,10 +74,6 @@
 #include "peripherals/touch.h"
 #endif
 
-#if CIRCUITPY_AUDIOBUSIO
-#include "common-hal/audiobusio/__init__.h"
-#endif
-
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #endif
@@ -386,10 +382,6 @@ void reset_port(void) {
 
     #if CIRCUITPY_ANALOGIO
     analogout_reset();
-    #endif
-
-    #if CIRCUITPY_AUDIOBUSIO
-    i2s_reset();
     #endif
 
     #if CIRCUITPY_BUSIO

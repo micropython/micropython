@@ -14,12 +14,6 @@ CONFIG_PARTITION_TABLE_CUSTOM=y
 # Driver Configurations
 #
 #
-# Legacy ADC Configuration
-#
-CONFIG_ADC_SUPPRESS_DEPRECATE_WARN=y
-# end of Legacy ADC Configuration
-
-#
 # GPTimer Configuration
 #
 CONFIG_GPTIMER_SUPPRESS_DEPRECATE_WARN=y

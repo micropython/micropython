@@ -1190,7 +1190,9 @@ void NORETURN nlr_jump_fail(void *val) {
 
 #ifndef NDEBUG
 static void NORETURN __fatal_error(const char *msg) {
+    #if CIRCUITPY_DEBUG == 0
     reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+    #endif
     while (true) {
     }
 }

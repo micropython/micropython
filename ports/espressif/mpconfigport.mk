@@ -36,6 +36,7 @@ CIRCUITPY_I2CTARGET ?= 1
 CIRCUITPY_IMAGECAPTURE = 0
 CIRCUITPY_MEMORYMAP ?= 1
 CIRCUITPY_NVM ?= 1
+CIRCUITPY_PARALLELDISPLAY ?= 0 # Turn off because it uses the old I2S driver which conflicts with the new ADC driver.
 CIRCUITPY_PS2IO ?= 1
 # Disabled temporarily
 CIRCUITPY_RGBMATRIX ?= 0
