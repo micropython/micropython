@@ -525,6 +525,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         )  # requires fp32, there's string_format_fp30.py instead
         skip_tests.add("float/bytes_construct.py")  # requires fp32
         skip_tests.add("float/bytearray_construct.py")  # requires fp32
+        skip_tests.add("float/float_format_ints_power10.py")  # requires fp32
     if upy_float_precision < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
