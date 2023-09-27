@@ -6,6 +6,17 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+try:
+    # Check there's enough memory to deflate gzip streams.
+    # zlib.compress(b'', wbits=25)
+    empty_gzip = (
+        b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    )
+    deflate.DeflateIO(io.BytesIO(empty_gzip)).read()
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
 # zlib.compress(b'micropython hello world hello world micropython', wbits=-9)
 data_raw = b'\xcb\xcdL.\xca/\xa8,\xc9\xc8\xcfS\xc8H\xcd\xc9\xc9W(\xcf/\xcaIAa\xe7"\xd4\x00\x00'
 # zlib.compress(b'micropython hello world hello world micropython', wbits=9)
