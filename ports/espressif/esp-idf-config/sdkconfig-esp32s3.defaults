@@ -52,6 +52,17 @@ CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
 # end of Driver Configurations
 
 #
+# LCD and Touch Panel
+#
+#
+# LCD Peripheral Configuration
+#
+CONFIG_LCD_RGB_RESTART_IN_VSYNC=y
+# end of LCD Peripheral Configuration
+
+# end of LCD and Touch Panel
+
+#
 # ESP System Settings
 #
 CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ_240=y

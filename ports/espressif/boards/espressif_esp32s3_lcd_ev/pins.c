@@ -1,6 +1,19 @@
 #include "py/objtuple.h"
+#include "boards/espressif_esp32s3_lcd_ev/board.h"
 #include "shared-bindings/board/__init__.h"
 #include "shared-module/displayio/__init__.h"
+
+STATIC const mp_rom_map_elem_t tft_io_expander_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_i2c_address), MP_ROM_INT(0x20)},
+    { MP_ROM_QSTR(MP_QSTR_gpio_address), MP_ROM_INT(1)},
+    { MP_ROM_QSTR(MP_QSTR_gpio_data_len), MP_ROM_INT(1)},
+    { MP_ROM_QSTR(MP_QSTR_gpio_data), MP_ROM_INT(0xF1)},
+    { MP_ROM_QSTR(MP_QSTR_cs_bit), MP_ROM_INT(1)},
+    { MP_ROM_QSTR(MP_QSTR_mosi_bit), MP_ROM_INT(3)},
+    { MP_ROM_QSTR(MP_QSTR_clk_bit), MP_ROM_INT(2)},
+    { MP_ROM_QSTR(MP_QSTR_i2c_init_sequence), &i2c_init_byte_obj},
+};
+MP_DEFINE_CONST_DICT(tft_io_expander_dict, tft_io_expander_table);
 
 STATIC const mp_rom_obj_tuple_t tft_r_pins = {
     {&mp_type_tuple},
@@ -73,6 +86,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_TFT_PINS), MP_ROM_PTR(&tft_pins_dict) },
     { MP_ROM_QSTR(MP_QSTR_TFT_TIMINGS), MP_ROM_PTR(&tft_timings_dict) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_IO_EXPANDER), MP_ROM_PTR(&tft_io_expander_dict) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_INIT_SEQUENCE), &display_init_byte_obj},
 
     { MP_ROM_QSTR(MP_QSTR_I2S_SCK), MP_ROM_PTR(&pin_GPIO16) },
     { MP_ROM_QSTR(MP_QSTR_I2S_MCLK), MP_ROM_PTR(&pin_GPIO5) },
