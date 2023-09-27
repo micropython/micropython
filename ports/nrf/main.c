@@ -302,8 +302,8 @@ soft_reset:
 #if !MICROPY_VFS
 #if MICROPY_MBFS
 // Use micro:bit filesystem
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
-    return os_mbfs_new_reader(filename);
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
+    return os_mbfs_new_reader(qstr_str(filename));
 }
 
 mp_import_stat_t mp_import_stat(const char *path) {
@@ -317,7 +317,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(mp_builtin_open_obj, 1, mp_builtin_open);
 
 #else
 // use dummy functions - no filesystem available
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(MP_ENOENT);
 }
 
