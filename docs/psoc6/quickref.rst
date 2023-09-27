@@ -186,12 +186,12 @@ The constructor
 ^^^^^^^^^^^^^^^
 An instance of the :mod:`machine.I2C` class can be created by invoking the constructor with all the 
 necessary parameters to fully configure the ``I2C``. By invoking the constructor, I2C peripheral is 
-initialized and configured to work in master mode. 
+initialized and configured to work in master mode. The maximum supported frequency is 1 MHz.
 
 ::
     
     from machine import I2C
-    i2c = I2C(0,scl='P6_0',sda='P6_1',freq=4000000)
+    i2c = I2C(0,scl='P6_0',sda='P6_1',freq=400000)
 
 Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode operation.
 
@@ -203,7 +203,7 @@ Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode op
 ::
 
     from machine import I2C
-    i2c = I2C(0,scl='P9_0',sda='P9_1',freq=4000000)  #I2C is initialised & configured with given scl,sda pins & frequency
+    i2c = I2C(0,scl='P9_0',sda='P9_1',freq=400000)  #I2C is initialised & configured with given scl,sda pins & frequency
 
 Methods
 ^^^^^^^
