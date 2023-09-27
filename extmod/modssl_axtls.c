@@ -208,7 +208,7 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     o->base.type = &ssl_socket_type;
     o->buf = NULL;
     o->bytes_left = 0;
-    o->sock = sock;
+    o->sock = MP_OBJ_NULL;
     o->blocking = true;
 
     uint32_t options = SSL_SERVER_VERIFY_LATER;
@@ -261,6 +261,10 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
             }
         }
     }
+
+    // Populate the socket entry now that the SSLSocket is fully set up.
+    // This prevents closing the socket if an exception is raised above.
+    o->sock = sock;
 
     return o;
 }
@@ -348,11 +352,21 @@ eagain:
 
 STATIC mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
-    if (request == MP_STREAM_CLOSE && self->ssl_sock != NULL) {
+    if (request == MP_STREAM_CLOSE) {
+        if (self->ssl_sock == NULL) {
+            // Already closed socket, do nothing.
+            return 0;
+        }
         ssl_free(self->ssl_sock);
         ssl_ctx_free(self->ssl_ctx);
         self->ssl_sock = NULL;
     }
+
+    if (self->sock == MP_OBJ_NULL) {
+        // Underlying socket may be null if the constructor raised an exception.
+        return 0;
+    }
+
     // Pass all requests down to the underlying socket
     return mp_get_stream(self->sock)->ioctl(self->sock, request, arg, errcode);
 }
