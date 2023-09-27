@@ -113,10 +113,10 @@ enum {
 
 void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *ctx);
 void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *ctx);
-void mp_raw_code_load_file(const char *filename, mp_compiled_module_t *ctx);
+void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *ctx);
 
 void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print);
-void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename);
+void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename);
 
 void mp_native_relocate(void *reloc, uint8_t *text, uintptr_t reloc_text);
 
