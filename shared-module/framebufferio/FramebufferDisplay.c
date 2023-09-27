@@ -252,7 +252,9 @@ STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t *self) {
     displayio_display_core_start_refresh(&self->core);
     const displayio_area_t *current_area = _get_refresh_areas(self);
     if (current_area) {
-        uint8_t dirty_row_bitmask[(self->core.height + 7) / 8];
+        bool transposed = (self->core.rotation == 90 || self->core.rotation == 270);
+        int row_count = transposed ? self->core.width : self->core.height;
+        uint8_t dirty_row_bitmask[(row_count + 7) / 8];
         memset(dirty_row_bitmask, 0, sizeof(dirty_row_bitmask));
         self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
         while (current_area != NULL) {
