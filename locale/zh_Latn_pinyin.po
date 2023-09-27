@@ -462,10 +462,6 @@ msgstr "bù zhī chí 3-arg pow()"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "wúfǎ qǐdòng AP"
@@ -2199,11 +2195,6 @@ msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 msgid "Unable to allocate the heap."
 msgstr "wú fǎ fēn pèi duī."
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr "wú fǎ pèi zhì ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Wúfǎ chuàngjiàn suǒ"
@@ -2222,19 +2213,9 @@ msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 msgid "Unable to init parser"
 msgstr "Wúfǎ chūshǐhuà jiěxī qì"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr "wú fǎ chū shǐ huà ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -4270,7 +4251,8 @@ msgstr "wèi yùliào de suō jìn"
 msgid "unexpected keyword argument"
 msgstr "yìwài de guānjiàn cí cānshù"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "yìwài de guānjiàn cí cānshù '%q'"
 
@@ -4427,10 +4409,6 @@ msgstr "wúfǎ jiě bāo de zhí shù"
 msgid "wrong output type"
 msgstr "cuòwù de shūchū lèixíng"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr "xTaskCreate shī bài"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi bìxū shì ndarray"
@@ -4442,6 +4420,24 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
+
+#, c-format
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ pèi zhì ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ chū shǐ huà ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate shī bài"
 
 #~ msgid "Unable to write to address."
 #~ msgstr "Wú fǎ xiě rù dì zhǐ."

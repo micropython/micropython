@@ -461,10 +461,6 @@ msgstr "pow() non supporté avec 3 paramètres"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Un canal d'interruptions matériel est déjà utilisé"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 est utilisé pars le Wifi"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr ""
@@ -2228,11 +2224,6 @@ msgstr "Impossible d'allouer des tampons pour une conversion signée"
 msgid "Unable to allocate the heap."
 msgstr "Impossible d'allouer le tas."
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Impossible de créer un verrou ('lock')"
@@ -2251,19 +2242,9 @@ msgstr "Impossible de trouver un GCLK libre"
 msgid "Unable to init parser"
 msgstr "Impossible d'initialiser le parser"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Impossible de lire les données de la palette de couleurs"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -4318,7 +4299,8 @@ msgstr "indentation inattendue"
 msgid "unexpected keyword argument"
 msgstr "paramètre nommé inattendu"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "paramètre nommé '%q' inattendu"
 
@@ -4475,10 +4457,6 @@ msgstr "mauvais nombre de valeurs à dégrouper"
 msgid "wrong output type"
 msgstr "type de sortie incorrect"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr "Échec de xTaskCreate"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi doit être un ndarray"
@@ -4490,6 +4468,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 est utilisé pars le Wifi"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "Échec de xTaskCreate"
 
 #~ msgid "Unable to write to address."
 #~ msgstr "L'écriture a échoué."

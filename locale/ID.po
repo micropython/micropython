@@ -450,10 +450,6 @@ msgstr "pow() 3-arg tidak didukung"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Sebuah channel hardware interrupt sedang digunakan"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 sedang digunakan oleh WiFi"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr ""
@@ -2180,11 +2176,6 @@ msgstr "Tidak dapat mengalokasikan buffer untuk signed conversion"
 msgid "Unable to allocate the heap."
 msgstr ""
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr ""
@@ -2203,19 +2194,9 @@ msgstr "Tidak dapat menemukan GCLK yang kosong"
 msgid "Unable to init parser"
 msgstr "Tidak dapat memulai parser"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Tidak dapat membaca data palet warna"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -4234,7 +4215,8 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr "argumen keyword tidak diharapkan"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "keyword argumen '%q' tidak diharapkan"
 
@@ -4391,10 +4373,6 @@ msgstr "jumlah nilai yang salah untuk dibongkar"
 msgid "wrong output type"
 msgstr "tipe output salah"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr "xTaskCreate gagal"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi harus ndarray"
@@ -4406,6 +4384,12 @@ msgstr "zi harus berjenis float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "Zi harus berbentuk (n_section, 2)"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 sedang digunakan oleh WiFi"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate gagal"
 
 #~ msgid "queue overflow"
 #~ msgstr "antrian meluap (overflow)"

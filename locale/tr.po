@@ -456,10 +456,6 @@ msgstr "3-argümanlı pow() desteklenmemektedir"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Bir donanım kesme kanalı halihazırda kullanılmaktadır"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2, WiFi tarafından kullanılmaktadır"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr ""
@@ -2176,11 +2172,6 @@ msgstr ""
 msgid "Unable to allocate the heap."
 msgstr ""
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr ""
@@ -2199,18 +2190,8 @@ msgstr ""
 msgid "Unable to init parser"
 msgstr ""
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
@@ -4227,7 +4208,8 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr ""
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr ""
 
@@ -4384,10 +4366,6 @@ msgstr ""
 msgid "wrong output type"
 msgstr ""
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr ""
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr ""
@@ -4399,6 +4377,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2, WiFi tarafından kullanılmaktadır"
 
 #~ msgid "'coroutine' object is not an iterator"
 #~ msgstr "'coroutine' nesnesi bir iteratör değildir"
