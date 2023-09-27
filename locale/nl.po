@@ -447,10 +447,6 @@ msgstr "3-arg pow() niet ondersteund"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Een hardware interrupt kanaal is al in gebruik"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 wordt gebruikt door WiFi"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr ""
@@ -2175,11 +2171,6 @@ msgstr "Niet in staat buffers voor gesigneerde conversie te alloceren"
 msgid "Unable to allocate the heap."
 msgstr ""
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Kan vergrendeling niet maken"
@@ -2198,19 +2189,9 @@ msgstr "Niet in staat een vrije GCLK te vinden"
 msgid "Unable to init parser"
 msgstr "Niet in staat om de parser te initialiseren"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Niet in staat kleurenpalet data te lezen"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -4239,7 +4220,8 @@ msgstr "onverwachte inspringing"
 msgid "unexpected keyword argument"
 msgstr "onverwacht trefwoordargument"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "onverwacht trefwoordargument '%q'"
 
@@ -4396,10 +4378,6 @@ msgstr "verkeerd aantal waarden om uit te pakken"
 msgid "wrong output type"
 msgstr "onjuist uitvoer type"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr ""
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi moet een ndarray zijn"
@@ -4411,6 +4389,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 wordt gebruikt door WiFi"
 
 #~ msgid "queue overflow"
 #~ msgstr "wachtrij overloop"

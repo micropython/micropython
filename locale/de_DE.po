@@ -458,10 +458,6 @@ msgstr "3-arg pow() wird nicht unterstützt"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 wird vom WiFi benutzt"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr ""
@@ -2207,11 +2203,6 @@ msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 msgid "Unable to allocate the heap."
 msgstr "Keine Allokation auf dem Heap möglich."
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr "ADC-DMA-Controller konnte nicht konfiguriert werden, Fehlercode: %d"
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr "Lock kann nicht erzeugt werden"
@@ -2230,19 +2221,9 @@ msgstr "Konnte keinen freien GCLK finden"
 msgid "Unable to init parser"
 msgstr "Parser konnte nicht gestartet werden"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr "ADC-DMA-Controller konnte nicht initialisiert werden, Fehlercode: %d"
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Konnte Farbpalettendaten nicht lesen"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr "ADC-DMA-Controller konnte nicht gestartet werden, Fehlercode: %d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
@@ -4302,7 +4283,8 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr "unerwartetes Schlüsselwort-Argument"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "unerwartetes Schlüsselwort-Argument '%q'"
 
@@ -4459,10 +4441,6 @@ msgstr "falsche Anzahl zu entpackender Werte"
 msgid "wrong output type"
 msgstr "Falscher Ausgabetyp"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr "xTaskCreate fehlgeschlagen"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi muss ein ndarray sein"
@@ -4474,6 +4452,25 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 wird vom WiFi benutzt"
+
+#, c-format
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "ADC-DMA-Controller konnte nicht konfiguriert werden, Fehlercode: %d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr ""
+#~ "ADC-DMA-Controller konnte nicht initialisiert werden, Fehlercode: %d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "ADC-DMA-Controller konnte nicht gestartet werden, Fehlercode: %d"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate fehlgeschlagen"
 
 #~ msgid "Unable to write to address."
 #~ msgstr "An die Adresse kann nicht geschrieben werden."

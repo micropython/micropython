@@ -449,10 +449,6 @@ msgstr "3-arg pow() hindi suportado"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Isang channel ng hardware interrupt ay ginagamit na"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr ""
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr ""
@@ -2170,11 +2166,6 @@ msgstr "Hindi ma-allocate ang buffers para sa naka-sign na conversion"
 msgid "Unable to allocate the heap."
 msgstr ""
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr ""
@@ -2193,18 +2184,8 @@ msgstr "Hindi mahanap ang libreng GCLK"
 msgid "Unable to init parser"
 msgstr "Hindi ma-init ang parser"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
@@ -4241,7 +4222,8 @@ msgstr "hindi inaasahang indent"
 msgid "unexpected keyword argument"
 msgstr "hindi inaasahang argumento ng keyword"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "hindi inaasahang argumento ng keyword na '%q'"
 
@@ -4396,10 +4378,6 @@ msgstr "maling number ng value na i-unpack"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "wrong output type"
-msgstr ""
-
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c

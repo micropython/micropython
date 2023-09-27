@@ -452,10 +452,6 @@ msgstr "pow() con tre argmomenti non supportata"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Un canale di interruzione hardware è già in uso"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 sta usando il WiFi"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr ""
@@ -2177,11 +2173,6 @@ msgstr "Ipossibilitato ad allocare buffer per la conversione con segno"
 msgid "Unable to allocate the heap."
 msgstr ""
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
 msgstr ""
@@ -2200,18 +2191,8 @@ msgstr "Impossibile trovare un GCLK libero"
 msgid "Unable to init parser"
 msgstr "Inizilizzazione del parser non possibile"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
@@ -4251,7 +4232,8 @@ msgstr "indentazione inaspettata"
 msgid "unexpected keyword argument"
 msgstr "argomento nominato inaspettato"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "argomento nominato '%q' inaspettato"
 
@@ -4408,10 +4390,6 @@ msgstr "numero di valori da scompattare non corretto"
 msgid "wrong output type"
 msgstr ""
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr ""
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr ""
@@ -4423,6 +4401,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 sta usando il WiFi"
 
 #~ msgid "queue overflow"
 #~ msgstr "overflow della coda"
