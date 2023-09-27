@@ -164,6 +164,7 @@ SECTIONS
         *machine_hspi.o(.literal*, .text*)
         *hspi.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
+        *modespnow.o(.literal* .text*)
         *modos.o(.literal* .text*)
         *modlwip.o(.literal* .text*)
         *modsocket.o(.literal* .text*)
