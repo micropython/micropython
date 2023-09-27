@@ -85,7 +85,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     }
 
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
-    size_t framebuffer_size = self->first_pixel_offset + self->row_stride * self->core.height;
+    size_t framebuffer_size = self->first_pixel_offset + self->row_stride * (self->core.height - 1) + self->core.width * self->core.colorspace.depth / 8;
 
     mp_arg_validate_length_min(self->bufinfo.len, framebuffer_size, MP_QSTR_framebuffer);
 

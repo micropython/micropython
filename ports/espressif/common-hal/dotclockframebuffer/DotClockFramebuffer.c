@@ -175,9 +175,10 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
 
     self->frequency = frequency;
     self->row_stride = 2 * (width + overscan_left);
+    self->first_pixel_offset = 2 * overscan_left;
     self->refresh_rate = frequency / (width + hsync_front_porch + hsync_back_porch) / (height + vsync_front_porch + vsync_back_porch);
-    self->bufinfo.buf = (uint8_t *)fb + 2 * overscan_left; // first line starts after overscan_left pixels
-    self->bufinfo.len = 2 * (cfg->timings.h_res * cfg->timings.v_res - overscan_left); // no overscan after last line
+    self->bufinfo.buf = (uint8_t *)fb;
+    self->bufinfo.len = 2 * (cfg->timings.h_res * cfg->timings.v_res);
     self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
 
 //  LCD_CAM.lcd_ctrl2.lcd_vsync_idle_pol = _vsync_polarity;
@@ -202,7 +203,7 @@ bool common_hal_dotclockframebuffer_framebuffer_deinitialized(dotclockframebuffe
 
 
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_width(dotclockframebuffer_framebuffer_obj_t *self) {
-    return self->panel_config.timings.h_res;
+    return self->panel_config.timings.h_res - self->first_pixel_offset / 2;
 }
 
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_height(dotclockframebuffer_framebuffer_obj_t *self) {
@@ -215,6 +216,10 @@ mp_int_t common_hal_dotclockframebuffer_framebuffer_get_frequency(dotclockframeb
 
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_row_stride(dotclockframebuffer_framebuffer_obj_t *self) {
     return self->row_stride;
+}
+
+mp_int_t common_hal_dotclockframebuffer_framebuffer_get_first_pixel_offset(dotclockframebuffer_framebuffer_obj_t *self) {
+    return self->first_pixel_offset;
 }
 
 void common_hal_dotclockframebuffer_framebuffer_refresh(dotclockframebuffer_framebuffer_obj_t *self) {

@@ -269,6 +269,24 @@ MP_DEFINE_CONST_FUN_OBJ_1(dotclockframebuffer_framebuffer_get_row_stride_obj, do
 MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_row_stride_obj,
     (mp_obj_t)&dotclockframebuffer_framebuffer_get_row_stride_obj);
 
+//|     first_pixel_offset: int
+//|     """The first_pixel_offset of the display, in bytes
+//|
+//|     Due to overscan or alignment requirements, the memory address for row N+1 may not be exactly ``2*width`` bytes after the memory address for row N.
+//|     This property gives the stride in **bytes**.
+//|
+//|     On Espressif this value is **guaranteed** to be a multiple of the 2 (i.e., it is a whole number of pixels)"""
+//|
+STATIC mp_obj_t dotclockframebuffer_framebuffer_get_first_pixel_offset(mp_obj_t self_in) {
+    dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
+    check_for_deinit(self);
+    return MP_OBJ_NEW_SMALL_INT(common_hal_dotclockframebuffer_framebuffer_get_first_pixel_offset(self));
+}
+MP_DEFINE_CONST_FUN_OBJ_1(dotclockframebuffer_framebuffer_get_first_pixel_offset_obj, dotclockframebuffer_framebuffer_get_first_pixel_offset);
+
+MP_PROPERTY_GETTER(dotclockframebuffer_framebuffer_first_pixel_offset_obj,
+    (mp_obj_t)&dotclockframebuffer_framebuffer_get_first_pixel_offset_obj);
+
 STATIC mp_int_t dotclockframebuffer_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
     // a readonly framebuffer would be unusual but not impossible
@@ -331,6 +349,11 @@ STATIC int dotclockframebuffer_framebuffer_get_row_stride_proto(mp_obj_t self_in
     return common_hal_dotclockframebuffer_framebuffer_get_row_stride(self);
 }
 
+STATIC int dotclockframebuffer_framebuffer_get_first_pixel_offset_proto(mp_obj_t self_in) {
+    dotclockframebuffer_framebuffer_obj_t *self = (dotclockframebuffer_framebuffer_obj_t *)self_in;
+    return common_hal_dotclockframebuffer_framebuffer_get_first_pixel_offset(self);
+}
+
 STATIC const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
     MP_PROTO_IMPLEMENT(MP_QSTR_protocol_framebuffer)
     .get_bufinfo = dotclockframebuffer_framebuffer_get_bufinfo,
@@ -340,6 +363,7 @@ STATIC const framebuffer_p_t dotclockframebuffer_framebuffer_proto = {
     .get_height = dotclockframebuffer_framebuffer_get_height_proto,
     .get_color_depth = dotclockframebuffer_framebuffer_get_color_depth_proto,
     .get_row_stride = dotclockframebuffer_framebuffer_get_row_stride_proto,
+    .get_first_pixel_offset = dotclockframebuffer_framebuffer_get_first_pixel_offset_proto,
     .get_bytes_per_cell = dotclockframebuffer_framebuffer_get_bytes_per_cell_proto,
     .get_native_frames_per_second = dotclockframebuffer_framebuffer_get_native_frames_per_second_proto,
     .swapbuffers = dotclockframebuffer_framebuffer_swapbuffers,
@@ -351,6 +375,7 @@ STATIC const mp_rom_map_elem_t dotclockframebuffer_framebuffer_locals_dict_table
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&dotclockframebuffer_framebuffer_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&dotclockframebuffer_framebuffer_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_row_stride), MP_ROM_PTR(&dotclockframebuffer_framebuffer_row_stride_obj) },
+    { MP_ROM_QSTR(MP_QSTR_first_pixel_offset), MP_ROM_PTR(&dotclockframebuffer_framebuffer_first_pixel_offset_obj) },
     { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_PTR(&dotclockframebuffer_framebuffer_frequency_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh_rate), MP_ROM_PTR(&dotclockframebuffer_framebuffer_refresh_rate_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&dotclockframebuffer_framebuffer_refresh_obj) },
