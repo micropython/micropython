@@ -34,7 +34,7 @@
 // as long as MPY_VERSION matches, but a native .mpy (i.e. one with an arch
 // set) must also match MPY_SUB_VERSION. This allows 3 additional updates to
 // the native ABI per bytecode revision.
-#define MPY_VERSION 6
+#define MPY_VERSION 7
 #define MPY_SUB_VERSION 1
 
 // Macros to encode/decode sub-version to/from the feature byte. This replaces
@@ -106,8 +106,10 @@ enum {
     MP_PERSISTENT_OBJ_STR,
     MP_PERSISTENT_OBJ_BYTES,
     MP_PERSISTENT_OBJ_INT,
-    MP_PERSISTENT_OBJ_FLOAT,
-    MP_PERSISTENT_OBJ_COMPLEX,
+    MP_PERSISTENT_OBJ_FP_FLOAT,
+    MP_PERSISTENT_OBJ_FP_DOUBLE,
+    MP_PERSISTENT_OBJ_COMPLEX_FLOAT,
+    MP_PERSISTENT_OBJ_COMPLEX_DOUBLE,
     MP_PERSISTENT_OBJ_TUPLE,
 };
 

@@ -52,11 +52,11 @@ class UserFS:
 
 
 # these are the test .mpy files
-valid_header = bytes([77, 6, mpy_arch, 31])
+valid_header = bytes([77, 7, mpy_arch, 31])
 # fmt: off
 user_files = {
     # bad architecture (mpy_arch needed for sub-version)
-    '/mod0.mpy': bytes([77, 6, 0xfc | mpy_arch, 31]),
+    '/mod0.mpy': bytes([77, 7, 0xfc | mpy_arch, 31]),
 
     # test loading of viper and asm
     '/mod1.mpy': valid_header + (

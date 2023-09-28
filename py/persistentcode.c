@@ -24,17 +24,22 @@
  * THE SOFTWARE.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 
+#include "py/binary.h"
+#include "py/obj.h"
+#include "py/objint.h"
 #include "py/reader.h"
 #include "py/nativeglue.h"
 #include "py/persistentcode.h"
 #include "py/bc0.h"
 #include "py/objstr.h"
 #include "py/mpthread.h"
+#include "py/misc.h"
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_PERSISTENT_CODE_SAVE
 
@@ -170,6 +175,49 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
     return qst;
 }
 
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
+STATIC mp_float_t mp_read_float_binary(mp_reader_t *reader, bool is_double) {
+    size_t len = is_double ? 8 : 4;
+    // native-endian buffer
+    byte buf[8];
+
+    #if MP_ENDIANNESS_LITTLE
+    read_bytes(reader, buf, len);
+    #else
+    for (int i = len - 1; i >= 0; i--) {
+        const byte b = read_byte(reader);
+        buf[i] = b;
+    }
+    #endif
+
+    if (is_double) {
+        union double_int_union {
+            double f;
+            int64_t i;
+        } u;
+        memcpy(&u.i, buf, len);
+
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        return u.f;
+        #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        return (mp_float_t)u.f;
+        #endif
+    } else {
+        union float_int_union {
+            float f;
+            int32_t i;
+        } u;
+        memcpy(&u.i, buf, len);
+
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        return (mp_float_t)u.f;
+        #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        return u.f;
+        #endif
+    }
+}
+#endif
+
 STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     byte obj_type = read_byte(reader);
     #if MICROPY_EMIT_MACHINE_CODE
@@ -185,7 +233,47 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
         return mp_const_true;
     } else if (obj_type == MP_PERSISTENT_OBJ_ELLIPSIS) {
         return MP_OBJ_FROM_PTR(&mp_const_ellipsis_obj);
-    } else {
+    } else if (obj_type == MP_PERSISTENT_OBJ_INT) {
+        size_t len_neg = read_uint(reader);
+        size_t len = len_neg >> 1;
+        bool is_negative = len_neg & 1;
+
+        vstr_t vstr;
+        vstr_init_len(&vstr, len);
+        read_bytes(reader, (byte *)vstr.buf, len);
+
+        if (len > sizeof(mp_int_t)) {
+            // definitely too big for small int
+            return mp_obj_int_from_bytes_impl(is_negative, false, len, (byte *)vstr.buf);
+        }
+
+        mp_int_t val = mp_binary_get_int(len, is_negative, false, (byte *)vstr.buf);
+
+        if (!MP_SMALL_INT_FITS(val) || (!is_negative && val < 0)) {
+            // still didn't fit in small int
+            return mp_obj_int_from_bytes_impl(is_negative, false, len, (byte *)vstr.buf);
+        } else {
+            return MP_OBJ_NEW_SMALL_INT(val);
+        }
+    }
+    #if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    else if (obj_type == MP_PERSISTENT_OBJ_COMPLEX_FLOAT ||
+             obj_type == MP_PERSISTENT_OBJ_COMPLEX_DOUBLE) {
+        bool is_double = obj_type == MP_PERSISTENT_OBJ_COMPLEX_DOUBLE;
+        mp_float_t real = mp_read_float_binary(reader, is_double);
+        mp_float_t imag = mp_read_float_binary(reader, is_double);
+        return mp_obj_new_complex(real, imag);
+    }
+    #endif
+    else if (obj_type == MP_PERSISTENT_OBJ_FP_FLOAT ||
+             obj_type == MP_PERSISTENT_OBJ_FP_DOUBLE) {
+        bool is_double = obj_type == MP_PERSISTENT_OBJ_FP_DOUBLE;
+        mp_float_t f = mp_read_float_binary(reader, is_double);
+        return mp_obj_new_float(f);
+    }
+    #endif
+    else {
         size_t len = read_uint(reader);
         if (len == 0 && obj_type == MP_PERSISTENT_OBJ_BYTES) {
             read_byte(reader); // skip null terminator
@@ -197,21 +285,16 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
             }
             return MP_OBJ_FROM_PTR(tuple);
         }
+
+        assert(obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES);
         vstr_t vstr;
         vstr_init_len(&vstr, len);
         read_bytes(reader, (byte *)vstr.buf, len);
-        if (obj_type == MP_PERSISTENT_OBJ_STR || obj_type == MP_PERSISTENT_OBJ_BYTES) {
-            read_byte(reader); // skip null terminator
-            if (obj_type == MP_PERSISTENT_OBJ_STR) {
-                return mp_obj_new_str_from_utf8_vstr(&vstr);
-            } else {
-                return mp_obj_new_bytes_from_vstr(&vstr);
-            }
-        } else if (obj_type == MP_PERSISTENT_OBJ_INT) {
-            return mp_parse_num_integer(vstr.buf, vstr.len, 10, NULL);
+        read_byte(reader); // skip null terminator
+        if (obj_type == MP_PERSISTENT_OBJ_STR) {
+            return mp_obj_new_str_from_utf8_vstr(&vstr);
         } else {
-            assert(obj_type == MP_PERSISTENT_OBJ_FLOAT || obj_type == MP_PERSISTENT_OBJ_COMPLEX);
-            return mp_parse_num_float(vstr.buf, vstr.len, obj_type == MP_PERSISTENT_OBJ_COMPLEX, NULL);
+            return mp_obj_new_bytes_from_vstr(&vstr);
         }
     }
 }
@@ -493,6 +576,23 @@ STATIC void save_qstr(mp_print_t *print, qstr qst) {
     mp_print_bytes(print, str, len + 1); // +1 to store null terminator
 }
 
+#if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
+STATIC void mp_print_float_binary(mp_print_t *print, mp_float_t f) {
+    mp_float_union_t fu = { .f = f };
+    mp_float_uint_t f_int_val = fu.i;
+
+    #if MP_ENDIANNESS_LITTLE
+    mp_print_bytes(print, (const byte *)&f_int_val, sizeof(f_int_val));
+    #else
+    for (int i = 0; i < sizeof(f_int_val); i++) {
+        const byte b = f_int_val & 0xff;
+        mp_print_bytes(print, &b, 1);
+        f_int_val >>= 8;
+    }
+    #endif
+}
+#endif
+
 STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
     #if MICROPY_EMIT_MACHINE_CODE
     if (o == MP_OBJ_FROM_PTR(&mp_fun_table)) {
@@ -534,28 +634,90 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
         for (size_t i = 0; i < len; ++i) {
             save_obj(print, items[i]);
         }
-    } else {
-        // we save numbers using a simplistic text representation
-        // TODO could be improved
-        byte obj_type;
-        if (mp_obj_is_int(o)) {
-            obj_type = MP_PERSISTENT_OBJ_INT;
-        #if MICROPY_PY_BUILTINS_COMPLEX
-        } else if (mp_obj_is_type(o, &mp_type_complex)) {
-            obj_type = MP_PERSISTENT_OBJ_COMPLEX;
-        #endif
+    } else if (mp_obj_is_int(o)) {
+        // Integers are saved as a metadata byte followed by the little-endian bytes of the integer.
+        // The metadata is the length shifted left by one, ORed with a bit specifying whether the
+        // integer is negative (1) or positive (0).
+        vstr_t vstr = {0};
+        byte smallint_buf[sizeof(mp_int_t)];
+
+        size_t len;
+        byte *buf;
+        bool is_negative = mp_obj_int_sign(o) == -1;
+
+        if (mp_obj_is_small_int(o)) {
+            mp_int_t val = MP_OBJ_SMALL_INT_VALUE(o);
+
+            len = sizeof(mp_int_t);
+            mp_binary_set_int(len, false, smallint_buf, val);
+            buf = smallint_buf;
         } else {
-            assert(mp_obj_is_float(o));
-            obj_type = MP_PERSISTENT_OBJ_FLOAT;
+            len = mp_obj_int_max_bytes_needed_impl(o);
+            vstr_init(&vstr, len);
+            mp_obj_int_to_bytes_impl(o, false, len, (byte *)vstr.buf);
+            buf = (byte *)vstr.buf;
         }
-        vstr_t vstr;
-        mp_print_t pr;
-        vstr_init_print(&vstr, 10, &pr);
-        mp_obj_print_helper(&pr, o, PRINT_REPR);
+
+        // Try to chop off as many bytes as possible (starting from MSB). Either chop off 0xff
+        // bytes if the resulting number's MSB is still 1 (is_negative=true), or chop off zero
+        // bytes (is_negative=false)
+        size_t leading_unneeded_bytes = 0;
+        for (int i = len - 1; i >= 0; i--) {
+            if (is_negative) {
+                // Try to remove a 0xff byte
+                if (i > 0 && buf[i] == 0xff && buf[i - 1] & 0x80) {
+                    // The current byte is all 1s, and the MSB of the next byte is 1, so this
+                    // byte can be chopped off.
+                    leading_unneeded_bytes++;
+                } else {
+                    // byte is required, end.
+                    break;
+                }
+            } else if (buf[i] == 0) {
+                // Remove a zero byte
+                leading_unneeded_bytes++;
+            } else {
+                // byte is required, end.
+                break;
+            }
+        }
+        len -= leading_unneeded_bytes;
+
+        byte obj_type = MP_PERSISTENT_OBJ_INT;
         mp_print_bytes(print, &obj_type, 1);
-        mp_print_uint(print, vstr.len);
-        mp_print_bytes(print, (const byte *)vstr.buf, vstr.len);
+        mp_print_uint(print, (len << 1) | is_negative);
+        mp_print_bytes(print, buf, len);
+
         vstr_clear(&vstr);
+    }
+    #if MICROPY_FLOAT_IMPL != MICROPY_FLOAT_IMPL_NONE
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    else if (mp_obj_is_type(o, &mp_type_complex)) {
+        mp_float_t real, imag;
+        mp_obj_complex_get(o, &real, &imag);
+
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        byte obj_type = MP_PERSISTENT_OBJ_COMPLEX_DOUBLE;
+        #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        byte obj_type = MP_PERSISTENT_OBJ_COMPLEX_FLOAT;
+        #endif
+        mp_print_bytes(print, &obj_type, 1);
+        mp_print_float_binary(print, real);
+        mp_print_float_binary(print, imag);
+    }
+    #endif
+    else if (mp_obj_is_float(o)) {
+        #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
+        byte obj_type = MP_PERSISTENT_OBJ_FP_DOUBLE;
+        #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
+        byte obj_type = MP_PERSISTENT_OBJ_FP_FLOAT;
+        #endif
+        mp_print_bytes(print, &obj_type, 1);
+        mp_print_float_binary(print, mp_obj_float_get(o));
+    }
+    #endif
+    else {
+        mp_raise_ValueError(MP_ERROR_TEXT("Unhandled constant type"));
     }
 }
 
