@@ -10,10 +10,10 @@
 #define LSE_VALUE (32768)
 #define EXTERNAL_CLOCK_VALUE (12288000)
 
-#include "boards/stm32h5xx_hal_conf_base.h"
-
 // Oscillator timeouts in ms
 #define HSE_STARTUP_TIMEOUT (100)
 #define LSE_STARTUP_TIMEOUT (5000)
+
+#include "boards/stm32h5xx_hal_conf_base.h"
 
 #endif // MICROPY_INCLUDED_STM32H5XX_HAL_CONF_H
