@@ -186,25 +186,26 @@
 // Bluetooth config.
 #define MICROPY_HW_BLE_UART_ID          (1)
 // D11 pin_GPIO_AD_B0_12
-#define MICROPY_HW_BLE_UART_RTS         (&pin_GPIO_AD_B0_12)
+#define MICROPY_HW_BLE_UART_RTS         (pin_GPIO_AD_B0_12)
 #define MICROPY_HW_BLE_UART_BAUDRATE    (460800)
 #define MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY (460800)
+#define MICROPY_HW_BLE_UART_FLOW_CONTROL (0)
 
 // WiFi config.
 #define MICROPY_HW_WIFI_SPI_ID          (0)
 #define MICROPY_HW_WIFI_SPI_BAUDRATE    (8 * 1000 * 1000)
 // D10 pin_GPIO_AD_B0_11
-#define MICROPY_HW_WIFI_SPI_CS          (&pin_GPIO_AD_B0_11)
+#define MICROPY_HW_WIFI_SPI_CS          (pin_GPIO_AD_B0_11)
 // D6  pin_GPIO_AD_B0_14
-#define MICROPY_HW_WIFI_DATAREADY       (&pin_GPIO_AD_B0_14)
+#define MICROPY_HW_WIFI_DATAREADY       (pin_GPIO_AD_B0_14)
 // D7  pin_GPIO_AD_B1_06
-#define MICROPY_HW_WIFI_HANDSHAKE       (&pin_GPIO_AD_B1_06)
+#define MICROPY_HW_WIFI_HANDSHAKE       (pin_GPIO_AD_B1_06)
 #define MICROPY_HW_WIFI_IRQ_PIN         (MICROPY_HW_WIFI_DATAREADY)
 
 // ESP hosted control pins
 // D5  pin_GPIO_AD_B0_06
-#define MICROPY_HW_ESP_HOSTED_RESET     (&pin_GPIO_AD_B0_06)
+#define MICROPY_HW_ESP_HOSTED_RESET     (pin_GPIO_AD_B0_06)
 // D6  pin_GPIO_AD_B0_14
-#define MICROPY_HW_ESP_HOSTED_GPIO0     (&pin_GPIO_AD_B0_14)
+#define MICROPY_HW_ESP_HOSTED_GPIO0     (pin_GPIO_AD_B0_14)
 
 #define MICROPY_HW_ESP_HOSTED_SHARED_PINS (1)
