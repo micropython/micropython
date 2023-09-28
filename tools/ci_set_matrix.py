@@ -189,14 +189,14 @@ def set_boards(build_all: bool):
 
                     # Check frozen files to see if they are in each board
                     if file.startswith("frozen"):
-                        if file in settings.get("FROZEN_MPY_DIRS", ""):
+                        if file in settings["FROZEN_MPY_DIRS"]:
                             boards_to_build.add(board)
                             continue
 
                     # Check supervisor files
                     # This is useful for limiting workflow changes to the relevant boards
                     if file.startswith("supervisor"):
-                        if file in settings.get("SRC_SUPERVISOR", ""):
+                        if file in settings["SRC_SUPERVISOR"]:
                             boards_to_build.add(board)
                             continue
 
