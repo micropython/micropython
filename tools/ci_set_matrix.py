@@ -203,9 +203,6 @@ def set_boards(build_all: bool):
                         if file.startswith("supervisor/shared/web_workflow/static/"):
                             web_workflow = settings["CIRCUITPY_WEB_WORKFLOW"]
 
-                            while web_workflow.startswith("$("):
-                                web_workflow = settings[web_workflow[2:-1]]
-
                             if web_workflow != "0":
                                 boards_to_build.add(board)
                                 continue
