@@ -280,6 +280,7 @@ bool supervisor_start_web_workflow(bool reload) {
         #if CIRCUITPY_CYW43
         common_hal_wifi_radio_stop_station(&common_hal_wifi_radio_obj);
         #endif
+
         return false;
     }
 
