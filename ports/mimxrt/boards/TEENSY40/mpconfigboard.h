@@ -1,6 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "Teensy 4.0"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1062DVJ6A"
 
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-teensy41"
+
 // Teensy 4.0 has 1 board LED
 #define MICROPY_HW_LED1_PIN (pin_GPIO_B0_03)
 #define MICROPY_HW_LED_ON(pin) (mp_hal_pin_high(pin))
@@ -115,3 +117,34 @@
         .data2 = { GPIO_SD_B0_04_USDHC1_DATA2 }, \
         .data3 = { GPIO_SD_B0_05_USDHC1_DATA3 }, \
     }
+
+// WiFi config.
+#define MICROPY_HW_WIFI_SPI_ID          (0)
+#define MICROPY_HW_WIFI_SPI_BAUDRATE    (9000000)
+// Do not use the default CS pin.
+#define MICROPY_HW_WIFI_CS_NUMBER       (-1)
+// CS: D5 = pin_GPIO_EMC_08
+#define MICROPY_HW_WIFI_SPI_CS          (pin_GPIO_EMC_08)
+// HANDSHAKE: D9 = GPIO_B0_11
+#define MICROPY_HW_WIFI_HANDSHAKE       (pin_GPIO_B0_11)
+// DATREADY: D10 = GPIO_B0_00
+#define MICROPY_HW_WIFI_DATAREADY       (pin_GPIO_B0_00)
+#define MICROPY_HW_WIFI_IRQ_PIN         (MICROPY_HW_WIFI_DATAREADY)
+
+// Bluetooth config.
+#define MICROPY_HW_BLE_UART_ID          (1)
+#define MICROPY_HW_BLE_UART_BAUDRATE    (460800)
+#define MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY (460800)
+#define MICROPY_HW_BLE_UART_FLOW_CONTROL (0)
+// RTS: MOSI = D11 pin_GPIO_B0_02
+#define MICROPY_HW_BLE_UART_RTS         (pin_GPIO_B0_02)
+// CTS: MISO = D12 pin_GPIO_B0_01
+#define MICROPY_HW_BLE_UART_CTS         (pin_GPIO_B0_01)
+
+// ESP hosted control pins
+// MICROPY_HW_ESP_HOSTED_RESET: D6 = GPIO_B0_10
+#define MICROPY_HW_ESP_HOSTED_RESET     (pin_GPIO_B0_10)
+// GPIO0 = DATAREADY: D5 = pin_GPIO_EMC_08
+#define MICROPY_HW_ESP_HOSTED_GPIO0     (MICROPY_HW_WIFI_DATAREADY)
+
+#define MICROPY_HW_ESP_HOSTED_SHARED_PINS (1)
