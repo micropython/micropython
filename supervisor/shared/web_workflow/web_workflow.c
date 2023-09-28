@@ -266,9 +266,6 @@ bool supervisor_start_web_workflow(bool reload) {
 
     os_getenv_err_t result = common_hal_os_getenv_str("CIRCUITPY_WIFI_SSID", ssid, sizeof(ssid));
     if (result != GETENV_OK) {
-        #if CIRCUITPY_CYW43
-        common_hal_wifi_radio_stop_station(&common_hal_wifi_radio_obj);
-        #endif
         return false;
     }
 
@@ -277,10 +274,6 @@ bool supervisor_start_web_workflow(bool reload) {
         // if password is unspecified, assume an open network
         password[0] = '\0';
     } else if (result != GETENV_OK) {
-        #if CIRCUITPY_CYW43
-        common_hal_wifi_radio_stop_station(&common_hal_wifi_radio_obj);
-        #endif
-
         return false;
     }
 
