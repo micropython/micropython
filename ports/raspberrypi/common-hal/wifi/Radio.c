@@ -75,8 +75,13 @@ bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
 }
 
 void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
-    self->enabled = enabled;
     // TODO: Actually enable and disable the WiFi module at this point.
+    if (self->enabled && !enabled) {
+        common_hal_wifi_radio_stop_station(self);
+        common_hal_wifi_radio_stop_ap(self);
+    }
+    self->enabled = enabled;
+
 }
 
 mp_obj_t common_hal_wifi_radio_get_hostname(wifi_radio_obj_t *self) {
