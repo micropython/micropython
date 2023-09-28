@@ -161,7 +161,7 @@ static const DMA_InitTypeDef dma_init_struct_i2s = {
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     .Request = 0,
     #endif
     .Direction = 0,
