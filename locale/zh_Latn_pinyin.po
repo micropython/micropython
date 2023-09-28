@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-29 18:34+0000\n"
+"PO-Revision-Date: 2023-09-13 17:49+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -103,13 +103,17 @@ msgstr ""
 "bù shì %d"
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -458,10 +462,6 @@ msgstr "bù zhī chí 3-arg pow()"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "wúfǎ qǐdòng AP"
@@ -473,8 +473,13 @@ msgstr "dìzhǐ chángdù bìxū shì %d zìjié"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 #: ports/nrf/common-hal/memorymap/AddressRange.c
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "bù yǔn xǔ de dì zhǐ fàn wéi"
+
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Address range wraps around"
+msgstr "dìzhǐ fànwéi huánrào"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -1255,6 +1260,7 @@ msgid "Invalid %q"
 msgstr "wú xiào %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 #: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
@@ -1408,6 +1414,10 @@ msgstr "quēshǎo jmp_pin. %q[%u] tiàodào yǐn jiǎoshàng"
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Bìxū shì %q zi lèi."
+
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
+msgid "Must provide 5/6/5 RGB pins"
+msgstr "bìxū tígòng 5/6/5RGB yǐnjiǎo"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
@@ -2170,6 +2180,10 @@ msgstr "UUID Zìfú chuàn bùshì 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgid "UUID value is not str, int or byte buffer"
 msgstr "UUID zhí bùshì str,int huò zì jié huǎnchōng qū"
 
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to access unaligned IO register"
+msgstr "wúfǎ fǎngwèn wèi duìqí de IO jìcúnqì"
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
@@ -2180,11 +2194,6 @@ msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate the heap."
 msgstr "wú fǎ fēn pèi duī."
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr "wú fǎ pèi zhì ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2204,32 +2213,22 @@ msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 msgid "Unable to init parser"
 msgstr "Wúfǎ chūshǐhuà jiěxī qì"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr "wú fǎ chū shǐ huà ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Wúfǎ dúqǔ tiáosèbǎn shùjù"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "wú fǎ qǐ dòng mDNS chá xún"
 
-#: shared-bindings/memorymap/AddressRange.c
-msgid "Unable to write to address."
-msgstr "Wú fǎ xiě rù dì zhǐ."
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Wúfǎ xiě rù nvm."
+
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to write to read-only memory"
+msgstr "wúfǎ xiěrù zhǐdú nèicún"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -3005,7 +3004,7 @@ msgstr "kòngxián"
 msgid "empty file"
 msgstr "kōng de wénjiàn"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "kōng yīn yīnxiào"
 
@@ -3959,10 +3958,6 @@ msgstr "pow() yǒu 3 cānshù xūyào zhěngshù"
 msgid "pull masks conflict with direction masks"
 msgstr "lā kǒu zhào yǔ fāng xiàng miàn mó chōng tū"
 
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "duìliè yìchū"
-
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr "bù zhī chí yuán shǐ f-strings"
@@ -4256,7 +4251,8 @@ msgstr "wèi yùliào de suō jìn"
 msgid "unexpected keyword argument"
 msgstr "yìwài de guānjiàn cí cānshù"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "yìwài de guānjiàn cí cānshù '%q'"
 
@@ -4413,10 +4409,6 @@ msgstr "wúfǎ jiě bāo de zhí shù"
 msgid "wrong output type"
 msgstr "cuòwù de shūchū lèixíng"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr "xTaskCreate shī bài"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi bìxū shì ndarray"
@@ -4428,6 +4420,30 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
+
+#, c-format
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ pèi zhì ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ chū shǐ huà ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate shī bài"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "Wú fǎ xiě rù dì zhǐ."
+
+#~ msgid "queue overflow"
+#~ msgstr "duìliè yìchū"
 
 #~ msgid "Stopping AP is not supported."
 #~ msgstr "bù zhī chí tíng zhǐ AP."

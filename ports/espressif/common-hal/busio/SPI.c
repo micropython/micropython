@@ -30,7 +30,7 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "driver/spi_common_internal.h"
+#include "esp_private/spi_common_internal.h"
 
 #define SPI_MAX_DMA_BITS (SPI_MAX_DMA_LEN * 8)
 #define MAX_SPI_TRANSACTIONS 10

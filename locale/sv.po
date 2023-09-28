@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-29 18:34+0000\n"
+"PO-Revision-Date: 2023-09-10 08:50+0000\n"
 "Last-Translator: Jonny Bergdahl <jonny@bergdahl.it>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: sv\n"
@@ -101,13 +101,17 @@ msgstr ""
 "%d adresspinnar, %d rgb-pinnar och %d brickor anger en höjd på %d, inte %d"
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -457,10 +461,6 @@ msgstr "3-arguments pow() stöds inte"
 msgid "A hardware interrupt channel is already in use"
 msgstr "En kanal för hårdvaruavbrott används redan"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 används av WiFi"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "Kunde inte starta AP"
@@ -472,8 +472,13 @@ msgstr "Adressen måste vara %d byte lång"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 #: ports/nrf/common-hal/memorymap/AddressRange.c
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Adressintervallet är inte tillåtet"
+
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Address range wraps around"
+msgstr "Adressintervall ger överflödesfel"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -1249,6 +1254,7 @@ msgid "Invalid %q"
 msgstr "Ogiltig %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 #: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
@@ -1403,6 +1409,10 @@ msgstr "Saknad jmp_pin. %q[%u] hoppar på pin"
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Måste vara en %q-subklass."
+
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
+msgid "Must provide 5/6/5 RGB pins"
+msgstr "Måset ange 5/6/5 RGB-pinnar"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
@@ -2167,6 +2177,10 @@ msgstr "UUID-sträng inte \"xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\""
 msgid "UUID value is not str, int or byte buffer"
 msgstr "UUID-värdet är inte str, int eller byte-buffert"
 
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to access unaligned IO register"
+msgstr "Kan inte komma åt ojusterat IO-register"
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
@@ -2177,11 +2191,6 @@ msgstr "Det går inte att allokera buffert för signerad konvertering"
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate the heap."
 msgstr "Kan inte allokera heap."
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr "Kan inte konfigurera ADC DMA controller, Felkod:%d"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2201,32 +2210,22 @@ msgstr "Det gick inte att hitta ledig GCLK"
 msgid "Unable to init parser"
 msgstr "Kan inte initiera tolken"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr "Kan inte inititiera ADC DMA-controller, Felkod:%d"
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Det går inte att läsa färgpalettdata"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr "Kan inte starta ADC DMA controller, Felkod:%d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "Det gick inte att starta mDNS-frågan"
 
-#: shared-bindings/memorymap/AddressRange.c
-msgid "Unable to write to address."
-msgstr "Det går inte att skriva till adress."
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Det gick inte att skriva till nvm."
+
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to write to read-only memory"
+msgstr "Kan inte skriva till skrivskyddat minne"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -3001,7 +3000,7 @@ msgstr "tom"
 msgid "empty file"
 msgstr "tom fil"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "tom heap"
 
@@ -3957,10 +3956,6 @@ msgstr "pow() med 3 argument kräver heltal"
 msgid "pull masks conflict with direction masks"
 msgstr "pull-mask är i konflikt med riktnings-mask"
 
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "köstorlek överskreds"
-
 #: py/parse.c
 msgid "raw f-strings are not supported"
 msgstr "råa f-strängar stöds inte"
@@ -4251,7 +4246,8 @@ msgstr "oväntat indrag"
 msgid "unexpected keyword argument"
 msgstr "oväntat nyckelordsargument"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "oväntat nyckelordsargument '%q'"
 
@@ -4408,10 +4404,6 @@ msgstr "fel antal värden för att packa upp"
 msgid "wrong output type"
 msgstr "fel utdatatyp"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr "xTaskCreate misslyckades"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi måste vara en ndarray"
@@ -4423,6 +4415,30 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 används av WiFi"
+
+#, c-format
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Kan inte konfigurera ADC DMA controller, Felkod:%d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Kan inte inititiera ADC DMA-controller, Felkod:%d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Kan inte starta ADC DMA controller, Felkod:%d"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate misslyckades"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "Det går inte att skriva till adress."
+
+#~ msgid "queue overflow"
+#~ msgstr "köstorlek överskreds"
 
 #~ msgid "Stopping AP is not supported."
 #~ msgstr "Stoppa AP stöds inte."

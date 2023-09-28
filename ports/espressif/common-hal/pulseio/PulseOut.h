@@ -28,7 +28,6 @@
 #define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PULSEIO_PULSEOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "components/driver/include/driver/rmt.h"
 #include "peripherals/rmt.h"
 
 #include "py/obj.h"

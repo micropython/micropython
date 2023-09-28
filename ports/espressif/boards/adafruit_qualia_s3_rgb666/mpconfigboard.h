@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 microDev
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,17 @@
  * THE SOFTWARE.
  */
 
-// See https://github.com/espressif/esp-idf/issues/6906
+// Micropython setup
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_ESP32C3_FIX_H
-#define MICROPY_INCLUDED_ESPRESSIF_ESP32C3_FIX_H
+#define MICROPY_HW_BOARD_NAME       "Adafruit-Qualia-S3-RGB666"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-#ifdef __riscv
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO18)
 
-#undef __INT32_TYPE__
-#define __INT32_TYPE__      int
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO4) // also DBLTAP
 
-#undef __UINT32_TYPE__
-#define __UINT32_TYPE__     unsigned int
+#define DOUBLE_TAP_PIN (&pin_GPIO4) // also NEOPIXEL
 
-#endif // __riscv
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_ESP32C3_FIX_H
+// a 1024x768 16BPP framebuffer + some breathing room
+#define DEFAULT_RESERVED_PSRAM      (1024 * 1024 * 2)

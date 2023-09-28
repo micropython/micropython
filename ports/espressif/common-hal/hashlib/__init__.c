@@ -33,7 +33,7 @@ bool common_hal_hashlib_new(hashlib_hash_obj_t *self, const char *algorithm) {
     if (strcmp(algorithm, "sha1") == 0) {
         self->hash_type = MBEDTLS_SSL_HASH_SHA1;
         mbedtls_sha1_init(&self->sha1);
-        mbedtls_sha1_starts_ret(&self->sha1);
+        mbedtls_sha1_starts(&self->sha1);
         return true;
     }
     return false;

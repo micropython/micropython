@@ -41,21 +41,23 @@
 #include "soc/efuse_reg.h"
 
 #if !defined(CONFIG_IDF_TARGET_ESP32)
-#include "driver/temp_sensor.h"
+#include "driver/temperature_sensor.h"
 #endif
 
 float common_hal_mcu_processor_get_temperature(void) {
-    float tsens_out;
+    float tsens_value;
     #if defined(CONFIG_IDF_TARGET_ESP32)
     return NAN;
     #else
-    temp_sensor_config_t temp_sensor = TSENS_CONFIG_DEFAULT(); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
-    temp_sensor_set_config(temp_sensor);
-    temp_sensor_start();
-    temp_sensor_read_celsius(&tsens_out);
-    temp_sensor_stop();
+    temperature_sensor_handle_t temp_sensor = NULL;
+    temperature_sensor_config_t temp_sensor_config = TEMPERATURE_SENSOR_CONFIG_DEFAULT(-10, 80); // DEFAULT: range:-10℃ ~  80℃, error < 1℃.
+    temperature_sensor_install(&temp_sensor_config, &temp_sensor);
+    temperature_sensor_enable(temp_sensor);
+    temperature_sensor_get_celsius(temp_sensor, &tsens_value);
+    temperature_sensor_disable(temp_sensor);
+    temperature_sensor_uninstall(temp_sensor);
     #endif
-    return tsens_out;
+    return tsens_value;
 }
 
 float common_hal_mcu_processor_get_voltage(void) {
@@ -63,17 +65,7 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    return CONFIG_ESP32_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #elif defined(CONFIG_IDF_TARGET_ESP32C3)
-    return CONFIG_ESP32C3_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-    return CONFIG_ESP32S2_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-    return CONFIG_ESP32S3_DEFAULT_CPU_FREQ_MHZ * 1000000;
-    #else
-    #error No known CONFIG_IDF_TARGET_xxx found
-    #endif
+    return CONFIG_ESP_DEFAULT_CPU_FREQ_MHZ * 1000000;
 }
 
 STATIC uint8_t swap_nibbles(uint8_t v) {
@@ -88,6 +80,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 
     #if defined(CONFIG_IDF_TARGET_ESP32)
     uint32_t mac_address_part = REG_READ(EFUSE_BLK0_RDATA1_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_0_REG);
     #else
     uint32_t mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_0_REG);
     #endif
@@ -103,6 +97,8 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
     // and 16 in the high order word
     #if defined(CONFIG_IDF_TARGET_ESP32)
     mac_address_part = REG_READ(EFUSE_BLK0_RDATA2_REG);
+    #elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    mac_address_part = REG_READ(EFUSE_RD_MAC_SYS_1_REG);
     #else
     mac_address_part = REG_READ(EFUSE_RD_MAC_SPI_SYS_1_REG);
     #endif

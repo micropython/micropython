@@ -43,5 +43,3 @@
 
 // For entering safe mode
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO9)
-
-#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)

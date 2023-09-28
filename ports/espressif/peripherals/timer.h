@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_TIMER_HANDLER_H
 
 #include "driver/timer.h"
+#include "soc/timer_group_struct.h"
 
 typedef struct {
     timg_dev_t *hw;

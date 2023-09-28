@@ -59,12 +59,10 @@
 
 // Nearly all boards have this because it is used to enter the ROM bootloader.
 #ifndef CIRCUITPY_BOOT_BUTTON
-  #ifdef CONFIG_IDF_TARGET_ESP32C3
+  #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
     #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO9)
-  #else
-    #ifndef CONFIG_IDF_TARGET_ESP32
-      #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-    #endif
+  #elif !defined(CONFIG_IDF_TARGET_ESP32)
+    #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
   #endif
 #endif
 
@@ -88,12 +86,6 @@
 // external pull up resistors.
 #ifndef CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (0)
-#endif
-
-// Define to (1) in mpconfigboard.h if the board uses the internal USB to
-// Serial/JTAG to connect do USB.
-#ifndef CIRCUITPY_ESP_USB_SERIAL_JTAG
-#define CIRCUITPY_ESP_USB_SERIAL_JTAG (0)
 #endif
 
 #ifndef DEFAULT_RESERVED_PSRAM

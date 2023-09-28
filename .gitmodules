@@ -143,10 +143,14 @@
 [submodule "ports/espressif/esp-idf"]
 	path = ports/espressif/esp-idf
 	url = https://github.com/adafruit/esp-idf.git
-	branch = release/v4.4-circuitpython
-[submodule "ports/espressif/certificates/nina-fw"]
-	path = lib/certificates/nina-fw
-	url = https://github.com/adafruit/nina-fw.git
+	branch = circuitpython-v5.1
+[submodule "ports/espressif/esp-protocols"]
+	path = ports/espressif/esp-protocols
+	url = https://github.com/espressif/esp-protocols.git
+[submodule "ports/espressif/esp-camera"]
+	path = ports/espressif/esp-camera
+	url = https://github.com/adafruit/esp32-camera.git
+	branch = circuitpython
 [submodule "frozen/Adafruit_CircuitPython_ST7789"]
 	path = frozen/Adafruit_CircuitPython_ST7789
 	url = https://github.com/adafruit/Adafruit_CircuitPython_ST7789
@@ -300,10 +304,6 @@
 [submodule "frozen/circuitpython_picoed"]
 	path = frozen/circuitpython_picoed
 	url = https://github.com/elecfreaks/circuitpython_picoed.git
-[submodule "ports/espressif/esp32-camera"]
-	path = ports/espressif/esp32-camera
-	url = https://github.com/adafruit/esp32-camera/
-        branch = circuitpython
 [submodule "ports/raspberrypi/lib/cyw43-driver"]
 	path = ports/raspberrypi/lib/cyw43-driver
 	url = https://github.com/georgerobotics/cyw43-driver.git
@@ -340,8 +340,11 @@
 	url = https://github.com/bablokb/circuitpython-pcf85063a
 [submodule "frozen/Adafruit_CircuitPython_Wave"]
 	path = frozen/Adafruit_CircuitPython_Wave
-	url = http://github.com/adafruit/Adafruit_CircuitPython_Wave.git
+	url = https://github.com/adafruit/Adafruit_CircuitPython_Wave.git
 [submodule "ports/raspberrypi/lib/Pico-PIO-USB"]
 	path = ports/raspberrypi/lib/Pico-PIO-USB
 	url = https://github.com/sekigon-gonnoc/Pico-PIO-USB.git
 	branch = main
+[submodule "lib/certificates"]
+	path = lib/certificates
+	url = https://github.com/adafruit/certificates

@@ -37,11 +37,7 @@ runs:
     - name: Install IDF tools
       if: inputs.port == 'espressif'
       run: |
-        echo "Installing ESP-IDF tools"
-        $IDF_PATH/tools/idf_tools.py --non-interactive install required
-        $IDF_PATH/tools/idf_tools.py --non-interactive install cmake
-        echo "Installing Python environment and packages"
-        $IDF_PATH/tools/idf_tools.py --non-interactive install-python-env
+        $IDF_PATH/install.sh
         rm -rf $IDF_TOOLS_PATH/dist
       shell: bash
     - name: Set environment

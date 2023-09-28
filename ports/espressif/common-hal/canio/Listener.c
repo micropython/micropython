@@ -39,40 +39,30 @@
 
 #include "hal/twai_ll.h"
 
+// There is no logic that dictates TWAI vs TWAI0
+#if defined(CONFIG_IDF_TARGET_ESP32H2) || defined(CONFIG_IDF_TARGET_ESP32C6)
+#define TWAI TWAI0
+#endif
+
 // IDE = "extended ID" flag of packet header.  We always add this bit to the
 // mask because a match is always for just one kind of address length
 #define FILTER16_IDE (1 << 3)
 #define FILTER32_IDE (1 << 2)
 
-// Work around a problem reported at
-// https://github.com/espressif/esp-idf/issues/6020 where
-// twai_ll_set_acc_filter does not work under -Os optimization
-__attribute__((optimize("O0")))
-__attribute__((noinline))
-static void canio_set_acc_filter(twai_dev_t *hw, uint32_t code, uint32_t mask, bool single_filter) {
-    uint32_t code_swapped = __builtin_bswap32(code);
-    uint32_t mask_swapped = __builtin_bswap32(mask);
-    for (int i = 0; i < 4; i++) {
-        hw->acceptance_filter.acr[i].val = ((code_swapped >> (i * 8)) & 0xFF);
-        hw->acceptance_filter.amr[i].val = ((mask_swapped >> (i * 8)) & 0xFF);
-    }
-    hw->mode_reg.afm = single_filter;
-}
-
 STATIC void install_standard_filter(canio_listener_obj_t *self, canio_match_obj_t *match) {
-    canio_set_acc_filter(&TWAI, match->id << 21, ~(match->mask << 21), true);
+    twai_ll_set_acc_filter(&TWAI, match->id << 21, ~(match->mask << 21), true);
     self->extended = false;
     self->standard = true;
 }
 
 STATIC void install_extended_filter(canio_listener_obj_t *self, canio_match_obj_t *match) {
-    canio_set_acc_filter(&TWAI, match->id << 3, ~(match->mask << 3), true);
+    twai_ll_set_acc_filter(&TWAI, match->id << 3, ~(match->mask << 3), true);
     self->extended = true;
     self->standard = false;
 }
 
 STATIC void install_all_match_filter(canio_listener_obj_t *self) {
-    canio_set_acc_filter(&TWAI, 0u, ~0u, true);
+    twai_ll_set_acc_filter(&TWAI, 0u, ~0u, true);
     self->extended = true;
     self->standard = true;
 }

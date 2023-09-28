@@ -1,27 +1,15 @@
-CONFIG_ESP32_ECO3_CACHE_LOCK_FIX=y
-CONFIG_ESP32_SPIRAM_SUPPORT=n
-
-# CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY is not set
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
 #
 # LWIP
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="M5StaskAtomLite"
 # end of LWIP
 
-# Uncomment (remove ###) to send ESP_LOG  output to TX/RX pins
-### #
-### # ESP System Settings
-### #
-### CONFIG_ESP_SYSTEM_PANIC_PRINT_HALT=y
-### # CONFIG_ESP_SYSTEM_PANIC_SILENT_REBOOT is not set
-### CONFIG_ESP_CONSOLE_UART_CUSTOM=y
-### CONFIG_ESP_CONSOLE_NONE is not set
-### CONFIG_ESP_CONSOLE_UART=y
-### CONFIG_ESP_CONSOLE_UART_CUSTOM_NUM_0=y
-### # CONFIG_ESP_CONSOLE_UART_CUSTOM_NUM_1 is not set
-### CONFIG_ESP_CONSOLE_UART_NUM=0
-### CONFIG_ESP_CONSOLE_UART_TX_GPIO=17
-### CONFIG_ESP_CONSOLE_UART_RX_GPIO=16
-### CONFIG_ESP_CONSOLE_UART_BAUDRATE=115200
-### # CONFIG_ESP_SYSTEM_CHECK_INT_LEVEL_5 is not set
-### # end of ESP System Settings
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

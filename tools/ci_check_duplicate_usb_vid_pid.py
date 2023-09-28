@@ -55,6 +55,7 @@ DEFAULT_CLUSTERLIST = {
         "espressif_esp32s3_devkitc_1_n8r2",
         "espressif_esp32s3_devkitc_1_n8r8",
         "espressif_esp32s3_devkitc_1_n32r8",
+        "espressif_esp32s3_devkitc_1_n8r8_hacktablet",
     ],
     "0x303A:0x7009": [
         "espressif_esp32s2_devkitc_1_n4",
@@ -94,7 +95,9 @@ def check_vid_pid(files, clusterlist):
     if duplicates are found, and lists the duplicates.
     """
 
-    usb_pattern = re.compile(r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3)$", flags=re.M)
+    usb_pattern = re.compile(
+        r"^CIRCUITPY_USB\s*=\s*0$|^IDF_TARGET = (esp32|esp32c3|esp32c6|esp32h2)$", flags=re.M
+    )
 
     usb_ids = defaultdict(set)
     for board_config in files:
@@ -138,7 +141,8 @@ def check_vid_pid(files, clusterlist):
             f"Duplicate VID/PID usage found!\n{duplicates}\n"
             f"If you are open source maker, then you can request a PID from http://pid.codes\n"
             f"For boards without native USB, you can request a Creator ID from https://github.com/creationid/creators/\n"
-            f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id"
+            f"Otherwise, companies should pay the USB-IF for a vendor ID: https://www.usb.org/getting-vendor-id\n"
+            f"FAQ: Why does CircuitPython require a unique VID:PID for every board definition? https://learn.adafruit.com/how-to-add-a-new-board-to-circuitpython/frequently-asked-questions#faq-3130480"
         )
         sys.exit(duplicate_message)
 

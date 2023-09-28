@@ -35,7 +35,7 @@ typedef enum {
 static i2c_status_t i2c_status[I2C_NUM_MAX];
 
 void i2c_reset(void) {
-    for (i2c_port_t num = 0; num < I2C_NUM_MAX; num++) {
+    for (i2c_port_t num = 0; num < (i2c_port_t)I2C_NUM_MAX; num++) {
         if (i2c_status[num] == STATUS_IN_USE) {
             i2c_driver_delete(num);
             i2c_status[num] = STATUS_FREE;
@@ -70,7 +70,7 @@ void peripherals_i2c_deinit(i2c_port_t num) {
 
 i2c_port_t peripherals_i2c_get_free_num(void) {
     i2c_port_t i2c_num = I2C_NUM_MAX;
-    for (i2c_port_t num = 0; num < I2C_NUM_MAX; num++) {
+    for (i2c_port_t num = 0; num < (int)I2C_NUM_MAX; num++) {
         if (i2c_status[num] == STATUS_FREE) {
             i2c_num = num;
             break;

@@ -94,7 +94,10 @@ def preprocess():
 
     def pp(flags):
         def run(files):
-            return subprocess.check_output(args.pp + flags + files)
+            completed = subprocess.run(args.pp + flags + files, stdout=subprocess.PIPE)
+            if completed.returncode != 0:
+                raise RuntimeError()
+            return completed.stdout
 
         return run
 

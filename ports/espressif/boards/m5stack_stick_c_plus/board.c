@@ -33,7 +33,7 @@
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/include/driver/gpio.h"
+#include "components/driver/gpio/include/driver/gpio.h"
 #include "components/hal/include/hal/gpio_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 

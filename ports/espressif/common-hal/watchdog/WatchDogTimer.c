@@ -62,7 +62,12 @@ void watchdog_reset(void) {
 static void wdt_config(watchdog_watchdogtimer_obj_t *self) {
     // enable panic hanler in WATCHDOGMODE_RESET mode
     // initialize Task Watchdog Timer (TWDT)
-    if (esp_task_wdt_init((uint32_t)self->timeout, (self->mode == WATCHDOGMODE_RESET)) != ESP_OK) {
+    esp_task_wdt_config_t twdt_config = {
+        .timeout_ms = (uint32_t)self->timeout,
+        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,    // Bitmask of all cores
+        .trigger_panic = (self->mode == WATCHDOGMODE_RESET),
+    };
+    if (esp_task_wdt_init(&twdt_config) != ESP_OK) {
         mp_raise_RuntimeError(translate("Initialization failed due to lack of memory"));
     }
     esp_task_wdt_add(NULL);

@@ -353,8 +353,7 @@ bool supervisor_start_web_workflow(bool reload) {
         #if CIRCUITPY_MDNS
         // Try to start MDNS if the user deinited it.
         if (mdns.base.type != &mdns_server_type ||
-            common_hal_mdns_server_deinited(&mdns) ||
-            reload) { // Always reconstruct on reload, since we don't know if the net changed.
+            common_hal_mdns_server_deinited(&mdns)) {
             mdns_server_construct(&mdns, true);
             mdns.base.type = &mdns_server_type;
             if (!common_hal_mdns_server_deinited(&mdns)) {

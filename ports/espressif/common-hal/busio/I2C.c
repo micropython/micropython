@@ -28,7 +28,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "components/driver/include/driver/i2c.h"
+#include "components/driver/i2c/include/driver/i2c.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -82,6 +82,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->sda_pin = sda;
     self->scl_pin = scl;
     self->i2c_num = peripherals_i2c_get_free_num();
+    self->has_lock = 0;
 
     if (self->i2c_num == I2C_NUM_MAX) {
         mp_raise_ValueError(translate("All I2C peripherals are in use"));
