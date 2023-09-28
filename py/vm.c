@@ -326,7 +326,7 @@ outer_dispatch_loop:
             for (;;) {
 dispatch_loop:
                 #if MICROPY_OPT_COMPUTED_GOTO
-                DISPATCH();
+                ONE_TRUE_DISPATCH();
                 #else
                 TRACE(ip);
                 MARK_EXC_IP_GLOBAL();

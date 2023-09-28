@@ -505,10 +505,9 @@ STATIC MP_DEFINE_CONST_DICT(displayio_tilegrid_locals_dict, displayio_tilegrid_l
 
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_tilegrid_type,
-    MP_TYPE_FLAG_EXTENDED,
+    MP_QSTR_TileGrid,
     MP_TYPE_FLAG_NONE,
-    name, MP_QSTR_TileGrid,
     make_new, displayio_tilegrid_make_new,
     locals_dict, &displayio_tilegrid_locals_dict,
-    .subscr, tilegrid_subscr
+    subscr, tilegrid_subscr
     );

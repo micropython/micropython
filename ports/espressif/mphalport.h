@@ -38,31 +38,4 @@
 
 bool mp_hal_stdin_any(void);
 
-<<<<<<<< HEAD:ports/espressif/mphalport.h
 #endif // MICROPY_INCLUDED_ESPRESSIF_MPHAL_H
-========
-int mp_hal_get_interrupt_char(void);
-
-#if MICROPY_VFS_POSIX
-
-#include <errno.h>
-
-// This macro is used to implement PEP 475 to retry specified syscalls on EINTR
-#define MP_HAL_RETRY_SYSCALL(ret, syscall, raise) \
-    { \
-        for (;;) { \
-            ret = syscall; \
-            if (ret == -1) { \
-                int err = errno; \
-                if (err == EINTR) { \
-                    mp_handle_pending(true); \
-                    continue; \
-                } \
-                raise; \
-            } \
-            break; \
-        } \
-    }
-
-#endif
->>>>>>>> v1.20.0:ports/webassembly/mphalport.h

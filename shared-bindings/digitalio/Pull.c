@@ -68,8 +68,8 @@ STATIC void digitalio_pull_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 MP_DEFINE_CONST_OBJ_TYPE(
     digitalio_pull_type,
+    MP_QSTR_Pull,
     MP_TYPE_FLAG_NONE,
-    name, MP_QSTR_Pull,
     print, digitalio_pull_print,
     locals_dict, &digitalio_pull_locals_dict
     );

@@ -29,6 +29,10 @@
 #include "py/obj.h"
 #include "py/objarray.h"
 
+// CIRCUITPY
+extern const char nibble_to_hex_upper[16];
+extern const char nibble_to_hex_lower[16];
+
 typedef struct _mp_obj_str_t {
     mp_obj_base_t base;
     size_t hash;

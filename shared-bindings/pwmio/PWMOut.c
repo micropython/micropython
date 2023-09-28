@@ -302,6 +302,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pwmio_pwmout_type,
     MP_QSTR_PWMOut,
     MP_TYPE_FLAG_NONE,
-    .make_new, pwmio_pwmout_make_new,
+    make_new, pwmio_pwmout_make_new,
     locals_dict, &pwmio_pwmout_locals_dict
     );

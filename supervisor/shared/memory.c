@@ -346,3 +346,5 @@ void supervisor_move_memory(void) {
     // Add calls to further clients here.
     old_allocations = NULL;
 }
+
+MP_REGISTER_ROOT_POINTER(struct _supervisor_allocation_node *first_embedded_allocation);

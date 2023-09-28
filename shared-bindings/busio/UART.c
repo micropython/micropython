@@ -43,7 +43,22 @@
 // #define STREAM_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 //| class UART:
-//|     """A bidirectional serial protocol"""
+//|     """A bidirectional serial protocol
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["busio.UART"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -402,12 +417,13 @@ STATIC void busio_uart_parity_print(const mp_print_t *print, mp_obj_t self_in, m
     mp_printf(print, "%q.%q.%q.%q", MP_QSTR_busio, MP_QSTR_UART, MP_QSTR_Parity, parity);
 }
 
-const mp_obj_type_t busio_uart_parity_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Parity,
-    .print = busio_uart_parity_print,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_parity_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_parity_type,
+    MP_QSTR_Parity,
+    MP_TYPE_FLAG_NONE,
+    print, busio_uart_parity_print,
+    locals_dict, &busio_uart_parity_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     #if CIRCUITPY_BUSIO_UART
@@ -452,7 +468,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     make_new, busio_uart_make_new,
     locals_dict, &busio_uart_locals_dict,
-    iter,  mp_stream_unbuffered_iter
+    iter, mp_stream_unbuffered_iter,
+    protocol, &uart_stream_p
     );
 #else
 MP_DEFINE_CONST_OBJ_TYPE(

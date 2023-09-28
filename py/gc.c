@@ -482,13 +482,19 @@ void gc_collect_start(void) {
     #endif
 }
 
+// CIRCUITPY
+void gc_collect_ptr(void *ptr) {
+    void *ptrs[1] = { ptr };
+    gc_collect_root(ptrs, 1);
+}
+
 // Address sanitizer needs to know that the access to ptrs[i] must always be
 // considered OK, even if it's a load from an address that would normally be
 // prohibited (due to being undefined, in a red zone, etc).
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
 __attribute__((no_sanitize_address))
 #endif
-static void *gc_get_ptr(void **ptrs, int i) {
+static void *MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_get_ptr)(void **ptrs, int i) {
     #if MICROPY_DEBUG_VALGRIND
     if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
         return NULL;
@@ -1167,7 +1173,10 @@ void gc_dump_alloc_table(const mp_print_t *print) {
                 */
                 /* this prints the uPy object type of the head block */
                 case AT_HEAD: {
+                    #pragma GCC diagnostic push
+                    #pragma GCC diagnostic ignored "-Wcast-align"
                     void **ptr = (void **)(area->gc_pool_start + bl * BYTES_PER_BLOCK);
+                    #pragma GCC diagnostic pop
                     if (*ptr == &mp_type_tuple) {
                         c = 'T';
                     } else if (*ptr == &mp_type_list) {

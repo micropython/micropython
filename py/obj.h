@@ -995,12 +995,18 @@ mp_obj_t mp_obj_new_str_from_utf8_vstr(vstr_t *vstr); // input data must be vali
 #endif
 mp_obj_t mp_obj_new_bytes_from_vstr(vstr_t *vstr);
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len);
+// CIRCUITPY
+mp_obj_t mp_obj_new_bytes_of_zeros(size_t len);
 mp_obj_t mp_obj_new_bytearray(size_t n, const void *items);
 mp_obj_t mp_obj_new_bytearray_of_zeros(size_t n); // CIRCUITPY
 mp_obj_t mp_obj_new_bytearray_by_ref(size_t n, void *items);
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_obj_t mp_obj_new_int_from_float(mp_float_t val);
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag);
+
+// CIRCUITPY: our own conversion routines that don't bring double routines
+extern mp_float_t uint64_to_float(uint64_t ui64);
+extern uint64_t float_to_uint64(float f);
 #endif
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type);
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args);

@@ -316,14 +316,11 @@ typedef long mp_off_t;
 #if defined(DEFAULT_UART_BUS_TX) && defined(DEFAULT_UART_BUS_RX)
 #define CIRCUITPY_BOARD_UART        (1)
 #define CIRCUITPY_BOARD_UART_PIN    {{.tx = DEFAULT_UART_BUS_TX, .rx = DEFAULT_UART_BUS_RX}}
-#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #else
 #define CIRCUITPY_BOARD_UART        (0)
-#define BOARD_UART_ROOT_POINTER
 #endif
-#else
-#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #endif
+
 
 #if MICROPY_PY_ASYNC_AWAIT && !CIRCUITPY_TRACEBACK
 #error CIRCUITPY_ASYNCIO requires CIRCUITPY_TRACEBACK
@@ -357,12 +354,6 @@ typedef long mp_off_t;
 #else
 #define CIRCUITPY_DISPLAY_LIMIT (0)
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (0)
-#endif
-
-#if CIRCUITPY_KEYPAD
-#define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
-#else
-#define KEYPAD_ROOT_POINTERS
 #endif
 
 #if CIRCUITPY_MEMORYMONITOR
@@ -438,15 +429,9 @@ struct _supervisor_allocation_node;
 
 #define CIRCUITPY_COMMON_ROOT_POINTERS \
     FLASH_ROOT_POINTERS \
-    KEYPAD_ROOT_POINTERS \
-    BOARD_UART_ROOT_POINTER \
     WIFI_MONITOR_ROOT_POINTERS \
     MEMORYMONITOR_ROOT_POINTERS \
     vstr_t *repl_line; \
-    mp_obj_t pew_singleton; \
-    mp_obj_t rtc_time_source; \
-    const char *readline_hist[MICROPY_READLINE_HISTORY_SIZE]; \
-    struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void background_callback_run_all(void);
 #define RUN_BACKGROUND_TASKS (background_callback_run_all())

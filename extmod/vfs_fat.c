@@ -104,7 +104,7 @@ STATIC void verify_fs_writable(fs_user_mount_t *vfs) {
     }
 }
 
-#if _FS_REENTRANT
+#if FF_FS_REENTRANT
 STATIC mp_obj_t fat_vfs_del(mp_obj_t self_in) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(self_in);
     // f_umount only needs to be called to release the sync object
@@ -508,7 +508,7 @@ STATIC const mp_obj_property_t fat_vfs_label_obj = {
 #endif
 
 STATIC const mp_rom_map_elem_t fat_vfs_locals_dict_table[] = {
-    #if _FS_REENTRANT
+    #if FF_FS_REENTRANT
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&fat_vfs_del_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_mkfs), MP_ROM_PTR(&fat_vfs_mkfs_obj) },

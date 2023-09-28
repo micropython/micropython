@@ -139,6 +139,9 @@ mp_obj_t common_hal_board_create_spi(const mp_int_t instance) {
 
 #if CIRCUITPY_BOARD_UART
 
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t board_uart_bus);
+
 typedef struct {
     const mcu_pin_obj_t *tx;
     const mcu_pin_obj_t *rx;

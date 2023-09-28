@@ -787,6 +787,7 @@ endif
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_LIBM)): CFLAGS += -Wno-missing-prototypes
 endif
 
+# Sources used in all ports except unix.
 SRC_CIRCUITPY_COMMON = \
 	shared/libc/string0.c \
 	shared/readline/readline.c \

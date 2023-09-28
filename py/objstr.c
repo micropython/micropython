@@ -34,6 +34,13 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
+// CIRCUITPY
+const char nibble_to_hex_upper[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                                      'A', 'B', 'C', 'D', 'E', 'F'};
+
+const char nibble_to_hex_lower[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                                      'a', 'b', 'c', 'd', 'e', 'f'};
+
 #if MICROPY_PY_BUILTINS_STR_OP_MODULO
 STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_t *args, mp_obj_t dict);
 #endif
@@ -2322,6 +2329,15 @@ mp_obj_t mp_obj_str_intern_checked(mp_obj_t obj) {
 mp_obj_t mp_obj_new_bytes(const byte *data, size_t len) {
     return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
+
+// CIRCUITPY
+mp_obj_t mp_obj_new_bytes_of_zeros(size_t len) {
+    vstr_t vstr;
+    vstr_init_len(&vstr, len);
+    memset(vstr.buf, 0, len);
+    return mp_obj_new_bytes_from_vstr(&vstr);
+}
+
 
 bool mp_obj_str_equal(mp_obj_t s1, mp_obj_t s2) {
     if (mp_obj_is_qstr(s1) && mp_obj_is_qstr(s2)) {
