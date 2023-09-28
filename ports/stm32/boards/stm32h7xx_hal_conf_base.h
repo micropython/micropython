@@ -95,6 +95,7 @@
 #include "stm32h7xx_ll_adc.h"
 #include "stm32h7xx_ll_lpuart.h"
 #include "stm32h7xx_ll_pwr.h"
+#include "stm32h7xx_ll_rcc.h"
 #include "stm32h7xx_ll_rtc.h"
 #include "stm32h7xx_ll_usart.h"
 
