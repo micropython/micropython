@@ -4,13 +4,12 @@
     ],
     "docs": "",
     "features": [
-        "512KB SRAM",
-        "2MB Flash",
-        "16MB QSPI Flash",
-        "USB High Speed Phy",
-        "10/100 Ethernet Phy",
-        "ESP32 WiFi/BT Module",
-        "NXP SE050 crypto device"
+        "BLE",
+        "Ethernet",
+        "External Flash",
+        "Secure Element",
+        "USB-C",
+        "WiFi"
     ],
     "images": [
         "ABX00074_01.iso_1000x750.jpg"
