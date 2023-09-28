@@ -42,7 +42,6 @@ uint32_t trng_random_u32(void);
 #else
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #endif
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT      (32)
 #define MICROPY_ALLOC_PATH_MAX              (256)
 
 // MicroPython emitters
