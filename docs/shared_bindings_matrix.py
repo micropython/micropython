@@ -170,9 +170,11 @@ def get_settings_from_makefile(port_dir, board_name):
     This means that the effect of all Makefile directives is taken
     into account, without having to re-encode the logic that sets them
     in this script, something that has proved error-prone
+
+    This list must explicitly include any setting queried by tools/ci_set_matrix.py.
     """
     contents = subprocess.run(
-        ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS"],
+        ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS", "print-SRC_SUPERVISOR"],
         encoding="utf-8",
         errors="replace",
         stdout=subprocess.PIPE,
