@@ -352,7 +352,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     displayio_group_type,
     MP_QSTR_Group,
     MP_TYPE_FLAG_ITER_IS_GETITER,
-    .make_new, displayio_group_make_new,
+    make_new, displayio_group_make_new,
     locals_dict, &displayio_group_locals_dict,
     subscr, group_subscr,
     unary_op, group_unary_op,

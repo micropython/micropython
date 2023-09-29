@@ -37,23 +37,6 @@
 
 #include "py/circuitpy_mpconfig.h"
 
-#if CIRCUITPY_BLEIO
-#define BLEIO_ROOT_POINTERS struct ble_event_handler_entry *ble_event_handler_entries;
-#else
-#define BLEIO_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_ESPNOW
-#define ESPNOW_ROOT_POINTERS struct _espnow_obj_t *espnow_singleton;
-#else
-#define ESPNOW_ROOT_POINTERS
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS  \
-    CIRCUITPY_COMMON_ROOT_POINTERS  \
-    BLEIO_ROOT_POINTERS             \
-    ESPNOW_ROOT_POINTERS
-
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 

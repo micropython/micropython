@@ -1098,3 +1098,5 @@ bool common_hal_rp2pio_statemachine_get_writing(rp2pio_statemachine_obj_t *self)
 int common_hal_rp2pio_statemachine_get_pending(rp2pio_statemachine_obj_t *self) {
     return self->pending_buffers;
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t background_pio[NUM_DMA_CHANNELS]);

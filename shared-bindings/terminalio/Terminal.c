@@ -145,7 +145,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     make_new, terminalio_terminal_make_new,
     locals_dict, (mp_obj_dict_t *)&terminalio_terminal_locals_dict,
-    getiter, mp_identity_getiter,
-    iternext, mp_stream_unbuffered_iter,
+    iter, mp_stream_unbuffered_iter,
     protocol, &terminalio_terminal_stream_p
     );

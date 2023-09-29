@@ -400,3 +400,5 @@ void I2C3_EV_IRQHandler(void) {
 void I2C4_EV_IRQHandler(void) {
     call_hal_irq(4);
 }
+
+MP_REGISTER_ROOT_POINTER(void *cpy_i2c_obj_all[MAX_I2C]);

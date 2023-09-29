@@ -141,7 +141,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     // Convert a tuple or list to a bytearray.
     if (mp_obj_is_type(value, &mp_type_tuple) ||
         mp_obj_is_type(value, &mp_type_list)) {
-        value = mp_type_bytes.make_new(&mp_type_bytes, 1, 0, &value);
+        value = MP_OBJ_TYPE_GET_SLOT(&mp_type_bytes, make_new)(&mp_type_bytes, 1, 0, &value);
     }
 
     uint32_t color;

@@ -368,3 +368,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &espnow_stream_p,
     unary_op, &espnow_unary_op
     );
+
+MP_REGISTER_ROOT_POINTER(struct _espnow_obj_t *espnow_singleton);

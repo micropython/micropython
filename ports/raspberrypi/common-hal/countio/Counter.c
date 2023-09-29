@@ -111,3 +111,5 @@ void counter_interrupt_handler(void) {
         self->count += 65536;
     }
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t counting[NUM_PWM_SLICES]);
