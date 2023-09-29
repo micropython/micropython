@@ -105,7 +105,7 @@ Warning: test
 123
 456
 # VM
-2 1
+1 1
 # scheduler
 sched(0)=1
 sched(1)=1

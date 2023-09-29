@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2019 Damien P. George
+ * Copyright (c) 2013-2020 Damien P. George
  * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,7 @@
 #include <assert.h>
 
 #include "py/runtime.h"
+#include "py/bc0.h"
 #include "py/bc.h"
 #include "py/objstr.h"
 #include "py/objgenerator.h"
@@ -62,6 +63,12 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     mp_obj_gen_instance_t *o = mp_obj_malloc_var(mp_obj_gen_instance_t, byte,
         n_state * sizeof(mp_obj_t) + n_exc_stack * sizeof(mp_exc_stack_t),
         &mp_type_gen_instance);
+
+    #if MICROPY_PY_ASYNC_AWAIT
+    if (scope_flags & MP_SCOPE_FLAG_ASYNCGENERATOR) {
+        o->base.type = &mp_type_agen_instance;
+    }
+    #endif
 
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
@@ -115,6 +122,11 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
     // Allocate the generator object, with room for local stack (exception stack not needed).
     mp_obj_gen_instance_native_t *o = mp_obj_malloc_var(mp_obj_gen_instance_native_t, byte, n_state * sizeof(mp_obj_t), &mp_type_gen_instance);
+    #if MICROPY_PY_ASYNC_AWAIT
+    if (scope_flags & MP_SCOPE_FLAG_ASYNCGENERATOR) {
+        o->base.type = &mp_type_agen_instance;
+    }
+    #endif
 
     // Parse the input arguments and set up the code state
     o->pend_exc = mp_const_none;
@@ -165,6 +177,13 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
     mp_obj_gen_instance_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->code_state.ip == 0) {
         // Trying to resume an already stopped generator.
+        #if MICROPY_PY_ASYNC_AWAIT
+        if (self->base.type == &mp_type_agen_instance) {
+            // Do a "raise StopAsyncIteration()".
+            *ret_val = mp_obj_new_exception(&mp_type_StopAsyncIteration);
+            return MP_VM_RETURN_EXCEPTION;
+        }
+        #endif
         // This is an optimised "raise StopIteration(None)".
         *ret_val = mp_const_none;
         return MP_VM_RETURN_NORMAL;
@@ -233,12 +252,41 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
             self->code_state.ip = 0;
             // This is an optimised "raise StopIteration(*ret_val)".
             *ret_val = *self->code_state.sp;
+            #if MICROPY_PY_ASYNC_AWAIT
+            if (self->base.type == &mp_type_agen_instance) {
+                // Reached the end of the async generator, do "raise StopAsyncIteration()".
+                assert(*ret_val == mp_const_none); // enforced by the compiler
+                *ret_val = mp_obj_new_exception(&mp_type_StopAsyncIteration);
+                ret_kind = MP_VM_RETURN_EXCEPTION;
+            }
+            #endif
             break;
 
         case MP_VM_RETURN_YIELD:
+        case MP_VM_RETURN_YIELD_FROM:
             *ret_val = *self->code_state.sp;
             #if MICROPY_PY_GENERATOR_PEND_THROW
             *self->code_state.sp = mp_const_none;
+            #endif
+            #if MICROPY_PY_ASYNC_AWAIT
+            if (self->base.type == &mp_type_agen_instance) {
+                #if MICROPY_EMIT_NATIVE
+                if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
+                    // A native generator.
+                    if (ret_kind == MP_VM_RETURN_YIELD) {
+                        // "yield" in native async generator.
+                        ret_kind = MP_VM_RETURN_NORMAL;
+                    } else {
+                        // "yield from" in native async generator.
+                        ret_kind = MP_VM_RETURN_YIELD;
+                    }
+                } else
+                #endif
+                if (*self->code_state.ip != MP_BC_YIELD_FROM) {
+                    // "yield" in async generator.
+                    ret_kind = MP_VM_RETURN_NORMAL;
+                }
+            }
             #endif
             break;
 
@@ -371,3 +419,25 @@ MP_DEFINE_CONST_OBJ_TYPE(
     iter, gen_instance_iternext,
     locals_dict, &gen_instance_locals_dict
     );
+
+/******************************************************************************/
+// async generator instance
+
+#if MICROPY_PY_ASYNC_AWAIT
+
+STATIC const mp_rom_map_elem_t agen_instance_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___aiter__), MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___anext__), MP_ROM_PTR(&mp_identity_obj) },
+};
+STATIC MP_DEFINE_CONST_DICT(agen_instance_locals_dict, agen_instance_locals_dict_table);
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_agen_instance,
+    MP_QSTR_async_generator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    unary_op, mp_generic_unary_op,
+    iter, gen_instance_iternext,
+    locals_dict, &agen_instance_locals_dict
+    );
+
+#endif // MICROPY_PY_ASYNC_AWAIT

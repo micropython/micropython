@@ -1404,7 +1404,11 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
 
-    if (type == &mp_type_gen_instance) {
+    if (type == &mp_type_gen_instance
+        #if MICROPY_PY_ASYNC_AWAIT
+        || type == &mp_type_agen_instance
+        #endif
+        ) {
         return mp_obj_gen_resume(self_in, send_value, throw_value, ret_val);
     }
 
