@@ -32,9 +32,11 @@
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO18)
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO4) // also DBLTAP
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO5)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO6)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO7)
 
-#define DOUBLE_TAP_PIN (&pin_GPIO4) // also NEOPIXEL
+#define DOUBLE_TAP_PIN (&pin_GPIO4)
 
 // a 1024x768 16BPP framebuffer + some breathing room
 #define DEFAULT_RESERVED_PSRAM      (1024 * 1024 * 2)
