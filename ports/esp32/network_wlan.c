@@ -524,7 +524,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                         // TODO: Deprecated. Use network.hostname(name) instead.
                         size_t len;
                         const char *str = mp_obj_str_get_data(kwargs->table[i].value, &len);
-                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+                        if (len > MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
                             mp_raise_ValueError(NULL);
                         }
                         strcpy(mod_network_hostname, str);

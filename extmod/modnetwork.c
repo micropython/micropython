@@ -35,7 +35,7 @@
 #if MICROPY_PY_NETWORK
 
 #include "shared/netutils/netutils.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 // So that CYW43_LINK_xxx constants are available to MICROPY_PORT_NETWORK_INTERFACES.
@@ -56,7 +56,7 @@ char mod_network_country_code[2] = "XX";
 #error "MICROPY_PY_NETWORK_HOSTNAME_DEFAULT must be set in mpconfigport.h or mpconfigboard.h"
 #endif
 
-char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN] = MICROPY_PY_NETWORK_HOSTNAME_DEFAULT;
+char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1] = MICROPY_PY_NETWORK_HOSTNAME_DEFAULT;
 
 #ifdef MICROPY_PORT_NETWORK_INTERFACES
 
@@ -122,7 +122,7 @@ STATIC mp_obj_t network_hostname(size_t n_args, const mp_obj_t *args) {
     } else {
         size_t len;
         const char *str = mp_obj_str_get_data(args[0], &len);
-        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+        if (len > MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
             mp_raise_ValueError(NULL);
         }
         strcpy(mod_network_hostname, str);
