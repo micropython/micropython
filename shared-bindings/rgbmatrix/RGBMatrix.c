@@ -376,9 +376,7 @@ STATIC const mp_rom_map_elem_t rgbmatrix_rgbmatrix_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(rgbmatrix_rgbmatrix_locals_dict, rgbmatrix_rgbmatrix_locals_dict_table);
 
 STATIC void rgbmatrix_rgbmatrix_get_bufinfo(mp_obj_t self_in, mp_buffer_info_t *bufinfo) {
-    rgbmatrix_rgbmatrix_obj_t *self = (rgbmatrix_rgbmatrix_obj_t *)self_in;
-
-    *bufinfo = self->bufinfo;
+    common_hal_rgbmatrix_rgbmatrix_get_bufinfo(self_in, bufinfo);
 }
 
 // These version exists so that the prototype matches the protocol,
@@ -442,7 +440,7 @@ STATIC mp_int_t rgbmatrix_rgbmatrix_get_buffer(mp_obj_t self_in, mp_buffer_info_
     if ((flags & MP_BUFFER_WRITE) && !(self->bufinfo.typecode & MP_OBJ_ARRAY_TYPECODE_FLAG_RW)) {
         return 1;
     }
-    *bufinfo = self->bufinfo;
+    common_hal_rgbmatrix_rgbmatrix_get_bufinfo(self_in, bufinfo);
     bufinfo->typecode = 'H';
     return 0;
 }
