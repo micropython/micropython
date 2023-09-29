@@ -65,6 +65,9 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
         // reading bytes, writing 16-bit words, so output buffer will be bigger.
 
         output_length_used *= 2;
+        if (output_length_used > output_length) {
+            mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+        }
 
         // Correct "rail-to-rail" scaling of arbitrary-depth input to output
         // requires more operations than this, but at least the vital 8- to
