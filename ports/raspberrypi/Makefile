@@ -434,7 +434,7 @@ $(BUILD)/boot2.elf: $(BUILD)/stage2.c
 	$(Q)$(CC) $(CFLAGS) $(BOOT2_S_CFLAGS) -Os -ggdb3 -I. -fPIC --specs=nosys.specs -nostartfiles -Wl,-T,boot_stage2.ld  -Wl,-Map=$@.map -o $@ $<
 	$(Q)$(SIZE) $@
 
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 
 all: $(BUILD)/firmware.uf2
 

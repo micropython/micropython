@@ -158,3 +158,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, wifi_monitor_make_new,
     locals_dict, &wifi_monitor_locals_dict
     );
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t wifi_monitor_singleton);

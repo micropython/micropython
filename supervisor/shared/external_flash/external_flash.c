@@ -605,3 +605,5 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 
 void MP_WEAK external_flash_setup(void) {
 }
+
+MP_REGISTER_ROOT_POINTER(uint8_t **flash_ram_cache);
