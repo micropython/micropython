@@ -156,6 +156,10 @@ ifeq ($(MICROPY_PY_MACHINE_SDCARD),1)
 SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_usdhc.c
 endif
 
+ifeq ($(MICROPY_HW_ENABLE_CAN),1)
+SRC_HAL_IMX_C += $(MCU_DIR)/drivers/fsl_flexcan.c
+endif
+
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES), MIMXRT1015 MIMXRT1021 MIMXRT1052 MIMXRT1062 MIMXRT1064 MIMXRT1176))
 SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_qtmr.c \
@@ -195,6 +199,7 @@ SRC_C += \
 	led.c \
 	machine_adc.c \
 	machine_bitstream.c \
+	machine_can.c \
 	machine_i2c.c \
 	machine_i2s.c \
 	machine_led.c \
@@ -332,6 +337,7 @@ endif
 MICROPY_HW_SDRAM_AVAIL ?= 0
 MICROPY_HW_SDRAM_SIZE ?= 0
 MICROPY_PY_MACHINE_SDCARD ?= 0
+MICROPY_HW_ENABLE_CAN ?= 0
 
 # Configure default compiler flags
 CFLAGS += \
@@ -352,6 +358,7 @@ CFLAGS += \
 	-DMICROPY_HW_SDRAM_AVAIL=$(MICROPY_HW_SDRAM_AVAIL) \
 	-DMICROPY_HW_SDRAM_SIZE=$(MICROPY_HW_SDRAM_SIZE) \
 	-DMICROPY_PY_MACHINE_SDCARD=$(MICROPY_PY_MACHINE_SDCARD) \
+	-DMICROPY_HW_ENABLE_CAN=$(MICROPY_HW_ENABLE_CAN) \
 	-DSPI_RETRY_TIMES=1000000 \
 	-DUART_RETRY_TIMES=1000000 \
 	-DXIP_BOOT_HEADER_ENABLE=1 \
