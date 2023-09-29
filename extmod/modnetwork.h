@@ -56,10 +56,12 @@
 extern char mod_network_country_code[2];
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
-#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (16)
+// Doesn't include the null terminator.
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
 #endif
 
-extern char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN];
+// This is a null-terminated string.
+extern char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1];
 
 #if MICROPY_PY_LWIP
 struct netif;
