@@ -1099,6 +1099,38 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 }
 #endif // Alternative gc_realloc impl
 
+bool gc_never_free(void *ptr) {
+    // Check to make sure the pointer is on the heap in the first place.
+    if (gc_nbytes(ptr) == 0) {
+        return false;
+    }
+    // Pointers are stored in a linked list where each block is BYTES_PER_BLOCK long and the first
+    // pointer is the next block of pointers.
+    void **current_reference_block = MP_STATE_MEM(permanent_pointers);
+    void **last_reference_block = NULL;
+    while (current_reference_block != NULL) {
+        for (size_t i = 1; i < BYTES_PER_BLOCK / sizeof(void *); i++) {
+            if (current_reference_block[i] == NULL) {
+                current_reference_block[i] = ptr;
+                return true;
+            }
+        }
+        last_reference_block = current_reference_block; // keep a record of last "proper" reference block
+        current_reference_block = current_reference_block[0];
+    }
+    void **next_block = gc_alloc(BYTES_PER_BLOCK, false);
+    if (next_block == NULL) {
+        return false;
+    }
+    if (MP_STATE_MEM(permanent_pointers) == NULL) {
+        MP_STATE_MEM(permanent_pointers) = next_block;
+    } else {
+        last_reference_block[0] = next_block;
+    }
+    next_block[1] = ptr;
+    return true;
+}
+
 void gc_dump_info(const mp_print_t *print) {
     gc_info_t info;
     gc_info(&info);

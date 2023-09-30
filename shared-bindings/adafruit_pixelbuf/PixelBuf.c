@@ -376,5 +376,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, pixelbuf_pixelbuf_make_new,
     subscr, pixelbuf_pixelbuf_subscr,
     unary_op, pixelbuf_pixelbuf_unary_op,
-    iter, mp_obj_new_generic_iterator
+    iter, mp_obj_generic_subscript_getiter
     );

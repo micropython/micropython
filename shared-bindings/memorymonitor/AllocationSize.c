@@ -171,6 +171,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, memorymonitor_allocationsize_make_new,
     subscr, memorymonitor_allocationsize_subscr,
     unary_op, memorymonitor_allocationsize_unary_op,
-    getiter, mp_obj_new_generic_iterator,
+    iter, mp_obj_generic_subscript_getiter,
     locals_dict, &memorymonitor_allocationsize_locals_dict
     );

@@ -223,6 +223,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &displayio_palette_locals_dict,
     subscr, palette_subscr,
     unary_op, group_unary_op,
-    iter, mp_obj_new_generic_iterator
-
+    iter, mp_obj_generic_subscript_getiter
     );

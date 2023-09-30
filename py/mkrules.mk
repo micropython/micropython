@@ -78,7 +78,8 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
   $(RM) -f $(@:.o=.d)
 endef
 
-vpath %.c . $(TOP) $(USER_C_MODULES)
+# CIRCUITPY: add $(DEVICES_MODULES) and $(BUILD)
+vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES) $(BUILD)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
 
