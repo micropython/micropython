@@ -61,6 +61,9 @@ void common_hal_rgbmatrix_timer_enable(void *ptr) {
 }
 
 void common_hal_rgbmatrix_timer_disable(void *ptr) {
+    if (ptr == NULL) {
+        return;
+    }
     timer_index_t *timer = (timer_index_t *)ptr;
     if (timer->idx == TIMER_MAX) {
         return;
