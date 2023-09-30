@@ -132,6 +132,7 @@ set(MICROPY_SOURCE_PORT
     pendsv.c
     rp2_flash.c
     rp2_pio.c
+    rp2_dma.c
     uart.c
     usbd.c
     msc_disk.c
@@ -156,6 +157,7 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_PORT_DIR}/modos.c
     ${MICROPY_PORT_DIR}/rp2_flash.c
     ${MICROPY_PORT_DIR}/rp2_pio.c
+    ${MICROPY_PORT_DIR}/rp2_dma.c
     ${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c
 )
 
