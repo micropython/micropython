@@ -36,6 +36,10 @@
 
 #if MICROPY_PY_BLUETOOTH
 
+#ifndef MICROPY_HW_BLE_UART_FLOW_CONTROL
+#define MICROPY_HW_BLE_UART_FLOW_CONTROL (3)
+#endif
+
 #define DEBUG_printf(...) // mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 #define ERROR_printf(...) mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 
@@ -85,7 +89,7 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     mp_obj_t args[] = {
         MP_OBJ_NEW_SMALL_INT(port),
         MP_OBJ_NEW_QSTR(MP_QSTR_baudrate), MP_OBJ_NEW_SMALL_INT(baudrate),
-        MP_OBJ_NEW_QSTR(MP_QSTR_flow), MP_OBJ_NEW_SMALL_INT(3),
+        MP_OBJ_NEW_QSTR(MP_QSTR_flow), MP_OBJ_NEW_SMALL_INT(MICROPY_HW_BLE_UART_FLOW_CONTROL),
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout), MP_OBJ_NEW_SMALL_INT(200),
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout_char), MP_OBJ_NEW_SMALL_INT(200),
         MP_OBJ_NEW_QSTR(MP_QSTR_txbuf), MP_OBJ_NEW_SMALL_INT(768),
