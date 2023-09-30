@@ -40,9 +40,9 @@ called `firmware.uf2`.
 If you are using a different board other than a Rasoberry Pi Pico, then you should
 pass the board name to the build; e.g. for Raspberry Pi Pico W:
 
-    $ make BOARD=PICO_W submodules
-    $ make BOARD=PICO_W clean
-    $ make BOARD=PICO_W
+    $ make BOARD=RPI_PICO_W submodules
+    $ make BOARD=RPI_PICO_W clean
+    $ make BOARD=RPI_PICO_W
 
 ## Deploying firmware to the device
 
