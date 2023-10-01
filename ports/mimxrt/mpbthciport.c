@@ -85,13 +85,14 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     mp_obj_t args[] = {
         MP_OBJ_NEW_SMALL_INT(port),
         MP_OBJ_NEW_QSTR(MP_QSTR_baudrate), MP_OBJ_NEW_SMALL_INT(baudrate),
+        MP_OBJ_NEW_QSTR(MP_QSTR_flow), MP_OBJ_NEW_SMALL_INT(3),
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout), MP_OBJ_NEW_SMALL_INT(200),
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout_char), MP_OBJ_NEW_SMALL_INT(200),
         MP_OBJ_NEW_QSTR(MP_QSTR_txbuf), MP_OBJ_NEW_SMALL_INT(768),
         MP_OBJ_NEW_QSTR(MP_QSTR_rxbuf), MP_OBJ_NEW_SMALL_INT(768),
     };
 
-    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 1, 5, args);
+    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 1, 6, args);
     MP_STATE_PORT(mp_bthci_uart) = mp_bthci_uart;
 
     // Start the HCI polling to process any initial events/packets.

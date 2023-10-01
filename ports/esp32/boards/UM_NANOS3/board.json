@@ -6,7 +6,7 @@
     "features": [
         "Battery Charging",
         "RGB LED",
-        "SPIRAM",
+        "External RAM",
         "WiFi",
         "BLE"
     ],

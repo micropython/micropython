@@ -5,8 +5,6 @@
 #ifndef MICROPY_INCLUDED_STM32H7XX_HAL_CONF_H
 #define MICROPY_INCLUDED_STM32H7XX_HAL_CONF_H
 
-#include "boards/stm32h7xx_hal_conf_base.h"
-
 // Oscillator values in Hz
 #define HSE_VALUE (25000000)
 #define LSE_VALUE (32768)
@@ -47,5 +45,7 @@
 #ifdef HAL_MMC_MODULE_ENABLED
 #include "stm32h7xx_hal_mmc.h"
 #endif
+
+#include "boards/stm32h7xx_hal_conf_base.h"
 
 #endif // MICROPY_INCLUDED_STM32H7XX_HAL_CONF_H

@@ -42,7 +42,6 @@ uint32_t trng_random_u32(void);
 #else
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #endif
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT      (32)
 #define MICROPY_ALLOC_PATH_MAX              (256)
 
 // MicroPython emitters
@@ -87,6 +86,9 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_MACHINE_I2C              (1)
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (0)
+#endif
+#ifndef MICROPY_PY_MACHINE_SDCARD
+#define MICROPY_PY_MACHINE_SDCARD           (1)
 #endif
 #define MICROPY_PY_MACHINE_SOFTI2C          (1)
 #define MICROPY_PY_MACHINE_SPI              (1)

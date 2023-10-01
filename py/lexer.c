@@ -846,6 +846,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     vstr_init(&lex->vstr, 32);
     #if MICROPY_PY_FSTRINGS
     vstr_init(&lex->fstring_args, 0);
+    lex->fstring_args_idx = 0;
     #endif
 
     // store sentinel for first indentation level

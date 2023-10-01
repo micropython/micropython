@@ -161,7 +161,7 @@ static const DMA_InitTypeDef dma_init_struct_i2s = {
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
     .Channel = 0,
-    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB)) || defined(STM32WL)
+    #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
     .Request = 0,
     #endif
     .Direction = 0,
@@ -185,6 +185,24 @@ static const DMA_InitTypeDef dma_init_struct_sdio = {
 #endif
 
 #if defined(MICROPY_HW_ENABLE_DAC) && MICROPY_HW_ENABLE_DAC
+#if defined(STM32H5)
+// Default parameters to dma_init() for DAC tx
+static const DMA_InitTypeDef dma_init_struct_dac = {
+    .Request = 0, // set by dma_init_handle
+    .BlkHWRequest = DMA_BREQ_SINGLE_BURST,
+    .Direction = DMA_MEMORY_TO_PERIPH,
+    .SrcInc = DMA_SINC_INCREMENTED,
+    .DestInc = DMA_DINC_FIXED,
+    .SrcDataWidth = DMA_SRC_DATAWIDTH_BYTE,
+    .DestDataWidth = DMA_DEST_DATAWIDTH_WORD,
+    .Priority = DMA_HIGH_PRIORITY,
+    .SrcBurstLength = 1,
+    .DestBurstLength = 1,
+    .TransferAllocatedPort = DMA_SRC_ALLOCATED_PORT0 | DMA_DEST_ALLOCATED_PORT0,
+    .TransferEventMode = DMA_TCEM_BLOCK_TRANSFER,
+    .Mode = DMA_NORMAL, // DMA_NORMAL or DMA_PFCTRL (peripheral flow control mode)
+};
+#else
 // Default parameters to dma_init() for DAC tx
 static const DMA_InitTypeDef dma_init_struct_dac = {
     #if defined(STM32F4) || defined(STM32F7)
@@ -206,6 +224,7 @@ static const DMA_InitTypeDef dma_init_struct_dac = {
     .PeriphBurst = DMA_PBURST_SINGLE,
     #endif
 };
+#endif
 #endif
 
 #if MICROPY_HW_ENABLE_DCMI
@@ -715,6 +734,10 @@ const dma_descr_t dma_SPI_1_RX = { GPDMA1_Channel0, GPDMA1_REQUEST_SPI1_RX, dma_
 const dma_descr_t dma_SPI_1_TX = { GPDMA1_Channel1, GPDMA1_REQUEST_SPI1_TX, dma_id_1, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_RX = { GPDMA1_Channel2, GPDMA1_REQUEST_SPI2_RX, dma_id_2, &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_TX = { GPDMA1_Channel3, GPDMA1_REQUEST_SPI2_TX, dma_id_3, &dma_init_struct_spi_i2c };
+#if MICROPY_HW_ENABLE_DAC
+const dma_descr_t dma_DAC_1_TX = { GPDMA1_Channel4, GPDMA1_REQUEST_DAC1_CH1, dma_id_4, &dma_init_struct_dac };
+const dma_descr_t dma_DAC_2_TX = { GPDMA1_Channel5, GPDMA1_REQUEST_DAC1_CH2, dma_id_5, &dma_init_struct_dac };
+#endif
 
 static const uint8_t dma_irqn[NSTREAM] = {
     GPDMA1_Channel0_IRQn,
@@ -1613,7 +1636,106 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
     dma->CCR |= DMA_CCR_EN;
 }
 
-#elif defined(STM32G0) || defined(STM32H5) || defined(STM32WB) || defined(STM32WL)
+#elif defined(STM32H5)
+
+// Fully setup GPDMA linked list entry
+typedef struct _dma_ll_full_t {
+    __IO uint32_t CTR1;
+    __IO uint32_t CTR2;
+    __IO uint32_t CBR1;
+    __IO uint32_t CSAR;
+    __IO uint32_t CDAR;
+    __IO uint32_t CLLR;
+} dma_ll_full_t;
+
+// Align LL entry to 32 bytes to ensure it never crosses a 64 kB boundary
+__ALIGNED(32) static __IO dma_ll_full_t lli1;
+
+void dma_nohal_init(const dma_descr_t *descr, uint32_t config) {
+    DMA_Channel_TypeDef *dma = descr->instance;
+    const DMA_InitTypeDef *init = descr->init;
+
+    // Enable the DMA peripheral
+    dma_enable_clock(descr->id);
+
+    // - LSM = 0, normal linked list mode
+    // - No interrupts
+    // - Not suspended, out of reset, disabled
+    // - Priority as defined by user
+    dma->CCR = init->Priority;
+
+    uint32_t ctr1reg = 0;
+    ctr1reg |= init->SrcDataWidth;
+    ctr1reg |= init->SrcInc;
+    ctr1reg |= (((init->SrcBurstLength - 1) << DMA_CTR1_SBL_1_Pos)) & DMA_CTR1_SBL_1_Msk;
+    ctr1reg |= init->DestDataWidth;
+    ctr1reg |= init->DestInc;
+    ctr1reg |= (((init->DestBurstLength - 1) << DMA_CTR1_DBL_1_Pos)) & DMA_CTR1_DBL_1_Msk;
+
+    uint32_t ctr2reg = 0;
+    ctr2reg |= init->BlkHWRequest;
+    ctr2reg |= init->Direction;
+    ctr2reg |= init->Mode;
+    ctr2reg |= init->TransferEventMode;
+    ctr2reg |= init->TransferAllocatedPort;
+    uint32_t reqsel = descr->sub_instance;
+    ctr2reg |= (reqsel << DMA_CTR2_REQSEL_Pos) & DMA_CTR2_REQSEL_Msk;
+
+    dma->CBR1 = 0;  // set length to zero, so that GPDMA engine fetches first LL entry immediately
+    dma->CSAR = 0;
+    dma->CDAR = 0;
+
+    // Attach linked list entry
+    dma->CLBAR = (uint32_t)(&lli1) & 0xffff0000UL;  // upper 16 bits of linked list addresses
+
+    uint32_t cllrreg = 0;
+    cllrreg |= (DMA_CLLR_UT1 | DMA_CLLR_UT2 | DMA_CLLR_UB1 | DMA_CLLR_USA | DMA_CLLR_UDA | DMA_CLLR_ULL);
+    cllrreg |= (uint32_t)(&lli1) & 0x0000fffcUL;    // lower 16 bits of linked list entry address
+    dma->CLLR = cllrreg;
+
+    // Setup linked list control registers. Length and addresses are set in dma_nohal_start()
+    lli1.CTR1 = ctr1reg;
+    lli1.CTR2 = ctr2reg;
+
+    if ((config & DMA_CIRCULAR) == DMA_CIRCULAR) {
+        lli1.CLLR = cllrreg;    // pointer to itself for circular operation
+    } else {
+        lli1.CLLR = 0;  // No next node, this is end of linked list chain
+    }
+}
+
+void dma_nohal_deinit(const dma_descr_t *descr) {
+    DMA_Channel_TypeDef *dma = descr->instance;
+
+    if ((dma->CCR & DMA_CCR_EN) == DMA_CCR_EN) {
+        // Suspend currently running channel. Wait until done, then reset to clear FIFOs.
+        dma->CCR |= DMA_CCR_SUSP;
+
+        uint32_t t0 = mp_hal_ticks_ms();
+        while ((dma->CSR & DMA_CSR_SUSPF) != DMA_CSR_SUSPF) {
+            if (mp_hal_ticks_ms() - t0 >= 100) {
+                // Timeout.. Abort to avoid blocking system forever
+                break;
+            }
+        }
+
+        dma->CCR |= DMA_CCR_RESET;
+    }
+    dma->CCR &= ~DMA_CCR_EN;
+    dma->CCR = 0;
+    dma_deinit(descr);
+}
+
+void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_addr, uint16_t len) {
+    DMA_Channel_TypeDef *dma = descr->instance;
+    lli1.CBR1 = (len << DMA_CBR1_BNDT_Pos) & DMA_CBR1_BNDT_Msk;
+    lli1.CSAR = src_addr;
+    lli1.CDAR = dst_addr;
+
+    dma->CCR |= DMA_CCR_EN;
+}
+
+#elif defined(STM32G0) || defined(STM32WB) || defined(STM32WL)
 
 // These functions are currently not implemented or needed for this MCU.
 

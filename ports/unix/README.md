@@ -72,3 +72,17 @@ deplibs`. To actually enable/disable use of dependencies, edit the
 `ports/unix/mpconfigport.mk` file, which has inline descriptions of the
 options. For example, to build the SSL module, `MICROPY_PY_SSL` should be
 set to 1.
+
+Debug Symbols
+-------------
+
+By default, builds are stripped of symbols and debug information to save size.
+
+To build a debuggable version of the Unix port, there are two options
+
+1. Run `make [other arguments] DEBUG=1`. Note setting `DEBUG` also reduces the
+   optimisation level, so it's not a good option for builds that also want the
+   best performance.
+2. Run `make [other arguments] STRIP=`. Note that the value of `STRIP` is
+   empty. This will skip the build step that strips symbols and debug
+   information, but changes nothing else in the build configuration.
