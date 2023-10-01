@@ -65,7 +65,7 @@ typedef struct _rp2_dma_ctrl_field_t {
 
 STATIC rp2_dma_ctrl_field_t rp2_dma_ctrl_fields_table[] = {
     { MP_QSTR_enable,        0, 1, 0 },
-    { MP_QSTR_high_priority, 1, 1, 0 },
+    { MP_QSTR_high_pri,      1, 1, 0 },
     { MP_QSTR_size,          2, 2, 0 },
     { MP_QSTR_inc_read,      4, 1, 0 },
     { MP_QSTR_inc_write,     5, 1, 0 },
@@ -78,9 +78,9 @@ STATIC rp2_dma_ctrl_field_t rp2_dma_ctrl_fields_table[] = {
     { MP_QSTR_sniff_en,     23, 1, 0 },
     { MP_QSTR_busy,         24, 1, 1 },
     // bits 25 through 28 are reserved
-    { MP_QSTR_write_error,  29, 1, 0 },
-    { MP_QSTR_read_error,   30, 1, 0 },
-    { MP_QSTR_ahb_error,    31, 1, 1 },
+    { MP_QSTR_write_err,    29, 1, 0 },
+    { MP_QSTR_read_err,     30, 1, 0 },
+    { MP_QSTR_ahb_err,      31, 1, 1 },
 };
 STATIC uint32_t rp2_dma_ctrl_field_count = sizeof(rp2_dma_ctrl_fields_table) / sizeof(rp2_dma_ctrl_field_t);
 
@@ -99,142 +99,16 @@ STATIC uint32_t rp2_dma_register_value_from_obj(mp_obj_t o, int reg_type) {
         }
     }
 
-    // DMAConfigs can cast as integers; we don't want them as counts or addresses
-    if (reg_type != REG_TYPE_CONF && mp_obj_is_type(o, &rp2_dma_config_type)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("DMAConfig only allowed for ctrl"));
-    }
+    // Make sure that the value is an integer
+    o = mp_unary_op(MP_UNARY_OP_INT_MAYBE, o);
 
-    if (!mp_obj_is_int(o)) {
-        o = mp_unary_op(MP_UNARY_OP_INT_MAYBE, o);
-        if (o == MP_OBJ_NULL) {
-            mp_raise_ValueError(MP_ERROR_TEXT("value can's be converted to integer"));
-        }
-    }
-
-    if (mp_obj_is_small_int(o)) {
-        // For small ints, just get the value
-        return (uint32_t)MP_OBJ_SMALL_INT_VALUE(o);
-    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    } else if (mp_obj_is_int(o)) {
-        // For non-small ints, we need to unpack the value
-        uint32_t value;
-        mp_obj_int_to_bytes_impl(o, MP_ENDIANNESS_BIG, 4, (byte *)&value);
-        return value;
-    #endif
+    if (mp_obj_is_int(o)) {
+        return mp_obj_int_get_uint_checked(o);
     } else {
-        mp_raise_ValueError(MP_ERROR_TEXT("value can's be converted to integer"));
+        mp_raise_ValueError(MP_ERROR_TEXT("value not an integer"));
     }
 }
 
-
-// Default is quiet, unpaced, read and write incrementing, word transfers, enabled
-#define DEFAULT_DMA_CONFIG (1 << 21) | (0x3f << 15) | (1 << 5) | (1 << 4) | (2 << 2) | (1 << 0)
-
-STATIC bool rp2_dma_config_set_field(uint32_t *old_value, qstr name, mp_obj_t field_value) {
-    rp2_dma_ctrl_field_t *table = rp2_dma_ctrl_fields_table;
-    for (int i = 0; i < rp2_dma_ctrl_field_count; i++) {
-        if (name == table[i].name) {
-            if (table[i].read_only) {
-                return false;
-            }
-            mp_int_t fv = mp_obj_get_int(field_value);
-            uint32_t mask = ((1 << table[i].length) - 1) << table[i].shift;
-            *old_value = (*old_value & (~mask)) | ((fv << table[i].shift) & mask);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-// We can do this because fields can't be 32 bits wide
-#define FIELD_NOT_FOUND 0xffffffffu
-
-STATIC uint32_t rp2_dma_config_get_field(uint32_t value, qstr name) {
-    rp2_dma_ctrl_field_t *table = rp2_dma_ctrl_fields_table;
-    for (int i = 0; i < rp2_dma_ctrl_field_count; i++) {
-        if (name == table[i].name) {
-            return (value >> table[i].shift) & ((1 << table[i].length) - 1);
-        }
-    }
-    return FIELD_NOT_FOUND;
-}
-
-STATIC mp_obj_t rp2_dma_config_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, true);
-
-    uint32_t value = DEFAULT_DMA_CONFIG;
-    if (n_args > 0) {
-        value = rp2_dma_register_value_from_obj(args[0], REG_TYPE_CONF);
-        args++;
-    }
-
-    for (int i = 0; i < n_kw * 2; i += 2) {
-        qstr q_name = mp_obj_str_get_qstr(args[i]);
-        if (!rp2_dma_config_set_field(&value, q_name, args[i + 1])) {
-            mp_raise_msg_varg(&mp_type_AttributeError, MP_ERROR_TEXT("DMAConfig has no '%s' field"), qstr_str(q_name));
-        }
-    }
-
-    rp2_dma_config_obj_t *self = m_new_obj(rp2_dma_config_obj_t);
-    self->base.type = &rp2_dma_config_type;
-    self->value = value;
-    return MP_OBJ_FROM_PTR(self);
-}
-
-STATIC void rp2_dma_config_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    mp_printf(print, "DMAConfig(");
-    uint32_t value = ((rp2_dma_config_obj_t *)MP_OBJ_TO_PTR(self_in))->value;
-    rp2_dma_ctrl_field_t *table = rp2_dma_ctrl_fields_table;
-
-    for (int i = 0; i < rp2_dma_ctrl_field_count; i++) {
-        if (i != 0) {
-            mp_printf(print, ", ");
-        }
-        uint32_t field_value = (value >> table[i].shift) & ((1 << table[i].length) - 1);
-        mp_printf(print, "%s=%d", qstr_str(table[i].name), field_value);
-    }
-    mp_printf(print, ")");
-}
-
-STATIC void rp2_dma_config_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
-    rp2_dma_config_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (dest[0] == MP_OBJ_NULL) {
-        // Load attribute
-        uint32_t field_value = rp2_dma_config_get_field(self->value, attr_in);
-        if (field_value != FIELD_NOT_FOUND) {
-            dest[0] = mp_obj_new_int_from_uint(field_value);
-        }
-    } else {
-        // Set or delete attribute
-        if (dest[1] == MP_OBJ_NULL) {
-            // We don't support deleting attributes.
-            return;
-        }
-        if (rp2_dma_config_set_field(&self->value, attr_in, dest[1])) {
-            dest[0] = MP_OBJ_NULL; // indicate success
-        }
-    }
-}
-
-mp_obj_t rp2_dma_config_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
-    rp2_dma_config_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    switch (op) {
-        case MP_UNARY_OP_INT_MAYBE:
-            return mp_obj_new_int_from_uint(self->value);
-        default:
-            return MP_OBJ_NULL;      // op not supported
-    }
-}
-
-MP_DEFINE_CONST_OBJ_TYPE(rp2_dma_config_type,
-    MP_QSTR_DMAConfig,
-    MP_TYPE_FLAG_NONE,
-    make_new, rp2_dma_config_make_new,
-    print, rp2_dma_config_print,
-    unary_op, rp2_dma_config_unary_op,
-    attr, rp2_dma_config_attr
-    );
 
 STATIC void rp2_dma_irq_handler(void) {
     // Main IRQ handler
@@ -312,12 +186,6 @@ STATIC void rp2_dma_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
             rp2_dma_error_if_closed(self);
             uint32_t busy = dma_channel_is_busy(self->channel);
             dest[0] = mp_obj_new_bool((mp_int_t)busy);
-        } else if (attr_in == MP_QSTR_default_ctrl) {
-            // Get the default ctrl for _this_ channel, i.e. with chaining disabled.
-            rp2_dma_config_obj_t *conf = m_new_obj(rp2_dma_config_obj_t);
-            conf->base.type = &rp2_dma_config_type;
-            conf->value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << 11);
-            dest[0] = conf;
         } else if (attr_in == MP_QSTR_read) {
             rp2_dma_error_if_closed(self);
             dest[0] = mp_obj_new_int_from_uint((mp_uint_t)reg_block->read_addr);
@@ -445,6 +313,81 @@ STATIC mp_obj_t rp2_dma_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(rp2_dma_config_obj, 1, rp2_dma_config);
 
+// Default is quiet, unpaced, read and write incrementing, word transfers, enabled
+#define DEFAULT_DMA_CONFIG (1 << 21) | (0x3f << 15) | (1 << 5) | (1 << 4) | (2 << 2) | (1 << 0)
+
+STATIC mp_obj_t rp2_dma_pack_ctrl(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // Pack keyword settings into a control register value, using either the default for this
+    // DMA channel or the provided defaults
+    rp2_dma_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_uint_t value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << 11);
+
+    mp_uint_t remaining = kw_args->used;
+
+    for (mp_uint_t i = 0; i < remaining; i++) {
+        if (!mp_obj_is_int(kw_args->table[i].value)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("Arg not an int"));
+        }
+    }
+
+    mp_map_elem_t *default_entry = mp_map_lookup(kw_args, MP_OBJ_NEW_QSTR(MP_QSTR_default), MP_MAP_LOOKUP);
+    if (default_entry) {
+        remaining--;
+        value = mp_obj_int_get_uint_checked(default_entry->value);
+    }
+
+    for (mp_uint_t i = 0; i < rp2_dma_ctrl_field_count; i++) {
+        mp_map_elem_t *field_entry = mp_map_lookup(
+            kw_args,
+            MP_OBJ_NEW_QSTR(rp2_dma_ctrl_fields_table[i].name),
+            MP_MAP_LOOKUP
+            );
+        if (field_entry) {
+            remaining--;
+            // Silently ignore read-only fields, to allow the passing of a modified unpack_ctrl() results
+            if (!rp2_dma_ctrl_fields_table[i].read_only) {
+                mp_uint_t field_value = mp_obj_int_get_uint_checked(field_entry->value);
+                mp_uint_t mask = ((1 << rp2_dma_ctrl_fields_table[i].length) - 1);
+                mp_uint_t masked_value = field_value & mask;
+                if (field_value != masked_value) {
+                    mp_raise_ValueError(MP_ERROR_TEXT("Bad field value"));
+                }
+                value &= ~(mask << rp2_dma_ctrl_fields_table[i].shift);
+                value |= masked_value << rp2_dma_ctrl_fields_table[i].shift;
+            }
+        }
+    }
+
+    if (remaining) {
+        mp_raise_type(&mp_type_AttributeError);
+    }
+
+    return mp_obj_new_int_from_uint(value);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(rp2_dma_pack_ctrl_obj, 1, rp2_dma_pack_ctrl);
+
+STATIC mp_obj_t rp2_dma_unpack_ctrl(mp_obj_t value_obj) {
+    // Return a dict representing the unpacked fields of a control register value
+    mp_obj_t result_dict[rp2_dma_ctrl_field_count * 2];
+
+    if (!mp_obj_is_int(value_obj)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("int required"));
+    }
+
+    mp_uint_t value = mp_obj_int_get_uint_checked(value_obj);
+
+    for (mp_uint_t i = 0; i < rp2_dma_ctrl_field_count; i++) {
+        result_dict[i * 2] = MP_OBJ_NEW_QSTR(rp2_dma_ctrl_fields_table[i].name);
+        mp_uint_t field_value =
+            (value >> rp2_dma_ctrl_fields_table[i].shift) & ((1 << rp2_dma_ctrl_fields_table[i].length) - 1);
+        result_dict[i * 2 + 1] = MP_OBJ_NEW_SMALL_INT(field_value);
+    }
+
+    return mp_obj_dict_make_new(&mp_type_dict, 0, rp2_dma_ctrl_field_count, result_dict);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_dma_unpack_ctrl_fun_obj, rp2_dma_unpack_ctrl);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(rp2_dma_unpack_ctrl_obj, MP_ROM_PTR(&rp2_dma_unpack_ctrl_fun_obj));
+
 STATIC mp_obj_t rp2_dma_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_hard };
     static const mp_arg_t allowed_args[] = {
@@ -513,6 +456,8 @@ STATIC const mp_rom_map_elem_t rp2_dma_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&rp2_dma_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&rp2_dma_close_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&rp2_dma_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pack_ctrl), MP_ROM_PTR(&rp2_dma_pack_ctrl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unpack_ctrl), MP_ROM_PTR(&rp2_dma_unpack_ctrl_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_dma_locals_dict, rp2_dma_locals_dict_table);
 
