@@ -42,9 +42,6 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     uint16_t rotation,
     bool auto_refresh);
 
-bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self,
-    displayio_group_t *root_group);
-
 bool common_hal_framebufferio_framebufferdisplay_refresh(framebufferio_framebufferdisplay_obj_t *self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame);
 
 bool common_hal_framebufferio_framebufferdisplay_get_auto_refresh(framebufferio_framebufferdisplay_obj_t *self);

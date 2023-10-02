@@ -245,31 +245,6 @@ static displayio_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: Group) -> None:
-//|         """
-//|         .. note:: `show()` is deprecated and will be removed in CircuitPython 9.0.0.
-//|           Use ``.root_group = group`` instead.
-//|
-//|         Switches to displaying the given group of layers. When group is None, the default
-//|         CircuitPython terminal will be shown.
-//|
-//|         :param Group group: The group to show."""
-//|         ...
-STATIC mp_obj_t displayio_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
-    displayio_epaperdisplay_obj_t *self = native_display(self_in);
-    displayio_group_t *group = NULL;
-    if (group_in != mp_const_none) {
-        group = MP_OBJ_TO_PTR(native_group(group_in));
-    }
-
-    bool ok = common_hal_displayio_epaperdisplay_show(self, group);
-    if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_epaperdisplay_show_obj, displayio_epaperdisplay_obj_show);
-
 //|     def update_refresh_mode(
 //|         self, start_sequence: ReadableBuffer, seconds_per_frame: float = 180
 //|     ) -> None:
@@ -415,7 +390,6 @@ MP_PROPERTY_GETSET(displayio_epaperdisplay_root_group_obj,
     (mp_obj_t)&displayio_epaperdisplay_set_root_group_obj);
 
 STATIC const mp_rom_map_elem_t displayio_epaperdisplay_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_epaperdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_update_refresh_mode), MP_ROM_PTR(&displayio_epaperdisplay_update_refresh_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&displayio_epaperdisplay_refresh_obj) },
 

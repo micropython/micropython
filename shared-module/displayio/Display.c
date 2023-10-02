@@ -140,13 +140,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
-bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
-    if (root_group == NULL) {
-        root_group = &circuitpython_splash;
-    }
-    return displayio_display_core_set_root_group(&self->core, root_group);
-}
-
 uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t *self) {
     return displayio_display_core_get_width(&self->core);
 }

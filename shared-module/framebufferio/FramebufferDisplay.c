@@ -100,15 +100,8 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-    common_hal_framebufferio_framebufferdisplay_show(self, &circuitpython_splash);
+    displayio_display_core_set_root_group(&self->core, &circuitpython_splash);
     common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, auto_refresh);
-}
-
-bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
-    if (root_group == NULL) {
-        root_group = &circuitpython_splash;
-    }
-    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t *self) {
@@ -360,7 +353,7 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
     const mp_obj_type_t *fb_type = mp_obj_get_type(self->framebuffer);
     if (fb_type != NULL && fb_type != &mp_type_NoneType) {
         common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
-        common_hal_framebufferio_framebufferdisplay_show(self, NULL);
+        displayio_display_core_set_root_group(&self->core, &circuitpython_splash);
         self->core.full_refresh = true;
     } else {
         release_framebufferdisplay(self);

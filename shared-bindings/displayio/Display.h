@@ -46,9 +46,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     bool single_byte_bounds, bool data_as_commands, bool auto_refresh, uint16_t native_frames_per_second,
     bool backlight_on_high, bool SH1107_addressing, uint16_t backlight_pwm_frequency);
 
-bool common_hal_displayio_display_show(displayio_display_obj_t *self,
-    displayio_group_t *root_group);
-
 bool common_hal_displayio_display_refresh(displayio_display_obj_t *self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame);
 
 bool common_hal_displayio_display_get_auto_refresh(displayio_display_obj_t *self);
