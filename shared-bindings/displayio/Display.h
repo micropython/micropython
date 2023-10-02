@@ -35,6 +35,7 @@
 extern const mp_obj_type_t displayio_display_type;
 
 #define NO_BRIGHTNESS_COMMAND 0x100
+#define NO_FPS_LIMIT 0xffffffff
 
 void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     mp_obj_t bus, uint16_t width, uint16_t height,

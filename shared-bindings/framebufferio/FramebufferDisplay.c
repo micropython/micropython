@@ -136,7 +136,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_refresh(size_t n_args, cons
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     framebufferio_framebufferdisplay_obj_t *self = native_display(pos_args[0]);
-    uint32_t maximum_ms_per_real_frame = 0xffffffff;
+    uint32_t maximum_ms_per_real_frame = NO_FPS_LIMIT;
     mp_int_t minimum_frames_per_second = args[ARG_minimum_frames_per_second].u_int;
     if (minimum_frames_per_second > 0) {
         maximum_ms_per_real_frame = 1000 / minimum_frames_per_second;
@@ -144,7 +144,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_refresh(size_t n_args, cons
 
     uint32_t target_ms_per_frame;
     if (args[ARG_target_frames_per_second].u_obj == mp_const_none) {
-        target_ms_per_frame = 0xffffffff;
+        target_ms_per_frame = NO_FPS_LIMIT;
     } else {
         target_ms_per_frame = 1000 / mp_obj_get_int(args[ARG_target_frames_per_second].u_obj);
     }

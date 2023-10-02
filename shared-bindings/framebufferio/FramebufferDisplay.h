@@ -36,6 +36,7 @@
 extern const mp_obj_type_t framebufferio_framebufferdisplay_type;
 
 #define NO_BRIGHTNESS_COMMAND 0x100
+#define NO_FPS_LIMIT 0xffffffff
 
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t *self,
     mp_obj_t framebuffer,
