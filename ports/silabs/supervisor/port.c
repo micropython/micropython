@@ -192,6 +192,10 @@ void reset_port(void) {
     #if CIRCUITPY_RTC
     rtc_reset();
     #endif
+
+    #if CIRCUITPY_WATCHDOG
+    watchdog_reset();
+    #endif
 }
 
 void reset_to_bootloader(void) {

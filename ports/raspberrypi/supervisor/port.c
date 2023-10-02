@@ -207,6 +207,10 @@ void reset_port(void) {
     ssl_reset();
     #endif
 
+    #if CIRCUITPY_WATCHDOG
+    watchdog_reset();
+    #endif
+
     #if CIRCUITPY_WIFI
     wifi_reset();
     #endif
