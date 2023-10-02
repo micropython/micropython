@@ -262,9 +262,17 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
+# CIRCUITPY: these two targets are ours
+.PHONY: print-failures clean-failures
+print-failures clean-failures:
+	../../tests/run-tests.py --$@
+
+
+# CIRCUITPY: support for passing args to run-tests, like `make test TEST_ARGS="basics/*.py"`
+TEST_ARGS ?=
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py $(TEST_ARGS)
 
 test_full: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
