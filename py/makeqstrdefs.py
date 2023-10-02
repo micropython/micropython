@@ -160,7 +160,8 @@ def process_file(f):
         for match in re_match.findall(line):
             if args.mode == _MODE_QSTR:
                 name = match.replace("MP_QSTR_", "")
-                output.append("Q(" + name + ")")
+                # CIRCUITPY: undo character escapes in qstrs in C code
+                output.append("Q(" + qstr_unescape(name) + ")")
             elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
                 output.append(match)
 
