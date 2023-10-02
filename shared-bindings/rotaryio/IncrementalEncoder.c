@@ -35,7 +35,9 @@
 #include "shared-bindings/util.h"
 
 //| class IncrementalEncoder:
-//|     """IncrementalEncoder determines the relative rotational position based on two series of pulses."""
+//|     """IncrementalEncoder determines the relative rotational position based on two series of pulses.
+//|	   It assumes that the encoder's common pin(s) are connected to ground,and enables pull-ups on
+//|	   pin_a and pin_b."""
 //|
 //|     def __init__(
 //|         self, pin_a: microcontroller.Pin, pin_b: microcontroller.Pin, divisor: int = 4
