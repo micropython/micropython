@@ -84,8 +84,10 @@ shared-bindings/frequencyio/__init__.rst shared-bindings/frequencyio/
 shared-bindings/gnss/__init__.rst shared-bindings/gnss/
 shared-bindings/i2cperipheral/__init__.rst shared-bindings/i2cperipheral/
 shared-bindings/i2csecondary/__init__.rst shared-bindings/i2csecondary/
-shared-bindings/i2cslave/I2CSlave.rst shared-bindings/i2cperipheral/#i2cperipheral.I2CPeripheral
-shared-bindings/i2cslave/I2CSlaveRequest.rst shared-bindings/i2cperipheral/#i2cperipheral.I2CPeripheralRequest
+shared-bindings/i2cslave/I2CSlave.rst shared-bindings/i2cperipheral/#i2ctarget.Target
+shared-bindings/i2cslave/I2CSlaveRequest.rst shared-bindings/i2cperipheral/#i2ctarget.I2CTargetRequest
+shared-bindings/i2cperipheral/I2CPeripheral.rst shared-bindings/i2ctarget/#i2ctarget.I2CTarget
+shared-bindings/i2cperipheral/I2CPeripheralRequest.rst shared-bindings/i2ctarget/#i2ctarget.I2CTargetRequest
 shared-bindings/math/__init__.rst shared-bindings/math/
 shared-bindings/microcontroller/Pin.rst shared-bindings/microcontroller/#microcontroller.Pin
 shared-bindings/microcontroller/Processor.rst shared-bindings/microcontroller/#microcontroller.Processor
