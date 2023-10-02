@@ -141,14 +141,6 @@ STATIC mp_obj_t espidf_get_total_psram(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_total_psram_obj, espidf_get_total_psram);
 
-//| def get_reserved_psram() -> int:
-//|     """Returns number of bytes of psram reserved for use by esp-idf, either a board-specific default value or the value defined in ``settings.toml``."""
-//|
-STATIC mp_obj_t espidf_get_reserved_psram(void) {
-    return MP_OBJ_NEW_SMALL_INT(common_hal_espidf_get_reserved_psram());
-}
-MP_DEFINE_CONST_FUN_OBJ_0(espidf_get_reserved_psram_obj, espidf_get_reserved_psram);
-
 STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_espidf) },
 
@@ -159,7 +151,6 @@ STATIC const mp_rom_map_elem_t espidf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_erase_nvs), MP_ROM_PTR(&espidf_erase_nvs_obj)},
 
     { MP_ROM_QSTR(MP_QSTR_get_total_psram), MP_ROM_PTR(&espidf_get_total_psram_obj)},
-    { MP_ROM_QSTR(MP_QSTR_get_reserved_psram), MP_ROM_PTR(&espidf_get_reserved_psram_obj)},
     { MP_ROM_QSTR(MP_QSTR_IDFError), MP_ROM_PTR(&mp_type_espidf_IDFError) },
     { MP_ROM_QSTR(MP_QSTR_MemoryError),      MP_ROM_PTR(&mp_type_espidf_MemoryError) },
 };

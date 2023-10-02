@@ -477,24 +477,21 @@ void reset_cpu(void) {
     reset();
 }
 
-bool port_has_fixed_stack(void) {
-    return false;
-}
-
 uint32_t *port_stack_get_limit(void) {
-    return &_ebss;
+    return port_stack_get_top() - (CIRCUITPY_DEFAULT_STACK_SIZE + CIRCUITPY_EXCEPTION_STACK_SIZE) / sizeof(uint32_t);
 }
 
 uint32_t *port_stack_get_top(void) {
     return &_estack;
 }
 
+// Used for the shared heap allocator.
 uint32_t *port_heap_get_bottom(void) {
-    return port_stack_get_limit();
+    return &_ebss;
 }
 
 uint32_t *port_heap_get_top(void) {
-    return port_stack_get_top();
+    return port_stack_get_limit();
 }
 
 // Place the word to save 8k from the end of RAM so we and the bootloader don't clobber it.

@@ -34,22 +34,6 @@
 #include "py/mpstate.h"
 #include "py/misc.h"
 
-// CIRCUITPY-CHANGE: - this may change when use split heap
-#if !MICROPY_GC_SPLIT_HEAP
-#define HEAP_PTR(ptr) ( \
-    MP_STATE_MEM(area).gc_pool_start != 0                     /* Not on the heap if it isn't inited */ \
-    && ptr >= (void *)MP_STATE_MEM(area).gc_pool_start        /* must be above start of pool */ \
-    && ptr < (void *)MP_STATE_MEM(area).gc_pool_end           /* must be below end of pool */ \
-    )
-
-// CIRCUITPY-CHANGE: defined here so available outside of gc.c
-// ptr should be of type void*
-#define VERIFY_PTR(ptr) ( \
-    ((uintptr_t)(ptr) & (MICROPY_BYTES_PER_GC_BLOCK - 1)) == 0          /* must be aligned on a block */ \
-    && HEAP_PTR(ptr) \
-    )
-#endif
-
 void gc_init(void *start, void *end);
 // CIRCUITPY-CHANGE
 void gc_deinit(void);
@@ -100,6 +84,10 @@ void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);
 // Prevents a pointer from ever being freed because it establishes a permanent reference to it. Use
 // very sparingly because it can leak memory.
 bool gc_never_free(void *ptr);
+
+// True if the pointer is on the MP heap. Doesn't require that it is the start
+// of a block.
+bool gc_ptr_on_heap(void *ptr);
 
 typedef struct _gc_info_t {
     size_t total;

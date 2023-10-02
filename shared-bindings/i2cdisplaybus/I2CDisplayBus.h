@@ -47,3 +47,7 @@ void common_hal_i2cdisplaybus_i2cdisplaybus_send(mp_obj_t self, display_byte_typ
     display_chip_select_behavior_t chip_select, const uint8_t *data, uint32_t data_length);
 
 void common_hal_i2cdisplaybus_i2cdisplaybus_end_transaction(mp_obj_t self);
+
+// The I2CDisplayBus object always lives off the MP heap. So, code must collect any pointers
+// back to the MP heap manually. Otherwise they'll get freed.
+void common_hal_i2cdisplaybus_i2cdisplaybus_collect_ptrs(mp_obj_t obj);

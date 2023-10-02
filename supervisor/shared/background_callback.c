@@ -126,7 +126,7 @@ void background_callback_reset() {
     background_callback_t *cb = (background_callback_t *)callback_head;
     while (cb) {
         background_callback_t *next = cb->next;
-        if (!HEAP_PTR((void *)cb)) {
+        if (gc_ptr_on_heap((void *)cb)) {
             *previous_next = cb;
             previous_next = &cb->next;
             cb->next = NULL;

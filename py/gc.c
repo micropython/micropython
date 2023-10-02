@@ -338,16 +338,13 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
 
 #endif
 
-#if !MICROPY_GC_SPLIT_HEAP
 // CIRCUITPY-CHANGE
-// TODO FOR MERGE: fix this for split heap
 void gc_deinit(void) {
-    // Run any finalisers before we stop using the heap.
+    // Run any finalisers before we stop using the heap. This will also free
+    // any additional heap areas (but not the first.)
     gc_sweep_all();
-    /// MP_STATIC_ASSERT(!MICROPY_GC_SPLIT_HEAP);
     memset(&MP_STATE_MEM(area), 0, sizeof(MP_STATE_MEM(area)));
 }
-#endif
 
 void gc_lock(void) {
     // This does not need to be atomic or have the GC mutex because:
@@ -364,6 +361,16 @@ void gc_unlock(void) {
 
 bool gc_is_locked(void) {
     return MP_STATE_THREAD(gc_lock_depth) != 0;
+}
+
+bool gc_ptr_on_heap(void *ptr) {
+    for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
+        if (ptr >= (void *)area->gc_pool_start   // must be above start of pool
+            && ptr < (void *)area->gc_pool_end) {   // must be below end of pool
+            return true;
+        }
+    }
+    return false;
 }
 
 #if MICROPY_GC_SPLIT_HEAP
@@ -383,7 +390,12 @@ STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
 }
 #endif
 
-// CIRCUITPY-CHANGE: VERIFY_PTR moved to gc.h to make it available elsewhere.
+// ptr should be of type void*
+#define VERIFY_PTR(ptr) ( \
+    ((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) == 0          /* must be aligned on a block */ \
+    && ptr >= (void *)MP_STATE_MEM(area).gc_pool_start      /* must be above start of pool */ \
+    && ptr < (void *)MP_STATE_MEM(area).gc_pool_end         /* must be below end of pool */ \
+    )
 
 #ifndef TRACE_MARK
 #if DEBUG_PRINT
@@ -837,6 +849,10 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
                 continue;
             }
             #endif
+
+            #if CIRCUITPY_DEBUG
+            gc_dump_alloc_table(&mp_plat_print);
+            #endif
             return NULL;
         }
         DEBUG_printf("gc_alloc(" UINT_FMT "): no free mem, triggering GC\n", n_bytes);
@@ -963,7 +979,7 @@ void gc_free(void *ptr) {
     // assert(area);
     #else
     // CIRCUITPY-CHANGE: extra checking
-    if (MP_STATE_MEM(area.gc_pool_start) == 0) {
+    if (MP_STATE_MEM(area).gc_pool_start == 0) {
         reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
     }
     assert(VERIFY_PTR(ptr));
@@ -1245,39 +1261,6 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 }
 #endif // Alternative gc_realloc impl
 
-// CIRCUITPY-CHANGE
-bool gc_never_free(void *ptr) {
-    // Check to make sure the pointer is on the heap in the first place.
-    if (gc_nbytes(ptr) == 0) {
-        return false;
-    }
-    // Pointers are stored in a linked list where each block is BYTES_PER_BLOCK long and the first
-    // pointer is the next block of pointers.
-    void **current_reference_block = MP_STATE_MEM(permanent_pointers);
-    void **last_reference_block = NULL;
-    while (current_reference_block != NULL) {
-        for (size_t i = 1; i < BYTES_PER_BLOCK / sizeof(void *); i++) {
-            if (current_reference_block[i] == NULL) {
-                current_reference_block[i] = ptr;
-                return true;
-            }
-        }
-        last_reference_block = current_reference_block; // keep a record of last "proper" reference block
-        current_reference_block = current_reference_block[0];
-    }
-    void **next_block = gc_alloc(BYTES_PER_BLOCK, false);
-    if (next_block == NULL) {
-        return false;
-    }
-    if (MP_STATE_MEM(permanent_pointers) == NULL) {
-        MP_STATE_MEM(permanent_pointers) = next_block;
-    } else {
-        last_reference_block[0] = next_block;
-    }
-    next_block[1] = ptr;
-    return true;
-}
-
 void gc_dump_info(const mp_print_t *print) {
     gc_info_t info;
     gc_info(&info);
@@ -1421,8 +1404,6 @@ void gc_dump_alloc_table(const mp_print_t *print) {
         }
         mp_print_str(print, "\n");
     }
-    // CIRCUITPY-CHANGE
-    mp_print_str(&mp_plat_print, "\n");
     GC_EXIT();
 }
 

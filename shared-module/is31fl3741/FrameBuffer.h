@@ -30,7 +30,7 @@
 #include "lib/protomatter/src/core.h"
 #include "shared-module/is31fl3741/IS31FL3741.h"
 
-extern const mp_obj_type_t is31fl3741_FrameBuffer_type;
+extern const mp_obj_type_t is31fl3741_framebuffer_type;
 typedef struct {
     mp_obj_base_t base;
     is31fl3741_IS31FL3741_obj_t *is31fl3741;
@@ -43,4 +43,4 @@ typedef struct {
     bool paused;
     bool scale;
     bool auto_gamma;
-} is31fl3741_FrameBuffer_obj_t;
+} is31fl3741_framebuffer_obj_t;

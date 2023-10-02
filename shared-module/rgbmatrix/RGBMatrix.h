@@ -28,14 +28,12 @@
 
 #include "py/obj.h"
 #include "lib/protomatter/src/core.h"
-#include "supervisor/memory.h"
 
 extern const mp_obj_type_t rgbmatrix_RGBMatrix_type;
 typedef struct {
     mp_obj_base_t base;
     mp_obj_t framebuffer;
     mp_buffer_info_t bufinfo;
-    supervisor_allocation *allocation;
     Protomatter_core protomatter;
     void *timer;
     uint16_t bufsize, width;

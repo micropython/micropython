@@ -1,5 +1,6 @@
 SRC_SUPERVISOR = \
 	main.c \
+	lib/tlsf/tlsf.c \
 	supervisor/port.c \
 	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
@@ -7,7 +8,6 @@ SRC_SUPERVISOR = \
 	supervisor/shared/fatfs.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/lock.c \
-	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
 	supervisor/shared/port.c \
 	supervisor/shared/reload.c \
@@ -20,6 +20,9 @@ SRC_SUPERVISOR = \
 	supervisor/shared/translate/translate.c \
 	supervisor/shared/workflow.c \
 	supervisor/stub/misc.c \
+
+# For tlsf
+CFLAGS += -D_DEBUG=0
 
 NO_USB ?= $(wildcard supervisor/usb.c)
 

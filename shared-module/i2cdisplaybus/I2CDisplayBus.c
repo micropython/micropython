@@ -61,9 +61,6 @@ void common_hal_i2cdisplaybus_i2cdisplaybus_construct(i2cdisplaybus_i2cdisplaybu
     // Write to the device and return 0 on success or an appropriate error code from mperrno.h
     self->bus = i2c;
     common_hal_busio_i2c_never_reset(self->bus);
-    // Our object is statically allocated off the heap so make sure the bus object lives to the end
-    // of the heap as well.
-    gc_never_free(self->bus);
 
     self->address = device_address;
 }
@@ -72,6 +69,10 @@ void common_hal_i2cdisplaybus_i2cdisplaybus_deinit(i2cdisplaybus_i2cdisplaybus_o
     if (self->bus == &self->inline_bus) {
         common_hal_busio_i2c_deinit(self->bus);
     }
+    // TODO figure out how to undo never_reset. maybe only mark never_reset when
+    // we subsume objects off the mp heap.
+
+    self->bus = NULL;
 
     if (self->reset.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->reset);
@@ -125,4 +126,9 @@ void common_hal_i2cdisplaybus_i2cdisplaybus_send(mp_obj_t obj, display_byte_type
 void common_hal_i2cdisplaybus_i2cdisplaybus_end_transaction(mp_obj_t obj) {
     i2cdisplaybus_i2cdisplaybus_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_busio_i2c_unlock(self->bus);
+}
+
+void common_hal_i2cdisplaybus_i2cdisplaybus_collect_ptrs(mp_obj_t obj) {
+    i2cdisplaybus_i2cdisplaybus_obj_t *self = MP_OBJ_TO_PTR(obj);
+    gc_collect_ptr((void *)self->bus);
 }

@@ -25,7 +25,6 @@
  */
 
 #include "bindings/espidf/__init__.h"
-#include "supervisor/memory.h"
 #include "py/runtime.h"
 
 #include "esp_now.h"
@@ -68,36 +67,6 @@ bool common_hal_espidf_set_reserved_psram(size_t amount) {
     return true;
     #else
     return false;
-    #endif
-}
-
-supervisor_allocation *psram_for_idf;
-
-void common_hal_espidf_reserve_psram(void) {
-    #ifdef CONFIG_SPIRAM_USE_MEMMAP
-    if (!psram_for_idf) {
-        ESP_LOGI(TAG, "Reserving %d bytes of psram", reserved_psram);
-        if (reserved_psram == 0) {
-            return;
-        }
-        psram_for_idf = allocate_memory(reserved_psram, true, false);
-        if (psram_for_idf) {
-            intptr_t psram_for_idf_start = (intptr_t)psram_for_idf->ptr;
-            intptr_t psram_for_idf_end = psram_for_idf_start + reserved_psram;
-            ESP_LOGI(TAG, "Reserved %x..%x", psram_for_idf_start, psram_for_idf_end);
-            heap_caps_add_region(psram_for_idf_start, psram_for_idf_end);
-        } else {
-            ESP_LOGE(TAG, "supervisor allocation failed");
-        }
-    }
-    #endif
-}
-
-size_t common_hal_espidf_get_reserved_psram(void) {
-    #ifdef CONFIG_SPIRAM
-    return reserved_psram;
-    #else
-    return 0;
     #endif
 }
 

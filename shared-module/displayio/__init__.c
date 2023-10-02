@@ -37,7 +37,6 @@
 #include "shared-module/displayio/area.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/reload.h"
-#include "supervisor/memory.h"
 
 #include "supervisor/spi_flash_api.h"
 #include "py/mpconfig.h"
@@ -166,8 +165,8 @@ void common_hal_displayio_release_displays(void) {
             common_hal_rgbmatrix_rgbmatrix_deinit(&display_buses[i].rgbmatrix);
         #endif
         #if CIRCUITPY_IS31FL3741
-        } else if (bus_type == &is31fl3741_FrameBuffer_type) {
-            common_hal_is31fl3741_FrameBuffer_deinit(&display_buses[i].is31fl3741);
+        } else if (bus_type == &is31fl3741_framebuffer_type) {
+            common_hal_is31fl3741_framebuffer_deinit(&display_buses[i].is31fl3741);
         #endif
         #if CIRCUITPY_SHARPDISPLAY
         } else if (bus_type == &sharpdisplay_framebuffer_type) {
@@ -260,8 +259,8 @@ void reset_displays(void) {
             }
         #endif
         #if CIRCUITPY_IS31FL3741
-        } else if (display_bus_type == &is31fl3741_FrameBuffer_type) {
-            is31fl3741_FrameBuffer_obj_t *is31fb = &display_buses[i].is31fl3741;
+        } else if (display_bus_type == &is31fl3741_framebuffer_type) {
+            is31fl3741_framebuffer_obj_t *is31fb = &display_buses[i].is31fl3741;
 
             if (((uint32_t)is31fb->is31fl3741->i2c) < ((uint32_t)&display_buses) ||
                 ((uint32_t)is31fb->is31fl3741->i2c) > ((uint32_t)&display_buses + CIRCUITPY_DISPLAY_LIMIT)) {
@@ -284,9 +283,9 @@ void reset_displays(void) {
             }
 
             if (!any_display_uses_this_framebuffer(&is31fb->base)) {
-                common_hal_is31fl3741_FrameBuffer_deinit(is31fb);
+                common_hal_is31fl3741_framebuffer_deinit(is31fb);
             } else {
-                common_hal_is31fl3741_FrameBuffer_set_paused(is31fb, true);
+                common_hal_is31fl3741_framebuffer_set_paused(is31fb, true);
             }
         #endif
         #if CIRCUITPY_SHARPDISPLAY
@@ -351,8 +350,8 @@ void displayio_gc_collect(void) {
         }
         #endif
         #if CIRCUITPY_IS31FL3741
-        if (display_bus_type == &is31fl3741_FrameBuffer_type) {
-            is31fl3741_FrameBuffer_collect_ptrs(&display_buses[i].is31fl3741);
+        if (display_bus_type == &is31fl3741_framebuffer_type) {
+            is31fl3741_framebuffer_collect_ptrs(&display_buses[i].is31fl3741);
         }
         #endif
         #if CIRCUITPY_SHARPDISPLAY

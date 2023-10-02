@@ -189,6 +189,8 @@ else ifeq ($(IDF_TARGET_ARCH),riscv)
 CFLAGS += -march=rv32imac_zicsr_zifencei
 endif
 
+$(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
+
 LDFLAGS = $(CFLAGS) -Wl,-nostdlib -Wl,-Map=$@.map -Wl,-cref -Wl,--undefined=uxTopUsedPriority
 
 LDFLAGS += \

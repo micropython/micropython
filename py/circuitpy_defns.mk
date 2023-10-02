@@ -779,6 +779,7 @@ SRC_LIBM = \
 $(addprefix lib/,\
 	libm/math.c \
 	libm/roundf.c \
+	libm/fabsf.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
