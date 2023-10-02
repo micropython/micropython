@@ -203,6 +203,10 @@ msgstr ""
 msgid "%q must be <= %d"
 msgstr ""
 
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
+msgid "%q must be <= %u"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must be >= %d"
 msgstr ""
@@ -1175,10 +1179,6 @@ msgstr ""
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "Initialization failed due to lack of memory"
-msgstr ""
-
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
@@ -1816,11 +1816,6 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr "方向がoutputのときpullは使われません"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
-msgid "RAISE mode is not implemented"
-msgstr ""
-
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr ""
@@ -2323,19 +2318,9 @@ msgstr "電圧読み取りがタイムアウト"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr "WatchDogTimerは現在動作していません"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-msgstr "WatchDogTimer.modeはいったんWatchDogMode.RESETに設定すると変更不可"
 
 #: py/builtinhelp.c
 #, c-format
@@ -4098,10 +4083,7 @@ msgstr "JSONに構文エラーがあります"
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypedディスクリプタの構文エラー"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "タイムアウト長は対応する最大値を超えています"
 
@@ -4303,10 +4285,6 @@ msgstr "値は%dバイトに収まらなければなりません"
 msgid "value out of range of target"
 msgstr ""
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "watchdog not initialized"
-msgstr ""
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
 msgstr ""
@@ -4377,6 +4355,12 @@ msgstr "ziはfloat値でなければなりません"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "WatchDogTimerは現在動作していません"
+
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr "WatchDogTimer.modeはいったんWatchDogMode.RESETに設定すると変更不可"
 
 #~ msgid "queue overflow"
 #~ msgstr "キューがオーバーフローしました"

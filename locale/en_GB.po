@@ -209,6 +209,10 @@ msgstr "%q must be 1 when %q is True"
 msgid "%q must be <= %d"
 msgstr "%q must be <= %d"
 
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
+msgid "%q must be <= %u"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must be >= %d"
 msgstr "%q must be >= %d"
@@ -1183,10 +1187,6 @@ msgstr "Initial set pin direction conflicts with initial out pin direction"
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr "Initial set pin state conflicts with initial out pin state"
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "Initialization failed due to lack of memory"
-msgstr "Initialisation failed due to lack of memory"
-
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
@@ -1829,11 +1829,6 @@ msgstr "Program too long"
 msgid "Pull not used when direction is output."
 msgstr "Pull not used when direction is output."
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
-msgid "RAISE mode is not implemented"
-msgstr "RAISE mode is not implemented"
-
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "RISE_AND_FALL not available on this chip"
@@ -2339,19 +2334,9 @@ msgstr "Voltage read timed out"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WARNING: Your code filename has two extensions\n"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr "WatchDogTimer cannot be deinitialised once mode is set to RESET"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr "WatchDogTimer is not currently running"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-msgstr "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 
 #: py/builtinhelp.c
 #, c-format
@@ -4119,10 +4104,7 @@ msgstr "syntax error in JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "syntax error in uctypes descriptor"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "timeout duration exceeded the maximum supported value"
 
@@ -4324,10 +4306,6 @@ msgstr "value must fit in %d byte(s)"
 msgid "value out of range of target"
 msgstr "value out of range of target"
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "watchdog not initialized"
-msgstr "WatchDog not initialised"
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
 msgstr "width must be greater than zero"
@@ -4398,6 +4376,21 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "Initialisation failed due to lack of memory"
+
+#~ msgid "RAISE mode is not implemented"
+#~ msgstr "RAISE mode is not implemented"
+
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "WatchDogTimer is not currently running"
+
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+
+#~ msgid "watchdog not initialized"
+#~ msgstr "WatchDog not initialised"
 
 #~ msgid "ADC2 is being used by WiFi"
 #~ msgstr "ADC2 is being used by WiFi"

@@ -210,6 +210,10 @@ msgstr "sāng %q wèi True shí, %q bìxū wèi 1"
 msgid "%q must be <= %d"
 msgstr "%q bìxū <= %d"
 
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
+msgid "%q must be <= %u"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must be >= %d"
 msgstr "%q bìxū >= %d"
@@ -1194,10 +1198,6 @@ msgstr ""
 "chū shǐ shè zhì yǐn jiǎo zhuàng tài yǔ chū shǐ chū yǐn jiǎo zhuàng tài chōng "
 "tū"
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "Initialization failed due to lack of memory"
-msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
-
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
@@ -1843,11 +1843,6 @@ msgstr "chéng xù tài cháng"
 msgid "Pull not used when direction is output."
 msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
-msgid "RAISE mode is not implemented"
-msgstr "wèi shí xiàn tí shēng mó shì"
-
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "RISE_AND_FALL zài cǐ xīn piàn shàng bù kě yòng"
@@ -2353,20 +2348,9 @@ msgstr "Diànyā dòu qǔ chāoshí"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "Jǐnggào: Nǐ de dàimǎ wénjiàn míng yǒu liǎng gè kuòzhǎn míng\n"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr "Yīdàn jiāng móshì shèzhì wèi RESET, jiù wúfǎ chūshǐhuà WatchDog Timer"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr "WatchDogTimer dāngqián wèi yùnxíng"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-msgstr ""
-"Yīdàn shèzhì wèi WatchDogMode.RESET, zé bùnéng gēnggǎi WatchDogTimer.Mode"
 
 #: py/builtinhelp.c
 #, c-format
@@ -4141,10 +4125,7 @@ msgstr "JSON yǔfǎ cuòwù"
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "chāoshí shíjiān chāoguò zuìdà zhīchí zhí"
 
@@ -4346,10 +4327,6 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 msgid "value out of range of target"
 msgstr "zhí fàn wéi wài de mù biāo"
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "watchdog not initialized"
-msgstr "wèi chū shǐ huà jiān shì qì"
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
 msgstr "kuāndù bìxū dàyú líng"
@@ -4420,6 +4397,22 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
+
+#~ msgid "RAISE mode is not implemented"
+#~ msgstr "wèi shí xiàn tí shēng mó shì"
+
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "WatchDogTimer dāngqián wèi yùnxíng"
+
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr ""
+#~ "Yīdàn shèzhì wèi WatchDogMode.RESET, zé bùnéng gēnggǎi WatchDogTimer.Mode"
+
+#~ msgid "watchdog not initialized"
+#~ msgstr "wèi chū shǐ huà jiān shì qì"
 
 #~ msgid "ADC2 is being used by WiFi"
 #~ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
