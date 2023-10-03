@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-10-01 08:00+0000\n"
+"PO-Revision-Date: 2023-10-03 15:21+0000\n"
 "Last-Translator: Vladimír Smitka <vladimir.smitka@lynt.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
@@ -22,7 +22,7 @@ msgid ""
 "Code done running.\n"
 msgstr ""
 "\n"
-"Program byl dokončen.\n"
+"Běh programu byl dokončen.\n"
 
 #: main.c
 msgid ""
@@ -209,7 +209,7 @@ msgstr "%q musí být <= %d"
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "%q must be <= %u"
-msgstr ""
+msgstr "%q musí být <= %u"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -277,11 +277,11 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr "%q[%u] posouvá o více bitů než je počet pinů"
+msgstr "%q[%u] posouvá dovnitř o více bitů než je počet pinů"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u] posouvá ven o více bitů než je počet pinů"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
@@ -465,7 +465,7 @@ msgstr "Kanál hardwarového přerušení je již používán"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
-msgstr ""
+msgstr "AP nemohl být spuštěn"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -476,7 +476,7 @@ msgstr "Adresa musí být %d bajtů dlouhá"
 #: ports/nrf/common-hal/memorymap/AddressRange.c
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
-msgstr ""
+msgstr "Adresní rozsah není povolen"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
@@ -521,7 +521,7 @@ msgstr "Všechny kanály jsou používány"
 
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All dma channels in use"
-msgstr ""
+msgstr "Všechny DMA kanály jsou používány"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -531,7 +531,7 @@ msgstr "Všechny kanály událostí jsou již používány"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All state machines in use"
-msgstr ""
+msgstr "Všechny stavové automaty jsou používány"
 
 #: ports/atmel-samd/audio_dma.c
 msgid "All sync event channels in use"
@@ -658,8 +658,9 @@ msgid "Bitmap size and bits per value must match"
 msgstr "Velikost bitmapy a počet bitů na hodnotu se musí shodovat"
 
 #: supervisor/shared/safe_mode.c
+#, fuzzy
 msgid "Boot device must be first (interface #0)."
-msgstr ""
+msgstr "Bootovací zařízení musí být první (rozhraní #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -710,7 +711,7 @@ msgstr "Buffer je příliš krátký o %d bajtů"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "Buffer příliš malý"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -738,7 +739,7 @@ msgstr "Disk CIRCUITPY nelze nalézt nebo vytvořit."
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
-msgstr ""
+msgstr "CRC nebo kontrolní součet byl neplatný"
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
@@ -816,7 +817,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
-msgstr ""
+msgstr "Nelze nastavit možnosti socketu"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -837,11 +838,11 @@ msgstr "Nelze měnit frekvenci časovače, který je již používán"
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
-msgstr ""
+msgstr "Nelze probudit hranou na pinu, pouze úrovní"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
-msgstr ""
+msgstr "Nelze probudit hranou na pinu. Pouze úrovní."
 
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "CharacteristicBuffer writing not provided"
@@ -876,7 +877,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c
 msgid "Could not retrieve clock"
-msgstr ""
+msgstr "Nelze načíst hodiny"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -950,7 +951,7 @@ msgstr "Otočení displeje musí být po 90 stupních"
 
 #: main.c
 msgid "Done"
-msgstr ""
+msgstr "Hotovo"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
@@ -958,7 +959,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "During handling of the above exception, another exception occurred:"
-msgstr ""
+msgstr "Při zpracování uvedené výjimky nastala další výjimka:"
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
