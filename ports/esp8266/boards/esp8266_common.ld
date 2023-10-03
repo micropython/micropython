@@ -157,6 +157,8 @@ SECTIONS
         *machine_rtc.o(.literal*, .text*)
         *machine_adc.o(.literal*, .text*)
         *machine_uart.o(.literal*, .text*)
+        *softuart.o(.literal*, .text*)
+        *machine_softuart.o(.literal*, .text*)
         *modpybi2c.o(.literal*, .text*)
         *modmachine.o(.literal*, .text*)
         *machine_wdt.o(.literal*, .text*)
