@@ -16,7 +16,6 @@
 // port-specific includes
 #include "modmachine.h"
 #include "mplogger.h"
-#include "pins.h"
 
 #define DEFAULT_I2C_FREQ     (400000)
 #define MICROPY_HW_I2C_SCL   (CYBSP_I2C_SCL)

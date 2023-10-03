@@ -15,7 +15,6 @@
 // port-specific includes
 #include "modmachine.h"
 #include "mplogger.h"
-#include "pins.h"
 
 #define MICROPY_HW_SPI_SCK  P9_2
 #define MICROPY_HW_SPI_MOSI P9_0

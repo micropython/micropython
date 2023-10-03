@@ -11,7 +11,7 @@
 #define MAX_BLOCKS              (1)
 #define MAX_CHANNELS            (6)
 
-#include "pins.h"
+#include "machine_pin.h"
 
 typedef struct _machine_adc_obj_t machine_adc_obj_t; /* Forward declaration of adc_obj */
 

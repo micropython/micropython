@@ -135,7 +135,6 @@ MOD_SRC_C += $(addprefix modules/,\
 	machine/machine_pin.c \
 	machine/machine_rtc.c \
 	machine/machine_spi.c \
-	machine/pins.c \
 	machine/machine_timer.c \
 	machine/machine_adc.c \
 	machine/machine_adcblock.c \

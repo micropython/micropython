@@ -4,7 +4,6 @@
 
 // port-specific includes
 #include "mplogger.h"
-#include "pins.h"
 
 extern mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
 
