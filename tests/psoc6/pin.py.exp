@@ -1,4 +1,4 @@
-Pin:111 or P13_7, Mode=OUT, Pull=None, Value=1
+Pin:111 or P13_7, Mode=OUT, Pull=None, Value=0
 None
 None
 None
