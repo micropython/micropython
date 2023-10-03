@@ -153,11 +153,14 @@ STATIC mp_uint_t vfs_posix_file_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_
     switch (request) {
         case MP_STREAM_FLUSH: {
             int ret;
-            // fsync(stdin/stdout/stderr) may fail with EINVAL (or ENOTSUP on macos),
-            // but don't propagate that error out.  Because data is not buffered by
-            // us, and stdin/out/err.flush() should just be a no-op.
-            #ifdef __APPLE__
+            // fsync(stdin/stdout/stderr) may fail with EINVAL (or ENOTSUP on macos or EBADF
+            // on windows), because the OS doesn't buffer these except for instance when they
+            // are redirected from/to file, but don't propagate that error out.  Because data
+            // is not buffered by us, and stdin/out/err.flush() should just be a no-op.
+            #if defined(__APPLE__)
             #define VFS_POSIX_STREAM_STDIO_ERR_CATCH (err == EINVAL || err == ENOTSUP)
+            #elif defined(_MSC_VER)
+            #define VFS_POSIX_STREAM_STDIO_ERR_CATCH (err == EINVAL || err == EBADF)
             #else
             #define VFS_POSIX_STREAM_STDIO_ERR_CATCH (err == EINVAL)
             #endif
