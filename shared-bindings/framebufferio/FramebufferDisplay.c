@@ -99,27 +99,6 @@ static framebufferio_framebufferdisplay_obj_t *native_display(mp_obj_t display_o
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: displayio.Group) -> None:
-//|         """Switches to displaying the given group of layers. When group is None, the default
-//|         CircuitPython terminal will be shown.
-//|
-//|         :param Group group: The group to show."""
-//|         ...
-STATIC mp_obj_t framebufferio_framebufferdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
-    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-    displayio_group_t *group = NULL;
-    if (group_in != mp_const_none) {
-        group = MP_OBJ_TO_PTR(native_group(group_in));
-    }
-
-    bool ok = common_hal_framebufferio_framebufferdisplay_show(self, group);
-    if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_show_obj, framebufferio_framebufferdisplay_obj_show);
-
 //|     def refresh(
 //|         self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1
 //|     ) -> bool:
@@ -354,7 +333,6 @@ MP_PROPERTY_GETSET(framebufferio_framebufferdisplay_root_group_obj,
     (mp_obj_t)&framebufferio_framebufferdisplay_set_root_group_obj);
 
 STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&framebufferio_framebufferdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&framebufferio_framebufferdisplay_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&framebufferio_framebufferdisplay_fill_row_obj) },
 

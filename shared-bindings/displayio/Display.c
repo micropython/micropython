@@ -239,33 +239,6 @@ static displayio_display_obj_t *native_display(mp_obj_t display_obj) {
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: Group) -> None:
-//|         """
-//|         .. note:: `show()` is deprecated and will be removed in CircuitPython 9.0.0.
-//|           Use ``.root_group = group`` instead.
-//|
-//|         Switches to displaying the given group of layers. When group is None, the default
-//|         CircuitPython terminal will be shown.
-//|
-//|         :param Group group: The group to show.
-//|
-//|         """
-//|         ...
-STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
-    displayio_display_obj_t *self = native_display(self_in);
-    displayio_group_t *group = NULL;
-    if (group_in != mp_const_none) {
-        group = MP_OBJ_TO_PTR(native_group(group_in));
-    }
-
-    bool ok = common_hal_displayio_display_show(self, group);
-    if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
-
 //|     def refresh(
 //|         self,
 //|         *,
@@ -512,7 +485,6 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_fill_row_obj, 1, displayio_display_obj_fill_row);
 
 STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_display_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&displayio_display_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&displayio_display_fill_row_obj) },
 
