@@ -289,5 +289,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_I2CDevice,
     MP_TYPE_FLAG_NONE,
     make_new, adafruit_bus_device_i2cdevice_make_new,
-    locals_dict = &adafruit_bus_device_i2cdevice_locals_dict
+    locals_dict, &adafruit_bus_device_i2cdevice_locals_dict
     );

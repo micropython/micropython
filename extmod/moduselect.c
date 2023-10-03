@@ -171,7 +171,8 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
             mp_map_deinit(&poll_map);
             return mp_obj_new_tuple(3, list_array);
         }
-        MICROPY_EVENT_POLL_HOOK
+        // CIRCUITPY
+        RUN_BACKGROUND_TASKS;
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_select_select_obj, 3, 4, select_select);
@@ -250,7 +251,11 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
         if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
             break;
         }
-        MICROPY_EVENT_POLL_HOOK
+        // CIRCUITPY
+        RUN_BACKGROUND_TASKS;
+        if (mp_hal_is_interrupted()) {
+            return 0;
+        }
     }
 
     return n_ready;

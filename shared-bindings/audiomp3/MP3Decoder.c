@@ -289,5 +289,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     make_new, audiomp3_mp3file_make_new,
     locals_dict, &audiomp3_mp3file_locals_dict,
-    .protocol, &audiomp3_mp3file_proto
+    protocol, &audiomp3_mp3file_proto
     );

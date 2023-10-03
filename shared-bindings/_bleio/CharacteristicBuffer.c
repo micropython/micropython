@@ -228,6 +228,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     make_new, bleio_characteristic_buffer_make_new,
     locals_dict, &bleio_characteristic_buffer_locals_dict,
-    iternext, mp_stream_unbuffered_iter,
+    iter, mp_stream_unbuffered_iter,
     protocol, &characteristic_buffer_stream_p
     );

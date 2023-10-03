@@ -288,5 +288,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, bleio_uuid_make_new,
     locals_dict, &bleio_uuid_locals_dict,
     unary_op, bleio_uuid_unary_op,
-    binary_op, bleio_uuid_binary_op,
+    binary_op, bleio_uuid_binary_op
     );

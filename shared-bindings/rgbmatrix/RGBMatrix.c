@@ -428,5 +428,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &rgbmatrix_rgbmatrix_locals_dict,
     make_new, rgbmatrix_rgbmatrix_make_new,
     buffer, rgbmatrix_rgbmatrix_get_buffer,
-    protocol = &rgbmatrix_rgbmatrix_proto
+    protocol, &rgbmatrix_rgbmatrix_proto
     );

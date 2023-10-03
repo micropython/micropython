@@ -245,5 +245,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_vector_shape_type,
     MP_QSTR_VectorShape,
     MP_TYPE_FLAG_NONE,
-    locals_dict = &vectorio_vector_shape_locals_dict
+    locals_dict, &vectorio_vector_shape_locals_dict
     );

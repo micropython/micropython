@@ -63,6 +63,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     bleio_scanresults_type,
     MP_QSTR_ScanResults,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    getiter, mp_identity_getiter,
-    iternext, scanresults_iternext
+    iter, scanresults_iternext
     );

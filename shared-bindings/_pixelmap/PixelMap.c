@@ -259,8 +259,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     pixelmap_pixelmap_type,
     MP_QSTR_PixelMap,
     MP_TYPE_FLAG_NONE,
-    .locals_dict, &pixelmap_pixelmap_locals_dict,
-    .make_new, pixelmap_pixelmap_make_new,
-    .subscr, pixelmap_pixelmap_subscr,
-    .unary_op, pixelmap_pixelmap_unary_op
+    locals_dict, &pixelmap_pixelmap_locals_dict,
+    make_new, pixelmap_pixelmap_make_new,
+    subscr, pixelmap_pixelmap_subscr,
+    unary_op, pixelmap_pixelmap_unary_op
     );

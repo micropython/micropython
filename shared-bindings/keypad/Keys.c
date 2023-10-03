@@ -173,7 +173,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     keypad_keys_type,
     MP_QSTR_Keys,
     MP_TYPE_FLAG_NONE,
-    .make_new = keypad_keys_make_new
+    make_new, keypad_keys_make_new
     #if CIRCUITPY_KEYPAD_KEYS
     , locals_dict, &keypad_keys_locals_dict
     #endif
