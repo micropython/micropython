@@ -200,6 +200,10 @@ msgstr ""
 msgid "%q must be <= %d"
 msgstr ""
 
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
+msgid "%q must be <= %u"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must be >= %d"
 msgstr ""
@@ -1176,10 +1180,6 @@ msgstr ""
 msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "Initialization failed due to lack of memory"
-msgstr ""
-
 #: shared-bindings/bitops/__init__.c
 #, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
@@ -1823,11 +1823,6 @@ msgstr ""
 msgid "Pull not used when direction is output."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
-msgid "RAISE mode is not implemented"
-msgstr ""
-
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr ""
@@ -2331,18 +2326,8 @@ msgstr ""
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "ATTENZIONE: Il nome del sorgente ha due estensioni\n"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 
 #: py/builtinhelp.c
@@ -4122,10 +4107,7 @@ msgstr "errore di sintassi nel JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "errore di sintassi nel descrittore uctypes"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr ""
 
@@ -4325,10 +4307,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
-msgstr ""
-
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "watchdog not initialized"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
