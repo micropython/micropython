@@ -19,6 +19,7 @@ sdk_extension:
 - id: cp_efr32
   version: 1.0.0
 component:
+- {id: device_init_dpll}
 - {id: bluetooth_feature_nvm}
 - {id: bluetooth_feature_gatt_server}
 - {id: bluetooth_feature_sm}
