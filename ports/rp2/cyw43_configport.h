@@ -48,7 +48,7 @@
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
 
-#define CYW43_HOST_NAME                 mod_network_hostname
+#define CYW43_HOST_NAME                 mod_network_hostname_data
 
 #define CYW43_SDPCM_SEND_COMMON_WAIT \
     if (get_core_num() == 0) { \
