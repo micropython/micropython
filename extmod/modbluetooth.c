@@ -504,7 +504,7 @@ STATIC int bluetooth_gatts_register_service(mp_obj_t uuid_in, mp_obj_t character
     // How many descriptors in the flattened list per characteristic.
     uint8_t *num_descriptors = m_new(uint8_t, len);
 
-    // Inititally allocate enough room for the number of characteristics.
+    // Initially allocate enough room for the number of characteristics.
     // Will be grown to accommodate descriptors as necessary.
     *num_handles = len;
     *handles = m_new(uint16_t, *num_handles);

@@ -225,7 +225,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///
 ///   - `mode` can be one of:
 ///     - `Timer.UP` - configures the timer to count from 0 to MOD (default)
-///     - `Timer.CENTER` - confgures the timer to count from 0 to MOD and
+///     - `Timer.CENTER` - configures the timer to count from 0 to MOD and
 ///       then back down to 0.
 ///
 ///   - `callback` - as per Timer.callback()

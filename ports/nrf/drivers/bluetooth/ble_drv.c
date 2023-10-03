@@ -942,7 +942,7 @@ static void sd_evt_handler(uint32_t evt_id) {
             break;
     }
 #if MICROPY_HW_USB_CDC
-    // Farward SOC events to USB CDC driver.
+    // Forward SOC events to USB CDC driver.
     usb_cdc_sd_event_handler(evt_id);
 #endif
 }

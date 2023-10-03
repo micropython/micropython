@@ -1136,7 +1136,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_RANGE_BINOP (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
-// Support for callling next() with second argument
+// Support for calling next() with second argument
 #ifndef MICROPY_PY_BUILTINS_NEXT2
 #define MICROPY_PY_BUILTINS_NEXT2 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
@@ -1155,13 +1155,13 @@ typedef double mp_float_t;
 #define MICROPY_PY_ALL_SPECIAL_METHODS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// Whether to support all inplace arithmetic operarion methods
+// Whether to support all inplace arithmetic operation methods
 // (__imul__, etc.)
 #ifndef MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS
 #define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EVERYTHING)
 #endif
 
-// Whether to support reverse arithmetic operarion methods
+// Whether to support reverse arithmetic operation methods
 // (__radd__, etc.). Additionally gated by
 // MICROPY_PY_ALL_SPECIAL_METHODS.
 #ifndef MICROPY_PY_REVERSE_SPECIAL_METHODS

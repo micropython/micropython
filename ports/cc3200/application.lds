@@ -83,7 +83,7 @@ SECTIONS
     } > SRAM
 
     /* place here functions that are only called during boot up, */
-    /* that way, we can re-use this area for the MicroPython heap */
+    /* that way, we can reuse this area for the MicroPython heap */
     .boot :
     {
         . = ALIGN(8);
