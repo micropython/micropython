@@ -864,6 +864,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif
 
+#if !MICROPY_ENABLE_DYNRUNTIME
 // This factory function is provided for backwards compatibility with the old
 // FrameBuffer1 class which did not support a format argument.
 STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args_in) {
@@ -872,7 +873,6 @@ STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(legacy_framebuffer1_obj, 3, 4, legacy_framebuffer1);
 
-#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_framebuf) },
     { MP_ROM_QSTR(MP_QSTR_FrameBuffer), MP_ROM_PTR(&mp_type_framebuf) },
