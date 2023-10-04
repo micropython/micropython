@@ -36,7 +36,6 @@ mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *a
     MP_OBJ_TYPE_SET_SLOT(&mp_type_framebuf, locals_dict, (void*)&framebuf_locals_dict, 2);
 
     mp_store_global(MP_QSTR_FrameBuffer, MP_OBJ_FROM_PTR(&mp_type_framebuf));
-    mp_store_global(MP_QSTR_FrameBuffer1, MP_OBJ_FROM_PTR(&legacy_framebuffer1_obj));
     mp_store_global(MP_QSTR_MVLSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB));
     mp_store_global(MP_QSTR_MONO_VLSB, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB));
     mp_store_global(MP_QSTR_RGB565, MP_OBJ_NEW_SMALL_INT(FRAMEBUF_RGB565));
