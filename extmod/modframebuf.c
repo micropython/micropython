@@ -336,12 +336,8 @@ STATIC void framebuf_args(const mp_obj_t *args_in, mp_int_t *args_out, int n) {
 }
 
 STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    (void)flags;
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
-    bufinfo->buf = self->buf;
-    bufinfo->len = self->stride * self->height * (self->format == FRAMEBUF_RGB565 ? 2 : 1);
-    bufinfo->typecode = 'B'; // view framebuf as bytes
-    return 0;
+    return mp_get_buffer(self->buf_obj, bufinfo, flags) ? 0 : 1;
 }
 
 STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
