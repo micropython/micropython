@@ -503,12 +503,12 @@ uint8_t *scan_dynamic_frozen(mp_obj_t out_frozen_list, const char *name) {
         if (*ptr == 0xff) {
             break;              // end-of-dynamic_frozen: erased sector are filled by with 0xff in NOR flash
         }
-        if (ptr + FLASH_SEC_SIZE * ptr[1] > FLASH_END) {
-            break;                                       // corrupted frozen sector
-        }
         if (*ptr == 0) {           // deleted frozen sector has 1st byte == 0 => skip
             ptr += FLASH_SEC_SIZE;
             continue;
+        }
+        if (ptr + FLASH_SEC_SIZE * ptr[1] > FLASH_END) {
+            break;                                       // corrupted frozen sector
         }
         if (*ptr != ptr[1]) {
             break;                   // valid frozen sector must have byte1 == byte2 == #-of-sectors, or corrupted
@@ -576,6 +576,9 @@ bool has_enough_free_sect(uint8_t *ptr, int n_needed) {
     return x >= n_needed;
 }
 mp_obj_t flash_mpy_to_rom(const char *filename, const char *modname, uint8_t *ptr, uint32_t filesize, int tot_secs) {
+    for(int x=0, sn=(int)(ptr-FLASH_START)/FLASH_SEC_SIZE; x<tot_secs; x++, sn++){
+        erase_sector(sn);
+    }
     mp_obj_t res = mp_const_true;
     byte buf[256] = {tot_secs, tot_secs, strlen(modname), 0};
     mp_reader_t reader;
