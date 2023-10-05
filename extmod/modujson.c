@@ -176,6 +176,9 @@ STATIC mp_uint_t ujson_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, 
         }
         s->start = 0;
         s->end = mp_obj_get_int(ret);
+        if (s->end == 0) {
+            return 0;
+        }
     }
 
     *((uint8_t *)buf) = ((uint8_t *)s->bytearray_obj.items)[s->start];
