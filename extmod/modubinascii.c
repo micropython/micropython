@@ -222,6 +222,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b
 #if MICROPY_PY_UBINASCII_CRC32
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
+    // CIRCUITPY
+    check_not_unicode(args[0]);
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     uint32_t crc = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 0;
     crc = uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
