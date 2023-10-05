@@ -152,7 +152,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
 
-    wifi_station_set_hostname(mod_network_hostname);
+    wifi_station_set_hostname(mod_network_hostname_data);
 
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
@@ -402,12 +402,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         // TODO: Deprecated. Use network.hostname(name) instead.
-                        size_t len;
-                        const char *str = mp_obj_str_get_data(kwargs->table[i].value, &len);
-                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
-                            mp_raise_ValueError(NULL);
-                        }
-                        strcpy(mod_network_hostname, str);
+                        mod_network_hostname(1, &kwargs->table[i].value);
                         break;
                     }
                     case MP_QSTR_protocol: {
@@ -481,9 +476,9 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             break;
         case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
-            req_if = STATION_IF;
             // TODO: Deprecated. Use network.hostname() instead.
-            val = mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
+            req_if = STATION_IF;
+            val = mod_network_hostname(0, NULL);
             break;
         }
         case MP_QSTR_protocol: {

@@ -1856,7 +1856,7 @@ int mp_bluetooth_l2cap_recvinto(uint16_t conn_handle, uint16_t cid, uint8_t *buf
                 // re-enable receiving yet (as we need to complete the rest of IRQ handler first).
                 if (!chan->irq_in_progress) {
                     // We've already given the channel a new mbuf in l2cap_channel_event above, so
-                    // re-use that mbuf in the call to ble_l2cap_recv_ready. This will just
+                    // reuse that mbuf in the call to ble_l2cap_recv_ready. This will just
                     // give the channel more credits.
                     struct os_mbuf *sdu_rx = chan->chan->coc_rx.sdu;
                     assert(sdu_rx);

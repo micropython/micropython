@@ -51,7 +51,7 @@
 static err_t netif_struct_init(struct netif *netif) {
     netif->linkoutput = esp_hosted_netif_output;
     netif->output = etharp_output;
-    netif->mtu = 1500;
+    netif->mtu = ESP_FRAME_MAX_PAYLOAD;
     netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_ETHERNET | NETIF_FLAG_IGMP;
     esp_hosted_wifi_get_mac(netif->name[1] - '0', netif->hwaddr);
     netif->hwaddr_len = sizeof(netif->hwaddr);

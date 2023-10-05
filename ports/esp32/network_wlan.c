@@ -169,8 +169,8 @@ static void network_wlan_ip_event_handler(void *event_handler_arg, esp_event_bas
             if (!mdns_initialised) {
                 mdns_init();
                 #if MICROPY_HW_ENABLE_MDNS_RESPONDER
-                mdns_hostname_set(mod_network_hostname);
-                mdns_instance_name_set(mod_network_hostname);
+                mdns_hostname_set(mod_network_hostname_data);
+                mdns_instance_name_set(mod_network_hostname_data);
                 #endif
                 mdns_initialised = true;
             }
@@ -305,7 +305,7 @@ STATIC mp_obj_t network_wlan_connect(size_t n_args, const mp_obj_t *pos_args, mp
         esp_exceptions(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_sta_config));
     }
 
-    esp_exceptions(esp_netif_set_hostname(wlan_sta_obj.netif, mod_network_hostname));
+    esp_exceptions(esp_netif_set_hostname(wlan_sta_obj.netif, mod_network_hostname_data));
 
     wifi_sta_reconnects = 0;
     // connect to the WiFi AP
@@ -522,12 +522,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
                     case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         // TODO: Deprecated. Use network.hostname(name) instead.
-                        size_t len;
-                        const char *str = mp_obj_str_get_data(kwargs->table[i].value, &len);
-                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
-                            mp_raise_ValueError(NULL);
-                        }
-                        strcpy(mod_network_hostname, str);
+                        mod_network_hostname(1, &kwargs->table[i].value);
                         break;
                     }
                     case MP_QSTR_max_clients: {
@@ -630,7 +625,7 @@ STATIC mp_obj_t network_wlan_config(size_t n_args, const mp_obj_t *args, mp_map_
         case MP_QSTR_dhcp_hostname: {
             // TODO: Deprecated. Use network.hostname() instead.
             req_if = ESP_IF_WIFI_STA;
-            val = mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
+            val = mod_network_hostname(0, NULL);
             break;
         }
         case MP_QSTR_max_clients: {

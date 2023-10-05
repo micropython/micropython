@@ -363,7 +363,7 @@ DRESULT sd_disk_read (BYTE* pBuffer, DWORD ulSectorNumber, UINT SectorCount) {
 
 //*****************************************************************************
 //
-//! Wrties sector(s) to the disk drive.
+//! Writes sector(s) to the disk drive.
 //!
 //!
 //! This function writes specified number of sectors to the drive

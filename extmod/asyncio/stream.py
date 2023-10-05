@@ -127,20 +127,30 @@ class Server:
         await self.wait_closed()
 
     def close(self):
+        # Note: the _serve task must have already started by now due to the sleep
+        # in start_server, so `state` won't be clobbered at the start of _serve.
+        self.state = True
         self.task.cancel()
 
     async def wait_closed(self):
         await self.task
 
     async def _serve(self, s, cb):
+        self.state = False
         # Accept incoming connections
         while True:
             try:
                 yield core._io_queue.queue_read(s)
-            except core.CancelledError:
-                # Shutdown server
+            except core.CancelledError as er:
+                # The server task was cancelled, shutdown server and close socket.
                 s.close()
-                return
+                if self.state:
+                    # If the server was explicitly closed, ignore the cancellation.
+                    return
+                else:
+                    # Otherwise e.g. the parent task was cancelled, propagate
+                    # cancellation.
+                    raise er
             try:
                 s2, addr = s.accept()
             except:
@@ -167,6 +177,16 @@ async def start_server(cb, host, port, backlog=5):
     # Create and return server object and task.
     srv = Server()
     srv.task = core.create_task(srv._serve(s, cb))
+    try:
+        # Ensure that the _serve task has been scheduled so that it gets to
+        # handle cancellation.
+        await core.sleep_ms(0)
+    except core.CancelledError as er:
+        # If the parent task is cancelled during this first sleep, then
+        # we will leak the task and it will sit waiting for the socket, so
+        # cancel it.
+        srv.task.cancel()
+        raise er
     return srv
 
 

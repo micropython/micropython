@@ -605,7 +605,7 @@ STATIC void pyb_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
 ///   - `mode` can be one of:
 ///     - `Timer.UP` - configures the timer to count from 0 to ARR (default)
 ///     - `Timer.DOWN` - configures the timer to count from ARR down to 0.
-///     - `Timer.CENTER` - confgures the timer to count from 0 to ARR and
+///     - `Timer.CENTER` - configures the timer to count from 0 to ARR and
 ///       then back down to 0.
 ///
 ///   - `div` can be one of 1, 2, or 4. Divides the timer clock to determine

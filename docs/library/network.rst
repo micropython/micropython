@@ -188,6 +188,11 @@ The following are functions available in the network module.
     during connection. For this reason, you must set the hostname before
     activating/connecting your network interfaces.
 
+    The length of the hostname is limited to 32 characters.
+    :term:`MicroPython ports <MicroPython port>` may choose to set a lower
+    limit for memory reasons. If the given name does not fit, a `ValueError`
+    is raised.
+
     The default hostname is typically the name of the board.
 
 .. function:: phy_mode([mode])

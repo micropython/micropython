@@ -245,7 +245,7 @@ that you use a virtual environment:
 
    $ python3 -m venv env
    $ source env/bin/activate
-   $ pip install sphinx
+   $ pip install -r docs/requirements.txt
 
 Navigate to the ``docs`` directory:
 

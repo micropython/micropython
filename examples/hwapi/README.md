@@ -3,7 +3,7 @@ This directory shows the best practices for using MicroPython hardware API
 across various boards, with the aim to enable writing portable applications,
 which would work from a board to board, from a system to another systems.
 This is inherently a hard problem, because hardware is different from one
-board type to another, and even from examplar of board to another. For
+board type to another, and even from exemplar of board to another. For
 example, if your app requires an external LED, one user may connect it
 to one GPIO pin, while another user may find it much more convenient to
 use another pin. This of course applies to relays, buzzers, sensors, etc.

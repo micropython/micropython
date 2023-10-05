@@ -296,10 +296,10 @@ STATIC int do_repl(void) {
         }
 
         int ret = execute_from_lexer(LEX_SRC_STR, line, MP_PARSE_SINGLE_INPUT, true);
+        free(line);
         if (ret & FORCED_EXIT) {
             return ret;
         }
-        free(line);
     }
 
     #endif

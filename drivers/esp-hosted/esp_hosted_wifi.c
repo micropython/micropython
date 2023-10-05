@@ -476,6 +476,10 @@ int esp_hosted_wifi_init(uint32_t itf) {
         esp_hosted_netif_init(&esp_state, itf);
         info_printf("esp_hosted_init() initialized itf %lu\n", itf);
     }
+
+    // Re/enable IRQ pin.
+    esp_hosted_hal_irq_enable(true);
+
     return 0;
 }
 

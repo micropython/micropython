@@ -56,10 +56,17 @@
 extern char mod_network_country_code[2];
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
-#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (16)
+// Doesn't include the null terminator.
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
 #endif
 
-extern char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN];
+// This is a null-terminated string.
+extern char mod_network_hostname_data[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1];
+
+// To support backwards-compatible (esp32, esp8266, cyw43)
+// `if.config(hostname=...)` to forward directly to the implementation of
+// `network.hostname(...)`.
+mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args);
 
 #if MICROPY_PY_LWIP
 struct netif;

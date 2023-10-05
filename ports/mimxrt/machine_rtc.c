@@ -30,6 +30,7 @@
 #include "modmachine.h"
 #include "ticks.h"
 #include "fsl_snvs_lp.h"
+#include "fsl_snvs_hp.h"
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
@@ -41,6 +42,12 @@ STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
 // Start the RTC Timer.
 void machine_rtc_start(void) {
+    // Enable Non-Privileged Software Access
+    SNVS->HPCOMR |= SNVS_HPCOMR_NPSWA_EN_MASK;
+    // Do a basic init.
+    SNVS_LP_Init(SNVS);
+    // Disable all external Tamper
+    SNVS_LP_DisableAllExternalTamper(SNVS);
 
     SNVS_LP_SRTC_StartTimer(SNVS);
     // If the date is not set, set it to a more recent start date,
