@@ -106,7 +106,7 @@ class ManifestPackageMetadata:
         self.stdlib = False
 
         # Allows a python-ecosys package to be annotated with the
-        # corresponding name in PyPI. e.g. micropython-lib/urequests is based
+        # corresponding name in PyPI. e.g. micropython-lib/requests is based
         # on pypi/requests.
         self.pypi = None
         # For a micropython package, this is the name that we will publish it
