@@ -107,7 +107,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     }
     // Get timer id
     if (id != 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Specified Timer doesn't exist. Currently only id 0 is comfigured"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Specified Timer doesn't exist. Currently only id 0 is configured"));
     }
 
     if (n_args > 0 || n_kw > 0) {
