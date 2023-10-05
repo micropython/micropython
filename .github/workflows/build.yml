@@ -51,6 +51,7 @@ jobs:
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross
       with:
+        cp-version: ${{ steps.set-up-submodules.outputs.version }}
         download: false
     - name: Get last commit with checks
       id: get-last-commit-with-checks
