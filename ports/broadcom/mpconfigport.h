@@ -45,8 +45,8 @@
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (1920)
 #define CIRCUITPY_PROCESSOR_COUNT (4)
 
-#define MICROPY_FF_MKFS_FAT32  (1)
 #define MICROPY_FATFS_EXFAT    (1)
+#define MICROPY_FATFS_MKFS_FAT32  (1)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

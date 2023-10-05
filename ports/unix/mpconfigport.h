@@ -154,6 +154,8 @@ typedef long mp_off_t;
 #define MICROPY_FATFS_RPATH            (2)
 #define MICROPY_FATFS_MAX_SS           (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+#define MICROPY_FATFS_MKFS_FAT32       (1)
+#define MICROPY_FATFS_USE_LABEL (1)
 
 #define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
 

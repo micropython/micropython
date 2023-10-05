@@ -128,7 +128,6 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_CMATH                 (0)
 #define MICROPY_PY_COLLECTIONS           (CIRCUITPY_COLLECTIONS)
 #define MICROPY_PY_DESCRIPTORS           (1)
-#define MICROPY_PY_IO_FILEIO             (1)
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
 #define MICROPY_PY_IO                    (CIRCUITPY_IO)
@@ -264,8 +263,8 @@ typedef long mp_off_t;
 #define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
 #endif
 
-#ifndef MICROPY_FF_MKFS_FAT32
-#define MICROPY_FF_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_FATFS_MKFS_FAT32
+#define MICROPY_FATFS_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
 #endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
