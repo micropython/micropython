@@ -126,10 +126,10 @@ espnow_peers_obj_t *espnow_peers_new(void) {
 MP_DEFINE_CONST_OBJ_TYPE(
     espnow_peers_type,
     MP_QSTR_Peers,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
     print, espnow_peers_print,
     locals_dict, &espnow_peers_locals_dict,
     unary_op, espnow_peers_unary_op,
     subscr, espnow_peers_subscr,
-    getiter, espnow_peers_getiter
+    iter, espnow_peers_getiter
     );

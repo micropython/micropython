@@ -72,6 +72,7 @@ STATIC MP_DEFINE_CONST_DICT(usb_host_port_locals_dict, usb_host_port_locals_dict
 MP_DEFINE_CONST_OBJ_TYPE(
     usb_host_port_type,
     MP_QSTR_Port,
+    MP_TYPE_FLAG_NONE,
     make_new, usb_host_port_make_new,
     locals_dict, &usb_host_port_locals_dict
     );

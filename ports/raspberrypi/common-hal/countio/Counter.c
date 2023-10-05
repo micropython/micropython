@@ -112,4 +112,4 @@ void counter_interrupt_handler(void) {
     }
 }
 
-MP_REGISTER_ROOT_POINTER(mp_obj_t counting[NUM_PWM_SLICES]);
+MP_REGISTER_ROOT_POINTER(mp_obj_t counting[enum_NUM_PWM_SLICES]);

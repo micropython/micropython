@@ -68,5 +68,12 @@ extern critical_section_t background_queue_lock;
 #define CALLBACK_CRITICAL_BEGIN (critical_section_enter_blocking(&background_queue_lock))
 #define CALLBACK_CRITICAL_END (critical_section_exit(&background_queue_lock))
 
+// Turn some macros into compile-time constants, using enum.
+// Some nested macros expand across multiple lines, which is not
+// handled by the MP_REGISTER_ROOT_POINTER processing in makeqstrdefs.py.
+enum {
+    enum_NUM_DMA_CHANNELS = NUM_DMA_CHANNELS,
+    enum_NUM_PWM_SLICES = NUM_PWM_SLICES,
+};
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

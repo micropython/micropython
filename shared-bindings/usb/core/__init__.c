@@ -130,8 +130,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     usb_core_devices_type,
     MP_QSTR_USBDevices,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    getiter, mp_identity_getiter,
-    iternext, usb_core_devices_iternext
+    iter, usb_core_devices_iternext
     );
 
 STATIC mp_obj_t usb_core_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

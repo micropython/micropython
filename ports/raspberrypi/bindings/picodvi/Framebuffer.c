@@ -255,5 +255,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &picodvi_framebuffer_locals_dict,
     make_new, picodvi_framebuffer_make_new,
     buffer, common_hal_picodvi_framebuffer_get_buffer,
-    protocol, &picodvi_framebuffer_proto,
+    protocol, &picodvi_framebuffer_proto
     );
