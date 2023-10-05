@@ -101,7 +101,7 @@ A useful function for connecting to your local WiFi network is::
         print('network config:', wlan.ifconfig())
 
 Once the network is established the :mod:`socket <socket>` module can be used
-to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
 convenient HTTP requests.
 
 After a call to ``wlan.connect()``, the device will by default retry to connect
