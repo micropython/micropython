@@ -59,6 +59,7 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
     while (s < top) {
         unichar ch;
         ch = utf8_get_char(s);
+        const byte *start = s;
         s = utf8_next_char(s);
         if (ch == quote_char) {
             mp_printf(print, "\\%c", quote_char);
@@ -72,12 +73,14 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
             mp_print_str(print, "\\r");
         } else if (ch == '\t') {
             mp_print_str(print, "\\t");
-        } else if (ch < 0x100) {
+        } else if (ch <= 0x1f || (0x7f <= ch && ch <= 0xa0) || ch == 0xad) {
             mp_printf(print, "\\x%02x", ch);
-        } else if (ch < 0x10000) {
+        } else if ((0x2000 <= ch && ch <= 0x200f) || ch == 0x2028 || ch == 0x2029) {
             mp_printf(print, "\\u%04x", ch);
         } else {
-            mp_printf(print, "\\U%08x", ch);
+            // Print the full character out.
+            int width = s - start;
+            mp_print_strn(print, (const char *)start, width, 0, ' ', width);
         }
     }
     mp_printf(print, "%c", quote_char);

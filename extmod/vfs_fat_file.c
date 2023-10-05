@@ -232,12 +232,10 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
                 mode |= FA_READ | FA_WRITE;
                 plus_count++;
                 break;
-            #if MICROPY_PY_IO_FILEIO
             case 'b':
                 bt_count++;
                 type = &mp_type_vfs_fat_fileio;
                 break;
-            #endif
             case 't':
                 bt_count++;
                 type = &mp_type_vfs_fat_textio;
