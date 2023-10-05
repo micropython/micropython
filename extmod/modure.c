@@ -444,7 +444,11 @@ STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
 STATIC MP_DEFINE_CONST_OBJ_TYPE(
     re_type,
+    #if CIRCUITPY
+    MP_QSTR_re,
+    #else
     MP_QSTR_ure,
+    #endif
     MP_TYPE_FLAG_NONE,
     print, re_print,
     locals_dict, &re_locals_dict

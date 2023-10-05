@@ -14,6 +14,27 @@
 #define EMIT_CHECKED(at, byte) (_emit_checked(at, code, byte, &err))
 #define PC (prog->bytelen)
 
+static char unescape(char c) {
+    switch (c) {
+        case 'a':
+            return '\a';
+        case 'b':
+            return '\b';
+        case 'f':
+            return '\f';
+        case 'n':
+            return '\n';
+        case 'r':
+            return '\r';
+        case 't':
+            return '\t';
+        case 'v':
+            return '\v';
+        default:
+            return c;
+    }
+}
+
 static void _emit_checked(int at, char *code, int val, bool *err) {
     *err |= val != (int8_t)val;
     if (code) {
@@ -34,14 +55,16 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
         case '\\':
             re++;
             if (!*re) return NULL; // Trailing backslash
+            term = PC;
             if (MATCH_NAMED_CLASS_CHAR(*re)) {
-                term = PC;
                 EMIT(PC++, NamedClass);
                 EMIT(PC++, *re);
-                prog->len++;
-                break;
+            } else {
+                EMIT(PC++, Char);
+                EMIT(PC++, unescape(*re));
             }
-            MP_FALLTHROUGH
+            prog->len++;
+            break;
         default:
             term = PC;
             EMIT(PC++, Char);
@@ -74,7 +97,7 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
                         c = RE15_CLASS_NAMED_CLASS_INDICATOR;
                         goto emit_char_pair;
                     } else {
-                        // CIRCUITPY TODO: handle unescape here again PR #1544
+                        c = unescape(c);
                     }
                 }
                 if (!c) return NULL;
@@ -84,7 +107,6 @@ static const char *_compilecode(const char *re, ByteProg *prog, int sizecode)
             emit_char_pair:
                 EMIT(PC++, c);
                 EMIT(PC++, *re);
-                // CIRCUITPY TODO handle unescape here again PR #1544
             }
             EMIT_CHECKED(term + 1, cnt);
             break;
