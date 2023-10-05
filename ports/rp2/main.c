@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
     };
     rtc_init();
     rtc_set_datetime(&t);
+    mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
