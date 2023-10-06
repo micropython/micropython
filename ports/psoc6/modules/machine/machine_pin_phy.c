@@ -121,6 +121,41 @@ machine_pin_phy_obj_t machine_pin_phy_obj[] = {
     {PIN_USBDM, "USBDM",  PIN_PHY_FUNC_NONE}
 };
 
+// Function definitions
+// helper function to translate pin_name(string) into machine_pin_io_obj_t index.
+int pin_find(mp_obj_t pin) {
+    int wanted_pin = -1;
+    if (mp_obj_is_small_int(pin)) {
+        // Pin defined by the index of pin table
+        wanted_pin = mp_obj_get_int(pin);
+    } else if (mp_obj_is_str(pin)) {
+        // Search by name
+        size_t slen;
+        const char *s = mp_obj_str_get_data(pin, &slen);
+        for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_phy_obj); i++) {
+            if (slen == strlen(machine_pin_phy_obj[i].name) && strncmp(s, machine_pin_phy_obj[i].name, slen) == 0) {
+                wanted_pin = i;
+                break;
+            }
+        }
+    }
+
+    if (!(0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_phy_obj))) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid pin: Pin not defined!"));
+    }
+
+    return wanted_pin;
+}
+
+// helper function to translate pin_name(string) into machine_pin_io_obj_t->pin_addr
+int pin_addr_by_name(mp_obj_t pin) {
+    if (mp_obj_is_str(pin)) {
+        return machine_pin_phy_obj[pin_find(pin)].addr;
+    } else {
+        return -1; // expecting a str as input
+    }
+}
+
 #define pin_phy_assert_null(x) { if (x == NULL) { return NULL; } }
 
 machine_pin_phy_obj_t *pin_phy_find_by_name(mp_obj_t pin_name) {
