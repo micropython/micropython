@@ -1,6 +1,7 @@
 name: Build docs
 
 on:
+  push:
   pull_request:
     paths:
       - docs/**
