@@ -219,6 +219,10 @@ STATIC void stop_mp(void) {
     usb_background();
     #endif
 
+    // Set the qstr pool back to the const pools. The heap allocated ones will
+    // be overwritten.
+    qstr_reset();
+
     gc_deinit();
 }
 

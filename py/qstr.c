@@ -122,9 +122,13 @@ extern const qstr_pool_t MICROPY_QSTR_EXTRA_POOL;
 #define CONST_POOL mp_qstr_const_pool
 #endif
 
-void qstr_init(void) {
+void qstr_reset(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
+}
+
+void qstr_init(void) {
+    qstr_reset();
 
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(qstr_mutex));
