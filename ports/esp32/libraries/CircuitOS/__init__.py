@@ -4,6 +4,7 @@ from ._Display import *
 from ._LED import *
 from ._Encoder import *
 from ._Slider import *
+from ._RGBSolid import *
 
 from .Devices.PCA95XX import *
 from .Devices.IS31FL3731 import *

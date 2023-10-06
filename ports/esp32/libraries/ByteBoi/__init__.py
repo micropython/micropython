@@ -1,5 +1,5 @@
 from machine import SPI, Pin, Signal, I2C
-from CircuitOS import Display, PCA95XX
+from CircuitOS import Display, PCA95XX, RGBSolidGPIO, RGBSolidExpander
 from .Pins import *
 
 i2c = I2C(0, sda=Pin(Pins.I2C_SDA), scl=Pin(Pins.I2C_SCL))
@@ -43,6 +43,8 @@ if variant == 0:
 
 
 	backlight = BBBacklight()
+	rgb = RGBSolidExpander(Pins.LED_R, Pins.LED_G, Pins.LED_B, expander)
+
 
 else:  # variant == 1
 	from CircuitOS import PanelST7789, InputShift
@@ -55,6 +57,8 @@ else:  # variant == 1
 	backlight = Signal(blPin, invert=True)
 
 	buttons = InputShift(Pins.SHIFT_DAT, Pins.SHIFT_CLK, Pins.SHIFT_PL)
+	rgb = RGBSolidGPIO(Pins.LED_R, Pins.LED_G, Pins.LED_B)
+
 
 
 display = Display(panel)
