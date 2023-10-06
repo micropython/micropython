@@ -612,8 +612,11 @@ STATIC mp_obj_t extra_coverage(void) {
 
     // ringbuf
     {
-        byte buf[100];
-        ringbuf_t ringbuf = {buf, sizeof(buf), 0, 0, 0};
+        #define RINGBUF_SIZE 99
+
+        byte buf[RINGBUF_SIZE];
+        ringbuf_t ringbuf;
+        ringbuf_init(&ringbuf, buf, sizeof(buf));
 
         mp_printf(&mp_plat_print, "# ringbuf\n");
 
@@ -631,7 +634,7 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
 
         // Two-byte put with full ringbuf.
-        for (int i = 0; i < 99; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE; ++i) {
             ringbuf_put(&ringbuf, i);
         }
         mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
@@ -643,7 +646,7 @@ STATIC mp_obj_t extra_coverage(void) {
         ringbuf_get(&ringbuf);
         mp_printf(&mp_plat_print, "%d %d\n", ringbuf_num_empty(&ringbuf), ringbuf_num_filled(&ringbuf));
         mp_printf(&mp_plat_print, "%d\n", ringbuf_put16(&ringbuf, 0xcc99));
-        for (int i = 0; i < 97; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE - 2; ++i) {
             ringbuf_get(&ringbuf);
         }
         mp_printf(&mp_plat_print, "%04x\n", ringbuf_get16(&ringbuf));
@@ -651,7 +654,7 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // Two-byte put with wrap around on first byte:
         ringbuf_clear(&ringbuf);
-        for (int i = 0; i < 99; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE; ++i) {
             ringbuf_put(&ringbuf, i);
             ringbuf_get(&ringbuf);
         }
@@ -660,7 +663,7 @@ STATIC mp_obj_t extra_coverage(void) {
 
         // Two-byte put with wrap around on second byte:
         ringbuf_clear(&ringbuf);
-        for (int i = 0; i < 98; ++i) {
+        for (int i = 0; i < RINGBUF_SIZE - 1; ++i) {
             ringbuf_put(&ringbuf, i);
             ringbuf_get(&ringbuf);
         }

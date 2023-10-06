@@ -293,7 +293,7 @@
 	url = https://github.com/adafruit/Adafruit_CircuitPython_Ticks.git
 [submodule "frozen/Adafruit_CircuitPython_asyncio"]
 	path = frozen/Adafruit_CircuitPython_asyncio
-	url = https://github.com/adafruit/Adafruit_CircuitPython_asyncio.git
+	url = https://github.com/tannewt/Adafruit_CircuitPython_asyncio.git
 [submodule "frozen/circuitpython_ef_music"]
 	path = frozen/circuitpython_ef_music
 	url = https://github.com/elecfreaks/circuitpython_ef_music.git

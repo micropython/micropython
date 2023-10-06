@@ -15,12 +15,12 @@ false true
 abc
 %
 # GC
-0
-0
+0x0
+0x0
 # GC part 2
 pass
 # tracked allocation
-m_tracked_head = 0
+m_tracked_head = 0x0
 0 1
 1 1
 2 1
@@ -37,7 +37,7 @@ m_tracked_head = 0
 5 1
 6 1
 7 1
-m_tracked_head = 0
+m_tracked_head = 0x0
 # vstr
 tests
 sts
@@ -55,18 +55,12 @@ _uasyncio       aesio           array           audiocore
 audiomixer      bitmaptools     cexample        cmath
 collections     cppexample      displayio       gc
 math            qrio            rainbowio       struct
-synthio         termios         traceback       ubinascii
-uctypes         uerrno          uhashlib        uheapq
-uio             ujson           ulab            ulab.numpy
-ulab.numpy.fft  ulab.numpy.linalg               ulab.scipy
-ulab.scipy.linalg               ulab.scipy.optimize
-ulab.scipy.signal               ulab.scipy.special
-ulab.utils      uos             urandom         ure
-uselect         usys            utime           utimeq
-uzlib           zlib
+synthio         traceback       ubinascii       uctypes
+uerrno          uhashlib        uheapq          uio
+ujson           ulab            uos             uplatform
+urandom         ure             uselect         usys
+utime           uzlib           zlib
 ime
-
-utime           utimeq
 
 argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation

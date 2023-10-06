@@ -28,7 +28,6 @@ def get_version_info_from_git(repo_path):
 
     # Note: git describe doesn't work if no tag is available
     try:
-        print(tools_describe)
         git_tag = subprocess.check_output(
             [tools_describe],
             cwd=repo_path,
@@ -95,10 +94,8 @@ def make_version_header(repo_path, filename):
     # Get version info using git (required)
     info = get_version_info_from_git(repo_path)
     if info is None:
-        print(info)
         cannot_determine_version()
     git_tag, git_hash, ver = info
-    print(git_tag, git_hash, ver)
     if len(ver) < 3:
         cannot_determine_version()
     else:
