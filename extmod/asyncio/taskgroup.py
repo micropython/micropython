@@ -214,10 +214,10 @@ class TaskGroup:
             if self._on_completed is not None and not self._tasks:
                 self._on_completed.set()
 
-        if type(exc) is core.CancelledError:
+        if exc is None:
             return
 
-        if exc is None:
+        if type(exc) is core.CancelledError:
             return
 
         self._errors.append(exc)
