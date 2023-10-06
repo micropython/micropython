@@ -12,8 +12,6 @@ elif "CY8CPROTO-063-BLE" in machine:
     print("SKIP")
     raise SystemExit
 
-pin = Pin(pin_name)
-
 # Negative tests
 try:
     adcBlock = ADCBlock(1)
@@ -28,11 +26,11 @@ except:
 adcBlock = ADCBlock(0)
 
 try:
-    adcPin = adcBlock.connect(0, pin)
+    adcPin = adcBlock.connect(0, pin_name)
 except:
     print("TypeError: Wrong pin specified for the mentioned channel")
 
 
-adcPin = adcBlock.connect(3, pin)
+adcPin = adcBlock.connect(3, pin_name)
 
 print(adcPin.read_uv() > 0)

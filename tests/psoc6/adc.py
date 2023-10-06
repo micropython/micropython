@@ -14,16 +14,13 @@ elif "CY8CPROTO-063-BLE" in machine:
     print("SKIP")
     raise SystemExit
 
-adc_pin = Pin(adc_pin_name)
-adc_wrong_pin = Pin(adc_wrong_pin_name)
-
 # Exceptions should be raised
 try:
-    adc = ADC(adc_wrong_pin)
+    adc = ADC(adc_wrong_pin_name)
 except:
     print("Invalid ADC Pin")
 
-adc = ADC(adc_pin, sample_ns=1000)
+adc = ADC(adc_pin_name, sample_ns=1000)
 print(adc)
 
 print(adc.read_u16() > 0)
