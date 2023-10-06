@@ -57,7 +57,7 @@ SRC_C = \
 # Add fmode when compiling with mingw gcc
 COMPILER_TARGET := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
-	SRC_C += ports/windows/fmode.c
+	SRC_C += windows-fmode.c
 endif
 
 OBJ = $(PY_CORE_O)
