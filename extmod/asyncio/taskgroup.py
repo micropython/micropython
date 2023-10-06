@@ -176,7 +176,8 @@ class TaskGroup:
         try:
             self._parent_task.cancel()
         except RuntimeError:
-            raise core.CancelledError()
+            self._abort()
+            self._parent_cancel_requested = True
 
     def _is_base_error(self, exc: BaseException) -> bool:
         # KeyboardInterrupt and SystemExit are "special": they should
