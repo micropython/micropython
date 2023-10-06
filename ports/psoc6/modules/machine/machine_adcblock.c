@@ -208,16 +208,16 @@ STATIC mp_obj_t machine_adcblock_connect(size_t n_pos_args, const mp_obj_t *pos_
             channel = mp_obj_get_int(pos_args[1]);
             pin = _get_adc_pin_number_for_channel(channel);
         } else {
-            machine_pin_io_obj_t *adc_pin_obj = MP_OBJ_TO_PTR(pos_args[1]);
-            pin = adc_pin_obj->pin_addr;
+            machine_pin_phy_obj_t *adc_pin_obj = pin_phy_alloc(pos_args[1], PIN_PHY_FUNC_ADC);
+            pin = adc_pin_obj->addr;
             channel = _get_adc_channel_number_for_pin(pin);
         }
     } else if (n_pos_args == 3) {
         channel = mp_obj_get_int(pos_args[1]);
         uint32_t exp_pin = _get_adc_pin_number_for_channel(channel);
 
-        machine_pin_io_obj_t *adc_pin_obj = MP_OBJ_TO_PTR(pos_args[2]);
-        pin = adc_pin_obj->pin_addr;
+        machine_pin_phy_obj_t *adc_pin_obj = pin_phy_alloc(pos_args[2], PIN_PHY_FUNC_ADC);
+        pin = adc_pin_obj->addr;
         if (exp_pin != pin) {
             mp_raise_TypeError(MP_ERROR_TEXT("Wrong pin specified for the mentioned channel"));
         }

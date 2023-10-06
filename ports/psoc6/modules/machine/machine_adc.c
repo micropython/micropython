@@ -102,12 +102,12 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, all_args + 1, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_pin_io_obj_t *adc_pin_obj = MP_OBJ_TO_PTR(all_args[0]);
+    machine_pin_phy_obj_t *adc_pin_obj = pin_phy_alloc(all_args[0], PIN_PHY_FUNC_ADC);
 
     // Get user input sampling time
     uint32_t sampling_time = args[ARG_sample_ns].u_int;
 
-    machine_adc_obj_t *o = adc_init_helper(sampling_time, adc_pin_obj->pin_addr);
+    machine_adc_obj_t *o = adc_init_helper(sampling_time, adc_pin_obj->addr);
 
     return MP_OBJ_FROM_PTR(o);
 }

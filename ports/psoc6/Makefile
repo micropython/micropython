@@ -132,6 +132,7 @@ MOD_SRC_C += $(addprefix modules/,\
 	\
 	machine/modmachine.c \
 	machine/machine_i2c.c \
+	machine/machine_pin_phy.c \
 	machine/machine_pin.c \
 	machine/machine_rtc.c \
 	machine/machine_spi.c \

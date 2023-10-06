@@ -97,16 +97,16 @@ int mp_hal_stdin_rx_chr(void) {
 
 
 void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
-    gpio_clear_value(pin);
+    cyhal_gpio_write(pin, false);
 }
 
 
 void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
-    gpio_set_value(pin);
+    cyhal_gpio_write(pin, true);
 }
 
 int mp_hal_pin_read(mp_hal_pin_obj_t pin) {
-    return gpio_get_value(pin);
+    return cyhal_gpio_read(pin);
 }
 
 
@@ -121,9 +121,9 @@ uint8_t mp_hal_pin_name(mp_hal_pin_obj_t pin) {
 
 void mp_hal_pin_write(mp_hal_pin_obj_t pin, uint8_t polarity) {
     if (polarity == 1) {
-        gpio_set_value(pin);
+        cyhal_gpio_write(pin, true);
     } else {
-        gpio_clear_value(pin);
+        cyhal_gpio_write(pin, false);
     }
 }
 
