@@ -272,9 +272,9 @@ class Loop:
         return Loop._exc_handler
 
     def default_exception_handler(loop, context):
-        print(context["message"])
-        print("future:", context["future"], "coro=", context["future"].coro)
-        sys.print_exception(context["exception"])
+        print(context["message"], file=sys.stderr)
+        print("future:", context["future"], "coro=", context["future"].coro, file=sys.stderr)
+        sys.print_exception(context["exception"], sys.stderr)
 
     def call_exception_handler(context):
         (Loop._exc_handler or Loop.default_exception_handler)(Loop, context)
