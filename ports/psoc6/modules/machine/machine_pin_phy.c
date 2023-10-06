@@ -169,7 +169,7 @@ void pin_phy_free(machine_pin_phy_obj_t *pin_phy) {
     pin_phy->allocated_func = PIN_PHY_FUNC_NONE;
 
     // TODO: each module should provide its own instance deinitialization
-    // We can not just free the physical_pin, whithout deiniting its corresponding
+    // We can not just free the physical_pin, without deiniting its corresponding
     // peripheral object
     // machine_mod_deinit[func](pin_phy);
 }
