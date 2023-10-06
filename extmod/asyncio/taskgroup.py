@@ -123,6 +123,11 @@ class TaskGroup:
             raise self._base_error
 
         if et is not None and et is not core.CancelledError:
+            if _DEBUG:
+                import sys
+
+                print("*** ERR ", repr(exc), file=sys.stderr)
+                sys.print_exception(exc, sys.stderr)
             self._errors.append(exc)
 
         if self._errors:
@@ -139,7 +144,7 @@ class TaskGroup:
                     import sys
 
                     for err in errors:
-                        sys.print_exception(err)
+                        sys.print_exception(err, sys.stderr)
                 EGroup = core.ExceptionGroup
                 for err in errors:
                     if not isinstance(err, Exception):
@@ -205,7 +210,8 @@ class TaskGroup:
             if _DEBUG:
                 import sys
 
-                sys.print_exception(e)
+                print("*** ERR ", repr(e), file=sys.stderr)
+                sys.print_exception(e, sys.stderr)
 
             exc = e
         else:
