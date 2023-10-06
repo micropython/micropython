@@ -15,18 +15,23 @@ class HP203B:
     def begin(self) -> bool:
         try:
             self._i2c.writeto(self._addr, bytearray([0x06]))  # soft reset
-            time.sleep_ms(5)
-
-            self._i2c.writeto(self._addr, bytearray([0b01010100]))
+            time.sleep_ms(100)
             return True
         except OSError:
             return False
 
     def get_baro(self) -> int:
+        self._measure()
+        time.sleep_ms(100)
         return self._read_sensor(self.PRESSURE)
 
     def get_alt(self) -> int:
+        self._measure()
+        time.sleep_ms(100)
         return self._read_sensor(self.ALTITUDE)
+
+    def _measure(self):
+        self._i2c.writeto(self._addr, bytearray([0x40]))
 
     def _read_sensor(self, sensor: int) -> int:
         self._i2c.writeto(self._addr, bytearray([sensor]))
