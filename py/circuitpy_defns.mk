@@ -837,3 +837,8 @@ invalid-board:
 	echo "Valid boards:" && \
 	printf '%s\n' $(ALL_BOARDS_IN_PORT) | column -xc $$(tput cols || echo 80) 1>&2 && \
 	false
+
+# Print out the value of a make variable.
+# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
+print-%:
+	@echo $* = $($*)
