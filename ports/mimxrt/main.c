@@ -93,7 +93,7 @@ int main(void) {
     #endif
 
     for (;;) {
-        #if defined(MICROPY_HW_LED1)
+        #if defined(MICROPY_HW_LED1_PIN)
         led_init();
         #endif
 
