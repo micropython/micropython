@@ -13,9 +13,13 @@ ifneq ($(QSTR_AUTOGEN_DISABLE),1)
 QSTR_DEFS_COLLECTED = $(HEADER_BUILD)/qstrdefs.collected.h
 endif
 
+# Allow a port to set the top-level port configuration file.
+MPCONFIGPORT_H ?= mpconfigport.h
+CFLAGS += -DMP_CONFIGFILE='"$(MPCONFIGPORT_H)"'
+
 # Any files listed by these variables will cause a full regeneration of qstrs
 # DEPENDENCIES: included in qstr processing; REQUIREMENTS: not included
-QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
+QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h $(MPCONFIGPORT_H)
 QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/mpversion.h
 
 # some code is performance bottleneck and compiled with other optimization options
@@ -227,7 +231,7 @@ MPCONFIGPORT_MK = $(wildcard mpconfigport.mk)
 # Note: we need to protect the qstr names from the preprocessor, so we wrap
 # the lines in "" and then unwrap after the preprocessor is finished.
 # See more information about this process in docs/develop/qstr.rst.
-$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py mpconfigport.h $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
+$(HEADER_BUILD)/qstrdefs.generated.h: $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) $(PY_SRC)/makeqstrdata.py $(MPCONFIGPORT_H) $(MPCONFIGPORT_MK) $(PY_SRC)/mpconfig.h | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(CAT) $(PY_QSTR_DEFS) $(QSTR_DEFS) $(QSTR_DEFS_COLLECTED) | $(SED) 's/^Q(.*)/"&"/' | $(CPP) $(CFLAGS) - | $(SED) 's/^\"\(Q(.*)\)\"/\1/' > $(HEADER_BUILD)/qstrdefs.preprocessed.h
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdata.py $(HEADER_BUILD)/qstrdefs.preprocessed.h > $@

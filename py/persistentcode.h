@@ -120,4 +120,8 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename);
 
 void mp_native_relocate(void *reloc, uint8_t *text, uintptr_t reloc_text);
 
+#if MICROPY_DYNAMIC_COMPILER
+uint8_t mp_nlr_num_regs_for_arch(uint8_t arch);
+#endif
+
 #endif // MICROPY_INCLUDED_PY_PERSISTENTCODE_H

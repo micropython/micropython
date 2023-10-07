@@ -660,3 +660,26 @@ void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename) {
 // An mp_obj_list_t that tracks relocated native code to prevent the GC from reclaiming them.
 MP_REGISTER_ROOT_POINTER(mp_obj_t track_reloc_code_list);
 #endif
+
+#if MICROPY_DYNAMIC_COMPILER
+STATIC uint8_t mp_nlr_num_regs_for_arch_table[] = {
+    0, // MP_NATIVE_ARCH_NONE
+    MICROPY_NLR_NUM_REGS_X86, // MP_NATIVE_ARCH_X86,
+    MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN), // MP_NATIVE_ARCH_X64,
+    MICROPY_NLR_NUM_REGS_ARM_THUMB_FP, // MP_NATIVE_ARCH_ARMV6,
+    MICROPY_NLR_NUM_REGS_ARM_THUMB_FP, // MP_NATIVE_ARCH_ARMV6M,
+    MICROPY_NLR_NUM_REGS_ARM_THUMB_FP, // MP_NATIVE_ARCH_ARMV7M,
+    MICROPY_NLR_NUM_REGS_ARM_THUMB_FP, // MP_NATIVE_ARCH_ARMV7EM,
+    MICROPY_NLR_NUM_REGS_ARM_THUMB_FP, // MP_NATIVE_ARCH_ARMV7EMSP,
+    MICROPY_NLR_NUM_REGS_ARM_THUMB_FP, // MP_NATIVE_ARCH_ARMV7EMDP,
+    MICROPY_NLR_NUM_REGS_XTENSA, // MP_NATIVE_ARCH_XTENSA,
+    MICROPY_NLR_NUM_REGS_XTENSAWIN, // MP_NATIVE_ARCH_XTENSAWIN,
+};
+
+uint8_t mp_nlr_num_regs_for_arch(uint8_t arch) {
+    if (arch >= MP_ARRAY_SIZE(mp_nlr_num_regs_for_arch_table)) {
+        return 0;
+    }
+    return mp_nlr_num_regs_for_arch_table[arch];
+}
+#endif

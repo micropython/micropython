@@ -24,15 +24,19 @@
  * THE SOFTWARE.
  */
 
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "py/builtin.h"
 #include "py/compile.h"
 #include "py/persistentcode.h"
 #include "py/runtime.h"
+#include "py/mpstate.h"
 #include "py/gc.h"
 #include "py/stackctrl.h"
 #include "genhdr/mpversion.h"
@@ -284,44 +288,31 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 const char *arch = argv[a] + sizeof("-march=") - 1;
                 if (strcmp(arch, "x86") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
                 } else if (strcmp(arch, "x64") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
                 } else if (strcmp(arch, "armv6") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "armv6m") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6M;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP; // need to be conservative so this code can run on armv7emdp
                 } else if (strcmp(arch, "armv7m") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7M;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "armv7em") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7EM;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "armv7emsp") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7EMSP;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "armv7emdp") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7EMDP;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                 } else if (strcmp(arch, "xtensa") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSA;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSA;
                 } else if (strcmp(arch, "xtensawin") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
                 } else if (strcmp(arch, "host") == 0) {
                     #if defined(__i386__) || defined(_M_IX86)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
                     #elif defined(__x86_64__) || defined(_M_X64)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
                     #elif defined(__arm__) && !defined(__thumb2__)
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
-                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
                     #else
                     mp_printf(&mp_stderr_print, "unable to determine host architecture for -march=host\n");
                     exit(1);
@@ -329,6 +320,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else {
                     return usage(argv);
                 }
+                mp_dynamic_compiler.nlr_buf_num_regs = mp_nlr_num_regs_for_arch(mp_dynamic_compiler.native_arch);
             } else if (strcmp(argv[a], "--") == 0) {
                 option_parsing_active = false;
             } else {
@@ -364,11 +356,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
 int main(int argc, char **argv) {
     mp_stack_ctrl_init();
     return main_(argc, argv);
-}
-
-mp_import_stat_t mp_import_stat(const char *path) {
-    (void)path;
-    return MP_IMPORT_STAT_NO_EXIST;
 }
 
 void nlr_jump_fail(void *val) {

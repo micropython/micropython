@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
-#
 # This file is part of the MicroPython project, http://micropython.org/
 #
 # The MIT License (MIT)
 #
 # Copyright (c) 2022 Andrew Leech
-# Copyright (c) 2022 Jim Mussared
+# Copyright (c) 2023 Jim Mussared
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +23,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-from __future__ import print_function
-import argparse
-import sys
+from .main import main
 
-from . import run, CrossCompileError
-
-try:
-    print(run(sys.argv[1:]))
-except CrossCompileError as er:
-    print(er.args[0], file=sys.stderr)
-    raise SystemExit(1)
+main()

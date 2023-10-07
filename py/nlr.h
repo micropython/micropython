@@ -47,14 +47,28 @@
 
 // *FORMAT-OFF*
 
-// If MICROPY_NLR_SETJMP is not enabled then auto-detect the machine arch
-#if !MICROPY_NLR_SETJMP
+#if MICROPY_NLR_TERMINATE
+// The port cannot provide NLR, and it must provides nlr_terminate instead.
+#define MICROPY_NLR_NUM_REGS (0)
+#define MICROPY_NLR_SETJMP (0)
+
+NORETURN void nlr_terminate(void *val);
+static NORETURN inline void nlr_jump(void *val) {
+    nlr_terminate(val);
+}
+#elif !MICROPY_NLR_SETJMP
+// If MICROPY_NLR_SETJMP is not defined (or disabled) then auto-detect the
+// machine arch and use the custom implementation where possible, otherwise
+// fall back to setjmp.
+
 // A lot of nlr-related things need different treatment on Windows
 #if defined(_WIN32) || defined(__CYGWIN__)
 #define MICROPY_NLR_OS_WINDOWS 1
 #else
 #define MICROPY_NLR_OS_WINDOWS 0
 #endif
+
+// Architecture specific configuration.
 #if defined(__i386__)
     #define MICROPY_NLR_X86 (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_X86)
@@ -89,24 +103,26 @@
     #define MICROPY_NLR_MIPS (1)
     #define MICROPY_NLR_NUM_REGS (MICROPY_NLR_NUM_REGS_MIPS)
 #else
-    #define MICROPY_NLR_SETJMP (1)
-    //#warning "No native NLR support for this arch, using setjmp implementation"
+    #if defined(MICROPY_NLR_SETJMP)
+        #error "No native NLR support for this arch, and setjmp was disabled."
+    #else
+        // Enable the fall-back setjump implementation.
+        #define MICROPY_NLR_SETJMP (1)
+        // #warning "No native NLR support for this arch, using setjmp implementation"
+    #endif
 #endif
-#endif
-
-// *FORMAT-ON*
+#endif  // !MICROPY_NLR_SETJMP
 
 #if MICROPY_NLR_SETJMP
 #include <setjmp.h>
 #endif
 
-typedef struct _nlr_buf_t nlr_buf_t;
-struct _nlr_buf_t {
+typedef struct _nlr_buf_t {
     // The entries in this struct must all be machine word size.
 
     // Pointer to the previous nlr_buf_t in the chain.
     // Or NULL if it's the top-level one.
-    nlr_buf_t *prev;
+    struct _nlr_buf_t *prev;
 
     // The exception that is being raised:
     // - NULL means the jump is because of a VM abort (only if MICROPY_ENABLE_VM_ABORT enabled)
@@ -122,16 +138,14 @@ struct _nlr_buf_t {
     #if MICROPY_ENABLE_PYSTACK
     void *pystack;
     #endif
-};
+} nlr_buf_t;
 
 typedef void (*nlr_jump_callback_fun_t)(void *ctx);
 
-typedef struct _nlr_jump_callback_node_t nlr_jump_callback_node_t;
-
-struct _nlr_jump_callback_node_t {
-    nlr_jump_callback_node_t *prev;
+typedef struct _nlr_jump_callback_node_t {
+    struct _nlr_jump_callback_node_t *prev;
     nlr_jump_callback_fun_t fun;
-};
+} nlr_jump_callback_node_t;
 
 // Helper macros to save/restore the pystack state
 #if MICROPY_ENABLE_PYSTACK
@@ -154,7 +168,9 @@ struct _nlr_jump_callback_node_t {
     MP_NLR_RESTORE_PYSTACK(top); \
     *_top_ptr = top->prev; \
 
-#if MICROPY_NLR_SETJMP
+#if MICROPY_NLR_TERMINATE
+#define nlr_push(buf) ((void)buf, 0)
+#elif MICROPY_NLR_SETJMP
 // nlr_push() must be defined as a macro, because "The stack context will be
 // invalidated if the function which called setjmp() returns."
 // For this case it is safe to call nlr_push_tail() first.
@@ -165,6 +181,7 @@ unsigned int nlr_push(nlr_buf_t *);
 
 unsigned int nlr_push_tail(nlr_buf_t *top);
 void nlr_pop(void);
+
 NORETURN void nlr_jump(void *val);
 
 #if MICROPY_ENABLE_VM_ABORT
@@ -173,10 +190,12 @@ NORETURN void nlr_jump(void *val);
 NORETURN void nlr_jump_abort(void);
 #endif
 
+#if !MICROPY_NLR_TERMINATE
 // This must be implemented by a port.  It's called by nlr_jump
 // if no nlr buf has been pushed.  It must not return, but rather
 // should bail out with a fatal error.
 NORETURN void nlr_jump_fail(void *val);
+#endif
 
 // use nlr_raise instead of nlr_jump so that debugging is easier
 #ifndef MICROPY_DEBUG_NLR

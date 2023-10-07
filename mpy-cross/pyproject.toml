@@ -1,0 +1,55 @@
+[build-system]
+requires = [
+    "hatchling",
+    "hatch-requirements-txt",
+    "hatch-vcs",
+]
+build-backend = "hatchling.build"
+
+[project]
+name = "mpy_cross"
+description = "MicroPython cross-compiler"
+readme = "README.md"
+authors = [
+    {name = "Damien George", email = "damien@micropython.org"},
+]
+urls = {Homepage = "https://github.com/micropython/micropython"}
+keywords = [
+    "hardware",
+    "micropython",
+]
+license = {text = "MIT"}
+classifiers = [
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Embedded Systems",
+    "Topic :: System :: Hardware",
+]
+requires-python = ">=3.6"
+dynamic = ["dependencies", "version"]
+
+[project.scripts]
+mpy_cross = "mpy_cross.main:main"
+
+[tool.hatch.metadata.hooks.requirements_txt]
+files = ["requirements.txt"]
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "(?P<version>v(\\d+).(\\d+).(\\d+))"
+raw-options = { root = "..", version_scheme = "post-release" }
+
+[tool.hatch.build]
+packages = ["mpy_cross"]
+
+# Package the compiled wasm binary and add it to the package for both wheel and sdist.
+# Must have run `make -j -f Makefile.wasm` first.
+[tool.hatch.build.force-include]
+"build-wasm/mpy-cross.wasm" = "mpy_cross/mpy-cross.wasm"
+
+# Workaround to allow `python -m build` to work.
+[tool.hatch.build.targets.sdist.force-include]
+"build-wasm/mpy-cross.wasm" = "mpy_cross/mpy-cross.wasm"
+"requirements.txt" = "requirements.txt"
