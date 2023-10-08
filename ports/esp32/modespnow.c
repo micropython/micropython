@@ -26,7 +26,6 @@
  * THE SOFTWARE.
  */
 
-
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -47,6 +46,9 @@
 #include "py/ringbuf.h"
 
 #include "mpconfigport.h"
+
+#if MICROPY_ESPNOW
+
 #include "mphalport.h"
 #include "modnetwork.h"
 #include "modespnow.h"
@@ -859,3 +861,5 @@ const mp_obj_module_t mp_module_espnow = {
 
 MP_REGISTER_MODULE(MP_QSTR__espnow, mp_module_espnow);
 MP_REGISTER_ROOT_POINTER(struct _esp_espnow_obj_t *espnow_singleton);
+
+#endif // MICROPY_ESPNOW
