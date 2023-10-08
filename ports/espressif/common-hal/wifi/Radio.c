@@ -44,7 +44,7 @@
 #include "components/lwip/include/apps/ping/ping_sock.h"
 
 #if CIRCUITPY_MDNS
-#include "components/mdns/include/mdns.h"
+#include "common-hal/mdns/Server.h"
 #endif
 
 #define MAC_ADDRESS_LENGTH 6
@@ -97,7 +97,7 @@ void common_hal_wifi_radio_set_enabled(wifi_radio_obj_t *self, bool enabled) {
             common_hal_wifi_radio_stop_scanning_networks(self);
         }
         #if CIRCUITPY_MDNS
-        mdns_free();
+        mdns_server_deinit_singleton();
         #endif
         ESP_ERROR_CHECK(esp_wifi_stop());
         self->started = false;

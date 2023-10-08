@@ -161,6 +161,10 @@ extern void common_hal_espcamera_camera_deinit(espcamera_camera_obj_t *self) {
 
     esp_camera_deinit();
 
+    reset_pin_number(self->camera_config.pin_pclk);
+    reset_pin_number(self->camera_config.pin_vsync);
+    reset_pin_number(self->camera_config.pin_href);
+
     self->camera_config.xclk_freq_hz = 0;
 }
 

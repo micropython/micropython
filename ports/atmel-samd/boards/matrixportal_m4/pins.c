@@ -1,4 +1,40 @@
+#include "py/objtuple.h"
 #include "shared-bindings/board/__init__.h"
+
+STATIC const mp_rom_obj_tuple_t matrix_addr_tuple = {
+    {&mp_type_tuple},
+    5,
+    {
+        MP_ROM_PTR(&pin_PB07),
+        MP_ROM_PTR(&pin_PB08),
+        MP_ROM_PTR(&pin_PB09),
+        MP_ROM_PTR(&pin_PB15),
+        MP_ROM_PTR(&pin_PB13),
+    }
+};
+
+STATIC const mp_rom_obj_tuple_t matrix_data_tuple = {
+    {&mp_type_tuple},
+    6,
+    {
+        MP_ROM_PTR(&pin_PB00),
+        MP_ROM_PTR(&pin_PB01),
+        MP_ROM_PTR(&pin_PB02),
+
+        MP_ROM_PTR(&pin_PB03),
+        MP_ROM_PTR(&pin_PB04),
+        MP_ROM_PTR(&pin_PB05),
+    }
+};
+
+STATIC const mp_rom_map_elem_t matrix_common_table[] = {
+    { MP_OBJ_NEW_QSTR(MP_QSTR_rgb_pins),MP_ROM_PTR(&matrix_data_tuple) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_clock_pin),MP_ROM_PTR(&pin_PB06) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_latch_pin),MP_ROM_PTR(&pin_PB14) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_output_enable_pin),MP_ROM_PTR(&pin_PB12) },
+};
+MP_DEFINE_CONST_DICT(matrix_common_dict, matrix_common_table);
+
 
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
@@ -29,6 +65,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_SCK),MP_ROM_PTR(&pin_PA16) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MOSI),MP_ROM_PTR(&pin_PA19) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MISO),MP_ROM_PTR(&pin_PA17) },
+
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MTX_ADDRESS),MP_ROM_PTR(&matrix_addr_tuple) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_MTX_COMMON),MP_ROM_PTR(&matrix_common_dict) },
 
     { MP_OBJ_NEW_QSTR(MP_QSTR_MTX_R1),MP_ROM_PTR(&pin_PB00) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_MTX_G1),MP_ROM_PTR(&pin_PB01) },

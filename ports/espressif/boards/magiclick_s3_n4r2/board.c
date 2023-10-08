@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,6 @@
  * THE SOFTWARE.
  */
 
-// Micropython setup
+#include "supervisor/board.h"
 
-#define MICROPY_HW_BOARD_NAME       "FeatherS3"
-#define MICROPY_HW_MCU_NAME         "ESP32S3"
-
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO40)
-#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO39)
-
-#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
-
-#define CIRCUITPY_BOARD_I2C         (2)
-#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO9, .sda = &pin_GPIO8}, \
-                                     {.scl = &pin_GPIO15, .sda = &pin_GPIO16}}
-
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
-
-#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
-#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
-
-#define DOUBLE_TAP_PIN (&pin_GPIO47)
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
