@@ -29,3 +29,4 @@
 #include "py/objnamedtuple.h"
 
 extern const mp_obj_namedtuple_type_t qrio_qrinfo_type_obj;
+extern const mp_obj_namedtuple_type_t qrio_qrposition_type_obj;
