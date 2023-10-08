@@ -65,7 +65,11 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
 
     switch (err_code) {
         case PPPERR_NONE:
+            #if CONFIG_LWIP_IPV6
             self->connected = (pppif->ip_addr.u_addr.ip4.addr != 0);
+            #else
+            self->connected = (pppif->ip_addr.addr != 0);
+            #endif // CONFIG_LWIP_IPV6
             break;
         case PPPERR_USER:
             self->clean_close = true;
@@ -250,7 +254,11 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
         ip_addr_t dns;
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
+        #if CONFIG_LWIP_IPV6
         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns.u_addr.ip4, NETUTILS_BIG);
+        #else
+        netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
+        #endif // CONFIG_LWIP_IPV6
         dns_setserver(0, &dns);
         return mp_const_none;
     }
