@@ -108,7 +108,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_main_clock);
     }
     if (bit_clock->number != word_select->number - 1) {
-        mp_raise_ValueError(translate("Bit clock and word select must be sequential pins"));
+        mp_raise_ValueError(translate("Bit clock and word select must be sequential GPIO pins"));
     }
 
     const uint16_t *program = i2s_program;
