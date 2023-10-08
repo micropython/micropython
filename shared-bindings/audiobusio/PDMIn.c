@@ -245,8 +245,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     audiobusio_pdmin_type,
     MP_QSTR_PDMIn,
     MP_TYPE_FLAG_NONE,
-    make_new, audiobusio_pdmin_make_new,
+    make_new, audiobusio_pdmin_make_new
     #if CIRCUITPY_AUDIOBUSIO_PDMIN
-    locals_dict, &audiobusio_pdmin_locals_dict
+    , locals_dict, &audiobusio_pdmin_locals_dict
     #endif
     );

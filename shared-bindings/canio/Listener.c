@@ -170,6 +170,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     canio_listener_type,
     MP_QSTR_Listener,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
-    .locals_dict = (mp_obj_dict_t *)&canio_listener_locals_dict,
-    .iternext = canio_iternext
+    locals_dict, &canio_listener_locals_dict,
+    iter, canio_iternext
     );
