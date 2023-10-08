@@ -34,3 +34,6 @@
 #define CIRCUITPY_BOARD_I2C         (2)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO39, .sda = &pin_GPIO38}, \
                                      {.scl = &pin_GPIO1, .sda = &pin_GPIO2}}
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO17)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO21)
