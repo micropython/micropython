@@ -28,7 +28,6 @@
 // extmod/machine_i2s.c via MICROPY_PY_MACHINE_I2S_INCLUDEFILE.
 
 #include "py/mphal.h"
-#include "py/stream.h"
 
 #if MICROPY_PY_MACHINE_I2S
 
@@ -634,128 +633,6 @@ STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
 STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
-
-STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->mode != (I2S_MODE_MASTER | I2S_MODE_RX)) {
-        *errcode = MP_EPERM;
-        return MP_STREAM_ERROR;
-    }
-
-    uint8_t appbuf_sample_size_in_bytes = (self->bits / 8) * (self->format == STEREO ? 2: 1);
-    if (size % appbuf_sample_size_in_bytes != 0) {
-        *errcode = MP_EINVAL;
-        return MP_STREAM_ERROR;
-    }
-
-    if (size == 0) {
-        return 0;
-    }
-
-    if (self->io_mode == NON_BLOCKING) {
-        non_blocking_descriptor_t descriptor;
-        descriptor.appbuf.buf = (void *)buf_in;
-        descriptor.appbuf.len = size;
-        descriptor.callback = self->callback_for_non_blocking;
-        descriptor.direction = I2S_RX_TRANSFER;
-        // send the descriptor to the task that handles non-blocking mode
-        xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
-        return size;
-    } else { // blocking or asyncio mode
-        mp_buffer_info_t appbuf;
-        appbuf.buf = (void *)buf_in;
-        appbuf.len = size;
-        uint32_t num_bytes_read = fill_appbuf_from_dma(self, &appbuf);
-        return num_bytes_read;
-    }
-}
-
-STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->mode != (I2S_MODE_MASTER | I2S_MODE_TX)) {
-        *errcode = MP_EPERM;
-        return MP_STREAM_ERROR;
-    }
-
-    if (size == 0) {
-        return 0;
-    }
-
-    if (self->io_mode == NON_BLOCKING) {
-        non_blocking_descriptor_t descriptor;
-        descriptor.appbuf.buf = (void *)buf_in;
-        descriptor.appbuf.len = size;
-        descriptor.callback = self->callback_for_non_blocking;
-        descriptor.direction = I2S_TX_TRANSFER;
-        // send the descriptor to the task that handles non-blocking mode
-        xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
-        return size;
-    } else { // blocking or asyncio mode
-        mp_buffer_info_t appbuf;
-        appbuf.buf = (void *)buf_in;
-        appbuf.len = size;
-        size_t num_bytes_written = copy_appbuf_to_dma(self, &appbuf);
-        return num_bytes_written;
-    }
-}
-
-STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t ret;
-    mp_uint_t flags = arg;
-    self->io_mode = ASYNCIO; // a call to ioctl() is an indication that asyncio is being used
-
-    if (request == MP_STREAM_POLL) {
-        ret = 0;
-
-        if (flags & MP_STREAM_POLL_RD) {
-            if (self->mode != (I2S_MODE_MASTER | I2S_MODE_RX)) {
-                *errcode = MP_EPERM;
-                return MP_STREAM_ERROR;
-            }
-
-            i2s_event_t i2s_event;
-
-            // check event queue to determine if a DMA buffer has been filled
-            // (which is an indication that at least one DMA buffer is available to be read)
-            // note:  timeout = 0 so the call is non-blocking
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_RX_DONE) {
-                    // getting here means that at least one DMA buffer is now full
-                    // indicating that audio samples can be read from the I2S object
-                    ret |= MP_STREAM_POLL_RD;
-                }
-            }
-        }
-
-        if (flags & MP_STREAM_POLL_WR) {
-            if (self->mode != (I2S_MODE_MASTER | I2S_MODE_TX)) {
-                *errcode = MP_EPERM;
-                return MP_STREAM_ERROR;
-            }
-
-            i2s_event_t i2s_event;
-
-            // check event queue to determine if a DMA buffer has been emptied
-            // (which is an indication that at least one DMA buffer is available to be written)
-            // note:  timeout = 0 so the call is non-blocking
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_TX_DONE) {
-                    // getting here means that at least one DMA buffer is now empty
-                    // indicating that audio samples can be written to the I2S object
-                    ret |= MP_STREAM_POLL_WR;
-                }
-            }
-        }
-    } else {
-        *errcode = MP_EINVAL;
-        ret = MP_STREAM_ERROR;
-    }
-
-    return ret;
-}
 
 MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_AUTO]);
 
