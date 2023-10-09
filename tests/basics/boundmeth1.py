@@ -3,17 +3,13 @@
 # uPy and CPython differ when printing a bound method, so just print the type
 print(type(repr([].append)))
 
-
 class A:
     def f(self):
         return 0
-
     def g(self, a):
         return a
-
     def h(self, a, b, c, d, e, f):
         return a + b + c + d + e + f
-
 
 # bound method with no extra args
 m = A().f
