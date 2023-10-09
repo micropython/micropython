@@ -120,7 +120,6 @@ set(MICROPY_SOURCE_PORT
     machine_adc.c
     machine_bitstream.c
     machine_i2c.c
-    machine_i2s.c
     machine_pin.c
     machine_rtc.c
     machine_spi.c
@@ -149,7 +148,6 @@ set(MICROPY_SOURCE_QSTR
     ${MICROPY_DIR}/shared/runtime/sys_stdio_mphal.c
     ${MICROPY_PORT_DIR}/machine_adc.c
     ${MICROPY_PORT_DIR}/machine_i2c.c
-    ${MICROPY_PORT_DIR}/machine_i2s.c
     ${MICROPY_PORT_DIR}/machine_pin.c
     ${MICROPY_PORT_DIR}/machine_rtc.c
     ${MICROPY_PORT_DIR}/machine_spi.c
