@@ -25,23 +25,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_i2s.c via MICROPY_PY_MACHINE_I2S_INCLUDEFILE.
 
-#include "py/obj.h"
-#include "py/runtime.h"
+#include <stdlib.h>
 #include "py/mphal.h"
-#include "py/misc.h"
 #include "py/stream.h"
-#include "py/objstr.h"
-#include "modmachine.h"
 #include "pin.h"
 #include "dma.h"
 
-#if MICROPY_HW_ENABLE_I2S
+#if MICROPY_PY_MACHINE_I2S
+
 // The I2S module has 3 modes of operation:
 //
 // Mode1:  Blocking
@@ -591,7 +585,7 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
 
 void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {
     uint32_t errorCode = HAL_I2S_GetError(hi2s);
-    printf("I2S Error = %ld\n", errorCode);
+    mp_printf(MICROPY_ERROR_PRINTER, "I2S Error = %ld\n", errorCode);
 }
 
 void HAL_I2S_RxCpltCallback(I2S_HandleTypeDef *hi2s) {
@@ -671,7 +665,7 @@ void HAL_I2S_TxHalfCpltCallback(I2S_HandleTypeDef *hi2s) {
     feed_dma(self, TOP_HALF);
 }
 
-STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     enum {
         ARG_sck,
@@ -839,9 +833,7 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         );
 }
 
-STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
-    uint8_t i2s_id = mp_obj_get_int(args[0]);
+STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     uint8_t i2s_id_zero_base = 0;
 
     if (0) {
@@ -870,24 +862,10 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     // align DMA buffer start to the cache line size (32 bytes)
     self->dma_buffer_dcache_aligned = (uint8_t *)((uint32_t)(self->dma_buffer + 0x1f) & ~0x1f);
 
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
-    machine_i2s_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
-
-    return MP_OBJ_FROM_PTR(self);
+    return self;
 }
 
-STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
-    machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
-    machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
-
-STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
+STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     if (self->ring_buffer_storage != NULL) {
         dma_deinit(self->dma_descr_tx);
         dma_deinit(self->dma_descr_rx);
@@ -906,10 +884,7 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
         m_free(self->ring_buffer_storage);
         self->ring_buffer_storage = NULL;
     }
-
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
 
 STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -989,25 +964,6 @@ STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_ma
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
 STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
-
-STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
-    // Methods
-    { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&machine_i2s_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write),           MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_i2s_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_i2s_irq_obj) },
-
-    // Static method
-    { MP_ROM_QSTR(MP_QSTR_shift),           MP_ROM_PTR(&machine_i2s_shift_obj) },
-
-    // Constants
-    { MP_ROM_QSTR(MP_QSTR_RX),              MP_ROM_INT(I2S_MODE_MASTER_RX) },
-    { MP_ROM_QSTR(MP_QSTR_TX),              MP_ROM_INT(I2S_MODE_MASTER_TX) },
-    { MP_ROM_QSTR(MP_QSTR_STEREO),          MP_ROM_INT(STEREO) },
-    { MP_ROM_QSTR(MP_QSTR_MONO),            MP_ROM_INT(MONO) },
-};
-MP_DEFINE_CONST_DICT(machine_i2s_locals_dict, machine_i2s_locals_dict_table);
 
 STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -1107,23 +1063,6 @@ STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     return ret;
 }
 
-STATIC const mp_stream_p_t i2s_stream_p = {
-    .read = machine_i2s_stream_read,
-    .write = machine_i2s_stream_write,
-    .ioctl = machine_i2s_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_i2s_type,
-    MP_QSTR_I2S,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_i2s_make_new,
-    print, machine_i2s_print,
-    protocol, &i2s_stream_p,
-    locals_dict, &machine_i2s_locals_dict
-    );
-
 MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[MICROPY_HW_MAX_I2S]);
 
-#endif // MICROPY_HW_ENABLE_I2S
+#endif // MICROPY_PY_MACHINE_I2S

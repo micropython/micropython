@@ -131,7 +131,7 @@ static const DMA_InitTypeDef dma_init_struct_spi_i2c = {
 };
 #endif
 
-#if MICROPY_HW_ENABLE_I2S
+#if MICROPY_PY_MACHINE_I2S
 // Default parameters to dma_init() for i2s; Channel and Direction
 // vary depending on the peripheral instance so they get passed separately
 static const DMA_InitTypeDef dma_init_struct_i2s = {
@@ -314,7 +314,7 @@ const dma_descr_t dma_I2C_3_RX = { DMA1_Stream2, DMA_CHANNEL_3, dma_id_2,   &dma
 const dma_descr_t dma_I2C_2_RX = { DMA1_Stream2, DMA_CHANNEL_7, dma_id_2,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_RX = { DMA1_Stream3, DMA_CHANNEL_0, dma_id_3,   &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_2_TX = { DMA1_Stream4, DMA_CHANNEL_0, dma_id_4,   &dma_init_struct_spi_i2c };
-#if MICROPY_HW_ENABLE_I2S
+#if MICROPY_PY_MACHINE_I2S
 const dma_descr_t dma_I2S_2_RX = { DMA1_Stream3, DMA_CHANNEL_0, dma_id_3,   &dma_init_struct_i2s };
 const dma_descr_t dma_I2S_2_TX = { DMA1_Stream4, DMA_CHANNEL_0, dma_id_4,   &dma_init_struct_i2s };
 #endif
@@ -342,7 +342,7 @@ const dma_descr_t dma_SDMMC_2 = { DMA2_Stream0, DMA_CHANNEL_11, dma_id_8,  &dma_
 const dma_descr_t dma_DCMI_0 = { DMA2_Stream1, DMA_CHANNEL_1, dma_id_9,  &dma_init_struct_dcmi };
 #endif
 const dma_descr_t dma_SPI_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma_init_struct_spi_i2c };
-#if MICROPY_HW_ENABLE_I2S
+#if MICROPY_PY_MACHINE_I2S
 const dma_descr_t dma_I2S_1_RX = { DMA2_Stream2, DMA_CHANNEL_3, dma_id_10,  &dma_init_struct_i2s };
 #endif
 #if ENABLE_SDIO
@@ -356,7 +356,7 @@ const dma_descr_t dma_SPI_5_TX = { DMA2_Stream4, DMA_CHANNEL_2, dma_id_12,  &dma
 const dma_descr_t dma_SPI_4_TX = { DMA2_Stream4, DMA_CHANNEL_5, dma_id_12,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_6_TX = { DMA2_Stream5, DMA_CHANNEL_1, dma_id_13,  &dma_init_struct_spi_i2c };
 const dma_descr_t dma_SPI_1_TX = { DMA2_Stream5, DMA_CHANNEL_3, dma_id_13,  &dma_init_struct_spi_i2c };
-#if MICROPY_HW_ENABLE_I2S
+#if MICROPY_PY_MACHINE_I2S
 const dma_descr_t dma_I2S_1_TX = { DMA2_Stream5, DMA_CHANNEL_3, dma_id_13,  &dma_init_struct_i2s };
 #endif
 // #if defined(STM32F7) && defined(SDMMC2) && ENABLE_SDIO
