@@ -206,6 +206,9 @@
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/nrf/modules/machine/soft_pwm.c"
 #endif
 
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/nrf/modules/machine/uart.c"
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
+
 #ifndef MICROPY_PY_MACHINE_TIMER_NRF
 #define MICROPY_PY_MACHINE_TIMER_NRF (1)
 #endif

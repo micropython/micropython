@@ -321,7 +321,6 @@ endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/modmachine.c \
-	machine/uart.c \
 	machine/spi.c \
 	machine/i2c.c \
 	machine/pin.c \

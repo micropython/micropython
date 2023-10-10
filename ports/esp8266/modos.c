@@ -30,6 +30,7 @@
 #include "py/objtuple.h"
 #include "py/objstr.h"
 #include "extmod/misc.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
@@ -53,10 +54,10 @@ STATIC mp_obj_t mp_os_urandom(mp_obj_t num) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_urandom_obj, mp_os_urandom);
 
 void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t stream_attached) {
-    if (mp_obj_get_type(stream_attached) == &pyb_uart_type) {
+    if (mp_obj_get_type(stream_attached) == &machine_uart_type) {
         ++uart_attached_to_dupterm;
     }
-    if (mp_obj_get_type(stream_detached) == &pyb_uart_type) {
+    if (mp_obj_get_type(stream_detached) == &machine_uart_type) {
         --uart_attached_to_dupterm;
     }
 }

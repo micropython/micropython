@@ -102,7 +102,6 @@ SRC_C += \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_spi.c \
-	machine_uart.c \
 	main.c \
 	modmachine.c \
 	modsamd.c \

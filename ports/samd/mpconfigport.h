@@ -116,6 +116,8 @@
 #ifndef MICROPY_PY_MACHINE_UART
 #define MICROPY_PY_MACHINE_UART             (1)
 #endif
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/samd/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
 #define MICROPY_PY_MACHINE_TIMER            (1)
 #define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
 #define MICROPY_PY_OS_DUPTERM               (3)
