@@ -7,7 +7,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Anonymous <noreply@weblate.org>\n"
+"Last-Translator: Vladimír Smitka <vladimir.smitka@lynt.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
 "MIME-Version: 1.0\n"
@@ -1177,8 +1177,7 @@ msgstr "Alokace heapu při neběžícím VM."
 #: supervisor/shared/safe_mode.c
 msgid ""
 "Heap was corrupted because the stack was too small. Increase stack size."
-msgstr ""
-"Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
+msgstr "Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
