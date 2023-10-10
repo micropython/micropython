@@ -45,7 +45,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
-#if MICROPY_ESPNOW
+#if MICROPY_PY_ESPNOW
 #include "modespnow.h"
 #endif
 
@@ -77,7 +77,7 @@ STATIC void mp_reset(void) {
         mp_os_dupterm_obj.fun.var(2, args);
     }
 
-    #if MICROPY_ESPNOW
+    #if MICROPY_PY_ESPNOW
     espnow_deinit(mp_const_none);
     #endif
 
