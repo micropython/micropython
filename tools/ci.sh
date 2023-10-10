@@ -462,6 +462,15 @@ function ci_unix_standard_run_tests {
     ci_unix_run_tests_full_helper standard
 }
 
+function ci_unix_standard_v2_build {
+    ci_unix_build_helper VARIANT=standard MICROPY_PREVIEW_VERSION_2=1
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_standard_v2_run_tests {
+    ci_unix_run_tests_full_helper standard
+}
+
 function ci_unix_coverage_setup {
     sudo pip3 install setuptools
     sudo pip3 install pyelftools

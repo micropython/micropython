@@ -15,12 +15,22 @@ set(MICROPY_ROOT_POINTERS_SPLIT "${MICROPY_GENHDR_DIR}/root_pointers.split")
 set(MICROPY_ROOT_POINTERS_COLLECTED "${MICROPY_GENHDR_DIR}/root_pointers.collected")
 set(MICROPY_ROOT_POINTERS "${MICROPY_GENHDR_DIR}/root_pointers.h")
 
+if(NOT MICROPY_PREVIEW_VERSION_2)
+    set(MICROPY_PREVIEW_VERSION_2 0)
+endif()
+
 # Need to do this before extracting MICROPY_CPP_DEF below. Rest of frozen
 # manifest handling is at the end of this file.
 if(MICROPY_FROZEN_MANIFEST)
     target_compile_definitions(${MICROPY_TARGET} PUBLIC
         MICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
         MICROPY_MODULE_FROZEN_MPY=\(1\)
+    )
+endif()
+
+if(MICROPY_PREVIEW_VERSION_2)
+    target_compile_definitions(${MICROPY_TARGET} PUBLIC
+        MICROPY_PREVIEW_VERSION_2=\(1\)
     )
 endif()
 
