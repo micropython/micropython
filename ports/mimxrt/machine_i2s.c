@@ -741,27 +741,6 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_arg
     }
 }
 
-STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2S(id=%u,\n"
-        "sck="MP_HAL_PIN_FMT ",\n"
-        "ws="MP_HAL_PIN_FMT ",\n"
-        "sd="MP_HAL_PIN_FMT ",\n"
-        "mck="MP_HAL_PIN_FMT ",\n"
-        "mode=%u,\n"
-        "bits=%u, format=%u,\n"
-        "rate=%d, ibuf=%d)",
-        self->i2s_id,
-        mp_hal_pin_name(self->sck),
-        mp_hal_pin_name(self->ws),
-        mp_hal_pin_name(self->sd),
-        mp_hal_pin_name(self->mck),
-        self->mode,
-        self->bits, self->format,
-        self->rate, self->ibuf
-        );
-}
-
 STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     if (i2s_id < 1 || i2s_id > MICROPY_HW_I2S_NUM) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S(%d) does not exist"), i2s_id);

@@ -638,25 +638,6 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_arg
     dma_channel_start(self->dma_channel[0]);
 }
 
-STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2S(id=%u,\n"
-        "sck="MP_HAL_PIN_FMT ",\n"
-        "ws="MP_HAL_PIN_FMT ",\n"
-        "sd="MP_HAL_PIN_FMT ",\n"
-        "mode=%u,\n"
-        "bits=%u, format=%u,\n"
-        "rate=%d, ibuf=%d)",
-        self->i2s_id,
-        mp_hal_pin_name(self->sck),
-        mp_hal_pin_name(self->ws),
-        mp_hal_pin_name(self->sd),
-        self->mode,
-        self->bits, self->format,
-        self->rate, self->ibuf
-        );
-}
-
 STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
     if (i2s_id >= MAX_I2S_RP2) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));

@@ -280,6 +280,31 @@ STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self) {
 
 #endif // MICROPY_PY_MACHINE_I2S_RING_BUF
 
+STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "I2S(id=%u,\n"
+        "sck="MP_HAL_PIN_FMT ",\n"
+        "ws="MP_HAL_PIN_FMT ",\n"
+        "sd="MP_HAL_PIN_FMT ",\n"
+        #if MICROPY_PY_MACHINE_I2S_MCK
+        "mck="MP_HAL_PIN_FMT ",\n"
+        #endif
+        "mode=%u,\n"
+        "bits=%u, format=%u,\n"
+        "rate=%d, ibuf=%d)",
+        self->i2s_id,
+        mp_hal_pin_name(self->sck),
+        mp_hal_pin_name(self->ws),
+        mp_hal_pin_name(self->sd),
+        #if MICROPY_PY_MACHINE_I2S_MCK
+        mp_hal_pin_name(self->mck),
+        #endif
+        self->mode,
+        self->bits, self->format,
+        self->rate, self->ibuf
+        );
+}
+
 STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
     mp_int_t i2s_id = mp_obj_get_int(args[0]);
