@@ -33,8 +33,6 @@ Full Table of Contents
    design_guide
    porting
    common_hal
-   reference/mpyfiles.rst
-   reference/glossary.rst
 
 .. toctree::
    :maxdepth: 2
