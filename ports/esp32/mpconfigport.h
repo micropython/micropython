@@ -72,8 +72,8 @@
 #define MICROPY_GC_SPLIT_HEAP_AUTO          (1)
 
 // extended modules
-#ifndef MICROPY_ESPNOW
-#define MICROPY_ESPNOW                      (1)
+#ifndef MICROPY_PY_ESPNOW
+#define MICROPY_PY_ESPNOW                   (1)
 #endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)

@@ -33,7 +33,7 @@
 
 #include "py/runtime.h"
 
-#if MICROPY_ESPNOW
+#if MICROPY_PY_ESPNOW
 
 #include "c_types.h"
 #include "espnow.h"

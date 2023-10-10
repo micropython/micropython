@@ -60,7 +60,7 @@
 #include "extmod/modbluetooth.h"
 #endif
 
-#if MICROPY_ESPNOW
+#if MICROPY_PY_ESPNOW
 #include "modespnow.h"
 #endif
 
@@ -152,7 +152,7 @@ soft_reset_exit:
     mp_bluetooth_deinit();
     #endif
 
-    #if MICROPY_ESPNOW
+    #if MICROPY_PY_ESPNOW
     espnow_deinit(mp_const_none);
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif
