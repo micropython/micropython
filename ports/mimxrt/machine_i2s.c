@@ -613,39 +613,7 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
     return true;
 }
 
-STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-
-    enum {
-        ARG_sck,
-        ARG_ws,
-        ARG_sd,
-        ARG_mck,
-        ARG_mode,
-        ARG_bits,
-        ARG_format,
-        ARG_rate,
-        ARG_ibuf,
-    };
-
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_ws,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_sd,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mck,      MP_ARG_KW_ONLY | MP_ARG_OBJ,   {.u_obj = mp_const_none} },
-        { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_format,   MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_ibuf,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_pos_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    //
-    // ---- Check validity of arguments ----
-    //
-
+STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
     // is Mode valid?
     uint16_t i2s_mode = args[ARG_mode].u_int;
     if ((i2s_mode != (RX)) &&
@@ -672,6 +640,7 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_arg
     const machine_pin_obj_t *pin_sd = pin_find(args[ARG_sd].u_obj);
     uint16_t mapping_index;
     bool invalid_sd = true;
+
     if (lookup_gpio(pin_sd, SD, self->i2s_id, &mapping_index)) {
         if (i2s_mode == i2s_gpio_map[mapping_index].mode) {
             invalid_sd = false;
