@@ -1,3 +1,53 @@
+[project]
+name = "MicroPython_tools"
+description = 'MicroPython build tools'
+dynamic = ["version"]
+readme = "README.md"
+requires-python = ">=3.7"
+license = "MIT"
+keywords = []
+authors = [
+    { name = "Damien P. George", email = "dpg@nowhere.xyz" },
+    { name = "Jos Verlinde", email = "jos_verlinde@hotmail.com" },
+]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: MicroPython",
+]
+
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+tag-pattern = "(?P<version>v(\\d+).(\\d+).(\\d+))"
+raw-options = { version_scheme = "python-simplified-semver" } # 1.22.1.dev1+g551360320.d20231010
+
+[project.optional-dependencies]
+docs = ["sphinx~=7.2.6", "sphinxcontrib.jquery==4.1"]
+githooks = ["pre-commit>=3.4.0"]
+# Linters
+black = ["black>=23.1.0"]
+codespell = ["codespell>=2.0.0"]
+ruff = ["ruff>=0.0.243"]
+mypy = ["mypy>=1.0.0"]
+pyright = ["pyright"]
+# nested extras requires pip >= 21.2
+lint = [
+    "MicroPython_tools[black,codespell,ruff]",
+]
+# port build requirements
+port_stm32 = ["pyhy"]                     # only for encrypted mboot support
+port_esp32 = ["esptool>=3.0.0"]
+port_esp8266 = ["esptool>=3.0.0"]
+port_nrf = ["nrfutil>=6.0.0", "intelhex"]
+# native modules
+# https://github.com/micropython/micropython/blob/9f835df35e1628974437cdf87334667a9e2ce3c5/docs/develop/natmod.rst#L187
+native = ["pyelftools>=0.25"]
+
 [tool.black]
 line-length = 99
 
