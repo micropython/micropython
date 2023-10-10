@@ -329,7 +329,6 @@ SRC_C += \
 	fdcan.c \
 	pyb_can.c \
 	usb.c \
-	wdt.c \
 	eth.c \
 	gccollect.c \
 	help.c \

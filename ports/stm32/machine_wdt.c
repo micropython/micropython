@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2016-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,40 +24,28 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_wdt.c via MICROPY_PY_MACHINE_WDT_INCLUDEFILE.
 
-#include "py/runtime.h"
-#include "wdt.h"
+#include "py/mphal.h"
 
 #if defined(STM32H7)
 #define IWDG (IWDG1)
 #endif
 
-typedef struct _pyb_wdt_obj_t {
+typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
-} pyb_wdt_obj_t;
+} machine_wdt_obj_t;
 
-STATIC const pyb_wdt_obj_t pyb_wdt = {{&pyb_wdt_type}};
+STATIC const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
 
-STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    // parse arguments
-    enum { ARG_id, ARG_timeout };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_timeout, MP_ARG_INT, {.u_int = 5000} },
-    };
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_int_t id = args[ARG_id].u_int;
+STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
     if (id != 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("WDT(%d) doesn't exist"), id);
     }
 
-    // timeout is in milliseconds
-    mp_int_t timeout = args[ARG_timeout].u_int;
-
     // compute prescaler
+    int32_t timeout = timeout_ms;
     uint32_t prescaler;
     for (prescaler = 0; prescaler < 6 && timeout >= 512; ++prescaler, timeout /= 2) {
     }
@@ -86,26 +74,10 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // start the watch dog
     IWDG->KR = 0xcccc;
 
-    return MP_OBJ_FROM_PTR(&pyb_wdt);
+    return (machine_wdt_obj_t *)&machine_wdt;
 }
 
-STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self_in) {
-    (void)self_in;
+STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
+    (void)self;
     IWDG->KR = 0xaaaa;
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_wdt_feed_obj, pyb_wdt_feed);
-
-STATIC const mp_rom_map_elem_t pyb_wdt_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&pyb_wdt_feed_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(pyb_wdt_locals_dict, pyb_wdt_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    pyb_wdt_type,
-    MP_QSTR_WDT,
-    MP_TYPE_FLAG_NONE,
-    make_new, pyb_wdt_make_new,
-    locals_dict, &pyb_wdt_locals_dict
-    );

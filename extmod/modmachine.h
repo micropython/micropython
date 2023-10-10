@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_WDT_H
-#define MICROPY_INCLUDED_STM32_WDT_H
 
-extern const mp_obj_type_t pyb_wdt_type;
+#ifndef MICROPY_INCLUDED_EXTMOD_MODMACHINE_H
+#define MICROPY_INCLUDED_EXTMOD_MODMACHINE_H
 
-#endif // MICROPY_INCLUDED_STM32_WDT_H
+#include "py/obj.h"
+
+// A port must provide these types, but they are otherwise opaque.
+typedef struct _machine_wdt_obj_t machine_wdt_obj_t;
+
+// These classes correspond to machine.Type entries in the machine module.
+// Their Python bindings are implemented in extmod, and their implementation
+// is provided by a port.
+extern const mp_obj_type_t machine_i2c_type;
+extern const mp_obj_type_t machine_spi_type;
+extern const mp_obj_type_t machine_timer_type;
+extern const mp_obj_type_t machine_wdt_type;
+
+#endif // MICROPY_INCLUDED_EXTMOD_MODMACHINE_H

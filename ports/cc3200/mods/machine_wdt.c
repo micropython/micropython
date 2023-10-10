@@ -24,11 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_wdt.c via MICROPY_PY_MACHINE_WDT_INCLUDEFILE.
 
-#include "py/mpconfig.h"
-#include "py/obj.h"
-#include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "inc/hw_types.h"
@@ -40,8 +38,6 @@
 #include "prcm.h"
 #include "utils.h"
 #include "pybwdt.h"
-#include "mperror.h"
-
 
 /******************************************************************************
  DECLARE CONSTANTS
@@ -52,18 +48,18 @@
 /******************************************************************************
  DECLARE TYPES
  ******************************************************************************/
-typedef struct {
+typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
     bool    servers;
     bool    servers_sleeping;
     bool    simplelink;
     bool    running;
-} pyb_wdt_obj_t;
+} machine_wdt_obj_t;
 
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pyb_wdt_obj_t pyb_wdt_obj = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
+STATIC machine_wdt_obj_t machine_wdt_obj = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -74,39 +70,28 @@ void pybwdt_init0 (void) {
 }
 
 void pybwdt_srv_alive (void) {
-    pyb_wdt_obj.servers = true;
+    machine_wdt_obj.servers = true;
 }
 
 void pybwdt_srv_sleeping (bool state) {
-    pyb_wdt_obj.servers_sleeping = state;
+    machine_wdt_obj.servers_sleeping = state;
 }
 
 void pybwdt_sl_alive (void) {
-    pyb_wdt_obj.simplelink = true;
+    machine_wdt_obj.simplelink = true;
 }
 
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC const mp_arg_t pyb_wdt_init_args[] = {
-    { MP_QSTR_id,                             MP_ARG_OBJ,  {.u_obj = mp_const_none} },
-    { MP_QSTR_timeout,                        MP_ARG_INT,  {.u_int = 5000} },   // 5 s
-};
-STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    // check the arguments
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
-    mp_arg_val_t args[MP_ARRAY_SIZE(pyb_wdt_init_args)];
-    mp_arg_parse_all(n_args, all_args, &kw_args, MP_ARRAY_SIZE(args), pyb_wdt_init_args, args);
-
-    if (args[0].u_obj != mp_const_none && mp_obj_get_int(args[0].u_obj) > 0) {
+STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+    if (id != 0) {
         mp_raise_OSError(MP_ENODEV);
     }
-    uint timeout_ms = args[1].u_int;
     if (timeout_ms < PYBWDT_MIN_TIMEOUT_MS) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
-    if (pyb_wdt_obj.running) {
+    if (machine_wdt_obj.running) {
         mp_raise_OSError(MP_EPERM);
     }
 
@@ -116,10 +101,10 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
     // Unlock to be able to configure the registers
     MAP_WatchdogUnlock(WDT_BASE);
 
-#ifdef DEBUG
+    #ifdef DEBUG
     // make the WDT stall when the debugger stops on a breakpoint
     MAP_WatchdogStallEnable (WDT_BASE);
-#endif
+    #endif
 
     // set the watchdog timer reload value
     // the WDT trigger a system reset after the second timeout
@@ -128,33 +113,16 @@ STATIC mp_obj_t pyb_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_
 
     // start the timer. Once it's started, it cannot be disabled.
     MAP_WatchdogEnable(WDT_BASE);
-    pyb_wdt_obj.base.type = &pyb_wdt_type;
-    pyb_wdt_obj.running = true;
+    machine_wdt_obj.base.type = &machine_wdt_type;
+    machine_wdt_obj.running = true;
 
-    return (mp_obj_t)&pyb_wdt_obj;
+    return &machine_wdt_obj;
 }
 
-STATIC mp_obj_t pyb_wdt_feed(mp_obj_t self_in) {
-    pyb_wdt_obj_t *self = self_in;
+STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     if ((self->servers || self->servers_sleeping) && self->simplelink && self->running) {
         self->servers = false;
         self->simplelink = false;
         MAP_WatchdogIntClear(WDT_BASE);
     }
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_wdt_feed_obj, pyb_wdt_feed);
-
-STATIC const mp_rom_map_elem_t pybwdt_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&pyb_wdt_feed_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(pybwdt_locals_dict, pybwdt_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    pyb_wdt_type,
-    MP_QSTR_WDT,
-    MP_TYPE_FLAG_NONE,
-    make_new, pyb_wdt_make_new,
-    locals_dict, &pybwdt_locals_dict
-    );
-

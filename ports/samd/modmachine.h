@@ -49,7 +49,6 @@ extern const mp_obj_type_t machine_timer_type;
 #if MICROPY_PY_MACHINE_UART
 extern const mp_obj_type_t machine_uart_type;
 #endif
-extern const mp_obj_type_t machine_wdt_type;
 #if MICROPY_PY_MACHINE_RTC
 extern const mp_obj_type_t machine_rtc_type;
 #endif
