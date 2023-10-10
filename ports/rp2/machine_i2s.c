@@ -37,37 +37,8 @@
 #include "hardware/dma.h"
 #include "hardware/irq.h"
 
-// The I2S class has 3 modes of operation:
-//
-// Mode1:  Blocking
-// - readinto() and write() methods block until the supplied buffer is filled (read) or emptied (write)
-// - this is the default mode of operation
-//
-// Mode2:  Non-Blocking
-// - readinto() and write() methods return immediately
-// - buffer filling and emptying happens asynchronously to the main MicroPython task
-// - a callback function is called when the supplied buffer has been filled (read) or emptied (write)
-// - non-blocking mode is enabled when a callback is set with the irq() method
-// - the DMA IRQ handler is used to implement the asynchronous background operations
-//
-// Mode3: Asyncio
-// - implements the stream protocol
-// - asyncio mode is enabled when the ioctl() function is called
-// - the state of the internal ring buffer is used to detect that I2S samples can be read or written
-//
-// The samples contained in the app buffer supplied for the readinto() and write() methods have the following convention:
-//   Mono:  little endian format
-//   Stereo:  little endian format, left channel first
-//
-// I2S terms:
-//   "frame":  consists of two audio samples (Left audio sample + Right audio sample)
-//
-// Misc:
-// - for Mono configuration:
-//   - readinto method: samples are gathered from the L channel only
-//   - write method: every sample is output to both the L and R channels
-// - for readinto method the I2S hardware is read using 8-byte frames
-//   (this is standard for almost all I2S hardware, such as MEMS microphones)
+// Notes on this port's specific implementation of I2S:
+// - the DMA IRQ handler is used to implement the asynchronous background operations, for non-blocking mode
 // - the PIO is used to drive the I2S bus signals
 // - all sample data transfers use non-blocking DMA
 // - the DMA controller is configured with 2 DMA channels in chained mode
@@ -86,9 +57,6 @@
 #define NON_BLOCKING_RATE_MULTIPLIER (4)
 #define SIZEOF_NON_BLOCKING_COPY_IN_BYTES (SIZEOF_HALF_DMA_BUFFER_IN_BYTES * NON_BLOCKING_RATE_MULTIPLIER)
 
-#define NUM_I2S_USER_FORMATS (4)
-#define I2S_RX_FRAME_SIZE_IN_BYTES (8)
-
 #define SAMPLES_PER_FRAME (2)
 #define PIO_INSTRUCTIONS_PER_BIT (2)
 
@@ -96,17 +64,6 @@ typedef enum {
     RX,
     TX
 } i2s_mode_t;
-
-typedef enum {
-    MONO,
-    STEREO
-} format_t;
-
-typedef enum {
-    BLOCKING,
-    NON_BLOCKING,
-    ASYNCIO
-} io_mode_t;
 
 typedef enum {
     GP_INPUT = 0,
