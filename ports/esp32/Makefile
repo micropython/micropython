@@ -52,6 +52,10 @@ ifdef BOARD_VARIANT
 	IDFPY_FLAGS += -D MICROPY_BOARD_VARIANT=$(BOARD_VARIANT)
 endif
 
+ifdef MICROPY_PREVIEW_VERSION_2
+	IDFPY_FLAGS += -D MICROPY_PREVIEW_VERSION_2=1
+endif
+
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
 define RUN_IDF_PY

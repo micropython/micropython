@@ -79,19 +79,26 @@ STATIC const mp_rom_obj_tuple_t mp_sys_implementation_version_info_obj = {
     }
 };
 STATIC const MP_DEFINE_STR_OBJ(mp_sys_implementation_machine_obj, MICROPY_BANNER_MACHINE);
-#if MICROPY_PERSISTENT_CODE_LOAD
-#define SYS_IMPLEMENTATION_ELEMS \
-    MP_ROM_QSTR(MP_QSTR_micropython), \
-    MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
-    MP_ROM_PTR(&mp_sys_implementation_machine_obj), \
-    MP_ROM_INT(MPY_FILE_HEADER_INT)
-#else
-#define SYS_IMPLEMENTATION_ELEMS \
+#define SYS_IMPLEMENTATION_ELEMS_BASE \
     MP_ROM_QSTR(MP_QSTR_micropython), \
     MP_ROM_PTR(&mp_sys_implementation_version_info_obj), \
     MP_ROM_PTR(&mp_sys_implementation_machine_obj)
+
+#if MICROPY_PERSISTENT_CODE_LOAD
+#define SYS_IMPLEMENTATION_ELEMS__MPY \
+    , MP_ROM_INT(MPY_FILE_HEADER_INT)
+#else
+#define SYS_IMPLEMENTATION_ELEMS__MPY
 #endif
+
 #if MICROPY_PY_ATTRTUPLE
+#if MICROPY_PREVIEW_VERSION_2
+#define SYS_IMPLEMENTATION_ELEMS__V2 \
+    , MP_ROM_TRUE
+#else
+#define SYS_IMPLEMENTATION_ELEMS__V2
+#endif
+
 STATIC const qstr impl_fields[] = {
     MP_QSTR_name,
     MP_QSTR_version,
@@ -99,19 +106,30 @@ STATIC const qstr impl_fields[] = {
     #if MICROPY_PERSISTENT_CODE_LOAD
     MP_QSTR__mpy,
     #endif
+    #if MICROPY_PREVIEW_VERSION_2
+    MP_QSTR__v2,
+    #endif
 };
 STATIC MP_DEFINE_ATTRTUPLE(
     mp_sys_implementation_obj,
     impl_fields,
-    3 + MICROPY_PERSISTENT_CODE_LOAD,
-    SYS_IMPLEMENTATION_ELEMS
+    3 + MICROPY_PERSISTENT_CODE_LOAD + MICROPY_PREVIEW_VERSION_2,
+    SYS_IMPLEMENTATION_ELEMS_BASE
+    SYS_IMPLEMENTATION_ELEMS__MPY
+    SYS_IMPLEMENTATION_ELEMS__V2
     );
 #else
 STATIC const mp_rom_obj_tuple_t mp_sys_implementation_obj = {
     {&mp_type_tuple},
     3 + MICROPY_PERSISTENT_CODE_LOAD,
+    // Do not include SYS_IMPLEMENTATION_ELEMS__V2 because
+    // SYS_IMPLEMENTATION_ELEMS__MPY may be empty if
+    // MICROPY_PERSISTENT_CODE_LOAD is disabled, which means they'll share
+    // the same index. Cannot query _v2 if MICROPY_PY_ATTRTUPLE is
+    // disabled.
     {
-        SYS_IMPLEMENTATION_ELEMS
+        SYS_IMPLEMENTATION_ELEMS_BASE
+                                SYS_IMPLEMENTATION_ELEMS__MPY
     }
 };
 #endif

@@ -48,6 +48,10 @@ ifdef BOARD_VARIANT
 CMAKE_ARGS += -DMICROPY_BOARD_VARIANT=$(BOARD_VARIANT)
 endif
 
+ifdef MICROPY_PREVIEW_VERSION_2
+CMAKE_ARGS += -DMICROPY_PREVIEW_VERSION_2=1
+endif
+
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
 all:
