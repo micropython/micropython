@@ -109,7 +109,7 @@ typedef struct _non_blocking_descriptor_t {
 
 typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
-    i2s_port_t port;
+    i2s_port_t i2s_id;
     mp_hal_pin_obj_t sck;
     mp_hal_pin_obj_t ws;
     mp_hal_pin_obj_t sd;
@@ -255,7 +255,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
         }
 
         esp_err_t ret = i2s_read(
-            self->port,
+            self->i2s_id,
             self->transform_buffer,
             num_bytes_requested_from_dma,
             &num_bytes_received_from_dma,
@@ -315,7 +315,7 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
         delay = portMAX_DELAY;  // block until supplied buffer is emptied
     }
 
-    esp_err_t ret = i2s_write(self->port, appbuf->buf, appbuf->len, &num_bytes_written, delay);
+    esp_err_t ret = i2s_write(self->i2s_id, appbuf->buf, appbuf->len, &num_bytes_written, delay);
     check_esp_err(ret);
 
     if ((self->io_mode == ASYNCIO) && (num_bytes_written < appbuf->len)) {
@@ -444,17 +444,17 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_arg
     i2s_config.bits_per_chan = 0;
 
     // I2S queue size equals the number of DMA buffers
-    check_esp_err(i2s_driver_install(self->port, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
+    check_esp_err(i2s_driver_install(self->i2s_id, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
 
     // apply low-level workaround for bug in some ESP-IDF versions that swap
     // the left and right channels
     // https://github.com/espressif/esp-idf/issues/6625
     #if CONFIG_IDF_TARGET_ESP32S3
-    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_TX_MSB_SHIFT);
-    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_RX_MSB_SHIFT);
+    REG_SET_BIT(I2S_TX_CONF_REG(self->i2s_id), I2S_TX_MSB_SHIFT);
+    REG_SET_BIT(I2S_TX_CONF_REG(self->i2s_id), I2S_RX_MSB_SHIFT);
     #else
-    REG_SET_BIT(I2S_CONF_REG(self->port), I2S_TX_MSB_RIGHT);
-    REG_SET_BIT(I2S_CONF_REG(self->port), I2S_RX_MSB_RIGHT);
+    REG_SET_BIT(I2S_CONF_REG(self->i2s_id), I2S_TX_MSB_RIGHT);
+    REG_SET_BIT(I2S_CONF_REG(self->i2s_id), I2S_RX_MSB_RIGHT);
     #endif
 
     i2s_pin_config_t pin_config;
@@ -470,42 +470,22 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_arg
         pin_config.data_out_num = self->sd;
     }
 
-    check_esp_err(i2s_set_pin(self->port, &pin_config));
-}
-
-STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2S(id=%u,\n"
-        "sck="MP_HAL_PIN_FMT ",\n"
-        "ws="MP_HAL_PIN_FMT ",\n"
-        "sd="MP_HAL_PIN_FMT ",\n"
-        "mode=%u,\n"
-        "bits=%u, format=%u,\n"
-        "rate=%d, ibuf=%d)",
-        self->port,
-        mp_hal_pin_name(self->sck),
-        mp_hal_pin_name(self->ws),
-        mp_hal_pin_name(self->sd),
-        self->mode,
-        self->bits, self->format,
-        self->rate, self->ibuf
-        );
+    check_esp_err(i2s_set_pin(self->i2s_id, &pin_config));
 }
 
 STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
-    i2s_port_t port = i2s_id;
-    if (port < 0 || port >= I2S_NUM_AUTO) {
+    if (i2s_id < 0 || i2s_id >= I2S_NUM_AUTO) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
     machine_i2s_obj_t *self;
-    if (MP_STATE_PORT(machine_i2s_obj)[port] == NULL) {
+    if (MP_STATE_PORT(machine_i2s_obj)[i2s_id] == NULL) {
         self = m_new_obj_with_finaliser(machine_i2s_obj_t);
         self->base.type = &machine_i2s_type;
-        MP_STATE_PORT(machine_i2s_obj)[port] = self;
-        self->port = port;
+        MP_STATE_PORT(machine_i2s_obj)[i2s_id] = self;
+        self->i2s_id = i2s_id;
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[port];
+        self = MP_STATE_PORT(machine_i2s_obj)[i2s_id];
         machine_i2s_deinit(self);
     }
 
@@ -513,7 +493,7 @@ STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
 }
 
 STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
-    i2s_driver_uninstall(self->port);
+    i2s_driver_uninstall(self->i2s_id);
 
     if (self->non_blocking_mode_task != NULL) {
         vTaskDelete(self->non_blocking_mode_task);
