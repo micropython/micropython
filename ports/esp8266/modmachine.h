@@ -5,7 +5,6 @@
 
 extern const mp_obj_type_t pyb_pin_type;
 extern const mp_obj_type_t pyb_rtc_type;
-extern const mp_obj_type_t pyb_uart_type;
 extern const mp_obj_type_t pyb_i2c_type;
 extern const mp_obj_type_t machine_hspi_type;
 

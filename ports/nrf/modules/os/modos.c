@@ -34,11 +34,11 @@
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "modules/os/microbitfs.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
 #include "genhdr/mpversion.h"
-#include "uart.h"
 
 #if MICROPY_HW_ENABLE_RNG
 #include "drivers/rng.h"

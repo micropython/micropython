@@ -123,7 +123,6 @@ set(MICROPY_SOURCE_PORT
     machine_rtc.c
     machine_spi.c
     machine_timer.c
-    machine_uart.c
     main.c
     modmachine.c
     modrp2.c

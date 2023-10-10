@@ -60,8 +60,6 @@ typedef struct _machine_spi_obj_t {
     size_t rxlen;
 } machine_spi_obj_t;
 
-extern Sercom *sercom_instance[];
-
 void common_spi_irq_handler(int spi_id) {
     // handle Sercom IRQ RXC
     machine_spi_obj_t *self = MP_STATE_PORT(sercom_table[spi_id]);

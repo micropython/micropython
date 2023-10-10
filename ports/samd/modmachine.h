@@ -40,9 +40,6 @@ extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_spi_type;
 #endif
 extern const mp_obj_type_t machine_timer_type;
-#if MICROPY_PY_MACHINE_UART
-extern const mp_obj_type_t machine_uart_type;
-#endif
 #if MICROPY_PY_MACHINE_RTC
 extern const mp_obj_type_t machine_rtc_type;
 #endif

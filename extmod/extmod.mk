@@ -13,6 +13,7 @@ SRC_EXTMOD_C += \
 	extmod/machine_signal.c \
 	extmod/machine_spi.c \
 	extmod/machine_timer.c \
+	extmod/machine_uart.c \
 	extmod/machine_wdt.c \
 	extmod/modasyncio.c \
 	extmod/modbinascii.c \

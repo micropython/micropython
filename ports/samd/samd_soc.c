@@ -128,3 +128,28 @@ void samd_init(void) {
     machine_rtc_start(false);
     #endif
 }
+
+#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+
+Sercom *sercom_instance[] = SERCOM_INSTS;
+MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
+
+// Common Sercom functions used by all Serial devices
+void sercom_enable(Sercom *uart, int state) {
+    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
+    // Wait for the Registers to update.
+    while (uart->USART.SYNCBUSY.bit.ENABLE) {
+    }
+}
+
+void sercom_deinit_all(void) {
+    for (int i = 0; i < SERCOM_INST_NUM; i++) {
+        Sercom *uart = sercom_instance[i];
+        uart->USART.INTENCLR.reg = 0xff;
+        sercom_register_irq(i, NULL);
+        sercom_enable(uart, 0);
+        MP_STATE_PORT(sercom_table[i]) = NULL;
+    }
+}
+
+#endif

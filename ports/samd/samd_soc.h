@@ -30,6 +30,8 @@
 #include "sam.h"
 #include "clock_config.h"
 
+extern Sercom *sercom_instance[];
+
 void samd_init(void);
 void samd_main(void);
 

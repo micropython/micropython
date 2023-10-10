@@ -182,4 +182,4 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
     }
 }
 
-MP_REGISTER_ROOT_POINTER(struct _pyb_uart_obj_t *pyb_stdio_uart);
+MP_REGISTER_ROOT_POINTER(struct _machine_uart_obj_t *pyb_stdio_uart);

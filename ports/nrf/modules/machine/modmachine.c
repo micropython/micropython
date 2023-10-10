@@ -39,7 +39,6 @@
 #include "lib/oofatfs/diskio.h"
 #include "gccollect.h"
 #include "pin.h"
-#include "uart.h"
 #include "spi.h"
 #include "i2c.h"
 #include "timer.h"

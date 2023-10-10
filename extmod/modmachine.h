@@ -65,10 +65,29 @@
 #define MICROPY_PY_MACHINE_ADC_READ (0)
 #endif
 
+// Whether to enable the UART.sendbreak() method.
+// Requires a port to implement mp_machine_uart_sendbreak().
+#ifndef MICROPY_PY_MACHINE_UART_SENDBREAK
+#define MICROPY_PY_MACHINE_UART_SENDBREAK (0)
+#endif
+
+// Whether to enable the UART.readchar() and UART.writechar() methods.
+// Requires a port to implement mp_machine_uart_readchar() and mp_machine_uart_writechar().
+#ifndef MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (0)
+#endif
+
+// Whether to enable the UART.irq() method.
+// Requires a port to implement mp_machine_uart_irq().
+#ifndef MICROPY_PY_MACHINE_UART_IRQ
+#define MICROPY_PY_MACHINE_UART_IRQ (0)
+#endif
+
 // A port must provide these types, but they are otherwise opaque.
 typedef struct _machine_adc_obj_t machine_adc_obj_t;
 typedef struct _machine_i2s_obj_t machine_i2s_obj_t;
 typedef struct _machine_pwm_obj_t machine_pwm_obj_t;
+typedef struct _machine_uart_obj_t machine_uart_obj_t;
 typedef struct _machine_wdt_obj_t machine_wdt_obj_t;
 
 // These classes correspond to machine.Type entries in the machine module.
@@ -80,6 +99,7 @@ extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_timer_type;
+extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_wdt_type;
 
 #endif // MICROPY_INCLUDED_EXTMOD_MODMACHINE_H

@@ -38,6 +38,7 @@
 #include "py/stackctrl.h"
 #include "py/gc.h"
 #include "py/compile.h"
+#include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 #include "readline.h"
 #include "gccollect.h"

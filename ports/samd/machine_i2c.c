@@ -71,8 +71,6 @@ typedef struct _machine_i2c_obj_t {
     uint8_t *buf;
 } machine_i2c_obj_t;
 
-extern Sercom *sercom_instance[];
-
 STATIC void i2c_send_command(Sercom *i2c, uint8_t command) {
     i2c->I2CM.CTRLB.bit.CMD = command;
     while (i2c->I2CM.SYNCBUSY.bit.SYSOP) {
