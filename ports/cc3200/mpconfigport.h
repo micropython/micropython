@@ -120,6 +120,8 @@
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME     (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS                (1)
 #define MICROPY_PY_TIME_INCLUDEFILE                 "ports/cc3200/mods/modtime.c"
+#define MICROPY_PY_MACHINE_WDT                      (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE          "ports/cc3200/mods/machine_wdt.c"
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)

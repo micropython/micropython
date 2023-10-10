@@ -10,7 +10,6 @@ typedef enum {
 } wake_type_t;
 
 extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_wdt_type;
 extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_touchpad_type;
 extern const mp_obj_type_t machine_adc_type;

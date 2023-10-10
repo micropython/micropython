@@ -205,7 +205,6 @@ SRC_C += \
 	machine_sdcard.c \
 	machine_spi.c \
 	machine_uart.c \
-	machine_wdt.c \
 	main.c \
 	mbedtls/mbedtls_port.c \
 	mimxrt_flash.c \

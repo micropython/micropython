@@ -31,6 +31,7 @@
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "drivers/dht/dht.h"
 #include "shared/runtime/pyexec.h"
 #include "modmachine.h"
@@ -261,7 +262,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
     #endif
+    #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
+    #endif
     #if MICROPY_PY_MACHINE_RTC
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) },
     #endif
