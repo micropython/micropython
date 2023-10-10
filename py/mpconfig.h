@@ -53,21 +53,6 @@
 // You can override any of the options below using mpconfigport.h file
 // located in a directory of your port.
 
-// mpconfigport.h is a file containing configuration settings for a
-// particular port. mpconfigport.h is actually a default name for
-// such config, and it can be overridden using MP_CONFIGFILE preprocessor
-// define (you can do that by passing CFLAGS_EXTRA='-DMP_CONFIGFILE="<file.h>"'
-// argument to make when using standard MicroPython makefiles).
-// This is useful to have more than one config per port, for example,
-// release vs debug configs, etc. Note that if you switch from one config
-// to another, you must rebuild from scratch using "-B" switch to make.
-
-#ifdef MP_CONFIGFILE
-#include MP_CONFIGFILE
-#else
-#include <mpconfigport.h>
-#endif
-
 // Is this a CircuitPython build?
 #ifndef CIRCUITPY
 #define CIRCUITPY 0
@@ -85,6 +70,15 @@
 #define MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES (40)
 // Enable everything (e.g. coverage)
 #define MICROPY_CONFIG_ROM_LEVEL_EVERYTHING (50)
+
+// mpconfigport.h is a file containing configuration settings for a
+// particular port. mpconfigport.h is actually a default name for
+// such config, and it can be overridden using MP_CONFIGFILE preprocessor
+// define (you can do that by passing CFLAGS_EXTRA='-DMP_CONFIGFILE="<file.h>"'
+// argument to make when using standard MicroPython makefiles).
+// This is useful to have more than one config per port, for example,
+// release vs debug configs, etc. Note that if you switch from one config
+// to another, you must rebuild from scratch using "-B" switch to make.
 
 #ifdef MP_CONFIGFILE
 #include MP_CONFIGFILE
