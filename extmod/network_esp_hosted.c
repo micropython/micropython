@@ -204,6 +204,13 @@ static mp_obj_t network_esp_hosted_ifconfig(size_t n_args, const mp_obj_t *args)
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_esp_hosted_ifconfig_obj, 1, 2, network_esp_hosted_ifconfig);
 
+static mp_obj_t network_esp_hosted_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    esp_hosted_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    void *netif = esp_hosted_wifi_get_netif(self->itf);
+    return mod_network_nic_ipconfig(netif, n_args - 1, args + 1, kwargs);
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_esp_hosted_ipconfig_obj, 1, network_esp_hosted_ipconfig);
+
 static mp_obj_t network_esp_hosted_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     esp_hosted_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -299,6 +306,7 @@ static const mp_rom_map_elem_t network_esp_hosted_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_disconnect),          MP_ROM_PTR(&network_esp_hosted_disconnect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected),         MP_ROM_PTR(&network_esp_hosted_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig),            MP_ROM_PTR(&network_esp_hosted_ifconfig_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ipconfig),            MP_ROM_PTR(&network_esp_hosted_ipconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_config),              MP_ROM_PTR(&network_esp_hosted_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_status),              MP_ROM_PTR(&network_esp_hosted_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_OPEN),                MP_ROM_INT(ESP_HOSTED_SEC_OPEN) },

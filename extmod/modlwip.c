@@ -38,6 +38,7 @@
 #if MICROPY_PY_LWIP
 
 #include "shared/netutils/netutils.h"
+#include "modnetwork.h"
 
 #include "lwip/init.h"
 #include "lwip/tcp.h"
@@ -353,8 +354,12 @@ static void lwip_socket_free_incoming(lwip_socket_obj_t *socket) {
     }
 }
 
+#if LWIP_VERSION_MAJOR < 2
+#define IPADDR_STRLEN_MAX 46
+#endif
 mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
-    char *ipstr = ipaddr_ntoa(ip);
+    char ipstr[IPADDR_STRLEN_MAX];
+    ipaddr_ntoa_r(ip, ipstr, sizeof(ipstr));
     mp_obj_t tuple[2] = {
         tuple[0] = mp_obj_new_str(ipstr, strlen(ipstr)),
         tuple[1] = mp_obj_new_int(port),
@@ -1750,7 +1755,11 @@ static mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
     state.status = 0;
 
     MICROPY_PY_LWIP_ENTER
+    #if LWIP_VERSION_MAJOR < 2
     err_t ret = dns_gethostbyname(host, (ip_addr_t *)&state.ipaddr, lwip_getaddrinfo_cb, &state);
+    #else
+    err_t ret = dns_gethostbyname_addrtype(host, (ip_addr_t *)&state.ipaddr, lwip_getaddrinfo_cb, &state, mp_mod_network_prefer_dns_use_ip_version == 4 ? LWIP_DNS_ADDRTYPE_IPV4_IPV6 : LWIP_DNS_ADDRTYPE_IPV6_IPV4);
+    #endif
     MICROPY_PY_LWIP_EXIT
 
     switch (ret) {
