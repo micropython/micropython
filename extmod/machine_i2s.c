@@ -61,6 +61,7 @@ STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self);
 STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id);
 STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self);
+STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self);
 
 // The port provides implementations of the above in this file.
 #include MICROPY_PY_MACHINE_I2S_INCLUDEFILE
@@ -308,6 +309,27 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
+
+// I2S.irq(handler)
+STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
+    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
+    }
+
+    if (handler != mp_const_none) {
+        self->io_mode = NON_BLOCKING;
+    } else {
+        self->io_mode = BLOCKING;
+    }
+
+    self->callback_for_non_blocking = handler;
+
+    mp_machine_i2s_irq_update(self);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
 
 // Shift() is typically used as a volume control.
 // shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB

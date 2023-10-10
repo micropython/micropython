@@ -686,21 +686,8 @@ STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
     }
 }
 
-STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
-    }
-
-    if (handler != mp_const_none) {
-        self->io_mode = NON_BLOCKING;
-    } else {
-        self->io_mode = BLOCKING;
-    }
-
-    self->callback_for_non_blocking = handler;
-    return mp_const_none;
+STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
+    (void)self;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
 
 MP_REGISTER_ROOT_POINTER(void *machine_i2s_obj[2]);
