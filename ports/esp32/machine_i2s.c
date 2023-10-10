@@ -572,68 +572,6 @@ STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
 
-// Shift() is typically used as a volume control.
-// shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB
-STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_buf, ARG_bits, ARG_shift};
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buf,    MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_bits,   MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_shift,  MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-    };
-
-    // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buf].u_obj, &bufinfo, MP_BUFFER_RW);
-
-    int16_t *buf_16 = bufinfo.buf;
-    int32_t *buf_32 = bufinfo.buf;
-
-    uint8_t bits = args[ARG_bits].u_int;
-    int8_t shift = args[ARG_shift].u_int;
-
-    uint32_t num_audio_samples;
-    switch (bits) {
-        case 16:
-            num_audio_samples = bufinfo.len / 2;
-            break;
-
-        case 32:
-            num_audio_samples = bufinfo.len / 4;
-            break;
-
-        default:
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
-            break;
-    }
-
-    for (uint32_t i = 0; i < num_audio_samples; i++) {
-        switch (bits) {
-            case 16:
-                if (shift >= 0) {
-                    buf_16[i] = buf_16[i] << shift;
-                } else {
-                    buf_16[i] = buf_16[i] >> abs(shift);
-                }
-                break;
-            case 32:
-                if (shift >= 0) {
-                    buf_32[i] = buf_32[i] << shift;
-                } else {
-                    buf_32[i] = buf_32[i] >> abs(shift);
-                }
-                break;
-        }
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
-
 MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_AUTO]);
 
 #endif // MICROPY_PY_MACHINE_I2S
