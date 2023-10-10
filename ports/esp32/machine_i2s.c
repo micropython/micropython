@@ -29,8 +29,6 @@
 
 #include "py/mphal.h"
 
-#if MICROPY_PY_MACHINE_I2S
-
 #include "driver/i2s.h"
 #include "soc/i2s_reg.h"
 #include "freertos/FreeRTOS.h"
@@ -38,38 +36,9 @@
 #include "freertos/queue.h"
 #include "esp_task.h"
 
-// The I2S module has 3 modes of operation:
-//
-// Mode1:  Blocking
-// - readinto() and write() methods block until the supplied buffer is filled (read) or emptied (write)
-// - this is the default mode of operation
-//
-// Mode2:  Non-Blocking
-// - readinto() and write() methods return immediately.
-// - buffer filling and emptying happens asynchronously to the main MicroPython task
-// - a callback function is called when the supplied buffer has been filled (read) or emptied (write)
-// - non-blocking mode is enabled when a callback is set with the irq() method
+// Notes on this port's specific implementation of I2S:
 // - a FreeRTOS task is created to implement the asynchronous background operations
 // - a FreeRTOS queue is used to transfer the supplied buffer to the background task
-//
-// Mode3: Asyncio
-// - implements the stream protocol
-// - asyncio mode is enabled when the ioctl() function is called
-// - the I2S event queue is used to detect that I2S samples can be read or written from/to DMA memory
-//
-// The samples contained in the app buffer supplied for the readinto() and write() methods have the following convention:
-//   Mono:  little endian format
-//   Stereo:  little endian format, left channel first
-//
-// I2S terms:
-//   "frame":  consists of two audio samples (Left audio sample + Right audio sample)
-//
-// Misc:
-// - for Mono configuration:
-//   - readinto method: samples are gathered from the L channel only
-//   - write method: every sample is output to both the L and R channels
-// - for readinto method the I2S hardware is read using 8-byte frames
-//   (this is standard for almost all I2S hardware, such as MEMS microphones)
 // - all sample data transfers use DMA
 
 #define I2S_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -81,20 +50,6 @@
 // with the app buffer.  It facilitates audio sample transformations.  e.g.  32-bits samples to 16-bit samples.
 // The size of 240 bytes is an engineering optimum that balances transfer performance with an acceptable use of heap space
 #define SIZEOF_TRANSFORM_BUFFER_IN_BYTES (240)
-
-#define NUM_I2S_USER_FORMATS (4)
-#define I2S_RX_FRAME_SIZE_IN_BYTES (8)
-
-typedef enum {
-    MONO,
-    STEREO
-} format_t;
-
-typedef enum {
-    BLOCKING,
-    NON_BLOCKING,
-    ASYNCIO
-} io_mode_t;
 
 typedef enum {
     I2S_TX_TRANSFER,
@@ -510,5 +465,3 @@ STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
 }
 
 MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_AUTO]);
-
-#endif // MICROPY_PY_MACHINE_I2S

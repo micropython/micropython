@@ -32,6 +32,52 @@
 
 #include "extmod/modmachine.h"
 
+// The I2S class has 3 modes of operation:
+//
+// Mode1:  Blocking
+// - readinto() and write() methods block until the supplied buffer is filled (read) or emptied (write)
+// - this is the default mode of operation
+//
+// Mode2:  Non-Blocking
+// - readinto() and write() methods return immediately
+// - buffer filling and emptying happens asynchronously to the main MicroPython task
+// - a callback function is called when the supplied buffer has been filled (read) or emptied (write)
+// - non-blocking mode is enabled when a callback is set with the irq() method
+// - implementation of asynchronous background operations is port specific
+//
+// Mode3: Asyncio
+// - implements the stream protocol
+// - asyncio mode is enabled when the ioctl() function is called
+// - the state of the internal ring buffer is used to detect that I2S samples can be read or written
+//
+// The samples contained in the app buffer supplied for the readinto() and write() methods have the following convention:
+//   Mono:  little endian format
+//   Stereo:  little endian format, left channel first
+//
+// I2S terms:
+//   "frame":  consists of two audio samples (Left audio sample + Right audio sample)
+//
+// Misc:
+// - for Mono configuration:
+//   - readinto method: samples are gathered from the L channel only
+//   - write method: every sample is output to both the L and R channels
+// - for readinto method the I2S hardware is read using 8-byte frames
+//   (this is standard for almost all I2S hardware, such as MEMS microphones)
+
+#define NUM_I2S_USER_FORMATS (4)
+#define I2S_RX_FRAME_SIZE_IN_BYTES (8)
+
+typedef enum {
+    MONO,
+    STEREO
+} format_t;
+
+typedef enum {
+    BLOCKING,
+    NON_BLOCKING,
+    ASYNCIO
+} io_mode_t;
+
 // Arguments for I2S() constructor and I2S.init().
 enum {
     ARG_sck,
