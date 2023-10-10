@@ -32,6 +32,21 @@
 
 #include "extmod/modmachine.h"
 
+// Arguments for I2S() constructor and I2S.init().
+enum {
+    ARG_sck,
+    ARG_ws,
+    ARG_sd,
+    #if MICROPY_PY_MACHINE_I2S_MCK
+    ARG_mck,
+    #endif
+    ARG_mode,
+    ARG_bits,
+    ARG_format,
+    ARG_rate,
+    ARG_ibuf,
+};
+
 #if MICROPY_PY_MACHINE_I2S_RING_BUF
 
 typedef struct _ring_buf_t {
@@ -58,7 +73,7 @@ STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self);
 #endif // MICROPY_PY_MACHINE_I2S_RING_BUF
 
 // The port must provide implementations of these low-level I2S functions.
-STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args);
 STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id);
 STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self);
 STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self);
@@ -280,6 +295,27 @@ STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self) {
 
 #endif // MICROPY_PY_MACHINE_I2S_RING_BUF
 
+MP_NOINLINE STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_ws,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_sd,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
+        #if MICROPY_PY_MACHINE_I2S_MCK
+        { MP_QSTR_mck,      MP_ARG_KW_ONLY | MP_ARG_OBJ,   {.u_obj = mp_const_none} },
+        #endif
+        { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_format,   MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+        { MP_QSTR_ibuf,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
+    };
+
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_pos_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_machine_i2s_init_helper(self, args);
+}
+
 STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2S(id=%u,\n"
@@ -313,7 +349,7 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
-    mp_machine_i2s_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
+    machine_i2s_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -322,7 +358,7 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_machine_i2s_deinit(self);
-    mp_machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
+    machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
