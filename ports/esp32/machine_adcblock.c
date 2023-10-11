@@ -157,7 +157,7 @@ STATIC mp_obj_t madcblock_connect(size_t n_pos_args, const mp_obj_t *pos_args, m
         mp_raise_TypeError(MP_ERROR_TEXT("too many positional args"));
     }
 
-    const madc_obj_t *adc = madc_search_helper(self, channel_id, gpio_id);
+    const machine_adc_obj_t *adc = madc_search_helper(self, channel_id, gpio_id);
     if (adc != NULL) {
         madc_init_helper(adc, 0, pos_args + n_pos_args, kw_args);
         return MP_OBJ_FROM_PTR(adc);

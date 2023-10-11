@@ -96,7 +96,6 @@ MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 SRC_C += \
 	mcu/$(MCU_SERIES_LOWER)/clock_config.c \
 	help.c \
-	machine_adc.c \
 	machine_bitstream.c \
 	machine_dac.c \
 	machine_i2c.c \

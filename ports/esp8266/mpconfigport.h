@@ -61,6 +61,9 @@
 #define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_LWIP_SOCK_RAW    (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_ADC      (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/esp8266/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)

@@ -319,7 +319,6 @@ SRC_C += \
 	uart.c \
 	gccollect.c \
 	help.c \
-	machine_adc.c \
 	machine_dac.c \
 	machine_i2c.c \
 	machine_spi.c \

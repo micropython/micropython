@@ -29,9 +29,6 @@
 #include "py/obj.h"
 #include "shared/timeutils/timeutils.h"
 
-#if MICROPY_PY_MACHINE_ADC
-extern const mp_obj_type_t machine_adc_type;
-#endif
 #if MICROPY_PY_MACHINE_DAC
 extern const mp_obj_type_t machine_dac_type;
 #endif

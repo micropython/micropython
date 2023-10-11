@@ -179,6 +179,7 @@
 #ifndef MICROPY_PY_MACHINE_ADC
 #define MICROPY_PY_MACHINE_ADC      (0)
 #endif
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/nrf/modules/machine/adc.c"
 
 #ifndef MICROPY_PY_MACHINE_I2C
 #define MICROPY_PY_MACHINE_I2C      (0)

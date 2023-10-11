@@ -25,7 +25,9 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
+
 #include "py/mphal.h"
 #include "ra_adc.h"
 
@@ -47,7 +49,18 @@ typedef struct {
 /******************************************************************************/
 // MicroPython bindings for machine.ADC
 
-const mp_obj_type_t machine_adc_type;
+#if defined(ADC_CHANNEL_VBAT)
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VBAT \
+    { MP_ROM_QSTR(MP_QSTR_CORE_VBAT), MP_ROM_INT(ADC_CHANNEL_VBAT) },
+#else
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VBAT
+#endif
+
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_VREF), MP_ROM_INT(ADC_CHANNEL_VREF) }, \
+    { MP_ROM_QSTR(MP_QSTR_CORE_VREF), MP_ROM_INT(ADC_CHANNEL_VREFINT) }, \
+    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) }, \
+    MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VBAT \
 
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
@@ -57,14 +70,14 @@ typedef struct _machine_adc_obj_t {
     uint32_t sample_time;
 } machine_adc_obj_t;
 
-STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t resolution = (uint8_t)ra_adc_get_resolution();
     mp_printf(print, "<ADC%u channel=%u>", resolution, self->channel);
 }
 
 // ADC(id)
-STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -97,40 +110,14 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_obj_t machine_adc_read(mp_obj_t self_in) {
-    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(ra_adc_read((uint32_t)(self->pin)));
+STATIC mp_int_t mp_machine_adc_read(machine_adc_obj_t *self) {
+    return ra_adc_read((uint32_t)(self->pin));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_obj, machine_adc_read);
 
-STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
-    const machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     mp_uint_t raw = (mp_uint_t)ra_adc_read((uint32_t)(self->pin));
     mp_int_t bits = (mp_int_t)ra_adc_get_resolution();
     // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)
     mp_uint_t u16 = raw << (16 - bits) | raw >> (2 * bits - 16);
-    return MP_OBJ_NEW_SMALL_INT(u16);
+    return u16;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
-
-STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&machine_adc_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_VREF), MP_ROM_INT(ADC_CHANNEL_VREF) },
-    { MP_ROM_QSTR(MP_QSTR_CORE_VREF), MP_ROM_INT(ADC_CHANNEL_VREFINT) },
-    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) },
-    #if defined(ADC_CHANNEL_VBAT)
-    { MP_ROM_QSTR(MP_QSTR_CORE_VBAT), MP_ROM_INT(ADC_CHANNEL_VBAT) },
-    #endif
-};
-STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_adc_type,
-    MP_QSTR_ADC,
-    MP_TYPE_FLAG_NONE,
-    make_new, machine_adc_make_new,
-    locals_dict, &machine_adc_locals_dict,
-    print, machine_adc_print
-    );
