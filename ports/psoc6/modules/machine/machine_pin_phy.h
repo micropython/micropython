@@ -26,8 +26,11 @@ machine_pin_phy_obj_t *pin_phy_alloc(mp_obj_t addr, machine_pin_phy_func_t func)
 machine_pin_phy_obj_t *pin_phy_realloc(mp_obj_t addr, machine_pin_phy_func_t func);
 void pin_phy_free(machine_pin_phy_obj_t *obj);
 
+void mod_pin_phy_deinit(void);
+
 // Function Prototypes to support interaction between c<->py
 int pin_find(mp_obj_t obj);
+mp_obj_t pin_name_by_addr(mp_obj_t pin);
 int pin_addr_by_name(mp_obj_t obj);
 
 #define PIN_P0_0  CYHAL_GET_GPIO(CYHAL_PORT_0, 0)// !< Port 0 Pin 0

@@ -126,8 +126,13 @@ machine_pin_phy_obj_t machine_pin_phy_obj[] = {
 int pin_find(mp_obj_t pin) {
     int wanted_pin = -1;
     if (mp_obj_is_small_int(pin)) {
-        // Pin defined by the index of pin table
-        wanted_pin = mp_obj_get_int(pin);
+        int pin_addr = mp_obj_get_int(pin);
+        for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_phy_obj); i++) {
+            if (machine_pin_phy_obj[i].addr == pin_addr) {
+                wanted_pin = i;
+                break;
+            }
+        }
     } else if (mp_obj_is_str(pin)) {
         // Search by name
         size_t slen;
@@ -145,6 +150,15 @@ int pin_find(mp_obj_t pin) {
     }
 
     return wanted_pin;
+}
+
+mp_obj_t pin_name_by_addr(mp_obj_t pin) {
+    if (mp_obj_is_int(pin)) {
+        const char *name = machine_pin_phy_obj[pin_find(pin)].name;
+        return mp_obj_new_str(name, strlen(name));
+    } else {
+        return NULL; // expecting a int as input
+    }
 }
 
 // helper function to translate pin_name(string) into machine_pin_io_obj_t->pin_addr
@@ -200,11 +214,12 @@ machine_pin_phy_obj_t *pin_phy_realloc(mp_obj_t pin_name, machine_pin_phy_func_t
 }
 
 void pin_phy_free(machine_pin_phy_obj_t *pin_phy) {
-    // machine_pin_phy_func_t current_func = pin_phy->allocated_func;
     pin_phy->allocated_func = PIN_PHY_FUNC_NONE;
+}
 
-    // TODO: each module should provide its own instance deinitialization
-    // We can not just free the physical_pin, without deiniting its corresponding
-    // peripheral object
-    // machine_mod_deinit[func](pin_phy);
+
+void mod_pin_phy_deinit(void) {
+    for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_phy_obj); i++) {
+        pin_phy_free(&machine_pin_phy_obj[i]);
+    }
 }

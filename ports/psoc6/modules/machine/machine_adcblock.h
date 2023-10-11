@@ -17,7 +17,7 @@ typedef struct _machine_adc_obj_t machine_adc_obj_t; /* Forward declaration of a
 
 typedef struct _machine_adcblock_obj_t {
     mp_obj_base_t base;
-    cyhal_adc_t adc_block_obj;
+    cyhal_adc_t adc_obj;
     uint8_t id;
     uint8_t bits;
     machine_adc_obj_t *channel[ADC_BLOCK_CHANNEL_MAX];
@@ -30,5 +30,5 @@ typedef struct
     uint32_t pin;
 }adc_block_channel_pin_map_t;
 
-void adcblock_deinit(void);
+void mod_adc_block_deinit(void);
 #endif // MICROPY_INCLUDED_MACHINE_ADCBLOCK_H

@@ -24,7 +24,8 @@ typedef struct _machine_pin_io_obj_t {
 #define MAX_PIN_IO MP_ARRAY_SIZE(machine_pin_phy_obj)
 machine_pin_io_obj_t *pin_io[MAX_PIN_IO] = {NULL};
 
-static inline machine_pin_io_obj_t *pin_io_allocate(void) {
+static inline machine_pin_io_obj_t *pin_io_allocate(mp_obj_t pin_name) {
+    machine_pin_phy_obj_t *pin_phy = pin_phy_realloc(pin_name, PIN_PHY_FUNC_DIO);
     uint16_t i;
     for (i = 0; i < MAX_PIN_IO; i++) {
         if (pin_io[i] == NULL) {
@@ -32,7 +33,18 @@ static inline machine_pin_io_obj_t *pin_io_allocate(void) {
         }
     }
     pin_io[i] = mp_obj_malloc(machine_pin_io_obj_t, &machine_pin_type);
+    pin_io[i]->pin_phy = pin_phy;
+
     return pin_io[i];
+}
+
+static inline void pin_io_free(machine_pin_io_obj_t *pin) {
+    pin_phy_free(pin->pin_phy);
+    for (uint16_t i = 0; i < MAX_PIN_IO; i++) {
+        if (pin_io[i] == pin) {
+            pin_io[i] = NULL;
+        }
+    }
 }
 
 // Pin.print()
@@ -217,14 +229,10 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
 
     mp_arg_check_num(n_args, n_kw, 1, 6, true);
 
-    machine_pin_phy_obj_t *pin_phy = pin_phy_realloc(args[0], PIN_PHY_FUNC_DIO);
-
-    machine_pin_io_obj_t *self = pin_io_allocate();
+    machine_pin_io_obj_t *self = pin_io_allocate(args[0]);
     if (self == NULL) {
         return mp_const_none;
     }
-
-    self->pin_phy = pin_phy;
 
     // go into param arg parsing if args apart from "id" are provided (for ex. pin.Mode, pin.PULL etc)
     if (n_args > 1 || n_kw > 0) {
@@ -274,11 +282,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_obj_init_obj, 1, machine_pin_obj_init);
 STATIC mp_obj_t machine_pin_obj_deinit(mp_obj_t self_in) {
     machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyhal_gpio_free(self->pin_phy->addr);
+    pin_io_free(self);
 
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_deinit_obj, machine_pin_obj_deinit);
-
 
 // Pin.toggle()
 STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
@@ -334,6 +342,14 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),               MP_ROM_INT(GPIO_PULL_DOWN) }
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
+
+void mod_pin_deinit() {
+    for (uint8_t i = 0; i < MAX_PIN_IO; i++) {
+        if (pin_io[i] != NULL) {
+            machine_pin_obj_deinit(pin_io[i]);
+        }
+    }
+}
 
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;

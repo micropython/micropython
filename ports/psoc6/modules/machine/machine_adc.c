@@ -12,31 +12,15 @@
 #include "cyhal.h"
 #include "cy_pdl.h"
 
-#define IS_GPIO_VALID_ADC_PIN(gpio) ((gpio == CYHAL_NC_PIN_VALUE) || ((gpio >= 80) && (gpio <= 87)))
+extern machine_adcblock_obj_t *adc_block_obj_find(mp_obj_t pin);
+extern machine_adcblock_obj_t *adc_block_obj_init(mp_obj_t pin);
+extern machine_adc_obj_t *adc_block_channel_find(machine_adcblock_obj_t *adc_block, mp_obj_t pin);
+extern machine_adc_obj_t *adc_block_channel_alloc(machine_adcblock_obj_t *adc_block, mp_obj_t pin);
+extern void adc_block_channel_free(machine_adcblock_obj_t *acd_block, machine_adc_obj_t *channel);
 
-extern int16_t adc_block_get_block_id_for_pin(uint32_t pin);
-extern machine_adc_obj_t *adc_block_retrieve_adc_obj_for_pin(machine_adcblock_obj_t *adc_block, uint32_t pin);
-extern machine_adcblock_obj_t *adc_block_init_helper(uint8_t adc_id, uint8_t bits);
-extern machine_adc_obj_t *adc_block_allocate_new_channel_for_pin(machine_adcblock_obj_t *adc_block, uint32_t pin);
+void adc_obj_init(machine_adc_obj_t *adc, machine_adcblock_obj_t *adc_block, mp_obj_t pin_name, uint32_t sampling_time) {
+    machine_pin_phy_obj_t *adc_pin_phy = pin_phy_realloc(pin_name, PIN_PHY_FUNC_ADC);
 
-/******************************************************************************/
-// MicroPython bindings for machine.ADC
-
-const mp_obj_type_t machine_adc_type;
-
-// Private helper function to check if ADC Block ID is valid
-static inline bool _is_gpio_valid_adc_pin(uint32_t pin) {
-    if ((pin == CYHAL_NC_PIN_VALUE) || ((pin >= 80) && (pin <= 87))) {
-        return true;
-    }
-
-    return false;
-}
-
-// Public helper function to handle new ADC channel creation and initialization
-machine_adc_obj_t *adc_create_and_init_new_channel_obj(machine_adcblock_obj_t *adc_block, uint32_t pin, uint32_t sampling_time) {
-
-    machine_adc_obj_t *adc_channel = adc_block_allocate_new_channel_for_pin(adc_block, pin);
     const cyhal_adc_channel_config_t channel_config =
     {
         .enable_averaging = false,
@@ -44,47 +28,45 @@ machine_adc_obj_t *adc_create_and_init_new_channel_obj(machine_adcblock_obj_t *a
         .enabled = true
     };
 
-    cy_rslt_t status = cyhal_adc_channel_init_diff(&(adc_channel->adc_chan_obj), &(adc_block->adc_block_obj), pin, CYHAL_ADC_VNEG, &channel_config);
+    cy_rslt_t status = cyhal_adc_channel_init_diff(&(adc->adc_chan_obj), &(adc_block->adc_obj), adc_pin_phy->addr, CYHAL_ADC_VNEG, &channel_config);
     if (status != CY_RSLT_SUCCESS) {
         mp_raise_TypeError(MP_ERROR_TEXT("ADC Channel Initialization failed!"));
     }
 
-    adc_channel->pin = pin;
-    adc_channel->block = adc_block;
-    adc_channel->sample_ns = sampling_time;
-
-    return adc_channel;
+    adc->pin_phy = adc_pin_phy;
+    adc->block = adc_block;
+    adc->sample_ns = sampling_time;
 }
 
-// Main helper function to create and initialize ADC
-machine_adc_obj_t *adc_init_helper(uint32_t sampling_time, uint32_t pin) {
-    if (!_is_gpio_valid_adc_pin(pin)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Invalid ADC Pin"));
+void adc_obj_deinit(machine_adc_obj_t *adc) {
+    cyhal_adc_channel_free(&(adc->adc_chan_obj));
+    pin_phy_free(adc->pin_phy);
+}
+
+machine_adc_obj_t *machine_adc_make_init(uint32_t sampling_time, mp_obj_t pin_name) {
+    machine_adc_obj_t *adc;
+
+    machine_adcblock_obj_t *adc_block = adc_block_obj_find(pin_name);
+    if (adc_block == NULL) {
+        adc_block = adc_block_obj_init(pin_name);
+    } else {
+        adc = adc_block_channel_find(adc_block, pin_name);
+        if (adc != NULL) {
+            adc->sample_ns = sampling_time;
+            return adc;
+        }
     }
 
-    int16_t adc_block_id = adc_block_get_block_id_for_pin(pin);
+    adc = adc_block_channel_alloc(adc_block, pin_name);
+    adc_obj_init(adc, adc_block, pin_name, sampling_time);
 
-    if (adc_block_id == -1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("No associated ADC Block for specified pin!"));
-    }
-
-    // Initialize ADC Block
-    machine_adcblock_obj_t *adc_block = adc_block_init_helper(adc_block_id, DEFAULT_ADC_BITS);
-
-    // Retrieve associated channel (ADC obj) for pin
-    machine_adc_obj_t *o = adc_block_retrieve_adc_obj_for_pin(adc_block, pin);
-
-    if (o == NULL) {
-        o = adc_create_and_init_new_channel_obj(adc_block, pin, sampling_time);
-    }
-
-    return o;
+    return adc;
 }
 
 // machine_adc_print()
 STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "<ADC Pin=%u, ADCBlock_id=%d, sampling_time_ns=%ld>", self->pin, self->block->id, self->sample_ns);
+    mp_printf(print, "<ADC Pin=%u, ADCBlock_id=%d, sampling_time_ns=%ld>", self->pin_phy->addr, self->block->id, self->sample_ns);
 }
 
 // ADC(id)
@@ -102,15 +84,22 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, all_args + 1, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_pin_phy_obj_t *adc_pin_obj = pin_phy_alloc(all_args[0], PIN_PHY_FUNC_ADC);
-
     // Get user input sampling time
     uint32_t sampling_time = args[ARG_sample_ns].u_int;
 
-    machine_adc_obj_t *o = adc_init_helper(sampling_time, adc_pin_obj->addr);
+    machine_adc_obj_t *o = machine_adc_make_init(sampling_time, all_args[0]);
 
     return MP_OBJ_FROM_PTR(o);
 }
+
+// deinit()
+STATIC mp_obj_t machine_adc_deinit(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    adc_obj_deinit(self);
+    adc_block_channel_free(self->block, self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_deinit_obj, machine_adc_deinit);
 
 // block()
 STATIC mp_obj_t machine_adc_block(mp_obj_t self_in) {
@@ -134,6 +123,7 @@ STATIC mp_obj_t machine_adc_read_uv(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_uv_obj, machine_adc_read_uv);
 
 STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_adc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_uv), MP_ROM_PTR(&machine_adc_read_uv_obj) },
     { MP_ROM_QSTR(MP_QSTR_block), MP_ROM_PTR(&machine_adc_block_obj) },
