@@ -220,7 +220,7 @@ void common_hal_socketpool_socketpool_raise_gaierror_noname(void) {
 
     mp_obj_t exc_args[] = {
         MP_OBJ_NEW_SMALL_INT(SOCKETPOOL_EAI_NONAME),
-        mp_obj_new_str_from_vstr(&mp_type_str, &vstr),
+        mp_obj_new_str_from_vstr(&vstr),
     };
     nlr_raise(mp_obj_new_exception_args(&mp_type_gaierror, MP_ARRAY_SIZE(exc_args), exc_args));
 }

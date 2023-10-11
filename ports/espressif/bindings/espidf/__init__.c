@@ -131,7 +131,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, mp_obj_exception_make_new,
     attr, mp_obj_exception_attr,
     parent, &mp_type_MemoryError
-};
+    );
 
 //| def get_total_psram() -> int:
 //|     """Returns the number of bytes of psram detected, or 0 if psram is not present or not configured"""
@@ -170,3 +170,5 @@ const mp_obj_module_t espidf_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&espidf_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module);

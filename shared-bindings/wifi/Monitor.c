@@ -1,4 +1,4 @@
-1/*
+/*
  * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)

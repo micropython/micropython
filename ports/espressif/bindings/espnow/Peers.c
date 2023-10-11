@@ -83,8 +83,7 @@ STATIC MP_DEFINE_CONST_DICT(espnow_peers_locals_dict, espnow_peers_locals_dict_t
 
 STATIC void espnow_peers_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
-    return list->base.type->print(print, self->list, kind);
+    return MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(self->list), print)(print, self->list, kind);
 }
 
 /******************************************************************************/
@@ -92,8 +91,7 @@ STATIC void espnow_peers_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
 
 STATIC mp_obj_t espnow_peers_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
-    return list->base.type->ext->unary_op(op, self->list);
+    return MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(self->list), unary_op)(op, self->list);
 }
 
 /******************************************************************************/
@@ -104,8 +102,7 @@ STATIC mp_obj_t espnow_peers_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t v
         return MP_OBJ_NULL; // op not supported
     }
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
-    return list->base.type->ext->subscr(self->list, index, value);
+    return MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(self->list), subscr)(self->list, index, value);
 }
 
 /******************************************************************************/
@@ -113,8 +110,7 @@ STATIC mp_obj_t espnow_peers_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t v
 
 STATIC mp_obj_t espnow_peers_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     espnow_peers_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
-    return list->base.type->ext->getiter(self->list, iter_buf);
+    return ((mp_getiter_fun_t)MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(self->list), iter))(self->list, iter_buf);
 }
 
 espnow_peers_obj_t *espnow_peers_new(void) {
