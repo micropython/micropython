@@ -185,7 +185,8 @@ GIT_SUBMODULES += lib/micropython-lib
 endif
 
 # to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h | $(MICROPY_MPYCROSS_DEPENDENCY)
+# CIRCUITPY: FROZEN_MANIFEST is constructed at build time
+$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h $(FROZEN_MANIFEST) | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
@@ -256,3 +257,9 @@ print-def:
 	@$(RM) -f __empty__.c
 
 -include $(OBJ:.o=.P)
+
+# CIRCUITPY addition
+# Print out the value of a make variable.
+# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
+print-%:
+	@echo $* = $($*)
