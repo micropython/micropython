@@ -263,8 +263,10 @@ soft_reset:
 
     #if MICROPY_VFS || MICROPY_MBFS || MICROPY_MODULE_FROZEN
     // run boot.py and main.py if they exist.
-    pyexec_file_if_exists("boot.py");
-    pyexec_file_if_exists("main.py");
+    ret = pyexec_file_if_exists("boot.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+        pyexec_file_if_exists("main.py");
+    }
     #endif
 
     for (;;) {

@@ -83,8 +83,8 @@ STATIC void mp_reset(void) {
 
     #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py", false);
-    pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    int ret = pyexec_file_if_exists("boot.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
         pyexec_file_if_exists("main.py");
     }
     #endif
