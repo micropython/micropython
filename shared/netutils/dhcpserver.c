@@ -32,6 +32,7 @@
 #include <string.h>
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "lwip/opt.h"
 
 #if LWIP_UDP
 

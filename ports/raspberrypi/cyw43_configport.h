@@ -30,66 +30,19 @@
 #include "py/mpconfig.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "extmod/modnetwork.h"
-#include "pendsv.h"
 
-#define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE "w43439A0_7_95_49_00_combined.h"
-#define CYW43_WIFI_NVRAM_INCLUDE_FILE   "wifi_nvram_43439.h"
-#define CYW43_IOCTL_TIMEOUT_US          (1000000)
-#define CYW43_SLEEP_MAX                 (10)
+#include "supervisor/port.h"
+
+#include "sdk/src/rp2_common/pico_cyw43_driver/include/cyw43_configport.h"
+
 #define CYW43_NETUTILS                  (1)
-#define CYW43_USE_OTP_MAC               (1)
 
-#define CYW43_EPERM                     MP_EPERM // Operation not permitted
-#define CYW43_EIO                       MP_EIO // I/O error
-#define CYW43_EINVAL                    MP_EINVAL // Invalid argument
-#define CYW43_ETIMEDOUT                 MP_ETIMEDOUT // Connection timed out
-
-#define CYW43_THREAD_ENTER              MICROPY_PY_LWIP_ENTER
-#define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
-#define CYW43_THREAD_LOCK_CHECK
-
-#define CYW43_HOST_NAME                 mod_network_hostname
-
-#define CYW43_SDPCM_SEND_COMMON_WAIT \
-    if (get_core_num() == 0) { \
-        cyw43_yield(); \
-    } \
-
-#define CYW43_DO_IOCTL_WAIT \
-    if (get_core_num() == 0) { \
-        cyw43_yield(); \
-    } \
-
-#define CYW43_ARRAY_SIZE(a)             MP_ARRAY_SIZE(a)
-
-#define CYW43_HAL_PIN_MODE_INPUT        MP_HAL_PIN_MODE_INPUT
-#define CYW43_HAL_PIN_MODE_OUTPUT       MP_HAL_PIN_MODE_OUTPUT
-#define CYW43_HAL_PIN_PULL_NONE         MP_HAL_PIN_PULL_NONE
-#define CYW43_HAL_PIN_PULL_UP           MP_HAL_PIN_PULL_UP
-#define CYW43_HAL_PIN_PULL_DOWN         MP_HAL_PIN_PULL_DOWN
-
-#define CYW43_HAL_MAC_WLAN0             MP_HAL_MAC_WLAN0
-
-// set in SDK board header
-#define CYW43_NUM_GPIOS                 CYW43_WL_GPIO_COUNT
-
-#define CYW43_POST_POLL_HOOK            cyw43_post_poll_hook();
-
-#define cyw43_hal_ticks_us              mp_hal_ticks_us
-#define cyw43_hal_ticks_ms              mp_hal_ticks_ms
-
-#define cyw43_hal_pin_obj_t             mp_hal_pin_obj_t
-#define cyw43_hal_pin_config            mp_hal_pin_config
-#define cyw43_hal_pin_read              mp_hal_pin_read
-#define cyw43_hal_pin_low               mp_hal_pin_low
-#define cyw43_hal_pin_high              mp_hal_pin_high
-
-#define cyw43_hal_get_mac               mp_hal_get_mac
-#define cyw43_hal_get_mac_ascii         mp_hal_get_mac_ascii
-#define cyw43_hal_generate_laa_mac      mp_hal_generate_laa_mac
-
-#define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
+#if CIRCUITPY_USB
+#include "supervisor/usb.h"
+#define CYW43_EVENT_POLL_HOOK usb_background();
+#else
+#define CYW43_EVENT_POLL_HOOK
+#endif
 
 void cyw43_post_poll_hook(void);
 extern volatile int cyw43_has_pending;
@@ -97,26 +50,9 @@ extern volatile int cyw43_has_pending;
 static inline void cyw43_yield(void) {
     uint32_t my_interrupts = save_and_disable_interrupts();
     if (!cyw43_has_pending) {
-        __WFI();
+        port_idle_until_interrupt();
     }
     restore_interrupts(my_interrupts);
 }
-
-static inline void cyw43_delay_us(uint32_t us) {
-    uint32_t start = mp_hal_ticks_us();
-    while (mp_hal_ticks_us() - start < us) {
-    }
-}
-
-static inline void cyw43_delay_ms(uint32_t ms) {
-    uint32_t us = ms * 1000;
-    int32_t start = mp_hal_ticks_us();
-    while (mp_hal_ticks_us() - start < us) {
-        cyw43_yield();
-        MICROPY_EVENT_POLL_HOOK_FAST;
-    }
-}
-
-#define CYW43_EVENT_POLL_HOOK MICROPY_EVENT_POLL_HOOK_FAST
 
 #endif // MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H

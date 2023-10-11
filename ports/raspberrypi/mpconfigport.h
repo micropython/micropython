@@ -56,7 +56,6 @@
 #include "py/circuitpy_mpconfig.h"
 
 #if CIRCUITPY_CYW43
-#include "pico/cyw43_arch.h"
 #define MICROPY_PY_LWIP_ENTER   cyw43_arch_lwip_begin();
 #define MICROPY_PY_LWIP_REENTER MICROPY_PY_LWIP_ENTER
 #define MICROPY_PY_LWIP_EXIT    cyw43_arch_lwip_end();
