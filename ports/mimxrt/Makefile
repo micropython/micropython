@@ -195,7 +195,6 @@ SRC_C += \
 	hal/pwm_backport.c \
 	help.c \
 	led.c \
-	machine_adc.c \
 	machine_bitstream.c \
 	machine_i2c.c \
 	machine_led.c \

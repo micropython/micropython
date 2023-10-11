@@ -24,15 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
-#include "py/nlr.h"
-#include "py/runtime.h"
 #include "py/mphal.h"
-
-#if MICROPY_PY_MACHINE_ADC
-
 #include "adc.h"
 
 #if NRF51
@@ -100,19 +95,23 @@ STATIC int adc_find(mp_obj_t id) {
     mp_raise_ValueError(MP_ERROR_TEXT("ADC doesn't exist"));
 }
 
-/// \method __str__()
-/// Return a string describing the ADC object.
-STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+/******************************************************************************/
+/* MicroPython bindings for machine API                                       */
+
+// These are ad-hoc legacy methods and need to be removed.
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&mp_machine_adc_value_obj) }, /* instance method */ \
+    { MP_ROM_QSTR(MP_QSTR_battery_level), MP_ROM_PTR(&mp_machine_adc_battery_level_obj) }, /* class method */ \
+
+// Return a string describing the ADC object.
+STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     machine_adc_obj_t *self = o;
 
     mp_printf(print, "ADC(%u)", self->id);
 }
 
-/******************************************************************************/
-/* MicroPython bindings for machine API                                       */
-
 // for make_new
-STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1) } },
@@ -172,8 +171,7 @@ int16_t machine_adc_value_read(machine_adc_obj_t * adc_obj) {
 }
 
 // read_u16()
-STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
-    machine_adc_obj_t *self = self_in;
+STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     int16_t raw = machine_adc_value_read(self);
     #if defined(NRF52_SERIES)
     // raw is signed but the channel is in single-ended mode and this method cannot return negative values
@@ -182,9 +180,8 @@ STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     }
     #endif
     // raw is an 8-bit value
-    return MP_OBJ_NEW_SMALL_INT(raw << 8 | raw);
+    return (raw << 8) | raw;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_read_u16_obj, machine_adc_read_u16);
 
 /// \method value()
 /// Read adc level.
@@ -282,25 +279,3 @@ mp_obj_t machine_adc_battery_level(void) {
     return MP_OBJ_NEW_SMALL_INT(batt_in_percent);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_adc_battery_level_obj, machine_adc_battery_level);
-
-STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
-    // instance methods
-    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&mp_machine_adc_read_u16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&mp_machine_adc_value_obj) },
-
-    // class methods
-    { MP_ROM_QSTR(MP_QSTR_battery_level), MP_ROM_PTR(&mp_machine_adc_battery_level_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_adc_type,
-    MP_QSTR_ADC,
-    MP_TYPE_FLAG_NONE,
-    make_new, machine_adc_make_new,
-    locals_dict, &machine_adc_locals_dict,
-    print, machine_adc_print
-    );
-
-#endif // MICROPY_PY_MACHINE_ADC

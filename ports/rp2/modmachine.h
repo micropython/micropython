@@ -3,7 +3,6 @@
 
 #include "py/obj.h"
 
-extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_rtc_type;

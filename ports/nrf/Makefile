@@ -324,7 +324,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/uart.c \
 	machine/spi.c \
 	machine/i2c.c \
-	machine/adc.c \
 	machine/pin.c \
 	machine/timer.c \
 	machine/rtcounter.c \
