@@ -90,13 +90,13 @@ void common_hal_memorymap_addressrange_construct(memorymap_addressrange_obj_t *s
     self->len = length;
 }
 
-uint32_t common_hal_memorymap_addressrange_get_length(const memorymap_addressrange_obj_t *self) {
+size_t common_hal_memorymap_addressrange_get_length(const memorymap_addressrange_obj_t *self) {
     return self->len;
 }
 
 
-bool common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_obj_t *self,
-    uint32_t start_index, uint8_t *values, uint32_t len) {
+void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_obj_t *self,
+    size_t start_index, uint8_t *values, size_t len) {
     uint8_t *address = self->start_address + start_index;
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
@@ -112,12 +112,10 @@ bool common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_ob
         memcpy(address, values, len);
     }
     #pragma GCC diagnostic pop
-
-    return true;
 }
 
 void common_hal_memorymap_addressrange_get_bytes(const memorymap_addressrange_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t *values) {
+    size_t start_index, size_t len, uint8_t *values) {
     uint8_t *address = self->start_address + start_index;
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"

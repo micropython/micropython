@@ -352,7 +352,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
-SRC_QSTR += $(HEADER_BUILD)/sdiodata.h
+QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/sdiodata.h
 OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/sioddata.h
 $(HEADER_BUILD)/sdiodata.h: tools/mksdiodata.py | $(HEADER_BUILD)
 	$(Q)$(PYTHON) $< > $@

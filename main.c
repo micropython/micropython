@@ -218,6 +218,10 @@ STATIC void stop_mp(void) {
     usb_background();
     #endif
 
+    // Set the qstr pool back to the const pools. The heap allocated ones will
+    // be overwritten.
+    qstr_reset();
+
     gc_deinit();
 }
 
@@ -237,6 +241,12 @@ void supervisor_execution_status(void) {
     } else {
         serial_write_compressed(translate("Done"));
     }
+}
+#endif
+
+#if CIRCUITPY_WATCHDOG
+pyexec_result_t *pyexec_result(void) {
+    return &_exec_result;
 }
 #endif
 
@@ -933,6 +943,11 @@ STATIC int run_repl(safe_mode_t safe_mode) {
 
     autoreload_suspend(AUTORELOAD_SUSPEND_REPL);
 
+    if (get_safe_mode() == SAFE_MODE_NONE) {
+        const char *const filenames[] = { "repl.py" };
+        (void)maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
+    }
+
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
     // won't. This simplifies pin sharing because they won't be in use when
@@ -1035,6 +1050,10 @@ int __attribute__((used)) main(void) {
     if (!filesystem_init(get_safe_mode() == SAFE_MODE_NONE, false)) {
         set_safe_mode(SAFE_MODE_NO_CIRCUITPY);
     }
+
+    // We maybe can't initialize the heap until here, because on espressif port we need to be able to check for reserved psram in settings.toml
+    // (but it's OK if this is a no-op due to the heap being initialized in port_init())
+    set_safe_mode(port_heap_init(get_safe_mode()));
 
     #if CIRCUITPY_ALARM
     // Record which alarm woke us up, if any.
@@ -1165,6 +1184,13 @@ void gc_collect(void) {
 MP_WEAK void port_gc_collect() {
 }
 
+// A port may initialize the heap in port_init but if it cannot (for instance
+// in espressif it must be done after CIRCUITPY is mounted) then it must provde
+// an implementation of this function.
+MP_WEAK safe_mode_t port_heap_init(safe_mode_t safe_mode_in) {
+    return safe_mode_in;
+}
+
 void NORETURN nlr_jump_fail(void *val) {
     reset_into_safe_mode(SAFE_MODE_NLR_JUMP_FAIL);
     while (true) {
@@ -1173,7 +1199,9 @@ void NORETURN nlr_jump_fail(void *val) {
 
 #ifndef NDEBUG
 static void NORETURN __fatal_error(const char *msg) {
+    #if CIRCUITPY_DEBUG == 0
     reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+    #endif
     while (true) {
     }
 }

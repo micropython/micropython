@@ -28,6 +28,9 @@
 #define MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H
 
 #include "py/obj.h"
+
+#include "shared-module/watchdog/__init__.h"
+
 #include "shared-bindings/watchdog/WatchDogMode.h"
 #include "shared-bindings/watchdog/WatchDogTimer.h"
 
@@ -36,9 +39,5 @@ struct _watchdog_watchdogtimer_obj_t {
     mp_float_t timeout;
     watchdog_watchdogmode_t mode;
 };
-
-// This needs to be called in order to disable the watchdog if it's set to
-// "RAISE". If set to "RESET", then the watchdog cannot be reset.
-void watchdog_reset(void);
 
 #endif // MICROPY_INCLUDED_NRF_COMMON_HAL_WATCHDOG_WATCHDOGTIMER_H

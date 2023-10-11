@@ -332,8 +332,9 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_stop_station_obj, wifi_radio_stop_station);
 //|
 //|         **Limitations:** On Espressif, ``authmode`` with a non-empty password must include
 //|         `wifi.AuthMode.PSK`, and one or both of `wifi.AuthMode.WPA` and `wifi.AuthMode.WPA2`.
-//|         On Pi Pico W, ``authmode`` is ignored; it is always ``(wifi.AuthMode.WPA2, wifi.AuthMode.PSK)`
-//|         with a non-empty password, or ``(wifi.AuthMode.OPEN,)`` when no password is given.
+//|         On Pi Pico W, ``authmode`` is ignored; it is always ``(wifi.AuthMode.WPA2, wifi.AuthMode.PSK)``
+//|         with a non-empty password, or ``(wifi.AuthMode.OPEN)``, when no password is given.
+//|         On Pi Pico W, the AP can be started and stopped only once per reboot.
 //|
 //|         The length of ``password`` must be 8-63 characters if it is ASCII,
 //|         or exactly 64 hexadecimal characters if it is the hex form of the 256-bit key.

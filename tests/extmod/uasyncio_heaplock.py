@@ -25,13 +25,10 @@ except RuntimeError:
     raise SystemExit
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 class TestStream:

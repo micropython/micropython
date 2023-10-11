@@ -1,13 +1,10 @@
-# Test uasyncio.gather() function, features that are not implemented.
+# Test asyncio.gather() function, featres that are not implemented.
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 async def foo():

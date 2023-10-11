@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PWMIO_PWMOUT_H
 
 #include "common-hal/microcontroller/Pin.h"
-#include "components/driver/include/driver/ledc.h"
+#include "components/driver/ledc/include/driver/ledc.h"
 
 typedef struct {
     mp_obj_base_t base;

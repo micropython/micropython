@@ -69,28 +69,23 @@ ADDITIONAL_MODULES = {
     "array": "CIRCUITPY_ARRAY",
     # always available, so depend on something that's always 1.
     "builtins": "CIRCUITPY",
+    "builtins.pow3": "CIRCUITPY_BUILTINS_POW3",
+    "busio.SPI": "CIRCUITPY_BUSIO_SPI",
+    "busio.UART": "CIRCUITPY_BUSIO_UART",
     "collections": "CIRCUITPY_COLLECTIONS",
     "fontio": "CIRCUITPY_DISPLAYIO",
     "io": "CIRCUITPY_IO",
+    "keypad.KeyMatrix": "CIRCUITPY_KEYPAD_KEYMATRIX",
+    "keypad.Keys": "CIRCUITPY_KEYPAD_KEYS",
+    "keypad.ShiftRegisterKeys": "CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS",
+    "os.getenv": "CIRCUITPY_OS_GETENV",
     "select": "MICROPY_PY_USELECT_SELECT",
-    "terminalio": "CIRCUITPY_DISPLAYIO",
     "sys": "CIRCUITPY_SYS",
+    "terminalio": "CIRCUITPY_DISPLAYIO",
     "usb": "CIRCUITPY_USB_HOST",
 }
 
-MODULES_NOT_IN_BINDINGS = [
-    "_asyncio",
-    "array",
-    "binascii",
-    "builtins",
-    "collections",
-    "errno",
-    "json",
-    "re",
-    "select",
-    "sys",
-    "ulab",
-]
+MODULES_NOT_IN_BINDINGS = [ "binascii", "errno", "json", "re", "ulab" ]
 
 FROZEN_EXCLUDES = ["examples", "docs", "tests", "utils", "conf.py", "setup.py"]
 """Files and dirs at the root of a frozen directory that should be ignored.
@@ -117,7 +112,7 @@ def get_bindings():
     bindings_modules = []
     for d in get_circuitpython_root_dir().glob("ports/*/bindings"):
         bindings_modules.extend(module.name for module in d.iterdir() if d.is_dir())
-    return shared_bindings_modules + bindings_modules + MODULES_NOT_IN_BINDINGS
+    return shared_bindings_modules + bindings_modules + MODULES_NOT_IN_BINDINGS + list(ADDITIONAL_MODULES.keys())
 
 
 def get_board_mapping():
@@ -175,9 +170,11 @@ def get_settings_from_makefile(port_dir, board_name):
     This means that the effect of all Makefile directives is taken
     into account, without having to re-encode the logic that sets them
     in this script, something that has proved error-prone
+
+    This list must explicitly include any setting queried by tools/ci_set_matrix.py.
     """
     contents = subprocess.run(
-        ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS"],
+        ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS", "print-SRC_SUPERVISOR"],
         encoding="utf-8",
         errors="replace",
         stdout=subprocess.PIPE,

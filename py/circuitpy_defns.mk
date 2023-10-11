@@ -296,6 +296,9 @@ endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
 endif
+ifeq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),1)
+SRC_PATTERNS += dotclockframebuffer/%
+endif
 ifeq ($(CIRCUITPY_RP2PIO),1)
 SRC_PATTERNS += rp2pio/%
 endif
@@ -435,6 +438,8 @@ SRC_COMMON_HAL_ALL = \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
+	dotclockframebuffer/DotClockFramebuffer.c \
+	dotclockframebuffer/__init__.c \
 	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
@@ -598,6 +603,7 @@ SRC_SHARED_MODULE_ALL = \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	dotclockframebuffer/__init__.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
@@ -660,6 +666,7 @@ SRC_SHARED_MODULE_ALL = \
 	usb/core/__init__.c \
 	usb/core/Device.c \
 	ustack/__init__.c \
+	watchdog/__init__.c \
 	zlib/__init__.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \

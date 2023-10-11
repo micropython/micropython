@@ -145,6 +145,11 @@ STATIC const mp_rom_map_elem_t task_queue_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_push), MP_ROM_PTR(&task_queue_push_obj) },
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&task_queue_pop_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&task_queue_remove_obj) },
+
+    // CIRCUITPYTHON: Remove these in CircuitPython 10.0.0
+    { MP_ROM_QSTR(MP_QSTR_push_head), MP_ROM_PTR(&task_queue_push_obj) },
+    { MP_ROM_QSTR(MP_QSTR_push_sorted), MP_ROM_PTR(&task_queue_push_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pop_head), MP_ROM_PTR(&task_queue_pop_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(task_queue_locals_dict, task_queue_locals_dict_table);
 
@@ -228,6 +233,14 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
 
+// CIRCUITPY provides __await__().
+STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+
+STATIC mp_obj_t task_await(mp_obj_t self_in) {
+    return task_getiter(self_in, NULL);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_await_obj, task_await);
+
 STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
@@ -246,6 +259,9 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[1] = self_in;
         } else if (attr == MP_QSTR_ph_key) {
             dest[0] = self->ph_key;
+        } else if (attr == MP_QSTR___await__) {
+            dest[0] = MP_OBJ_FROM_PTR(&task_await_obj);
+            dest[1] = self_in;
         }
     } else if (dest[1] != MP_OBJ_NULL) {
         // Store
@@ -320,6 +336,6 @@ const mp_obj_module_t mp_module_uasyncio = {
     .globals = (mp_obj_dict_t *)&mp_module_uasyncio_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__uasyncio, mp_module_uasyncio);
+MP_REGISTER_MODULE(MP_QSTR__asyncio, mp_module_uasyncio);
 
 #endif // MICROPY_PY_UASYNCIO

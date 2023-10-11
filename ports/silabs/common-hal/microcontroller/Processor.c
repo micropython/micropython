@@ -49,7 +49,7 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    return CMU_ClockFreqGet(cmuClock_HCLK);
+    return CMU_ClockFreqGet(cmuClock_SYSCLK);
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {

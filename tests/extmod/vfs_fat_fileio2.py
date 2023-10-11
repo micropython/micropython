@@ -1,12 +1,12 @@
 try:
-    import uerrno
-    import uos
+    import errno
+    import os
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 try:
-    uos.VfsFat
+    os.VfsFat
 except AttributeError:
     print("SKIP")
     raise SystemExit
@@ -40,39 +40,39 @@ class RAMFS:
 
 try:
     bdev = RAMFS(50)
-    uos.VfsFat.mkfs(bdev)
+    os.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
-vfs = uos.VfsFat(bdev)
-uos.mount(vfs, "/ramdisk")
-uos.chdir("/ramdisk")
+vfs = os.VfsFat(bdev)
+os.mount(vfs, "/ramdisk")
+os.chdir("/ramdisk")
 
 try:
     vfs.mkdir("foo_dir")
 except OSError as e:
-    print(e.errno == uerrno.EEXIST)
+    print(e.errno == errno.EEXIST)
 
 try:
     vfs.remove("foo_dir")
 except OSError as e:
-    print(e.errno == uerrno.EISDIR)
+    print(e.errno == errno.EISDIR)
 
 try:
     vfs.remove("no_file.txt")
 except OSError as e:
-    print(e.errno == uerrno.ENOENT)
+    print(e.errno == errno.ENOENT)
 
 try:
     vfs.rename("foo_dir", "/null/file")
 except OSError as e:
-    print(e.errno == uerrno.ENOENT)
+    print(e.errno == errno.ENOENT)
 
 try:
     vfs.rename("foo_dir", "foo_dir/inside_itself")
 except OSError as e:
-    print(e.errno == uerrno.EINVAL)
+    print(e.errno == errno.EINVAL)
 
 # file in dir
 with open("foo_dir/file-in-dir.txt", "w+t") as f:
@@ -88,7 +88,7 @@ with open("foo_dir/sub_file.txt", "w") as f:
 try:
     vfs.rmdir("foo_dir")
 except OSError as e:
-    print(e.errno == uerrno.EACCES)
+    print(e.errno == errno.EACCES)
 
 # trim full path
 vfs.rename("foo_dir/file-in-dir.txt", "foo_dir/file.txt")
@@ -117,5 +117,5 @@ try:
     f = open("large_file.txt", "wb")
     f.write(bytearray(bsize * free))
 except OSError as e:
-    print("ENOSPC:", e.errno == 28)  # uerrno.ENOSPC
+    print("ENOSPC:", e.errno == 28)  # errno.ENOSPC
 f.close()

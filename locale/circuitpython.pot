@@ -31,8 +31,8 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -89,13 +89,17 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -190,6 +194,10 @@ msgstr ""
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 #: shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
+msgstr ""
+
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
+msgid "%q must be <= %u"
 msgstr ""
 
 #: py/argcheck.c
@@ -448,8 +456,8 @@ msgstr ""
 msgid "A hardware interrupt channel is already in use"
 msgstr ""
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
 msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
@@ -459,7 +467,12 @@ msgstr ""
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 #: ports/nrf/common-hal/memorymap/AddressRange.c
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
+msgstr ""
+
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Address range wraps around"
 msgstr ""
 
 #: ports/espressif/common-hal/canio/CAN.c
@@ -665,11 +678,6 @@ msgstr ""
 msgid "Buffer is not a bytearray."
 msgstr ""
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr ""
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -687,6 +695,12 @@ msgstr ""
 #: shared-bindings/_bleio/PacketBuffer.c
 #, c-format
 msgid "Buffer too short by %d bytes"
+msgstr ""
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
 msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
@@ -1031,10 +1045,6 @@ msgstr ""
 msgid "Failed to write internal flash."
 msgstr ""
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr ""
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr ""
@@ -1095,8 +1105,6 @@ msgstr ""
 msgid "Generic Failure"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -1108,6 +1116,10 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
+msgstr ""
+
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
@@ -1157,10 +1169,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin state conflicts with initial out pin state"
-msgstr ""
-
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "Initialization failed due to lack of memory"
 msgstr ""
 
 #: shared-bindings/bitops/__init__.c
@@ -1224,6 +1232,7 @@ msgid "Invalid %q"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 #: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
@@ -1376,6 +1385,10 @@ msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
+msgstr ""
+
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
+msgid "Must provide 5/6/5 RGB pins"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
@@ -1756,6 +1769,10 @@ msgstr ""
 msgid "Polygon needs at least 3 points"
 msgstr ""
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr ""
@@ -1786,11 +1803,6 @@ msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
-msgstr ""
-
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
-msgid "RAISE mode is not implemented"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
@@ -1955,10 +1967,6 @@ msgstr ""
 msgid "Stereo right must be on PWM channel B"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr ""
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr ""
@@ -1981,10 +1989,6 @@ msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
 msgstr ""
 
 #: shared-module/audiomixer/MixerVoice.c
@@ -2127,6 +2131,10 @@ msgstr ""
 msgid "UUID value is not str, int or byte buffer"
 msgstr ""
 
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to access unaligned IO register"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
@@ -2136,11 +2144,6 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate the heap."
-msgstr ""
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
 msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
@@ -2161,18 +2164,8 @@ msgstr ""
 msgid "Unable to init parser"
 msgstr ""
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr ""
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
 msgstr ""
 
 #: ports/espressif/common-hal/mdns/Server.c
@@ -2180,12 +2173,12 @@ msgstr ""
 msgid "Unable to start mDNS query"
 msgstr ""
 
-#: shared-bindings/memorymap/AddressRange.c
-msgid "Unable to write to address."
-msgstr ""
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
+msgstr ""
+
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to write to read-only memory"
 msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c
@@ -2309,18 +2302,8 @@ msgstr ""
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr ""
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
 msgstr ""
 
 #: py/builtinhelp.c
@@ -2335,14 +2318,6 @@ msgstr ""
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr ""
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
 msgstr ""
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
@@ -2370,6 +2345,10 @@ msgstr ""
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
+msgstr ""
+
+#: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
+msgid "You pressed button DOWN at start up."
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -2578,8 +2557,7 @@ msgstr ""
 msgid "buffer slices must be of equal length"
 msgstr ""
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr ""
 
@@ -2976,10 +2954,6 @@ msgstr ""
 
 #: shared-bindings/random/__init__.c
 msgid "empty sequence"
-msgstr ""
-
-#: extmod/machine_bitstream.c
-msgid "encoding"
 msgstr ""
 
 #: py/objstr.c
@@ -3880,10 +3854,6 @@ msgstr ""
 msgid "pixel coordinates out of bounds"
 msgstr ""
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4013,10 +3983,6 @@ msgstr ""
 msgid "sleep length must be non-negative"
 msgstr ""
 
-#: extmod/ulab/code/ndarray.c
-msgid "slice step can't be zero"
-msgstr ""
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr ""
@@ -4122,10 +4088,7 @@ msgstr ""
 msgid "ticks interval overflow"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr ""
 
@@ -4232,7 +4195,8 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr ""
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr ""
 
@@ -4326,10 +4290,6 @@ msgstr ""
 msgid "value out of range of target"
 msgstr ""
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "watchdog not initialized"
-msgstr ""
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
 msgstr ""
@@ -4387,10 +4347,6 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "wrong output type"
-msgstr ""
-
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
 msgstr ""
 
 #: extmod/ulab/code/scipy/signal/signal.c

@@ -27,7 +27,7 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
 
-#include "components/driver/include/driver/gpio.h"
+#include "components/driver/gpio/include/driver/gpio.h"
 
 #include "components/hal/include/hal/gpio_hal.h"
 

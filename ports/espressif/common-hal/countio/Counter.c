@@ -30,6 +30,8 @@
 
 #include "py/runtime.h"
 
+#include "driver/gpio.h"
+
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
     claim_pin(pin);

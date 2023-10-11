@@ -34,6 +34,8 @@
 #include "shared-bindings/wifi/ScannedNetworks.h"
 #include "shared-bindings/wifi/Network.h"
 
+#include "esp_netif_types.h"
+
 // Event bits for the Radio event group.
 #define WIFI_SCAN_DONE_BIT BIT0
 #define WIFI_CONNECTED_BIT BIT1

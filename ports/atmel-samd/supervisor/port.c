@@ -388,13 +388,16 @@ void reset_port(void) {
     #if CIRCUITPY_BUSIO
     reset_sercoms();
     #endif
+
     #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
     audioout_reset();
     #endif
+
     #if CIRCUITPY_AUDIOBUSIO
     pdmin_reset();
     #endif
+
     #if CIRCUITPY_AUDIOBUSIO_I2SOUT
     i2sout_reset();
     #endif
@@ -406,14 +409,18 @@ void reset_port(void) {
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
     #endif
+
     eic_reset();
+
     #if CIRCUITPY_PULSEIO
     pulsein_reset();
     pulseout_reset();
     #endif
+
     #if CIRCUITPY_PWMIO
     pwmout_reset();
     #endif
+
     #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO || CIRCUITPY_FREQUENCYIO
     reset_timers();
     #endif
@@ -421,6 +428,10 @@ void reset_port(void) {
     #if CIRCUITPY_ANALOGIO
     analogin_reset();
     analogout_reset();
+    #endif
+
+    #if CIRCUITPY_WATCHDOG
+    watchdog_reset();
     #endif
 
     reset_gclks();

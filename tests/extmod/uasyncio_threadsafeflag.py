@@ -1,7 +1,7 @@
 # Test Event class
 
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -11,6 +11,7 @@ import micropython
 
 try:
     micropython.schedule
+    asyncio.ThreadSafeFlag
 except AttributeError:
     print("SKIP")
     raise SystemExit
@@ -18,7 +19,7 @@ except AttributeError:
 
 try:
     # Unix port can't select/poll on user-defined types.
-    import uselect as select
+    import select
 
     poller = select.poll()
     poller.register(asyncio.ThreadSafeFlag())

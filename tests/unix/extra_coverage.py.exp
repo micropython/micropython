@@ -48,19 +48,21 @@ RuntimeError:
 RuntimeError: 
 # repl
 ame__
-mport 
+port 
 
-builtins        micropython     __future__      _thread
-_uasyncio       aesio           array           audiocore
-audiomixer      bitmaptools     cexample        cmath
-collections     cppexample      displayio       gc
-math            qrio            rainbowio       struct
-synthio         traceback       ubinascii       uctypes
-uerrno          uhashlib        uheapq          uio
-ujson           ulab            uos             uplatform
-urandom         ure             uselect         usys
-utime           uzlib           zlib
-ime
+builtins        micropython     __future__      _asyncio
+_thread         aesio           array           audiocore
+audiomixer      binascii        bitmaptools     cexample
+cmath           collections     cppexample      displayio
+errno           gc              hashlib         heapq
+io              json            math            os
+platform        qrio            rainbowio       random
+re              select          struct          synthio
+sys             time            traceback       uctypes
+ulab            zlib
+me
+
+rainbowio       random
 
 argv            atexit          byteorder       exc_info
 executable      exit            getsizeof       implementation

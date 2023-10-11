@@ -170,13 +170,18 @@ STATIC mp_obj_t mod_uzlib_decompress(size_t n_args, const mp_obj_t *args) {
     decomp->source_limit = (byte *)bufinfo.buf + bufinfo.len;
 
     int st;
-    bool is_zlib = true;
+    mp_int_t wbits = 0;
 
-    if (n_args > 1 && MP_OBJ_SMALL_INT_VALUE(args[1]) < 0) {
-        is_zlib = false;
+    if (n_args > 1) {
+        wbits = MP_OBJ_SMALL_INT_VALUE(args[1]);
     }
 
-    if (is_zlib) {
+    if (wbits >= 16) {
+        st = uzlib_gzip_parse_header(decomp);
+        if (st < 0) {
+            goto error;
+        }
+    } else if (wbits >= 0) {
         st = uzlib_zlib_parse_header(decomp);
         if (st < 0) {
             goto error;
@@ -225,7 +230,7 @@ const mp_obj_module_t mp_module_uzlib = {
 };
 
 
-MP_REGISTER_MODULE(MP_QSTR_uzlib, mp_module_uzlib);
+MP_REGISTER_MODULE(MP_QSTR_zlib, mp_module_uzlib);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

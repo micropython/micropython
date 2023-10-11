@@ -34,12 +34,9 @@ msgstr ""
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
-"Please file an issue with your program at https://github.com/adafruit/"
-"circuitpython/issues."
+"Please file an issue with your program at github.com/adafruit/circuitpython/"
+"issues."
 msgstr ""
-"\n"
-"Bitte erstellen Sie ein Problem (Issue) für Ihr Programm unter https://"
-"github.com/adafruit/circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -101,13 +98,17 @@ msgstr ""
 "nicht %d"
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c
+#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
 #: ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -203,6 +204,10 @@ msgstr "%q muss 1 sein, wenn %q wahr ist"
 #: shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
 msgstr "%q muss <= %d sein"
+
+#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
+msgid "%q must be <= %u"
+msgstr ""
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -407,10 +412,6 @@ msgstr "'break' außerhalb einer Schleife"
 msgid "'continue' outside loop"
 msgstr "'continue' außerhalb einer Schleife"
 
-#: py/objgenerator.c
-msgid "'coroutine' object is not an iterator"
-msgstr "'coroutine' Objekt ist kein Iterator"
-
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
 msgstr "'data' erfordert mindestens zwei Argumente"
@@ -461,9 +462,9 @@ msgstr "3-arg pow() wird nicht unterstützt"
 msgid "A hardware interrupt channel is already in use"
 msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
 
-#: ports/espressif/common-hal/analogio/AnalogIn.c
-msgid "ADC2 is being used by WiFi"
-msgstr "ADC2 wird vom WiFi benutzt"
+#: ports/raspberrypi/common-hal/wifi/Radio.c
+msgid "AP could not be started"
+msgstr ""
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -472,8 +473,13 @@ msgstr "Die Adresse muss %d Bytes lang sein"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 #: ports/nrf/common-hal/memorymap/AddressRange.c
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Adressbereich nicht erlaubt"
+
+#: shared-bindings/memorymap/AddressRange.c
+msgid "Address range wraps around"
+msgstr ""
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -680,11 +686,6 @@ msgstr "Puffer-Elemente müssen 4 Bytes lang oder kürzer sein"
 msgid "Buffer is not a bytearray."
 msgstr "Der Buffer ist kein Byte-Array."
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
-#: shared-bindings/framebufferio/FramebufferDisplay.c
-msgid "Buffer is too small"
-msgstr "Der Puffer ist zu klein"
-
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
@@ -703,6 +704,12 @@ msgstr "Der Puffer muss ein vielfaches von 512 bytes sein"
 #, c-format
 msgid "Buffer too short by %d bytes"
 msgstr "Puffer um %d Bytes zu kurz"
+
+#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+#: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
+msgid "Buffer too small"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -1055,10 +1062,6 @@ msgstr "Mutex konnte nicht freigegeben werden. Status: 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Interner Flash konnte nicht geschrieben werden."
 
-#: supervisor/shared/safe_mode.c
-msgid "Fault detected by hardware."
-msgstr "Hardware hat Fehler festgestellt."
-
 #: py/moduerrno.c
 msgid "File exists"
 msgstr "Datei existiert"
@@ -1138,6 +1141,10 @@ msgstr "Gruppe schon benutzt"
 msgid "Half duplex SPI is not implemented"
 msgstr "Hald-Duplex SPI is tnicht implementiert"
 
+#: supervisor/shared/safe_mode.c
+msgid "Hard fault: memory access or instruction error."
+msgstr ""
+
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
 #: ports/stm/common-hal/busio/SPI.c ports/stm/common-hal/busio/UART.c
@@ -1191,10 +1198,6 @@ msgid "Initial set pin state conflicts with initial out pin state"
 msgstr ""
 "Anfänglicher Pin-Zustand steht im Widerspruch mit dem anfänglichen out-"
 "Zustand des Pins"
-
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "Initialization failed due to lack of memory"
-msgstr "Initialisierung aufgrund von Speichermangel fehlgeschlagen"
 
 #: shared-bindings/bitops/__init__.c
 #, c-format
@@ -1257,6 +1260,7 @@ msgid "Invalid %q"
 msgstr "Ungültiger %q"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 #: ports/mimxrt10xx/common-hal/microcontroller/Pin.c
 #: shared-bindings/microcontroller/Pin.c
 msgid "Invalid %q pin"
@@ -1411,6 +1415,10 @@ msgstr ""
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Muss eine %q Unterklasse sein."
+
+#: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
+msgid "Must provide 5/6/5 RGB pins"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
@@ -1799,6 +1807,10 @@ msgstr "und alle Module im Dateisystem\n"
 msgid "Polygon needs at least 3 points"
 msgstr "Polygone brauchen mindestens 3 Punkte"
 
+#: supervisor/shared/safe_mode.c
+msgid "Power dipped. Make sure you are providing enough power."
+msgstr ""
+
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
 msgstr "Präfix-Puffer muss sich auf dem Heap befinden"
@@ -1833,11 +1845,6 @@ msgstr "Programm zu lang"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
 msgstr "Pull wird nicht verwendet, wenn die Richtung output ist."
-
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
-msgid "RAISE mode is not implemented"
-msgstr "RAISE-Modus ist nicht implementiert"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
@@ -2005,10 +2012,6 @@ msgstr "Stereo links muss sich auf PWM-Kanal A befinden"
 msgid "Stereo right must be on PWM channel B"
 msgstr "Stereo rechts muss sich auf PWM-Kanal B befinden"
 
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Stopping AP is not supported."
-msgstr "Das Stoppen des AP wird nicht unterstützt."
-
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
 msgstr "Gib entweder monotonic_time oder epoch_time an"
@@ -2035,12 +2038,6 @@ msgstr ""
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
 msgstr "Die Länge von rgb_pins muss 6, 12, 18, 24 oder 30 betragen"
-
-#: supervisor/shared/safe_mode.c
-msgid "The power dipped. Make sure you are providing enough power."
-msgstr ""
-"Die Spannung ist eingebrochen. Stelle sicher, dass genügend Leistung "
-"verfügbar ist."
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2186,6 +2183,10 @@ msgstr "UUID string ist nicht 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 msgid "UUID value is not str, int or byte buffer"
 msgstr "Der UUID-Wert ist kein str-, int- oder Byte-Puffer"
 
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to access unaligned IO register"
+msgstr ""
+
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
@@ -2196,11 +2197,6 @@ msgstr "Konnte keine Buffer für Vorzeichenumwandlung allozieren"
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate the heap."
 msgstr "Keine Allokation auf dem Heap möglich."
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-msgstr "ADC-DMA-Controller konnte nicht konfiguriert werden, Fehlercode: %d"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2220,32 +2216,22 @@ msgstr "Konnte keinen freien GCLK finden"
 msgid "Unable to init parser"
 msgstr "Parser konnte nicht gestartet werden"
 
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-msgstr "ADC-DMA-Controller konnte nicht initialisiert werden, Fehlercode: %d"
-
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
 msgstr "Konnte Farbpalettendaten nicht lesen"
-
-#: ports/espressif/common-hal/analogbufio/BufferedIn.c
-#, c-format
-msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-msgstr "ADC-DMA-Controller konnte nicht gestartet werden, Fehlercode: %d"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
 msgstr "mDNS-Abfrage kann nicht gestartet werden"
 
-#: shared-bindings/memorymap/AddressRange.c
-msgid "Unable to write to address."
-msgstr "An die Adresse kann nicht geschrieben werden."
-
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
 msgstr "Schreiben in nvm nicht möglich."
+
+#: ports/raspberrypi/common-hal/memorymap/AddressRange.c
+msgid "Unable to write to read-only memory"
+msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -2373,23 +2359,11 @@ msgid "WARNING: Your code filename has two extensions\n"
 msgstr ""
 "WARNUNG: Der Dateiname deines Programms hat zwei Dateityperweiterungen\n"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr ""
 "WatchDogTimer kann nicht deinitialisiert werden, wenn der Modus auf RESET "
 "gesetzt ist"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer is not currently running"
-msgstr "WatchDogTimer läuft aktuell nicht"
-
-#: shared-bindings/watchdog/WatchDogTimer.c
-msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-msgstr ""
-"WatchDogTimer.mode kann nicht geändert werden, nachdem er auf WatchDogMode."
-"RESET gesetzt wurde"
 
 #: py/builtinhelp.c
 #, c-format
@@ -2409,14 +2383,6 @@ msgstr ""
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
 msgstr "Wi-Fi: "
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in access point mode."
-msgstr "Das Wifi ist im Accesspoint-Modus."
-
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Wifi is in station mode."
-msgstr "Das Wifi ist im Station-Modus."
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
@@ -2444,6 +2410,10 @@ msgstr "Beide Knöpfe wurden beim Starten gedrückt."
 #: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
 msgstr "Knopf A wurde beim Starten gedrückt."
+
+#: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
+msgid "You pressed button DOWN at start up."
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
@@ -2650,8 +2620,7 @@ msgstr "Die Puffergröße muss zum Format passen"
 msgid "buffer slices must be of equal length"
 msgstr "Puffersegmente müssen gleich lang sein"
 
-#: py/modstruct.c shared-bindings/struct/__init__.c
-#: shared-module/struct/__init__.c
+#: py/modstruct.c shared-module/struct/__init__.c
 msgid "buffer too small"
 msgstr "Puffer zu klein"
 
@@ -3038,7 +3007,7 @@ msgstr "leer"
 msgid "empty file"
 msgstr "Leere Datei"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c extmod/modutimeq.c
+#: extmod/moduasyncio.c extmod/moduheapq.c
 msgid "empty heap"
 msgstr "leerer heap"
 
@@ -3964,10 +3933,6 @@ msgstr "Parameter müssen Register im Bereich von r0 bis r3 sein"
 msgid "pixel coordinates out of bounds"
 msgstr "Pixelkoordinaten außerhalb der Grenzen"
 
-#: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
-msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-msgstr "pixel_shader muss displayio.Palette oder displayio.ColorConverter sein"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "Abfrage der Datei unter Win32 nicht verfügbar"
@@ -4008,10 +3973,6 @@ msgstr "pow() mit 3 Argumenten erfordert ganze Zahlen"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "pull masks conflict with direction masks"
 msgstr "Pull-Masken kollidieren mit Richtungsmasken"
-
-#: extmod/modutimeq.c
-msgid "queue overflow"
-msgstr "Warteschlangenüberlauf"
 
 #: py/parse.c
 msgid "raw f-strings are not supported"
@@ -4193,10 +4154,7 @@ msgstr "Syntaxfehler in JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "Syntaxfehler in uctypes Deskriptor"
 
-#: ports/atmel-samd/common-hal/watchdog/WatchDogTimer.c
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
-#: ports/raspberrypi/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "Das Zeitlimit hat den maximal zulässigen Wert überschritten"
 
@@ -4279,7 +4237,7 @@ msgstr "Typ '%q' ist kein akzeptierter Basis-Typ"
 msgid "type is not an acceptable base type"
 msgstr "Typ ist kein akzeptierter Basis-Typ"
 
-#: py/objgenerator.c py/runtime.c
+#: py/runtime.c
 msgid "type object '%q' has no attribute '%q'"
 msgstr "Typ-Objekt '%q' hat kein Attribut '%q'"
 
@@ -4305,7 +4263,8 @@ msgstr ""
 msgid "unexpected keyword argument"
 msgstr "unerwartetes Schlüsselwort-Argument"
 
-#: py/bc.c py/objnamedtuple.c shared-bindings/traceback/__init__.c
+#: py/argcheck.c py/bc.c py/objnamedtuple.c
+#: shared-bindings/traceback/__init__.c
 msgid "unexpected keyword argument '%q'"
 msgstr "unerwartetes Schlüsselwort-Argument '%q'"
 
@@ -4399,10 +4358,6 @@ msgstr "Wert muss in %d Byte(s) passen"
 msgid "value out of range of target"
 msgstr "Wert außerhalb des Zielbereiches"
 
-#: ports/espressif/common-hal/watchdog/WatchDogTimer.c
-msgid "watchdog not initialized"
-msgstr "watchdog nicht initialisiert"
-
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
 msgstr "Breite muss größer als 0 sein"
@@ -4462,10 +4417,6 @@ msgstr "falsche Anzahl zu entpackender Werte"
 msgid "wrong output type"
 msgstr "Falscher Ausgabetyp"
 
-#: ports/espressif/common-hal/audiobusio/__init__.c
-msgid "xTaskCreate failed"
-msgstr "xTaskCreate fehlgeschlagen"
-
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be an ndarray"
 msgstr "zi muss ein ndarray sein"
@@ -4477,6 +4428,84 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "Initialisierung aufgrund von Speichermangel fehlgeschlagen"
+
+#~ msgid "RAISE mode is not implemented"
+#~ msgstr "RAISE-Modus ist nicht implementiert"
+
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "WatchDogTimer läuft aktuell nicht"
+
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr ""
+#~ "WatchDogTimer.mode kann nicht geändert werden, nachdem er auf "
+#~ "WatchDogMode.RESET gesetzt wurde"
+
+#~ msgid "watchdog not initialized"
+#~ msgstr "watchdog nicht initialisiert"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 wird vom WiFi benutzt"
+
+#, c-format
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "ADC-DMA-Controller konnte nicht konfiguriert werden, Fehlercode: %d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr ""
+#~ "ADC-DMA-Controller konnte nicht initialisiert werden, Fehlercode: %d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "ADC-DMA-Controller konnte nicht gestartet werden, Fehlercode: %d"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate fehlgeschlagen"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "An die Adresse kann nicht geschrieben werden."
+
+#~ msgid "queue overflow"
+#~ msgstr "Warteschlangenüberlauf"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Das Stoppen des AP wird nicht unterstützt."
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "Das Wifi ist im Accesspoint-Modus."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "Das Wifi ist im Station-Modus."
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
+#~ msgstr ""
+#~ "\n"
+#~ "Bitte erstellen Sie ein Problem (Issue) für Ihr Programm unter https://"
+#~ "github.com/adafruit/circuitpython/issues."
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "'coroutine' Objekt ist kein Iterator"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Der Puffer ist zu klein"
+
+#~ msgid "Fault detected by hardware."
+#~ msgstr "Hardware hat Fehler festgestellt."
+
+#~ msgid "The power dipped. Make sure you are providing enough power."
+#~ msgstr ""
+#~ "Die Spannung ist eingebrochen. Stelle sicher, dass genügend Leistung "
+#~ "verfügbar ist."
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shader muss displayio.Palette oder displayio.ColorConverter sein"
 
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Beschädigte .mpy Datei"

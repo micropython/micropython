@@ -1,11 +1,8 @@
 try:
-    import uasyncio as asyncio
+    import asyncio
 except ImportError:
-    try:
-        import asyncio
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 async def foo():
@@ -19,10 +16,10 @@ except AttributeError:
     raise SystemExit
 
 try:
-    import utime
+    import time
 
-    ticks = utime.ticks_ms
-    ticks_diff = utime.ticks_diff
+    ticks = time.ticks_ms
+    ticks_diff = time.ticks_diff
 except:
     import time
 

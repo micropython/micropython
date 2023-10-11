@@ -50,7 +50,7 @@
 //|
 //|       board.DISPLAY.brightness = 0
 //|       splash = displayio.Group()
-//|       board.DISPLAY.show(splash)
+//|       board.DISPLAY.root_group = splash
 //|
 //|       odb = displayio.OnDiskBitmap('/sample.bmp')
 //|       face = displayio.TileGrid(odb, pixel_shader=odb.pixel_shader)

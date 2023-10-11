@@ -41,6 +41,8 @@ extern void reset_all_pins(void);
 // reset_pin_number takes the pin number instead of the pointer so that objects don't
 // need to store a full pointer.
 extern void reset_pin_number(gpio_num_t pin_number);
+// reset all pins in `bitmask`
+extern void reset_pin_mask(uint64_t bitmask);
 extern void skip_reset_once_pin_number(gpio_num_t pin_number);
 extern void claim_pin(const mcu_pin_obj_t *pin);
 extern void claim_pin_number(gpio_num_t pin_number);

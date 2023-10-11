@@ -87,7 +87,7 @@ static void io_expander_backlight_init(void) {
     i2c_master_write_byte(cmd, AW9523_REG_SOFTRESET, true);
     i2c_master_write_byte(cmd, 0, true);
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
     cmd = i2c_cmd_link_create();
@@ -97,7 +97,7 @@ static void io_expander_backlight_init(void) {
     i2c_master_write_byte(cmd, AW9523_DEFAULT_CONFIG >> 8, true);
     i2c_master_write_byte(cmd, AW9523_DEFAULT_CONFIG & 0xff, true);
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
     cmd = i2c_cmd_link_create();
@@ -107,7 +107,7 @@ static void io_expander_backlight_init(void) {
     i2c_master_write_byte(cmd, AW9523_DEFAULT_OUTPUT >> 8, true);
     i2c_master_write_byte(cmd, AW9523_DEFAULT_OUTPUT & 0xff, true);
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
     i2c_driver_delete(i2c_num);

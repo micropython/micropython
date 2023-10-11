@@ -140,13 +140,6 @@ void common_hal_displayio_display_construct(displayio_display_obj_t *self,
     common_hal_displayio_display_set_auto_refresh(self, auto_refresh);
 }
 
-bool common_hal_displayio_display_show(displayio_display_obj_t *self, displayio_group_t *root_group) {
-    if (root_group == NULL) {
-        root_group = &circuitpython_splash;
-    }
-    return displayio_display_core_set_root_group(&self->core, root_group);
-}
-
 uint16_t common_hal_displayio_display_get_width(displayio_display_obj_t *self) {
     return displayio_display_core_get_width(&self->core);
 }
@@ -361,7 +354,7 @@ uint16_t common_hal_displayio_display_get_rotation(displayio_display_obj_t *self
 
 
 bool common_hal_displayio_display_refresh(displayio_display_obj_t *self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
-    if (!self->auto_refresh && !self->first_manual_refresh && (target_ms_per_frame != 0xffffffff)) {
+    if (!self->auto_refresh && !self->first_manual_refresh && (target_ms_per_frame != NO_FPS_LIMIT)) {
         uint64_t current_time = supervisor_ticks_ms64();
         uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.

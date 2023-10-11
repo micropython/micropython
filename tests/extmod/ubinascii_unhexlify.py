@@ -1,8 +1,5 @@
 try:
-    try:
-        import ubinascii as binascii
-    except ImportError:
-        import binascii
+    import binascii
 except ImportError:
     print("SKIP")
     raise SystemExit

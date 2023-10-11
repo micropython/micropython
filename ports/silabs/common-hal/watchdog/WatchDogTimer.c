@@ -41,10 +41,6 @@ void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
     WDOG_Enable(false);
 }
 
-void watchdog_reset(void) {
-    common_hal_watchdog_deinit(&common_hal_mcu_watchdogtimer_obj);
-}
-
 mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
     return self->timeout;
 }

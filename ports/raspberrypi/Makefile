@@ -236,6 +236,7 @@ SRC_SDK := \
 
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_SDK) $(SRC_CYW43)): CFLAGS += -Wno-missing-prototypes -Wno-undef -Wno-unused-function -Wno-nested-externs -Wno-strict-prototypes -Wno-double-promotion -Wno-sign-compare -Wno-unused-variable -Wno-strict-overflow -Ilib/cyw43-driver
+$(BUILD)/sdk/src/rp2_common/pico_standard_link/crt0.o: CFLAGS += -Wno-undef
 
 SRC_C += \
 	boards/$(BOARD)/board.c \
@@ -357,7 +358,7 @@ CFLAGS += \
 	  -isystem $(TOP)/lib/mbedtls/include \
 	  -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"' \
 
-$(BUILD)/x509_crt_bundle.S: $(TOP)/lib/certificates/nina-fw/data/roots.pem $(TOP)/tools/gen_crt_bundle.py
+$(BUILD)/x509_crt_bundle.S: $(TOP)/lib/certificates/data/roots.pem $(TOP)/tools/gen_crt_bundle.py
 	$(Q)$(PYTHON) $(TOP)/tools/gen_crt_bundle.py -i $< -o $@ --asm
 OBJ_MBEDTLS := $(BUILD)/x509_crt_bundle.o
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_MBEDTLS))): CFLAGS += -Wno-suggest-attribute=format
@@ -423,7 +424,8 @@ $(BUILD)/stage2.c: stage2.c.jinja gen_stage2.py | $(BUILD)/
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 
-$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py | $(HEADER_BUILD)/
+QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/flash_info.h
+$(HEADER_BUILD)/flash_info.h: flash_info.h.jinja gen_stage2.py
 	$(STEPECHO) "GEN $<"
 	$(Q)$(PYTHON) gen_stage2.py $< $@ $(EXTERNAL_FLASH_DEVICES)
 

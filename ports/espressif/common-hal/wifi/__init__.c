@@ -32,6 +32,7 @@
 #include "shared-bindings/wifi/Monitor.h"
 #include "shared-bindings/wifi/Radio.h"
 
+#include "py/gc.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
 
@@ -121,7 +122,7 @@ static void event_handler(void *arg, esp_event_base_t event_base,
             // Cases to handle later.
             // case WIFI_EVENT_STA_AUTHMODE_CHANGE:
             default: {
-                ESP_LOGW(TAG, "event %d 0x%02x", event_id, event_id);
+                ESP_LOGW(TAG, "event %ld 0x%02ld", event_id, event_id);
                 break;
             }
         }
@@ -162,8 +163,8 @@ void common_hal_wifi_init(bool user_initiated) {
     if (!wifi_ever_inited) {
         ESP_ERROR_CHECK(esp_netif_init());
         ESP_ERROR_CHECK(esp_event_loop_create_default());
+        wifi_ever_inited = true;
     }
-    wifi_ever_inited = true;
 
     self->netif = esp_netif_create_default_wifi_sta();
     self->ap_netif = esp_netif_create_default_wifi_ap();
@@ -189,7 +190,8 @@ void common_hal_wifi_init(bool user_initiated) {
         &self->handler_instance_got_ip));
 
     wifi_init_config_t config = WIFI_INIT_CONFIG_DEFAULT();
-    #ifdef CONFIG_IDF_TARGET_ESP32
+    #ifdef CONFIG_ESP32_WIFI_NVS_ENABLED
+    // Generally we don't use this because we store ssid and passwords ourselves in the filesystem.
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         // NVS partition was truncated and needs to be erased
@@ -201,9 +203,16 @@ void common_hal_wifi_init(bool user_initiated) {
     #endif
     esp_err_t result = esp_wifi_init(&config);
     if (result == ESP_ERR_NO_MEM) {
-        mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
+        if (gc_alloc_possible()) {
+            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
+        }
+        ESP_LOGE(TAG, "Failed to allocate Wifi memory");
     } else if (result != ESP_OK) {
-        raise_esp_error(result);
+        if (gc_alloc_possible()) {
+            raise_esp_error(result);
+        }
+        ESP_LOGE(TAG, "WiFi error code: %x", result);
+        return;
     }
     // set station mode to avoid the default SoftAP
     common_hal_wifi_radio_start_station(self);

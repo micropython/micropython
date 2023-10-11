@@ -35,7 +35,22 @@
 #include "shared-bindings/util.h"
 
 //| class Keys:
-//|     """Manage a set of independent keys."""
+//|     """Manage a set of independent keys.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["keypad.Keys"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,

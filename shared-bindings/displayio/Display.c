@@ -238,33 +238,6 @@ static displayio_display_obj_t *native_display(mp_obj_t display_obj) {
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: Group) -> None:
-//|         """
-//|         .. note:: `show()` is deprecated and will be removed in CircuitPython 9.0.0.
-//|           Use ``.root_group = group`` instead.
-//|
-//|         Switches to displaying the given group of layers. When group is None, the default
-//|         CircuitPython terminal will be shown.
-//|
-//|         :param Group group: The group to show.
-//|
-//|         """
-//|         ...
-STATIC mp_obj_t displayio_display_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
-    displayio_display_obj_t *self = native_display(self_in);
-    displayio_group_t *group = NULL;
-    if (group_in != mp_const_none) {
-        group = MP_OBJ_TO_PTR(native_group(group_in));
-    }
-
-    bool ok = common_hal_displayio_display_show(self, group);
-    if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(displayio_display_show_obj, displayio_display_obj_show);
-
 //|     def refresh(
 //|         self,
 //|         *,
@@ -302,7 +275,7 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     displayio_display_obj_t *self = native_display(pos_args[0]);
-    uint32_t maximum_ms_per_real_frame = 0xffffffff;
+    uint32_t maximum_ms_per_real_frame = NO_FPS_LIMIT;
     mp_int_t minimum_frames_per_second = args[ARG_minimum_frames_per_second].u_int;
     if (minimum_frames_per_second > 0) {
         maximum_ms_per_real_frame = 1000 / minimum_frames_per_second;
@@ -310,7 +283,7 @@ STATIC mp_obj_t displayio_display_obj_refresh(size_t n_args, const mp_obj_t *pos
 
     uint32_t target_ms_per_frame;
     if (args[ARG_target_frames_per_second].u_obj == mp_const_none) {
-        target_ms_per_frame = 0xffffffff;
+        target_ms_per_frame = NO_FPS_LIMIT;
     } else {
         target_ms_per_frame = 1000 / mp_obj_get_int(args[ARG_target_frames_per_second].u_obj);
     }
@@ -505,13 +478,12 @@ STATIC mp_obj_t displayio_display_obj_fill_row(size_t n_args, const mp_obj_t *po
         displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
         return result;
     } else {
-        mp_raise_ValueError(translate("Buffer is too small"));
+        mp_raise_ValueError(translate("Buffer too small"));
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(displayio_display_fill_row_obj, 1, displayio_display_obj_fill_row);
 
 STATIC const mp_rom_map_elem_t displayio_display_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&displayio_display_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&displayio_display_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&displayio_display_fill_row_obj) },
 

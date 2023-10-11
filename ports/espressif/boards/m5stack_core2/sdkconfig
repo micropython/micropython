@@ -1,6 +1,30 @@
-CONFIG_ESP32_ECO3_CACHE_LOCK_FIX=y
-CONFIG_ESP32_SPIRAM_SUPPORT=y
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Security features
+#
+CONFIG_SECURE_BOOT_V2_RSA_SUPPORTED=y
+CONFIG_SECURE_BOOT_V2_PREFERRED=y
+# end of Security features
+
+#
+# Component config
+#
+#
+# Hardware Settings
+#
+#
+# Chip revision
+#
+# CONFIG_ESP32_REV_MIN_0 is not set
 CONFIG_ESP32_REV_MIN_3=y
+CONFIG_ESP32_REV_MIN=3
+CONFIG_ESP32_REV_MIN_FULL=300
+CONFIG_ESP_REV_MIN_FULL=300
+# end of Chip revision
+
+# end of Hardware Settings
 
 #
 # LWIP
@@ -8,27 +32,6 @@ CONFIG_ESP32_REV_MIN_3=y
 CONFIG_LWIP_LOCAL_HOSTNAME="M5StaskCore2"
 # end of LWIP
 
-#
-# SPI RAM config
-#
-# CONFIG_SPIRAM_TYPE_AUTO=y
-# CONFIG_SPIRAM_TYPE_ESPPSRAM16 is not set
-# CONFIG_SPIRAM_TYPE_ESPPSRAM32 is not set
-CONFIG_SPIRAM_TYPE_ESPPSRAM64=y
-CONFIG_SPIRAM_SIZE=8388608
-# end of SPI RAM config
+# end of Component config
 
-# CONFIG_SPIRAM_FETCH_INSTRUCTIONS is not set
-# CONFIG_SPIRAM_RODATA is not set
-CONFIG_SPIRAM_SPEED_80M=y
-# CONFIG_SPIRAM_SPEED_40M is not set
-# CONFIG_SPIRAM_SPEED_26M is not set
-# CONFIG_SPIRAM_SPEED_20M is not set
-CONFIG_SPIRAM=y
-CONFIG_SPIRAM_BOOT_INIT=y
-# CONFIG_SPIRAM_IGNORE_NOTFOUND is not set
-CONFIG_SPIRAM_USE_MEMMAP=y
-# CONFIG_SPIRAM_USE_CAPS_ALLOC is not set
-# CONFIG_SPIRAM_USE_MALLOC is not set
-CONFIG_SPIRAM_MEMTEST=y
-# CONFIG_SPIRAM_ALLOW_BSS_SEG_EXTERNAL_MEMORY is not set
+# end of Espressif IoT Development Framework Configuration

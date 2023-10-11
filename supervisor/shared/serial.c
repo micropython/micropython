@@ -140,7 +140,7 @@ void serial_early_init(void) {
     const mcu_pin_obj_t *console_tx = MP_OBJ_TO_PTR(CIRCUITPY_CONSOLE_UART_TX);
 
     common_hal_busio_uart_construct(&console_uart, console_tx, console_rx, NULL, NULL, NULL,
-        false, 115200, 8, BUSIO_UART_PARITY_NONE, 1, 1.0f, sizeof(console_uart_rx_buf),
+        false, CIRCUITPY_CONSOLE_UART_BAUDRATE, 8, BUSIO_UART_PARITY_NONE, 1, 1.0f, sizeof(console_uart_rx_buf),
         console_uart_rx_buf, true);
     common_hal_busio_uart_never_reset(&console_uart);
 

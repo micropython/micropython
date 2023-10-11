@@ -1,13 +1,10 @@
 # test named char classes
 
 try:
-    import ure as re
+    import re
 except ImportError:
-    try:
-        import re
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 
 def print_groups(match):

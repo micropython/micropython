@@ -1,17 +1,17 @@
 # Test that native code loaded from a .mpy file is retained after a GC.
 
 try:
-    import gc, sys, uio, uos
+    import gc, sys, io, os
 
     sys.implementation._mpy
-    uio.IOBase
-    uos.mount
+    io.IOBase
+    os.mount
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 
-class UserFile(uio.IOBase):
+class UserFile(io.IOBase):
     def __init__(self, data):
         self.data = memoryview(data)
         self.pos = 0
@@ -68,7 +68,7 @@ if sys_implementation_mpy not in features0_file_contents:
 user_files = {"/features0.mpy": features0_file_contents[sys_implementation_mpy]}
 
 # Create and mount a user filesystem.
-uos.mount(UserFS(user_files), "/userfs")
+os.mount(UserFS(user_files), "/userfs")
 sys.path.append("/userfs")
 
 # Import the native function.
@@ -89,5 +89,5 @@ for i in range(1000):
 print(factorial(10))
 
 # Unmount and undo path addition.
-uos.umount("/userfs")
+os.umount("/userfs")
 sys.path.pop()

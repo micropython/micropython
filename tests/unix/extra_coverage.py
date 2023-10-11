@@ -4,8 +4,8 @@ except NameError:
     print("SKIP")
     raise SystemExit
 
-import uerrno
-import uio
+import errno
+import io
 
 data = extra_coverage()
 
@@ -18,7 +18,7 @@ print(hash(str(data[1], "utf8")))
 
 # test streams
 stream = data[2]  # has set_error and set_buf. Write always returns error
-stream.set_error(uerrno.EAGAIN)  # non-blocking error
+stream.set_error(errno.EAGAIN)  # non-blocking error
 print(stream.read())  # read all encounters non-blocking error
 print(stream.read(1))  # read 1 byte encounters non-blocking error
 print(stream.readline())  # readline encounters non-blocking error
@@ -42,8 +42,8 @@ stream2 = data[3]  # is textio
 print(stream2.read(1))  # read 1 byte encounters non-blocking error with textio stream
 
 # test BufferedWriter with stream errors
-stream.set_error(uerrno.EAGAIN)
-buf = uio.BufferedWriter(stream, 8)
+stream.set_error(errno.EAGAIN)
+buf = io.BufferedWriter(stream, 8)
 print(buf.write(bytearray(16)))
 
 # function defined in C++ code
