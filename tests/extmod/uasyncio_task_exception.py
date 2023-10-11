@@ -7,10 +7,6 @@
 # If the task _is_ subsequently awaited, then the await should succeed without
 # raising.
 
-# TODO: Fix this test.
-print("SKIP")
-raise SystemExit
-
 try:
     import asyncio
 except ImportError:
@@ -38,7 +34,6 @@ async def main():
     await asyncio.sleep(0)
     print("await")
     await t  # should not raise.
-    print("await done")
 
 
 asyncio.run(main())
