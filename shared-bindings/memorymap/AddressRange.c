@@ -93,7 +93,7 @@ STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_
     size_t start;
     if (mp_obj_is_small_int(args[ARG_start].u_obj)) {
         start = MP_OBJ_SMALL_INT_VALUE(args[ARG_start].u_obj);
-    } else if (mp_obj_is_type(args[ARG_start].u_obj, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(args[ARG_start].u_obj, &mp_type_int)) {
         start = mp_obj_int_get_uint_checked(args[ARG_start].u_obj);
     } else {
         mp_obj_t arg = mp_unary_op(MP_UNARY_OP_INT, args[ARG_start].u_obj);
