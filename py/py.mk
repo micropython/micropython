@@ -72,18 +72,20 @@ PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_C:.c=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_CXX:.cpp=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_C:.c=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_CXX:.cpp=.o))
+endif # USER_C_MODULES
 
 # CIRCUITPY
 ifeq ($(CIRCUITPY_ULAB),1)
 ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
-SRC_MOD += $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
+ULAB_SRC_PATHFIX := $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
+SRC_MOD += $(ULAB_SRC_PATHFIX)
+SRC_QSTR += $(ULAB_SRC_PATHFIX)
 CFLAGS_MOD += -DCIRCUITPY_ULAB=1 -DMODULE_ULAB_ENABLED=1 -DULAB_HAS_USER_MODULE=0 -iquote $(TOP)/extmod/ulab/code
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Wno-missing-declarations -Wno-missing-prototypes -Wno-unused-parameter -Wno-float-equal -Wno-sign-compare -Wno-cast-align -Wno-shadow -DCIRCUITPY
 ifeq ($(CIRCUITPY_ULAB_OPTIMIZE_SIZE),1)
 $(BUILD)/extmod/ulab/code/%.o: CFLAGS += -Os
 endif # CIRCUITPY_ULAB_OPTIMIZE_SIZE
 endif # CIRCUITPY_ULAB
-endif # USER_C_MODULES
 
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
