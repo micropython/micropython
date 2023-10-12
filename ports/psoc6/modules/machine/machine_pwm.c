@@ -1,4 +1,4 @@
-#include "py/runtime.h"
+ #include "py/runtime.h"
 #include "py/mphal.h"
 #include "modmachine.h"
 
@@ -59,13 +59,50 @@ STATIC inline void pwm_pin_free(machine_pwm_obj_t *pwm_obj) {
 typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
     cyhal_pwm_t pwm_obj;
-    bool active;
-    uint8_t pin;
+    machine_pin_phy_obj_t *pin;
     uint32_t fz;
     uint8_t duty_type;
     mp_float_t duty;
     bool invert;
 } machine_pwm_obj_t;
+
+static machine_pwm_obj_t *pwm_obj[MAX_PWM_OBJS] = { NULL };
+
+STATIC inline machine_pwm_obj_t *pwm_obj_alloc() {
+    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
+    {
+        if (pwm_obj[i] == NULL) {
+            pwm_obj[i] = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
+            return pwm_obj[i];
+        }
+    }
+
+    return NULL;
+}
+
+STATIC inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
+    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
+    {
+        if (pwm_obj[i] == pwm_obj_ptr) {
+            pwm_obj[i] = NULL;
+        }
+    }
+}
+
+STATIC inline void pwm_pin_alloc(machine_pwm_obj_t *pwm_obj, mp_obj_t pin_name) {
+    machine_pin_phy_obj_t *pin = pin_phy_realloc(pin_name, PIN_PHY_FUNC_PWM);
+
+    if (pin == NULL) {
+        size_t slen;
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM pin (%s) not found !"), mp_obj_str_get_data(pin_name, &slen));
+    }
+
+    pwm_obj->pin = pin;
+}
+
+STATIC inline void pwm_pin_free(machine_pwm_obj_t *pwm_obj) {
+    pin_phy_free(pwm_obj->pin);
+}
 
 enum {
     VALUE_NOT_SET = -1,
