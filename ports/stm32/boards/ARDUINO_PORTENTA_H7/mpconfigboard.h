@@ -170,7 +170,12 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_I2C3_SCL         (pin_H7)
 #define MICROPY_HW_I2C3_SDA         (pin_H8)
 
-// SPI
+// SPI buses
+#define MICROPY_HW_SPI1_NSS         (pin_C13)
+#define MICROPY_HW_SPI1_SCK         (pin_B3)
+#define MICROPY_HW_SPI1_MISO        (pin_B4)
+#define MICROPY_HW_SPI1_MOSI        (pin_D7)
+
 #define MICROPY_HW_SPI2_NSS         (pin_I0)
 #define MICROPY_HW_SPI2_SCK         (pin_I1)
 #define MICROPY_HW_SPI2_MISO        (pin_C2)
