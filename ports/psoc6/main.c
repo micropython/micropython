@@ -58,6 +58,7 @@ extern void network_init(void);
 extern void network_deinit(void);
 extern void mod_pin_deinit(void);
 extern void mod_adc_block_deinit(void);
+extern void mod_i2c_deinit(void);
 
 void mpy_task(void *arg);
 
@@ -179,6 +180,7 @@ soft_reset:
     machine_deinit();
     mod_pin_deinit();
     mod_adc_block_deinit();
+    mod_i2c_deinit();
     mod_pin_phy_deinit();
     #if MICROPY_PY_NETWORK
     mod_network_deinit();

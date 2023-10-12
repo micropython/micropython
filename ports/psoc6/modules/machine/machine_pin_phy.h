@@ -22,8 +22,8 @@ typedef struct _machine_pin_phy_obj_t {
 extern machine_pin_phy_obj_t machine_pin_phy_obj[PIN_PHY_NUM_MAX];
 
 bool pin_phy_is_alloc(machine_pin_phy_obj_t *obj);
-machine_pin_phy_obj_t *pin_phy_alloc(mp_obj_t addr, machine_pin_phy_func_t func);
-machine_pin_phy_obj_t *pin_phy_realloc(mp_obj_t addr, machine_pin_phy_func_t func);
+machine_pin_phy_obj_t *pin_phy_alloc(mp_obj_t pin_name, machine_pin_phy_func_t func);
+machine_pin_phy_obj_t *pin_phy_realloc(mp_obj_t pin_name, machine_pin_phy_func_t func);
 void pin_phy_free(machine_pin_phy_obj_t *obj);
 
 void mod_pin_phy_deinit(void);
