@@ -3,20 +3,58 @@
 #include "modmachine.h"
 
 // port-specific includes
+#include "machine_pin_phy.h"
 #include "mplogger.h"
 
-extern mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj);
+#define MAX_PWM_OBJS 10 // TODO: Derive this from BSP
 
 typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
     cyhal_pwm_t pwm_obj;
-    bool active;
-    uint8_t pin;
+    machine_pin_phy_obj_t *pin;
     uint32_t fz;
     uint8_t duty_type;
     mp_float_t duty;
     bool invert;
 } machine_pwm_obj_t;
+
+static machine_pwm_obj_t *pwm_obj[MAX_PWM_OBJS] = { NULL };
+
+STATIC inline machine_pwm_obj_t *pwm_obj_alloc() {
+    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
+    {
+        if (pwm_obj[i] == NULL) {
+            pwm_obj[i] = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
+            return pwm_obj[i];
+        }
+    }
+
+    return NULL;
+}
+
+STATIC inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
+    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
+    {
+        if (pwm_obj[i] == pwm_obj_ptr) {
+            pwm_obj[i] = NULL;
+        }
+    }
+}
+
+STATIC inline void pwm_pin_alloc(machine_pwm_obj_t *pwm_obj, mp_obj_t pin_name) {
+    machine_pin_phy_obj_t *pin = pin_phy_realloc(pin_name, PIN_PHY_FUNC_PWM);
+
+    if (pin == NULL) {
+        size_t slen;
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("PWM pin (%s) not found !"), mp_obj_str_get_data(pin_name, &slen));
+    }
+
+    pwm_obj->pin = pin;
+}
+
+STATIC inline void pwm_pin_free(machine_pwm_obj_t *pwm_obj) {
+    pin_phy_free(pwm_obj->pin);
+}
 
 enum {
     VALUE_NOT_SET = -1,
@@ -25,31 +63,20 @@ enum {
     DUTY_NS
 };
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
-
-STATIC cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
+STATIC inline cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
     return cyhal_pwm_set_duty_cycle(pwm_obj, duty_cycle * 100, fz); // duty_cycle in percentage
 }
 
-STATIC cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
+STATIC inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
     return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width * 1000);
 }
 
-STATIC cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj) {
-    return cyhal_pwm_init_adv(&machine_pwm_obj->pwm_obj, machine_pwm_obj->pin, NC, CYHAL_PWM_LEFT_ALIGN, true, 0, true, NULL); // complimentary pin set as not connected
-}
-
-
-// To check whether the PWM is active
-STATIC void pwm_is_active(machine_pwm_obj_t *self) {
-    if (self->active == 0) {
-        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("PWM inactive"));
-    }
+STATIC inline cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj) {
+    return cyhal_pwm_init_adv(&machine_pwm_obj->pwm_obj, machine_pwm_obj->pin->addr, NC, CYHAL_PWM_LEFT_ALIGN, true, 0, true, NULL); // complimentary pin set as not connected
 }
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    pwm_is_active(self_in);
     mp_printf(print, "frequency=%u duty_cycle=%f invert=%u", self->fz, (double)self->duty, self->invert);
 }
 
@@ -67,7 +94,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args,
         MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    self->active = 1;
+    // self->active = 1;
 
     if ((args[ARG_freq].u_int != VALUE_NOT_SET)) {
         pwm_freq_duty_set(&self->pwm_obj, args[ARG_freq].u_int, self->duty);
@@ -106,20 +133,15 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    // Get GPIO to connect to PWM.
-    int pin = mp_hal_get_pin_obj(all_args[0]);
-
     // Get static peripheral object.
-    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
-    self->base.type = &machine_pwm_type;
-    self->pin = pin;
-    self->active = 0;
+    machine_pwm_obj_t *self = pwm_obj_alloc();
+    pwm_pin_alloc(self, all_args[0]);
     self->duty_type = DUTY_NOT_SET;
     self->fz = -1;
     self->invert = -1;
 
     // Initialize PWM
-    cy_rslt_t result = cyhal_pwm_init(&self->pwm_obj, self->pin, NULL);
+    cy_rslt_t result = cyhal_pwm_init(&self->pwm_obj, self->pin->addr, NULL);
 
     // To check whether PWM init is successful
     if (result != CY_RSLT_SUCCESS) {
@@ -136,28 +158,11 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 
 STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     cyhal_pwm_free(&self->pwm_obj);
-    self->active = 0;
-}
-
-
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
-    pwm_is_active(self);
-    return MP_OBJ_NEW_SMALL_INT(self->fz);
-
-}
-
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
-    pwm_is_active(self);
-    self->fz = freq;
-    pwm_freq_duty_set(&self->pwm_obj, freq, self->duty);
-    if (self->duty_type == DUTY_NS) {
-        self->duty = ((self->duty) * (self->fz) * 65535) / 1000000000;
-        mp_machine_pwm_duty_set_ns(self, self->duty);
-    }
+    pwm_pin_free(self);
+    pwm_obj_free(self);
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
-    pwm_is_active(self);
     if (self->duty_type == DUTY_NS) {
         // duty_cycle = pulsewidth(ns)*freq(hz);
         return mp_obj_new_float(((self->duty) * (self->fz) * 65535) / 1000000000);
@@ -167,8 +172,12 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 }
 
 // sets the duty cycle as a ratio duty_u16 / 65535.
+<<<<<<< HEAD
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     pwm_is_active(self);
+=======
+STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_float_t duty_u16) {
+>>>>>>> 032779024 (ports/psoc6/../machine_pwm.c: Added deinit and pin phy refactor.)
     // Check the value is more than the max value
     self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
     self->duty_type = DUTY_U16;
@@ -176,7 +185,6 @@ STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
-    pwm_is_active(self);
     if (self->duty_type == DUTY_U16) {
         return mp_obj_new_float(((self->duty) * 1000000000) / ((self->fz) * 65535));   // pw (ns) = duty_cycle*10^9/fz
     } else {
@@ -185,9 +193,35 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 }
 
 // sets the pulse width in nanoseconds
+<<<<<<< HEAD
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     pwm_is_active(self);
+=======
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_float_t duty_ns) {
+>>>>>>> 032779024 (ports/psoc6/../machine_pwm.c: Added deinit and pin phy refactor.)
     self->duty = duty_ns;
     self->duty_type = DUTY_NS;
     pwm_freq_duty_set(&self->pwm_obj, self->fz, duty_ns);
+}
+
+STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+    return MP_OBJ_NEW_SMALL_INT(self->fz);
+
+}
+
+STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+    self->fz = freq;
+    pwm_freq_duty_set(&self->pwm_obj, freq, self->duty);
+    if (self->duty_type == DUTY_NS) {
+        self->duty = ((self->duty) * (self->fz) * 65535) / 1000000000;
+        mp_machine_pwm_duty_set_ns(self, self->duty);
+    }
+}
+
+void mod_pwm_deinit() {
+    for (uint8_t i = 0; i < MAX_PWM_OBJS; i++) {
+        if (pwm_obj[i] != NULL) {
+            mp_machine_pwm_deinit(pwm_obj[i]);
+        }
+    }
 }
