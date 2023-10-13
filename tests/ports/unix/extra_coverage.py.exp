@@ -59,7 +59,7 @@ heapq           io              json            machine
 math            os              platform        random
 re              select          socket          struct
 sys             termios         time            tls
-uctypes         websocket
+uctypes         vfs             websocket
 me
 
 micropython     machine         math
