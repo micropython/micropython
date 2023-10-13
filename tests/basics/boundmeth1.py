@@ -33,6 +33,8 @@ try:
 except AttributeError:
     print("AttributeError")
 
+print("--------")
+
 # bound method comparison with same object
 a = A()
 m1 = a.f
@@ -50,6 +52,14 @@ m2 = a2.f
 print(m1 == a2.f)  # should result in False
 print(m2 == a1.f)  # should result in False
 print(m1 != a2.f)  # should result in True
+
+# bound method comparison with non-bound-method objects
+print(A().f == None)  # should result in False
+print(A().f != None)  # should result in True
+print(None == A().f)  # should result in False
+print(None != A().f)  # should result in True
+
+print("--------")
 
 # bound method hashing
 a = A()

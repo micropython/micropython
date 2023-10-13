@@ -94,7 +94,10 @@ STATIC mp_obj_t bound_meth_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 }
 
 STATIC mp_obj_t bound_meth_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
-    if (!mp_obj_is_type(rhs_in, &mp_type_bound_meth) || op != MP_BINARY_OP_EQUAL) {
+    // The MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE flag is clear for this type, so if this
+    // function is called with MP_BINARY_OP_EQUAL then lhs_in and rhs_in must have the
+    // same type, which is mp_type_bound_meth.
+    if (op != MP_BINARY_OP_EQUAL) {
         return MP_OBJ_NULL; // op not supported
     }
     mp_obj_bound_meth_t *lhs = MP_OBJ_TO_PTR(lhs_in);
