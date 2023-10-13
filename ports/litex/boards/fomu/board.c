@@ -66,4 +66,3 @@ void board_init(void) {
     ledda_write(3, LEDDPWRG);   // Green
     ledda_write(98, LEDDPWRB);  // Blue
 }
-#endif // MICROPY_INCLUDED_MIMXRT_HAL_FLEXSPI_NOR_FLASH_H
