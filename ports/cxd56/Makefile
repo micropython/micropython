@@ -72,6 +72,7 @@ CFLAGS += \
 	$(INC) \
 	-DCONFIG_WCHAR_BUILTIN \
 	-DCONFIG_HAVE_DOUBLE \
+	-DNDEBUG \
 	-Dmain=spresense_main \
 	-D_estack=__stack \
 	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\"" \
