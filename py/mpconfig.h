@@ -1744,6 +1744,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_SSL_FINALISER (MICROPY_ENABLE_FINALISER)
 #endif
 
+// Whether to provide the "vfs" module
+#ifndef MICROPY_PY_VFS
+#define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES && MICROPY_VFS)
+#endif
+
 #ifndef MICROPY_PY_WEBSOCKET
 #define MICROPY_PY_WEBSOCKET (0)
 #endif
