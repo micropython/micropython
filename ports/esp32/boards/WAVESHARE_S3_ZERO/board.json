@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "WiFi",
+        "Dual-core",
+        "RGB LED",
+        "USB",
+        "USB-C"
+    ],
+    "images": [
+        "esp32-s3-zero.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "ESP32-S3",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/esp32-s3-zero.htm",
+    "vendor": "Waveshare",
+    "variants": {
+    }
+}
