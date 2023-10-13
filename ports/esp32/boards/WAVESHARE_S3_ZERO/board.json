@@ -7,7 +7,11 @@
         "BLE",
         "External Flash",
         "External RAM",
-        "WiFi"
+        "WiFi",
+        "Dual-core",
+        "RGB LED",
+        "USB",
+        "USB-C"
     ],
     "images": [
         "esp32-s3-zero.jpg"
