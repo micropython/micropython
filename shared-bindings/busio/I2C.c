@@ -388,7 +388,7 @@ STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(busio_i2c_locals_dict, busio_i2c_locals_dict_table);
 
-const MP_DEFINE_CONST_OBJ_TYPE(
+MP_DEFINE_CONST_OBJ_TYPE(
     busio_i2c_type,
     MP_QSTR_I2C,
     MP_TYPE_FLAG_NONE,
