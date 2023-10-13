@@ -2,6 +2,7 @@
 #define MICROPY_INCLUDED_MACHINE_ADC_H
 
 #include "machine_adcblock.h"
+#include "machine_pin_phy.h"
 
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;

@@ -16,7 +16,7 @@
 
 
 // port-specific includes
-#include "modules/machine/machine_pin.h"
+#include "modules/machine/machine_pin_phy.h"
 
 extern cyhal_rtc_t psoc6_rtc;
 extern cyhal_timer_t psoc6_timer;

@@ -4,7 +4,7 @@
 
 // port-specific includes
 #include "modmachine.h"
-#include "machine_pin.h"
+#include "machine_pin_phy.h"
 #include "extmod/virtpin.h"
 #include "mplogger.h"
 #include "cyhal.h"
@@ -178,7 +178,7 @@ static bool machine_pin_is_inited(machine_pin_io_obj_t *self) {
 STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_io_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mplogger_print("init helper function called\n");
 
-    enum {ARG_mode, ARG_pull, ARG_value, ARG_drive}; // , ARG_alt};
+    enum {ARG_mode, ARG_pull, ARG_value};
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_mode,  MP_ARG_OBJ,                     {.u_rom_obj = MP_ROM_NONE}},
         {MP_QSTR_pull,  MP_ARG_OBJ,                     {.u_rom_obj = MP_ROM_NONE}},
@@ -223,7 +223,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_io_obj_t *self, size_t n
 }
 
 // Machine Pin methods - port-specific definitions
-// Pin constructor(id,mode,pull,value=value,drive=drive,alt=alt)
+// Pin constructor(id,mode,pull,value=value)
 mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mplogger_print("%q constructor invoked\n", MP_QSTR_Pin);
 
@@ -272,7 +272,7 @@ STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
 // instantiates obj of Pin class
-// Pin.init(mode,pull,value=value,drive=drive,alt=alt)
+// Pin.init(mode,pull,value=value)
 STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
