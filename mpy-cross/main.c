@@ -71,7 +71,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         if (strcmp(file, "-") == 0) {
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, STDIN_FILENO, false);
         } else {
-            lex = mp_lexer_new_from_file(file);
+            lex = mp_lexer_new_from_file(qstr_from_str(file));
         }
 
         qstr source_name;
@@ -104,7 +104,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
                 vstr_add_str(&vstr, output_file);
             }
 
-            mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
+            mp_raw_code_save_file(&cm, qstr_from_strn(vstr.buf, vstr.len));
             vstr_clear(&vstr);
         }
 

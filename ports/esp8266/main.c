@@ -83,8 +83,8 @@ STATIC void mp_reset(void) {
 
     #if MICROPY_MODULE_FROZEN
     pyexec_frozen_module("_boot.py", false);
-    pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    int ret = pyexec_file_if_exists("boot.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
         pyexec_file_if_exists("main.py");
     }
     #endif
@@ -141,7 +141,7 @@ void user_init(void) {
 }
 
 #if !MICROPY_VFS
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(MP_ENOENT);
 }
 
