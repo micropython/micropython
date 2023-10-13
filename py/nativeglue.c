@@ -328,7 +328,7 @@ const mp_fun_table_t mp_fun_table = {
     mp_obj_new_float_from_d,
     mp_obj_get_float_to_f,
     mp_obj_get_float_to_d,
-    mp_get_buffer_raise,
+    mp_get_buffer,
     mp_get_stream_raise,
     &mp_plat_print,
     &mp_type_type,
