@@ -10,25 +10,25 @@ Enabled modules
     * cmath
     * gc
     * math
-    * uarray
-    * uasyncio
-    * ubinascii
-    * ucollections
-    * uerrno
-    * uhashlib
-    * uheapq
-    * uio
-    * ujson
-    * uos
-    * urandom
-    * ure
-    * uselect
-    * usocket
-    * ussl
-    * ustruct
-    * usys
-    * utime
-    * uzlib
+    * array
+    * asyncio
+    * binascii
+    * collections
+    * errno
+    * hashlib
+    * heapq
+    * io
+    * json
+    * os
+    * random
+    * re
+    * select
+    * socket
+    * ssl
+    * struct
+    * sys
+    * time
+    * zlib
 
 
 * Micropython specific modules and libraries
@@ -46,7 +46,7 @@ Enabled modules
         * ADCBlock
 
     * micropython
-    * ucryptolib
+    * cryptolib
     * uctypes
     * network
 
@@ -62,7 +62,7 @@ Not yet enabled
 
 * Micropython specific modules and libraries
     * btree
-    * ubluetooth
+    * bluetooth
 
 
 Table :ref:`configuration details <table_mpy_configuration>` below lists specific settings deviating from the configuration as per config level as well as functionality not yet implemented:
@@ -74,9 +74,9 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 +=================+======================================================================================================================+
 | gc              | Option ``MICROPY_ENABLE_GC`` enabled.                                                                                |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| uhashlib        | Options ``MICROPY_PY_UHASHLIB_MD5``, ``MICROPY_PY_UHASHLIB_SHA1``, ``MICROPY_PY_UHASHLIB_SHA256`` enabled.           |
+| hashlib         | Options ``MICROPY_PY_UHASHLIB_MD5``, ``MICROPY_PY_UHASHLIB_SHA1``, ``MICROPY_PY_UHASHLIB_SHA256`` enabled.           |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| uos             | Support for LFS2 and FAT, LFS2 enabled by default. FS mounted on external flash at "/flash".                         |
+| os              | Support for LFS2 and FAT, LFS2 enabled by default. FS mounted on external flash at "/flash".                         |
 |                 |                                                                                                                      |
 |                 | Options ``MICROPY_PY_OS_DUPTERM``, ``MICROPY_PY_UOS_GETENV_PUTENV_UNSETENV``, ``MICROPY_PY_UOS_INCLUDEFILE``,        |
 |                 | ``MICROPY_PY_UOS_SYSTEM``, ``MICROPY_PY_UOS_UNAME``, ``MICROPY_VFS_LFS2`` enabled.                                   |
@@ -84,19 +84,19 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 |                 | Function *urandom()* not yet implemented. Requires implementing *mp_uos_urandom()* and setting option                |
 |                 | ``MICROPY_PY_UOS_URANDOM``.                                                                                          |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| urandom         | Function *seed()* not yet implemented.                                                                               |
+| random          | Function *seed()* not yet implemented.                                                                               |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| ure             | Options ``MICROPY_PY_URE_DEBUG``, ``MICROPY_PY_URE_MATCH_GROUPS``, ``MICROPY_PY_URE_MATCH_SPAN_START_END`` enabled.  |
+| re              | Options ``MICROPY_PY_URE_DEBUG``, ``MICROPY_PY_URE_MATCH_GROUPS``, ``MICROPY_PY_URE_MATCH_SPAN_START_END`` enabled.  |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| usocket         | Options ``MICROPY_PY_USOCKET`` enabled.                                                                              |
+| socket          | Options ``MICROPY_PY_USOCKET`` enabled.                                                                              |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| ussl            | Options ``MICROPY_PY_USSL`` enabled. Has 2 failing tests.                                                            |
+| ssl             | Options ``MICROPY_PY_USSL`` enabled. Has 2 failing tests.                                                            |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| usys            | Options ``MICROPY_PY_SYS_EXC_INFO`` enabled.                                                                         |
+| sys             | Options ``MICROPY_PY_SYS_EXC_INFO`` enabled.                                                                         |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| utime           | Enabled through HAL functions based on machine.RTC module. Option ``MICROPY_PY_UTIME_MP_HAL`` enabled.               |
+| time            | Enabled through HAL functions based on machine.RTC module. Option ``MICROPY_PY_UTIME_MP_HAL`` enabled.               |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| ucryptolib      | Options ``MICROPY_PY_UCRYPTOLIB``, ``MICROPY_PY_UCRYPTOLIB_CTR``, ``MICROPY_PY_UCRYPTOLIB_CONSTS`` enabled.          |
+| cryptolib       | Options ``MICROPY_PY_UCRYPTOLIB``, ``MICROPY_PY_UCRYPTOLIB_CTR``, ``MICROPY_PY_UCRYPTOLIB_CONSTS`` enabled.          |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine         | Functions not yet implemented: *lightsleep()*, *deepsleep()*, *wake_reason()*, *time_pulse_us()*, *rng()*.           | 
 |                 |                                                                                                                      |

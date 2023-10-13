@@ -87,9 +87,9 @@ An instance of the :mod:`machine.Pin` class can be created by invoking the const
 
     from machine import Pin
 
-    p0 = Pin('P13_7', Pin.OUT, Pin.PULL_DOWN, value=Pin.STATE_LOW)   # create output pin on pin P13_7, 
-                                                                     # with pull-down resistor enabled,
-                                                                     # with initial value 0 (STATE_LOW)     
+    p0 = Pin('P13_7', Pin.OUT, Pin.PULL_DOWN, value=0)   # create output pin on pin P13_7, 
+                                                         # with pull-down resistor enabled,
+                                                         # with initial value 0 (low)     
 
 
 Additionally, with any combination of parameters (except the Pin number or ``id`` which should be passed mandatorily), a :mod:`machine.Pin` object with various configuration levels can be instantiated. In these cases, the :meth:`Pin.init` function has to be called proactively to set the other necessary configurations, as needed.
@@ -115,19 +115,22 @@ Similar to CPython, the parameters can be passed in any order if keywords are us
 
     from machine import Pin
 
-    p0 = Pin(id='P13_7', value=Pin.STATE_LOW, pull=Pin.PULL_DOWN, mode=Pin.OUT)     # create output pin on pin P13_7, 
-                                                                                    # with pull-down resistor enabled,
-                                                                                    # with initial value 0 (STATE_LOW) 
+    p0 = Pin(id='P13_7', value=0, pull=Pin.PULL_DOWN, mode=Pin.OUT)     # create output pin on pin P13_7, 
+                                                                        # with pull-down resistor enabled,
+                                                                        # with initial value 0 (low) 
 
 
-    p1 = Pin('P0_0', Pin.OUT, None, value=Pin.STATE_HIGH)                           # create output pin on pin P0_0, 
-                                                                                    # with pull as NONE,
-                                                                                    # with initial value 1 (STATE_HIGH)                                                                       
+    p1 = Pin('P0_0', Pin.OUT, None, value=1)                           # create output pin on pin P0_0, 
+                                                                       # with pull as NONE,
+                                                                       # with initial value 1 (high)                                                                       
 
 Note that the parameters such as ``value`` can only be passed as keyword arguments.  
 
-..
-    TODO: add ``drive`` and ``alt`` when implemented
+.. note::
+
+    The following constructor arguments are NOT supported in this port:
+        * ``drive``. This configuration is automatically handled by the constructor and abstracted to the user.
+        * ``alt``. Alternative functionality is directly handled by the respective machine peripherals classes.
 
 Methods
 ^^^^^^^
@@ -135,16 +138,6 @@ Methods
 .. method:: Pin.toggle()
 
    Set pin value to its complement.
-
-
-Constants
-^^^^^^^^^
-The following constants are used to configure the pin objects in addition to the ones mentioned in the :mod:`machine.Pin` class.
-
-.. data:: Pin.STATE_LOW
-          Pin.STATE_HIGH
-          
-    Selects the pin value.
 
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
@@ -180,6 +173,14 @@ scl    P6_0           P9_0
 sda    P6_1           P9_1
 =====  ===========  ============
 
+.. 
+
+    TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
+    TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
+    - From board manual? 
+    - From datasheet?
+    - To create a pinout diagram? 
+
 
 The driver is accessed via :ref:`machine.I2C <machine.I2C>`
 
@@ -192,19 +193,19 @@ initialized and configured to work in master mode. The maximum supported frequen
 ::
     
     from machine import I2C
-    i2c = I2C(0,scl='P6_0',sda='P6_1',freq=400000)
+    i2c = I2C(0, scl='P6_0', sda='P6_1',freq=400000)
 
-Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode operation.
-
-::
-
-    from machine import I2C
-    i2c = I2C(0)  #I2C is initialized & configured with default scl, sda pin & frequency
+Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode operation. The ``scl`` and ``sda`` pins are also required.
 
 ::
 
     from machine import I2C
-    i2c = I2C(0,scl='P9_0',sda='P9_1',freq=400000)  #I2C is initialised & configured with given scl,sda pins & frequency
+    i2c = I2C(0, scl='P6_0', sda='P6_1')  #I2C is initialized & configured with default frequency
+
+::
+
+    from machine import I2C
+    i2c = I2C(0, scl='P9_0', sda='P9_1', freq=400000)  #I2C is initialised & configured with given scl,sda pins & frequency
 
 Methods
 ^^^^^^^
@@ -411,8 +412,17 @@ MISO    P9_1           P6_1         P10_1
 SCK     P9_2           P6_2         P10_2
 =====  ===========  ============  ============
 
+.. 
+
+    TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
+    TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
+    - From board manual? 
+    - From datasheet?
+    - To create a pinout diagram? 
+
 Refer `PSoC 6 MCU: CY8C62x8, CY8C62xA Datasheet <https://www.infineon.com/dgdl/Infineon-PSOC_6_MCU_CY8C62X8_CY8C62XA-DataSheet-v18_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1>`_
-for additional details regarding all the SPI capable pins. 
+for additional details regarding all the SPI capable pins. The pins ``sck``, ``mosi`` and ``miso`` *must* be specified when
+initialising Software SPI.
 
 The driver is accessed via :ref:`machine.SPI <machine.SPI>`
 
@@ -425,7 +435,7 @@ SPI object is created with default settings or settings of previous initializati
 ::
     
     from machine import SPI
-    spi = SPI(0) # Default assignment: id=0, sck=P9_2  ,MOSI=P9_0, MISO=P9_1, baudrate=1000000, Polarity=0, Phase=0, bits=8, firstbit=SPI.MSB
+    spi = SPI(0, sck='P11_2', mosi='P11_0', miso='P11_1') # Default assignment: id=0, SCK=P11_2  ,MOSI=P11_0, MISO=P11_1
     spi.init()
 
 Management of a CS signal should happen in user code (via machine.Pin class).
@@ -441,7 +451,7 @@ If the constructor is called with any additional parameters then SPI object is c
 
 ::    
     
-    spi = SPI(0, baudrate=2000000) #object is created & initialised with baudrate=2000000 & default parameters
+    spi = SPI(0, sck='P11_2', mosi='P11_0', miso='P11_1', baudrate=2000000) #object is created & initialised with baudrate=2000000 & default parameters
     spi = SPI(0, baudrate=1500000, polarity=1, phase=1, bits=8, firstbit=SPI.LSB, sck='P11_2', mosi='P11_0', miso='P11_1')
 
 Methods
@@ -473,9 +483,9 @@ following pins : "P10_0" - "P10_5".
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
-    from machine import ADC, Pin
+    from machine import ADC
 
-    adc = ADC(Pin("P10_0"))        # create an ADC object on ADC pin
+    adc = ADC("P10_0")             # create an ADC object on ADC pin
     val = adc.read_u16()           # read a raw analog value in the range 0-65535
     val = adc.read_uv()            # read an analog value in micro volts
 
@@ -499,6 +509,14 @@ PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping a
 |    5    | P10_5 |
 +---------+-------+
 
+.. 
+
+    TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
+    TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
+    - From board manual? 
+    - From datasheet?
+    - To create a pinout diagram? 
+
 .. note::
     Arbitrary connection of ADC channels to GPIO is not supported. Specifying a pin that is not connected to this block, 
     or specifying a mismatched channel and pin, will raise an exception.
@@ -506,9 +524,9 @@ PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping a
 To use the APIs:
 ::
     
-    from machine import ADCBlock, Pin
+    from machine import ADCBlock
 
     adcBlock = ADCBlock(0, bits=12)             # create an ADCBlock 0 object
-    adc = adcBlock.connect(0, Pin("P10_0"))     # connect channel 0 to pin P10_0
+    adc = adcBlock.connect(0, "P10_0")          # connect channel 0 to pin P10_0
     val = adc.read_uv()                         # read an analog value in micro volts
 
