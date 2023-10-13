@@ -585,17 +585,25 @@ typedef struct _mp_getiter_iternext_custom_t {
 } mp_getiter_iternext_custom_t;
 
 // Buffer protocol
+
 typedef struct _mp_buffer_info_t {
     void *buf;      // can be NULL if len == 0
     size_t len;     // in bytes
     int typecode;   // as per binary.h
 } mp_buffer_info_t;
+
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
+#define MP_BUFFER_RAISE_IF_UNSUPPORTED (4)
+
 typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+
+static inline void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    mp_get_buffer(obj, bufinfo, flags | MP_BUFFER_RAISE_IF_UNSUPPORTED);
+}
 
 // This struct will be updated to become a variable sized struct. In order to
 // use this as a member, or allocate dynamically, use the mp_obj_empty_type_t
