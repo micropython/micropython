@@ -641,8 +641,8 @@ msgid "Below minimum frame rate"
 msgstr "Pod minimální obnovovací frekvencí"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
-msgstr "Bitové hodiny a výběr slov musí být sekvenční piny"
+msgid "Bit clock and word select must be sequential GPIO pins"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1121,8 +1121,6 @@ msgstr "Inicializace GNSS"
 msgid "Generic Failure"
 msgstr "Základní chyba"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -1154,7 +1152,8 @@ msgstr "Alokace heapu při neběžícím VM."
 #: supervisor/shared/safe_mode.c
 msgid ""
 "Heap was corrupted because the stack was too small. Increase stack size."
-msgstr "Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
+msgstr ""
+"Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -4369,6 +4368,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Bitové hodiny a výběr slov musí být sekvenční piny"
 
 #~ msgid "ADC2 is being used by WiFi"
 #~ msgstr "WiFi používá ADC2"

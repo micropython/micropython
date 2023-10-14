@@ -644,10 +644,8 @@ msgid "Below minimum frame rate"
 msgstr "Au-dessous de la fréquence d'images minimale"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
+msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr ""
-"La sélection du bit d'horloge et de mot doit être sur des broches "
-"séquentielles"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1141,8 +1139,6 @@ msgstr "Initialisation GNSS"
 msgid "Generic Failure"
 msgstr "Échec génerique"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -4444,6 +4440,11 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr ""
+#~ "La sélection du bit d'horloge et de mot doit être sur des broches "
+#~ "séquentielles"
 
 #~ msgid "Initialization failed due to lack of memory"
 #~ msgstr "Échec d'initialisation par manque de mémoire"

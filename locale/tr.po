@@ -639,8 +639,8 @@ msgid "Below minimum frame rate"
 msgstr "Minimum kare hızından altında"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
-msgstr "Bit saati ve kelime seçimi pinleri sıralı olmalıdır"
+msgid "Bit clock and word select must be sequential GPIO pins"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1116,8 +1116,6 @@ msgstr "GNSS init"
 msgid "Generic Failure"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -4355,6 +4353,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Bit saati ve kelime seçimi pinleri sıralı olmalıdır"
 
 #~ msgid "Initialization failed due to lack of memory"
 #~ msgstr "Bellek yetersizliği nedeniyle başlatma başarısız oldu"
