@@ -39,6 +39,7 @@ extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 
 void mp_hal_set_interrupt_char(int c);
+void mp_hal_time_ns_set_from_rtc(void);
 
 static inline void mp_hal_delay_us(mp_uint_t us) {
     sleep_us(us);

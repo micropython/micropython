@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
 void gc_collect(void) {
 }
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(MP_ENOENT);
 }
 

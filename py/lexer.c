@@ -879,10 +879,10 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len
 
 #if MICROPY_READER_POSIX || MICROPY_READER_VFS
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_reader_t reader;
     mp_reader_new_file(&reader, filename);
-    return mp_lexer_new(qstr_from_str(filename), reader);
+    return mp_lexer_new(filename, reader);
 }
 
 #if MICROPY_HELPER_LEXER_UNIX

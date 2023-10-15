@@ -45,7 +45,7 @@
 #include "gccollect.h"
 #include "user_interface.h"
 
-#if MICROPY_ESPNOW
+#if MICROPY_PY_ESPNOW
 #include "modespnow.h"
 #endif
 
@@ -77,7 +77,7 @@ STATIC void mp_reset(void) {
         mp_os_dupterm_obj.fun.var(2, args);
     }
 
-    #if MICROPY_ESPNOW
+    #if MICROPY_PY_ESPNOW
     espnow_deinit(mp_const_none);
     #endif
 
@@ -86,8 +86,8 @@ STATIC void mp_reset(void) {
     scan_dynamic_frozen(NULL, NULL);
     #endif
     pyexec_frozen_module("_boot.py", false);
-    pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    int ret = pyexec_file_if_exists("boot.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
         pyexec_file_if_exists("main.py");
     }
     #endif
@@ -144,7 +144,7 @@ void user_init(void) {
 }
 
 #if !MICROPY_VFS
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(MP_ENOENT);
 }
 

@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
     };
     rtc_init();
     rtc_set_datetime(&t);
+    mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
@@ -178,7 +179,7 @@ int main(int argc, char **argv) {
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
             ret = pyexec_file_if_exists("main.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;

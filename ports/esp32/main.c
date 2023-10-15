@@ -60,7 +60,7 @@
 #include "extmod/modbluetooth.h"
 #endif
 
-#if MICROPY_ESPNOW
+#if MICROPY_PY_ESPNOW
 #include "modespnow.h"
 #endif
 
@@ -124,8 +124,11 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py", false);
-    pyexec_file_if_exists("boot.py");
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+    int ret = pyexec_file_if_exists("boot.py");
+    if (ret & PYEXEC_FORCED_EXIT) {
+        goto soft_reset_exit;
+    }
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
         int ret = pyexec_file_if_exists("main.py");
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
@@ -152,7 +155,7 @@ soft_reset_exit:
     mp_bluetooth_deinit();
     #endif
 
-    #if MICROPY_ESPNOW
+    #if MICROPY_PY_ESPNOW
     espnow_deinit(mp_const_none);
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif

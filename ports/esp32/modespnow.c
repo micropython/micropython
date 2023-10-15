@@ -47,17 +47,20 @@
 #include "py/ringbuf.h"
 
 #include "mpconfigport.h"
+
+#if MICROPY_PY_ESPNOW
+
 #include "mphalport.h"
 #include "modnetwork.h"
 #include "modespnow.h"
 
-#ifndef MICROPY_ESPNOW_RSSI
+#ifndef MICROPY_PY_ESPNOW_RSSI
 // Include code to track rssi of peers
-#define MICROPY_ESPNOW_RSSI 1
+#define MICROPY_PY_ESPNOW_RSSI 1
 #endif
-#ifndef MICROPY_ESPNOW_EXTRA_PEER_METHODS
+#ifndef MICROPY_PY_ESPNOW_EXTRA_PEER_METHODS
 // Include mod_peer(),get_peer(),peer_count()
-#define MICROPY_ESPNOW_EXTRA_PEER_METHODS 1
+#define MICROPY_PY_ESPNOW_EXTRA_PEER_METHODS 1
 #endif
 
 // Relies on gcc Variadic Macros and Statement Expressions
@@ -71,10 +74,10 @@ static const uint8_t ESPNOW_MAGIC = 0x99;
 typedef struct {
     uint8_t magic;              // = ESPNOW_MAGIC
     uint8_t msg_len;            // Length of the message
-    #if MICROPY_ESPNOW_RSSI
+    #if MICROPY_PY_ESPNOW_RSSI
     uint32_t time_ms;           // Timestamp (ms) when packet is received
     int8_t rssi;                // RSSI value (dBm) (-127 to 0)
-    #endif // MICROPY_ESPNOW_RSSI
+    #endif // MICROPY_PY_ESPNOW_RSSI
 } __attribute__((packed)) espnow_hdr_t;
 
 typedef struct {
@@ -117,9 +120,9 @@ typedef struct _esp_espnow_obj_t {
     size_t peer_count;              // Cache the # of peers for send(sync=True)
     mp_obj_t recv_cb;               // Callback when a packet is received
     mp_obj_t recv_cb_arg;           // Argument passed to callback
-    #if MICROPY_ESPNOW_RSSI
+    #if MICROPY_PY_ESPNOW_RSSI
     mp_obj_t peers_table;           // A dictionary of discovered peers
-    #endif // MICROPY_ESPNOW_RSSI
+    #endif // MICROPY_PY_ESPNOW_RSSI
 } esp_espnow_obj_t;
 
 const mp_obj_type_t esp_espnow_type;
@@ -164,11 +167,11 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     self->recv_timeout_ms = DEFAULT_RECV_TIMEOUT_MS;
     self->recv_buffer = NULL;       // Buffer is allocated in espnow_init()
     self->recv_cb = mp_const_none;
-    #if MICROPY_ESPNOW_RSSI
+    #if MICROPY_PY_ESPNOW_RSSI
     self->peers_table = mp_obj_new_dict(0);
     // Prevent user code modifying the dict
     mp_obj_dict_get_map(self->peers_table)->is_fixed = 1;
-    #endif // MICROPY_ESPNOW_RSSI
+    #endif // MICROPY_PY_ESPNOW_RSSI
 
     // Set the global singleton pointer for the espnow protocol.
     MP_STATE_PORT(espnow_singleton) = self;
@@ -305,7 +308,7 @@ STATIC mp_obj_t espnow_stats(mp_obj_t _) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_stats_obj, espnow_stats);
 
-#if MICROPY_ESPNOW_RSSI
+#if MICROPY_PY_ESPNOW_RSSI
 // ### Maintaining the peer table and reading RSSI values
 //
 // We maintain a peers table for several reasons, to:
@@ -345,7 +348,7 @@ static mp_map_elem_t *_update_rssi(const uint8_t *peer, int8_t rssi, uint32_t ti
     list->items[1] = mp_obj_new_int(time_ms);
     return item;
 }
-#endif // MICROPY_ESPNOW_RSSI
+#endif // MICROPY_PY_ESPNOW_RSSI
 
 // Return C pointer to byte memory string/bytes/bytearray in obj.
 // Raise ValueError if the length does not match expected len.
@@ -413,11 +416,11 @@ STATIC mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
         msg->len += msg->free;   // Make all the space in msg array available
         msg->free = 0;
     }
-    #if MICROPY_ESPNOW_RSSI
+    #if MICROPY_PY_ESPNOW_RSSI
     uint8_t peer_buf[ESP_NOW_ETH_ALEN];
     #else
     uint8_t *peer_buf = _get_bytes_len_w(list->items[0], ESP_NOW_ETH_ALEN);
-    #endif // MICROPY_ESPNOW_RSSI
+    #endif // MICROPY_PY_ESPNOW_RSSI
     uint8_t *msg_buf = _get_bytes_len_w(msg, ESP_NOW_MAX_DATA_LEN);
 
     // Read the packet header from the incoming buffer
@@ -441,7 +444,7 @@ STATIC mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
         msg->free = size - msg_len;
     }
 
-    #if MICROPY_ESPNOW_RSSI
+    #if MICROPY_PY_ESPNOW_RSSI
     // Update rssi value in the peer device table
     mp_map_elem_t *entry = _update_rssi(peer_buf, hdr.rssi, hdr.time_ms);
     list->items[0] = entry->key;  // Set first element of list to peer
@@ -449,7 +452,7 @@ STATIC mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
         list->items[2] = MP_OBJ_NEW_SMALL_INT(hdr.rssi);
         list->items[3] = mp_obj_new_int(hdr.time_ms);
     }
-    #endif // MICROPY_ESPNOW_RSSI
+    #endif // MICROPY_PY_ESPNOW_RSSI
 
     return MP_OBJ_NEW_SMALL_INT(msg_len);
 }
@@ -561,10 +564,10 @@ STATIC void recv_cb(const esp_now_recv_info_t *recv_info, const uint8_t *msg, in
     espnow_hdr_t header;
     header.magic = ESPNOW_MAGIC;
     header.msg_len = msg_len;
-    #if MICROPY_ESPNOW_RSSI
+    #if MICROPY_PY_ESPNOW_RSSI
     header.rssi = recv_info->rx_ctrl->rssi;
     header.time_ms = mp_hal_ticks_ms();
-    #endif // MICROPY_ESPNOW_RSSI
+    #endif // MICROPY_PY_ESPNOW_RSSI
 
     ringbuf_put_bytes(buf, (uint8_t *)&header, sizeof(header));
     ringbuf_put_bytes(buf, recv_info->src_addr, ESP_NOW_ETH_ALEN);
@@ -710,7 +713,7 @@ STATIC mp_obj_t espnow_get_peers(mp_obj_t _) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(espnow_get_peers_obj, espnow_get_peers);
 
-#if MICROPY_ESPNOW_EXTRA_PEER_METHODS
+#if MICROPY_PY_ESPNOW_EXTRA_PEER_METHODS
 // ESPNow.get_peer(peer_mac): Get the peer info for peer_mac as a tuple.
 // Raise OSError if ESPNow.init() has not been called.
 // Raise ValueError if mac or LMK are not bytes-like objects or wrong length.
@@ -777,11 +780,11 @@ STATIC const mp_rom_map_elem_t esp_espnow_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add_peer), MP_ROM_PTR(&espnow_add_peer_obj) },
     { MP_ROM_QSTR(MP_QSTR_del_peer), MP_ROM_PTR(&espnow_del_peer_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_peers), MP_ROM_PTR(&espnow_get_peers_obj) },
-    #if MICROPY_ESPNOW_EXTRA_PEER_METHODS
+    #if MICROPY_PY_ESPNOW_EXTRA_PEER_METHODS
     { MP_ROM_QSTR(MP_QSTR_mod_peer), MP_ROM_PTR(&espnow_mod_peer_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_peer), MP_ROM_PTR(&espnow_get_peer_obj) },
     { MP_ROM_QSTR(MP_QSTR_peer_count), MP_ROM_PTR(&espnow_peer_count_obj) },
-    #endif // MICROPY_ESPNOW_EXTRA_PEER_METHODS
+    #endif // MICROPY_PY_ESPNOW_EXTRA_PEER_METHODS
 };
 STATIC MP_DEFINE_CONST_DICT(esp_espnow_locals_dict, esp_espnow_locals_dict_table);
 
@@ -819,7 +822,7 @@ STATIC const mp_stream_p_t espnow_stream_p = {
     .ioctl = espnow_stream_ioctl,
 };
 
-#if MICROPY_ESPNOW_RSSI
+#if MICROPY_PY_ESPNOW_RSSI
 // Return reference to the dictionary of peers we have seen:
 //   {peer1: (rssi, time_sec), peer2: (rssi, time_msec), ...}
 // where:
@@ -838,16 +841,16 @@ STATIC void espnow_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
     dest[1] = MP_OBJ_SENTINEL;  // Attribute not found
 }
-#endif // MICROPY_ESPNOW_RSSI
+#endif // MICROPY_PY_ESPNOW_RSSI
 
 MP_DEFINE_CONST_OBJ_TYPE(
     esp_espnow_type,
     MP_QSTR_ESPNowBase,
     MP_TYPE_FLAG_NONE,
     make_new, espnow_make_new,
-    #if MICROPY_ESPNOW_RSSI
+    #if MICROPY_PY_ESPNOW_RSSI
     attr, espnow_attr,
-    #endif // MICROPY_ESPNOW_RSSI
+    #endif // MICROPY_PY_ESPNOW_RSSI
     protocol, &espnow_stream_p,
     locals_dict, &esp_espnow_locals_dict
     );
@@ -859,3 +862,5 @@ const mp_obj_module_t mp_module_espnow = {
 
 MP_REGISTER_MODULE(MP_QSTR__espnow, mp_module_espnow);
 MP_REGISTER_ROOT_POINTER(struct _esp_espnow_obj_t *espnow_singleton);
+
+#endif // MICROPY_PY_ESPNOW

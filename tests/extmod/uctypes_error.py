@@ -8,6 +8,12 @@ except ImportError:
 
 data = bytearray(b"01234567")
 
+# first argument isn't an integer
+try:
+    uctypes.struct(data, {})
+except TypeError:
+    print("TypeError")
+
 # del subscr not supported
 S = uctypes.struct(uctypes.addressof(data), {})
 try:

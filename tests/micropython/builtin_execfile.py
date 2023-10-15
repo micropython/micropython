@@ -70,5 +70,11 @@ except OSError:
 # Test execfile with a file that does exist.
 execfile("/test_mnt/test.py")
 
+# Test that it only works with string arguments.
+try:
+    execfile(b"aaa")
+except TypeError:
+    print("TypeError")
+
 # Unmount the VFS object.
 os.umount(fs)
