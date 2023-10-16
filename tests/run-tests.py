@@ -13,6 +13,9 @@ from multiprocessing.pool import ThreadPool
 import threading
 import tempfile
 
+# Maximum time to run a PC-based test, in seconds.
+TEST_TIMEOUT = 30
+
 # See stackoverflow.com/questions/2632199: __file__ nor sys.argv[0]
 # are guaranteed to always work, this one should though.
 BASEPATH = os.path.dirname(os.path.abspath(inspect.getsourcefile(lambda: None)))
@@ -27,23 +30,60 @@ def base_path(*p):
 # to the correct executable.
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/windows/micropython.exe"))
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", base_path("../ports/windows/build-standard/micropython.exe")
+    )
+    # mpy-cross is only needed if --via-mpy command-line arg is passed
+    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/build/mpy-cross.exe"))
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", base_path("../ports/unix/micropython"))
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", base_path("../ports/unix/build-standard/micropython")
+    )
+    # mpy-cross is only needed if --via-mpy command-line arg is passed
+    MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/build/mpy-cross"))
 
 # Use CPython options to not save .pyc files, to only access the core standard library
 # (not site packages which may clash with u-module names), and improve start up time.
-CPYTHON3_CMD = [CPYTHON3, "-Wignore", "-BS"]
+CPYTHON3_CMD = [CPYTHON3, "-BS"]
 
-# mpy-cross is only needed if --via-mpy command-line arg is passed
-MPYCROSS = os.getenv("MICROPY_MPYCROSS", base_path("../mpy-cross/mpy-cross"))
 
 # For diff'ing test output
 DIFF = os.getenv("MICROPY_DIFF", "diff -u")
 
 # Set PYTHONIOENCODING so that CPython will use utf-8 on systems which set another encoding in the locale
 os.environ["PYTHONIOENCODING"] = "utf-8"
+
+# Code to allow a target MicroPython to import an .mpy from RAM
+injected_import_hook_code = """\
+import usys, uos, uio
+class __File(uio.IOBase):
+  def __init__(self):
+    self.off = 0
+  def ioctl(self, request, arg):
+    return 0
+  def readinto(self, buf):
+    buf[:] = memoryview(__buf)[self.off:self.off + len(buf)]
+    self.off += len(buf)
+    return len(buf)
+class __FS:
+  def mount(self, readonly, mkfs):
+    pass
+  def umount(self):
+    pass
+  def chdir(self, path):
+    pass
+  def stat(self, path):
+    if path == '__injected_test.mpy':
+      return tuple(0 for _ in range(10))
+    else:
+      raise OSError(-2) # ENOENT
+  def open(self, path, mode):
+    return __File()
+uos.mount(__FS(), '/__vfstest')
+uos.chdir('/__vfstest')
+__import__('__injected_test')
+"""
 
 
 def rm_f(fname):
@@ -69,6 +109,68 @@ def convert_regex_escapes(line):
     if cs[-1] == "\n":
         cs[-1] = "\r*\n"
     return bytes("".join(cs), "utf8")
+
+
+def prepare_script_for_target(args, *, script_filename=None, script_text=None, force_plain=False):
+    if force_plain or (not args.via_mpy and args.emit == "bytecode"):
+        if script_filename is not None:
+            with open(script_filename, "rb") as f:
+                script_text = f.read()
+    elif args.via_mpy:
+        tempname = tempfile.mktemp(dir="")
+        mpy_filename = tempname + ".mpy"
+
+        if script_filename is None:
+            script_filename = tempname + ".py"
+            cleanup_script_filename = True
+            with open(script_filename, "wb") as f:
+                f.write(script_text)
+        else:
+            cleanup_script_filename = False
+
+        try:
+            subprocess.check_output(
+                [MPYCROSS]
+                + args.mpy_cross_flags.split()
+                + ["-o", mpy_filename, "-X", "emit=" + args.emit, script_filename],
+                stderr=subprocess.STDOUT,
+            )
+        except subprocess.CalledProcessError as er:
+            return True, b"mpy-cross crash\n" + er.output
+
+        with open(mpy_filename, "rb") as f:
+            script_text = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
+
+        rm_f(mpy_filename)
+        if cleanup_script_filename:
+            rm_f(script_filename)
+
+        script_text += bytes(injected_import_hook_code, "ascii")
+    else:
+        print("error: using emit={} must go via .mpy".format(args.emit))
+        sys.exit(1)
+
+    return False, script_text
+
+
+def run_script_on_remote_target(pyb, args, test_file, is_special):
+    had_crash, script = prepare_script_for_target(
+        args, script_filename=test_file, force_plain=is_special
+    )
+    if had_crash:
+        return True, script
+
+    try:
+        had_crash = False
+        pyb.enter_raw_repl()
+        output_mupy = pyb.exec_(script)
+    except pyboard.PyboardError as e:
+        had_crash = True
+        if not is_special and e.args[0] == "exception":
+            output_mupy = e.args[1] + e.args[2] + b"CRASH"
+        else:
+            output_mupy = bytes(e.args[0], "ascii") + b"\nCRASH"
+    return had_crash, output_mupy
 
 
 def run_micropython(pyb, args, test_file, is_special=False):
@@ -109,33 +211,29 @@ def run_micropython(pyb, args, test_file, is_special=False):
                         return b"SKIP\n"
                     import select
 
+                    # Even though these might have the pty module, it's unlikely to function.
+                    if sys.platform in ["win32", "msys", "cygwin"]:
+                        return b"SKIP\n"
+
                     def get(required=False):
                         rv = b""
                         while True:
-                            ready = select.select([emulator], [], [emulator], 0.02)
-                            if ready[0] == [emulator]:
-                                rv += os.read(emulator, 1024)
+                            ready = select.select([master], [], [], 0.02)
+                            if ready[0] == [master]:
+                                rv += os.read(master, 1024)
                             else:
                                 if not required or rv:
                                     return rv
 
                     def send_get(what):
-                        os.write(emulator, what)
+                        os.write(master, what)
                         return get()
 
                     with open(test_file, "rb") as f:
                         # instead of: output_mupy = subprocess.check_output(args, stdin=f)
-                        # openpty returns two read/write file descriptors.  The first one is
-                        # used by the program which provides the virtual
-                        # terminal service, and the second one is used by the
-                        # subprogram which requires a tty to work.
-                        emulator, subterminal = pty.openpty()
+                        master, slave = pty.openpty()
                         p = subprocess.Popen(
-                            args,
-                            stdin=subterminal,
-                            stdout=subterminal,
-                            stderr=subprocess.STDOUT,
-                            bufsize=0,
+                            args, stdin=slave, stdout=slave, stderr=subprocess.STDOUT, bufsize=0
                         )
                         banner = get(True)
                         output_mupy = banner + b"".join(send_get(line) for line in f)
@@ -150,15 +248,14 @@ def run_micropython(pyb, args, test_file, is_special=False):
                             p.kill()
                         except ProcessLookupError:
                             pass
-                        os.close(subterminal)
-                        os.close(emulator)
+                        os.close(master)
+                        os.close(slave)
                 else:
                     output_mupy = subprocess.check_output(
                         args + [test_file], stderr=subprocess.STDOUT
                     )
-
-            except subprocess.CalledProcessError as error:
-                return error.output + b"CRASH"
+            except subprocess.CalledProcessError:
+                return b"CRASH"
 
         else:
             # a standard test run on PC
@@ -167,6 +264,8 @@ def run_micropython(pyb, args, test_file, is_special=False):
             cmdlist = [MICROPYTHON, "-X", "emit=" + args.emit]
             if args.heapsize is not None:
                 cmdlist.extend(["-X", "heapsize=" + args.heapsize])
+            if sys.platform == "darwin":
+                cmdlist.extend(["-X", "realtime"])
 
             # if running via .mpy, first compile the .py file
             if args.via_mpy:
@@ -183,20 +282,15 @@ def run_micropython(pyb, args, test_file, is_special=False):
 
             # run the actual test
             try:
-                result = subprocess.run(
-                    cmdlist,
-                    stderr=subprocess.STDOUT,
-                    stdout=subprocess.PIPE,
-                    check=True,
-                    timeout=10,
+                output_mupy = subprocess.check_output(
+                    cmdlist, stderr=subprocess.STDOUT, timeout=TEST_TIMEOUT
                 )
-                output_mupy = result.stdout
-            except subprocess.TimeoutExpired as er:
-                had_crash = True
-                output_mupy = (er.output or b"") + b"TIMEOUT"
             except subprocess.CalledProcessError as er:
                 had_crash = True
                 output_mupy = er.output + b"CRASH"
+            except subprocess.TimeoutExpired as er:
+                had_crash = True
+                output_mupy = (er.output or b"") + b"TIMEOUT"
 
             # clean up if we had an intermediate .mpy file
             if args.via_mpy:
@@ -212,6 +306,10 @@ def run_micropython(pyb, args, test_file, is_special=False):
     # don't try to convert the output if we should skip this test
     if had_crash or output_mupy in (b"SKIP\n", b"CRASH"):
         return output_mupy
+
+    # skipped special tests will output "SKIP" surrounded by other interpreter debug output
+    if is_special and not had_crash and b"\nSKIP\n" in output_mupy:
+        return b"SKIP\n"
 
     if is_special or test_file in special_tests:
         # convert parts of the output that are not stable across runs
@@ -428,18 +526,23 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if upy_float_precision < 64:
         skip_tests.add("float/float_divmod.py")  # tested by float/float_divmod_relaxed.py instead
         skip_tests.add("float/float2int_doubleprec_intbig.py")
+        skip_tests.add("float/float_format_ints_doubleprec.py")
         skip_tests.add("float/float_parse_doubleprec.py")
 
     if not has_complex:
         skip_tests.add("float/complex1.py")
         skip_tests.add("float/complex1_intbig.py")
+        skip_tests.add("float/complex_reverse_op.py")
         skip_tests.add("float/complex_special_methods.py")
         skip_tests.add("float/int_big_float.py")
         skip_tests.add("float/true_value.py")
         skip_tests.add("float/types.py")
+        skip_tests.add("float/complex_dunder.py")
 
     if not has_coverage:
         skip_tests.add("cmdline/cmd_parsetree.py")
+        skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
+        skip_tests.add("extmod/ussl_poll.py")
 
     # Some tests shouldn't be run on a PC
     if args.target == "unix":
@@ -514,6 +617,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/del_deref.py")  # requires checking for unbound local
         skip_tests.add("basics/del_local.py")  # requires checking for unbound local
         skip_tests.add("basics/exception_chain.py")  # raise from is not supported
+        skip_tests.add("basics/fun_name.py")  # requires proper names for native functions
         skip_tests.add("basics/scope_implicit.py")  # requires checking for unbound local
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
@@ -608,17 +712,16 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             with open(test_file_expected, "rb") as f:
                 output_expected = f.read()
         else:
-            e = {"PYTHONPATH": os.getcwd(), "PATH": os.environ["PATH"], "LANG": "en_US.UTF-8"}
+            # CIRCUITPY: set language & make sure testlib is available for `skip_ok`.
+            e = {"PYTHONPATH": "testlib", "PATH": os.environ["PATH"], "LANG": "en_US.UTF-8"}
             # run CPython to work out expected output
             try:
-                output_expected = subprocess.check_output(
-                    CPYTHON3_CMD + [test_file], env=e, stderr=subprocess.STDOUT
-                )
+                output_expected = subprocess.check_output(CPYTHON3_CMD + [test_file], env=e)
                 if args.write_exp:
                     with open(test_file_expected, "wb") as f:
                         f.write(output_expected)
-            except subprocess.CalledProcessError as error:
-                output_expected = error.output + b"CPYTHON3 CRASH"
+            except subprocess.CalledProcessError:
+                output_expected = b"CPYTHON3 CRASH"
 
         # canonical form for all host platforms is to use \n for end-of-line
         output_expected = output_expected.replace(b"\r\n", b"\n")
@@ -828,8 +931,15 @@ the last matching regex is used:
         "renesas-ra",
         "rp2",
     )
-    if args.target in LOCAL_TARGETS or args.list_tests:
+    if args.list_tests:
         pyb = None
+    elif args.target in LOCAL_TARGETS:
+        pyb = None
+        if not args.mpy_cross_flags:
+            if args.target == "unix":
+                args.mpy_cross_flags = "-march=host"
+            elif args.target == "qemu-arm":
+                args.mpy_cross_flags = "-march=armv7m"
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
         sys.path.append(base_path("../tools"))
@@ -856,7 +966,6 @@ the last matching regex is used:
         if args.test_dirs is None:
             test_dirs = (
                 "basics",
-                "circuitpython",
                 "micropython",
                 "misc",
                 "extmod",
@@ -883,7 +992,6 @@ the last matching regex is used:
                     "unicode",
                     "unix",
                     "cmdline",
-                    "../extmod/ulab/tests",
                 )
             elif args.target == "qemu-arm":
                 if not args.write_exp:

@@ -992,9 +992,10 @@ STATIC const mp_rom_map_elem_t espcamera_camera_locals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(espcamera_camera_locals_dict, espcamera_camera_locals_table);
 
-const mp_obj_type_t espcamera_camera_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Camera,
-    .make_new = espcamera_camera_make_new,
-    .locals_dict = (mp_obj_t)&espcamera_camera_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espcamera_camera_type,
+    MP_QSTR_Camera,
+    MP_TYPE_FLAG_NONE,
+    make_new, espcamera_camera_make_new,
+    locals_dict, &espcamera_camera_locals_dict
+    );

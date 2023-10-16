@@ -30,7 +30,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 // I2C timing specs for the H7 and F7
@@ -401,3 +400,5 @@ void I2C3_EV_IRQHandler(void) {
 void I2C4_EV_IRQHandler(void) {
     call_hal_irq(4);
 }
+
+MP_REGISTER_ROOT_POINTER(void *cpy_i2c_obj_all[MAX_I2C]);

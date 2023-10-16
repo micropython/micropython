@@ -140,10 +140,11 @@ STATIC void bleio_service_print(const mp_print_t *print, mp_obj_t self_in, mp_pr
     }
 }
 
-const mp_obj_type_t bleio_service_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Service,
-    .make_new = bleio_service_make_new,
-    .print = bleio_service_print,
-    .locals_dict = (mp_obj_dict_t *)&bleio_service_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_service_type,
+    MP_QSTR_Service,
+    MP_TYPE_FLAG_NONE,
+    make_new, bleio_service_make_new,
+    print, bleio_service_print,
+    locals_dict, &bleio_service_locals_dict
+    );

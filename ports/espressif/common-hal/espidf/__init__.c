@@ -25,7 +25,6 @@
  */
 
 #include "bindings/espidf/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/memory.h"
 #include "py/runtime.h"
 

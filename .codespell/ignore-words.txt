@@ -24,3 +24,5 @@ numer
 arithmetics
 ftbfs
 straightaway
+ftbs
+ftb

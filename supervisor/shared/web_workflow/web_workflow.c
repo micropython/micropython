@@ -339,7 +339,7 @@ bool supervisor_start_web_workflow(bool reload) {
 
     initialized = pool.base.type == &socketpool_socketpool_type;
 
-    if (initialized){
+    if (initialized) {
         if (!common_hal_socketpool_socket_get_closed(&active)) {
             common_hal_socketpool_socket_close(&active);
         }
@@ -368,10 +368,10 @@ bool supervisor_start_web_workflow(bool reload) {
         }
         // Wake polling thread (maybe)
         socketpool_socket_poll_resume();
-        #endif
-        return true;
-    }
-    return false;
+    #endif
+    return true;
+}
+return false;
 }
 
 void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {

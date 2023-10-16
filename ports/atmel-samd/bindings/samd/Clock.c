@@ -128,12 +128,13 @@ STATIC const mp_rom_map_elem_t samd_clock_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(samd_clock_locals_dict, samd_clock_locals_dict_table);
 
-const mp_obj_type_t samd_clock_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Clock,
-    .print = samd_clock_print,
-    .locals_dict = (mp_obj_t)&samd_clock_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    samd_clock_type,
+    MP_QSTR_Clock,
+    MP_TYPE_FLAG_NONE,
+    print, samd_clock_print,
+    locals_dict, &samd_clock_locals_dict
+    );
 
 #ifdef SAMD21
 

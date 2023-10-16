@@ -32,7 +32,6 @@
 #include "py/pystack.h"
 
 #include "supervisor/linker.h"
-
 #include "supervisor/shared/translate/translate.h"
 
 typedef enum {
@@ -96,14 +95,12 @@ bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback)
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
 
 void mp_arg_check_num_sig(size_t n_args, size_t n_kw, uint32_t sig);
-static MP_INLINE void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
+static inline void mp_arg_check_num(size_t n_args, size_t n_kw, size_t n_args_min, size_t n_args_max, bool takes_kw) {
     mp_arg_check_num_sig(n_args, n_kw, MP_OBJ_FUN_MAKE_SIG(n_args_min, n_args_max, takes_kw));
 }
 void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
 void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, size_t n_allowed, const mp_arg_t *allowed, mp_arg_val_t *out_vals);
-#if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
 NORETURN void mp_arg_error_terse_mismatch(void);
-#endif
 NORETURN void mp_arg_error_unimpl_kw(void);
 
 NORETURN void mp_arg_error_invalid(qstr arg_name);
@@ -128,16 +125,16 @@ mp_obj_t mp_arg_validate_type_or_none(mp_obj_t obj, const mp_obj_type_t *type, q
 mp_int_t mp_arg_validate_type_int(mp_obj_t obj, qstr arg_name);
 mp_obj_t mp_arg_validate_type_string(mp_obj_t obj, qstr arg_name);
 
-static MP_INLINE mp_obj_dict_t *mp_locals_get(void) {
+static inline mp_obj_dict_t *mp_locals_get(void) {
     return MP_STATE_THREAD(dict_locals);
 }
-static MP_INLINE void mp_locals_set(mp_obj_dict_t *d) {
+static inline void mp_locals_set(mp_obj_dict_t *d) {
     MP_STATE_THREAD(dict_locals) = d;
 }
-static MP_INLINE mp_obj_dict_t *mp_globals_get(void) {
+static inline mp_obj_dict_t *mp_globals_get(void) {
     return MP_STATE_THREAD(dict_globals);
 }
-static MP_INLINE void mp_globals_set(mp_obj_dict_t *d) {
+static inline void mp_globals_set(mp_obj_dict_t *d) {
     MP_STATE_THREAD(dict_globals) = d;
 }
 
@@ -194,7 +191,7 @@ mp_obj_t mp_iternext_allow_raise(mp_obj_t o); // may return MP_OBJ_STOP_ITERATIO
 mp_obj_t mp_iternext(mp_obj_t o); // will always return MP_OBJ_STOP_ITERATION instead of raising StopIteration(...)
 mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, mp_obj_t *ret_val);
 
-static MP_INLINE mp_obj_t mp_make_stop_iteration(mp_obj_t o) {
+static inline mp_obj_t mp_make_stop_iteration(mp_obj_t o) {
     MP_STATE_THREAD(stop_iteration_arg) = o;
     return MP_OBJ_STOP_ITERATION;
 }
@@ -217,35 +214,44 @@ NORETURN void mp_raise_NotImplementedError_no_msg(void);
 #define mp_raise_NotImplementedError(msg) mp_raise_NotImplementedError_no_msg()
 #else
 #define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
-NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
 NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_ValueError(const compressed_string_t *msg);
+NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
+NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);
+#endif
+
+NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt
+    , ...);
 NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list argptr);
 // Only use this string version in native mpy files. Otherwise, use the compressed string version.
 NORETURN void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char *msg);
-NORETURN void mp_raise_ValueError(const compressed_string_t *msg);
-NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...);
-NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
-NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
+
 NORETURN void mp_raise_AttributeError(const compressed_string_t *msg);
-NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
-NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_BrokenPipeError(void);
+NORETURN void mp_raise_ConnectionError(const compressed_string_t *msg);
 NORETURN void mp_raise_ImportError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError(const compressed_string_t *msg);
 NORETURN void mp_raise_IndexError_varg(const compressed_string_t *msg, ...);
-NORETURN void mp_raise_StopIteration(mp_obj_t arg);
-NORETURN void mp_raise_OSError(int errno_);
-NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str);
-NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg);
-NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...);
-NORETURN void mp_raise_ConnectionError(const compressed_string_t *msg);
-NORETURN void mp_raise_BrokenPipeError(void);
 NORETURN void mp_raise_NotImplementedError(const compressed_string_t *msg);
 NORETURN void mp_raise_NotImplementedError_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str);
+NORETURN void mp_raise_OSError(int errno_);
+NORETURN void mp_raise_OSError_msg(const compressed_string_t *msg);
+NORETURN void mp_raise_OSError_msg_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename);
 NORETURN void mp_raise_OverflowError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_recursion_depth(void);
+NORETURN void mp_raise_RuntimeError(const compressed_string_t *msg);
+NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_StopIteration(mp_obj_t arg);
+NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
+NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_ValueError(const compressed_string_t *msg);
+NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_ZeroDivisionError(void);
-#endif
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
 #undef mp_check_self

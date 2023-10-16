@@ -29,7 +29,6 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "driver/gpio.h"
 

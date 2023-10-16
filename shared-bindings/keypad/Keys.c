@@ -184,11 +184,12 @@ STATIC const mp_rom_map_elem_t keypad_keys_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(keypad_keys_locals_dict, keypad_keys_locals_dict_table);
 #endif
 
-const mp_obj_type_t keypad_keys_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Keys,
-    .make_new = keypad_keys_make_new,
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_keys_type,
+    MP_QSTR_Keys,
+    MP_TYPE_FLAG_NONE,
+    make_new, keypad_keys_make_new
     #if CIRCUITPY_KEYPAD_KEYS
-    .locals_dict = (mp_obj_t)&keypad_keys_locals_dict,
+    , locals_dict, &keypad_keys_locals_dict
     #endif
-};
+    );

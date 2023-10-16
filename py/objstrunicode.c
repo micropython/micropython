@@ -32,8 +32,6 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 
 STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
@@ -41,13 +39,6 @@ STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_bu
 /******************************************************************************/
 /* str                                                                        */
 
-
-// These settings approximate CPython's printability. It is not
-// exhaustive and may print "unprintable" characters. All ASCII control codes
-// are escaped along with variable space widths and paragraph designators.
-// Unlike CPython, we do not escape private use codes or reserved characters.
-// We assume that the unicode is well formed.
-// CPython policy is documented here: https://github.com/python/cpython/blob/bb3e0c240bc60fe08d332ff5955d54197f79751c/Objects/unicodectype.c#L147-L159
 STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint str_len) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
@@ -74,6 +65,8 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
             mp_printf(print, "\\%c", quote_char);
         } else if (ch == '\\') {
             mp_print_str(print, "\\\\");
+        } else if (32 <= ch && ch <= 126) {
+            mp_printf(print, "%c", ch);
         } else if (ch == '\n') {
             mp_print_str(print, "\\n");
         } else if (ch == '\r') {
@@ -120,33 +113,17 @@ STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-size_t str_offset_to_index(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
-    size_t offset) {
-    if (offset > self_len) {
-        mp_raise_ValueError(MP_ERROR_TEXT("offset out of bounds"));
-    }
-
-    if (type == &mp_type_bytes) {
-        return offset;
-    }
-
-    size_t index_val = 0;
-    const byte *s = self_data;
-    for (size_t i = 0; i < offset; i++, s++) {
-        if (!UTF8_IS_CONT(*s)) {
-            ++index_val;
-        }
-    }
-    return index_val;
-}
-
 // Convert an index into a pointer to its lead byte. Out of bounds indexing will raise IndexError or
 // be capped to the first/last character of the string, depending on is_slice.
 const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, size_t self_len,
     mp_obj_t index, bool is_slice) {
     // All str functions also handle bytes objects, and they call str_index_to_ptr(),
     // so it must handle bytes.
-    if (type == &mp_type_bytes) {
+    if (type == &mp_type_bytes
+        #if MICROPY_PY_BUILTINS_BYTEARRAY
+        || type == &mp_type_bytearray
+        #endif
+        ) {
         // Taken from objstr.c:str_index_to_ptr()
         size_t index_val = mp_get_index(type, self_len, index, is_slice);
         return self_data + index_val;
@@ -159,7 +136,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_index, MP_QSTR_int, mp_obj_get_type(index)->name);
+        mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("string indices must be integers, not %s"), mp_obj_get_type_str(index));
     }
     const byte *s, *top = self_data + self_len;
     if (i < 0) {
@@ -169,7 +146,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return self_data;
                 }
-                mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_str);
+                mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("string index out of range"));
             }
             if (!UTF8_IS_CONT(*s)) {
                 ++i;
@@ -188,7 +165,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
                 if (is_slice) {
                     return top;
                 }
-                mp_raise_IndexError_varg(MP_ERROR_TEXT("%q index out of range"), MP_QSTR_str);
+                mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("string index out of range"));
             }
             // Then check completion
             if (i-- == 0) {
@@ -255,63 +232,19 @@ STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-STATIC const mp_rom_map_elem_t struni_locals_dict_table[] = {
-    #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR_encode), MP_ROM_PTR(&str_encode_obj) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_find), MP_ROM_PTR(&str_find_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rfind), MP_ROM_PTR(&str_rfind_obj) },
-    { MP_ROM_QSTR(MP_QSTR_index), MP_ROM_PTR(&str_index_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rindex), MP_ROM_PTR(&str_rindex_obj) },
-    { MP_ROM_QSTR(MP_QSTR_join), MP_ROM_PTR(&str_join_obj) },
-    { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&str_split_obj) },
-    #if MICROPY_PY_BUILTINS_STR_SPLITLINES
-    { MP_ROM_QSTR(MP_QSTR_splitlines), MP_ROM_PTR(&str_splitlines_obj) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_rsplit), MP_ROM_PTR(&str_rsplit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_startswith), MP_ROM_PTR(&str_startswith_obj) },
-    { MP_ROM_QSTR(MP_QSTR_endswith), MP_ROM_PTR(&str_endswith_obj) },
-    { MP_ROM_QSTR(MP_QSTR_strip), MP_ROM_PTR(&str_strip_obj) },
-    { MP_ROM_QSTR(MP_QSTR_lstrip), MP_ROM_PTR(&str_lstrip_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rstrip), MP_ROM_PTR(&str_rstrip_obj) },
-    { MP_ROM_QSTR(MP_QSTR_format), MP_ROM_PTR(&str_format_obj) },
-    { MP_ROM_QSTR(MP_QSTR_replace), MP_ROM_PTR(&str_replace_obj) },
-    #if MICROPY_PY_BUILTINS_STR_COUNT
-    { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&str_count_obj) },
-    #endif
-    #if MICROPY_PY_BUILTINS_STR_PARTITION
-    { MP_ROM_QSTR(MP_QSTR_partition), MP_ROM_PTR(&str_partition_obj) },
-    { MP_ROM_QSTR(MP_QSTR_rpartition), MP_ROM_PTR(&str_rpartition_obj) },
-    #endif
-    #if MICROPY_PY_BUILTINS_STR_CENTER
-    { MP_ROM_QSTR(MP_QSTR_center), MP_ROM_PTR(&str_center_obj) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_lower), MP_ROM_PTR(&str_lower_obj) },
-    { MP_ROM_QSTR(MP_QSTR_upper), MP_ROM_PTR(&str_upper_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isspace), MP_ROM_PTR(&str_isspace_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isalpha), MP_ROM_PTR(&str_isalpha_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isdigit), MP_ROM_PTR(&str_isdigit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_isupper), MP_ROM_PTR(&str_isupper_obj) },
-    { MP_ROM_QSTR(MP_QSTR_islower), MP_ROM_PTR(&str_islower_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(struni_locals_dict, struni_locals_dict_table);
-
-const mp_obj_type_t mp_type_str = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_str,
-    .print = uni_print,
-    .make_new = mp_obj_str_make_new,
-    .locals_dict = (mp_obj_dict_t *)&struni_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = uni_unary_op,
-        .binary_op = mp_obj_str_binary_op,
-        .subscr = str_subscr,
-        .getiter = mp_obj_new_str_iterator,
-        .buffer_p = { .get_buffer = mp_obj_str_get_buffer },
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_str,
+    MP_QSTR_str,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_str_make_new,
+    print, uni_print,
+    unary_op, uni_unary_op,
+    binary_op, mp_obj_str_binary_op,
+    subscr, str_subscr,
+    iter, mp_obj_new_str_iterator,
+    buffer, mp_obj_str_get_buffer,
+    locals_dict, &mp_obj_str_locals_dict
+    );
 
 /******************************************************************************/
 /* str iterator                                                               */

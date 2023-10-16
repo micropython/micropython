@@ -33,8 +33,6 @@
 #include "py/objnamedtuple.h"
 #include "py/objtype.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_COLLECTIONS
 
 size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr name) {
@@ -117,9 +115,10 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
         #endif
     }
 
-    // Create a tuple and set the type to this namedtuple
-    mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_fields, NULL));
-    tuple->base.type = type_in;
+    // Create a namedtuple with explicit malloc. Calling mp_obj_new_tuple
+    // with num_fields=0 returns a read-only object.
+    mp_obj_tuple_t *tuple = mp_obj_malloc_var(mp_obj_tuple_t, mp_obj_t, num_fields, type_in);
+    tuple->len = num_fields;
 
     // Copy the positional args into the first slots of the namedtuple
     memcpy(&tuple->items[0], args, sizeof(mp_obj_t) * n_args);
@@ -151,8 +150,7 @@ mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t
 }
 
 mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *fields) {
-    mp_obj_namedtuple_type_t *o = m_new_obj_var(mp_obj_namedtuple_type_t, qstr, n_fields);
-    memset(&o->base, 0, sizeof(o->base));
+    mp_obj_namedtuple_type_t *o = m_new_obj_var0(mp_obj_namedtuple_type_t, qstr, n_fields);
     o->n_fields = n_fields;
     for (size_t i = 0; i < n_fields; i++) {
         o->fields[i] = mp_obj_str_get_qstr(fields[i]);
@@ -162,17 +160,18 @@ mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *
 
 STATIC mp_obj_t mp_obj_new_namedtuple_type(qstr name, size_t n_fields, mp_obj_t *fields) {
     mp_obj_namedtuple_type_t *o = mp_obj_new_namedtuple_base(n_fields, fields);
-    o->base.base.type = &mp_type_type;
-    o->base.flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED; // can match tuple
-    o->base.name = name;
-    o->base.print = namedtuple_print;
-    o->base.make_new = namedtuple_make_new;
-    o->base.MP_TYPE_UNARY_OP = mp_obj_tuple_unary_op;
-    o->base.MP_TYPE_BINARY_OP = mp_obj_tuple_binary_op;
-    o->base.attr = namedtuple_attr;
-    o->base.MP_TYPE_SUBSCR = mp_obj_tuple_subscr;
-    o->base.MP_TYPE_GETITER = mp_obj_tuple_getiter;
-    o->base.parent = &mp_type_tuple;
+    mp_obj_type_t *type = (mp_obj_type_t *)&o->base;
+    type->base.type = &mp_type_type;
+    type->flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE; // can match tuple
+    type->name = name;
+    MP_OBJ_TYPE_SET_SLOT(type, make_new, namedtuple_make_new, 0);
+    MP_OBJ_TYPE_SET_SLOT(type, print, namedtuple_print, 1);
+    MP_OBJ_TYPE_SET_SLOT(type, unary_op, mp_obj_tuple_unary_op, 2);
+    MP_OBJ_TYPE_SET_SLOT(type, binary_op, mp_obj_tuple_binary_op, 3);
+    MP_OBJ_TYPE_SET_SLOT(type, attr, namedtuple_attr, 4);
+    MP_OBJ_TYPE_SET_SLOT(type, subscr, mp_obj_tuple_subscr, 5);
+    MP_OBJ_TYPE_SET_SLOT(type, iter, mp_obj_tuple_getiter, 6);
+    MP_OBJ_TYPE_SET_SLOT(type, parent, &mp_type_tuple, 7);
     return MP_OBJ_FROM_PTR(o);
 }
 

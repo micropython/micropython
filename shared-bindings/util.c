@@ -27,7 +27,6 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 // If so, deinit() has already been called on the object, so complain.
 void raise_deinited_error(void) {

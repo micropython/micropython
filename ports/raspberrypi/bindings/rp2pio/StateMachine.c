@@ -40,7 +40,6 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 //| class StateMachine:
@@ -860,9 +859,10 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(rp2pio_statemachine_locals_dict, rp2pio_statemachine_locals_dict_table);
 
-const mp_obj_type_t rp2pio_statemachine_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_StateMachine,
-    .make_new = rp2pio_statemachine_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rp2pio_statemachine_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2pio_statemachine_type,
+    MP_QSTR_StateMachine,
+    MP_TYPE_FLAG_NONE,
+    make_new, rp2pio_statemachine_make_new,
+    locals_dict, &rp2pio_statemachine_locals_dict
+    );

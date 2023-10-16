@@ -54,6 +54,11 @@ typedef unsigned int uint;
 
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
+#if defined(_MSC_VER)
+#define MP_STATIC_ASSERT_NOT_MSC(cond) (1)
+#else
+#define MP_STATIC_ASSERT_NOT_MSC(cond) MP_STATIC_ASSERT(cond)
+#endif
 
 // Round-up integer division
 #define MP_CEIL_DIVIDE(a, b) (((a) + (b) - 1) / (b))
@@ -70,6 +75,7 @@ typedef unsigned int uint;
 #define m_new_obj(type) (m_new(type, 1))
 #define m_new_obj_maybe(type) (m_new_maybe(type, 1))
 #define m_new_obj_var(obj_type, var_type, var_num) ((obj_type *)m_malloc(sizeof(obj_type) + sizeof(var_type) * (var_num)))
+#define m_new_obj_var0(obj_type, var_type, var_num) ((obj_type *)m_malloc0(sizeof(obj_type) + sizeof(var_type) * (var_num)))
 #define m_new_obj_var_maybe(obj_type, var_type, var_num) ((obj_type *)m_malloc_maybe(sizeof(obj_type) + sizeof(var_type) * (var_num)))
 #if MICROPY_ENABLE_FINALISER
 #define m_new_obj_with_finaliser(type) ((type *)(m_malloc_with_finaliser(sizeof(type))))
@@ -179,7 +185,7 @@ typedef struct _vstr_t {
     size_t alloc;
     size_t len;
     char *buf;
-    bool fixed_buf : 1;
+    bool fixed_buf;
 } vstr_t;
 
 // convenience macro to declare a vstr with a fixed size buffer on the stack
@@ -244,10 +250,12 @@ extern mp_uint_t mp_verbose_flag;
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MP_FLOAT_EXP_BITS (11)
+#define MP_FLOAT_EXP_OFFSET (1023)
 #define MP_FLOAT_FRAC_BITS (52)
 typedef uint64_t mp_float_uint_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MP_FLOAT_EXP_BITS (8)
+#define MP_FLOAT_EXP_OFFSET (127)
 #define MP_FLOAT_FRAC_BITS (23)
 typedef uint32_t mp_float_uint_t;
 #endif
@@ -294,15 +302,16 @@ typedef union _mp_float_union_t {
 
 // Force usage of the MP_ERROR_TEXT macro by requiring an opaque type.
 typedef struct {
-    #ifdef __clang__
-    // Fix "error: empty struct has size 0 in C, size 1 in C++".
+    #if defined(__clang__) || defined(_MSC_VER)
+    // Fix "error: empty struct has size 0 in C, size 1 in C++", and the msvc counterpart
+    // "C requires that a struct or union have at least one member"
     char dummy;
     #endif
 } *mp_rom_error_text_t;
 
 #include <string.h>
 
-inline __attribute__((always_inline)) const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
+inline MP_ALWAYSINLINE const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
     // "genhdr/compressed.data.h" contains an invocation of the MP_MATCH_COMPRESSED macro for each compressed string.
     // The giant if(strcmp) tree is optimized by the compiler, which turns this into a direct return of the compressed data.
     #define MP_MATCH_COMPRESSED(a, b) if (strcmp(msg, a) == 0) { return b; } else
@@ -332,7 +341,9 @@ typedef const char *mp_rom_error_text_t;
 // Might add more types of compressed text in the future.
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.
 // CIRCUITPY: MP_ERROR_TEXT() -> translate()
-#if !CIRCUITPY
+#if CIRCUITPY
+#include "supervisor/shared/translate/translate.h"
+#else
 #define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
 #endif
 

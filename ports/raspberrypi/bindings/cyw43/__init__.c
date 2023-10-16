@@ -32,6 +32,9 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "bindings/cyw43/__init__.h"
 
+#include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
+
+#include "lib/cyw43-driver/src/cyw43.h"
 
 static int power_management_value = PM_DISABLED;
 
@@ -41,7 +44,7 @@ void cyw43_enter_deep_sleep(void) {
     gpio_put(WL_REG_ON, false);
 }
 
-void bindings_cyw43_wifi_enforce_pm() {
+void bindings_cyw43_wifi_enforce_pm(void) {
     cyw43_wifi_pm(&cyw43_state, power_management_value);
 }
 
@@ -52,15 +55,13 @@ void bindings_cyw43_wifi_enforce_pm() {
 //|     in :py:mod:`board`. A `CywPin` can be used as a DigitalInOut, but not with other
 //|     peripherals such as `PWMOut`."""
 //|
-const mp_obj_type_t cyw43_pin_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_CywPin,
-    .print = shared_bindings_microcontroller_pin_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    cyw43_pin_type,
+    MP_QSTR_CywPin,
+    MP_TYPE_FLAG_NONE,
+    print, shared_bindings_microcontroller_pin_print,
+    unary_op, mp_generic_unary_op
+    );
 
 //| PM_STANDARD: int
 //| """The standard power management mode"""

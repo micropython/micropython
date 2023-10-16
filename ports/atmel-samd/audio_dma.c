@@ -432,4 +432,6 @@ void audio_dma_evsys_handler(void) {
     }
 }
 
+MP_REGISTER_ROOT_POINTER(mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT]);
+
 #endif

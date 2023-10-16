@@ -54,6 +54,8 @@
 #include "lwip/timeouts.h"
 #include "lwip/udp.h"
 
+#include "sdk/src/rp2_common/pico_cyw43_arch/include/pico/cyw43_arch.h"
+
 #define MICROPY_PY_LWIP_SOCK_RAW (1)
 
 #if 0 // print debugging info

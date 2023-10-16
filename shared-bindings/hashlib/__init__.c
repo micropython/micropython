@@ -31,7 +31,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """Hashing related functions
 //|

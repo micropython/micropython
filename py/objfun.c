@@ -34,8 +34,6 @@
 #include "py/bc.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/linker.h"
-
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #else // don't print debugging info
@@ -58,15 +56,11 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_0_call)(mp_obj_t self_in, size_t n_arg
     return self->fun._0();
 }
 
-const mp_obj_type_t mp_type_fun_builtin_0 = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_builtin_0_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_builtin_0, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    call, fun_builtin_0_call,
+    unary_op, mp_generic_unary_op
+    );
 
 STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_1_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_1));
@@ -75,32 +69,24 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_1_call)(mp_obj_t self_in, size_t n_arg
     return self->fun._1(args[0]);
 }
 
-const mp_obj_type_t mp_type_fun_builtin_1 = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_builtin_1_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_builtin_1, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    call, fun_builtin_1_call,
+    unary_op, mp_generic_unary_op
+    );
 
-STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_2_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_2));
     mp_obj_fun_builtin_fixed_t *self = MP_OBJ_TO_PTR(self_in);
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     return self->fun._2(args[0], args[1]);
 }
 
-const mp_obj_type_t mp_type_fun_builtin_2 = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_builtin_2_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_builtin_2, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    call, fun_builtin_2_call,
+    unary_op, mp_generic_unary_op
+    );
 
 STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_3_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_3));
@@ -109,17 +95,13 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_3_call)(mp_obj_t self_in, size_t n_arg
     return self->fun._3(args[0], args[1], args[2]);
 }
 
-const mp_obj_type_t mp_type_fun_builtin_3 = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_builtin_3_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_builtin_3, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    call, fun_builtin_3_call,
+    unary_op, mp_generic_unary_op
+    );
 
-STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_var_call)(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_type(self_in, &mp_type_fun_builtin_var));
     mp_obj_fun_builtin_var_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -142,15 +124,11 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_builtin_var_call)(mp_obj_t self_in, size_t n_a
     }
 }
 
-const mp_obj_type_t mp_type_fun_builtin_var = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_builtin_var_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_builtin_var, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
+    call, fun_builtin_var_call,
+    unary_op, mp_generic_unary_op
+    );
 
 /******************************************************************************/
 /* byte code functions                                                        */
@@ -374,21 +352,27 @@ void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
-const mp_obj_type_t mp_type_fun_bc = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    #if MICROPY_CPYTHON_COMPAT
-    .print = fun_bc_print,
-    #endif
-    #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = mp_obj_fun_bc_attr,
-    #endif
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_bc_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+#if MICROPY_CPYTHON_COMPAT
+#define FUN_BC_TYPE_PRINT print, fun_bc_print,
+#else
+#define FUN_BC_TYPE_PRINT
+#endif
+
+#if MICROPY_PY_FUNCTION_ATTRS
+#define FUN_BC_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define FUN_BC_TYPE_ATTR
+#endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_bc,
+    MP_QSTR_function,
+    MP_TYPE_FLAG_BINDS_SELF,
+    FUN_BC_TYPE_PRINT
+    FUN_BC_TYPE_ATTR
+    call, fun_bc_call,
+    unary_op, mp_generic_unary_op
+    );
 
 mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_module_context_t *context, struct _mp_raw_code_t *const *child_table) {
     size_t n_def_args = 0;
@@ -431,15 +415,26 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_native_call)(mp_obj_t self_in, size_t n_args, 
     return fun(self_in, n_args, n_kw, args);
 }
 
-STATIC const mp_obj_type_t mp_type_fun_native = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_native_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+#if MICROPY_CPYTHON_COMPAT
+#define FUN_BC_TYPE_PRINT print, fun_bc_print,
+#else
+#define FUN_BC_TYPE_PRINT
+#endif
+#if MICROPY_PY_FUNCTION_ATTRS
+#define FUN_BC_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define FUN_BC_TYPE_ATTR
+#endif
+
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_native,
+    MP_QSTR_function,
+    MP_TYPE_FLAG_BINDS_SELF,
+    FUN_BC_TYPE_PRINT
+    FUN_BC_TYPE_ATTR
+    call, fun_native_call,
+    unary_op, mp_generic_unary_op
+    );
 
 mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
     mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(mp_obj_new_fun_bc(def_args, (const byte *)fun_data, mc, child_table));
@@ -478,7 +473,7 @@ STATIC mp_uint_t convert_obj_for_inline_asm(mp_obj_t obj) {
         return 0;
     } else if (obj == mp_const_true) {
         return 1;
-    } else if (mp_obj_is_type(obj, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(obj, &mp_type_int)) {
         return mp_obj_int_get_truncated(obj);
     } else if (mp_obj_is_str(obj)) {
         // pointer to the string (it's probably constant though!)
@@ -541,15 +536,13 @@ STATIC mp_obj_t PLACE_IN_ITCM(fun_asm_call)(mp_obj_t self_in, size_t n_args, siz
     return mp_native_to_obj(ret, self->type_sig);
 }
 
-STATIC const mp_obj_type_t mp_type_fun_asm = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_function,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = fun_asm_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_asm,
+    MP_QSTR_function,
+    MP_TYPE_FLAG_BINDS_SELF,
+    call, fun_asm_call,
+    unary_op, mp_generic_unary_op
+    );
 
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {
     mp_obj_fun_asm_t *o = mp_obj_malloc(mp_obj_fun_asm_t, &mp_type_fun_asm);

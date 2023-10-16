@@ -126,15 +126,12 @@ STATIC mp_obj_t usb_core_devices_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-const mp_obj_type_t usb_core_devices_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_USBDevices,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = usb_core_devices_iternext,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_core_devices_type,
+    MP_QSTR_USBDevices,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, usb_core_devices_iternext
+    );
 
 STATIC mp_obj_t usb_core_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_find_all, ARG_idVendor, ARG_idProduct };

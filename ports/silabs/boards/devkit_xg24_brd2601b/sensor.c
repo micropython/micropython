@@ -27,7 +27,6 @@
 #include "py/runtime.h"
 #include "common-hal/busio/I2C.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "em_i2c.h"
 #include "sl_i2cspm.h"
 #include "sl_i2cspm_sensor_config.h"

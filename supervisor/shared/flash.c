@@ -203,12 +203,13 @@ STATIC const mp_rom_map_elem_t supervisor_flash_obj_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_flash_obj_locals_dict, supervisor_flash_obj_locals_dict_table);
 
-const mp_obj_type_t supervisor_flash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-    .make_new = supervisor_flash_obj_make_new,
-    .locals_dict = (struct _mp_obj_dict_t *)&supervisor_flash_obj_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    supervisor_flash_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    make_new, supervisor_flash_obj_make_new,
+    locals_dict, &supervisor_flash_obj_locals_dict
+    );
 
 void supervisor_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;

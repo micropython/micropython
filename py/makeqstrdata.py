@@ -342,6 +342,10 @@ def parse_input_headers_with_translations(infiles):
                     order = -190000
                 elif ident.startswith("__"):
                     order -= 100000
+                elif ident.startswith("_lt"):
+                    order -= 100000
+                elif ident.startswith("_gt"):
+                    order -= 100000
                 qstrs[ident] = (order, ident, qstr)
 
     if not qcfgs and qstrs:

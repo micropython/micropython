@@ -149,9 +149,10 @@ STATIC const mp_rom_map_elem_t analogio_analogin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(analogio_analogin_locals_dict, analogio_analogin_locals_dict_table);
 
-const mp_obj_type_t analogio_analogin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_AnalogIn,
-    .make_new = analogio_analogin_make_new,
-    .locals_dict = (mp_obj_t)&analogio_analogin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    analogio_analogin_type,
+    MP_QSTR_AnalogIn,
+    MP_TYPE_FLAG_NONE,
+    make_new, analogio_analogin_make_new,
+    locals_dict, &analogio_analogin_locals_dict
+    );

@@ -38,7 +38,6 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class SDCard:
 //|     """SD Card Block Interface with SDIO
@@ -268,9 +267,10 @@ STATIC const mp_rom_map_elem_t sdioio_sdcard_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(sdioio_sdcard_locals_dict, sdioio_sdcard_locals_dict_table);
 
-const mp_obj_type_t sdioio_SDCard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SDCard,
-    .make_new = sdioio_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t *)&sdioio_sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    sdioio_SDCard_type,
+    MP_QSTR_SDCard,
+    MP_TYPE_FLAG_NONE,
+    make_new, sdioio_sdcard_make_new,
+    locals_dict, &sdioio_sdcard_locals_dict
+    );

@@ -172,9 +172,10 @@ STATIC const mp_rom_map_elem_t espulp_ulp_locals_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(espulp_ulp_locals_dict, espulp_ulp_locals_table);
 
-const mp_obj_type_t espulp_ulp_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ULP,
-    .make_new = espulp_ulp_make_new,
-    .locals_dict = (mp_obj_t)&espulp_ulp_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espulp_ulp_type,
+    MP_QSTR_ULP,
+    MP_TYPE_FLAG_NONE,
+    make_new, espulp_ulp_make_new,
+    locals_dict, &espulp_ulp_locals_dict
+    );

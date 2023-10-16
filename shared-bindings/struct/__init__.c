@@ -36,7 +36,6 @@
 #include "py/parsenum.h"
 #include "shared-bindings/struct/__init__.h"
 #include "shared-module/struct/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """Manipulation of c-style data
 //|
@@ -74,7 +73,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     memset(p, 0, size);
     byte *end_p = &p[size];
     shared_modules_struct_pack_into(args[0], p, end_p, n_args - 1, &args[1]);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
@@ -133,8 +132,8 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_obj, 2, 3, struct_unpack);
 STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_format, ARG_buffer, ARG_offset };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_format, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_format, MP_ARG_REQUIRED | MP_ARG_OBJ, {} },
+        { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {} },
         { MP_QSTR_offset, MP_ARG_INT, {.u_int = 0} },
     };
 

@@ -35,13 +35,11 @@
 #include "py/objfun.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 // Instance of GeneratorExit exception - needed by generator.close()
 // CIRCUITPY: https://github.com/adafruit/circuitpython/pull/7069 fix
 #if MICROPY_CONST_GENERATOREXIT_OBJ
 const
-mp_obj_exception_t mp_static_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
+mp_obj_exception_t mp_const_GeneratorExit_obj = {{&mp_type_GeneratorExit}, (mp_obj_tuple_t *)&mp_const_empty_tuple_obj, (mp_obj_traceback_t *)&mp_const_empty_traceback_obj};
 #else
 static
 mp_obj_exception_t mp_static_GeneratorExit_obj;
@@ -85,32 +83,30 @@ STATIC mp_obj_t gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_kw, cons
     return MP_OBJ_FROM_PTR(o);
 }
 
-const mp_obj_type_t mp_type_gen_wrap = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_generator,
-    #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = mp_obj_fun_bc_attr,
-    #endif
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = gen_wrap_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+#if MICROPY_PY_FUNCTION_ATTRS
+#define GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define GEN_WRAP_TYPE_ATTR
+#endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_gen_wrap,
+    MP_QSTR_generator,
+    MP_TYPE_FLAG_BINDS_SELF,
+    GEN_WRAP_TYPE_ATTR
+    call, gen_wrap_call,
+    unary_op, mp_generic_unary_op
+    );
 
 #if MICROPY_PY_ASYNC_AWAIT
-const mp_obj_type_t mp_type_coro_wrap = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_coroutine,
-    #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = mp_obj_fun_bc_attr,
-    #endif
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = gen_wrap_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_coro_wrap,
+    MP_QSTR_coroutine,
+    MP_TYPE_FLAG_BINDS_SELF,
+    GEN_WRAP_TYPE_ATTR
+    call, gen_wrap_call,
+    unary_op, mp_generic_unary_op
+    );
 #endif
 
 /******************************************************************************/
@@ -175,32 +171,31 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     return MP_OBJ_FROM_PTR(o);
 }
 
-const mp_obj_type_t mp_type_native_gen_wrap = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_generator,
-    #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = mp_obj_fun_bc_attr,
-    #endif
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = native_gen_wrap_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+#if MICROPY_PY_FUNCTION_ATTRS
+#define NATIVE_GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#else
+#define NATIVE_GEN_WRAP_TYPE_ATTR
+#endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_native_gen_wrap,
+    MP_QSTR_generator,
+    MP_TYPE_FLAG_BINDS_SELF,
+    call, native_gen_wrap_call,
+    NATIVE_GEN_WRAP_TYPE_ATTR
+    unary_op, mp_generic_unary_op
+    );
+
 
 #if MICROPY_PY_ASYNC_AWAIT
-const mp_obj_type_t mp_type_native_coro_wrap = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_coroutine,
-    #if MICROPY_PY_FUNCTION_ATTRS
-    .attr = mp_obj_fun_bc_attr,
-    #endif
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = native_gen_wrap_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_native_coro_wrap,
+    MP_QSTR_coroutine,
+    MP_TYPE_FLAG_BINDS_SELF,
+    GEN_WRAP_TYPE_ATTR
+    call, native_gen_wrap_call,
+    unary_op, mp_generic_unary_op
+    );
 #endif
 
 #endif // MICROPY_EMIT_NATIVE
@@ -241,6 +236,7 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
         *ret_val = mp_const_none;
         return MP_VM_RETURN_NORMAL;
     }
+
     // Ensure the generator cannot be reentered during execution
     if (self->pend_exc == MP_OBJ_NULL) {
         mp_raise_ValueError(MP_ERROR_TEXT("generator already executing"));
@@ -337,7 +333,6 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 STATIC mp_obj_t gen_resume_and_raise(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t throw_value, bool raise_stop_iteration) {
     mp_obj_t ret;
     switch (mp_obj_gen_resume(self_in, send_value, throw_value, &ret)) {
-
         case MP_VM_RETURN_NORMAL:
         default:
             // A normal return is a StopIteration, either raise it or return
@@ -401,8 +396,10 @@ static mp_obj_t generatorexit(void) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     MP_STATIC_ASSERT(!MICROPY_CONST_GENERATOREXIT_OBJ);
     mp_obj_exception_initialize0(&mp_static_GeneratorExit_obj, &mp_type_GeneratorExit);
-    #endif
     return MP_OBJ_FROM_PTR(&mp_static_GeneratorExit_obj);
+    #else
+    return MP_OBJ_FROM_PTR(&mp_const_GeneratorExit_obj);
+    #endif
 }
 
 STATIC mp_obj_t gen_instance_close(mp_obj_t self_in) {
@@ -450,18 +447,15 @@ STATIC const mp_rom_map_elem_t gen_instance_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(gen_instance_locals_dict, gen_instance_locals_dict_table);
 
-const mp_obj_type_t mp_type_gen_instance = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_generator,
-    .print = gen_instance_print,
-    .locals_dict = (mp_obj_dict_t *)&gen_instance_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        .getiter = mp_identity_getiter,
-        .iternext = gen_instance_iternext,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_gen_instance,
+    MP_QSTR_generator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    print, gen_instance_print,
+    unary_op, mp_generic_unary_op,
+    iter, gen_instance_iternext,
+    locals_dict, &gen_instance_locals_dict
+    );
 
 #if MICROPY_PY_ASYNC_AWAIT
 // CIRCUITPY
@@ -474,23 +468,18 @@ STATIC const mp_rom_map_elem_t coro_instance_locals_dict_table[] = {
     #if MICROPY_PY_GENERATOR_PEND_THROW
     { MP_ROM_QSTR(MP_QSTR_pend_throw), MP_ROM_PTR(&gen_instance_pend_throw_obj) },
     #endif
-    #if MICROPY_PY_ASYNC_AWAIT
     { MP_ROM_QSTR(MP_QSTR___await__), MP_ROM_PTR(&coro_instance_await_obj) },
-    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(coro_instance_locals_dict, coro_instance_locals_dict_table);
 
-const mp_obj_type_t mp_type_coro_instance = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_coroutine,
-    .print = coro_instance_print,
-    .locals_dict = (mp_obj_dict_t *)&coro_instance_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        .getiter = mp_identity_getiter,
-        .iternext = gen_instance_iternext,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_coro_instance,
+    MP_QSTR_coroutine,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    print, coro_instance_print,
+    unary_op, mp_generic_unary_op,
+    iter, gen_instance_iternext,
+    locals_dict, &coro_instance_locals_dict
+    );
 #endif

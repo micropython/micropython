@@ -7,7 +7,7 @@ ECHO = @echo
 RM = /bin/rm
 MKDIR = /bin/mkdir
 PYTHON = python3
-MPY_CROSS = $(MPY_DIR)/mpy-cross/mpy-cross
+MPY_CROSS = $(MPY_DIR)/mpy-cross/build/mpy-cross
 MPY_TOOL = $(PYTHON) $(MPY_DIR)/tools/mpy-tool.py
 MPY_LD = $(PYTHON) $(MPY_DIR)/tools/mpy_ld.py
 
@@ -35,7 +35,7 @@ CFLAGS += -U _FORTIFY_SOURCE # prevent use of __*_chk libc functions
 
 MPY_CROSS_FLAGS += -march=$(ARCH)
 
-SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC))))
+SRC_O += $(addprefix $(BUILD)/, $(patsubst %.c,%.o,$(filter %.c,$(SRC))) $(patsubst %.S,%.o,$(filter %.S,$(SRC))))
 SRC_MPY += $(addprefix $(BUILD)/, $(patsubst %.py,%.mpy,$(filter %.py,$(SRC))))
 
 ################################################################################
@@ -132,6 +132,11 @@ $(CONFIG_H): $(SRC)
 # Build .o from .c source files
 $(BUILD)/%.o: %.c $(CONFIG_H) Makefile
 	$(ECHO) "CC $<"
+	$(Q)$(CROSS)gcc $(CFLAGS) -o $@ -c $<
+
+# Build .o from .S source files
+$(BUILD)/%.o: %.S $(CONFIG_H) Makefile
+	$(ECHO) "AS $<"
 	$(Q)$(CROSS)gcc $(CFLAGS) -o $@ -c $<
 
 # Build .mpy from .py source files

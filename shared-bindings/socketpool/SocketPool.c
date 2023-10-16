@@ -194,12 +194,13 @@ STATIC const mp_rom_map_elem_t socketpool_socketpool_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(socketpool_socketpool_locals_dict, socketpool_socketpool_locals_dict_table);
 
-const mp_obj_type_t socketpool_socketpool_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SocketPool,
-    .make_new = socketpool_socketpool_make_new,
-    .locals_dict = (mp_obj_dict_t *)&socketpool_socketpool_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    socketpool_socketpool_type,
+    MP_QSTR_SocketPool,
+    MP_TYPE_FLAG_NONE,
+    make_new, socketpool_socketpool_make_new,
+    locals_dict, &socketpool_socketpool_locals_dict
+    );
 
 MP_WEAK
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketpool_obj_t *self, const char *host) {
@@ -219,7 +220,7 @@ void common_hal_socketpool_socketpool_raise_gaierror_noname(void) {
 
     mp_obj_t exc_args[] = {
         MP_OBJ_NEW_SMALL_INT(SOCKETPOOL_EAI_NONAME),
-        mp_obj_new_str_from_vstr(&mp_type_str, &vstr),
+        mp_obj_new_str_from_vstr(&vstr),
     };
     nlr_raise(mp_obj_new_exception_args(&mp_type_gaierror, MP_ARRAY_SIZE(exc_args), exc_args));
 }

@@ -33,7 +33,6 @@
 #include "common-hal/rtc/RTC.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate/translate.h"
 
 // This is the time in seconds since 2000 that the RTC was started.
 __attribute__((section(".uninitialized"))) static uint32_t rtc_offset[3];

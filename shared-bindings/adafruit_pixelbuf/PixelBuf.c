@@ -368,15 +368,13 @@ STATIC const mp_rom_map_elem_t pixelbuf_pixelbuf_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_locals_dict_table);
 
 
-const mp_obj_type_t pixelbuf_pixelbuf_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PixelBuf,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
-    .make_new = pixelbuf_pixelbuf_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = pixelbuf_pixelbuf_subscr,
-        .unary_op = pixelbuf_pixelbuf_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pixelbuf_pixelbuf_type,
+    MP_QSTR_PixelBuf,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    locals_dict, &pixelbuf_pixelbuf_locals_dict,
+    make_new, pixelbuf_pixelbuf_make_new,
+    subscr, pixelbuf_pixelbuf_subscr,
+    unary_op, pixelbuf_pixelbuf_unary_op,
+    iter, mp_obj_generic_subscript_getiter
+    );

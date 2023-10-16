@@ -29,8 +29,6 @@
 
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig) {
     // TODO maybe take the function name as an argument so we can print nicer error messages
 
@@ -174,7 +172,7 @@ NORETURN void mp_arg_error_terse_mismatch(void) {
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not yet implemented - use normal args instead"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not implemented - use normal args instead"));
 }
 #endif
 

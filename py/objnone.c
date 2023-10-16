@@ -43,15 +43,13 @@ STATIC void none_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     }
 }
 
-const mp_obj_type_t mp_type_NoneType = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_NoneType,
-    .print = none_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_NoneType,
+    MP_QSTR_NoneType,
+    MP_TYPE_FLAG_NONE,
+    print, none_print,
+    unary_op, mp_generic_unary_op
+    );
 
 #if !MICROPY_OBJ_IMMEDIATE_OBJS
 const mp_obj_none_t mp_const_none_obj = {{&mp_type_NoneType}};

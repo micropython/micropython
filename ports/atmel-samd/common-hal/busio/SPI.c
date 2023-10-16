@@ -33,7 +33,6 @@
 #include "peripheral_clk_config.h"
 
 #include "supervisor/board.h"
-#include "supervisor/shared/translate/translate.h"
 #include "common-hal/busio/__init__.h"
 
 #include "hal/include/hal_gpio.h"

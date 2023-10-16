@@ -144,7 +144,7 @@ mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, u
     }
     wifi_scannednetworks_obj_t *scan = mp_obj_malloc(wifi_scannednetworks_obj_t, &wifi_scannednetworks_type);
     mp_obj_t args[] = { mp_const_empty_tuple, MP_OBJ_NEW_SMALL_INT(16) };
-    scan->results = mp_type_deque.make_new(&mp_type_deque, 2, 0, args);
+    scan->results = MP_OBJ_TYPE_GET_SLOT(&mp_type_deque, make_new)(&mp_type_deque, 2, 0, args);
     self->current_scan = scan;
     wifi_scannednetworks_start_scan(scan);
     return scan;

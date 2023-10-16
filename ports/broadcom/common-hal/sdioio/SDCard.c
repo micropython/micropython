@@ -35,7 +35,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "peripherals/broadcom/cpu.h"
 #include "peripherals/broadcom/defines.h"

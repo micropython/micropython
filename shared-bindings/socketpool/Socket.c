@@ -447,13 +447,11 @@ STATIC const mp_stream_p_t socket_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t socketpool_socket_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Socket,
-    .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        .protocol = &socket_stream_p,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    socketpool_socket_type,
+    MP_QSTR_Socket,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &socketpool_socket_locals_dict,
+    unary_op, mp_generic_unary_op,
+    protocol, &socket_stream_p
+    );

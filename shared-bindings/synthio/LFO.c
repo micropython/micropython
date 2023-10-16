@@ -291,14 +291,12 @@ STATIC const synthio_block_proto_t lfo_proto = {
     .tick = common_hal_synthio_lfo_tick,
 };
 
-const mp_obj_type_t synthio_lfo_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_LFO,
-    .make_new = synthio_lfo_make_new,
-    .locals_dict = (mp_obj_dict_t *)&synthio_lfo_locals_dict,
-    .print = lfo_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &lfo_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    synthio_lfo_type,
+    MP_QSTR_LFO,
+    MP_TYPE_FLAG_NONE,
+    make_new, synthio_lfo_make_new,
+    locals_dict, &synthio_lfo_locals_dict,
+    print, lfo_print,
+    protocol, &lfo_proto
+    );

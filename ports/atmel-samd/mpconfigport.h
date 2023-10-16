@@ -62,7 +62,7 @@
 
 #define MICROPY_FATFS_EXFAT    (0)
 // FAT32 mkfs takes about 500 bytes.
-#define MICROPY_FF_MKFS_FAT32 (0)
+#define MICROPY_FATFS_MKFS_FAT32 (0)
 
 // Only support simpler HID descriptors on SAMD21.
 #define CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (1)
@@ -269,14 +269,5 @@
 // due to limitations of chips is handled in mpconfigboard.mk
 
 #include "peripherals/samd/dma.h"
-
-#if CIRCUITPY_AUDIOCORE
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT];
-#else
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS
-#endif
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

@@ -1,0 +1,122 @@
+File cmdline/cmd_showbc_opt.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 35 bytes)
+Raw bytecode (code_info_size=13, bytecode_size=22):
+ 00 16 01 60 20 64 40 84 07 64 40 84 07 32 00 16
+ 02 32 01 16 03 32 02 16 04 32 03 16 05 32 04 16
+ 06 51 63
+arg names:
+(N_STATE 1)
+(N_EXC_STACK 0)
+  bc=0 line=1
+  bc=0 line=4
+  bc=0 line=5
+  bc=4 line=8
+  bc=4 line=10
+  bc=8 line=17
+  bc=12 line=20
+  bc=12 line=22
+  bc=16 line=29
+00 MAKE_FUNCTION \.\+
+02 STORE_NAME f0
+04 MAKE_FUNCTION \.\+
+06 STORE_NAME f1
+08 MAKE_FUNCTION \.\+
+10 STORE_NAME f2
+12 MAKE_FUNCTION \.\+
+14 STORE_NAME f3
+16 MAKE_FUNCTION \.\+
+18 STORE_NAME f4
+20 LOAD_CONST_NONE
+21 RETURN_VALUE
+File cmdline/cmd_showbc_opt.py, code block 'f0' (descriptor: \.\+, bytecode @\.\+ 8 bytes)
+Raw bytecode (code_info_size=6, bytecode_size=2):
+ 08 08 02 60 40 22 80 63
+arg names:
+(N_STATE 2)
+(N_EXC_STACK 0)
+  bc=0 line=1
+  bc=0 line=4
+  bc=0 line=6
+  bc=2 line=7
+00 LOAD_CONST_SMALL_INT 0
+01 RETURN_VALUE
+File cmdline/cmd_showbc_opt.py, code block 'f1' (descriptor: \.\+, bytecode @\.\+ 22 bytes)
+Raw bytecode (code_info_size=9, bytecode_size=13):
+ 11 0e 03 08 80 0a 23 22 20 b0 44 42 51 63 12 07
+ 82 34 01 59 51 63
+arg names: x
+(N_STATE 3)
+(N_EXC_STACK 0)
+  bc=0 line=1
+  bc=0 line=11
+  bc=3 line=12
+  bc=5 line=13
+  bc=5 line=14
+00 LOAD_FAST 0
+01 POP_JUMP_IF_FALSE 5
+03 LOAD_CONST_NONE
+04 RETURN_VALUE
+05 LOAD_GLOBAL print
+07 LOAD_CONST_SMALL_INT 2
+08 CALL_FUNCTION n=1 nkw=0
+10 POP_TOP
+11 LOAD_CONST_NONE
+12 RETURN_VALUE
+File cmdline/cmd_showbc_opt.py, code block 'f2' (descriptor: \.\+, bytecode @\.\+ 10 bytes)
+Raw bytecode (code_info_size=7, bytecode_size=3):
+ 11 0a 04 08 80 11 23 12 09 65
+arg names: x
+(N_STATE 3)
+(N_EXC_STACK 0)
+  bc=0 line=1
+  bc=0 line=18
+  bc=3 line=19
+00 LOAD_GLOBAL Exception
+02 RAISE_OBJ
+File cmdline/cmd_showbc_opt.py, code block 'f3' (descriptor: \.\+, bytecode @\.\+ 24 bytes)
+Raw bytecode (code_info_size=9, bytecode_size=15):
+ 11 0e 05 08 80 16 22 22 23 42 42 42 43 b0 43 3b
+ 12 07 82 34 01 59 51 63
+arg names: x
+(N_STATE 3)
+(N_EXC_STACK 0)
+  bc=0 line=1
+  bc=0 line=23
+  bc=2 line=24
+  bc=4 line=25
+  bc=7 line=26
+00 JUMP 4
+02 JUMP 7
+04 LOAD_FAST 0
+05 POP_JUMP_IF_TRUE 2
+07 LOAD_GLOBAL print
+09 LOAD_CONST_SMALL_INT 2
+10 CALL_FUNCTION n=1 nkw=0
+12 POP_TOP
+13 LOAD_CONST_NONE
+14 RETURN_VALUE
+File cmdline/cmd_showbc_opt.py, code block 'f4' (descriptor: \.\+, bytecode @\.\+ 24 bytes)
+Raw bytecode (code_info_size=9, bytecode_size=15):
+ 11 0e 06 08 80 1d 22 22 23 42 42 42 40 b0 43 3b
+ 12 07 82 34 01 59 51 63
+arg names: x
+(N_STATE 3)
+(N_EXC_STACK 0)
+  bc=0 line=1
+  bc=0 line=30
+  bc=2 line=31
+  bc=4 line=32
+  bc=7 line=33
+00 JUMP 4
+02 JUMP 4
+04 LOAD_FAST 0
+05 POP_JUMP_IF_TRUE 2
+07 LOAD_GLOBAL print
+09 LOAD_CONST_SMALL_INT 2
+10 CALL_FUNCTION n=1 nkw=0
+12 POP_TOP
+13 LOAD_CONST_NONE
+14 RETURN_VALUE
+mem: total=\\d\+, current=\\d\+, peak=\\d\+
+stack: \\d\+ out of \\d\+
+GC: total: \\d\+, used: \\d\+, free: \\d\+
+ No. of 1-blocks: \\d\+, 2-blocks: \\d\+, max blk sz: \\d\+, max free sz: \\d\+

@@ -38,7 +38,6 @@
 #include "hal/utils/include/utils_repeat_macro.h"
 #include "samd/pins.h"
 #include "samd/timers.h"
-#include "supervisor/shared/translate/translate.h"
 
 #undef ENABLE
 

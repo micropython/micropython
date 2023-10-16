@@ -382,14 +382,12 @@ STATIC const mp_rom_map_elem_t dotclockframebuffer_framebuffer_locals_dict_table
 };
 STATIC MP_DEFINE_CONST_DICT(dotclockframebuffer_framebuffer_locals_dict, dotclockframebuffer_framebuffer_locals_dict_table);
 
-const mp_obj_type_t dotclockframebuffer_framebuffer_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_DotClockFramebuffer,
-    .make_new = dotclockframebuffer_framebuffer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&dotclockframebuffer_framebuffer_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .buffer_p = { .get_buffer = dotclockframebuffer_framebuffer_get_buffer, },
-        .protocol = &dotclockframebuffer_framebuffer_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    dotclockframebuffer_framebuffer_type,
+    MP_QSTR_DotClockFramebuffer,
+    MP_TYPE_FLAG_NONE,
+    make_new, dotclockframebuffer_framebuffer_make_new,
+    locals_dict, &dotclockframebuffer_framebuffer_locals_dict,
+    buffer, dotclockframebuffer_framebuffer_get_buffer,
+    protocol, &dotclockframebuffer_framebuffer_proto
+    );
