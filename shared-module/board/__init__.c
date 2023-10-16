@@ -27,7 +27,6 @@
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/board/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 #include "mpconfigboard.h"
 #include "py/runtime.h"
 
@@ -139,6 +138,9 @@ mp_obj_t common_hal_board_create_spi(const mp_int_t instance) {
 #endif
 
 #if CIRCUITPY_BOARD_UART
+
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t board_uart_bus);
 
 typedef struct {
     const mcu_pin_obj_t *tx;

@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class MixerVoice:
 //|     """Voice objects used with Mixer
@@ -65,7 +64,7 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
 STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -106,7 +105,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixervoice_get_level_obj, audiomixer_mixerv
 STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_level };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_level,     MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_level,     MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
     };
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -154,9 +153,10 @@ STATIC const mp_rom_map_elem_t audiomixer_mixervoice_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiomixer_mixervoice_locals_dict, audiomixer_mixervoice_locals_dict_table);
 
-const mp_obj_type_t audiomixer_mixervoice_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MixerVoice,
-    .make_new = audiomixer_mixervoice_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiomixer_mixervoice_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiomixer_mixervoice_type,
+    MP_QSTR_MixerVoice,
+    MP_TYPE_FLAG_NONE,
+    make_new, audiomixer_mixervoice_make_new,
+    locals_dict, &audiomixer_mixervoice_locals_dict
+    );

@@ -37,7 +37,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 
 // TODO: This should be the same size as PWMOut.c:pwms[], but there's no trivial way to accomplish that
 STATIC audiopwmio_pwmaudioout_obj_t *active_audio[4];

@@ -30,7 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/objproperty.h"
-#include "supervisor/shared/translate/translate.h"
+
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 
 //| class OnDiskBitmap:
@@ -148,9 +148,10 @@ STATIC const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondiskbitmap_locals_dict_table);
 
-const mp_obj_type_t displayio_ondiskbitmap_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_OnDiskBitmap,
-    .make_new = displayio_ondiskbitmap_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_ondiskbitmap_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_ondiskbitmap_type,
+    MP_QSTR_OnDiskBitmap,
+    MP_TYPE_FLAG_NONE,
+    make_new, displayio_ondiskbitmap_make_new,
+    locals_dict, &displayio_ondiskbitmap_locals_dict
+    );

@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Group:
 //|     """Manage a group of sprites and groups and how they are inter-related."""
@@ -349,15 +348,13 @@ STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_dict_table);
 
-const mp_obj_type_t displayio_group_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Group,
-    .make_new = displayio_group_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_group_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = group_subscr,
-        .unary_op = group_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_group_type,
+    MP_QSTR_Group,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, displayio_group_make_new,
+    locals_dict, &displayio_group_locals_dict,
+    subscr, group_subscr,
+    unary_op, group_unary_op,
+    iter, mp_obj_generic_subscript_getiter
+    );

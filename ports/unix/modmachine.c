@@ -36,8 +36,6 @@
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PLAT_DEV_MEM
 #include <errno.h>
 #include <fcntl.h>

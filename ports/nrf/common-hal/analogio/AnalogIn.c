@@ -29,7 +29,6 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_saadc.h"
 #include "nrf_gpio.h"

@@ -345,6 +345,9 @@
 	path = ports/raspberrypi/lib/Pico-PIO-USB
 	url = https://github.com/sekigon-gonnoc/Pico-PIO-USB.git
 	branch = main
+[submodule "lib/micropython-lib"]
+	path = lib/micropython-lib
+	url = https://github.com/micropython/micropython-lib.git
 [submodule "lib/certificates"]
 	path = lib/certificates
 	url = https://github.com/adafruit/certificates

@@ -79,13 +79,14 @@
 //|     """
 //|
 
-const mp_obj_type_t mp_type_WatchDogTimeout = {
-    { &mp_type_type },
-    .name = MP_QSTR_WatchDogTimeout,
-    .make_new = mp_obj_exception_make_new,
-    .attr = mp_obj_exception_attr,
-    .parent = &mp_type_Exception,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_WatchDogTimeout,
+    MP_QSTR_WatchDogTimeout,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_obj_exception_make_new,
+    attr, mp_obj_exception_attr,
+    parent, &mp_type_Exception
+    );
 
 mp_obj_exception_t mp_watchdog_timeout_exception = {
     .base.type = &mp_type_WatchDogTimeout,

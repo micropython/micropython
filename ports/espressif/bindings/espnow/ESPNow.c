@@ -359,14 +359,14 @@ STATIC mp_obj_t espnow_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-const mp_obj_type_t espnow_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ESPNow,
-    .make_new = espnow_make_new,
-    .locals_dict = (mp_obj_t)&espnow_locals_dict,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &espnow_stream_p,
-        .unary_op = &espnow_unary_op
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espnow_type,
+    MP_QSTR_ESPNow,
+    MP_TYPE_FLAG_NONE,
+    make_new, espnow_make_new,
+    locals_dict, &espnow_locals_dict,
+    protocol, &espnow_stream_p,
+    unary_op, &espnow_unary_op
+    );
+
+MP_REGISTER_ROOT_POINTER(struct _espnow_obj_t *espnow_singleton);

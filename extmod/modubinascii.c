@@ -30,8 +30,9 @@
 
 #include "py/runtime.h"
 #include "py/binary.h"
+#include "py/objstr.h"
 
-#include "supervisor/shared/translate/translate.h"
+#include "lib/uzlib/tinf.h"
 
 #if MICROPY_PY_UBINASCII
 
@@ -42,76 +43,19 @@ static void check_not_unicode(const mp_obj_t arg) {
     }
     #endif
 }
-STATIC mp_obj_t mod_binascii_hexlify(size_t n_args, const mp_obj_t *args) {
-    // First argument is the data to convert.
-    // Second argument is an optional separator to be used between values.
-    const char *sep = NULL;
-    mp_buffer_info_t bufinfo;
-    check_not_unicode(args[0]);
-    mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
 
-    // Code below assumes non-zero buffer length when computing size with
-    // separator, so handle the zero-length case here.
-    if (bufinfo.len == 0) {
-        return mp_const_empty_bytes;
-    }
-
-    vstr_t vstr;
-    size_t out_len = bufinfo.len * 2;
-    if (n_args > 1) {
-        // 1-char separator between hex numbers
-        out_len += bufinfo.len - 1;
-        sep = mp_obj_str_get_str(args[1]);
-    }
-    vstr_init_len(&vstr, out_len);
-    byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
-    for (mp_uint_t i = bufinfo.len; i--;) {
-        byte d = (*in >> 4);
-        if (d > 9) {
-            d += 'a' - '9' - 1;
-        }
-        *out++ = d + '0';
-        d = (*in++ & 0xf);
-        if (d > 9) {
-            d += 'a' - '9' - 1;
-        }
-        *out++ = d + '0';
-        if (sep != NULL && i != 0) {
-            *out++ = *sep;
-        }
-    }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+#if MICROPY_PY_BUILTINS_BYTES_HEX
+STATIC mp_obj_t bytes_hex_as_bytes(size_t n_args, const mp_obj_t *args) {
+    return mp_obj_bytes_hex(n_args, args, &mp_type_bytes);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_hexlify_obj, 1, 2, mod_binascii_hexlify);
 
-STATIC mp_obj_t mod_binascii_unhexlify(mp_obj_t data) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(data, &bufinfo, MP_BUFFER_READ);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bytes_hex_as_bytes_obj, 1, 2, bytes_hex_as_bytes);
 
-    if ((bufinfo.len & 1) != 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("odd-length string"));
-    }
-    vstr_t vstr;
-    vstr_init_len(&vstr, bufinfo.len / 2);
-    byte *in = bufinfo.buf, *out = (byte *)vstr.buf;
-    byte hex_byte = 0;
-    for (mp_uint_t i = bufinfo.len; i--;) {
-        byte hex_ch = *in++;
-        if (unichar_isxdigit(hex_ch)) {
-            hex_byte += unichar_xdigit_value(hex_ch);
-        } else {
-            mp_raise_ValueError(MP_ERROR_TEXT("non-hex digit found"));
-        }
-        if (i & 1) {
-            hex_byte <<= 4;
-        } else {
-            *out++ = hex_byte;
-            hex_byte = 0;
-        }
-    }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+STATIC mp_obj_t bytes_fromhex_bytes(mp_obj_t data) {
+    return mp_obj_bytes_fromhex(MP_OBJ_FROM_PTR(&mp_type_bytes), data);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_unhexlify_obj, mod_binascii_unhexlify);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(bytes_fromhex_obj, bytes_fromhex_bytes);
+#endif
 
 // If ch is a character in the base64 alphabet, and is not a pad character, then
 // the corresponding integer between 0 and 63, inclusively, is returned.
@@ -171,7 +115,7 @@ STATIC mp_obj_t mod_binascii_a2b_base64(mp_obj_t data) {
         mp_raise_ValueError(MP_ERROR_TEXT("incorrect padding"));
     }
 
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_binascii_a2b_base64_obj, mod_binascii_a2b_base64);
 
@@ -184,6 +128,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *pos_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     uint8_t newline = args[ARG_newline].u_bool;
+    // CIRCUITPY
     check_not_unicode(pos_args[0]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(pos_args[0], &bufinfo, MP_BUFFER_READ);
@@ -234,7 +179,7 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *pos_args,
     if (newline) {
         *out = '\n';
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
 
@@ -274,53 +219,30 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b
  *    any source distribution.
  */
 
-/*
- * CRC32 algorithm taken from the zlib source, which is
- * Copyright (C) 1995-1998 Jean-loup Gailly and Mark Adler
- */
-
-
-static const unsigned int tinf_crc32tab[16] = {
-    0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac, 0x76dc4190,
-    0x6b6b51f4, 0x4db26158, 0x5005713c, 0xedb88320, 0xf00f9344,
-    0xd6d6a3e8, 0xcb61b38c, 0x9b64c2b0, 0x86d3d2d4, 0xa00ae278,
-    0xbdbdf21c
-};
-
-/* crc is previous value for incremental computation, 0xffffffff initially */
-static uint32_t from_uzlib_crc32(const void *data, unsigned int length, uint32_t crc) {
-    const unsigned char *buf = (const unsigned char *)data;
-    unsigned int i;
-
-    for (i = 0; i < length; ++i)
-    {
-        crc ^= buf[i];
-        crc = tinf_crc32tab[crc & 0x0f] ^ (crc >> 4);
-        crc = tinf_crc32tab[crc & 0x0f] ^ (crc >> 4);
-    }
-
-    // return value suitable for passing in next time, for final value invert it
-    return crc /* ^ 0xffffffff*/;
-}
-
+#if MICROPY_PY_UBINASCII_CRC32
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
+    // CIRCUITPY
     check_not_unicode(args[0]);
     mp_get_buffer_raise(args[0], &bufinfo, MP_BUFFER_READ);
     uint32_t crc = (n_args > 1) ? mp_obj_get_int_truncated(args[1]) : 0;
-    crc = from_uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
+    crc = uzlib_crc32(bufinfo.buf, bufinfo.len, crc ^ 0xffffffff);
     return mp_obj_new_int_from_uint(crc ^ 0xffffffff);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_binascii_crc32_obj, 1, 2, mod_binascii_crc32);
-
+#endif
 
 STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_binascii) },
-    { MP_ROM_QSTR(MP_QSTR_hexlify), MP_ROM_PTR(&mod_binascii_hexlify_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unhexlify), MP_ROM_PTR(&mod_binascii_unhexlify_obj) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ubinascii) },
+    #if MICROPY_PY_BUILTINS_BYTES_HEX
+    { MP_ROM_QSTR(MP_QSTR_hexlify), MP_ROM_PTR(&bytes_hex_as_bytes_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unhexlify), MP_ROM_PTR(&bytes_fromhex_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_a2b_base64), MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
     { MP_ROM_QSTR(MP_QSTR_b2a_base64), MP_ROM_PTR(&mod_binascii_b2a_base64_obj) },
+    #if MICROPY_PY_UBINASCII_CRC32
     { MP_ROM_QSTR(MP_QSTR_crc32), MP_ROM_PTR(&mod_binascii_crc32_obj) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_binascii_globals, mp_module_binascii_globals_table);

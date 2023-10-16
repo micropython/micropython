@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -419,11 +419,6 @@ right_arrow_key:
                 // right arrow
                 if (rl.cursor_pos < rl.line->len) {
                     redraw_step_forward = 1;
-                    // Check if we have moved into a UTF-8 continuation byte
-                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos+redraw_step_forward]) &&
-                            rl.cursor_pos+redraw_step_forward < rl.line->len) {
-                        redraw_step_forward++;
-                    }
                 }
             } else if (c == 'D') {
 #if MICROPY_REPL_EMACS_KEYS
@@ -432,11 +427,6 @@ left_arrow_key:
                 // left arrow
                 if (rl.cursor_pos > rl.orig_line_len) {
                     redraw_step_back = 1;
-                    // Check if we have moved into a UTF-8 continuation byte
-                    while (UTF8_IS_CONT(rl.line->buf[rl.cursor_pos-redraw_step_back])) {
-                        redraw_step_back++;
-                        cont_chars++;
-                    }
                 }
             } else if (c == 'H') {
                 // home
@@ -637,10 +627,12 @@ void readline_push_history(const char *line) {
         // so update the history
         char *most_recent_hist = str_dup_maybe(line);
         if (most_recent_hist != NULL) {
-            for (int i = READLINE_HIST_SIZE - 1; i > 0; i--) {
+            for (int i = MICROPY_READLINE_HISTORY_SIZE - 1; i > 0; i--) {
                 MP_STATE_PORT(readline_hist)[i] = MP_STATE_PORT(readline_hist)[i - 1];
             }
             MP_STATE_PORT(readline_hist)[0] = most_recent_hist;
         }
     }
 }
+
+MP_REGISTER_ROOT_POINTER(const char *readline_hist[MICROPY_READLINE_HISTORY_SIZE]);

@@ -42,7 +42,6 @@
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "driver/i2s_std.h"
 

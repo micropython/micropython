@@ -57,5 +57,5 @@ mp_obj_t shared_module_getpass_getpass(const char *prompt, mp_print_t *print) {
         }
     }
 
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_vstr(&vstr);
 }

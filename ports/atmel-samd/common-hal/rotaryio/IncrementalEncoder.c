@@ -33,7 +33,6 @@
 #include "eic_handler.h"
 #include "samd/external_interrupts.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
     const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {

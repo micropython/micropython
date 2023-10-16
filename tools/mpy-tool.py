@@ -88,6 +88,7 @@ class FreezeError(Exception):
 
 class Config:
     MPY_VERSION = 6
+    MPY_SUB_VERSION = 1
     MICROPY_LONGINT_IMPL_NONE = 0
     MICROPY_LONGINT_IMPL_LONGLONG = 1
     MICROPY_LONGINT_IMPL_MPZ = 2
@@ -935,6 +936,10 @@ class RawCode(object):
                 % (self.escaped_name, self.offset_line_info)
             )
             print(
+                "        .line_info_top = fun_data_%s + %u,"
+                % (self.escaped_name, self.offset_closure_info)
+            )
+            print(
                 "        .opcodes = fun_data_%s + %u," % (self.escaped_name, self.offset_opcodes)
             )
             print("    },")
@@ -1334,6 +1339,9 @@ def read_mpy(filename):
         feature_byte = header[2]
         mpy_native_arch = feature_byte >> 2
         if mpy_native_arch != MP_NATIVE_ARCH_NONE:
+            mpy_sub_version = feature_byte & 3
+            if mpy_sub_version != config.MPY_SUB_VERSION:
+                raise MPYReadError(filename, "incompatible .mpy sub-version")
             if config.native_arch == MP_NATIVE_ARCH_NONE:
                 config.native_arch = mpy_native_arch
             elif config.native_arch != mpy_native_arch:
@@ -1657,7 +1665,9 @@ def merge_mpy(compiled_modules, output_file):
     else:
         main_cm_idx = None
         for idx, cm in enumerate(compiled_modules):
-            if cm.header[2]:
+            feature_byte = cm.header[2]
+            mpy_native_arch = feature_byte >> 2
+            if mpy_native_arch:
                 # Must use qstr_table and obj_table from this raw_code
                 if main_cm_idx is not None:
                     raise Exception("can't merge files when more than one contains native code")
@@ -1669,7 +1679,7 @@ def merge_mpy(compiled_modules, output_file):
         header = bytearray(4)
         header[0] = ord("C")
         header[1] = config.MPY_VERSION
-        header[2] = config.native_arch << 2
+        header[2] = config.native_arch << 2 | config.MPY_SUB_VERSION if config.native_arch else 0
         header[3] = config.mp_small_int_bits
         merged_mpy.extend(header)
 

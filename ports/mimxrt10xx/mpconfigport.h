@@ -52,10 +52,7 @@ extern uint8_t _ld_default_stack_size;
 
 #include "py/circuitpy_mpconfig.h"
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-
 // TODO:
-//    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT];
+//    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT] as an MP_REGISTER_ROOT_POINTER.
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

@@ -34,7 +34,6 @@
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PulseOut:
 //|     """Pulse PWM "carrier" output on and off. This is commonly used in infrared remotes. The
@@ -148,9 +147,10 @@ STATIC const mp_rom_map_elem_t pulseio_pulseout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pulseio_pulseout_locals_dict, pulseio_pulseout_locals_dict_table);
 
-const mp_obj_type_t pulseio_pulseout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PulseOut,
-    .make_new = pulseio_pulseout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pulseio_pulseout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pulseio_pulseout_type,
+    MP_QSTR_PulseOut,
+    MP_TYPE_FLAG_NONE,
+    make_new, pulseio_pulseout_make_new,
+    locals_dict, &pulseio_pulseout_locals_dict
+    );

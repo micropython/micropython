@@ -196,3 +196,5 @@ void SD_EVT_IRQHandler(void) {
     ble_serial_enable();
     #endif
 }
+
+MP_REGISTER_ROOT_POINTER(ble_drv_evt_handler_entry_t * ble_drv_evt_handler_entries);

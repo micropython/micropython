@@ -54,7 +54,7 @@ except NotImplementedError:
 # str(...) with keywords not implemented
 try:
     str(b"abc", encoding="utf8")
-except TypeError:
+except NotImplementedError:
     print("TypeError")
 
 # str.rsplit(None, n) not implemented

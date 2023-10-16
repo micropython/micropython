@@ -318,7 +318,7 @@ const mp_fun_table_t mp_fun_table = {
     gc_realloc,
     mp_printf,
     mp_vprintf,
-    mp_raise_msg_str,
+    mp_raise_msg_str, // CIRCUITPY
     mp_obj_get_type,
     mp_obj_new_str,
     mp_obj_new_bytes,

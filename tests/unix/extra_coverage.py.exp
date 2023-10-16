@@ -17,6 +17,8 @@ abc
 # GC
 0x0
 0x0
+# GC part 2
+pass
 # tracked allocation
 m_tracked_head = 0x0
 0 1
@@ -54,23 +56,20 @@ audiomixer      binascii        bitmaptools     cexample
 cmath           collections     cppexample      displayio
 errno           gc              hashlib         heapq
 io              json            math            os
-qrio            rainbowio       random          re
-select          struct          synthio         sys
-termios         time            traceback       uctypes
-ulab            ulab.numpy      ulab.numpy.fft
-ulab.numpy.linalg               ulab.scipy
-ulab.scipy.linalg               ulab.scipy.optimize
-ulab.scipy.signal               ulab.scipy.special
-ulab.utils      zlib
+platform        qrio            rainbowio       random
+re              select          struct          synthio
+sys             time            traceback       uctypes
+ulab            zlib
 me
 
 rainbowio       random
 
 argv            atexit          byteorder       exc_info
-exit            getsizeof       implementation  maxsize
-modules         path            platform        print_exception
-ps1             ps2             stderr          stdin
-stdout          tracebacklimit  version         version_info
+executable      exit            getsizeof       implementation
+maxsize         modules         path            platform
+print_exception                 ps1             ps2
+stderr          stdin           stdout          tracebacklimit
+version         version_info
 ementation
 # attrtuple
 (start=1, stop=2, step=3)
@@ -183,7 +182,6 @@ OSError
 None
 None
 cpp None
-5
 (3, 'hellocpp')
 frzstr1
 frzstr1.py
@@ -204,3 +202,13 @@ X
 '\x1b'
 b'\x00\xff'
 NULL
+uPy
+a long string that is not interned
+a string that has unicode αβγ chars
+b'bytes 1234\x01'
+123456789
+0
+1
+2
+3
+frozentest.py

@@ -214,12 +214,13 @@ STATIC const mp_rom_map_elem_t i2ctarget_i2c_target_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(i2ctarget_i2c_target_locals_dict, i2ctarget_i2c_target_locals_dict_table);
 
-const mp_obj_type_t i2ctarget_i2c_target_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2CTarget,
-    .make_new = i2ctarget_i2c_target_make_new,
-    .locals_dict = (mp_obj_dict_t *)&i2ctarget_i2c_target_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    i2ctarget_i2c_target_type,
+    MP_QSTR_I2CTarget,
+    MP_TYPE_FLAG_NONE,
+    make_new, i2ctarget_i2c_target_make_new,
+    locals_dict, &i2ctarget_i2c_target_locals_dict
+    );
 
 //| class I2CTargetRequest:
 //|     def __init__(
@@ -416,9 +417,10 @@ STATIC const mp_rom_map_elem_t i2ctarget_i2c_target_request_locals_dict_table[] 
 
 STATIC MP_DEFINE_CONST_DICT(i2ctarget_i2c_target_request_locals_dict, i2ctarget_i2c_target_request_locals_dict_table);
 
-const mp_obj_type_t i2ctarget_i2c_target_request_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2CTargetRequest,
-    .make_new = i2ctarget_i2c_target_request_make_new,
-    .locals_dict = (mp_obj_dict_t *)&i2ctarget_i2c_target_request_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    i2ctarget_i2c_target_request_type,
+    MP_QSTR_I2CTargetRequest,
+    MP_TYPE_FLAG_NONE,
+    make_new, i2ctarget_i2c_target_request_make_new,
+    locals_dict, &i2ctarget_i2c_target_request_locals_dict
+    );

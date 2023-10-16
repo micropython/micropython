@@ -18,10 +18,12 @@ prepare_script_for_target = __import__("run-tests").prepare_script_for_target
 # Paths for host executables
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/windows/micropython.exe")
+    MICROPYTHON = os.getenv(
+        "MICROPY_MICROPYTHON", "../ports/windows/build-standard/micropython.exe"
+    )
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/micropython")
+    MICROPYTHON = os.getenv("MICROPY_MICROPYTHON", "../ports/unix/build-standard/micropython")
 
 PYTHON_TRUTH = CPYTHON3
 
@@ -187,7 +189,7 @@ def parse_output(filename):
         m = int(m.split("=")[1])
         data = []
         for l in f:
-            if l.find(": ") != -1 and l.find(": SKIP") == -1 and l.find("CRASH: ") == -1:
+            if ": " in l and ": SKIP" not in l and "CRASH: " not in l:
                 name, values = l.strip().split(": ")
                 values = tuple(float(v) for v in values.split())
                 data.append((name,) + values)
@@ -258,9 +260,12 @@ def main():
     cmd_parser.add_argument(
         "--emit", default="bytecode", help="MicroPython emitter to use (bytecode or native)"
     )
+    cmd_parser.add_argument("--heapsize", help="heapsize to use (use default if not specified)")
     cmd_parser.add_argument("--via-mpy", action="store_true", help="compile code to .mpy first")
     cmd_parser.add_argument("--mpy-cross-flags", default="", help="flags to pass to mpy-cross")
-    cmd_parser.add_argument("N", nargs=1, help="N parameter (approximate target CPU frequency)")
+    cmd_parser.add_argument(
+        "N", nargs=1, help="N parameter (approximate target CPU frequency in MHz)"
+    )
     cmd_parser.add_argument("M", nargs=1, help="M parameter (approximate target heap in kbytes)")
     cmd_parser.add_argument("files", nargs="*", help="input test files")
     args = cmd_parser.parse_args()
@@ -283,6 +288,8 @@ def main():
         target.enter_raw_repl()
     else:
         target = [MICROPYTHON, "-X", "emit=" + args.emit]
+        if args.heapsize is not None:
+            target.extend(["-X", "heapsize=" + args.heapsize])
 
     if len(args.files) == 0:
         tests_skip = ("benchrun.py",)

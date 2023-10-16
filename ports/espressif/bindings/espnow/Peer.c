@@ -222,9 +222,10 @@ STATIC const mp_rom_map_elem_t espnow_peer_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_peer_locals_dict, espnow_peer_locals_dict_table);
 
-const mp_obj_type_t espnow_peer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Peer,
-    .make_new = espnow_peer_make_new,
-    .locals_dict = (mp_obj_t)&espnow_peer_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espnow_peer_type,
+    MP_QSTR_Peer,
+    MP_TYPE_FLAG_NONE,
+    make_new, espnow_peer_make_new,
+    locals_dict, &espnow_peer_locals_dict
+    );

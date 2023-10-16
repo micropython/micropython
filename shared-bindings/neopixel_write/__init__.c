@@ -30,7 +30,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 // RGB LED timing information:
 

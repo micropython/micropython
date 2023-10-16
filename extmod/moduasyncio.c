@@ -35,8 +35,6 @@
 #include "shared-bindings/supervisor/__init__.h"
 #endif
 
-#include "supervisor/shared/translate/translate.h"
-
 // Used when task cannot be guaranteed to be non-NULL.
 #define TASK_PAIRHEAP(task) ((task) ? &(task)->pairheap : NULL)
 
@@ -65,32 +63,19 @@ STATIC const mp_obj_type_t task_queue_type;
 STATIC const mp_obj_type_t task_type;
 
 STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
-STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
 
-// CIRCUITPY-style ticks
-#define _TICKS_PERIOD (1lu << 29)
-#define _TICKS_MAX (_TICKS_PERIOD - 1)
-#define _TICKS_HALFPERIOD (_TICKS_PERIOD >> 1)
-#if !CIRCUITPY || (defined(__unix__) || defined(__APPLE__))
 STATIC mp_obj_t ticks(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & _TICKS_MAX);
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_UTIME_TICKS_PERIOD - 1));
 }
-#else
-// We don't share the implementation above because our supervisor_ticks_ms
-// starts the epoch about 65 seconds before the first overflow (see
-// shared-bindings/supervisor/__init__.c). We assume/require that
-// supervisor.ticks_ms is picked as the ticks implementation under
-// CircuitPython for the Python-coded bits of asyncio.
-#define ticks() supervisor_ticks_ms()
-#endif
 
 STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
     mp_uint_t t0 = MP_OBJ_SMALL_INT_VALUE(t0_in);
     mp_uint_t t1 = MP_OBJ_SMALL_INT_VALUE(t1_in);
-    mp_int_t diff = ((t1 - t0 + _TICKS_HALFPERIOD) & _TICKS_MAX) - _TICKS_HALFPERIOD;
+    mp_int_t diff = ((t1 - t0 + MICROPY_PY_UTIME_TICKS_PERIOD / 2) & (MICROPY_PY_UTIME_TICKS_PERIOD - 1))
+        - MICROPY_PY_UTIME_TICKS_PERIOD / 2;
     return diff;
 }
 
@@ -161,19 +146,20 @@ STATIC const mp_rom_map_elem_t task_queue_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pop), MP_ROM_PTR(&task_queue_pop_obj) },
     { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&task_queue_remove_obj) },
 
-    // CIRCUITPYTHON: remove these after the bundle need not support 8.x
+    // CIRCUITPYTHON: Remove these in CircuitPython 10.0.0
     { MP_ROM_QSTR(MP_QSTR_push_head), MP_ROM_PTR(&task_queue_push_obj) },
     { MP_ROM_QSTR(MP_QSTR_push_sorted), MP_ROM_PTR(&task_queue_push_obj) },
     { MP_ROM_QSTR(MP_QSTR_pop_head), MP_ROM_PTR(&task_queue_pop_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(task_queue_locals_dict, task_queue_locals_dict_table);
 
-STATIC const mp_obj_type_t task_queue_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_TaskQueue,
-    .make_new = task_queue_make_new,
-    .locals_dict = (mp_obj_dict_t *)&task_queue_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    task_queue_type,
+    MP_QSTR_TaskQueue,
+    MP_TYPE_FLAG_NONE,
+    make_new, task_queue_make_new,
+    locals_dict, &task_queue_locals_dict
+    );
 
 /******************************************************************************/
 // Task class
@@ -248,6 +234,8 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
 
 // CIRCUITPY provides __await__().
+STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+
 STATIC mp_obj_t task_await(mp_obj_t self_in) {
     return task_getiter(self_in, NULL);
 }
@@ -271,7 +259,6 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             dest[1] = self_in;
         } else if (attr == MP_QSTR_ph_key) {
             dest[0] = self->ph_key;
-            // CIRCUITPY provides __await__().
         } else if (attr == MP_QSTR___await__) {
             dest[0] = MP_OBJ_FROM_PTR(&task_await_obj);
             dest[1] = self_in;
@@ -307,7 +294,6 @@ STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
     if (TASK_IS_DONE(self)) {
-        // CIRCUITPY
         if (self->data == mp_const_none) {
             // Task finished but has already been sent to the loop's exception handler.
             mp_raise_StopIteration(MP_OBJ_NULL);
@@ -326,27 +312,25 @@ STATIC mp_obj_t task_iternext(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-STATIC const mp_obj_type_t task_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Task,
-    .make_new = task_make_new,
-    .attr = task_attr,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = task_getiter,
-        .iternext = task_iternext,
-        ),
+STATIC const mp_getiter_iternext_custom_t task_getiter_iternext = {
+    .getiter = task_getiter,
+    .iternext = task_iternext,
 };
+
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    task_type,
+    MP_QSTR_Task,
+    MP_TYPE_FLAG_ITER_IS_CUSTOM,
+    make_new, task_make_new,
+    attr, task_attr,
+    iter, &task_getiter_iternext
+    );
 
 /******************************************************************************/
 // C-level uasyncio module
 
 STATIC const mp_rom_map_elem_t mp_module_uasyncio_globals_table[] = {
-    #if CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__asyncio) },
-    #else
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__uasyncio) },
-    #endif
     { MP_ROM_QSTR(MP_QSTR_TaskQueue), MP_ROM_PTR(&task_queue_type) },
     { MP_ROM_QSTR(MP_QSTR_Task), MP_ROM_PTR(&task_type) },
 };

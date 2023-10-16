@@ -493,4 +493,5 @@ void isr_dma_0(void) {
     }
 }
 
+MP_REGISTER_ROOT_POINTER(mp_obj_t playing_audio[enum_NUM_DMA_CHANNELS]);
 #endif

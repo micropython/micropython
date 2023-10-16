@@ -34,7 +34,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class ColorConverter:
 //|     """Converts one color format to another."""
@@ -136,9 +135,10 @@ STATIC const mp_rom_map_elem_t displayio_colorconverter_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_colorconverter_locals_dict, displayio_colorconverter_locals_dict_table);
 
-const mp_obj_type_t displayio_colorconverter_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ColorConverter,
-    .make_new = displayio_colorconverter_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_colorconverter_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_colorconverter_type,
+    MP_QSTR_ColorConverter,
+    MP_TYPE_FLAG_NONE,
+    make_new, displayio_colorconverter_make_new,
+    locals_dict, &displayio_colorconverter_locals_dict
+    );

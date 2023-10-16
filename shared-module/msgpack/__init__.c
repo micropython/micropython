@@ -36,7 +36,6 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/msgpack/ExtType.h"
 #include "shared-bindings/msgpack/__init__.h"
 #include "shared-module/msgpack/__init__.h"
@@ -376,7 +375,7 @@ STATIC mp_obj_t unpack_bytes(msgpack_stream_t *s, size_t size) {
         size -= n;
         p += n;
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 STATIC mp_obj_t unpack_ext(msgpack_stream_t *s, size_t size, mp_obj_t ext_hook) {
@@ -475,7 +474,7 @@ STATIC mp_obj_t unpack(msgpack_stream_t *s, mp_obj_t ext_hook, bool use_list) {
             vstr_init_len(&vstr, size);
             byte *p = (byte *)vstr.buf;
             read(s, p, size);
-            return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            return mp_obj_new_str_from_vstr(&vstr);
         }
         case 0xde:
         case 0xdf: {

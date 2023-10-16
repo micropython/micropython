@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 STATIC I2CSPM_Init_TypeDef i2cspm_init;

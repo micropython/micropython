@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// This file should be compiled when included from vfs_lfs.c.
+#if defined(LFS_BUILD_VERSION)
+
 #include <stdio.h>
 #include <string.h>
 
@@ -35,6 +38,10 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 #include "shared/timeutils/timeutils.h"
+
+#if !MICROPY_ENABLE_FINALISER
+#error "MICROPY_VFS_LFS requires MICROPY_ENABLE_FINALISER"
+#endif
 
 STATIC int MP_VFS_LFSx(dev_ioctl)(const struct LFSx_API (config) * c, int cmd, int arg, bool must_return_int) {
     mp_obj_t ret = mp_vfs_blockdev_ioctl(c->context, cmd, arg);
@@ -155,6 +162,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(MP_VFS_LFSx(open_obj), MP_VFS_LFSx(file_open));
 typedef struct MP_VFS_LFSx (_ilistdir_it_t) {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
+    mp_fun_1_t finaliser;
     bool is_str;
     MP_OBJ_VFS_LFSx *vfs;
     LFSx_API(dir_t) dir;
@@ -163,11 +171,16 @@ typedef struct MP_VFS_LFSx (_ilistdir_it_t) {
 STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     MP_VFS_LFSx(ilistdir_it_t) * self = MP_OBJ_TO_PTR(self_in);
 
+    if (self->vfs == NULL) {
+        return MP_OBJ_STOP_ITERATION;
+    }
+
     struct LFSx_API (info) info;
     for (;;) {
         int ret = LFSx_API(dir_read)(&self->vfs->lfs, &self->dir, &info);
         if (ret == 0) {
             LFSx_API(dir_close)(&self->vfs->lfs, &self->dir);
+            self->vfs = NULL;
             return MP_OBJ_STOP_ITERATION;
         }
         if (!(info.name[0] == '.' && (info.name[1] == '\0'
@@ -190,6 +203,14 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_iternext)(mp_obj_t self_in) {
     return MP_OBJ_FROM_PTR(t);
 }
 
+STATIC mp_obj_t MP_VFS_LFSx(ilistdir_it_del)(mp_obj_t self_in) {
+    MP_VFS_LFSx(ilistdir_it_t) * self = MP_OBJ_TO_PTR(self_in);
+    if (self->vfs != NULL) {
+        LFSx_API(dir_close)(&self->vfs->lfs, &self->dir);
+    }
+    return mp_const_none;
+}
+
 STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) {
     MP_OBJ_VFS_LFSx *self = MP_OBJ_TO_PTR(args[0]);
     bool is_str_type = true;
@@ -203,14 +224,17 @@ STATIC mp_obj_t MP_VFS_LFSx(ilistdir_func)(size_t n_args, const mp_obj_t *args) 
         path = vstr_null_terminated_str(&self->cur_dir);
     }
 
-    MP_VFS_LFSx(ilistdir_it_t) * iter = mp_obj_malloc(MP_VFS_LFSx(ilistdir_it_t), &mp_type_polymorph_iter);
+    MP_VFS_LFSx(ilistdir_it_t) * iter = m_new_obj_with_finaliser(MP_VFS_LFSx(ilistdir_it_t));
+    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
+
     iter->iternext = MP_VFS_LFSx(ilistdir_it_iternext);
+    iter->finaliser = MP_VFS_LFSx(ilistdir_it_del);
     iter->is_str = is_str_type;
-    iter->vfs = self;
     int ret = LFSx_API(dir_open)(&self->lfs, &iter->dir, path);
     if (ret < 0) {
         mp_raise_OSError(-ret);
     }
+    iter->vfs = self;
     return MP_OBJ_FROM_PTR(iter);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(MP_VFS_LFSx(ilistdir_obj), 1, 2, MP_VFS_LFSx(ilistdir_func));
@@ -481,17 +505,21 @@ STATIC const mp_vfs_proto_t MP_VFS_LFSx(proto) = {
     .import_stat = MP_VFS_LFSx(import_stat),
 };
 
-const mp_obj_type_t MP_TYPE_VFS_LFSx = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    #if LFS_BUILD_VERSION == 1
-    .name = MP_QSTR_VfsLfs1,
-    #else
-    .name = MP_QSTR_VfsLfs2,
-    #endif
-    .make_new = MP_VFS_LFSx(make_new),
-    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(locals_dict),
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &MP_VFS_LFSx(proto),
-        ),
-};
+#if LFS_BUILD_VERSION == 1
+#define VFS_LFSx_QSTR MP_QSTR_VfsLfs1
+#else
+#define VFS_LFSx_QSTR MP_QSTR_VfsLfs2
+#endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    MP_TYPE_VFS_LFSx,
+    VFS_LFSx_QSTR,
+    MP_TYPE_FLAG_NONE,
+    make_new, MP_VFS_LFSx(make_new),
+    protocol, &MP_VFS_LFSx(proto),
+    locals_dict, &MP_VFS_LFSx(locals_dict)
+    );
+
+#undef VFS_LFSx_QSTR
+
+#endif // defined(LFS_BUILD_VERSION)

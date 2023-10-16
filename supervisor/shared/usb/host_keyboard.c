@@ -318,7 +318,7 @@ void tuh_hid_report_received_cb(uint8_t dev_addr, uint8_t instance, uint8_t cons
 }
 
 void usb_keyboard_init(void) {
-    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
+    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf));
 }
 
 bool usb_keyboard_chars_available(void) {

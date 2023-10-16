@@ -317,10 +317,11 @@ STATIC const mp_rom_map_elem_t synthio_note_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(synthio_note_locals_dict, synthio_note_locals_dict_table);
 
-const mp_obj_type_t synthio_note_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Note,
-    .make_new = synthio_note_make_new,
-    .locals_dict = (mp_obj_dict_t *)&synthio_note_locals_dict,
-    .print = note_print,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    synthio_note_type,
+    MP_QSTR_Note,
+    MP_TYPE_FLAG_NONE,
+    make_new, synthio_note_make_new,
+    locals_dict, &synthio_note_locals_dict,
+    print, note_print
+    );

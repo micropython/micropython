@@ -34,7 +34,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PDMIn:
 //|     """Record an input PDM audio stream"""
@@ -242,11 +241,12 @@ STATIC const mp_rom_map_elem_t audiobusio_pdmin_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(audiobusio_pdmin_locals_dict, audiobusio_pdmin_locals_dict_table);
 #endif
 
-const mp_obj_type_t audiobusio_pdmin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PDMIn,
-    .make_new = audiobusio_pdmin_make_new,
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiobusio_pdmin_type,
+    MP_QSTR_PDMIn,
+    MP_TYPE_FLAG_NONE,
+    make_new, audiobusio_pdmin_make_new
     #if CIRCUITPY_AUDIOBUSIO_PDMIN
-    .locals_dict = (mp_obj_dict_t *)&audiobusio_pdmin_locals_dict,
+    , locals_dict, &audiobusio_pdmin_locals_dict
     #endif
-};
+    );

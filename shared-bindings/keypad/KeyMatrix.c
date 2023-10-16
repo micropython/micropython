@@ -250,11 +250,12 @@ STATIC MP_DEFINE_CONST_DICT(keypad_keymatrix_locals_dict, keypad_keymatrix_local
 
 #endif
 
-const mp_obj_type_t keypad_keymatrix_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_KeyMatrix,
-    .make_new = keypad_keymatrix_make_new,
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_keymatrix_type,
+    MP_QSTR_KeyMatrix,
+    MP_TYPE_FLAG_NONE,
+    make_new, keypad_keymatrix_make_new
     #if CIRCUITPY_KEYPAD_KEYMATRIX
-    .locals_dict = (mp_obj_t)&keypad_keymatrix_locals_dict,
+    , locals_dict, &keypad_keymatrix_locals_dict
     #endif
-};
+    );

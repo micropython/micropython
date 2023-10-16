@@ -32,7 +32,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/util.h"
 #include "supervisor/board.h"
-#include "supervisor/shared/translate/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Pin.h"
 

@@ -104,14 +104,15 @@ STATIC void espidf_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
 //|
 //|     ...
 //|
-const mp_obj_type_t mp_type_espidf_IDFError = {
-    { &mp_type_type },
-    .name = MP_QSTR_IDFError,
-    .print = espidf_exception_print,
-    .make_new = mp_obj_exception_make_new,
-    .attr = mp_obj_exception_attr,
-    .parent = &mp_type_OSError,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_espidf_IDFError,
+    MP_QSTR_IDFError,
+    MP_TYPE_FLAG_NONE,
+    print, espidf_exception_print,
+    make_new, mp_obj_exception_make_new,
+    attr, mp_obj_exception_attr,
+    parent, &mp_type_OSError
+    );
 
 //| class MemoryError(builtins.MemoryError):
 //|     """Raised when an ``ESP-IDF`` memory allocation fails."""
@@ -122,14 +123,15 @@ NORETURN void mp_raise_espidf_MemoryError(void) {
     nlr_raise(mp_obj_new_exception(&mp_type_espidf_MemoryError));
 }
 
-const mp_obj_type_t mp_type_espidf_MemoryError = {
-    { &mp_type_type },
-    .name = MP_QSTR_MemoryError,
-    .print = espidf_exception_print,
-    .make_new = mp_obj_exception_make_new,
-    .attr = mp_obj_exception_attr,
-    .parent = &mp_type_MemoryError,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_espidf_MemoryError,
+    MP_QSTR_MemoryError,
+    MP_TYPE_FLAG_NONE,
+    print, espidf_exception_print,
+    make_new, mp_obj_exception_make_new,
+    attr, mp_obj_exception_attr,
+    parent, &mp_type_MemoryError
+    );
 
 //| def get_total_psram() -> int:
 //|     """Returns the number of bytes of psram detected, or 0 if psram is not present or not configured"""
@@ -168,3 +170,5 @@ const mp_obj_module_t espidf_module = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&espidf_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_espidf, espidf_module);

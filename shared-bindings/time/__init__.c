@@ -34,7 +34,6 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """time and timing related functions
 //|
@@ -119,23 +118,7 @@ STATIC mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, s
 //|         ...
 //|
 const mp_obj_namedtuple_type_t struct_time_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_struct_time,
-        .print = namedtuple_print,
-        .parent = &mp_type_tuple,
-        .make_new = struct_time_make_new,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS_MAKE_NEW(MP_QSTR_struct_time, struct_time_make_new),
     .n_fields = 9,
     .fields = {
         MP_QSTR_tm_year,
@@ -177,7 +160,7 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     mp_obj_t *elems;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, (mp_obj_type_t *)&struct_time_type_obj.base)) {
         mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 
@@ -291,7 +274,7 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     mp_obj_t *elem;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, (mp_obj_type_t *)&struct_time_type_obj.base)) {
         mp_raise_TypeError(translate("Tuple or struct_time argument required"));
     }
 
