@@ -24,7 +24,7 @@ static const char *example_2 =
     "gc.collect()\n"
     "\n"
     "print('finish')\n"
-    ;
+;
 
 // This array is the MicroPython GC heap.
 static char heap[8 * 1024];

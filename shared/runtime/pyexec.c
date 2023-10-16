@@ -797,4 +797,4 @@ mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj, pyb_set_repl_info);
 #endif
 
-MP_REGISTER_ROOT_POINTER(vstr_t *repl_line);
+MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
