@@ -587,6 +587,20 @@ MP_WEAK void SystemClock_Config(void) {
     // Enable the Debug Module in low-power modes.
     DBGMCU->CR |= (DBGMCU_CR_DBG_SLEEPD1 | DBGMCU_CR_DBG_STOPD1 | DBGMCU_CR_DBG_STANDBYD1);
     #endif
+
+    // Configure the analog switches
+    #ifdef MICROPY_HW_ANALOG_SWITCH_PA0
+    HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PA0, MICROPY_HW_ANALOG_SWITCH_PA0);
+    #endif
+    #ifdef MICROPY_HW_ANALOG_SWITCH_PA1
+    HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PA1, MICROPY_HW_ANALOG_SWITCH_PA1);
+    #endif
+    #ifdef MICROPY_HW_ANALOG_SWITCH_PC2
+    HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC2, MICROPY_HW_ANALOG_SWITCH_PC2);
+    #endif
+    #ifdef MICROPY_HW_ANALOG_SWITCH_PC3
+    HAL_SYSCFG_AnalogSwitchConfig(SYSCFG_SWITCH_PC3, MICROPY_HW_ANALOG_SWITCH_PC3);
+    #endif
 }
 
 #endif
