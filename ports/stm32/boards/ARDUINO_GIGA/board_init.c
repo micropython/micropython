@@ -37,10 +37,10 @@ void GIGA_board_early_init(void) {
 
     // The following pins need to be configured at this point to fix an
     // issue with some boards that have an older QSPI flash part revision.
-    mp_hal_pin_config(pin_PD13, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pin_D13, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
     __HAL_RCC_GPIOD_CLK_DISABLE();
 
-    mp_hal_pin_config(pin_PF7, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+    mp_hal_pin_config(pin_F7, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
     __HAL_RCC_GPIOF_CLK_DISABLE();
 
     #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE == 1
