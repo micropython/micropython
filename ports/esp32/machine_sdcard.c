@@ -269,7 +269,6 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         SET_CONFIG_PIN(bus_config, miso_io_num, ARG_miso);
         SET_CONFIG_PIN(bus_config, mosi_io_num, ARG_mosi);
         SET_CONFIG_PIN(bus_config, sclk_io_num, ARG_sck);
-
         SET_CONFIG_PIN(dev_config, gpio_cs, ARG_cs);
         SET_CONFIG_PIN(dev_config, gpio_cd, ARG_cd);
         SET_CONFIG_PIN(dev_config, gpio_wp, ARG_wp);
@@ -301,7 +300,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         SET_CONFIG_PIN(slot_config, clk, ARG_sck);
         SET_CONFIG_PIN(slot_config, cmd, ARG_mosi);
         SET_CONFIG_PIN(slot_config, d0, ARG_miso);
-        
+
         SET_CONFIG_PIN(slot_config, gpio_cd, ARG_cd);
         SET_CONFIG_PIN(slot_config, gpio_wp, ARG_wp);
 
