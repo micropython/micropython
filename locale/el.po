@@ -642,8 +642,8 @@ msgid "Below minimum frame rate"
 msgstr "Χαμηλότερο από το ελάχιστο frame rate"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
-msgstr "Ρολόι bit και word select πρέπει να είναι διαδοχικά pins"
+msgid "Bit clock and word select must be sequential GPIO pins"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1124,8 +1124,6 @@ msgstr ""
 msgid "Generic Failure"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -4361,6 +4359,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Ρολόι bit και word select πρέπει να είναι διαδοχικά pins"
 
 #~ msgid "ADC2 is being used by WiFi"
 #~ msgstr "Το ADC2 χρησιμοποιείται απο το WIFI"

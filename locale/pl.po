@@ -632,7 +632,7 @@ msgid "Below minimum frame rate"
 msgstr "Poniżej minimalnej liczby klatek na sekundę"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
+msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
@@ -1106,8 +1106,6 @@ msgstr ""
 msgid "Generic Failure"
 msgstr ""
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c

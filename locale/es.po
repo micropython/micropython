@@ -647,8 +647,8 @@ msgid "Below minimum frame rate"
 msgstr "Por debajo de la tasa mínima de refrescamiento"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
-msgstr "Los pines \"clock\" y \"word-select\" deben ser consecutivos"
+msgid "Bit clock and word select must be sequential GPIO pins"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1135,8 +1135,6 @@ msgstr "Inicialización GNSS"
 msgid "Generic Failure"
 msgstr "Fallo Genérico"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -4423,6 +4421,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Los pines \"clock\" y \"word-select\" deben ser consecutivos"
 
 #~ msgid "Initialization failed due to lack of memory"
 #~ msgstr "Inicializacion fallida por falta de memoria"

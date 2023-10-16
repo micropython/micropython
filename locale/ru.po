@@ -646,9 +646,8 @@ msgid "Below minimum frame rate"
 msgstr "Ниже минимальной частоты кадров"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
+msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr ""
-"Битовый тактовый генератор и выбор слова должны быть последовательными пинами"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1141,8 +1140,6 @@ msgstr "Инициализация GNSS"
 msgid "Generic Failure"
 msgstr "Общий сбой"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -4440,6 +4437,11 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr ""
+#~ "Битовый тактовый генератор и выбор слова должны быть последовательными "
+#~ "пинами"
 
 #~ msgid "Initialization failed due to lack of memory"
 #~ msgstr "Инициализация не удалась из-за нехватки памяти"

@@ -645,8 +645,8 @@ msgid "Below minimum frame rate"
 msgstr "dīyú zuìdī zhēnlǜ"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
-msgstr "wèi shízhōng hé zì xuǎnzé bìxū shì liánxù de yǐn jiǎo"
+msgid "Bit clock and word select must be sequential GPIO pins"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1126,8 +1126,6 @@ msgstr "GNSS chūshǐhuà"
 msgid "Generic Failure"
 msgstr "tōng yòng gù zhàng"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -4397,6 +4395,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "wèi shízhōng hé zì xuǎnzé bìxū shì liánxù de yǐn jiǎo"
 
 #~ msgid "Initialization failed due to lack of memory"
 #~ msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
