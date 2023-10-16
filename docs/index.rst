@@ -33,6 +33,7 @@ Full Table of Contents
    design_guide
    porting
    common_hal
+   reference/glossary.rst
 
 .. toctree::
    :maxdepth: 2
