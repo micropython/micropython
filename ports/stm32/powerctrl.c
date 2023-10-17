@@ -498,6 +498,9 @@ set_clk:
     RCC_OscInitStruct.OscillatorType = MICROPY_HW_RCC_OSCILLATOR_TYPE;
     RCC_OscInitStruct.HSEState = MICROPY_HW_RCC_HSE_STATE;
     RCC_OscInitStruct.HSIState = MICROPY_HW_RCC_HSI_STATE;
+    #if defined(STM32G0) || defined(STM32H5)
+    RCC_OscInitStruct.HSIDiv = RCC_HSI_DIV1;
+    #endif
     RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
     RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
     RCC_OscInitStruct.PLL.PLLSource = MICROPY_HW_RCC_PLL_SRC;
@@ -506,7 +509,24 @@ set_clk:
     RCC_OscInitStruct.PLL.PLLP = p;
     RCC_OscInitStruct.PLL.PLLQ = q;
 
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    RCC_OscInitStruct.PLL.PLLR = 0;
+    if (MICROPY_HW_CLK_VALUE / 1000000 <= 2 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_0; // 1-2MHz
+    } else if (MICROPY_HW_CLK_VALUE / 1000000 <= 4 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_1; // 2-4MHz
+    } else if (MICROPY_HW_CLK_VALUE / 1000000 <= 8 * m) {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_2; // 4-8MHz
+    } else {
+        RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1_VCIRANGE_3; // 8-16MHz
+    }
+    if (MICROPY_HW_CLK_VALUE / 1000000 * n <= 420 * m) {
+        RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1_VCORANGE_MEDIUM; // 150-420MHz
+    } else {
+        RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1_VCORANGE_WIDE; // 192-836MHz
+    }
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    #elif defined(STM32H7)
     RCC_OscInitStruct.PLL.PLLR = 0;
     if (MICROPY_HW_CLK_VALUE / 1000000 <= 2 * m) {
         RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_0; // 1-2MHz
