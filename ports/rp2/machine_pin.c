@@ -166,7 +166,7 @@ const machine_pin_af_obj_t *machine_pin_find_alt_by_index(const machine_pin_obj_
     return NULL;
 }
 
-static const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
+const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
     // Is already a object of the proper type
     if (mp_obj_is_type(pin, &machine_pin_type)) {
         return pin;
