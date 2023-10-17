@@ -298,7 +298,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
         // it is a good idea to set the internal pull-ups anyway.
         // slot_config.flags = SDMMC_SLOT_FLAG_INTERNAL_PULLUP;
 
-        #if CONFIG_IDF_TARGET_ESP32
+        #if CONFIG_IDF_TARGET_ESP32S3
         SET_CONFIG_PIN(slot_config, clk, ARG_sck);
         SET_CONFIG_PIN(slot_config, cmd, ARG_mosi);
         SET_CONFIG_PIN(slot_config, d0, ARG_miso);
