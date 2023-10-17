@@ -33,11 +33,16 @@
 #include "em_wdog.h"
 #include "em_cmu.h"
 
+static bool _wdt_init = false;
+
 void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
     WDOGn_Feed(DEFAULT_WDOG);
 }
 
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
+    if (!_wdt_init) {
+        return;
+    }
     WDOG_Enable(false);
 }
 
@@ -105,6 +110,8 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self,
 
         // Initializing watchdog with chosen settings
         WDOGn_Init(DEFAULT_WDOG, &wdogInit);
+
+        _wdt_init = true;
     }
 }
 

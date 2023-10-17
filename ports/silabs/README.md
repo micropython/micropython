@@ -34,6 +34,8 @@ Install necessary packages
     sudo apt install default-jre gcc-arm-none-eabi wget python3 python3-pip git git-lfs gettext uncrustify
     sudo python -m pip install --upgrade pip
 
+**Note** that this uses git lfs and will not link without it. The error is something like "Unknown file format" because git lfs has a text placeholder file.
+
 ## Supported boards ##
 
 | Board                       | Code         | Build CMD                                  |
@@ -70,6 +72,13 @@ You may also build with certain flags available in the makefile, depending on yo
 Clean the project by using:
 
     make BOARD=explorerkit_xg24_brd2703a clean
+
+## Flashing CircuitPython
+
+Flash the project by using [Simplicity Commander](https://community.silabs.com/s/article/simplicity-commander?language=en_US):
+
+    make BOARD=explorerkit_xg24_brd2703a flash
+
 
 ## Running CircuitPython ##
 
