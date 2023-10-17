@@ -48,11 +48,11 @@ static void storage_systick_callback(uint32_t ticks_ms);
 
 void storage_init(void) {
     if (!storage_is_initialised) {
-        storage_is_initialised = true;
-
         systick_enable_dispatch(SYSTICK_DISPATCH_STORAGE, storage_systick_callback);
 
-        MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_INIT, 0);
+        if (MICROPY_HW_BDEV_IOCTL(BDEV_IOCTL_INIT, 0) == 0) {
+            storage_is_initialised = true;
+        }
 
         #if defined(MICROPY_HW_BDEV2_IOCTL)
         MICROPY_HW_BDEV2_IOCTL(BDEV_IOCTL_INIT, 0);
