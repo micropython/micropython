@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/audiocore/RawSample.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class RawSample:
 //|     """A raw audio sample buffer in memory"""
@@ -73,7 +72,7 @@
 STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_channel_count, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL } },
         { MP_QSTR_channel_count, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1 } },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 8000} },
     };
@@ -175,13 +174,11 @@ STATIC const audiosample_p_t audioio_rawsample_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)audioio_rawsample_get_buffer_structure,
 };
 
-const mp_obj_type_t audioio_rawsample_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RawSample,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audioio_rawsample_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audioio_rawsample_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audioio_rawsample_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audioio_rawsample_type,
+    MP_QSTR_RawSample,
+    MP_TYPE_FLAG_NONE,
+    make_new, audioio_rawsample_make_new,
+    locals_dict, &audioio_rawsample_locals_dict,
+    protocol, &audioio_rawsample_proto
+    );

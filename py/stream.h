@@ -99,7 +99,9 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 #define MP_STREAM_OP_IOCTL (4)
 
 // Object is assumed to have a non-NULL stream protocol with valid r/w/ioctl methods
-const mp_stream_p_t *mp_get_stream(mp_const_obj_t self);
+static inline const mp_stream_p_t *mp_get_stream(mp_const_obj_t self) {
+    return (const mp_stream_p_t *)MP_OBJ_TYPE_GET_SLOT(((const mp_obj_base_t *)MP_OBJ_TO_PTR(self))->type, protocol);
+}
 
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags);
 mp_obj_t mp_stream_close(mp_obj_t stream);
@@ -118,7 +120,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
-mp_obj_t mp_stream_flush(mp_obj_t self);
+mp_obj_t mp_stream_flush(mp_obj_t self); // CIRCUITPY
 
 #if MICROPY_STREAMS_POSIX_API
 #include <sys/types.h>

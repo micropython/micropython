@@ -70,5 +70,5 @@ mp_obj_t utf16le_to_string(const uint16_t *buf, size_t utf16_len) {
     vstr_init(&vstr, utf16_len);
     utf16_str utf = {buf, utf16_len};
     _convert_utf16le_to_utf8(&vstr, &utf);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    return mp_obj_new_str_from_vstr(&vstr);
 }

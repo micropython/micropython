@@ -33,7 +33,6 @@
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/traceback.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
 
 #if CIRCUITPY_USB_IDENTIFICATION

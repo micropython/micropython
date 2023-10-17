@@ -36,7 +36,6 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
-#include "supervisor/shared/translate/translate.h"
 #include "timer_handler.h"
 
 // This timer is shared amongst all PulseOut objects under the assumption that

@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class MP3Decoder:
 //|     """Load a mp3 file for audio playback
@@ -284,13 +283,11 @@ STATIC const audiosample_p_t audiomp3_mp3file_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)audiomp3_mp3file_get_buffer_structure,
 };
 
-const mp_obj_type_t audiomp3_mp3file_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MP3Decoder,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audiomp3_mp3file_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiomp3_mp3file_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audiomp3_mp3file_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiomp3_mp3file_type,
+    MP_QSTR_MP3Decoder,
+    MP_TYPE_FLAG_NONE,
+    make_new, audiomp3_mp3file_make_new,
+    locals_dict, &audiomp3_mp3file_locals_dict,
+    protocol, &audiomp3_mp3file_proto
+    );

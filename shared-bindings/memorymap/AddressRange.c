@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/memorymap/AddressRange.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AddressRange:
 //|     r"""Presents a range of addresses as a bytearray.
@@ -94,7 +93,7 @@ STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_
     size_t start;
     if (mp_obj_is_small_int(args[ARG_start].u_obj)) {
         start = MP_OBJ_SMALL_INT_VALUE(args[ARG_start].u_obj);
-    } else if (mp_obj_is_type(args[ARG_start].u_obj, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(args[ARG_start].u_obj, &mp_type_int)) {
         start = mp_obj_int_get_uint_checked(args[ARG_start].u_obj);
     } else {
         mp_obj_t arg = mp_unary_op(MP_UNARY_OP_INT, args[ARG_start].u_obj);
@@ -229,14 +228,12 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
     }
 }
 
-const mp_obj_type_t memorymap_addressrange_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_AddressRange,
-    .make_new = memorymap_addressrange_make_new,
-    .locals_dict = (mp_obj_t)&memorymap_addressrange_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = memorymap_addressrange_subscr,
-        .unary_op = memorymap_addressrange_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    memorymap_addressrange_type,
+    MP_QSTR_AddressRange,
+    MP_TYPE_FLAG_NONE,
+    make_new, memorymap_addressrange_make_new,
+    locals_dict, (mp_obj_t)&memorymap_addressrange_locals_dict,
+    subscr, memorymap_addressrange_subscr,
+    unary_op, memorymap_addressrange_unary_op
+    );

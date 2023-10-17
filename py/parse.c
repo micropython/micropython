@@ -39,8 +39,6 @@
 #include "py/objstr.h"
 #include "py/builtin.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_ENABLE_COMPILER
 
 #define RULE_ACT_ARG_MASK       (0x0f)
@@ -340,16 +338,6 @@ STATIC uint8_t peek_rule(parser_t *parser, size_t n) {
 }
 #endif
 
-bool mp_parse_node_is_const_false(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE)
-           || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
-}
-
-bool mp_parse_node_is_const_true(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE)
-           || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) != 0);
-}
-
 bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
     if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         *o = MP_OBJ_NEW_SMALL_INT(MP_PARSE_NODE_LEAF_SMALL_INT(pn));
@@ -432,6 +420,24 @@ STATIC mp_obj_t mp_parse_node_convert_to_obj(mp_parse_node_t pn) {
     }
 }
 #endif
+
+STATIC bool parse_node_is_const_bool(mp_parse_node_t pn, bool value) {
+    // Returns true if 'pn' is a constant whose boolean value is equivalent to 'value'
+    #if MICROPY_COMP_CONST_TUPLE || MICROPY_COMP_CONST
+    return mp_parse_node_is_const(pn) && mp_obj_is_true(mp_parse_node_convert_to_obj(pn)) == value;
+    #else
+    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, value ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE)
+           || (MP_PARSE_NODE_IS_SMALL_INT(pn) && !!MP_PARSE_NODE_LEAF_SMALL_INT(pn) == value);
+    #endif
+}
+
+bool mp_parse_node_is_const_false(mp_parse_node_t pn) {
+    return parse_node_is_const_bool(pn, false);
+}
+
+bool mp_parse_node_is_const_true(mp_parse_node_t pn) {
+    return parse_node_is_const_bool(pn, true);
+}
 
 size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
@@ -597,7 +603,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
         pn = make_node_const_object_optimised(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
-        mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
+        mp_obj_t o = mp_parse_num_float(lex->vstr.buf, lex->vstr.len, true, lex);
         pn = make_node_const_object(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_STRING) {
         // Don't automatically intern all strings.  Doc strings (which are usually large)

@@ -33,7 +33,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PulseIn:
 //|     """Measure a series of active and idle pulses. This is commonly used in infrared receivers
@@ -290,14 +289,12 @@ STATIC const mp_rom_map_elem_t pulseio_pulsein_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pulseio_pulsein_locals_dict, pulseio_pulsein_locals_dict_table);
 
-const mp_obj_type_t pulseio_pulsein_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_PulseIn,
-    .make_new = pulseio_pulsein_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pulseio_pulsein_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = pulsein_subscr,
-        .unary_op = pulsein_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pulseio_pulsein_type,
+    MP_QSTR_PulseIn,
+    MP_TYPE_FLAG_NONE,
+    make_new, pulseio_pulsein_make_new,
+    locals_dict, &pulseio_pulsein_locals_dict,
+    subscr, pulsein_subscr,
+    unary_op, pulsein_unary_op
+    );

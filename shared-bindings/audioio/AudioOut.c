@@ -34,7 +34,6 @@
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AudioOut:
 //|     """Output an analog audio signal"""
@@ -259,9 +258,10 @@ STATIC const mp_rom_map_elem_t audioio_audioout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audioio_audioout_locals_dict, audioio_audioout_locals_dict_table);
 
-const mp_obj_type_t audioio_audioout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_AudioOut,
-    .make_new = audioio_audioout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audioio_audioout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audioio_audioout_type,
+    MP_QSTR_AudioOut,
+    MP_TYPE_FLAG_NONE,
+    make_new, audioio_audioout_make_new,
+    locals_dict, &audioio_audioout_locals_dict
+    );

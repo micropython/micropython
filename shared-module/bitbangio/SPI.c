@@ -32,7 +32,6 @@
 #include "shared-bindings/bitbangio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define MAX_BAUDRATE (common_hal_mcu_get_clock_frequency() / 48)
 

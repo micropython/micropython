@@ -26,11 +26,12 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+
+#if MICROPY_VFS && (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
+
 #include "shared/timeutils/timeutils.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_lfs.h"
-
-#if MICROPY_VFS && (MICROPY_VFS_LFS1 || MICROPY_VFS_LFS2)
 
 enum { LFS_MAKE_ARG_bdev, LFS_MAKE_ARG_readsize, LFS_MAKE_ARG_progsize, LFS_MAKE_ARG_lookahead, LFS_MAKE_ARG_mtime };
 

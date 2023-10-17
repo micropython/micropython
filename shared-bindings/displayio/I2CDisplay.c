@@ -37,7 +37,6 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class I2CDisplay:
 //|     """Manage updating a display over I2C in the background while Python code runs.
@@ -130,9 +129,10 @@ STATIC const mp_rom_map_elem_t displayio_i2cdisplay_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_i2cdisplay_locals_dict, displayio_i2cdisplay_locals_dict_table);
 
-const mp_obj_type_t displayio_i2cdisplay_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2CDisplay,
-    .make_new = displayio_i2cdisplay_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_i2cdisplay_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_i2cdisplay_type,
+    MP_QSTR_I2CDisplay,
+    MP_TYPE_FLAG_NONE,
+    make_new, displayio_i2cdisplay_make_new,
+    locals_dict, &displayio_i2cdisplay_locals_dict
+    );

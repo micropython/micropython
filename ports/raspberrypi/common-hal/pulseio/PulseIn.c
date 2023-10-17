@@ -32,7 +32,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "bindings/rp2pio/StateMachine.h"
 #include "common-hal/pulseio/PulseIn.h"
 

@@ -2,7 +2,7 @@
 This script processes the output from the C preprocessor and extracts all
 qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 
-This script works with Python 3.x
+This script works with Python 3.x (CIRCUITPY: not 2.x)
 """
 
 from __future__ import print_function
@@ -16,10 +16,6 @@ import multiprocessing, multiprocessing.dummy
 
 
 from html.entities import name2codepoint
-
-# Blocklist of qstrings that are specially handled in further
-# processing and should be ignored
-QSTRING_BLOCK_LIST = set(["NULL", "number_of"])
 
 # add some custom names to map characters that aren't in HTML
 name2codepoint["hyphen"] = ord("-")
@@ -63,6 +59,9 @@ _MODE_COMPRESS = "compress"
 
 # Extract MP_REGISTER_MODULE(...) macros.
 _MODE_MODULE = "module"
+
+# Extract MP_REGISTER_ROOT_POINTER(...) macros.
+_MODE_ROOT_POINTER = "root_pointer"
 
 
 def is_c_source(fname):
@@ -135,25 +134,26 @@ def qstr_unescape(qstr):
 
 
 def process_file(f):
-    re_line = re.compile(r"#[line]*\s\d+\s\"([^\"]+)\"")
+    # match gcc-like output (# n "file") and msvc-like output (#line n "file")
+    re_line = re.compile(r"^#(?:line)?\s+\d+\s\"([^\"]+)\"")
     if args.mode == _MODE_QSTR:
         re_match = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
     elif args.mode == _MODE_COMPRESS:
         re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
     elif args.mode == _MODE_MODULE:
         re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?\);")
+    elif args.mode == _MODE_ROOT_POINTER:
+        re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
     re_translate = re.compile(r"translate\(\"((?:(?=(\\?))\2.)*?)\"\)")
     output = []
     last_fname = None
     for line in f:
         if line.isspace():
             continue
-        # match gcc-like output (# n "file") and msvc-like output (#line n "file")
-        if line.startswith(("# ", "#line")):
-            m = re_line.match(line)
-            assert m is not None
+        m = re_line.match(line)
+        if m:
             fname = m.group(1)
-            if os.path.splitext(fname)[1] not in [".c", ".cpp"]:
+            if not is_c_source(fname) and not is_cxx_source(fname):
                 continue
             if fname != last_fname:
                 write_out(last_fname, output)
@@ -163,9 +163,9 @@ def process_file(f):
         for match in re_match.findall(line):
             if args.mode == _MODE_QSTR:
                 name = match.replace("MP_QSTR_", "")
-                if name not in QSTRING_BLOCK_LIST:
-                    output.append("Q(" + qstr_unescape(name) + ")")
-            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE):
+                # CIRCUITPY: undo character escapes in qstrs in C code
+                output.append("Q(" + qstr_unescape(name) + ")")
+            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
                 output.append(match)
 
         for match in re_translate.findall(line):
@@ -205,6 +205,8 @@ def cat_together():
         mode_full = "Compressed data"
     elif args.mode == _MODE_MODULE:
         mode_full = "Module registrations"
+    elif args.mode == _MODE_ROOT_POINTER:
+        mode_full = "Root pointer registrations"
     if old_hash != new_hash:
         print(mode_full, "updated")
         try:
@@ -265,7 +267,7 @@ if __name__ == "__main__":
     args.output_dir = sys.argv[4]
     args.output_file = None if len(sys.argv) == 5 else sys.argv[5]  # Unused for command=split
 
-    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS, _MODE_MODULE):
+    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
         print("error: mode %s unrecognised" % sys.argv[2])
         sys.exit(2)
 

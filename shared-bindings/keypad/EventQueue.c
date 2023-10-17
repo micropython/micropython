@@ -165,15 +165,13 @@ STATIC const mp_stream_p_t eventqueue_p = {
 #endif
 
 
-const mp_obj_type_t keypad_eventqueue_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_EventQueue,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = keypad_eventqueue_unary_op,
-        #if MICROPY_PY_USELECT
-        .protocol = &eventqueue_p,
-        #endif
-        ),
-    .locals_dict = (mp_obj_t)&keypad_eventqueue_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_eventqueue_type,
+    MP_QSTR_EventQueue,
+    MP_TYPE_FLAG_NONE,
+    unary_op, keypad_eventqueue_unary_op,
+    #if MICROPY_PY_USELECT
+    protocol, &eventqueue_p,
+    #endif
+    locals_dict, &keypad_eventqueue_locals_dict
+    );

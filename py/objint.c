@@ -35,8 +35,6 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
@@ -142,9 +140,9 @@ mp_obj_t mp_obj_new_int_from_float(mp_float_t val) {
     if (u.p.exp == ((1 << MP_FLOAT_EXP_BITS) - 1)) {
         // ...then number is Inf (positive or negative) if fraction is 0, else NaN.
         if (u.p.frc == 0) {
-            mp_raise_OverflowError_varg(MP_ERROR_TEXT("can't convert %q to %q"), MP_QSTR_inf, MP_QSTR_int);
+            mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("can't convert inf to int"));
         } else {
-            mp_raise_ValueError_varg(MP_ERROR_TEXT("can't convert %q to %q"), MP_QSTR_NaN, MP_QSTR_int);
+            mp_raise_ValueError(MP_ERROR_TEXT("can't convert NaN to int"));
         }
     } else {
         mp_fp_as_int_class_t icl = mp_classify_fp_as_int(val);
@@ -234,7 +232,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
         // A small int; get the integer value to format.
         num = MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        assert(mp_obj_is_type(self_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(self_in, &mp_type_int));
         // Not a small int.
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
         const mp_obj_int_t *self = self_in;
@@ -485,8 +483,8 @@ STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     enum { ARG_bytes, ARG_byteorder, ARG_signed };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_bytes, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_byteorder, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_bytes, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL} },
+        { MP_QSTR_byteorder, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = NULL} },
         { MP_QSTR_signed, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -568,7 +566,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
         mp_binary_set_int(l, big_endian, data + (big_endian ? (len - l) : 0), val);
     }
 
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(int_to_bytes_obj, 3, int_to_bytes);
 
@@ -582,15 +580,13 @@ STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
 
-const mp_obj_type_t mp_type_int = {
-    { &mp_type_type },
-    .name = MP_QSTR_int,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .print = mp_obj_int_print,
-    .make_new = mp_obj_int_make_new,
-    .locals_dict = (mp_obj_dict_t *)&int_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_obj_int_unary_op,
-        .binary_op = mp_obj_int_binary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_int,
+    MP_QSTR_int,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_obj_int_make_new,
+    print, mp_obj_int_print,
+    unary_op, mp_obj_int_unary_op,
+    binary_op, mp_obj_int_binary_op,
+    locals_dict, &int_locals_dict
+    );

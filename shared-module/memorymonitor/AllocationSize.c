@@ -89,3 +89,6 @@ void memorymonitor_allocationsizes_track_allocation(size_t block_count) {
 void memorymonitor_allocationsizes_reset(void) {
     MP_STATE_VM(active_allocationsizes) = NULL;
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t active_allocationsizes);
+MP_REGISTER_ROOT_POINTER(mp_obj_t active_allocationalarms);

@@ -28,8 +28,6 @@
 
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 /******************************************************************************/
 /* range iterator                                                             */
 
@@ -52,15 +50,12 @@ STATIC mp_obj_t range_it_iternext(mp_obj_t o_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_range_it = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_iterator,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = range_it_iternext,
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_range_it,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, range_it_iternext
+    );
 
 STATIC mp_obj_t mp_obj_new_range_iterator(mp_int_t cur, mp_int_t stop, mp_int_t step, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_range_it_t) <= sizeof(mp_obj_iter_buf_t));
@@ -213,21 +208,27 @@ STATIC void range_attr(mp_obj_t o_in, qstr attr, mp_obj_t *dest) {
 }
 #endif
 
-const mp_obj_type_t mp_type_range = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_range,
-    .print = range_print,
-    .make_new = range_make_new,
-    #if MICROPY_PY_BUILTINS_RANGE_ATTRS
-    .attr = range_attr,
-    #endif
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = range_unary_op,
-        #if MICROPY_PY_BUILTINS_RANGE_BINOP
-        .binary_op = range_binary_op,
-        #endif
-        .subscr = range_subscr,
-        .getiter = range_getiter,
-        ),
-};
+#if MICROPY_PY_BUILTINS_RANGE_BINOP
+#define RANGE_TYPE_BINOP binary_op, range_binary_op,
+#else
+#define RANGE_TYPE_BINOP
+#endif
+
+#if MICROPY_PY_BUILTINS_RANGE_ATTRS
+#define RANGE_TYPE_ATTR attr, range_attr,
+#else
+#define RANGE_TYPE_ATTR
+#endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_range,
+    MP_QSTR_range,
+    MP_TYPE_FLAG_NONE,
+    make_new, range_make_new,
+    RANGE_TYPE_BINOP
+    RANGE_TYPE_ATTR
+    print, range_print,
+    unary_op, range_unary_op,
+    subscr, range_subscr,
+    iter, range_getiter
+    );

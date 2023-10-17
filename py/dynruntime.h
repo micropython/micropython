@@ -105,7 +105,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_const_none                       ((mp_obj_t)mp_fun_table.const_none)
 #define mp_const_false                      ((mp_obj_t)mp_fun_table.const_false)
 #define mp_const_true                       ((mp_obj_t)mp_fun_table.const_true)
-#define mp_const_empty_bytes                (mp_type_bytes.make_new(NULL, 0, 0, NULL))
+#define mp_const_empty_bytes                (MP_OBJ_TYPE_GET_SLOT(&mp_type_bytes, make_new)(NULL, 0, 0, NULL))
 #define mp_const_empty_tuple                (mp_fun_table.new_tuple(0, NULL))
 
 #define mp_obj_new_bool(b)                  ((b) ? (mp_obj_t)mp_fun_table.const_true : (mp_obj_t)mp_fun_table.const_false)
@@ -127,6 +127,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
 #define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
+#define mp_obj_is_true(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_BOOL))
 
 #define mp_obj_len(o)                       (mp_obj_len_dyn(o))
 #define mp_obj_subscr(base, index, val)     (mp_fun_table.obj_subscr((base), (index), (val)))
@@ -151,7 +152,7 @@ static inline mp_obj_t mp_obj_cast_to_native_base_dyn(mp_obj_t self_in, mp_const
 
     if (MP_OBJ_FROM_PTR(self_type) == native_type) {
         return self_in;
-    } else if (self_type->parent != native_type) {
+    } else if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(self_type, parent) != native_type) {
         // The self_in object is not a direct descendant of native_type, so fail the cast.
         // This is a very simple version of mp_obj_is_subclass_fast that could be improved.
         return MP_OBJ_NULL;

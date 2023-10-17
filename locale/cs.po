@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-10-03 15:21+0000\n"
+"PO-Revision-Date: 2023-10-13 20:08+0000\n"
 "Last-Translator: Vladimír Smitka <vladimir.smitka@lynt.cz>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: cs\n"
@@ -150,7 +150,7 @@ msgstr "%q v %q musí být typu %q, ne %q"
 msgid "%q in use"
 msgstr "%q se právě používá"
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstr.c
 msgid "%q index out of range"
 msgstr "Index %q je mimo rozsah"
 
@@ -216,7 +216,6 @@ msgid "%q must be >= %d"
 msgstr "%q musí být >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
-#, fuzzy
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
 msgstr "%q musí být bytearray nebo pole typu 'H' nebo 'B'"
 
@@ -238,7 +237,7 @@ msgstr "%q musí být pole typu 'h'"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q musí být typu %q nebo %q, ne %q"
 
-#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q musí být typu %q, ne %q"
 
@@ -265,7 +264,7 @@ msgstr "%q krok nemůže být nula"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr "%q() vyžaduje %d pozičních argumentů, ale %d jich bylo zadáno"
+msgstr "%q() vyžaduje %d pozičních argumentů, ale pouze %d jich bylo zadáno"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -289,6 +288,11 @@ msgstr "%q[%u] používá extra pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
+msgstr "%q[%u] čeká na vstup mimo rozsah"
+
+#: py/runtime.c
+#, c-format
+msgid "%s"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -319,7 +323,7 @@ msgstr "Objekt '%q' není iterovatelný"
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
 msgid "'%s' expects a label"
-msgstr "'%s' očekává popisek"
+msgstr "'%s' očekává label"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -349,7 +353,7 @@ msgstr "'%s' očekává integer (celé číslo)"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr "'%s' očekává nejvíce r%d"
+msgstr "'%s' očekává nanejvýš r%d"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -387,7 +391,7 @@ msgstr "'%s' objekt není vložitelný"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "Specifikátor zarovnání '=' není ve formátovacím řetězci povolen"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
@@ -407,11 +411,11 @@ msgstr "'await', 'async for' nebo 'async' je volán mimo async"
 
 #: py/compile.c
 msgid "'break' outside loop"
-msgstr "'break' je volán vně cyklu"
+msgstr "'break' je volán mimo cyklus"
 
 #: py/compile.c
 msgid "'continue' outside loop"
-msgstr "'continue' je volán vně cyklu"
+msgstr "'continue' je volán mimo cyklus"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -439,11 +443,11 @@ msgstr "'yield' je volán mimo funkci"
 
 #: py/compile.c
 msgid "* arg after **"
-msgstr ""
+msgstr "* arg po **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
-msgstr ""
+msgstr "∗x musí být cíl přiřazení"
 
 #: py/obj.c
 msgid ", in %q\n"
@@ -451,7 +455,7 @@ msgstr ", v% q\n"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
-msgstr ""
+msgstr "0.0 na komplexní mocninu"
 
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
@@ -480,7 +484,7 @@ msgstr "Adresní rozsah není povolen"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
-msgstr ""
+msgstr "Adresní rozsah se překlápí přes maximální možnou adresu"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "All CAN peripherals are in use"
@@ -557,7 +561,7 @@ msgstr "Všechny časovače pro tento pin jsou používány"
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
 msgid "All timers in use"
-msgstr "Všechny časovače jsou použity"
+msgstr "Všechny časovače jsou používány"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -566,7 +570,7 @@ msgstr "Již propagujeme."
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 msgid "Already have all-matches listener"
-msgstr ""
+msgstr "Již existuje posluchač pro všechny zprávy"
 
 #: ports/espressif/bindings/espnow/ESPNow.c
 #: ports/espressif/common-hal/espulp/ULP.c
@@ -583,7 +587,7 @@ msgstr "Již skenuje wifi sítě"
 #: shared-module/os/getenv.c
 #, c-format
 msgid "An error occurred while retrieving '%s':\n"
-msgstr ""
+msgstr "Došlo k chybě při načítání '%s'\n"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -642,8 +646,8 @@ msgid "Below minimum frame rate"
 msgstr "Pod minimální obnovovací frekvencí"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
-msgstr "Bitové hodiny a výběr slov musí být sekvenční piny"
+msgid "Bit clock and word select must be sequential GPIO pins"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -658,7 +662,6 @@ msgid "Bitmap size and bits per value must match"
 msgstr "Velikost bitmapy a počet bitů na hodnotu se musí shodovat"
 
 #: supervisor/shared/safe_mode.c
-#, fuzzy
 msgid "Boot device must be first (interface #0)."
 msgstr "Bootovací zařízení musí být první (rozhraní #0)."
 
@@ -727,7 +730,7 @@ msgstr "Sběrnicový pin %d je již používán"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "Byte buffer must be 16 bytes."
-msgstr "Bajtový buffer musí být 16 bajtů."
+msgstr "Buffer musí být dlouhý 16 bajtů."
 
 #: shared-bindings/aesio/aes.c
 msgid "CBC blocks must be multiples of 16 bytes"
@@ -751,15 +754,18 @@ msgstr "Inizializace kamery"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on RTC IO from deep sleep."
-msgstr ""
+msgstr "Alarm z IO RTC je možné generovat pouze z hlubokého spánku."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on one low pin while others alarm high from deep sleep."
 msgstr ""
+"Lze nastavit alarm na jednom pinu ve stavu low při hlubokém spánku, ostatní "
+"musí být ve stavu high."
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
 msgstr ""
+"Lze nastavit alarm na maximálně dvou pinech ve stavu low při hlubokém spánku."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -790,7 +796,7 @@ msgstr "Nelze získat ve výstupním režimu"
 
 #: ports/nrf/common-hal/microcontroller/Processor.c
 msgid "Cannot get temperature"
-msgstr "Nelze získat teplotu"
+msgstr "Nelze získat teplotu (°C)"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot have scan responses for extended, connectable advertisements."
@@ -798,7 +804,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot pull on input-only pin."
-msgstr ""
+msgstr "Nelze aktivovat pull rezistor na pinu, který je pouze pro vstup."
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Cannot record to a file"
@@ -869,7 +875,7 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays have different lengths"
-msgstr ""
+msgstr "Pole souřadnic mají různé délky"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
@@ -919,7 +925,7 @@ msgstr "Datový blok musí následovat fmt blok"
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
-msgstr ""
+msgstr "Data nejsou podporována s cíleným oznamováním"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -929,6 +935,7 @@ msgstr "Data jsou příliš velká pro propagovaný paket"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
+"Piny pro hluboký spánek musí používat náběžnou hranu s pulldown rezistorem"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -968,7 +975,7 @@ msgstr "ECB operuje najednou pouze 16 bajtů"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
+msgstr "ESP-IDF alokace paměti selhala"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
@@ -983,15 +990,15 @@ msgstr "Chyba v regulárním výrazu"
 
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
-msgstr ""
+msgstr "Chyba v safemode.py."
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
-msgstr ""
+msgstr "Chyba: nepodařilo se nabindovat port"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
-msgstr ""
+msgstr "Očekáván typ %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1000,7 +1007,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is defined for ndarrays only"
-msgstr ""
+msgstr "FFT lze použít pouze pro ndarrays"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
@@ -1008,7 +1015,7 @@ msgstr "FFT je implementován pouze pro lineární pole"
 
 #: ports/espressif/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
-msgstr ""
+msgstr "SSL handshake selhal"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1017,7 +1024,7 @@ msgstr "Nepodařilo se odeslat příkaz."
 #: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
-msgstr ""
+msgstr "Nepodařilo se získat mutex, err 0x%04x"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
@@ -1029,11 +1036,11 @@ msgstr "Chyba alokace paměti WiFi"
 
 #: ports/espressif/common-hal/wifi/ScannedNetworks.c
 msgid "Failed to allocate wifi scan memory"
-msgstr ""
+msgstr "Nepodařilo se alokovat paměť pro wifi scan"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Failed to buffer the sample"
-msgstr ""
+msgstr "Nepodařilo se nabufferovat sample"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1051,7 +1058,7 @@ msgstr "Soubor MP3 se nepodařilo analyzovat"
 #: ports/nrf/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
-msgstr ""
+msgstr "Nepodařilo se uvolnit mutex, err 0x%04x"
 
 #: supervisor/shared/safe_mode.c
 msgid "Failed to write internal flash."
@@ -1063,33 +1070,33 @@ msgstr "soubor existuje"
 
 #: shared-module/os/getenv.c
 msgid "File not found"
-msgstr ""
+msgstr "Soubor nenalezen"
 
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
 msgid "Filters too complex"
-msgstr ""
+msgstr "Filtry jsou příliš komplexní"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is duplicate"
-msgstr ""
+msgstr "Firmware je duplicitní"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is invalid"
-msgstr ""
+msgstr "Firmware není validní"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Firmware is too big"
-msgstr ""
+msgstr "Firmware je příliš velký"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For L8 colorspace, input bitmap must have 8 bits per pixel"
-msgstr ""
+msgstr "Pro barevný prostor L8 musí mít vstupní bitmapa 8 bitů na pixel"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "For RGB colorspaces, input bitmap must have 16 bits per pixel"
-msgstr ""
+msgstr "Pro barevný prostor RGB musí mít vstupní bitmapa 16 bitů na pixel"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Format not supported"
@@ -1119,8 +1126,6 @@ msgstr "Inicializace GNSS"
 msgid "Generic Failure"
 msgstr "Základní chyba"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -1132,11 +1137,11 @@ msgstr "Skupina již byla použita"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "Half duplex SPI is not implemented"
-msgstr ""
+msgstr "Poloduplexní SPI není implementované"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
-msgstr ""
+msgstr "Fatální chyba: přístup k paměti nebo chyba instrukce."
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/stm/common-hal/busio/I2C.c
@@ -1147,16 +1152,17 @@ msgstr "Hardware je používán, zkuste alternativní piny"
 
 #: supervisor/shared/safe_mode.c
 msgid "Heap allocation when VM not running."
-msgstr ""
+msgstr "Alokace heapu při neběžícím VM."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "Heap was corrupted because the stack was too small. Increase stack size."
 msgstr ""
+"Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
-msgstr ""
+msgstr "I/O operace nad zavřeným souborem"
 
 #: ports/stm/common-hal/busio/I2C.c
 msgid "I2C init error"
@@ -1169,7 +1175,7 @@ msgstr "Periférie I2C je používána"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
+msgstr "Elementy v bufferu musí být <= 4 bajty"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1177,7 +1183,7 @@ msgstr "Nesprávná velikost vyrovnávací paměti"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Init program size invalid"
-msgstr ""
+msgstr "Velikost init programu není správná"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Initial set pin direction conflicts with initial out pin direction"
@@ -1198,7 +1204,7 @@ msgstr "Vstup trval příliš dlouho"
 
 #: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
 msgid "Input/output error"
-msgstr "Vstupně/výstupní chyba"
+msgstr "Chyba vstupu/výstupu"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
@@ -1210,11 +1216,11 @@ msgstr "Nedostatečné šifrování"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
-msgstr ""
+msgstr "Rozhraní musí být nastartováno"
 
 #: ports/atmel-samd/audio_dma.c ports/raspberrypi/audio_dma.c
 msgid "Internal audio buffer too small"
-msgstr ""
+msgstr "Interní audio buffer je příliš malý"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Internal define error"
@@ -1232,11 +1238,11 @@ msgstr "Vnitřní chyba #%d"
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
-msgstr ""
+msgstr "Interní watchdog timer expiroval."
 
 #: supervisor/shared/safe_mode.c
 msgid "Interrupt error."
-msgstr ""
+msgstr "Chyba přerušení."
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
@@ -1245,7 +1251,7 @@ msgstr ""
 #: shared-bindings/digitalio/DigitalInOut.c
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Invalid %q"
-msgstr ""
+msgstr "Špatný %s"
 
 #: ports/atmel-samd/common-hal/microcontroller/Pin.c
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
@@ -1269,7 +1275,7 @@ msgstr "Chybné BSSID"
 
 #: main.c
 msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr ""
+msgstr "Špatný CIRCUITPY_PYSTACK_SIZE\n"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
@@ -1286,7 +1292,7 @@ msgstr ""
 #: shared-module/os/getenv.c
 #, c-format
 msgid "Invalid byte %.*s"
-msgstr ""
+msgstr "Špatný byte %.*s"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
@@ -1295,7 +1301,7 @@ msgstr "Chybný data_pin[%d]"
 
 #: shared-module/msgpack/__init__.c
 msgid "Invalid format"
-msgstr ""
+msgstr "Špatný formát"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Invalid format chunk size"
@@ -1303,7 +1309,7 @@ msgstr "Neplatná velikost bloku"
 
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid hex password"
-msgstr ""
+msgstr "Špatné heslo v hex"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Invalid multicast MAC address"
@@ -1324,7 +1330,7 @@ msgstr "Chybný stav"
 
 #: shared-module/os/getenv.c
 msgid "Invalid unicode escape"
-msgstr ""
+msgstr "Neplatná unicode escape sekvence"
 
 #: shared-bindings/aesio/aes.c
 msgid "Key must be 16, 24, or 32 bytes long"
@@ -1332,7 +1338,7 @@ msgstr "Klíč musí být dlouhý 16, 24 nebo 32 bajtů"
 
 #: shared-module/os/getenv.c
 msgid "Key not found"
-msgstr ""
+msgstr "Klíč nenalezen"
 
 #: shared-module/is31fl3741/FrameBuffer.c
 msgid "LED mappings must match display size"
@@ -1344,11 +1350,11 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer already in a group"
-msgstr ""
+msgstr "Vrstva již v groupě je"
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass"
-msgstr ""
+msgstr "Vrstva musí být Group nebo TileGrid"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "MAC address was invalid"
@@ -1365,39 +1371,39 @@ msgstr ""
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
-msgstr ""
+msgstr "Nekorespondující velikost dat"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched swap flag"
-msgstr ""
+msgstr "Nekorespondující swap flag"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] reads pin(s)"
-msgstr ""
+msgstr "Chybí first_in_pin. %q[%u] čte z pinu(ů)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
-msgstr ""
+msgstr "Chybí first_in_pin. %q[%u] posunuje z pinu(ů)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] waits based on pin"
-msgstr ""
+msgstr "Chybí first_in_pin. %q[%u] čeká na základě pinu"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
-msgstr ""
+msgstr "Chybí first_out_pin. %q[%u] posunuje do pinu(ů)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] writes pin(s)"
-msgstr ""
+msgstr "Chybí first_out_pin. %q[%u] zapisuje do pinu(ů)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_set_pin. %q[%u] sets pin(s)"
-msgstr ""
+msgstr "Chybí first_set_pin. %q[%u] nastavuje pin(y)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
-msgstr ""
+msgstr "Chybí jmp_pin. %q[%u] skáče na pin"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1405,7 +1411,7 @@ msgstr "Musí být podtřída %q."
 
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 msgid "Must provide 5/6/5 RGB pins"
-msgstr ""
+msgstr "Je třeba poskytnout 5/6/5 RGB piny"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
@@ -1418,7 +1424,7 @@ msgstr "Je nutné použít několik kolíků 6 rgb, nikoli %d"
 
 #: supervisor/shared/safe_mode.c
 msgid "NLR jump failed. Likely memory corruption."
-msgstr ""
+msgstr "NLR skok selhal. Pravděpodobně poškozením paměti."
 
 #: ports/espressif/common-hal/nvm/ByteArray.c
 msgid "NVS Error"
@@ -1426,7 +1432,7 @@ msgstr "Chyba NVS"
 
 #: shared-bindings/socketpool/SocketPool.c
 msgid "Name or service not known"
-msgstr ""
+msgstr "Jméno nebo služba není známa"
 
 #: py/qstr.c
 msgid "Name too long"
@@ -1480,7 +1486,7 @@ msgstr "Žádné I2C zařízení na adrese: 0x%x"
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "No IP"
-msgstr ""
+msgstr "Není IP"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 msgid "No available clocks"
@@ -1488,11 +1494,11 @@ msgstr "Žádné dostupné hodiny"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
-msgstr ""
+msgstr "Žádné aktivní zachytávání"
 
 #: shared-module/usb/core/Device.c
 msgid "No configuration set"
-msgstr ""
+msgstr "Konfigurace není nastavena"
 
 #: shared-bindings/_bleio/PacketBuffer.c
 msgid "No connection: length cannot be determined"
@@ -1512,15 +1518,15 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in in program"
-msgstr ""
+msgstr "V programu není vstup"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No in or out in program"
-msgstr ""
+msgstr "V programu není vstup nebo výstup"
 
 #: py/objint.c shared-bindings/time/__init__.c
 msgid "No long integer support"
-msgstr ""
+msgstr "Není podpora long integer"
 
 #: shared-bindings/wifi/Radio.c
 msgid "No network with that ssid"
@@ -1528,14 +1534,14 @@ msgstr "Žádná síť s takovým SSID"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "No out in program"
-msgstr ""
+msgstr "V programu není výstup"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "No pull up found on SDA or SCL; check your wiring"
-msgstr ""
+msgstr "SDA nebo SCL zřejmě nemá pull up; zkontroluj zapojení"
 
 #: shared-module/touchio/TouchIn.c
 msgid "No pulldown on pin; 1Mohm recommended"
@@ -1559,11 +1565,11 @@ msgstr "Není k dispozici žádný časovač"
 
 #: shared-module/usb/core/Device.c
 msgid "No usb host port initialized"
-msgstr ""
+msgstr "Žádný USB host port není inicializován"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
-msgstr ""
+msgstr "Nordic system firmware - nedostatek paměti"
 
 #: shared-bindings/ipaddress/IPv4Address.c shared-bindings/ipaddress/__init__.c
 msgid "Not a valid IP string"
@@ -1597,11 +1603,11 @@ msgstr ""
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Off"
-msgstr ""
+msgstr "Vypnuto"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Ok"
-msgstr ""
+msgstr "Ok"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
@@ -1630,11 +1636,11 @@ msgstr ""
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Only edge detection is available on this hardware"
-msgstr ""
+msgstr "Na tomto hardware je dostupná pouze detekce hrany"
 
 #: shared-bindings/ipaddress/__init__.c
 msgid "Only int or string supported for ip"
-msgstr ""
+msgstr "Pro IP je podporován pouze int nebo string"
 
 #: shared-module/displayio/OnDiskBitmap.c
 #, c-format
@@ -1642,59 +1648,61 @@ msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
 msgstr ""
+"Podporovány jsou pouze černobílé, indexované 4 bpp nebo 8 bpp a 16 bpp nebo "
+"vyšší BMP: bitmapa má %d bpp"
 
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
 msgid "Only one %q can be set in deep sleep."
-msgstr ""
+msgstr "Pouze jeden %q lze nastavit v hlubokém spánku."
 
 #: ports/espressif/common-hal/espulp/ULPAlarm.c
 msgid "Only one %q can be set."
-msgstr ""
+msgstr "Lze nastavit pouze jeden %q ."
 
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
 #: ports/raspberrypi/common-hal/i2ctarget/I2CTarget.c
 msgid "Only one address is allowed"
-msgstr ""
+msgstr "Je povolena pouze jedna adresa"
 
 #: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
 #: ports/nrf/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set"
-msgstr ""
+msgstr "Lze nastavit pouze jeden alarm typu alarm.time"
 
 #: ports/espressif/common-hal/alarm/time/TimeAlarm.c
 #: ports/raspberrypi/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set."
-msgstr ""
+msgstr "Může být nastaven pouze jeden alarm typu alarm.time."
 
 #: shared-module/displayio/ColorConverter.c
 msgid "Only one color can be transparent at a time"
-msgstr ""
+msgstr "Pouze jedna barva může být nastavena jako transparentní"
 
 #: py/moduerrno.c
 msgid "Operation not permitted"
-msgstr ""
+msgstr "Operace není povolena"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation or feature not supported"
-msgstr ""
+msgstr "Operace nebo funkce není podporována"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Operation timed out"
-msgstr ""
+msgstr "Časový limit operace vypršel"
 
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Out of MDNS service slots"
-msgstr ""
+msgstr "Došly mDNS sloty"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Out of memory"
-msgstr ""
+msgstr "Došla paměť"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 #: ports/raspberrypi/common-hal/socketpool/Socket.c
 msgid "Out of sockets"
-msgstr ""
+msgstr "Došly sockety"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
@@ -1711,44 +1719,44 @@ msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "PWM restart"
-msgstr ""
+msgstr "Restart PWM"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice already in use"
-msgstr ""
+msgstr "PWM kanál je již využíván"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
-msgstr ""
+msgstr "PWM kanál A je již využíván"
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
-msgstr ""
+msgstr "Periférie je používána"
 
 #: py/moduerrno.c
 msgid "Permission denied"
-msgstr ""
+msgstr "Přístup odepřen"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr ""
+msgstr "Z Deep Sleep nelze probudit pinem"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
-msgstr ""
+msgstr "Počet pinů je příliš velký"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 #: ports/stm/common-hal/pulseio/PulseIn.c
 msgid "Pin interrupt already in use"
-msgstr ""
+msgstr "Přerušení od pinu je již používáno"
 
 #: shared-bindings/adafruit_bus_device/spi_device/SPIDevice.c
 msgid "Pin is input only"
-msgstr ""
+msgstr "Pin je pouze vstupní"
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
+msgstr "Pin musí být na PWM kanálu B"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
 msgid "Pin must support hardware interrupts"
@@ -1780,15 +1788,15 @@ msgstr ""
 
 #: py/builtinhelp.c
 msgid "Plus any modules on the filesystem\n"
-msgstr ""
+msgstr "Plus všechny moduly na filesystému\n"
 
 #: shared-module/vectorio/Polygon.c
 msgid "Polygon needs at least 3 points"
-msgstr ""
+msgstr "Polygon potřebuje nejméně 3 body"
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
+msgstr "Pokles napájení. Zkontroluj, zda je k dispozici dostatečné napájení."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -1806,19 +1814,19 @@ msgstr "Předstírám hluboký spánek do alarmu, CTRL-C nebo zápisu souboru.\n
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
-msgstr ""
+msgstr "Program provedl IN bez načtení ISR"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does OUT without loading OSR"
-msgstr ""
+msgstr "Program provedl OUT bez načtení OSR"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Program size invalid"
-msgstr ""
+msgstr "Velikost programu je nesprávná"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 msgid "Program too long"
-msgstr ""
+msgstr "Program je příliš dlouhý"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Pull not used when direction is output."
@@ -1826,7 +1834,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
-msgstr ""
+msgstr "RISE_AND_FALL není na tomto čipu k dispozici"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1839,7 +1847,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
 #: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RS485"
-msgstr ""
+msgstr "RS485"
 
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c
@@ -1848,88 +1856,88 @@ msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c shared-bindings/time/__init__.c
 msgid "RTC is not supported on this board"
-msgstr ""
+msgstr "RTC není na této desce podporován"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "Random number generation error"
-msgstr ""
+msgstr "Chyba generování náhodných čísel"
 
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
 #: shared-module/displayio/Bitmap.c
 msgid "Read-only"
-msgstr ""
+msgstr "Pouze pro čtení"
 
 #: extmod/vfs_fat.c py/moduerrno.c
 msgid "Read-only filesystem"
-msgstr ""
+msgstr "Filesystém pouze pro čtení"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Received response was invalid"
-msgstr ""
+msgstr "Přijatá odpověď nebyla validní"
 
 #: supervisor/shared/bluetooth/bluetooth.c
 msgid "Reconnecting"
-msgstr ""
+msgstr "Opětovné připojování"
 
 #: shared-bindings/displayio/EPaperDisplay.c
 msgid "Refresh too soon"
-msgstr ""
+msgstr "Pokus o obnovení příliš brzo"
 
 #: shared-bindings/canio/RemoteTransmissionRequest.c
 msgid "RemoteTransmissionRequests limited to 8 bytes"
-msgstr ""
+msgstr "RemoteTransmissionRequests je limitován na 8 bajtů"
 
 #: shared-bindings/aesio/aes.c
 msgid "Requested AES mode is unsupported"
-msgstr ""
+msgstr "Požadovaný režim AES je nepodporovaný"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
-msgstr ""
+msgstr "Požadovaný zdroj nebyl nalezen"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
-msgstr ""
+msgstr "Pravý kanál nepodporován"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
-msgstr ""
+msgstr "Běh v nouzovém režimu! Uložený kód není zpracováván.\n"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "SD card CSD format not supported"
-msgstr ""
+msgstr "CSD formát SD karty není podporován"
 
 #: ports/cxd56/common-hal/sdioio/SDCard.c
 msgid "SDCard init"
-msgstr ""
+msgstr "Inicializace SD karty"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO GetCardInfo Error %d"
-msgstr ""
+msgstr "SDIO GetCardInfo chyba %d"
 
 #: ports/stm/common-hal/sdioio/SDCard.c
 #, c-format
 msgid "SDIO Init Error %d"
-msgstr ""
+msgstr "Inicializace SDIO chyba %d"
 
 #: ports/espressif/common-hal/busio/SPI.c
 msgid "SPI configuration failed"
-msgstr ""
+msgstr "Konfigurace SPI selhala"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI init error"
-msgstr ""
+msgstr "Chyba inicializace SPI"
 
 #: ports/raspberrypi/common-hal/busio/SPI.c
 msgid "SPI peripheral in use"
-msgstr ""
+msgstr "SPI periferie je používána"
 
 #: ports/stm/common-hal/busio/SPI.c
 msgid "SPI re-init"
-msgstr ""
+msgstr "Opětovná inicializace SPI"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "Scale dimensions must divide by 3"
@@ -1938,7 +1946,7 @@ msgstr ""
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progress. Stop with stop_scan."
-msgstr ""
+msgstr "Scan již probíhá. Lze zastavit pomocí stop_scan."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -1951,7 +1959,7 @@ msgstr ""
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Size not supported"
-msgstr ""
+msgstr "Velikost není podporována"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
@@ -1968,51 +1976,47 @@ msgstr ""
 #: ports/espressif/common-hal/socketpool/SocketPool.c
 #: ports/raspberrypi/common-hal/socketpool/SocketPool.c
 msgid "SocketPool can only be used with wifi.radio"
-msgstr ""
+msgstr "SocketPool je možné použít pouze s wifi.radio"
 
 #: shared-bindings/aesio/aes.c
 msgid "Source and destination buffers must be the same length"
-msgstr ""
+msgstr "Zdrojové a cílové buffery musí být stejné délky"
 
 #: shared-bindings/paralleldisplay/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
-msgstr ""
-
-#: extmod/modure.c
-msgid "Splitting with sub-captures"
-msgstr ""
+msgstr "Specifikuj přesně jeden z data0 nebo data_pins"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
-msgstr ""
+msgstr "Levý stereo kanál musí být na PWM kanálu A"
 
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo right must be on PWM channel B"
-msgstr ""
+msgstr "Pravý stereo kanál musí být na PWM kanálu B"
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
-msgstr ""
+msgstr "Musíš definovat monotonic_time nebo epoch_time"
 
 #: shared-bindings/gnss/GNSS.c
 msgid "System entry must be gnss.SatelliteSystem"
-msgstr ""
+msgstr "Parametr \"system\" musí být gnss.SatelliteSystem"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Temperature read timed out"
-msgstr ""
+msgstr "Čas pro čtení teploty vypršel"
 
 #: supervisor/shared/safe_mode.c
 msgid "The `microcontroller` module was used to boot into safe mode."
-msgstr ""
+msgstr "Modul `microcontroller` byl použit pro spuštění do nouzového režimu."
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
-msgstr ""
+msgstr "Výše uvedená výjimka byla přímá příčina následující výjimky:"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "The length of rgb_pins must be 6, 12, 18, 24, or 30"
-msgstr ""
+msgstr "Počet prvků rgb_pin musí být 6, 12, 18, 24, nebo 30"
 
 #: shared-module/audiomixer/MixerVoice.c
 msgid "The sample's bits_per_sample does not match the mixer's"
@@ -2032,11 +2036,11 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Third-party firmware fatal error."
-msgstr ""
+msgstr "Fatální chyby firmware třetí strany."
 
 #: shared-module/imagecapture/ParallelImageCapture.c
 msgid "This microcontroller does not support continuous capture."
-msgstr ""
+msgstr "Tento mikrokontrolér nepodporuje kontinuální snímání."
 
 #: shared-module/paralleldisplay/ParallelBus.c
 msgid ""
@@ -2058,17 +2062,17 @@ msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Time is in the past."
-msgstr ""
+msgstr "Čas je v minulosti."
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
-msgstr ""
+msgstr "Časový limit je příliš dlouhý: maximální limit je %d vteřin"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample"
-msgstr ""
+msgstr "V samplu je příliš mnoho kanálů"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Too many channels in sample."
@@ -2077,21 +2081,22 @@ msgstr ""
 #: shared-module/displayio/__init__.c
 msgid "Too many display busses; forgot displayio.release_displays() ?"
 msgstr ""
+"Příliš mnoho sběrnic displaye; nezapomněl si na displayio.release_displays()?"
 
 #: shared-module/displayio/__init__.c
 msgid "Too many displays"
-msgstr ""
+msgstr "Příliš mnoho displejů"
 
 #: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
-msgstr ""
+msgstr "Velikost dat k zápisu je větší než %q"
 
 #: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
-msgstr ""
+msgstr "Touch alarmy nejsou dostupné"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
@@ -2103,60 +2108,60 @@ msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART de-init"
-msgstr ""
+msgstr "De-inicializace UART"
 
 #: ports/cxd56/common-hal/busio/UART.c ports/espressif/common-hal/busio/UART.c
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART init"
-msgstr ""
+msgstr "Inicializace UART"
 
 #: ports/raspberrypi/common-hal/busio/UART.c
 msgid "UART peripheral in use"
-msgstr ""
+msgstr "UART periférie je používána"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART re-init"
-msgstr ""
+msgstr "Opětovná inicializace UART"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART write"
-msgstr ""
+msgstr "Zápis na UART"
 
 #: main.c
 msgid "UID:"
-msgstr ""
+msgstr "UID:"
 
 #: shared-module/usb_hid/Device.c
 msgid "USB busy"
-msgstr ""
+msgstr "USB zaneprázdněno"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
-msgstr ""
+msgstr "USB zařízení potřebují více endpointů než je k dispozici."
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
-msgstr ""
+msgstr "USB zařízení používají příliš mnoho názvů rozhraní."
 
 #: shared-module/usb_hid/Device.c
 msgid "USB error"
-msgstr ""
+msgstr "Chyba USB"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID integer value must be 0-0xffff"
-msgstr ""
+msgstr "UUID integer musí být 0-0xffff"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
+msgstr "UUID řetězec neodpovídá 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
-msgstr ""
+msgstr "Hodnota UUID není str, int ani byte buffer"
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
-msgstr ""
+msgstr "Nelze přistupovat k nezarovnanému IO registru"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
@@ -2167,21 +2172,21 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate the heap."
-msgstr ""
+msgstr "Nelze alokovat heap."
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
-msgstr ""
+msgstr "Není možné vytvořit zámek"
 
 #: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
+msgstr "I2C display nenalezen na %x"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 msgid "Unable to find free GCLK"
-msgstr ""
+msgstr "Nelze najít volný GCLK"
 
 #: py/parse.c
 msgid "Unable to init parser"
@@ -2189,24 +2194,24 @@ msgstr ""
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "Unable to read color palette data"
-msgstr ""
+msgstr "Nelze číst data palety barev"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Unable to start mDNS query"
-msgstr ""
+msgstr "Nepodařilo se začít mDNS dotaz"
 
 #: shared-bindings/nvm/ByteArray.c
 msgid "Unable to write to nvm."
-msgstr ""
+msgstr "Není možné zapisovat do nvm."
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to write to read-only memory"
-msgstr ""
+msgstr "Není možné zapisovat do paměti jen pro čtení"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
-msgstr ""
+msgstr "Nelze zapsat do sleep_memory."
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
@@ -2215,27 +2220,27 @@ msgstr ""
 #: ports/espressif/common-hal/ssl/SSLSocket.c
 #, c-format
 msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
+msgstr "Neošetřená chyba ESP TLS: %d %d %x %d"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
-msgstr ""
+msgstr "Neznámá chyba BLE na %s:%d: %d"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error: %d"
-msgstr ""
+msgstr "Neznámá chyba BLE: %d"
 
 #: ports/raspberrypi/common-hal/wifi/__init__.c
 #, c-format
 msgid "Unknown error code %d"
-msgstr ""
+msgstr "Neznámý chybový kód %d"
 
 #: shared-bindings/wifi/Radio.c
 #, c-format
 msgid "Unknown failure %d"
-msgstr ""
+msgstr "Neznámé selhání %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
@@ -2245,27 +2250,27 @@ msgstr ""
 #: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
 #: supervisor/shared/safe_mode.c
 msgid "Unknown reason."
-msgstr ""
+msgstr "Neznámý důvod."
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown security error: 0x%04x"
-msgstr ""
+msgstr "Neznámá bezpečnostní chyba: 0x%04x"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error at %s:%d: %d"
-msgstr ""
+msgstr "Neznámá chyba firmwaru na %s:%d: %d"
 
 #: ports/nrf/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
-msgstr ""
+msgstr "Neznámá chyba firmwaru: %04x"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %d"
-msgstr ""
+msgstr "Neznámá chyba firmwaru: %d"
 
 #: shared-bindings/adafruit_pixelbuf/PixelBuf.c
 #: shared-module/_pixelmap/PixelMap.c
@@ -2281,23 +2286,23 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Unsupported colorspace"
-msgstr ""
+msgstr "Nepodporovaný barevný prostor"
 
 #: shared-module/displayio/display_core.c
 msgid "Unsupported display bus type"
-msgstr ""
+msgstr "Nepodporovaná sběrnice dispalye"
 
 #: shared-module/audiocore/WaveFile.c
 msgid "Unsupported format"
-msgstr ""
+msgstr "Nepodporovaný formát"
 
 #: shared-bindings/hashlib/__init__.c
 msgid "Unsupported hash algorithm"
-msgstr ""
+msgstr "Nepodporovaný hash algoritmus"
 
 #: ports/espressif/common-hal/dualbank/__init__.c
 msgid "Update Failed"
-msgstr ""
+msgstr "Aktualizace selhala"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
@@ -2315,19 +2320,19 @@ msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Version was invalid"
-msgstr ""
+msgstr "Verze byla neplatná"
 
 #: ports/stm/common-hal/microcontroller/Processor.c
 msgid "Voltage read timed out"
-msgstr ""
+msgstr "Časový limit čtení napětí vypršel"
 
 #: main.c
 msgid "WARNING: Your code filename has two extensions\n"
-msgstr ""
+msgstr "UPOZORNĚNÍ: Název souboru vašeho kódu má dvě koncovky\n"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
-msgstr ""
+msgstr "WatchDogTimer nelze deaktivovat v režimu RESET"
 
 #: py/builtinhelp.c
 #, c-format
@@ -2338,18 +2343,23 @@ msgid ""
 "\n"
 "To list built-in modules type `help(\"modules\")`.\n"
 msgstr ""
+"Vítejte v Adafruit CircuitPython %s!\n"
+"\n"
+"Pro více informací navštivte circuitpython.org.\n"
+"\n"
+"Seznam vestavěných modulů můžete vypsat pomocí `help(\"modules\")`.\n"
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "Wi-Fi: "
-msgstr ""
+msgstr "Wi-Fi: "
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "Wifi is not enabled"
-msgstr ""
+msgstr "Wifi není povoleno"
 
 #: main.c
 msgid "Woken up by alarm.\n"
-msgstr ""
+msgstr "Probuzen alarmem.\n"
 
 #: ports/espressif/common-hal/_bleio/PacketBuffer.c
 #: ports/nrf/common-hal/_bleio/PacketBuffer.c
@@ -2361,64 +2371,65 @@ msgstr ""
 #: ports/atmel-samd/boards/circuitplayground_express_displayio/mpconfigboard.h
 #: ports/atmel-samd/boards/meowmeow/mpconfigboard.h
 msgid "You pressed both buttons at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl obě tlačítka."
 
 #: ports/espressif/boards/m5stack_core_basic/mpconfigboard.h
 #: ports/espressif/boards/m5stack_core_fire/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c/mpconfigboard.h
 #: ports/espressif/boards/m5stack_stick_c_plus/mpconfigboard.h
 msgid "You pressed button A at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko A."
 
 #: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
 msgid "You pressed button DOWN at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko DOWN."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko BOOT"
 
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko na pinu GPIO0."
 
 #: ports/espressif/boards/espressif_esp32_lyrat/mpconfigboard.h
 msgid "You pressed the Rec button at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko Rec."
 
 #: ports/espressif/boards/adafruit_feather_esp32_v2/mpconfigboard.h
 msgid "You pressed the SW38 button at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko SW38."
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko VOLUME."
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_u/mpconfigboard.h
 msgid "You pressed the central button at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl středové tlačítko."
 
 #: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
 msgid "You pressed the left button at start up."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko doleva."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the reset button during boot."
-msgstr ""
+msgstr "Při spuštění jsi stiskl tlačítko reset."
 
 #: supervisor/shared/micropython.c
 msgid "[truncated due to length]"
-msgstr ""
+msgstr "[zkráceno kvůli délce]"
 
 #: py/objtype.c
 msgid "__init__() should return None"
 msgstr ""
 
 #: py/objtype.c
-msgid "__init__() should return None, not '%q'"
+#, c-format
+msgid "__init__() should return None, not '%s'"
 msgstr ""
 
 #: py/objobject.c
@@ -2435,7 +2446,7 @@ msgstr ""
 
 #: py/compile.c
 msgid "annotation must be an identifier"
-msgstr ""
+msgstr "anotace musí být identifikátor"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "arange: cannot compute length"
@@ -2455,7 +2466,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr ""
+msgstr "argsort není implementován pro zploštěná pole"
 
 #: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
@@ -2463,7 +2474,7 @@ msgstr ""
 
 #: py/compile.c
 msgid "argument name reused"
-msgstr ""
+msgstr "jméno argumentu znovupoužito"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -2480,15 +2491,15 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr ""
+msgstr "Pole a index musí mít stejnou délku"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "array has too many dimensions"
-msgstr ""
+msgstr "pole má příliš mnoho dimenzí"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array is too big"
-msgstr ""
+msgstr "pole je příliš velké"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
@@ -2497,31 +2508,31 @@ msgstr ""
 
 #: py/asmxtensa.c
 msgid "asm overflow"
-msgstr ""
+msgstr "přetečení v asm"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
-msgstr ""
+msgstr "pokus o získání (arg)min/(arg)max z prázdné sekvence"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr ""
 
 #: py/objstr.c
-msgid "attributes not supported yet"
+msgid "attributes not supported"
 msgstr ""
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
-msgstr ""
+msgstr "osa je mimo rozsah"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 msgid "axis must be None, or an integer"
-msgstr ""
+msgstr "osa musí být None nebo integer"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "axis too long"
-msgstr ""
+msgstr "osa je příliš dlouhá"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "background value out of range of target"
@@ -2549,11 +2560,11 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
-msgstr ""
+msgstr "velikosti bitmapy musí odpovídat"
 
 #: extmod/modurandom.c
 msgid "bits must be 32 or less"
-msgstr ""
+msgstr "počet bitů nesmí přesáhnout 32"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2565,11 +2576,11 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
-msgstr ""
+msgstr "buffer je menší než požadovaná velikost"
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer size must be a multiple of element size"
-msgstr ""
+msgstr "velikost bufferu musí být násobkem velikosti elementu"
 
 #: shared-module/struct/__init__.c
 msgid "buffer size must match format"
@@ -2585,15 +2596,15 @@ msgstr ""
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "buffer too small for requested bytes"
-msgstr ""
+msgstr "buffer je příliš malý pro počet požadovaných bajtů"
 
 #: py/emitbc.c
 msgid "bytecode overflow"
-msgstr ""
+msgstr "přetečení bytecode"
 
 #: py/objarray.c
 msgid "bytes length not a multiple of item size"
-msgstr ""
+msgstr "Počet bajtů není násobkem velikosti prvku"
 
 #: py/objstr.c
 msgid "bytes value out of range"
@@ -2610,7 +2621,7 @@ msgstr ""
 #: shared-module/vectorio/Circle.c shared-module/vectorio/Polygon.c
 #: shared-module/vectorio/Rectangle.c
 msgid "can only have one parent"
-msgstr ""
+msgstr "může mít pouze jednoho rodiče"
 
 #: py/emitinlinethumb.c
 msgid "can only have up to 4 parameters to Thumb assembly"
@@ -2634,41 +2645,49 @@ msgstr ""
 
 #: extmod/moduasyncio.c
 msgid "can't cancel self"
-msgstr ""
+msgstr "nelze zrušit sám sebe"
 
-#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
-msgstr ""
+msgstr "není možné převést %q na %q"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to complex"
-msgstr ""
+msgstr "nelze převést %s na complex"
 
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to float"
-msgstr ""
+msgstr "nelze převést %s na float"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
+#: py/objint.c
+msgid "can't convert NaN to int"
+msgstr ""
+
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
+msgstr "nelze převést complex na float"
+
+#: py/objint.c
+msgid "can't convert inf to int"
 msgstr ""
 
 #: py/obj.c
 msgid "can't convert to complex"
-msgstr ""
+msgstr "nelze převést na complex"
 
 #: py/obj.c
 msgid "can't convert to float"
-msgstr ""
+msgstr "nelze převést na float"
 
 #: py/runtime.c
 msgid "can't convert to int"
-msgstr ""
+msgstr "nelze převést na int"
 
 #: py/objstr.c
 msgid "can't convert to str implicitly"
@@ -2686,12 +2705,12 @@ msgstr ""
 msgid "can't do binary op between '%q' and '%q'"
 msgstr ""
 
-#: py/objcomplex.c
-msgid "can't do truncated division of a complex number"
-msgstr ""
-
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
+msgstr ""
+
+#: py/runtime.c
+msgid "can't import name %q"
 msgstr ""
 
 #: py/emitnative.c
@@ -2704,7 +2723,7 @@ msgstr ""
 
 #: py/builtinimport.c
 msgid "can't perform relative import"
-msgstr ""
+msgstr "nelze provést relativní import"
 
 #: py/objgenerator.c
 msgid "can't send non-None value to a just-started generator"
@@ -2712,7 +2731,7 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "can't set 512 block size"
-msgstr ""
+msgstr "nelze nastavit velikost bloku 512"
 
 #: py/objexcept.c py/objnamedtuple.c
 msgid "can't set attribute"
@@ -2720,7 +2739,7 @@ msgstr ""
 
 #: py/runtime.c shared-bindings/supervisor/Runtime.c
 msgid "can't set attribute '%q'"
-msgstr ""
+msgstr "nelze nastavit atribut '%q'"
 
 #: py/emitnative.c
 msgid "can't store '%q'"
@@ -2744,13 +2763,21 @@ msgid ""
 "can't switch from manual field specification to automatic field numbering"
 msgstr ""
 
+#: py/objcomplex.c
+msgid "can't truncate-divide a complex number"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "can't unambiguously get sizeof scalar"
+msgstr ""
+
 #: extmod/moduasyncio.c
 msgid "can't wait"
-msgstr ""
+msgstr "nelze čekat"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
-msgstr ""
+msgstr "nelze přiřadit nový tvar"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
@@ -2758,11 +2785,11 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
-msgstr ""
+msgstr "nelze převést complex na dtype"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex type"
-msgstr ""
+msgstr "nelze převést typ complex"
 
 #: py/objtype.c
 msgid "cannot create '%q' instances"
@@ -2774,19 +2801,11 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot delete array elements"
-msgstr ""
-
-#: py/runtime.c
-msgid "cannot import name %q"
-msgstr ""
+msgstr "nelze smazat prvky pole"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array"
-msgstr ""
-
-#: extmod/moductypes.c
-msgid "cannot unambiguously get sizeof scalar"
-msgstr ""
+msgstr "nelze změnit rozměry pole"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2794,7 +2813,7 @@ msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "channel re-init"
-msgstr ""
+msgstr "opětovná inicializace kanálu"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -2814,7 +2833,7 @@ msgstr ""
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
-msgstr ""
+msgstr "kód mimo rozsah 0~127"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -2834,6 +2853,10 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "comparison of int and uint"
+msgstr "porovnání int a uint"
+
+#: py/objcomplex.c
+msgid "complex divide by zero"
 msgstr ""
 
 #: py/objfloat.c py/parsenum.c
@@ -2862,7 +2885,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "corrupted file"
-msgstr ""
+msgstr "poškozený soubor"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "could not invert Vandermonde matrix"
@@ -2870,7 +2893,7 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "couldn't determine SD card version"
-msgstr ""
+msgstr "nelze zjistit verzi SD karty"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "cross is defined for 1D arrays of length 3"
@@ -2878,20 +2901,20 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be iterable"
-msgstr ""
+msgstr "data musí být iterovatelná"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "data must be of equal length"
-msgstr ""
+msgstr "data musí mít stejnou délku"
 
 #: ports/atmel-samd/common-hal/imagecapture/ParallelImageCapture.c
 #, c-format
 msgid "data pin #%d in use"
-msgstr ""
+msgstr "datový pin #%d je používán"
 
 #: extmod/ulab/code/ndarray.c
 msgid "data type not understood"
-msgstr ""
+msgstr "datový typ nebyl rozpoznán"
 
 #: py/parsenum.c
 msgid "decimal numbers not supported"
@@ -2928,15 +2951,15 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "dimensions do not match"
-msgstr ""
+msgstr "dimenze nesouhlasí"
 
 #: py/emitnative.c
 msgid "div/mod not implemented for uint"
-msgstr ""
+msgstr "div/mod nejsou implementované pro uint"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "divide by zero"
-msgstr ""
+msgstr "dělení nulou"
 
 #: py/runtime.c
 msgid "division by zero"
@@ -2944,7 +2967,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "dtype must be float, or complex"
-msgstr ""
+msgstr "dtype musí být float nebo complex"
 
 #: py/objdeque.c
 msgid "empty"
@@ -2952,7 +2975,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "empty file"
-msgstr ""
+msgstr "prázdný soubor"
 
 #: extmod/moduasyncio.c extmod/moduheapq.c
 msgid "empty heap"
@@ -2972,7 +2995,7 @@ msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "epoch_time not supported on this board"
-msgstr ""
+msgstr "epoch_time není podporován na této desce"
 
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
@@ -2984,6 +3007,8 @@ msgid ""
 "espcamera.Camera requires reserved PSRAM to be configured. See the "
 "documentation for instructions."
 msgstr ""
+"espcamera.Camera vyžaduje reservovanou PSRAM. V dokumentaci nalezneš "
+"instrukce."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -3033,7 +3058,7 @@ msgstr ""
 
 #: shared-bindings/traceback/__init__.c
 msgid "file write is not available"
-msgstr ""
+msgstr "zápis do souboru není dostupný"
 
 #: shared-bindings/storage/__init__.c
 msgid "filesystem must provide mount method"
@@ -3041,15 +3066,15 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "first argument must be a callable"
-msgstr ""
+msgstr "První argument musí být zavolatelný"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "first argument must be a function"
-msgstr ""
+msgstr "první argument musí být funkce"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "first argument must be a tuple of ndarrays"
-msgstr ""
+msgstr "první argument musí být tuple nebo ndarray"
 
 #: extmod/ulab/code/numpy/transform.c extmod/ulab/code/numpy/vector.c
 msgid "first argument must be an ndarray"
@@ -3061,7 +3086,7 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/linalg/linalg.c
 msgid "first two arguments must be ndarrays"
-msgstr ""
+msgstr "první dva argumenty musí být ndarray"
 
 #: extmod/ulab/code/ndarray.c
 msgid "flattening order must be either 'C', or 'F'"
@@ -3077,7 +3102,7 @@ msgstr ""
 
 #: py/nativeglue.c
 msgid "float unsupported"
-msgstr ""
+msgstr "float není podporován"
 
 #: shared-bindings/_stage/Text.c
 msgid "font must be 2048 bytes long"
@@ -3110,29 +3135,29 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "function is defined for ndarrays only"
-msgstr ""
+msgstr "funkce je definována pouze pro ndarraye"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "function is implemented for ndarrays only"
-msgstr ""
+msgstr "funkce je implementována jen pro ndarraye"
 
 #: py/argcheck.c
 #, c-format
 msgid "function missing %d required positional arguments"
-msgstr ""
+msgstr "funkci chybí %d povinné poziční argumenty"
 
 #: py/bc.c
 msgid "function missing keyword-only argument"
-msgstr ""
+msgstr "funkci chybí argument pouze pro klíčové slovo"
 
 #: py/bc.c
 msgid "function missing required keyword argument '%q'"
-msgstr ""
+msgstr "funkci chybí argument specifikovaný klíčovým slovem"
 
 #: py/bc.c
 #, c-format
 msgid "function missing required positional argument #%d"
-msgstr ""
+msgstr "funkci chybí požadovaný argument na pozici #%d"
 
 #: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
 #, c-format
@@ -3153,7 +3178,7 @@ msgstr ""
 
 #: py/objgenerator.c py/runtime.c
 msgid "generator raised StopIteration"
-msgstr ""
+msgstr "generátor způsobil StopIteration"
 
 #: shared-bindings/_stage/Layer.c
 msgid "graphic must be 2048 bytes long"
@@ -3161,7 +3186,7 @@ msgstr ""
 
 #: extmod/moduhashlib.c
 msgid "hash is final"
-msgstr ""
+msgstr "hash je konečný"
 
 #: extmod/moduheapq.c
 msgid "heap must be a list"
@@ -3181,11 +3206,11 @@ msgstr ""
 
 #: py/persistentcode.c
 msgid "incompatible .mpy arch"
-msgstr ""
+msgstr "nekopmatibilní architektura .mpy"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "nekompatibilní .mpy soubor"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3205,7 +3230,7 @@ msgstr ""
 
 #: shared-bindings/_pixelmap/PixelMap.c
 msgid "index must be tuple or int"
-msgstr ""
+msgstr "index musí být tuple nebo int"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/ulab_tools.c
 #: ports/espressif/common-hal/pulseio/PulseIn.c
@@ -3223,15 +3248,15 @@ msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "init I2C"
-msgstr ""
+msgstr "inicializace I2C"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "initial values must be iterable"
-msgstr ""
+msgstr "výchozí hodnoty musí být iterovatelné"
 
 #: shared-bindings/_bleio/Characteristic.c shared-bindings/_bleio/Descriptor.c
 msgid "initial_value length is wrong"
-msgstr ""
+msgstr "délka initial_value je chybná"
 
 #: py/compile.c
 msgid "inline assembler must be a function"
@@ -3239,15 +3264,15 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output dimensions differ"
-msgstr ""
+msgstr "dimenze vstupu a výstupu se liší"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input and output shapes differ"
-msgstr ""
+msgstr "vstupní a výstupní tvar je růzmý"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
-msgstr ""
+msgstr "vstupní argument musí být integer, tuple nebo list"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
@@ -3255,7 +3280,7 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input arrays are not compatible"
-msgstr ""
+msgstr "vstupní pole nejsou kompatibilní"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input data must be an iterable"
@@ -3263,11 +3288,11 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "input dtype must be float or complex"
-msgstr ""
+msgstr "vstupní dtype musí být float nebo complex"
 
 #: extmod/ulab/code/numpy/poly.c
 msgid "input is not iterable"
-msgstr ""
+msgstr "vstup není iterovatelný"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "input matrix is asymmetric"
@@ -3280,27 +3305,27 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input must be 1- or 2-d"
-msgstr ""
+msgstr "vstup musí být 1- nebo 2-d"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be a 1D ndarray"
-msgstr ""
+msgstr "vstup musí být 1D ndarray"
 
 #: extmod/ulab/code/scipy/linalg/linalg.c extmod/ulab/code/user/user.c
 msgid "input must be a dense ndarray"
-msgstr ""
+msgstr "vstup musí být hustý ndarray"
 
 #: extmod/ulab/code/user/user.c
 msgid "input must be an ndarray"
-msgstr ""
+msgstr "vstup musí být ndarray"
 
 #: extmod/ulab/code/numpy/carray/carray.c
 msgid "input must be an ndarray, or a scalar"
-msgstr ""
+msgstr "vstup musí být ndarray nebo scalar"
 
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "input must be one-dimensional"
-msgstr ""
+msgstr "vstup musí být jednorozměrný"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "input must be square matrix"
@@ -3325,16 +3350,16 @@ msgstr ""
 
 #: py/compile.c
 msgid "invalid architecture"
-msgstr ""
+msgstr "špatná architektura"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
-msgstr ""
+msgstr "chybné bits_per_pixel %d, musí být 1, 2, 4, 8, 16, 24, or 32"
 
 #: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "invalid cert"
-msgstr ""
+msgstr "špatný certifikár"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3344,11 +3369,11 @@ msgstr ""
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
 msgid "invalid element_size %d, must be, 1, 2, or 4"
-msgstr ""
+msgstr "chybná element_size %d, musí být 1, 2, nebo 4"
 
 #: shared-bindings/traceback/__init__.c
 msgid "invalid exception"
-msgstr ""
+msgstr "špatná výjimka"
 
 #: py/objstr.c
 msgid "invalid format specifier"
@@ -3356,11 +3381,11 @@ msgstr ""
 
 #: shared-bindings/wifi/Radio.c
 msgid "invalid hostname"
-msgstr ""
+msgstr "špatný hostname"
 
 #: ports/raspberrypi/common-hal/ssl/SSLSocket.c
 msgid "invalid key"
-msgstr ""
+msgstr "špatný klíč"
 
 #: py/compile.c
 msgid "invalid micropython decorator"
@@ -3368,7 +3393,7 @@ msgstr ""
 
 #: ports/espressif/common-hal/espcamera/Camera.c
 msgid "invalid setting"
-msgstr ""
+msgstr "neplatné nastavení"
 
 #: shared-bindings/random/__init__.c
 msgid "invalid step"
@@ -3408,7 +3433,7 @@ msgid "join expects a list of str/bytes objects consistent with self object"
 msgstr ""
 
 #: py/argcheck.c
-msgid "keyword argument(s) not yet implemented - use normal args instead"
+msgid "keyword argument(s) not implemented - use normal args instead"
 msgstr ""
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
@@ -3417,10 +3442,6 @@ msgstr ""
 
 #: py/compile.c
 msgid "label redefined"
-msgstr ""
-
-#: py/stream.c
-msgid "length argument not allowed for this type"
 msgstr ""
 
 #: shared-bindings/audiomixer/MixerVoice.c
@@ -3450,12 +3471,12 @@ msgstr ""
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS already initialized"
-msgstr ""
+msgstr "mDNS je již inicializováno"
 
 #: ports/espressif/common-hal/mdns/Server.c
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "mDNS only works with built-in WiFi"
-msgstr ""
+msgstr "mDNS pracuje pouze s vestavěnou WiFi"
 
 #: py/parse.c
 msgid "malformed f-string"
@@ -3482,7 +3503,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "maximum number of dimensions is "
-msgstr ""
+msgstr "maximální počet dimenzí je "
 
 #: py/runtime.c
 msgid "maximum recursion depth exceeded"
@@ -3490,11 +3511,11 @@ msgstr ""
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter must be > 0"
-msgstr ""
+msgstr "maxiter musí být > 0"
 
 #: extmod/ulab/code/scipy/optimize/optimize.c
 msgid "maxiter should be > 0"
-msgstr ""
+msgstr "maxiter by měl být > 0"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "median argument must be an ndarray"
@@ -3510,8 +3531,12 @@ msgid "memory allocation failed, heap is locked"
 msgstr ""
 
 #: py/objarray.c
-msgid "memoryview: length is not a multiple of itemsize"
+msgid "memoryview offset too large"
 msgstr ""
+
+#: py/objarray.c
+msgid "memoryview: length is not a multiple of itemsize"
+msgstr "memoryview: délka není násobkem velikosti položky"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
@@ -3557,6 +3582,10 @@ msgstr ""
 msgid "name not defined"
 msgstr ""
 
+#: py/persistentcode.c
+msgid "native code in .mpy unsupported"
+msgstr ""
+
 #: py/asmthumb.c
 msgid "native method too big"
 msgstr ""
@@ -3567,7 +3596,7 @@ msgstr ""
 
 #: extmod/ulab/code/ndarray.c
 msgid "ndarray length overflows"
-msgstr ""
+msgstr "délka ndarray přetekla"
 
 #: py/runtime.c
 #, c-format
@@ -3576,7 +3605,7 @@ msgstr ""
 
 #: py/modmath.c
 msgid "negative factorial"
-msgstr ""
+msgstr "záporný faktoriál"
 
 #: py/objint_longlong.c py/objint_mpz.c py/runtime.c
 msgid "negative power with no float support"
@@ -3592,7 +3621,7 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no SD card"
-msgstr ""
+msgstr "není vložena SD karta"
 
 #: py/vm.c
 msgid "no active exception to reraise"
@@ -3616,7 +3645,7 @@ msgstr ""
 
 #: shared-module/sdcardio/SDCard.c
 msgid "no response from SD card"
-msgstr ""
+msgstr "žádná odpověď z SD karty"
 
 #: ports/espressif/common-hal/espcamera/Camera.c py/objobject.c py/runtime.c
 msgid "no such attribute"
@@ -3631,17 +3660,17 @@ msgstr ""
 msgid "non-default argument follows default argument"
 msgstr ""
 
-#: extmod/modubinascii.c
+#: py/objstr.c
 msgid "non-hex digit found"
 msgstr ""
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
-msgstr ""
+msgstr "nenulový timeout musí být > 0.01"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "non-zero timeout must be >= interval"
-msgstr ""
+msgstr "nenulový timeout musí být >= interval"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "not a 128-bit UUID"
@@ -3649,7 +3678,7 @@ msgstr ""
 
 #: py/parse.c
 msgid "not a constant"
-msgstr ""
+msgstr "není konstanta"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3661,11 +3690,11 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/carray/carray_tools.c
 msgid "not implemented for complex dtype"
-msgstr ""
+msgstr "není implementováno pro komplexní dtype"
 
 #: extmod/ulab/code/numpy/bitwise.c
 msgid "not supported for input types"
-msgstr ""
+msgstr "není podporováno pro vstupní typy"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "number of points must be at least 2"
@@ -3673,12 +3702,12 @@ msgstr ""
 
 #: py/builtinhelp.c
 msgid "object "
-msgstr ""
+msgstr "objekt "
 
 #: py/obj.c
 #, c-format
 msgid "object '%s' isn't a tuple or list"
-msgstr ""
+msgstr "objekt '%s' není tuple or nebo list"
 
 #: py/obj.c
 msgid "object doesn't support item assignment"
@@ -3715,34 +3744,30 @@ msgstr ""
 #: py/obj.c
 #, c-format
 msgid "object of type '%s' has no len()"
-msgstr ""
+msgstr "objekt typu '%s' nemá len()"
 
 #: py/obj.c
 msgid "object with buffer protocol required"
 msgstr ""
 
-#: extmod/modubinascii.c
+#: py/objstr.c
 msgid "odd-length string"
 msgstr ""
 
 #: supervisor/shared/web_workflow/web_workflow.c
 msgid "off"
-msgstr ""
+msgstr "vypnuto"
 
 #: extmod/ulab/code/utils/utils.c
 msgid "offset is too large"
-msgstr ""
+msgstr "offset je příliš velký"
 
 #: shared-bindings/dualbank/__init__.c
 msgid "offset must be >= 0"
-msgstr ""
+msgstr "offset musí být >= 0"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
-msgstr ""
-
-#: py/objstr.c py/objstrunicode.c
-msgid "offset out of bounds"
 msgstr ""
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
@@ -3752,15 +3777,15 @@ msgstr ""
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only mono is supported"
-msgstr ""
+msgstr "je podporováno pouze mono"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "only ndarrays can be concatenated"
-msgstr ""
+msgstr "pouze ndarraye mohou být spojeny"
 
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only oversample=64 is supported"
-msgstr ""
+msgstr "je podporován pouze oversampling 64"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 #: ports/stm/common-hal/audiobusio/PDMIn.c
@@ -3775,7 +3800,7 @@ msgstr ""
 
 #: py/vm.c
 msgid "opcode"
-msgstr ""
+msgstr "opcode"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/bitwise.c
 #: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/vector.c
@@ -3784,15 +3809,15 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for 2D arrays only"
-msgstr ""
+msgstr "operace je definována pouze pro 2D pole"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "operation is defined for ndarrays only"
-msgstr ""
+msgstr "operace je definována pouze pro ndarray pole"
 
 #: extmod/ulab/code/ndarray.c
 msgid "operation is implemented for 1D Boolean arrays only"
-msgstr ""
+msgstr "operace je immplementována pouze pro 1D boolean pole"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "operation is not implemented on ndarrays"
@@ -3813,7 +3838,7 @@ msgstr ""
 
 #: extmod/ulab/code/utils/utils.c
 msgid "out array is too small"
-msgstr ""
+msgstr "výstupní pole je příliš malé"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "out keyword is not supported for complex dtype"
@@ -3879,11 +3904,11 @@ msgstr ""
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
 msgid "pop from empty %q"
-msgstr ""
+msgstr "pop z prázdného %q"
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "port must be >= 0"
-msgstr ""
+msgstr "port musí být >= 0"
 
 #: py/compile.c
 msgid "positional arg after **"
@@ -3907,7 +3932,7 @@ msgstr ""
 
 #: py/parse.c
 msgid "raw f-strings are not supported"
-msgstr ""
+msgstr "surové f-stringy nesjou podporované"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "real and imaginary parts must be of equal length"
@@ -3967,11 +3992,11 @@ msgstr ""
 
 #: py/nativeglue.c
 msgid "set unsupported"
-msgstr ""
+msgstr "set neoodporován"
 
 #: extmod/ulab/code/ndarray.c
 msgid "shape must be integer or tuple of integers"
-msgstr ""
+msgstr "tvar musí být integer nebo tuple integerů"
 
 #: shared-module/msgpack/__init__.c
 msgid "short read"
@@ -3991,10 +4016,6 @@ msgstr ""
 
 #: shared-bindings/time/__init__.c
 msgid "sleep length must be non-negative"
-msgstr ""
-
-#: extmod/ulab/code/ndarray.c
-msgid "slice step can't be zero"
 msgstr ""
 
 #: py/nativeglue.c
@@ -4027,7 +4048,7 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source palette too large"
-msgstr ""
+msgstr "zdrojová paleta je příliš velká"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 2 or 65536"
@@ -4039,6 +4060,10 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "source_bitmap must have value_count of 8"
+msgstr ""
+
+#: extmod/modure.c
+msgid "splitting with sub-captures"
 msgstr ""
 
 #: py/objstr.c
@@ -4053,8 +4078,17 @@ msgstr ""
 msgid "stream operation not supported"
 msgstr ""
 
-#: py/stream.c
-msgid "string not supported; use bytes or bytearray"
+#: py/objarray.c py/objstr.c
+msgid "string argument without an encoding"
+msgstr ""
+
+#: py/objstrunicode.c
+msgid "string index out of range"
+msgstr ""
+
+#: py/objstrunicode.c
+#, c-format
+msgid "string indices must be integers, not %s"
 msgstr ""
 
 #: extmod/moductypes.c
@@ -4085,13 +4119,17 @@ msgstr ""
 msgid "syntax error in uctypes descriptor"
 msgstr ""
 
+#: extmod/utime_mphal.c
+msgid "ticks interval overflow"
+msgstr ""
+
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
-msgstr ""
+msgstr "timeout překročil maximální podporovanou hodnotu"
 
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
-msgstr ""
+msgstr "timeout musí být < 655.35 s"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
@@ -4103,7 +4141,7 @@ msgstr ""
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "timer re-init"
-msgstr ""
+msgstr "opětovný init timeru"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
@@ -4115,11 +4153,11 @@ msgstr ""
 
 #: py/compile.c
 msgid "too many args"
-msgstr ""
+msgstr "příliš mnoho argumentů"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
-msgstr ""
+msgstr "příliš mnoho dimenzí"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
@@ -4144,7 +4182,7 @@ msgstr ""
 
 #: py/obj.c
 msgid "tuple/list has wrong length"
-msgstr ""
+msgstr "tuple/list má špatnou délku"
 
 #: ports/espressif/common-hal/canio/CAN.c
 #, c-format
@@ -4186,7 +4224,7 @@ msgstr ""
 
 #: py/parse.c
 msgid "unexpected indent"
-msgstr ""
+msgstr "neočekávané odsazení"
 
 #: py/bc.c
 msgid "unexpected keyword argument"
@@ -4216,16 +4254,16 @@ msgstr ""
 
 #: py/compile.c
 msgid "unknown type"
-msgstr ""
+msgstr "neznámý typ"
 
 #: py/compile.c
 msgid "unknown type '%q'"
-msgstr ""
+msgstr "neznámý typ '%q'"
 
 #: py/objstr.c
 #, c-format
 msgid "unmatched '%c' in format"
-msgstr ""
+msgstr "neshoduje se '%c' ve formátu"
 
 #: py/objtype.c py/runtime.c
 msgid "unreadable attribute"
@@ -4233,7 +4271,7 @@ msgstr ""
 
 #: shared-bindings/displayio/TileGrid.c shared-bindings/vectorio/VectorShape.c
 msgid "unsupported %q type"
-msgstr ""
+msgstr "nepodporovaný typ% q"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -4298,7 +4336,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/wifi/Monitor.c
 msgid "wifi.Monitor not available"
-msgstr ""
+msgstr "wifi.Monitor není dostupný"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "window must be <= interval"
@@ -4314,11 +4352,11 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "wrong dtype"
-msgstr ""
+msgstr "špatný dtype"
 
 #: extmod/ulab/code/numpy/transform.c
 msgid "wrong index type"
-msgstr ""
+msgstr "špatný typ indexu"
 
 #: extmod/ulab/code/numpy/compare.c extmod/ulab/code/numpy/create.c
 #: extmod/ulab/code/numpy/io/io.c extmod/ulab/code/numpy/transform.c
@@ -4357,6 +4395,15 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "__init__() should return None, not '%q'"
+#~ msgstr "__init__() by měl vracet hodnotu None, nikoli '%q'"
+
+#~ msgid "cannot unambiguously get sizeof scalar"
+#~ msgstr "velikost scalar nelze jednoznačně určit"
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Bitové hodiny a výběr slov musí být sekvenční piny"
 
 #~ msgid "ADC2 is being used by WiFi"
 #~ msgstr "WiFi používá ADC2"

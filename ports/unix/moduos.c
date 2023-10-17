@@ -25,6 +25,7 @@
  * THE SOFTWARE.
  */
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -39,7 +40,8 @@ os_getenv_err_t common_hal_os_getenv_str(const char *key, char *value, size_t va
 os_getenv_err_t common_hal_os_getenv_int(const char *key, mp_int_t *value);
 #endif
 
-STATIC mp_obj_t mp_uos_getenv(mp_obj_t var_in) {
+STATIC mp_obj_t mp_uos_getenv(size_t n_args, const mp_obj_t *args) {
+    mp_obj_t var_in = args[0];
     #if defined(MICROPY_UNIX_COVERAGE)
     mp_obj_t result = common_hal_os_getenv(mp_obj_str_get_str(var_in), mp_const_none);
     if (result != mp_const_none) {
@@ -48,11 +50,11 @@ STATIC mp_obj_t mp_uos_getenv(mp_obj_t var_in) {
     #endif
     const char *s = getenv(mp_obj_str_get_str(var_in));
     if (s == NULL) {
-        return mp_const_none;
+        return n_args > 1 ? args[1] : mp_const_none;
     }
     return mp_obj_new_str(s, strlen(s));
 }
-MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_getenv_obj, mp_uos_getenv);
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_getenv_obj, 1, 2, mp_uos_getenv);
 
 #if defined(MICROPY_UNIX_COVERAGE)
 STATIC mp_obj_t mp_uos_getenv_int(mp_obj_t var_in) {
@@ -129,7 +131,7 @@ STATIC mp_obj_t mp_uos_urandom(mp_obj_t num) {
     vstr_t vstr;
     vstr_init_len(&vstr, n);
     mp_hal_get_random(n, vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_uos_urandom_obj, mp_uos_urandom);
 

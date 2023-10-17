@@ -248,14 +248,12 @@ STATIC const framebuffer_p_t picodvi_framebuffer_proto = {
     .deinit = picodvi_framebuffer_deinit_proto,
 };
 
-const mp_obj_type_t picodvi_framebuffer_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Framebuffer,
-    .locals_dict = (mp_obj_dict_t *)&picodvi_framebuffer_locals_dict,
-    .make_new = picodvi_framebuffer_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .buffer_p = { .get_buffer = common_hal_picodvi_framebuffer_get_buffer, },
-        .protocol = &picodvi_framebuffer_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    picodvi_framebuffer_type,
+    MP_QSTR_Framebuffer,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &picodvi_framebuffer_locals_dict,
+    make_new, picodvi_framebuffer_make_new,
+    buffer, common_hal_picodvi_framebuffer_get_buffer,
+    protocol, &picodvi_framebuffer_proto
+    );

@@ -1,13 +1,20 @@
-# Select the variant to build for.
+# Select the variant to build for:
+ifdef VARIANT_DIR
+# Custom variant path - remove trailing slash and get the final component of
+# the path as the variant name.
+VARIANT ?= $(notdir $(VARIANT_DIR:/=))
+else
+# If not given on the command line, then default to standard.
 VARIANT ?= standard
-
-# If the build directory is not given, make it reflect the variant name.
-BUILD ?= build-$(VARIANT)
-
 VARIANT_DIR ?= variants/$(VARIANT)
+endif
+
 ifeq ($(wildcard $(VARIANT_DIR)/.),)
 $(error Invalid VARIANT specified: $(VARIANT_DIR))
 endif
+
+# If the build directory is not given, make it reflect the variant name.
+BUILD ?= build-$(VARIANT)
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
@@ -30,7 +37,7 @@ UNAME_S := $(shell uname -s)
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/axtls lib/berkeley-db-1.xx lib/libffi
+GIT_SUBMODULES += lib/berkeley-db-1.xx
 
 INC +=  -I.
 INC +=  -I$(TOP)
@@ -38,8 +45,8 @@ INC += -I$(BUILD)
 
 # compiler settings
 CWARN = -Wall -Werror
-CWARN += -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
-CFLAGS += $(INC) $(CWARN) -std=gnu11 -DUNIX $(CFLAGS_MOD) $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
+CWARN += -Wextra -Wno-unused-parameter -Wpointer-arith -Wdouble-promotion -Wfloat-conversion
+CFLAGS += $(INC) $(CWARN) -std=gnu99 -DUNIX $(COPT) -I$(VARIANT_DIR) $(CFLAGS_EXTRA)
 
 # Debugging/Optimization
 ifdef DEBUG
@@ -110,60 +117,39 @@ ifeq ($(MICROPY_FORCE_32BIT),1)
 # starting with linux-libc-dev:i386
 ifeq ($(MICROPY_PY_FFI),1)
 ifeq ($(UNAME_S),Linux)
-CFLAGS_MOD += -I/usr/include/i686-linux-gnu
+CFLAGS += -I/usr/include/i686-linux-gnu
 endif
 endif
 endif
 
 ifeq ($(MICROPY_USE_READLINE),1)
 INC += -I$(TOP)/shared/readline
-CFLAGS_MOD += -DMICROPY_USE_READLINE=1
+CFLAGS += -DMICROPY_USE_READLINE=1
 SHARED_SRC_C_EXTRA += readline/readline.c
 endif
 ifeq ($(MICROPY_PY_TERMIOS),1)
-CFLAGS_MOD += -DMICROPY_PY_TERMIOS=1
-SRC_MOD += modtermios.c
+CFLAGS += -DMICROPY_PY_TERMIOS=1
 endif
 ifeq ($(MICROPY_PY_SOCKET),1)
-CFLAGS_MOD += -DMICROPY_PY_SOCKET=1
-SRC_MOD += modusocket.c
+CFLAGS += -DMICROPY_PY_SOCKET=1
 endif
 ifeq ($(MICROPY_PY_THREAD),1)
-CFLAGS_MOD += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
-LDFLAGS_MOD += $(LIBPTHREAD)
+CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
+LDFLAGS += $(LIBPTHREAD)
+endif
+
+ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_SSL_AXTLS),1)
+
+endif
 endif
 
 # If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
-
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
 HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
 
-# Only one stack can be enabled.
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-$(error Cannot enable both NimBLE and BTstack at the same time)
-endif
-endif
-
-# Default to btstack, but a variant (or make command line) can set NimBLE
-# explicitly (which is always via H4 UART).
-ifneq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifneq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-MICROPY_BLUETOOTH_BTSTACK ?= 1
-endif
-endif
-
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-
 # Figure out which BTstack transport to use.
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK_H4),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
-$(error Cannot enable BTstack support for USB and H4 UART at the same time)
-endif
-else
 ifeq ($(HAVE_LIBUSB),1)
 # Default to btstack-over-usb.
 MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
@@ -171,51 +157,40 @@ else
 # Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
+
+SRC_BTSTACK_C += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 endif
-
-# BTstack is enabled.
-GIT_SUBMODULES += lib/btstack
-include $(TOP)/extmod/btstack/btstack.mk
-SRC_BTSTACK += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
-
-else
-
-# NimBLE is enabled.
-GIT_SUBMODULES += lib/mynewt-nimble
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
-include $(TOP)/extmod/nimble/nimble.mk
-
-endif
-
 endif
 
 ifeq ($(MICROPY_PY_FFI),1)
 
 ifeq ($(MICROPY_STANDALONE),1)
-LIBFFI_CFLAGS_MOD := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
+# Build libffi from source.
+GIT_SUBMODULES += lib/libffi
+DEPLIBS += libffi
+LIBFFI_CFLAGS := -I$(shell ls -1d $(BUILD)/lib/libffi/out/lib/libffi-*/include)
  ifeq ($(MICROPY_FORCE_32BIT),1)
-  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib32/libffi.a
+  LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib32/libffi.a
  else
-  LIBFFI_LDFLAGS_MOD = $(BUILD)/lib/libffi/out/lib/libffi.a
+  LIBFFI_LDFLAGS = $(BUILD)/lib/libffi/out/lib/libffi.a
  endif
 else
-LIBFFI_CFLAGS_MOD := $(shell pkg-config --cflags libffi)
-LIBFFI_LDFLAGS_MOD := $(shell pkg-config --libs libffi)
+# Use system version of libffi.
+LIBFFI_CFLAGS := $(shell pkg-config --cflags libffi)
+LIBFFI_LDFLAGS := $(shell pkg-config --libs libffi)
 endif
 
 ifeq ($(UNAME_S),Linux)
-LIBFFI_LDFLAGS_MOD += -ldl
+LIBFFI_LDFLAGS += -ldl
 endif
 
-CFLAGS_MOD += $(LIBFFI_CFLAGS_MOD) -DMICROPY_PY_FFI=1
-LDFLAGS_MOD += $(LIBFFI_LDFLAGS_MOD)
-SRC_MOD += modffi.c
+CFLAGS += $(LIBFFI_CFLAGS) -DMICROPY_PY_FFI=1
+LDFLAGS += $(LIBFFI_LDFLAGS)
 endif
 
 ifeq ($(MICROPY_PY_JNI),1)
 # Path for 64-bit OpenJDK, should be adjusted for other JDKs
-CFLAGS_MOD += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
-SRC_MOD += modjni.c
+CFLAGS += -I/usr/lib/jvm/java-7-openjdk-amd64/include -DMICROPY_PY_JNI=1
 endif
 
 # source files
@@ -236,6 +211,8 @@ SRC_C += \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
+
 SHARED_SRC_C += $(addprefix shared/,\
 	runtime/gchelper_generic.c \
 	timeutils/timeutils.c \
@@ -243,17 +220,14 @@ SHARED_SRC_C += $(addprefix shared/,\
 	)
 
 SRC_CXX += \
-	$(SRC_MOD_CXX)
 
 OBJ = $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
 # Append any auto-generated sources that are needed by sources listed in
 # SRC_QSTR
 SRC_QSTR_AUTO_DEPS +=
@@ -267,13 +241,7 @@ CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 endif
 
-HASCPP17 = $(shell expr `$(CC) -dumpversion | cut -f1 -d.` \>= 7)
-ifeq ($(HASCPP17), 1)
-	CXXFLAGS += -std=c++17
-else
-	CXXFLAGS += -std=c++11
-endif
-CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99 -std=gnu11,$(CFLAGS) $(CXXFLAGS_MOD))
+CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS) $(CXXFLAGS_MOD))
 
 ifeq ($(MICROPY_FORCE_32BIT),1)
 RUN_TESTS_MPY_CROSS_FLAGS = --mpy-cross-flags='-march=x86'
@@ -294,39 +262,30 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
-TEST_EXTRA ?=
-test: $(PROG) $(TOP)/tests/run-tests.py
-	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py $(TEST_EXTRA)
-
-test_full: $(PROG) $(TOP)/tests/run-tests.py
-	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py -d thread
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --emit native
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
-	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
-	cat $(TOP)/tests/basics/0prelim.py | ./$(PROG) | grep -q 'abc'
-
+# CIRCUITPY: these two targets are ours
 .PHONY: print-failures clean-failures
 print-failures clean-failures:
 	../../tests/run-tests.py --$@
 
+
+# CIRCUITPY: support for passing args to run-tests, like `make test TEST_ARGS="basics/*.py"`
+TEST_ARGS ?=
+test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py $(TEST_ARGS)
+
+test_full: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
+	$(eval DIRNAME=ports/$(notdir $(CURDIR)))
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py -d thread
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --emit native
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) -d basics float micropython
+	cd $(TOP)/tests && MICROPY_MICROPYTHON=../$(DIRNAME)/$(BUILD)/$(PROG) ./run-tests.py --via-mpy $(RUN_TESTS_MPY_CROSS_FLAGS) --emit native -d basics float micropython
+	cat $(TOP)/tests/basics/0prelim.py | ./$(BUILD)/$(PROG) | grep -q 'abc'
+
 test_gcov: test_full
 	gcov -o $(BUILD)/py $(TOP)/py/*.c
 	gcov -o $(BUILD)/extmod $(TOP)/extmod/*.c
-
-# build an interpreter for fuzzing
-fuzz:
-	$(MAKE) \
-	    CC=afl-clang-fast DEBUG=1 \
-	    CFLAGS_EXTRA='$(CFLAGS_EXTRA) -ffunction-sections' \
-	    LDFLAGS_EXTRA='$(LDFLAGS_EXTRA)' \
-	    BUILD=build-fuzz PROG=micropython_fuzz
-
-fuzz_clean:
-	$(MAKE) V=2 BUILD=build-fuzz PROG=micropython_fuzz clean
-
 
 # Value of configure's --host= option (required for cross-compilation).
 # Deduce it from CROSS_COMPILE by default, but can be overridden.
@@ -336,7 +295,7 @@ else
 CROSS_COMPILE_HOST =
 endif
 
-deplibs: libffi axtls
+deplibs: $(DEPLIBS)
 
 libffi: $(BUILD)/lib/libffi/include/ffi.h
 
@@ -347,23 +306,15 @@ $(TOP)/lib/libffi/configure: $(TOP)/lib/libffi/autogen.sh
 # docs and depending on makeinfo
 $(BUILD)/lib/libffi/include/ffi.h: $(TOP)/lib/libffi/configure
 	mkdir -p $(BUILD)/lib/libffi; cd $(BUILD)/lib/libffi; \
-	$(abspath $(TOP))/lib/libffi/configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
+	$(abspath $(TOP))/lib/libffi/configure $(CROSS_COMPILE_HOST) --prefix=$$PWD/out --disable-shared --disable-structs CC="$(CC)" CXX="$(CXX)" LD="$(LD)" CFLAGS="-Os -fomit-frame-pointer -fstrict-aliasing -ffast-math -fno-exceptions"; \
 	$(MAKE) install-exec-recursive; $(MAKE) -C include install-data-am
-
-axtls: $(TOP)/lib/axtls/README
-
-$(TOP)/lib/axtls/README:
-	@echo "You cloned without --recursive, fetching submodules for you."
-	(cd $(TOP); git submodule update --init --recursive)
 
 PREFIX = /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/bin
 
-install: $(PROG)
+install: $(BUILD)/$(PROG)
 	install -d $(BINDIR)
-	install $(PROG) $(BINDIR)/$(PROG)
+	install $(BUILD)/$(PROG) $(BINDIR)/$(PROG)
 
 uninstall:
 	-rm $(BINDIR)/$(PROG)
-
-$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h

@@ -794,6 +794,7 @@ endif
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_LIBM)): CFLAGS += -Wno-missing-prototypes
 endif
 
+# Sources used in all ports except unix.
 SRC_CIRCUITPY_COMMON = \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
@@ -843,3 +844,8 @@ invalid-board:
 	echo "Valid boards:" && \
 	printf '%s\n' $(ALL_BOARDS_IN_PORT) | column -xc $$(tput cols || echo 80) 1>&2 && \
 	false
+
+# Print out the value of a make variable.
+# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
+print-%:
+	@echo $* = $($*)

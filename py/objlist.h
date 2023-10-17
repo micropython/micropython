@@ -36,6 +36,7 @@ typedef struct _mp_obj_list_t {
 } mp_obj_list_t;
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n);
+mp_obj_t mp_obj_list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index);
 void mp_obj_list_insert(mp_obj_list_t *self, size_t index, mp_obj_t obj);
 

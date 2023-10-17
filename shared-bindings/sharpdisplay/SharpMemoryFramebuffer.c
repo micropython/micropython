@@ -116,14 +116,12 @@ STATIC const mp_rom_map_elem_t sharpdisplay_framebuffer_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(sharpdisplay_framebuffer_locals_dict, sharpdisplay_framebuffer_locals_dict_table);
 
-const mp_obj_type_t sharpdisplay_framebuffer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SharpMemoryFramebuffer,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = sharpdisplay_framebuffer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&sharpdisplay_framebuffer_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .buffer_p = { .get_buffer = sharpdisplay_framebuffer_get_buffer, },
-        .protocol = &sharpdisplay_framebuffer_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    sharpdisplay_framebuffer_type,
+    MP_QSTR_SharpMemoryFramebuffer,
+    MP_TYPE_FLAG_NONE,
+    make_new, sharpdisplay_framebuffer_make_new,
+    locals_dict, &sharpdisplay_framebuffer_locals_dict,
+    buffer, sharpdisplay_framebuffer_get_buffer,
+    protocol, &sharpdisplay_framebuffer_proto
+    );

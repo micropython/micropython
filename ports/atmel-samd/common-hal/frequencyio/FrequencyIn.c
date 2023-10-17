@@ -48,7 +48,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 
 #ifdef SAMD21
 #include "hpl/gclk/hpl_gclk_base.h"

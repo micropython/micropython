@@ -33,7 +33,6 @@
 #include "py/obj.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PinAlarm:
 //|     """Trigger an alarm when a pin changes state."""
@@ -118,9 +117,10 @@ STATIC const mp_rom_map_elem_t alarm_pin_pinalarm_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(alarm_pin_pinalarm_locals_dict, alarm_pin_pinalarm_locals_dict_table);
 
-const mp_obj_type_t alarm_pin_pinalarm_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinAlarm,
-    .make_new = alarm_pin_pinalarm_make_new,
-    .locals_dict = (mp_obj_t)&alarm_pin_pinalarm_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    alarm_pin_pinalarm_type,
+    MP_QSTR_PinAlarm,
+    MP_TYPE_FLAG_NONE,
+    make_new, alarm_pin_pinalarm_make_new,
+    locals_dict, &alarm_pin_pinalarm_locals_dict
+    );

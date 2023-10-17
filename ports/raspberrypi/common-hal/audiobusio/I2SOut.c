@@ -37,7 +37,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/audiocore/__init__.h"
 #include "bindings/rp2pio/StateMachine.h"
-#include "supervisor/shared/translate/translate.h"
 
 const uint16_t i2s_program[] = {
 // ; Load the next set of samples
@@ -108,7 +107,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_main_clock);
     }
     if (bit_clock->number != word_select->number - 1) {
-        mp_raise_ValueError(translate("Bit clock and word select must be sequential pins"));
+        mp_raise_ValueError(translate("Bit clock and word select must be sequential GPIO pins"));
     }
 
     const uint16_t *program = i2s_program;

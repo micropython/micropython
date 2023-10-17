@@ -33,7 +33,6 @@
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/flash.h"
 
 //| """Storage management

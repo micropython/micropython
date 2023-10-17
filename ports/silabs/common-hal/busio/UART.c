@@ -35,7 +35,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define UARTDRV_USART_BUFFER_SIZE 6
 

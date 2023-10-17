@@ -152,7 +152,7 @@ msgstr "%q em %q deve ser do tipo %q e não %q"
 msgid "%q in use"
 msgstr "%q em uso"
 
-#: py/objstr.c py/objstrunicode.c
+#: py/objstr.c
 msgid "%q index out of range"
 msgstr "O índice %q está fora do intervalo"
 
@@ -239,7 +239,7 @@ msgstr "%q deve ser uma matriz do tipo 'h'"
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q deve ser do tipo %q ou %q e não %q"
 
-#: py/argcheck.c py/objstrunicode.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q deve ser do tipo %q e não %q"
 
@@ -291,6 +291,11 @@ msgstr "%q[%u] usa pino extra"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
 msgstr "%q[%u] espera na entrada fora da contagem"
+
+#: py/runtime.c
+#, c-format
+msgid "%s"
+msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -647,8 +652,8 @@ msgid "Below minimum frame rate"
 msgstr "Abaixo da taxa mínima de quadros"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must be sequential pins"
-msgstr "O Bit clock e o word select devem ser pinos sequenciais"
+msgid "Bit clock and word select must be sequential GPIO pins"
+msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -1132,8 +1137,6 @@ msgstr "Inicialização do GNSS"
 msgid "Generic Failure"
 msgstr "Falha Genérica"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
@@ -2014,10 +2017,6 @@ msgstr "Os buffers da origem e do destino devem ter o mesmo comprimento"
 msgid "Specify exactly one of data0 or data_pins"
 msgstr "Especifique exatamente um do data0 ou do data_pins"
 
-#: extmod/modure.c
-msgid "Splitting with sub-captures"
-msgstr "Divisão com sub-capturas"
-
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Stereo left must be on PWM channel A"
 msgstr "O estéreo à esquerda deve estar no canal PWM A"
@@ -2471,8 +2470,9 @@ msgid "__init__() should return None"
 msgstr "O __init__() deve retornar Nenhum"
 
 #: py/objtype.c
-msgid "__init__() should return None, not '%q'"
-msgstr "O __init__() deve retornar Nenhum, não '%q'"
+#, c-format
+msgid "__init__() should return None, not '%s'"
+msgstr "O __init__() deve retornar Nenhum, não '%s'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -2561,8 +2561,8 @@ msgid "attempt to get argmin/argmax of an empty sequence"
 msgstr "tente obter argmin/argmax de uma sequência vazia"
 
 #: py/objstr.c
-msgid "attributes not supported yet"
-msgstr "atributos ainda não suportados"
+msgid "attributes not supported"
+msgstr ""
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
@@ -2689,7 +2689,7 @@ msgstr "a expressão não pode ser atribuída"
 msgid "can't cancel self"
 msgstr "não é possível cancelar a si mesmo"
 
-#: py/objint.c py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "não é possível converter %q para %q"
 
@@ -2707,9 +2707,17 @@ msgstr "Não é possível converter %s para float"
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "não é possível converter implicitamente o objeto '%q' para %q"
 
+#: py/objint.c
+msgid "can't convert NaN to int"
+msgstr "Não é possível converter NaN para int"
+
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
 msgstr "não foi possível converter complexo em flutuante"
+
+#: py/objint.c
+msgid "can't convert inf to int"
+msgstr "não é possível converter inf para int"
 
 #: py/obj.c
 msgid "can't convert to complex"
@@ -2739,13 +2747,13 @@ msgstr "não é possível excluir a expressão"
 msgid "can't do binary op between '%q' and '%q'"
 msgstr "não é possível executar uma operação binária entre '%q' e '%q'"
 
-#: py/objcomplex.c
-msgid "can't do truncated division of a complex number"
-msgstr "não é possível fazer a divisão truncada de um número complexo"
-
 #: py/emitnative.c
 msgid "can't implicitly convert '%q' to 'bool'"
 msgstr "não é possível converter implicitamente '%q' em 'bool'"
+
+#: py/runtime.c
+msgid "can't import name %q"
+msgstr ""
 
 #: py/emitnative.c
 msgid "can't load from '%q'"
@@ -2801,6 +2809,14 @@ msgid ""
 msgstr ""
 "não é possível alternar da especificação de campo manual para a automática"
 
+#: py/objcomplex.c
+msgid "can't truncate-divide a complex number"
+msgstr ""
+
+#: extmod/moductypes.c
+msgid "can't unambiguously get sizeof scalar"
+msgstr ""
+
 #: extmod/moduasyncio.c
 msgid "can't wait"
 msgstr "não vejo a hora"
@@ -2833,17 +2849,9 @@ msgstr "não é possível criar instância"
 msgid "cannot delete array elements"
 msgstr "não é possível excluir os elementos da matriz"
 
-#: py/runtime.c
-msgid "cannot import name %q"
-msgstr "não pode importar nome %q"
-
 #: extmod/ulab/code/ndarray.c
 msgid "cannot reshape array"
 msgstr "não é possível remodelar a matriz"
-
-#: extmod/moductypes.c
-msgid "cannot unambiguously get sizeof scalar"
-msgstr "Não é possível obter de forma inequívoca a escala do sizeof"
 
 #: py/emitnative.c
 msgid "casting"
@@ -2894,6 +2902,10 @@ msgstr "cor deve estar entre 0x000000 e 0xffffff"
 #: py/emitnative.c
 msgid "comparison of int and uint"
 msgstr "comparação de int e uint"
+
+#: py/objcomplex.c
+msgid "complex divide by zero"
+msgstr ""
 
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
@@ -3474,10 +3486,8 @@ msgstr ""
 "join espera uma lista de objetos str/bytes consistentes com o próprio objeto"
 
 #: py/argcheck.c
-msgid "keyword argument(s) not yet implemented - use normal args instead"
+msgid "keyword argument(s) not implemented - use normal args instead"
 msgstr ""
-"o(s) argumento(s) de palavra-chave ainda não foi implementado - em vez "
-"disso, use argumentos normais"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3486,10 +3496,6 @@ msgstr "o rótulo '%q' não foi definido"
 #: py/compile.c
 msgid "label redefined"
 msgstr "o rótulo foi redefinido"
-
-#: py/stream.c
-msgid "length argument not allowed for this type"
-msgstr "o argumento de comprimento não é permitido para este tipo"
 
 #: shared-bindings/audiomixer/MixerVoice.c
 msgid "level must be between 0 and 1"
@@ -3580,6 +3586,10 @@ msgstr ""
 "(heap) está bloqueada"
 
 #: py/objarray.c
+msgid "memoryview offset too large"
+msgstr ""
+
+#: py/objarray.c
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr "memoryview: o comprimento não é um múltiplo do tamanho dos itens"
 
@@ -3626,6 +3636,10 @@ msgstr "o nome '%q' não está definido"
 #: py/runtime.c
 msgid "name not defined"
 msgstr "nome não definido"
+
+#: py/persistentcode.c
+msgid "native code in .mpy unsupported"
+msgstr ""
 
 #: py/asmthumb.c
 msgid "native method too big"
@@ -3701,7 +3715,7 @@ msgstr "um não UUID foi encontrado na lista service_uuids_whitelist"
 msgid "non-default argument follows default argument"
 msgstr "o argumento não predefinido segue o argumento predefinido"
 
-#: extmod/modubinascii.c
+#: py/objstr.c
 msgid "non-hex digit found"
 msgstr "um dígito não hexadecimal foi encontrado"
 
@@ -3791,7 +3805,7 @@ msgstr "O objeto do tipo '%s' não possui len()"
 msgid "object with buffer protocol required"
 msgstr "é necessário objeto com protocolo do buffer"
 
-#: extmod/modubinascii.c
+#: py/objstr.c
 msgid "odd-length string"
 msgstr "sequência com comprimento ímpar"
 
@@ -3810,10 +3824,6 @@ msgstr "o offset deve ser >= 0"
 #: extmod/ulab/code/numpy/create.c
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr "o offset deve ser positivo e não maior do que o comprimento do buffer"
-
-#: py/objstr.c py/objstrunicode.c
-msgid "offset out of bounds"
-msgstr "desvio fora dos limites"
 
 #: ports/nrf/common-hal/audiobusio/PDMIn.c
 #: ports/stm/common-hal/audiobusio/PDMIn.c
@@ -4068,10 +4078,6 @@ msgstr "o tamanho é definido apenas para os ndarrays"
 msgid "sleep length must be non-negative"
 msgstr "a duração do sleep não deve ser negativo"
 
-#: extmod/ulab/code/ndarray.c
-msgid "slice step can't be zero"
-msgstr "a etapa da fatia não pode ser zero"
-
 #: py/nativeglue.c
 msgid "slice unsupported"
 msgstr "fatia não suportada"
@@ -4116,6 +4122,10 @@ msgstr "o source_bitmap deve ter o value_count de 65536"
 msgid "source_bitmap must have value_count of 8"
 msgstr "o source_bitmap deve ter o value_count de 8"
 
+#: extmod/modure.c
+msgid "splitting with sub-captures"
+msgstr ""
+
 #: py/objstr.c
 msgid "start/end indices"
 msgstr "os índices de início/fim"
@@ -4128,9 +4138,18 @@ msgstr "stop não está acessível a partir do início"
 msgid "stream operation not supported"
 msgstr "a operação do fluxo não é compatível"
 
-#: py/stream.c
-msgid "string not supported; use bytes or bytearray"
-msgstr "a string não é compatível; use bytes ou bytearray"
+#: py/objarray.c py/objstr.c
+msgid "string argument without an encoding"
+msgstr ""
+
+#: py/objstrunicode.c
+msgid "string index out of range"
+msgstr "o índice da string está fora do intervalo"
+
+#: py/objstrunicode.c
+#, c-format
+msgid "string indices must be integers, not %s"
+msgstr "o índices das string devem ser números inteiros, não %s"
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
@@ -4159,6 +4178,10 @@ msgstr "erro de sintaxe no JSON"
 #: extmod/moductypes.c
 msgid "syntax error in uctypes descriptor"
 msgstr "houve um erro de sintaxe no descritor uctypes"
+
+#: extmod/utime_mphal.c
+msgid "ticks interval overflow"
+msgstr ""
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
@@ -4432,6 +4455,44 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "Splitting with sub-captures"
+#~ msgstr "Divisão com sub-capturas"
+
+#~ msgid "__init__() should return None, not '%q'"
+#~ msgstr "O __init__() deve retornar Nenhum, não '%q'"
+
+#~ msgid "attributes not supported yet"
+#~ msgstr "atributos ainda não suportados"
+
+#~ msgid "can't do truncated division of a complex number"
+#~ msgstr "não é possível fazer a divisão truncada de um número complexo"
+
+#~ msgid "cannot import name %q"
+#~ msgstr "não pode importar nome %q"
+
+#~ msgid "cannot unambiguously get sizeof scalar"
+#~ msgstr "Não é possível obter de forma inequívoca a escala do sizeof"
+
+#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
+#~ msgstr ""
+#~ "o(s) argumento(s) de palavra-chave ainda não foi implementado - em vez "
+#~ "disso, use argumentos normais"
+
+#~ msgid "length argument not allowed for this type"
+#~ msgstr "o argumento de comprimento não é permitido para este tipo"
+
+#~ msgid "offset out of bounds"
+#~ msgstr "desvio fora dos limites"
+
+#~ msgid "slice step can't be zero"
+#~ msgstr "a etapa da fatia não pode ser zero"
+
+#~ msgid "string not supported; use bytes or bytearray"
+#~ msgstr "a string não é compatível; use bytes ou bytearray"
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "O Bit clock e o word select devem ser pinos sequenciais"
 
 #~ msgid "Initialization failed due to lack of memory"
 #~ msgstr "A inicialização falhou devido à falta de memória"
@@ -5989,20 +6050,11 @@ msgstr "zi deve estar na forma (n_section, 2)"
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Rodando em modo seguro! Atualização automática está desligada.\n"
 
-#~ msgid "__init__() should return None, not '%s'"
-#~ msgstr "O __init__() deve retornar Nenhum, não '%s'"
-
 #~ msgid "can't convert %s to int"
 #~ msgstr "Não é possível converter %s para int"
 
-#~ msgid "can't convert NaN to int"
-#~ msgstr "Não é possível converter NaN para int"
-
 #~ msgid "can't convert address to int"
 #~ msgstr "não é possível converter o endereço para int"
-
-#~ msgid "can't convert inf to int"
-#~ msgstr "não é possível converter inf para int"
 
 #~ msgid "object '%s' is not a tuple or list"
 #~ msgstr "o objeto '%s' não é uma tupla ou uma lista"
@@ -6015,12 +6067,6 @@ msgstr "zi deve estar na forma (n_section, 2)"
 
 #~ msgid "popitem(): dictionary is empty"
 #~ msgstr "popitem(): o dicionário está vazio"
-
-#~ msgid "string index out of range"
-#~ msgstr "o índice da string está fora do intervalo"
-
-#~ msgid "string indices must be integers, not %s"
-#~ msgstr "o índices das string devem ser números inteiros, não %s"
 
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "código de formato desconhecido '%c' para o objeto do tipo '%s'"

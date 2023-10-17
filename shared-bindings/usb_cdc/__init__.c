@@ -31,9 +31,6 @@
 
 #include "shared-bindings/usb_cdc/__init__.h"
 #include "shared-bindings/usb_cdc/Serial.h"
-#include "supervisor/shared/translate/translate.h"
-
-#include "py/runtime.h"
 
 //| """USB CDC Serial streams
 //|

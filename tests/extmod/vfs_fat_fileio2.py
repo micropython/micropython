@@ -40,11 +40,11 @@ class RAMFS:
 
 try:
     bdev = RAMFS(50)
+    os.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
-os.VfsFat.mkfs(bdev)
 vfs = os.VfsFat(bdev)
 os.mount(vfs, "/ramdisk")
 os.chdir("/ramdisk")

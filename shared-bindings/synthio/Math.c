@@ -126,10 +126,8 @@ STATIC mp_obj_t mathop_call(mp_obj_t fun, size_t n_args, size_t n_kw, const mp_o
 STATIC MP_DEFINE_CONST_DICT(synthio_math_operation_locals_dict, synthio_math_operation_locals_table);
 MAKE_PRINTER(synthio, synthio_math_operation);
 MAKE_ENUM_TYPE(synthio, MathOperation, synthio_math_operation,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = mathop_call,
-        ));
+    call, mathop_call
+    );
 
 //| class Math:
 //|     """An arithmetic block
@@ -293,14 +291,12 @@ STATIC const synthio_block_proto_t math_proto = {
     .tick = common_hal_synthio_math_tick,
 };
 
-const mp_obj_type_t synthio_math_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Math,
-    .make_new = synthio_math_make_new,
-    .locals_dict = (mp_obj_dict_t *)&synthio_math_locals_dict,
-    .print = math_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &math_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    synthio_math_type,
+    MP_QSTR_Math,
+    MP_TYPE_FLAG_NONE,
+    make_new, synthio_math_make_new,
+    locals_dict, &synthio_math_locals_dict,
+    print, math_print,
+    protocol, &math_proto
+    );

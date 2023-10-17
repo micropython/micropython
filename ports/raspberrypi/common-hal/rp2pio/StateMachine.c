@@ -1098,3 +1098,7 @@ bool common_hal_rp2pio_statemachine_get_writing(rp2pio_statemachine_obj_t *self)
 int common_hal_rp2pio_statemachine_get_pending(rp2pio_statemachine_obj_t *self) {
     return self->pending_buffers;
 }
+
+// Use a compile-time constant for MP_REGISTER_POINTER so the preprocessor will
+// not split the expansion across multiple lines.
+MP_REGISTER_ROOT_POINTER(mp_obj_t background_pio[enum_NUM_DMA_CHANNELS]);

@@ -35,8 +35,9 @@ STATIC void mp_obj_traceback_print(const mp_print_t *print, mp_obj_t o_in, mp_pr
     mp_printf(print, "<%q object at %p>", MP_QSTR_traceback, o);
 }
 
-const mp_obj_type_t mp_type_traceback = {
-    { &mp_type_type },
-    .name = MP_QSTR_traceback,
-    .print = mp_obj_traceback_print,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_traceback,
+    MP_QSTR_traceback,
+    MP_TYPE_FLAG_NONE,
+    print, mp_obj_traceback_print
+    );

@@ -39,7 +39,6 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 //| class SPI:
@@ -490,12 +489,13 @@ STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 
-const mp_obj_type_t busio_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .make_new = busio_spi_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, busio_spi_make_new,
+    locals_dict, &busio_spi_locals_dict
+    );
 
 busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj, qstr arg_name) {
     return mp_arg_validate_type(obj, &busio_spi_type, arg_name);

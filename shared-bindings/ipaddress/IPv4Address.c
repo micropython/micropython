@@ -175,15 +175,13 @@ STATIC const mp_rom_map_elem_t ipaddress_ipv4address_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ipaddress_ipv4address_locals_dict, ipaddress_ipv4address_locals_dict_table);
 
-const mp_obj_type_t ipaddress_ipv4address_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Address,
-    .make_new = ipaddress_ipv4address_make_new,
-    .locals_dict = (mp_obj_dict_t *)&ipaddress_ipv4address_locals_dict,
-    .print = ipaddress_ipv4address_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = ipaddress_ipv4address_unary_op,
-        .binary_op = ipaddress_ipv4address_binary_op,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ipaddress_ipv4address_type,
+    MP_QSTR_Address,
+    MP_TYPE_FLAG_NONE,
+    make_new, ipaddress_ipv4address_make_new,
+    locals_dict, &ipaddress_ipv4address_locals_dict,
+    print, ipaddress_ipv4address_print,
+    unary_op, ipaddress_ipv4address_unary_op,
+    binary_op, ipaddress_ipv4address_binary_op
+    );

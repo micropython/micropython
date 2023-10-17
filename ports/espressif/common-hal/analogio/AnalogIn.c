@@ -30,7 +30,6 @@
 #include "shared-bindings/analogio/AnalogIn.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "adc_cali_schemes.h"
 #include "esp_adc/adc_oneshot.h"

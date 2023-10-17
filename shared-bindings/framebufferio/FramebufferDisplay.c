@@ -38,7 +38,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class FramebufferDisplay:
 //|     """Manage updating a display with framebuffer in RAM
@@ -364,9 +363,10 @@ STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_tabl
 };
 STATIC MP_DEFINE_CONST_DICT(framebufferio_framebufferdisplay_locals_dict, framebufferio_framebufferdisplay_locals_dict_table);
 
-const mp_obj_type_t framebufferio_framebufferdisplay_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FramebufferDisplay,
-    .make_new = framebufferio_framebufferdisplay_make_new,
-    .locals_dict = (mp_obj_dict_t *)&framebufferio_framebufferdisplay_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    framebufferio_framebufferdisplay_type,
+    MP_QSTR_FramebufferDisplay,
+    MP_TYPE_FLAG_NONE,
+    make_new, framebufferio_framebufferdisplay_make_new,
+    locals_dict, &framebufferio_framebufferdisplay_locals_dict
+    );

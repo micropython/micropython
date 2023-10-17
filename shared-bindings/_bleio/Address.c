@@ -199,15 +199,13 @@ STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bleio_address_locals_dict, bleio_address_locals_dict_table);
 
-const mp_obj_type_t bleio_address_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Address,
-    .make_new = bleio_address_make_new,
-    .print = bleio_address_print,
-    .locals_dict = (mp_obj_dict_t *)&bleio_address_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = bleio_address_unary_op,
-        .binary_op = bleio_address_binary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_address_type,
+    MP_QSTR_Address,
+    MP_TYPE_FLAG_NONE,
+    make_new, bleio_address_make_new,
+    print, bleio_address_print,
+    locals_dict, &bleio_address_locals_dict,
+    unary_op, bleio_address_unary_op,
+    binary_op, bleio_address_binary_op
+    );

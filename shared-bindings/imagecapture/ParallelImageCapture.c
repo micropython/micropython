@@ -189,9 +189,10 @@ STATIC const mp_rom_map_elem_t imagecapture_parallelimagecapture_locals_dict_tab
 
 STATIC MP_DEFINE_CONST_DICT(imagecapture_parallelimagecapture_locals_dict, imagecapture_parallelimagecapture_locals_dict_table);
 
-const mp_obj_type_t imagecapture_parallelimagecapture_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ParallelImageCapture,
-    .make_new = imagecapture_parallelimagecapture_make_new,
-    .locals_dict = (mp_obj_dict_t *)&imagecapture_parallelimagecapture_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    imagecapture_parallelimagecapture_type,
+    MP_QSTR_ParallelImageCapture,
+    MP_TYPE_FLAG_NONE,
+    make_new, imagecapture_parallelimagecapture_make_new,
+    locals_dict, &imagecapture_parallelimagecapture_locals_dict
+    );
