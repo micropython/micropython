@@ -268,3 +268,21 @@ $(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
 # http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
 # http://www.emulators.com/docs/nx25_nostradamus.htm
 #-fno-crossjumping
+
+
+$(PY_BUILD)/bc.o \
+$(PY_BUILD)/gc.o \
+$(PY_BUILD)/malloc.o \
+$(PY_BUILD)/map.o \
+$(PY_BUILD)/nlr%.o \
+$(PY_BUILD)/obj.o \
+$(PY_BUILD)/objclosure.o \
+$(PY_BUILD)/objlist.o \
+$(PY_BUILD)/objmap.o \
+$(PY_BUILD)/objrange.o \
+$(PY_BUILD)/objslice.o \
+$(PY_BUILD)/qstr.o \
+$(PY_BUILD)/smallint.o \
+$(PY_BUILD)/vm.o: \
+	CFLAGS += -fno-function-sections -fno-data-sections
+
