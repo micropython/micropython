@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/board/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
-#include "shared-bindings/displayio/Display.h"
 #include "shared-bindings/displayio/Group.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-module/displayio/area.h"
@@ -42,6 +41,10 @@
 
 #include "supervisor/spi_flash_api.h"
 #include "py/mpconfig.h"
+
+#if CIRCUITPY_BUSDISPLAY
+#include "shared-bindings/busdisplay/BusDisplay.h"
+#endif
 
 #if CIRCUITPY_DOTCLOCKFRAMEBUFFER
 #include "shared-bindings/dotclockframebuffer/DotClockFramebuffer.h"
@@ -93,19 +96,24 @@ void displayio_background(void) {
     }
 
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        mp_const_obj_t display_type = displays[i].display.base.type;
+        mp_const_obj_t display_type = displays[i].display_base.type;
         if (display_type == NULL || display_type == &mp_type_NoneType) {
             // Skip null display.
             continue;
         }
-        if (display_type == &displayio_display_type) {
-            displayio_display_background(&displays[i].display);
+        if (false) {
+        #if CIRCUITPY_BUSDISPLAY
+        } else if (display_type == &busdisplay_busdisplay_type) {
+            busdisplay_busdisplay_background(&displays[i].display);
+        #endif
         #if CIRCUITPY_FRAMEBUFFERIO
         } else if (display_type == &framebufferio_framebufferdisplay_type) {
             framebufferio_framebufferdisplay_background(&displays[i].framebuffer_display);
         #endif
-        } else if (display_type == &displayio_epaperdisplay_type) {
-            displayio_epaperdisplay_background(&displays[i].epaper_display);
+        #if CIRCUITPY_EPAPERDISPLAY
+        } else if (display_type == &epaperdisplay_epaperdisplay_type) {
+            epaperdisplay_epaperdisplay_background(&displays[i].epaper_display);
+        #endif
         }
     }
 
@@ -118,32 +126,40 @@ void common_hal_displayio_release_displays(void) {
         mp_const_obj_t display_type = displays[i].display_base.type;
         if (display_type == NULL || display_type == &mp_type_NoneType) {
             continue;
-        } else if (display_type == &displayio_display_type) {
-            release_display(&displays[i].display);
-        } else if (display_type == &displayio_epaperdisplay_type) {
+        #if CIRCUITPY_BUSDISPLAY
+        } else if (display_type == &busdisplay_busdisplay_type) {
+            release_busdisplay(&displays[i].display);
+        #endif
+        #if CIRCUITPY_EPAPERDISPLAY
+        } else if (display_type == &epaperdisplay_epaperdisplay_type) {
             release_epaperdisplay(&displays[i].epaper_display);
+        #endif
         #if CIRCUITPY_FRAMEBUFFERIO
         } else if (display_type == &framebufferio_framebufferdisplay_type) {
             release_framebufferdisplay(&displays[i].framebuffer_display);
         #endif
         }
-        displays[i].display.base.type = &mp_type_NoneType;
+        displays[i].display_base.type = &mp_type_NoneType;
     }
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t bus_type = display_buses[i].bus_base.type;
         if (bus_type == NULL || bus_type == &mp_type_NoneType) {
             continue;
-        } else if (bus_type == &displayio_fourwire_type) {
-            common_hal_displayio_fourwire_deinit(&display_buses[i].fourwire_bus);
-        } else if (bus_type == &displayio_i2cdisplay_type) {
-            common_hal_displayio_i2cdisplay_deinit(&display_buses[i].i2cdisplay_bus);
+        #if CIRCUITPY_FOURWIRE
+        } else if (bus_type == &fourwire_fourwire_type) {
+            common_hal_fourwire_fourwire_deinit(&display_buses[i].fourwire_bus);
+        #endif
+        #if CIRCUITPY_I2CDISPLAYBUS
+        } else if (bus_type == &i2cdisplaybus_i2cdisplaybus_type) {
+            common_hal_i2cdisplaybus_i2cdisplaybus_deinit(&display_buses[i].i2cdisplay_bus);
+        #endif
         #if CIRCUITPY_DOTCLOCKFRAMEBUFFER
         } else if (bus_type == &dotclockframebuffer_framebuffer_type) {
             common_hal_dotclockframebuffer_framebuffer_deinit(&display_buses[i].dotclock);
         #endif
-        #if CIRCUITPY_PARALLELDISPLAY
-        } else if (bus_type == &paralleldisplay_parallelbus_type) {
-            common_hal_paralleldisplay_parallelbus_deinit(&display_buses[i].parallel_bus);
+        #if CIRCUITPY_PARALLELDISPLAYBUS
+        } else if (bus_type == &paralleldisplaybus_parallelbus_type) {
+            common_hal_paralleldisplaybus_parallelbus_deinit(&display_buses[i].parallel_bus);
         #endif
         #if CIRCUITPY_RGBMATRIX
         } else if (bus_type == &rgbmatrix_RGBMatrix_type) {
@@ -176,8 +192,11 @@ void reset_displays(void) {
     // The SPI buses used by FourWires may be allocated on the heap so we need to move them inline.
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
         mp_const_obj_t display_bus_type = display_buses[i].bus_base.type;
-        if (display_bus_type == &displayio_fourwire_type) {
-            displayio_fourwire_obj_t *fourwire = &display_buses[i].fourwire_bus;
+        if (display_bus_type == NULL || display_bus_type == &mp_type_NoneType) {
+            continue;
+        #if CIRCUITPY_FOURWIRE
+        } else if (display_bus_type == &fourwire_fourwire_type) {
+            fourwire_fourwire_obj_t *fourwire = &display_buses[i].fourwire_bus;
             if (((size_t)fourwire->bus) < ((size_t)&display_buses) ||
                 ((size_t)fourwire->bus) > ((size_t)&display_buses + CIRCUITPY_DISPLAY_LIMIT * sizeof(primary_display_bus_t))) {
                 busio_spi_obj_t *original_spi = fourwire->bus;
@@ -198,14 +217,16 @@ void reset_displays(void) {
                 fourwire->bus = &fourwire->inline_bus;
                 // Check for other display buses that use the same spi bus and swap them too.
                 for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
-                    if (display_buses[j].fourwire_bus.base.type == &displayio_fourwire_type &&
+                    if (display_buses[j].fourwire_bus.base.type == &fourwire_fourwire_type &&
                         display_buses[j].fourwire_bus.bus == original_spi) {
                         display_buses[j].fourwire_bus.bus = &fourwire->inline_bus;
                     }
                 }
             }
-        } else if (display_bus_type == &displayio_i2cdisplay_type) {
-            displayio_i2cdisplay_obj_t *i2c = &display_buses[i].i2cdisplay_bus;
+        #endif
+        #if CIRCUITPY_I2CDISPLAYBUS
+        } else if (display_bus_type == &i2cdisplaybus_i2cdisplaybus_type) {
+            i2cdisplaybus_i2cdisplaybus_obj_t *i2c = &display_buses[i].i2cdisplay_bus;
             // Check to see if we need to inline the I2C bus.
             if (((size_t)i2c->bus) < ((size_t)&display_buses) ||
                 ((size_t)i2c->bus) > ((size_t)&display_buses + CIRCUITPY_DISPLAY_LIMIT * sizeof(primary_display_bus_t))) {
@@ -222,12 +243,13 @@ void reset_displays(void) {
                 i2c->bus = &i2c->inline_bus;
                 // Check for other displays that use the same i2c bus and swap them too.
                 for (uint8_t j = i + 1; j < CIRCUITPY_DISPLAY_LIMIT; j++) {
-                    if (display_buses[j].i2cdisplay_bus.base.type == &displayio_i2cdisplay_type &&
+                    if (display_buses[j].i2cdisplay_bus.base.type == &i2cdisplaybus_i2cdisplaybus_type &&
                         display_buses[j].i2cdisplay_bus.bus == original_i2c) {
                         display_buses[j].i2cdisplay_bus.bus = &i2c->inline_bus;
                     }
                 }
             }
+        #endif
         #if CIRCUITPY_RGBMATRIX
         } else if (display_bus_type == &rgbmatrix_RGBMatrix_type) {
             rgbmatrix_rgbmatrix_obj_t *pm = &display_buses[i].rgbmatrix;
@@ -298,11 +320,17 @@ void reset_displays(void) {
         // Reset the displayed group. Only the first will get the terminal but
         // that's ok.
         mp_const_obj_t display_type = displays[i].display_base.type;
-        if (display_type == &displayio_display_type) {
-            reset_display(&displays[i].display);
-        } else if (display_type == &displayio_epaperdisplay_type) {
-            displayio_epaperdisplay_obj_t *display = &displays[i].epaper_display;
-            displayio_epaperdisplay_reset(display);
+        if (display_type == NULL || display_type == &mp_type_NoneType) {
+            continue;
+        #if CIRCUITPY_BUSDISPLAY
+        } else if (display_type == &busdisplay_busdisplay_type) {
+            reset_busdisplay(&displays[i].display);
+        #endif
+        #if CIRCUITPY_EPAPERDISPLAY
+        } else if (display_type == &epaperdisplay_epaperdisplay_type) {
+            epaperdisplay_epaperdisplay_obj_t *display = &displays[i].epaper_display;
+            epaperdisplay_epaperdisplay_reset(display);
+        #endif
         #if CIRCUITPY_FRAMEBUFFERIO
         } else if (display_type == &framebufferio_framebufferdisplay_type) {
             framebufferio_framebufferdisplay_reset(&displays[i].framebuffer_display);
@@ -338,25 +366,28 @@ void displayio_gc_collect(void) {
         mp_const_obj_t display_type = displays[i].display_base.type;
         if (display_type == NULL || display_type == &mp_type_NoneType) {
             continue;
-        }
 
-        // Alternatively, we could use gc_collect_root over the whole object,
-        // but this is more precise, and is the only field that needs marking.
-        if (display_type == &displayio_display_type) {
-            displayio_display_collect_ptrs(&displays[i].display);
+            // Alternatively, we could use gc_collect_root over the whole object,
+            // but this is more precise, and is the only field that needs marking.
+        #if CIRCUITPY_BUSDISPLAY
+        } else if (display_type == &busdisplay_busdisplay_type) {
+            busdisplay_busdisplay_collect_ptrs(&displays[i].display);
+        #endif
         #if CIRCUITPY_FRAMEBUFFERIO
         } else if (display_type == &framebufferio_framebufferdisplay_type) {
             framebufferio_framebufferdisplay_collect_ptrs(&displays[i].framebuffer_display);
         #endif
-        } else if (display_type == &displayio_epaperdisplay_type) {
-            displayio_epaperdisplay_collect_ptrs(&displays[i].epaper_display);
+        #if CIRCUITPY_EPAPERDISPLAY
+        } else if (display_type == &epaperdisplay_epaperdisplay_type) {
+            epaperdisplay_epaperdisplay_collect_ptrs(&displays[i].epaper_display);
+        #endif
         }
     }
 }
 
 primary_display_t *allocate_display(void) {
     for (uint8_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
-        mp_const_obj_t display_type = displays[i].display.base.type;
+        mp_const_obj_t display_type = displays[i].display_base.type;
         if (display_type == NULL || display_type == &mp_type_NoneType) {
             // Clear this memory so it is in a known state before init.
             memset(&displays[i], 0, sizeof(displays[i]));

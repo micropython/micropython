@@ -29,11 +29,11 @@
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/fourwire/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 
-displayio_fourwire_obj_t board_display_obj;
+fourwire_fourwire_obj_t board_display_obj;
 
 typedef struct {
     const uint32_t *config_data;
@@ -97,13 +97,13 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PA13, &pin_PA15, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
-    bus->base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(bus,
+    bus->base.type = &fourwire_fourwire_type;
+    common_hal_fourwire_fourwire_construct(bus,
         spi,
         &pin_PA16, // TFT_DC Command or data
         &pin_PA11, // TFT_CS Chip select
@@ -115,9 +115,9 @@ void board_init(void) {
     uint32_t cfg0 = lookupCfg(CFG_DISPLAY_CFG0, 0x000000);
     uint32_t offX = (cfg0 >> 8) & 0xff;
     uint32_t offY = (cfg0 >> 16) & 0xff;
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(display,
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
+    common_hal_busdisplay_busdisplay_construct(display,
         bus,
         160, // Width (after rotation)
         128, // Height (after rotation)

@@ -54,28 +54,18 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     self->framebuffer = framebuffer;
     self->framebuffer_protocol = mp_proto_get_or_throw(MP_QSTR_protocol_framebuffer, framebuffer);
 
-    uint16_t ram_width = 0x100;
-    uint16_t ram_height = 0x100;
     uint16_t depth = fb_getter_default(get_color_depth, 16);
     displayio_display_core_construct(
         &self->core,
-        NULL,
         self->framebuffer_protocol->get_width(self->framebuffer),
         self->framebuffer_protocol->get_height(self->framebuffer),
-        ram_width,
-        ram_height,
-        0,
-        0,
         0, // rotation
         depth,
         fb_getter_default(get_grayscale, (depth < 8)),
         fb_getter_default(get_pixels_in_byte_share_row, false),
         fb_getter_default(get_bytes_per_cell, 2),
         fb_getter_default(get_reverse_pixels_in_byte, false),
-        fb_getter_default(get_reverse_pixels_in_word, false),
-        // Region update related settings that aren't used by framebuffer display.
-        NO_COMMAND, NO_COMMAND, NO_COMMAND, NO_COMMAND,
-        false, false, false, false
+        fb_getter_default(get_reverse_pixels_in_word, false)
         );
 
     self->first_pixel_offset = fb_getter_default(get_first_pixel_offset, 0);

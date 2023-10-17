@@ -28,12 +28,12 @@
 #include "mpconfigboard.h"
 #include "hal/include/hal_gpio.h"
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/fourwire/FourWire.h"
 #include "shared-bindings/time/__init__.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 
-displayio_fourwire_obj_t board_display_obj;
+fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 #define HEIGHT 400
@@ -57,13 +57,13 @@ uint8_t refresh_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_PB13, &pin_PB15, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
-    bus->base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(bus,
+    bus->base.type = &fourwire_fourwire_type;
+    common_hal_fourwire_fourwire_construct(bus,
         spi,
         &pin_PB05, // EPD_DC Command or data
         &pin_PB07, // EPD_CS Chip select
@@ -72,9 +72,9 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_epaperdisplay_obj_t *display = &allocate_display()->epaper_display;
-    display->base.type = &displayio_epaperdisplay_type;
-    common_hal_displayio_epaperdisplay_construct(display,
+    epaperdisplay_epaperdisplay_obj_t *display = &allocate_display()->epaper_display;
+    display->base.type = &epaperdisplay_epaperdisplay_type;
+    common_hal_epaperdisplay_epaperdisplay_construct(display,
         bus,
         start_sequence,
         sizeof(start_sequence),

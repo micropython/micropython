@@ -152,6 +152,9 @@ endif
 ifeq ($(CIRCUITPY_BUSDEVICE),1)
 SRC_PATTERNS += adafruit_bus_device/%
 endif
+ifeq ($(CIRCUITPY_BUSDISPLAY),1)
+SRC_PATTERNS += busdisplay/%
+endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/%
 endif
@@ -176,6 +179,9 @@ endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
+ifeq ($(CIRCUITPY_EPAPERDISPLAY),1)
+SRC_PATTERNS += epaperdisplay/%
+endif
 ifeq ($(CIRCUITPY_ESPCAMERA),1)
 SRC_PATTERNS += espcamera/%
 endif
@@ -190,6 +196,9 @@ SRC_PATTERNS += espulp/%
 endif
 ifeq ($(CIRCUITPY_FLOPPYIO),1)
 SRC_PATTERNS += floppyio/%
+endif
+ifeq ($(CIRCUITPY_FOURWIRE),1)
+SRC_PATTERNS += fourwire/%
 endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
@@ -211,6 +220,9 @@ SRC_PATTERNS += gnss/%
 endif
 ifeq ($(CIRCUITPY_HASHLIB),1)
 SRC_PATTERNS += hashlib/%
+endif
+ifeq ($(CIRCUITPY_I2CDISPLAYBUS),1)
+SRC_PATTERNS += i2cdisplaybus/%
 endif
 ifeq ($(CIRCUITPY_I2CTARGET),1)
 SRC_PATTERNS += i2ctarget/%
@@ -260,8 +272,8 @@ endif
 ifeq ($(CIRCUITPY_DUALBANK),1)
 SRC_PATTERNS += dualbank/%
 endif
-ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
-SRC_PATTERNS += paralleldisplay/%
+ifeq ($(CIRCUITPY_PARALLELDISPLAYBUS),1)
+SRC_PATTERNS += paralleldisplaybus/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
@@ -465,7 +477,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
-	paralleldisplay/ParallelBus.c \
+	paralleldisplaybus/ParallelBus.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -534,8 +546,7 @@ $(filter $(SRC_PATTERNS), \
 	microcontroller/RunMode.c \
 	msgpack/__init__.c \
 	msgpack/ExtType.c \
-	paralleldisplay/__init__.c \
-	paralleldisplay/ParallelBus.c \
+	paralleldisplaybus/__init__.c \
 	qrio/PixelPolicy.c \
 	qrio/QRInfo.c \
 	supervisor/RunReason.c \
@@ -587,32 +598,35 @@ SRC_SHARED_MODULE_ALL = \
 	adafruit_bus_device/__init__.c \
 	adafruit_bus_device/i2c_device/I2CDevice.c \
 	adafruit_bus_device/spi_device/SPIDevice.c \
+	busdisplay/__init__.c \
+	busdisplay/BusDisplay.c \
 	canio/Match.c \
 	canio/Message.c \
 	canio/RemoteTransmissionRequest.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
-	displayio/Display.c \
-	displayio/EPaperDisplay.c \
-	displayio/FourWire.c \
 	displayio/Group.c \
-	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
-	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
 	dotclockframebuffer/__init__.c \
+	epaperdisplay/__init__.c \
+	epaperdisplay/EPaperDisplay.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
+	fourwire/__init__.c \
+	fourwire/FourWire.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
 	getpass/__init__.c \
 	gifio/__init__.c \
 	gifio/GifWriter.c \
 	gifio/OnDiskGif.c \
+	i2cdisplaybus/__init__.c \
+	i2cdisplaybus/I2CDisplayBus.c \
 	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
@@ -633,7 +647,7 @@ SRC_SHARED_MODULE_ALL = \
 	onewireio/__init__.c \
 	onewireio/OneWire.c \
 	os/__init__.c \
-	paralleldisplay/ParallelBus.c \
+	paralleldisplaybus/ParallelBus.c \
 	qrio/__init__.c \
 	qrio/QRDecoder.c \
 	rainbowio/__init__.c \
@@ -745,6 +759,7 @@ endif
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
+	displayio/bus_core.c \
 	displayio/display_core.c \
 	os/getenv.c \
 	usb/utf16le.c \

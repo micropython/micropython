@@ -24,10 +24,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
-#define MICROPY_INCLUDED_SHARED_MODULE__STAGE_H
+#pragma once
 
-#include "shared-bindings/displayio/Display.h"
+#include "shared-bindings/busdisplay/BusDisplay.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "py/obj.h"
@@ -40,7 +39,5 @@ void render_stage(
     int16_t vx, int16_t vy,
     mp_obj_t *layers, size_t layers_size,
     uint16_t *buffer, size_t buffer_size,
-    displayio_display_obj_t *display,
+    busdisplay_busdisplay_obj_t *display,
     uint8_t scale, uint16_t background);
-
-#endif  // MICROPY_INCLUDED_SHARED_MODULE__STAGE

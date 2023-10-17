@@ -27,7 +27,7 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/fourwire/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 
@@ -63,13 +63,13 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO23, NULL, false);
     common_hal_busio_spi_never_reset(spi);
 
-    bus->base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(bus,
+    bus->base.type = &fourwire_fourwire_type;
+    common_hal_fourwire_fourwire_construct(bus,
         spi,
         &pin_GPIO21, // TFT_DC Command or data
         &pin_GPIO5, // TFT_CS Chip select
@@ -78,9 +78,9 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(display,
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
+    common_hal_busdisplay_busdisplay_construct(display,
         bus,
         320, // Width (after rotation)
         240, // Height (after rotation)
