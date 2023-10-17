@@ -174,6 +174,7 @@ STATIC void *thread_entry(void *args_in) {
     // The GC starts off unlocked on this thread.
     ts.gc_lock_depth = 0;
 
+    ts.nlr_jump_callback_top = NULL;
     ts.mp_pending_exception = MP_OBJ_NULL;
 
     // set locals and globals from the calling context
