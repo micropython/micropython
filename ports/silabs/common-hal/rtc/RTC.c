@@ -33,7 +33,6 @@
 #include "common-hal/rtc/RTC.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate/translate.h"
 #include "peripherals/rtc.h"
 #include "sl_sleeptimer.h"
 

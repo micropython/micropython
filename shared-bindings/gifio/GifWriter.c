@@ -158,9 +158,10 @@ STATIC const mp_rom_map_elem_t gifio_gifwriter_locals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(gifio_gifwriter_locals, gifio_gifwriter_locals_table);
 
-const mp_obj_type_t gifio_gifwriter_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_GifWriter,
-    .make_new = gifio_gifwriter_make_new,
-    .locals_dict = (mp_obj_dict_t *)&gifio_gifwriter_locals,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    gifio_gifwriter_type,
+    MP_QSTR_GifWriter,
+    MP_TYPE_FLAG_NONE,
+    make_new, gifio_gifwriter_make_new,
+    locals_dict, &gifio_gifwriter_locals
+    );

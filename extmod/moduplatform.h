@@ -37,11 +37,11 @@
 
 #if defined(__ARM_ARCH)
 #define MICROPY_PLATFORM_ARCH   "arm"
-#elif defined(__x86_64__) || defined(_WIN64)
+#elif defined(__x86_64__) || defined(_M_X64)
 #define MICROPY_PLATFORM_ARCH   "x86_64"
 #elif defined(__i386__) || defined(_M_IX86)
 #define MICROPY_PLATFORM_ARCH   "x86"
-#elif defined(__xtensa__) || defined(_M_IX86)
+#elif defined(__xtensa__)
 #define MICROPY_PLATFORM_ARCH   "xtensa"
 #else
 #define MICROPY_PLATFORM_ARCH   ""

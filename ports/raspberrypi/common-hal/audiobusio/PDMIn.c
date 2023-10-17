@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "audio_dma.h"
 

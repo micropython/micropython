@@ -33,7 +33,6 @@
 
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #ifdef SOC_DAC_SUPPORTED
 #include "driver/dac_oneshot.h"

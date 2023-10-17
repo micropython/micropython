@@ -34,7 +34,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Bitmap:
 //|     """Stores values of a certain size in a 2D array
@@ -287,14 +286,12 @@ STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, m
     return common_hal_displayio_bitmap_get_buffer(self, bufinfo, flags);
 }
 
-const mp_obj_type_t displayio_bitmap_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Bitmap,
-    .make_new = displayio_bitmap_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_bitmap_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = bitmap_subscr,
-        .buffer_p = { .get_buffer = bitmap_get_buffer },
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_bitmap_type,
+    MP_QSTR_Bitmap,
+    MP_TYPE_FLAG_NONE,
+    make_new, displayio_bitmap_make_new,
+    locals_dict, &displayio_bitmap_locals_dict,
+    subscr, bitmap_subscr,
+    buffer, bitmap_get_buffer
+    );

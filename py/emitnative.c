@@ -305,8 +305,6 @@ struct _emit_t {
     uint16_t n_info;
     uint16_t n_cell;
 
-    bool last_emit_was_return_value;
-
     scope_t *scope;
 
     ASM_T *as;
@@ -399,7 +397,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
     emit->pass = pass;
     emit->do_viper_types = scope->emit_options == MP_EMIT_OPT_VIPER;
     emit->stack_size = 0;
-    emit->last_emit_was_return_value = false;
     emit->scope = scope;
 
     // allocate memory for keeping track of the types of locals
@@ -433,7 +430,7 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
     // local variables begin unbound, and have unknown type
     for (mp_uint_t i = num_args; i < emit->local_vtype_alloc; i++) {
-        emit->local_vtype[i] = VTYPE_UNBOUND;
+        emit->local_vtype[i] = emit->do_viper_types ? VTYPE_UNBOUND : VTYPE_PYOBJ;
     }
 
     // values on stack begin unbound
@@ -762,10 +759,6 @@ STATIC bool emit_native_end_pass(emit_t *emit) {
     return true;
 }
 
-STATIC bool emit_native_last_emit_was_return_value(emit_t *emit) {
-    return emit->last_emit_was_return_value;
-}
-
 STATIC void ensure_extra_stack(emit_t *emit, size_t delta) {
     if (emit->stack_size + delta > emit->stack_info_alloc) {
         size_t new_alloc = (emit->stack_size + delta + 8) & ~3;
@@ -822,7 +815,7 @@ STATIC void emit_native_set_source_line(emit_t *emit, mp_uint_t source_line) {
 
 // this must be called at start of emit functions
 STATIC void emit_native_pre(emit_t *emit) {
-    emit->last_emit_was_return_value = false;
+    (void)emit;
 }
 
 // depth==0 is top, depth==1 is before top, etc
@@ -946,7 +939,6 @@ STATIC void emit_fold_stack_top(emit_t *emit, int reg_dest) {
 // If stacked value is in a register and the register is not r1 or r2, then
 // *reg_dest is set to that register.  Otherwise the value is put in *reg_dest.
 STATIC void emit_pre_pop_reg_flexible(emit_t *emit, vtype_kind_t *vtype, int *reg_dest, int not_r1, int not_r2) {
-    emit->last_emit_was_return_value = false;
     stack_info_t *si = peek_stack(emit, 0);
     if (si->kind == STACK_REG && si->data.u_reg != not_r1 && si->data.u_reg != not_r2) {
         *vtype = si->vtype;
@@ -959,12 +951,10 @@ STATIC void emit_pre_pop_reg_flexible(emit_t *emit, vtype_kind_t *vtype, int *re
 }
 
 STATIC void emit_pre_pop_discard(emit_t *emit) {
-    emit->last_emit_was_return_value = false;
     adjust_stack(emit, -1);
 }
 
 STATIC void emit_pre_pop_reg(emit_t *emit, vtype_kind_t *vtype, int reg_dest) {
-    emit->last_emit_was_return_value = false;
     emit_access_stack(emit, 1, vtype, reg_dest);
     adjust_stack(emit, -1);
 }
@@ -1566,6 +1556,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                             break;
                         }
                         #endif
+                        need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add index to base
                         reg_base = reg_index;
@@ -1583,6 +1574,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                             break;
                         }
                         #endif
+                        need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 1);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 2*index to base
                         reg_base = reg_index;
@@ -1600,6 +1592,7 @@ STATIC void emit_native_load_subscr(emit_t *emit) {
                             break;
                         }
                         #endif
+                        need_reg_single(emit, reg_index, 0);
                         ASM_MOV_REG_IMM(emit->as, reg_index, index_value << 2);
                         ASM_ADD_REG_REG(emit->as, reg_index, reg_base); // add 4*index to base
                         reg_base = reg_index;
@@ -1722,10 +1715,18 @@ STATIC void emit_native_store_global(emit_t *emit, qstr qst, int kind) {
 }
 
 STATIC void emit_native_store_attr(emit_t *emit, qstr qst) {
-    vtype_kind_t vtype_base, vtype_val;
-    emit_pre_pop_reg_reg(emit, &vtype_base, REG_ARG_1, &vtype_val, REG_ARG_3); // arg1 = base, arg3 = value
+    vtype_kind_t vtype_base;
+    vtype_kind_t vtype_val = peek_vtype(emit, 1);
+    if (vtype_val == VTYPE_PYOBJ) {
+        emit_pre_pop_reg_reg(emit, &vtype_base, REG_ARG_1, &vtype_val, REG_ARG_3); // arg1 = base, arg3 = value
+    } else {
+        emit_access_stack(emit, 2, &vtype_val, REG_ARG_1); // arg1 = value
+        emit_call_with_imm_arg(emit, MP_F_CONVERT_NATIVE_TO_OBJ, vtype_val, REG_ARG_2); // arg2 = type
+        ASM_MOV_REG_REG(emit->as, REG_ARG_3, REG_RET); // arg3 = value (converted)
+        emit_pre_pop_reg(emit, &vtype_base, REG_ARG_1); // arg1 = base
+        adjust_stack(emit, -1); // pop value
+    }
     assert(vtype_base == VTYPE_PYOBJ);
-    assert(vtype_val == VTYPE_PYOBJ);
     emit_call_with_qstr_arg(emit, MP_F_STORE_ATTR, qst, REG_ARG_2); // arg2 = attribute name
     emit_post(emit);
 }
@@ -2005,6 +2006,7 @@ STATIC void emit_native_jump(emit_t *emit, mp_uint_t label) {
     need_stack_settled(emit);
     ASM_JUMP(emit->as, label);
     emit_post(emit);
+    mp_asm_base_suppress_code(&emit->as->base);
 }
 
 STATIC void emit_native_jump_helper(emit_t *emit, bool cond, mp_uint_t label, bool pop) {
@@ -2392,14 +2394,13 @@ STATIC void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
         } else if (op == MP_BINARY_OP_MULTIPLY) {
             ASM_MUL_REG_REG(emit->as, REG_ARG_2, reg_rhs);
             emit_post_push_reg(emit, vtype_lhs, REG_ARG_2);
-        } else if (MP_BINARY_OP_LESS <= op && op <= MP_BINARY_OP_NOT_EQUAL) {
-            // comparison ops are (in enum order):
-            //  MP_BINARY_OP_LESS
-            //  MP_BINARY_OP_MORE
-            //  MP_BINARY_OP_EQUAL
-            //  MP_BINARY_OP_LESS_EQUAL
-            //  MP_BINARY_OP_MORE_EQUAL
-            //  MP_BINARY_OP_NOT_EQUAL
+        } else if (op == MP_BINARY_OP_LESS
+                   || op == MP_BINARY_OP_MORE
+                   || op == MP_BINARY_OP_EQUAL
+                   || op == MP_BINARY_OP_LESS_EQUAL
+                   || op == MP_BINARY_OP_MORE_EQUAL
+                   || op == MP_BINARY_OP_NOT_EQUAL) {
+            // comparison ops
 
             if (vtype_lhs != vtype_rhs) {
                 EMIT_NATIVE_VIPER_TYPE_ERROR(emit, MP_ERROR_TEXT("comparison of int and uint"));
@@ -2800,7 +2801,6 @@ STATIC void emit_native_return_value(emit_t *emit) {
 
         // Do the unwinding jump to get to the return handler
         emit_native_unwind_jump(emit, emit->exit_label, emit->exc_stack_size);
-        emit->last_emit_was_return_value = true;
         return;
     }
 
@@ -2838,7 +2838,6 @@ STATIC void emit_native_return_value(emit_t *emit) {
         ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_RET_VAL(emit), REG_PARENT_RET);
     }
     emit_native_unwind_jump(emit, emit->exit_label, emit->exc_stack_size);
-    emit->last_emit_was_return_value = true;
 }
 
 STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
@@ -2851,6 +2850,7 @@ STATIC void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
     }
     // TODO probably make this 1 call to the runtime (which could even call convert, native_raise(obj, type))
     emit_call(emit, MP_F_NATIVE_RAISE);
+    mp_asm_base_suppress_code(&emit->as->base);
 }
 
 STATIC void emit_native_yield(emit_t *emit, int kind) {
@@ -2957,7 +2957,6 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
 
     emit_native_start_pass,
     emit_native_end_pass,
-    emit_native_last_emit_was_return_value,
     emit_native_adjust_stack_size,
     emit_native_set_source_line,
 

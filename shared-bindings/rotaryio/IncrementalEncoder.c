@@ -180,9 +180,10 @@ STATIC const mp_rom_map_elem_t rotaryio_incrementalencoder_locals_dict_table[] =
 };
 STATIC MP_DEFINE_CONST_DICT(rotaryio_incrementalencoder_locals_dict, rotaryio_incrementalencoder_locals_dict_table);
 
-const mp_obj_type_t rotaryio_incrementalencoder_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_IncrementalEncoder,
-    .make_new = rotaryio_incrementalencoder_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rotaryio_incrementalencoder_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rotaryio_incrementalencoder_type,
+    MP_QSTR_IncrementalEncoder,
+    MP_TYPE_FLAG_NONE,
+    make_new, rotaryio_incrementalencoder_make_new,
+    locals_dict, &rotaryio_incrementalencoder_locals_dict
+    );

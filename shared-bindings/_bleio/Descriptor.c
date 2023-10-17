@@ -211,9 +211,10 @@ STATIC void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp
     }
 }
 
-const mp_obj_type_t bleio_descriptor_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Descriptor,
-    .print = bleio_descriptor_print,
-    .locals_dict = (mp_obj_dict_t *)&bleio_descriptor_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_descriptor_type,
+    MP_QSTR_Descriptor,
+    MP_TYPE_FLAG_NONE,
+    print, bleio_descriptor_print,
+    locals_dict, &bleio_descriptor_locals_dict
+    );

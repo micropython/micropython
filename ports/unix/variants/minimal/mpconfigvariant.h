@@ -26,123 +26,44 @@
 
 // options to control how MicroPython is built
 
-// Prevent the rest of the default mpconfigport.h being used.
-#define MICROPY_UNIX_MINIMAL (1)
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_MINIMUM)
 
+// Disable native emitters.
+#define MICROPY_EMIT_X86 (0)
+#define MICROPY_EMIT_X64 (0)
+#define MICROPY_EMIT_THUMB (0)
+#define MICROPY_EMIT_ARM (0)
+
+// Tune the parser to use less RAM by default.
 #define MICROPY_ALLOC_QSTR_CHUNK_INIT (64)
 #define MICROPY_ALLOC_PARSE_RULE_INIT (8)
 #define MICROPY_ALLOC_PARSE_RULE_INC  (8)
 #define MICROPY_ALLOC_PARSE_RESULT_INIT (8)
 #define MICROPY_ALLOC_PARSE_RESULT_INC (8)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT (64)
-#define MICROPY_ALLOC_PATH_MAX      (PATH_MAX)
-#define MICROPY_ENABLE_GC           (1)
-#define MICROPY_GC_ALLOC_THRESHOLD  (0)
-#define MICROPY_ENABLE_FINALISER    (0)
-#define MICROPY_STACK_CHECK         (0)
-#define MICROPY_COMP_CONST          (0)
-#define MICROPY_MEM_STATS           (0)
-#define MICROPY_DEBUG_PRINTERS      (0)
-#define MICROPY_READER_POSIX        (1)
-#define MICROPY_READER_VFS          (1)
-#define MICROPY_HELPER_REPL         (1)
-#define MICROPY_HELPER_LEXER_UNIX   (1)
-#define MICROPY_ENABLE_SOURCE_LINE  (0)
-#define MICROPY_ERROR_REPORTING     (MICROPY_ERROR_REPORTING_TERSE)
-#define MICROPY_WARNINGS            (0)
-#define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (0)
-#define MICROPY_KBD_EXCEPTION       (1)
-#define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_NONE)
-#define MICROPY_LONGINT_IMPL        (MICROPY_LONGINT_IMPL_NONE)
-#define MICROPY_STREAMS_NON_BLOCK   (0)
-#define MICROPY_OPT_COMPUTED_GOTO   (0)
-#define MICROPY_OPT_LOAD_ATTR_FAST_PATH (0)
-#define MICROPY_OPT_MAP_LOOKUP_CACHE (0)
-#define MICROPY_CAN_OVERRIDE_BUILTINS (0)
-#define MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG (0)
-#define MICROPY_VFS                 (1)
-#define MICROPY_VFS_POSIX           (1)
-#define MICROPY_CPYTHON_COMPAT      (0)
-#define MICROPY_PY_BUILTINS_BYTEARRAY (0)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW (0)
-#define MICROPY_PY_BUILTINS_COMPILE (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE (0)
-#define MICROPY_PY_BUILTINS_FILTER  (0)
-#define MICROPY_PY_BUILTINS_FROZENSET (0)
-#define MICROPY_PY_BUILTINS_REVERSED (0)
-#define MICROPY_PY_BUILTINS_SET     (0)
-#define MICROPY_PY_BUILTINS_SLICE   (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT (0)
-#define MICROPY_PY_BUILTINS_STR_OP_MODULO (0)
-#define MICROPY_PY_BUILTINS_STR_UNICODE (0)
-#define MICROPY_PY_BUILTINS_PROPERTY (0)
-#define MICROPY_PY_BUILTINS_MIN_MAX (0)
-#define MICROPY_PY___FILE__         (0)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO (0)
-#define MICROPY_PY_GC               (0)
-#define MICROPY_PY_GC_COLLECT_RETVAL (0)
-#define MICROPY_PY_ARRAY            (0)
-#define MICROPY_PY_COLLECTIONS      (0)
-#define MICROPY_PY_MATH             (0)
-#define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_IO               (0)
-#define MICROPY_PY_IO_FILEIO        (0)
-#define MICROPY_PY_STRUCT           (0)
-#define MICROPY_PY_SYS              (1)
-#define MICROPY_PY_SYS_EXIT         (0)
-#define MICROPY_PY_SYS_PLATFORM     "linux"
-#ifndef MICROPY_PY_SYS_PATH_DEFAULT
-#define MICROPY_PY_SYS_PATH_DEFAULT ".frozen:~/.micropython/lib:/usr/lib/micropython"
-#endif
-#define MICROPY_PY_SYS_MAXSIZE      (0)
-#define MICROPY_PY_SYS_STDFILES     (0)
-#define MICROPY_PY_CMATH            (0)
-#define MICROPY_PY_UCTYPES          (0)
-#define MICROPY_PY_UTIME            (0)
-#define MICROPY_PY_UZLIB            (0)
-#define MICROPY_PY_UJSON            (0)
-#define MICROPY_PY_UOS              (1)
-#define MICROPY_PY_URE              (0)
-#define MICROPY_PY_UHEAPQ           (0)
-#define MICROPY_PY_UHASHLIB         (0)
-#define MICROPY_PY_UBINASCII        (0)
 
-#define MICROPY_PORT_ROOT_POINTERS \
+// Enable features that are not enabled by default with the minimum config.
+#define MICROPY_COMP_CONST_FOLDING (1)
+#define MICROPY_COMP_CONST_LITERAL (1)
+#define MICROPY_COMP_CONST_TUPLE (1)
+#define MICROPY_COMP_DOUBLE_TUPLE_ASSIGN (1)
+#define MICROPY_ENABLE_COMPILER (1)
+#define MICROPY_ENABLE_EXTERNAL_IMPORT (1)
+#define MICROPY_FULL_CHECKS (1)
+#define MICROPY_HELPER_REPL (1)
+#define MICROPY_KBD_EXCEPTION (1)
+#define MICROPY_MODULE_GETATTR (1)
+#define MICROPY_MULTIPLE_INHERITANCE (1)
+#define MICROPY_PY_ASSIGN_EXPR (1)
+#define MICROPY_PY_ASYNC_AWAIT (1)
+#define MICROPY_PY_ATTRTUPLE (1)
+#define MICROPY_PY_BUILTINS_DICT_FROMKEYS (1)
+#define MICROPY_PY_BUILTINS_RANGE_ATTRS (1)
+#define MICROPY_PY_GENERATOR_PEND_THROW (1)
 
-#define mp_type_fileio mp_type_vfs_posix_fileio
-#define mp_type_textio mp_type_vfs_posix_textio
+// Enable just the sys and os built-in modules.
+#define MICROPY_PY_SYS (1)
+#define MICROPY_PY_UOS (1)
 
-//////////////////////////////////////////
-// Do not change anything beyond this line
-//////////////////////////////////////////
-
-#if !(defined(MICROPY_GCREGS_SETJMP) || defined(__x86_64__) || defined(__i386__) || defined(__thumb2__) || defined(__thumb__) || defined(__arm__))
-// Fall back to setjmp() implementation for discovery of GC pointers in registers.
-#define MICROPY_GCREGS_SETJMP (1)
-#endif
-
-// type definitions for the specific machine
-
-#ifdef __LP64__
-typedef long mp_int_t; // must be pointer size
-typedef unsigned long mp_uint_t; // must be pointer size
-#else
-// These are definitions for machines where sizeof(int) == sizeof(void*),
-// regardless for actual size.
-typedef int mp_int_t; // must be pointer size
-typedef unsigned int mp_uint_t; // must be pointer size
-#endif
-
-// Cannot include <sys/types.h>, as it may lead to symbol name clashes
-#if _FILE_OFFSET_BITS == 64 && !defined(__LP64__)
-typedef long long mp_off_t;
-#else
-typedef long mp_off_t;
-#endif
-
-// We need to provide a declaration/definition of alloca()
-#ifdef __FreeBSD__
-#include <stdlib.h>
-#else
-#include <alloca.h>
-#endif
+// The minimum sets this to 1 to save flash.
+#define MICROPY_QSTR_BYTES_IN_HASH (2)

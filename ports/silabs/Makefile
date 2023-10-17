@@ -24,7 +24,7 @@
 #
 
 .SUFFIXES:				# ignore builtin rules
-.PHONY: all clean slc-clean slc-generate dependents
+.PHONY: all clean slc-clean slc-generate dependents flash
 # Values set by the initial generation
 PROJECTNAME = circuitpython_efr32
 # If the build directory is not given, make it reflect the board name.
@@ -118,7 +118,7 @@ $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR +=
 
@@ -142,10 +142,13 @@ $(SILABS_BUILD)/$(PROJECTNAME).Makefile: | $(HEADER_BUILD)/mpversion.h
 	+@$(MAKE) --no-print-directory slc-generate
 
 $(OUTPUT_DIR)/firmware.out: $(SILABS_BUILD)/pin_functions.h $(SILABS_BUILD)/pins.c $(OBJ) $(OBJS) $(LIB_FILES)
-	@echo 'Linking $(OUTPUT_DIR)/firmware.out'
-	@echo "$(OBJS) $(OBJ)" > $(OUTPUT_DIR)/linker_objs
-	$(CC) $(LD_FLAGS) @$(OUTPUT_DIR)/linker_objs $(LIBS) -o $(OUTPUT_DIR)/firmware.out
-	$(OBJCOPY) $(OUTPUT_DIR)/firmware.out -O binary $(OUTPUT_DIR)/firmware.bin
+	$(STEPECHO) 'Linking $(OUTPUT_DIR)/firmware.out'
+	$(Q)echo "$(OBJS) $(OBJ)" > $(OUTPUT_DIR)/linker_objs
+	$(Q)$(CC) $(LD_FLAGS) @$(OUTPUT_DIR)/linker_objs $(LIBS) -o $(OUTPUT_DIR)/firmware.out
+	$(Q)$(OBJCOPY) $(OUTPUT_DIR)/firmware.out -O binary $(OUTPUT_DIR)/firmware.bin
+
+flash: $(OUTPUT_DIR)/firmware.bin
+	$(Q)commander flash -d EFR32MG24 --address 08000000 $(OUTPUT_DIR)/firmware.bin
 
 $(OUTPUT_DIR)/firmware.hex:
 
@@ -174,37 +177,11 @@ endif
 	@sed -i 's/ autogen\// $(SILABS_BUILD)\/autogen\//g' $(SILABS_BUILD)/circuitpython_efr32.project.mak
 	@sed -i 's/-T"autogen\//-T"$(SILABS_BUILD)\/autogen\//g' $(SILABS_BUILD)/circuitpython_efr32.project.mak
 
-# tools/slc_cli_linux/bin/slc-cli/developer/exporter_templates/arm_gcc/arm_gcc.Makefile defines
-# ECHO = @
-# which is not compatible with py/mkenv.mk:
+# tools/slc_cli_linux/bin/slc-cli/developer/exporter_templates/arm_gcc/arm_gcc.Makefile includes
+# build rules and defines ECHO = @ when VERBOSE = 1 which is not compatible with py/mkenv.mk:
 # ECHO = @echo
 # so override ECHO
-$(OBJS): ECHO =
+$(OBJS): ECHO = $(Q)
 #$(OBJS):
-
-$(OUTPUT_DIR)/%.o: %.c
-	#@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	@$(CC) $(CFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.cpp
-	#@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	@$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.cc
-	#@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	@$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.s
-	#@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	@$(CC) $(ASMFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.S
-	#@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	@$(CC) $(ASMFLAGS) -c -o $@ $<
 
 include $(TOP)/py/mkrules.mk

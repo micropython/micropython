@@ -46,7 +46,11 @@
 #include <string.h>
 
 #define DEBUG_printf(...) // printf(__VA_ARGS__)
-#define DEBUG_HCI_DUMP (0)
+
+#define HCI_TRACE (0)
+#define COL_OFF "\033[0m"
+#define COL_GREEN "\033[0;32m"
+#define COL_BLUE "\033[0;34m"
 
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
@@ -234,8 +238,8 @@ int mp_bluetooth_hci_uart_readchar(void) {
     ssize_t bytes_read = read(uart_fd, &c, 1);
 
     if (bytes_read == 1) {
-        #if DEBUG_HCI_DUMP
-        printf("[% 8ld] RX: %02x\n", mp_hal_ticks_ms(), c);
+        #if HCI_TRACE
+        printf(COL_BLUE "> [% 8ld] RX: %02x" COL_OFF "\n", mp_hal_ticks_ms(), c);
         #endif
         return c;
     } else {
@@ -250,12 +254,12 @@ int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
         return 0;
     }
 
-    #if DEBUG_HCI_DUMP
-    printf("[% 8ld] TX: %02x", mp_hal_ticks_ms(), buf[0]);
+    #if HCI_TRACE
+    printf(COL_GREEN "< [% 8ld] TX: %02x", mp_hal_ticks_ms(), buf[0]);
     for (size_t i = 1; i < len; ++i) {
         printf(":%02x", buf[i]);
     }
-    printf("\n");
+    printf(COL_OFF "\n");
     #endif
 
     return write(uart_fd, buf, len);

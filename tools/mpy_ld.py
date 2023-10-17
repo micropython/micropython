@@ -36,6 +36,7 @@ import makeqstrdata as qstrutil
 
 # MicroPython constants
 MPY_VERSION = 6
+MPY_SUB_VERSION = 1
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
 MP_NATIVE_ARCH_X86 = 1
@@ -919,7 +920,11 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.open(fmpy)
 
     # MPY: header
-    out.write_bytes(bytearray([ord("C"), MPY_VERSION, env.arch.mpy_feature, MP_SMALL_INT_BITS]))
+    out.write_bytes(
+        bytearray(
+            [ord("C"), MPY_VERSION, env.arch.mpy_feature | MPY_SUB_VERSION, MP_SMALL_INT_BITS]
+        )
+    )
 
     # MPY: n_qstr
     out.write_uint(1 + len(native_qstr_vals))

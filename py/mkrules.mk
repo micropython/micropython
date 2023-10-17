@@ -4,11 +4,14 @@ THIS_MAKEFILE = $(lastword $(MAKEFILE_LIST))
 include $(dir $(THIS_MAKEFILE))mkenv.mk
 endif
 
+HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
+HELP_MPY_LIB_SUBMODULE ?= "\033[1;31mError: micropython-lib submodule is not initialized.\033[0m Run 'make submodules'"
+
 # Extra deps that need to happen before object compilation.
 OBJ_EXTRA_ORDER_DEPS =
 
-# Generate moduledefs.h.
-OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h
+# Generate header files.
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/moduledefs.h $(HEADER_BUILD)/root_pointers.h
 
 ifeq ($(MICROPY_ROM_TEXT_COMPRESSION),1)
 # If compression is enabled, trigger the build of compressed.data.h...
@@ -65,7 +68,7 @@ endef
 
 define compile_cxx
 $(ECHO) "CXX $<"
-$(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
+$(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
 @# The following fixes the dependency file.
 @# See http://make.paulandlesley.org/autodep.html for details.
 @# Regex adjusted from the above to play better with Windows paths, etc.
@@ -75,7 +78,7 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $<
   $(RM) -f $(@:.o=.d)
 endef
 
-# frozen.c and frozen_mpy.c are created in $(BUILD), so add it to the vpath as well.
+# CIRCUITPY: add $(DEVICES_MODULES) and $(BUILD)
 vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES) $(BUILD)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
@@ -127,6 +130,16 @@ $(HEADER_BUILD)/moduledefs.collected: $(HEADER_BUILD)/moduledefs.split
 	$(STEPECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat module _ $(HEADER_BUILD)/module $@
 
+# Module definitions via MP_REGISTER_ROOT_POINTER.
+$(HEADER_BUILD)/root_pointers.split: $(HEADER_BUILD)/qstr.i.last
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py split root_pointer $< $(HEADER_BUILD)/root_pointer _
+	$(Q)$(TOUCH) $@
+
+$(HEADER_BUILD)/root_pointers.collected: $(HEADER_BUILD)/root_pointers.split
+	$(STEPECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PY_SRC)/makeqstrdefs.py cat root_pointer _ $(HEADER_BUILD)/root_pointer $@
+
 # Compressed error strings.
 $(HEADER_BUILD)/compressed.split: $(HEADER_BUILD)/qstr.i.last
 	$(STEPECHO) "GEN $@"
@@ -153,7 +166,7 @@ $(HEADER_BUILD):
 ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
 # to automatically build mpy-cross, if needed
 $(MICROPY_MPYCROSS_DEPENDENCY):
-	$(MAKE) -C $(dir $@)
+	$(MAKE) -C $(TOP)/mpy-cross
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -165,8 +178,16 @@ $(error Support for FROZEN_MPY_DIR was removed. Please use manifest.py instead, 
 endif
 
 ifneq ($(FROZEN_MANIFEST),)
+# If we're using the default submodule path for micropython-lib, then make
+# sure it's included in "make submodules".
+ifeq ($(MPY_LIB_DIR),$(MPY_LIB_SUBMODULE_DIR))
+GIT_SUBMODULES += lib/micropython-lib
+endif
+
 # to build frozen_content.c from a manifest
-$(BUILD)/frozen_content.c: $(BUILD)/genhdr/qstrdefs.generated.h $(FROZEN_MANIFEST) | $(MICROPY_MPYCROSS_DEPENDENCY)
+# CIRCUITPY: FROZEN_MANIFEST is constructed at build time
+$(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h $(FROZEN_MANIFEST) | $(MICROPY_MPYCROSS_DEPENDENCY)
+	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
 endif
 
@@ -180,22 +201,22 @@ ifneq (,$(findstring mingw,$(COMPILER_TARGET)))
 PROG := $(PROG).exe
 endif
 
-all: $(PROG)
+all: $(BUILD)/$(PROG)
 
-$(PROG): $(OBJ)
-	$(STEPECHO) "LINK $@"
+$(BUILD)/$(PROG): $(OBJ)
+	$(ECHO) "LINK $@"
 # Do not pass COPT here - it's *C* compiler optimizations. For example,
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
-ifdef STRIP_CIRCUITPYTHON
+ifndef DEBUG
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $@
 endif
 	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $@
 
 clean: clean-prog
 clean-prog:
-	$(RM) -f $(PROG)
-	$(RM) -f $(PROG).map
+	$(RM) -f $(BUILD)/$(PROG)
+	$(RM) -f $(BUILD)/$(PROG).map
 
 .PHONY: clean-prog
 endif
@@ -215,8 +236,8 @@ LIBMICROPYTHON = libmicropython.a
 # with 3rd-party projects which don't have proper dependency
 # tracking. Then LIBMICROPYTHON_EXTRA_CMD can e.g. touch some
 # other file to cause needed effect, e.g. relinking with new lib.
-lib $(LIBMICROPYTHON): $(OBJ)
-	$(Q)$(AR) rcs $(LIBMICROPYTHON) $^
+lib $(BUILD)/$(LIBMICROPYTHON): $(OBJ)
+	$(Q)$(AR) rcs $(BUILD)/$(LIBMICROPYTHON) $^
 	$(LIBMICROPYTHON_EXTRA_CMD)
 
 clean:
@@ -237,6 +258,7 @@ print-def:
 
 -include $(OBJ:.o=.P)
 
+# CIRCUITPY addition
 # Print out the value of a make variable.
 # https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
 print-%:

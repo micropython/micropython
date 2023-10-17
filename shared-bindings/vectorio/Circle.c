@@ -8,7 +8,6 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Circle:
 //|     def __init__(
@@ -133,13 +132,11 @@ STATIC const mp_rom_map_elem_t vectorio_circle_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(vectorio_circle_locals_dict, vectorio_circle_locals_dict_table);
 
-const mp_obj_type_t vectorio_circle_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Circle,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = vectorio_circle_make_new,
-    .locals_dict = (mp_obj_dict_t *)&vectorio_circle_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &circle_draw_protocol,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    vectorio_circle_type,
+    MP_QSTR_Circle,
+    MP_TYPE_FLAG_NONE,
+    make_new, vectorio_circle_make_new,
+    locals_dict, &vectorio_circle_locals_dict,
+    protocol, &circle_draw_protocol
+    );

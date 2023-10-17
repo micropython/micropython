@@ -28,7 +28,6 @@
 
 #include "__init__.h"
 #include "Text.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Text:
 //|     """Keep information about a single grid of text"""
@@ -105,9 +104,10 @@ STATIC const mp_rom_map_elem_t text_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(text_locals_dict, text_locals_dict_table);
 
-const mp_obj_type_t mp_type_text = {
-    { &mp_type_type },
-    .name = MP_QSTR_Text,
-    .make_new = text_make_new,
-    .locals_dict = (mp_obj_dict_t *)&text_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_text,
+    MP_QSTR_Text,
+    MP_TYPE_FLAG_NONE,
+    make_new, text_make_new,
+    locals_dict, &text_locals_dict
+    );

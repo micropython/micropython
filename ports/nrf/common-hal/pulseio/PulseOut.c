@@ -35,7 +35,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 // A single timer is shared amongst all PulseOut objects under the assumption that
 // the code is single threaded.

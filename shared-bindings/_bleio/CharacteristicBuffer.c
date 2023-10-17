@@ -222,15 +222,12 @@ STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
 };
 
 
-const mp_obj_type_t bleio_characteristic_buffer_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_CharacteristicBuffer,
-    .make_new = bleio_characteristic_buffer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_buffer_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &characteristic_buffer_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_characteristic_buffer_type,
+    MP_QSTR_CharacteristicBuffer,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, bleio_characteristic_buffer_make_new,
+    locals_dict, &bleio_characteristic_buffer_locals_dict,
+    iter, mp_stream_unbuffered_iter,
+    protocol, &characteristic_buffer_stream_p
+    );

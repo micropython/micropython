@@ -154,3 +154,5 @@ mp_obj_t common_hal_keypad_generic_get_events(void *self_in) {
     keypad_scanner_obj_t *self = self_in;
     return self->events;
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t keypad_scanners_linked_list);

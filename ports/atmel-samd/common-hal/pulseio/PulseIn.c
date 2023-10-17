@@ -44,7 +44,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/port.h"
 
 // This timer is shared amongst all PulseIn objects as a higher resolution clock.

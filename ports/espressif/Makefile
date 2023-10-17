@@ -369,7 +369,7 @@ $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 $(BUILD)/lib/protomatter/src/core.o: CFLAGS += -DESP32
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 
 # IDF build commands
 IDF_PATH = $(realpath ./esp-idf)

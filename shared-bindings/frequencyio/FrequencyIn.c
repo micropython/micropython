@@ -33,7 +33,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class FrequencyIn:
 //|     """Read a frequency signal
@@ -218,9 +217,10 @@ STATIC const mp_rom_map_elem_t frequencyio_frequencyin_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(frequencyio_frequencyin_locals_dict, frequencyio_frequencyin_locals_dict_table);
 
-const mp_obj_type_t frequencyio_frequencyin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_frequencyin,
-    .make_new = frequencyio_frequencyin_make_new,
-    .locals_dict = (mp_obj_dict_t *)&frequencyio_frequencyin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    frequencyio_frequencyin_type,
+    MP_QSTR_frequencyin,
+    MP_TYPE_FLAG_NONE,
+    make_new, frequencyio_frequencyin_make_new,
+    locals_dict, &frequencyio_frequencyin_locals_dict
+    );

@@ -38,7 +38,6 @@
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/displayio/Shape.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class TileGrid:
 //|     """A grid of tiles sourced out of one bitmap
@@ -504,13 +503,11 @@ STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_tilegrid_locals_dict, displayio_tilegrid_locals_dict_table);
 
-const mp_obj_type_t displayio_tilegrid_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_TileGrid,
-    .make_new = displayio_tilegrid_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_tilegrid_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = tilegrid_subscr,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_tilegrid_type,
+    MP_QSTR_TileGrid,
+    MP_TYPE_FLAG_NONE,
+    make_new, displayio_tilegrid_make_new,
+    locals_dict, &displayio_tilegrid_locals_dict,
+    subscr, tilegrid_subscr
+    );

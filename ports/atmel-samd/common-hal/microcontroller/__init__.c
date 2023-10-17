@@ -36,7 +36,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/translate/translate.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);

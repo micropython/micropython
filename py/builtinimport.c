@@ -38,14 +38,21 @@
 #include "py/builtin.h"
 #include "py/frozenmod.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
 #else // don't print debugging info
 #define DEBUG_PRINT (0)
 #define DEBUG_printf(...) (void)0
+#endif
+
+#if MICROPY_MODULE_WEAK_LINKS
+STATIC qstr make_weak_link_name(vstr_t *buffer, qstr name) {
+    vstr_reset(buffer);
+    vstr_add_char(buffer, 'u');
+    vstr_add_str(buffer, qstr_str(name));
+    return qstr_from_strn(buffer->buf, buffer->len);
+}
 #endif
 
 #if MICROPY_ENABLE_EXTERNAL_IMPORT
@@ -162,7 +169,7 @@ STATIC void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
 #endif
 
 #if (MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD) || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(mp_module_context_t *context, const mp_raw_code_t *rc, const mp_module_context_t *mc, const char *source_name) {
+STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw_code_t *rc, const char *source_name) {
     (void)source_name;
 
     #if MICROPY_PY___FILE__
@@ -182,7 +189,7 @@ STATIC void do_execute_raw_code(mp_module_context_t *context, const mp_raw_code_
 
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_obj_t module_fun = mp_make_function_from_raw_code(rc, mc, NULL);
+        mp_obj_t module_fun = mp_make_function_from_raw_code(rc, context, NULL);
         mp_call_function_0(module_fun);
 
         // finish nlr block, restore context
@@ -227,7 +234,7 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
         if (frozen_type == MP_FROZEN_MPY) {
             const mp_frozen_module_t *frozen = modref;
             module_obj->constants = frozen->constants;
-            do_execute_raw_code(module_obj, frozen->rc, module_obj, file_str + frozen_path_prefix_len);
+            do_execute_raw_code(module_obj, frozen->rc, file_str + frozen_path_prefix_len);
             return;
         }
         #endif
@@ -239,8 +246,10 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
     // the correct format and, if so, load and execute the file.
     #if MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD
     if (file_str[file->len - 3] == 'm') {
-        mp_compiled_module_t cm = mp_raw_code_load_file(file_str, module_obj);
-        do_execute_raw_code(module_obj, cm.rc, cm.context, file_str);
+        mp_compiled_module_t cm;
+        cm.context = module_obj;
+        mp_raw_code_load_file(file_str, &cm);
+        do_execute_raw_code(cm.context, cm.rc, file_str);
         return;
     }
     #endif
@@ -370,10 +379,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // formerly known as "weak links").
         #if MICROPY_MODULE_WEAK_LINKS
         if (stat == MP_IMPORT_STAT_NO_EXIST && module_obj == MP_OBJ_NULL) {
-            char *umodule_buf = vstr_str(path);
-            umodule_buf[0] = 'u';
-            strcpy(umodule_buf + 1, qstr_str(level_mod_name));
-            qstr umodule_name = qstr_from_str(umodule_buf);
+            qstr umodule_name = make_weak_link_name(path, level_mod_name);
             module_obj = mp_module_get_builtin(umodule_name);
         }
         #elif MICROPY_PY_SYS
@@ -475,7 +481,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
     return module_obj;
 }
 
-mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
+mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
     #if DEBUG_PRINT
     DEBUG_printf("__import__:\n");
     for (size_t i = 0; i < n_args; i++) {
@@ -574,7 +580,11 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
 #else // MICROPY_ENABLE_EXTERNAL_IMPORT
 
-mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
+bool mp_obj_is_package(mp_obj_t module) {
+    return false;
+}
+
+mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args) {
     // Check that it's not a relative import
     if (n_args >= 5 && MP_OBJ_SMALL_INT_VALUE(args[4]) != 0) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("relative import"));
@@ -589,10 +599,8 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
 
     #if MICROPY_MODULE_WEAK_LINKS
     // Check if there is a weak link to this module
-    char umodule_buf[MICROPY_ALLOC_PATH_MAX];
-    umodule_buf[0] = 'u';
-    strcpy(umodule_buf + 1, args[0]);
-    qstr umodule_name_qstr = qstr_from_str(umodule_buf);
+    VSTR_FIXED(umodule_path, MICROPY_ALLOC_PATH_MAX);
+    qstr umodule_name_qstr = make_weak_link_name(&umodule_path, module_name_qstr);
     module_obj = mp_module_get_loaded_or_builtin(umodule_name_qstr);
     if (module_obj != MP_OBJ_NULL) {
         return module_obj;

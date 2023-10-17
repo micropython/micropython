@@ -31,8 +31,6 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_BUILTINS_COMPILE
 
 typedef struct _mp_obj_code_t {
@@ -40,10 +38,11 @@ typedef struct _mp_obj_code_t {
     mp_obj_t module_fun;
 } mp_obj_code_t;
 
-STATIC const mp_obj_type_t mp_type_code = {
-    { &mp_type_type },
-    .name = MP_QSTR_code,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_code,
+    MP_QSTR_code,
+    MP_TYPE_FLAG_NONE
+    );
 
 STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
     // save context and set new context

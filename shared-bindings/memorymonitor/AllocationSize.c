@@ -31,7 +31,6 @@
 #include "py/runtime0.h"
 #include "shared-bindings/memorymonitor/AllocationSize.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AllocationSize:
 //|     def __init__(self) -> None:
@@ -165,12 +164,13 @@ STATIC const mp_rom_map_elem_t memorymonitor_allocationsize_locals_dict_table[] 
 };
 STATIC MP_DEFINE_CONST_DICT(memorymonitor_allocationsize_locals_dict, memorymonitor_allocationsize_locals_dict_table);
 
-const mp_obj_type_t memorymonitor_allocationsize_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_AllocationSize,
-    .make_new = memorymonitor_allocationsize_make_new,
-    .subscr = memorymonitor_allocationsize_subscr,
-    .unary_op = memorymonitor_allocationsize_unary_op,
-    .getiter = mp_obj_new_generic_iterator,
-    .locals_dict = (mp_obj_dict_t *)&memorymonitor_allocationsize_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    memorymonitor_allocationsize_type,
+    MP_QSTR_AllocationSize,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, memorymonitor_allocationsize_make_new,
+    subscr, memorymonitor_allocationsize_subscr,
+    unary_op, memorymonitor_allocationsize_unary_op,
+    iter, mp_obj_generic_subscript_getiter,
+    locals_dict, &memorymonitor_allocationsize_locals_dict
+    );

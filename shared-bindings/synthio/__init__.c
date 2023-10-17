@@ -171,23 +171,7 @@ STATIC mp_obj_t synthio_envelope_make_new(const mp_obj_type_t *type_in, size_t n
 };
 
 const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_Envelope,
-        .print = namedtuple_print,
-        .parent = &mp_type_tuple,
-        .make_new = synthio_envelope_make_new,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS_MAKE_NEW(MP_QSTR_Envelope, synthio_envelope_make_new),
     .n_fields = 5,
     .fields = {
         MP_QSTR_attack_time,
@@ -233,14 +217,14 @@ const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
 STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_file, ARG_sample_rate, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if (!mp_obj_is_type(args[ARG_file].u_obj, &mp_type_fileio)) {
+    if (!mp_obj_is_type(args[ARG_file].u_obj, &mp_type_vfs_fat_fileio)) {
         mp_raise_TypeError(translate("file must be a file opened in byte mode"));
     }
     pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);

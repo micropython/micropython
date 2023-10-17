@@ -172,13 +172,14 @@ STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_settrace_codeobj = {
-    { &mp_type_type },
-    .name = MP_QSTR_code,
-    .print = code_print,
-    .unary_op = mp_generic_unary_op,
-    .attr = code_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_settrace_codeobj,
+    MP_QSTR_code,
+    MP_TYPE_FLAG_NONE,
+    print, code_print,
+    unary_op, mp_generic_unary_op,
+    attr, code_attr
+    );
 
 mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t *rc) {
     mp_obj_code_t *o = m_new_obj_maybe(mp_obj_code_t);
@@ -241,13 +242,14 @@ STATIC void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_frame = {
-    { &mp_type_type },
-    .name = MP_QSTR_frame,
-    .print = frame_print,
-    .unary_op = mp_generic_unary_op,
-    .attr = frame_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_frame,
+    MP_QSTR_frame,
+    MP_TYPE_FLAG_NONE,
+    print, frame_print,
+    unary_op, mp_generic_unary_op,
+    attr, frame_attr
+    );
 
 mp_obj_t mp_obj_new_frame(const mp_code_state_t *code_state) {
     if (gc_is_locked()) {

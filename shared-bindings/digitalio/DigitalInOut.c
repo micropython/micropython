@@ -41,7 +41,6 @@
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 #if CIRCUITPY_CYW43
 #include "bindings/cyw43/__init__.h"
@@ -360,12 +359,13 @@ STATIC const mp_rom_map_elem_t digitalio_digitalinout_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(digitalio_digitalinout_locals_dict, digitalio_digitalinout_locals_dict_table);
 
-const mp_obj_type_t digitalio_digitalinout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DigitalInOut,
-    .make_new = digitalio_digitalinout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&digitalio_digitalinout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    digitalio_digitalinout_type,
+    MP_QSTR_DigitalInOut,
+    MP_TYPE_FLAG_NONE,
+    make_new, digitalio_digitalinout_make_new,
+    locals_dict, &digitalio_digitalinout_locals_dict
+    );
 
 // Helper for validating digitalio.DigitalInOut arguments
 digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj) {

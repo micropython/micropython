@@ -139,9 +139,10 @@ STATIC const mp_rom_map_elem_t qrio_qrdecoder_locals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(qrio_qrdecoder_locals, qrio_qrdecoder_locals_table);
 
-const mp_obj_type_t qrio_qrdecoder_type_obj = {
-    { &mp_type_type },
-    .name = MP_QSTR_QRDecoder,
-    .make_new = qrio_qrdecoder_make_new,
-    .locals_dict = (mp_obj_dict_t *)&qrio_qrdecoder_locals,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    qrio_qrdecoder_type_obj,
+    MP_QSTR_QRDecoder,
+    MP_TYPE_FLAG_NONE,
+    make_new, qrio_qrdecoder_make_new,
+    locals_dict, &qrio_qrdecoder_locals
+    );

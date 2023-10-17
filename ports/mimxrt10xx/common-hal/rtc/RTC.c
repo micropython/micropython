@@ -33,7 +33,6 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "common-hal/rtc/RTC.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "sdk/drivers/snvs_hp/fsl_snvs_hp.h"
 #include "sdk/drivers/snvs_lp/fsl_snvs_lp.h"

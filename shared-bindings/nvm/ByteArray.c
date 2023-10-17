@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/nvm/ByteArray.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class ByteArray:
 //|     r"""Presents a stretch of non-volatile memory as a bytearray.
@@ -159,13 +158,11 @@ STATIC mp_obj_t nvm_bytearray_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj
     }
 }
 
-const mp_obj_type_t nvm_bytearray_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_ByteArray,
-    .locals_dict = (mp_obj_t)&nvm_bytearray_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = nvm_bytearray_subscr,
-        .unary_op = nvm_bytearray_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    nvm_bytearray_type,
+    MP_QSTR_ByteArray,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &nvm_bytearray_locals_dict,
+    subscr, nvm_bytearray_subscr,
+    unary_op, nvm_bytearray_unary_op
+    );

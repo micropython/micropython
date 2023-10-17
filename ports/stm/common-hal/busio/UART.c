@@ -35,7 +35,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define ALL_UARTS 0xFFFF
 
@@ -675,3 +674,5 @@ STATIC void uart_assign_irq(busio_uart_obj_t *self, USART_TypeDef *USARTx) {
     }
     #endif
 }
+
+MP_REGISTER_ROOT_POINTER(void *cpy_uart_obj_all[MAX_UART]);
