@@ -670,6 +670,7 @@ soft_reset_exit:
     dac_deinit_all();
     #endif
     machine_deinit();
+    dma_deinit_all();
 
     #if MICROPY_PY_THREAD
     pyb_thread_deinit();

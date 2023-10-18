@@ -152,6 +152,7 @@ void dma_init(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir
 void dma_init_handle(DMA_HandleTypeDef *dma, const dma_descr_t *dma_descr, uint32_t dir, void *data);
 void dma_deinit(const dma_descr_t *dma_descr);
 void dma_invalidate_channel(const dma_descr_t *dma_descr);
+void dma_deinit_all();
 
 // API that configures the DMA directly and does not use the HAL.
 void dma_nohal_init(const dma_descr_t *descr, uint32_t config);

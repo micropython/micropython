@@ -1520,6 +1520,19 @@ void dma_deinit(const dma_descr_t *dma_descr) {
     }
 }
 
+void dma_deinit_all() {
+    for (size_t i = 0; i < NSTREAM; i++) {
+        DMA_HandleTypeDef *handle = dma_handle[i];
+        if (handle != NULL) {
+            #if !defined(STM32F0)
+            HAL_NVIC_DisableIRQ(dma_irqn[i]);
+            #endif
+            dma_handle[i] = NULL;
+            dma_disable_clock(i);
+        }
+    }
+}
+
 void dma_invalidate_channel(const dma_descr_t *dma_descr) {
     if (dma_descr != NULL) {
         dma_id_t dma_id = dma_descr->id;
