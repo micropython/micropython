@@ -90,13 +90,14 @@
 
 #define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
 
-// Bluetooth uses the C heap to load its firmware (provided by pico-sdk).
-// Space is reserved for this, see MICROPY_C_HEAP_SIZE.
+// Bluetooth requires dynamic memory allocation to load its firmware (the allocation
+// call is made from pico-sdk).  This allocation is always done at thread-level, not
+// from an IRQ, so is safe to delegate to the MicroPython GC heap.
 #ifndef cyw43_malloc
-#define cyw43_malloc malloc
+#define cyw43_malloc(nmemb) m_tracked_calloc(nmemb, 1)
 #endif
 #ifndef cyw43_free
-#define cyw43_free free
+#define cyw43_free m_tracked_free
 #endif
 
 void cyw43_post_poll_hook(void);

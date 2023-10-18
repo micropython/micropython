@@ -36,7 +36,7 @@ import makeqstrdata as qstrutil
 
 # MicroPython constants
 MPY_VERSION = 6
-MPY_SUB_VERSION = 1
+MPY_SUB_VERSION = 2
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
 MP_NATIVE_ARCH_X86 = 1

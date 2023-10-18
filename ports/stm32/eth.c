@@ -62,7 +62,19 @@
 #define PHY_SCSR_SPEED_100FULL  (6 << PHY_SCSR_SPEED_Pos)
 
 // ETH DMA RX and TX descriptor definitions
-#if defined(STM32H7)
+#if defined(STM32H5)
+#define RX_DESCR_3_OWN_Pos      (31)
+#define RX_DESCR_3_IOC_Pos      (30)
+#define RX_DESCR_3_BUF1V_Pos    (24)
+#define RX_DESCR_3_PL_Msk       (0x7fff)
+
+#define TX_DESCR_3_OWN_Pos      (31)
+#define TX_DESCR_3_FD_Pos       (29)
+#define TX_DESCR_3_LD_Pos       (28)
+#define TX_DESCR_3_CIC_Pos      (16)
+#define TX_DESCR_2_B1L_Pos      (0)
+#define TX_DESCR_2_B1L_Msk      (0x3fff << TX_DESCR_2_B1L_Pos)
+#elif defined(STM32H7)
 #define RX_DESCR_3_OWN_Pos      (31)
 #define RX_DESCR_3_IOC_Pos      (30)
 #define RX_DESCR_3_BUF1V_Pos    (24)
@@ -135,7 +147,7 @@ STATIC void eth_mac_deinit(eth_t *self);
 STATIC void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf);
 
 STATIC void eth_phy_write(uint32_t reg, uint32_t val) {
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
     uint32_t ar = ETH->MACMDIOAR;
@@ -161,7 +173,7 @@ STATIC void eth_phy_write(uint32_t reg, uint32_t val) {
 }
 
 STATIC uint32_t eth_phy_read(uint32_t reg) {
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
     uint32_t ar = ETH->MACMDIOAR;
@@ -202,7 +214,11 @@ void eth_init(eth_t *self, int mac_idx) {
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_RMII_TXD1, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_RMII_TXD1);
 
     // Enable peripheral clock
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    __HAL_RCC_ETH_CLK_ENABLE();
+    __HAL_RCC_ETHTX_CLK_ENABLE();
+    __HAL_RCC_ETHRX_CLK_ENABLE();
+    #elif defined(STM32H7)
     __HAL_RCC_ETH1MAC_CLK_ENABLE();
     __HAL_RCC_ETH1TX_CLK_ENABLE();
     __HAL_RCC_ETH1RX_CLK_ENABLE();
@@ -218,11 +234,20 @@ void eth_set_trace(eth_t *self, uint32_t value) {
 STATIC int eth_mac_init(eth_t *self) {
     // Configure MPU
     uint32_t irq_state = mpu_config_start();
+    #if defined(STM32H5)
+    mpu_config_region(MPU_REGION_ETH, (uint32_t)&eth_dma, MPU_CONFIG_ETH(16 * 1024));
+    #else
     mpu_config_region(MPU_REGION_ETH, (uint32_t)&eth_dma, MPU_CONFIG_ETH(MPU_REGION_SIZE_16KB));
+    #endif
     mpu_config_end(irq_state);
 
     // Enable peripheral clock
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    __HAL_RCC_ETH_CLK_ENABLE();
+    __HAL_RCC_ETHTX_CLK_ENABLE();
+    __HAL_RCC_ETHRX_CLK_ENABLE();
+    __HAL_RCC_ETH_FORCE_RESET();
+    #elif defined(STM32H7)
     __HAL_RCC_ETH1MAC_CLK_ENABLE();
     __HAL_RCC_ETH1TX_CLK_ENABLE();
     __HAL_RCC_ETH1RX_CLK_ENABLE();
@@ -233,14 +258,23 @@ STATIC int eth_mac_init(eth_t *self) {
     #endif
 
     // Select RMII interface
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    __HAL_RCC_SBS_CLK_ENABLE();
+    SBS->PMCR = (SBS->PMCR & ~SBS_PMCR_ETH_SEL_PHY_Msk) | SBS_PMCR_ETH_SEL_PHY_2;
+    #elif defined(STM32H7)
     SYSCFG->PMCR = (SYSCFG->PMCR & ~SYSCFG_PMCR_EPIS_SEL_Msk) | SYSCFG_PMCR_EPIS_SEL_2;
     #else
     __HAL_RCC_SYSCFG_CLK_ENABLE();
     SYSCFG->PMC |= SYSCFG_PMC_MII_RMII_SEL;
     #endif
 
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    __HAL_RCC_ETH_RELEASE_RESET();
+
+    __HAL_RCC_ETH_CLK_SLEEP_ENABLE();
+    __HAL_RCC_ETHTX_CLK_SLEEP_ENABLE();
+    __HAL_RCC_ETHRX_CLK_SLEEP_ENABLE();
+    #elif defined(STM32H7)
     __HAL_RCC_ETH1MAC_RELEASE_RESET();
 
     __HAL_RCC_ETH1MAC_CLK_SLEEP_ENABLE();
@@ -255,7 +289,7 @@ STATIC int eth_mac_init(eth_t *self) {
     #endif
 
     // Do a soft reset of the MAC core
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     #define ETH_SOFT_RESET(eth) do { eth->DMAMR = ETH_DMAMR_SWR; } while (0)
     #define ETH_IS_RESET(eth) (eth->DMAMR & ETH_DMAMR_SWR)
     #else
@@ -277,7 +311,23 @@ STATIC int eth_mac_init(eth_t *self) {
     // Set MII clock range
     uint32_t hclk = HAL_RCC_GetHCLKFreq();
     uint32_t cr_div;
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    cr_div = ETH->MACMDIOAR & ~ETH_MACMDIOAR_CR;
+    if (hclk < 35000000) {
+        cr_div |= ETH_MACMDIOAR_CR_DIV16;
+    } else if (hclk < 60000000) {
+        cr_div |= ETH_MACMDIOAR_CR_DIV26;
+    } else if (hclk < 100000000) {
+        cr_div |= ETH_MACMDIOAR_CR_DIV42;
+    } else if (hclk < 150000000) {
+        cr_div |= ETH_MACMDIOAR_CR_DIV62;
+    } else if (hclk < 250000000) {
+        cr_div |= ETH_MACMDIOAR_CR_DIV102;
+    } else {
+        cr_div |= ETH_MACMDIOAR_CR_DIV124;
+    }
+    ETH->MACMDIOAR = cr_div;
+    #elif defined(STM32H7)
     cr_div = ETH->MACMDIOAR & ~ETH_MACMDIOAR_CR;
     if (hclk < 35000000) {
         cr_div |= ETH_MACMDIOAR_CR_DIV16;
@@ -306,7 +356,7 @@ STATIC int eth_mac_init(eth_t *self) {
     ETH->MACMIIAR = cr_div;
     #endif
 
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     // don't skip 32bit words since our descriptors are continuous in memory
     ETH->DMACCR &= ~(ETH_DMACCR_DSL_Msk);
     #endif
@@ -351,7 +401,7 @@ STATIC int eth_mac_init(eth_t *self) {
     uint16_t phy_scsr = eth_phy_read(PHY_SCSR);
 
     // Burst mode configuration
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     ETH->DMASBMR = ETH->DMASBMR & ~ETH_DMASBMR_AAL & ~ETH_DMASBMR_FB;
     #else
     ETH->DMABMR = 0;
@@ -359,7 +409,7 @@ STATIC int eth_mac_init(eth_t *self) {
     mp_hal_delay_ms(2);
 
     // Select DMA interrupts
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     ETH->DMACIER = ETH->DMACIER
         | ETH_DMACIER_NIE // enable normal interrupts
         | ETH_DMACIER_RIE // enable RX interrupt
@@ -373,7 +423,7 @@ STATIC int eth_mac_init(eth_t *self) {
 
     // Configure RX descriptor lists
     for (size_t i = 0; i < RX_BUF_NUM; ++i) {
-        #if defined(STM32H7)
+        #if defined(STM32H5) || defined(STM32H7)
         eth_dma.rx_descr[i].rdes3 =
             1 << RX_DESCR_3_OWN_Pos
                 | (1 << RX_DESCR_3_BUF1V_Pos) // buf1 address valid
@@ -391,7 +441,7 @@ STATIC int eth_mac_init(eth_t *self) {
         #endif
     }
 
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     ETH->DMACRDLAR = (uint32_t)&eth_dma.rx_descr[0];
     #else
     ETH->DMARDLAR = (uint32_t)&eth_dma.rx_descr[0];
@@ -400,7 +450,7 @@ STATIC int eth_mac_init(eth_t *self) {
 
     // Configure TX descriptor lists
     for (size_t i = 0; i < TX_BUF_NUM; ++i) {
-        #if defined(STM32H7)
+        #if defined(STM32H5) || defined(STM32H7)
         eth_dma.tx_descr[i].tdes0 = 0;
         eth_dma.tx_descr[i].tdes1 = 0;
         eth_dma.tx_descr[i].tdes2 = TX_BUF_SIZE & TX_DESCR_2_B1L_Msk;
@@ -413,7 +463,7 @@ STATIC int eth_mac_init(eth_t *self) {
         #endif
     }
 
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     // set number of descriptors and buffers
     ETH->DMACTDRLR = TX_BUF_NUM - 1;
     ETH->DMACRDRLR = RX_BUF_NUM - 1;
@@ -425,7 +475,7 @@ STATIC int eth_mac_init(eth_t *self) {
     eth_dma.tx_descr_idx = 0;
 
     // Configure DMA
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     // read from RX FIFO only after a full frame is written
     ETH->MTLRQOMR = ETH_MTLRQOMR_RSF;
     // transmission starts when a full packet resides in the Tx queue
@@ -439,7 +489,7 @@ STATIC int eth_mac_init(eth_t *self) {
     mp_hal_delay_ms(2);
 
     // Select MAC filtering options
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     ETH->MACPFR = ETH_MACPFR_RA; // pass all frames up
     #else
     ETH->MACFFR =
@@ -472,7 +522,7 @@ STATIC int eth_mac_init(eth_t *self) {
     mp_hal_delay_ms(2);
 
     // Start DMA layer
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     ETH->DMACRCR |= ETH_DMACRCR_SR; // start RX
     ETH->DMACTCR |= ETH_DMACTCR_ST; // start TX
     #else
@@ -493,7 +543,11 @@ STATIC int eth_mac_init(eth_t *self) {
 STATIC void eth_mac_deinit(eth_t *self) {
     (void)self;
     HAL_NVIC_DisableIRQ(ETH_IRQn);
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    __HAL_RCC_ETH_FORCE_RESET();
+    __HAL_RCC_ETH_RELEASE_RESET();
+    __HAL_RCC_ETH_CLK_DISABLE();
+    #elif defined(STM32H7)
     __HAL_RCC_ETH1MAC_FORCE_RESET();
     __HAL_RCC_ETH1MAC_RELEASE_RESET();
     __HAL_RCC_ETH1MAC_CLK_DISABLE();
@@ -513,7 +567,7 @@ STATIC int eth_tx_buf_get(size_t len, uint8_t **buf) {
     eth_dma_tx_descr_t *tx_descr = &eth_dma.tx_descr[eth_dma.tx_descr_idx];
     uint32_t t0 = mp_hal_ticks_ms();
     for (;;) {
-        #if defined(STM32H7)
+        #if defined(STM32H5) || defined(STM32H7)
         if (!(tx_descr->tdes3 & (1 << TX_DESCR_3_OWN_Pos))) {
             break;
         }
@@ -527,7 +581,7 @@ STATIC int eth_tx_buf_get(size_t len, uint8_t **buf) {
         }
     }
 
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     // Update TX descriptor with length and buffer pointer
     *buf = &eth_dma.tx_buf[eth_dma.tx_descr_idx * TX_BUF_SIZE];
     tx_descr->tdes2 = len & TX_DESCR_2_B1L_Msk;
@@ -549,7 +603,7 @@ STATIC int eth_tx_buf_send(void) {
     eth_dma.tx_descr_idx = (eth_dma.tx_descr_idx + 1) % TX_BUF_NUM;
 
     // Schedule to send next outgoing frame
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     tx_descr->tdes3 =
         1 << TX_DESCR_3_OWN_Pos     // owned by DMA
             | 1 << TX_DESCR_3_LD_Pos // last segment
@@ -568,7 +622,7 @@ STATIC int eth_tx_buf_send(void) {
 
     // Notify ETH DMA that there is a new TX descriptor for sending
     __DMB();
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     if (ETH->DMACSR & ETH_DMACSR_TBU) {
         ETH->DMACSR = ETH_DMACSR_TBU;
     }
@@ -590,7 +644,7 @@ STATIC void eth_dma_rx_free(void) {
     eth_dma.rx_descr_idx = (eth_dma.rx_descr_idx + 1) % RX_BUF_NUM;
 
     // Schedule to get next incoming frame
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     rx_descr->rdes0 = (uint32_t)buf;
     rx_descr->rdes3 = 1 << RX_DESCR_3_OWN_Pos;  // owned by DMA
     rx_descr->rdes3 |= 1 << RX_DESCR_3_BUF1V_Pos; // buf 1 address valid
@@ -607,7 +661,7 @@ STATIC void eth_dma_rx_free(void) {
 
     // Notify ETH DMA that there is a new RX descriptor available
     __DMB();
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     ETH->DMACRDTPR = (uint32_t)&rx_descr[eth_dma.rx_descr_idx];
     #else
     ETH->DMARPDR = 0;
@@ -615,7 +669,7 @@ STATIC void eth_dma_rx_free(void) {
 }
 
 void ETH_IRQHandler(void) {
-    #if defined(STM32H7)
+    #if defined(STM32H5) || defined(STM32H7)
     uint32_t sr = ETH->DMACSR;
     ETH->DMACSR = ETH_DMACSR_NIS;
     uint32_t rx_interrupt = sr & ETH_DMACSR_RI;
@@ -625,13 +679,13 @@ void ETH_IRQHandler(void) {
     uint32_t rx_interrupt = sr & ETH_DMASR_RS;
     #endif
     if (rx_interrupt) {
-        #if defined(STM32H7)
+        #if defined(STM32H5) || defined(STM32H7)
         ETH->DMACSR = ETH_DMACSR_RI;
         #else
         ETH->DMASR = ETH_DMASR_RS;
         #endif
         for (;;) {
-            #if defined(STM32H7)
+            #if defined(STM32H5) || defined(STM32H7)
             eth_dma_rx_descr_t *rx_descr_l = &eth_dma.rx_descr[eth_dma.rx_descr_idx];
             if (rx_descr_l->rdes3 & (1 << RX_DESCR_3_OWN_Pos)) {
                 // No more RX descriptors ready to read
@@ -646,13 +700,13 @@ void ETH_IRQHandler(void) {
             #endif
 
             // Get RX buffer containing new frame
-            #if defined(STM32H7)
+            #if defined(STM32H5) || defined(STM32H7)
             size_t len = (rx_descr_l->rdes3 & RX_DESCR_3_PL_Msk);
             #else
             size_t len = (rx_descr->rdes0 & RX_DESCR_0_FL_Msk) >> RX_DESCR_0_FL_Pos;
             #endif
             len -= 4; // discard CRC at end
-            #if defined(STM32H7)
+            #if defined(STM32H5) || defined(STM32H7)
             uint8_t *buf = &eth_dma.rx_buf[eth_dma.rx_descr_idx * RX_BUF_SIZE];
             #else
             uint8_t *buf = (uint8_t *)rx_descr->rdes2;

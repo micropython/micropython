@@ -249,8 +249,10 @@ typedef struct _mp_state_vm_t {
     #endif
 } mp_state_vm_t;
 
-// This structure holds state that is specific to a given thread.
-// Everything in this structure is scanned for root pointers.
+// This structure holds state that is specific to a given thread. Everything
+// in this structure is scanned for root pointers.  Anything added to this
+// structure must have corresponding initialisation added to thread_entry (in
+// py/modthread.c).
 typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;

@@ -86,16 +86,6 @@ Functions
 Classes
 -------
 
-.. class:: FileIO(...)
-
-    This is type of a file open in binary mode, e.g. using ``open(name, "rb")``.
-    You should not instantiate this class directly.
-
-.. class:: TextIOWrapper(...)
-
-    This is type of a file open in text mode, e.g. using ``open(name, "rt")``.
-    You should not instantiate this class directly.
-
 .. class:: StringIO([string])
 .. class:: BytesIO([string])
 

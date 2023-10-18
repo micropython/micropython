@@ -41,6 +41,15 @@ mcu_table = {
         range_vco_in=range(1, 2 + 1),
         range_vco_out=range(100, 432 + 1),
     ),
+    "stm32h5": MCU(
+        range_sysclk=range(2, 250 + 1, 2),
+        range_m=range(1, 63 + 1),
+        range_n=range(4, 512 + 1),
+        range_p=range(2, 128 + 1, 2),
+        range_q=range(1, 128 + 1),
+        range_vco_in=range(1, 16 + 1),
+        range_vco_out=range(150, 836 + 1),  # 150-420=medium, 192-836=wide
+    ),
     "stm32h7": MCU(
         range_sysclk=range(2, 400 + 1, 2),  # above 400MHz currently unsupported
         range_m=range(1, 63 + 1),
@@ -274,9 +283,6 @@ def main():
         hse, hsi = search_header_for_hsx_values(argv[0][5:], [None, None])
         if hse is None:
             raise ValueError("%s does not contain a definition of HSE_VALUE" % argv[0])
-        if hsi is not None and hsi > 16:
-            # Currently, a HSI value greater than 16MHz is not supported
-            hsi = None
     else:
         # HSE given directly as an integer
         hse = int(argv[0])
@@ -289,7 +295,7 @@ def main():
             break
 
     # Relax constraint on PLLQ being 48MHz on MCUs which have separate PLLs for 48MHz
-    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h7"))
+    relax_pll48 = mcu_series.startswith(("stm32f413", "stm32f7", "stm32h5", "stm32h7"))
 
     hse_valid_plls = compute_pll_table(hse, relax_pll48)
     if hsi is not None:
