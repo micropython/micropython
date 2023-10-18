@@ -8,10 +8,9 @@ if "CY8CPROTO-062-4343W" in machine:
     scl_pin = "P6_0"
     sda_pin = "P6_1"
 elif "CY8CPROTO-063-BLE" in machine:
-    print("SKIP")
-    raise SystemExit
+    scl_pin = "P6_4"
+    sda_pin = "P6_5"
 
 si2c = SoftI2C(scl=scl_pin, sda=sda_pin, freq=400000)
-print(si2c)
 
 print(si2c.scan())
