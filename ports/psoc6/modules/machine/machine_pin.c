@@ -330,8 +330,8 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value),                   MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_low),                     MP_ROM_PTR(&machine_pin_low_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),                    MP_ROM_PTR(&machine_pin_high_obj) },
-    { MP_ROM_QSTR(MP_QSTR_off),                     MP_ROM_PTR(&machine_pin_high_obj) },
-    { MP_ROM_QSTR(MP_QSTR_on),                      MP_ROM_PTR(&machine_pin_low_obj) },
+    { MP_ROM_QSTR(MP_QSTR_off),                     MP_ROM_PTR(&machine_pin_low_obj) },
+    { MP_ROM_QSTR(MP_QSTR_on),                      MP_ROM_PTR(&machine_pin_high_obj) },
 
     // Const
     { MP_ROM_QSTR(MP_QSTR_IN),                      MP_ROM_INT(GPIO_MODE_IN) },
