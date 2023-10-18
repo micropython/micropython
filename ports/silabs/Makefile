@@ -144,7 +144,7 @@ $(SILABS_BUILD)/$(PROJECTNAME).Makefile: | $(HEADER_BUILD)/mpversion.h
 $(OUTPUT_DIR)/firmware.out: $(SILABS_BUILD)/pin_functions.h $(SILABS_BUILD)/pins.c $(OBJ) $(OBJS) $(LIB_FILES)
 	$(STEPECHO) 'Linking $(OUTPUT_DIR)/firmware.out'
 	$(Q)echo "$(OBJS) $(OBJ)" > $(OUTPUT_DIR)/linker_objs
-	$(Q)$(CC) $(LD_FLAGS) @$(OUTPUT_DIR)/linker_objs $(LIBS) -o $(OUTPUT_DIR)/firmware.out
+	$(Q)$(CC) $(LD_FLAGS) @$(OUTPUT_DIR)/linker_objs -Wl,--print-memory-usage $(LIBS) -o $(OUTPUT_DIR)/firmware.out
 	$(Q)$(OBJCOPY) $(OUTPUT_DIR)/firmware.out -O binary $(OUTPUT_DIR)/firmware.bin
 
 flash: $(OUTPUT_DIR)/firmware.bin
