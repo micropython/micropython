@@ -42,6 +42,7 @@
 #define CMD_WREN        (0x06)
 #define CMD_SEC_ERASE   (0x20)
 #define CMD_RDCR        (0x35)
+#define CMD_RD_SFDP     (0x5a)
 #define CMD_RD_DEVID    (0x9f)
 #define CMD_CHIP_ERASE  (0xc7)
 #define CMD_C4READ      (0xeb)
@@ -57,13 +58,8 @@
 #define PAGE_SIZE (256) // maximum bytes we can write in one SPI transfer
 #define SECTOR_SIZE MP_SPIFLASH_ERASE_BLOCK_SIZE
 
-#if MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES
 #ifndef MICROPY_HW_SPIFLASH_DEVICES
-#if !MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES
-#warning SPIFLASH size undefined, should set MICROPY_HW_SPIFLASH_DEVICES or MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES
-#endif
 #define MICROPY_HW_SPIFLASH_DEVICES
-#endif
 #endif
 
 #if !BUILDING_MBOOT
@@ -113,10 +109,11 @@ static int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, 
     int ret = 0;
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
-        uint8_t buf[5] = {cmd, 0};
+        uint8_t buf[6] = {cmd, 0};
         uint8_t buff_len = 1 + mp_spi_set_addr_buff(&buf[1], addr);
+        uint8_t dummy = (cmd == CMD_RD_SFDP)? 1 : 0;
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, buff_len, buf, NULL);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, buff_len + dummy, buf, NULL);
         if (len && (src != NULL)) {
             c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, src, NULL);
         } else if (len && (dest != NULL)) {
@@ -246,8 +243,44 @@ int mp_spiflash_init(mp_spiflash_t *self) {
         #if MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES
         generic_config.total_size = MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES;
         #else
-        diag_printf("Set MICROPY_HW_SPIFLASH_DEVICES or MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES");
-        diag_printf("jedec ids: 0x%x 0x%x 0x%x\n", jedec_ids[0], jedec_ids[1], jedec_ids[2]);
+        // Try to read "Serial Flash Discoverable Parameters"
+        // JEDEC Standard No. 216, 9 x 32bit dwords of data.
+        // Start be reading the headers to confirm sfdp is supported and find the parameter table address.
+        uint32_t sfdp[4] = {0};
+        ret = mp_spiflash_transfer_cmd_addr_data(self, CMD_RD_SFDP, 0, sizeof(sfdp), NULL, (uint8_t *)sfdp, MP_QSPI_TRANSFER_CMD_ADDR_DATA);
+        const char sfdp_header[] = {'S', 'F', 'D', 'P'};
+        if (ret != 0 || sfdp[0] != *(uint32_t *)sfdp_header) {
+            diag_printf("mp_spiflash: sfdp not supported\n");
+            diag_printf("Set MICROPY_HW_SPIFLASH_DEVICES or MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES");
+            diag_printf("jedec ids: 0x%x 0x%x 0x%x\n", jedec_ids[0], jedec_ids[1], jedec_ids[2]);
+            mp_spiflash_release_bus(self);
+            return -2;
+        } else {
+            // Read the first few SFDP parameter tables.
+            uint32_t sfdp_param_table_addr = sfdp[3] & 0xFFFFFF;
+            ret = mp_spiflash_transfer_cmd_addr_data(self, CMD_RD_SFDP, sfdp_param_table_addr, sizeof(sfdp), NULL, (uint8_t *)sfdp, MP_QSPI_TRANSFER_CMD_ADDR_DATA);
+            // Flash Memory Density
+            uint32_t size = sfdp[1] & ~(1 << 31);
+            if (size != 0) {
+                if (sfdp[1] & (1 << 31)) {
+                    // When bit-31 is set to 1, the total bits is 2^size.
+                    generic_config.total_size = 1 << size;
+                } else {
+                    // When bit-31 is set to 0, the total bits is size + 1.
+                    generic_config.total_size = (size + 1) / 8;
+                }
+            }
+            uint8_t opcode_sec_erase = (sfdp[0] >> 8 & 0xFF);
+            if (opcode_sec_erase != 0x20) {
+                diag_printf("mp_spiflash_sec_erase: opcode not supported\n");
+            }
+            if (sfdp[0] & (1 << 21)) {
+                // Supports (1-4-4) Fast Read: Device supports single line opcode,
+                // quad line address, and quad output Fast Read.
+                generic_config.supports_fast_read = true;
+                generic_config.supports_qspi = true;
+            }
+        }
         #endif
     }
 
