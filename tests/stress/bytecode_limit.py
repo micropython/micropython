@@ -3,7 +3,7 @@
 body = " with f()()() as a:\n  try:\n   f()()()\n  except Exception:\n   pass\n"
 
 # Test overflow of jump offset.
-for n in (430, 431, 432, 433):
+for n in (433, 432, 431, 430):
     try:
         exec("cond = 0\nif cond:\n" + body * n + "else:\n print('cond false')\n")
     except MemoryError:

@@ -27,8 +27,8 @@ FROZEN_MANIFEST ?= variants/manifest.py
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
+QSTR_DEFS += qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
@@ -59,8 +59,8 @@ endif
 # Remove unused sections.
 COPT += -fdata-sections -ffunction-sections
 
-# Always enable symbols -- They're occasionally useful, and don't make it into the
-# final .bin/.hex/.dfu so the extra size doesn't matter.
+# Note: Symbols and debug information will still be stripped from the final binary
+# unless "DEBUG=1" or "STRIP=" is passed to make, see README.md for details.
 CFLAGS += -g
 
 ifndef DEBUG
@@ -138,7 +138,7 @@ CFLAGS += -DMICROPY_PY_THREAD=1 -DMICROPY_PY_THREAD_GIL=0
 LDFLAGS += $(LIBPTHREAD)
 endif
 
-ifeq ($(MICROPY_PY_USSL),1)
+ifeq ($(MICROPY_PY_SSL),1)
 ifeq ($(MICROPY_SSL_AXTLS),1)
 
 endif

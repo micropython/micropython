@@ -94,8 +94,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
     GEN_WRAP_TYPE_ATTR
-    call, gen_wrap_call,
-    unary_op, mp_generic_unary_op
+    call, gen_wrap_call
     );
 
 #if MICROPY_PY_ASYNC_AWAIT
@@ -172,7 +171,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
 }
 
 #if MICROPY_PY_FUNCTION_ATTRS
-#define NATIVE_GEN_WRAP_TYPE_ATTR attr, mp_obj_fun_bc_attr,
+#define NATIVE_GEN_WRAP_TYPE_ATTR , attr, mp_obj_fun_bc_attr
 #else
 #define NATIVE_GEN_WRAP_TYPE_ATTR
 #endif
@@ -181,9 +180,8 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_native_gen_wrap,
     MP_QSTR_generator,
     MP_TYPE_FLAG_BINDS_SELF,
-    call, native_gen_wrap_call,
+    call, native_gen_wrap_call
     NATIVE_GEN_WRAP_TYPE_ATTR
-    unary_op, mp_generic_unary_op
     );
 
 
@@ -452,7 +450,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_generator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     print, gen_instance_print,
-    unary_op, mp_generic_unary_op,
     iter, gen_instance_iternext,
     locals_dict, &gen_instance_locals_dict
     );

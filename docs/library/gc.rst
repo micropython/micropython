@@ -24,7 +24,7 @@ Functions
 
 .. function:: mem_alloc()
 
-   Return the number of bytes of heap RAM that are allocated.
+   Return the number of bytes of heap RAM that are allocated by Python code.
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -33,8 +33,8 @@ Functions
 
 .. function:: mem_free()
 
-   Return the number of bytes of available heap RAM, or -1 if this amount
-   is not known.
+   Return the number of bytes of heap RAM that is available for Python
+   code to allocate, or -1 if this amount is not known.
 
    .. admonition:: Difference to CPython
       :class: attention

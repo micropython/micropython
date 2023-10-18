@@ -47,7 +47,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/modstruct.c
     ${MICROPY_PY_DIR}/modsys.c
     ${MICROPY_PY_DIR}/modthread.c
-    ${MICROPY_PY_DIR}/moduerrno.c
+    ${MICROPY_PY_DIR}/moderrno.c
     ${MICROPY_PY_DIR}/mpprint.c
     ${MICROPY_PY_DIR}/mpstate.c
     ${MICROPY_PY_DIR}/mpz.c

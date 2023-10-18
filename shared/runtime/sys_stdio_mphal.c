@@ -89,18 +89,13 @@ STATIC mp_uint_t stdio_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg,
     (void)self_in;
     if (request == MP_STREAM_POLL) {
         return mp_hal_stdio_poll(arg);
+    } else if (request == MP_STREAM_CLOSE) {
+        return 0;
     } else {
         *errcode = MP_EINVAL;
         return MP_STREAM_ERROR;
     }
 }
-
-STATIC mp_obj_t stdio_obj___exit__(size_t n_args, const mp_obj_t *args) {
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stdio_obj___exit___obj, 4, 4, stdio_obj___exit__);
-
-// TODO gc hook to close the file if not already closed
 
 STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
     #if MICROPY_PY_SYS_STDIO_BUFFER
@@ -112,9 +107,8 @@ STATIC const mp_rom_map_elem_t stdio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readlines), MP_ROM_PTR(&mp_stream_unbuffered_readlines_obj)},
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&stdio_obj___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(stdio_locals_dict, stdio_locals_dict_table);

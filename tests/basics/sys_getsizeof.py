@@ -16,7 +16,7 @@ print(sys.getsizeof(A()) > 0)
 
 # Only test deque if we have it
 try:
-    from ucollections import deque
+    from collections import deque
     assert sys.getsizeof(deque((), 1)) > 0
 except ImportError:
     pass

@@ -17,11 +17,10 @@ NATMOD_EXAMPLE_DIR = "../examples/natmod/"
 
 # Supported tests and their corresponding mpy module
 TEST_MAPPINGS = {
-    "uheapq": "uheapq/uheapq_$(ARCH).mpy",
-    "urandom": "urandom/urandom_$(ARCH).mpy",
-    "ure": "ure/ure_$(ARCH).mpy",
-    "zlib": "zlib/zlib_$(ARCH).mpy",
-}
+    "heapq": "heapq/heapq_$(ARCH).mpy",
+    "random": "random/random_$(ARCH).mpy",
+    "re": "re/re_$(ARCH).mpy",
+    "zlib": "zlib/zlib_$(ARCH).mpy",}
 
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\
@@ -41,14 +40,14 @@ class __FS:
   def chdir(self, path):
     pass
   def stat(self, path):
-    if path == '__injected.mpy':
+    if path == '/__injected.mpy':
       return tuple(0 for _ in range(10))
     else:
       raise OSError(-2) # ENOENT
   def open(self, path, mode):
     return __File()
 os.mount(__FS(), '/__remote')
-os.chdir('/__remote')
+sys.path.insert(0, '/__remote')
 sys.modules['{}'] = __import__('__injected')
 """
 
@@ -106,9 +105,10 @@ def run_tests(target_truth, target, args, stats):
             test_file_data = f.read()
 
         # Create full test with embedded .mpy
+        test_script = b"import sys\nsys.path.remove('')\n\n"
         try:
             with open(NATMOD_EXAMPLE_DIR + test_mpy, "rb") as f:
-                test_script = b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
+                test_script += b"__buf=" + bytes(repr(f.read()), "ascii") + b"\n"
         except OSError:
             print("----  {} - mpy file not compiled".format(test_file))
             continue

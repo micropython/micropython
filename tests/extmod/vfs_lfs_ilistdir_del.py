@@ -2,9 +2,9 @@
 import gc
 
 try:
-    import uos
+    import os
 
-    uos.VfsLfs2
+    os.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -72,4 +72,4 @@ def test(bdev, vfs_class):
 
 
 bdev = RAMBlockDevice(30)
-test(bdev, uos.VfsLfs2)
+test(bdev, os.VfsLfs2)

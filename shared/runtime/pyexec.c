@@ -43,6 +43,8 @@
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
 
+// CIRCUITPY multiple changes for atexit(), interrupts
+
 #if CIRCUITPY_ATEXIT
 #include "shared-module/atexit/__init__.h"
 #endif
@@ -542,6 +544,8 @@ int pyexec_event_repl_process_char(int c) {
     return res;
 }
 
+MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
+
 #else // MICROPY_REPL_EVENT_DRIVEN
 
 int pyexec_raw_repl(void) {
@@ -639,7 +643,7 @@ friendly_repl_reset:
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs
             // interrupts to be enabled or no transfers occur. So we try to
-            // do the user a favor and reenable interrupts.
+            // do the user a favor and re-enable interrupts.
             if (query_irq() == IRQ_STATE_DISABLED) {
                 enable_irq(IRQ_STATE_ENABLED);
                 mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");
@@ -796,5 +800,3 @@ mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj, pyb_set_repl_info);
 #endif
-
-MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);

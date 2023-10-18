@@ -51,6 +51,7 @@ void vstr_init(vstr_t *vstr, size_t alloc) {
 // Init the vstr so it allocs exactly enough ram to hold a null-terminated
 // string of the given length, and set the length.
 void vstr_init_len(vstr_t *vstr, size_t len) {
+    // CIRCUITPY
     if (len == SIZE_MAX) {
         m_malloc_fail(len);
     }

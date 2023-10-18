@@ -28,7 +28,6 @@
 #include <string.h>
 
 #include "py/mpconfig.h"
-
 #if MICROPY_PY_COLLECTIONS_DEQUE
 
 #include "py/runtime.h"

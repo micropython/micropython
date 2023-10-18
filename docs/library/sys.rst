@@ -33,6 +33,7 @@ Constants
 
    * *name* - string "circuitpython"
    * *version* - tuple (major, minor, micro), e.g. (1, 7, 0)
+   * *_machine* - string describing the underlying machine
    * *_mpy* - supported mpy file-format version (optional attribute)
 
    This object is the recommended way to distinguish CircuitPython from other

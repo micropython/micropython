@@ -65,6 +65,8 @@ def test(bdev, vfs_class):
 
 
 try:
+    import os
+
     bdev = RAMBlockDevice(50)
 except MemoryError:
     print("SKIP")

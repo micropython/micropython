@@ -17,7 +17,7 @@ t0 = time.ticks_us()
 t1 = time.ticks_us()
 print(0 <= time.ticks_diff(t1, t0) <= 500)
 
-# ticks_cpu may not be implemented, at least make sre it doesn't decrease
+# ticks_cpu may not be implemented, at least make sure it doesn't decrease
 t0 = time.ticks_cpu()
 t1 = time.ticks_cpu()
 print(time.ticks_diff(t1, t0) >= 0)

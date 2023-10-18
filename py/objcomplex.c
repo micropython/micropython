@@ -36,6 +36,7 @@
 #include <math.h>
 #include "py/formatfloat.h"
 
+// CIRCUITPY compilation warning removal
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 

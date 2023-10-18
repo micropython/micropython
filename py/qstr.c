@@ -33,6 +33,8 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
+// CIRCUITPY changes for TRANSLATION
+
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind
 
@@ -119,6 +121,7 @@ extern const qstr_pool_t MICROPY_QSTR_EXTRA_POOL;
 #define CONST_POOL mp_qstr_const_pool
 #endif
 
+// CIRCUITPY
 void qstr_reset(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;

@@ -39,16 +39,19 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
 
+// CIRCUITPY: native_list() and other changes here for broadcom port
+// https://github.com/adafruit/circuitpython/pull/5610
+
 /******************************************************************************/
 /* list                                                                       */
 
 STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_list_t *o = MP_OBJ_TO_PTR(o_in);
     const char *item_separator = ", ";
-    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
+    if (!(MICROPY_PY_JSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     } else {
-        #if MICROPY_PY_UJSON_SEPARATORS
+        #if MICROPY_PY_JSON_SEPARATORS
         item_separator = MP_PRINT_GET_EXT(print)->item_separator;
         #endif
     }
@@ -290,6 +293,7 @@ inline mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
     return ret;
 }
 
+// CIRCUITPY
 STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_list));
     mp_obj_list_t *self = native_list(args[0]);

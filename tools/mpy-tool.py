@@ -33,9 +33,9 @@ if platform.python_version_tuple()[0] == "2":
 
     str_cons = lambda val, enc=None: str(val)
     bytes_cons = lambda val, enc=None: bytearray(val)
-    is_str_type = lambda o: type(o) is str
+    is_str_type = lambda o: isinstance(o, str)
     is_bytes_type = lambda o: type(o) is bytearray
-    is_int_type = lambda o: type(o) is int or type(o) is long
+    is_int_type = lambda o: isinstance(o, int) or isinstance(o, long)  # noqa: F821
 
     def hexlify_to_str(b):
         x = hexlify_py2(b)
@@ -46,9 +46,9 @@ else:
 
     str_cons = str
     bytes_cons = bytes
-    is_str_type = lambda o: type(o) is str
-    is_bytes_type = lambda o: type(o) is bytes
-    is_int_type = lambda o: type(o) is int
+    is_str_type = lambda o: isinstance(o, str)
+    is_bytes_type = lambda o: isinstance(o, bytes)
+    is_int_type = lambda o: isinstance(o, int)
 
     def hexlify_to_str(b):
         return str(hexlify(b, ":"), "ascii")
@@ -127,9 +127,9 @@ MP_PERSISTENT_OBJ_COMPLEX = 9
 MP_PERSISTENT_OBJ_TUPLE = 10
 
 # Circuitpython: this does not match upstream because we added MP_SCOPE_FLAG_ASYNC
-MP_SCOPE_FLAG_VIPERRELOC = 0x10
-MP_SCOPE_FLAG_VIPERRODATA = 0x20
-MP_SCOPE_FLAG_VIPERBSS = 0x40
+MP_SCOPE_FLAG_VIPERRELOC = 0x20
+MP_SCOPE_FLAG_VIPERRODATA = 0x40
+MP_SCOPE_FLAG_VIPERBSS = 0x80
 
 MP_BC_MASK_EXTRA_BYTE = 0x9E
 
@@ -755,7 +755,7 @@ class CompiledModule:
                 const_int_content += (digs.count(",") + 1) * bits_per_dig // 8
                 const_obj_content += 4 * 4
                 return "MP_ROM_PTR(&%s)" % obj_name
-        elif type(obj) is float:
+        elif isinstance(obj, float):
             macro_name = "%s_macro" % obj_name
             print(
                 "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
@@ -776,7 +776,7 @@ class CompiledModule:
             print("#endif")
             const_obj_content += 3 * 4
             return macro_name
-        elif type(obj) is complex:
+        elif isinstance(obj, complex):
             print(
                 "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
                 % (obj_name, obj.real, obj.imag)
@@ -1119,7 +1119,6 @@ class RawCodeNative(RawCode):
 
         i_top = len(self.fun_data)
         i = 0
-        qi = 0
         while i < i_top:
             # copy machine code (max 16 bytes)
             i16 = min(i + 16, i_top)
@@ -1275,7 +1274,7 @@ def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERRODATA:
                     rodata_size = reader.read_uint()
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERBSS:
-                    bss_size = reader.read_uint()
+                    reader.read_uint()  # bss_size
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERRODATA:
                     reader.read_bytes(rodata_size)
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC:
@@ -1284,10 +1283,10 @@ def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
                         if op == 0xFF:
                             break
                         if op & 1:
-                            addr = reader.read_uint()
+                            reader.read_uint()  # addr
                         op >>= 1
                         if op <= 5 and op & 1:
-                            n = reader.read_uint()
+                            reader.read_uint()  # n
             else:
                 assert kind == MP_CODE_NATIVE_ASM
                 native_n_pos_args = reader.read_uint()

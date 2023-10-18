@@ -28,6 +28,8 @@
 
 #include "py/obj.h"
 
+// CIRCUITPY multiple changes
+
 typedef enum {
     PYEXEC_MODE_FRIENDLY_REPL,
     PYEXEC_MODE_RAW_REPL,

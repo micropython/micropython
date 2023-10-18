@@ -116,6 +116,7 @@ bool mp_obj_is_native_exception_instance(mp_obj_t self_in) {
     return MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(self_in), make_new) == mp_obj_exception_make_new;
 }
 
+// CIRCUITPY
 mp_obj_exception_t *mp_obj_exception_get_native(mp_obj_t self_in) {
     assert(mp_obj_is_exception_instance(self_in));
     if (mp_obj_is_native_exception_instance(self_in)) {
@@ -179,7 +180,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
             return;
         }
 
-        #if MICROPY_PY_UERRNO
+        #if MICROPY_PY_ERRNO
         // try to provide a nice OSError error message
         if (o->base.type == &mp_type_OSError && o->args->len > 0 && o->args->len < 3 && mp_obj_is_small_int(o->args->items[0])) {
             // CIRCUITPY can print a whole string, not just the errno qstr
@@ -223,6 +224,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     // Populate the exception object
     o_exc->base.type = type;
+    // CIRCUITPY
     o_exc->traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
 
     mp_obj_tuple_t *o_tuple;
@@ -263,6 +265,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 // Get exception "value" - that is, first argument, or None
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in) {
+    // CIRCUITPY
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
     if (self->args->len == 0) {
         return mp_const_none;
@@ -276,6 +279,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_exception_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] != MP_OBJ_NULL) {
         // store/delete attribute
+        // CIRCUITPY changes till end of function
         #if MICROPY_CONST_GENERATOREXIT_OBJ
         if (self == &mp_const_GeneratorExit_obj) {
             mp_raise_AttributeError(MP_ERROR_TEXT("can't set attribute"));
@@ -406,6 +410,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(BlockingIOError, OSError)
     MP_DEFINE_EXCEPTION(ChildProcessError, OSError)
     */
+    // CIRCUITPY
     MP_DEFINE_EXCEPTION(ConnectionError, OSError)
       MP_DEFINE_EXCEPTION(BrokenPipeError, ConnectionError)
     /*
@@ -418,6 +423,7 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
     MP_DEFINE_EXCEPTION(PermissionError, OSError)
     MP_DEFINE_EXCEPTION(ProcessLookupError, OSError)
     */
+    // CIRCUITPY
     MP_DEFINE_EXCEPTION(TimeoutError, OSError)
     /*
     MP_DEFINE_EXCEPTION(FileExistsError, OSError)
@@ -472,6 +478,7 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
 
 #if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
+    // CIRCUITPY is different here and for many lines below.
     return mp_obj_new_exception_msg_varg(exc_type, msg);
 }
 
@@ -705,6 +712,7 @@ void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values
     }
 }
 
+// CIRCUITPY
 #if MICROPY_PY_SYS_EXC_INFO
 STATIC const mp_obj_namedtuple_type_t code_type_obj = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_code),

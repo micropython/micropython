@@ -1,7 +1,6 @@
 # check cases converting float to int, requiring double precision float
 
 import struct
-
 import sys
 
 maxsize_bits = 0

@@ -376,6 +376,7 @@ int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, c
 }
 #endif
 
+// CIRCUITPY
 static int print_str_common(const mp_print_t *print, const char *str, int prec, size_t len, int flags, int fill, int width) {
     if (prec >= 0 && (size_t)prec < len) {
         len = prec;

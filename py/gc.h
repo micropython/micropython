@@ -34,6 +34,7 @@
 #include "py/mpstate.h"
 #include "py/misc.h"
 
+// CIRCUITPY - this may change when use split heap
 #if !MICROPY_GC_SPLIT_HEAP
 #define HEAP_PTR(ptr) ( \
     MP_STATE_MEM(area).gc_pool_start != 0                     /* Not on the heap if it isn't inited */ \
@@ -41,6 +42,7 @@
     && ptr < (void *)MP_STATE_MEM(area).gc_pool_end           /* must be below end of pool */ \
     )
 
+// CIRCUITPY: defined here so available outside of gc.c
 // ptr should be of type void*
 #define VERIFY_PTR(ptr) ( \
     ((uintptr_t)(ptr) & (MICROPY_BYTES_PER_GC_BLOCK - 1)) == 0          /* must be aligned on a block */ \
@@ -49,12 +51,19 @@
 #endif
 
 void gc_init(void *start, void *end);
+// CIRCUITPY
 void gc_deinit(void);
 
 #if MICROPY_GC_SPLIT_HEAP
 // Used to add additional memory areas to the heap.
 void gc_add(void *start, void *end);
-#endif
+
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+// Port must implement this function to return the maximum available block of
+// RAM to allocate a new heap area into using MP_PLAT_ALLOC_HEAP.
+size_t gc_get_max_new_split(void);
+#endif // MICROPY_GC_SPLIT_HEAP_AUTO
+#endif // MICROPY_GC_SPLIT_HEAP
 
 // These lock/unlock functions can be nested.
 // They can be used to prevent the GC from allocating/freeing.
@@ -65,10 +74,12 @@ bool gc_is_locked(void);
 // A given port must implement gc_collect by using the other collect functions.
 void gc_collect(void);
 void gc_collect_start(void);
+// CIRCUITPY
 void gc_collect_ptr(void *ptr);
 void gc_collect_root(void **ptrs, size_t len);
 void gc_collect_end(void);
 
+// CIRCUITPY
 // Is the gc heap available?
 bool gc_alloc_possible(void);
 
@@ -85,6 +96,7 @@ size_t gc_nbytes(const void *ptr);
 bool gc_has_finaliser(const void *ptr);
 void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);
 
+// CIRCUITPY
 // Prevents a pointer from ever being freed because it establishes a permanent reference to it. Use
 // very sparingly because it can leak memory.
 bool gc_never_free(void *ptr);
@@ -97,6 +109,9 @@ typedef struct _gc_info_t {
     size_t num_1block;
     size_t num_2block;
     size_t max_block;
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    size_t max_new_split;
+    #endif
 } gc_info_t;
 
 void gc_info(gc_info_t *info);

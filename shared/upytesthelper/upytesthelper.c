@@ -31,6 +31,14 @@
 #include "py/compile.h"
 #include "upytesthelper.h"
 
+#if !MICROPY_PY_SYS_PATH
+#error "upytesthelper requires MICROPY_PY_SYS_PATH=1"
+#endif
+
+#if !MICROPY_PY_SYS_ARGV
+#error "upytesthelper requires MICROPY_PY_SYS_ARGV=1"
+#endif
+
 static const char *test_exp_output;
 static int test_exp_output_len, test_rem_output_len;
 static int test_failed;
@@ -60,8 +68,8 @@ bool upytest_is_failed(void) {
 }
 
 // MP_PLAT_PRINT_STRN() should be redirected to this function.
-// It will pass-thru any content to mp_hal_stdout_tx_strn_cooked()
-// (the dfault value of MP_PLAT_PRINT_STRN), but will also match
+// It will pass-through any content to mp_hal_stdout_tx_strn_cooked()
+// (the default value of MP_PLAT_PRINT_STRN), but will also match
 // it to the expected output as set by upytest_set_expected_output().
 // If mismatch happens, upytest_is_failed() returns true.
 void upytest_output(const char *str, mp_uint_t len) {
@@ -93,7 +101,7 @@ void upytest_execute_test(const char *src) {
     // reinitialized before running each.
     gc_init(heap_start, heap_end);
     mp_init();
-    mp_obj_list_init(mp_sys_path, 0);
+    mp_sys_path = mp_obj_new_list(0, NULL);
     #if MICROPY_MODULE_FROZEN
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__dot_frozen));
     #endif

@@ -40,6 +40,8 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
+// CIRCUITPY a number of changes
+
 #define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
 
 // flags for readline_t.auto_indent_state

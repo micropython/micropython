@@ -82,6 +82,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
     }
 }
 
+// CIRCUITPY differences
 // This wrapper function is allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
 STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -127,6 +128,7 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
     return o;
 }
 
+// CIRCUITPY
 // When instances are first created they have the base_init wrapper as their native parent's
 // instance because make_new combines __new__ and __init__. This object is invalid for the native
 // code so it must call this method to ensure that the given object has been __init__'d and is
@@ -301,6 +303,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 
     // TODO: CPython prints fully-qualified type name
+    // CIRCUITPY: use qstr
     mp_printf(print, "<%q object at %p>", mp_obj_get_type_qstr(self_in), self);
 }
 
@@ -401,7 +404,7 @@ const byte mp_unary_op_method_name[MP_UNARY_OP_NUM_RUNTIME] = {
     [MP_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [MP_UNARY_OP_LEN] = MP_QSTR___len__,
     [MP_UNARY_OP_HASH] = MP_QSTR___hash__,
-    [MP_UNARY_OP_INT] = MP_QSTR___int__,
+    [MP_UNARY_OP_INT_MAYBE] = MP_QSTR___int__,
     #if MICROPY_PY_ALL_SPECIAL_METHODS
     [MP_UNARY_OP_POSITIVE] = MP_QSTR___pos__,
     [MP_UNARY_OP_NEGATIVE] = MP_QSTR___neg__,
@@ -459,7 +462,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 // __hash__ must return a small int
                 val = MP_OBJ_NEW_SMALL_INT(mp_obj_get_int_truncated(val));
                 break;
-            case MP_UNARY_OP_INT:
+            case MP_UNARY_OP_INT_MAYBE:
                 // Must return int
                 if (!mp_obj_is_int(val)) {
                     mp_raise_TypeError(NULL);
@@ -561,7 +564,6 @@ STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = MP_OBJ_TO_PTR(lhs_in);
-retry:;
     qstr op_name = mp_binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -586,22 +588,12 @@ retry:;
         res = mp_call_method_n_kw(1, 0, dest);
         res = op == MP_BINARY_OP_CONTAINS ? mp_obj_new_bool(mp_obj_is_true(res)) : res;
     } else {
-        // If this was an inplace method, fallback to normal method
-        // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
-        // "If a specific method is not defined, the augmented assignment
-        // falls back to the normal methods."
-        if (op >= MP_BINARY_OP_INPLACE_OR && op <= MP_BINARY_OP_INPLACE_POWER) {
-            op -= MP_BINARY_OP_INPLACE_OR - MP_BINARY_OP_OR;
-            goto retry;
-        }
         return MP_OBJ_NULL; // op not supported
     }
 
     #if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
     // NotImplemented means "try other fallbacks (like calling __rop__
-    // instead of __op__) and if nothing works, raise TypeError". As
-    // MicroPython doesn't implement any fallbacks, signal to raise
-    // TypeError right away.
+    // instead of __op__) and if nothing works, raise TypeError".
     if (res == mp_const_notimplemented) {
         return MP_OBJ_NULL; // op not supported
     }
@@ -740,6 +732,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
             // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
+            // CIRCUITPY: variable number of proxies
             size_t n_proxy;
             const mp_obj_t *proxy = mp_obj_property_get(member[0], &n_proxy);
             mp_obj_t dest[2] = {self_in, value};
@@ -1141,7 +1134,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, type_make_new,
     print, type_print,
     call, type_call,
-    unary_op, mp_generic_unary_op,
     attr, type_attr
     );
 

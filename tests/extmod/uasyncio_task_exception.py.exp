@@ -1,6 +1,0 @@
-create
-sleep 1
-raise
-sleep 2
-exception handler OSError
-await

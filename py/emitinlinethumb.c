@@ -74,6 +74,7 @@ static inline bool emit_inline_thumb_allow_float(emit_inline_asm_t *emit) {
 
 #endif
 
+// CIRCUITPY
 STATIC void emit_inline_thumb_error_msg(emit_inline_asm_t *emit, const compressed_string_t *msg) {
     *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
 }

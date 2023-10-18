@@ -25,6 +25,7 @@
  */
 
 #include "py/mpstate.h"
+// CIRCUITPY
 #include "supervisor/linker.h"
 
 #if MICROPY_DYNAMIC_COMPILER

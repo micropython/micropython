@@ -31,6 +31,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// CIRCUITPY thoroughly reworked
+
 typedef struct _ringbuf_t {
     uint8_t *buf;
     uint32_t size;
@@ -61,5 +63,8 @@ size_t ringbuf_get_n(ringbuf_t *r, uint8_t *buf, size_t bufsize);
 // Note: big-endian. Return -1 if can't read or write two bytes.
 int ringbuf_get16(ringbuf_t *r);
 int ringbuf_put16(ringbuf_t *r, uint16_t v);
+
+int ringbuf_get_bytes(ringbuf_t *r, uint8_t *data, size_t data_len);
+int ringbuf_put_bytes(ringbuf_t *r, const uint8_t *data, size_t data_len);
 
 #endif // MICROPY_INCLUDED_PY_RINGBUF_H

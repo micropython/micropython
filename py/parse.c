@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     RULE_const_object, // special node for a constant, generic Python object
@@ -69,7 +69,7 @@ enum {
 // define rules without a compile function
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_##rule,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -86,7 +86,7 @@ STATIC const uint8_t rule_act_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...) kind,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -94,7 +94,7 @@ STATIC const uint8_t rule_act_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) kind,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -115,13 +115,13 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...) __VA_ARGS__,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...)  __VA_ARGS__,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -141,12 +141,12 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 enum {
 #define DEF_RULE(rule, comp, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -164,13 +164,13 @@ enum {
 STATIC const uint8_t rule_arg_offset_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     0, // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -187,20 +187,20 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-    0;
+0;
 
 #if MICROPY_DEBUG_PARSE_RULE_NAME
 // Define an array of rule names corresponding to each rule
 STATIC const char *const rule_name_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) #rule,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     "", // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) #rule,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -242,6 +242,8 @@ typedef struct _parser_t {
     #endif
 } parser_t;
 
+STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
+
 STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     size_t off = rule_arg_offset_table[r_id];
     if (r_id >= FIRST_RULE_WITH_OFFSET_ABOVE_255) {
@@ -250,6 +252,7 @@ STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     return &rule_arg_combined_table[off];
 }
 
+// CIRCUITPY ignore compiler warning
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 
@@ -634,10 +637,12 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     push_result_node(parser, pn);
 }
 
+#if MICROPY_COMP_CONST_FOLDING
+
 #if MICROPY_COMP_MODULE_CONST
 STATIC const mp_rom_map_elem_t mp_constants_table[] = {
-    #if MICROPY_PY_UERRNO
-    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+    #if MICROPY_PY_ERRNO
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_errno) },
     #endif
     #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
@@ -899,7 +904,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
 
     return true;
 }
-#endif
+
+#endif // MICROPY_COMP_CONST_FOLDING
 
 #if MICROPY_COMP_CONST_TUPLE
 STATIC bool build_tuple_from_stack(parser_t *parser, size_t src_line, size_t num_args) {
@@ -1012,7 +1018,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 
     #if MICROPY_COMP_CONST_TUPLE
     if (build_tuple(parser, src_line, rule_id, num_args)) {
-        // we built a tuple from this rule so return straight away
+        // we built a tuple from this rule so return straightaway
         return;
     }
     #endif
@@ -1031,6 +1037,9 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 }
 
 mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
+    // Set exception handler to free the lexer if an exception is raised.
+    MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, mp_lexer_free, lex);
+    nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
 
     // initialise parser and allocate memory for its stacks
 
@@ -1038,6 +1047,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
     parser.rule_stack_top = 0;
+    // CIRCUITPY make parsing more memory flexible
+    // https://github.com/adafruit/circuitpython/pull/552
     parser.rule_stack = NULL;
     while (parser.rule_stack_alloc > 1) {
         parser.rule_stack = m_new_maybe(rule_stack_t, parser.rule_stack_alloc);
@@ -1121,7 +1132,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     backtrack = false;
                 }
                 for (; i < n; ++i) {
-                    // printf("--> inside for @L924\n");
                     uint16_t kind = rule_arg[i] & RULE_ARG_KIND_MASK;
                     if (kind == RULE_ARG_TOK) {
                         if (lex->tok_kind == (rule_arg[i] & RULE_ARG_ARG_MASK)) {
@@ -1398,8 +1408,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
 
-    // we also free the lexer on behalf of the caller
-    mp_lexer_free(lex);
+    // Deregister exception handler and free the lexer.
+    nlr_pop_jump_callback(true);
 
     return parser.tree;
 }

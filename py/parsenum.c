@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     mp_obj_t ret_val;
 
     // check radix base
+    // CIRCUITPY use validator
     if (base != 0) {
         // this won't be reached if lex!=NULL
         mp_arg_validate_int_range(base, 2, 36, MP_QSTR_base);
@@ -214,7 +215,7 @@ static void accept_digit(mp_float_t *p_dec_val, int dig, int *p_exp_extra, int i
         }
     }
 }
-#endif // MICROPY_BUILTINS_FLOAT
+#endif // MICROPY_PY_BUILTINS_FLOAT
 
 #if MICROPY_PY_BUILTINS_COMPLEX
 mp_obj_t mp_parse_num_decimal(const char *str, size_t len, bool allow_imag, bool force_complex, mp_lexer_t *lex)

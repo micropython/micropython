@@ -7,6 +7,7 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
+# CIRCUITPY
 TRANSLATION ?= en_US
 
 # If qstr autogeneration is not disabled we specify the output header
@@ -203,7 +204,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	modmicropython.o \
 	modstruct.o \
 	modsys.o \
-	moduerrno.o \
+	moderrno.o \
 	modthread.o \
 	vm.o \
 	bc.o \

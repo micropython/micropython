@@ -255,7 +255,7 @@ STATIC void compile_error_set_line(compiler_t *comp, mp_parse_node_t pn) {
     }
 }
 
-STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const compressed_string_t *msg) {
+STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, mp_rom_error_text_t msg) {
     // only register the error if there has been no other error
     if (comp->compile_error == MP_OBJ_NULL) {
         comp->compile_error = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
@@ -422,21 +422,6 @@ STATIC void c_if_cond(compiler_t *comp, mp_parse_node_t pn, bool jump_if, int la
             }
         } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_not_test_2) {
             c_if_cond(comp, pns->nodes[0], !jump_if, label);
-            return;
-        } else if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_atom_paren) {
-            // cond is something in parenthesis
-            if (MP_PARSE_NODE_IS_NULL(pns->nodes[0])) {
-                // empty tuple, acts as false for the condition
-                if (jump_if == false) {
-                    EMIT_ARG(jump, label);
-                }
-            } else {
-                assert(MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_testlist_comp));
-                // non-empty tuple, acts as true for the condition
-                if (jump_if == true) {
-                    EMIT_ARG(jump, label);
-                }
-            }
             return;
         }
     }
@@ -850,21 +835,12 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_par
     qstr attr = MP_PARSE_NODE_LEAF_ARG(name_nodes[1]);
     if (attr == MP_QSTR_bytecode) {
         *emit_options = MP_EMIT_OPT_BYTECODE;
-        // @micropython.native decorator.
+    #if MICROPY_EMIT_NATIVE
     } else if (attr == MP_QSTR_native) {
-        // CIRCUITPY
-        // Different from MicroPython: native doesn't raise SyntaxError if native support isn't
-        // compiled, it just passes through the function unmodified.
-        #if MICROPY_EMIT_NATIVE
         *emit_options = MP_EMIT_OPT_NATIVE_PYTHON;
-        #else
-        return true;
-        #endif
-        #if MICROPY_EMIT_NATIVE
-        // @micropython.viper decorator.
     } else if (attr == MP_QSTR_viper) {
         *emit_options = MP_EMIT_OPT_VIPER;
-        #endif
+    #endif
         #if MICROPY_EMIT_INLINE_ASM
     #if MICROPY_DYNAMIC_COMPILER
     } else if (attr == MP_QSTR_asm_thumb) {
@@ -883,11 +859,11 @@ STATIC bool compile_built_in_decorator(compiler_t *comp, size_t name_len, mp_par
     #if MICROPY_EMIT_NATIVE && MICROPY_DYNAMIC_COMPILER
     if (*emit_options == MP_EMIT_OPT_NATIVE_PYTHON || *emit_options == MP_EMIT_OPT_VIPER) {
         if (emit_native_table[mp_dynamic_compiler.native_arch] == NULL) {
-            compile_syntax_error(comp, name_nodes[1], MP_ERROR_TEXT("invalid architecture"));
+            compile_syntax_error(comp, name_nodes[1], MP_ERROR_TEXT("invalid arch"));
         }
     } else if (*emit_options == MP_EMIT_OPT_ASM) {
         if (emit_asm_table[mp_dynamic_compiler.native_arch] == NULL) {
-            compile_syntax_error(comp, name_nodes[1], MP_ERROR_TEXT("invalid architecture"));
+            compile_syntax_error(comp, name_nodes[1], MP_ERROR_TEXT("invalid arch"));
         }
     }
     #endif
@@ -947,7 +923,7 @@ STATIC void compile_decorated(compiler_t *comp, mp_parse_node_struct_t *pns) {
         mp_parse_node_struct_t *pns0 = (mp_parse_node_struct_t *)pns_body->nodes[0];
         body_name = compile_funcdef_helper(comp, pns0, emit_options);
         scope_t *fscope = (scope_t *)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_ASYNC;
+        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     #endif
     } else {
         assert(MP_PARSE_NODE_STRUCT_KIND(pns_body) == PN_classdef); // should be
@@ -1031,16 +1007,13 @@ STATIC void compile_del_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
 
 STATIC void compile_break_cont_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
     uint16_t label;
-    const compressed_string_t *error_msg;
     if (MP_PARSE_NODE_STRUCT_KIND(pns) == PN_break_stmt) {
         label = comp->break_label;
-        error_msg = MP_ERROR_TEXT("'break' outside loop");
     } else {
         label = comp->continue_label;
-        error_msg = MP_ERROR_TEXT("'continue' outside loop");
     }
     if (label == INVALID_LABEL) {
-        compile_syntax_error(comp, (mp_parse_node_t)pns, error_msg);
+        compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("'break'/'continue' outside loop"));
     }
     assert(comp->cur_except_level >= comp->break_continue_except_level);
     EMIT_ARG(unwind_jump, label, comp->cur_except_level - comp->break_continue_except_level);
@@ -1795,17 +1768,21 @@ STATIC void compile_await_object_method(compiler_t *comp, qstr method) {
 }
 
 STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
-    // comp->break_label |= MP_EMIT_BREAK_FROM_FOR;
-    qstr context = MP_PARSE_NODE_LEAF_ARG(pns->nodes[1]);
+    // Allocate labels.
     uint while_else_label = comp_next_label(comp);
     uint try_exception_label = comp_next_label(comp);
     uint try_else_label = comp_next_label(comp);
     uint try_finally_label = comp_next_label(comp);
 
+    // Stack: (...)
+
+    // Compile the iterator expression and load and call its __aiter__ method.
     compile_node(comp, pns->nodes[1]); // iterator
+    // Stack: (..., iterator)
     EMIT_ARG(load_method, MP_QSTR___aiter__, false);
+    // Stack: (..., iterator, __aiter__)
     EMIT_ARG(call_method, 0, 0, 0);
-    compile_store_id(comp, context);
+    // Stack: (..., iterable)
 
     START_BREAK_CONTINUE_BLOCK
 
@@ -1813,9 +1790,15 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
 
     compile_increase_except_level(comp, try_exception_label, MP_EMIT_SETUP_BLOCK_EXCEPT);
 
-    compile_load_id(comp, context);
+    EMIT(dup_top);
+    // Stack: (..., iterable, iterable)
+
+    // Compile: yield from iterable.__anext__()
     compile_await_object_method(comp, MP_QSTR___anext__);
+    // Stack: (..., iterable, yielded_value)
+
     c_assign(comp, pns->nodes[0], ASSIGN_STORE); // variable
+    // Stack: (..., iterable)
     EMIT_ARG(pop_except_jump, try_else_label, false);
 
     EMIT_ARG(label_assign, try_exception_label);
@@ -1832,6 +1815,8 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     compile_decrease_except_level(comp);
     EMIT(end_except_handler);
 
+    // Stack: (..., iterable)
+
     EMIT_ARG(label_assign, try_else_label);
     compile_node(comp, pns->nodes[2]); // body
 
@@ -1843,6 +1828,10 @@ STATIC void compile_async_for_stmt(compiler_t *comp, mp_parse_node_struct_t *pns
     compile_node(comp, pns->nodes[3]); // else
 
     EMIT_ARG(label_assign, break_label);
+    // Stack: (..., iterable)
+
+    EMIT(pop_top);
+    // Stack: (...)
 }
 
 STATIC void compile_async_with_stmt_helper(compiler_t *comp, size_t n, mp_parse_node_t *nodes, mp_parse_node_t body) {
@@ -1974,13 +1963,13 @@ STATIC void compile_async_stmt(compiler_t *comp, mp_parse_node_struct_t *pns) {
         // async def
         compile_funcdef(comp, pns0);
         scope_t *fscope = (scope_t *)pns0->nodes[4];
-        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR | MP_SCOPE_FLAG_ASYNC;
+        fscope->scope_flags |= MP_SCOPE_FLAG_GENERATOR;
     } else {
         // async for/with; first verify the scope is a generator
         int scope_flags = comp->scope_cur->scope_flags;
         if (!(scope_flags & MP_SCOPE_FLAG_GENERATOR)) {
             compile_syntax_error(comp, (mp_parse_node_t)pns0,
-                MP_ERROR_TEXT("'await', 'async for' or 'async with' outside async function"));
+                MP_ERROR_TEXT("async for/with outside async function"));
             return;
         }
 
@@ -2749,12 +2738,6 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
         reserve_labels_for_native(comp, 1);
     } else if (MP_PARSE_NODE_IS_STRUCT_KIND(pns->nodes[0], PN_yield_arg_from)) {
         pns = (mp_parse_node_struct_t *)pns->nodes[0];
-        #if MICROPY_PY_ASYNC_AWAIT
-        if ((comp->scope_cur->scope_flags & MP_SCOPE_FLAG_ASYNC) != 0) {
-            compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("'yield from' inside async function"));
-            return;
-        }
-        #endif
         compile_node(comp, pns->nodes[0]);
         compile_yield_from(comp);
     } else {
@@ -2771,15 +2754,7 @@ STATIC void compile_atom_expr_await(compiler_t *comp, mp_parse_node_struct_t *pn
         return;
     }
     compile_atom_expr_normal(comp, pns);
-
-    // If it's an awaitable thing, need to reach for the __await__ method for the coroutine.
-    // async def functions' __await__ return themselves, which are able to receive a send(),
-    // while other types with custom __await__ implementations return async generators.
-    EMIT_ARG(load_method, MP_QSTR___await__, false);
-    EMIT_ARG(call_method, 0, 0, 0);
-    EMIT_ARG(load_const_tok, MP_TOKEN_KW_NONE);
-    EMIT_ARG(yield, MP_EMIT_YIELD_FROM);
-    reserve_labels_for_native(comp, 3);
+    compile_yield_from(comp);
 }
 #endif
 

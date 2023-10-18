@@ -188,7 +188,7 @@ STATIC mp_obj_t mp_builtin_dir(size_t n_args, const mp_obj_t *args) {
         // Implemented by probing all possible qstrs with mp_load_method_maybe
         size_t nqstr = QSTR_TOTAL();
         for (size_t i = MP_QSTR_ + 1; i < nqstr; ++i) {
-            // CIRCUITPY changes #6539
+            // CIRCUITPY changes PR #6539
             mp_obj_t dest[2] = {};
             mp_load_method_protected(args[0], i, dest, true);
             if (dest[0] != MP_OBJ_NULL) {
@@ -398,6 +398,7 @@ STATIC mp_obj_t mp_builtin_pow(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_pow_obj, 2, 3, mp_builtin_pow);
 
+// CIRCUITPY adds flush()
 STATIC mp_obj_t mp_builtin_print(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sep, ARG_end, ARG_flush, ARG_file };
     static const mp_arg_t allowed_args[] = {

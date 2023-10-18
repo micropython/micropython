@@ -45,11 +45,17 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
-    // save context and set new context
-    mp_obj_dict_t *old_globals = mp_globals_get();
-    mp_obj_dict_t *old_locals = mp_locals_get();
+    // save context
+    nlr_jump_callback_node_globals_locals_t ctx;
+    ctx.globals = mp_globals_get();
+    ctx.locals = mp_locals_get();
+
+    // set new context
     mp_globals_set(globals);
     mp_locals_set(locals);
+
+    // set exception handler to restore context if an exception is raised
+    nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
     // a bit of a hack: fun_bc will re-set globals, so need to make sure it's
     // the correct one
@@ -59,19 +65,13 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     }
 
     // execute code
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t ret = mp_call_function_0(self->module_fun);
-        nlr_pop();
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        return ret;
-    } else {
-        // exception; restore context and re-raise same exception
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        nlr_jump(nlr.ret_val);
-    }
+    mp_obj_t ret = mp_call_function_0(self->module_fun);
+
+    // deregister exception handler and restore context
+    nlr_pop_jump_callback(true);
+
+    // return value
+    return ret;
 }
 
 STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {

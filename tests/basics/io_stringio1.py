@@ -1,7 +1,6 @@
 import io
-
 a = io.StringIO()
-print("io.StringIO" in repr(a))
+print('io.StringIO' in repr(a))
 print(a.getvalue())
 print(a.read())
 
@@ -37,7 +36,7 @@ print(a.tell())
 
 a = io.StringIO()
 a.close()
-for f in [a.read, a.getvalue, lambda: a.write("")]:
+for f in [a.read, a.getvalue, lambda:a.write("")]:
     # CPython throws for operations on closed I/O, MicroPython makes
     # the underlying string empty unless MICROPY_CPYTHON_COMPAT defined
     try:

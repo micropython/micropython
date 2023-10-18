@@ -33,13 +33,17 @@
 // Enable extra Unix features.
 #include "../mpconfigvariant_common.h"
 
+// Enable testing of split heap.
+#define MICROPY_GC_SPLIT_HEAP          (1)
+#define MICROPY_GC_SPLIT_HEAP_N_HEAPS  (4)
+
 // Enable additional features.
 #define MICROPY_DEBUG_PARSE_RULE_NAME  (1)
 #define MICROPY_TRACKED_ALLOC          (1)
 #define MICROPY_WARNINGS_CATEGORY      (1)
 
-// Disable things never used in circuitpython
-#define MICROPY_PY_UCRYPTOLIB          (0)
-#define MICROPY_PY_UCRYPTOLIB_CTR      (0)
+// CIRCUITPY Disable things never used in circuitpython
+#define MICROPY_PY_CRYPTOLIB          (0)
+#define MICROPY_PY_CRYPTOLIB_CTR      (0)
 #define MICROPY_PY_STRUCT              (0) // uses shared-bindings struct
 #define MICROPY_GC_SPLIT_HEAP          (0)

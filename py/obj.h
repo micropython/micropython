@@ -34,6 +34,7 @@
 #include "py/mpprint.h"
 #include "py/runtime0.h"
 
+// CIRCUITPY
 #include "supervisor/shared/translate/compressed_string.h"
 
 // This is the definition of the opaque MicroPython object type.
@@ -465,6 +466,13 @@ typedef struct _mp_rom_obj_t { mp_const_obj_t o; } mp_rom_obj_t;
 // param obj_module: mp_obj_module_t instance
 #define MP_REGISTER_MODULE(module_name, obj_module)
 
+// As above, but allow this module to be extended from the filesystem.
+#define MP_REGISTER_EXTENSIBLE_MODULE(module_name, obj_module)
+
+// Add a custom handler for a builtin module that will be called to delegate
+// failed attribute lookups.
+#define MP_REGISTER_MODULE_DELEGATION(obj_module, fun_name)
+
 // Declare a root pointer (to avoid garbage collection of a global static variable).
 // param variable_declaration: a valid C variable declaration
 #define MP_REGISTER_ROOT_POINTER(variable_declaration)
@@ -825,6 +833,7 @@ extern const mp_obj_type_t mp_type_bytearray;
 extern const mp_obj_type_t mp_type_memoryview;
 extern const mp_obj_type_t mp_type_float;
 extern const mp_obj_type_t mp_type_complex;
+// CIRCUITPY
 extern const mp_obj_type_t mp_type_traceback;
 extern const mp_obj_type_t mp_type_tuple;
 extern const mp_obj_type_t mp_type_list;
@@ -842,10 +851,13 @@ extern const mp_obj_type_t mp_type_zip;
 extern const mp_obj_type_t mp_type_array;
 extern const mp_obj_type_t mp_type_super;
 extern const mp_obj_type_t mp_type_gen_wrap;
+// CIRCUITPY distinguishes generators and coroutines
 extern const mp_obj_type_t mp_type_coro_wrap;
 extern const mp_obj_type_t mp_type_native_gen_wrap;
+// CIRCUITPY distinguishes generators and coroutines
 extern const mp_obj_type_t mp_type_native_coro_wrap;
 extern const mp_obj_type_t mp_type_gen_instance;
+// CIRCUITPY distinguishes generators and coroutines
 extern const mp_obj_type_t mp_type_coro_instance;
 extern const mp_obj_type_t mp_type_fun_builtin_0;
 extern const mp_obj_type_t mp_type_fun_builtin_1;
@@ -877,6 +889,7 @@ extern const mp_obj_type_t mp_type_ImportError;
 extern const mp_obj_type_t mp_type_IndentationError;
 extern const mp_obj_type_t mp_type_IndexError;
 extern const mp_obj_type_t mp_type_KeyboardInterrupt;
+// CIRCUITPY
 extern const mp_obj_type_t mp_type_ReloadException;
 extern const mp_obj_type_t mp_type_KeyError;
 extern const mp_obj_type_t mp_type_LookupError;
@@ -884,7 +897,9 @@ extern const mp_obj_type_t mp_type_MemoryError;
 extern const mp_obj_type_t mp_type_NameError;
 extern const mp_obj_type_t mp_type_NotImplementedError;
 extern const mp_obj_type_t mp_type_OSError;
+// CIRCUITPY
 extern const mp_obj_type_t mp_type_ConnectionError;
+// CIRCUITPY
 extern const mp_obj_type_t mp_type_BrokenPipeError;
 extern const mp_obj_type_t mp_type_OverflowError;
 extern const mp_obj_type_t mp_type_RuntimeError;
@@ -928,6 +943,7 @@ extern const struct _mp_obj_str_t mp_const_empty_bytes_obj;
 extern const struct _mp_obj_tuple_t mp_const_empty_tuple_obj;
 extern const struct _mp_obj_dict_t mp_const_empty_dict_obj;
 extern const struct _mp_obj_singleton_t mp_const_ellipsis_obj;
+// CIRCUITPY next several lines
 extern const struct _mp_obj_traceback_t mp_const_empty_traceback_obj;
 extern const struct _mp_obj_singleton_t mp_const_notimplemented_obj;
 #if MICROPY_CONST_GENERATOREXIT_OBJ
@@ -976,6 +992,7 @@ void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 #define mp_obj_is_str_or_bytes(o) (mp_obj_is_qstr(o) || (mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, binary_op) == mp_obj_str_binary_op))
 bool mp_obj_is_dict_or_ordereddict(mp_obj_t o);
 #define mp_obj_is_fun(o) (mp_obj_is_obj(o) && (((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type->name == MP_QSTR_function))
+// CIRCUITPY
 // type check is done on iter method to allow tuple, namedtuple, attrtuple
 #define mp_obj_is_tuple_compatible(o) (MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o), iter) == mp_obj_tuple_getiter)
 
@@ -1018,10 +1035,12 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
 #define mp_obj_new_exception_msg(exc_type, msg) mp_obj_new_exception(exc_type)
 #define mp_obj_new_exception_msg_varg(exc_type, ...) mp_obj_new_exception(exc_type)
 #else
+// CIRCUITPY
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg);
 mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...);  // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 #endif
 #ifdef va_start
+// CIRCUITPY
 mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list arg);  // same fmt restrictions as above
 #endif
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
@@ -1038,6 +1057,7 @@ mp_obj_t mp_obj_new_memoryview(byte typecode, size_t nitems, void *items);
 
 const mp_obj_type_t *mp_obj_get_type(mp_const_obj_t o_in);
 const char *mp_obj_get_type_str(mp_const_obj_t o_in);
+CIRCUITPY
 #define mp_obj_get_type_qstr(o_in) (mp_obj_get_type((o_in))->name)
 bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo); // arguments should be type objects
 mp_obj_t mp_obj_cast_to_native_base(mp_obj_t self_in, mp_const_obj_t native_type);
@@ -1045,6 +1065,7 @@ mp_obj_t mp_obj_cast_to_native_base(mp_obj_t self_in, mp_const_obj_t native_type
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 void mp_obj_print(mp_obj_t o, mp_print_kind_t kind);
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc);
+// CIRCUITPY
 void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit);
 
 bool mp_obj_is_true(mp_obj_t arg);
@@ -1073,7 +1094,6 @@ mp_obj_t mp_obj_id(mp_obj_t o_in);
 mp_obj_t mp_obj_len(mp_obj_t o_in);
 mp_obj_t mp_obj_len_maybe(mp_obj_t o_in); // may return MP_OBJ_NULL
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t val);
-mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in);
 
 // cell
 
@@ -1108,6 +1128,7 @@ bool mp_obj_exception_match(mp_obj_t exc, mp_const_obj_t exc_type);
 void mp_obj_exception_clear_traceback(mp_obj_t self_in);
 void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qstr block);
 void mp_obj_exception_get_traceback(mp_obj_t self_in, size_t *n, size_t **values);
+// CIRCUITPY
 mp_obj_t mp_obj_exception_get_traceback_obj(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_get_value(mp_obj_t self_in);
 mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
@@ -1184,6 +1205,7 @@ void mp_obj_tuple_del(mp_obj_t self_in);
 mp_int_t mp_obj_tuple_hash(mp_obj_t self_in);
 
 // list
+// CIRCUITPY
 mp_obj_t mp_obj_list_clear(mp_obj_t self_in);
 mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg);
 mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value);
@@ -1253,6 +1275,7 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun);
 mp_obj_t mp_identity(mp_obj_t self);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_identity_obj);
 
+// CIRCUITPY
 // Generic iterator that uses unary op and subscr to iterate over a native type. It will be slower
 // than a custom iterator but applies broadly.
 mp_obj_t mp_obj_generic_subscript_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf);
@@ -1265,8 +1288,6 @@ typedef struct _mp_obj_module_t {
 static inline mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t module) {
     return ((mp_obj_module_t *)MP_OBJ_TO_PTR(module))->globals;
 }
-// check if given module object is a package
-bool mp_obj_is_package(mp_obj_t module);
 
 // staticmethod and classmethod types; defined here so we can make const versions
 // this structure is used for instances of both staticmethod and classmethod
@@ -1280,10 +1301,12 @@ typedef struct _mp_rom_obj_static_class_method_t {
 } mp_rom_obj_static_class_method_t;
 
 // property
+// CIRCUITPY
 const mp_obj_t *mp_obj_property_get(mp_obj_t self_in, size_t *n_proxy);
 
 // sequence helpers
 
+// CIRCUITPY
 // Compute the new length of a sequence and ensure an exception is thrown on overflow.
 size_t mp_seq_multiply_len(size_t item_sz, size_t len);
 void mp_seq_multiply(const void *items, size_t item_sz, size_t len, size_t times, void *dest);

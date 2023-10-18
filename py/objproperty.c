@@ -31,6 +31,9 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
+// CIRCUITPY changes to reduce property proxy table size
+// when possible
+
 #if MICROPY_PY_BUILTINS_PROPERTY
 
 STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

@@ -38,12 +38,6 @@ class Cud():
     def __floordiv__(self, other):
         print("__floordiv__ called")
 
-    def __index__(self, other):
-        print("__index__ called")
-
-    def __inv__(self):
-        print("__inv__ called")
-
     def __invert__(self):
         print("__invert__ called")
 

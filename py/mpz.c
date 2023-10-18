@@ -452,7 +452,7 @@ STATIC size_t mpn_mul(mpz_dig_t *idig, mpz_dig_t *jdig, size_t jlen, mpz_dig_t *
         }
 
         ilen = id - oidig;
-        // check to prevent usb starvation
+        // CIRCUITPY: check to prevent usb starvation
         #ifdef RUN_BACKGROUND_TASKS
         RUN_BACKGROUND_TASKS;
         #endif

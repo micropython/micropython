@@ -28,6 +28,7 @@
 #define MICROPY_INCLUDED_PY_STREAM_H
 
 #include "py/obj.h"
+// CIRCUITPY
 #include "py/proto.h"
 #include "py/mperrno.h"
 
@@ -68,6 +69,7 @@ struct mp_stream_seek_t {
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
+    // CIRCUITPY
     MP_PROTOCOL_HEAD
     // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
@@ -88,6 +90,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_unbuffered_readlines_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_write_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_stream_write1_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_close_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream___exit___obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_tell_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);
@@ -120,7 +123,8 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
-mp_obj_t mp_stream_flush(mp_obj_t self); // CIRCUITPY
+ // CIRCUITPY
+mp_obj_t mp_stream_flush(mp_obj_t self);
 
 #if MICROPY_STREAMS_POSIX_API
 #include <sys/types.h>

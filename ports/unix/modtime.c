@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014-2017 Paul Sokolovsky
- * Copyright (c) 2014-2017 Damien P. George
+ * Copyright (c) 2014-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_UTIME
-
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -35,10 +32,8 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include "py/runtime.h"
-#include "py/smallint.h"
 #include "py/mphal.h"
-#include "extmod/utime_mphal.h"
+#include "py/runtime.h"
 
 #ifdef _WIN32
 static inline int msec_sleep_tv(struct timeval *tv) {
@@ -66,7 +61,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #error Unsupported clock() implementation
 #endif
 
-STATIC mp_obj_t mod_time_time(void) {
+STATIC mp_obj_t mp_time_time_get(void) {
     #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -91,7 +86,7 @@ STATIC mp_obj_t mod_time_clock(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
-STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
+STATIC mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);

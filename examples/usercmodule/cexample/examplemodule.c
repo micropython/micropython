@@ -68,7 +68,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &example_Timer_locals_dict
     );
 
-// Define all properties of the module.
+// Define all attributes of the module.
 // Table entries are key/value pairs of the attribute name (a string)
 // and the MicroPython object reference.
 // All identifiers and strings are written as MP_QSTR_xxx and will be

@@ -31,8 +31,16 @@
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
+// CIRCUITPY
 #include "supervisor/linker.h"
 #include "supervisor/shared/translate/translate.h"
+
+// For use with mp_call_function_1_from_nlr_jump_callback.
+#define MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, f, a) \
+    nlr_jump_callback_node_call_function_1_t ctx = { \
+        .func = (void (*)(void *))(f), \
+        .arg = (a), \
+    }
 
 typedef enum {
     MP_VM_RETURN_NORMAL,
@@ -71,6 +79,20 @@ typedef struct _mp_sched_node_t {
     struct _mp_sched_node_t *next;
 } mp_sched_node_t;
 
+// For use with mp_globals_locals_set_from_nlr_jump_callback.
+typedef struct _nlr_jump_callback_node_globals_locals_t {
+    nlr_jump_callback_node_t callback;
+    mp_obj_dict_t *globals;
+    mp_obj_dict_t *locals;
+} nlr_jump_callback_node_globals_locals_t;
+
+// For use with mp_call_function_1_from_nlr_jump_callback.
+typedef struct _nlr_jump_callback_node_call_function_1_t {
+    nlr_jump_callback_node_t callback;
+    void (*func)(void *);
+    void *arg;
+} nlr_jump_callback_node_call_function_1_t;
+
 // Tables mapping operator enums to qstrs, defined in objtype.c
 extern const byte mp_unary_op_method_name[];
 extern const byte mp_binary_op_method_name[];
@@ -80,8 +102,10 @@ void mp_deinit(void);
 
 void mp_sched_exception(mp_obj_t exc);
 void mp_sched_keyboard_interrupt(void);
+#if MICROPY_ENABLE_VM_ABORT
+void mp_sched_vm_abort(void);
+#endif
 void mp_handle_pending(bool raise_exc);
-void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
@@ -103,6 +127,7 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
+// CIRCUITPY arg validation routines
 NORETURN void mp_arg_error_invalid(qstr arg_name);
 mp_int_t mp_arg_validate_int(mp_int_t i, mp_int_t required_i, qstr arg_name);
 mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name);
@@ -249,6 +274,7 @@ NORETURN void mp_raise_RuntimeError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_StopIteration(mp_obj_t arg);
 NORETURN void mp_raise_TypeError(const compressed_string_t *msg);
 NORETURN void mp_raise_TypeError_varg(const compressed_string_t *fmt, ...);
+NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg);
 NORETURN void mp_raise_ValueError(const compressed_string_t *msg);
 NORETURN void mp_raise_ValueError_varg(const compressed_string_t *fmt, ...);
 NORETURN void mp_raise_ZeroDivisionError(void);
@@ -268,8 +294,13 @@ int mp_native_type_from_qstr(qstr qst);
 mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type);
 mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type);
 
-#define mp_sys_path (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_path_obj)))
+#if MICROPY_PY_SYS_PATH
+#define mp_sys_path (MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PATH]))
+#endif
+
+#if MICROPY_PY_SYS_ARGV
 #define mp_sys_argv (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)))
+#endif
 
 #if MICROPY_WARNINGS
 #ifndef mp_warning

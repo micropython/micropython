@@ -64,7 +64,12 @@ MP_DEFINE_CONST_FUN_OBJ_0(gc_isenabled_obj, gc_isenabled);
 STATIC mp_obj_t gc_mem_free(void) {
     gc_info_t info;
     gc_info(&info);
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    // Include max_new_split value here as a more useful heuristic
+    return MP_OBJ_NEW_SMALL_INT(info.free + info.max_new_split);
+    #else
     return MP_OBJ_NEW_SMALL_INT(info.free);
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_0(gc_mem_free_obj, gc_mem_free);
 

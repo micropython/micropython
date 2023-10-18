@@ -107,12 +107,14 @@ const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_
 }
 
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
+    // CIRCUITPY
     return qstr_str(mp_obj_get_type_qstr(o_in));
 }
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
+    // CIRCUITPY
     #ifdef RUN_BACKGROUND_TASKS
     RUN_BACKGROUND_TASKS;
     #endif
@@ -141,6 +143,7 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_print_helper(MP_PYTHON_PRINTER, o_in, kind);
 }
 
+// CIRCUITPY
 static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
@@ -163,6 +166,7 @@ static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_
     #endif
 }
 
+// CIRCUITPY
 // helper function to print an exception with traceback
 void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit) {
     if (mp_obj_is_exception_instance(exc) && stack_ok()) {
@@ -223,6 +227,7 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
     mp_print_str(print, "\n");
 }
 
+// CIRCUITPY
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     mp_obj_print_exception_with_limit(print, exc, 0);
 }
@@ -358,7 +363,7 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         o2 = temp;
     }
 
-    // equality not implemented, so fall back to pointer conparison
+    // equality not implemented, so fall back to pointer comparison
     return (o1 == o2) ? local_true : local_false;
 }
 
@@ -370,18 +375,11 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
     // This function essentially performs implicit type conversion to int
     // Note that Python does NOT provide implicit type conversion from
     // float to int in the core expression language, try some_list[1.0].
-    if (arg == mp_const_false) {
-        return 0;
-    } else if (arg == mp_const_true) {
-        return 1;
-    } else if (mp_obj_is_small_int(arg)) {
-        return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (mp_obj_is_exact_type(arg, &mp_type_int)) {
-        return mp_obj_int_get_checked(arg);
-    } else {
-        mp_obj_t res = mp_unary_op(MP_UNARY_OP_INT, (mp_obj_t)arg);
-        return mp_obj_int_get_checked(res);
+    mp_int_t val;
+    if (!mp_obj_get_int_maybe(arg, &val)) {
+        mp_raise_TypeError_int_conversion(arg);
     }
+    return val;
 }
 
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg) {
@@ -405,7 +403,12 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
     } else if (mp_obj_is_exact_type(arg, &mp_type_int)) {
         *value = mp_obj_int_get_checked(arg);
     } else {
-        return false;
+        arg = mp_unary_op(MP_UNARY_OP_INT_MAYBE, (mp_obj_t)arg);
+        if (arg != MP_OBJ_NULL) {
+            *value = mp_obj_int_get_checked(arg);
+        } else {
+            return false;
+        }
     }
     return true;
 }
@@ -485,6 +488,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 
 // note: returned value in *items may point to the interior of a GC block
 void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
+    // CIRCUITPY
     if (mp_obj_is_tuple_compatible(o)) {
         mp_obj_tuple_get(o, len, items);
     } else if (mp_obj_is_type(o, &mp_type_list)) {
@@ -538,6 +542,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             i = len;
         }
     } else {
+        // CIRCUITPY
         mp_arg_validate_index_range(i, 0, len - 1, MP_QSTR_index);
     }
 
@@ -693,14 +698,5 @@ bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
 void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     if (!mp_get_buffer(obj, bufinfo, flags)) {
         mp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
-    }
-}
-
-mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
-    switch (op) {
-        case MP_UNARY_OP_HASH:
-            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
-        default:
-            return MP_OBJ_NULL;      // op not supported
     }
 }

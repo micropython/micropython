@@ -31,6 +31,12 @@
 
 #if MICROPY_PY_SYS_SETTRACE
 
+#if !MICROPY_PERSISTENT_CODE_SAVE
+// The settrace feature requires that we maintain additional metadata on the raw
+// code object which is normally only done when writing .mpy files.
+#error "MICROPY_PY_SYS_SETTRACE requires MICROPY_PERSISTENT_CODE_SAVE to be enabled"
+#endif
+
 #define prof_trace_cb MP_STATE_THREAD(prof_trace_callback)
 #define QSTR_MAP(context, idx) (context->constants.qstr_table[idx])
 
@@ -177,7 +183,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_code,
     MP_TYPE_FLAG_NONE,
     print, code_print,
-    unary_op, mp_generic_unary_op,
     attr, code_attr
     );
 
@@ -247,7 +252,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_frame,
     MP_TYPE_FLAG_NONE,
     print, frame_print,
-    unary_op, mp_generic_unary_op,
     attr, frame_attr
     );
 

@@ -75,10 +75,10 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     bool first = true;
     const char *item_separator = ", ";
     const char *key_separator = ": ";
-    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
+    if (!(MICROPY_PY_JSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     } else {
-        #if MICROPY_PY_UJSON_SEPARATORS
+        #if MICROPY_PY_JSON_SEPARATORS
         item_separator = MP_PRINT_GET_EXT(print)->item_separator;
         key_separator = MP_PRINT_GET_EXT(print)->key_separator;
         #endif
@@ -94,7 +94,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, item_separator);
         }
         first = false;
-        bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
+        bool add_quote = MICROPY_PY_JSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
         if (add_quote) {
             mp_print_str(print, "\"");
         }
@@ -305,6 +305,7 @@ STATIC mp_obj_t dict_fromkeys(size_t n_args, const mp_obj_t *args) {
     mp_obj_t len = mp_obj_len_maybe(args[1]);
     if (len == MP_OBJ_NULL) {
         /* object's type doesn't have a __len__ slot */
+        // CIRCUITPY uses dict_new_typed() here.
         self_out = dict_new_typed(type, 0);
     } else {
         self_out = dict_new_typed(type, MP_OBJ_SMALL_INT_VALUE(len));
@@ -441,6 +442,7 @@ STATIC mp_obj_t dict_update(size_t n_args, const mp_obj_t *args, mp_map_t *kwarg
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(dict_update_obj, 1, dict_update);
 
+// CIRCUITPY
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
 STATIC mp_obj_t dict_move_to_end(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_obj_dict_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -576,6 +578,16 @@ STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_print_str(print, "])");
 }
 
+// CIRCUITPY
+STATIC mp_obj_t dict_view_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+    mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(o_in);
+    // only dict.values() supports __hash__.
+    if (op == MP_UNARY_OP_HASH && o->kind == MP_DICT_VIEW_VALUES) {
+        return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
+    }
+    return MP_OBJ_NULL;
+}
+
 STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // only supported for the 'keys' kind until sets and dicts are refactored
     mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(lhs_in);
@@ -593,6 +605,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_dict_view,
     MP_TYPE_FLAG_ITER_IS_GETITER,
     print, dict_view_print,
+    unary_op, dict_view_unary_op,
     binary_op, dict_view_binary_op,
     iter, dict_view_getiter
     );
@@ -650,6 +663,7 @@ STATIC const mp_rom_map_elem_t dict_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get), MP_ROM_PTR(&dict_get_obj) },
     { MP_ROM_QSTR(MP_QSTR_items), MP_ROM_PTR(&dict_items_obj) },
     { MP_ROM_QSTR(MP_QSTR_keys), MP_ROM_PTR(&dict_keys_obj) },
+    // CIRCUITPY
     #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
     { MP_ROM_QSTR(MP_QSTR_move_to_end), MP_ROM_PTR(&dict_move_to_end_obj) },
     #endif

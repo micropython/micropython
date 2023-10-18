@@ -1,6 +1,5 @@
 # Extended stream operations on io.BytesIO
 import io
-
 a = io.BytesIO(b"foobar")
 a.seek(10)
 print(a.read(10))

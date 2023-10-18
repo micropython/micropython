@@ -1,5 +1,4 @@
 import io
-
 try:
     io.IOBase
 except AttributeError:
@@ -12,6 +11,5 @@ class MyIO(io.IOBase):
         # CPython and uPy pass in different types for buf (str vs bytearray)
         print("write", len(buf))
         return len(buf)
-
 
 print("test", file=MyIO())

@@ -49,6 +49,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(object___init___obj, object___init__);
 
 STATIC mp_obj_t object___new__(mp_obj_t cls) {
     if (!mp_obj_is_type(cls, &mp_type_type) || !mp_obj_is_instance_type((mp_obj_type_t *)MP_OBJ_TO_PTR(cls))) {
+        // CIRCUITPY better error
         mp_raise_TypeError(MP_ERROR_TEXT("__new__ arg must be a user-type"));
     }
     // This executes only "__new__" part of instance creation.
