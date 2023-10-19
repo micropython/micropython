@@ -2,7 +2,7 @@
 This script processes the output from the C preprocessor and extracts all
 qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 
-This script works with Python 3.x (CIRCUITPY: not 2.x)
+This script works with Python 3.x (CIRCUITPY-CHANGE: not 2.x)
 """
 
 from __future__ import print_function
@@ -165,7 +165,7 @@ def process_file(f):
         for match in re_match.findall(line):
             if args.mode == _MODE_QSTR:
                 name = match.replace("MP_QSTR_", "")
-                # CIRCUITPY: undo character escapes in qstrs in C code
+                # CIRCUITPY-CHANGE: undo character escapes in qstrs in C code
                 output.append("Q(" + qstr_unescape(name) + ")")
             elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
                 output.append(match)

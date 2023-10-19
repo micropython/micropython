@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-// CIRCUITPY thoroughly reworked
+// CIRCUITPY-CHANGE: thoroughly reworked
 
 #include "ringbuf.h"
 

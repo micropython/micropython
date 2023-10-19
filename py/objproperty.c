@@ -31,7 +31,7 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-// CIRCUITPY changes to reduce property proxy table size
+// CIRCUITPY-CHANGE: changes to reduce property proxy table size
 // when possible
 
 #if MICROPY_PY_BUILTINS_PROPERTY

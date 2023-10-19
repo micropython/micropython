@@ -28,7 +28,7 @@
 #include "py/stackctrl.h"
 
 void mp_stack_ctrl_init(void) {
-    // CIRCUITPY: Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
+    // CIRCUITPY-CHANGE: Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
     #if __GNUC__ >= 13
     #pragma GCC diagnostic push
@@ -47,7 +47,7 @@ void mp_stack_set_top(void *top) {
 
 mp_uint_t PLACE_IN_ITCM(mp_stack_usage)(void) {
     // Assumes descending stack
-    // CIRCUITPY: Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
+    // CIRCUITPY-CHANGE: Force routine to not be inlined. Better guarantee than MP_NOINLINE for -flto.
     __asm volatile ("");
     volatile int stack_dummy;
     return MP_STATE_THREAD(stack_top) - (char *)&stack_dummy;

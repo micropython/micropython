@@ -58,7 +58,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// CIRCUITPY: force definitions
+// CIRCUITPY-CHANGE: force definitions
 #ifndef N_X64
 #define N_X64 (0)
 #endif

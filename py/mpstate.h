@@ -142,7 +142,7 @@ typedef struct _mp_state_mem_t {
     mp_thread_mutex_t gc_mutex;
     #endif
 
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     void **permanent_pointers;
 } mp_state_mem_t;
 
@@ -270,7 +270,7 @@ typedef struct _mp_state_thread_t {
     // Stack top at the start of program
     char *stack_top;
 
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     #if MICROPY_MAX_STACK_USAGE
     char *stack_bottom;
     #endif

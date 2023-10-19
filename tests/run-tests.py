@@ -623,7 +623,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
-        # CIRCUITPY
+        # CIRCUITPY-CHANGE
         skip_tests.update(
             (
                 "basics/chained_exception.py",
@@ -714,7 +714,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             with open(test_file_expected, "rb") as f:
                 output_expected = f.read()
         else:
-            # CIRCUITPY: set language & make sure testlib is available for `skip_ok`.
+            # CIRCUITPY-CHANGE: set language & make sure testlib is available for `skip_ok`.
             e = {"PYTHONPATH": "testlib", "PATH": os.environ["PATH"], "LANG": "en_US.UTF-8"}
             # run CPython to work out expected output
             try:

@@ -36,7 +36,7 @@
 #include <valgrind/memcheck.h>
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #include "supervisor/shared/safe_mode.h"
 
 #if CIRCUITPY_MEMORYMONITOR
@@ -53,7 +53,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Uncomment this if you want to use a debugger to capture state at every allocation and free.
 // #define LOG_HEAP_ACTIVITY 1
 
@@ -131,7 +131,7 @@
 #define GC_EXIT()
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #ifdef LOG_HEAP_ACTIVITY
 volatile uint32_t change_me;
 #pragma GCC push_options
@@ -338,7 +338,7 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
 
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // TODO FOR MERGE: fix this for multiple areas??
 void gc_deinit(void) {
     // Run any finalisers before we stop using the heap.
@@ -381,7 +381,7 @@ STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
 }
 #endif
 
-// CIRCUITPY: VERIFY_PTR moved to gc.h to make it available elsewhere.
+// CIRCUITPY-CHANGE: VERIFY_PTR moved to gc.h to make it available elsewhere.
 
 #ifndef TRACE_MARK
 #if DEBUG_PRINT
@@ -395,7 +395,7 @@ STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
 // children: mark the unmarked child blocks and put those newly marked
 // blocks on the stack. When all children have been checked, pop off the
 // topmost block on the stack and repeat with that one.
-// CIRCUITPY: We don't instrument these functions because they occur a lot during GC and
+// CIRCUITPY-CHANGE: We don't instrument these functions because they occur a lot during GC and
 #if MICROPY_GC_SPLIT_HEAP
 STATIC void MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_mark_subtree)(mp_state_mem_area_t * area, size_t block)
 #else
@@ -599,7 +599,7 @@ void gc_collect_start(void) {
     #endif
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 void gc_collect_ptr(void *ptr) {
     void *ptrs[1] = { ptr };
     gc_collect_root(ptrs, 1);
@@ -611,7 +611,7 @@ void gc_collect_ptr(void *ptr) {
 #if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
 __attribute__((no_sanitize_address))
 #endif
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 static void *MP_NO_INSTRUMENT PLACE_IN_ITCM(gc_get_ptr)(void **ptrs, int i) {
     #if MICROPY_DEBUG_VALGRIND
     if (!VALGRIND_CHECK_MEM_IS_ADDRESSABLE(&ptrs[i], sizeof(*ptrs))) {
@@ -744,7 +744,7 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 bool gc_alloc_possible(void) {
     #if MICROPY_GC_SPLIT_HEAP
     return MP_STATE_MEM(gc_last_free_area) != 0;
@@ -797,7 +797,7 @@ void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
         area = &MP_STATE_MEM(area);
         #endif
 
-        // CIRCUITPY
+        // CIRCUITPY-CHANGE
         if (area == 0) {
             reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
         }
@@ -861,7 +861,7 @@ found:
         area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
     }
 
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     #ifdef LOG_HEAP_ACTIVITY
     gc_log_change(start_block, end_block - start_block + 1);
     #endif
@@ -958,7 +958,7 @@ void gc_free(void *ptr) {
     mp_state_mem_area_t *area;
     #if MICROPY_GC_SPLIT_HEAP
     area = gc_get_ptr_area(ptr);
-    // CIRCUITPY extra checking
+    // CIRCUITPY-CHANGE: extra checking
     if (MP_STATE_MEM(gc_pool_start) == 0) {
         reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
     }
@@ -995,7 +995,7 @@ void gc_free(void *ptr) {
         area->gc_last_free_atb_index = block / BLOCKS_PER_ATB;
     }
 
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     #ifdef LOG_HEAP_ACTIVITY
     gc_log_change(start_block, 0);
     #endif
@@ -1166,7 +1166,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         gc_dump_alloc_table(&mp_plat_print);
         #endif
 
-        // CIRCUITPY
+        // CIRCUITPY-CHANGE
         #ifdef LOG_HEAP_ACTIVITY
         gc_log_change(block, new_blocks);
         #endif
@@ -1203,7 +1203,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         gc_dump_alloc_table(&mp_plat_print);
         #endif
 
-        // CIRCUITPY
+        // CIRCUITPY-CHANGE
         #ifdef LOG_HEAP_ACTIVITY
         gc_log_change(block, new_blocks);
         #endif
@@ -1243,7 +1243,7 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
 }
 #endif // Alternative gc_realloc impl
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 bool gc_never_free(void *ptr) {
     // Check to make sure the pointer is on the heap in the first place.
     if (gc_nbytes(ptr) == 0) {
@@ -1353,7 +1353,7 @@ void gc_dump_alloc_table(const mp_print_t *print) {
                 */
                 /* this prints the uPy object type of the head block */
                 case AT_HEAD: {
-                    // CIRCUITPY compiler warning avoidance
+                    // CIRCUITPY-CHANGE: compiler warning avoidance
                     #pragma GCC diagnostic push
                     #pragma GCC diagnostic ignored "-Wcast-align"
                     void **ptr = (void **)(area->gc_pool_start + bl * BYTES_PER_BLOCK);
@@ -1419,7 +1419,7 @@ void gc_dump_alloc_table(const mp_print_t *print) {
         }
         mp_print_str(print, "\n");
     }
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     mp_print_str(&mp_plat_print, "\n");
     GC_EXIT();
 }

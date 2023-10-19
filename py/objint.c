@@ -300,7 +300,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     return b;
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 
 void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed) {
@@ -395,7 +395,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
 // This is called only with strings whose value doesn't fit in SMALL_INT
 mp_obj_t mp_obj_new_int_from_str_len(const char **str, size_t len, bool neg, unsigned int base) {
-    // CIRCUITPY different error message
+    // CIRCUITPY-CHANGE: different error message
     mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("No long integer support"));
     return mp_const_none;
 }
@@ -458,7 +458,7 @@ mp_obj_t mp_obj_int_binary_op_extra_cases(mp_binary_op_t op, mp_obj_t lhs_in, mp
     return MP_OBJ_NULL; // op not supported
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #if MICROPY_CPYTHON_COMPAT
 STATIC mp_obj_t int_bit_length(mp_obj_t self_in) {
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
@@ -480,7 +480,7 @@ STATIC mp_obj_t int_bit_length(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(int_bit_length_obj, int_bit_length);
 #endif
 
-// CIRCUITPY more functionality
+// CIRCUITPY-CHANGE: more functionality
 // this is a classmethod
 STATIC mp_obj_t int_from_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Support signed param (assumes signed=False at the moment)
@@ -575,7 +575,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(int_to_bytes_obj, 3, int_to_bytes);
 
 STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     #if MICROPY_CPYTHON_COMPAT
     { MP_ROM_QSTR(MP_QSTR_bit_length), MP_ROM_PTR(&int_bit_length_obj) },
     #endif

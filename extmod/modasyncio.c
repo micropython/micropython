@@ -228,7 +228,7 @@ STATIC mp_obj_t task_cancel(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_cancel_obj, task_cancel);
 
-// CIRCUITPY provides __await__().
+// CIRCUITPY-CHANGE: CircuitPython provides __await__().
 STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
 
 STATIC mp_obj_t task_await(mp_obj_t self_in) {

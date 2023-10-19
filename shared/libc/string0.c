@@ -34,7 +34,7 @@
 #define likely(x) __builtin_expect((x), 1)
 #endif
 
-// CIRCUITPY avoid compiler warnings
+// CIRCUITPY-CHANGE: avoid compiler warnings
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 void *memcpy(void *dst, const void *src, size_t n) {
@@ -75,7 +75,7 @@ void *memcpy(void *dst, const void *src, size_t n) {
     return dst;
 }
 
-// CIRCUITPY extern
+// CIRCUITPY-CHANGE: extern
 extern void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen);
 void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen) {
     if (len > slen) {

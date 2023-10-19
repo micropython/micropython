@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_LIB_UTILS_INTERRUPT_CHAR_H
 #define MICROPY_INCLUDED_LIB_UTILS_INTERRUPT_CHAR_H
 
-// CIRCUITPY changes
+// CIRCUITPY-CHANGE: various changes
 #include <stdbool.h>
 
 extern int mp_interrupt_char;

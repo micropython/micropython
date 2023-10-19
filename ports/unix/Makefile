@@ -262,13 +262,13 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
-# CIRCUITPY: these two targets are ours
+# CIRCUITPY-CHANGE: these two targets are for CircuitPython builds
 .PHONY: print-failures clean-failures
 print-failures clean-failures:
 	../../tests/run-tests.py --$@
 
 
-# CIRCUITPY: support for passing args to run-tests, like `make test TEST_ARGS="basics/*.py"`
+# CIRCUITPY-CHANGE: support for passing args to run-tests, like `make test TEST_ARGS="basics/*.py"`
 TEST_ARGS ?=
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
 	$(eval DIRNAME=ports/$(notdir $(CURDIR)))

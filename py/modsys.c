@@ -166,7 +166,7 @@ STATIC mp_obj_t mp_sys_exc_info(void) {
 
     t->items[0] = MP_OBJ_FROM_PTR(mp_obj_get_type(cur_exc));
     t->items[1] = cur_exc;
-    // CIRCUITPY has traceback obj
+    // CIRCUITPY-CHANGE: has traceback obj
     t->items[2] = mp_obj_exception_get_traceback_obj(cur_exc);
     return MP_OBJ_FROM_PTR(t);
 }

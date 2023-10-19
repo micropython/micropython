@@ -39,7 +39,7 @@
 enum {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) id,
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #define TRANSLATION(english_id, number)
     #include "genhdr/qstrdefs.generated.h"
 #undef QDEF

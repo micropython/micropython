@@ -53,7 +53,7 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     mp_obj_t ret_val;
 
     // check radix base
-    // CIRCUITPY use validator
+    // CIRCUITPY-CHANGE: use validator
     if (base != 0) {
         // this won't be reached if lex!=NULL
         mp_arg_validate_int_range(base, 2, 36, MP_QSTR_base);

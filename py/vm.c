@@ -195,7 +195,7 @@
 #define TRACE_TICK(current_ip, current_sp, is_exception)
 #endif // MICROPY_PY_SYS_SETTRACE
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 STATIC mp_obj_t get_active_exception(mp_exc_stack_t *exc_sp, mp_exc_stack_t *exc_stack) {
     for (mp_exc_stack_t *e = exc_sp; e >= exc_stack; --e) {
         if (e->prev_exc != NULL) {
@@ -237,7 +237,7 @@ mp_vm_return_kind_t MICROPY_WRAP_MP_EXECUTE_BYTECODE(mp_execute_bytecode)(mp_cod
 #endif
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     #if MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
     #define ONE_TRUE_DISPATCH() one_true_dispatch : do { \
         TRACE(ip); \
@@ -328,7 +328,7 @@ outer_dispatch_loop:
             for (;;) {
 dispatch_loop:
                 #if MICROPY_OPT_COMPUTED_GOTO
-                // CIRCUITPY
+                // CIRCUITPY-CHANGE
                 ONE_TRUE_DISPATCH();
                 #else
                 TRACE(ip);
@@ -1061,7 +1061,7 @@ unwind_jump:;
                     }
                     #endif
                     SET_TOP(mp_call_method_n_kw(unum & 0xff, (unum >> 8) & 0xff, sp));
-                    // CIRCUITPY
+                    // CIRCUITPY-CHANGE
                     DISPATCH_WITH_PEND_EXC_CHECK();
                 }
 
@@ -1172,7 +1172,7 @@ unwind_return:
                 ENTRY(MP_BC_RAISE_LAST): {
                     MARK_EXC_IP_SELECTIVE();
                     // search for the inner-most previous exception, to reraise it
-                    // CIRCUITPY
+                    // CIRCUITPY-CHANGE
                      mp_obj_t obj = get_active_exception(exc_sp, exc_stack);
                     if (obj == MP_OBJ_NULL) {
                         obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("no active exception to reraise"));
@@ -1183,7 +1183,7 @@ unwind_return:
                 ENTRY(MP_BC_RAISE_OBJ): {
                     MARK_EXC_IP_SELECTIVE();
                     mp_obj_t obj = mp_make_raise_obj(TOP());
-                    // CIRCUITPY
+                    // CIRCUITPY-CHANGE
                     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
                     mp_obj_t active_exception = get_active_exception(exc_sp, exc_stack);
                     if (active_exception != MP_OBJ_NULL && active_exception != obj) {
@@ -1195,7 +1195,7 @@ unwind_return:
 
                 ENTRY(MP_BC_RAISE_FROM): {
                     MARK_EXC_IP_SELECTIVE();
-                    // CIRCUITPY
+                    // CIRCUITPY-CHANGE
                     mp_obj_t cause = POP();
                     mp_obj_t obj = mp_make_raise_obj(TOP());
                     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
@@ -1445,7 +1445,7 @@ unwind_loop:
             // - exceptions re-raised by END_FINALLY
             // - exceptions re-raised explicitly by "raise"
             if ( true
-                // CIRCUITPY
+                // CIRCUITPY-CHANGE
                 #if MICROPY_CONST_GENERATOREXIT_OBJ
                 && nlr.ret_val != &mp_const_GeneratorExit_obj
                 #endif

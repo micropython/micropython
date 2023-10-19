@@ -540,7 +540,7 @@
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Whether to save trade flash space for speed in MICROPY_OPT_COMPUTED_GOTO.
 // Costs about 3% speed, saves about 1500 bytes space.  In addition to the assumptions
 // of MICROPY_OPT_COMPUTED_GOTO, also assumes that mp_execute_bytecode is less than
@@ -606,7 +606,7 @@
 #define MICROPY_HAS_FILE_READER (MICROPY_READER_POSIX || MICROPY_READER_VFS)
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Number of VFS mounts to persist across soft-reset.
 #ifndef MICROPY_FATFS_NUM_PERSISTENT
 #define MICROPY_FATFS_NUM_PERSISTENT (0)
@@ -811,13 +811,13 @@ typedef long long mp_longint_impl_t;
 #define MICROPY_ERROR_PRINTER (&mp_plat_print)
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Whether to support chained exceptions
 #ifndef MICROPY_CPYTHON_EXCEPTION_CHAIN
 #define MICROPY_CPYTHON_EXCEPTION_CHAIN (0)
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Whether the statically allocated GeneratorExit exception may be const
 #ifndef MICROPY_CONST_GENERATOREXIT_OBJ
 #define MICROPY_CONST_GENERATOREXIT_OBJ (!MICROPY_CPYTHON_EXCEPTION_CHAIN)
@@ -1606,7 +1606,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_UCTYPES_NATIVE_C_TYPES (1)
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // TODO? CIRCUITPY_ZLIB instead
 #ifndef MICROPY_PY_ZLIB
 #define MICROPY_PY_ZLIB (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
@@ -1696,7 +1696,7 @@ typedef double mp_float_t;
 #define MICROPY_PY_BINASCII (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
 
-// CIRCUITPY: does not depend on MICROPY_PY_DEFLATE
+// CIRCUITPY-CHANGE: does not depend on MICROPY_PY_DEFLATE
 #ifndef MICROPY_PY_BINASCII_CRC32
 #define MICROPY_PY_BINASCII_CRC32 (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
 #endif
@@ -1993,14 +1993,14 @@ typedef double mp_float_t;
 #define MP_WEAK __attribute__((weak))
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Modifier for functions which should not be instrumented when tracing with
 // -finstrument-functions
 #ifndef MP_NO_INSTRUMENT
 #define MP_NO_INSTRUMENT __attribute__((no_instrument_function))
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Modifier for functions which should ideally inlined
 #ifndef MP_INLINE
 #define MP_INLINE inline MP_NO_INSTRUMENT
@@ -2026,7 +2026,7 @@ typedef double mp_float_t;
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
 #endif
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // Modifier for functions which aren't often used. Calls will also be considered
 // unlikely. Section names are `.text.unlikely` for use in linker scripts.
 #ifndef MP_COLD

@@ -34,7 +34,7 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 const char nibble_to_hex_upper[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                                       'A', 'B', 'C', 'D', 'E', 'F'};
 
@@ -272,7 +272,7 @@ STATIC mp_obj_t bytes_make_new(const mp_obj_type_t *type_in, size_t n_args, size
         return mp_obj_new_bytes_from_vstr(&vstr);
     }
 
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     // check if __bytes__ exists, and if so delegate to it
     mp_obj_t dest[2];
     mp_load_method_maybe(args[0], MP_QSTR___bytes__, dest);
@@ -381,7 +381,7 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 return mp_const_empty_bytes;
             }
         }
-        // CIRCUITPY: more careful checking of length
+        // CIRCUITPY-CHANGE: more careful checking of length
         size_t new_len = mp_seq_multiply_len(lhs_len, n);
         vstr_t vstr;
         vstr_init_len(&vstr, new_len);
@@ -1024,7 +1024,7 @@ STATIC vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             terse_str_format_value_error();
             #else
-            // CIRCUITPY better error message
+            // CIRCUITPY-CHANGE: better error message
             mp_raise_ValueError_varg(MP_ERROR_TEXT("unmatched '%c' in format"), '}');
             #endif
         }
@@ -2179,7 +2179,7 @@ MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_array_locals_dict,
     TABLE_ENTRIES_ARRAY);
 #endif
 
-// CIRCUITPY: hex() but no cast()
+// CIRCUITPY-CHANGE: hex() but no cast()
 #if MICROPY_PY_BUILTINS_MEMORYVIEW && MICROPY_PY_BUILTINS_BYTES_HEX && !MICROPY_CPYTHON_COMPAT
 MP_DEFINE_CONST_DICT_WITH_SIZE(mp_obj_memoryview_locals_dict,
     array_bytearray_str_bytes_locals_table + TABLE_ENTRIES_ARRAY,
@@ -2342,7 +2342,7 @@ mp_obj_t mp_obj_new_bytes(const byte *data, size_t len) {
     return mp_obj_new_str_copy(&mp_type_bytes, data, len);
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 mp_obj_t mp_obj_new_bytes_of_zeros(size_t len) {
     vstr_t vstr;
     vstr_init_len(&vstr, len);

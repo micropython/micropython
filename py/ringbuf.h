@@ -31,7 +31,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// CIRCUITPY thoroughly reworked
+// CIRCUITPY-CHANGE: thoroughly reworked
 
 typedef struct _ringbuf_t {
     uint8_t *buf;

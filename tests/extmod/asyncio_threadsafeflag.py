@@ -11,7 +11,7 @@ import micropython
 
 try:
     micropython.schedule
-    # CIRCUITPY: no ThreadSafeFlag
+    # CIRCUITPY-CHANGE: no ThreadSafeFlag
     asyncio.ThreadSafeFlag
 except AttributeError:
     print("SKIP")

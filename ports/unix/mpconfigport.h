@@ -37,7 +37,7 @@
 // Variant-specific definitions.
 #include "mpconfigvariant.h"
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #define CIRCUITPY_MICROPYTHON_ADVANCED (1)
 #define MICROPY_PY_ASYNC_AWAIT (1)
 
@@ -254,4 +254,5 @@ static inline unsigned long mp_random_seed_init(void) {
 #define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
-#define RUN_BACKGROUND_TASKS ((void)0) // CIRCUITPY
+// CIRCUITPY-CHANGE
+#define RUN_BACKGROUND_TASKS ((void)0)

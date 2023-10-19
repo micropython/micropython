@@ -31,7 +31,7 @@
 #include <assert.h>
 
 #include "py/compile.h"
-// CIRCUITPY: for gc_collect() after each import
+// CIRCUITPY-CHANGE: for gc_collect() after each import
 #include "py/gc.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"
@@ -511,7 +511,7 @@ STATIC mp_obj_t process_import_at_level(qstr full_mod_name, qstr level_mod_name,
         // a __path__ attribute, and not attempt to stat it.
     }
 
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     // Loading a module thrashes the heap significantly so we explicitly clean up
     // afterwards.
     gc_collect();

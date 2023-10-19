@@ -1,7 +1,7 @@
 # This makefile fragment adds the source code files for the core extmod modules
 # and provides rules to build 3rd-party components for extmod modules.
 
-# CIRCUITPY has removed many extmod modules.
+# CIRCUITPY-CHANGE: many extmod modules removed
 SRC_EXTMOD_C += \
 	extmod/modasyncio.c \
 	extmod/modbinascii.c \

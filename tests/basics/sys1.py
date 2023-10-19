@@ -13,7 +13,7 @@ except AttributeError:
     print(True)
 
 try:
-    # CIRCUITPY
+    # CIRCUITPY-CHANGE
     print(sys.implementation.name in ('cpython', 'micropython', 'circuitpython'))
 except AttributeError:
     # Effectively skip subtests

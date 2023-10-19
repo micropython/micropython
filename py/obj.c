@@ -107,14 +107,14 @@ const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_
 }
 
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     return qstr_str(mp_obj_get_type_qstr(o_in));
 }
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     #ifdef RUN_BACKGROUND_TASKS
     RUN_BACKGROUND_TASKS;
     #endif
@@ -143,7 +143,7 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_print_helper(MP_PYTHON_PRINTER, o_in, kind);
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
@@ -166,7 +166,7 @@ static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_
     #endif
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // helper function to print an exception with traceback
 void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit) {
     if (mp_obj_is_exception_instance(exc) && stack_ok()) {
@@ -227,7 +227,7 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
     mp_print_str(print, "\n");
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     mp_obj_print_exception_with_limit(print, exc, 0);
 }
@@ -488,7 +488,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 
 // note: returned value in *items may point to the interior of a GC block
 void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     if (mp_obj_is_tuple_compatible(o)) {
         mp_obj_tuple_get(o, len, items);
     } else if (mp_obj_is_type(o, &mp_type_list)) {
@@ -542,7 +542,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             i = len;
         }
     } else {
-        // CIRCUITPY
+        // CIRCUITPY-CHANGE
         mp_arg_validate_index_range(i, 0, len - 1, MP_QSTR_index);
     }
 
@@ -645,7 +645,7 @@ mp_obj_t mp_identity(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // generic subscript iterator, which iterates through anything with a 0-based subscript.
 typedef struct {
     mp_obj_base_t base;

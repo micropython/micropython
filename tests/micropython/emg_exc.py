@@ -24,7 +24,7 @@ def f():
         exc = er
     micropython.heap_unlock()
 
-    # CIRCUITPY
+    # CIRCUITPY-CHANGE
     print(repr(exc))
 
 

@@ -82,7 +82,7 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
     }
 }
 
-// CIRCUITPY differences
+// CIRCUITPY-CHANGE: differences
 // This wrapper function is allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
 STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -128,7 +128,7 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
     return o;
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 // When instances are first created they have the base_init wrapper as their native parent's
 // instance because make_new combines __new__ and __init__. This object is invalid for the native
 // code so it must call this method to ensure that the given object has been __init__'d and is
@@ -303,7 +303,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 
     // TODO: CPython prints fully-qualified type name
-    // CIRCUITPY: use qstr
+    // CIRCUITPY-CHANGE: use qstr
     mp_printf(print, "<%q object at %p>", mp_obj_get_type_qstr(self_in), self);
 }
 
@@ -732,7 +732,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
             // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
-            // CIRCUITPY: variable number of proxies
+            // CIRCUITPY-CHANGE: variable number of proxies
             size_t n_proxy;
             const mp_obj_t *proxy = mp_obj_property_get(member[0], &n_proxy);
             mp_obj_t dest[2] = {self_in, value};
@@ -1347,7 +1347,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // Looked up native __init__ so defer to it
             dest[0] = MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj);
             dest[1] = self->obj;
-            // CIRCUITPY better support for properties
+            // CIRCUITPY-CHANGE: better support for properties
         } else {
             mp_obj_t member = dest[0];
             // changes to mp_obj_instance_load_attr may require changes

@@ -252,7 +252,7 @@ STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     return &rule_arg_combined_table[off];
 }
 
-// CIRCUITPY ignore compiler warning
+// CIRCUITPY-CHANGE: ignore compiler warning
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 
@@ -1038,7 +1038,7 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
     parser.rule_stack_top = 0;
-    // CIRCUITPY make parsing more memory flexible
+    // CIRCUITPY-CHANGE: make parsing more memory flexible
     // https://github.com/adafruit/circuitpython/pull/552
     parser.rule_stack = NULL;
     while (parser.rule_stack_alloc > 1) {

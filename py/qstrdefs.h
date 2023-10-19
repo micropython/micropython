@@ -35,7 +35,7 @@
 QCFG(BYTES_IN_LEN, MICROPY_QSTR_BYTES_IN_LEN)
 QCFG(BYTES_IN_HASH, MICROPY_QSTR_BYTES_IN_HASH)
 
-// CIRCUITPY translatable messages removed
+// CIRCUITPY-CHANGE: translatable messages removed
 
 Q()
 Q(*)

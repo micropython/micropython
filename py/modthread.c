@@ -129,7 +129,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 STATIC size_t thread_stack_size = 0;
 
 STATIC mp_obj_t mod_thread_get_ident(void) {
-    // CIRCUITPY: uintptr_t cast to avoid warning
+    // CIRCUITPY-CHANGE: uintptr_t cast to avoid warning
     return mp_obj_new_int_from_uint((uintptr_t)mp_thread_get_state());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_get_ident_obj, mod_thread_get_ident);

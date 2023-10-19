@@ -95,7 +95,7 @@ void mp_hal_set_interrupt_char(char c) {
     }
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 bool mp_hal_is_interrupted(void) {
     return false;
 }
@@ -192,7 +192,7 @@ main_term:;
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
-    // CIRCUITPY: need to conditionalize MICROPY_PY_OS_DUPTERM
+    // CIRCUITPY-CHANGE: need to conditionalize MICROPY_PY_OS_DUPTERM
     #if MICROPY_PY_OS_DUPTERM
     mp_os_dupterm_tx_strn(str, len);
     #endif

@@ -206,7 +206,7 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     size_t len;
     subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     #if MICROPY_PY_RE_MATCH_SPAN_START_END && !(defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME)
 
     if (n_args > 2) {

@@ -87,7 +87,7 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
             size_t addr = read_uint(ri->reader);
             if ((addr & 1) == 0) {
                 // Point to somewhere in text
-                // CIRCUITPY avoid compiler warnings
+                // CIRCUITPY-CHANGE: avoid compiler warnings
                 #pragma GCC diagnostic push
                 #pragma GCC diagnostic ignored "-Wcast-align"
                 addr_to_adjust = &((uintptr_t *)text)[addr >> 1];
@@ -405,7 +405,7 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
     byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
-    // CIRCUITPY: 'C', not 'M'
+    // CIRCUITPY-CHANGE: 'C', not 'M'
     if (header[0] != 'C'
         || header[1] != MPY_VERSION
         || (arch != MP_NATIVE_ARCH_NONE && MPY_FEATURE_DECODE_SUB_VERSION(header[2]) != MPY_SUB_VERSION)

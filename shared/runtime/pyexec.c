@@ -44,7 +44,7 @@
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
 
-// CIRCUITPY multiple changes for atexit(), interrupts
+// CIRCUITPY-CHANGE: multiple changes for atexit(), interrupts
 
 #if CIRCUITPY_ATEXIT
 #include "shared-module/atexit/__init__.h"

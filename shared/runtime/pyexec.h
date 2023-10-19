@@ -28,7 +28,7 @@
 
 #include "py/obj.h"
 
-// CIRCUITPY multiple changes
+// CIRCUITPY-CHANGE: multiple changes
 
 typedef enum {
     PYEXEC_MODE_FRIENDLY_REPL,

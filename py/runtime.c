@@ -89,7 +89,7 @@ void mp_init(void) {
 
     #if MICROPY_KBD_EXCEPTION
     // initialise the exception object for raising KeyboardInterrupt
-    // CIRCUITPY chained exception support
+    // CIRCUITPY-CHANGE: chained exception support
     mp_obj_exception_initialize0(&MP_STATE_VM(mp_kbd_exception), &mp_type_KeyboardInterrupt);
     #endif
 
@@ -134,7 +134,7 @@ void mp_init(void) {
     }
     #endif
 
-    // CIRCUITPY: do not unmount /
+    // CIRCUITPY-CHANGE: do not unmount /
     #if MICROPY_VFS && 0
     // initialise the VFS sub-system
     MP_STATE_VM(vfs_cur) = NULL;
@@ -248,7 +248,7 @@ mp_obj_t MICROPY_WRAP_MP_LOAD_GLOBAL(mp_load_global)(qstr qst) {
     return elem->value;
 }
 
-// CIRCUITPY noinline
+// CIRCUITPY-CHANGE: noinline
 // https://github.com/adafruit/circuitpython/pull/8071
 mp_obj_t __attribute__((noinline)) mp_load_build_class(void) {
     DEBUG_OP_printf("load_build_class\n");
@@ -950,7 +950,7 @@ mp_obj_t mp_call_method_n_kw_var(bool have_self, size_t n_args_n_kw, const mp_ob
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-// CIRCUITPY noline
+// CIRCUITPY-CHANGE: noline
 void __attribute__((noinline, )) mp_unpack_sequence(mp_obj_t seq_in, size_t num, mp_obj_t *items) {
     size_t seq_len;
     if (mp_obj_is_type(seq_in, &mp_type_tuple) || mp_obj_is_type(seq_in, &mp_type_list)) {
@@ -998,7 +998,7 @@ too_long:
 }
 
 // unpacked items are stored in reverse order into the array pointed to by items
-// CIRCUITPY noinline
+// CIRCUITPY-CHANGE: noinline
 void __attribute__((noinline)) mp_unpack_ex(mp_obj_t seq_in, size_t num_in, mp_obj_t *items) {
     size_t num_left = num_in & 0xff;
     size_t num_right = (num_in >> 8) & 0xff;
@@ -1164,7 +1164,7 @@ void mp_convert_member_lookup(mp_obj_t self, const mp_obj_type_t *type, mp_obj_t
             }
             dest[0] = ((mp_obj_static_class_method_t *)MP_OBJ_TO_PTR(member))->fun;
             dest[1] = MP_OBJ_FROM_PTR(type);
-            // CIRCUITPY
+            // CIRCUITPY-CHANGE
             // https://github.com/adafruit/circuitpython/commit/8fae7d2e3024de6336affc4b2a8fa992c946e017
             #if MICROPY_PY_BUILTINS_PROPERTY
             // If self is MP_OBJ_NULL, we looking at the class itself, not an instance.
@@ -1297,7 +1297,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             // success
             return;
         }
-    // CIRCUITPY https://github.com/adafruit/circuitpython/pull/50
+    // CIRCUITPY-CHANGE: https://github.com/adafruit/circuitpython/pull/50
     #if MICROPY_PY_BUILTINS_PROPERTY
     } else if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
         // generic method lookup
@@ -1334,7 +1334,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
     mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute"));
     #else
     mp_raise_msg_varg(&mp_type_AttributeError,
-        // CIRCUITPY better error message
+        // CIRCUITPY-CHANGE: better error message
         MP_ERROR_TEXT("can't set attribute '%q'"),
         attr);
     #endif
@@ -1393,7 +1393,7 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 STATIC mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
     if ((type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
-        // CIRCUITPY: unneeded declaration
+        // CIRCUITPY-CHANGE: unneeded declaration
         // mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
         return mp_stream_unbuffered_iter;
     } else if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
@@ -1471,7 +1471,7 @@ mp_vm_return_kind_t mp_resume(mp_obj_t self_in, mp_obj_t send_value, mp_obj_t th
     assert((send_value != MP_OBJ_NULL) ^ (throw_value != MP_OBJ_NULL));
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
 
-    // CIRCUITPY distinguishes generators and coroutines.
+    // CIRCUITPY-CHANGE: distinguishes generators and coroutines.
     if (type == &mp_type_gen_instance
         #if MICROPY_PY_ASYNC_AWAIT
         || type == &mp_type_coro_instance
@@ -1597,7 +1597,7 @@ mp_obj_t mp_import_name(qstr name, mp_obj_t fromlist, mp_obj_t level) {
     return mp_builtin___import__(5, args);
 }
 
-// CIRCUITPY noinline
+// CIRCUITPY-CHANGE: noinline
 mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) {
     DEBUG_printf("import from %p %s\n", module, qstr_str(name));
 
@@ -1702,7 +1702,7 @@ mp_obj_t mp_parse_compile_execute(mp_lexer_t *lex, mp_parse_input_kind_t parse_i
 
 #endif // MICROPY_ENABLE_COMPILER
 
-// CIRCUITPY MP_COLD are CIRCUITPY
+// CIRCUITPY-CHANGE: MP_COLD are CIRCUITPY
 NORETURN MP_COLD void m_malloc_fail(size_t num_bytes) {
     DEBUG_printf("memory allocation failed, allocating %u bytes\n", (uint)num_bytes);
     #if MICROPY_ENABLE_GC

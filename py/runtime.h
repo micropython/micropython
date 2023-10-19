@@ -31,7 +31,7 @@
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #include "supervisor/linker.h"
 #include "supervisor/shared/translate/translate.h"
 
@@ -127,7 +127,7 @@ void mp_arg_parse_all_kw_array(size_t n_pos, size_t n_kw, const mp_obj_t *args, 
 NORETURN void mp_arg_error_terse_mismatch(void);
 NORETURN void mp_arg_error_unimpl_kw(void);
 
-// CIRCUITPY arg validation routines
+// CIRCUITPY-CHANGE: arg validation routines
 NORETURN void mp_arg_error_invalid(qstr arg_name);
 mp_int_t mp_arg_validate_int(mp_int_t i, mp_int_t required_i, qstr arg_name);
 mp_int_t mp_arg_validate_int_min(mp_int_t i, mp_int_t min, qstr arg_name);

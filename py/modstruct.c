@@ -181,7 +181,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_
 
 // This function assumes there is enough room in p to store all the values
 STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
-    // CIRCUITPY additional error checking
+    // CIRCUITPY-CHANGE: additional error checking
     size_t size;
     size_t count = calc_size_items(mp_obj_str_get_str(fmt_in), &size);
     if (count != n_args) {

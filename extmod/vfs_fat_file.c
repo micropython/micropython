@@ -257,7 +257,7 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
         m_del_obj(pyb_file_obj_t, o);
         mp_raise_OSError_errno_str(fresult_to_errno_table[res], path_in);
     }
-    // CIRCUITPY does fast seek.
+    // CIRCUITPY-CHANGE: does fast seek.
     // If we're reading, turn on fast seek.
     if (mode == FA_READ) {
         // One call to determine how much space we need.

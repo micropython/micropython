@@ -12,7 +12,7 @@ endif
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 TOP := $(patsubst %/py/mkenv.mk,%,$(THIS_MAKEFILE))
 
-# CIRCUITPY: verbosity differences, STEPECHO
+# CIRCUITPY-CHANGE: verbosity differences, STEPECHO
 # Turn on increased build verbosity by defining BUILD_VERBOSE in your main
 # Makefile or in your environment. You can also use V="steps commands rules" or any combination thereof
 # on the make command line.
@@ -74,7 +74,7 @@ AR = $(CROSS_COMPILE)ar
 MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
 MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
-# CIRCUITPY
+# CIRCUITPY-CHANGE
 PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
 
 MPY_LIB_SUBMODULE_DIR = $(TOP)/lib/micropython-lib

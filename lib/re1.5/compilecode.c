@@ -254,7 +254,7 @@ int re1_5_compilecode(ByteProg *prog, const char *re)
     return 0;
 }
 
-// CIRCUITPY debug as main program
+// CIRCUITPY-CHANGE: debug as main program
 #if defined(DEBUG_COMPILECODE)
 #include <assert.h>
 void re1_5_fatal(char *x) {

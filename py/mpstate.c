@@ -25,7 +25,7 @@
  */
 
 #include "py/mpstate.h"
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #include "supervisor/linker.h"
 
 #if MICROPY_DYNAMIC_COMPILER

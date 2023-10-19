@@ -367,7 +367,7 @@ STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
         if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_ticks >= timeout)) {
             return n_ready;
         }
-        // CIRCUITPY
+        // CIRCUITPY-CHANGE
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             return 0;
@@ -425,7 +425,7 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
         if (!mp_map_slot_is_filled(&poll_set.map, i)) {
             continue;
         }
-        // CIRCUITPY
+        // CIRCUITPY-CHANGE
         RUN_BACKGROUND_TASKS;
 
         poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set.map.table[i].value);

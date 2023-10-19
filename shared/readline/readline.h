@@ -26,7 +26,7 @@
 #ifndef MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
 #define MICROPY_INCLUDED_LIB_MP_READLINE_READLINE_H
 
-// CIRCUITPY: a number of changes
+// CIRCUITPY-CHANGE: a number of changes
 
 #include "py/misc.h"
 

@@ -73,7 +73,7 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
             mp_print_str(print, "\\r");
         } else if (ch == '\t') {
             mp_print_str(print, "\\t");
-        // CIRCUITPY difference: print printable Unicode chars
+        // CIRCUITPY-CHANGE: print printable Unicode chars
         } else if (ch <= 0x1f || (0x7f <= ch && ch <= 0xa0) || ch == 0xad) {
             mp_printf(print, "\\x%02x", ch);
         } else if ((0x2000 <= ch && ch <= 0x200f) || ch == 0x2028 || ch == 0x2029) {

@@ -39,7 +39,7 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
 
-// CIRCUITPY: native_list() and other changes here for broadcom port
+// CIRCUITPY-CHANGE: native_list() and other changes here for broadcom port
 // https://github.com/adafruit/circuitpython/pull/5610
 
 /******************************************************************************/
@@ -293,7 +293,7 @@ inline mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
     return ret;
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_list));
     mp_obj_list_t *self = native_list(args[0]);

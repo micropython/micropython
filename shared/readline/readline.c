@@ -40,7 +40,7 @@
 #define DEBUG_printf(...) (void)0
 #endif
 
-// CIRCUITPY a number of changes
+// CIRCUITPY-CHANGE: a number of changes
 
 #define READLINE_HIST_SIZE (MP_ARRAY_SIZE(MP_STATE_PORT(readline_hist)))
 

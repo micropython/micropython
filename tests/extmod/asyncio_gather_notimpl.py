@@ -7,7 +7,7 @@ except ImportError:
     raise SystemExit
 
 
-# CIRCUITPY provides __await__()
+# CIRCUITPY-CHANGE: CircuitPython provides __await__()
 async def foo():
     return 42
 

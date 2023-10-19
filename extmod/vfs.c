@@ -365,7 +365,7 @@ mp_obj_t mp_vfs_getcwd(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_vfs_getcwd_obj, mp_vfs_getcwd);
 
-// CIRCUITPY: accessible from shared-module/os/__init__.c
+// CIRCUITPY-CHANGE: accessible from shared-module/os/__init__.c
 mp_obj_t mp_vfs_ilistdir_it_iternext(mp_obj_t self_in) {
     mp_vfs_ilistdir_it_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->is_iter) {

@@ -42,7 +42,7 @@
 #define MICROPY_TRACKED_ALLOC          (1)
 #define MICROPY_WARNINGS_CATEGORY      (1)
 
-// CIRCUITPY Disable things never used in circuitpython
+// CIRCUITPY-CHANGE: Disable things never used in circuitpython
 #define MICROPY_PY_CRYPTOLIB          (0)
 #define MICROPY_PY_CRYPTOLIB_CTR      (0)
 #define MICROPY_PY_STRUCT              (0) // uses shared-bindings struct

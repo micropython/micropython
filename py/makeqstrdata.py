@@ -3,7 +3,7 @@ Process raw qstr file and output qstr data with length, hash and data bytes.
 
 This script works with Python 2.7, 3.3 and 3.4.
 
-CIRCUITPY:
+CIRCUITPY-CHANGE:
 For documentation about the format of compressed translated strings, see
 supervisor/shared/translate/translate.h
 """
@@ -272,7 +272,7 @@ def qstr_escape(qst):
     return re.sub(r"[^A-Za-z0-9_]", esc_char, qst)
 
 
-# CIRCUITPY: add translations handling
+# CIRCUITPY-CHANGE: add translations handling
 def parse_input_headers_with_translations(infiles):
     qcfgs = {}
     qstrs = {}
@@ -306,7 +306,7 @@ def parse_input_headers_with_translations(infiles):
                     qcfgs[match.group(1)] = value
                     continue
 
-                # CIRCUITPY
+                # CIRCUITPY-CHANGE
                 match = re.match(r'^TRANSLATE\("(.*)"\)$', line)
                 if match:
                     translations.add(match.group(1))
@@ -345,7 +345,7 @@ def parse_input_headers_with_translations(infiles):
                     order = -190000
                 elif ident.startswith("__"):
                     order -= 100000
-                # CIRCUITPY
+                # CIRCUITPY-CHANGE
                 elif ident.startswith("_lt"):
                     order -= 100000
                 elif ident.startswith("_gt"):
@@ -359,7 +359,7 @@ def parse_input_headers_with_translations(infiles):
     return qcfgs, qstrs, translations
 
 
-# CIRCUITPY: Used externally by mpy-tool.py. Don't pass back translations.
+# CIRCUITPY-CHANGE: Used externally by mpy-tool.py. Don't pass back translations.
 def parse_input_headers(infiles):
     qcfgs, qstrs, translations = parse_input_headers_with_translations(infiles)
     return (qcfgs, qstrs)
@@ -385,7 +385,7 @@ def make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr):
     return '%d, %d, "%s"' % (qhash, qlen, qdata)
 
 
-# CIRCUITPY: add translations
+# CIRCUITPY-CHANGE: add translations
 def print_qstr_data(qcfgs, qstrs, translations):
     # get config variables
     cfg_bytes_len = int(qcfgs["BYTES_IN_LEN"])

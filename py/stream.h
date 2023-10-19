@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_PY_STREAM_H
 
 #include "py/obj.h"
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 #include "py/proto.h"
 #include "py/mperrno.h"
 
@@ -69,7 +69,7 @@ struct mp_stream_seek_t {
 
 // Stream protocol
 typedef struct _mp_stream_p_t {
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     MP_PROTOCOL_HEAD
     // On error, functions should return MP_STREAM_ERROR and fill in *errcode (values
     // are implementation-dependent, but will be exposed to user, e.g. via exception).
@@ -123,7 +123,7 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf, mp_uint_t size, int *errcode,
 #define mp_stream_read_exactly(stream, buf, size, err) mp_stream_rw(stream, buf, size, err, MP_STREAM_RW_READ)
 
 void mp_stream_write_adaptor(void *self, const char *buf, size_t len);
- // CIRCUITPY
+ // CIRCUITPY-CHANGE
 mp_obj_t mp_stream_flush(mp_obj_t self);
 
 #if MICROPY_STREAMS_POSIX_API

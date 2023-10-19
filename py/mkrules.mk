@@ -44,7 +44,7 @@ QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 # can be located. By following this scheme, it allows a single build rule
 # to be used to compile all .c files.
 
-# CIRCUITPY adds STEPECHO
+# CIRCUITPY-CHANGE: adds STEPECHO
 vpath %.S . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.S
 	$(STEPECHO) "CC $<"
@@ -79,7 +79,7 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
   $(RM) -f $(@:.o=.d)
 endef
 
-# CIRCUITPY: add $(DEVICES_MODULES) and $(BUILD)
+# CIRCUITPY-CHANGE: add $(DEVICES_MODULES) and $(BUILD)
 vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES) $(BUILD)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
@@ -191,7 +191,7 @@ CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMICROPY_MODULE_FROZEN_STR
 
 # to build frozen_content.c from a manifest
-# CIRCUITPY: FROZEN_MANIFEST is constructed at build time
+# CIRCUITPY-CHANGE: FROZEN_MANIFEST is constructed at build time
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h $(FROZEN_MANIFEST) | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)

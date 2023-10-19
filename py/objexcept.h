@@ -28,7 +28,7 @@
 
 #include "py/obj.h"
 #include "py/objtuple.h"
-// CIRCUITPY changes here and below for traceback.
+// CIRCUITPY-CHANGE: changes here and below for traceback.
 #include "py/objtraceback.h"
 
 typedef struct _mp_obj_exception_t {

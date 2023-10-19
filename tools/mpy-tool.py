@@ -328,7 +328,7 @@ class Opcode:
         self.extra_arg = extra_arg
 
 
-# CIRCUITPY: we assume MICROPY_OBJ_REPR_C
+# CIRCUITPY-CHANGE: we assume MICROPY_OBJ_REPR_C
 def mp_small_int_fits(i):
     return -0x4_000_000 <= i <= 0x3_FFF_FFF
 

@@ -130,7 +130,7 @@ typedef struct _json_stream_t {
     mp_obj_t stream_obj;
     mp_uint_t (*read)(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode);
     int errcode;
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
     mp_obj_t python_readinto[2 + 1];
     mp_obj_array_t bytearray_obj;
     size_t start;
@@ -154,7 +154,7 @@ STATIC byte json_stream_next(json_stream_t *s) {
     return s->cur;
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 
 // We read from an object's `readinto` method in chunks larger than the json
 // parser needs to reduce the number of function calls done.
@@ -398,7 +398,7 @@ STATIC mp_obj_t _mod_json_load(mp_obj_t stream_obj, bool return_first_json) {
         }
     }
 success:
-    // CIRCUITPY
+    // CIRCUITPY-CHANGE
 
     // It is legal for a stream to have contents after JSON.
     // E.g., A UART is not closed after receiving an object; in load() we will

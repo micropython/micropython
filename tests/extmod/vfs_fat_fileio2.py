@@ -67,7 +67,7 @@ try:
 except OSError as e:
     print(e.errno == errno.ENOENT)
 
-# CIRCUITPY test
+# CIRCUITPY-CHANGE: test
 try:
     vfs.rename("foo_dir", "foo_dir/inside_itself")
 except OSError as e:

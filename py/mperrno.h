@@ -147,7 +147,7 @@
 #include "py/obj.h"
 
 qstr mp_errno_to_str(mp_obj_t errno_val);
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len);
 #endif
 
