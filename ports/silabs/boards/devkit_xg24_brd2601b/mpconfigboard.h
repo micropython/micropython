@@ -34,6 +34,10 @@
 #define BOARD_HSE_SOURCE (RCC_HSE_BYPASS)
 #define BOARD_HAS_LOW_SPEED_CRYSTAL (0)
 
+#define CIRCUITPY_RGB_STATUS_R (&pin_PD2)
+#define CIRCUITPY_RGB_STATUS_G (&pin_PA4)
+#define CIRCUITPY_RGB_STATUS_B (&pin_PB0)
+
 // On-board flash
 #define SPI_FLASH_MOSI_PIN          (&pin_PC3)
 #define SPI_FLASH_MISO_PIN          (&pin_PC2)
