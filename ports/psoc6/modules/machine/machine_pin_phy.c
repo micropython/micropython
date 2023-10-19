@@ -2,7 +2,9 @@
 #include "py/mphal.h"
 #include "machine_pin_phy.h"
 
-machine_pin_phy_obj_t machine_pin_phy_obj[] = {
+// extern const uint8_t machine_pin_num_of_cpu_pins;
+
+/*machine_pin_phy_obj_t machine_pin_phy_obj[] = {
     {PIN_P0_0, "P0_0",  PIN_PHY_FUNC_NONE},
     {PIN_P0_1, "P0_1",  PIN_PHY_FUNC_NONE},
     {PIN_P0_2, "P0_2",  PIN_PHY_FUNC_NONE},
@@ -119,7 +121,7 @@ machine_pin_phy_obj_t machine_pin_phy_obj[] = {
 
     {PIN_USBDP, "USBDP",  PIN_PHY_FUNC_NONE},
     {PIN_USBDM, "USBDM",  PIN_PHY_FUNC_NONE}
-};
+};*/
 
 // Function definitions
 // helper function to translate pin_name(string) into machine_pin_io_obj_t index.
@@ -127,7 +129,7 @@ int pin_find(mp_obj_t pin) {
     int wanted_pin = -1;
     if (mp_obj_is_small_int(pin)) {
         int pin_addr = mp_obj_get_int(pin);
-        for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_phy_obj); i++) {
+        for (int i = 0; i < machine_pin_num_of_cpu_pins; i++) {
             if (machine_pin_phy_obj[i].addr == pin_addr) {
                 wanted_pin = i;
                 break;
@@ -137,7 +139,7 @@ int pin_find(mp_obj_t pin) {
         // Search by name
         size_t slen;
         const char *s = mp_obj_str_get_data(pin, &slen);
-        for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_phy_obj); i++) {
+        for (int i = 0; i < machine_pin_num_of_cpu_pins; i++) {
             if (slen == strlen(machine_pin_phy_obj[i].name) && strncmp(s, machine_pin_phy_obj[i].name, slen) == 0) {
                 wanted_pin = i;
                 break;
@@ -145,7 +147,7 @@ int pin_find(mp_obj_t pin) {
         }
     }
 
-    if (!(0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_phy_obj))) {
+    if (!(0 <= wanted_pin && wanted_pin < machine_pin_num_of_cpu_pins)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid pin: Pin not defined!"));
     }
 
@@ -175,7 +177,7 @@ int pin_addr_by_name(mp_obj_t pin) {
 machine_pin_phy_obj_t *pin_phy_find_by_name(mp_obj_t pin_name) {
     size_t slen;
     const char *s = mp_obj_str_get_data(pin_name, &slen);
-    for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_phy_obj); i++) {
+    for (int i = 0; i < machine_pin_num_of_cpu_pins; i++) {
         if (slen == strlen(machine_pin_phy_obj[i].name) && strncmp(s, machine_pin_phy_obj[i].name, slen) == 0) {
             return &machine_pin_phy_obj[i];
         }
@@ -219,7 +221,7 @@ void pin_phy_free(machine_pin_phy_obj_t *pin_phy) {
 
 
 void mod_pin_phy_deinit(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(machine_pin_phy_obj); i++) {
+    for (int i = 0; i < machine_pin_num_of_cpu_pins; i++) {
         pin_phy_free(&machine_pin_phy_obj[i]);
     }
 }

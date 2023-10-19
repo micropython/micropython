@@ -236,7 +236,7 @@ build: mtb_get_build_flags make_pins_csv $(MPY_PATH_TO_MAIN_MAKEFILE) $(MPY_MAIN
 
 all: build
 
-#clean: mtb_clean
+clean: mtb_clean
 
 rebuild: clean mtb_clean all
 

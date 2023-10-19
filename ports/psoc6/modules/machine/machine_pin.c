@@ -21,13 +21,13 @@ typedef struct _machine_pin_io_obj_t {
     uint8_t pull;
 } machine_pin_io_obj_t;
 
-#define MAX_PIN_IO MP_ARRAY_SIZE(machine_pin_phy_obj)
-machine_pin_io_obj_t *pin_io[MAX_PIN_IO] = {NULL};
+
+machine_pin_io_obj_t *pin_io[102] = {NULL};
 
 static inline machine_pin_io_obj_t *pin_io_allocate(mp_obj_t pin_name) {
     machine_pin_phy_obj_t *pin_phy = pin_phy_realloc(pin_name, PIN_PHY_FUNC_DIO);
     uint16_t i;
-    for (i = 0; i < MAX_PIN_IO; i++) {
+    for (i = 0; i < machine_pin_num_of_cpu_pins; i++) {
         if (pin_io[i] == NULL) {
             break;
         }
@@ -40,7 +40,7 @@ static inline machine_pin_io_obj_t *pin_io_allocate(mp_obj_t pin_name) {
 
 static inline void pin_io_free(machine_pin_io_obj_t *pin) {
     pin_phy_free(pin->pin_phy);
-    for (uint16_t i = 0; i < MAX_PIN_IO; i++) {
+    for (uint16_t i = 0; i < machine_pin_num_of_cpu_pins; i++) {
         if (pin_io[i] == pin) {
             pin_io[i] = NULL;
         }
@@ -344,7 +344,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
 void mod_pin_deinit() {
-    for (uint8_t i = 0; i < MAX_PIN_IO; i++) {
+    for (uint8_t i = 0; i < machine_pin_num_of_cpu_pins; i++) {
         if (pin_io[i] != NULL) {
             machine_pin_obj_deinit(pin_io[i]);
         }

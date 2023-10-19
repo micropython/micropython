@@ -8,7 +8,7 @@ import os
 prefix_content = '#include <stdio.h> \n \
 #include "py/obj.h" \n \
 #include "py/mphal.h" \n \
-#include "modules/machine/pins.h"\n '
+#include "modules/machine/machine_pin_phy.h"\n '
 
 
 class NamedPin(object):
@@ -28,6 +28,7 @@ class Pin(object):
         self._name = name
         self._pin_addr = pin_addr
         self._pin_exp = pin_exp
+        self._pin_func = "PIN_PHY_FUNC_NONE"
         self._board_pin = False
 
     def cpu_pin_name(self):
@@ -44,7 +45,7 @@ class Pin(object):
 
     def print(self):
         """print(
-            "const machine_pin_obj_t pin_{:s}_obj = PIN({:s}, {:s});".format(
+            "const machine_pin_phy_obj_t pin_{:s}_obj = PIN({:s}, {:s});".format(
                 self._name,
                 self._name,
                 self._pin_addr,
@@ -54,13 +55,16 @@ class Pin(object):
 
     def print_header(self, hdr_file):
         n = self.cpu_pin_name()
-        hdr_file.write("extern const machine_pin_obj_t pin_{:s}_obj;\n".format(n))
+        hdr_file.write("extern const machine_pin_phy_obj_t pin_{:s}_obj;\n".format(n))
 
     def qstr_list(self):
         return [self._name]
 
     def print_const_table_entry(self):
-        print('{{{{ &machine_pin_type}},{:s}, "{:s}"}},'.format(self._pin_exp, self._name))
+        print('{{{:s}, "{:s}", {:s}}},'.format(self._pin_exp, self._name, self._pin_func))
+
+    # def print_const_table_entry(self):
+    #    print('{{{{ &machine_pin_type}},{:s}, "{:s}"}},'.format(self._pin_exp, self._name))
 
 
 class Pins(object):
@@ -68,6 +72,7 @@ class Pins(object):
         self.cpu_pins = []  # list of NamedPin objects
         self.board_pins = []  # list of NamedPin objects
         self.board_pin_csv_path = ""
+        self.num_cpu_pins = 0
 
     def find_pin(self, cpu_pin_name):
         for named_pin in self.cpu_pins:
@@ -76,17 +81,17 @@ class Pins(object):
                 return pin
 
     def print_const_table(self):
-        num_cpu_pins = 0
+        # num_cpu_pins = 0
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
-                pin.set_board_index(num_cpu_pins)
-                num_cpu_pins += 1
+                pin.set_board_index(self.num_cpu_pins)
+                self.num_cpu_pins += 1
         print("")
         print(prefix_content)
-        print("const uint8_t machine_pin_num_of_cpu_pins = {:d};".format(num_cpu_pins))
+        print("const uint8_t machine_pin_num_of_cpu_pins = {:d};".format(self.num_cpu_pins))
         print("")
-        print("const machine_pin_obj_t machine_pin_obj[{:d}] = {{".format(num_cpu_pins))
+        print("machine_pin_phy_obj_t machine_pin_phy_obj[{:d}] = {{".format(self.num_cpu_pins))
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
@@ -131,7 +136,7 @@ class Pins(object):
             pin = named_pin.pin()
             if pin.is_board_pin():
                 print(
-                    "  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&machine_pin_obj[{:d}]) }},".format(
+                    "  {{ MP_ROM_QSTR(MP_QSTR_{:s}), MP_ROM_PTR(&machine_pin_phy_obj[{:d}]) }},".format(
                         named_pin.name(), num_cpu_pins
                     )
                 )
