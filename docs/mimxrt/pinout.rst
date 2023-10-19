@@ -28,7 +28,7 @@ MIMXRT1060-EVK     Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1064-EVK     Debug USB      D0/D1        D7/D6        D8/D9
 MIMXRT1170-EVK     Debug USB      D0/D1       D12/D11      D10/D13
 Adafruit Metro M7     -           D0/D1        D7/D3        A1/A0
-Olimex RT1010Py       -          RxD/TxD       D5/D6           -
+Olimex RT1010Py       -          RxD/TxD       D7/D8        D5/D6
 Seeed ARCH MIX        -         J3_19/J3_20  J4_16/J4_17  J4_06/J4_07
 =================  ===========  ===========  ===========  ===========
 
