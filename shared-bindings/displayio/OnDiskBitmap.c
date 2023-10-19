@@ -151,7 +151,7 @@ STATIC MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondisk
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_ondiskbitmap_type,
     MP_QSTR_OnDiskBitmap,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, displayio_ondiskbitmap_make_new,
     locals_dict, &displayio_ondiskbitmap_locals_dict
     );

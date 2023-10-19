@@ -109,6 +109,6 @@ STATIC MP_DEFINE_CONST_DICT(fontio_builtinfont_locals_dict, fontio_builtinfont_l
 MP_DEFINE_CONST_OBJ_TYPE(
     fontio_builtinfont_type,
     MP_QSTR_BuiltinFont,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &fontio_builtinfont_locals_dict
     );

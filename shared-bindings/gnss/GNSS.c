@@ -172,7 +172,7 @@ STATIC MP_DEFINE_CONST_DICT(gnss_locals_dict, gnss_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     gnss_type,
     MP_QSTR_GNSS,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, gnss_make_new,
     locals_dict, &gnss_locals_dict
     );

@@ -90,6 +90,7 @@ CFLAGS += \
 	-DCIRCUITPY_TRACEBACK=1 \
 	-DCIRCUITPY_ZLIB=1
 
-SRC_C += coverage.c
+# CIRCUITPY-CHANGE: test native base classes.
+SRC_C += coverage.c native_base_class.c
 SRC_CXX += coveragecpp.cpp
 CIRCUITPY_MESSAGE_COMPRESSION_LEVEL = 1

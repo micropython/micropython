@@ -292,7 +292,7 @@ STATIC MP_DEFINE_CONST_DICT(pulseio_pulsein_locals_dict, pulseio_pulsein_locals_
 MP_DEFINE_CONST_OBJ_TYPE(
     pulseio_pulsein_type,
     MP_QSTR_PulseIn,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, pulseio_pulsein_make_new,
     locals_dict, &pulseio_pulsein_locals_dict,
     subscr, pulsein_subscr,

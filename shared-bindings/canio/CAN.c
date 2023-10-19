@@ -346,7 +346,7 @@ STATIC MP_DEFINE_CONST_DICT(canio_can_locals_dict, canio_can_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_can_type,
     MP_QSTR_CAN,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, canio_can_make_new,
     locals_dict, &canio_can_locals_dict
     );

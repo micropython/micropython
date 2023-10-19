@@ -220,7 +220,7 @@ STATIC MP_DEFINE_CONST_DICT(frequencyio_frequencyin_locals_dict, frequencyio_fre
 MP_DEFINE_CONST_OBJ_TYPE(
     frequencyio_frequencyin_type,
     MP_QSTR_frequencyin,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, frequencyio_frequencyin_make_new,
     locals_dict, &frequencyio_frequencyin_locals_dict
     );

@@ -294,7 +294,7 @@ STATIC const synthio_block_proto_t lfo_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     synthio_lfo_type,
     MP_QSTR_LFO,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, synthio_lfo_make_new,
     locals_dict, &synthio_lfo_locals_dict,
     print, lfo_print,

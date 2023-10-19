@@ -471,7 +471,7 @@ STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_adapter_type,
     MP_QSTR_Adapter,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, bleio_adapter_make_new,
     locals_dict, &bleio_adapter_locals_dict
     );

@@ -294,7 +294,7 @@ STATIC const synthio_block_proto_t math_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     synthio_math_type,
     MP_QSTR_Math,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, synthio_math_make_new,
     locals_dict, &synthio_math_locals_dict,
     print, math_print,

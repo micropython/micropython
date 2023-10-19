@@ -275,7 +275,7 @@ STATIC MP_DEFINE_CONST_DICT(audiobusio_i2sout_locals_dict, audiobusio_i2sout_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     audiobusio_i2sout_type,
     MP_QSTR_I2SOut,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audiobusio_i2sout_make_new,
     locals_dict, &audiobusio_i2sout_locals_dict
     );

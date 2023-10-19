@@ -218,7 +218,7 @@ STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_palette_type,
     MP_QSTR_Palette,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, displayio_palette_make_new,
     locals_dict, &displayio_palette_locals_dict,
     subscr, palette_subscr,

@@ -862,7 +862,7 @@ STATIC MP_DEFINE_CONST_DICT(rp2pio_statemachine_locals_dict, rp2pio_statemachine
 MP_DEFINE_CONST_OBJ_TYPE(
     rp2pio_statemachine_type,
     MP_QSTR_StateMachine,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, rp2pio_statemachine_make_new,
     locals_dict, &rp2pio_statemachine_locals_dict
     );

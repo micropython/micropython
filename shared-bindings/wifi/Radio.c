@@ -780,6 +780,6 @@ STATIC MP_DEFINE_CONST_DICT(wifi_radio_locals_dict, wifi_radio_locals_dict_table
 MP_DEFINE_CONST_OBJ_TYPE(
     wifi_radio_type,
     MP_QSTR_Radio,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &wifi_radio_locals_dict
     );

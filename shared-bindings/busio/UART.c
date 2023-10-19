@@ -465,7 +465,7 @@ STATIC const mp_stream_p_t uart_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     busio_uart_type,
     MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, busio_uart_make_new,
     locals_dict, &busio_uart_locals_dict,
     iter, mp_stream_unbuffered_iter,

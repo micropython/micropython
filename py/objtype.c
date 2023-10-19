@@ -193,6 +193,10 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
                     // do a lookup, not a (base) type in which we found the class method.
                     const mp_obj_type_t *org_type = (const mp_obj_type_t *)lookup->obj;
                     mp_convert_member_lookup(MP_OBJ_NULL, org_type, elem->value, lookup->dest);
+                } else if (mp_obj_is_type(elem->value, &mp_type_property)) {
+                    // CIRCUITPY-CHANGE: CircuitPython uses properties on native classes, so we always return them.
+                    lookup->dest[0] = elem->value;
+                    return;
                 } else {
                     mp_obj_instance_t *obj = lookup->obj;
                     mp_obj_t obj_obj;
@@ -1172,9 +1176,10 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
             #endif
         }
         #if ENABLE_SPECIAL_ACCESSORS
+        // Inherit the special accessors flag.
+        base_flags |= t->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
         if (mp_obj_is_instance_type(t)) {
             t->flags |= MP_TYPE_FLAG_IS_SUBCLASSED;
-            base_flags |= t->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
         }
         #endif
     }

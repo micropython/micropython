@@ -453,7 +453,7 @@ STATIC const audiosample_p_t synthio_synthesizer_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     synthio_synthesizer_type,
     MP_QSTR_Synthesizer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, synthio_synthesizer_make_new,
     locals_dict, &synthio_synthesizer_locals_dict,
     protocol, &synthio_synthesizer_proto

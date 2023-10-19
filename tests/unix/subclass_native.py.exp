@@ -1,0 +1,11 @@
+.test: direct kwarg
+native base class .test set to: 'test set directly'
+.test: test set directly
+.test: subclass kwarg
+native base class .test set to: 'test set indirectly'
+.test: test set indirectly
+._new_attribute True
+.test: super init suffix
+native base class .test set to: 'test set indirectly through b'
+.test: test set indirectly through b
+._new_attribute True

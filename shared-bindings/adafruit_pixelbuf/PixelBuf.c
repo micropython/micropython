@@ -371,7 +371,7 @@ STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_loc
 MP_DEFINE_CONST_OBJ_TYPE(
     pixelbuf_pixelbuf_type,
     MP_QSTR_PixelBuf,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &pixelbuf_pixelbuf_locals_dict,
     make_new, pixelbuf_pixelbuf_make_new,
     subscr, pixelbuf_pixelbuf_subscr,

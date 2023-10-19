@@ -156,7 +156,7 @@ STATIC MP_DEFINE_CONST_DICT(audiomixer_mixervoice_locals_dict, audiomixer_mixerv
 MP_DEFINE_CONST_OBJ_TYPE(
     audiomixer_mixervoice_type,
     MP_QSTR_MixerVoice,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audiomixer_mixervoice_make_new,
     locals_dict, &audiomixer_mixervoice_locals_dict
     );

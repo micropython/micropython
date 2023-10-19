@@ -202,7 +202,7 @@ STATIC MP_DEFINE_CONST_DICT(bleio_address_locals_dict, bleio_address_locals_dict
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_address_type,
     MP_QSTR_Address,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, bleio_address_make_new,
     print, bleio_address_print,
     locals_dict, &bleio_address_locals_dict,

@@ -121,6 +121,6 @@ STATIC MP_DEFINE_CONST_DICT(supervisor_status_bar_locals_dict, supervisor_status
 MP_DEFINE_CONST_OBJ_TYPE(
     supervisor_status_bar_type,
     MP_QSTR_Status_Bar,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &supervisor_status_bar_locals_dict
     );

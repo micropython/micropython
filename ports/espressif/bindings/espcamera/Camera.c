@@ -995,7 +995,7 @@ STATIC MP_DEFINE_CONST_DICT(espcamera_camera_locals_dict, espcamera_camera_local
 MP_DEFINE_CONST_OBJ_TYPE(
     espcamera_camera_type,
     MP_QSTR_Camera,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, espcamera_camera_make_new,
     locals_dict, &espcamera_camera_locals_dict
     );

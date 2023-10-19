@@ -254,6 +254,6 @@ STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_l
 MP_DEFINE_CONST_OBJ_TYPE(
     supervisor_runtime_type,
     MP_QSTR_Runtime,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &supervisor_runtime_locals_dict
     );

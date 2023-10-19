@@ -168,7 +168,7 @@ STATIC const mp_stream_p_t eventqueue_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     keypad_eventqueue_type,
     MP_QSTR_EventQueue,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     unary_op, keypad_eventqueue_unary_op,
     #if MICROPY_PY_SELECT
     protocol, &eventqueue_p,

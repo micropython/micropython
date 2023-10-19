@@ -407,7 +407,7 @@ STATIC MP_DEFINE_CONST_DICT(epaperdisplay_epaperdisplay_locals_dict, epaperdispl
 MP_DEFINE_CONST_OBJ_TYPE(
     epaperdisplay_epaperdisplay_type,
     MP_QSTR_EPaperDisplay,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, epaperdisplay_epaperdisplay_make_new,
     locals_dict, &epaperdisplay_epaperdisplay_locals_dict
     );

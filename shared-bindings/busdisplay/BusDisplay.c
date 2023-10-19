@@ -509,7 +509,7 @@ STATIC MP_DEFINE_CONST_DICT(busdisplay_busdisplay_locals_dict, busdisplay_busdis
 MP_DEFINE_CONST_OBJ_TYPE(
     busdisplay_busdisplay_type,
     MP_QSTR_BusDisplay,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, busdisplay_busdisplay_make_new,
     locals_dict, &busdisplay_busdisplay_locals_dict
     );

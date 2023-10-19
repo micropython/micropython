@@ -362,7 +362,7 @@ STATIC mp_obj_t espnow_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
 MP_DEFINE_CONST_OBJ_TYPE(
     espnow_type,
     MP_QSTR_ESPNow,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, espnow_make_new,
     locals_dict, &espnow_locals_dict,
     protocol, &espnow_stream_p,

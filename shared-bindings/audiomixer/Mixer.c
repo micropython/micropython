@@ -275,7 +275,7 @@ STATIC const audiosample_p_t audiomixer_mixer_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     audiomixer_mixer_type,
     MP_QSTR_Mixer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audiomixer_mixer_make_new,
     locals_dict, &audiomixer_mixer_locals_dict,
     protocol, &audiomixer_mixer_proto
