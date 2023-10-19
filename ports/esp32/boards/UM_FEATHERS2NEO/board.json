@@ -17,7 +17,7 @@
         "5x5 RGB LED Matrix"
     ],
     "images": [
-        "FeatherS2_Neo_White_Product2.jpg"
+        "unexpectedmaker_feathers2neo.jpg"
     ],
     "mcu": "esp32s2",
     "product": "Feather S2 Neo",
