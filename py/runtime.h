@@ -163,6 +163,9 @@ static inline void mp_globals_set(mp_obj_dict_t *d) {
     MP_STATE_THREAD(dict_globals) = d;
 }
 
+void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in);
+void mp_call_function_1_from_nlr_jump_callback(void *ctx_in);
+
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
 mp_obj_t mp_load_build_class(void);

@@ -248,6 +248,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     bleio_connection_type,
     MP_QSTR_Connection,
     MP_TYPE_FLAG_NONE,
-    locals_dict, &bleio_connection_locals_dict,
-    unary_op, mp_generic_unary_op
+    locals_dict, &bleio_connection_locals_dict
     );

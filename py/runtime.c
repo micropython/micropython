@@ -1393,7 +1393,8 @@ mp_obj_t mp_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
 
 STATIC mp_fun_1_t type_get_iternext(const mp_obj_type_t *type) {
     if ((type->flags & MP_TYPE_FLAG_ITER_IS_STREAM) == MP_TYPE_FLAG_ITER_IS_STREAM) {
-        mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
+        // CIRCUITPY: unneeded declaration
+        // mp_obj_t mp_stream_unbuffered_iter(mp_obj_t self);
         return mp_stream_unbuffered_iter;
     } else if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
         return (mp_fun_1_t)MP_OBJ_TYPE_GET_SLOT(type, iter);

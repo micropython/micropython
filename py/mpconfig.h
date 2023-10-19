@@ -26,6 +26,11 @@
 #ifndef MICROPY_INCLUDED_PY_MPCONFIG_H
 #define MICROPY_INCLUDED_PY_MPCONFIG_H
 
+// Is this a CircuitPython build?
+#ifndef CIRCUITPY
+#define CIRCUITPY 0
+#endif
+
 // In CircuitPython, version info is in genhdr/mpversion.h.
 #if CIRCUITPY
 #include "genhdr/mpversion.h"
@@ -52,11 +57,6 @@
 // This file contains default configuration settings for MicroPython.
 // You can override any of the options below using mpconfigport.h file
 // located in a directory of your port.
-
-// Is this a CircuitPython build?
-#ifndef CIRCUITPY
-#define CIRCUITPY 0
-#endif
 
 // mpconfigport.h is a file containing configuration settings for a
 // particular port. mpconfigport.h is actually a default name for
@@ -540,6 +540,15 @@
 #define MICROPY_OPT_COMPUTED_GOTO (0)
 #endif
 
+// CIRCUITPY
+// Whether to save trade flash space for speed in MICROPY_OPT_COMPUTED_GOTO.
+// Costs about 3% speed, saves about 1500 bytes space.  In addition to the assumptions
+// of MICROPY_OPT_COMPUTED_GOTO, also assumes that mp_execute_bytecode is less than
+// 32kB in size.
+#ifndef MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE
+#define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (0)
+#endif
+
 // Optimise the fast path for loading attributes from instance types. Increases
 // Thumb2 code size by about 48 bytes.
 #ifndef MICROPY_OPT_LOAD_ATTR_FAST_PATH
@@ -595,6 +604,12 @@
 // Whether any readers have been defined
 #ifndef MICROPY_HAS_FILE_READER
 #define MICROPY_HAS_FILE_READER (MICROPY_READER_POSIX || MICROPY_READER_VFS)
+#endif
+
+// CIRCUITPY
+// Number of VFS mounts to persist across soft-reset.
+#ifndef MICROPY_FATFS_NUM_PERSISTENT
+#define MICROPY_FATFS_NUM_PERSISTENT (0)
 #endif
 
 // Hook for the VM at the start of the opcode loop (can contain variable
@@ -1595,6 +1610,7 @@ typedef double mp_float_t;
 // TODO? CIRCUITPY_ZLIB instead
 #ifndef MICROPY_PY_ZLIB
 #define MICROPY_PY_ZLIB (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES)
+#endif
 
 // Whether to provide "deflate" module (decompression-only by default)
 #ifndef MICROPY_PY_DEFLATE
@@ -1977,6 +1993,19 @@ typedef double mp_float_t;
 #define MP_WEAK __attribute__((weak))
 #endif
 
+// CIRCUITPY
+// Modifier for functions which should not be instrumented when tracing with
+// -finstrument-functions
+#ifndef MP_NO_INSTRUMENT
+#define MP_NO_INSTRUMENT __attribute__((no_instrument_function))
+#endif
+
+// CIRCUITPY
+// Modifier for functions which should ideally inlined
+#ifndef MP_INLINE
+#define MP_INLINE inline MP_NO_INSTRUMENT
+#endif
+
 // Modifier for functions which should be never inlined
 #ifndef MP_NOINLINE
 #define MP_NOINLINE __attribute__((noinline))
@@ -1995,6 +2024,13 @@ typedef double mp_float_t;
 // Condition is likely to be false, to help branch prediction
 #ifndef MP_UNLIKELY
 #define MP_UNLIKELY(x) __builtin_expect((x), 0)
+#endif
+
+// CIRCUITPY
+// Modifier for functions which aren't often used. Calls will also be considered
+// unlikely. Section names are `.text.unlikely` for use in linker scripts.
+#ifndef MP_COLD
+#define MP_COLD __attribute__((cold))
 #endif
 
 // To annotate that code is unreachable

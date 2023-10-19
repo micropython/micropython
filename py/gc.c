@@ -260,14 +260,6 @@ void gc_add(void *start, void *end) {
     prev_area->next = area;
 }
 
-// CIRCUITPY
-// TODO FOR MERGE: fix this for multiple areas??
-void gc_deinit(void) {
-    // Run any finalisers before we stop using the heap.
-    gc_sweep_all();
-    MP_STATIC_ASSERT(!MICROPY_GC_SPLIT_HEAP);
-    memset(&MP_STATE_MEM(area), 0, sizeof(MP_STATE_MEM(area)));
-
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 // Try to automatically add a heap area large enough to fulfill 'failed_alloc'.
 STATIC bool gc_try_add_heap(size_t failed_alloc) {
@@ -345,6 +337,15 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
 #endif
 
 #endif
+
+// CIRCUITPY
+// TODO FOR MERGE: fix this for multiple areas??
+void gc_deinit(void) {
+    // Run any finalisers before we stop using the heap.
+    gc_sweep_all();
+    MP_STATIC_ASSERT(!MICROPY_GC_SPLIT_HEAP);
+    memset(&MP_STATE_MEM(area), 0, sizeof(MP_STATE_MEM(area)));
+}
 
 void gc_lock(void) {
     // This does not need to be atomic or have the GC mutex because:

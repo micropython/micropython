@@ -103,8 +103,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_coroutine,
     MP_TYPE_FLAG_BINDS_SELF,
     GEN_WRAP_TYPE_ATTR
-    call, gen_wrap_call,
-    unary_op, mp_generic_unary_op
+    call, gen_wrap_call
     );
 #endif
 
@@ -191,8 +190,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_coroutine,
     MP_TYPE_FLAG_BINDS_SELF,
     GEN_WRAP_TYPE_ATTR
-    call, native_gen_wrap_call,
-    unary_op, mp_generic_unary_op
+    call, native_gen_wrap_call
     );
 #endif
 
@@ -475,7 +473,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_coroutine,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,
     print, coro_instance_print,
-    unary_op, mp_generic_unary_op,
     iter, gen_instance_iternext,
     locals_dict, &coro_instance_locals_dict
     );

@@ -59,8 +59,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     cyw43_pin_type,
     MP_QSTR_CywPin,
     MP_TYPE_FLAG_NONE,
-    print, shared_bindings_microcontroller_pin_print,
-    unary_op, mp_generic_unary_op
+    print, shared_bindings_microcontroller_pin_print
     );
 
 //| PM_STANDARD: int

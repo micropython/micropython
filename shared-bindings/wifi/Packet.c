@@ -63,6 +63,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Packet,
     MP_TYPE_FLAG_NONE,
     print, wifi_packet_print,
-    locals_dict, &wifi_packet_locals_dict,
-    unary_op, mp_generic_unary_op
+    locals_dict, &wifi_packet_locals_dict
     );

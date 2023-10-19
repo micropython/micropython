@@ -51,7 +51,8 @@
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Socket."""
 //|         ...
-// Provided by mp_generic_unary_op().
+// Provided inherently.
+// See https://github.com/micropython/micropython/pull/10348.
 
 //|     def __enter__(self) -> Socket:
 //|         """No-op used by Context Managers."""
@@ -452,6 +453,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_Socket,
     MP_TYPE_FLAG_NONE,
     locals_dict, &socketpool_socket_locals_dict,
-    unary_op, mp_generic_unary_op,
     protocol, &socket_stream_p
     );

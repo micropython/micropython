@@ -48,7 +48,8 @@
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Socket."""
 //|         ...
-// Provided by mp_generic_unary_op().
+// Provided by automatic inclusion of hash()
+// https://github.com/micropython/micropython/pull/10348
 
 //|     def __enter__(self) -> SSLSocket:
 //|         """No-op used by Context Managers."""
@@ -301,7 +302,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     ssl_sslsocket_type,
     MP_QSTR_SSLSocket,
     MP_TYPE_FLAG_NONE,
-    locals_dict, &ssl_sslsocket_locals_dict,
-    unary_op, mp_generic_unary_op
-
+    locals_dict, &ssl_sslsocket_locals_dict
     );

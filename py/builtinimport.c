@@ -31,6 +31,8 @@
 #include <assert.h>
 
 #include "py/compile.h"
+// CIRCUITPY: for gc_collect() after each import
+#include "py/gc.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"
 #include "py/runtime.h"
@@ -136,7 +138,6 @@ STATIC mp_import_stat_t stat_top_level(qstr mod_name, vstr_t *dest) {
             return stat;
         }
     }
-    #endif
 
     // sys.path was empty or no matches, do not search the filesystem or
     // frozen code.

@@ -31,10 +31,10 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 
-#if MICROPY_PY_UZLIB
+#if MICROPY_PY_ZLIB
 
 #define UZLIB_CONF_PARANOID_CHECKS (1)
-#include "lib/uzlib/tinf.h"
+#include "lib/uzlib/uzlib.h"
 
 #if 0 // print debugging info
 #define DEBUG_printf DEBUG_printf
@@ -243,4 +243,4 @@ MP_REGISTER_MODULE(MP_QSTR_zlib, mp_module_uzlib);
 #include "lib/uzlib/adler32.c"
 #include "lib/uzlib/crc32.c"
 
-#endif // MICROPY_PY_UZLIB
+#endif // MICROPY_PY_ZLIB
