@@ -53,6 +53,7 @@
 #include "extmod/vfs_posix.h"
 #include "genhdr/mpversion.h"
 #include "input.h"
+#include "shared/runtime/pyexec.h"
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;
@@ -319,6 +320,7 @@ STATIC void print_help(char **argv) {
         "usage: %s [<opts>] [-X <implopt>] [-c <command> | -m <module> | <filename>]\n"
         "Options:\n"
         "-h : print this help message\n"
+        "-e : embedded mode: run 'boot.py', enable raw input\n"
         "-i : enable inspection via REPL after running command/module/file\n"
         #if MICROPY_DEBUG_PRINTERS
         "-v : verbose (trace various operations); can be multiple\n"
@@ -622,6 +624,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;
     bool inspect = false;
+    bool embed = false;
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-i") == 0) {
@@ -634,6 +637,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 set_sys_argv(argv, argc, a + 2); // Then what comes after the command
                 ret = do_str(argv[a + 1]);
                 break;
+            } else if (strcmp(argv[a], "-e") == 0) {
+                embed = true;
+                pyexec_file_if_exists("boot.py");
             } else if (strcmp(argv[a], "-m") == 0) {
                 if (a + 1 >= argc) {
                     return invalid_args();
@@ -729,7 +735,27 @@ MP_NOINLINE int main_(int argc, char **argv) {
         inspect = true;
     }
     if (ret == NOTHING_EXECUTED || inspect) {
-        if (isatty(0) || inspect) {
+        if (embed) {
+            // Run main.py if not told otherwise
+            if (ret == NOTHING_EXECUTED) {
+                ret = pyexec_file_if_exists("main.py");
+                if (ret & PYEXEC_FORCED_EXIT) {
+                    goto soft_reset_exit;
+                }
+            }
+            ret = 0;
+            for (;;) {
+                if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+                    if (pyexec_raw_repl() != 0) {
+                        break;
+                    }
+                } else {
+                    if (pyexec_friendly_repl() != 0) {
+                        break;
+                    }
+                }
+            }
+        } else if (isatty(0) || inspect) {
             prompt_read_history();
             ret = do_repl();
             prompt_write_history();
@@ -737,6 +763,8 @@ MP_NOINLINE int main_(int argc, char **argv) {
             ret = execute_from_lexer(LEX_SRC_STDIN, NULL, MP_PARSE_FILE_INPUT, false);
         }
     }
+
+soft_reset_exit:
 
     #if MICROPY_PY_SYS_SETTRACE
     MP_STATE_THREAD(prof_trace_callback) = MP_OBJ_NULL;
