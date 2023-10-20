@@ -25,15 +25,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
+
 #include <string.h>
-
-#include "py/nlr.h"
-#include "py/runtime.h"
 #include "py/mphal.h"
-
-#if MICROPY_PY_MACHINE_HW_PWM
-
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "pwm.h"
@@ -154,11 +150,6 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 /* MicroPython bindings for machine API                                       */
 
 STATIC void machine_hard_pwm_start(const machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_deinit(const machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_freq_set(const machine_pwm_obj_t *self, mp_int_t freq);
-STATIC void mp_machine_pwm_duty_set(const machine_pwm_obj_t *self, mp_int_t duty);
-STATIC void mp_machine_pwm_duty_set_u16(const machine_pwm_obj_t *self, mp_int_t duty_u16);
-STATIC void mp_machine_pwm_duty_set_ns(const machine_pwm_obj_t *self, mp_int_t duty_ns);
 
 static const mp_arg_t allowed_args[] = {
     { MP_QSTR_pin,      MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -171,7 +162,7 @@ static const mp_arg_t allowed_args[] = {
     { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
 };
 
-STATIC void mp_machine_pwm_init_helper(const machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_pin, ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_device, ARG_channel };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -245,7 +236,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     // start the PWM running for this channel
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
-    mp_machine_pwm_init_helper(self, n_args, all_args, &kw_args);
+    mp_machine_pwm_init_helper((machine_pwm_obj_t *)self, n_args, all_args, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -253,23 +244,23 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
 // Stop all PWM modules and release them
 void pwm_deinit_all(void) {
     for (int i = 0; i < MP_ARRAY_SIZE(machine_hard_pwm_instances); i++) {
-        mp_machine_pwm_deinit(&machine_hard_pwm_obj[i * NRF_PWM_CHANNEL_COUNT]);
+        mp_machine_pwm_deinit((machine_pwm_obj_t *)&machine_hard_pwm_obj[i * NRF_PWM_CHANNEL_COUNT]);
     }
     pwm_init0();
 }
 
 // Stop the PWM module, but do not release it.
-STATIC void mp_machine_pwm_deinit(const machine_pwm_obj_t *self) {
+STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     self->p_config->active = STOPPED;
     nrfx_pwm_stop(self->p_pwm, true);
     nrfx_pwm_uninit(self->p_pwm);
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(const machine_pwm_obj_t *self) {
+STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT(self->p_config->freq);
 }
 
-STATIC void mp_machine_pwm_freq_set(const machine_pwm_obj_t *self, mp_int_t freq) {
+STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
 
     uint8_t div = 0;
     if (freq > (PWM_MAX_BASE_FREQ / 3) || freq <= (PWM_MIN_BASE_FREQ / PWM_MAX_PERIOD)) {
@@ -285,7 +276,7 @@ STATIC void mp_machine_pwm_freq_set(const machine_pwm_obj_t *self, mp_int_t freq
     machine_hard_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get(const machine_pwm_obj_t *self) {
+STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
@@ -295,13 +286,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get(const machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set(const machine_pwm_obj_t *self, mp_int_t duty) {
+STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
     self->p_config->duty[self->channel] = duty;
     self->p_config->duty_mode[self->channel] = DUTY_PERCENT;
     machine_hard_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(const machine_pwm_obj_t *self) {
+STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_U16) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else if (self->p_config->duty_mode[self->channel] == DUTY_PERCENT) {
@@ -311,13 +302,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(const machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_u16(const machine_pwm_obj_t *self, mp_int_t duty) {
+STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
     self->p_config->duty[self->channel] = duty;
     self->p_config->duty_mode[self->channel] = DUTY_U16;
     machine_hard_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(const machine_pwm_obj_t *self) {
+STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     if (self->p_config->duty_mode[self->channel] == DUTY_NS) {
         return MP_OBJ_NEW_SMALL_INT(self->p_config->duty[self->channel]);
     } else {
@@ -325,7 +316,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(const machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_ns(const machine_pwm_obj_t *self, mp_int_t duty) {
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
     self->p_config->duty[self->channel] = duty;
     self->p_config->duty_mode[self->channel] = DUTY_NS;
     machine_hard_pwm_start(self);
@@ -393,5 +384,3 @@ STATIC void machine_hard_pwm_start(const machine_pwm_obj_t *self) {
         0, // Loop disabled.
         0);
 }
-
-#endif // MICROPY_PY_MACHINE_HW_PWM

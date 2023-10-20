@@ -28,11 +28,26 @@
 
 #if MICROPY_PY_MACHINE_PWM
 
-#include "extmod/machine_pwm.h"
+#include "extmod/modmachine.h"
 
-#ifdef MICROPY_PY_MACHINE_PWM_INCLUDEFILE
-#include MICROPY_PY_MACHINE_PWM_INCLUDEFILE
+// The port must provide implementations of these low-level PWM functions.
+STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind);
+STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self);
+STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self);
+STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+#if MICROPY_PY_MACHINE_PWM_DUTY
+STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self);
+STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty);
 #endif
+STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self);
+STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
+STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self);
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
+
+// The port provides implementations of the above in this file.
+#include MICROPY_PY_MACHINE_PWM_INCLUDEFILE
 
 STATIC mp_obj_t machine_pwm_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_machine_pwm_init_helper(args[0], n_args - 1, args + 1, kw_args);

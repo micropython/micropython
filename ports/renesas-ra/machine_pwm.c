@@ -25,15 +25,13 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
+
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_pwm.h"
 #include "pin.h"
 #include "ra/ra_gpt.h"
-#include "modmachine.h"
-
-#if MICROPY_HW_ENABLE_HW_PWM
 
 typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
@@ -353,5 +351,3 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
         }
     }
 }
-
-#endif // MICROPY_HW_ENABLE_HW_PWM

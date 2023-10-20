@@ -25,15 +25,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-
-#if MICROPY_PY_MACHINE_PWM
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
 
 #include <string.h>
 #include "py/mphal.h"
-#include "modmachine.h"
 #include "clock_config.h"
-
 #include "sam.h"
 #include "pin_af.h"
 
@@ -396,5 +393,3 @@ STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns
     duty_type_flags[self->device] &= ~(1 << self->channel);
     mp_machine_pwm_start(self);
 }
-
-#endif

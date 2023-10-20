@@ -24,12 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
+
 #include "py/mphal.h"
-
-#if MICROPY_PY_MACHINE_SOFT_PWM
-
 #include "softpwm.h"
 
 typedef enum {
@@ -62,11 +60,6 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 // MicroPython bindings for machine API
 
 STATIC void machine_soft_pwm_start(machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
-STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty);
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
 
 STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty, ARG_duty_u16, ARG_duty_ns };
@@ -210,5 +203,3 @@ STATIC void machine_soft_pwm_start(machine_pwm_obj_t *self) {
         pwm_set_duty_cycle(self->pwm_pin, duty_width);
     }
 }
-
-#endif // MICROPY_PY_MACHINE_HW_PWM
