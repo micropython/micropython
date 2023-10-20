@@ -344,6 +344,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         } else if (attr == MP_QSTR_strerror) {
             if (self->args->len > 1) {
                 dest[0] = self->args->items[1];
+            #if MICROPY_PY_ERRNO
             } else if (self->args->len > 0) {
                 char decompressed[50];
                 const char *msg = mp_common_errno_to_str(self->args->items[0], decompressed, sizeof(decompressed));
@@ -352,6 +353,7 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 } else {
                     dest[0] = mp_const_none;
                 }
+            #endif
             } else {
                 dest[0] = mp_const_none;
             }
