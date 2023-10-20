@@ -36,7 +36,7 @@
  * Copyright (C) 1995-1998 Jean-loup Gailly and Mark Adler
  */
 
-#include "uzlib.h"
+#include "tinf.h"
 
 #define A32_BASE 65521
 #define A32_NMAX 5552

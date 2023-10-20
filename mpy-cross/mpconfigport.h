@@ -95,7 +95,7 @@
 
 // MINGW only handles these errno names.
 #ifdef __MINGW32__
-#define MICROPY_PY_UERRNO_LIST \
+#define MICROPY_PY_ERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
     X(ESRCH) \

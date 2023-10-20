@@ -125,30 +125,30 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE  (1)
 
+#define MICROPY_PY_BINASCII             (CIRCUITPY_BINASCII)
 #define MICROPY_PY_CMATH                 (0)
 #define MICROPY_PY_COLLECTIONS           (CIRCUITPY_COLLECTIONS)
 #define MICROPY_PY_DESCRIPTORS           (1)
+// In extmod
+#define MICROPY_PY_ERRNO                (CIRCUITPY_ERRNO)
+// Uses about 80 bytes.
+#define MICROPY_PY_ERRNO_ERRORCODE      (CIRCUITPY_ERRNO)
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
 #define MICROPY_PY_IO                    (CIRCUITPY_IO)
+// In extmod
+#define MICROPY_PY_JSON                 (CIRCUITPY_JSON)
 #define MICROPY_PY_MATH                  (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO  (0)
+// Supplanted by shared-bindings/random
+#define MICROPY_PY_RANDOM               (0)
+#define MICROPY_PY_RANDOM_EXTRA_FUNCS   (0)
+#define MICROPY_PY_RE                   (CIRCUITPY_RE)
 // Supplanted by shared-bindings/struct
 #define MICROPY_PY_STRUCT                (0)
 #define MICROPY_PY_SYS                   (CIRCUITPY_SYS)
 #define MICROPY_PY_SYS_MAXSIZE           (1)
 #define MICROPY_PY_SYS_STDFILES          (1)
-// In extmod
-#define MICROPY_PY_UBINASCII             (CIRCUITPY_BINASCII)
-#define MICROPY_PY_UERRNO                (CIRCUITPY_ERRNO)
-// Uses about 80 bytes.
-#define MICROPY_PY_UERRNO_ERRORCODE      (CIRCUITPY_ERRNO)
-// Supplanted by shared-bindings/random
-#define MICROPY_PY_URANDOM               (0)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS   (0)
-// In extmod
-#define MICROPY_PY_UJSON                 (CIRCUITPY_JSON)
-#define MICROPY_PY_URE                   (CIRCUITPY_RE)
 #define MICROPY_PY___FILE__              (1)
 
 #define MICROPY_QSTR_BYTES_IN_HASH       (1)
@@ -253,9 +253,9 @@ typedef long mp_off_t;
 #ifndef MICROPY_PY_COLLECTIONS_DEQUE
 #define MICROPY_PY_COLLECTIONS_DEQUE          (CIRCUITPY_FULL_BUILD)
 #endif
-#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
-#define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+#define MICROPY_PY_RE_MATCH_GROUPS           (CIRCUITPY_RE)
+#define MICROPY_PY_RE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
+#define MICROPY_PY_RE_SUB                    (CIRCUITPY_RE)
 
 #define CIRCUITPY_MICROPYTHON_ADVANCED        (0)
 

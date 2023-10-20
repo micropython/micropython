@@ -32,8 +32,6 @@
 #include "py/binary.h"
 #include "py/objstr.h"
 
-//#include "lib/uzlib/tinf.h"
-
 #if MICROPY_PY_BINASCII
 
 static void check_not_unicode(const mp_obj_t arg) {
@@ -182,44 +180,9 @@ STATIC mp_obj_t mod_binascii_b2a_base64(size_t n_args, const mp_obj_t *pos_args,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_binascii_b2a_base64_obj, 1, mod_binascii_b2a_base64);
 
-// CIRCUITPY-CHANGE: uses a self-contained implementation of CRC32,
-// instead of depending on uzlib, like MicroPython.
-
-/*
- * CRC32 checksum
- *
- * Copyright (c) 1998-2003 by Joergen Ibsen / Jibz
- * All Rights Reserved
- *
- * http://www.ibsensoftware.com/
- *
- * This software is provided 'as-is', without any express
- * or implied warranty.  In no event will the authors be
- * held liable for any damages arising from the use of
- * this software.
- *
- * Permission is granted to anyone to use this software
- * for any purpose, including commercial applications,
- * and to alter it and redistribute it freely, subject to
- * the following restrictions:
- *
- * 1. The origin of this software must not be
- *    misrepresented; you must not claim that you
- *    wrote the original software. If you use this
- *    software in a product, an acknowledgment in
- *    the product documentation would be appreciated
- *    but is not required.
- *
- * 2. Altered source versions must be plainly marked
- *    as such, and must not be misrepresented as
- *    being the original software.
- *
- * 3. This notice may not be removed or altered from
- *    any source distribution.
- */
-
-#if MICROPY_PY_UBINASCII_CRC32
-//#include "lib/uzlib/uzlib.h"
+// CIRCUITPY-CHANGE: no deflate
+#if MICROPY_PY_BINASCII_CRC32
+#include "lib/uzlib/uzlib.h"
 
 STATIC mp_obj_t mod_binascii_crc32(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
@@ -241,6 +204,7 @@ STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_a2b_base64), MP_ROM_PTR(&mod_binascii_a2b_base64_obj) },
     { MP_ROM_QSTR(MP_QSTR_b2a_base64), MP_ROM_PTR(&mod_binascii_b2a_base64_obj) },
+    // CIRCUITPY-CHANGE: no deflate
     #if MICROPY_PY_BINASCII_CRC32
     { MP_ROM_QSTR(MP_QSTR_crc32), MP_ROM_PTR(&mod_binascii_crc32_obj) },
     #endif
@@ -248,7 +212,7 @@ STATIC const mp_rom_map_elem_t mp_module_binascii_globals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_binascii_globals, mp_module_binascii_globals_table);
 
-const mp_obj_module_t mp_module_ubinascii = {
+const mp_obj_module_t mp_module_binascii = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_binascii_globals,
 };

@@ -372,8 +372,9 @@ STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
         if (mp_hal_is_interrupted()) {
             return 0;
         }
-        // end CIRCUITPY
-        MICROPY_EVENT_POLL_HOOK
+        #ifdef MICROPY_EVENT_POLL_HOOK
+        MICROPY_EVENT_POLL_HOOK;
+        #endif
     }
 
     #endif

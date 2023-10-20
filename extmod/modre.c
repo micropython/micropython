@@ -85,7 +85,7 @@ STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
-#if MICROPY_PY_URE_MATCH_GROUPS
+#if MICROPY_PY_RE_MATCH_GROUPS
 
 STATIC mp_obj_t match_groups(mp_obj_t self_in) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
@@ -102,7 +102,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(match_groups_obj, match_groups);
 
 #endif
 
-#if MICROPY_PY_URE_MATCH_SPAN_START_END
+#if MICROPY_PY_RE_MATCH_SPAN_START_END
 
 STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span[2]) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(args[0]);

@@ -26,6 +26,8 @@
 
 #include <stdio.h>
 
+#include "py/binary.h"
+#include "py/objarray.h"
 #include "py/objlist.h"
 #include "py/objstringio.h"
 #include "py/parsenum.h"
@@ -145,6 +147,7 @@ typedef struct _json_stream_t {
 
 STATIC byte json_stream_next(json_stream_t *s) {
     mp_uint_t ret = s->read(s->stream_obj, &s->cur, 1, &s->errcode);
+    JSON_DEBUG("  usjon_stream_next err:%2d cur: %c \n", s->errcode, s->cur);
     if (s->errcode != 0) {
         mp_raise_OSError(s->errcode);
     }
@@ -163,7 +166,7 @@ STATIC byte json_stream_next(json_stream_t *s) {
 
 STATIC mp_uint_t json_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
     (void)size;  // Ignore size because we know it's always 1.
-    ujson_stream_t *s = obj;
+    json_stream_t *s = obj;
 
     if (s->start == s->end) {
         *errcode = 0;
@@ -186,7 +189,7 @@ STATIC mp_uint_t json_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, i
 
 STATIC mp_obj_t _mod_json_load(mp_obj_t stream_obj, bool return_first_json) {
     const mp_stream_p_t *stream_p = mp_proto_get(MP_QSTR_protocol_stream, stream_obj);
-    ujson_stream_t s;
+    json_stream_t s;
     uint8_t character_buffer[CIRCUITPY_JSON_READ_CHUNK_SIZE];
     if (stream_p == NULL) {
         s.start = 0;
@@ -199,7 +202,7 @@ STATIC mp_obj_t _mod_json_load(mp_obj_t stream_obj, bool return_first_json) {
         s.bytearray_obj.items = character_buffer;
         s.python_readinto[2] = MP_OBJ_FROM_PTR(&s.bytearray_obj);
         s.stream_obj = &s;
-        s.read = ujson_python_readinto;
+        s.read = json_python_readinto;
     } else {
         stream_p = mp_get_stream_raise(stream_obj, MP_STREAM_OP_READ);
         s.stream_obj = stream_obj;

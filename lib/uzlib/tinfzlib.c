@@ -1,10 +1,12 @@
 /*
- * CRC32 checksum
+ * uzlib  -  tiny deflate/inflate library (deflate, gzip, zlib)
  *
- * Copyright (c) 1998-2003 by Joergen Ibsen / Jibz
+ * Copyright (c) 2003 by Joergen Ibsen / Jibz
  * All Rights Reserved
  *
  * http://www.ibsensoftware.com/
+ *
+ * Copyright (c) 2014-2018 by Paul Sokolovsky
  *
  * This software is provided 'as-is', without any express
  * or implied warranty.  In no event will the authors be
@@ -31,33 +33,34 @@
  *    any source distribution.
  */
 
-/*
- * CRC32 algorithm taken from the zlib source, which is
- * Copyright (C) 1995-1998 Jean-loup Gailly and Mark Adler
- */
-
 #include "tinf.h"
 
-static const unsigned int tinf_crc32tab[16] = {
-   0x00000000, 0x1db71064, 0x3b6e20c8, 0x26d930ac, 0x76dc4190,
-   0x6b6b51f4, 0x4db26158, 0x5005713c, 0xedb88320, 0xf00f9344,
-   0xd6d6a3e8, 0xcb61b38c, 0x9b64c2b0, 0x86d3d2d4, 0xa00ae278,
-   0xbdbdf21c
-};
-
-/* crc is previous value for incremental computation, 0xffffffff initially */
-uint32_t uzlib_crc32(const void *data, unsigned int length, uint32_t crc)
+int uzlib_zlib_parse_header(TINF_DATA *d)
 {
-   const unsigned char *buf = (const unsigned char *)data;
-   unsigned int i;
+   unsigned char cmf, flg;
 
-   for (i = 0; i < length; ++i)
-   {
-      crc ^= buf[i];
-      crc = tinf_crc32tab[crc & 0x0f] ^ (crc >> 4);
-      crc = tinf_crc32tab[crc & 0x0f] ^ (crc >> 4);
-   }
+   /* -- get header bytes -- */
 
-   // return value suitable for passing in next time, for final value invert it
-   return crc/* ^ 0xffffffff*/;
+   cmf = uzlib_get_byte(d);
+   flg = uzlib_get_byte(d);
+
+   /* -- check format -- */
+
+   /* check checksum */
+   if ((256*cmf + flg) % 31) return TINF_DATA_ERROR;
+
+   /* check method is deflate */
+   if ((cmf & 0x0f) != 8) return TINF_DATA_ERROR;
+
+   /* check window size is valid */
+   if ((cmf >> 4) > 7) return TINF_DATA_ERROR;
+
+   /* check there is no preset dictionary */
+   if (flg & 0x20) return TINF_DATA_ERROR;
+
+   /* initialize for adler32 checksum */
+   d->checksum_type = TINF_CHKSUM_ADLER;
+   d->checksum = 1;
+
+   return cmf >> 4;
 }
