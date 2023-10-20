@@ -88,6 +88,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(DEFAULT_SPI_BUS_SCK) },
     { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_GPIO15) },
 
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A0), MP_ROM_PTR(&pin_GPIO17) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_A1), MP_ROM_PTR(&pin_GPIO16) },
+
     // I/O expander pin numbers
     { MP_ROM_QSTR(MP_QSTR_TFT_SCK), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_TFT_CS), MP_ROM_INT(1) },
