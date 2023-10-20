@@ -15,4 +15,6 @@ Port Specific modules
 ---------------------
 
 .. toctree::
+    ../../shared-bindings/cyw43/index
+    ../../shared-bindings/picodvi/index
     ../../shared-bindings/rp2pio/index

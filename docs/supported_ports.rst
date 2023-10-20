@@ -12,10 +12,13 @@ is limited.
     :maxdepth: 2
 
     ../ports/atmel-samd/README
+    ../ports/broadcom/README
     ../ports/cxd56/README
     ../ports/espressif/README
     ../ports/litex/README
     ../ports/mimxrt10xx/README
     ../ports/nrf/README
     ../ports/raspberrypi/README
+    ../ports/silabs/README
     ../ports/stm/README
+    ../ports/unix/README
