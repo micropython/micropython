@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 
 // The first four must fit in 8 bits, see emitbc.c
 // The remaining must fit in 16 bits, see scope.h
+// and must match definitions in mpy-tool.py and mpy_ld.py
 #define MP_SCOPE_FLAG_ALL_SIG      (0x1f)
 #define MP_SCOPE_FLAG_GENERATOR    (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)
@@ -78,6 +79,8 @@ typedef enum {
     MP_UNARY_OP_HASH, // __hash__; must return a small int
     MP_UNARY_OP_ABS, // __abs__
     MP_UNARY_OP_INT, // __int__
+    MP_UNARY_OP_FLOAT_MAYBE, // __float__
+    MP_UNARY_OP_COMPLEX_MAYBE, // __complex__
     MP_UNARY_OP_SIZEOF, // for sys.getsizeof()
 } mp_unary_op_t;
 

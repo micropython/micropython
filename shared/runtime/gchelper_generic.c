@@ -98,7 +98,7 @@ STATIC void gc_helper_get_regs(gc_helper_regs_t arr) {
 
 #elif defined(__thumb2__) || defined(__thumb__) || defined(__arm__)
 
-// Fallback implementation, prefer gchelper_m0.s or gchelper_m3.s
+// Fallback implementation, prefer gchelper_thumb1.s or gchelper_thumb2.s
 
 STATIC void gc_helper_get_regs(gc_helper_regs_t arr) {
     register long r4 asm ("r4");

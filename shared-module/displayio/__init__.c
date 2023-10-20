@@ -43,6 +43,10 @@
 #include "supervisor/spi_flash_api.h"
 #include "py/mpconfig.h"
 
+#if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+#include "shared-bindings/dotclockframebuffer/DotClockFramebuffer.h"
+#endif
+
 #if CIRCUITPY_SHARPDISPLAY
 #include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
@@ -133,6 +137,10 @@ void common_hal_displayio_release_displays(void) {
             common_hal_displayio_fourwire_deinit(&display_buses[i].fourwire_bus);
         } else if (bus_type == &displayio_i2cdisplay_type) {
             common_hal_displayio_i2cdisplay_deinit(&display_buses[i].i2cdisplay_bus);
+        #if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+        } else if (bus_type == &dotclockframebuffer_framebuffer_type) {
+            common_hal_dotclockframebuffer_framebuffer_deinit(&display_buses[i].dotclock);
+        #endif
         #if CIRCUITPY_PARALLELDISPLAY
         } else if (bus_type == &paralleldisplay_parallelbus_type) {
             common_hal_paralleldisplay_parallelbus_deinit(&display_buses[i].parallel_bus);
@@ -294,7 +302,7 @@ void reset_displays(void) {
             reset_display(&displays[i].display);
         } else if (display_type == &displayio_epaperdisplay_type) {
             displayio_epaperdisplay_obj_t *display = &displays[i].epaper_display;
-            common_hal_displayio_epaperdisplay_show(display, NULL);
+            displayio_epaperdisplay_reset(display);
         #if CIRCUITPY_FRAMEBUFFERIO
         } else if (display_type == &framebufferio_framebufferdisplay_type) {
             framebufferio_framebufferdisplay_reset(&displays[i].framebuffer_display);
@@ -386,5 +394,5 @@ primary_display_bus_t *allocate_display_bus_or_raise(void) {
     if (result) {
         return result;
     }
-    mp_raise_RuntimeError(translate("Too many display busses"));
+    mp_raise_RuntimeError(translate("Too many display busses; forgot displayio.release_displays() ?"));
 }

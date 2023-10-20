@@ -31,6 +31,8 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 
+#include "common-hal/espidf/__init__.h"
+
 extern const mp_obj_type_t mp_type_espidf_IDFError;
 extern const mp_obj_type_t mp_type_espidf_MemoryError;
 

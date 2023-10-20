@@ -1,7 +1,28 @@
-// Copyright (c) 2014 Paul Sokolovsky
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Paul Sokolovsky
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <stdio.h>
 #include <assert.h>
@@ -12,15 +33,17 @@
 #include "py/objstr.h"
 #include "py/stackctrl.h"
 
+#if MICROPY_PY_BUILTINS_STR_UNICODE
+#include "py/unicode.h"
+#endif
+
 #if MICROPY_PY_URE
 
 #define re1_5_stack_chk() MP_STACK_CHECK()
 
 #include "lib/re1.5/re1.5.h"
 
-#if MICROPY_PY_URE_DEBUG
 #define FLAG_DEBUG 0x1000
-#endif
 
 typedef struct _mp_obj_re_t {
     mp_obj_base_t base;
@@ -102,6 +125,18 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
         e = self->caps[no * 2 + 1] - begin;
     }
 
+    #if MICROPY_PY_BUILTINS_STR_UNICODE
+    if (mp_obj_get_type(self->str) == &mp_type_str) {
+        const byte *begin = (const byte *)mp_obj_str_get_str(self->str);
+        if (s != -1) {
+            s = utf8_ptr_to_index(begin, begin + s);
+        }
+        if (e != -1) {
+            e = utf8_ptr_to_index(begin, begin + e);
+        }
+    }
+    #endif
+
     span[0] = mp_obj_new_int(s);
     span[1] = mp_obj_new_int(e);
 }
@@ -144,12 +179,13 @@ STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
 
-STATIC const mp_obj_type_t match_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_match,
-    .print = match_print,
-    .locals_dict = (void *)&match_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    match_type,
+    MP_QSTR_match,
+    MP_TYPE_FLAG_NONE,
+    print, match_print,
+    locals_dict, &match_locals_dict
+    );
 #endif
 
 STATIC void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -161,14 +197,14 @@ STATIC void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t 
 STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_re_t *self;
-    if (mp_obj_is_type(args[0], &re_type)) {
+    if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
         self = MP_OBJ_TO_PTR(args[0]);
     } else {
         self = MP_OBJ_TO_PTR(mod_re_compile(1, args));
     }
     Subject subj;
     size_t len;
-    subj.begin = mp_obj_str_get_data(args[1], &len);
+    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     #if MICROPY_PY_URE_MATCH_SPAN_START_END && !(defined(MICROPY_ENABLE_DYNRUNTIME) && MICROPY_ENABLE_DYNRUNTIME)
 
@@ -210,7 +246,7 @@ STATIC mp_obj_t ure_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 
-    match->base.type = &match_type;
+    match->base.type = (mp_obj_type_t *)&match_type;
     match->num_matches = caps_num / 2; // caps_num counts start and end pointers
     match->str = args[1];
     return MP_OBJ_FROM_PTR(match);
@@ -231,7 +267,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     Subject subj;
     size_t len;
     const mp_obj_type_t *str_type = mp_obj_get_type(args[1]);
-    subj.begin = mp_obj_str_get_data(args[1], &len);
+    subj.begin_line = subj.begin = mp_obj_str_get_data(args[1], &len);
     subj.end = subj.begin + len;
     int caps_num = (self->re.sub + 1) * 2;
 
@@ -255,7 +291,7 @@ STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
         mp_obj_t s = mp_obj_new_str_of_type(str_type, (const byte *)subj.begin, caps[0] - subj.begin);
         mp_obj_list_append(retval, s);
         if (self->re.sub > 0) {
-            mp_raise_NotImplementedError(MP_ERROR_TEXT("Splitting with sub-captures"));
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("splitting with sub-captures"));
         }
         subj.begin = caps[1];
         if (maxsplit > 0 && --maxsplit == 0) {
@@ -275,7 +311,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
 STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self;
-    if (mp_obj_is_type(args[0], &re_type)) {
+    if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
         self = MP_OBJ_TO_PTR(args[0]);
     } else {
         self = MP_OBJ_TO_PTR(mod_re_compile(1, args));
@@ -291,14 +327,14 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     size_t where_len;
     const char *where_str = mp_obj_str_get_data(where, &where_len);
     Subject subj;
-    subj.begin = where_str;
+    subj.begin_line = subj.begin = where_str;
     subj.end = subj.begin + where_len;
     int caps_num = (self->re.sub + 1) * 2;
 
     vstr_t vstr_return;
     vstr_return.buf = NULL; // We'll init the vstr after the first match
     mp_obj_match_t *match = mp_local_alloc(sizeof(mp_obj_match_t) + caps_num * sizeof(char *));
-    match->base.type = &match_type;
+    match->base.type = (mp_obj_type_t *)&match_type;
     match->num_matches = caps_num / 2; // caps_num counts start and end pointers
     match->str = where;
 
@@ -383,7 +419,11 @@ STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     // Add post-match string
     vstr_add_strn(&vstr_return, subj.begin, subj.end - subj.begin);
 
-    return mp_obj_new_str_from_vstr(mp_obj_get_type(where), &vstr_return);
+    if (mp_obj_get_type(where) == &mp_type_str) {
+        return mp_obj_new_str_from_utf8_vstr(&vstr_return);
+    } else {
+        return mp_obj_new_bytes_from_vstr(&vstr_return);
+    }
 }
 
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub_helper);
@@ -402,16 +442,17 @@ STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
-STATIC const mp_obj_type_t re_type = {
-    { &mp_type_type },
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    re_type,
     #if CIRCUITPY
-    .name = MP_QSTR_re,
+    MP_QSTR_re,
     #else
-    .name = MP_QSTR_ure,
+    MP_QSTR_ure,
     #endif
-    .print = re_print,
-    .locals_dict = (void *)&re_locals_dict,
-};
+    MP_TYPE_FLAG_NONE,
+    print, re_print,
+    locals_dict, &re_locals_dict
+    );
 #endif
 
 STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
@@ -421,15 +462,12 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     if (size == -1) {
         goto error;
     }
-    mp_obj_re_t *o = m_new_obj_var(mp_obj_re_t, char, size);
-    o->base.type = &re_type;
+    mp_obj_re_t *o = mp_obj_malloc_var(mp_obj_re_t, char, size, (mp_obj_type_t *)&re_type);
     #if MICROPY_PY_URE_DEBUG
     int flags = 0;
     if (n_args > 1) {
         flags = mp_obj_get_int(args[1]);
     }
-    #else
-    (void)n_args;
     #endif
     int error = re1_5_compilecode(&o->re, re_str);
     if (error != 0) {
@@ -470,7 +508,7 @@ const mp_obj_module_t mp_module_ure = {
     .globals = (mp_obj_dict_t *)&mp_module_re_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_re, mp_module_ure, MICROPY_PY_URE);
+MP_REGISTER_MODULE(MP_QSTR_re, mp_module_ure);
 #endif
 
 // Source files #include'd here to make sure they're compiled in

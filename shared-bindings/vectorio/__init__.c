@@ -45,4 +45,4 @@ const mp_obj_module_t vectorio_module = {
     .globals = (mp_obj_dict_t *)&vectorio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_vectorio, vectorio_module, CIRCUITPY_VECTORIO);
+MP_REGISTER_MODULE(MP_QSTR_vectorio, vectorio_module);

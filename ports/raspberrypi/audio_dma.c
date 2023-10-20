@@ -64,20 +64,26 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
     if (dma->sample_resolution <= 8 && dma->output_resolution > 8) {
         // reading bytes, writing 16-bit words, so output buffer will be bigger.
 
-        output_length_used = output_length * 2;
+        output_length_used *= 2;
         if (output_length_used > output_length) {
             mp_raise_RuntimeError(translate("Internal audio buffer too small"));
         }
 
-        size_t shift = dma->output_resolution - dma->sample_resolution;
+        // Correct "rail-to-rail" scaling of arbitrary-depth input to output
+        // requires more operations than this, but at least the vital 8- to
+        // 16-bit cases are correctly scaled now. Prior code was only
+        // considering 8-to-16 anyway, but had a slight DC offset in the
+        // result, so this is no worse off WRT supported resolutions.
+        uint16_t mul = ((1 << dma->output_resolution) - 1) / ((1 << dma->sample_resolution) - 1);
+        uint16_t offset = (1 << dma->output_resolution) / 2;
 
         for (uint32_t i = 0; i < input_length; i += dma->sample_spacing) {
             if (dma->signed_to_unsigned) {
-                ((uint16_t *)output)[out_i] = ((uint16_t)((int8_t *)input)[i] + 0x80) << shift;
+                ((uint16_t *)output)[out_i] = (uint16_t)((((int8_t *)input)[i] + 0x80) * mul);
             } else if (dma->unsigned_to_signed) {
-                ((int16_t *)output)[out_i] = ((int16_t)((uint8_t *)input)[i] - 0x80) << shift;
+                ((int16_t *)output)[out_i] = (int16_t)(((uint8_t *)input)[i] * mul - offset);
             } else {
-                ((uint16_t *)output)[out_i] = ((uint16_t)((uint8_t *)input)[i]) << shift;
+                ((uint16_t *)output)[out_i] = (uint16_t)(((uint8_t *)input)[i] * mul);
             }
             out_i += 1;
         }
@@ -388,6 +394,27 @@ bool audio_dma_get_paused(audio_dma_t *dma) {
     return (control & DMA_CH0_CTRL_TRIG_EN_BITS) == 0;
 }
 
+uint32_t audio_dma_pause_all(void) {
+    uint32_t result = 0;
+    for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
+        audio_dma_t *dma = MP_STATE_PORT(playing_audio)[channel];
+        if (dma != NULL && !audio_dma_get_paused(dma)) {
+            audio_dma_pause(dma);
+            result |= (1 << channel);
+        }
+    }
+    return result;
+}
+
+void audio_dma_unpause_mask(uint32_t channel_mask) {
+    for (size_t channel = 0; channel < NUM_DMA_CHANNELS; channel++) {
+        audio_dma_t *dma = MP_STATE_PORT(playing_audio)[channel];
+        if (dma != NULL && (channel_mask & (1 << channel))) {
+            audio_dma_resume(dma);
+        }
+    }
+}
+
 void audio_dma_init(audio_dma_t *dma) {
     dma->buffer[0] = NULL;
     dma->buffer[1] = NULL;
@@ -466,4 +493,5 @@ void isr_dma_0(void) {
     }
 }
 
+MP_REGISTER_ROOT_POINTER(mp_obj_t playing_audio[enum_NUM_DMA_CHANNELS]);
 #endif

@@ -1,11 +1,8 @@
 try:
-    import ure as re
+    import re
 except ImportError:
-    try:
-        import re
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 r = re.compile(" ")
 s = r.split("a b c foobar")
@@ -30,4 +27,14 @@ print(s)
 # bytes objects
 r = re.compile(b"x")
 s = r.split(b"fooxbar")
+print(s)
+
+# using ^
+r = re.compile("^ab")
+s = r.split("abababcabab")
+print(s)
+
+# using ^ with |
+r = re.compile("^ab|cab")
+s = r.split("abababcabab")
 print(s)

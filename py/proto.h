@@ -31,7 +31,7 @@
 #define MP_PROTOCOL_HEAD /* NOTHING */
 #define MP_PROTO_IMPLEMENT(name) /* NOTHING */
 static inline void *mp_proto_get(uint16_t name, mp_const_obj_type_t obj) {
-    return mp_type_get_protocol_slot(mp_obj_get_type(obj));
+    return MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(obj), protocol);
 }
 #else
 #define MP_PROTOCOL_HEAD \

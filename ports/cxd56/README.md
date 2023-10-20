@@ -75,7 +75,7 @@ Bootloader information:
 
 * You have to accept the End User License Agreement to be able to download and use the Spresense bootloader binary.
 
-Download the spresense binaries zip archive from: [Spresense firmware v2-4-000](https://developer.sony.com/file/download/download-spresense-firmware-v2-4-000)
+Download the spresense binaries zip archive from: [Spresense firmware v3-0-0](https://developer.sony.com/file/download/download-spresense-firmware-v3-0-0)
 
 Extract spresense binaries in your PC to ports/spresense/spresense-exported-sdk/firmware/
 

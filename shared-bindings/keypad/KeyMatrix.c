@@ -35,7 +35,22 @@
 #include "shared-bindings/util.h"
 
 //| class KeyMatrix:
-//|     """Manage a 2D matrix of keys with row and column pins."""
+//|     """Manage a 2D matrix of keys with row and column pins.
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["keypad.KeyMatrix"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -72,8 +87,7 @@
 
 STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_KEYPAD_KEYMATRIX
-    keypad_keymatrix_obj_t *self = m_new_obj(keypad_keymatrix_obj_t);
-    self->base.type = &keypad_keymatrix_type;
+    keypad_keymatrix_obj_t *self = mp_obj_malloc(keypad_keymatrix_obj_t, &keypad_keymatrix_type);
     enum { ARG_row_pins, ARG_column_pins, ARG_columns_to_anodes, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_row_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -236,11 +250,12 @@ STATIC MP_DEFINE_CONST_DICT(keypad_keymatrix_locals_dict, keypad_keymatrix_local
 
 #endif
 
-const mp_obj_type_t keypad_keymatrix_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_KeyMatrix,
-    .make_new = keypad_keymatrix_make_new,
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_keymatrix_type,
+    MP_QSTR_KeyMatrix,
+    MP_TYPE_FLAG_NONE,
+    make_new, keypad_keymatrix_make_new
     #if CIRCUITPY_KEYPAD_KEYMATRIX
-    .locals_dict = (mp_obj_t)&keypad_keymatrix_locals_dict,
+    , locals_dict, &keypad_keymatrix_locals_dict
     #endif
-};
+    );

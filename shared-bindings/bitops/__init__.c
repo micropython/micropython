@@ -99,4 +99,4 @@ const mp_obj_module_t bitops_module = {
     .globals = (mp_obj_dict_t *)&bitops_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_bitops, bitops_module, CIRCUITPY_BITOPS);
+MP_REGISTER_MODULE(MP_QSTR_bitops, bitops_module);

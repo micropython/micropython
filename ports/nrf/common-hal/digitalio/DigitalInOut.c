@@ -26,7 +26,6 @@
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_gpio.h"
 

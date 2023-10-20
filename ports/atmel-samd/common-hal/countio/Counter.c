@@ -7,7 +7,6 @@
 #include "eic_handler.h"
 #include "samd/external_interrupts.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {

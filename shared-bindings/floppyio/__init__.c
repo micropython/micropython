@@ -127,4 +127,4 @@ const mp_obj_module_t floppyio_module = {
     .globals = (mp_obj_dict_t *)&floppyio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_floppyio, floppyio_module, CIRCUITPY_FLOPPYIO);
+MP_REGISTER_MODULE(MP_QSTR_floppyio, floppyio_module);

@@ -33,11 +33,11 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
-#include "common-hal/watchdog/WatchDogTimer.h"
-
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/watchdog/__init__.h"
 #include "shared-bindings/watchdog/WatchDogTimer.h"
+
+#include "common-hal/watchdog/WatchDogTimer.h"
 
 #include "supervisor/port.h"
 
@@ -105,10 +105,6 @@ void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
         timer_free();
     }
     self->mode = WATCHDOGMODE_NONE;
-}
-
-void watchdog_reset(void) {
-    common_hal_watchdog_deinit(&common_hal_mcu_watchdogtimer_obj);
 }
 
 mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {

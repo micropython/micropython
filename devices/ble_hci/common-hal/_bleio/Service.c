@@ -101,8 +101,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
 
     if (characteristic->props & (CHAR_PROP_NOTIFY | CHAR_PROP_INDICATE)) {
         // We need a CCCD if this characteristic is doing notify or indicate.
-        bleio_descriptor_obj_t *cccd = m_new_obj(bleio_descriptor_obj_t);
-        cccd->base.type = &bleio_descriptor_type;
+        bleio_descriptor_obj_t *cccd = mp_obj_malloc(bleio_descriptor_obj_t, &bleio_descriptor_type);
 
         uint16_t zero = 0;
         mp_buffer_info_t zero_cccd_value = {

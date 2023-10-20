@@ -24,11 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <py/runtime.h>
+#include "py/runtime.h"
 
 #include "__init__.h"
 #include "Layer.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Layer:
 //|     """Keep information about a single layer of graphics"""
@@ -58,8 +57,7 @@ STATIC mp_obj_t layer_make_new(const mp_obj_type_t *type, size_t n_args,
     size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 4, 5, false);
 
-    layer_obj_t *self = m_new_obj(layer_obj_t);
-    self->base.type = type;
+    layer_obj_t *self = mp_obj_malloc(layer_obj_t, type);
 
     self->width = mp_obj_get_int(args[0]);
     self->height = mp_obj_get_int(args[1]);
@@ -126,9 +124,10 @@ STATIC const mp_rom_map_elem_t layer_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(layer_locals_dict, layer_locals_dict_table);
 
-const mp_obj_type_t mp_type_layer = {
-    { &mp_type_type },
-    .name = MP_QSTR_Layer,
-    .make_new = layer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&layer_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_layer,
+    MP_QSTR_Layer,
+    MP_TYPE_FLAG_NONE,
+    make_new, layer_make_new,
+    locals_dict, &layer_locals_dict
+    );

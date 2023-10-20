@@ -329,7 +329,7 @@ void port_i2s_initialize(i2s_t *self, int instance, sai_transceiver_t *config) {
         mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_I2SOut);
     }
     for (size_t i = 0; i < MP_ARRAY_SIZE(self->buffers); i++) {
-        self->buffers[i] = m_malloc(AUDIO_BUFFER_FRAME_COUNT * sizeof(uint32_t), false);
+        self->buffers[i] = m_malloc(AUDIO_BUFFER_FRAME_COUNT * sizeof(uint32_t));
     }
     self->peripheral = peripheral;
     SAI_Init(self->peripheral);

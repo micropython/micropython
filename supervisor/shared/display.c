@@ -128,10 +128,8 @@ void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
         status_bar->full_change = true;
 
         scroll_area->width_in_tiles = width_in_tiles;
-        scroll_area->height_in_tiles = height_in_tiles;
-        #if CIRCUITPY_REPL_LOGO
-        scroll_area->height_in_tiles -= 1;
-        #endif
+        // Leave space for the status bar, no matter if we have logo or not.
+        scroll_area->height_in_tiles = height_in_tiles - 1;
         scroll_area->pixel_width = scroll_area->width_in_tiles * scroll_area->tile_width;
         scroll_area->pixel_height = scroll_area->height_in_tiles * scroll_area->tile_height;
         // Right align the scroll area to give margin to the start of each line.
@@ -214,7 +212,7 @@ mp_obj_list_t splash_children = {
     .items = members,
 };
 #else
-mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_terminal_status_bar_text_grid,};
+mp_obj_t members[] = { &supervisor_terminal_scroll_area_text_grid, &supervisor_terminal_status_bar_text_grid, };
 mp_obj_list_t splash_children = {
     .base = {.type = &mp_type_list },
     .alloc = 2,

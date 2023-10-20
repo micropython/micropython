@@ -55,6 +55,16 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_BEGIN_ATOMIC_SECTION() (common_hal_mcu_disable_interrupts(), 0)
 #define MICROPY_END_ATOMIC_SECTION(state) ((void)state, common_hal_mcu_enable_interrupts())
 
+// MicroPython-only options not used by CircuitPython, but present in various files
+// inherited from MicroPython, especially in extmod/
+#define MICROPY_ENABLE_DYNRUNTIME        (0)
+#define MICROPY_PY_BLUETOOTH             (0)
+#define MICROPY_PY_LWIP_SLIP             (0)
+#define MICROPY_PY_OS_DUPTERM            (0)
+#define MICROPY_ROM_TEXT_COMPRESSION     (0)
+#define MICROPY_VFS_LFS1                 (0)
+#define MICROPY_VFS_LFS2                 (0)
+
 // Sorted alphabetically for easy finding.
 //
 // default is 128; consider raising to reduce fragmentation.
@@ -73,6 +83,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_ENABLE_DOC_STRING        (0)
 #define MICROPY_ENABLE_FINALISER         (1)
 #define MICROPY_ENABLE_GC                (1)
+#define MICROPY_ENABLE_PYSTACK           (1)
 #define MICROPY_TRACKED_ALLOC            (CIRCUITPY_SSL_MBEDTLS)
 #define MICROPY_ENABLE_SOURCE_LINE       (1)
 #define MICROPY_EPOCH_IS_1970            (1)
@@ -96,8 +107,8 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_ARRAY                 (CIRCUITPY_ARRAY)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN    (1)
 #define MICROPY_PY_ATTRTUPLE             (1)
-
 #define MICROPY_PY_BUILTINS_BYTEARRAY    (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX    (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE    (1)
 #define MICROPY_PY_BUILTINS_FILTER       (1)
 #define MICROPY_PY_BUILTINS_HELP         (1)
@@ -117,7 +128,6 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_CMATH                 (0)
 #define MICROPY_PY_COLLECTIONS           (CIRCUITPY_COLLECTIONS)
 #define MICROPY_PY_DESCRIPTORS           (1)
-#define MICROPY_PY_IO_FILEIO             (1)
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
 #define MICROPY_PY_IO                    (CIRCUITPY_IO)
@@ -144,7 +154,6 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_QSTR_BYTES_IN_HASH       (1)
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
-#define MICROPY_ENABLE_PYSTACK           (1)
 #define CIRCUITPY_SETTABLE_PYSTACK       (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
@@ -205,7 +214,6 @@ typedef long mp_off_t;
 #define mp_type_fileio mp_type_vfs_fat_fileio
 #define mp_type_textio mp_type_vfs_fat_textio
 
-#define mp_import_stat mp_vfs_import_stat
 #define mp_builtin_open_obj mp_vfs_open_obj
 
 
@@ -255,8 +263,8 @@ typedef long mp_off_t;
 #define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
 #endif
 
-#ifndef MICROPY_FF_MKFS_FAT32
-#define MICROPY_FF_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_FATFS_MKFS_FAT32
+#define MICROPY_FATFS_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
 #endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
@@ -307,14 +315,11 @@ typedef long mp_off_t;
 #if defined(DEFAULT_UART_BUS_TX) && defined(DEFAULT_UART_BUS_RX)
 #define CIRCUITPY_BOARD_UART        (1)
 #define CIRCUITPY_BOARD_UART_PIN    {{.tx = DEFAULT_UART_BUS_TX, .rx = DEFAULT_UART_BUS_RX}}
-#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #else
 #define CIRCUITPY_BOARD_UART        (0)
-#define BOARD_UART_ROOT_POINTER
 #endif
-#else
-#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #endif
+
 
 #if MICROPY_PY_ASYNC_AWAIT && !CIRCUITPY_TRACEBACK
 #error CIRCUITPY_ASYNCIO requires CIRCUITPY_TRACEBACK
@@ -350,19 +355,6 @@ typedef long mp_off_t;
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (0)
 #endif
 
-#if CIRCUITPY_KEYPAD
-#define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
-#else
-#define KEYPAD_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_MEMORYMONITOR
-#define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
-    mp_obj_t active_allocationalarms;
-#else
-#define MEMORYMONITOR_ROOT_POINTERS
-#endif
-
 // This is not a top-level module; it's microcontroller.nvm.
 #if CIRCUITPY_NVM
 extern const struct _mp_obj_module_t nvm_module;
@@ -377,12 +369,6 @@ extern const struct _mp_obj_module_t nvm_module;
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
 #error "ulab requires MICROPY_PY_REVERSE_SPECIAL_METHODS"
 #endif
-#endif
-
-#if CIRCUITPY_WIFI
-#define WIFI_MONITOR_ROOT_POINTERS mp_obj_t wifi_monitor_singleton;
-#else
-#define WIFI_MONITOR_ROOT_POINTERS
 #endif
 
 // Define certain native modules with weak links so they can be replaced with Python
@@ -422,22 +408,8 @@ extern const struct _mp_obj_module_t nvm_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#include "supervisor/flash_root_pointers.h"
-
 // From supervisor/memory.c
 struct _supervisor_allocation_node;
-
-#define CIRCUITPY_COMMON_ROOT_POINTERS \
-    FLASH_ROOT_POINTERS \
-    KEYPAD_ROOT_POINTERS \
-    BOARD_UART_ROOT_POINTER \
-    WIFI_MONITOR_ROOT_POINTERS \
-    MEMORYMONITOR_ROOT_POINTERS \
-    vstr_t *repl_line; \
-    mp_obj_t pew_singleton; \
-    mp_obj_t rtc_time_source; \
-    const char *readline_hist[8]; \
-    struct _supervisor_allocation_node *first_embedded_allocation; \
 
 void background_callback_run_all(void);
 #define RUN_BACKGROUND_TASKS (background_callback_run_all())
@@ -482,13 +454,6 @@ void background_callback_run_all(void);
 #endif
 
 #define CIRCUITPY_VERBOSE_BLE 0
-
-// This trades ~1k flash space (1) for that much in RAM plus the cost to compute
-// the values once on init (0). Only turn it off, when you really need the flash
-// space and are willing to trade the RAM.
-#ifndef CIRCUITPY_PRECOMPUTE_QSTR_ATTR
-#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (1)
-#endif
 
 // Display the Blinka logo in the REPL on displayio displays.
 #ifndef CIRCUITPY_REPL_LOGO
@@ -609,6 +574,12 @@ void background_callback_run_all(void);
 
 #ifndef CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE
 #define CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE (0)
+#endif
+
+// Align the internal sector buffer. Useful when it is passed into TinyUSB for
+// loads.
+#ifndef MICROPY_FATFS_WINDOW_ALIGNMENT
+#define MICROPY_FATFS_WINDOW_ALIGNMENT CIRCUITPY_TUSB_MEM_ALIGN
 #endif
 
 #define FF_FS_CASE_INSENSITIVE_COMPARISON_ASCII_ONLY (1)

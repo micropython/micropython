@@ -50,8 +50,7 @@ STATIC mp_obj_t qrio_qrdecoder_make_new(const mp_obj_type_t *type, size_t n_args
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, args_in, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    qrio_qrdecoder_obj_t *self = m_new_obj(qrio_qrdecoder_obj_t);
-    self->base.type = &qrio_qrdecoder_type_obj;
+    qrio_qrdecoder_obj_t *self = mp_obj_malloc(qrio_qrdecoder_obj_t, &qrio_qrdecoder_type_obj);
     shared_module_qrio_qrdecoder_construct(self, args[ARG_width].u_int, args[ARG_height].u_int);
 
     return self;
@@ -140,9 +139,10 @@ STATIC const mp_rom_map_elem_t qrio_qrdecoder_locals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(qrio_qrdecoder_locals, qrio_qrdecoder_locals_table);
 
-const mp_obj_type_t qrio_qrdecoder_type_obj = {
-    { &mp_type_type },
-    .name = MP_QSTR_QRDecoder,
-    .make_new = qrio_qrdecoder_make_new,
-    .locals_dict = (mp_obj_dict_t *)&qrio_qrdecoder_locals,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    qrio_qrdecoder_type_obj,
+    MP_QSTR_QRDecoder,
+    MP_TYPE_FLAG_NONE,
+    make_new, qrio_qrdecoder_make_new,
+    locals_dict, &qrio_qrdecoder_locals
+    );

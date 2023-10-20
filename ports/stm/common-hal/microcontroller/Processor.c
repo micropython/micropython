@@ -32,7 +32,6 @@
 #endif
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include STM32_HAL_H
 
@@ -86,7 +85,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
     HAL_ADC_Start(&AdcHandle);
-    if (HAL_ADC_PollForConversion(&AdcHandle,1) != HAL_OK) {
+    if (HAL_ADC_PollForConversion(&AdcHandle, 1) != HAL_OK) {
         mp_raise_RuntimeError(translate("Temperature read timed out"));
     }
     uint32_t value = (uint32_t)HAL_ADC_GetValue(&AdcHandle);
@@ -118,7 +117,7 @@ float common_hal_mcu_processor_get_voltage(void) {
     HAL_ADC_ConfigChannel(&AdcHandle, &sConfig);
 
     HAL_ADC_Start(&AdcHandle);
-    if (HAL_ADC_PollForConversion(&AdcHandle,1) != HAL_OK) {
+    if (HAL_ADC_PollForConversion(&AdcHandle, 1) != HAL_OK) {
         mp_raise_RuntimeError(translate("Voltage read timed out"));
     }
     uint32_t value = (uint32_t)HAL_ADC_GetValue(&AdcHandle);

@@ -31,9 +31,6 @@
 
 #include "shared-bindings/usb_cdc/__init__.h"
 #include "shared-bindings/usb_cdc/Serial.h"
-#include "supervisor/shared/translate/translate.h"
-
-#include "py/runtime.h"
 
 //| """USB CDC Serial streams
 //|
@@ -142,4 +139,4 @@ void usb_cdc_set_data(mp_obj_t serial_obj) {
     set_module_dict_entry(MP_ROM_QSTR(MP_QSTR_data), serial_obj);
 }
 
-MP_REGISTER_MODULE(MP_QSTR_usb_cdc, usb_cdc_module, CIRCUITPY_USB_CDC);
+MP_REGISTER_MODULE(MP_QSTR_usb_cdc, usb_cdc_module);

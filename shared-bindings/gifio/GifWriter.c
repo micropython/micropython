@@ -73,8 +73,7 @@ static mp_obj_t gifio_gifwriter_make_new(const mp_obj_type_t *type, size_t n_arg
         own_file = true;
     }
 
-    gifio_gifwriter_t *self = m_new_obj(gifio_gifwriter_t);
-    self->base.type = &gifio_gifwriter_type;
+    gifio_gifwriter_t *self = mp_obj_malloc(gifio_gifwriter_t, &gifio_gifwriter_type);
     shared_module_gifio_gifwriter_construct(
         self,
         file,
@@ -159,9 +158,10 @@ STATIC const mp_rom_map_elem_t gifio_gifwriter_locals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(gifio_gifwriter_locals, gifio_gifwriter_locals_table);
 
-const mp_obj_type_t gifio_gifwriter_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_GifWriter,
-    .make_new = gifio_gifwriter_make_new,
-    .locals_dict = (mp_obj_dict_t *)&gifio_gifwriter_locals,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    gifio_gifwriter_type,
+    MP_QSTR_GifWriter,
+    MP_TYPE_FLAG_NONE,
+    make_new, gifio_gifwriter_make_new,
+    locals_dict, &gifio_gifwriter_locals
+    );

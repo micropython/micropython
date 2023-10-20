@@ -28,7 +28,6 @@
 #include "supervisor/shared/stack.h"
 
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nvm3_default.h"
 #include "nvm3_default_config.h"

@@ -31,7 +31,6 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/parsenum.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/struct/__init__.h"
 
 STATIC void struct_validate_format(char fmt) {
@@ -126,7 +125,7 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
     const mp_uint_t total_sz = shared_modules_struct_calcsize(fmt_in);
 
     if (p + total_sz > end_p) {
-        mp_raise_RuntimeError(translate("buffer too small"));
+        mp_raise_RuntimeError(translate("Buffer too small"));
     }
 
     size_t i = 0;

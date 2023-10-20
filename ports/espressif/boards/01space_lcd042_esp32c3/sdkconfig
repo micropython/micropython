@@ -1,6 +1,15 @@
-# chip is ESP32-C3 FH4
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
 #
 # LWIP
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="01Space-LCD042-ESP32C3"
 # end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

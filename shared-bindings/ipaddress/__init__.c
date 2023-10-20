@@ -112,4 +112,4 @@ const mp_obj_module_t ipaddress_module = {
     .globals = (mp_obj_dict_t *)&ipaddress_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ipaddress, ipaddress_module, CIRCUITPY_IPADDRESS);
+MP_REGISTER_MODULE(MP_QSTR_ipaddress, ipaddress_module);

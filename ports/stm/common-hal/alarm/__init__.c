@@ -122,11 +122,11 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
             stm_sleep_source_t cause = alarm_get_wakeup_cause();
             switch (cause) {
                 case STM_WAKEUP_RTC: {
-                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 case STM_WAKEUP_GPIO: {
-                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 default:

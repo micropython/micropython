@@ -85,8 +85,7 @@ STATIC mp_obj_t bleio_packet_buffer_make_new(const mp_obj_type_t *type, size_t n
         max_packet_size = mp_obj_get_int(args[ARG_max_packet_size].u_obj);
     }
 
-    bleio_packet_buffer_obj_t *self = m_new_obj(bleio_packet_buffer_obj_t);
-    self->base.type = &bleio_packet_buffer_type;
+    bleio_packet_buffer_obj_t *self = mp_obj_malloc(bleio_packet_buffer_obj_t, &bleio_packet_buffer_type);
 
     common_hal_bleio_packet_buffer_construct(self, characteristic, buffer_size, max_packet_size);
 
@@ -230,9 +229,10 @@ STATIC const mp_rom_map_elem_t bleio_packet_buffer_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(bleio_packet_buffer_locals_dict, bleio_packet_buffer_locals_dict_table);
 
 
-const mp_obj_type_t bleio_packet_buffer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PacketBuffer,
-    .make_new = bleio_packet_buffer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&bleio_packet_buffer_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_packet_buffer_type,
+    MP_QSTR_PacketBuffer,
+    MP_TYPE_FLAG_NONE,
+    make_new, bleio_packet_buffer_make_new,
+    locals_dict, &bleio_packet_buffer_locals_dict
+    );

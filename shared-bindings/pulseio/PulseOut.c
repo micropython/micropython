@@ -34,7 +34,6 @@
 #include "shared-bindings/pulseio/PulseOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PulseOut:
 //|     """Pulse PWM "carrier" output on and off. This is commonly used in infrared remotes. The
@@ -81,8 +80,7 @@ STATIC mp_obj_t pulseio_pulseout_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_int_t frequency = args[ARG_frequency].u_int;
     mp_int_t duty_cycle = args[ARG_duty_cycle].u_int;
 
-    pulseio_pulseout_obj_t *self = m_new_obj(pulseio_pulseout_obj_t);
-    self->base.type = &pulseio_pulseout_type;
+    pulseio_pulseout_obj_t *self = mp_obj_malloc(pulseio_pulseout_obj_t, &pulseio_pulseout_type);
     common_hal_pulseio_pulseout_construct(self, pin, frequency, duty_cycle);
     return MP_OBJ_FROM_PTR(self);
 }
@@ -149,9 +147,10 @@ STATIC const mp_rom_map_elem_t pulseio_pulseout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pulseio_pulseout_locals_dict, pulseio_pulseout_locals_dict_table);
 
-const mp_obj_type_t pulseio_pulseout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PulseOut,
-    .make_new = pulseio_pulseout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pulseio_pulseout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pulseio_pulseout_type,
+    MP_QSTR_PulseOut,
+    MP_TYPE_FLAG_NONE,
+    make_new, pulseio_pulseout_make_new,
+    locals_dict, &pulseio_pulseout_locals_dict
+    );

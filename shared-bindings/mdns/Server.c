@@ -171,6 +171,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mdns_server_find_obj, 1, _mdns_server_find);
 //|         ``service_type`` and ``protocol`` can only occur on one port. Any call after the first
 //|         will update the entry's port.
 //|
+//|         If web workflow is active, the port it uses can't also be used to advertise a service.
+//|
 //|         :param str service_type: The service type such as "_http"
 //|         :param str protocol: The service protocol such as "_tcp"
 //|         :param int port: The port used by the service"""
@@ -211,9 +213,10 @@ STATIC const mp_rom_map_elem_t mdns_server_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mdns_server_locals_dict, mdns_server_locals_dict_table);
 
-const mp_obj_type_t mdns_server_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Server,
-    .make_new = mdns_server_make_new,
-    .locals_dict = (mp_obj_t)&mdns_server_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mdns_server_type,
+    MP_QSTR_Server,
+    MP_TYPE_FLAG_NONE,
+    make_new, mdns_server_make_new,
+    locals_dict, &mdns_server_locals_dict
+    );

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,6 @@
 #include <assert.h>
 
 #include "py/runtime.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 void PLACE_IN_ITCM(mp_arg_check_num_sig)(size_t n_args, size_t n_kw, uint32_t sig) {
     // TODO maybe take the function name as an argument so we can print nicer error messages
@@ -133,7 +131,28 @@ void mp_arg_parse_all(size_t n_pos, const mp_obj_t *pos, mp_map_t *kws, size_t n
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_arg_error_terse_mismatch();
         #else
-        // TODO better error message
+        #if CIRCUITPY_FULL_BUILD
+        mp_map_elem_t *elem = kws->table;
+        size_t alloc = kws->alloc;
+        for (size_t i = 0; i < alloc; i++) {
+            mp_obj_t key = elem[i].key;
+            if (key == MP_OBJ_NULL) {
+                continue;
+            }
+            bool seen = false;
+            for (size_t j = n_pos; j < n_allowed; j++) {
+                if (mp_obj_equal(MP_OBJ_NEW_QSTR(allowed[j].qst), key)) {
+                    seen = true;
+                    break;
+                }
+            }
+            if (!seen) {
+                mp_raise_msg_varg(&mp_type_TypeError,
+                    MP_ERROR_TEXT("unexpected keyword argument '%q'"), mp_obj_str_get_qstr(key));
+            }
+        }
+        #endif
+        // (for the !FULL_BUILD case, and as a fallthrough for the FULL_BUILD case, even though it SHOULD be unreachable in that case)
         mp_raise_TypeError(MP_ERROR_TEXT("extra keyword arguments given"));
         #endif
     }
@@ -153,7 +172,7 @@ NORETURN void mp_arg_error_terse_mismatch(void) {
 
 #if MICROPY_CPYTHON_COMPAT
 NORETURN void mp_arg_error_unimpl_kw(void) {
-    mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not yet implemented - use normal args instead"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("keyword argument(s) not implemented - use normal args instead"));
 }
 #endif
 

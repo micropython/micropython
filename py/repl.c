@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2013-2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,16 @@
 #include "py/repl.h"
 
 #if MICROPY_HELPER_REPL
+
+#if MICROPY_PY_SYS_PS1_PS2
+const char *mp_repl_get_psx(unsigned int entry) {
+    if (mp_obj_is_str(MP_STATE_VM(sys_mutable)[entry])) {
+        return mp_obj_str_get_str(MP_STATE_VM(sys_mutable)[entry]);
+    } else {
+        return "";
+    }
+}
+#endif
 
 STATIC bool str_startswith_word(const char *str, const char *head) {
     size_t i;
@@ -303,10 +313,7 @@ size_t mp_repl_autocomplete(const char *str, size_t len, const mp_print_t *print
                 return sizeof(import_str) - 1 - s_len;
             }
         }
-        if (q_first == 0) {
-            *compl_str = "    ";
-            return s_len ? 0 : 4;
-        }
+        return 0;
     }
 
     // 1 match found, or multiple matches with a common prefix

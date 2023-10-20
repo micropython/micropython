@@ -60,7 +60,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_ob
         .ai_socktype = SOCK_STREAM,
     };
     struct addrinfo *res;
-    int err = getaddrinfo(host, NULL, &hints, &res);
+    int err = lwip_getaddrinfo(host, NULL, &hints, &res);
     if (err != 0 || res == NULL) {
         return mp_const_none;
     }
@@ -72,7 +72,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_ob
     char ip_str[IP4ADDR_STRLEN_MAX];
     inet_ntoa_r(*addr, ip_str, IP4ADDR_STRLEN_MAX);
     mp_obj_t ip_obj = mp_obj_new_str(ip_str, strlen(ip_str));
-    freeaddrinfo(res);
+    lwip_freeaddrinfo(res);
 
     return ip_obj;
 }

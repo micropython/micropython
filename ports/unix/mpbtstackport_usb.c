@@ -34,6 +34,7 @@
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK && MICROPY_BLUETOOTH_BTSTACK_USB
 
 #include "lib/btstack/src/btstack.h"
+#include "lib/btstack/src/hci_transport_usb.h"
 #include "lib/btstack/platform/embedded/btstack_run_loop_embedded.h"
 #include "lib/btstack/platform/embedded/hal_cpu.h"
 #include "lib/btstack/platform/embedded/hal_time_ms.h"

@@ -28,7 +28,6 @@
 #include "common-hal/analogio/AnalogIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared/runtime/interrupt_char.h"
-#include "supervisor/shared/translate/translate.h"
 #include "em_cmu.h"
 #include "em_iadc.h"
 

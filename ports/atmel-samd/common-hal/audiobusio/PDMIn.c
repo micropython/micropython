@@ -37,7 +37,6 @@
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"

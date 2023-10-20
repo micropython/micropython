@@ -429,8 +429,7 @@ bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *s
     ble_gap_addr_t local_address;
     get_address(self, &local_address);
 
-    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
+    bleio_address_obj_t *address = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
 
     common_hal_bleio_address_construct(address, local_address.addr, local_address.addr_type);
     return address;
@@ -545,7 +544,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     }
     self->scan_results = shared_module_bleio_new_scanresults(buffer_size, prefixes, prefix_length, minimum_rssi);
     size_t max_packet_size = extended ? BLE_GAP_SCAN_BUFFER_EXTENDED_MAX_SUPPORTED : BLE_GAP_SCAN_BUFFER_MAX;
-    uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size, false);
+    uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size);
     ble_data_t *sd_data = (ble_data_t *)raw_data;
     self->scan_results->common_hal_data = sd_data;
     sd_data->len = max_packet_size;
@@ -909,12 +908,11 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     }
 
     // The advertising data buffers must not move, because the SoftDevice depends on them.
-    // So make them long-lived and reuse them onwards.
     if (self->advertising_data == NULL) {
-        self->advertising_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+        self->advertising_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false);
     }
     if (self->scan_response_data == NULL) {
-        self->scan_response_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false, true);
+        self->scan_response_data = (uint8_t *)gc_alloc(BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED * sizeof(uint8_t), false);
     }
 
     memcpy(self->advertising_data, advertising_data_bufinfo->buf, advertising_data_bufinfo->len);

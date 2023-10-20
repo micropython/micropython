@@ -32,7 +32,6 @@
 #include "shared-bindings/usb_midi/__init__.h"
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-bindings/usb_midi/PortOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "py/runtime.h"
 
@@ -96,4 +95,4 @@ const mp_obj_module_t usb_midi_module = {
     .globals = (mp_obj_dict_t *)&usb_midi_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usb_midi, usb_midi_module, CIRCUITPY_USB_MIDI);
+MP_REGISTER_MODULE(MP_QSTR_usb_midi, usb_midi_module);

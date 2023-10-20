@@ -39,6 +39,8 @@ typedef struct {
     const mcu_pin_obj_t *bit_clock;
     const mcu_pin_obj_t *word_select;
     const mcu_pin_obj_t *data;
+    const mcu_pin_obj_t *mclk;
+    uint8_t instance;
 } audiobusio_i2sout_obj_t;
 
 #endif

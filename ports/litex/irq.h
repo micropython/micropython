@@ -41,9 +41,9 @@ static inline unsigned int irq_getie(void) {
 
 static inline void irq_setie(unsigned int ie) {
     if (ie) {
-        csrs(mstatus,CSR_MSTATUS_MIE);
+        csrs(mstatus, CSR_MSTATUS_MIE);
     } else {
-        csrc(mstatus,CSR_MSTATUS_MIE);
+        csrc(mstatus, CSR_MSTATUS_MIE);
     }
 }
 

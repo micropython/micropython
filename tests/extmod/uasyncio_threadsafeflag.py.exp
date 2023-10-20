@@ -1,0 +1,32 @@
+yield
+task 1
+set event
+yield
+wait task
+task 1 done
+----
+yield
+task 2
+set event
+yield
+schedule
+schedule done
+wait task
+task 2 done
+----
+set event
+yield
+task 3
+task 3 done
+wait task
+----
+set event
+yield
+clear event
+yield
+yield
+task 4
+set event
+yield
+wait task
+task 4 done

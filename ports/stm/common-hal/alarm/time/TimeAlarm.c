@@ -108,15 +108,15 @@ void alarm_time_timealarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_
     // Use alarm B, since port reserves A
     // If true deep sleep is called, it will either ignore or overwrite this depending on
     // whether it is shorter or longer than the USB delay
-    stm32_peripherals_rtc_assign_alarm_callback(PERIPHERALS_ALARM_B,timer_callback);
-    stm32_peripherals_rtc_set_alarm(PERIPHERALS_ALARM_B,wakeup_in_ticks);
+    stm32_peripherals_rtc_assign_alarm_callback(PERIPHERALS_ALARM_B, timer_callback);
+    stm32_peripherals_rtc_set_alarm(PERIPHERALS_ALARM_B, wakeup_in_ticks);
 }
 
 void alarm_time_timealarm_prepare_for_deep_sleep(void) {
     if (deep_sleep_ticks) {
         // This is used for both fake and real deep sleep, so it still needs the callback
-        stm32_peripherals_rtc_assign_alarm_callback(PERIPHERALS_ALARM_B,timer_callback);
-        stm32_peripherals_rtc_set_alarm(PERIPHERALS_ALARM_B,deep_sleep_ticks);
+        stm32_peripherals_rtc_assign_alarm_callback(PERIPHERALS_ALARM_B, timer_callback);
+        stm32_peripherals_rtc_set_alarm(PERIPHERALS_ALARM_B, deep_sleep_ticks);
         deep_sleep_ticks = 0;
     }
 }

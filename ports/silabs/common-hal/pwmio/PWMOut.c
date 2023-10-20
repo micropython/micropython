@@ -26,7 +26,6 @@
 #include "py/runtime.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 STATIC sl_pwm_instance_t pwm_handle[TIM_BANK_ARRAY_LEN];

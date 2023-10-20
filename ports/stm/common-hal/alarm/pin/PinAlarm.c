@@ -147,7 +147,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
             if (!stm_peripherals_exti_reserve(alarm->pin->number)) {
                 mp_raise_RuntimeError(translate("Pin interrupt already in use"));
             }
-            stm_peripherals_exti_set_callback(pin_alarm_callback,alarm->pin->number);
+            stm_peripherals_exti_set_callback(pin_alarm_callback, alarm->pin->number);
             stm_peripherals_exti_enable(alarm->pin->number);
             reserved_alarms[alarm->pin->number] = true;
         }

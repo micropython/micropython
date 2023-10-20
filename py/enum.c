@@ -27,10 +27,8 @@
 #include "py/enum.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 mp_obj_t cp_enum_find(const mp_obj_type_t *type, int value) {
-    const mp_obj_dict_t *dict = type->locals_dict;
+    const mp_obj_dict_t *dict = MP_OBJ_TYPE_GET_SLOT(type, locals_dict);
     for (size_t i = 0; i < dict->map.used; i++) {
         const cp_enum_obj_t *v = MP_OBJ_TO_PTR(dict->map.table[i].value);
         if (v->value == value) {

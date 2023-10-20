@@ -19,7 +19,10 @@ repos:
         exclude: |
           (?x)^(
             locale/|
-            lib/
+            lib/|
+            tests/unicode/data/utf-8_invalid.txt|
+            tests/extmod/data/qr.pgm|
+            tests/basics/bytearray_byte_operations.py
           )
 -   repo: local
     hooks:

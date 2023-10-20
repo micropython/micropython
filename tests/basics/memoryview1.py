@@ -5,13 +5,10 @@ except:
     print("SKIP")
     raise SystemExit
 try:
-    import uarray as array
+    import array
 except ImportError:
-    try:
-        import array
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 # test reading from bytes
 b = b'1234'

@@ -32,7 +32,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrfx_twim.h"
 #include "nrfx_spim.h"

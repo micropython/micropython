@@ -1,11 +1,8 @@
 try:
-    import ure as re
+    import re
 except ImportError:
-    try:
-        import re
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 try:
     re.match("(a*)*", "aaa")

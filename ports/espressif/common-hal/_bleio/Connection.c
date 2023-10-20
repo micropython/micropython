@@ -176,12 +176,7 @@ STATIC int _discovered_service_cb(uint16_t conn_handle,
     if (_last_discovery_status != BLE_ERR_SUCCESS) {
         return 0;
     }
-    bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
-    if (service == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    service->base.type = &bleio_service_type;
+    bleio_service_obj_t *service = mp_obj_malloc(bleio_service_obj_t, &bleio_service_type);
 
     // Initialize several fields at once.
     bleio_service_from_connection(service, bleio_connection_new_from_internal(self));
@@ -191,12 +186,8 @@ STATIC int _discovered_service_cb(uint16_t conn_handle,
     service->end_handle = svc->end_handle;
     service->handle = svc->start_handle;
 
-    bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-    if (uuid == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
+
     uuid->nimble_ble_uuid = svc->uuid;
     service->uuid = uuid;
 
@@ -224,20 +215,12 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
         return 0;
     }
 
-    bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
-    if (characteristic == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    characteristic->base.type = &bleio_characteristic_type;
+    bleio_characteristic_obj_t *characteristic =
+        mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
     // Known characteristic UUID.
-    bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-    if (uuid == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
+
     uuid->nimble_ble_uuid = chr->uuid;
 
     bleio_characteristic_properties_t props =
@@ -301,19 +284,9 @@ STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
             break;
     }
 
-    bleio_descriptor_obj_t *descriptor = m_new_obj(bleio_descriptor_obj_t);
-    if (descriptor == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    descriptor->base.type = &bleio_descriptor_type;
+    bleio_descriptor_obj_t *descriptor = mp_obj_malloc(bleio_descriptor_obj_t, &bleio_descriptor_type);
 
-    bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-    if (uuid == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
     uuid->nimble_ble_uuid = dsc->uuid;
 
     common_hal_bleio_descriptor_construct(
@@ -438,8 +411,8 @@ mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t *interna
     if (internal->connection_obj != mp_const_none) {
         return internal->connection_obj;
     }
-    bleio_connection_obj_t *connection = m_new_obj(bleio_connection_obj_t);
-    connection->base.type = &bleio_connection_type;
+    bleio_connection_obj_t *connection = mp_obj_malloc(bleio_connection_obj_t, &bleio_connection_type);
+
     connection->connection = internal;
     internal->connection_obj = connection;
 

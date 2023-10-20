@@ -87,8 +87,7 @@ STATIC mp_obj_t pixelmap_pixelmap_make_new(const mp_obj_type_t *type, size_t n_a
         }
     }
 
-    pixelmap_pixelmap_obj_t *self = m_new_obj(pixelmap_pixelmap_obj_t);
-    self->base.type = &pixelmap_pixelmap_type;
+    pixelmap_pixelmap_obj_t *self = mp_obj_malloc(pixelmap_pixelmap_obj_t, &pixelmap_pixelmap_type);
     shared_module_pixelmap_pixelmap_construct(self, pixelbuf, indices);
 
     return MP_OBJ_FROM_PTR(self);
@@ -256,14 +255,12 @@ STATIC const mp_rom_map_elem_t pixelmap_pixelmap_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pixelmap_pixelmap_locals_dict, pixelmap_pixelmap_locals_dict_table);
 
 
-const mp_obj_type_t pixelmap_pixelmap_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PixelMap,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .locals_dict = (mp_obj_t)&pixelmap_pixelmap_locals_dict,
-    .make_new = pixelmap_pixelmap_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = pixelmap_pixelmap_subscr,
-        .unary_op = pixelmap_pixelmap_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pixelmap_pixelmap_type,
+    MP_QSTR_PixelMap,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &pixelmap_pixelmap_locals_dict,
+    make_new, pixelmap_pixelmap_make_new,
+    subscr, pixelmap_pixelmap_subscr,
+    unary_op, pixelmap_pixelmap_unary_op
+    );

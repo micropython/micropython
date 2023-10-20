@@ -22,7 +22,9 @@ for po_filename in po_filenames:
 
     missing = all_ids - po_ids
     if missing:
-        print("Missing message id. Please run `make translate`")
+        print(
+            "Missing message id. Please run `make translate` and then `git commit locale/circuitpython.pot`"
+        )
         print(missing)
         sys.exit(-1)
     else:

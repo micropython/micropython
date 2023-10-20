@@ -34,7 +34,6 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 const rtc_rtc_obj_t rtc_rtc_obj = {{&rtc_rtc_type}};
 
@@ -126,9 +125,10 @@ STATIC const mp_rom_map_elem_t rtc_rtc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(rtc_rtc_locals_dict, rtc_rtc_locals_dict_table);
 
-const mp_obj_type_t rtc_rtc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RTC,
-    .make_new = rtc_rtc_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rtc_rtc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rtc_rtc_type,
+    MP_QSTR_RTC,
+    MP_TYPE_FLAG_NONE,
+    make_new, rtc_rtc_make_new,
+    locals_dict, &rtc_rtc_locals_dict
+    );

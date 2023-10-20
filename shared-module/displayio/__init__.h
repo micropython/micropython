@@ -47,6 +47,9 @@
 #if CIRCUITPY_SHARPDISPLAY
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
+#if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+#include "common-hal/dotclockframebuffer/DotClockFramebuffer.h"
+#endif
 // Port unique frame buffers.
 #if CIRCUITPY_VIDEOCORE
 #include "bindings/videocore/Framebuffer.h"
@@ -77,6 +80,9 @@ typedef struct {
         #endif
         #if CIRCUITPY_PICODVI
         picodvi_framebuffer_obj_t picodvi;
+        #endif
+        #if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+        dotclockframebuffer_framebuffer_obj_t dotclock;
         #endif
     };
 } primary_display_bus_t;

@@ -1,5 +1,5 @@
 try:
-    from ucollections import OrderedDict
+    from collections import OrderedDict
     import uctypes
 except ImportError:
     print("SKIP")

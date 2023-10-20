@@ -36,7 +36,6 @@
 
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -105,7 +104,7 @@ bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
     #if HAS_DAC
-    reset_pin_number(self->pin->port,self->pin->number);
+    reset_pin_number(self->pin->port, self->pin->number);
     self->pin = NULL;
     dac_on[self->dac_index] = false;
 

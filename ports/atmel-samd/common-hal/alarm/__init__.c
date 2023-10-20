@@ -113,11 +113,11 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
         RUN_BACKGROUND_TASKS;
         // Detect if interrupt was alarm or ctrl-C interrupt.
         if (alarm_time_timealarm_woke_this_cycle()) {
-            wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+            wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms, alarms);
             break;
         }
         if (alarm_pin_pinalarm_woke_this_cycle()) {
-            wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+            wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms, alarms);
             break;
         }
 

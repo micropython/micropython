@@ -31,7 +31,6 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Pin:
 //|     """Identifies an IO pin on the microcontroller."""
@@ -83,15 +82,13 @@ void shared_bindings_microcontroller_pin_print(const mp_print_t *print, mp_obj_t
     }
 }
 
-const mp_obj_type_t mcu_pin_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Pin,
-    .print = shared_bindings_microcontroller_pin_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mcu_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    print, shared_bindings_microcontroller_pin_print,
+    unary_op, mp_generic_unary_op
+    );
 
 const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj, qstr arg_name) {
     return MP_OBJ_TO_PTR(mp_arg_validate_type(obj, &mcu_pin_type, arg_name));

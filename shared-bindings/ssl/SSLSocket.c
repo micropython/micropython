@@ -297,12 +297,11 @@ STATIC const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ssl_sslsocket_locals_dict, ssl_sslsocket_locals_dict_table);
 
-const mp_obj_type_t ssl_sslsocket_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_SSLSocket,
-    .locals_dict = (mp_obj_dict_t *)&ssl_sslsocket_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ssl_sslsocket_type,
+    MP_QSTR_SSLSocket,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &ssl_sslsocket_locals_dict,
+    unary_op, mp_generic_unary_op
+
+    );

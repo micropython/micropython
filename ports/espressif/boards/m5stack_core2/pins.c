@@ -80,10 +80,10 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     // { MP_ROM_QSTR(MP_QSTR_TFT_BACKLIGHT), MP_ROM_PTR(&pin_GPIO32) }, AXP_DC3
 
     // sd card
-    { MP_ROM_QSTR(MP_QSTR_SD_CS),MP_ROM_PTR(&pin_GPIO4) },
+    { MP_ROM_QSTR(MP_QSTR_SD_CS), MP_ROM_PTR(&pin_GPIO4) },
 
     // touch screen
-    { MP_ROM_QSTR(MP_QSTR_TOUCH_INT),MP_ROM_PTR(&pin_GPIO39) },
+    { MP_ROM_QSTR(MP_QSTR_TOUCH_INT), MP_ROM_PTR(&pin_GPIO39) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_PORTA_I2C), MP_ROM_PTR(&board_porta_i2c_obj) },

@@ -71,7 +71,7 @@ void common_hal_wifi_init(bool user_initiated) {
 
 void wifi_user_reset(void) {
     if (wifi_user_initiated) {
-        // wifi_reset();
+        wifi_reset();
         wifi_user_initiated = false;
     }
 }
@@ -83,7 +83,7 @@ void wifi_reset(void) {
     // the cyw43 wifi chip is not reset due to https://github.com/raspberrypi/pico-sdk/issues/980
     common_hal_wifi_monitor_deinit(MP_STATE_VM(wifi_monitor_singleton));
     common_hal_wifi_radio_obj.current_scan = NULL;
-    // common_hal_wifi_radio_set_enabled(radio, false);
+    common_hal_wifi_radio_set_enabled(&common_hal_wifi_radio_obj, false);
     supervisor_workflow_request_background();
 }
 

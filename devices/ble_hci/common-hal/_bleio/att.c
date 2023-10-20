@@ -44,7 +44,6 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 
 STATIC uint16_t max_mtu = BT_ATT_DEFAULT_LE_MTU;  // 23
 STATIC unsigned long timeout = 5000;

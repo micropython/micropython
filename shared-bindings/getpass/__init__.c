@@ -84,4 +84,4 @@ const mp_obj_module_t getpass_module = {
     .globals = (mp_obj_dict_t *)&getpass_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_getpass, getpass_module, CIRCUITPY_GETPASS);
+MP_REGISTER_MODULE(MP_QSTR_getpass, getpass_module);

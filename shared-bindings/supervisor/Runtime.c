@@ -251,8 +251,9 @@ STATIC const mp_rom_map_elem_t supervisor_runtime_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_runtime_locals_dict, supervisor_runtime_locals_dict_table);
 
-const mp_obj_type_t supervisor_runtime_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Runtime,
-    .locals_dict = (mp_obj_dict_t *)&supervisor_runtime_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    supervisor_runtime_type,
+    MP_QSTR_Runtime,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &supervisor_runtime_locals_dict
+    );

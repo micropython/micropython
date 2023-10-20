@@ -34,7 +34,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Palette:
 //|     """Map a pixel palette_index to a full color. Colors are transformed to the display's format internally to
@@ -59,8 +58,7 @@ STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    displayio_palette_t *self = m_new_obj(displayio_palette_t);
-    self->base.type = &displayio_palette_type;
+    displayio_palette_t *self = mp_obj_malloc(displayio_palette_t, &displayio_palette_type);
     common_hal_displayio_palette_construct(self, mp_arg_validate_int_range(args[ARG_color_count].u_int, 1, 32767, MP_QSTR_color_count), args[ARG_dither].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
@@ -143,7 +141,7 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     // Convert a tuple or list to a bytearray.
     if (mp_obj_is_type(value, &mp_type_tuple) ||
         mp_obj_is_type(value, &mp_type_list)) {
-        value = mp_type_bytes.make_new(&mp_type_bytes, 1, 0, &value);
+        value = MP_OBJ_TYPE_GET_SLOT(&mp_type_bytes, make_new)(&mp_type_bytes, 1, 0, &value);
     }
 
     uint32_t color;
@@ -217,15 +215,13 @@ STATIC const mp_rom_map_elem_t displayio_palette_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_palette_locals_dict, displayio_palette_locals_dict_table);
 
-const mp_obj_type_t displayio_palette_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Palette,
-    .make_new = displayio_palette_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_palette_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = palette_subscr,
-        .unary_op = group_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_palette_type,
+    MP_QSTR_Palette,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, displayio_palette_make_new,
+    locals_dict, &displayio_palette_locals_dict,
+    subscr, palette_subscr,
+    unary_op, group_unary_op,
+    iter, mp_obj_generic_subscript_getiter
+    );

@@ -44,7 +44,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/port.h"
 
 // This timer is shared amongst all PulseIn objects as a higher resolution clock.
@@ -159,7 +158,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         mp_raise_RuntimeError(translate("EXTINT channel already in use"));
     }
 
-    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }

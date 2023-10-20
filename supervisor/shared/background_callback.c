@@ -36,10 +36,14 @@
 
 STATIC volatile background_callback_t *volatile callback_head, *volatile callback_tail;
 
+#ifndef CALLBACK_CRITICAL_BEGIN
 #define CALLBACK_CRITICAL_BEGIN (common_hal_mcu_disable_interrupts())
+#endif
+#ifndef CALLBACK_CRITICAL_END
 #define CALLBACK_CRITICAL_END (common_hal_mcu_enable_interrupts())
+#endif
 
-MP_WEAK void port_wake_main_task(void) {
+MP_WEAK void PLACE_IN_ITCM(port_wake_main_task)(void) {
 }
 
 void PLACE_IN_ITCM(background_callback_add_core)(background_callback_t * cb) {
@@ -68,7 +72,7 @@ void PLACE_IN_ITCM(background_callback_add)(background_callback_t * cb, backgrou
     background_callback_add_core(cb);
 }
 
-bool inline background_callback_pending(void) {
+inline bool background_callback_pending(void) {
     return callback_head != NULL;
 }
 

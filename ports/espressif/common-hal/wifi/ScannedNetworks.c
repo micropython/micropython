@@ -115,8 +115,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
         self->channel_scan_in_progress = false;
     }
 
-    wifi_network_obj_t *entry = m_new_obj(wifi_network_obj_t);
-    entry->base.type = &wifi_network_type;
+    wifi_network_obj_t *entry = mp_obj_malloc(wifi_network_obj_t, &wifi_network_type);
     memcpy(&entry->record, &self->results[self->current_result], sizeof(wifi_ap_record_t));
     self->current_result++;
 

@@ -59,7 +59,7 @@ static _websocket cp_serial;
 void websocket_init(void) {
     socketpool_socket_reset(&cp_serial.socket);
 
-    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
+    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf));
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {

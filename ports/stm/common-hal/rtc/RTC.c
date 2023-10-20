@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/RTC.h"
-#include "supervisor/shared/translate/translate.h"
 #include "peripherals/rtc.h"
 
 

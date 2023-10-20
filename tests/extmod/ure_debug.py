@@ -1,10 +1,10 @@
 # test printing debugging info when compiling
 try:
-    import ure
+    import re
 
-    ure.DEBUG
+    re.DEBUG
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
-ure.compile("^a|b[0-9]\w$", ure.DEBUG)
+re.compile("^a|b[0-9]\w$", re.DEBUG)

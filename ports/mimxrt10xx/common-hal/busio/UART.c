@@ -47,7 +47,7 @@
 #if ENABLE_DEBUG_PRINTING
 #define DBGPrintf mp_printf
 #else
-#define DBGPrintf(p,...)
+#define DBGPrintf(p, ...)
 #endif
 
 
@@ -348,7 +348,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (self->rx != NULL) {
         if (receiver_buffer == NULL) {
-            self->ringbuf = gc_alloc(receiver_buffer_size, false, true /*long-lived*/);
+            self->ringbuf = gc_alloc(receiver_buffer_size, false);
         } else {
             self->ringbuf = receiver_buffer;
         }
@@ -401,7 +401,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx == NULL) {
-        mp_raise_ValueError(translate("No RX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
     }
 
     if (len == 0) {
@@ -458,7 +458,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx == NULL) {
-        mp_raise_ValueError(translate("No TX pin"));
+        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
     }
     if (self->rs485_dir && len) {
         GPIO_PinWrite(self->rs485_dir->gpio, self->rs485_dir->number, !self->rs485_invert);

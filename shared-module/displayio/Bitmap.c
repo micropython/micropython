@@ -51,7 +51,7 @@ void common_hal_displayio_bitmap_construct_from_buffer(displayio_bitmap_t *self,
     self->stride = stride(width, bits_per_value);
     self->data_alloc = false;
     if (!data) {
-        data = m_malloc(self->stride * height * sizeof(uint32_t), false);
+        data = m_malloc(self->stride * height * sizeof(uint32_t));
         self->data_alloc = true;
     }
     self->data = data;
@@ -170,63 +170,6 @@ void displayio_bitmap_write_pixel(displayio_bitmap_t *self, int16_t x, int16_t y
             ((uint16_t *)row)[x] = value;
         } else if (bytes_per_value == 4) {
             ((uint32_t *)row)[x] = value;
-        }
-    }
-}
-
-void common_hal_displayio_bitmap_blit(displayio_bitmap_t *self, int16_t x, int16_t y, displayio_bitmap_t *source,
-    int16_t x1, int16_t y1, int16_t x2, int16_t y2, uint32_t skip_index, bool skip_index_none) {
-    if (self->read_only) {
-        mp_raise_RuntimeError(translate("Read-only"));
-    }
-    // Copy region of "source" bitmap into "self" bitmap at location x,y in the "self"
-    // If skip_value is encountered in the source bitmap, it will not be copied.
-    // If skip_value is `None`, then all pixels are copied.
-    // This function assumes input checks were performed for pixel index entries.
-
-    // Update the dirty area
-    int16_t dirty_x_max = (x + (x2 - x1));
-    if (dirty_x_max > self->width) {
-        dirty_x_max = self->width;
-    }
-    int16_t dirty_y_max = y + (y2 - y1);
-    if (dirty_y_max > self->height) {
-        dirty_y_max = self->height;
-    }
-
-    displayio_area_t a = { x, y, dirty_x_max, dirty_y_max, NULL};
-    displayio_bitmap_set_dirty_area(self, &a);
-
-    bool x_reverse = false;
-    bool y_reverse = false;
-
-    // Add reverse direction option to protect blitting of self bitmap back into self bitmap
-    if (x > x1) {
-        x_reverse = true;
-    }
-    if (y > y1) {
-        y_reverse = true;
-    }
-
-    // simplest version - use internal functions for get/set pixels
-    for (int16_t i = 0; i < (x2 - x1); i++) {
-
-        const int xs_index = x_reverse ? ((x2) - i - 1) : x1 + i; // x-index into the source bitmap
-        const int xd_index = x_reverse ? ((x + (x2 - x1)) - i - 1) : x + i; // x-index into the destination bitmap
-
-        if ((xd_index >= 0) && (xd_index < self->width)) {
-            for (int16_t j = 0; j < (y2 - y1); j++) {
-
-                const int ys_index = y_reverse ? ((y2) - j - 1) : y1 + j;  // y-index into the source bitmap
-                const int yd_index = y_reverse ? ((y + (y2 - y1)) - j - 1) : y + j; // y-index into the destination bitmap
-
-                if ((yd_index >= 0) && (yd_index < self->height)) {
-                    uint32_t value = common_hal_displayio_bitmap_get_pixel(source, xs_index, ys_index);
-                    if ((skip_index_none) || (value != skip_index)) {   // write if skip_value_none is True
-                        displayio_bitmap_write_pixel(self, xd_index, yd_index, value);
-                    }
-                }
-            }
         }
     }
 }

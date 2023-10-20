@@ -34,7 +34,6 @@
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-bindings/usb_midi/PortOut.h"
 #include "supervisor/memory.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/usb.h"
 #include "tusb.h"
 

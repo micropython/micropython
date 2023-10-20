@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ typedef struct _mp_print_ext_t {
     mp_print_t base;
     const char *item_separator;
     const char *key_separator;
-}mp_print_ext_t;
+} mp_print_ext_t;
 
 #define MP_PRINT_GET_EXT(print) ((mp_print_ext_t *)print)
 

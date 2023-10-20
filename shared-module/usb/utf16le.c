@@ -26,60 +26,49 @@
 
 #include "shared-module/usb/utf16le.h"
 
-STATIC void _convert_utf16le_to_utf8(const uint16_t *utf16, size_t utf16_len, uint8_t *utf8, size_t utf8_len) {
-    // TODO: Check for runover.
-    (void)utf8_len;
+typedef struct {
+    const uint16_t *buf;
+    size_t len;
+} utf16_str;
 
-    for (size_t i = 0; i < utf16_len; i++) {
-        uint16_t chr = utf16[i];
-        if (chr < 0x80) {
-            *utf8++ = chr & 0xff;
-        } else if (chr < 0x800) {
-            *utf8++ = (uint8_t)(0xC0 | (chr >> 6 & 0x1F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
-        } else if (chr < 0x10000) {
-            // TODO: Verify surrogate.
-            *utf8++ = (uint8_t)(0xE0 | (chr >> 12 & 0x0F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 6 & 0x3F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
-        } else {
-            // TODO: Handle UTF-16 code points that take two entries.
-            uint32_t hc = ((chr & 0xFFFF0000) - 0xD8000000) >> 6;    /* Get high 10 bits */
-            chr = (chr & 0xFFFF) - 0xDC00;                  /* Get low 10 bits */
-            chr = (hc | chr) + 0x10000;
-            *utf8++ = (uint8_t)(0xF0 | (chr >> 18 & 0x07));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 12 & 0x3F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 6 & 0x3F));
-            *utf8++ = (uint8_t)(0x80 | (chr >> 0 & 0x3F));
-        }
+STATIC uint32_t utf16str_peek_unit(utf16_str *utf) {
+    if (!utf->len) {
+        return 0;
     }
+    return *utf->buf;
 }
 
-// Count how many bytes a utf-16-le encoded string will take in utf-8.
-STATIC mp_int_t _count_utf8_bytes(const uint16_t *buf, size_t len) {
-    size_t total_bytes = 0;
-    for (size_t i = 0; i < len; i++) {
-        uint16_t chr = buf[i];
-        if (chr < 0x80) {
-            total_bytes += 1;
-        } else if (chr < 0x800) {
-            total_bytes += 2;
-        } else if (chr < 0x10000) {
-            total_bytes += 3;
-        } else {
-            total_bytes += 4;
+STATIC uint32_t utf16str_next_unit(utf16_str *utf) {
+    uint32_t result = utf16str_peek_unit(utf);
+    if (utf->len) {
+        utf->len--;
+        utf->buf++;
+    }
+    return result;
+}
+STATIC uint32_t utf16str_next_codepoint(utf16_str *utf) {
+    uint32_t unichr = utf16str_next_unit(utf);
+    if (unichr >= 0xd800 && unichr < 0xdc00) {
+        uint32_t low_surrogate = utf16str_peek_unit(utf);
+        if (low_surrogate >= 0xdc00 && low_surrogate < 0xe000) {
+            (void)utf16str_next_unit(utf);
+            unichr = (unichr - 0xd800) * 0x400 + low_surrogate - 0xdc00 + 0x10000;
         }
     }
-    return total_bytes;
+    return unichr;
+}
+
+STATIC void _convert_utf16le_to_utf8(vstr_t *vstr, utf16_str *utf) {
+    while (utf->len) {
+        vstr_add_char(vstr, utf16str_next_codepoint(utf));
+    }
 }
 
 mp_obj_t utf16le_to_string(const uint16_t *buf, size_t utf16_len) {
-    size_t size = _count_utf8_bytes(buf, utf16_len);
+    // will grow if necessary, but will never grow for an all-ASCII descriptor
     vstr_t vstr;
-    vstr_init_len(&vstr, size + 1);
-    byte *p = (byte *)vstr.buf;
-    // Null terminate.
-    p[size] = '\0';
-    _convert_utf16le_to_utf8(buf, utf16_len, p, size);
-    return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    vstr_init(&vstr, utf16_len);
+    utf16_str utf = {buf, utf16_len};
+    _convert_utf16le_to_utf8(&vstr, &utf);
+    return mp_obj_new_str_from_vstr(&vstr);
 }

@@ -1,13 +1,35 @@
-// SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013-2016 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "py/builtin.h"
 #include "py/compile.h"
 #include "py/persistentcode.h"
 #include "py/runtime.h"
@@ -51,7 +73,9 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, false);
+        mp_compiled_module_t cm;
+        cm.context = m_new_obj(mp_module_context_t);
+        mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
 
         vstr_t vstr;
         vstr_init(&vstr, 16);
@@ -62,7 +86,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         } else {
             vstr_add_str(&vstr, output_file);
         }
-        mp_raw_code_save_file(rc, vstr_null_terminated_str(&vstr));
+        mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
         vstr_clear(&vstr);
 
         nlr_pop();
@@ -86,8 +110,7 @@ STATIC int usage(char **argv) {
         "\n"
         "Target specific options:\n"
         "-msmall-int-bits=number : set the maximum bits used to encode a small-int\n"
-        "-mno-unicode : don't support unicode in compiled strings\n"
-        "-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin\n"
+        "-march=<arch> : set architecture for native emitter; x86, x64, armv6, armv6m, armv7m, armv7em, armv7emsp, armv7emdp, xtensa, xtensawin\n"
         "\n"
         "Implementation specific options:\n", argv[0]
         );
@@ -159,6 +182,15 @@ STATIC void pre_process_options(int argc, char **argv) {
     }
 }
 
+STATIC char *backslash_to_forwardslash(char *path) {
+    for (char *p = path; p != NULL && *p != '\0'; ++p) {
+        if (*p == '\\') {
+            *p = '/';
+        }
+    }
+    return path;
+}
+
 MP_NOINLINE int main_(int argc, char **argv) {
     mp_stack_set_limit(40000 * (sizeof(void *) / 4));
 
@@ -181,20 +213,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;
-    mp_dynamic_compiler.py_builtins_str_unicode = 1;
-    #if defined(__i386__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
-    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
-    #elif defined(__x86_64__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
-    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
-    #elif defined(__arm__) && !defined(__thumb2__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
-    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
-    #else
+    // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
-    #endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
@@ -207,7 +228,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 a += 1;
             } else if (strcmp(argv[a], "--version") == 0) {
                 printf("CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
-                    "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "-CircuitPython\n");
+                    "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "." MP_STRINGIFY(MPY_SUB_VERSION) "\n");
                 return 0;
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
@@ -230,7 +251,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 a += 1;
-                source_file = argv[a];
+                source_file = backslash_to_forwardslash(argv[a]);
             } else if (strncmp(argv[a], "-msmall-int-bits=", sizeof("-msmall-int-bits=") - 1) == 0) {
                 char *end;
                 mp_dynamic_compiler.small_int_bits =
@@ -239,10 +260,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     return usage(argv);
                 }
                 // TODO check that small_int_bits is within range of host's capabilities
-            } else if (strcmp(argv[a], "-mno-unicode") == 0) {
-                mp_dynamic_compiler.py_builtins_str_unicode = 0;
-            } else if (strcmp(argv[a], "-municode") == 0) {
-                mp_dynamic_compiler.py_builtins_str_unicode = 1;
             } else if (strncmp(argv[a], "-march=", sizeof("-march=") - 1) == 0) {
                 const char *arch = argv[a] + sizeof("-march=") - 1;
                 if (strcmp(arch, "x86") == 0) {
@@ -254,6 +271,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "armv6") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                } else if (strcmp(arch, "armv6m") == 0) {
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6M;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP; // need to be conservative so this code can run on armv7emdp
                 } else if (strcmp(arch, "armv7m") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV7M;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
@@ -272,6 +292,20 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "xtensawin") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
+                } else if (strcmp(arch, "host") == 0) {
+                    #if defined(__i386__) || defined(_M_IX86)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
+                    #elif defined(__x86_64__) || defined(_M_X64)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
+                    #elif defined(__arm__) && !defined(__thumb2__)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                    #else
+                    mp_printf(&mp_stderr_print, "unable to determine host architecture for -march=host\n");
+                    exit(1);
+                    #endif
                 } else {
                     return usage(argv);
                 }
@@ -283,7 +317,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 mp_printf(&mp_stderr_print, "multiple input files\n");
                 exit(1);
             }
-            input_file = argv[a];
+            input_file = backslash_to_forwardslash(argv[a]);
         }
     }
 
@@ -318,8 +352,4 @@ mp_import_stat_t mp_import_stat(const char *path) {
 void nlr_jump_fail(void *val) {
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
-}
-
-void serial_write(const char *text) {
-    printf("%s", text);
 }

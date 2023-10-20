@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+// This file should be compiled when included from vfs_lfs.c.
+#if defined(LFS_BUILD_VERSION)
+
 #include <stdio.h>
 #include <string.h>
 
@@ -68,11 +71,9 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
             case '+':
                 flags |= LFSx_MACRO(_O_RDWR);
                 break;
-            #if MICROPY_PY_IO_FILEIO
             case 'b':
                 type = &MP_TYPE_VFS_LFSx_(_fileio);
                 break;
-            #endif
             case 't':
                 type = &MP_TYPE_VFS_LFSx_(_textio);
                 break;
@@ -216,45 +217,35 @@ STATIC const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(file_locals_dict), MP_VFS_LFSx(file_locals_dict_table));
 
-#if MICROPY_PY_IO_FILEIO
 STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = MP_VFS_LFSx(file_read),
     .write = MP_VFS_LFSx(file_write),
     .ioctl = MP_VFS_LFSx(file_ioctl),
 };
 
-const mp_obj_type_t MP_TYPE_VFS_LFSx_(_fileio) = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_FileIO,
-    .print = MP_VFS_LFSx(file_print),
-    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &MP_VFS_LFSx(fileio_stream_p),
-        ),
-};
-#endif
+MP_DEFINE_CONST_OBJ_TYPE(
+    MP_TYPE_VFS_LFSx_(_fileio),
+    MP_QSTR_FileIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, MP_VFS_LFSx(file_print),
+    protocol, &MP_VFS_LFSx(fileio_stream_p),
+    locals_dict, &MP_VFS_LFSx(file_locals_dict)
+    );
 
 STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = MP_VFS_LFSx(file_read),
     .write = MP_VFS_LFSx(file_write),
     .ioctl = MP_VFS_LFSx(file_ioctl),
     .is_text = true,
 };
 
-const mp_obj_type_t MP_TYPE_VFS_LFSx_(_textio) = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_TextIOWrapper,
-    .print = MP_VFS_LFSx(file_print),
-    .locals_dict = (mp_obj_dict_t *)&MP_VFS_LFSx(file_locals_dict),
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &MP_VFS_LFSx(textio_stream_p),
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    MP_TYPE_VFS_LFSx_(_textio),
+    MP_QSTR_TextIOWrapper,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    print, MP_VFS_LFSx(file_print),
+    protocol, &MP_VFS_LFSx(textio_stream_p),
+    locals_dict, &MP_VFS_LFSx(file_locals_dict)
+    );
+
+#endif // defined(LFS_BUILD_VERSION)

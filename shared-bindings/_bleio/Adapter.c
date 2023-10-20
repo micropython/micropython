@@ -468,9 +468,10 @@ STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict_table);
 
-const mp_obj_type_t bleio_adapter_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Adapter,
-    .make_new = bleio_adapter_make_new,
-    .locals_dict = (mp_obj_t)&bleio_adapter_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_adapter_type,
+    MP_QSTR_Adapter,
+    MP_TYPE_FLAG_NONE,
+    make_new, bleio_adapter_make_new,
+    locals_dict, &bleio_adapter_locals_dict
+    );

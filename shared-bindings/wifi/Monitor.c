@@ -59,8 +59,7 @@ STATIC mp_obj_t wifi_monitor_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     wifi_monitor_obj_t *self = MP_STATE_VM(wifi_monitor_singleton);
     if (common_hal_wifi_monitor_deinited()) {
-        self = m_new_obj(wifi_monitor_obj_t);
-        self->base.type = &wifi_monitor_type;
+        self = mp_obj_malloc(wifi_monitor_obj_t, &wifi_monitor_type);
         common_hal_wifi_monitor_construct(self, channel, queue);
         MP_STATE_VM(wifi_monitor_singleton) = self;
     }
@@ -152,9 +151,12 @@ STATIC const mp_rom_map_elem_t wifi_monitor_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(wifi_monitor_locals_dict, wifi_monitor_locals_dict_table);
 
-const mp_obj_type_t wifi_monitor_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Monitor,
-    .make_new = wifi_monitor_make_new,
-    .locals_dict = (mp_obj_t)&wifi_monitor_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    wifi_monitor_type,
+    MP_QSTR_Monitor,
+    MP_TYPE_FLAG_NONE,
+    make_new, wifi_monitor_make_new,
+    locals_dict, &wifi_monitor_locals_dict
+    );
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t wifi_monitor_singleton);

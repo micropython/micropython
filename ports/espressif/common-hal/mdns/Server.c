@@ -31,7 +31,7 @@
 #include "shared-bindings/mdns/RemoteService.h"
 #include "shared-bindings/wifi/__init__.h"
 
-#include "components/mdns/include/mdns.h"
+#include "mdns.h"
 
 // Track whether the underlying IDF mdns has been started so that we only
 // create a single inited MDNS object to CircuitPython. (After deinit, another
@@ -125,22 +125,13 @@ size_t mdns_server_find(mdns_server_obj_t *self, const char *service_type, const
     if (search == NULL) {
         return 0;
     }
+    uint8_t num_results;
     mdns_result_t *results;
-    while (!mdns_query_async_get_results(search, 1, &results)) {
+    while (!mdns_query_async_get_results(search, 1, &results, &num_results)) {
         RUN_BACKGROUND_TASKS;
     }
     mdns_query_async_delete(search);
-    // Count how many results we got.
-    // TODO: Remove this loop when moving off 4.4. Newer APIs will give us num_results
-    // back directly.
     mdns_result_t *next = results;
-    uint8_t num_results = 0;
-    while (next != NULL) {
-        num_results++;
-        next = next->next;
-    }
-
-    next = results;
     // Don't error if we're out of memory. Instead, truncate the tuple.
     uint8_t added = 0;
     while (next != NULL && added < out_len) {
@@ -166,31 +157,23 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
     if (search == NULL) {
         mp_raise_RuntimeError(translate("Unable to start mDNS query"));
     }
+    uint8_t num_results;
     mdns_result_t *results;
-    while (!mdns_query_async_get_results(search, 1, &results)) {
+    while (!mdns_query_async_get_results(search, 1, &results, &num_results)) {
         RUN_BACKGROUND_TASKS;
     }
     mdns_query_async_delete(search);
-    // Count how many results we got.
-    // TODO: Remove this loop when moving off 4.4. Newer APIs will give us num_results
-    // back directly.
-    mdns_result_t *next = results;
-    uint8_t num_results = 0;
-    while (next != NULL) {
-        num_results++;
-        next = next->next;
-    }
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(num_results, NULL));
     // The empty tuple object is shared and stored in flash so return early if
     // we got it. Without this we'll crash when trying to set len below.
     if (num_results == 0) {
         return MP_OBJ_FROM_PTR(tuple);
     }
-    next = results;
+    mdns_result_t *next = results;
     // Don't error if we're out of memory. Instead, truncate the tuple.
     uint8_t added = 0;
     while (next != NULL) {
-        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), GC_ALLOC_FLAG_HAS_FINALISER, false);
+        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), GC_ALLOC_FLAG_HAS_FINALISER);
         if (service == NULL) {
             if (added == 0) {
                 m_malloc_fail(sizeof(mdns_remoteservice_obj_t));

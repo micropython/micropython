@@ -34,6 +34,9 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/os/__init__.h"
 
+#include "hardware/rtc.h"
+#include "shared/timeutils/timeutils.h"
+
 extern uint8_t rosc_random_u8(size_t cycles);
 
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {

@@ -21,3 +21,7 @@ print(f"a {x=:08x} b {y} c")
 
 print(f'a {f() + g("foo") + h()=} b')
 print(f'a {f() + g("foo") + h()=:08x} b')
+
+print(f"a {1,=} b")
+print(f"a {x,y,=} b")
+print(f"a {x,1=} b")

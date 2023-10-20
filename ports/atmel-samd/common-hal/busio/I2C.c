@@ -35,7 +35,6 @@
 #include "samd/sercom.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "common-hal/busio/__init__.h"
 

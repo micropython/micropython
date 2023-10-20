@@ -33,6 +33,7 @@
 #include "supervisor/shared/external_flash/common_commands.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
+#include "py/gc.h"
 #include "py/misc.h"
 #include "py/obj.h"
 #include "py/runtime.h"
@@ -367,11 +368,12 @@ static bool allocate_ram_cache(void) {
         return true;
     }
 
-    if (MP_STATE_MEM(gc_pool_start) == 0) {
+    // Couldn't allocate outside the heap. Is the heap available?
+    if (!gc_alloc_possible()) {
         return false;
     }
 
-    MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t), false);
+    MP_STATE_VM(flash_ram_cache) = m_malloc_maybe(blocks_per_sector * pages_per_block * sizeof(uint32_t));
     if (MP_STATE_VM(flash_ram_cache) == NULL) {
         return false;
     }
@@ -382,7 +384,7 @@ static bool allocate_ram_cache(void) {
     bool success = true;
     for (i = 0; i < blocks_per_sector; i++) {
         for (j = 0; j < pages_per_block; j++) {
-            uint8_t *page_cache = m_malloc_maybe(SPI_FLASH_PAGE_SIZE, false);
+            uint8_t *page_cache = m_malloc_maybe(SPI_FLASH_PAGE_SIZE);
             if (page_cache == NULL) {
                 success = false;
                 break;
@@ -414,7 +416,7 @@ static void release_ram_cache(void) {
     if (supervisor_cache != NULL) {
         free_memory(supervisor_cache);
         supervisor_cache = NULL;
-    } else if (MP_STATE_MEM(gc_pool_start)) {
+    } else if (gc_alloc_possible()) {
         m_free(MP_STATE_VM(flash_ram_cache));
     }
     MP_STATE_VM(flash_ram_cache) = NULL;
@@ -462,7 +464,7 @@ static bool flush_ram_cache(bool keep_cache) {
             write_flash(current_sector + (i * pages_per_block + j) * SPI_FLASH_PAGE_SIZE,
                 MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j],
                 SPI_FLASH_PAGE_SIZE);
-            if (!keep_cache && supervisor_cache == NULL && MP_STATE_MEM(gc_pool_start)) {
+            if (!keep_cache && supervisor_cache == NULL && gc_alloc_possible()) {
                 m_free(MP_STATE_VM(flash_ram_cache)[i * pages_per_block + j]);
             }
         }
@@ -605,3 +607,5 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t block_num, 
 
 void MP_WEAK external_flash_setup(void) {
 }
+
+MP_REGISTER_ROOT_POINTER(uint8_t * *flash_ram_cache);

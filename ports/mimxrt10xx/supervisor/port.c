@@ -321,7 +321,7 @@ __attribute__((used, naked, no_instrument_function, optimize("no-tree-loop-distr
     main();
 }
 
-void __attribute__((no_instrument_function,section(".itcm.profile_enter"),long_call)) __cyg_profile_func_enter(void *this_fn,
+void __attribute__((no_instrument_function, section(".itcm.profile_enter"), long_call)) __cyg_profile_func_enter(void *this_fn,
     void *call_site) {
     if ((ITM->TER & (1 << 3)) == 0) {
         return;
@@ -333,7 +333,7 @@ void __attribute__((no_instrument_function,section(".itcm.profile_enter"),long_c
     ITM->PORT[3].u32 = addr;
 }
 
-void __attribute__((no_instrument_function,section(".itcm.profile_exit"),long_call)) __cyg_profile_func_exit(void *this_fn,
+void __attribute__((no_instrument_function, section(".itcm.profile_exit"), long_call)) __cyg_profile_func_exit(void *this_fn,
     void *call_site) {
     if ((ITM->TER & (1 << 4)) == 0) {
         return;

@@ -58,13 +58,11 @@ STATIC MP_DEFINE_CONST_DICT(wifi_packet_locals_dict, wifi_packet_locals_table);
 
 MAKE_PRINTER(wifi, wifi_packet);
 
-const mp_obj_type_t wifi_packet_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Packet,
-    .print = wifi_packet_print,
-    .locals_dict = (mp_obj_t)&wifi_packet_locals_dict,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    wifi_packet_type,
+    MP_QSTR_Packet,
+    MP_TYPE_FLAG_NONE,
+    print, wifi_packet_print,
+    locals_dict, &wifi_packet_locals_dict,
+    unary_op, mp_generic_unary_op
+    );

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,6 @@ const mp_obj_module_t mp_module_array = {
     .globals = (mp_obj_dict_t *)&mp_module_array_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_array, mp_module_array, MICROPY_PY_ARRAY);
+MP_REGISTER_MODULE(MP_QSTR_array, mp_module_array);
 
 #endif

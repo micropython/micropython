@@ -24,7 +24,7 @@ PORT_DEPS = {
     "cxd56": ["extmod/ulab/", "lib/tinyusb/"],
     "espressif": [
         "extmod/ulab/",
-        "lib/certificates/nina-fw/",
+        "lib/certificates/",
         "lib/protomatter/",
         "lib/quirc/",
         "lib/tinyusb/",
@@ -37,7 +37,7 @@ PORT_DEPS = {
         "lib/adafruit_floppy/",
         "lib/mbedtls/",
         "lib/mp3/",
-        "lib/certificates/nina-fw/",
+        "lib/certificates/",
         "lib/protomatter/",
         "lib/quirc/",
         "lib/tinyusb/",
@@ -79,6 +79,10 @@ def main():
         submodules = ["extmod/ulab", "lib/", "tools/"]
     elif TARGET == "tests":
         submodules = ["extmod/ulab", "lib/", "tools/"]
+        submodules_tags = [
+            "frozen/Adafruit_CircuitPython_asyncio",
+            "frozen/Adafruit_CircuitPython_Ticks",
+        ]
     elif TARGET == "docs":
         # used in .readthedocs.yml to generate RTD
         submodules = ["extmod/ulab"]

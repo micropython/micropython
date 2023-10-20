@@ -2,7 +2,6 @@
 
 #include "py/runtime.h"
 #include "py/mpstate.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "shared-bindings/countio/Edge.h"
 #include "shared-bindings/digitalio/Pull.h"
@@ -112,3 +111,5 @@ void counter_interrupt_handler(void) {
         self->count += 65536;
     }
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t counting[enum_NUM_PWM_SLICES]);

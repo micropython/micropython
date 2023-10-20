@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/board.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 // Note that any bugs introduced in this file can cause crashes
@@ -95,7 +94,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
                 mp_raise_ValueError(translate("SPI init error"));
             }
         } else {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
         }
     } else {
         raise_ValueError_invalid_pins();

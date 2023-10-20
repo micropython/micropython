@@ -62,6 +62,7 @@ typedef struct {
 void displayio_epaperdisplay_change_refresh_mode_parameters(displayio_epaperdisplay_obj_t *self,
     mp_buffer_info_t *start_sequence, float seconds_per_frame);
 void displayio_epaperdisplay_background(displayio_epaperdisplay_obj_t *self);
+void displayio_epaperdisplay_reset(displayio_epaperdisplay_obj_t *self);
 void release_epaperdisplay(displayio_epaperdisplay_obj_t *self);
 size_t maybe_refresh_epaperdisplay(void);
 

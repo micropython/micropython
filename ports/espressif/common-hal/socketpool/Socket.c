@@ -402,7 +402,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     #pragma GCC diagnostic ignored "-Wcast-align"
     dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
     #pragma GCC diagnostic pop
-    freeaddrinfo(result_i);
+    lwip_freeaddrinfo(result_i);
 
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(port);
@@ -411,7 +411,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
 
     // Switch to blocking mode for this one call
     int opts;
-    opts = lwip_fcntl(self->num,F_GETFL,0);
+    opts = lwip_fcntl(self->num, F_GETFL, 0);
     opts = opts & (~O_NONBLOCK);
     lwip_fcntl(self->num, F_SETFL, opts);
 
@@ -582,7 +582,7 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
     #pragma GCC diagnostic ignored "-Wcast-align"
     dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
     #pragma GCC diagnostic pop
-    freeaddrinfo(result_i);
+    lwip_freeaddrinfo(result_i);
 
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(port);

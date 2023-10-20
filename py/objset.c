@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,6 @@
 
 #include "py/runtime.h"
 #include "py/builtin.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_SET
 
@@ -176,8 +174,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(set_clear_obj, set_clear);
 STATIC mp_obj_t set_copy(mp_obj_t self_in) {
     check_set_or_frozenset(self_in);
     mp_obj_set_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_set_t *other = m_new_obj(mp_obj_set_t);
-    other->base.type = self->base.type;
+    mp_obj_set_t *other = mp_obj_malloc(mp_obj_set_t, self->base.type);
     mp_set_init(&other->set, self->set.alloc);
     other->set.used = self->set.used;
     memcpy(other->set.table, self->set.table, self->set.alloc * sizeof(mp_obj_t));
@@ -543,19 +540,17 @@ STATIC const mp_rom_map_elem_t set_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(set_locals_dict, set_locals_dict_table);
 
-const mp_obj_type_t mp_type_set = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_set,
-    .print = set_print,
-    .make_new = set_make_new,
-    .locals_dict = (mp_obj_dict_t *)&set_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = set_unary_op,
-        .binary_op = set_binary_op,
-        .getiter = set_getiter,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_set,
+    MP_QSTR_set,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, set_make_new,
+    print, set_print,
+    unary_op, set_unary_op,
+    binary_op, set_binary_op,
+    iter, set_getiter,
+    locals_dict, &set_locals_dict
+    );
 
 #if MICROPY_PY_BUILTINS_FROZENSET
 STATIC const mp_rom_map_elem_t frozenset_locals_dict_table[] = {
@@ -571,24 +566,21 @@ STATIC const mp_rom_map_elem_t frozenset_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(frozenset_locals_dict, frozenset_locals_dict_table);
 
-const mp_obj_type_t mp_type_frozenset = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_frozenset,
-    .print = set_print,
-    .make_new = set_make_new,
-    .locals_dict = (mp_obj_dict_t *)&frozenset_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = set_unary_op,
-        .binary_op = set_binary_op,
-        .getiter = set_getiter,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_frozenset,
+    MP_QSTR_frozenset,
+    MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, set_make_new,
+    print, set_print,
+    unary_op, set_unary_op,
+    binary_op, set_binary_op,
+    iter, set_getiter,
+    locals_dict, &frozenset_locals_dict
+    );
 #endif
 
 mp_obj_t mp_obj_new_set(size_t n_args, mp_obj_t *items) {
-    mp_obj_set_t *o = m_new_obj(mp_obj_set_t);
-    o->base.type = &mp_type_set;
+    mp_obj_set_t *o = mp_obj_malloc(mp_obj_set_t, &mp_type_set);
     mp_set_init(&o->set, n_args);
     for (size_t i = 0; i < n_args; i++) {
         mp_set_lookup(&o->set, items[i], MP_MAP_LOOKUP_ADD_IF_NOT_FOUND);

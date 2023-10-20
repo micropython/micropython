@@ -42,21 +42,30 @@
 
 #include "freertos/FreeRTOS.h"
 
-#include "soc/rtc_cntl_reg.h"
 #include "esp_private/system_internal.h"
 
 #if defined(CONFIG_IDF_TARGET_ESP32)
+#include "soc/rtc_cntl_reg.h"
 #include "esp32/rom/rtc.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
+#include "soc/rtc_cntl_reg.h"
 #include "esp32c3/rom/rtc.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+#include "soc/lp_aon_reg.h"
+#include "esp32c6/rom/rtc.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
+#include "soc/rtc_cntl_reg.h"
 #include "esp32s2/rom/rtc.h"
 #include "esp32s2/rom/usb/usb_persist.h"
 #include "esp32s2/rom/usb/chip_usb_dw_wrapper.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+#include "soc/rtc_cntl_reg.h"
 #include "esp32s3/rom/rtc.h"
 #include "esp32s3/rom/usb/usb_persist.h"
 #include "esp32s3/rom/usb/chip_usb_dw_wrapper.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+#include "soc/lp_aon_reg.h"
+#include "esp32h2/rom/rtc.h"
 #else
 #error No known CONFIG_IDF_TARGET_xxx found
 #endif
@@ -101,9 +110,17 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
             REG_WRITE(RTC_RESET_CAUSE_REG, 0);  // reset uf2
             #endif
+            #ifdef SOC_LP_AON_SUPPORTED
+            REG_WRITE(LP_AON_STORE0_REG, 0);  // reset safe mode
+            #else
             REG_WRITE(RTC_CNTL_STORE0_REG, 0);  // reset safe mode
+            #endif
             #if !defined(CONFIG_IDF_TARGET_ESP32)
+            #ifdef SOC_LP_AON_SUPPORTED
+            REG_WRITE(LP_AON_SYS_CFG_REG, 0); // reset bootloader
+            #else
             REG_WRITE(RTC_CNTL_OPTION1_REG, 0); // reset bootloader
+            #endif
             #endif
             break;
         case RUNMODE_SAFE_MODE:
@@ -118,7 +135,11 @@ void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
             #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
             chip_usb_set_persist_flags(USBDC_BOOT_DFU);
             #endif
+            #ifdef SOC_LP_AON_SUPPORTED
+            REG_WRITE(LP_AON_SYS_CFG_REG, LP_AON_FORCE_DOWNLOAD_BOOT);
+            #else
             REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
+            #endif
             #endif
             break;
         default:

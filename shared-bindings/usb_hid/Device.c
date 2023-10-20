@@ -27,7 +27,6 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Device:
 //|     """HID Device specification"""
@@ -91,8 +90,7 @@
 //|     Uses Report ID 3 for its IN report."""
 
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
-    self->base.type = &usb_hid_device_type;
+    usb_hid_device_obj_t *self = mp_obj_malloc(usb_hid_device_obj_t, &usb_hid_device_type);
     enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_report_ids, ARG_in_report_lengths, ARG_out_report_lengths };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -265,9 +263,10 @@ STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
 
-const mp_obj_type_t usb_hid_device_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Device,
-    .make_new = usb_hid_device_make_new,
-    .locals_dict = (mp_obj_t)&usb_hid_device_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_hid_device_type,
+    MP_QSTR_Device,
+    MP_TYPE_FLAG_NONE,
+    make_new, usb_hid_device_make_new,
+    locals_dict, &usb_hid_device_locals_dict
+    );

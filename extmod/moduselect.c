@@ -1,15 +1,35 @@
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-// SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
-// SPDX-FileCopyrightText: Copyright (c) 2015-2017 Paul Sokolovsky
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2015-2017 Paul Sokolovsky
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include "py/mpconfig.h"
 #if MICROPY_PY_USELECT
 
 #include <stdio.h>
 
-#include "py/stream.h"
 #include "py/runtime.h"
 #include "py/obj.h"
 #include "py/objlist.h"
@@ -151,6 +171,7 @@ STATIC mp_obj_t select_select(size_t n_args, const mp_obj_t *args) {
             mp_map_deinit(&poll_map);
             return mp_obj_new_tuple(3, list_array);
         }
+        // CIRCUITPY
         RUN_BACKGROUND_TASKS;
     }
 }
@@ -230,6 +251,7 @@ STATIC mp_uint_t poll_poll_internal(uint n_args, const mp_obj_t *args) {
         if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_tick >= timeout)) {
             break;
         }
+        // CIRCUITPY
         RUN_BACKGROUND_TASKS;
         if (mp_hal_is_interrupted()) {
             return 0;
@@ -320,21 +342,17 @@ STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_poll = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_poll,
-    .locals_dict = (void *)&poll_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = poll_iternext,
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_poll,
+    MP_QSTR_poll,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, poll_iternext,
+    locals_dict, &poll_locals_dict
+    );
 
 // poll()
 STATIC mp_obj_t select_poll(void) {
-    mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
-    poll->base.type = &mp_type_poll;
+    mp_obj_poll_t *poll = mp_obj_malloc(mp_obj_poll_t, &mp_type_poll);
     mp_map_init(&poll->poll_map, 0);
     poll->iter_cnt = 0;
     poll->ret_tuple = MP_OBJ_NULL;
@@ -361,6 +379,6 @@ const mp_obj_module_t mp_module_uselect = {
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_select, mp_module_uselect, MICROPY_PY_USELECT);
+MP_REGISTER_MODULE(MP_QSTR_select, mp_module_uselect);
 
 #endif // MICROPY_PY_USELECT

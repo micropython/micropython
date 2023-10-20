@@ -116,14 +116,7 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-    common_hal_displayio_epaperdisplay_show(self, &circuitpython_splash);
-}
-
-bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group) {
-    if (root_group == NULL) {
-        root_group = &circuitpython_splash;
-    }
-    return displayio_display_core_set_root_group(&self->core, root_group);
+    common_hal_displayio_epaperdisplay_set_root_group(self, &circuitpython_splash);
 }
 
 bool common_hal_displayio_epaperdisplay_set_root_group(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group) {
@@ -501,6 +494,11 @@ void release_epaperdisplay(displayio_epaperdisplay_obj_t *self) {
     if (self->busy.base.type == &digitalio_digitalinout_type) {
         common_hal_digitalio_digitalinout_deinit(&self->busy);
     }
+}
+
+void displayio_epaperdisplay_reset(displayio_epaperdisplay_obj_t *self) {
+    displayio_display_core_set_root_group(&self->core, &circuitpython_splash);
+    self->core.full_refresh = true;
 }
 
 void displayio_epaperdisplay_collect_ptrs(displayio_epaperdisplay_obj_t *self) {

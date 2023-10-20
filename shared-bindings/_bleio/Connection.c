@@ -244,12 +244,10 @@ STATIC const mp_rom_map_elem_t bleio_connection_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_locals_dict_table);
 
-const mp_obj_type_t bleio_connection_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Connection,
-    .locals_dict = (mp_obj_dict_t *)&bleio_connection_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_connection_type,
+    MP_QSTR_Connection,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &bleio_connection_locals_dict,
+    unary_op, mp_generic_unary_op
+    );

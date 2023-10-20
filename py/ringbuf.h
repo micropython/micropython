@@ -43,7 +43,7 @@ typedef struct _ringbuf_t {
 bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t capacity);
 
 // For allocation of a buffer on the heap, use ringbuf_alloc().
-bool ringbuf_alloc(ringbuf_t *r, size_t capacity, bool long_lived);
+bool ringbuf_alloc(ringbuf_t *r, size_t capacity);
 
 // Mark ringbuf as no longer in use, and allow any heap storage to be freed by gc.
 void ringbuf_deinit(ringbuf_t *r);

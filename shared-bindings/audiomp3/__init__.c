@@ -50,4 +50,4 @@ const mp_obj_module_t audiomp3_module = {
     .globals = (mp_obj_dict_t *)&audiomp3_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_audiomp3, audiomp3_module, CIRCUITPY_AUDIOMP3);
+MP_REGISTER_MODULE(MP_QSTR_audiomp3, audiomp3_module);

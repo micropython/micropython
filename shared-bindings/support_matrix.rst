@@ -11,6 +11,8 @@ Only those boards that provide those modules will be listed.
 To exclude boards that provide a module, type a "-" in front of the module name.
 You can also type a regular expression as a filter.
 
+.. jinja
+
 .. raw:: html
 
     <p id="support-matrix-filter-block"><input placeholder="Filter the boards by available modules" id="support-matrix-filter" type="text"/><span id="support-matrix-filter-num">(all)</span></p>

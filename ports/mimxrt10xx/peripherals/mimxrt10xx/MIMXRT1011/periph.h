@@ -56,6 +56,7 @@ extern const mcu_periph_obj_t mcu_i2s_rx_sync_list[2];
 extern const mcu_periph_obj_t mcu_i2s_tx_bclk_list[2];
 extern const mcu_periph_obj_t mcu_i2s_tx_data0_list[2];
 extern const mcu_periph_obj_t mcu_i2s_tx_sync_list[2];
+extern const mcu_periph_obj_t mcu_i2s_mclk_list[2];
 
 extern const mcu_periph_obj_t mcu_mqs_left_list[1];
 extern const mcu_periph_obj_t mcu_mqs_right_list[1];

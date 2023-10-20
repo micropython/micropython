@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PortIn:
 //|     """Receives midi commands over USB"""
@@ -109,14 +108,11 @@ STATIC const mp_stream_p_t usb_midi_portin_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t usb_midi_portin_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_PortIn,
-    .locals_dict = (mp_obj_dict_t *)&usb_midi_portin_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &usb_midi_portin_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_midi_portin_type,
+    MP_QSTR_PortIn,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    locals_dict, &usb_midi_portin_locals_dict,
+    iter, mp_stream_unbuffered_iter,
+    protocol, &usb_midi_portin_stream_p
+    );

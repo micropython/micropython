@@ -1,4 +1,4 @@
-import ujson as json
+import json
 
 # Test that json can load from any object with readinto
 

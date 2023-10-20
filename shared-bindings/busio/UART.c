@@ -38,13 +38,27 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define STREAM_DEBUG(...) (void)0
 // #define STREAM_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
 
 //| class UART:
-//|     """A bidirectional serial protocol"""
+//|     """A bidirectional serial protocol
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["busio.UART"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -104,7 +118,7 @@ STATIC void validate_timeout(mp_float_t timeout) {
 STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_BUSIO_UART
     enum { ARG_tx, ARG_rx, ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_timeout, ARG_receiver_buffer_size,
-           ARG_rts, ARG_cts, ARG_rs485_dir,ARG_rs485_invert};
+           ARG_rts, ARG_cts, ARG_rs485_dir, ARG_rs485_invert};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_tx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_rx, MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -155,11 +169,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     const bool rs485_invert = args[ARG_rs485_invert].u_bool;
 
-    // Always initially allocate the UART object within the long-lived heap.
-    // This is needed to avoid crashes with certain UART implementations which
-    // cannot accommodate being moved after creation. (See
-    // https://github.com/adafruit/circuitpython/issues/1056)
-    busio_uart_obj_t *self = m_new_ll_obj_with_finaliser(busio_uart_obj_t);
+    busio_uart_obj_t *self = m_new_obj_with_finaliser(busio_uart_obj_t);
     self->base.type = &busio_uart_type;
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
@@ -407,12 +417,13 @@ STATIC void busio_uart_parity_print(const mp_print_t *print, mp_obj_t self_in, m
     mp_printf(print, "%q.%q.%q.%q", MP_QSTR_busio, MP_QSTR_UART, MP_QSTR_Parity, parity);
 }
 
-const mp_obj_type_t busio_uart_parity_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Parity,
-    .print = busio_uart_parity_print,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_parity_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_parity_type,
+    MP_QSTR_Parity,
+    MP_TYPE_FLAG_NONE,
+    print, busio_uart_parity_print,
+    locals_dict, &busio_uart_parity_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     #if CIRCUITPY_BUSIO_UART
@@ -451,23 +462,21 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .pyserial_readinto_compatibility = true,
 };
 
-const mp_obj_type_t busio_uart_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_UART,
-    .make_new = busio_uart_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &uart_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, busio_uart_make_new,
+    locals_dict, &busio_uart_locals_dict,
+    iter, mp_stream_unbuffered_iter,
+    protocol, &uart_stream_p
+    );
 #else
-const mp_obj_type_t busio_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .make_new = busio_uart_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_NONE,
+    make_new, busio_uart_make_new,
+    locals_dict, &busio_uart_locals_dict
+    );
 #endif  // CIRCUITPY_BUSIO_UART

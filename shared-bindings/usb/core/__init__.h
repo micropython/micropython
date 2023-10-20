@@ -35,14 +35,12 @@ extern const mp_obj_module_t usb_core_module;
 void usb_core_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind);
 
 #define MP_DEFINE_USB_CORE_EXCEPTION(exc_name, base_name) \
-    const mp_obj_type_t mp_type_usb_core_##exc_name = { \
-        { &mp_type_type }, \
-        .name = MP_QSTR_##exc_name, \
-        .print = usb_core_exception_print, \
-        .make_new = mp_obj_exception_make_new, \
-        .attr = mp_obj_exception_attr, \
-        .parent = &mp_type_##base_name, \
-    };
+    MP_DEFINE_CONST_OBJ_TYPE(mp_type_usb_core_##exc_name, MP_QSTR_##exc_name, MP_TYPE_FLAG_NONE, \
+    make_new, mp_obj_exception_make_new, \
+    print, usb_core_exception_print, \
+    attr, mp_obj_exception_attr, \
+    parent, &mp_type_##base_name \
+    );
 
 extern const mp_obj_type_t mp_type_usb_core_USBError;
 extern const mp_obj_type_t mp_type_usb_core_USBTimeoutError;

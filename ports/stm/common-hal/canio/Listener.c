@@ -285,8 +285,8 @@ mp_obj_t common_hal_canio_listener_receive(canio_listener_obj_t *self) {
     uint32_t rdtr = self->mailbox->RDTR;
 
     bool rtr = rir & CAN_RI0R_RTR;
-    canio_message_obj_t *message = m_new_obj(canio_message_obj_t);
-    message->base.type = rtr ? &canio_remote_transmission_request_type : &canio_message_type;
+    canio_message_obj_t *message =
+        mp_obj_malloc(canio_message_obj_t, rtr ? &canio_remote_transmission_request_type : &canio_message_type);
     message->extended = rir & CAN_RI0R_IDE;
     if (message->extended) {
         message->id = rir >> 3;

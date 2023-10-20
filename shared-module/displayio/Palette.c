@@ -30,7 +30,7 @@
 
 void common_hal_displayio_palette_construct(displayio_palette_t *self, uint16_t color_count, bool dither) {
     self->color_count = color_count;
-    self->colors = (_displayio_color_t *)m_malloc(color_count * sizeof(_displayio_color_t), false);
+    self->colors = (_displayio_color_t *)m_malloc(color_count * sizeof(_displayio_color_t));
     self->dither = dither;
 }
 

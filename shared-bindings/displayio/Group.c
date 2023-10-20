@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Group:
 //|     """Manage a group of sprites and groups and how they are inter-related."""
@@ -56,10 +55,9 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t scale = mp_arg_validate_int_range(args[ARG_scale].u_int, 1, 32767,MP_QSTR_scale);
+    mp_int_t scale = mp_arg_validate_int_range(args[ARG_scale].u_int, 1, 32767, MP_QSTR_scale);
 
-    displayio_group_t *self = m_new_obj(displayio_group_t);
-    self->base.type = &displayio_group_type;
+    displayio_group_t *self = mp_obj_malloc(displayio_group_t, &displayio_group_type);
     common_hal_displayio_group_construct(self, scale, args[ARG_x].u_int, args[ARG_y].u_int);
 
     return MP_OBJ_FROM_PTR(self);
@@ -350,15 +348,13 @@ STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_dict_table);
 
-const mp_obj_type_t displayio_group_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Group,
-    .make_new = displayio_group_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_group_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = group_subscr,
-        .unary_op = group_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_group_type,
+    MP_QSTR_Group,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, displayio_group_make_new,
+    locals_dict, &displayio_group_locals_dict,
+    subscr, group_subscr,
+    unary_op, group_unary_op,
+    iter, mp_obj_generic_subscript_getiter
+    );

@@ -353,10 +353,10 @@ safe_mode_t port_init(void) {
     if (strcmp((char *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR, "CIRCUITPYTHON1") == 0) {
         fine = ((uint16_t *)CIRCUITPY_INTERNAL_CONFIG_START_ADDR)[8];
     }
-    clock_init(BOARD_HAS_CRYSTAL, fine);
+    clock_init(BOARD_HAS_CRYSTAL, BOARD_XOSC_FREQ_HZ, BOARD_XOSC_IS_CRYSTAL, fine);
     #else
     // Use a default fine value
-    clock_init(BOARD_HAS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
+    clock_init(BOARD_HAS_CRYSTAL, BOARD_XOSC_FREQ_HZ, BOARD_XOSC_IS_CRYSTAL, DEFAULT_DFLL48M_FINE_CALIBRATION);
     #endif
 
     rtc_init();
@@ -388,13 +388,16 @@ void reset_port(void) {
     #if CIRCUITPY_BUSIO
     reset_sercoms();
     #endif
+
     #if CIRCUITPY_AUDIOIO
     audio_dma_reset();
     audioout_reset();
     #endif
+
     #if CIRCUITPY_AUDIOBUSIO
     pdmin_reset();
     #endif
+
     #if CIRCUITPY_AUDIOBUSIO_I2SOUT
     i2sout_reset();
     #endif
@@ -406,14 +409,18 @@ void reset_port(void) {
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
     #endif
+
     eic_reset();
+
     #if CIRCUITPY_PULSEIO
     pulsein_reset();
     pulseout_reset();
     #endif
+
     #if CIRCUITPY_PWMIO
     pwmout_reset();
     #endif
+
     #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO || CIRCUITPY_FREQUENCYIO
     reset_timers();
     #endif
@@ -421,6 +428,10 @@ void reset_port(void) {
     #if CIRCUITPY_ANALOGIO
     analogin_reset();
     analogout_reset();
+    #endif
+
+    #if CIRCUITPY_WATCHDOG
+    watchdog_reset();
     #endif
 
     reset_gclks();

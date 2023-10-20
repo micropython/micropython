@@ -36,7 +36,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/translate/translate.h"
 
 void common_hal_mcu_delay_us(uint32_t delay) {
     mp_hal_delay_us(delay);
@@ -63,7 +62,7 @@ void common_hal_mcu_enable_interrupts(void) {
 }
 
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
-    if (runmode == RUNMODE_BOOTLOADER) {
+    if ((runmode == RUNMODE_BOOTLOADER) || (runmode == RUNMODE_UF2)) {
         if (!bootloader_available()) {
             mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present"));
         }

@@ -35,7 +35,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class ParallelBus:
 //|     """Manage updating a display over 8-bit parallel bus in the background while Python code runs. This
@@ -122,7 +121,7 @@ STATIC mp_obj_t paralleldisplay_parallelbus_obj_reset(mp_obj_t self_in) {
     paralleldisplay_parallelbus_obj_t *self = self_in;
 
     if (!common_hal_paralleldisplay_parallelbus_reset(self)) {
-        mp_raise_RuntimeError(translate("no reset pin available"));
+        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }
@@ -158,9 +157,10 @@ STATIC const mp_rom_map_elem_t paralleldisplay_parallelbus_locals_dict_table[] =
 };
 STATIC MP_DEFINE_CONST_DICT(paralleldisplay_parallelbus_locals_dict, paralleldisplay_parallelbus_locals_dict_table);
 
-const mp_obj_type_t paralleldisplay_parallelbus_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ParallelBus,
-    .make_new = paralleldisplay_parallelbus_make_new,
-    .locals_dict = (mp_obj_dict_t *)&paralleldisplay_parallelbus_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    paralleldisplay_parallelbus_type,
+    MP_QSTR_ParallelBus,
+    MP_TYPE_FLAG_NONE,
+    make_new, paralleldisplay_parallelbus_make_new,
+    locals_dict, &paralleldisplay_parallelbus_locals_dict
+    );

@@ -1,7 +1,13 @@
 try:
-    import uzlib as zlib
-    import uio as io
+    import zlib
+    import io
 except ImportError:
+    print("SKIP")
+    raise SystemExit
+
+try:
+    zlib.decompIO
+except AttributeError:
     print("SKIP")
     raise SystemExit
 

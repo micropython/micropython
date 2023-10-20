@@ -1,4 +1,3 @@
-
 #include "shared-module/vectorio/__init__.h"
 #include "shared-bindings/vectorio/VectorShape.h"
 #include "shared-bindings/vectorio/Circle.h"
@@ -16,7 +15,6 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 // shape: The shape implementation to draw.
@@ -47,8 +45,7 @@ mp_obj_t vectorio_vector_shape_make_new(const mp_obj_t shape, const mp_obj_t pix
         mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_shape);
     }
 
-    vectorio_vector_shape_t *self = m_new_obj(vectorio_vector_shape_t);
-    self->base.type = &vectorio_vector_shape_type;
+    vectorio_vector_shape_t *self = mp_obj_malloc(vectorio_vector_shape_t, &vectorio_vector_shape_type);
     common_hal_vectorio_vector_shape_construct(self,
         ishape, pixel_shader, x, y
         );
@@ -226,7 +223,7 @@ STATIC mp_obj_t vectorio_vector_shape_obj_set_pixel_shader(mp_obj_t wrapper_shap
     vectorio_vector_shape_t *self = MP_OBJ_TO_PTR(draw_protocol->draw_get_protocol_self(wrapper_shape));
 
     if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
-        mp_raise_TypeError(translate("pixel_shader must be displayio.Palette or displayio.ColorConverter"));
+        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
     common_hal_vectorio_vector_shape_set_pixel_shader(self, pixel_shader);
@@ -244,8 +241,9 @@ STATIC const mp_rom_map_elem_t vectorio_vector_shape_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(vectorio_vector_shape_locals_dict, vectorio_vector_shape_locals_dict_table);
 
-const mp_obj_type_t vectorio_vector_shape_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_VectorShape,
-    .locals_dict = (mp_obj_dict_t *)&vectorio_vector_shape_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    vectorio_vector_shape_type,
+    MP_QSTR_VectorShape,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &vectorio_vector_shape_locals_dict
+    );

@@ -453,8 +453,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //     for (size_t i = 0; i < response->count; ++i) {
 //         ble_gattc_service_t *gattc_service = &response->services[i];
 
-//         bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
-//         service->base.type = &bleio_service_type;
+//         bleio_service_obj_t *service = mp_obj_malloc(bleio_service_obj_t, &bleio_service_type);
 
 //         // Initialize several fields at once.
 //         bleio_service_from_connection(service, bleio_connection_new_from_internal(connection));
@@ -466,8 +465,7 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 
 //         if (gattc_service->uuid.type != BLE_UUID_TYPE_UNKNOWN) {
 //             // Known service UUID.
-//             bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-//             uuid->base.type = &bleio_uuid_type;
+//             bleio_uuid_obj_t *uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
 //             bleio_uuid_construct_from_nrf_ble_uuid(uuid, &gattc_service->uuid);
 //             service->uuid = uuid;
 //         } else {
@@ -491,15 +489,14 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //     for (size_t i = 0; i < response->count; ++i) {
 //         ble_gattc_char_t *gattc_char = &response->chars[i];
 
-//         bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
-//         characteristic->base.type = &bleio_characteristic_type;
+//         bleio_characteristic_obj_t *characteristic =
+//             mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
 //         bleio_uuid_obj_t *uuid = NULL;
 
 //         if (gattc_char->uuid.type != BLE_UUID_TYPE_UNKNOWN) {
 //             // Known characteristic UUID.
-//             uuid = m_new_obj(bleio_uuid_obj_t);
-//             uuid->base.type = &bleio_uuid_type;
+//             uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
 //             bleio_uuid_construct_from_nrf_ble_uuid(uuid, &gattc_char->uuid);
 //         } else {
 //             // The discovery response contained a 128-bit UUID that has not yet been registered with the
@@ -557,15 +554,13 @@ void common_hal_bleio_connection_set_connection_interval(bleio_connection_intern
 //                 break;
 //         }
 
-//         bleio_descriptor_obj_t *descriptor = m_new_obj(bleio_descriptor_obj_t);
-//         descriptor->base.type = &bleio_descriptor_type;
+//         bleio_descriptor_obj_t *descriptor = mp_obj_malloc(bleio_descriptor_obj_t, &bleio_descriptor_type);
 
 //         bleio_uuid_obj_t *uuid = NULL;
 
 //         if (gattc_desc->uuid.type != BLE_UUID_TYPE_UNKNOWN) {
 //             // Known descriptor UUID.
-//             uuid = m_new_obj(bleio_uuid_obj_t);
-//             uuid->base.type = &bleio_uuid_type;
+//             uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
 //             bleio_uuid_construct_from_nrf_ble_uuid(uuid, &gattc_desc->uuid);
 //         } else {
 //             // The discovery response contained a 128-bit UUID that has not yet been registered with the
@@ -750,8 +745,7 @@ mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t *interna
     if (internal->connection_obj != mp_const_none) {
         return internal->connection_obj;
     }
-    bleio_connection_obj_t *connection = m_new_obj(bleio_connection_obj_t);
-    connection->base.type = &bleio_connection_type;
+    bleio_connection_obj_t *connection = mp_obj_malloc(bleio_connection_obj_t, &bleio_connection_type);
     connection->connection = internal;
     internal->connection_obj = connection;
 

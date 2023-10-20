@@ -37,7 +37,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/audiocore/__init__.h"
 #include "bindings/rp2pio/StateMachine.h"
-#include "supervisor/shared/translate/translate.h"
 
 const uint16_t i2s_program[] = {
 // ; Load the next set of samples
@@ -103,9 +102,12 @@ void i2sout_reset(void) {
 // Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
-    const mcu_pin_obj_t *data, bool left_justified) {
+    const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
+    if (main_clock != NULL) {
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_main_clock);
+    }
     if (bit_clock->number != word_select->number - 1) {
-        mp_raise_ValueError(translate("Bit clock and word select must be sequential pins"));
+        mp_raise_ValueError(translate("Bit clock and word select must be sequential GPIO pins"));
     }
 
     const uint16_t *program = i2s_program;
@@ -121,7 +123,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         &self->state_machine,
         program, program_len,
         44100 * 32 * 6, // Clock at 44.1 khz to warm the DAC up.
-        NULL, 0,
+        NULL, 0, // init
+        NULL, 0, // may_exec
         data, 1, 0, 0xffffffff, // out pin
         NULL, 0, // in pins
         0, 0, // in pulls
@@ -135,7 +138,8 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         false, // Wait for txstall
         false, 32, false, // in settings
         false, // Not user-interruptible.
-        0, -1); // wrap settings
+        0, -1, // wrap settings
+        PIO_ANY_OFFSET);
 
     self->playing = false;
     audio_dma_init(&self->dma);

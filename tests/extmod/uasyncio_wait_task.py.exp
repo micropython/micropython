@@ -5,6 +5,6 @@ task 2
 start
 hello
 world
-took 40 40
+took 200 200
 task_raise
 ValueError

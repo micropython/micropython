@@ -31,8 +31,6 @@
 #include "shared-bindings/usb_hid/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 //| """USB Human Interface Device
 //|
 //| The `usb_hid` module allows you to output data as a HID device."""
@@ -182,4 +180,4 @@ void usb_hid_set_devices(mp_obj_t devices) {
     }
 }
 
-MP_REGISTER_MODULE(MP_QSTR_usb_hid, usb_hid_module, CIRCUITPY_USB_HID);
+MP_REGISTER_MODULE(MP_QSTR_usb_hid, usb_hid_module);

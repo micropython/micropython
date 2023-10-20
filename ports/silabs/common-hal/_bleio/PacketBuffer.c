@@ -223,12 +223,12 @@ void common_hal_bleio_packet_buffer_construct(
 
     if (incoming) {
         incoming_buffer_size = buffer_size * (sizeof(uint16_t) + max_packet_size);
-        incoming_buffer = m_malloc(incoming_buffer_size, false);
+        incoming_buffer = m_malloc(incoming_buffer_size);
     }
 
     if (outgoing) {
-        outgoing1 = m_malloc(max_packet_size, false);
-        outgoing2 = m_malloc(max_packet_size, false);
+        outgoing1 = m_malloc(max_packet_size);
+        outgoing2 = m_malloc(max_packet_size);
     }
     _common_hal_bleio_packet_buffer_construct(self, characteristic,
         incoming_buffer, incoming_buffer_size,

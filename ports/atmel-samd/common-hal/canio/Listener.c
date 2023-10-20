@@ -368,8 +368,8 @@ mp_obj_t common_hal_canio_listener_receive(canio_listener_obj_t *self) {
     int index = self->hw->RXFS.bit.F0GI;
     canio_can_rx_fifo_t *hw_message = &self->fifo[index];
     bool rtr = hw_message->rxf0.bit.RTR;
-    canio_message_obj_t *message = m_new_obj(canio_message_obj_t);
-    message->base.type = rtr ? &canio_remote_transmission_request_type : &canio_message_type;
+    canio_message_obj_t *message =
+        mp_obj_malloc(canio_message_obj_t, rtr ? &canio_remote_transmission_request_type : &canio_message_type);
     message->extended = hw_message->rxf0.bit.XTD;
     if (message->extended) {
         message->id = hw_message->rxf0.bit.ID;

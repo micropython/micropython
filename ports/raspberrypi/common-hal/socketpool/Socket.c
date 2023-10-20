@@ -54,6 +54,8 @@
 #include "lwip/timeouts.h"
 #include "lwip/udp.h"
 
+#include "sdk/src/rp2_common/pico_cyw43_arch/include/pico/cyw43_arch.h"
+
 #define MICROPY_PY_LWIP_SOCK_RAW (1)
 
 #if 0 // print debugging info
@@ -733,8 +735,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
 
-    // we must allocate sockets long-lived because we depend on their object-identity
-    socketpool_socket_obj_t *socket = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
+    socketpool_socket_obj_t *socket = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     socket->base.type = &socketpool_socket_type;
 
     if (!socketpool_socket(self, family, type, socket)) {

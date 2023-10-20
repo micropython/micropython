@@ -1,7 +1,5 @@
 #include <py/runtime.h>
 
-#include "supervisor/shared/translate/translate.h"
-
 NORETURN void abort_(void);
 
 NORETURN void abort_(void) {

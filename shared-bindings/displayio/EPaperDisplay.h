@@ -52,8 +52,6 @@ void common_hal_displayio_epaperdisplay_construct(displayio_epaperdisplay_obj_t 
 
 bool common_hal_displayio_epaperdisplay_refresh(displayio_epaperdisplay_obj_t *self);
 
-bool common_hal_displayio_epaperdisplay_show(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group);
-
 mp_obj_t common_hal_displayio_epaperdisplay_get_root_group(displayio_epaperdisplay_obj_t *self);
 bool common_hal_displayio_epaperdisplay_set_root_group(displayio_epaperdisplay_obj_t *self, displayio_group_t *root_group);
 

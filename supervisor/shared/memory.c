@@ -212,7 +212,7 @@ static supervisor_allocation_node *allocate_memory_node(uint32_t length, bool hi
             if (!node) {
                 // 4. GC allocation?
                 if (movable && gc_alloc_possible()) {
-                    node = m_malloc_maybe(sizeof(supervisor_allocation_node) + length, true);
+                    node = m_malloc_maybe(sizeof(supervisor_allocation_node) + length);
                     if (node) {
                         node->next = MP_STATE_VM(first_embedded_allocation);
                         MP_STATE_VM(first_embedded_allocation) = node;
@@ -346,3 +346,5 @@ void supervisor_move_memory(void) {
     // Add calls to further clients here.
     old_allocations = NULL;
 }
+
+MP_REGISTER_ROOT_POINTER(struct _supervisor_allocation_node *first_embedded_allocation);

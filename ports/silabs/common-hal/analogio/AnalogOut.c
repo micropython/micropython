@@ -28,7 +28,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "em_vdac.h"
 

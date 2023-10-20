@@ -1,13 +1,9 @@
 try:
-    from uio import StringIO
-    import ujson as json
-except:
-    try:
-        from io import StringIO
-        import json
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    from io import StringIO
+    import json
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 s = StringIO()
 json.dump(False, s)

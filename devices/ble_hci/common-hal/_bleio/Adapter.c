@@ -82,28 +82,23 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
 
     // Generic Access Service setup.
 
-    bleio_uuid_obj_t *generic_access_service_uuid = m_new_obj(bleio_uuid_obj_t);
-    generic_access_service_uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *generic_access_service_uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
     common_hal_bleio_uuid_construct(generic_access_service_uuid, 0x1800, NULL);
 
-    bleio_uuid_obj_t *device_name_characteristic_uuid = m_new_obj(bleio_uuid_obj_t);
-    device_name_characteristic_uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *device_name_characteristic_uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
     common_hal_bleio_uuid_construct(device_name_characteristic_uuid, 0x2A00, NULL);
 
-    bleio_uuid_obj_t *appearance_characteristic_uuid = m_new_obj(bleio_uuid_obj_t);
-    appearance_characteristic_uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *appearance_characteristic_uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
     common_hal_bleio_uuid_construct(appearance_characteristic_uuid, 0x2A01, NULL);
 
     // Not implemented:
     // Peripheral Preferred Connection Parameters
     // Central Address Resolution
 
-    bleio_service_obj_t *generic_access_service = m_new_obj(bleio_service_obj_t);
-    generic_access_service->base.type = &bleio_service_type;
+    bleio_service_obj_t *generic_access_service = mp_obj_malloc(bleio_service_obj_t, &bleio_service_type);
     common_hal_bleio_service_construct(generic_access_service, generic_access_service_uuid, false);
 
-    adapter->device_name_characteristic = m_new_obj(bleio_characteristic_obj_t);
-    adapter->device_name_characteristic->base.type = &bleio_characteristic_type;
+    adapter->device_name_characteristic = mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
     char generic_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 'n', 'n', 'n', 'n' };
     mp_buffer_info_t generic_name_bufinfo = {
@@ -132,8 +127,7 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
         .len = sizeof(zero_16),
     };
 
-    adapter->appearance_characteristic = m_new_obj(bleio_characteristic_obj_t);
-    adapter->appearance_characteristic->base.type = &bleio_characteristic_type;
+    adapter->appearance_characteristic = mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
     common_hal_bleio_characteristic_construct(
         adapter->appearance_characteristic,
@@ -151,20 +145,16 @@ STATIC void add_generic_services(bleio_adapter_obj_t *adapter) {
 
     // Generic Attribute Service setup.
 
-    bleio_uuid_obj_t *generic_attribute_service_uuid = m_new_obj(bleio_uuid_obj_t);
-    generic_attribute_service_uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *generic_attribute_service_uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
     common_hal_bleio_uuid_construct(generic_attribute_service_uuid, 0x1801, NULL);
 
-    bleio_uuid_obj_t *service_changed_characteristic_uuid = m_new_obj(bleio_uuid_obj_t);
-    service_changed_characteristic_uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *service_changed_characteristic_uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
     common_hal_bleio_uuid_construct(service_changed_characteristic_uuid, 0x2A05, NULL);
 
-    bleio_service_obj_t *generic_attribute_service = m_new_obj(bleio_service_obj_t);
-    generic_attribute_service->base.type = &bleio_service_type;
+    bleio_service_obj_t *generic_attribute_service = mp_obj_malloc(bleio_service_obj_t, &bleio_service_type);
     common_hal_bleio_service_construct(generic_attribute_service, generic_attribute_service_uuid, false);
 
-    adapter->service_changed_characteristic = m_new_obj(bleio_characteristic_obj_t);
-    adapter->service_changed_characteristic->base.type = &bleio_characteristic_type;
+    adapter->service_changed_characteristic = mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
     uint32_t zero_32 = 0;
     mp_buffer_info_t zero_32_value = {
@@ -416,8 +406,7 @@ bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *s
     bt_addr_t addr;
     hci_check_error(hci_read_bd_addr(&addr));
 
-    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
+    bleio_address_obj_t *address = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
 
     common_hal_bleio_address_construct(address, addr.val, BT_ADDR_LE_PUBLIC);
     return address;
@@ -490,7 +479,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     self->scan_results = shared_module_bleio_new_scanresults(buffer_size, prefixes, prefix_length, minimum_rssi);
 
     // size_t max_packet_size = extended ? BLE_GAP_SCAN_BUFFER_EXTENDED_MAX_SUPPORTED : BLE_GAP_SCAN_BUFFER_MAX;
-    // uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size, false);
+    // uint8_t *raw_data = m_malloc(sizeof(ble_data_t) + max_packet_size);
     // ble_data_t * sd_data = (ble_data_t *) raw_data;
     // self->scan_results->common_hal_data = sd_data;
     // sd_data->len = max_packet_size;

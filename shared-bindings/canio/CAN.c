@@ -83,8 +83,7 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_ValueError(translate("tx and rx cannot both be None"));
     }
 
-    canio_can_obj_t *self = m_new_obj(canio_can_obj_t);
-    self->base.type = &canio_can_type;
+    canio_can_obj_t *self = mp_obj_malloc(canio_can_obj_t, &canio_can_type);
     common_hal_canio_can_construct(self, tx_pin, rx_pin, args[ARG_baudrate].u_int, args[ARG_loopback].u_bool, args[ARG_silent].u_bool);
 
     common_hal_canio_can_auto_restart_set(self, args[ARG_auto_restart].u_bool);
@@ -344,9 +343,10 @@ STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(canio_can_locals_dict, canio_can_locals_dict_table);
 
-const mp_obj_type_t canio_can_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CAN,
-    .make_new = canio_can_make_new,
-    .locals_dict = (mp_obj_t)&canio_can_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    canio_can_type,
+    MP_QSTR_CAN,
+    MP_TYPE_FLAG_NONE,
+    make_new, canio_can_make_new,
+    locals_dict, &canio_can_locals_dict
+    );

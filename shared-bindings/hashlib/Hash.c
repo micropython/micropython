@@ -89,8 +89,9 @@ STATIC const mp_rom_map_elem_t hashlib_hash_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(hashlib_hash_locals_dict, hashlib_hash_locals_dict_table);
 
-const mp_obj_type_t hashlib_hash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Hash,
-    .locals_dict = (mp_obj_dict_t *)&hashlib_hash_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    hashlib_hash_type,
+    MP_QSTR_Hash,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &hashlib_hash_locals_dict
+    );

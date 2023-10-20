@@ -196,7 +196,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.hex
 
@@ -224,17 +224,20 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 include $(TOP)/py/mkrules.mk
 
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)
 
-ifeq ($(CHIP_FAMILY), MIMXRT1062)
-PYOCD_TARGET = mimxrt1060
-endif
+# Flash using jlink
+define jlink_script
+halt
+loadfile $^
+r
+go
+exit
+endef
+export jlink_script
 
-# Flash using pyocd
-PYOCD_OPTION ?=
-flash: $(BUILD)/firmware.hex
-	pyocd flash -t $(PYOCD_TARGET) $(PYOCD_OPTION) $<
-	pyocd reset -t $(PYOCD_TARGET)
+JLINKEXE = JLinkExe
+flash-jlink: $(BUILD)/firmware.elf
+	@echo "$$jlink_script" > $(BUILD)/firmware.jlink
+	$(JLINKEXE) -device $(CHIP_FAMILY)xxx5A -if swd -JTAGConf -1,-1 -speed auto -CommandFile $(BUILD)/firmware.jlink
+
+flash: flash-jlink

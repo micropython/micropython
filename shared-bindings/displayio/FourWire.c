@@ -37,7 +37,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class FourWire:
 //|     """Manage updating a display over SPI four wire protocol in the background while Python code runs.
@@ -114,7 +113,7 @@ STATIC mp_obj_t displayio_fourwire_obj_reset(mp_obj_t self_in) {
     displayio_fourwire_obj_t *self = self_in;
 
     if (!common_hal_displayio_fourwire_reset(self)) {
-        mp_raise_RuntimeError(translate("no reset pin available"));
+        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }
@@ -166,9 +165,10 @@ STATIC const mp_rom_map_elem_t displayio_fourwire_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_fourwire_locals_dict, displayio_fourwire_locals_dict_table);
 
-const mp_obj_type_t displayio_fourwire_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FourWire,
-    .make_new = displayio_fourwire_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_fourwire_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_fourwire_type,
+    MP_QSTR_FourWire,
+    MP_TYPE_FLAG_NONE,
+    make_new, displayio_fourwire_make_new,
+    locals_dict, &displayio_fourwire_locals_dict
+    );

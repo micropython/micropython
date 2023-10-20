@@ -32,6 +32,7 @@
 
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK && MICROPY_BLUETOOTH_BTSTACK_H4
 
+#include "lib/btstack/src/hci_transport_h4.h"
 #include "lib/btstack/chipset/zephyr/btstack_chipset_zephyr.h"
 
 #include "extmod/btstack/btstack_hci_uart.h"
@@ -42,11 +43,12 @@
 #define DEBUG_printf(...) // printf(__VA_ARGS__)
 
 STATIC hci_transport_config_uart_t hci_transport_config_uart = {
-    HCI_TRANSPORT_CONFIG_UART,
-    1000000, // initial baudrate
-    0,       // main baudrate
-    1,       // flow control
-    NULL,    // device name
+    .type = HCI_TRANSPORT_CONFIG_UART,
+    .baudrate_init = 1000000,
+    .baudrate_main = 0,
+    .flowcontrol = 1,
+    .device_name = NULL,
+    .parity = BTSTACK_UART_PARITY_OFF,
 };
 
 void mp_bluetooth_hci_poll_h4(void) {
@@ -58,7 +60,7 @@ void mp_bluetooth_hci_poll_h4(void) {
 void mp_bluetooth_btstack_port_init_h4(void) {
     DEBUG_printf("mp_bluetooth_btstack_port_init_h4\n");
 
-    const hci_transport_t *transport = hci_transport_h4_instance(&mp_bluetooth_btstack_hci_uart_block);
+    const hci_transport_t *transport = hci_transport_h4_instance_for_uart(&mp_bluetooth_btstack_hci_uart_block);
     hci_init(transport, &hci_transport_config_uart);
 
     hci_set_chipset(btstack_chipset_zephyr_instance());

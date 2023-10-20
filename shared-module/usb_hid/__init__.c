@@ -33,7 +33,6 @@
 #include "shared-bindings/usb_hid/__init__.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "supervisor/memory.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/usb.h"
 
 static const uint8_t usb_hid_descriptor_template[] = {

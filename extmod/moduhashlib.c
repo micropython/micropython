@@ -1,14 +1,33 @@
-// Copyright (c) 2014 Paul Sokolovsky
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014 Paul Sokolovsky
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <assert.h>
 #include <string.h>
 
 #include "py/runtime.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_UHASHLIB
 
@@ -39,7 +58,6 @@
 
 #endif
 
-
 typedef struct _mp_obj_hash_t {
     mp_obj_base_t base;
     bool final; // if set, update and digest raise an exception
@@ -65,8 +83,7 @@ STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg);
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_sha256_context));
-    o->base.type = type;
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, char, sizeof(mbedtls_sha256_context), type);
     o->final = false;
     mbedtls_sha256_init((mbedtls_sha256_context *)&o->state);
     mbedtls_sha256_starts_ret((mbedtls_sha256_context *)&o->state, 0);
@@ -92,7 +109,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, 32);
     mbedtls_sha256_finish_ret((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 #else
@@ -105,13 +122,11 @@ static void check_not_unicode(const mp_obj_t arg) {
     #endif
 }
 
-#if MICROPY_PY_UHASHLIB_SHA256
 #include "lib/crypto-algorithms/sha256.c"
 
 STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX));
-    o->base.type = type;
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, char, sizeof(CRYAL_SHA256_CTX), type);
     o->final = false;
     sha256_init((CRYAL_SHA256_CTX *)o->state);
     if (n_args == 1) {
@@ -137,7 +152,7 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, SHA256_BLOCK_SIZE);
     sha256_final((CRYAL_SHA256_CTX *)self->state, (byte *)vstr.buf);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -151,24 +166,22 @@ STATIC const mp_rom_map_elem_t uhashlib_sha256_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha256_locals_dict, uhashlib_sha256_locals_dict_table);
 
-STATIC const mp_obj_type_t uhashlib_sha256_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_sha256,
-    .make_new = uhashlib_sha256_make_new,
-    .locals_dict = (void *)&uhashlib_sha256_locals_dict,
-};
-#endif
-
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uhashlib_sha256_type,
+    MP_QSTR_sha256,
+    MP_TYPE_FLAG_NONE,
+    make_new, uhashlib_sha256_make_new,
+    locals_dict, &uhashlib_sha256_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_UHASHLIB_SHA1
 STATIC mp_obj_t uhashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg);
 
 #if MICROPY_SSL_AXTLS
-STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    mp_arg_check_num(n_args, kw_args, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(SHA1_CTX));
-    o->base.type = type;
+STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, char, sizeof(SHA1_CTX), type);
     o->final = false;
     SHA1_Init((SHA1_CTX *)o->state);
     if (n_args == 1) {
@@ -178,7 +191,6 @@ STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 STATIC mp_obj_t uhashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg) {
-    check_not_unicode(arg);
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     uhashlib_ensure_not_final(self);
     mp_buffer_info_t bufinfo;
@@ -194,7 +206,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, SHA1_SIZE);
     SHA1_Final((byte *)vstr.buf, (SHA1_CTX *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -208,8 +220,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
 
 STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_sha1_context));
-    o->base.type = type;
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, char, sizeof(mbedtls_sha1_context), type);
     o->final = false;
     mbedtls_sha1_init((mbedtls_sha1_context *)o->state);
     mbedtls_sha1_starts_ret((mbedtls_sha1_context *)o->state);
@@ -236,7 +247,7 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
     vstr_init_len(&vstr, 20);
     mbedtls_sha1_finish_ret((mbedtls_sha1_context *)self->state, (byte *)vstr.buf);
     mbedtls_sha1_free((mbedtls_sha1_context *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif
 
@@ -249,12 +260,13 @@ STATIC const mp_rom_map_elem_t uhashlib_sha1_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_sha1_locals_dict, uhashlib_sha1_locals_dict_table);
 
-STATIC const mp_obj_type_t uhashlib_sha1_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_sha1,
-    .make_new = uhashlib_sha1_make_new,
-    .locals_dict = (void *)&uhashlib_sha1_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uhashlib_sha1_type,
+    MP_QSTR_sha1,
+    MP_TYPE_FLAG_NONE,
+    make_new, uhashlib_sha1_make_new,
+    locals_dict, &uhashlib_sha1_locals_dict
+    );
 #endif
 
 #if MICROPY_PY_UHASHLIB_MD5
@@ -263,8 +275,7 @@ STATIC mp_obj_t uhashlib_md5_update(mp_obj_t self_in, mp_obj_t arg);
 #if MICROPY_SSL_AXTLS
 STATIC mp_obj_t uhashlib_md5_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(MD5_CTX));
-    o->base.type = type;
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, char, sizeof(MD5_CTX), type);
     o->final = false;
     MD5_Init((MD5_CTX *)o->state);
     if (n_args == 1) {
@@ -289,7 +300,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     vstr_t vstr;
     vstr_init_len(&vstr, MD5_SIZE);
     MD5_Final((byte *)vstr.buf, (MD5_CTX *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif // MICROPY_SSL_AXTLS
 
@@ -303,8 +314,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
 
 STATIC mp_obj_t uhashlib_md5_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
-    mp_obj_hash_t *o = m_new_obj_var(mp_obj_hash_t, char, sizeof(mbedtls_md5_context));
-    o->base.type = type;
+    mp_obj_hash_t *o = mp_obj_malloc_var(mp_obj_hash_t, char, sizeof(mbedtls_md5_context), type);
     o->final = false;
     mbedtls_md5_init((mbedtls_md5_context *)o->state);
     mbedtls_md5_starts_ret((mbedtls_md5_context *)o->state);
@@ -331,7 +341,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     vstr_init_len(&vstr, 16);
     mbedtls_md5_finish_ret((mbedtls_md5_context *)self->state, (byte *)vstr.buf);
     mbedtls_md5_free((mbedtls_md5_context *)self->state);
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 #endif // MICROPY_SSL_MBEDTLS
 
@@ -344,12 +354,13 @@ STATIC const mp_rom_map_elem_t uhashlib_md5_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(uhashlib_md5_locals_dict, uhashlib_md5_locals_dict_table);
 
-STATIC const mp_obj_type_t uhashlib_md5_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_md5,
-    .make_new = uhashlib_md5_make_new,
-    .locals_dict = (void *)&uhashlib_md5_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uhashlib_md5_type,
+    MP_QSTR_md5,
+    MP_TYPE_FLAG_NONE,
+    make_new, uhashlib_md5_make_new,
+    locals_dict, &uhashlib_md5_locals_dict
+    );
 #endif // MICROPY_PY_UHASHLIB_MD5
 
 STATIC const mp_rom_map_elem_t mp_module_uhashlib_globals_table[] = {
@@ -371,5 +382,7 @@ const mp_obj_module_t mp_module_uhashlib = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uhashlib_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_hashlib, mp_module_uhashlib);
 
 #endif // MICROPY_PY_UHASHLIB

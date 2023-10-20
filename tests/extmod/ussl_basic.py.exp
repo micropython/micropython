@@ -1,7 +1,0 @@
-wrap_socket: OSError(-256, 'CONN_LOST')
-<_SSLSocket 
-4
-b''
-read: OSError(-261,)
-read: OSError(9,)
-write: OSError(9,)

@@ -33,7 +33,6 @@
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/flash.h"
 
 //| """Storage management
@@ -314,4 +313,4 @@ const mp_obj_module_t storage_module = {
     .globals = (mp_obj_dict_t *)&storage_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_storage, storage_module, CIRCUITPY_STORAGE);
+MP_REGISTER_MODULE(MP_QSTR_storage, storage_module);

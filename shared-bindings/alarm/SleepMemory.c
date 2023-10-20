@@ -31,7 +31,6 @@
 #include "py/runtime0.h"
 
 #include "shared-bindings/alarm/SleepMemory.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class SleepMemory:
 //|     """Store raw bytes in RAM that persists during deep sleep.
@@ -170,13 +169,11 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
     }
 }
 
-const mp_obj_type_t alarm_sleep_memory_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SleepMemory,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .locals_dict = (mp_obj_t)&alarm_sleep_memory_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = alarm_sleep_memory_subscr,
-        .unary_op = alarm_sleep_memory_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    alarm_sleep_memory_type,
+    MP_QSTR_SleepMemory,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &alarm_sleep_memory_locals_dict,
+    subscr, alarm_sleep_memory_subscr,
+    unary_op, alarm_sleep_memory_unary_op
+    );

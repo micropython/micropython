@@ -45,6 +45,7 @@ from shared_bindings_matrix import (
 # Files that never influence board builds
 IGNORE_BOARD = {
     ".devcontainer",
+    "conf.py",
     "docs",
     "tests",
     "tools/ci_changes_per_commit.py",
@@ -55,7 +56,7 @@ IGNORE_BOARD = {
 PATTERN_DOCS = (
     r"^(?:\.github|docs|extmod\/ulab)|"
     r"^(?:(?:ports\/\w+\/bindings|shared-bindings)\S+\.c|tools\/extract_pyi\.py|\.readthedocs\.yml|conf\.py|requirements-doc\.txt)$|"
-    r"(?:-stubs|\.(?:md|MD|rst|RST))$"
+    r"(?:-stubs|\.(?:md|MD|mk|rst|RST)|/Makefile)$"
 )
 
 PATTERN_WINDOWS = {
@@ -188,7 +189,7 @@ def set_boards(build_all: bool):
 
                     # Check frozen files to see if they are in each board
                     if file.startswith("frozen"):
-                        if file in settings.get("FROZEN_MPY_DIRS", ""):
+                        if file in settings["FROZEN_MPY_DIRS"]:
                             boards_to_build.add(board)
                             continue
 
@@ -201,9 +202,6 @@ def set_boards(build_all: bool):
 
                         if file.startswith("supervisor/shared/web_workflow/static/"):
                             web_workflow = settings["CIRCUITPY_WEB_WORKFLOW"]
-
-                            while web_workflow.startswith("$("):
-                                web_workflow = settings[web_workflow[2:-1]]
 
                             if web_workflow != "0":
                                 boards_to_build.add(board)

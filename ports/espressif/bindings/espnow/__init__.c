@@ -80,7 +80,7 @@ STATIC const mp_rom_map_elem_t espnow_module_globals_table[] = {
 
     // module classes
     { MP_ROM_QSTR(MP_QSTR_ESPNow),      MP_ROM_PTR(&espnow_type) },
-    { MP_ROM_QSTR(MP_QSTR_ESPNowPacket),MP_ROM_PTR(&espnow_packet_type_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ESPNowPacket), MP_ROM_PTR(&espnow_packet_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_Peer),        MP_ROM_PTR(&espnow_peer_type) },
     { MP_ROM_QSTR(MP_QSTR_Peers),       MP_ROM_PTR(&espnow_peers_type) },
 };
@@ -91,4 +91,4 @@ const mp_obj_module_t espnow_module = {
     .globals = (mp_obj_dict_t *)&espnow_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_espnow, espnow_module, CIRCUITPY_ESPNOW);
+MP_REGISTER_MODULE(MP_QSTR_espnow, espnow_module);

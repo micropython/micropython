@@ -101,7 +101,7 @@ mp_float_t common_hal_bleio_connection_get_connection_interval(
 mp_int_t common_hal_bleio_connection_get_max_packet_length(
     bleio_connection_internal_t *self) {
 
-    sl_status_t sc = sl_bt_gatt_server_get_mtu(self->conn_handle,&self->mtu);
+    sl_status_t sc = sl_bt_gatt_server_get_mtu(self->conn_handle, &self->mtu);
     if (sc != SL_STATUS_OK) {
         mp_raise_bleio_BluetoothError(translate("gatt_server_get_mtu fail."));
     }
@@ -136,7 +136,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
 
     xdiscovery_event = xEventGroupCreate();
     if (xdiscovery_event != NULL) {
-        xEventGroupClearBits(xdiscovery_event,1 << 0);
+        xEventGroupClearBits(xdiscovery_event, 1 << 0);
     }
     self->connection->remote_service_list = mp_obj_new_list(0, NULL);
     bleio_connection_ensure_connected(self);
@@ -161,7 +161,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
                 ux_bits = xEventGroupWaitBits(
                     xdiscovery_event,
                     1 << 0,
-                        pdTRUE,pdFALSE,
+                        pdTRUE, pdFALSE,
                         DISCOVERY_TIMEOUT_MS / portTICK_PERIOD_MS);
 
                 if ((ux_bits & (1 << 0)) == (1 << 0)) {
@@ -189,7 +189,7 @@ mp_obj_tuple_t *common_hal_bleio_connection_discover_remote_services(
                 uuid16_value[0] = uuid->efr_ble_uuid.uuid16.value & 0xff;
                 uuid16_value[1] = uuid->efr_ble_uuid.uuid16.value >> 8;
                 sc = sl_bt_gatt_discover_primary_services_by_uuid(
-                    self->connection->conn_handle,2,uuid16_value);
+                    self->connection->conn_handle, 2, uuid16_value);
 
             } else if (BLE_UUID_TYPE_128 == uuid->efr_ble_uuid.uuid.type) {
                 sc = sl_bt_gatt_discover_primary_services_by_uuid(
@@ -251,8 +251,7 @@ mp_obj_t bleio_connection_new_from_internal(
     if (internal->connection_obj != mp_const_none) {
         return internal->connection_obj;
     }
-    connection = m_new_obj(bleio_connection_obj_t);
-    connection->base.type = &bleio_connection_type;
+    connection = mp_obj_malloc(bleio_connection_obj_t, &bleio_connection_type);
     connection->connection = internal;
     internal->connection_obj = connection;
 

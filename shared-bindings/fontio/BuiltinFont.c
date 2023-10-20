@@ -34,7 +34,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| from typing_extensions import Protocol  # for compat with python < 3.8
 //|
@@ -107,8 +106,9 @@ STATIC const mp_rom_map_elem_t fontio_builtinfont_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(fontio_builtinfont_locals_dict, fontio_builtinfont_locals_dict_table);
 
-const mp_obj_type_t fontio_builtinfont_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_BuiltinFont,
-    .locals_dict = (mp_obj_dict_t *)&fontio_builtinfont_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    fontio_builtinfont_type,
+    MP_QSTR_BuiltinFont,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &fontio_builtinfont_locals_dict
+    );

@@ -1,11 +1,11 @@
 # test splitting with pattern matches that can be empty
 #
-# CPython 3.5 issues a FutureWarning for these tests because their
-# behaviour will change in a future version.  MicroPython just stops
+# CPython 3.5 issues a FutreWarning for these tests because their
+# behaviour will change in a futre version.  MicroPython just stops
 # splitting as soon as an empty match is found.
 
 try:
-    import ure as re
+    import re
 except ImportError:
     print("SKIP")
     raise SystemExit

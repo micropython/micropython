@@ -35,7 +35,7 @@
 #include "shared-bindings/util.h"
 #include "common-hal/microcontroller/Pin.h"
 
-#include "esp32-camera/driver/private_include/cam_hal.h"
+#include "esp-camera/driver/private_include/cam_hal.h"
 
 #if !CONFIG_SPIRAM
 #error espcamera only works on boards configured with spiram, disable it in mpconfigboard.mk
@@ -160,6 +160,10 @@ extern void common_hal_espcamera_camera_deinit(espcamera_camera_obj_t *self) {
     reset_pin_number(self->camera_config.pin_d0);
 
     esp_camera_deinit();
+
+    reset_pin_number(self->camera_config.pin_pclk);
+    reset_pin_number(self->camera_config.pin_vsync);
+    reset_pin_number(self->camera_config.pin_href);
 
     self->camera_config.xclk_freq_hz = 0;
 }

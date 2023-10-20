@@ -35,7 +35,6 @@
 
 #include "sdk/drivers/pwm/fsl_pwm.h"
 
-#include "supervisor/shared/translate/translate.h"
 #include "periph.h"
 
 static PWM_Type *const _flexpwms[] = PWM_BASE_PTRS;

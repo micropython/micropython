@@ -41,7 +41,6 @@
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 #if CIRCUITPY_CYW43
 #include "bindings/cyw43/__init__.h"
@@ -90,8 +89,7 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    digitalio_digitalinout_obj_t *self = m_new_obj(digitalio_digitalinout_obj_t);
-    self->base.type = &digitalio_digitalinout_type;
+    digitalio_digitalinout_obj_t *self = mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
 
     const mcu_pin_obj_t *pin = common_hal_digitalio_validate_pin(args[0]);
     common_hal_digitalio_digitalinout_construct(self, pin);
@@ -361,12 +359,13 @@ STATIC const mp_rom_map_elem_t digitalio_digitalinout_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(digitalio_digitalinout_locals_dict, digitalio_digitalinout_locals_dict_table);
 
-const mp_obj_type_t digitalio_digitalinout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DigitalInOut,
-    .make_new = digitalio_digitalinout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&digitalio_digitalinout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    digitalio_digitalinout_type,
+    MP_QSTR_DigitalInOut,
+    MP_TYPE_FLAG_NONE,
+    make_new, digitalio_digitalinout_make_new,
+    locals_dict, &digitalio_digitalinout_locals_dict
+    );
 
 // Helper for validating digitalio.DigitalInOut arguments
 digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj) {

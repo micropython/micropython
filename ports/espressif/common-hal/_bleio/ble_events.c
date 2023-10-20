@@ -126,3 +126,5 @@ int ble_event_run_handlers(struct ble_gap_event *event) {
     #endif
     return 0;
 }
+
+MP_REGISTER_ROOT_POINTER(struct ble_event_handler_entry *ble_event_handler_entries);

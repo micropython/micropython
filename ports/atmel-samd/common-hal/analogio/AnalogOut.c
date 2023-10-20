@@ -33,7 +33,6 @@
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"

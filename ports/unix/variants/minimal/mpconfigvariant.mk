@@ -1,5 +1,4 @@
 # build a minimal interpreter
-PROG = micropython-minimal
 
 FROZEN_MANIFEST =
 
@@ -10,3 +9,7 @@ MICROPY_PY_THREAD = 0
 MICROPY_PY_TERMIOS = 0
 MICROPY_PY_USSL = 0
 MICROPY_USE_READLINE = 0
+
+MICROPY_VFS_FAT = 0
+MICROPY_VFS_LFS1 = 0
+MICROPY_VFS_LFS2 = 0

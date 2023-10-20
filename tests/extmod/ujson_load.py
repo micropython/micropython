@@ -1,13 +1,9 @@
 try:
-    from uio import StringIO
-    import ujson as json
-except:
-    try:
-        from io import StringIO
-        import json
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    from io import StringIO
+    import json
+except ImportError:
+    print("SKIP")
+    raise SystemExit
 
 print(json.load(StringIO("null")))
 print(json.load(StringIO('"abc\\u0064e"')))

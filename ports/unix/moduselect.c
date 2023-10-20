@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2014 Damien P. George
  * Copyright (c) 2015-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -311,24 +311,20 @@ STATIC const mp_rom_map_elem_t poll_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(poll_locals_dict, poll_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_poll = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_poll,
-    .locals_dict = (void *)&poll_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = poll_iternext,
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_poll,
+    MP_QSTR_poll,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, poll_iternext,
+    locals_dict, &poll_locals_dict
+    );
 
 STATIC mp_obj_t select_poll(size_t n_args, const mp_obj_t *args) {
     int alloc = 4;
     if (n_args > 0) {
         alloc = mp_obj_get_int(args[0]);
     }
-    mp_obj_poll_t *poll = m_new_obj(mp_obj_poll_t);
-    poll->base.type = &mp_type_poll;
+    mp_obj_poll_t *poll = mp_obj_malloc(mp_obj_poll_t, &mp_type_poll);
     poll->entries = m_new(struct pollfd, alloc);
     poll->alloc = alloc;
     poll->len = 0;
@@ -354,5 +350,7 @@ const mp_obj_module_t mp_module_uselect = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_select_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_select, mp_module_uselect);
 
 #endif // MICROPY_PY_USELECT_POSIX

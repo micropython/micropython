@@ -60,9 +60,4 @@ extern uint8_t _ld_default_stack_size;
 #define MAX_I2C 4
 #define MAX_SPI 6
 
-#define MICROPY_PORT_ROOT_POINTERS \
-    void *cpy_uart_obj_all[MAX_UART]; \
-    void *cpy_i2c_obj_all[MAX_I2C]; \
-    CIRCUITPY_COMMON_ROOT_POINTERS
-
 #endif  // __INCLUDED_MPCONFIGPORT_H

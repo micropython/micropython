@@ -101,7 +101,7 @@ void common_hal_bleio_packet_buffer_construct(
     }
 
     if (incoming) {
-        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + max_packet_size), false)) {
+        if (!ringbuf_alloc(&self->ringbuf, buffer_size * (sizeof(uint16_t) + max_packet_size))) {
             mp_raise_ValueError(translate("Buffer too large and unable to allocate"));
         }
     }
@@ -110,8 +110,8 @@ void common_hal_bleio_packet_buffer_construct(
         self->packet_queued = false;
         self->pending_index = 0;
         self->pending_size = 0;
-        self->outgoing[0] = m_malloc(max_packet_size, false);
-        self->outgoing[1] = m_malloc(max_packet_size, false);
+        self->outgoing[0] = m_malloc(max_packet_size);
+        self->outgoing[1] = m_malloc(max_packet_size);
     } else {
         self->outgoing[0] = NULL;
         self->outgoing[1] = NULL;

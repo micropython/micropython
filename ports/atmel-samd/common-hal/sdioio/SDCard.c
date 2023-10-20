@@ -32,7 +32,6 @@
 #include "shared-bindings/sdioio/SDCard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "genhdr/sdiodata.h"
 

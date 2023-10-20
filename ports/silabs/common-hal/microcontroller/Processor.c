@@ -33,7 +33,6 @@
 #endif
 #include "common-hal/microcontroller/Processor.h"
 #include "shared-bindings/microcontroller/ResetReason.h"
-#include "supervisor/shared/translate/translate.h"
 #include "tempdrv.h"
 #include "em_system.h"
 #include "em_cmu.h"
@@ -50,7 +49,7 @@ float common_hal_mcu_processor_get_voltage(void) {
 }
 
 uint32_t common_hal_mcu_processor_get_frequency(void) {
-    return CMU_ClockFreqGet(cmuClock_HCLK);
+    return CMU_ClockFreqGet(cmuClock_SYSCLK);
 }
 
 void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {

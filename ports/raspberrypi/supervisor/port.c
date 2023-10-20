@@ -76,6 +76,8 @@
 #include "tusb.h"
 #include <cmsis_compiler.h>
 
+critical_section_t background_queue_lock;
+
 extern volatile bool mp_msc_enabled;
 
 STATIC void _tick_callback(uint alarm_num);
@@ -127,6 +129,9 @@ safe_mode_t port_init(void) {
     for (uint32_t i = 0; i < ((size_t)&_ld_dtcm_bss_size) / 4; i++) {
         (&_ld_dtcm_bss_start)[i] = 0;
     }
+
+    // Set up the critical section to protect the background task queue.
+    critical_section_init(&background_queue_lock);
 
     #if CIRCUITPY_CYW43
     never_reset_pin_number(23);
@@ -202,6 +207,10 @@ void reset_port(void) {
     ssl_reset();
     #endif
 
+    #if CIRCUITPY_WATCHDOG
+    watchdog_reset();
+    #endif
+
     #if CIRCUITPY_WIFI
     wifi_reset();
     #endif
@@ -247,14 +256,15 @@ uint32_t *port_heap_get_top(void) {
     return port_stack_get_top();
 }
 
+uint32_t __uninitialized_ram(saved_word);
 void port_set_saved_word(uint32_t value) {
-    // Store in a watchdog scratch register instead of RAM. 4-7 are used by the
-    // sdk. 0 is used by alarm. 1-3 are free.
-    watchdog_hw->scratch[1] = value;
+    // Store in RAM because the watchdog scratch registers don't survive
+    // resetting by pulling the RUN pin low.
+    saved_word = value;
 }
 
 uint32_t port_get_saved_word(void) {
-    return watchdog_hw->scratch[1];
+    return saved_word;
 }
 
 static volatile bool ticks_enabled;
@@ -299,7 +309,7 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
-    if (!background_callback_pending() && !tud_task_event_ready() && !_woken_up) {
+    if (!background_callback_pending() && !tud_task_event_ready() && !tuh_task_event_ready() && !_woken_up) {
         __DSB();
         __WFI();
     }

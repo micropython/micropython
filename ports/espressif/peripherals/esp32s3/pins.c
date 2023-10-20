@@ -26,6 +26,8 @@
 
 #include "peripherals/pins.h"
 
+// NOTE: These numbers do NOT always match the package and module pin number.
+// These are by solely by GPIO numbers.
 const mcu_pin_obj_t pin_GPIO0 = PIN(0, NO_ADC, NO_ADC_CHANNEL, NO_TOUCH_CHANNEL);
 const mcu_pin_obj_t pin_GPIO1 = PIN(1, ADC_UNIT_1, ADC_CHANNEL_0, TOUCH_PAD_NUM1);
 const mcu_pin_obj_t pin_GPIO2 = PIN(2, ADC_UNIT_1, ADC_CHANNEL_1, TOUCH_PAD_NUM2);

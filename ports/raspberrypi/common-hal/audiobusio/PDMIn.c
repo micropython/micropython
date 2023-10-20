@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "audio_dma.h"
 
@@ -66,6 +65,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         pdmin, MP_ARRAY_SIZE(pdmin),
         sample_rate * 32 * 2, // Frequency based on sample rate
         NULL, 0,
+        NULL, 0, // may_exec
         NULL, 1, 0, 0xffffffff, // out pin
         data_pin, 1, // in pins
         0, 0, // in pulls
@@ -79,8 +79,8 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
         false, // Wait for txstall
         false, 32, true, // in settings
         false, // Not user-interruptible.
-        0, -1); // wrap settings
-
+        0, -1, // wrap settings
+        PIO_ANY_OFFSET);
     uint32_t actual_frequency = common_hal_rp2pio_statemachine_get_frequency(&self->state_machine);
     if (actual_frequency < MIN_MIC_CLOCK) {
         mp_raise_ValueError(translate("sampling rate out of range"));
