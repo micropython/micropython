@@ -61,9 +61,6 @@ class Pin(object):
     def print_const_table_entry(self):
         print('{{{:s}, "{:s}", {:s}}},'.format(self._pin_exp, self._name, self._pin_func))
 
-    # def print_const_table_entry(self):
-    #    print('{{{{ &machine_pin_type}},{:s}, "{:s}"}},'.format(self._pin_exp, self._name))
-
 
 class Pins(object):
     def __init__(self):
@@ -159,10 +156,6 @@ class Pins(object):
     def print_header(self, hdr_filename):
         with open(hdr_filename, "wt") as hdr_file:
             hdr_file.write("#define MAX_IO_PINS {:d} \n".format(self.get_num_cpu_pins()))
-            """for named_pin in self.cpu_pins:
-                pin = named_pin.pin()
-                if pin.is_board_pin():
-                    pin.print_header(self.num_cpu_pins ,hdr_file)"""
 
     def print_qstr(self, qstr_filename):
         with open(qstr_filename, "wt") as qstr_file:
@@ -176,12 +169,6 @@ class Pins(object):
                 qstr_set |= set([named_pin.name()])
             for qstr in sorted(qstr_set):
                 # cond_var = None
-
-                # ToDO: For next iteration
-                """if qstr.startswith("AF"):
-                af_words = qstr.split("_")
-                cond_var = conditional_var(af_words[1])
-                print_conditional_if(cond_var, file=qstr_file)"""
                 print("Q({})".format(qstr), file=qstr_file)
 
 
@@ -191,14 +178,6 @@ def main():
         usage="%(prog)s [options] [command]",
         description="Generate board specific pin file",
     )
-
-    """parser.add_argument(
-        "-pr",
-        "--prefix",
-        dest="prefix_filename",
-        help="Specifies beginning portion of generated pins file",
-        default="psoc6_prefix.c",
-    )"""
 
     parser.add_argument(
         "-q",
@@ -219,12 +198,6 @@ def main():
     pins = Pins()
 
     pins.parse_af_file()
-
-    """if args.prefix_filename:
-        print("// --prefix {:s}".format(args.prefix_filename))
-        print("")
-        with open(args.prefix_filename, "r") as prefix_file:
-            print(prefix_file.read())"""
 
     if args.hdr_filename and args.qstr_filename:
         pins.parse_board_file()
