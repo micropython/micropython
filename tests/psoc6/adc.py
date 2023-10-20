@@ -11,8 +11,8 @@ if "CY8CPROTO-062-4343W" in machine:
     adc_pin_name = "P10_0"
     adc_wrong_pin_name = "P13_7"
 elif "CY8CPROTO-063-BLE" in machine:
-    print("SKIP")
-    raise SystemExit
+    adc_pin_name = "P10_0"
+    adc_wrong_pin_name = "P13_7"
 
 # Exceptions should be raised
 try:
@@ -21,7 +21,6 @@ except:
     print("Invalid ADC Pin")
 
 adc = ADC(adc_pin_name, sample_ns=1000)
-print(adc)
 
 print(adc.read_u16() > 0)
 print(adc.read_uv() > 0)
