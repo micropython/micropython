@@ -44,6 +44,7 @@
 #endif
 
 #include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 typedef struct _lan_if_obj_t {
     base_if_obj_t base;
@@ -302,6 +303,7 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
 
     if (n_args > 1) {
         if (mp_obj_is_true(args[1])) {
+            esp_netif_set_hostname(self->base.netif, mod_network_hostname_data);
             self->base.active = (esp_eth_start(self->eth_handle) == ESP_OK);
             if (!self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
