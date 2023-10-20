@@ -715,13 +715,18 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
                 output_expected = f.read()
         else:
             # CIRCUITPY-CHANGE: set language & make sure testlib is available for `skip_ok`.
-            e = {"PYTHONPATH": "testlib", "PATH": os.environ["PATH"], "LANG": "en_US.UTF-8"}
+            e = {
+                "PYTHONPATH": base_path("testlib"),
+                "PATH": os.environ["PATH"],
+                "LANG": "en_US.UTF-8",
+            }
             # run CPython to work out expected output
             try:
                 output_expected = subprocess.check_output(
                     CPYTHON3_CMD + [os.path.abspath(test_file)],
                     cwd=os.path.dirname(test_file),
                     stderr=subprocess.STDOUT,
+                    env=e,
                 )
                 if args.write_exp:
                     with open(test_file_expected, "wb") as f:
@@ -1022,8 +1027,16 @@ the last matching regex is used:
         tests = args.files
 
     if not args.keep_path:
-        # clear search path to make sure tests use only builtin modules and those in extmod
-        os.environ["MICROPYPATH"] = ".frozen" + os.pathsep + base_path("../extmod")
+        # clear search path to make sure tests use only builtin modules and those that can be frozen
+        # CIRCUITPY-CHANGE: Add testlib for skip_if and our async stuff.
+        os.environ["MICROPYPATH"] = os.pathsep.join(
+            [
+                ".frozen",
+                base_path("testlib"),
+                base_path("../frozen/Adafruit_CircuitPython_asyncio"),
+                base_path("../frozen/Adafruit_CircuitPython_Ticks"),
+            ]
+        )
 
     try:
         os.makedirs(args.result_dir, exist_ok=True)

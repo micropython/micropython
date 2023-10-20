@@ -40,4 +40,4 @@ async def main():
     print("finish")
 
 
-uasyncio.run(main())
+asyncio.run(main())
