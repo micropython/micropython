@@ -338,14 +338,16 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
 
 #endif
 
+#if !MICROPY_GC_SPLIT_HEAP
 // CIRCUITPY-CHANGE
-// TODO FOR MERGE: fix this for multiple areas??
+// TODO FOR MERGE: fix this for split heap
 void gc_deinit(void) {
     // Run any finalisers before we stop using the heap.
     gc_sweep_all();
-    MP_STATIC_ASSERT(!MICROPY_GC_SPLIT_HEAP);
+    /// MP_STATIC_ASSERT(!MICROPY_GC_SPLIT_HEAP);
     memset(&MP_STATE_MEM(area), 0, sizeof(MP_STATE_MEM(area)));
 }
+#endif
 
 void gc_lock(void) {
     // This does not need to be atomic or have the GC mutex because:
@@ -958,12 +960,12 @@ void gc_free(void *ptr) {
     mp_state_mem_area_t *area;
     #if MICROPY_GC_SPLIT_HEAP
     area = gc_get_ptr_area(ptr);
+    // assert(area);
+    #else
     // CIRCUITPY-CHANGE: extra checking
     if (MP_STATE_MEM(gc_pool_start) == 0) {
         reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
     }
-    // assert(area);
-    #else
     assert(VERIFY_PTR(ptr));
     area = &MP_STATE_MEM(area);
     #endif

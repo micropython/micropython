@@ -200,8 +200,6 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	modtime.c \
-	moduselect.c \
 	alloc.c \
 	fatfs_port.c \
 	supervisor/stub/filesystem.c \
@@ -210,6 +208,10 @@ SRC_C += \
 	supervisor/shared/translate/translate.c \
 	$(SRC_MOD) \
 	$(wildcard $(VARIANT_DIR)/*.c)
+
+# CIRCUITPY-CHANGE
+# CircuitPython doesn't use extmod/modtime.c, but ports/unix/extmod.c depends on it.
+SRC_EXTMOD_C += extmod/modtime.c
 
 $(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
 

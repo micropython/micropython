@@ -147,4 +147,4 @@ STATIC mp_obj_t mp_os_errno(size_t n_args, const mp_obj_t *args) {
     errno = mp_obj_get_int(args[0]);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_uos_errno_obj, 0, 1, mp_uos_errno);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_os_errno_obj, 0, 1, mp_os_errno);

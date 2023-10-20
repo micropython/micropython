@@ -46,4 +46,3 @@
 #define MICROPY_PY_CRYPTOLIB          (0)
 #define MICROPY_PY_CRYPTOLIB_CTR      (0)
 #define MICROPY_PY_STRUCT              (0) // uses shared-bindings struct
-#define MICROPY_GC_SPLIT_HEAP          (0)

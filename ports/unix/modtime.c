@@ -71,7 +71,6 @@ STATIC mp_obj_t mp_time_time_get(void) {
     return mp_obj_new_int((mp_int_t)time(NULL));
     #endif
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 STATIC mp_obj_t mod_time_clock(void) {
@@ -125,7 +124,6 @@ STATIC mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #endif
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
 
 STATIC mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, struct tm *(*time_func)(const time_t *timep)) {
     time_t t;
@@ -202,31 +200,8 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_time_mktime_obj, mod_time_mktime);
 
-STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
-    { MP_ROM_QSTR(MP_QSTR_clock), MP_ROM_PTR(&mod_time_clock_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mod_time_sleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_time_sleep_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_time_sleep_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mod_time_time_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_time_ticks_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_time_ticks_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_time_ticks_cpu_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_time_ticks_add_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_time_ticks_diff_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time_ns), MP_ROM_PTR(&mp_time_time_ns_obj) },
-    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mod_time_gmtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) },
+#define MICROPY_PY_TIME_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_clock), MP_ROM_PTR(&mod_time_clock_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mod_time_gmtime_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mod_time_mktime_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
-
-const mp_obj_module_t mp_module_time = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_time, mp_module_time);
-
-#endif // MICROPY_PY_TIME

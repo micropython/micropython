@@ -136,6 +136,7 @@ STATIC mp_obj_t hashlib_sha256_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 STATIC mp_obj_t hashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg) {
+    check_not_unicode(arg);
     mp_obj_hash_t *self = MP_OBJ_TO_PTR(self_in);
     hashlib_ensure_not_final(self);
     mp_buffer_info_t bufinfo;
