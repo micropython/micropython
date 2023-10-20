@@ -25,9 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
+
 #include "py/mphal.h"
-#include "modmachine.h"
 #include "pin.h"
 #include "fsl_clock.h"
 #include "fsl_iomuxc.h"

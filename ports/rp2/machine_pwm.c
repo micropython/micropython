@@ -24,10 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/mphal.h"
-#include "modmachine.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
 
+#include "py/mphal.h"
 #include "hardware/clocks.h"
 #include "hardware/pwm.h"
 

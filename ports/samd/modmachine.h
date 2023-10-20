@@ -39,9 +39,6 @@ extern const mp_obj_type_t machine_dac_type;
 extern const mp_obj_type_t machine_i2c_type;
 #endif
 extern const mp_obj_type_t machine_pin_type;
-#if MICROPY_PY_MACHINE_PWM
-extern const mp_obj_type_t machine_pwm_type;
-#endif
 #if MICROPY_PY_MACHINE_SPI
 extern const mp_obj_type_t machine_spi_type;
 #endif
