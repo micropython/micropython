@@ -22,7 +22,7 @@ typedef struct _machine_pin_io_obj_t {
 } machine_pin_io_obj_t;
 
 
-machine_pin_io_obj_t *pin_io[102] = {NULL};
+machine_pin_io_obj_t *pin_io[MAX_IO_PINS] = {NULL};
 
 static inline machine_pin_io_obj_t *pin_io_allocate(mp_obj_t pin_name) {
     machine_pin_phy_obj_t *pin_phy = pin_phy_realloc(pin_name, PIN_PHY_FUNC_DIO);

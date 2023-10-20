@@ -51,11 +51,9 @@ class Pin(object):
                 self._pin_addr,
             )
         )"""
-        # print("")
 
-    def print_header(self, hdr_file):
-        n = self.cpu_pin_name()
-        hdr_file.write("extern const machine_pin_phy_obj_t pin_{:s}_obj;\n".format(n))
+    def print_header(self, num_pins, hdr_file):
+        hdr_file.write("#define MAX_IO_PINS {:d} \n".format(num_pins))
 
     def qstr_list(self):
         return [self._name]
@@ -74,6 +72,16 @@ class Pins(object):
         self.board_pin_csv_path = ""
         self.num_cpu_pins = 0
 
+    def update_num_cpu_pins(self):
+        for named_pin in self.cpu_pins:
+            pin = named_pin.pin()
+            if pin.is_board_pin():
+                pin.set_board_index(self.num_cpu_pins)
+                self.num_cpu_pins += 1
+
+    def get_num_cpu_pins(self):
+        return self.num_cpu_pins
+
     def find_pin(self, cpu_pin_name):
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
@@ -81,17 +89,13 @@ class Pins(object):
                 return pin
 
     def print_const_table(self):
-        # num_cpu_pins = 0
-        for named_pin in self.cpu_pins:
-            pin = named_pin.pin()
-            if pin.is_board_pin():
-                pin.set_board_index(self.num_cpu_pins)
-                self.num_cpu_pins += 1
         print("")
         print(prefix_content)
-        print("const uint8_t machine_pin_num_of_cpu_pins = {:d};".format(self.num_cpu_pins))
+        print("const uint8_t machine_pin_num_of_cpu_pins = {:d};".format(self.get_num_cpu_pins()))
         print("")
-        print("machine_pin_phy_obj_t machine_pin_phy_obj[{:d}] = {{".format(self.num_cpu_pins))
+        print(
+            "machine_pin_phy_obj_t machine_pin_phy_obj[{:d}] = {{".format(self.get_num_cpu_pins())
+        )
         for named_pin in self.cpu_pins:
             pin = named_pin.pin()
             if pin.is_board_pin():
@@ -154,10 +158,11 @@ class Pins(object):
 
     def print_header(self, hdr_filename):
         with open(hdr_filename, "wt") as hdr_file:
-            for named_pin in self.cpu_pins:
+            hdr_file.write("#define MAX_IO_PINS {:d} \n".format(self.get_num_cpu_pins()))
+            """for named_pin in self.cpu_pins:
                 pin = named_pin.pin()
                 if pin.is_board_pin():
-                    pin.print_header(hdr_file)
+                    pin.print_header(self.num_cpu_pins ,hdr_file)"""
 
     def print_qstr(self, qstr_filename):
         with open(qstr_filename, "wt") as qstr_file:
@@ -223,6 +228,7 @@ def main():
 
     if args.hdr_filename and args.qstr_filename:
         pins.parse_board_file()
+        pins.update_num_cpu_pins()
         pins.print_const_table()
         pins.print()
         pins.print_header(args.hdr_filename)
