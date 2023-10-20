@@ -5,10 +5,10 @@ STATIC const mp_rom_obj_tuple_t matrix_addr_tuple = {
     {&mp_type_tuple},
     5,
     {
-        MP_ROM_PTR(&pin_GPIO35),
+        MP_ROM_PTR(&pin_GPIO45),
         MP_ROM_PTR(&pin_GPIO36),
         MP_ROM_PTR(&pin_GPIO48),
-        MP_ROM_PTR(&pin_GPIO45),
+        MP_ROM_PTR(&pin_GPIO35),
         MP_ROM_PTR(&pin_GPIO21),
     }
 };

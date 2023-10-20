@@ -109,6 +109,11 @@ CIRCUITPY_SYNTHIO_MAX_CHANNELS = 12
 CIRCUITPY_ULAB_OPTIMIZE_SIZE ?= 1
 CIRCUITPY_WATCHDOG ?= 1
 
+ifeq ($(CHIP_VARIANT),SAMD51G19A)
+# No I2S on SAMD51G
+CIRCUITPY_AUDIOBUSIO = 0
+endif
+
 endif # samd51
 ######################################################################
 
