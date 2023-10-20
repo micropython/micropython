@@ -148,3 +148,6 @@ endif
 # only if something else is turned off, such as HID.
 USB_NUM_ENDPOINT_PAIRS = 7
 USB_NUM_IN_ENDPOINTS = 5
+
+# Usually lots of flash space available
+CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1

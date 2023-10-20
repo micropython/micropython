@@ -63,6 +63,8 @@ endif
 OBJ = $(PY_CORE_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 
+# CIRCUITPY
 $(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
+CIRCUITPY_MESSAGE_COMPRESSION_LEVEL = 1
 
 include $(TOP)/py/mkrules.mk
