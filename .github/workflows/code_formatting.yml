@@ -13,9 +13,9 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v4
     - name: Install packages
-      run: source tools/ci.sh && ci_code_formatting_setup
+      run: source tools/ci.sh && ci_c_code_formatting_setup
     - name: Run code formatting
-      run: source tools/ci.sh && ci_code_formatting_run
+      run: source tools/ci.sh && ci_c_code_formatting_run
     - name: Check code formatting
       run: git diff --exit-code
 

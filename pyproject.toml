@@ -1,6 +1,3 @@
-[tool.black]
-line-length = 99
-
 [tool.codespell]
 count = ""
 ignore-regex = '\b[A-Z]{3}\b'
@@ -24,7 +21,12 @@ ACKNOWLEDGEMENTS,\
 """
 
 [tool.ruff]
-exclude = ["lib", "tests"]
+# Exclude third-party code from linting and formatting
+extend-exclude = ["lib"]
+line-length = 99
+target-version = "py37"
+
+[tool.ruff.lint]
 extend-select = ["C9", "PLC"]
 ignore = [
   "E401",
@@ -37,15 +39,21 @@ ignore = [
   "F405",
   "PLC1901",
 ]
-line-length = 337
-target-version = "py37"
 
 [tool.ruff.mccabe]
 max-complexity = 40
 
 [tool.ruff.per-file-ignores]
+# Exclude all tests from linting (does not apply to formatting).
+"tests/**/*.py" = ["ALL"]
 "ports/cc3200/tools/uniflash.py" = ["E711"]
-
 # manifest.py files are evaluated with some global names pre-defined
 "**/manifest.py" = ["F821"]
 "ports/**/boards/**/manifest_*.py" = ["F821"]
+
+[tool.ruff.format]
+# Exclude third-party code, and exclude the following tests:
+#   basics: needs careful attention before applying automatic formatting
+#   repl_: not real python files
+#   viper_args: uses f(*)
+exclude = ["tests/basics/*.py", "tests/*/repl_*.py", "tests/micropython/viper_args.py"]
