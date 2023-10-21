@@ -298,6 +298,10 @@ void SystemClock_Config(void) {
     LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_PLL3Q);
 
     #endif
+
+    #ifdef NDEBUG
+    DBGMCU->CR = 0;
+    #endif
 }
 
 #elif defined(STM32L0)
