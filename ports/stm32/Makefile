@@ -329,14 +329,12 @@ SRC_C += \
 	fdcan.c \
 	pyb_can.c \
 	usb.c \
-	wdt.c \
 	eth.c \
 	gccollect.c \
 	help.c \
 	machine_adc.c \
 	machine_bitstream.c \
 	machine_i2c.c \
-	machine_i2s.c \
 	machine_spi.c \
 	machine_uart.c \
 	modmachine.c \

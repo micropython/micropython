@@ -26,9 +26,7 @@
 #ifndef MICROPY_INCLUDED_CC3200_MODS_PYBWDT_H
 #define MICROPY_INCLUDED_CC3200_MODS_PYBWDT_H
 
-#include "py/obj.h"
-
-extern const mp_obj_type_t pyb_wdt_type;
+#include <stdbool.h>
 
 void pybwdt_init0 (void);
 void pybwdt_srv_alive (void);

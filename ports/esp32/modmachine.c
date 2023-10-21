@@ -44,9 +44,9 @@
 #include "extmod/machine_mem.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_pulse.h"
-#include "extmod/machine_pwm.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -297,7 +297,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
+    #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
+    #endif
     #if MICROPY_HW_ENABLE_SDCARD
     { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
     #endif

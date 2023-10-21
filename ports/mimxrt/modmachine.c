@@ -33,6 +33,7 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_signal.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 #include "led.h"
 #include "pin.h"
@@ -204,7 +205,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #endif
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
+    #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) },

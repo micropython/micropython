@@ -118,10 +118,17 @@
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
+#define MICROPY_PY_MACHINE_I2S                  (1)
+#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/rp2/machine_i2s.c"
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX      (RX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX      (TX)
+#define MICROPY_PY_MACHINE_I2S_RING_BUF         (1)
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SPI_MSB              (SPI_MSB_FIRST)
 #define MICROPY_PY_MACHINE_SPI_LSB              (SPI_LSB_FIRST)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
+#define MICROPY_PY_MACHINE_WDT                  (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/rp2/machine_wdt.c"
 #define MICROPY_PY_ONEWIRE                      (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)

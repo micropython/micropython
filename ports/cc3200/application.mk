@@ -93,7 +93,6 @@ APP_MODS_SRC_C = $(addprefix mods/,\
 	pybspi.c \
 	pybtimer.c \
 	pybuart.c \
-	pybwdt.c \
 	)
 
 APP_CC3100_SRC_C = $(addprefix drivers/cc3100/src/,\

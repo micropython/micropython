@@ -24,21 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdbool.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_i2s.c via MICROPY_PY_MACHINE_I2S_INCLUDEFILE.
 
-#include "py/obj.h"
-#include "py/runtime.h"
-#include "py/misc.h"
-#include "py/stream.h"
-#include "py/objstr.h"
-#include "modmachine.h"
-#include "mphalport.h"
-
-#if MICROPY_PY_MACHINE_I2S
+#include "py/mphal.h"
 
 #include "driver/i2s.h"
 #include "soc/i2s_reg.h"
@@ -47,38 +36,9 @@
 #include "freertos/queue.h"
 #include "esp_task.h"
 
-// The I2S module has 3 modes of operation:
-//
-// Mode1:  Blocking
-// - readinto() and write() methods block until the supplied buffer is filled (read) or emptied (write)
-// - this is the default mode of operation
-//
-// Mode2:  Non-Blocking
-// - readinto() and write() methods return immediately.
-// - buffer filling and emptying happens asynchronously to the main MicroPython task
-// - a callback function is called when the supplied buffer has been filled (read) or emptied (write)
-// - non-blocking mode is enabled when a callback is set with the irq() method
+// Notes on this port's specific implementation of I2S:
 // - a FreeRTOS task is created to implement the asynchronous background operations
 // - a FreeRTOS queue is used to transfer the supplied buffer to the background task
-//
-// Mode3: Asyncio
-// - implements the stream protocol
-// - asyncio mode is enabled when the ioctl() function is called
-// - the I2S event queue is used to detect that I2S samples can be read or written from/to DMA memory
-//
-// The samples contained in the app buffer supplied for the readinto() and write() methods have the following convention:
-//   Mono:  little endian format
-//   Stereo:  little endian format, left channel first
-//
-// I2S terms:
-//   "frame":  consists of two audio samples (Left audio sample + Right audio sample)
-//
-// Misc:
-// - for Mono configuration:
-//   - readinto method: samples are gathered from the L channel only
-//   - write method: every sample is output to both the L and R channels
-// - for readinto method the I2S hardware is read using 8-byte frames
-//   (this is standard for almost all I2S hardware, such as MEMS microphones)
 // - all sample data transfers use DMA
 
 #define I2S_TASK_PRIORITY        (ESP_TASK_PRIO_MIN + 1)
@@ -90,20 +50,6 @@
 // with the app buffer.  It facilitates audio sample transformations.  e.g.  32-bits samples to 16-bit samples.
 // The size of 240 bytes is an engineering optimum that balances transfer performance with an acceptable use of heap space
 #define SIZEOF_TRANSFORM_BUFFER_IN_BYTES (240)
-
-#define NUM_I2S_USER_FORMATS (4)
-#define I2S_RX_FRAME_SIZE_IN_BYTES (8)
-
-typedef enum {
-    MONO,
-    STEREO
-} format_t;
-
-typedef enum {
-    BLOCKING,
-    NON_BLOCKING,
-    ASYNCIO
-} io_mode_t;
 
 typedef enum {
     I2S_TX_TRANSFER,
@@ -118,7 +64,7 @@ typedef struct _non_blocking_descriptor_t {
 
 typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
-    i2s_port_t port;
+    i2s_port_t i2s_id;
     mp_hal_pin_obj_t sck;
     mp_hal_pin_obj_t ws;
     mp_hal_pin_obj_t sd;
@@ -264,7 +210,7 @@ STATIC uint32_t fill_appbuf_from_dma(machine_i2s_obj_t *self, mp_buffer_info_t *
         }
 
         esp_err_t ret = i2s_read(
-            self->port,
+            self->i2s_id,
             self->transform_buffer,
             num_bytes_requested_from_dma,
             &num_bytes_received_from_dma,
@@ -324,7 +270,7 @@ STATIC size_t copy_appbuf_to_dma(machine_i2s_obj_t *self, mp_buffer_info_t *appb
         delay = portMAX_DELAY;  // block until supplied buffer is emptied
     }
 
-    esp_err_t ret = i2s_write(self->port, appbuf->buf, appbuf->len, &num_bytes_written, delay);
+    esp_err_t ret = i2s_write(self->i2s_id, appbuf->buf, appbuf->len, &num_bytes_written, delay);
     check_esp_err(ret);
 
     if ((self->io_mode == ASYNCIO) && (num_bytes_written < appbuf->len)) {
@@ -360,37 +306,7 @@ STATIC void task_for_non_blocking_mode(void *self_in) {
     }
 }
 
-STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-
-    enum {
-        ARG_sck,
-        ARG_ws,
-        ARG_sd,
-        ARG_mode,
-        ARG_bits,
-        ARG_format,
-        ARG_rate,
-        ARG_ibuf,
-    };
-
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_ws,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_sd,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_mode,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_format,   MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_rate,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-        { MP_QSTR_ibuf,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT,   {.u_int = -1} },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_pos_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    //
-    // ---- Check validity of arguments ----
-    //
-
+STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
     // are Pins valid?
     int8_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sck].u_obj);
     int8_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_ws].u_obj);
@@ -453,17 +369,17 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     i2s_config.bits_per_chan = 0;
 
     // I2S queue size equals the number of DMA buffers
-    check_esp_err(i2s_driver_install(self->port, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
+    check_esp_err(i2s_driver_install(self->i2s_id, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
 
     // apply low-level workaround for bug in some ESP-IDF versions that swap
     // the left and right channels
     // https://github.com/espressif/esp-idf/issues/6625
     #if CONFIG_IDF_TARGET_ESP32S3
-    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_TX_MSB_SHIFT);
-    REG_SET_BIT(I2S_TX_CONF_REG(self->port), I2S_RX_MSB_SHIFT);
+    REG_SET_BIT(I2S_TX_CONF_REG(self->i2s_id), I2S_TX_MSB_SHIFT);
+    REG_SET_BIT(I2S_TX_CONF_REG(self->i2s_id), I2S_RX_MSB_SHIFT);
     #else
-    REG_SET_BIT(I2S_CONF_REG(self->port), I2S_TX_MSB_RIGHT);
-    REG_SET_BIT(I2S_CONF_REG(self->port), I2S_RX_MSB_RIGHT);
+    REG_SET_BIT(I2S_CONF_REG(self->i2s_id), I2S_TX_MSB_RIGHT);
+    REG_SET_BIT(I2S_CONF_REG(self->i2s_id), I2S_RX_MSB_RIGHT);
     #endif
 
     i2s_pin_config_t pin_config;
@@ -479,65 +395,30 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         pin_config.data_out_num = self->sd;
     }
 
-    check_esp_err(i2s_set_pin(self->port, &pin_config));
+    check_esp_err(i2s_set_pin(self->i2s_id, &pin_config));
 }
 
-STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2S(id=%u,\n"
-        "sck="MP_HAL_PIN_FMT ",\n"
-        "ws="MP_HAL_PIN_FMT ",\n"
-        "sd="MP_HAL_PIN_FMT ",\n"
-        "mode=%u,\n"
-        "bits=%u, format=%u,\n"
-        "rate=%d, ibuf=%d)",
-        self->port,
-        mp_hal_pin_name(self->sck),
-        mp_hal_pin_name(self->ws),
-        mp_hal_pin_name(self->sd),
-        self->mode,
-        self->bits, self->format,
-        self->rate, self->ibuf
-        );
-}
-
-STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
-    mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
-
-    i2s_port_t port = mp_obj_get_int(args[0]);
-    if (port < 0 || port >= I2S_NUM_AUTO) {
+STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
+    if (i2s_id < 0 || i2s_id >= I2S_NUM_AUTO) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
 
     machine_i2s_obj_t *self;
-    if (MP_STATE_PORT(machine_i2s_obj)[port] == NULL) {
+    if (MP_STATE_PORT(machine_i2s_obj)[i2s_id] == NULL) {
         self = m_new_obj_with_finaliser(machine_i2s_obj_t);
         self->base.type = &machine_i2s_type;
-        MP_STATE_PORT(machine_i2s_obj)[port] = self;
-        self->port = port;
+        MP_STATE_PORT(machine_i2s_obj)[i2s_id] = self;
+        self->i2s_id = i2s_id;
     } else {
-        self = MP_STATE_PORT(machine_i2s_obj)[port];
+        self = MP_STATE_PORT(machine_i2s_obj)[i2s_id];
         machine_i2s_deinit(self);
     }
 
-    mp_map_t kw_args;
-    mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
-    machine_i2s_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
-
-    return MP_OBJ_FROM_PTR(self);
+    return self;
 }
 
-STATIC mp_obj_t machine_i2s_obj_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_i2s_obj_t *self = pos_args[0];
-    machine_i2s_deinit(self);
-    machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_obj_init);
-
-STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    i2s_driver_uninstall(self->port);
+STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self) {
+    i2s_driver_uninstall(self->i2s_id);
 
     if (self->non_blocking_mode_task != NULL) {
         vTaskDelete(self->non_blocking_mode_task);
@@ -550,19 +431,10 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
     }
 
     self->i2s_event_queue = NULL;
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
 
-STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
-    }
-
-    if (handler != mp_const_none) {
-        self->io_mode = NON_BLOCKING;
-
+STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self) {
+    if (self->io_mode == NON_BLOCKING) {
         // create a queue linking the MicroPython task to a FreeRTOS task
         // that manages the non blocking mode of operation
         self->non_blocking_mode_queue = xQueueCreate(1, sizeof(non_blocking_descriptor_t));
@@ -589,236 +461,7 @@ STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
             vQueueDelete(self->non_blocking_mode_queue);
             self->non_blocking_mode_queue = NULL;
         }
-
-        self->io_mode = BLOCKING;
-    }
-
-    self->callback_for_non_blocking = handler;
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
-
-// Shift() is typically used as a volume control.
-// shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB
-STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_buf, ARG_bits, ARG_shift};
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buf,    MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_bits,   MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_shift,  MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
-    };
-
-    // parse args
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[ARG_buf].u_obj, &bufinfo, MP_BUFFER_RW);
-
-    int16_t *buf_16 = bufinfo.buf;
-    int32_t *buf_32 = bufinfo.buf;
-
-    uint8_t bits = args[ARG_bits].u_int;
-    int8_t shift = args[ARG_shift].u_int;
-
-    uint32_t num_audio_samples;
-    switch (bits) {
-        case 16:
-            num_audio_samples = bufinfo.len / 2;
-            break;
-
-        case 32:
-            num_audio_samples = bufinfo.len / 4;
-            break;
-
-        default:
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
-            break;
-    }
-
-    for (uint32_t i = 0; i < num_audio_samples; i++) {
-        switch (bits) {
-            case 16:
-                if (shift >= 0) {
-                    buf_16[i] = buf_16[i] << shift;
-                } else {
-                    buf_16[i] = buf_16[i] >> abs(shift);
-                }
-                break;
-            case 32:
-                if (shift >= 0) {
-                    buf_32[i] = buf_32[i] << shift;
-                } else {
-                    buf_32[i] = buf_32[i] >> abs(shift);
-                }
-                break;
-        }
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
-
-STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
-    // Methods
-    { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&machine_i2s_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write),           MP_ROM_PTR(&mp_stream_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_i2s_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_i2s_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR___del__),         MP_ROM_PTR(&machine_i2s_deinit_obj) },
-
-    // Static method
-    { MP_ROM_QSTR(MP_QSTR_shift),           MP_ROM_PTR(&machine_i2s_shift_obj) },
-
-    // Constants
-    { MP_ROM_QSTR(MP_QSTR_RX),              MP_ROM_INT(I2S_MODE_MASTER | I2S_MODE_RX) },
-    { MP_ROM_QSTR(MP_QSTR_TX),              MP_ROM_INT(I2S_MODE_MASTER | I2S_MODE_TX) },
-    { MP_ROM_QSTR(MP_QSTR_STEREO),          MP_ROM_INT(STEREO) },
-    { MP_ROM_QSTR(MP_QSTR_MONO),            MP_ROM_INT(MONO) },
-};
-MP_DEFINE_CONST_DICT(machine_i2s_locals_dict, machine_i2s_locals_dict_table);
-
-STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->mode != (I2S_MODE_MASTER | I2S_MODE_RX)) {
-        *errcode = MP_EPERM;
-        return MP_STREAM_ERROR;
-    }
-
-    uint8_t appbuf_sample_size_in_bytes = (self->bits / 8) * (self->format == STEREO ? 2: 1);
-    if (size % appbuf_sample_size_in_bytes != 0) {
-        *errcode = MP_EINVAL;
-        return MP_STREAM_ERROR;
-    }
-
-    if (size == 0) {
-        return 0;
-    }
-
-    if (self->io_mode == NON_BLOCKING) {
-        non_blocking_descriptor_t descriptor;
-        descriptor.appbuf.buf = (void *)buf_in;
-        descriptor.appbuf.len = size;
-        descriptor.callback = self->callback_for_non_blocking;
-        descriptor.direction = I2S_RX_TRANSFER;
-        // send the descriptor to the task that handles non-blocking mode
-        xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
-        return size;
-    } else { // blocking or asyncio mode
-        mp_buffer_info_t appbuf;
-        appbuf.buf = (void *)buf_in;
-        appbuf.len = size;
-        uint32_t num_bytes_read = fill_appbuf_from_dma(self, &appbuf);
-        return num_bytes_read;
     }
 }
-
-STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->mode != (I2S_MODE_MASTER | I2S_MODE_TX)) {
-        *errcode = MP_EPERM;
-        return MP_STREAM_ERROR;
-    }
-
-    if (size == 0) {
-        return 0;
-    }
-
-    if (self->io_mode == NON_BLOCKING) {
-        non_blocking_descriptor_t descriptor;
-        descriptor.appbuf.buf = (void *)buf_in;
-        descriptor.appbuf.len = size;
-        descriptor.callback = self->callback_for_non_blocking;
-        descriptor.direction = I2S_TX_TRANSFER;
-        // send the descriptor to the task that handles non-blocking mode
-        xQueueSend(self->non_blocking_mode_queue, &descriptor, 0);
-        return size;
-    } else { // blocking or asyncio mode
-        mp_buffer_info_t appbuf;
-        appbuf.buf = (void *)buf_in;
-        appbuf.len = size;
-        size_t num_bytes_written = copy_appbuf_to_dma(self, &appbuf);
-        return num_bytes_written;
-    }
-}
-
-STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t ret;
-    mp_uint_t flags = arg;
-    self->io_mode = ASYNCIO; // a call to ioctl() is an indication that asyncio is being used
-
-    if (request == MP_STREAM_POLL) {
-        ret = 0;
-
-        if (flags & MP_STREAM_POLL_RD) {
-            if (self->mode != (I2S_MODE_MASTER | I2S_MODE_RX)) {
-                *errcode = MP_EPERM;
-                return MP_STREAM_ERROR;
-            }
-
-            i2s_event_t i2s_event;
-
-            // check event queue to determine if a DMA buffer has been filled
-            // (which is an indication that at least one DMA buffer is available to be read)
-            // note:  timeout = 0 so the call is non-blocking
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_RX_DONE) {
-                    // getting here means that at least one DMA buffer is now full
-                    // indicating that audio samples can be read from the I2S object
-                    ret |= MP_STREAM_POLL_RD;
-                }
-            }
-        }
-
-        if (flags & MP_STREAM_POLL_WR) {
-            if (self->mode != (I2S_MODE_MASTER | I2S_MODE_TX)) {
-                *errcode = MP_EPERM;
-                return MP_STREAM_ERROR;
-            }
-
-            i2s_event_t i2s_event;
-
-            // check event queue to determine if a DMA buffer has been emptied
-            // (which is an indication that at least one DMA buffer is available to be written)
-            // note:  timeout = 0 so the call is non-blocking
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_TX_DONE) {
-                    // getting here means that at least one DMA buffer is now empty
-                    // indicating that audio samples can be written to the I2S object
-                    ret |= MP_STREAM_POLL_WR;
-                }
-            }
-        }
-    } else {
-        *errcode = MP_EINVAL;
-        ret = MP_STREAM_ERROR;
-    }
-
-    return ret;
-}
-
-STATIC const mp_stream_p_t i2s_stream_p = {
-    .read = machine_i2s_stream_read,
-    .write = machine_i2s_stream_write,
-    .ioctl = machine_i2s_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_i2s_type,
-    MP_QSTR_I2S,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_i2s_make_new,
-    print, machine_i2s_print,
-    protocol, &i2s_stream_p,
-    locals_dict, &machine_i2s_locals_dict
-    );
 
 MP_REGISTER_ROOT_POINTER(struct _machine_i2s_obj_t *machine_i2s_obj[I2S_NUM_AUTO]);
-
-#endif // MICROPY_PY_MACHINE_I2S

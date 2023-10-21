@@ -27,11 +27,11 @@
  * THE SOFTWARE.
  */
 
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
+
 #include <math.h>
-
-#include "py/runtime.h"
 #include "py/mphal.h"
-
 #include "driver/ledc.h"
 #include "esp_err.h"
 #include "soc/gpio_sig_map.h"

@@ -528,7 +528,7 @@ soft_reset:
     pyb_usb_init0();
     #endif
 
-    #if MICROPY_HW_ENABLE_I2S
+    #if MICROPY_PY_MACHINE_I2S
     machine_i2s_init0();
     #endif
 

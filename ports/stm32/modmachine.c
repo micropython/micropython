@@ -38,6 +38,7 @@
 #include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "extmod/vfs.h"
@@ -56,7 +57,6 @@
 #include "i2c.h"
 #include "spi.h"
 #include "uart.h"
-#include "wdt.h"
 
 #if defined(STM32G0)
 // G0 has BOR and POR combined
@@ -443,11 +443,13 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
     #endif
-    #if MICROPY_HW_ENABLE_I2S
+    #if MICROPY_PY_MACHINE_I2S
     { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&pyb_uart_type) },
-    { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&pyb_wdt_type) },
+    #if MICROPY_PY_MACHINE_WDT
+    { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
     #if 0
     { MP_ROM_QSTR(MP_QSTR_HeartBeat),           MP_ROM_PTR(&pyb_heartbeat_type) },

@@ -46,6 +46,9 @@
 #ifdef _MSC_VER
 #include <direct.h> // For mkdir etc.
 #endif
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 typedef struct _mp_obj_vfs_posix_t {
     mp_obj_base_t base;
@@ -55,21 +58,23 @@ typedef struct _mp_obj_vfs_posix_t {
 } mp_obj_vfs_posix_t;
 
 STATIC const char *vfs_posix_get_path_str(mp_obj_vfs_posix_t *self, mp_obj_t path) {
-    if (self->root_len == 0) {
-        return mp_obj_str_get_str(path);
+    const char *path_str = mp_obj_str_get_str(path);
+    if (self->root_len == 0 || path_str[0] != '/') {
+        return path_str;
     } else {
-        self->root.len = self->root_len;
-        vstr_add_str(&self->root, mp_obj_str_get_str(path));
+        self->root.len = self->root_len - 1;
+        vstr_add_str(&self->root, path_str);
         return vstr_null_terminated_str(&self->root);
     }
 }
 
 STATIC mp_obj_t vfs_posix_get_path_obj(mp_obj_vfs_posix_t *self, mp_obj_t path) {
-    if (self->root_len == 0) {
+    const char *path_str = mp_obj_str_get_str(path);
+    if (self->root_len == 0 || path_str[0] != '/') {
         return path;
     } else {
-        self->root.len = self->root_len;
-        vstr_add_str(&self->root, mp_obj_str_get_str(path));
+        self->root.len = self->root_len - 1;
+        vstr_add_str(&self->root, path_str);
         return mp_obj_new_str(self->root.buf, self->root.len);
     }
 }
@@ -107,7 +112,28 @@ STATIC mp_obj_t vfs_posix_make_new(const mp_obj_type_t *type, size_t n_args, siz
     mp_obj_vfs_posix_t *vfs = mp_obj_malloc(mp_obj_vfs_posix_t, type);
     vstr_init(&vfs->root, 0);
     if (n_args == 1) {
-        vstr_add_str(&vfs->root, mp_obj_str_get_str(args[0]));
+        const char *root = mp_obj_str_get_str(args[0]);
+        // if the root is relative, make it absolute, otherwise we'll get confused by chdir
+        #ifdef _WIN32
+        char buf[MICROPY_ALLOC_PATH_MAX + 1];
+        DWORD result = GetFullPathNameA(root, sizeof(buf), buf, NULL);
+        if (result > 0 && result < sizeof(buf)) {
+            vstr_add_str(&vfs->root, buf);
+        } else {
+            mp_raise_OSError(GetLastError());
+        }
+        #else
+        if (root[0] != '\0' && root[0] != '/') {
+            char buf[MICROPY_ALLOC_PATH_MAX + 1];
+            const char *cwd = getcwd(buf, sizeof(buf));
+            if (cwd == NULL) {
+                mp_raise_OSError(errno);
+            }
+            vstr_add_str(&vfs->root, cwd);
+            vstr_add_char(&vfs->root, '/');
+        }
+        vstr_add_str(&vfs->root, root);
+        #endif
         vstr_add_char(&vfs->root, '/');
     }
     vfs->root_len = vfs->root.len;
@@ -160,7 +186,14 @@ STATIC mp_obj_t vfs_posix_getcwd(mp_obj_t self_in) {
     if (ret == NULL) {
         mp_raise_OSError(errno);
     }
-    ret += self->root_len;
+    if (self->root_len > 0) {
+        ret += self->root_len - 1;
+        #ifdef _WIN32
+        if (*ret == '\\') {
+            *(char *)ret = '/';
+        }
+        #endif
+    }
     return mp_obj_new_str(ret, strlen(ret));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(vfs_posix_getcwd_obj, vfs_posix_getcwd);
