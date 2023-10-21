@@ -331,7 +331,7 @@ class SerialTransport(Transport):
     def fs_stat(self, src):
         try:
             self.exec("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % (("'%s'" % src)), parse=True))
+            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src), parse=True))
         except TransportError as e:
             reraise_filesystem_error(e, src)
 
