@@ -1454,7 +1454,15 @@ def freeze_mpy(firmware_qstr_idents, compiled_modules):
     # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
     qstr_pool_alloc = min(len(new), 10)
 
-    global bc_content, const_str_content, const_int_content, const_obj_content, const_table_qstr_content, const_table_ptr_content, raw_code_count, raw_code_content
+    global \
+        bc_content, \
+        const_str_content, \
+        const_int_content, \
+        const_obj_content, \
+        const_table_qstr_content, \
+        const_table_ptr_content, \
+        raw_code_count, \
+        raw_code_content
     qstr_content = 0
     bc_content = 0
     const_str_content = 0
