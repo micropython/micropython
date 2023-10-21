@@ -15,17 +15,16 @@ function ci_gcc_arm_setup {
 }
 
 ########################################################################################
-# code formatting
+# c code formatting
 
-function ci_code_formatting_setup {
+function ci_c_code_formatting_setup {
     sudo apt-get install uncrustify
-    pip3 install black
     uncrustify --version
-    black --version
 }
 
-function ci_code_formatting_run {
-    tools/codeformat.py -v
+function ci_c_code_formatting_run {
+    # Only run on C files. The ruff rule runs separately on Python.
+    tools/codeformat.py -v -c
 }
 
 ########################################################################################
