@@ -257,6 +257,13 @@ void new_status_color(uint32_t rgb) {
         status_neopixel_color[3 * i + 0] = (rgb_adjusted >> 8) & 0xff;
         status_neopixel_color[3 * i + 1] = (rgb_adjusted >> 16) & 0xff;
         status_neopixel_color[3 * i + 2] = rgb_adjusted & 0xff;
+
+        #ifdef MICROPY_HW_NEOPIXEL_ORDER_GRB
+        // Swap RG to GR
+        uint8_t temp = status_neopixel_color[3 * i + 0];
+        status_neopixel_color[3 * i + 0] = status_neopixel_color[3 * i + 1];
+        status_neopixel_color[3 * i + 1] = temp;
+        #endif
     }
     common_hal_neopixel_write(&status_neopixel, status_neopixel_color, 3 * MICROPY_HW_NEOPIXEL_COUNT);
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 2;
