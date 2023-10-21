@@ -582,7 +582,7 @@ mp_obj_t flash_mpy_to_rom(const char *filename, const char *modname, uint8_t *pt
     mp_obj_t res = mp_const_true;
     byte buf[256] = {tot_secs, tot_secs, strlen(modname), 0};
     mp_reader_t reader;
-    mp_reader_new_file(&reader, filename);
+    mp_reader_new_file(&reader, qstr_from_str(filename));
     *(uint32_t *)&buf[4] = filesize;
     strcpy(&buf[8], modname);
     mp_uint_t ch = 0;
@@ -618,7 +618,7 @@ bool delete_mpy_from_rom(byte *ptr) {
 bool compare_flash_to_file(const char *filename, byte *ptr) {
     bool is_diff = false;
     mp_reader_t reader;
-    mp_reader_new_file(&reader, filename);
+    mp_reader_new_file(&reader, qstr_from_str(filename));
     byte ch;
     while ((ch = reader.readbyte(reader.data)) != MP_READER_EOF) {
         if (*ptr != ch) {
@@ -637,7 +637,7 @@ STATIC mp_obj_t esp_add_frozen(size_t n_args, const mp_obj_t *args) {
     // get .mpy filesize
     int mpy_size = 0;
     mp_reader_t reader;
-    mp_reader_new_file(&reader, filename);
+    mp_reader_new_file(&reader, qstr_from_str(filename));
     while (reader.readbyte(reader.data) != MP_READER_EOF) {
         mpy_size++;
     }
