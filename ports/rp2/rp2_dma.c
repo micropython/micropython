@@ -316,12 +316,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(rp2_dma_config_obj, 1, rp2_dma_config);
 // Default is quiet, unpaced, read and write incrementing, word transfers, enabled
 #define DEFAULT_DMA_CONFIG (1 << 21) | (0x3f << 15) | (1 << 5) | (1 << 4) | (2 << 2) | (1 << 0)
 
-STATIC mp_obj_t rp2_dma_pack_ctrl(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_obj_t rp2_dma_pack_ctrl(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // Pack keyword settings into a control register value, using either the default for this
     // DMA channel or the provided defaults
     rp2_dma_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_uint_t value = DEFAULT_DMA_CONFIG | ((self->channel & 0xf) << 11);
 
+    if (n_pos_args > 1) {
+        mp_raise_TypeError(MP_ERROR_TEXT("pack_ctrl only takes keyword arguments"));
+    }
     mp_uint_t remaining = kw_args->used;
 
     for (mp_uint_t i = 0; i < remaining; i++) {
