@@ -1763,7 +1763,7 @@ msgstr "Permissão negada"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Pin cannot wake from Deep Sleep"
-msgstr "O pinto não pode acordar do deep sleep"
+msgstr "O pino não pode acordar do deep sleep"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Pin count too large"
