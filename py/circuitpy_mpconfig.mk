@@ -52,6 +52,10 @@ CFLAGS += -DCIRCUITPY=$(CIRCUITPY)
 CIRCUITPY_FULL_BUILD ?= 1
 CFLAGS += -DCIRCUITPY_FULL_BUILD=$(CIRCUITPY_FULL_BUILD)
 
+# By default, aggressively reduce the size of in-flash messages, at the cost of
+# increased build time
+CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 9
+
 # Reduce the size of in-flash properties. Requires support in the .ld linker
 # file, so not enabled by default.
 CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE ?= 0
