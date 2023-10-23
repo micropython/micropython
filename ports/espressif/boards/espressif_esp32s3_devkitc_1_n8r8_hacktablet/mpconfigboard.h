@@ -31,6 +31,9 @@
 
 #define MICROPY_HW_NEOPIXEL         (&pin_GPIO48)
 
+#define DEFAULT_I2C_BUS_SCL         (&pin_GPIO41)
+#define DEFAULT_I2C_BUS_SDA         (&pin_GPIO42)
+
 #define DEFAULT_UART_BUS_RX         (&pin_GPIO44)
 #define DEFAULT_UART_BUS_TX         (&pin_GPIO43)
 
