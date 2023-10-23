@@ -202,7 +202,7 @@ STATIC void rp2_dma_attr(mp_obj_t self_in, qstr attr_in, mp_obj_t *dest) {
             dest[0] = mp_obj_new_int_from_uint(self->channel);
         } else if (attr_in == MP_QSTR_registers) {
             mp_obj_array_t *reg_view = m_new_obj(mp_obj_array_t);
-            mp_obj_memoryview_init(reg_view, 'I', 0, 16, dma_channel_hw_addr(self->channel));
+            mp_obj_memoryview_init(reg_view, 'I' | 0x80, 0, 16, dma_channel_hw_addr(self->channel));
             dest[0] = reg_view;
         } else {
             // If a Micropython class supports attributes then the locals dict is not searched.
