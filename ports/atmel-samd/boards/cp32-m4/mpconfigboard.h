@@ -1,5 +1,5 @@
 #define MICROPY_HW_BOARD_NAME "CP32-M4"
-#define MICROPY_HW_MCU_NAME "samd51j20A"
+#define MICROPY_HW_MCU_NAME "samd51j20"
 
 #define MICROPY_HW_APA102_MOSI   (&pin_PA12)
 #define MICROPY_HW_APA102_SCK    (&pin_PA13)
