@@ -92,3 +92,4 @@ CFLAGS += \
 
 SRC_C += coverage.c
 SRC_CXX += coveragecpp.cpp
+CIRCUITPY_MESSAGE_COMPRESSION_LEVEL = 1

@@ -174,7 +174,7 @@ class EncodingTable:
     qstrs_inv: object
 
 
-def compute_huffman_coding(qstrs, translation_name, translations, f):
+def compute_huffman_coding(qstrs, translation_name, translations, f, compression_level):
     # possible future improvement: some languages are better when consider len(k) > 2. try both?
     qstrs = dict((k, v) for k, v in qstrs.items() if len(k) > 3)
     qstr_strs = list(qstrs.keys())
@@ -209,6 +209,8 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
             if 0x80 <= ord_c < 0xFF:
                 end_unused = min(ord_c, end_unused)
     max_words = end_unused - 0x80
+    if compression_level < 5:
+        max_words = 0
 
     bits_per_codepoint = 16 if max_ord > 255 else 8
     values_type = "uint16_t" if max_ord > 255 else "uint8_t"
@@ -298,8 +300,12 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
         word = scores[0][0]
         words.append(word)
 
+    splitters = words[:]
+    if compression_level > 3:
+        splitters.extend(qstr_strs)
+
     words.sort(key=len)
-    extractor = TextSplitter(words + qstr_strs)
+    extractor = TextSplitter(splitters)
     counter = collections.Counter()
     used_qstr = 0
     for t in texts:
@@ -356,8 +362,8 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
         len(translation.encode("utf-8")) for (original, translation) in translations
     )
 
-    maxlen = len(words[-1])
-    minlen = len(words[0])
+    maxlen = len(words[-1]) if words else 0
+    minlen = len(words[0]) if words else 0
     wlencount = [len([None for w in words if len(w) == l]) for l in range(minlen, maxlen + 1)]
 
     translation_qstr_bits = used_qstr.bit_length()
@@ -597,6 +603,12 @@ if __name__ == "__main__":
         "--translation", default=None, type=str, help="translations for i18n() items"
     )
     parser.add_argument(
+        "--compression_level",
+        type=int,
+        default=9,
+        help="degree of compression (>5: construct dictionary; >3: use qstrs)",
+    )
+    parser.add_argument(
         "--compression_filename",
         type=argparse.FileType("w", encoding="UTF-8"),
         help="header for compression info",
@@ -619,6 +631,6 @@ if __name__ == "__main__":
     i18ns = sorted(i18ns)
     translations = translate(args.translation, i18ns)
     encoding_table = compute_huffman_coding(
-        qstrs, args.translation, translations, args.compression_filename
+        qstrs, args.translation, translations, args.compression_filename, args.compression_level
     )
     output_translation_data(encoding_table, translations, args.translation_filename)
