@@ -92,13 +92,8 @@ STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
             // remove from poll list on error.
             socket->callback = MP_OBJ_NULL;
             mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
-        } else if (flags) {
+        } else if (flags & SOCKET_POLL_RD) {
             mp_call_function_1(socket->callback, MP_OBJ_FROM_PTR(socket));
-            if (flags & SOCKET_POLL_ERR) {
-                // remove from poll list on error.
-                socket->callback = MP_OBJ_NULL;
-                mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
-            }
         }
     }
 }
@@ -451,7 +446,7 @@ STATIC int network_ninaw10_socket_poll(mod_network_socket_obj_t *socket, uint32_
     }
     mp_uint_t start = mp_hal_ticks_ms();
     for (; !(flags & rwf); mp_hal_delay_ms(5)) {
-        if (nina_socket_poll(socket->fileno, &flags) < 0 || (flags & SOCKET_POLL_ERR)) {
+        if (nina_socket_poll(socket->fileno, &flags) < 0) {
             nina_socket_errno(_errno);
             debug_printf("socket_poll(%d) -> errno %d flags %d\n", socket->fileno, *_errno, flags);
             return -1;
