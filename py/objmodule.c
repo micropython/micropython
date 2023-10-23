@@ -198,15 +198,8 @@ mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
         // should be using sys.path to force the built-in, but this retains
         // the old behaviour of the u-prefix being used to force a built-in
         // import.
-        size_t module_name_len;
-        const char *module_name_str = (const char *)qstr_data(module_name, &module_name_len);
-        if (module_name_str[0] != 'u') {
-            return MP_OBJ_NULL;
-        }
-        elem = mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(qstr_from_strn(module_name_str + 1, module_name_len - 1)), MP_MAP_LOOKUP);
-        if (!elem) {
-            return MP_OBJ_NULL;
-        }
+        // CIRCUITPY-CHANGE: Don't look for `ufoo`.
+        return MP_OBJ_NULL;
     }
 
     #if MICROPY_MODULE_BUILTIN_INIT

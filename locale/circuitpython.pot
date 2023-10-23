@@ -415,6 +415,10 @@ msgid "'return' outside function"
 msgstr ""
 
 #: py/compile.c
+msgid "'yield from' inside async function"
+msgstr ""
+
+#: py/compile.c
 msgid "'yield' outside function"
 msgstr ""
 

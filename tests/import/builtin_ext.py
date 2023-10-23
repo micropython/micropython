@@ -23,18 +23,11 @@ print(usys, hasattr(usys, "__file__"))
 # This should get os.py, which uses uos to get the builtin.
 import os
 
-print(os, hasattr(os, "__file__"), os.sep, os.extra)
+print(os, hasattr(os, "__file__"))
 
 # This should get time.py, which uses empty sys.path to get the builtin.
 import time
 
 print(time, hasattr(time, "__file__"), time.sleep, time.extra)
 
-# These should get the builtins.
-import uos
-
-print(uos, hasattr(uos, "__file__"), hasattr(uos, "extra"))
-
-import utime
-
-print(utime, hasattr(utime, "__file__"), hasattr(utime, "extra"))
+# CIRCUITPY-CHANGE: Don't find u prefixes.
