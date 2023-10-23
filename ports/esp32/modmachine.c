@@ -115,6 +115,9 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 
     mp_int_t expiry = args[ARG_sleep_ms].u_int;
 
+    // First, disable any previously set wake-up source
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+
     if (expiry != 0) {
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
