@@ -43,6 +43,7 @@ typedef struct {
     volatile bool last_level;
     volatile uint32_t level_count;
     volatile uint16_t len;
+    volatile uint16_t len_target;
     volatile uint16_t start;
     rp2pio_statemachine_obj_t state_machine;
 } pulseio_pulsein_obj_t;

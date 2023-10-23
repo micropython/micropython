@@ -56,6 +56,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     self->idle_state = idle_state;
     self->start = 0;
     self->len = 0;
+    self->len_target = 0;
 
     common_hal_rp2pio_statemachine_construct(&self->state_machine,
         pulsein_program, MP_ARRAY_SIZE(pulsein_program),
@@ -133,6 +134,8 @@ void common_hal_pulseio_pulsein_interrupt(void *self_in) {
                     self->buffer[buf_index] = (uint16_t)result;
                     if (self->len < self->maxlen) {
                         self->len++;
+                        self->len_target++; // The interrupt will only cause a problem in either len or len_target, not both.
+                        // So we can just check for a match, and choose the higher.
                     } else {
                         self->start = (self->start + 1) % self->maxlen;
                     }
@@ -174,7 +177,13 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     }
     uint16_t value = self->buffer[self->start];
     self->start = (self->start + 1) % self->maxlen;
+    self->len_target--;
     self->len--;
+    if (self->len != self->len_target) {
+        uint16_t len_accurate = self->len > self->len_target ? self->len : self->len_target;
+        self->len_target = len_accurate;
+        self->len = len_accurate;
+    }
     return value;
 }
 
