@@ -96,6 +96,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_KBD_EXCEPTION            (1)
 #define MICROPY_MEM_STATS                (0)
 #define MICROPY_MODULE_BUILTIN_INIT      (1)
+#define MICROPY_MODULE_BUILTIN_SUBPACKAGES (1)
 #define MICROPY_NONSTANDARD_TYPECODES    (0)
 #define MICROPY_OPT_COMPUTED_GOTO        (1)
 #define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE)
