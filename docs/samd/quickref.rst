@@ -261,7 +261,7 @@ an external ADC.
 ADC Constructor
 ```````````````
 
-.. class:: ADC(dest, *, average=16, bits=12, vref=3, callback=None)
+.. class:: ADC(dest, *, average=16, bits=12, vref=ADC.AREF, callback=None)
   :noindex:
 
 On the SAMD21/SAMD51 ADC functionality is available on Pins labelled 'Ann'.
@@ -281,16 +281,16 @@ Averaging is used to reduce the noise. With a value of 16 the LSB noise is
 about 1 digit. The vref=n option sets the reference voltage for the ADC.
 The default setting is for 3.3V. Other values are:
 
-==== ==============================  ===============================
-vref SAMD21                          SAMD51
-==== ==============================  ===============================
-0    1.0V voltage reference          internal bandgap reference (1V)
-1    1/1.48 Analogue voltage supply  Analogue voltage supply
-2    1/2 Analogue voltage supply     1/2 Analogue voltage supply
-3    External reference A            External reference A
-4    External reference B            External reference B
-5    -                               External reference C
-==== ==============================  ===============================
+========= ===== ==============================  =============================
+Symbol    Value SAMD21                          SAMD51
+========= ===== ==============================  =============================
+INT_VREF  0     1.0V voltage reference          1V internal bandgap reference
+VDDA      1     1/1.48 Analogue voltage supply  Analogue voltage supply
+VDDA2     2     1/2 Analogue voltage supply     1/2 Analogue voltage supply
+AREF      3     External reference A (PA03)     External reference A (PA03)
+AREFB     4     External reference B (PA04)     External reference B (PA04)
+AREFC     5                                     External reference C (PA06)
+========= ===== ==============================  =============================
 
 The callback keyword option is used for timed ADC sampling. The callback is executed
 when all data has been sampled.
@@ -366,14 +366,14 @@ have 1 DAC channel at GPIO PA02, accepting only 0 as id. SAMD51 devices have
 The vref arguments defines the output voltage range, the callback option is used for
 dac_timed(). Suitable values for vref are:
 
-==== ============================  ================================
-vref SAMD21                        SAMD51
-==== ============================  ================================
-0    Internal voltage reference    Internal bandgap reference (~1V)
-1    Analogue voltage supply       Analogue voltage supply
-2    External reference            Unbuffered external reference
-3    -                             Buffered external reference
-==== ============================  ================================
+========= ===== ============================  ================================
+Symbol    Value SAMD21                        SAMD51
+========= ===== ============================  ================================
+INT_VREF  0     Internal voltage reference    Internal bandgap reference (~1V)
+VDDA      1     Analogue voltage supply       Analogue voltage supply
+AREF      2     External reference            Unbuffered external reference
+AREFB     3                                   Buffered external reference
+========= ===== ============================  ================================
 
 
 DAC Methods

@@ -425,6 +425,12 @@ static const mp_rom_map_elem_t dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_busy), MP_ROM_PTR(&machine_dac_busy_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&dac_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_write_timed), MP_ROM_PTR(&dac_write_timed_obj) },
+    { MP_ROM_QSTR(MP_QSTR_INT_VREF), MP_ROM_INT(0) },
+    { MP_ROM_QSTR(MP_QSTR_VDDA), MP_ROM_INT(1) },
+    { MP_ROM_QSTR(MP_QSTR_AREF), MP_ROM_INT(2) },
+    #if defined(MCU_SAMD51)
+    { MP_ROM_QSTR(MP_QSTR_AREFB), MP_ROM_INT(3) },
+    #endif
     #endif
 };
 

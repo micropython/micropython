@@ -28,17 +28,13 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
-#if MICROPY_PY_MACHINE_ADC
-
 #include <stdint.h>
 #include "py/obj.h"
-#include "py/runtime.h"
 #include "py/mperrno.h"
 
-#include "py/mphal.h"
+#include "mphalport.h"
 #include "sam.h"
 #include "pin_af.h"
-#include "modmachine.h"
 #include "samd_soc.h"
 #include "dma_manager.h"
 #include "tc_manager.h"
@@ -113,8 +109,21 @@ device_mgmt_t device_mgmt[ADC_INST_NUM];
 
 #endif  // defined(MCU_SAMD21)
 
-// The ADC class doesn't have any constants for this port.
-#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS
+#if defined(MCU_SAMD51)
+#define MICROPY_PY_MACHINE_SAMD51_ADC_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_AREFC), MP_ROM_INT(5) },
+#else
+#define MICROPY_PY_MACHINE_SAMD51_ADC_CLASS_CONSTANTS
+#endif
+
+// Class constants for the ADC reference sources..
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_INT_VREF), MP_ROM_INT(0) }, \
+    { MP_ROM_QSTR(MP_QSTR_VDDA), MP_ROM_INT(1) }, \
+    { MP_ROM_QSTR(MP_QSTR_VDDA2), MP_ROM_INT(2) }, \
+    { MP_ROM_QSTR(MP_QSTR_AREF), MP_ROM_INT(3) }, \
+    { MP_ROM_QSTR(MP_QSTR_AREFB), MP_ROM_INT(4) }, \
+    MICROPY_PY_MACHINE_SAMD51_ADC_CLASS_CONSTANTS \
 
 Adc *const adc_bases[] = ADC_INSTS;
 uint32_t ch_busy_flags = 0;
@@ -168,8 +177,7 @@ static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         self->adc_config.channel, self->bits, 1 << self->avg, self->vref);
 }
 
-static mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
-    const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
 
     enum { ARG_id, ARG_bits, ARG_average, ARG_vref, ARG_callback };
     static const mp_arg_t allowed_args[] = {
@@ -263,13 +271,13 @@ static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     return adc->RESULT.reg * (65536 / (1 << self->bits));
 }
 
-static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t freq_in) {
-    machine_adc_obj_t *self = self_in;
+#if MICROPY_PY_MACHINE_ADC_READ_TIMED
+
+static void mp_machine_adc_read_timed(machine_adc_obj_t *self, mp_obj_t values, mp_int_t freq) {
     Adc *adc = adc_bases[self->adc_config.device];
     mp_buffer_info_t src;
     mp_get_buffer_raise(values, &src, MP_BUFFER_READ);
     if (src.len >= 2) {
-        int freq = mp_obj_get_int(freq_in);
         if (self->tc_index == -1) {
             self->tc_index = allocate_tc_instance();
         }
@@ -363,12 +371,19 @@ static void machine_adc_read_timed(mp_obj_t self_in, mp_obj_t values, mp_obj_t f
         #endif // defined SAMD21 or SAMD51
 
     }
-    return mp_const_none;
 }
+
+// busy() : Report, if  the ADC device is busy
+static mp_obj_t mp_machine_adc_busy(machine_adc_obj_t *self) {
+    return device_mgmt[self->adc_config.device].busy ? mp_const_true : mp_const_false;
+}
+
+#endif
 
 // deinit() : release the ADC channel
 static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
-    busy_flags &= ~((1 << (self->adc_config.device * 16 + self->adc_config.channel)));
+    ch_busy_flags &= ~((1 << (self->adc_config.device * 16 + self->adc_config.channel)));
+    #if MICROPY_PY_MACHINE_ADC_READ_TIMED
     if (self->dma_channel >= 0) {
         #if defined(MCU_SAMD51)
         if (self->dma_channel == device_mgmt[self->adc_config.device].dma_channel) {
@@ -384,15 +399,8 @@ static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
         free_tc_instance(self->tc_index);
         self->tc_index = -1;
     }
+    #endif
 }
-
-// busy() : Report, if  the ADC device is busy
-static mp_int_t machine_adc_busy(mp_obj_t self_in) {
-    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return device_mgmt[self->adc_config.device].busy ? true : false;
-}
-
-#endif
 
 #if MICROPY_PY_MACHINE_ADC_READ_TIMED
 void adc_deinit_all(void) {
