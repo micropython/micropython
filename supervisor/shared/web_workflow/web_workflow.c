@@ -368,10 +368,10 @@ bool supervisor_start_web_workflow(bool reload) {
         }
         // Wake polling thread (maybe)
         socketpool_socket_poll_resume();
+        return true;
+    }
     #endif
-    return true;
-}
-return false;
+    return false;
 }
 
 void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
