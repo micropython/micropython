@@ -77,8 +77,6 @@ typedef ssize_t socket_size_t;
   should be add to separate modules (C or Python level).
  */
 
-// This type must "inherit" from mp_obj_fdfile_t, i.e. matching subset of
-// fields should have the same layout.
 typedef struct _mp_obj_socket_t {
     mp_obj_base_t base;
     socket_t fd;
