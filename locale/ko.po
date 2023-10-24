@@ -396,16 +396,8 @@ msgid "'await' outside function"
 msgstr "'await' 는 펑크션 외부에 있습니다"
 
 #: py/compile.c
-msgid "'await', 'async for' or 'async with' outside async function"
+msgid "'break'/'continue' outside loop"
 msgstr ""
-
-#: py/compile.c
-msgid "'break' outside loop"
-msgstr "'break' 는 루프 외부에 있습니다"
-
-#: py/compile.c
-msgid "'continue' outside loop"
-msgstr "'continue' 는 루프 외부에 있습니다"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -968,7 +960,7 @@ msgstr ""
 msgid "EXTINT channel already in use"
 msgstr ""
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "Error in regex"
 msgstr "Regex에 오류가 있습니다."
 
@@ -1048,7 +1040,7 @@ msgstr ""
 msgid "Failed to write internal flash."
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "File exists"
 msgstr ""
 
@@ -1183,7 +1175,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr ""
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
 msgid "Input/output error"
 msgstr ""
 
@@ -1262,7 +1254,7 @@ msgstr ""
 msgid "Invalid MAC address"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moderrno.c
 msgid "Invalid argument"
 msgstr ""
 
@@ -1528,15 +1520,15 @@ msgstr ""
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No space left on device"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such device"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such file/directory"
 msgstr ""
 
@@ -1657,7 +1649,7 @@ msgstr ""
 msgid "Only one color can be transparent at a time"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Operation not permitted"
 msgstr ""
 
@@ -1711,7 +1703,7 @@ msgstr ""
 msgid "Peripheral in use"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Permission denied"
 msgstr ""
 
@@ -1845,7 +1837,7 @@ msgstr ""
 msgid "Read-only"
 msgstr ""
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: extmod/vfs_fat.c py/moderrno.c
 msgid "Read-only filesystem"
 msgstr ""
 
@@ -2407,7 +2399,7 @@ msgstr ""
 msgid "__new__ arg must be a user-type"
 msgstr ""
 
-#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
+#: extmod/modbinascii.c extmod/modhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr ""
 
@@ -2481,6 +2473,10 @@ msgstr ""
 msgid "asm overflow"
 msgstr ""
 
+#: py/compile.c
+msgid "async for/with outside async function"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
@@ -2533,7 +2529,7 @@ msgstr ""
 msgid "bitmap sizes must match"
 msgstr ""
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "bits must be 32 or less"
 msgstr ""
 
@@ -2614,11 +2610,11 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr ""
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't cancel self"
 msgstr ""
 
-#: py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2630,6 +2626,11 @@ msgstr ""
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to float"
+msgstr ""
+
+#: py/runtime.c
+#, c-format
+msgid "can't convert %s to int"
 msgstr ""
 
 #: py/objstr.c
@@ -2742,7 +2743,7 @@ msgstr ""
 msgid "can't unambiguously get sizeof scalar"
 msgstr ""
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't wait"
 msgstr ""
 
@@ -2834,7 +2835,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr ""
 
-#: extmod/moduzlib.c
+#: extmod/modzlib.c
 msgid "compression header"
 msgstr ""
 
@@ -2948,7 +2949,7 @@ msgstr ""
 msgid "empty file"
 msgstr ""
 
-#: extmod/moduasyncio.c extmod/moduheapq.c
+#: extmod/modasyncio.c extmod/modheapq.c
 msgid "empty heap"
 msgstr ""
 
@@ -3077,6 +3078,10 @@ msgstr ""
 msgid "font must be 2048 bytes long"
 msgstr ""
 
+#: extmod/moddeflate.c
+msgid "format"
+msgstr ""
+
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr ""
@@ -3153,11 +3158,11 @@ msgstr ""
 msgid "graphic must be 2048 bytes long"
 msgstr ""
 
-#: extmod/moduhashlib.c
+#: extmod/modhashlib.c
 msgid "hash is final"
 msgstr ""
 
-#: extmod/moduheapq.c
+#: extmod/modheapq.c
 msgid "heap must be a list"
 msgstr ""
 
@@ -3189,7 +3194,7 @@ msgstr ""
 msgid "incomplete format key"
 msgstr ""
 
-#: extmod/modubinascii.c
+#: extmod/modbinascii.c
 msgid "incorrect padding"
 msgstr ""
 
@@ -3318,7 +3323,7 @@ msgid "interval must be in range %s-%s"
 msgstr ""
 
 #: py/compile.c
-msgid "invalid architecture"
+msgid "invalid arch"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3507,6 +3512,10 @@ msgstr ""
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr ""
 
+#: extmod/modtime.c
+msgid "mktime needs a tuple of length 8 or 9"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
 msgstr ""
@@ -3604,7 +3613,7 @@ msgstr ""
 msgid "no default packer"
 msgstr ""
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "no default seed"
 msgstr ""
 
@@ -4031,7 +4040,7 @@ msgstr ""
 msgid "source_bitmap must have value_count of 8"
 msgstr ""
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "splitting with sub-captures"
 msgstr ""
 
@@ -4080,7 +4089,7 @@ msgstr ""
 msgid "super() can't find self"
 msgstr ""
 
-#: extmod/modujson.c
+#: extmod/modjson.c
 msgid "syntax error in JSON"
 msgstr ""
 
@@ -4088,7 +4097,7 @@ msgstr ""
 msgid "syntax error in uctypes descriptor"
 msgstr ""
 
-#: extmod/utime_mphal.c
+#: extmod/modtime.c
 msgid "ticks interval overflow"
 msgstr ""
 
@@ -4266,7 +4275,7 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr ""
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%q'"
+msgid "unsupported type for %q: '%s'"
 msgstr ""
 
 #: py/runtime.c
@@ -4292,6 +4301,10 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
+msgstr ""
+
+#: extmod/moddeflate.c
+msgid "wbits"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4364,6 +4377,12 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' 는 루프 외부에 있습니다"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' 는 루프 외부에 있습니다"
 
 #~ msgid "invalid format"
 #~ msgstr "형식가 유효하지 않습니다"

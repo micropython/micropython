@@ -410,18 +410,8 @@ msgid "'await' outside function"
 msgstr "'aguardar' fora da função"
 
 #: py/compile.c
-msgid "'await', 'async for' or 'async with' outside async function"
+msgid "'break'/'continue' outside loop"
 msgstr ""
-"'await', 'async for' (async para) ou 'async with' (async com) estão fora da "
-"função async"
-
-#: py/compile.c
-msgid "'break' outside loop"
-msgstr "'break' fora do loop"
-
-#: py/compile.c
-msgid "'continue' outside loop"
-msgstr "'continue' fora do loop"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -993,7 +983,7 @@ msgstr "Houve uma falha na alocação da memória ESP-IDF"
 msgid "EXTINT channel already in use"
 msgstr "Canal EXTINT em uso"
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "Error in regex"
 msgstr "Erro no regex"
 
@@ -1073,7 +1063,7 @@ msgstr "Houve uma falha ao liberar o mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Falha ao gravar o flash interno."
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "File exists"
 msgstr "Arquivo já existe"
 
@@ -1220,7 +1210,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "A entrada está demorando demais"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
 msgid "Input/output error"
 msgstr "Erro de entrada/saída"
 
@@ -1299,7 +1289,7 @@ msgstr "CIRCUITPY_PYSTACK_SIZE inválido\n"
 msgid "Invalid MAC address"
 msgstr "Endereço MAC inválido"
 
-#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moderrno.c
 msgid "Invalid argument"
 msgstr "Argumento inválido"
 
@@ -1567,15 +1557,15 @@ msgstr ""
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Não há pulldown no pino; É recomendável utilizar um resistor de 1M ohm"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No space left on device"
 msgstr "Não resta espaço no dispositivo"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such device"
 msgstr "Não existe tal dispositivo"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such file/directory"
 msgstr "Este arquivo/diretório não existe"
 
@@ -1701,7 +1691,7 @@ msgstr "Apenas um alarme alarm.time pode ser definido."
 msgid "Only one color can be transparent at a time"
 msgstr "Apenas uma cor pode ser transparente de cada vez"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Operation not permitted"
 msgstr "A operação não é permitida"
 
@@ -1757,7 +1747,7 @@ msgstr "O canal A da fatia do PWM já está em uso"
 msgid "Peripheral in use"
 msgstr "O periférico está em uso"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Permission denied"
 msgstr "Permissão negada"
 
@@ -1900,7 +1890,7 @@ msgstr "Houve um erro na geração do número aleatório"
 msgid "Read-only"
 msgstr "Somente leitura"
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: extmod/vfs_fat.c py/moderrno.c
 msgid "Read-only filesystem"
 msgstr "Sistema de arquivos somente leitura"
 
@@ -2478,7 +2468,7 @@ msgstr "O __init__() deve retornar Nenhum, não '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "O argumento __new__ deve ser um tipo usuário"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
+#: extmod/modbinascii.c extmod/modhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "é necessário objetos tipo bytes"
 
@@ -2552,6 +2542,10 @@ msgstr "matriz/bytes são necessários no lado direito"
 msgid "asm overflow"
 msgstr "estouro asm"
 
+#: py/compile.c
+msgid "async for/with outside async function"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "tentativa de obter (arg)min/(arg)max da sequência vazia"
@@ -2604,7 +2598,7 @@ msgstr "a operação binário %q não foi implementada"
 msgid "bitmap sizes must match"
 msgstr "os tamanhos do bitmap devem coincidir"
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "bits must be 32 or less"
 msgstr "bits deve ser 32 ou menos"
 
@@ -2685,11 +2679,11 @@ msgstr "não é possível adicionar o método especial à classe já subclassifi
 msgid "can't assign to expression"
 msgstr "a expressão não pode ser atribuída"
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't cancel self"
 msgstr "não é possível cancelar a si mesmo"
 
-#: py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "não é possível converter %q para %q"
 
@@ -2702,6 +2696,11 @@ msgstr "Não é possível converter %s para complex"
 #, c-format
 msgid "can't convert %s to float"
 msgstr "Não é possível converter %s para float"
+
+#: py/runtime.c
+#, c-format
+msgid "can't convert %s to int"
+msgstr "Não é possível converter %s para int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2817,7 +2816,7 @@ msgstr "não é possível truncar-dividir um número complexo"
 msgid "can't unambiguously get sizeof scalar"
 msgstr "não é possível obter de forma inequívoca o tamanho do escalar"
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't wait"
 msgstr "não vejo a hora"
 
@@ -2911,7 +2910,7 @@ msgstr "divisão complexa por zero"
 msgid "complex values not supported"
 msgstr "os valores complexos não compatíveis"
 
-#: extmod/moduzlib.c
+#: extmod/modzlib.c
 msgid "compression header"
 msgstr "compressão do cabeçalho"
 
@@ -3028,7 +3027,7 @@ msgstr "vazio"
 msgid "empty file"
 msgstr "arquivo vazio"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c
+#: extmod/modasyncio.c extmod/modheapq.c
 msgid "empty heap"
 msgstr "a área de alocação dinâmica de variáveis (heap) está vazia"
 
@@ -3159,6 +3158,10 @@ msgstr "Flutuante não compatível"
 msgid "font must be 2048 bytes long"
 msgstr "a fonte deve ter 2048 bytes de comprimento"
 
+#: extmod/moddeflate.c
+msgid "format"
+msgstr ""
+
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "formato requer um dict"
@@ -3235,11 +3238,11 @@ msgstr "gerador StopIteration elevado"
 msgid "graphic must be 2048 bytes long"
 msgstr "o gráfico deve ter 2048 bytes de comprimento"
 
-#: extmod/moduhashlib.c
+#: extmod/modhashlib.c
 msgid "hash is final"
 msgstr "o hash é final"
 
-#: extmod/moduheapq.c
+#: extmod/modheapq.c
 msgid "heap must be a list"
 msgstr "a área de alocação dinâmica de variáveis (heap) deve ser uma lista"
 
@@ -3271,7 +3274,7 @@ msgstr "formato incompleto"
 msgid "incomplete format key"
 msgstr "a chave do formato está incompleto"
 
-#: extmod/modubinascii.c
+#: extmod/modbinascii.c
 msgid "incorrect padding"
 msgstr "preenchimento incorreto"
 
@@ -3401,8 +3404,8 @@ msgid "interval must be in range %s-%s"
 msgstr "o intervalo deve estar entre %s-%s"
 
 #: py/compile.c
-msgid "invalid architecture"
-msgstr "arquitetura inválida"
+msgid "invalid arch"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3595,6 +3598,10 @@ msgstr "o deslocamento da visualização da memória é muito grande"
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr "memoryview: o comprimento não é um múltiplo do tamanho dos itens"
 
+#: extmod/modtime.c
+msgid "mktime needs a tuple of length 8 or 9"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
 msgstr "o modo deve ser completo ou reduzido"
@@ -3692,7 +3699,7 @@ msgstr "nenhuma ligação para nonlocal foi encontrada"
 msgid "no default packer"
 msgstr "nenhum empacotador padrão"
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "no default seed"
 msgstr "nenhuma semente padrão"
 
@@ -4124,7 +4131,7 @@ msgstr "o source_bitmap deve ter o value_count de 65536"
 msgid "source_bitmap must have value_count of 8"
 msgstr "o source_bitmap deve ter o value_count de 8"
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "splitting with sub-captures"
 msgstr "divisão com subcapturas"
 
@@ -4173,7 +4180,7 @@ msgstr "a substring não foi encontrada"
 msgid "super() can't find self"
 msgstr "o super() não consegue se encontrar"
 
-#: extmod/modujson.c
+#: extmod/modjson.c
 msgid "syntax error in JSON"
 msgstr "erro de sintaxe no JSON"
 
@@ -4181,7 +4188,7 @@ msgstr "erro de sintaxe no JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "houve um erro de sintaxe no descritor uctypes"
 
-#: extmod/utime_mphal.c
+#: extmod/modtime.c
 msgid "ticks interval overflow"
 msgstr "estouro do intervalo de ticks"
 
@@ -4359,8 +4366,8 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "o caractere do formato não é compatível '%c' (0x%x) no índice %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%q'"
-msgstr "tipo sem suporte para %q: '%q'"
+msgid "unsupported type for %q: '%s'"
+msgstr "tipo não compatível para %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -4386,6 +4393,10 @@ msgstr "o valor deve caber em %d byte(s)"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
 msgstr "valor fora do alcance do alvo"
+
+#: extmod/moddeflate.c
+msgid "wbits"
+msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4457,6 +4468,23 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "'await', 'async for' or 'async with' outside async function"
+#~ msgstr ""
+#~ "'await', 'async for' (async para) ou 'async with' (async com) estão fora "
+#~ "da função async"
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' fora do loop"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' fora do loop"
+
+#~ msgid "invalid architecture"
+#~ msgstr "arquitetura inválida"
+
+#~ msgid "unsupported type for %q: '%q'"
+#~ msgstr "tipo sem suporte para %q: '%q'"
 
 #~ msgid "Splitting with sub-captures"
 #~ msgstr "Divisão com sub-capturas"
@@ -6052,9 +6080,6 @@ msgstr "zi deve estar na forma (n_section, 2)"
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Rodando em modo seguro! Atualização automática está desligada.\n"
 
-#~ msgid "can't convert %s to int"
-#~ msgstr "Não é possível converter %s para int"
-
 #~ msgid "can't convert address to int"
 #~ msgstr "não é possível converter o endereço para int"
 
@@ -6072,9 +6097,6 @@ msgstr "zi deve estar na forma (n_section, 2)"
 
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "código de formato desconhecido '%c' para o objeto do tipo '%s'"
-
-#~ msgid "unsupported type for %q: '%s'"
-#~ msgstr "tipo não compatível para %q: '%s'"
 
 #~ msgid "unsupported types for %q: '%s', '%s'"
 #~ msgstr "tipos não compatíveis para %q: '%s', '%s'"
