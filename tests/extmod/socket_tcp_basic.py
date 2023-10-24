@@ -11,4 +11,4 @@ s = socket.socket()
 try:
     s.recv(1)
 except OSError as er:
-    print("ENOTCONN:", er.errno == errno.ENOTCONN)
+    print("ENOTCONN:", er.errno in (errno.ENOTCONN, 10057))
