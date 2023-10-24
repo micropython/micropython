@@ -303,7 +303,7 @@ def compute_huffman_coding(qstrs, translation_name, translations, f, compression
         # picking to top 100 scores.
 
         counter = sorted(counter.items(), key=lambda x: math.log(x[1]) * len(x[0]), reverse=True)[
-                :100
+            :100
         ]
         scores = sorted(
             ((s, -est_net_savings(s, occ)) for (s, occ) in counter if occ > 1),
