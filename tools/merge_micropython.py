@@ -170,8 +170,6 @@ libs_to_delete = [
     "btstack",
     "libhydrogen",
     "lwip",
-    "mbedtls",
-    "mbedtls_errors",
     "micropython-lib",
     "mynewt-nimble",
     "nrfx",

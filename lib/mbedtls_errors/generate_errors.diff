@@ -1,0 +1,29 @@
+--- generate_errors_orig.pl	2023-04-30 17:58:23.503070758 +1000
++++ generate_errors.py	2023-04-30 17:58:20.826338349 +1000
+@@ -162,7 +162,7 @@
+     {
+         $code_check = \$ll_code_check;
+         $old_define = \$ll_old_define;
+-        $white_space = '        ';
++        $white_space = '    ';
+     }
+     else
+     {
+@@ -203,8 +203,15 @@
+         ${$old_define} = $define_name;
+     }
+
+-    ${$code_check} .= "${white_space}case -($error_name):\n".
+-                      "${white_space}    return( \"$module_name - $description\" );\n"
++    if ($error_name eq "MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE")
++    {
++        # no-op, this case is hard-coded in error.fmt
++    }
++    else
++    {
++        my $error_text = $error_name =~ s/^MBEDTLS_ERR_//r;
++        ${$code_check} .= "${white_space}{ -($error_name), \"$error_text\" },\n"
++    }
+ };
+ 
+ if ($ll_old_define ne "")
