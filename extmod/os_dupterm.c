@@ -169,29 +169,43 @@ int mp_os_dupterm_rx_chr(void) {
     return ret;
 }
 
-void mp_os_dupterm_tx_strn(const char *str, size_t len) {
+int mp_os_dupterm_tx_strn(const char *str, size_t len) {
+    // Returns the minimum successful write length, or -1 if no write is attempted.
+    int ret = len;
+    bool did_write = false;
     for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
         }
+        did_write = true;
 
         #if MICROPY_PY_OS_DUPTERM_BUILTIN_STREAM
         if (mp_os_dupterm_is_builtin_stream(MP_STATE_VM(dupterm_objs[idx]))) {
             int errcode = 0;
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
-            stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
+            mp_uint_t written = stream_p->write(MP_STATE_VM(dupterm_objs[idx]), str, len, &errcode);
+            int write_res = MAX(0, written);
+            ret = MIN(write_res, ret);
             continue;
         }
         #endif
 
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
+            mp_obj_t written = mp_stream_write(MP_STATE_VM(dupterm_objs[idx]), str, len, MP_STREAM_RW_WRITE);
+            if (written == mp_const_none) {
+                ret = 0;
+            } else if (mp_obj_is_small_int(written)) {
+                int written_int = MAX(0, MP_OBJ_SMALL_INT_VALUE(written));
+                ret = MIN(written_int, ret);
+            }
             nlr_pop();
         } else {
             mp_os_deactivate(idx, "dupterm: Exception in write() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
+            ret = 0;
         }
     }
+    return did_write ? ret : -1;
 }
 
 STATIC mp_obj_t mp_os_dupterm(size_t n_args, const mp_obj_t *args) {
