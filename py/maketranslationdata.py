@@ -28,6 +28,8 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent / "tools/huffman"))
 
 import huffman
 from html.entities import codepoint2name
+import math
+
 
 codepoint2name[ord("-")] = "hyphen"
 
@@ -220,6 +222,15 @@ def compute_huffman_coding(qstrs, translation_name, translations, f, compression
             f"Translation {translation_name} expected to fit in 8 bits but required 16 bits"
         )
 
+    # Prune the qstrs to only those longer than 3 characters that appear in the texts
+    qstr_counters = collections.Counter()
+    qstr_extractor = TextSplitter(qstr_strs)
+    for t in texts:
+        for qstr in qstr_extractor.iter(t):
+            if qstr in qstr_strs:
+                qstr_counters[qstr] += 1
+    qstr_strs = list(qstr_counters.keys())
+
     while len(words) < max_words:
         # Until the dictionary is filled to capacity, use a heuristic to find
         # the best "word" (2- to 11-gram) to add to it.
@@ -287,9 +298,13 @@ def compute_huffman_coding(qstrs, translation_name, translations, f, compression
         # to the codeword length the dictionary entry would get, times
         # the number of occurrences, less the ovehead of the entries in the
         # words[] array.
+        #
+        # The set of candidates is pruned by estimating their relative value and
+        # picking to top 100 scores.
 
+        counter = sorted(counter.items(), key=lambda x: math.log(x[1]) * len(x[0]), reverse=True)[:100]
         scores = sorted(
-            ((s, -est_net_savings(s, occ)) for (s, occ) in counter.items() if occ > 1),
+            ((s, -est_net_savings(s, occ)) for (s, occ) in counter if occ > 1),
             key=lambda x: x[1],
         )
 
