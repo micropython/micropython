@@ -140,8 +140,27 @@ static inline void read_mutex_unlock(machine_uart_obj_t *u) {
 STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self) {
     if (read_mutex_try_lock(self)) {
         while (uart_is_readable(self->uart) && ringbuf_free(&self->read_buffer) > 0) {
-            // get a byte from uart and put into the buffer
-            ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
+            // Get a byte from uart and put into the buffer. Every entry from
+            // the FIFO is accompanied by 4 error bits, that may be used for
+            // error handling.
+            uint16_t c = uart_get_hw(self->uart)->dr;
+            if (c & UART_UARTDR_OE_BITS) {
+                // Overrun Error: We missed at least one byte. Not much we can do here.
+            }
+            if (c & UART_UARTDR_BE_BITS) {
+                // Break Error: RX was held low for longer than one character
+                // (11 bits). We did *not* read the zero byte that we seemed to
+                // read from dr.
+                continue;
+            }
+            if (c & UART_UARTDR_PE_BITS) {
+                // Parity Error: The byte we read is invalid.
+            }
+            if (c & UART_UARTDR_FE_BITS) {
+                // Framing Error: We did not receive a valid stop bit.
+            }
+
+            ringbuf_put(&(self->read_buffer), c);
         }
         read_mutex_unlock(self);
     }
