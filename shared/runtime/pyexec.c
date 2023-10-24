@@ -29,19 +29,22 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "py/mphal.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
-#if MICROPY_HW_ENABLE_USB
+#if defined(MICROPY_HW_ENABLE_USB) && MICROPY_HW_ENABLE_USB
 #include "irq.h"
 #include "usb.h"
 #endif
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
+
+// CIRCUITPY-CHANGE: multiple changes for atexit(), interrupts
 
 #if CIRCUITPY_ATEXIT
 #include "shared-module/atexit/__init__.h"
@@ -542,6 +545,8 @@ int pyexec_event_repl_process_char(int c) {
     return res;
 }
 
+MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
+
 #else // MICROPY_REPL_EVENT_DRIVEN
 
 int pyexec_raw_repl(void) {
@@ -634,12 +639,12 @@ friendly_repl_reset:
     for (;;) {
     input_restart:
 
-        #if MICROPY_HW_ENABLE_USB
+        #if defined(MICROPY_HW_ENABLE_USB) && MICROPY_HW_ENABLE_USB
         if (usb_vcp_is_enabled()) {
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs
             // interrupts to be enabled or no transfers occur. So we try to
-            // do the user a favor and reenable interrupts.
+            // do the user a favor and re-enable interrupts.
             if (query_irq() == IRQ_STATE_DISABLED) {
                 enable_irq(IRQ_STATE_ENABLED);
                 mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");
@@ -796,5 +801,3 @@ mp_obj_t pyb_set_repl_info(mp_obj_t o_value) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(pyb_set_repl_info_obj, pyb_set_repl_info);
 #endif
-
-MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);

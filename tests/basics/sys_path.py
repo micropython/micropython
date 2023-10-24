@@ -1,7 +1,6 @@
 # test sys.path
 
 import sys
-
 # check that this script was executed from a file of the same name
 if "__file__" not in globals() or "sys_path.py" not in __file__:
     print("SKIP")

@@ -22,7 +22,7 @@ endif
 
 # QSTR generation uses the same CFLAGS, with these modifications.
 QSTR_GEN_FLAGS = -DNO_QSTR
-# Note: := to force evalulation immediately.
+# Note: := to force evaluation immediately.
 QSTR_GEN_CFLAGS := $(CFLAGS)
 QSTR_GEN_CFLAGS += $(QSTR_GEN_FLAGS)
 QSTR_GEN_CXXFLAGS := $(CXXFLAGS)
@@ -44,6 +44,7 @@ QSTR_GEN_CXXFLAGS += $(QSTR_GEN_FLAGS)
 # can be located. By following this scheme, it allows a single build rule
 # to be used to compile all .c files.
 
+# CIRCUITPY-CHANGE: adds STEPECHO
 vpath %.S . $(TOP) $(USER_C_MODULES)
 $(BUILD)/%.o: %.S
 	$(STEPECHO) "CC $<"
@@ -78,7 +79,7 @@ $(Q)$(CXX) $(CXXFLAGS) -c -MD -o $@ $< || (echo -e $(HELP_BUILD_ERROR); false)
   $(RM) -f $(@:.o=.d)
 endef
 
-# CIRCUITPY: add $(DEVICES_MODULES) and $(BUILD)
+# CIRCUITPY-CHANGE: add $(DEVICES_MODULES) and $(BUILD)
 vpath %.c . $(TOP) $(USER_C_MODULES) $(DEVICES_MODULES) $(BUILD)
 $(BUILD)/%.o: %.c
 	$(call compile_c)
@@ -166,7 +167,7 @@ $(HEADER_BUILD):
 ifneq ($(MICROPY_MPYCROSS_DEPENDENCY),)
 # to automatically build mpy-cross, if needed
 $(MICROPY_MPYCROSS_DEPENDENCY):
-	$(MAKE) -C $(TOP)/mpy-cross
+	$(MAKE) -C $(abspath $(dir $@)..)
 endif
 
 ifneq ($(FROZEN_DIR),)
@@ -184,8 +185,13 @@ ifeq ($(MPY_LIB_DIR),$(MPY_LIB_SUBMODULE_DIR))
 GIT_SUBMODULES += lib/micropython-lib
 endif
 
+# Set compile options needed to enable frozen code.
+CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
+CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+CFLAGS += -DMICROPY_MODULE_FROZEN_STR
+
 # to build frozen_content.c from a manifest
-# CIRCUITPY: FROZEN_MANIFEST is constructed at build time
+# CIRCUITPY-CHANGE: FROZEN_MANIFEST is constructed at build time
 $(BUILD)/frozen_content.c: FORCE $(BUILD)/genhdr/qstrdefs.generated.h $(BUILD)/genhdr/root_pointers.h $(FROZEN_MANIFEST) | $(MICROPY_MPYCROSS_DEPENDENCY)
 	$(Q)test -e "$(MPY_LIB_DIR)/README.md" || (echo -e $(HELP_MPY_LIB_SUBMODULE); false)
 	$(Q)$(MAKE_MANIFEST) -o $@ -v "MPY_DIR=$(TOP)" -v "MPY_LIB_DIR=$(MPY_LIB_DIR)" -v "PORT_DIR=$(shell pwd)" -v "BOARD_DIR=$(BOARD_DIR)" -b "$(BUILD)" $(if $(MPY_CROSS_FLAGS),-f"$(MPY_CROSS_FLAGS)",) --mpy-tool-flags="$(MPY_TOOL_FLAGS)" $(FROZEN_MANIFEST)
@@ -209,7 +215,9 @@ $(BUILD)/$(PROG): $(OBJ)
 # we may want to compile using Thumb, but link with non-Thumb libc.
 	$(Q)$(CC) -o $@ $^ $(LIB) $(LDFLAGS)
 ifndef DEBUG
+ifdef STRIP
 	$(Q)$(STRIP) $(STRIPFLAGS_EXTRA) $@
+endif
 endif
 	$(Q)$(SIZE) $$(find $(BUILD) -path "$(BUILD)/build/frozen*.o") $@
 
@@ -257,9 +265,3 @@ print-def:
 	@$(RM) -f __empty__.c
 
 -include $(OBJ:.o=.P)
-
-# CIRCUITPY addition
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

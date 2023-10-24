@@ -13,6 +13,8 @@ except (ImportError, AttributeError):
 # Skip the test if it does exist.
 temp_dir = "micropy_test_dir"
 try:
+    import os
+
     os.stat(temp_dir)
     print("SKIP")
     raise SystemExit
@@ -103,6 +105,8 @@ print(os.listdir(temp_dir))
 
 # remove with error
 try:
+    import os
+
     os.remove(temp_dir + "/test2")
 except OSError:
     print("remove OSError")
@@ -113,6 +117,8 @@ print(temp_dir in os.listdir())
 
 # rmdir with error
 try:
+    import os
+
     os.rmdir(temp_dir)
 except OSError:
     print("rmdir OSError")

@@ -7,6 +7,7 @@ HEADER_BUILD = $(BUILD)/genhdr
 # file containing qstr defs for the core Python bit
 PY_QSTR_DEFS = $(PY_SRC)/qstrdefs.h
 
+# CIRCUITPY-CHANGE
 TRANSLATION ?= en_US
 
 # If qstr autogeneration is not disabled we specify the output header
@@ -74,7 +75,7 @@ PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_C:.c=.o))
 PY_O += $(addprefix $(BUILD)/, $(SRC_USERMOD_PATHFIX_LIB_CXX:.cpp=.o))
 endif # USER_C_MODULES
 
-# CIRCUITPY
+# CIRCUITPY-CHANGE
 ifeq ($(CIRCUITPY_ULAB),1)
 ULAB_SRCS := $(shell find $(TOP)/extmod/ulab/code -type f -name "*.c")
 ULAB_SRC_PATHFIX := $(patsubst $(TOP)/%,%,$(ULAB_SRCS))
@@ -203,7 +204,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	modmicropython.o \
 	modstruct.o \
 	modsys.o \
-	moduerrno.o \
+	moderrno.o \
 	modthread.o \
 	vm.o \
 	bc.o \
@@ -254,7 +255,7 @@ $(HEADER_BUILD)/compressed.data.h: $(HEADER_BUILD)/compressed.collected
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PY_SRC)/makecompresseddata.py $< > $@
 
-# CIRCUITPY: for translations
+# CIRCUITPY-CHANGE: for translations
 $(HEADER_BUILD)/$(TRANSLATION).mo: $(TOP)/locale/$(TRANSLATION).po | $(HEADER_BUILD)
 	$(Q)$(PYTHON) $(TOP)/tools/msgfmt.py -o $@ $^
 
@@ -292,7 +293,7 @@ $(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 # that the function preludes are of a minimal and predictable form.
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
 
-# CIRCUITPY: separate SUPEROPT for gc.o and vm.o
+# CIRCUITPY-CHANGE: separate SUPEROPT for gc.o and vm.o
 # optimising gc for speed; 5ms down to 4ms on pybv2
 ifndef SUPEROPT_GC
   SUPEROPT_GC = 1

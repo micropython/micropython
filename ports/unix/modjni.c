@@ -329,8 +329,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     unary_op, jobject_unary_op,
     attr, jobject_attr,
     subscr, jobject_subscr,
-    iter, subscr_getiter,
-    //    .locals_dict = &jobject_locals_dict,
+    iter, subscr_getiter
     );
 
 STATIC mp_obj_t new_jobject(jobject jo) {
@@ -574,9 +573,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_jmethod,
     MP_TYPE_FLAG_NONE,
     print, jmethod_print,
-    call, jmethod_call,
-    //    .attr = jobject_attr,
-    //    .locals_dict = &jobject_locals_dict,
+    call, jmethod_call
     );
 
 #ifdef __ANDROID__
@@ -615,26 +612,26 @@ STATIC void create_jvm(void) {
 
     jclass Object_class = JJ(FindClass, "java/lang/Object");
     Object_toString_mid = JJ(GetMethodID, Object_class, "toString",
-        MP_ERROR_TEXT("()Ljava/lang/String;"));
+        MP_COMPRESSED_ROM_TEXT("()Ljava/lang/String;"));
 
     Class_getName_mid = (*env)->GetMethodID(env, Class_class, "getName",
-        MP_ERROR_TEXT("()Ljava/lang/String;"));
+        MP_COMPRESSED_ROM_TEXT("()Ljava/lang/String;"));
     Class_getField_mid = (*env)->GetMethodID(env, Class_class, "getField",
-        MP_ERROR_TEXT("(Ljava/lang/String;)Ljava/lang/reflect/Field;"));
+        MP_COMPRESSED_ROM_TEXT("(Ljava/lang/String;)Ljava/lang/reflect/Field;"));
     Class_getMethods_mid = (*env)->GetMethodID(env, Class_class, "getMethods",
-        MP_ERROR_TEXT("()[Ljava/lang/reflect/Method;"));
+        MP_COMPRESSED_ROM_TEXT("()[Ljava/lang/reflect/Method;"));
     Class_getConstructors_mid = (*env)->GetMethodID(env, Class_class, "getConstructors",
-        MP_ERROR_TEXT("()[Ljava/lang/reflect/Constructor;"));
+        MP_COMPRESSED_ROM_TEXT("()[Ljava/lang/reflect/Constructor;"));
     Method_getName_mid = (*env)->GetMethodID(env, method_class, "getName",
-        MP_ERROR_TEXT("()Ljava/lang/String;"));
+        MP_COMPRESSED_ROM_TEXT("()Ljava/lang/String;"));
 
     List_class = JJ(FindClass, "java/util/List");
     List_get_mid = JJ(GetMethodID, List_class, "get",
-        MP_ERROR_TEXT("(I)Ljava/lang/Object;"));
+        MP_COMPRESSED_ROM_TEXT("(I)Ljava/lang/Object;"));
     List_set_mid = JJ(GetMethodID, List_class, "set",
-        MP_ERROR_TEXT("(ILjava/lang/Object;)Ljava/lang/Object;"));
+        MP_COMPRESSED_ROM_TEXT("(ILjava/lang/Object;)Ljava/lang/Object;"));
     List_size_mid = JJ(GetMethodID, List_class, "size",
-        MP_ERROR_TEXT("()I"));
+        MP_COMPRESSED_ROM_TEXT("()I"));
     IndexException_class = JJ(FindClass, "java/lang/IndexOutOfBoundsException");
 }
 

@@ -63,7 +63,7 @@ ALIASES_BRAND_NAMES = {
 }
 
 ADDITIONAL_MODULES = {
-    "_asyncio": "MICROPY_PY_UASYNCIO",
+    "_asyncio": "MICROPY_PY_ASYNCIO",
     "adafruit_bus_device": "CIRCUITPY_BUSDEVICE",
     "adafruit_pixelbuf": "CIRCUITPY_PIXELBUF",
     "array": "CIRCUITPY_ARRAY",
@@ -79,7 +79,7 @@ ADDITIONAL_MODULES = {
     "keypad.Keys": "CIRCUITPY_KEYPAD_KEYS",
     "keypad.ShiftRegisterKeys": "CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS",
     "os.getenv": "CIRCUITPY_OS_GETENV",
-    "select": "MICROPY_PY_USELECT_SELECT",
+    "select": "MICROPY_PY_SELECT_SELECT",
     "sys": "CIRCUITPY_SYS",
     "terminalio": "CIRCUITPY_DISPLAYIO",
     "usb": "CIRCUITPY_USB_HOST",

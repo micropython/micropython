@@ -2,7 +2,7 @@
 This script processes the output from the C preprocessor and extracts all
 qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 
-This script works with Python 3.x (CIRCUITPY: not 2.x)
+This script works with Python 3.x (CIRCUITPY-CHANGE: not 2.x)
 """
 
 from __future__ import print_function
@@ -57,7 +57,7 @@ _MODE_QSTR = "qstr"
 # Extract MP_COMPRESSED_ROM_TEXT("") macros.  (Which come from MP_ERROR_TEXT)
 _MODE_COMPRESS = "compress"
 
-# Extract MP_REGISTER_MODULE(...) macros.
+# Extract MP_REGISTER_(EXTENSIBLE_)MODULE(...) macros.
 _MODE_MODULE = "module"
 
 # Extract MP_REGISTER_ROOT_POINTER(...) macros.
@@ -141,7 +141,9 @@ def process_file(f):
     elif args.mode == _MODE_COMPRESS:
         re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
     elif args.mode == _MODE_MODULE:
-        re_match = re.compile(r"MP_REGISTER_MODULE\(.*?,\s*.*?\);")
+        re_match = re.compile(
+            r"(?:MP_REGISTER_MODULE|MP_REGISTER_EXTENSIBLE_MODULE|MP_REGISTER_MODULE_DELEGATION)\(.*?,\s*.*?\);"
+        )
     elif args.mode == _MODE_ROOT_POINTER:
         re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
     re_translate = re.compile(r"translate\(\"((?:(?=(\\?))\2.)*?)\"\)")
@@ -163,7 +165,7 @@ def process_file(f):
         for match in re_match.findall(line):
             if args.mode == _MODE_QSTR:
                 name = match.replace("MP_QSTR_", "")
-                # CIRCUITPY: undo character escapes in qstrs in C code
+                # CIRCUITPY-CHANGE: undo character escapes in qstrs in C code
                 output.append("Q(" + qstr_unescape(name) + ")")
             elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
                 output.append(match)

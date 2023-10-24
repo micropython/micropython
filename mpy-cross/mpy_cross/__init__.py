@@ -100,7 +100,7 @@ def compile(src, dest=None, src_path=None, opt=None, march=None, mpy_cross=None,
     if not src:
         raise ValueError("src is required")
     if not os.path.exists(src):
-        raise CrossCompileError("Input .py file not found: {}.".format(src_py))
+        raise CrossCompileError("Input .py file not found: {}.".format(src))
 
     args = []
 

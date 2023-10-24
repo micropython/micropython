@@ -162,6 +162,14 @@ class PyInstanceSubProcess(PyInstance):
     def __str__(self):
         return self.argv[0].rsplit("/")[-1]
 
+    def prepare_script_from_file(self, filename, prepend, append):
+        # Make tests run in an isolated environment (i.e. `import io` would
+        # otherwise get the `tests/io` directory).
+        remove_cwd_from_sys_path = b"import sys\nsys.path.remove('')\n\n"
+        return remove_cwd_from_sys_path + super().prepare_script_from_file(
+            filename, prepend, append
+        )
+
     def run_script(self, script):
         output = b""
         err = None
@@ -582,7 +590,7 @@ def main():
     cmd_args = cmd_parser.parse_args()
 
     # clear search path to make sure tests use only builtin modules and those in extmod
-    os.environ["MICROPYPATH"] = os.pathsep.join(("", ".frozen", "../extmod"))
+    os.environ["MICROPYPATH"] = os.pathsep.join((".frozen", "../extmod"))
 
     test_files = prepare_test_file_list(cmd_args.files)
     max_instances = max(t[1] for t in test_files)

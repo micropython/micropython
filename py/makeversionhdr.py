@@ -13,7 +13,7 @@ import pathlib
 import datetime
 import subprocess
 
-# CIRCUITPY: use external script that can override git describe output with an
+# CIRCUITPY-CHANGE: use external script that can override git describe output with an
 # environment variable.
 tools_describe = str(pathlib.Path(__file__).resolve().parent.parent / "tools/describe")
 
@@ -72,7 +72,7 @@ def get_version_info_from_git(repo_path):
     except OSError:
         return None
 
-    # CIRCUITPY
+    # CIRCUITPY-CHANGE
     # Try to extract MicroPython version from git tag
     ver = git_tag.split("-")[0].split(".")
 

@@ -54,12 +54,12 @@ builtins        micropython     __future__      _asyncio
 _thread         aesio           array           audiocore
 audiomixer      binascii        bitmaptools     cexample
 cmath           collections     cppexample      displayio
-errno           gc              hashlib         heapq
-io              json            math            os
-platform        qrio            rainbowio       random
-re              select          struct          synthio
-sys             time            traceback       uctypes
-ulab            zlib
+errno           example_package                 gc
+hashlib         heapq           io              json
+math            os              platform        qrio
+rainbowio       random          re              select
+struct          synthio         sys             time
+traceback       uctypes         ulab            zlib
 me
 
 rainbowio       random
@@ -212,3 +212,13 @@ b'bytes 1234\x01'
 2
 3
 frozentest.py
+example_package.__init__
+<module 'example_package.foo.bar'>
+example_package.foo.bar.f
+<module 'example_package'> <module 'example_package.foo'> <module 'example_package.foo.bar'>
+example_package.f
+example_package.foo.f
+example_package.foo.bar.f
+True
+example_package.foo.f
+True

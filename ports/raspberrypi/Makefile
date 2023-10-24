@@ -298,6 +298,7 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         cipher.c \
         cipher_wrap.c \
         cmac.c \
+        constant_time.c \
         ctr_drbg.c \
         debug.c \
         des.c \
@@ -316,7 +317,6 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         md4.c \
         md5.c \
         md.c \
-        md_wrap.c \
         oid.c \
         padlock.c \
         pem.c \
@@ -340,6 +340,7 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         ssl_ciphersuites.c \
         ssl_cli.c \
         ssl_cookie.c \
+        ssl_msg.c \
         ssl_srv.c \
         ssl_ticket.c \
         ssl_tls.c \

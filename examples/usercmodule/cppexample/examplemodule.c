@@ -4,7 +4,7 @@
 // See example.cpp for the definition.
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(cppfunc_obj, cppfunc);
 
-// Define all properties of the module.
+// Define all attributes of the module.
 // Table entries are key/value pairs of the attribute name (a string)
 // and the MicroPython object reference.
 // All identifiers and strings are written as MP_QSTR_xxx and will be

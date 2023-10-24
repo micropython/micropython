@@ -3,7 +3,13 @@ This is a helper script for merging in new versions of MicroPython. You *must*
 evaluate its correctness and adapt it for each MP version. This is committed
 in the repo more for reference than "fire and forget" use.
 
-Updated for v1.20.0 merge - dhalbert
+I have found I have to run each piece separately, because there are some errors.
+For instance, there are file renames in the porcelain output that are not handled.
+I add a sys.exit(0) after a section, and once a section runs, I delete it temporarily
+and move on to the next section. -- dhalbert
+
+Updated for v1.21.0 merge - dhalbert
+
 """
 
 from io import StringIO
@@ -145,6 +151,7 @@ for d in docs_to_delete:
 tests_to_delete = [
     "esp32",
     "multi_bluetooth",
+    "multi_espnow",
     "multi_net",
     "net_hosted",
     "net_inet",
@@ -163,13 +170,12 @@ libs_to_delete = [
     "btstack",
     "libhydrogen",
     "lwip",
-    "mbedtls",
-    "mbedtls_errors",
     "micropython-lib",
     "mynewt-nimble",
     "nrfx",
     "nxp_driver",
     "pico-sdk",
+    "protobuf-c",
     "stm32lib",
     "wiznet5k",
 ]
@@ -191,10 +197,10 @@ extmod_to_delete = [
     "modnetwork.*",
     "modonewire.*",
     "moducryptolib.*",
-    "modusocket.*",
-    "modussl_*.*",
-    "modutimeq.*",
-    "moduwebsocket.*",
+    "modsocket.*",
+    "modssl_*.*",
+    "modtimeq.*",
+    "modwebsocket.*",
     "modwebrepl.*",
     "mpbthci.*",
     "network_*.*",

@@ -45,7 +45,9 @@
 //|         """Returns a hash for the Pin."""
 //|         ...
 //|
-// Provided by mp_generic_unary_op().
+// Provided inherently.
+// See https://github.com/micropython/micropython/pull/10348.
+
 
 static void get_pin_name(const mcu_pin_obj_t *self, qstr *package, qstr *module, qstr *name) {
     const mp_map_t *board_map = &board_module_globals.map;
@@ -86,8 +88,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     mcu_pin_type,
     MP_QSTR_Pin,
     MP_TYPE_FLAG_NONE,
-    print, shared_bindings_microcontroller_pin_print,
-    unary_op, mp_generic_unary_op
+    print, shared_bindings_microcontroller_pin_print
     );
 
 const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj, qstr arg_name) {

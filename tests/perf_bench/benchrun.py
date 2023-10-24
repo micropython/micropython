@@ -1,6 +1,6 @@
 def bm_run(N, M):
     try:
-        from utime import ticks_us, ticks_diff
+        from time import ticks_us, ticks_diff
     except ImportError:
         import time
 
