@@ -4,6 +4,7 @@ except ImportError:
     print("SKIP")
     raise SystemExit
 
+
 # CIRCUITPY-CHANGE: CircuitPython provides __await__()
 async def foo():
     return 42

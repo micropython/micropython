@@ -1297,7 +1297,7 @@ void mp_store_attr(mp_obj_t base, qstr attr, mp_obj_t value) {
             // success
             return;
         }
-    // CIRCUITPY-CHANGE: https://github.com/adafruit/circuitpython/pull/50
+        // CIRCUITPY-CHANGE: https://github.com/adafruit/circuitpython/pull/50
     #if MICROPY_PY_BUILTINS_PROPERTY
     } else if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
         // generic method lookup

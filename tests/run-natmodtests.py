@@ -20,7 +20,8 @@ TEST_MAPPINGS = {
     "heapq": "heapq/heapq_$(ARCH).mpy",
     "random": "random/random_$(ARCH).mpy",
     "re": "re/re_$(ARCH).mpy",
-    "zlib": "zlib/zlib_$(ARCH).mpy",}
+    "zlib": "zlib/zlib_$(ARCH).mpy",
+}
 
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\

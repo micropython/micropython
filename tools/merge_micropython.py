@@ -42,7 +42,7 @@ ports_to_delete = [
 ]
 for p in ports_to_delete:
     try:
-        git.rm("-rf", "ports/" + p)XC
+        git.rm("-rf", "ports/" + p)
     except sh.ErrorReturnCode_128:
         pass
 
