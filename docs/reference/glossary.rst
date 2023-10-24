@@ -159,7 +159,7 @@ Glossary
         as :term:`mpremote`.
 
     mpremote
-        A tool for interacting with a MicroPython device. See :ref:`mpremote`.
+        A tool for interacting with a MicroPython device.
 
     .mpy file
         The output of the :term:`cross-compiler`. A compiled form of a
