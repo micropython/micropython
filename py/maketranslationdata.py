@@ -302,9 +302,9 @@ def compute_huffman_coding(qstrs, translation_name, translations, f, compression
         # The set of candidates is pruned by estimating their relative value and
         # picking to top 100 scores.
 
-        counter = sorted(
-            counter.items(), key=lambda x: math.log(x[1]) * len(x[0]), reverse=True
-        )[:100]
+        counter = sorted(counter.items(), key=lambda x: math.log(x[1]) * len(x[0]), reverse=True)[
+                :100
+        ]
         scores = sorted(
             ((s, -est_net_savings(s, occ)) for (s, occ) in counter if occ > 1),
             key=lambda x: x[1],
