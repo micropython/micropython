@@ -226,7 +226,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     ``100``) and the output level to apply the carrier to (a boolean as per
     *idle_level*).
 
-.. method:: RMT.source_freq()
+.. classmethod:: RMT.source_freq()
 
     Returns the source clock frequency. Currently the source clock is not
     configurable so this will always return 80MHz.
