@@ -245,6 +245,13 @@ static busdisplay_busdisplay_obj_t *native_display(mp_obj_t display_obj) {
     return MP_OBJ_TO_PTR(native_display);
 }
 
+// Undocumented show() implementation with a friendly error message.
+STATIC mp_obj_t busdisplay_busdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
+    mp_raise_AttributeError(translate(".show(x) removed. Use .root_group = x"));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(busdisplay_busdisplay_show_obj, busdisplay_busdisplay_obj_show);
+
 //|     def refresh(
 //|         self,
 //|         *,
@@ -491,6 +498,7 @@ STATIC mp_obj_t busdisplay_busdisplay_obj_fill_row(size_t n_args, const mp_obj_t
 MP_DEFINE_CONST_FUN_OBJ_KW(busdisplay_busdisplay_fill_row_obj, 1, busdisplay_busdisplay_obj_fill_row);
 
 STATIC const mp_rom_map_elem_t busdisplay_busdisplay_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&busdisplay_busdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&busdisplay_busdisplay_refresh_obj) },
     { MP_ROM_QSTR(MP_QSTR_fill_row), MP_ROM_PTR(&busdisplay_busdisplay_fill_row_obj) },
 

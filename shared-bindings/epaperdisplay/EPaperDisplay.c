@@ -246,6 +246,13 @@ static epaperdisplay_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
     return MP_OBJ_TO_PTR(native_display);
 }
 
+// Undocumented show() implementation with a friendly error message.
+STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
+    mp_raise_AttributeError(translate(".show(x) removed. Use .root_group = x"));
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_2(epaperdisplay_epaperdisplay_show_obj, epaperdisplay_epaperdisplay_obj_show);
+
 //|     def update_refresh_mode(
 //|         self, start_sequence: ReadableBuffer, seconds_per_frame: float = 180
 //|     ) -> None:
@@ -391,6 +398,7 @@ MP_PROPERTY_GETSET(epaperdisplay_epaperdisplay_root_group_obj,
     (mp_obj_t)&epaperdisplay_epaperdisplay_set_root_group_obj);
 
 STATIC const mp_rom_map_elem_t epaperdisplay_epaperdisplay_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_show), MP_ROM_PTR(&epaperdisplay_epaperdisplay_show_obj) },
     { MP_ROM_QSTR(MP_QSTR_update_refresh_mode), MP_ROM_PTR(&epaperdisplay_epaperdisplay_update_refresh_mode_obj) },
     { MP_ROM_QSTR(MP_QSTR_refresh), MP_ROM_PTR(&epaperdisplay_epaperdisplay_refresh_obj) },
 
