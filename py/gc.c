@@ -963,7 +963,7 @@ void gc_free(void *ptr) {
     // assert(area);
     #else
     // CIRCUITPY-CHANGE: extra checking
-    if (MP_STATE_MEM(gc_pool_start) == 0) {
+    if (MP_STATE_MEM(area.gc_pool_start) == 0) {
         reset_into_safe_mode(SAFE_MODE_GC_ALLOC_OUTSIDE_VM);
     }
     assert(VERIFY_PTR(ptr));
