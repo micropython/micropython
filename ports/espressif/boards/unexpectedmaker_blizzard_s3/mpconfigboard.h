@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,22 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#include "py/obj.h"
-#include "lib/protomatter/src/core.h"
-#include "supervisor/memory.h"
+#define MICROPY_HW_BOARD_NAME       "BlizzardS3"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-extern const mp_obj_type_t rgbmatrix_RGBMatrix_type;
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t framebuffer;
-    mp_buffer_info_t bufinfo;
-    supervisor_allocation *allocation;
-    Protomatter_core protomatter;
-    void *timer;
-    uint16_t bufsize, width;
-    uint8_t rgb_pins[30];
-    uint8_t addr_pins[10];
-    uint8_t clock_pin, latch_pin, oe_pin;
-    uint8_t rgb_count, addr_count;
-    uint8_t bit_depth;
-    bool core_is_initialized;
-    bool paused;
-    bool doublebuffer;
-    bool serpentine;
-    int8_t tile;
-} rgbmatrix_rgbmatrix_obj_t;
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO18)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO17)
+
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO9)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO8)
+
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+
+#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
+
+#define DOUBLE_TAP_PIN (&pin_GPIO47)

@@ -29,16 +29,16 @@
 #define MICROPY_HW_BOARD_NAME       "Adafruit Metro ESP32S3"
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO45)
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO46)
 
 #define MICROPY_HW_LED_STATUS (&pin_GPIO13)
 
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO48)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO47)
 
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO37)
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO39)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO42)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO21)
 
 #define DEFAULT_UART_BUS_RX (&pin_GPIO41)
 #define DEFAULT_UART_BUS_TX (&pin_GPIO40)

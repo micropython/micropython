@@ -1,9 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,21 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#include "py/obj.h"
-#include "lib/protomatter/src/core.h"
-#include "supervisor/memory.h"
+#define MICROPY_HW_BOARD_NAME       "MagiClick S3 N4R2"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-extern const mp_obj_type_t rgbmatrix_RGBMatrix_type;
-typedef struct {
-    mp_obj_base_t base;
-    mp_obj_t framebuffer;
-    mp_buffer_info_t bufinfo;
-    supervisor_allocation *allocation;
-    Protomatter_core protomatter;
-    void *timer;
-    uint16_t bufsize, width;
-    uint8_t rgb_pins[30];
-    uint8_t addr_pins[10];
-    uint8_t clock_pin, latch_pin, oe_pin;
-    uint8_t rgb_count, addr_count;
-    uint8_t bit_depth;
-    bool core_is_initialized;
-    bool paused;
-    bool doublebuffer;
-    bool serpentine;
-    int8_t tile;
-} rgbmatrix_rgbmatrix_obj_t;
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO17)
+// #define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO38)
+
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO36, .sda = &pin_GPIO35}}
+
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO5, .mosi = &pin_GPIO4, .miso = &pin_GPIO6}}
+
+// #define CIRCUITPY_BOARD_UART        (1)
+// #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO5, .rx = &pin_GPIO16}}
+
+#define DOUBLE_TAP_PIN (&pin_GPIO6)
