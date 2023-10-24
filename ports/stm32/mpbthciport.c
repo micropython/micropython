@@ -65,17 +65,21 @@ void mp_bluetooth_hci_poll_in_ms_default(uint32_t ms) {
     soft_timer_reinsert(&mp_bluetooth_hci_soft_timer, ms);
 }
 
-#if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-
 STATIC mp_sched_node_t mp_bluetooth_hci_sched_node;
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
 // This task is scheduled periodically via a soft timer, or
 // immediately on HCI UART RXIDLE.
 STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
-    // This will process all buffered HCI UART data, and run any callouts or events.
     (void)node;
-    mp_bluetooth_hci_poll();
+
+    // Provided by either mpnimbleport.c or mpbtstackport.c.
+    extern bool mp_bluetooth_run_hci_uart(void);
+    extern bool mp_bluetooth_run_host_stack(void);
+
+    // This will process all buffered HCI UART data, and run any callouts or events.
+    mp_bluetooth_run_hci_uart();
+    mp_bluetooth_run_host_stack();
 }
 
 // Called periodically (systick) or directly (e.g. UART RX IRQ) in order to
@@ -83,14 +87,6 @@ STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
 void mp_bluetooth_hci_poll_now_default(void) {
     mp_sched_schedule_node(&mp_bluetooth_hci_sched_node, run_events_scheduled_task);
 }
-
-#else // !MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-
-void mp_bluetooth_hci_poll_now_default(void) {
-    pendsv_schedule_dispatch(PENDSV_DISPATCH_BLUETOOTH_HCI, mp_bluetooth_hci_poll);
-}
-
-#endif
 
 #if defined(STM32WB)
 
@@ -126,9 +122,7 @@ int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate) {
 }
 
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len) {
-    MICROPY_PY_BLUETOOTH_ENTER
     rfcore_ble_hci_cmd(len, (const uint8_t *)buf);
-    MICROPY_PY_BLUETOOTH_EXIT
     return 0;
 }
 
@@ -158,6 +152,11 @@ mp_irq_obj_t mp_bluetooth_hci_uart_irq_obj;
 static uint8_t hci_uart_rxbuf[768];
 
 mp_obj_t mp_uart_interrupt(mp_obj_t self_in) {
+    // Note: This could potentially run mp_bluetooth_run_hci_uart() directly
+    // to get the data out of the UART with as little latency as possible.
+    // Right now to keep things simple we run _everything_ in scheduler
+    // context.
+
     // Queue up the scheduler to run the HCI UART and event processing ASAP.
     mp_bluetooth_hci_poll_now();
 

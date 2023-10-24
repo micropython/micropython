@@ -65,7 +65,11 @@ def irq(event, data):
     elif event == _IRQ_GATTC_READ_DONE:
         print("_IRQ_GATTC_READ_DONE", data[-1])
     elif event == _IRQ_GATTC_WRITE_DONE:
-        print("_IRQ_GATTC_WRITE_DONE", data[-1])
+        if data[-1] != 0:
+            # Don't print successful write done, we wait for this event anyway
+            # (so it's definitely getting captured), and it may appear out of
+            # order with the notify/indicate that arrives at the same time.
+            print("_IRQ_GATTC_WRITE_DONE", data[-1])
     elif event == _IRQ_GATTC_NOTIFY:
         print("_IRQ_GATTC_NOTIFY", bytes(data[-1]))
     elif event == _IRQ_GATTC_INDICATE:
@@ -164,6 +168,7 @@ def instance1():
         print("gattc_read")
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_READ_DONE, TIMEOUT_MS)
 
         # Write to the characteristic, which will trigger a notification.
         print("gattc_write")
@@ -174,6 +179,7 @@ def instance1():
         print("gattc_read")  # Read the new value set immediately before notification.
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_READ_DONE, TIMEOUT_MS)
 
         # Write to the characteristic, which will trigger a value-included notification.
         print("gattc_write")
@@ -184,6 +190,7 @@ def instance1():
         print("gattc_read")  # Read value should be unchanged.
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_READ_DONE, TIMEOUT_MS)
 
         # Write to the characteristic, which will trigger an indication.
         print("gattc_write")
@@ -194,6 +201,7 @@ def instance1():
         print("gattc_read")  # Read the new value set immediately before indication.
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_READ_DONE, TIMEOUT_MS)
 
         # Write-without-response, which will trigger another notification with that value.
         ble.gattc_write(conn_handle, value_handle, "central3", 0)

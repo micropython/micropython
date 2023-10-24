@@ -110,6 +110,7 @@ def instance1():
             print("gattc_read")
             ble.gattc_read(conn_handle, value_handle)
             wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+            wait_for_event(_IRQ_GATTC_READ_DONE, TIMEOUT_MS)
 
             # Disconnect from peripheral.
             print("gap_disconnect:", ble.gap_disconnect(conn_handle))

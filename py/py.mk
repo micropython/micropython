@@ -90,6 +90,7 @@ PY_CORE_O_BASENAME = $(addprefix py/,\
 	qstr.o \
 	vstr.o \
 	mpprint.o \
+	mpthread.o \
 	unicode.o \
 	mpz.o \
 	reader.o \

@@ -70,12 +70,6 @@ Configuration
       characteristic 0x2a00.  This can be set at any time and changed multiple
       times.
 
-    - ``'rxbuf'``: Get/set the size in bytes of the internal buffer used to store
-      incoming events.  This buffer is global to the entire BLE driver and so
-      handles incoming data for all events, including all characteristics.
-      Increasing this allows better handling of bursty incoming data (for
-      example scan results) and the ability to receive larger characteristic values.
-
     - ``'mtu'``: Get/set the MTU that will be used during a ATT MTU exchange. The
       resulting MTU will be the minimum of this and the remote device's MTU.
       ATT MTU exchange will not happen automatically (unless the remote device initiates
@@ -114,7 +108,7 @@ Event Handling
     **Note:** As an optimisation to prevent unnecessary allocations, the ``addr``,
     ``adv_data``, ``char_data``, ``notify_data``, and ``uuid`` entries in the
     tuples are read-only memoryview instances pointing to :mod:`bluetooth`'s internal
-    ringbuffer, and are only valid during the invocation of the IRQ handler
+    memory, and are only valid during the invocation of the IRQ handler
     function.  If your program needs to save one of these values to access after
     the IRQ handler has returned (e.g. by saving it in a class instance or global
     variable), then it needs to take a copy of the data, either by using ``bytes()``
@@ -127,6 +121,8 @@ Event Handling
     to decide if it's the correct device, and only then copy the address data to be
     used elsewhere in the program.  And to print data from within the IRQ handler,
     ``print(bytes(addr))`` will be needed.
+
+    This is also true of the ``data`` tuple itself, do not store a reference to it.
 
     An event handler showing all possible events::
 

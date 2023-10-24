@@ -151,11 +151,13 @@ def instance1():
         print("gattc_read characteristic")
         ble.gattc_read(conn_handle, value_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_READ_DONE, TIMEOUT_MS)
 
         # Issue read of descriptor, should get initial value.
         print("gattc_read descriptor")
         ble.gattc_read(conn_handle, desc_handle)
         wait_for_event(_IRQ_GATTC_READ_RESULT, TIMEOUT_MS)
+        wait_for_event(_IRQ_GATTC_READ_DONE, TIMEOUT_MS)
 
         # Write-with-response to the characteristic.
         print("gattc_write characteristic")

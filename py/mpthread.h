@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_PY_MPTHREAD_H
 #define MICROPY_INCLUDED_PY_MPTHREAD_H
 
+#include <stdbool.h>
+
 #include "py/mpconfig.h"
 
 #if MICROPY_PY_THREAD
@@ -44,9 +46,63 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
 mp_uint_t mp_thread_get_id(void);
 void mp_thread_start(void);
 void mp_thread_finish(void);
+
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex);
+void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex);
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait);
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
+
+void mp_thread_sem_init(mp_thread_sem_t *sem, mp_uint_t value);
+bool mp_thread_sem_wait(mp_thread_sem_t *sem, bool wait);
+void mp_thread_sem_post(mp_thread_sem_t *sem);
+int mp_thread_sem_value(mp_thread_sem_t *sem);
+
+#else // !MICROPY_PY_THREAD
+
+// When threading is disabled, provide no-op implementation of
+// mp_thread_mutex_t and mp_thread_sem_t.
+
+typedef struct {
+} mp_thread_mutex_t;
+
+static inline void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
+}
+static inline void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex) {
+}
+static inline int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
+    return 1;
+}
+static inline void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
+}
+
+typedef struct {
+    volatile mp_uint_t value;
+} mp_thread_sem_t;
+
+static inline void mp_thread_sem_init(mp_thread_sem_t *sem, mp_uint_t value) {
+    sem->value = value;
+}
+static inline bool mp_thread_sem_wait(mp_thread_sem_t *sem, bool wait) {
+    if (wait) {
+        while (sem->value == 0) {
+        }
+        --sem->value;
+        return true;
+    } else {
+        if (sem->value == 0) {
+            return false;
+        } else {
+            --sem->value;
+            return true;
+        }
+    }
+}
+static inline void mp_thread_sem_post(mp_thread_sem_t *sem) {
+    ++sem->value;
+}
+static inline int mp_thread_sem_value(mp_thread_sem_t *sem) {
+    return sem->value;
+}
 
 #endif // MICROPY_PY_THREAD
 
@@ -57,6 +113,19 @@ void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex);
 #else
 #define MP_THREAD_GIL_ENTER()
 #define MP_THREAD_GIL_EXIT()
+#endif
+
+#if MICROPY_PY_THREAD && MICROPY_PY_THREAD_RTOS
+// Helper functions to assist with RTOS (or OS) threads/tasks that want to
+// call into the MicroPython VM. For example, a Unix pthread or FreeRTOS that
+// wants to execute Python code on a MicroPython thread. For example, on ESP32
+// the BLE host stack runs in a FreeRTOS task.
+typedef void (*mp_run_on_thread_function_t)(void *arg);
+void mp_thread_run_on_mp_thread(const mp_run_on_thread_function_t fn, void *arg, mp_uint_t stack_size);
+#else
+// When not using an RTOS (e.g. bare-metal STM32), all threads are MicroPython
+// threads.
+#define mp_thread_run_on_mp_thread(fn, arg, stack_size) fn(arg)
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPTHREAD_H

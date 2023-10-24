@@ -298,6 +298,13 @@ void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {
     pthread_mutex_init(mutex, NULL);
 }
 
+void mp_thread_mutex_init_recursive(mp_thread_mutex_t *mutex) {
+    pthread_mutexattr_t attr;
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(mutex, &attr);
+}
+
 int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
     int ret;
     if (wait) {
@@ -319,6 +326,35 @@ int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {
 void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {
     pthread_mutex_unlock(mutex);
     // TODO check return value
+}
+
+void mp_thread_sem_init(mp_thread_sem_t *sem, mp_uint_t value) {
+    sem_init(sem, 0, value);
+}
+
+bool mp_thread_sem_wait(mp_thread_sem_t *sem, bool wait) {
+    int ret;
+    do {
+        if (wait) {
+            ret = sem_wait(sem);
+        } else {
+            ret = sem_trywait(sem);
+        }
+    } while (ret == EINTR);
+    return ret == 0;
+}
+
+void mp_thread_sem_post(mp_thread_sem_t *sem) {
+    sem_post(sem);
+}
+
+int mp_thread_sem_value(mp_thread_sem_t *sem) {
+    int val;
+    int ret = sem_getvalue(sem, &val);
+    (void)ret;
+    assert(ret == 0);
+    val = MAX(0, val);
+    return val;
 }
 
 #endif // MICROPY_PY_THREAD

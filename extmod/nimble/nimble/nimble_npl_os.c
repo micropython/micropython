@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "nimble/ble.h"
 #include "nimble/nimble_npl.h"
-#include "extmod/nimble/hal/hal_uart.h"
 
 #include "extmod/modbluetooth.h"
 #include "extmod/nimble/modbluetooth_nimble.h"
@@ -177,41 +176,28 @@ int nimble_sprintf(char *str, const char *fmt, ...) {
 /******************************************************************************/
 // EVENTQ
 
-struct ble_npl_eventq *global_eventq = NULL;
+struct ble_npl_eventq* g_eventq_dflt;
 
-// This must not be called recursively or concurrently with the UART handler.
-void mp_bluetooth_nimble_os_eventq_run_all(void) {
-    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
-        return;
-    }
+// Run all events in the default queue.
+STATIC void ble_npl_run_default_queue(void) {
+    DEBUG_EVENT_printf("mp_bluetooth_nimble_npl_run_default_queue(%p, %p)\n", g_eventq_dflt, g_eventq_dflt->head);
 
     // Keep running while there are pending events.
     while (true) {
-        struct ble_npl_event *ev = NULL;
-
         os_sr_t sr;
         OS_ENTER_CRITICAL(sr);
-        // Search all queues for an event.
-        for (struct ble_npl_eventq *evq = global_eventq; evq != NULL; evq = evq->nextq) {
-            ev = evq->head;
-            if (ev) {
-                // Remove this event from the queue.
-                evq->head = ev->next;
-                if (ev->next) {
-                    ev->next->prev = NULL;
-                    ev->next = NULL;
-                }
-                ev->prev = NULL;
-
-                ev->pending = false;
-
-                // Stop searching and execute this event.
-                break;
-            }
+        struct ble_npl_event *ev = NULL;
+        if (g_eventq_dflt->head) {
+            ev = g_eventq_dflt->head;
+            // Remove this event from the queue.
+            g_eventq_dflt->head = ev->next;
+            // Mark it as executed.
+            ev->pending = false;
         }
         OS_EXIT_CRITICAL(sr);
 
         if (!ev) {
+            // Queue is empty.
             break;
         }
 
@@ -233,12 +219,9 @@ void ble_npl_eventq_init(struct ble_npl_eventq *evq) {
     DEBUG_EVENT_printf("ble_npl_eventq_init(%p)\n", evq);
     os_sr_t sr;
     OS_ENTER_CRITICAL(sr);
+    assert(g_eventq_dflt == NULL);
+    g_eventq_dflt = evq;
     evq->head = NULL;
-    struct ble_npl_eventq **evq2;
-    for (evq2 = &global_eventq; *evq2 != NULL; evq2 = &(*evq2)->nextq) {
-    }
-    *evq2 = evq;
-    evq->nextq = NULL;
     OS_EXIT_CRITICAL(sr);
 }
 
@@ -248,10 +231,11 @@ void ble_npl_eventq_put(struct ble_npl_eventq *evq, struct ble_npl_event *ev) {
     OS_ENTER_CRITICAL(sr);
     ev->next = NULL;
     ev->pending = true;
+
     if (evq->head == NULL) {
+        DEBUG_EVENT_printf("  --> set head\n");
         // Empty list, make this the first item.
         evq->head = ev;
-        ev->prev = NULL;
     } else {
         // Find the tail of this list.
         struct ble_npl_event *tail = evq->head;
@@ -263,9 +247,9 @@ void ble_npl_eventq_put(struct ble_npl_eventq *evq, struct ble_npl_event *ev) {
                 break;
             }
             if (tail->next == NULL) {
+                DEBUG_EVENT_printf("  --> added to tail\n");
                 // Found the end of the list, add this event as the tail.
                 tail->next = ev;
-                ev->prev = tail;
                 break;
             }
             DEBUG_EVENT_printf("  --> %p\n", tail->next);
@@ -298,27 +282,22 @@ void ble_npl_event_set_arg(struct ble_npl_event *ev, void *arg) {
 
 ble_npl_error_t ble_npl_mutex_init(struct ble_npl_mutex *mu) {
     DEBUG_MUTEX_printf("ble_npl_mutex_init(%p)\n", mu);
-    mu->locked = 0;
+    mp_thread_mutex_init_recursive(&mu->mutex);
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_mutex_pend(struct ble_npl_mutex *mu, ble_npl_time_t timeout) {
-    DEBUG_MUTEX_printf("ble_npl_mutex_pend(%p, %u) locked=%u\n", mu, (uint)timeout, (uint)mu->locked);
-
-    // All NimBLE code is executed by the scheduler (and is therefore
-    // implicitly mutexed) so this mutex implementation is a no-op.
-
-    ++mu->locked;
-
+    DEBUG_MUTEX_printf("ble_npl_mutex_pend(%p, %u)\n", mu, (uint)timeout);
+    if (!mp_thread_mutex_lock(&mu->mutex, 1)) {
+        printf("FAILED TO LOCK\n");
+        assert(0);
+    }
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_mutex_release(struct ble_npl_mutex *mu) {
-    DEBUG_MUTEX_printf("ble_npl_mutex_release(%p) locked=%u\n", mu, (uint)mu->locked);
-    assert(mu->locked > 0);
-
-    --mu->locked;
-
+    DEBUG_MUTEX_printf("ble_npl_mutex_release(%p)\n", mu);
+    mp_thread_mutex_unlock(&mu->mutex);
     return BLE_NPL_OK;
 }
 
@@ -327,12 +306,12 @@ ble_npl_error_t ble_npl_mutex_release(struct ble_npl_mutex *mu) {
 
 ble_npl_error_t ble_npl_sem_init(struct ble_npl_sem *sem, uint16_t tokens) {
     DEBUG_SEM_printf("ble_npl_sem_init(%p, %u)\n", sem, (uint)tokens);
-    sem->count = tokens;
+    mp_thread_sem_init(&sem->sem, tokens);
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout) {
-    DEBUG_SEM_printf("ble_npl_sem_pend(%p, %u) count=%u\n", sem, (uint)timeout, (uint)sem->count);
+    DEBUG_SEM_printf("ble_npl_sem_pend(%p, %u) tokens=%u\n", sem, (uint)timeout, (uint)ble_npl_sem_get_count(sem));
 
     // This is only called by NimBLE in ble_hs_hci_cmd_tx to synchronously
     // wait for an HCI ACK. The corresponding ble_npl_sem_release is called
@@ -340,36 +319,32 @@ ble_npl_error_t ble_npl_sem_pend(struct ble_npl_sem *sem, ble_npl_time_t timeout
     // extmod/nimble/hal/hal_uart.c). So this loop needs to run only the HCI
     // UART processing but not run any events.
 
-    if (sem->count == 0) {
-        uint32_t t0 = mp_hal_ticks_ms();
-        while (sem->count == 0 && mp_hal_ticks_ms() - t0 < timeout) {
-            if (sem->count != 0) {
-                break;
-            }
+    uint32_t t0 = mp_hal_ticks_ms();
 
-            mp_bluetooth_nimble_hci_uart_wfi();
+    while (true) {
+        if (mp_thread_sem_wait(&sem->sem, false)) {
+            return BLE_NPL_OK;
         }
 
-        if (sem->count == 0) {
-            DEBUG_SEM_printf("ble_npl_sem_pend: semaphore timeout\n");
+        if (mp_hal_ticks_ms() - t0 > timeout) {
             return BLE_NPL_TIMEOUT;
         }
 
-        DEBUG_SEM_printf("ble_npl_sem_pend: acquired in %u ms\n", (int)(mp_hal_ticks_ms() - t0));
+        mp_bluetooth_nimble_hci_uart_wfi();
     }
-    sem->count -= 1;
+
     return BLE_NPL_OK;
 }
 
 ble_npl_error_t ble_npl_sem_release(struct ble_npl_sem *sem) {
     DEBUG_SEM_printf("ble_npl_sem_release(%p)\n", sem);
-    sem->count += 1;
+    mp_thread_sem_post(&sem->sem);
     return BLE_NPL_OK;
 }
 
 uint16_t ble_npl_sem_get_count(struct ble_npl_sem *sem) {
     DEBUG_SEM_printf("ble_npl_sem_get_count(%p)\n", sem);
-    return sem->count;
+    return mp_thread_sem_value(&sem->sem);
 }
 
 /******************************************************************************/
@@ -377,7 +352,7 @@ uint16_t ble_npl_sem_get_count(struct ble_npl_sem *sem) {
 
 static struct ble_npl_callout *global_callout = NULL;
 
-void mp_bluetooth_nimble_os_callout_process(void) {
+STATIC void ble_npl_run_callouts(void) {
     os_sr_t sr;
     OS_ENTER_CRITICAL(sr);
     uint32_t tnow = mp_hal_ticks_ms();
@@ -502,19 +477,23 @@ void ble_npl_time_delay(ble_npl_time_t ticks) {
 
 // This is used anywhere NimBLE modifies global data structures.
 
-// Currently all NimBLE code is invoked by the scheduler so there should be no
-// races, so on STM32 MICROPY_PY_BLUETOOTH_ENTER/MICROPY_PY_BLUETOOTH_EXIT are
-// no-ops. However, in the future we may wish to make HCI UART processing
-// happen asynchronously (e.g. on RX IRQ), so the port can implement these
-// macros accordingly.
-
 uint32_t ble_npl_hw_enter_critical(void) {
     DEBUG_CRIT_printf("ble_npl_hw_enter_critical()\n");
-    MICROPY_PY_BLUETOOTH_ENTER
-    return atomic_state;
+    return MICROPY_BEGIN_ATOMIC_SECTION();
 }
 
 void ble_npl_hw_exit_critical(uint32_t atomic_state) {
-    MICROPY_PY_BLUETOOTH_EXIT
     DEBUG_CRIT_printf("ble_npl_hw_exit_critical(%u)\n", (uint)atomic_state);
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+}
+
+/******************************************************************************/
+
+void mp_bluetooth_nimble_run_host_stack(void) {
+    if (mp_bluetooth_nimble_ble_state == MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
+        return;
+    }
+
+    ble_npl_run_callouts();
+    ble_npl_run_default_queue();
 }

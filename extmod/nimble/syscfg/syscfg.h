@@ -17,7 +17,16 @@ void *nimble_realloc(void *ptr, size_t size);
 int nimble_sprintf(char *str, const char *fmt, ...);
 #define sprintf(str, fmt, ...) nimble_sprintf(str, fmt, __VA_ARGS__)
 
+#ifndef min
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+#ifndef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 #define MYNEWT_VAL(x) MYNEWT_VAL_ ## x
+#define MYNEWT_VAL_CHOICE(_name, _val) MYNEWT_VAL_ ## _name ## __ ## _val
 
 #define MYNEWT_VAL_LOG_LEVEL (255)
 
@@ -91,7 +100,7 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_GATT_WRITE_RELIABLE (MYNEWT_VAL_BLE_ROLE_CENTRAL)
 #define MYNEWT_VAL_BLE_HOST (1)
 #define MYNEWT_VAL_BLE_HS_AUTO_START (1)
-#define MYNEWT_VAL_BLE_HS_DEBUG (0)
+#define MYNEWT_VAL_BLE_HS_DEBUG (1)
 #define MYNEWT_VAL_BLE_HS_FLOW_CTRL (0)
 #define MYNEWT_VAL_BLE_HS_FLOW_CTRL_ITVL (1000)
 #define MYNEWT_VAL_BLE_HS_FLOW_CTRL_THRESH (2)
@@ -101,6 +110,7 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_HS_STOP_ON_SHUTDOWN_TIMEOUT (2000)
 #define MYNEWT_VAL_BLE_L2CAP_COC_MAX_NUM (1)
 #define MYNEWT_VAL_BLE_L2CAP_COC_MPS (MYNEWT_VAL_MSYS_1_BLOCK_SIZE - 8)
+#define MYNEWT_VAL_BLE_L2CAP_COC_SDU_BUFF_COUNT (1)
 #define MYNEWT_VAL_BLE_L2CAP_ENHANCED_COC (0)
 #define MYNEWT_VAL_BLE_L2CAP_JOIN_RX_FRAGS (1)
 #define MYNEWT_VAL_BLE_L2CAP_MAX_CHANS (3 * MYNEWT_VAL_BLE_MAX_CONNECTIONS)
@@ -125,6 +135,8 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_STORE_MAX_BONDS (3)
 #define MYNEWT_VAL_BLE_STORE_MAX_CCCDS (8)
 // These can be overridden at runtime with ble.config(le_secure, mitm, bond, io).
+#define MYNEWT_VAL_BLE_SM_LVL (0)
+#define MYNEWT_VAL_BLE_SM_SC_ONLY (0)
 #define MYNEWT_VAL_BLE_SM_SC (1)
 #define MYNEWT_VAL_BLE_SM_MITM (0)
 #define MYNEWT_VAL_BLE_SM_BONDING (0)
@@ -149,20 +161,40 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_BLE_HCI_TRANSPORT_UART (1)
 
 /*** nimble/transport/uart */
-#define MYNEWT_VAL_BLE_ACL_BUF_COUNT (12)
-#define MYNEWT_VAL_BLE_ACL_BUF_SIZE (255)
-#define MYNEWT_VAL_BLE_HCI_ACL_OUT_COUNT (12)
-#define MYNEWT_VAL_BLE_HCI_EVT_BUF_SIZE (70)
-#define MYNEWT_VAL_BLE_HCI_EVT_HI_BUF_COUNT (8)
-#define MYNEWT_VAL_BLE_HCI_EVT_LO_BUF_COUNT (8)
+#define MYNEWT_VAL_BLE_TRANSPORT_ACL_COUNT (12)
+#define MYNEWT_VAL_BLE_TRANSPORT_ACL_SIZE (255)
+#define MYNEWT_VAL_BLE_TRANSPORT_ISO_COUNT (10)
+#define MYNEWT_VAL_BLE_TRANSPORT_ISO_SIZE (300)
+#define MYNEWT_VAL_BLE_TRANSPORT_EVT_COUNT (4)
+#define MYNEWT_VAL_BLE_TRANSPORT_EVT_DISCARDABLE_COUNT (16)
+#define MYNEWT_VAL_BLE_TRANSPORT_EVT_SIZE (70)
+#define MYNEWT_VAL_BLE_TRANSPORT_ACL_FROM_HS_COUNT (MYNEWT_VAL_BLE_TRANSPORT_ACL_COUNT)
+#define MYNEWT_VAL_BLE_TRANSPORT_ACL_FROM_LL_COUNT (MYNEWT_VAL_BLE_TRANSPORT_ACL_COUNT)
+#define MYNEWT_VAL_BLE_TRANSPORT_ISO_FROM_HS_COUNT (MYNEWT_VAL_BLE_TRANSPORT_ISO_COUNT)
+#define MYNEWT_VAL_BLE_TRANSPORT_ISO_FROM_LL_COUNT (MYNEWT_VAL_BLE_TRANSPORT_ISO_COUNT)
 
 /* Overridden by targets/porting-nimble (defined by nimble/transport/uart) */
-#define MYNEWT_VAL_BLE_HCI_UART_BAUD (MICROPY_HW_BLE_UART_BAUDRATE)
-#define MYNEWT_VAL_BLE_HCI_UART_DATA_BITS (8)
-#define MYNEWT_VAL_BLE_HCI_UART_FLOW_CTRL (1)
-#define MYNEWT_VAL_BLE_HCI_UART_PARITY (HAL_UART_PARITY_NONE)
-#define MYNEWT_VAL_BLE_HCI_UART_PORT (MICROPY_HW_BLE_UART_ID)
-#define MYNEWT_VAL_BLE_HCI_UART_STOP_BITS (1)
+
+enum hal_uart_parity {
+    HAL_UART_PARITY_ODD,
+    HAL_UART_PARITY_EVEN,
+    HAL_UART_PARITY_NONE
+};
+
+enum hal_uart_flow_ctl {
+    HAL_UART_FLOW_CTL_RTS_CTS,
+    HAL_UART_FLOW_CTL_NONE
+};
+
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_BAUDRATE (MICROPY_HW_BLE_UART_BAUDRATE)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_DATA_BITS (8)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_FLOW_CONTROL__rtscts (1)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_FLOW_CONTROL__none (0)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_PARITY__odd (0)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_PARITY__even (0)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_PARITY__none (1)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_PORT (MICROPY_HW_BLE_UART_ID)
+#define MYNEWT_VAL_BLE_TRANSPORT_UART_STOP_BITS (1)
 
 /* Required for code that uses BLE_HS_LOG */
 #define MYNEWT_VAL_NEWT_FEATURE_LOGCFG (1)

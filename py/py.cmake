@@ -50,6 +50,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/moderrno.c
     ${MICROPY_PY_DIR}/mpprint.c
     ${MICROPY_PY_DIR}/mpstate.c
+    ${MICROPY_PY_DIR}/mpthread.c
     ${MICROPY_PY_DIR}/mpz.c
     ${MICROPY_PY_DIR}/nativeglue.c
     ${MICROPY_PY_DIR}/nlr.c

@@ -213,8 +213,8 @@ if(MICROPY_PY_BLUETOOTH)
     list(APPEND MICROPY_SOURCE_PORT mpbthciport.c)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_PY_BLUETOOTH=1
-        MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
         MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
+        MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
     )
 endif()
 
@@ -255,7 +255,7 @@ if(MICROPY_BLUETOOTH_NIMBLE)
         message(FATAL_ERROR " mynewt-nimble not initialized.\n Run 'make BOARD=${MICROPY_BOARD} submodules'")
     endif()
 
-    list(APPEND MICROPY_SOURCE_PORT mpnimbleport.c)
+    list(APPEND MICROPY_SOURCE_PORT ${MICROPY_DIR}/extmod/nimble/mpnimbleport_scheduler.c)
     target_compile_definitions(${MICROPY_TARGET} PRIVATE
         MICROPY_BLUETOOTH_NIMBLE=1
         MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY=0

@@ -295,17 +295,6 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-stm32"
 #endif
 
-#if MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS
-// Bluetooth code only runs in the scheduler, no locking/mutex required.
-#define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
-#define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
-#else
-// When async events are enabled, need to prevent PendSV execution racing with
-// scheduler execution.
-#define MICROPY_PY_BLUETOOTH_ENTER MICROPY_PY_PENDSV_ENTER
-#define MICROPY_PY_BLUETOOTH_EXIT  MICROPY_PY_PENDSV_EXIT
-#endif
-
 #if defined(STM32WB)
 #define MICROPY_PY_BLUETOOTH_HCI_READ_MODE MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
 #else
@@ -317,7 +306,7 @@ static inline mp_uint_t disable_irq(void) {
 #endif
 
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS
-#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (MICROPY_BLUETOOTH_NIMBLE)
+#define MICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS (0)// MICROPY_BLUETOOTH_NIMBLE)
 #endif
 
 // We need an implementation of the log2 function which is not a macro

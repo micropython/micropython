@@ -19,18 +19,6 @@ ifeq ($(MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY),0)
 
 GIT_SUBMODULES += lib/mynewt-nimble
 
-# On all ports where we provide the full implementation (i.e. not just
-# bindings like on ESP32), then we don't need to use the ringbuffer. In this
-# case, all NimBLE events are run by the MicroPython scheduler. On Unix, the
-# scheduler is also responsible for polling the UART, whereas on STM32 the
-# UART is also polled by the RX IRQ.
-CFLAGS_EXTMOD += -DMICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS=1
-
-# Without the ringbuffer, and with the full implementation, we can also
-# enable pairing and bonding. This requires both synchronous events and
-# some customisation of the key store.
-CFLAGS_EXTMOD += -DMICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1
-
 NIMBLE_LIB_DIR = lib/mynewt-nimble
 
 SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
@@ -75,7 +63,6 @@ SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_l2cap_coc.c \
 		ble_l2cap_sig.c \
 		ble_l2cap_sig_cmd.c \
-		ble_monitor.c \
 		ble_sm_alg.c \
 		ble_sm.c \
 		ble_sm_cmd.c \
@@ -86,7 +73,8 @@ SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 		ble_uuid.c \
 		) \
 	nimble/host/util/src/addr.c \
-	nimble/transport/uart/src/ble_hci_uart.c \
+	nimble/transport/src/transport.c \
+	nimble/transport/common/hci_h4/src/hci_h4.c \
 	$(addprefix porting/nimble/src/, \
 		endian.c \
 		mem.c \
@@ -98,9 +86,10 @@ SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_LIB_DIR)/, \
 	)
 	# nimble/host/store/ram/src/ble_store_ram.c \
 
+
 SRC_THIRDPARTY_C += $(addprefix $(NIMBLE_EXTMOD_DIR)/, \
 	nimble/nimble_npl_os.c \
-	hal/hal_uart.c \
+	transport/uart_ll.c \
 	)
 
 INC += -I$(TOP)/$(NIMBLE_EXTMOD_DIR)
@@ -112,10 +101,11 @@ INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/services/gatt/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/store/ram/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/host/util/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/include
-INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/uart/include
+INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/include
+INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/transport/common/hci_h4/include
 INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/porting/nimble/include
 
-$(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare -Wno-old-style-declaration
+$(BUILD)/$(NIMBLE_LIB_DIR)/%.o: CFLAGS += -Wno-maybe-uninitialized -Wno-pointer-arith -Wno-unused-but-set-variable -Wno-format -Wno-sign-compare -Wno-old-style-declaration -Wno-implicit-fallthrough
 
 endif
 
