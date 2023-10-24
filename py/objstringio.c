@@ -45,15 +45,26 @@ STATIC void check_stringio_is_open(const mp_obj_stringio_t *o) {
 #define check_stringio_is_open(o)
 #endif
 
+STATIC mp_obj_stringio_t *native_obj(mp_obj_t o_in) {
+    mp_obj_stringio_t *native = mp_obj_cast_to_native_base(o_in, &mp_type_stringio);
+
+    #if MICROPY_PY_IO_BYTESIO
+    if (native == MP_OBJ_NULL) {
+        native = mp_obj_cast_to_native_base(o_in, &mp_type_bytesio);
+    }
+    #endif
+    return native;
+}
+
 STATIC void stringio_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    mp_obj_stringio_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_stringio_t *self = native_obj(self_in);
     mp_printf(print, self->base.type == &mp_type_stringio ? "<io.StringIO 0x%x>" : "<io.BytesIO 0x%x>", self);
 }
 
 STATIC mp_uint_t stringio_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
-    mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
+    mp_obj_stringio_t *o = native_obj(o_in);
     check_stringio_is_open(o);
     if (o->vstr->len <= o->pos) {  // read to EOF, or seeked to EOF or beyond
         return 0;
@@ -77,7 +88,7 @@ STATIC void stringio_copy_on_write(mp_obj_stringio_t *o) {
 
 STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     (void)errcode;
-    mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
+    mp_obj_stringio_t *o = native_obj(o_in);
     check_stringio_is_open(o);
 
     if (o->vstr->fixed_buf) {
@@ -111,7 +122,7 @@ STATIC mp_uint_t stringio_write(mp_obj_t o_in, const void *buf, mp_uint_t size, 
 
 STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
-    mp_obj_stringio_t *o = MP_OBJ_TO_PTR(o_in);
+    mp_obj_stringio_t *o = native_obj(o_in);
     switch (request) {
         case MP_STREAM_SEEK: {
             struct mp_stream_seek_t *s = (struct mp_stream_seek_t *)arg;
@@ -163,7 +174,7 @@ STATIC mp_uint_t stringio_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
 #define STREAM_TO_CONTENT_TYPE(o) (((o)->base.type == &mp_type_stringio) ? &mp_type_str : &mp_type_bytes)
 
 STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
-    mp_obj_stringio_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_obj_stringio_t *self = native_obj(self_in);
     check_stringio_is_open(self);
     // TODO: Try to avoid copying string
     return mp_obj_new_str_of_type(STREAM_TO_CONTENT_TYPE(self), (byte *)self->vstr->buf, self->vstr->len);

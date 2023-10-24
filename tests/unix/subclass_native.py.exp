@@ -5,7 +5,9 @@ native base class .test set to: 'test set directly'
 native base class .test set to: 'test set indirectly'
 .test: test set indirectly
 ._new_attribute True
+native base class ._new_attribute set to: True
 .test: super init suffix
 native base class .test set to: 'test set indirectly through b'
 .test: test set indirectly through b
 ._new_attribute True
+native base class ._new_attribute set to: True

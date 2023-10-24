@@ -29,6 +29,8 @@ print(".test:", a.test)
 a._new_attribute = True
 print("._new_attribute", a._new_attribute)
 
+a.print_subclass_attr("_new_attribute")
+
 
 class B(NativeBaseClass):
     def __init__(self, suffix):
@@ -43,3 +45,5 @@ print(".test:", b.test)
 
 b._new_attribute = True
 print("._new_attribute", b._new_attribute)
+
+b.print_subclass_attr("_new_attribute")
