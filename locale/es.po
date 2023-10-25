@@ -449,6 +449,12 @@ msgstr "*x debe ser objetivo de la tarea"
 msgid ", in %q\n"
 msgstr ", en %q\n"
 
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid ".show(x) removed. Use .root_group = x"
+msgstr ""
+
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
 msgstr "0.0 a una potencia compleja"

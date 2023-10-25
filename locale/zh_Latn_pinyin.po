@@ -449,6 +449,12 @@ msgstr "*x bìxū shì bèi fùzhí de duìxiàng"
 msgid ", in %q\n"
 msgstr ", zài %q\n"
 
+#: shared-bindings/displayio/Display.c
+#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/framebufferio/FramebufferDisplay.c
+msgid ".show(x) removed. Use .root_group = x"
+msgstr ""
+
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
 msgstr "0.0 de fùshù cì mì"
