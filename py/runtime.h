@@ -242,44 +242,44 @@ NORETURN void mp_raise_NotImplementedError_no_msg(void);
 #define mp_raise_NotImplementedError(msg) mp_raise_NotImplementedError_no_msg()
 #else
 #define mp_raise_type(exc_type) mp_raise_msg(exc_type, NULL)
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const mp_rom_error_text_t *fmt, ...);
-NORETURN void mp_raise_ValueError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_TypeError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_NotImplementedError(const mp_rom_error_text_t *msg);
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...);
+NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 #endif
 
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
-NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, const mp_rom_error_text_t *fmt
+NORETURN void mp_raise_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
+NORETURN void mp_raise_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt
     , ...);
-NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, const mp_rom_error_text_t *fmt, va_list argptr);
+NORETURN void mp_raise_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list argptr);
 // Only use this string version in native mpy files. Otherwise, use the compressed string version.
 NORETURN void mp_raise_msg_str(const mp_obj_type_t *exc_type, const char *msg);
 
-NORETURN void mp_raise_AttributeError(const mp_rom_error_text_t *msg);
+NORETURN void mp_raise_AttributeError(mp_rom_error_text_t msg);
 NORETURN void mp_raise_BrokenPipeError(void);
-NORETURN void mp_raise_ConnectionError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_ImportError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_IndexError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_IndexError_varg(const mp_rom_error_text_t *msg, ...);
-NORETURN void mp_raise_NotImplementedError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_NotImplementedError_varg(const mp_rom_error_text_t *fmt, ...);
+NORETURN void mp_raise_ConnectionError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_ImportError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_IndexError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_IndexError_varg(mp_rom_error_text_t msg, ...);
+NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_NotImplementedError_varg(mp_rom_error_text_t fmt, ...);
 NORETURN void mp_raise_OSError_errno_str(int errno_, mp_obj_t str);
 NORETURN void mp_raise_OSError(int errno_);
-NORETURN void mp_raise_OSError_msg(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_OSError_msg_varg(const mp_rom_error_text_t *fmt, ...);
+NORETURN void mp_raise_OSError_msg(mp_rom_error_text_t msg);
+NORETURN void mp_raise_OSError_msg_varg(mp_rom_error_text_t fmt, ...);
 NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename);
-NORETURN void mp_raise_OverflowError_varg(const mp_rom_error_text_t *fmt, ...);
+NORETURN void mp_raise_OverflowError_varg(mp_rom_error_text_t fmt, ...);
 NORETURN void mp_raise_recursion_depth(void);
-NORETURN void mp_raise_RuntimeError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_RuntimeError_varg(const mp_rom_error_text_t *fmt, ...);
+NORETURN void mp_raise_RuntimeError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_RuntimeError_varg(mp_rom_error_text_t fmt, ...);
 NORETURN void mp_raise_StopIteration(mp_obj_t arg);
-NORETURN void mp_raise_TypeError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_TypeError_varg(const mp_rom_error_text_t *fmt, ...);
+NORETURN void mp_raise_TypeError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_TypeError_varg(mp_rom_error_text_t fmt, ...);
 NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg);
-NORETURN void mp_raise_ValueError(const mp_rom_error_text_t *msg);
-NORETURN void mp_raise_ValueError_varg(const mp_rom_error_text_t *fmt, ...);
+NORETURN void mp_raise_ValueError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_ValueError_varg(mp_rom_error_text_t fmt, ...);
 NORETURN void mp_raise_ZeroDivisionError(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG

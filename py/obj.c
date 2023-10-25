@@ -147,7 +147,7 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
-    const mp_rom_error_text_t *msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
+    mp_rom_error_text_t msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
     mp_obj_exception_t *inner = NULL;
     if (self->cause) {
         msg = MP_ERROR_TEXT("The above exception was the direct cause of the following exception:");
@@ -177,11 +177,11 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
         if (n > 0) {
             assert(n % 3 == 0);
             #if MICROPY_ENABLE_SOURCE_LINE
-            const mp_rom_error_text_t *frame = MP_ERROR_TEXT("  File \"%q\", line %d");
+            mp_rom_error_text_t frame = MP_ERROR_TEXT("  File \"%q\", line %d");
             #else
-            const mp_rom_error_text_t *frame = MP_ERROR_TEXT("  File \"%q\"");
+            mp_rom_error_text_t frame = MP_ERROR_TEXT("  File \"%q\"");
             #endif
-            const mp_rom_error_text_t *block_fmt = MP_ERROR_TEXT(", in %q\n");
+            mp_rom_error_text_t block_fmt = MP_ERROR_TEXT(", in %q\n");
 
             // Set traceback formatting
             // Default: Print full traceback

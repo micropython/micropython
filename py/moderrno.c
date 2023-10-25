@@ -127,7 +127,7 @@ const char *mp_common_errno_to_str(mp_obj_t errno_val, char *buf, size_t len) {
         return NULL;
     }
 
-    const mp_rom_error_text_t *desc = NULL;
+    mp_rom_error_text_t desc = NULL;
     switch (MP_OBJ_SMALL_INT_VALUE(errno_val)) {
         case EPERM:
             desc = MP_ERROR_TEXT("Operation not permitted");

@@ -496,7 +496,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 break;
             }
             case 'S': {
-                mp_rom_error_text_t *arg = va_arg(args, mp_rom_error_text_t *);
+                mp_rom_error_text_t arg = va_arg(args, mp_rom_error_text_t );
                 size_t len_with_nul = decompress_length(arg);
                 size_t len = len_with_nul - 1;
                 char str[len_with_nul];
@@ -593,7 +593,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
     return chrs;
 }
 
-int mp_cprintf(const mp_print_t *print, const mp_rom_error_text_t *compressed_fmt, ...) {
+int mp_cprintf(const mp_print_t *print, mp_rom_error_text_t compressed_fmt, ...) {
     va_list ap;
     va_start(ap, compressed_fmt);
     int ret = mp_vcprintf(print, compressed_fmt, ap);
@@ -601,7 +601,7 @@ int mp_cprintf(const mp_print_t *print, const mp_rom_error_text_t *compressed_fm
     return ret;
 }
 
-int mp_vcprintf(const mp_print_t *print, const mp_rom_error_text_t *compressed_fmt, va_list args) {
+int mp_vcprintf(const mp_print_t *print, mp_rom_error_text_t compressed_fmt, va_list args) {
     char fmt[decompress_length(compressed_fmt)];
     // TODO: Optimise this to format-while-decompressing (and not require the temp stack space).
     decompress(compressed_fmt, fmt);

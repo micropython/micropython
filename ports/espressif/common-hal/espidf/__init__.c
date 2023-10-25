@@ -122,7 +122,7 @@ intptr_t common_hal_espidf_get_psram_end(void) {
 }
 
 void raise_esp_error(esp_err_t err) {
-    const mp_rom_error_text_t *msg = NULL;
+    mp_rom_error_text_t msg = NULL;
     const mp_obj_type_t *exception_type = &mp_type_espidf_IDFError;
     switch (err) {
         case ESP_FAIL:

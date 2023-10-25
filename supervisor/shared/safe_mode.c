@@ -148,7 +148,7 @@ void print_safe_mode_message(safe_mode_t reason) {
 
     serial_write_compressed(translate("\nYou are in safe mode because:\n"));
 
-    const mp_rom_error_text_t *message = NULL;
+    mp_rom_error_text_t message = NULL;
 
     // First check for safe mode reasons that do not necessarily reflect bugs.
 

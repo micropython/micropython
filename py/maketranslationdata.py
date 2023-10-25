@@ -595,7 +595,7 @@ def output_translation_data(encoding_table, i18ns, out):
             decompressed = decompressed.replace(c, C_ESCAPES[c])
         formatted = ["{:d}".format(x) for x in compressed]
         out.write(
-            "const mp_rom_error_text_t translation{} = {{ .data = {}, .tail = {{ {} }} }}; // {}\n".format(
+            "const struct compressed_string translation{} = {{ .data = {}, .tail = {{ {} }} }}; // {}\n".format(
                 i, formatted[0], ", ".join(formatted[1:]), original, decompressed
             )
         )
