@@ -26,10 +26,12 @@ print(".test:", a.test)
 a.test = "test set indirectly"
 print(".test:", a.test)
 
-a._new_attribute = True
-print("._new_attribute", a._new_attribute)
+a.new_attribute = True
+print(".new_attribute", a.new_attribute)
 
-a.print_subclass_attr("_new_attribute")
+a.print_subclass_attr("new_attribute")
+
+print(a[0])
 
 
 class B(NativeBaseClass):
@@ -43,7 +45,8 @@ print(".test:", b.test)
 b.test = "test set indirectly through b"
 print(".test:", b.test)
 
-b._new_attribute = True
-print("._new_attribute", b._new_attribute)
+b.new_attribute = "hello"
+print(".new_attribute", b.new_attribute)
 
-b.print_subclass_attr("_new_attribute")
+b.print_subclass_attr("new_attribute")
+print(b[0])
