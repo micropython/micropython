@@ -41,6 +41,7 @@
 #endif
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
+#include "extmod/modplatform.h"
 #include "genhdr/mpversion.h"
 
 pyexec_mode_kind_t pyexec_mode_kind = PYEXEC_MODE_FRIENDLY_REPL;
@@ -103,6 +104,14 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             // source is a lexer, parse and compile the script
             qstr source_name = lex->source_name;
             mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
+            #if defined(MICROPY_UNIX_COVERAGE)
+            // allow to print the parse tree in the coverage build
+            if (mp_verbose_flag >= 3) {
+                printf("----------------\n");
+                mp_parse_node_print(&mp_plat_print, parse_tree.root, 0);
+                printf("----------------\n");
+            }
+            #endif
             module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
             #else
             mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("script compilation not supported"));
@@ -141,8 +150,13 @@ static int parse_compile_execute(const void *source, mp_parse_input_kind_t input
 
         // check for SystemExit
         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
-            // at the moment, the value of SystemExit is unused
-            ret = PYEXEC_FORCED_EXIT;
+            // Extract SystemExit value
+            mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
+            mp_int_t val = 0;
+            if (exit_val != mp_const_none && !mp_obj_get_int_maybe(exit_val, &val)) {
+                val = 1;
+            }
+            ret = PYEXEC_FORCED_EXIT | (val & 255);
         } else {
             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
             ret = 0;
