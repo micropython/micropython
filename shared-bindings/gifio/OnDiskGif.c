@@ -323,7 +323,7 @@ STATIC MP_DEFINE_CONST_DICT(gifio_ondiskgif_locals_dict, gifio_ondiskgif_locals_
 MP_DEFINE_CONST_OBJ_TYPE(
     gifio_ondiskgif_type,
     MP_QSTR_OnDiskGif,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, gifio_ondiskgif_make_new,
     locals_dict, &gifio_ondiskgif_locals_dict
     );

@@ -218,12 +218,12 @@ exclude_patterns = ["**/build*",
                     "ports/nrf/usb",
                     "ports/raspberrypi/sdk",
                     "ports/raspberrypi/lib",
-                    "ports/silabs",
+                    "ports/silabs/gecko_sdk",
+                    "ports/silabs/tools",
                     "ports/stm/st_driver",
                     "ports/stm/packages",
                     "ports/stm/peripherals",
                     "ports/stm/ref",
-                    "ports/unix",
                     "py",
                     "shared/*",
                     "shared-bindings/util.*",
@@ -362,14 +362,21 @@ latex_elements = {
 # Additional stuff for the LaTeX preamble.
 #'preamble': '',
 # Include 3 levels of headers in PDF ToC
-'preamble': '\setcounter{tocdepth}{2}',
+'preamble': r'''
+\setcounter{tocdepth}{2}
+\hbadness=99999
+\hfuzz=20pt
+\usepackage{pdflscape}
+''',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-  (master_doc, 'CircuitPython.tex', 'CircuitPython Documentation',
+  ("docs/pdf", 'CircuitPython.tex', 'CircuitPython Documentation',
+   'CircuitPython Contributors', 'manual'),
+  ("shared-bindings/support_matrix", 'SupportMatrix.tex', 'Board Support Matrix',
    'CircuitPython Contributors', 'manual'),
 ]
 

@@ -148,7 +148,7 @@ STATIC MP_DEFINE_CONST_DICT(countio_counter_locals_dict, countio_counter_locals_
 MP_DEFINE_CONST_OBJ_TYPE(
     countio_counter_type,
     MP_QSTR_Counter,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, countio_counter_make_new,
     locals_dict, &countio_counter_locals_dict
     );

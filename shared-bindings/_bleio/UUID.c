@@ -283,7 +283,7 @@ void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_uuid_type,
     MP_QSTR_UUID,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     print, bleio_uuid_print,
     make_new, bleio_uuid_make_new,
     locals_dict, &bleio_uuid_locals_dict,

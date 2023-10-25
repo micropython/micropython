@@ -270,7 +270,7 @@ STATIC MP_DEFINE_CONST_DICT(sdioio_sdcard_locals_dict, sdioio_sdcard_locals_dict
 MP_DEFINE_CONST_OBJ_TYPE(
     sdioio_SDCard_type,
     MP_QSTR_SDCard,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, sdioio_sdcard_make_new,
     locals_dict, &sdioio_sdcard_locals_dict
     );

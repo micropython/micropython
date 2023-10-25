@@ -178,7 +178,7 @@ STATIC MP_DEFINE_CONST_DICT(ipaddress_ipv4address_locals_dict, ipaddress_ipv4add
 MP_DEFINE_CONST_OBJ_TYPE(
     ipaddress_ipv4address_type,
     MP_QSTR_Address,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, ipaddress_ipv4address_make_new,
     locals_dict, &ipaddress_ipv4address_locals_dict,
     print, ipaddress_ipv4address_print,

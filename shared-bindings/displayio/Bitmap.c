@@ -291,7 +291,7 @@ STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, m
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_bitmap_type,
     MP_QSTR_Bitmap,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, displayio_bitmap_make_new,
     locals_dict, &displayio_bitmap_locals_dict,
     subscr, bitmap_subscr,

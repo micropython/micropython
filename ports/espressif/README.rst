@@ -1,4 +1,4 @@
-CircuitPython on Espressif SoCs
+Espressif
 =======================================
 
 This port adds the Espressif line of SoCs to CircuitPython.
@@ -10,9 +10,11 @@ Support Status:
     :header: SoC, Status
 
     ESP32, "beta"
+    ESP32-H2, "alpha"
     ESP32-C3, "beta"
+    ESP32-C6, "alpha"
     ESP32-S2, "stable"
-    ESP32-S3, "beta"
+    ESP32-S3, "stable"
 
 How this port is organized:
 ---------------------------------------

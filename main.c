@@ -94,6 +94,10 @@
 #include "shared-module/displayio/__init__.h"
 #endif
 
+#if CIRCUITPY_EPAPERDISPLAY
+#include "shared-bindings/epaperdisplay/EPaperDisplay.h"
+#endif
+
 #if CIRCUITPY_KEYPAD
 #include "shared-module/keypad/__init__.h"
 #endif
@@ -534,7 +538,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
     // Program has finished running.
     bool printed_press_any_key = false;
-    #if CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_EPAPERDISPLAY
     size_t time_to_epaper_refresh = 1;
     #endif
 
@@ -682,7 +686,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
             // Refresh the ePaper display if we have one. That way it'll show an error message.
             // Skip if we're about to autoreload. Otherwise we may delay when user code can update
             // the display.
-            #if CIRCUITPY_DISPLAYIO
+            #if CIRCUITPY_EPAPERDISPLAY
             if (time_to_epaper_refresh > 0 && !autoreload_pending()) {
                 time_to_epaper_refresh = maybe_refresh_epaperdisplay();
             }
@@ -724,7 +728,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
                 }
                 time_to_next_change = total_time - tick_diff;
             }
-            #if CIRCUITPY_DISPLAYIO
+            #if CIRCUITPY_EPAPERDISPLAY
             if (time_to_epaper_refresh > 0 && time_to_next_change > 0) {
                 time_to_next_change = MIN(time_to_next_change, time_to_epaper_refresh);
             }

@@ -244,6 +244,6 @@ STATIC MP_DEFINE_CONST_DICT(vectorio_vector_shape_locals_dict, vectorio_vector_s
 MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_vector_shape_type,
     MP_QSTR_VectorShape,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &vectorio_vector_shape_locals_dict
     );

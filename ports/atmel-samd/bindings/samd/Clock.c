@@ -131,7 +131,7 @@ STATIC MP_DEFINE_CONST_DICT(samd_clock_locals_dict, samd_clock_locals_dict_table
 MP_DEFINE_CONST_OBJ_TYPE(
     samd_clock_type,
     MP_QSTR_Clock,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     print, samd_clock_print,
     locals_dict, &samd_clock_locals_dict
     );

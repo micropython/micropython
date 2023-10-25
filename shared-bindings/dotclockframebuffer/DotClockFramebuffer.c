@@ -385,7 +385,7 @@ STATIC MP_DEFINE_CONST_DICT(dotclockframebuffer_framebuffer_locals_dict, dotcloc
 MP_DEFINE_CONST_OBJ_TYPE(
     dotclockframebuffer_framebuffer_type,
     MP_QSTR_DotClockFramebuffer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, dotclockframebuffer_framebuffer_make_new,
     locals_dict, &dotclockframebuffer_framebuffer_locals_dict,
     buffer, dotclockframebuffer_framebuffer_get_buffer,

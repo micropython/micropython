@@ -216,7 +216,7 @@ STATIC MP_DEFINE_CONST_DICT(mdns_server_locals_dict, mdns_server_locals_dict_tab
 MP_DEFINE_CONST_OBJ_TYPE(
     mdns_server_type,
     MP_QSTR_Server,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, mdns_server_make_new,
     locals_dict, &mdns_server_locals_dict
     );

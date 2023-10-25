@@ -154,7 +154,7 @@ STATIC MP_DEFINE_CONST_DICT(wifi_monitor_locals_dict, wifi_monitor_locals_dict_t
 MP_DEFINE_CONST_OBJ_TYPE(
     wifi_monitor_type,
     MP_QSTR_Monitor,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, wifi_monitor_make_new,
     locals_dict, &wifi_monitor_locals_dict
     );

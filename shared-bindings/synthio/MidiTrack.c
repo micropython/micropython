@@ -188,7 +188,7 @@ STATIC const audiosample_p_t synthio_miditrack_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     synthio_miditrack_type,
     MP_QSTR_MidiTrack,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, synthio_miditrack_make_new,
     locals_dict, &synthio_miditrack_locals_dict,
     protocol, &synthio_miditrack_proto

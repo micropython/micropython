@@ -1,4 +1,4 @@
-# CircuitPython Port To The Nordic Semiconductor nRF52 Series
+# Nordic Semiconductor nRF52 Series
 
 This is a port of CircuitPython to the Nordic Semiconductor nRF52 series of chips.
 

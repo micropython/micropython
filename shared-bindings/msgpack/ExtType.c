@@ -111,7 +111,7 @@ STATIC MP_DEFINE_CONST_DICT(mod_msgpack_exttype_locals_dict, mod_msgpack_exttype
 MP_DEFINE_CONST_OBJ_TYPE(
     mod_msgpack_exttype_type,
     MP_QSTR_ExtType,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, mod_msgpack_exttype_make_new,
     locals_dict, &mod_msgpack_exttype_locals_dict
     );

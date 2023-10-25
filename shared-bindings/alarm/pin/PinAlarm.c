@@ -120,7 +120,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_pin_pinalarm_locals_dict, alarm_pin_pinalarm_l
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_pin_pinalarm_type,
     MP_QSTR_PinAlarm,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, alarm_pin_pinalarm_make_new,
     locals_dict, &alarm_pin_pinalarm_locals_dict
     );

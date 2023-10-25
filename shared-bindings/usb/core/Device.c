@@ -334,6 +334,6 @@ STATIC MP_DEFINE_CONST_DICT(usb_core_device_locals_dict, usb_core_device_locals_
 MP_DEFINE_CONST_OBJ_TYPE(
     usb_core_device_type,
     MP_QSTR_Device,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &usb_core_device_locals_dict
     );

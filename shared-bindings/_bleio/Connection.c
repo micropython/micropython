@@ -247,6 +247,6 @@ STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_local
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_connection_type,
     MP_QSTR_Connection,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &bleio_connection_locals_dict
     );

@@ -214,7 +214,7 @@ STATIC void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_descriptor_type,
     MP_QSTR_Descriptor,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     print, bleio_descriptor_print,
     locals_dict, &bleio_descriptor_locals_dict
     );

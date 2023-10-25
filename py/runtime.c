@@ -1241,6 +1241,16 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
         mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
         mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
+            // CIRCUITPY-CHANGE: Validate flag
+            #if MICROPY_PY_BUILTINS_PROPERTY
+            // Validate that the type has the correct flag for properties. It is manually
+            // managed for native types. If the flag is missing, then act like the
+            // attribute doesn't exist.
+            if (mp_obj_is_type(elem->value, &mp_type_property) && (type->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) == 0) {
+                dest[1] = MP_OBJ_NULL;
+                return;
+            }
+            #endif
             mp_convert_member_lookup(obj, type, elem->value, dest);
         }
         return;
