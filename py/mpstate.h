@@ -36,6 +36,10 @@
 #include "py/objlist.h"
 #include "py/objexcept.h"
 
+#if CIRCUITPY_WARNINGS
+#include "shared-bindings/warnings/__init__.h"
+#endif
+
 // #if CIRCUITPY
 // #error CIRCUITPY is TRUE in mpstate.h.
 // #else
@@ -310,6 +314,10 @@ typedef struct _mp_state_thread_t {
     mp_obj_t prof_trace_callback;
     bool prof_callback_is_executing;
     struct _mp_code_state_t *current_code_state;
+    #endif
+
+    #if CIRCUITPY_WARNINGS
+    warnings_action_t warnings_action;
     #endif
 } mp_state_thread_t;
 
