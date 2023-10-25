@@ -80,23 +80,7 @@ const mp_obj_namedtuple_type_t qrio_qrinfo_type_obj = {
 //|
 
 const mp_obj_namedtuple_type_t qrio_qrposition_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_QRPosition,
-        .print = namedtuple_print,
-        .parent = &mp_type_tuple,
-        .make_new = namedtuple_make_new,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_QRPosition),
     .n_fields = 9,
     .fields = {
         MP_QSTR_top_left_x,
