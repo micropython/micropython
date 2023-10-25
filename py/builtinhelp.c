@@ -122,7 +122,7 @@ STATIC void mp_help_print_modules(void) {
 
     #if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
-    serial_write_compressed(translate("Plus any modules on the filesystem\n"));
+    serial_write_compressed(MP_ERROR_TEXT("Plus any modules on the filesystem\n"));
     #endif
 }
 #endif
@@ -138,10 +138,10 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
-    mp_cprintf(MP_PYTHON_PRINTER, translate("object "));
+    mp_cprintf(MP_PYTHON_PRINTER, MP_ERROR_TEXT("object "));
     mp_obj_print(obj, PRINT_STR);
 
-    mp_cprintf(MP_PYTHON_PRINTER, translate(" is of type %q\n"), type->name);
+    mp_cprintf(MP_PYTHON_PRINTER, MP_ERROR_TEXT(" is of type %q\n"), type->name);
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {
@@ -168,7 +168,7 @@ STATIC mp_obj_t mp_builtin_help(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // print a general help message. Translate only works on single strings on one line.
         mp_cprintf(MP_PYTHON_PRINTER,
-            translate("Welcome to Adafruit CircuitPython %s!\n\nVisit circuitpython.org for more information.\n\nTo list built-in modules type `help(\"modules\")`.\n"),
+            MP_ERROR_TEXT("Welcome to Adafruit CircuitPython %s!\n\nVisit circuitpython.org for more information.\n\nTo list built-in modules type `help(\"modules\")`.\n"),
             MICROPY_GIT_TAG);
     } else {
         // try to print something sensible about the given object

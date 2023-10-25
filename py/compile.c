@@ -2740,7 +2740,7 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
         pns = (mp_parse_node_struct_t *)pns->nodes[0];
         #if MICROPY_PY_ASYNC_AWAIT
         if (comp->scope_cur->scope_flags & MP_SCOPE_FLAG_ASYNC) {
-            compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'yield from' inside async function"));
+            compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("'yield from' inside async function"));
             return;
         }
         #endif
