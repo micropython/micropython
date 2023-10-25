@@ -36,10 +36,26 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifdef _WIN32
+// To get inet_pton and inet_ntop.
+#ifdef __MINGW32__
+#ifdef _WIN32_WINNT
+#undef _WIN32_WINNT
+#endif
+#define _WIN32_WINNT 0x0600
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#ifndef __MINGW32__
+#pragma comment(lib, "Ws2_32.lib")
+#endif
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <poll.h>
+#endif
 #include <errno.h>
 #include <math.h>
 
@@ -51,8 +67,97 @@
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "extmod/vfs.h"
-#include <poll.h>
 
+#ifdef _WIN32
+// Some extra info regarding the windows-specific code:
+// - like CPython, most of the error codes raised as OSError will be the WSA error codes, not errno.
+// - places where EAGAIN is turned into MP_ETIMEOUT are generally not needed On windows since the
+//   socket calls already return WSAETIMEDOUT.
+// - makefile() and poll functionality are not implemented.
+
+typedef int sock_len_t;
+typedef int socket_size_t;
+typedef SOCKET socket_t;
+
+// Just to make sure since we rely on this.
+#if SOCKET_ERROR != -1
+#error socket functions must return -1 for errors
+#endif
+#if NO_ERROR != 0
+#error socket functions must return 0 for no errors
+#endif
+
+#define socket_errno WSAGetLastError()
+#define socket_eintr WSAEINTR
+#define read_socket(fd, buf, size) recv(fd, buf, size, 0)
+#define write_socket(fd, buf, size) send(fd, buf, size, 0)
+#define close_socket(fd) closesocket(fd)
+
+void wsa_startup() {
+    WSADATA wsaData;
+    (void)WSAStartup(MAKEWORD(1, 1), &wsaData);
+}
+
+void wsa_cleanup() {
+    (void)WSACleanup();
+}
+
+// Socket calls are syscalls but with WSA error codes, not errno.
+#ifdef MP_HAL_RETRY_SYSCALL
+#undef MP_HAL_RETRY_SYSCALL
+#endif
+
+#define MP_HAL_RETRY_SYSCALL(ret, syscall, raise) { \
+        for (;;) { \
+            MP_THREAD_GIL_EXIT(); \
+            ret = syscall; \
+            MP_THREAD_GIL_ENTER(); \
+            if (ret == -1) { \
+                int err = WSAGetLastError(); \
+                if (err == WSAEINTR) { \
+                    mp_handle_pending(true); \
+                    continue; \
+                } \
+                raise; \
+            } \
+            break; \
+        } \
+}
+
+// Get SO_RCVTIMEO or SO_SNDTIMEO values.
+DWORD get_socket_timeout(socket_t sock, bool read_or_write) {
+    MP_THREAD_GIL_EXIT();
+    DWORD timeout = 0;
+    int opt_len = sizeof(timeout);
+    const int opt_name = read_or_write ? SO_RCVTIMEO : SO_SNDTIMEO;
+    const int r = getsockopt(sock, SOL_SOCKET, opt_name, (char *)&timeout, &opt_len);
+    MP_THREAD_GIL_ENTER();
+    RAISE_ERRNO(r, WSAGetLastError());
+    return timeout;
+}
+
+// Perform select() call, raising timeout error if timed out.
+void select_on_socket(socket_t sock, bool read_or_write, DWORD timeout) {
+    fd_set fdset;
+    FD_ZERO(&fdset);
+    FD_SET(sock, &fdset);
+    struct timeval tv;
+    tv.tv_sec = timeout / 1000;
+    tv.tv_usec = (timeout * 1000) % 1000;
+    int r;
+    fd_set *read_fd = read_or_write ? &fdset : NULL;
+    fd_set *write_fd = read_or_write ? NULL : &fdset;
+    // First argument is ignored: "The nfds parameter is included only for
+    // compatibility with Berkeley sockets".
+    MP_HAL_RETRY_SYSCALL(r, select(1, read_fd, write_fd, NULL, &tv), {
+        // r < 0 is error, r == 0 is timeout, r > 0 = no timeout.
+        RAISE_ERRNO(r, WSAGetLastError());
+    });
+    if (r == 0) {
+        mp_raise_OSError(MP_ETIMEDOUT);
+    }
+}
+#else
 typedef socklen_t sock_len_t;
 typedef int socket_t;
 typedef ssize_t socket_size_t;
@@ -62,6 +167,9 @@ typedef ssize_t socket_size_t;
 #define read_socket read
 #define write_socket write
 #define close_socket close
+
+#define initialize_socket_system() {}
+#endif
 
 /*
   The idea of this module is to implement reasonable minimum of
@@ -153,6 +261,7 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             MP_THREAD_GIL_ENTER();
             return 0;
 
+        #ifndef _WIN32
         case MP_STREAM_GET_FILENO:
             return self->fd;
 
@@ -187,6 +296,7 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
             return ret;
         }
         #endif
+        #endif
 
         default:
             *errcode = MP_EINVAL;
@@ -194,11 +304,13 @@ static mp_uint_t socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, i
     }
 }
 
+#ifndef _WIN32
 static mp_obj_t socket_fileno(mp_obj_t self_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->fd);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(socket_fileno_obj, socket_fileno);
+#endif
 
 static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
@@ -208,6 +320,15 @@ static mp_obj_t socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     // special case of PEP 475 to retry only if blocking so we can't use
     // MP_HAL_RETRY_SYSCALL() here
     for (;;) {
+        #ifdef _WIN32
+        // The connect() call has no timeout so implement it by first calling select().
+        // In theory there's a race condition here between select() returning and connect()
+        // being called, in practice doesn't seem worth fixing.
+        const DWORD timeout = get_socket_timeout(self->fd, true);
+        if (timeout > 0 && self->blocking) {
+            select_on_socket(self->fd, true, timeout);
+        }
+        #endif
         MP_THREAD_GIL_EXIT();
         int r = connect(self->fd, (const struct sockaddr *)bufinfo.buf, bufinfo.len);
         MP_THREAD_GIL_ENTER();
@@ -267,6 +388,26 @@ static mp_obj_t socket_accept(mp_obj_t self_in) {
     byte addr[32];
     sock_len_t addr_len = sizeof(addr);
     socket_t fd;
+    #ifdef _WIN32
+    // The accept() call has no timeout so manually implement it by first calling select().
+    const DWORD timeout = get_socket_timeout(self->fd, true);
+    if (timeout > 0 && self->blocking) {
+        select_on_socket(self->fd, true, timeout);
+    }
+    // The accept() call returns a socket, not an int, so cannot use MP_HAL_RETRY_SYSCALL.
+    for (;;) {
+        fd = accept(self->fd, (struct sockaddr *)&addr, &addr_len);
+        if (fd == INVALID_SOCKET) {
+            const int err = WSAGetLastError();
+            if (err == WSAEINTR) {
+                mp_handle_pending(1);
+                continue;
+            }
+            mp_raise_OSError(err);
+        }
+        break;
+    }
+    #else
     MP_HAL_RETRY_SYSCALL(fd, accept(self->fd, (struct sockaddr *)&addr, &addr_len), {
         // EAGAIN on a blocking socket means the operation timed out
         if (self->blocking && err == EAGAIN) {
@@ -274,6 +415,7 @@ static mp_obj_t socket_accept(mp_obj_t self_in) {
         }
         mp_raise_OSError(err);
     });
+    #endif
 
     mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     t->items[0] = MP_OBJ_FROM_PTR(socket_new(fd));
@@ -297,7 +439,7 @@ static mp_obj_t socket_recv(size_t n_args, const mp_obj_t *args) {
 
     byte *buf = m_new(byte, sz);
     socket_size_t out_sz;
-    MP_HAL_RETRY_SYSCALL(out_sz, recv(self->fd, buf, sz, flags), mp_raise_OSError(err));
+    MP_HAL_RETRY_SYSCALL(out_sz, recv(self->fd, (char *)buf, sz, flags), mp_raise_OSError(err));
     mp_obj_t ret = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
     m_del(char, buf, sz);
     return ret;
@@ -318,7 +460,7 @@ static mp_obj_t socket_recvfrom(size_t n_args, const mp_obj_t *args) {
 
     byte *buf = m_new(byte, sz);
     socket_size_t out_sz;
-    MP_HAL_RETRY_SYSCALL(out_sz, recvfrom(self->fd, buf, sz, flags, (struct sockaddr *)&addr, &addr_len),
+    MP_HAL_RETRY_SYSCALL(out_sz, recvfrom(self->fd, (char *)buf, sz, flags, (struct sockaddr *)&addr, &addr_len),
         mp_raise_OSError(err));
     mp_obj_t buf_o = mp_obj_new_str_of_type(&mp_type_bytes, buf, out_sz);
     m_del(char, buf, sz);
@@ -402,6 +544,11 @@ static mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
     int val = mp_obj_is_true(flag_in);
     MP_THREAD_GIL_EXIT();
+    #ifdef _WIN32
+    u_long mode = val ? 0 : 1;
+    // Called 'flags' but here it's just the return value.
+    const int flags = ioctlsocket(self->fd, FIONBIO, &mode);
+    #else
     int flags = fcntl(self->fd, F_GETFL, 0);
     if (flags == -1) {
         MP_THREAD_GIL_ENTER();
@@ -413,6 +560,7 @@ static mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
         flags |= O_NONBLOCK;
     }
     flags = fcntl(self->fd, F_SETFL, flags);
+    #endif
     MP_THREAD_GIL_ENTER();
     RAISE_ERRNO(flags, socket_errno);
     self->blocking = val;
@@ -423,6 +571,14 @@ static MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
 static mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     mp_obj_socket_t *self = MP_OBJ_TO_PTR(self_in);
     struct timeval tv = {0, };
+    #ifdef _WIN32
+    DWORD time_val = 0;
+    const char *ptv = (const char *)&time_val;
+    const int opt_len = sizeof(DWORD);
+    #else
+    struct timeval *ptv = &tv;
+    const int opt_len = sizeof(struct timeval);
+    #endif
     bool new_blocking = true;
 
     // Timeout of None means no timeout, which in POSIX is signified with 0 timeout,
@@ -436,6 +592,9 @@ static mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
         #else
         tv.tv_sec = mp_obj_get_int(timeout_in);
         #endif
+        #ifdef _WIN32
+        time_val = tv.tv_usec / 1000 + tv.tv_sec * 1000;
+        #endif
 
         // For SO_RCVTIMEO/SO_SNDTIMEO, zero timeout means infinity, but
         // for Python API it means non-blocking.
@@ -447,12 +606,12 @@ static mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     if (new_blocking) {
         int r;
         MP_THREAD_GIL_EXIT();
-        r = setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
+        r = setsockopt(self->fd, SOL_SOCKET, SO_RCVTIMEO, ptv, opt_len);
         if (r == -1) {
             MP_THREAD_GIL_ENTER();
             RAISE_ERRNO(r, socket_errno);
         }
-        r = setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(struct timeval));
+        r = setsockopt(self->fd, SOL_SOCKET, SO_SNDTIMEO, ptv, opt_len);
         MP_THREAD_GIL_ENTER();
         RAISE_ERRNO(r, socket_errno);
     }
@@ -465,6 +624,7 @@ static mp_obj_t socket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_2(socket_settimeout_obj, socket_settimeout);
 
+#ifndef _WIN32
 static mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     // TODO: CPython explicitly says that closing returned object doesn't close
     // the original socket (Python2 at all says that fd is dup()ed). But we
@@ -476,6 +636,7 @@ static mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {
     return mp_vfs_open(n_args, new_args, (mp_map_t *)&mp_const_empty_map);
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(socket_makefile_obj, 1, 3, socket_makefile);
+#endif
 
 static mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
@@ -500,14 +661,21 @@ static mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
 
     MP_THREAD_GIL_EXIT();
     socket_t fd = socket(family, type, proto);
+    #ifdef _WIN32
+    const int err = fd == INVALID_SOCKET ? -1 : 0;
+    #else
+    const int err = fd;
+    #endif
     MP_THREAD_GIL_ENTER();
-    RAISE_ERRNO(fd, socket_errno);
+    RAISE_ERRNO(err, socket_errno);
     return MP_OBJ_FROM_PTR(socket_new(fd));
 }
 
 static const mp_rom_map_elem_t socket_locals_dict_table[] = {
+    #ifndef _WIN32
     { MP_ROM_QSTR(MP_QSTR_fileno), MP_ROM_PTR(&socket_fileno_obj) },
     { MP_ROM_QSTR(MP_QSTR_makefile), MP_ROM_PTR(&socket_makefile_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
@@ -708,7 +876,9 @@ static const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     C(SOCK_RAW),
 
     C(MSG_DONTROUTE),
+    #ifndef _WIN32
     C(MSG_DONTWAIT),
+    #endif
 
     C(SOL_SOCKET),
     C(SO_BROADCAST),
