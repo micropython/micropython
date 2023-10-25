@@ -76,12 +76,21 @@ STATIC const mp_rom_map_elem_t native_base_class_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(native_base_class_locals_dict, native_base_class_locals_dict_table);
 
+STATIC mp_obj_t native_base_class_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+    mp_obj_t attribute_value = mp_load_attr(self_in, MP_QSTR_new_attribute);
+    mp_printf(&mp_plat_print, "native base class subscr .new_attribute set to: ");
+    mp_obj_print_helper(&mp_plat_print, attribute_value, PRINT_REPR);
+    mp_printf(&mp_plat_print, "\n");
+    return attribute_value;
+}
+
 MP_DEFINE_CONST_OBJ_TYPE(
     native_base_class_type,
     MP_QSTR_NativeBaseClass,
     MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, &native_base_class_make_new,
-    locals_dict, &native_base_class_locals_dict
+    locals_dict, &native_base_class_locals_dict,
+    subscr, &native_base_class_subscr
     );
 
 #endif
