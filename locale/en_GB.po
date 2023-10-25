@@ -408,16 +408,8 @@ msgid "'await' outside function"
 msgstr "'await' outside function"
 
 #: py/compile.c
-msgid "'await', 'async for' or 'async with' outside async function"
-msgstr "'await', 'async for' or 'async with' outside async function"
-
-#: py/compile.c
-msgid "'break' outside loop"
-msgstr "'break' outside loop"
-
-#: py/compile.c
-msgid "'continue' outside loop"
-msgstr "'continue' outside loop"
+msgid "'break'/'continue' outside loop"
+msgstr ""
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -982,7 +974,7 @@ msgstr "ESP-IDF memory allocation failed"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT channel already in use"
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "Error in regex"
 msgstr "Error in regex"
 
@@ -1062,7 +1054,7 @@ msgstr "Failed to release mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Failed to write internal flash."
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "File exists"
 msgstr "File exists"
 
@@ -1199,7 +1191,7 @@ msgstr "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgid "Input taking too long"
 msgstr "Input taking too long"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
 msgid "Input/output error"
 msgstr "Input/output error"
 
@@ -1278,7 +1270,7 @@ msgstr "Invalid CIRCUITPY_PYSTACK_SIZE\n"
 msgid "Invalid MAC address"
 msgstr "Invalid MAC address"
 
-#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moderrno.c
 msgid "Invalid argument"
 msgstr "Invalid argument"
 
@@ -1544,15 +1536,15 @@ msgstr "No pull up found on SDA or SCL; check your wiring"
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "No pulldown on pin; 1Mohm recommended"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No space left on device"
 msgstr "No space left on device"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such device"
 msgstr "No such device"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such file/directory"
 msgstr "No such file/directory"
 
@@ -1677,7 +1669,7 @@ msgstr "Only one alarm.time alarm can be set."
 msgid "Only one color can be transparent at a time"
 msgstr "Only one colour can be transparent at a time"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Operation not permitted"
 msgstr "Operation not permitted"
 
@@ -1732,7 +1724,7 @@ msgstr "PWM slice channel A already in use"
 msgid "Peripheral in use"
 msgstr "Peripheral in use"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Permission denied"
 msgstr "Permission denied"
 
@@ -1869,7 +1861,7 @@ msgstr "Random number generation error"
 msgid "Read-only"
 msgstr "Read-only"
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: extmod/vfs_fat.c py/moderrno.c
 msgid "Read-only filesystem"
 msgstr "Read-only filesystem"
 
@@ -2439,7 +2431,7 @@ msgstr ""
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ arg must be a user-type"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
+#: extmod/modbinascii.c extmod/modhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "a bytes-like object is required"
 
@@ -2513,6 +2505,10 @@ msgstr "array/bytes required on right side"
 msgid "asm overflow"
 msgstr "asm overflow"
 
+#: py/compile.c
+msgid "async for/with outside async function"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2565,7 +2561,7 @@ msgstr "binary op %q not implemented"
 msgid "bitmap sizes must match"
 msgstr "bitmap sizes must match"
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "bits must be 32 or less"
 msgstr "bits must be 32 or less"
 
@@ -2646,11 +2642,11 @@ msgstr "Can't add special method to already-subclassed class"
 msgid "can't assign to expression"
 msgstr "Can't assign to expression"
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't cancel self"
 msgstr "can't cancel self"
 
-#: py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Can't convert %q to %q"
 
@@ -2663,6 +2659,11 @@ msgstr "can't convert %s to complex"
 #, c-format
 msgid "can't convert %s to float"
 msgstr "can't convert %s to float"
+
+#: py/runtime.c
+#, c-format
+msgid "can't convert %s to int"
+msgstr ""
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2776,7 +2777,7 @@ msgstr ""
 msgid "can't unambiguously get sizeof scalar"
 msgstr ""
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't wait"
 msgstr "can't wait"
 
@@ -2868,7 +2869,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr "complex values not supported"
 
-#: extmod/moduzlib.c
+#: extmod/modzlib.c
 msgid "compression header"
 msgstr "compression header"
 
@@ -2983,7 +2984,7 @@ msgstr "empty"
 msgid "empty file"
 msgstr "empty file"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c
+#: extmod/modasyncio.c extmod/modheapq.c
 msgid "empty heap"
 msgstr "empty heap"
 
@@ -3114,6 +3115,10 @@ msgstr "float unsupported"
 msgid "font must be 2048 bytes long"
 msgstr "font must be 2048 bytes long"
 
+#: extmod/moddeflate.c
+msgid "format"
+msgstr ""
+
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "format requires a dict"
@@ -3190,11 +3195,11 @@ msgstr "generator raised StopIteration"
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic must be 2048 bytes long"
 
-#: extmod/moduhashlib.c
+#: extmod/modhashlib.c
 msgid "hash is final"
 msgstr "hash is final"
 
-#: extmod/moduheapq.c
+#: extmod/modheapq.c
 msgid "heap must be a list"
 msgstr "heap must be a list"
 
@@ -3226,7 +3231,7 @@ msgstr "incomplete format"
 msgid "incomplete format key"
 msgstr "incomplete format key"
 
-#: extmod/modubinascii.c
+#: extmod/modbinascii.c
 msgid "incorrect padding"
 msgstr "incorrect padding"
 
@@ -3355,8 +3360,8 @@ msgid "interval must be in range %s-%s"
 msgstr "interval must be in range %s-%s"
 
 #: py/compile.c
-msgid "invalid architecture"
-msgstr "invalid architecture"
+msgid "invalid arch"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3544,6 +3549,10 @@ msgstr ""
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr "memoryview: length is not a multiple of itemsize"
 
+#: extmod/modtime.c
+msgid "mktime needs a tuple of length 8 or 9"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
 msgstr "mode must be complete, or reduced"
@@ -3641,7 +3650,7 @@ msgstr "no binding for nonlocal found"
 msgid "no default packer"
 msgstr "no default packer"
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "no default seed"
 msgstr "no default seed"
 
@@ -4068,7 +4077,7 @@ msgstr "source_bitmap must have value_count of 65536"
 msgid "source_bitmap must have value_count of 8"
 msgstr "source_bitmap must have value_count of 8"
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "splitting with sub-captures"
 msgstr ""
 
@@ -4117,7 +4126,7 @@ msgstr "substring not found"
 msgid "super() can't find self"
 msgstr "super() can't find self"
 
-#: extmod/modujson.c
+#: extmod/modjson.c
 msgid "syntax error in JSON"
 msgstr "syntax error in JSON"
 
@@ -4125,7 +4134,7 @@ msgstr "syntax error in JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "syntax error in uctypes descriptor"
 
-#: extmod/utime_mphal.c
+#: extmod/modtime.c
 msgid "ticks interval overflow"
 msgstr ""
 
@@ -4303,8 +4312,8 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "unsupported format character '%c' (0x%x) at index %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%q'"
-msgstr "unsupported type for %q: '%q'"
+msgid "unsupported type for %q: '%s'"
+msgstr ""
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -4330,6 +4339,10 @@ msgstr "value must fit in %d byte(s)"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
 msgstr "value out of range of target"
+
+#: extmod/moddeflate.c
+msgid "wbits"
+msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4401,6 +4414,21 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "'await', 'async for' or 'async with' outside async function"
+#~ msgstr "'await', 'async for' or 'async with' outside async function"
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' outside loop"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' outside loop"
+
+#~ msgid "invalid architecture"
+#~ msgstr "invalid architecture"
+
+#~ msgid "unsupported type for %q: '%q'"
+#~ msgstr "unsupported type for %q: '%q'"
 
 #~ msgid "Splitting with sub-captures"
 #~ msgstr "Splitting with sub-captures"

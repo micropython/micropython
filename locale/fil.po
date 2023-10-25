@@ -397,16 +397,8 @@ msgid "'await' outside function"
 msgstr "'await' sa labas ng function"
 
 #: py/compile.c
-msgid "'await', 'async for' or 'async with' outside async function"
+msgid "'break'/'continue' outside loop"
 msgstr ""
-
-#: py/compile.c
-msgid "'break' outside loop"
-msgstr "'break' sa labas ng loop"
-
-#: py/compile.c
-msgid "'continue' outside loop"
-msgstr "'continue' sa labas ng loop"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -975,7 +967,7 @@ msgstr ""
 msgid "EXTINT channel already in use"
 msgstr "Ginagamit na ang EXTINT channel"
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "Error in regex"
 msgstr "May pagkakamali sa REGEX"
 
@@ -1055,7 +1047,7 @@ msgstr "Nabigo sa pagrelease ng mutex, status: 0x%08lX"
 msgid "Failed to write internal flash."
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "File exists"
 msgstr "Mayroong file"
 
@@ -1190,7 +1182,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr ""
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
 
@@ -1269,7 +1261,7 @@ msgstr ""
 msgid "Invalid MAC address"
 msgstr ""
 
-#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moderrno.c
 msgid "Invalid argument"
 msgstr "Maling argumento"
 
@@ -1535,15 +1527,15 @@ msgstr ""
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No space left on device"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such device"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such file/directory"
 msgstr "Walang file/directory"
 
@@ -1667,7 +1659,7 @@ msgstr ""
 msgid "Only one color can be transparent at a time"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Operation not permitted"
 msgstr ""
 
@@ -1722,7 +1714,7 @@ msgstr ""
 msgid "Peripheral in use"
 msgstr ""
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Permission denied"
 msgstr "Walang pahintulot"
 
@@ -1856,7 +1848,7 @@ msgstr ""
 msgid "Read-only"
 msgstr "Basahin-lamang"
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: extmod/vfs_fat.c py/moderrno.c
 msgid "Read-only filesystem"
 msgstr "Basahin-lamang mode"
 
@@ -2419,7 +2411,7 @@ msgstr "__init__() dapat magbalink na None, hindi '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ arg ay dapat na user-type"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
+#: extmod/modbinascii.c extmod/modhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "a bytes-like object ay kailangan"
 
@@ -2493,6 +2485,10 @@ msgstr "array/bytes kinakailangan sa kanang bahagi"
 msgid "asm overflow"
 msgstr ""
 
+#: py/compile.c
+msgid "async for/with outside async function"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr ""
@@ -2545,7 +2541,7 @@ msgstr "binary op %q hindi implemented"
 msgid "bitmap sizes must match"
 msgstr ""
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "bits must be 32 or less"
 msgstr ""
 
@@ -2628,11 +2624,11 @@ msgstr ""
 msgid "can't assign to expression"
 msgstr "hindi ma i-assign sa expression"
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't cancel self"
 msgstr ""
 
-#: py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr ""
 
@@ -2644,6 +2640,11 @@ msgstr "hindi ma-convert %s sa complex"
 #: py/obj.c
 #, c-format
 msgid "can't convert %s to float"
+msgstr "hindi ma-convert %s sa int"
+
+#: py/runtime.c
+#, c-format
+msgid "can't convert %s to int"
 msgstr "hindi ma-convert %s sa int"
 
 #: py/objstr.c
@@ -2760,7 +2761,7 @@ msgstr ""
 msgid "can't unambiguously get sizeof scalar"
 msgstr ""
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't wait"
 msgstr ""
 
@@ -2852,7 +2853,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr "kumplikadong values hindi sinusuportahan"
 
-#: extmod/moduzlib.c
+#: extmod/modzlib.c
 msgid "compression header"
 msgstr "compression header"
 
@@ -2970,7 +2971,7 @@ msgstr "walang laman"
 msgid "empty file"
 msgstr ""
 
-#: extmod/moduasyncio.c extmod/moduheapq.c
+#: extmod/modasyncio.c extmod/modheapq.c
 msgid "empty heap"
 msgstr "walang laman ang heap"
 
@@ -3099,6 +3100,10 @@ msgstr ""
 msgid "font must be 2048 bytes long"
 msgstr "font ay dapat 2048 bytes ang haba"
 
+#: extmod/moddeflate.c
+msgid "format"
+msgstr ""
+
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "kailangan ng format ng dict"
@@ -3176,11 +3181,11 @@ msgstr ""
 msgid "graphic must be 2048 bytes long"
 msgstr "graphic ay dapat 2048 bytes ang haba"
 
-#: extmod/moduhashlib.c
+#: extmod/modhashlib.c
 msgid "hash is final"
 msgstr ""
 
-#: extmod/moduheapq.c
+#: extmod/modheapq.c
 msgid "heap must be a list"
 msgstr "list dapat ang heap"
 
@@ -3212,7 +3217,7 @@ msgstr "hindi kumpleto ang format"
 msgid "incomplete format key"
 msgstr "hindi kumpleto ang format key"
 
-#: extmod/modubinascii.c
+#: extmod/modbinascii.c
 msgid "incorrect padding"
 msgstr "mali ang padding"
 
@@ -3341,7 +3346,7 @@ msgid "interval must be in range %s-%s"
 msgstr ""
 
 #: py/compile.c
-msgid "invalid architecture"
+msgid "invalid arch"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3532,6 +3537,10 @@ msgstr ""
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr ""
 
+#: extmod/modtime.c
+msgid "mktime needs a tuple of length 8 or 9"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
 msgstr ""
@@ -3629,7 +3638,7 @@ msgstr "no binding para sa nonlocal, nahanap"
 msgid "no default packer"
 msgstr ""
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "no default seed"
 msgstr ""
 
@@ -4057,7 +4066,7 @@ msgstr ""
 msgid "source_bitmap must have value_count of 8"
 msgstr ""
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "splitting with sub-captures"
 msgstr ""
 
@@ -4106,7 +4115,7 @@ msgstr "substring hindi nahanap"
 msgid "super() can't find self"
 msgstr "super() hindi mahanap ang sarili"
 
-#: extmod/modujson.c
+#: extmod/modjson.c
 msgid "syntax error in JSON"
 msgstr "sintaks error sa JSON"
 
@@ -4114,7 +4123,7 @@ msgstr "sintaks error sa JSON"
 msgid "syntax error in uctypes descriptor"
 msgstr "may pagkakamali sa sintaks sa uctypes descriptor"
 
-#: extmod/utime_mphal.c
+#: extmod/modtime.c
 msgid "ticks interval overflow"
 msgstr ""
 
@@ -4292,8 +4301,8 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "hindi sinusuportahan ang format character na '%c' (0x%x) sa index %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%q'"
-msgstr ""
+msgid "unsupported type for %q: '%s'"
+msgstr "hindi sinusuportahang type para sa %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -4318,6 +4327,10 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
+msgstr ""
+
+#: extmod/moddeflate.c
+msgid "wbits"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4390,6 +4403,12 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' sa labas ng loop"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' sa labas ng loop"
 
 #~ msgid "Splitting with sub-captures"
 #~ msgstr "Binibiyak gamit ang sub-captures"
@@ -4864,9 +4883,6 @@ msgstr ""
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Tumatakbo sa safe mode! Awtomatikong pag re-reload ay OFF.\n"
 
-#~ msgid "can't convert %s to int"
-#~ msgstr "hindi ma-convert %s sa int"
-
 #~ msgid "can't convert address to int"
 #~ msgstr "hindi ma i-convert ang address sa INT"
 
@@ -4884,9 +4900,6 @@ msgstr ""
 
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "hindi alam ang format code '%c' para sa object na ang type ay '%s'"
-
-#~ msgid "unsupported type for %q: '%s'"
-#~ msgstr "hindi sinusuportahang type para sa %q: '%s'"
 
 #~ msgid "unsupported types for %q: '%s', '%s'"
 #~ msgstr "hindi sinusuportahang type para sa %q: '%s', '%s'"

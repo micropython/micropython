@@ -410,16 +410,8 @@ msgid "'await' outside function"
 msgstr "'await' wèiyú hánshù zhīwài"
 
 #: py/compile.c
-msgid "'await', 'async for' or 'async with' outside async function"
-msgstr "'await', 'async for' huò 'async with' wèiyú yìbù (async) hánshù zhīwài"
-
-#: py/compile.c
-msgid "'break' outside loop"
-msgstr "'break' wèiyú xúnhuán zhīwài"
-
-#: py/compile.c
-msgid "'continue' outside loop"
-msgstr "'continue' wèiyú xúnhuán zhīwài"
+msgid "'break'/'continue' outside loop"
+msgstr ""
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -987,7 +979,7 @@ msgstr "ESP-IDF nèicún fēnpèi shībài"
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
 
@@ -1067,7 +1059,7 @@ msgstr "Wúfǎ shìfàng mutex, err 0x%04x"
 msgid "Failed to write internal flash."
 msgstr "Wúfǎ xiě rù nèibù shǎncún."
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "File exists"
 msgstr "Wénjiàn cúnzài"
 
@@ -1211,7 +1203,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "Shūrù shíjiānguò zhǎng"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
 msgid "Input/output error"
 msgstr "Shūrù/shūchū cuòwù"
 
@@ -1290,7 +1282,7 @@ msgstr "wú xiào CIRCUITPY_PYSTACK_SIZE\n"
 msgid "Invalid MAC address"
 msgstr "wú xiào de MAC dì zhǐ"
 
-#: ports/espressif/common-hal/espidf/__init__.c py/moduerrno.c
+#: ports/espressif/common-hal/espidf/__init__.c py/moderrno.c
 msgid "Invalid argument"
 msgstr "Wúxiào de cānshù"
 
@@ -1556,15 +1548,15 @@ msgstr "zài SDA huò SCL shàng wèi zhǎo dào shàng lā; jiǎn chá nín de 
 msgid "No pulldown on pin; 1Mohm recommended"
 msgstr "Yǐn jiǎo shàng méiyǒu xiàlā; 1Mohm tuījiàn"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No space left on device"
 msgstr "Shèbèi shàng méiyǒu kònggé"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such device"
 msgstr "wú cǐ shèbèi"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "No such file/directory"
 msgstr "Méiyǒu cǐ lèi wénjiàn/mùlù"
 
@@ -1690,7 +1682,7 @@ msgstr "zhǐ néng shè zhì yí gè bào jǐng."
 msgid "Only one color can be transparent at a time"
 msgstr "Yīcì zhǐ néng yǒuyī zhǒng yánsè shì tòumíng de"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Operation not permitted"
 msgstr "bù yǔnxǔ cāozuò"
 
@@ -1744,7 +1736,7 @@ msgstr "PWM qiē piàn tōng dào A yǐ zài shǐ yòng zhōng"
 msgid "Peripheral in use"
 msgstr "shǐ yòng zhōng de wài shè"
 
-#: py/moduerrno.c
+#: py/moderrno.c
 msgid "Permission denied"
 msgstr "Quánxiàn bèi jùjué"
 
@@ -1883,7 +1875,7 @@ msgstr "Suíjī shù shēngchéng cuòwù"
 msgid "Read-only"
 msgstr "Zhǐ dú"
 
-#: extmod/vfs_fat.c py/moduerrno.c
+#: extmod/vfs_fat.c py/moderrno.c
 msgid "Read-only filesystem"
 msgstr "Zhǐ dú wénjiàn xìtǒng"
 
@@ -2453,7 +2445,7 @@ msgstr "__Init__() yīnggāi fǎnhuí not, ér bùshì '%s'"
 msgid "__new__ arg must be a user-type"
 msgstr "__new__ cānshù bìxū shì yònghù lèixíng"
 
-#: extmod/modubinascii.c extmod/moduhashlib.c py/objarray.c
+#: extmod/modbinascii.c extmod/modhashlib.c py/objarray.c
 msgid "a bytes-like object is required"
 msgstr "xūyào yīgè zì jié lèi duìxiàng"
 
@@ -2527,6 +2519,10 @@ msgstr "yòu cè xūyào shùzǔ/zì jié"
 msgid "asm overflow"
 msgstr "gètǐ hé xiǎoxíng cāngkù guǎnlǐjú yìchū"
 
+#: py/compile.c
+msgid "async for/with outside async function"
+msgstr ""
+
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
 msgstr "cháng shì huò qǔ (arg) zuì xiǎo zhí /(arg) zuì dà kōng xù liè"
@@ -2579,7 +2575,7 @@ msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 msgid "bitmap sizes must match"
 msgstr "wèi tú dà xiǎo bì xū pǐ pèi"
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "bits must be 32 or less"
 msgstr "wèi bì xū shì 32 huò gèng shǎo"
 
@@ -2660,11 +2656,11 @@ msgstr "wúfǎ tiānjiā tèshū fāngfǎ dào zi fēnlèi lèi"
 msgid "can't assign to expression"
 msgstr "bùnéng fēnpèi dào biǎodá shì"
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't cancel self"
 msgstr "bù néng qǔ xiāo zì wǒ"
 
-#: py/runtime.c shared-module/adafruit_pixelbuf/PixelBuf.c
+#: shared-module/adafruit_pixelbuf/PixelBuf.c
 msgid "can't convert %q to %q"
 msgstr "Wúfǎ jiāng %q zhuǎnhuàn wèi %q"
 
@@ -2677,6 +2673,11 @@ msgstr "wúfǎ zhuǎnhuàn%s dào fùzá"
 #, c-format
 msgid "can't convert %s to float"
 msgstr "wúfǎ zhuǎnhuàn %s dào fú diǎn xíng biànliàng"
+
+#: py/runtime.c
+#, c-format
+msgid "can't convert %s to int"
+msgstr "wúfǎ zhuǎnhuàn%s dào int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
@@ -2788,7 +2789,7 @@ msgstr ""
 msgid "can't unambiguously get sizeof scalar"
 msgstr ""
 
-#: extmod/moduasyncio.c
+#: extmod/modasyncio.c
 msgid "can't wait"
 msgstr "děngbùjí"
 
@@ -2884,7 +2885,7 @@ msgstr ""
 msgid "complex values not supported"
 msgstr "bù zhīchí fùzá de zhí"
 
-#: extmod/moduzlib.c
+#: extmod/modzlib.c
 msgid "compression header"
 msgstr "yāsuō tóu bù"
 
@@ -3000,7 +3001,7 @@ msgstr "kòngxián"
 msgid "empty file"
 msgstr "kōng de wénjiàn"
 
-#: extmod/moduasyncio.c extmod/moduheapq.c
+#: extmod/modasyncio.c extmod/modheapq.c
 msgid "empty heap"
 msgstr "kōng yīn yīnxiào"
 
@@ -3131,6 +3132,10 @@ msgstr "fú dòng bù shòu zhī chí"
 msgid "font must be 2048 bytes long"
 msgstr "zìtǐ bìxū wèi 2048 zì jié"
 
+#: extmod/moddeflate.c
+msgid "format"
+msgstr ""
+
 #: py/objstr.c
 msgid "format requires a dict"
 msgstr "géshì yāoqiú yīgè yǔjù"
@@ -3207,11 +3212,11 @@ msgstr "fā diàn jī tí chū tíng zhǐ"
 msgid "graphic must be 2048 bytes long"
 msgstr "túxíng bìxū wèi 2048 zì jié"
 
-#: extmod/moduhashlib.c
+#: extmod/modhashlib.c
 msgid "hash is final"
 msgstr "hā xī shì zuì zhōng de"
 
-#: extmod/moduheapq.c
+#: extmod/modheapq.c
 msgid "heap must be a list"
 msgstr "duī bìxū shì yīgè lièbiǎo"
 
@@ -3243,7 +3248,7 @@ msgstr "géshì bù wánzhěng"
 msgid "incomplete format key"
 msgstr "géshì bù wánzhěng de mì yào"
 
-#: extmod/modubinascii.c
+#: extmod/modbinascii.c
 msgid "incorrect padding"
 msgstr "bù zhèngquè de tiánchōng"
 
@@ -3372,8 +3377,8 @@ msgid "interval must be in range %s-%s"
 msgstr "Jiàngé bìxū zài %s-%s fànwéi nèi"
 
 #: py/compile.c
-msgid "invalid architecture"
-msgstr "wú xiào de jià gòu"
+msgid "invalid arch"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3562,6 +3567,10 @@ msgstr ""
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr "nèi cún shì tú: cháng dù bú shì xiàng mù huà de bèi shù"
 
+#: extmod/modtime.c
+msgid "mktime needs a tuple of length 8 or 9"
+msgstr ""
+
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
 msgstr "mó shì bì xū wán chéng huò jiǎn shǎo"
@@ -3659,7 +3668,7 @@ msgstr "zhǎo bù dào fēi běndì de bǎng dìng"
 msgid "no default packer"
 msgstr "wú mò rèn bāo zhuāng jī"
 
-#: extmod/modurandom.c
+#: extmod/modrandom.c
 msgid "no default seed"
 msgstr "wú mò rèn zhǒng zi"
 
@@ -4089,7 +4098,7 @@ msgstr ""
 msgid "source_bitmap must have value_count of 8"
 msgstr "yuán wèi tú (source_bitmap) de zhí de shù mù (value_count) bì xū shì 8"
 
-#: extmod/modure.c
+#: extmod/modre.c
 msgid "splitting with sub-captures"
 msgstr ""
 
@@ -4138,7 +4147,7 @@ msgstr "wèi zhǎodào zi zìfú chuàn"
 msgid "super() can't find self"
 msgstr "chāojí() zhǎo bù dào zìjǐ"
 
-#: extmod/modujson.c
+#: extmod/modjson.c
 msgid "syntax error in JSON"
 msgstr "JSON yǔfǎ cuòwù"
 
@@ -4146,7 +4155,7 @@ msgstr "JSON yǔfǎ cuòwù"
 msgid "syntax error in uctypes descriptor"
 msgstr "uctypes miáoshù fú zhōng de yǔfǎ cuòwù"
 
-#: extmod/utime_mphal.c
+#: extmod/modtime.c
 msgid "ticks interval overflow"
 msgstr ""
 
@@ -4324,8 +4333,8 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "bù zhīchí de géshì zìfú '%c' (0x%x) suǒyǐn %d"
 
 #: py/runtime.c
-msgid "unsupported type for %q: '%q'"
-msgstr "%q de bù shòu zhīchí de lèixíng: '%q'"
+msgid "unsupported type for %q: '%s'"
+msgstr "bù zhīchí de lèixíng %q: '%s'"
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -4351,6 +4360,10 @@ msgstr "Zhí bìxū fúhé %d zì jié"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
 msgstr "zhí fàn wéi wài de mù biāo"
+
+#: extmod/moddeflate.c
+msgid "wbits"
+msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4422,6 +4435,22 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "'await', 'async for' or 'async with' outside async function"
+#~ msgstr ""
+#~ "'await', 'async for' huò 'async with' wèiyú yìbù (async) hánshù zhīwài"
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' wèiyú xúnhuán zhīwài"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' wèiyú xúnhuán zhīwài"
+
+#~ msgid "invalid architecture"
+#~ msgstr "wú xiào de jià gòu"
+
+#~ msgid "unsupported type for %q: '%q'"
+#~ msgstr "%q de bù shòu zhīchí de lèixíng: '%q'"
 
 #~ msgid "Splitting with sub-captures"
 #~ msgstr "Yǔ zi bǔhuò fēnliè"
@@ -5933,9 +5962,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "Running in safe mode! Auto-reload is off.\n"
 #~ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
 
-#~ msgid "can't convert %s to int"
-#~ msgstr "wúfǎ zhuǎnhuàn%s dào int"
-
 #~ msgid "can't convert address to int"
 #~ msgstr "wúfǎ jiāng dìzhǐ zhuǎnhuàn wèi int"
 
@@ -5954,9 +5980,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #, fuzzy
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "lèixíng '%s' duìxiàng wèizhī de géshì dàimǎ '%c'"
-
-#~ msgid "unsupported type for %q: '%s'"
-#~ msgstr "bù zhīchí de lèixíng %q: '%s'"
 
 #~ msgid "unsupported types for %q: '%s', '%s'"
 #~ msgstr "bù zhīchí de lèixíng wèi %q: '%s', '%s'"
