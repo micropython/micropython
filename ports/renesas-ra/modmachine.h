@@ -30,7 +30,6 @@
 #include "py/obj.h"
 
 extern const mp_obj_type_t machine_touchpad_type;
-extern const mp_obj_type_t machine_adcblock_type;
 extern const mp_obj_type_t machine_dac_type;
 extern const mp_obj_type_t machine_sdcard_type;
 

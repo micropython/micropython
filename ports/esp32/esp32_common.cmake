@@ -53,6 +53,7 @@ list(APPEND MICROPY_SOURCE_DRIVERS
 )
 
 list(APPEND MICROPY_SOURCE_PORT
+    adc.c
     main.c
     ppp_set_auth.c
     uart.c
@@ -66,7 +67,6 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_timer.c
     machine_pin.c
     machine_touchpad.c
-    machine_adcblock.c
     machine_dac.c
     machine_i2c.c
     modmachine.c

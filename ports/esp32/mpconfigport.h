@@ -99,10 +99,11 @@
 #define MICROPY_PY_MACHINE_ADC              (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
-#define MICROPY_PY_MACHINE_ADC_BLOCK        (1)
 #define MICROPY_PY_MACHINE_ADC_INIT         (1)
 #define MICROPY_PY_MACHINE_ADC_READ         (1)
 #define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
+#define MICROPY_PY_MACHINE_ADC_BLOCK        (1)
+#define MICROPY_PY_MACHINE_ADC_BLOCK_INCLUDEFILE "ports/esp32/machine_adc_block.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
