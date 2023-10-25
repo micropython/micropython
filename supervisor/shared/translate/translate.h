@@ -33,9 +33,7 @@
 #include "supervisor/shared/translate/compressed_string.h"
 
 // Map MicroPython's error messages to our translations.
-#if !defined(MICROPY_ENABLE_DYNRUNTIME) || !MICROPY_ENABLE_DYNRUNTIME
-#define MP_ERROR_TEXT(x) translate(x)
-#endif
+#define MP_COMPRESSED_ROM_TEXT(x) translate(x)
 
 // translate() is a giant function with many strcmp calls. The assumption is
 // that the build process will optimize this away and replace it with the

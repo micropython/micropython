@@ -297,7 +297,6 @@ typedef union _mp_float_union_t {
 // So leave MP_COMPRESSED_ROM_TEXT in place for makeqstrdefs.py / makecompresseddata.py to find them.
 
 #else
-
 // Compression enabled and doing a regular build.
 // Map MP_COMPRESSED_ROM_TEXT to the compressed strings.
 
@@ -327,10 +326,9 @@ inline MP_ALWAYSINLINE const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
 
     return msg;
 }
-
 #endif
 
-#elif CIRCUITPY
+#elif defined(CIRCUITPY)
 #include "supervisor/shared/translate/translate.h"
 #else
 
@@ -339,6 +337,10 @@ inline MP_ALWAYSINLINE const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
 typedef const char *mp_rom_error_text_t;
 #define MP_COMPRESSED_ROM_TEXT(x) x
 
-#endif // MICROPY_ROM_TEXT_COMPRESSION // CIRCUITPY
+#endif // MICROPY_ROM_TEXT_COMPRESSION
+
+// Might add more types of compressed text in the future.
+// For now, forward directly to MP_COMPRESSED_ROM_TEXT.
+#define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

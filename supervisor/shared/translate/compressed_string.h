@@ -94,7 +94,7 @@
 typedef struct compressed_string {
     uint8_t data;
     const uint8_t tail[];
-} mp_rom_error_text_t;
+} *mp_rom_error_text_t;
 
 // Return the compressed, translated version of a source string
 // Usually, due to LTO, this is optimized into a load of a constant
