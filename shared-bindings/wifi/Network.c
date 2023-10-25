@@ -122,6 +122,6 @@ STATIC MP_DEFINE_CONST_DICT(wifi_network_locals_dict, wifi_network_locals_dict_t
 MP_DEFINE_CONST_OBJ_TYPE(
     wifi_network_type,
     MP_QSTR_Network,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &wifi_network_locals_dict
     );

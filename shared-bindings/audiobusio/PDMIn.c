@@ -244,7 +244,7 @@ STATIC MP_DEFINE_CONST_DICT(audiobusio_pdmin_locals_dict, audiobusio_pdmin_local
 MP_DEFINE_CONST_OBJ_TYPE(
     audiobusio_pdmin_type,
     MP_QSTR_PDMIn,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audiobusio_pdmin_make_new
     #if CIRCUITPY_AUDIOBUSIO_PDMIN
     , locals_dict, &audiobusio_pdmin_locals_dict

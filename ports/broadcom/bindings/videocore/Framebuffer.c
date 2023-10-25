@@ -172,7 +172,7 @@ STATIC const framebuffer_p_t videocore_framebuffer_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     videocore_framebuffer_type,
     MP_QSTR_Framebuffer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, (mp_obj_dict_t *)&videocore_framebuffer_locals_dict,
     make_new, videocore_framebuffer_make_new,
     buffer, common_hal_videocore_framebuffer_get_buffer,

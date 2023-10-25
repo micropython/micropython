@@ -48,7 +48,7 @@ To compile (or recompile) mpy-cross:
 
     make -C mpy-cross
 
-# Building
+## Building
 
 There a number of ports of CircuitPython!  To build for your board, change to the appropriate ports directory and build.
 
@@ -64,7 +64,7 @@ If you aren't sure what boards exist, have a peek in the boards subdirectory of 
 If you have a fast computer with many cores, consider adding `-j` to your build flags, such as `-j17` on
 a 6-core 12-thread machine.
 
-# Testing
+## Testing
 
 If you are working on changes to the core language, you might find it useful to run the test suite.
 The test suite in the top level `tests` directory.  It needs the unix port to run.
@@ -84,7 +84,7 @@ A successful run will say something like
     676 tests passed
     30 tests skipped: buffered_writer builtin_help builtin_range_binop class_delattr_setattr cmd_parsetree extra_coverage framebuf1 framebuf16 framebuf2 framebuf4 framebuf8 framebuf_subclass mpy_invalid namedtuple_asdict non_compliant resource_stream schedule sys_getsizeof urandom_extra ure_groups ure_span ure_sub ure_sub_unmatched vfs_basic vfs_fat_fileio1 vfs_fat_fileio2 vfs_fat_more vfs_fat_oldproto vfs_fat_ramdisk vfs_userfs
 
-# Debugging
+## Debugging
 
 The easiest way to debug CircuitPython on hardware is with a JLink device, JLinkGDBServer, and an appropriate GDB.
 Instructions can be found at https://learn.adafruit.com/debugging-the-samd21-with-gdb
@@ -99,7 +99,7 @@ Example:
 If your port/build includes `arm-none-eabi-gdb-py`, consider using it instead, as it can be used for better register
 debugging with https://github.com/bnahill/PyCortexMDebug
 
-# Code Quality Checks
+## Code Quality Checks
 
 We apply code quality checks using pre-commit.  Install pre-commit once per system with
 

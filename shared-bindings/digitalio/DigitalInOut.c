@@ -362,7 +362,7 @@ STATIC MP_DEFINE_CONST_DICT(digitalio_digitalinout_locals_dict, digitalio_digita
 MP_DEFINE_CONST_OBJ_TYPE(
     digitalio_digitalinout_type,
     MP_QSTR_DigitalInOut,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, digitalio_digitalinout_make_new,
     locals_dict, &digitalio_digitalinout_locals_dict
     );

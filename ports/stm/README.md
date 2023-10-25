@@ -1,4 +1,4 @@
-# Circuitpython on STM32 #
+# ST Microelectronics STM32 #
 
 This port brings the ST Microelectronics STM32 series of MCUs to Circuitpython. STM32 chips have a wide range of capability, from <$1 low power STM32F0s to dual-core STM32H7s running at 400+ MHz. Currently, only the F4, F7, and H7 families are supported, powered by the ARM Cortex M4 and M7 processors.
 

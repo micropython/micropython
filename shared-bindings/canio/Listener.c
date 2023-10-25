@@ -169,7 +169,7 @@ STATIC MP_DEFINE_CONST_DICT(canio_listener_locals_dict, canio_listener_locals_di
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_listener_type,
     MP_QSTR_Listener,
-    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &canio_listener_locals_dict,
     iter, canio_iternext
     );

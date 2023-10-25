@@ -252,7 +252,7 @@ STATIC MP_DEFINE_CONST_DICT(aesio_locals_dict, aesio_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     aesio_aes_type,
     MP_QSTR_AES,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, aesio_aes_make_new,
     locals_dict, &aesio_locals_dict
     );

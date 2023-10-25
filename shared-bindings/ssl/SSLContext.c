@@ -201,7 +201,7 @@ STATIC MP_DEFINE_CONST_DICT(ssl_sslcontext_locals_dict, ssl_sslcontext_locals_di
 MP_DEFINE_CONST_OBJ_TYPE(
     ssl_sslcontext_type,
     MP_QSTR_SSLContext,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, ssl_sslcontext_make_new,
     locals_dict, &ssl_sslcontext_locals_dict
     );

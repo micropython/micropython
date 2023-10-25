@@ -271,7 +271,7 @@ STATIC MP_DEFINE_CONST_DICT(audiopwmio_pwmaudioout_locals_dict, audiopwmio_pwmau
 MP_DEFINE_CONST_OBJ_TYPE(
     audiopwmio_pwmaudioout_type,
     MP_QSTR_PWMAudioOut,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audiopwmio_pwmaudioout_make_new,
     locals_dict, &audiopwmio_pwmaudioout_locals_dict
     );

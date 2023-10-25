@@ -320,7 +320,7 @@ STATIC MP_DEFINE_CONST_DICT(synthio_note_locals_dict, synthio_note_locals_dict_t
 MP_DEFINE_CONST_OBJ_TYPE(
     synthio_note_type,
     MP_QSTR_Note,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, synthio_note_make_new,
     locals_dict, &synthio_note_locals_dict,
     print, note_print

@@ -280,7 +280,7 @@ STATIC const mp_stream_p_t usb_cdc_serial_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     usb_cdc_serial_type,
     MP_QSTR_Serial,
-    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &usb_cdc_serial_locals_dict,
     iter, mp_stream_unbuffered_iter,
     protocol, &usb_cdc_serial_stream_p

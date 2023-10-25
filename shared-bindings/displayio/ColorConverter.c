@@ -138,7 +138,7 @@ STATIC MP_DEFINE_CONST_DICT(displayio_colorconverter_locals_dict, displayio_colo
 MP_DEFINE_CONST_OBJ_TYPE(
     displayio_colorconverter_type,
     MP_QSTR_ColorConverter,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, displayio_colorconverter_make_new,
     locals_dict, &displayio_colorconverter_locals_dict
     );

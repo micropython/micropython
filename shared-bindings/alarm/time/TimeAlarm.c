@@ -134,7 +134,7 @@ STATIC MP_DEFINE_CONST_DICT(alarm_time_timealarm_locals_dict, alarm_time_timeala
 MP_DEFINE_CONST_OBJ_TYPE(
     alarm_time_timealarm_type,
     MP_QSTR_TimeAlarm,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, alarm_time_timealarm_make_new,
     locals_dict, &alarm_time_timealarm_locals_dict
     );

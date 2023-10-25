@@ -60,6 +60,9 @@ static supervisor_allocation *tilegrid_tiles = NULL;
 #endif
 
 void supervisor_start_terminal(uint16_t width_px, uint16_t height_px) {
+    if (supervisor_terminal_started()) {
+        return;
+    }
     // Default the scale to 2 because we may show blinka without the terminal for
     // languages that don't have font support.
     uint8_t scale = 2;

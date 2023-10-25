@@ -295,7 +295,7 @@ STATIC mp_int_t is31fl3741_FrameBuffer_get_buffer(mp_obj_t self_in, mp_buffer_in
 MP_DEFINE_CONST_OBJ_TYPE(
     is31fl3741_FrameBuffer_type,
     MP_QSTR_is31fl3741,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &is31fl3741_FrameBuffer_locals_dict,
     make_new, is31fl3741_FrameBuffer_make_new,
     buffer, is31fl3741_FrameBuffer_get_buffer,

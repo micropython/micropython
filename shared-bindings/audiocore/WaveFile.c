@@ -203,7 +203,7 @@ STATIC const audiosample_p_t audioio_wavefile_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     audioio_wavefile_type,
     MP_QSTR_WaveFile,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, audioio_wavefile_make_new,
     locals_dict, &audioio_wavefile_locals_dict,
     protocol, &audioio_wavefile_proto

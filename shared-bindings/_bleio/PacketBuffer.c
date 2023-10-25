@@ -232,7 +232,7 @@ STATIC MP_DEFINE_CONST_DICT(bleio_packet_buffer_locals_dict, bleio_packet_buffer
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_packet_buffer_type,
     MP_QSTR_PacketBuffer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, bleio_packet_buffer_make_new,
     locals_dict, &bleio_packet_buffer_locals_dict
     );

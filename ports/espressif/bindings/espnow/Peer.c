@@ -225,7 +225,7 @@ STATIC MP_DEFINE_CONST_DICT(espnow_peer_locals_dict, espnow_peer_locals_dict_tab
 MP_DEFINE_CONST_OBJ_TYPE(
     espnow_peer_type,
     MP_QSTR_Peer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, espnow_peer_make_new,
     locals_dict, &espnow_peer_locals_dict
     );

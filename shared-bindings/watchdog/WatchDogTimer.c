@@ -151,6 +151,6 @@ STATIC MP_DEFINE_CONST_DICT(watchdog_watchdogtimer_locals_dict, watchdog_watchdo
 MP_DEFINE_CONST_OBJ_TYPE(
     watchdog_watchdogtimer_type,
     MP_QSTR_WatchDogTimer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &watchdog_watchdogtimer_locals_dict
     );

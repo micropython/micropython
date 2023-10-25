@@ -492,7 +492,7 @@ STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 MP_DEFINE_CONST_OBJ_TYPE(
     busio_spi_type,
     MP_QSTR_SPI,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, busio_spi_make_new,
     locals_dict, &busio_spi_locals_dict
     );

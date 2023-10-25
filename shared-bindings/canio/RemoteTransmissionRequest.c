@@ -139,7 +139,7 @@ STATIC MP_DEFINE_CONST_DICT(canio_remote_transmission_request_locals_dict, canio
 MP_DEFINE_CONST_OBJ_TYPE(
     canio_remote_transmission_request_type,
     MP_QSTR_RemoteTransmissionRequest,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, canio_remote_transmission_request_make_new,
     locals_dict, &canio_remote_transmission_request_locals_dict
     );

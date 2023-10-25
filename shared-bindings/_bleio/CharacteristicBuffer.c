@@ -225,7 +225,7 @@ STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
 MP_DEFINE_CONST_OBJ_TYPE(
     bleio_characteristic_buffer_type,
     MP_QSTR_CharacteristicBuffer,
-    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, bleio_characteristic_buffer_make_new,
     locals_dict, &bleio_characteristic_buffer_locals_dict,
     iter, mp_stream_unbuffered_iter,

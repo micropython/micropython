@@ -167,7 +167,7 @@ STATIC MP_DEFINE_CONST_DICT(memorymonitor_allocationsize_locals_dict, memorymoni
 MP_DEFINE_CONST_OBJ_TYPE(
     memorymonitor_allocationsize_type,
     MP_QSTR_AllocationSize,
-    MP_TYPE_FLAG_ITER_IS_GETITER,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, memorymonitor_allocationsize_make_new,
     subscr, memorymonitor_allocationsize_subscr,
     unary_op, memorymonitor_allocationsize_unary_op,

@@ -366,7 +366,7 @@ STATIC MP_DEFINE_CONST_DICT(framebufferio_framebufferdisplay_locals_dict, frameb
 MP_DEFINE_CONST_OBJ_TYPE(
     framebufferio_framebufferdisplay_type,
     MP_QSTR_FramebufferDisplay,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, framebufferio_framebufferdisplay_make_new,
     locals_dict, &framebufferio_framebufferdisplay_locals_dict
     );

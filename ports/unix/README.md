@@ -1,5 +1,5 @@
 The Unix version
-----------------
+================
 
 The "unix" port requires a standard Unix-like environment with gcc and GNU
 make. This includes Linux, BSD, macOS, and Windows Subsystem for Linux. The
@@ -46,7 +46,7 @@ Browse available modules at
 for more information about `mip`.
 
 External dependencies
----------------------
+=====================
 
 The `libffi` library and `pkg-config` tool are required. On Debian/Ubuntu/Mint
 derivative Linux distros, install `build-essential`(includes toolchain and

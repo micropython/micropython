@@ -251,7 +251,7 @@ STATIC const framebuffer_p_t picodvi_framebuffer_proto = {
 MP_DEFINE_CONST_OBJ_TYPE(
     picodvi_framebuffer_type,
     MP_QSTR_Framebuffer,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &picodvi_framebuffer_locals_dict,
     make_new, picodvi_framebuffer_make_new,
     buffer, common_hal_picodvi_framebuffer_get_buffer,

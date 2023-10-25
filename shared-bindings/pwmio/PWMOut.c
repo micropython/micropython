@@ -301,7 +301,7 @@ STATIC MP_DEFINE_CONST_DICT(pwmio_pwmout_locals_dict, pwmio_pwmout_locals_dict_t
 MP_DEFINE_CONST_OBJ_TYPE(
     pwmio_pwmout_type,
     MP_QSTR_PWMOut,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, pwmio_pwmout_make_new,
     locals_dict, &pwmio_pwmout_locals_dict
     );
