@@ -830,6 +830,15 @@ typedef double mp_float_t;
 #define MICROPY_PY_BUILTINS_COMPLEX (MICROPY_PY_BUILTINS_FLOAT)
 #endif
 
+// Whether to use the native _Float16 for 16-bit float support
+#ifndef MICROPY_FLOAT_USE_NATIVE_FLT16
+#ifdef __FLT16_MAX__
+#define MICROPY_FLOAT_USE_NATIVE_FLT16 (1)
+#else
+#define MICROPY_FLOAT_USE_NATIVE_FLT16 (0)
+#endif
+#endif
+
 // Whether to provide a high-quality hash for float and complex numbers.
 // Otherwise the default is a very simple but correct hashing function.
 #ifndef MICROPY_FLOAT_HIGH_QUALITY_HASH
