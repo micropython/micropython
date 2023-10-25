@@ -69,21 +69,21 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
 
     mp_obj_t source = all_args[0];
 
-    uint32_t channel;
+    uint32_t channel = -1;
     bool is_ext = false;
     const machine_pin_obj_t *pin = NULL;
 
     if (mp_obj_is_int(source)) {
         // Get and validate channel number.
         channel = mp_obj_get_int(source);
-        if (!((channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR) || ADC_IS_VALID_GPIO(channel))) {
+        if (ADC_IS_VALID_GPIO(channel)) {
+            channel = ADC_CHANNEL_FROM_GPIO(channel);
+        } else if (!(channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR)) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid channel"));
         }
-
     } else {
         // Get GPIO and check it has ADC capabilities.
         pin = machine_pin_find(source);
-        channel = pin->id;
         bool valid_adc_pin = false;
         #if MICROPY_HW_ADC_EXT_COUNT
         is_ext = pin->is_ext;
@@ -92,7 +92,7 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
         } else
         #endif
         {
-            valid_adc_pin = ADC_IS_VALID_GPIO(channel);
+            valid_adc_pin = ADC_IS_VALID_GPIO(pin->id);
         }
         if (!valid_adc_pin) {
             mp_raise_ValueError(MP_ERROR_TEXT("Pin doesn't have ADC capabilities"));
@@ -104,16 +104,18 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
         adc_init();
     }
 
-    if (is_ext) {
-        #if MICROPY_HW_ADC_EXT_COUNT
-        // Note external pins are mutable.
-        machine_pin_ext_config((machine_pin_obj_t *)pin, MACHINE_PIN_MODE_ANALOG, 0);
-        channel = machine_pin_ext_to_adc_channel(pin);
-        #endif
-    } else if (ADC_IS_VALID_GPIO(channel)) {
-        // Configure the GPIO pin in ADC mode.
-        adc_gpio_init(channel);
-        channel = ADC_CHANNEL_FROM_GPIO(channel);
+    if (pin) {
+        if (is_ext) {
+            #if MICROPY_HW_ADC_EXT_COUNT
+            // Note external pins are mutable.
+            machine_pin_ext_config((machine_pin_obj_t *)pin, MACHINE_PIN_MODE_ANALOG, 0);
+            channel = machine_pin_ext_to_adc_channel(pin);
+            #endif
+        } else {
+            // Configure the GPIO pin in ADC mode.
+            adc_gpio_init(pin->id);
+            channel = ADC_CHANNEL_FROM_GPIO(pin->id);
+        }
     } else if (channel == ADC_CHANNEL_TEMPSENSOR) {
         // Enable temperature sensor.
         adc_set_temp_sensor_enabled(1);
