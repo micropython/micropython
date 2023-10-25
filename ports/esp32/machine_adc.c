@@ -28,13 +28,9 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
-#include "esp_log.h"
-
-#include "driver/gpio.h"
-#include "driver/adc.h"
-
 #include "py/mphal.h"
-#include "machine_adc.h"
+#include "adc.h"
+#include "driver/adc.h"
 
 #define ADCBLOCK1 (&madcblock_obj[0])
 #define ADCBLOCK2 (&madcblock_obj[1])
@@ -136,7 +132,7 @@ static inline void madc_atten_set(const machine_adc_obj_t *self, adc_atten_t att
     madc_obj_atten[self - &madc_obj[0]] = atten + 1;
 }
 
-const machine_adc_obj_t *madc_search_helper(madcblock_obj_t *block, adc_channel_t channel_id, gpio_num_t gpio_id) {
+const machine_adc_obj_t *madc_search_helper(machine_adc_block_obj_t *block, adc_channel_t channel_id, gpio_num_t gpio_id) {
     for (int i = 0; i < MP_ARRAY_SIZE(madc_obj); i++) {
         const machine_adc_obj_t *adc = &madc_obj[i];
         if ((block == NULL || block == adc->block) && (channel_id == -1 || channel_id == adc->channel_id) && (gpio_id == -1 || gpio_id == adc->gpio_id)) {
