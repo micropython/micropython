@@ -2,8 +2,90 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0">
   <PropertyGroup>
     <FrozenManifest>$(PyWinDir)\variants\manifest.py</FrozenManifest>
+    <PyIncDirs>$(PyIncDirs);$(PyBaseDir)lib\mbedtls\include</PyIncDirs>
   </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>MBEDTLS_CONFIG_FILE="$(PyBaseDir)ports\unix\mbedtls\mbedtls_config_port.h";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
+    <PySubmodules Include="lib/mbedtls" />
     <PySubmodules Include="lib/micropython-lib" />
+    <!--See extmod.mk.-->
+    <PyExtModSource Include="$(PyBaseDir)extmod\modtls_mbedtls.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls_errors\mp_mbedtls_errors.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\aes.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\aesni.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\asn1parse.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\asn1write.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\base64.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\bignum_core.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\bignum_mod.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\bignum_mod_raw.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\bignum.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\camellia.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ccm.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\chacha20.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\chachapoly.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\cipher.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\cipher_wrap.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\nist_kw.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\aria.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\cmac.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\constant_time.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\mps_reader.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\mps_trace.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ctr_drbg.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\debug.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\des.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\dhm.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ecdh.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ecdsa.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ecjpake.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ecp.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ecp_curves.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\entropy.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\entropy_poll.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\gcm.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\hmac_drbg.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\md5.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\md.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\oid.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\padlock.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\pem.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\pk.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\pkcs12.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\pkcs5.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\pkparse.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\pk_wrap.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\pkwrite.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\platform.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\platform_util.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\poly1305.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ripemd160.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\rsa.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\rsa_alt_helpers.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\sha1.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\sha256.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\sha512.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_cache.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_ciphersuites.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_client.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_cookie.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_debug_helpers_generated.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_msg.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_ticket.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_tls.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_tls12_client.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\ssl_tls12_server.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\timing.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\x509.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\x509_create.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\x509_crl.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\x509_crt.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\x509_csr.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\x509write_crt.c" />
+    <PyThirdPartySource Include="$(PyBaseDir)lib\mbedtls\library\x509write_csr.c" />
   </ItemGroup>
 </Project>

@@ -26,3 +26,7 @@
 
 #define MICROPY_PY_BUILTINS_HELP                (1)
 #define MICROPY_PY_BUILTINS_HELP_MODULES        (1)
+#ifndef __MINGW32__
+#define MICROPY_PY_SSL                          (1)
+#define MICROPY_SSL_MBEDTLS                     (1)
+#endif
