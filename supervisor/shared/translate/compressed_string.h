@@ -94,12 +94,12 @@
 typedef struct compressed_string {
     uint8_t data;
     const uint8_t tail[];
-} compressed_string_t;
+} mp_rom_error_text_t;
 
 // Return the compressed, translated version of a source string
 // Usually, due to LTO, this is optimized into a load of a constant
 // pointer.
-// const compressed_string_t *translate(const char *c);
-void serial_write_compressed(const compressed_string_t *compressed);
-char *decompress(const compressed_string_t *compressed, char *decompressed);
-uint16_t decompress_length(const compressed_string_t *compressed);
+// const mp_rom_error_text_t *translate(const char *c);
+void serial_write_compressed(const mp_rom_error_text_t *compressed);
+char *decompress(const mp_rom_error_text_t *compressed, char *decompressed);
+uint16_t decompress_length(const mp_rom_error_text_t *compressed);

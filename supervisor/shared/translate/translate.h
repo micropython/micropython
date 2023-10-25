@@ -49,5 +49,5 @@
 #else
 // In link time optimized (LTO) builds, we can compile this once into a .o and
 // at link time the calls will be optimized.
-const compressed_string_t *translate(const char *c);
+const mp_rom_error_text_t *translate(const char *c);
 #endif

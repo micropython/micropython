@@ -27,6 +27,7 @@
 #define MICROPY_INCLUDED_PY_MPPRINT_H
 
 #include "py/mpconfig.h"
+#include "py/misc.h"
 
 #define PF_FLAG_LEFT_ADJUST       (0x001)
 #define PF_FLAG_SHOW_SIGN         (0x002)
@@ -79,11 +80,9 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
-// CIRCUITPY-CHANGE
-struct compressed_string;
-int mp_cprintf(const mp_print_t *print, const struct compressed_string *compressed_fmt, ...);
+int mp_cprintf(const mp_print_t *print, const mp_rom_error_text_t *compressed_fmt, ...);
 #ifdef va_start
-int mp_vcprintf(const mp_print_t *print, const struct compressed_string *compressed_fmt, va_list args);
+int mp_vcprintf(const mp_print_t *print, const mp_rom_error_text_t *compressed_fmt, va_list args);
 #endif
 
 #endif // MICROPY_INCLUDED_PY_MPPRINT_H

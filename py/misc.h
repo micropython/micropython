@@ -330,6 +330,8 @@ inline MP_ALWAYSINLINE const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
 
 #endif
 
+#elif CIRCUITPY
+#include "supervisor/shared/translate/translate.h"
 #else
 
 // Compression not enabled, just make it a no-op.
@@ -337,15 +339,6 @@ inline MP_ALWAYSINLINE const char *MP_COMPRESSED_ROM_TEXT(const char *msg) {
 typedef const char *mp_rom_error_text_t;
 #define MP_COMPRESSED_ROM_TEXT(x) x
 
-#endif // MICROPY_ROM_TEXT_COMPRESSION
-
-// Might add more types of compressed text in the future.
-// For now, forward directly to MP_COMPRESSED_ROM_TEXT.
-// CIRCUITPY-CHANGE: MP_ERROR_TEXT() -> translate()
-#if CIRCUITPY
-#include "supervisor/shared/translate/translate.h"
-#else
-#define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
-#endif
+#endif // MICROPY_ROM_TEXT_COMPRESSION // CIRCUITPY
 
 #endif // MICROPY_INCLUDED_PY_MISC_H

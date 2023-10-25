@@ -39,7 +39,7 @@
 #include "py/mpprint.h"
 #include "supervisor/serial.h"
 
-void serial_write_compressed(const compressed_string_t *compressed) {
+void serial_write_compressed(const mp_rom_error_text_t *compressed) {
     mp_printf(MP_PYTHON_PRINTER, "%S", compressed);
 }
 
@@ -90,7 +90,7 @@ STATIC int put_utf8(char *buf, int u) {
     }
 }
 
-uint16_t decompress_length(const compressed_string_t *compressed) {
+uint16_t decompress_length(const mp_rom_error_text_t *compressed) {
     #ifndef NO_QSTR
     #if (compress_max_length_bits <= 8)
     return 1 + (compressed->data >> (8 - compress_max_length_bits));
@@ -123,7 +123,7 @@ static int get_nbits(bitstream_state_t *st, int n) {
     return r;
 }
 
-char *decompress(const compressed_string_t *compressed, char *decompressed) {
+char *decompress(const mp_rom_error_text_t *compressed, char *decompressed) {
     bitstream_state_t b = {
         .ptr = &(compressed->data) + (compress_max_length_bits >> 3),
         .bit = 1 << (7 - ((compress_max_length_bits) & 0x7)),

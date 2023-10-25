@@ -48,7 +48,7 @@
 //|     ...
 //|
 MP_DEFINE_USB_CORE_EXCEPTION(USBError, OSError)
-NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...) {
+NORETURN void mp_raise_usb_core_USBError(const mp_rom_error_text_t *fmt, ...) {
     mp_obj_t exception;
     if (fmt == NULL) {
         exception = mp_obj_new_exception(&mp_type_usb_core_USBError);
