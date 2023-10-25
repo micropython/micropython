@@ -855,7 +855,11 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
-        return mp_obj_subscr(self->subobj[0], index, value);
+        // CIRCUITPY-CHANGE: We pass the native subscr a copy of the original
+        // object so it can access info about the subobject.
+        const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
+        mp_obj_t ret = MP_OBJ_TYPE_GET_SLOT(type, subscr)(self_in, index, value);
+        return ret;
     } else if (member[0] != MP_OBJ_NULL) {
         size_t n_args = value == MP_OBJ_NULL || value == MP_OBJ_SENTINEL ? 1 : 2;
         mp_obj_t ret = mp_call_method_n_kw(n_args, 0, member);
