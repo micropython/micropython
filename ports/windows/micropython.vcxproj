@@ -89,6 +89,7 @@
     <ClCompile Include="@(PyExtModSource)" />
     <ClCompile Include="$(PyBaseDir)shared\readline\*.c" />
     <ClCompile Include="$(PyBaseDir)shared\runtime\gchelper_generic.c" />
+    <ClCompile Include="$(PyBaseDir)shared\runtime\pyexec.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\msvc\*.c" />
     <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
