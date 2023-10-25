@@ -815,6 +815,12 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if not sysconfig.get_platform().startswith("mingw"):
             # Works but CPython uses '\' path separator
             skip_tests.add("import/import_file.py")
+        # These are usually skipped because either the socket or select module is missing,
+        # but variants can have them both and select support for sockets is not implemented.
+        skip_tests.add("extmod/select_ipoll.py")
+        skip_tests.add("extmod/select_poll_basic.py")
+        skip_tests.add("extmod/select_poll_custom.py")
+        skip_tests.add("extmod/select_poll_udp.py")
 
     skip_tests = [os.path.realpath(base_path(skip_test)) for skip_test in skip_tests]
 
