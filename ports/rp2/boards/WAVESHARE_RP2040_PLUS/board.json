@@ -1,0 +1,23 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "Battery Charging",
+        "External Flash",
+        "USB-C"
+    ],
+    "images": [
+        "rp2040-plus-1.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "RP2040-Plus",
+    "thumbnail": "",
+    "url": "https://www.waveshare.com/rp2040-plus.htm",
+    "variants": {
+        "FLASH_16M": "16 MiB Flash"
+    },
+    "vendor": "Waveshare"
+}
