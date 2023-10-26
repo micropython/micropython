@@ -36,9 +36,6 @@
 // This needs to be set before we include the RTOS headers
 #define USE_US_TIMER 1
 
-#include "extmod/machine_mem.h"
-#include "extmod/machine_i2c.h"
-#include "extmod/machine_spi.h"
 #include "extmod/modmachine.h"
 #include "modmachine.h"
 

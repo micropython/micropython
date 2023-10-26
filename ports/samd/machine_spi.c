@@ -30,7 +30,6 @@
 #if MICROPY_PY_MACHINE_SPI
 
 #include "py/mphal.h"
-#include "extmod/machine_spi.h"
 #include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"

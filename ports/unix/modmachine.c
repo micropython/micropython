@@ -31,7 +31,6 @@
 #include "py/runtime.h"
 #include "py/obj.h"
 
-#include "extmod/machine_mem.h"
 #include "extmod/modmachine.h"
 
 #if MICROPY_PLAT_DEV_MEM
