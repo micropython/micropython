@@ -496,7 +496,7 @@ int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args) {
                 break;
             }
             case 'S': {
-                mp_rom_error_text_t arg = va_arg(args, mp_rom_error_text_t );
+                mp_rom_error_text_t arg = va_arg(args, mp_rom_error_text_t);
                 size_t len_with_nul = decompress_length(arg);
                 size_t len = len_with_nul - 1;
                 char str[len_with_nul];
