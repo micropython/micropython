@@ -376,8 +376,9 @@ latex_elements = {
 latex_documents = [
   ("docs/pdf", 'CircuitPython.tex', 'CircuitPython Documentation',
    'CircuitPython Contributors', 'manual'),
-  ("shared-bindings/support_matrix", 'SupportMatrix.tex', 'Board Support Matrix',
-   'CircuitPython Contributors', 'manual'),
+  # Uncomment this if you want to build a PDF of the board -> module support matrix.
+  # ("shared-bindings/support_matrix", 'SupportMatrix.tex', 'Board Support Matrix',
+  # 'CircuitPython Contributors', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
