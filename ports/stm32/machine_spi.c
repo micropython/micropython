@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "spi.h"
 
 /******************************************************************************/

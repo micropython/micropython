@@ -35,9 +35,10 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "mphalport.h"
 #include "modmachine.h"
-#include "extmod/virtpin.h"
 #include "machine_pin.h"
 #include "machine_rtc.h"
 #include "modesp32.h"

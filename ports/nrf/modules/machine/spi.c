@@ -36,6 +36,7 @@
 #include "py/nlr.h"
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"

@@ -31,7 +31,7 @@
 
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
 #include "clock_config.h"

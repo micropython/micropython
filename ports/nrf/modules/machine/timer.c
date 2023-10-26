@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include "py/nlr.h"
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "timer.h"
 #include "nrfx_timer.h"
 
