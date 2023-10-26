@@ -29,7 +29,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
-#include "extmod/machine_pulse.h"
+#include "extmod/modmachine.h"
 #include "drivers/dht/dht.h"
 
 // Allow the open-drain-high call to be DHT specific for ports that need it

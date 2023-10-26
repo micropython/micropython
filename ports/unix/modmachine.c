@@ -32,9 +32,7 @@
 #include "py/obj.h"
 
 #include "extmod/machine_mem.h"
-#include "extmod/machine_pinbase.h"
-#include "extmod/machine_signal.h"
-#include "extmod/machine_pulse.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PLAT_DEV_MEM
 #include <errno.h>
