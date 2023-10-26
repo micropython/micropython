@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-10-23 21:20+0000\n"
-"Last-Translator: Dan Halbert <halbert@halwitz.org>\n"
+"PO-Revision-Date: 2023-10-27 08:51+0000\n"
+"Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.1.1-dev\n"
+"X-Generator: Weblate 5.2-dev\n"
 
 #: main.c
 msgid ""
@@ -411,7 +411,7 @@ msgstr "'aguardar' fora da função"
 
 #: py/compile.c
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "'break'/'continue' fora do loop"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -453,7 +453,7 @@ msgstr ", em %q\n"
 #: shared-bindings/displayio/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid ".show(x) removed. Use .root_group = x"
-msgstr ""
+msgstr ".show(x) foi removido. Use .root_group = x"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -2550,7 +2550,7 @@ msgstr "estouro asm"
 
 #: py/compile.c
 msgid "async for/with outside async function"
-msgstr ""
+msgstr "assíncrono para/com a função assíncrona externa"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -3166,7 +3166,7 @@ msgstr "a fonte deve ter 2048 bytes de comprimento"
 
 #: extmod/moddeflate.c
 msgid "format"
-msgstr ""
+msgstr "formato"
 
 #: py/objstr.c
 msgid "format requires a dict"
@@ -3411,7 +3411,7 @@ msgstr "o intervalo deve estar entre %s-%s"
 
 #: py/compile.c
 msgid "invalid arch"
-msgstr ""
+msgstr "arco inválido"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3606,7 +3606,7 @@ msgstr "memoryview: o comprimento não é um múltiplo do tamanho dos itens"
 
 #: extmod/modtime.c
 msgid "mktime needs a tuple of length 8 or 9"
-msgstr ""
+msgstr "O mktime precisa de uma tupla com comprimento 8 ou 9"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
@@ -4402,7 +4402,7 @@ msgstr "valor fora do alcance do alvo"
 
 #: extmod/moddeflate.c
 msgid "wbits"
-msgstr ""
+msgstr "wbits"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
