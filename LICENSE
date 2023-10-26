@@ -78,8 +78,6 @@ used during the build process and is not part of the compiled source code.
                 /*/stm32*.h (BSD-3-clause)
             /usbdev (MCD-ST Liberty SW License Agreement V2)
             /usbhost (MCD-ST Liberty SW License Agreement V2)
-        /teensy
-            /core (PJRC.COM)
         /zephyr
             /src (Apache-2.0)
     /tools

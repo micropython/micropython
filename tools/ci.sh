@@ -357,19 +357,6 @@ function ci_stm32_nucleo_build {
 }
 
 ########################################################################################
-# ports/teensy
-
-function ci_teensy_setup {
-    ci_gcc_arm_setup
-}
-
-function ci_teensy_build {
-    make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/teensy submodules
-    make ${MAKEOPTS} -C ports/teensy
-}
-
-########################################################################################
 # ports/unix
 
 CI_UNIX_OPTS_SYS_SETTRACE=(
