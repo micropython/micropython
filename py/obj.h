@@ -614,17 +614,25 @@ typedef struct _mp_getiter_iternext_custom_t {
 } mp_getiter_iternext_custom_t;
 
 // Buffer protocol
+
 typedef struct _mp_buffer_info_t {
     void *buf;      // can be NULL if len == 0
     size_t len;     // in bytes
     int typecode;   // as per binary.h
 } mp_buffer_info_t;
+
 #define MP_BUFFER_READ  (1)
 #define MP_BUFFER_WRITE (2)
 #define MP_BUFFER_RW (MP_BUFFER_READ | MP_BUFFER_WRITE)
+#define MP_BUFFER_RAISE_IF_UNSUPPORTED (4)
+
 typedef mp_int_t (*mp_buffer_fun_t)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+
+static inline void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    mp_get_buffer(obj, bufinfo, flags | MP_BUFFER_RAISE_IF_UNSUPPORTED);
+}
 
 // This struct will be updated to become a variable sized struct. In order to
 // use this as a member, or allocate dynamically, use the mp_obj_empty_type_t
@@ -1033,13 +1041,11 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
 #define mp_obj_new_exception_msg(exc_type, msg) mp_obj_new_exception(exc_type)
 #define mp_obj_new_exception_msg_varg(exc_type, ...) mp_obj_new_exception(exc_type)
 #else
-// CIRCUITPY-CHANGE
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg);
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...);  // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...); // counts args by number of % symbols in fmt, excluding %%; can only handle void* sizes (ie no float/double!)
 #endif
 #ifdef va_start
-// CIRCUITPY-CHANGE
-mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list arg);  // same fmt restrictions as above
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list arg); // same fmt restrictions as above
 #endif
 mp_obj_t mp_obj_new_gen_wrap(mp_obj_t fun);
 mp_obj_t mp_obj_new_closure(mp_obj_t fun, size_t n_closed, const mp_obj_t *closed);

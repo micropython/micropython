@@ -685,18 +685,12 @@ mp_obj_t mp_obj_generic_subscript_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter_
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (!MP_OBJ_TYPE_HAS_SLOT(type, buffer)) {
-        return false;
+    if (MP_OBJ_TYPE_HAS_SLOT(type, buffer)
+        && MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags & MP_BUFFER_RW) == 0) {
+        return true;
     }
-    int ret = MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags);
-    if (ret != 0) {
-        return false;
-    }
-    return true;
-}
-
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    if (!mp_get_buffer(obj, bufinfo, flags)) {
+    if (flags & MP_BUFFER_RAISE_IF_UNSUPPORTED) {
         mp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
     }
+    return false;
 }
