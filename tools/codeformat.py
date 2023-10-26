@@ -76,8 +76,6 @@ EXCLUSIONS = [
     # STM32 USB dev/host code is mostly 3rd party.
     "ports/stm32/usbdev/**/*.[ch]",
     "ports/stm32/usbhost/**/*.[ch]",
-    # Teensy core code is 3rd party.
-    "ports/teensy/core/*.[ch]",
     # STM32 build includes generated Python code.
     "ports/*/build*",
     # not real python files
