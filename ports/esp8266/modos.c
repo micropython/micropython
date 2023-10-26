@@ -35,7 +35,6 @@
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
 #include "genhdr/mpversion.h"
-#include "esp_mphal.h"
 #include "user_interface.h"
 
 STATIC const char *mp_os_uname_release(void) {

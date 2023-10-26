@@ -27,6 +27,7 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_MODMACHINE_H
 #define MICROPY_INCLUDED_EXTMOD_MODMACHINE_H
 
+#include "py/mphal.h"
 #include "py/obj.h"
 
 // Whether to enable the ADC.init() method.
@@ -97,11 +98,19 @@ extern const mp_obj_type_t machine_adc_type;
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_pin_type;
+extern const mp_obj_type_t machine_pinbase_type;
 extern const mp_obj_type_t machine_pwm_type;
 extern const mp_obj_type_t machine_rtc_type;
+extern const mp_obj_type_t machine_signal_type;
 extern const mp_obj_type_t machine_spi_type;
 extern const mp_obj_type_t machine_timer_type;
 extern const mp_obj_type_t machine_uart_type;
 extern const mp_obj_type_t machine_wdt_type;
+
+void machine_bitstream_high_low(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len);
+mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us);
+
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bitstream_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_time_pulse_us_obj);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MODMACHINE_H

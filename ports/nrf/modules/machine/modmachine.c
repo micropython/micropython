@@ -31,7 +31,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_mem.h"
-#include "extmod/machine_pulse.h"
 #include "extmod/machine_i2c.h"
 #include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
