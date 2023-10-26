@@ -28,7 +28,6 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "spi.h"
-#include "extmod/machine_spi.h"
 #include "extmod/modmachine.h"
 
 // Possible DMA configurations for SPI buses:

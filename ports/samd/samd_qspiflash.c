@@ -35,7 +35,7 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "modmachine.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs.h"
 #include "pin_af.h"
 #include "clock_config.h"

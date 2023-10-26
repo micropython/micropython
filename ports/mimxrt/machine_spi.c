@@ -28,7 +28,6 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_spi.h"
 #include "extmod/modmachine.h"
 #include CLOCK_CONFIG_H
 

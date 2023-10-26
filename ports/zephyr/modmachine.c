@@ -32,9 +32,6 @@
 
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "extmod/machine_mem.h"
-#include "extmod/machine_i2c.h"
-#include "extmod/machine_spi.h"
 #include "extmod/modmachine.h"
 #include "modmachine.h"
 

@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "modmachine.h"
 #include "hspi.h"
 
