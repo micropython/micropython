@@ -29,8 +29,6 @@
 
 #include "extmod/machine_i2c.h"
 
-extern const mp_obj_type_t machine_i2c_type;
-
 void i2c_init0(void);
 
 #endif // I2C_H__

@@ -35,6 +35,7 @@
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 

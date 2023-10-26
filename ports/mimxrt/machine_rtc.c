@@ -29,6 +29,7 @@
 #include "py/runtime.h"
 #include "shared/runtime/mpirq.h"
 #include "shared/timeutils/timeutils.h"
+#include "extmod/modmachine.h"
 #include "modmachine.h"
 #include "ticks.h"
 #include "fsl_snvs_lp.h"

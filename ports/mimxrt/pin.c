@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 
 

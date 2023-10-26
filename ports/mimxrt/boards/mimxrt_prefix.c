@@ -2,6 +2,7 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 
 #define PIN_AF(_name, _af_mode, _input_daisy, _instance, _input_register, _pad_config) \

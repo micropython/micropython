@@ -35,6 +35,7 @@
 #if MICROPY_PY_MACHINE_I2C
 
 #include "extmod/machine_i2c.h"
+#include "extmod/modmachine.h"
 #include "i2c.h"
 #if NRFX_TWI_ENABLED
 #include "nrfx_twi.h"

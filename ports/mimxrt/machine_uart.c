@@ -73,8 +73,6 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-extern const mp_obj_type_t machine_uart_type;
-
 STATIC const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
 STATIC LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
 static const iomux_table_t iomux_table_uart[] = {

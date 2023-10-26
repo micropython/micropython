@@ -4,6 +4,7 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 
 #define PIN_AD(p_name, p_pin, ad_bit, ad_channel) \

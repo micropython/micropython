@@ -29,10 +29,11 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
 #include "machine_pin.h"
-#include "extmod/virtpin.h"
 
 #include "hardware/irq.h"
 #include "hardware/regs/intctrl.h"

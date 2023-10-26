@@ -31,9 +31,9 @@
 #include <stdint.h>
 #include "string.h"
 
-#include "modmachine.h"
 #include "py/runtime.h"
 #include "py/misc.h"
+#include "extmod/modmachine.h"
 #include "pin_af.h"
 #include "sam.h"
 

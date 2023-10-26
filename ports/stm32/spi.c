@@ -29,6 +29,7 @@
 #include "py/mphal.h"
 #include "spi.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 
 // Possible DMA configurations for SPI buses:
 // SPI1_TX: DMA2_Stream3.CHANNEL_3 or DMA2_Stream5.CHANNEL_3

@@ -36,7 +36,7 @@
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_SPI
 

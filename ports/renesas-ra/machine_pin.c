@@ -31,9 +31,10 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "shared/runtime/mpirq.h"
 #include "modmachine.h"
-#include "extmod/virtpin.h"
 
 #include "pin.h"
 #include "extint.h"

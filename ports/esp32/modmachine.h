@@ -9,14 +9,9 @@ typedef enum {
     MACHINE_WAKE_DEEPSLEEP=0x04
 } wake_type_t;
 
-extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_touchpad_type;
 extern const mp_obj_type_t machine_adcblock_type;
 extern const mp_obj_type_t machine_dac_type;
-extern const mp_obj_type_t machine_i2c_type;
-extern const mp_obj_type_t machine_spi_type;
-extern const mp_obj_type_t machine_rtc_type;
 extern const mp_obj_type_t machine_sdcard_type;
 
 void machine_init(void);

@@ -31,8 +31,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "extmod/vfs.h"
-#include "modmachine.h"
 #include "pin_af.h"
 
 #if MICROPY_HW_SPIFLASH
