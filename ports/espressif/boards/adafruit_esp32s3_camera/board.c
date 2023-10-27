@@ -87,7 +87,7 @@ void board_init(void) {
         MIPI_COMMAND_WRITE_MEMORY_START, // Write memory command
         display_init_sequence,
         sizeof(display_init_sequence),
-        45,  // backlight pin
+        &pin_GPIO45,  // backlight pin
         NO_BRIGHTNESS_COMMAND,
         1.0f, // brightness
         false, // single_byte_bounds
