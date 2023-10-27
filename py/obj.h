@@ -916,6 +916,10 @@ extern const mp_obj_type_t mp_type_ZeroDivisionError;
 #if CIRCUITPY_ALARM
 extern const mp_obj_type_t mp_type_DeepSleepRequest;
 #endif
+#if CIRCUITPY_WARNINGS
+extern const mp_obj_type_t mp_type_Warning;
+extern const mp_obj_type_t mp_type_FutureWarning;
+#endif
 
 
 // Constant objects, globally accessible: None, False, True

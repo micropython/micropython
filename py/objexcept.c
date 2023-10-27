@@ -452,14 +452,16 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
 #if CIRCUITPY_ALARM
 MP_DEFINE_EXCEPTION(DeepSleepRequest, BaseException)
 #endif
-/*
+#if CIRCUITPY_WARNINGS
   MP_DEFINE_EXCEPTION(Warning, Exception)
+    MP_DEFINE_EXCEPTION(FutureWarning, Warning)
+#endif
+/*
     MP_DEFINE_EXCEPTION(DeprecationWarning, Warning)
     MP_DEFINE_EXCEPTION(PendingDeprecationWarning, Warning)
     MP_DEFINE_EXCEPTION(RuntimeWarning, Warning)
     MP_DEFINE_EXCEPTION(SyntaxWarning, Warning)
     MP_DEFINE_EXCEPTION(UserWarning, Warning)
-    MP_DEFINE_EXCEPTION(FutureWarning, Warning)
     MP_DEFINE_EXCEPTION(ImportWarning, Warning)
     MP_DEFINE_EXCEPTION(UnicodeWarning, Warning)
     MP_DEFINE_EXCEPTION(BytesWarning, Warning)

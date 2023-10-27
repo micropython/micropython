@@ -395,6 +395,9 @@ endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
 endif
+ifeq ($(CIRCUITPY_WARNINGS),1)
+SRC_PATTERNS += warnings/%
+endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
 endif
@@ -680,13 +683,14 @@ SRC_SHARED_MODULE_ALL = \
 	usb/core/__init__.c \
 	usb/core/Device.c \
 	ustack/__init__.c \
-	watchdog/__init__.c \
-	zlib/__init__.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \
 	vectorio/Rectangle.c \
 	vectorio/VectorShape.c \
 	vectorio/__init__.c \
+	warnings/__init__.c \
+	watchdog/__init__.c \
+	zlib/__init__.c \
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))

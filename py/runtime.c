@@ -47,6 +47,10 @@
 #include "py/stream.h"
 #include "py/gc.h"
 
+#if CIRCUITPY_WARNINGS
+#include "shared-module/warnings/__init__.h"
+#endif
+
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
 #define DEBUG_printf DEBUG_printf
@@ -1658,6 +1662,25 @@ mp_obj_t __attribute__((noinline, )) mp_import_from(mp_obj_t module, qstr name) 
 
 void mp_import_all(mp_obj_t module) {
     DEBUG_printf("import all %p\n", module);
+
+    #if CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
+    if (module == &displayio_module) {
+        #if CIRCUITPY_BUSDISPLAY
+        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_Display, MP_QSTR_displayio, MP_QSTR_busdisplay);
+        warnings_warn(&mp_type_FutureWarning, translate("%q renamed %q"), MP_QSTR_Display, MP_QSTR_BusDisplay);
+        #endif
+        #if CIRCUITPY_EPAPERDISPLAY
+        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_EPaperDisplay, MP_QSTR_displayio, MP_QSTR_epaperdisplay);
+        #endif
+        #if CIRCUITPY_FOURWIRE
+        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_FourWire, MP_QSTR_displayio, MP_QSTR_fourwire);
+        #endif
+        #if CIRCUITPY_I2CDISPLAYBUS
+        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_I2CDisplay, MP_QSTR_displayio, MP_QSTR_i2cdisplaybus);
+        warnings_warn(&mp_type_FutureWarning, translate("%q renamed %q"), MP_QSTR_I2CDisplay, MP_QSTR_I2CDisplayBus);
+        #endif
+    }
+    #endif
 
     // TODO: Support __all__
     mp_map_t *map = &mp_obj_module_get_globals(module)->map;
