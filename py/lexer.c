@@ -586,10 +586,6 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
     lex->tok_line = lex->line;
     lex->tok_column = lex->column;
 
-    if (had_physical_newline) {
-        skip_whitespace(lex, false);
-    }
-
     if (lex->emit_dent < 0) {
         lex->tok_kind = MP_TOKEN_DEDENT;
         lex->emit_dent += 1;
@@ -598,7 +594,12 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         lex->tok_kind = MP_TOKEN_INDENT;
         lex->emit_dent -= 1;
 
-    } else if (had_physical_newline && lex->nested_bracket_level == 0) {
+    } else if (had_physical_newline) {
+        // The cursor is at the end of the previous line, pointing to a
+        // physical newline. Skip any remaining whitespace, comments, and
+        // newlines.
+        skip_whitespace(lex, false);
+
         lex->tok_kind = MP_TOKEN_NEWLINE;
 
         size_t num_spaces = lex->column - 1;
