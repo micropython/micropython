@@ -314,7 +314,7 @@ STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, si
     return result;
 }
 
-STATIC void print_dont_raise(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
+STATIC void print_dont_raise(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list argptr;
     va_start(argptr, fmt);
     mp_vcprintf(&mp_plat_print, fmt, argptr);
@@ -322,7 +322,7 @@ STATIC void print_dont_raise(const mp_obj_type_t *exc_type, const compressed_str
     va_end(argptr);
 }
 
-STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...)) {
+STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...)) {
     if (error == GETENV_OK) {
         return;
     }

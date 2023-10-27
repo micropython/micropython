@@ -255,7 +255,7 @@ STATIC void compile_error_set_line(compiler_t *comp, mp_parse_node_t pn) {
     }
 }
 
-STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, const compressed_string_t *msg) {
+STATIC void compile_syntax_error(compiler_t *comp, mp_parse_node_t pn, mp_rom_error_text_t msg) {
     // only register the error if there has been no other error
     if (comp->compile_error == MP_OBJ_NULL) {
         comp->compile_error = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
@@ -2740,7 +2740,7 @@ STATIC void compile_yield_expr(compiler_t *comp, mp_parse_node_struct_t *pns) {
         pns = (mp_parse_node_struct_t *)pns->nodes[0];
         #if MICROPY_PY_ASYNC_AWAIT
         if (comp->scope_cur->scope_flags & MP_SCOPE_FLAG_ASYNC) {
-            compile_syntax_error(comp, (mp_parse_node_t)pns, translate("'yield from' inside async function"));
+            compile_syntax_error(comp, (mp_parse_node_t)pns, MP_ERROR_TEXT("'yield from' inside async function"));
             return;
         }
         #endif

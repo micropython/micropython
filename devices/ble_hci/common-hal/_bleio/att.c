@@ -1722,7 +1722,7 @@ void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
 
 // FIX Do we need all of these?
 static void check_att_err(uint8_t err) {
-    const compressed_string_t *msg = NULL;
+    mp_rom_error_text_t msg = NULL;
     switch (err) {
         case 0:
             return;
