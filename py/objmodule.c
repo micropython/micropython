@@ -34,6 +34,10 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
+#if CIRCUITPY_WARNINGS
+#include "shared-module/warnings/__init__.h"
+#endif
+
 STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
@@ -62,6 +66,32 @@ STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *de
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
+        #if CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
+        if (self == &displayio_module) {
+            #if CIRCUITPY_BUSDISPLAY
+            if (attr == MP_QSTR_Display) {
+                warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_Display, MP_QSTR_displayio, MP_QSTR_busdisplay);
+                warnings_warn(&mp_type_FutureWarning, translate("%q renamed %q"), MP_QSTR_Display, MP_QSTR_BusDisplay);
+            }
+            #endif
+            #if CIRCUITPY_EPAPERDISPLAY
+            if (attr == MP_QSTR_EPaperDisplay) {
+                warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_EPaperDisplay, MP_QSTR_displayio, MP_QSTR_epaperdisplay);
+            }
+            #endif
+            #if CIRCUITPY_FOURWIRE
+            if (attr == MP_QSTR_FourWire) {
+                warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_FourWire, MP_QSTR_displayio, MP_QSTR_fourwire);
+            }
+            #endif
+            #if CIRCUITPY_I2CDISPLAYBUS
+            if (attr == MP_QSTR_I2CDisplay) {
+                warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_I2CDisplay, MP_QSTR_displayio, MP_QSTR_i2cdisplaybus);
+                warnings_warn(&mp_type_FutureWarning, translate("%q renamed %q"), MP_QSTR_I2CDisplay, MP_QSTR_I2CDisplayBus);
+            }
+            #endif
+        }
+        #endif
         // load attribute
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
@@ -173,6 +203,11 @@ STATIC const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] =
 // Attempts to find (and initialise) a built-in, otherwise returns
 // MP_OBJ_NULL.
 mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
+    #if CIRCUITPY_PARALLELDISPLAYBUS && CIRCUITPY_WARNINGS
+    if (module_name == MP_QSTR_paralleldisplay) {
+        warnings_warn(&mp_type_FutureWarning, translate("%q renamed %q"), MP_QSTR_paralleldisplay, MP_QSTR_paralleldisplaybus);
+    }
+    #endif
     mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)(extensible ? &mp_builtin_extensible_module_map : &mp_builtin_module_map), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
     if (!elem) {
         #if MICROPY_PY_SYS
