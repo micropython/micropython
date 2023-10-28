@@ -239,7 +239,7 @@ STATIC MP_DEFINE_CONST_DICT(keypad_shiftregisterkeys_locals_dict, keypad_shiftre
 MP_DEFINE_CONST_OBJ_TYPE(
     keypad_shiftregisterkeys_type,
     MP_QSTR_ShiftRegisterKeys,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, keypad_shiftregisterkeys_make_new
     #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
     , locals_dict, &keypad_shiftregisterkeys_locals_dict
