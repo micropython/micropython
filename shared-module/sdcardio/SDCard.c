@@ -199,7 +199,7 @@ STATIC int block_cmd(sdcardio_sdcard_obj_t *self, int cmd_, int block, void *res
     return cmd(self, cmd_, block * self->cdv, response_buf, response_len, true, true);
 }
 
-STATIC const compressed_string_t *init_card_v1(sdcardio_sdcard_obj_t *self) {
+STATIC mp_rom_error_text_t init_card_v1(sdcardio_sdcard_obj_t *self) {
     for (int i = 0; i < CMD_TIMEOUT; i++) {
         if (cmd(self, 41, 0, NULL, 0, true, true) == 0) {
             return NULL;
@@ -208,7 +208,7 @@ STATIC const compressed_string_t *init_card_v1(sdcardio_sdcard_obj_t *self) {
     return translate("timeout waiting for v1 card");
 }
 
-STATIC const compressed_string_t *init_card_v2(sdcardio_sdcard_obj_t *self) {
+STATIC mp_rom_error_text_t init_card_v2(sdcardio_sdcard_obj_t *self) {
     for (int i = 0; i < CMD_TIMEOUT; i++) {
         uint8_t ocr[4];
         common_hal_time_delay_ms(50);
@@ -225,7 +225,7 @@ STATIC const compressed_string_t *init_card_v2(sdcardio_sdcard_obj_t *self) {
     return translate("timeout waiting for v2 card");
 }
 
-STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
+STATIC mp_rom_error_text_t init_card(sdcardio_sdcard_obj_t *self) {
     clock_card(self, 10);
 
     common_hal_digitalio_digitalinout_set_value(&self->cs, false);
@@ -256,12 +256,12 @@ STATIC const compressed_string_t *init_card(sdcardio_sdcard_obj_t *self) {
         uint8_t rb7[4];
         int response = cmd(self, 8, 0x1AA, rb7, sizeof(rb7), false, true);
         if (response == R1_IDLE_STATE) {
-            const compressed_string_t *result = init_card_v2(self);
+            mp_rom_error_text_t result = init_card_v2(self);
             if (result != NULL) {
                 return result;
             }
         } else if (response == (R1_IDLE_STATE | R1_ILLEGAL_COMMAND)) {
-            const compressed_string_t *result = init_card_v1(self);
+            mp_rom_error_text_t result = init_card_v1(self);
             if (result != NULL) {
                 return result;
             }
@@ -314,7 +314,7 @@ void common_hal_sdcardio_sdcard_construct(sdcardio_sdcard_obj_t *self, busio_spi
     self->baudrate = 250000;
 
     lock_bus_or_throw(self);
-    const compressed_string_t *result = init_card(self);
+    mp_rom_error_text_t result = init_card(self);
     extraclock_and_unlock_bus(self);
 
     if (result != NULL) {

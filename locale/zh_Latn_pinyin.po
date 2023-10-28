@@ -189,19 +189,23 @@ msgstr "%q chángdù bìxū <= %d"
 msgid "%q length must be >= %d"
 msgstr "%q chángdù bìxū >= %d"
 
+#: py/objmodule.c py/runtime.c
+msgid "%q moved from %q to %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q bìxū %d"
 
-#: py/argcheck.c shared-bindings/displayio/Bitmap.c
-#: shared-bindings/displayio/Display.c
+#: py/argcheck.c shared-bindings/busdisplay/BusDisplay.c
+#: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
 msgstr "%q bì xū wéi %d-%d"
 
-#: shared-bindings/displayio/Display.c
+#: shared-bindings/busdisplay/BusDisplay.c
 msgid "%q must be 1 when %q is True"
 msgstr "sāng %q wèi True shí, %q bìxū wèi 1"
 
@@ -226,6 +230,10 @@ msgstr "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'H' huò 'B' de s
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
 "%q bì xū shì zì jié shù zǔ huò lèi xíng wéi 'h', 'H', 'b', huò 'B' de shù zǔ"
+
+#: shared-bindings/warnings/__init__.c
+msgid "%q must be a subclass of %q"
+msgstr ""
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
@@ -261,6 +269,10 @@ msgstr "%q chāo chū jiè xiàn"
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q chāochū fànwéi"
+
+#: py/objmodule.c py/runtime.c
+msgid "%q renamed %q"
+msgstr ""
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
@@ -449,8 +461,8 @@ msgstr "*x bìxū shì bèi fùzhí de duìxiàng"
 msgid ", in %q\n"
 msgstr ", zài %q\n"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/busdisplay/BusDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid ".show(x) removed. Use .root_group = x"
 msgstr ""
@@ -642,7 +654,7 @@ msgstr ""
 msgid "Baudrate not supported by peripheral"
 msgstr "bōtèlǜ bú bèi wàishè zhīchí"
 
-#: shared-module/displayio/Display.c
+#: shared-module/busdisplay/BusDisplay.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Below minimum frame rate"
 msgstr "dīyú zuìdī zhēnlǜ"
@@ -675,7 +687,7 @@ msgstr "RX hé TX dōu xū yào liúliàng kòngzhì"
 msgid "Both pins must support hardware interrupts"
 msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
-#: shared-bindings/displayio/Display.c
+#: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
 msgstr "liàngdù wúfǎ tiáozhěng"
@@ -712,7 +724,8 @@ msgstr "Huǎnchōngqū bìxū shì 512 zìjié de bèishù"
 msgid "Buffer too short by %d bytes"
 msgstr "Huǎnchōngqū tàiduǎn , mùqián zhǐyǒu %d zìjié"
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c
+#: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
@@ -722,10 +735,10 @@ msgstr "huǎnchōngqū tàixiǎo"
 msgid "Buffers must be same size"
 msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
 
-#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
-#: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/raspberrypi/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Zǒngxiàn yǐnjiǎo %d yǐjīng zài shǐyòng zhōng"
@@ -913,8 +926,8 @@ msgstr "DAC shèbèi chūshǐhuà cuòwù"
 msgid "DAC already in use"
 msgstr "DAC zhèngzài bèi shǐyòng"
 
-#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
-#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "shù jù 0 yǐn jiǎo bì xū shì zì jié duì qí de"
 
@@ -945,13 +958,13 @@ msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
 msgid "Device in use"
 msgstr "Zhèngzài shǐyòng de shèbèi"
 
-#: shared-bindings/displayio/Display.c
+#: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
 msgstr "Xiǎnshì bìxū jùyǒu 16 wèi yánsè kōngjiān."
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/busdisplay/BusDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Xiǎnshì xuánzhuǎn bìxū 90 dù jiā xīn"
@@ -1130,7 +1143,7 @@ msgid "Generic Failure"
 msgstr "tōng yòng gù zhàng"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-module/displayio/Display.c
+#: shared-module/busdisplay/BusDisplay.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Jítuán yǐjīng shǐyòngguò"
@@ -1233,7 +1246,7 @@ msgstr "nèi bù yīn pín huǎn chōng qì tài xiǎo"
 msgid "Internal define error"
 msgstr "Nèibù dìngyì cuòwù"
 
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "nèi bù cuò wù"
@@ -1256,7 +1269,7 @@ msgstr "zhōng duàn cuò wù."
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "wú xiào %q"
 
@@ -1459,9 +1472,10 @@ msgstr "líng huó de bǎi tuō jì yì"
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c shared-bindings/displayio/FourWire.c
-#: shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c shared-module/bitbangio/SPI.c
+#: ports/stm/common-hal/busio/UART.c shared-bindings/fourwire/FourWire.c
+#: shared-bindings/i2cdisplaybus/I2CDisplayBus.c
+#: shared-bindings/paralleldisplaybus/ParallelBus.c
+#: shared-module/bitbangio/SPI.c
 msgid "No %q pin"
 msgstr "Wèi zhǎodào %q yǐn jiǎo"
 
@@ -1593,7 +1607,7 @@ msgstr "Wèi liánjiē"
 msgid "Not playing"
 msgstr "Wèi bòfàng"
 
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
 msgstr "data_pins shù bì xū wéi 8 huò 16, ér bù shì %d"
@@ -1893,7 +1907,7 @@ msgstr "shōu dào de xiǎng yìng wú xiào"
 msgid "Reconnecting"
 msgstr "chóngxīn liánjiē"
 
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Shuāxīn tài kuàile"
 
@@ -1994,7 +2008,7 @@ msgstr "SocketPool zhǐ néng yǔ wifi.Radio yīqǐ shǐyòng"
 msgid "Source and destination buffers must be the same length"
 msgstr "Yuán huǎnchōng qū hé mùbiāo huǎnchōng qū de chángdù bìxū xiāngtóng"
 
-#: shared-bindings/paralleldisplay/ParallelBus.c
+#: shared-bindings/paralleldisplaybus/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
 msgstr "zhǐ dìng data0 huò data_pins zhōng de yí gè"
 
@@ -2054,7 +2068,7 @@ msgstr "dì sān fāng gù jiàn zhì mìng cuò wù."
 msgid "This microcontroller does not support continuous capture."
 msgstr "cǐ wēi kòng zhì qì bù zhī chí lián xù bǔ huò."
 
-#: shared-module/paralleldisplay/ParallelBus.c
+#: shared-module/paralleldisplaybus/ParallelBus.c
 msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
 "requires contiguous pins."
@@ -2191,7 +2205,8 @@ msgstr "wú fǎ fēn pèi duī."
 msgid "Unable to create lock"
 msgstr "Wúfǎ chuàngjiàn suǒ"
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
+#: shared-module/i2cdisplaybus/I2CDisplayBus.c
+#: shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Wúfǎ zài%x zhǎodào I2C xiǎnshìqì"
@@ -2303,7 +2318,7 @@ msgstr ""
 msgid "Unsupported colorspace"
 msgstr "bú zhī chí de sè cǎi kōng jiān"
 
-#: shared-module/displayio/display_core.c
+#: shared-module/displayio/bus_core.c
 msgid "Unsupported display bus type"
 msgstr "Bù zhīchí de gōnggòng qìchē lèixíng"
 

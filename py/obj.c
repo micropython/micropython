@@ -147,7 +147,7 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
 static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
-    const compressed_string_t *msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
+    mp_rom_error_text_t msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
     mp_obj_exception_t *inner = NULL;
     if (self->cause) {
         msg = MP_ERROR_TEXT("The above exception was the direct cause of the following exception:");
@@ -177,11 +177,11 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
         if (n > 0) {
             assert(n % 3 == 0);
             #if MICROPY_ENABLE_SOURCE_LINE
-            const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\", line %d");
+            mp_rom_error_text_t frame = MP_ERROR_TEXT("  File \"%q\", line %d");
             #else
-            const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\"");
+            mp_rom_error_text_t frame = MP_ERROR_TEXT("  File \"%q\"");
             #endif
-            const compressed_string_t *block_fmt = MP_ERROR_TEXT(", in %q\n");
+            mp_rom_error_text_t block_fmt = MP_ERROR_TEXT(", in %q\n");
 
             // Set traceback formatting
             // Default: Print full traceback
@@ -685,18 +685,12 @@ mp_obj_t mp_obj_generic_subscript_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter_
 
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    if (!MP_OBJ_TYPE_HAS_SLOT(type, buffer)) {
-        return false;
+    if (MP_OBJ_TYPE_HAS_SLOT(type, buffer)
+        && MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags & MP_BUFFER_RW) == 0) {
+        return true;
     }
-    int ret = MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags);
-    if (ret != 0) {
-        return false;
-    }
-    return true;
-}
-
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    if (!mp_get_buffer(obj, bufinfo, flags)) {
+    if (flags & MP_BUFFER_RAISE_IF_UNSUPPORTED) {
         mp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
     }
+    return false;
 }

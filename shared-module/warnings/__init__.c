@@ -48,7 +48,7 @@ void common_hal_warnings_warn(const char *message, const mp_obj_type_t *category
     mp_printf(MICROPY_ERROR_PRINTER, "%q: %s\n", category->name, message);
 }
 
-void warnings_warn(const mp_obj_type_t *category, const compressed_string_t *message, ...) {
+void warnings_warn(const mp_obj_type_t *category, mp_rom_error_text_t message, ...) {
     warnings_action_t action = MP_STATE_THREAD(warnings_action);
     if (action == WARNINGS_IGNORE) {
         return;

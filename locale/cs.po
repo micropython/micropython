@@ -186,19 +186,23 @@ msgstr "Délka %q musí být <= %d"
 msgid "%q length must be >= %d"
 msgstr "Délka %q musí být >= %d"
 
+#: py/objmodule.c py/runtime.c
+msgid "%q moved from %q to %q"
+msgstr ""
+
 #: py/argcheck.c
 msgid "%q must be %d"
 msgstr "%q musí být %d"
 
-#: py/argcheck.c shared-bindings/displayio/Bitmap.c
-#: shared-bindings/displayio/Display.c
+#: py/argcheck.c shared-bindings/busdisplay/BusDisplay.c
+#: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
 msgstr "%q musí být %d-%d"
 
-#: shared-bindings/displayio/Display.c
+#: shared-bindings/busdisplay/BusDisplay.c
 msgid "%q must be 1 when %q is True"
 msgstr "%q musí být 1, pokud %q je True"
 
@@ -222,6 +226,10 @@ msgstr "%q musí být bytearray nebo pole typu 'H' nebo 'B'"
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr "%q musí být bytearray nebo pole typu 'h', 'H', 'b', nebo 'B'"
+
+#: shared-bindings/warnings/__init__.c
+msgid "%q must be a subclass of %q"
+msgstr ""
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
@@ -257,6 +265,10 @@ msgstr "%q je mimo hranice"
 #: shared-bindings/canio/Match.c
 msgid "%q out of range"
 msgstr "%q je mimo rozsah"
+
+#: py/objmodule.c py/runtime.c
+msgid "%q renamed %q"
+msgstr ""
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
@@ -445,8 +457,8 @@ msgstr "∗x musí být cíl přiřazení"
 msgid ", in %q\n"
 msgstr ", v% q\n"
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/busdisplay/BusDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid ".show(x) removed. Use .root_group = x"
 msgstr ""
@@ -638,7 +650,7 @@ msgstr ""
 msgid "Baudrate not supported by peripheral"
 msgstr "Baudrate není podporován periférií"
 
-#: shared-module/displayio/Display.c
+#: shared-module/busdisplay/BusDisplay.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Below minimum frame rate"
 msgstr "Pod minimální obnovovací frekvencí"
@@ -671,7 +683,7 @@ msgstr "RX a TX jsou vyžadovány pro kontrolu toku"
 msgid "Both pins must support hardware interrupts"
 msgstr "Oba piny musí podporovat hardwarové přerušení"
 
-#: shared-bindings/displayio/Display.c
+#: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Brightness not adjustable"
 msgstr "Jas není nastavitelný"
@@ -708,7 +720,8 @@ msgstr "Buffer musí být násobkem 512 bajtů"
 msgid "Buffer too short by %d bytes"
 msgstr "Buffer je příliš krátký o %d bajtů"
 
-#: ports/cxd56/common-hal/camera/Camera.c shared-bindings/displayio/Display.c
+#: ports/cxd56/common-hal/camera/Camera.c
+#: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
@@ -718,10 +731,10 @@ msgstr "Buffer příliš malý"
 msgid "Buffers must be same size"
 msgstr "Buffery musí mít stejnou velikost"
 
-#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
-#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
-#: ports/raspberrypi/common-hal/paralleldisplay/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/raspberrypi/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
 msgstr "Sběrnicový pin %d je již používán"
@@ -911,8 +924,8 @@ msgstr "Chyba inicializace zařízení DAC"
 msgid "DAC already in use"
 msgstr "DAC se již používá"
 
-#: ports/atmel-samd/common-hal/paralleldisplay/ParallelBus.c
-#: ports/nrf/common-hal/paralleldisplay/ParallelBus.c
+#: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Datový pin 0 musí být zarovnán na bajty"
 
@@ -943,13 +956,13 @@ msgstr "Cílová kapacita je menší než destination_length."
 msgid "Device in use"
 msgstr "Zařízení je používáno"
 
-#: shared-bindings/displayio/Display.c
+#: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display must have a 16 bit colorspace."
 msgstr "Displej musí mít 16bitový barevný prostor."
 
-#: shared-bindings/displayio/Display.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/busdisplay/BusDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display rotation must be in 90 degree increments"
 msgstr "Otočení displeje musí být po 90 stupních"
@@ -1125,7 +1138,7 @@ msgid "Generic Failure"
 msgstr "Základní chyba"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
-#: shared-module/displayio/Display.c
+#: shared-module/busdisplay/BusDisplay.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Skupina již byla použita"
@@ -1224,7 +1237,7 @@ msgstr "Interní audio buffer je příliš malý"
 msgid "Internal define error"
 msgstr ""
 
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "Interní chyba"
@@ -1247,7 +1260,7 @@ msgstr "Chyba přerušení."
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 msgid "Invalid %q"
 msgstr "Špatný %s"
 
@@ -1450,9 +1463,10 @@ msgstr ""
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/SPI.c
-#: ports/stm/common-hal/busio/UART.c shared-bindings/displayio/FourWire.c
-#: shared-bindings/displayio/I2CDisplay.c
-#: shared-bindings/paralleldisplay/ParallelBus.c shared-module/bitbangio/SPI.c
+#: ports/stm/common-hal/busio/UART.c shared-bindings/fourwire/FourWire.c
+#: shared-bindings/i2cdisplaybus/I2CDisplayBus.c
+#: shared-bindings/paralleldisplaybus/ParallelBus.c
+#: shared-module/bitbangio/SPI.c
 msgid "No %q pin"
 msgstr "Žádný %q pin"
 
@@ -1584,7 +1598,7 @@ msgstr "Nepřipojený"
 msgid "Not playing"
 msgstr "Nehraje"
 
-#: ports/espressif/common-hal/paralleldisplay/ParallelBus.c
+#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
 msgstr "Počet data_pins musí být 8 nebo 16, nikoli %d"
@@ -1879,7 +1893,7 @@ msgstr "Přijatá odpověď nebyla validní"
 msgid "Reconnecting"
 msgstr "Opětovné připojování"
 
-#: shared-bindings/displayio/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c
 msgid "Refresh too soon"
 msgstr "Pokus o obnovení příliš brzo"
 
@@ -1980,7 +1994,7 @@ msgstr "SocketPool je možné použít pouze s wifi.radio"
 msgid "Source and destination buffers must be the same length"
 msgstr "Zdrojové a cílové buffery musí být stejné délky"
 
-#: shared-bindings/paralleldisplay/ParallelBus.c
+#: shared-bindings/paralleldisplaybus/ParallelBus.c
 msgid "Specify exactly one of data0 or data_pins"
 msgstr "Specifikuj přesně jeden z data0 nebo data_pins"
 
@@ -2040,7 +2054,7 @@ msgstr "Fatální chyby firmware třetí strany."
 msgid "This microcontroller does not support continuous capture."
 msgstr "Tento mikrokontrolér nepodporuje kontinuální snímání."
 
-#: shared-module/paralleldisplay/ParallelBus.c
+#: shared-module/paralleldisplaybus/ParallelBus.c
 msgid ""
 "This microcontroller only supports data0=, not data_pins=, because it "
 "requires contiguous pins."
@@ -2176,7 +2190,8 @@ msgstr "Nelze alokovat heap."
 msgid "Unable to create lock"
 msgstr "Není možné vytvořit zámek"
 
-#: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
+#: shared-module/i2cdisplaybus/I2CDisplayBus.c
+#: shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "I2C display nenalezen na %x"
@@ -2286,7 +2301,7 @@ msgstr ""
 msgid "Unsupported colorspace"
 msgstr "Nepodporovaný barevný prostor"
 
-#: shared-module/displayio/display_core.c
+#: shared-module/displayio/bus_core.c
 msgid "Unsupported display bus type"
 msgstr "Nepodporovaná sběrnice dispalye"
 

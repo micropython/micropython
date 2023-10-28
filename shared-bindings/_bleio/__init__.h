@@ -62,9 +62,9 @@ void bleio_reset(void);
 
 extern mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj);
 
-NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *msg, ...);
-NORETURN void mp_raise_bleio_RoleError(const compressed_string_t *msg);
-NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t *msg, ...);
+NORETURN void mp_raise_bleio_BluetoothError(mp_rom_error_text_t msg, ...);
+NORETURN void mp_raise_bleio_RoleError(mp_rom_error_text_t msg);
+NORETURN void mp_raise_bleio_SecurityError(mp_rom_error_text_t msg, ...);
 
 bleio_adapter_obj_t *common_hal_bleio_allocate_adapter_or_raise(void);
 void common_hal_bleio_check_connected(uint16_t conn_handle);

@@ -370,7 +370,7 @@ STATIC const byte *find_uncompressed_string(uint8_t n) {
 
 // Given a compressed string in src, decompresses it into dst.
 // dst must be large enough (use MP_MAX_UNCOMPRESSED_TEXT_LEN+1).
-void mp_decompress_rom_string(byte *dst, const mp_rom_error_text_t src_chr) {
+void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src_chr) {
     // Skip past the 0xff marker.
     const byte *src = (byte *)src_chr + 1;
     // Need to add spaces around compressed words, except for the first (i.e. transition from 1<->2).

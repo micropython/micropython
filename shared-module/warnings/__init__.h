@@ -26,4 +26,4 @@
 
 #pragma once
 
-void warnings_warn(const mp_obj_type_t *category, const compressed_string_t *message, ...);
+void warnings_warn(const mp_obj_type_t *category, mp_rom_error_text_t message, ...);

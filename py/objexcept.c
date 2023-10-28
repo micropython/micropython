@@ -481,7 +481,7 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
 }
 
 #if MICROPY_ERROR_REPORTING != MICROPY_ERROR_REPORTING_NONE
-mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, const compressed_string_t *msg) {
+mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     // CIRCUITPY-CHANGE: is different here and for many lines below.
     return mp_obj_new_exception_msg_varg(exc_type, msg);
 }
@@ -519,7 +519,7 @@ STATIC void exc_add_strn(void *data, const char *str, size_t len) {
     pr->len += len;
 }
 
-mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
+mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list args;
     va_start(args, fmt);
     mp_obj_t exc = mp_obj_new_exception_msg_vlist(exc_type, fmt, args);
@@ -527,7 +527,7 @@ mp_obj_t mp_obj_new_exception_msg_varg(const mp_obj_type_t *exc_type, const comp
     return exc;
 }
 
-mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, va_list ap) {
+mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, va_list ap) {
     assert(fmt != NULL);
 
     // Check that the given type is an exception type
