@@ -1,0 +1,26 @@
+Initial freq:  50
+Initial duty cycle:  32768.0
+Signal with freq = 1Hz and Duty cycle of 25%
+Current freq:  1
+Current duty cycle:  16384.0
+Signal with freq = 1Hz and Duty cycle of 50%
+Current freq:  1
+Current duty cycle:  32768.0
+Signal with freq = 1Hz and Duty cycle of 75%
+Current freq:  1
+Current duty cycle:  49151.0
+Signal with freq = 1Hz and Duty cycle of 100%
+Current freq:  1
+Current duty cycle:  65535.0
+Signal with freq = 25Hz and Duty cycle of 250%
+Current freq:  25
+Current duty cycle:  16384.0
+Signal with freq = 50Hz and Duty cycle of 50%
+Current freq:  50
+Current duty cycle:  32768.0
+Signal with freq = 75Hz and Duty cycle of 75%
+Current freq:  75
+Current duty cycle:  49151.0
+Signal with freq = 100Hz and Duty cycle of 100%
+Current freq:  100
+Current duty cycle:  65535.0
