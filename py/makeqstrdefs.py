@@ -146,7 +146,7 @@ def process_file(f):
         )
     elif args.mode == _MODE_ROOT_POINTER:
         re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
-    re_translate = re.compile(r"MP_ERROR_TEXT\(\"((?:(?=(\\?))\2.)*?)\"\)")
+    re_translate = re.compile(r"MP_COMPRESSED_ROM_TEXT\(\"((?:(?=(\\?))\2.)*?)\"\)")
     output = []
     last_fname = None
     for line in f:
