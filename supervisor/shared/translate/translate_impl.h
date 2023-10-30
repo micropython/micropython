@@ -50,7 +50,7 @@ __attribute__((always_inline))
 #endif
 // Prevent instrumenting this because that disables the inlining we rely of for code size
 // optimization.
-__attribute__((no_instrument_function)) mp_rom_error_text_t translate(const char *original) {
+__attribute__((no_instrument_function)) mp_rom_error_text_t MP_COMPRESSED_ROM_TEXT(const char *original) {
     #ifndef NO_QSTR
     #define QDEF(id, hash, len, str)
     #define TRANSLATION(english_id, number) if (strcmp(original, english_id) == 0) { return (mp_rom_error_text_t)&translation##number; } else

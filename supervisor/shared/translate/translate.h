@@ -34,7 +34,6 @@
 // Map MicroPython's error messages to our translations.
 #if !defined(MICROPY_ENABLE_DYNRUNTIME) || !MICROPY_ENABLE_DYNRUNTIME
 #include "supervisor/shared/translate/compressed_string.h"
-#define MP_COMPRESSED_ROM_TEXT(x) MP_ERROR_TEXT(x)
 
 // MP_ERROR_TEXT() is a giant function with many strcmp calls. The assumption is
 // that the build process will optimize this away and replace it with the
@@ -48,7 +47,7 @@
 #else
 // In link time optimized (LTO) builds, we can compile this once into a .o and
 // at link time the calls will be optimized.
-mp_rom_error_text_t MP_ERROR_TEXT(const char *c);
+mp_rom_error_text_t MP_COMPRESSED_ROM_TEXT(const char *c);
 #endif
 
 #else
