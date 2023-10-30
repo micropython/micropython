@@ -150,7 +150,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_bits_per_value_obj,
 STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     if (value_obj == mp_const_none) {
         // delete item
-        mp_raise_AttributeError(translate("Cannot delete values"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot delete values"));
         return mp_const_none;
     }
 
@@ -159,7 +159,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 
     if (mp_obj_is_type(index_obj, &mp_type_slice)) {
         // TODO(tannewt): Implement subscr after slices support start, stop and step tuples.
-        mp_raise_NotImplementedError(translate("Slices not supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
         return mp_const_none;
     }
 
@@ -169,7 +169,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
         mp_int_t i = MP_OBJ_SMALL_INT_VALUE(index_obj);
         int total_length = self->width * self->height;
         if (i < 0 || i >= total_length) {
-            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_index, 0, total_length - 1);
+            mp_raise_IndexError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_index, 0, total_length - 1);
         }
 
         x = i % self->width;
@@ -179,11 +179,11 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
         mp_obj_get_array_fixed_n(index_obj, 2, &items);
         mp_int_t x_in = mp_obj_get_int(items[0]);
         if (x_in < 0 || x_in >= self->width) {
-            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_x, 0, self->width - 1);
+            mp_raise_IndexError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_x, 0, self->width - 1);
         }
         mp_int_t y_in = mp_obj_get_int(items[1]);
         if (y_in < 0 || y_in >= self->height) {
-            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_y, 0, self->height - 1);
+            mp_raise_IndexError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_y, 0, self->height - 1);
         }
         x = x_in;
         y = y_in;

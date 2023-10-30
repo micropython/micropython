@@ -67,7 +67,7 @@ static inline void nw_put_le32(uint8_t *buf, uint32_t x) {
 }
 
 NORETURN static void ro_attribute(qstr attr) {
-    mp_raise_NotImplementedError_varg(translate("%q is read-only for this board"), attr);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q is read-only for this board"), attr);
 }
 
 bool common_hal_wifi_radio_get_enabled(wifi_radio_obj_t *self) {
@@ -137,10 +137,10 @@ void common_hal_wifi_radio_set_mac_address_ap(wifi_radio_obj_t *self, const uint
 mp_obj_t common_hal_wifi_radio_start_scanning_networks(wifi_radio_obj_t *self, uint8_t start_channel, uint8_t stop_channel) {
     // channel bounds are ignored; not implemented in driver
     if (self->current_scan) {
-        mp_raise_RuntimeError(translate("Already scanning for wifi networks"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Already scanning for wifi networks"));
     }
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("Wifi is not enabled"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Wifi is not enabled"));
     }
     wifi_scannednetworks_obj_t *scan = mp_obj_malloc(wifi_scannednetworks_obj_t, &wifi_scannednetworks_type);
     mp_obj_t args[] = { mp_const_empty_tuple, MP_OBJ_NEW_SMALL_INT(16) };
@@ -176,7 +176,7 @@ void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint32_t authmode, uint8_t max_connections) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("Wifi is not enabled"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Wifi is not enabled"));
     }
 
     /* TODO: If the AP is stopped once it cannot be restarted.
@@ -216,7 +216,7 @@ void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_UP) {
         common_hal_wifi_radio_stop_ap(self);
         // This is needed since it leaves a broken AP up.
-        mp_raise_RuntimeError(translate("AP could not be started"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("AP could not be started"));
     }
 }
 
@@ -226,7 +226,7 @@ bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self) {
 
 void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("wifi is not enabled"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("wifi is not enabled"));
     }
 
     cyw43_arch_disable_ap_mode();
@@ -259,7 +259,7 @@ static bool connection_unchanged(wifi_radio_obj_t *self, const uint8_t *ssid, si
 
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
-        mp_raise_RuntimeError(translate("Wifi is not enabled"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Wifi is not enabled"));
     }
 
     if (ssid_len > 32) {

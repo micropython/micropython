@@ -37,7 +37,7 @@
 
 STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_connected(self)) {
-        mp_raise_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
     }
 }
 
@@ -128,7 +128,7 @@ STATIC mp_uint_t bleio_characteristic_buffer_read(mp_obj_t self_in, void *buf_in
 }
 
 STATIC mp_uint_t bleio_characteristic_buffer_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    mp_raise_NotImplementedError(translate("CharacteristicBuffer writing not provided"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("CharacteristicBuffer writing not provided"));
     return 0;
 }
 

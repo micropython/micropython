@@ -97,7 +97,7 @@ STATIC mp_obj_t paralleldisplaybus_parallelbus_make_new(const mp_obj_type_t *typ
     bool specified_data_pins = args[ARG_data_pins].u_obj != mp_const_none;
 
     if (specified_data0 == specified_data_pins) {
-        mp_raise_ValueError(translate("Specify exactly one of data0 or data_pins"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Specify exactly one of data0 or data_pins"));
     }
 
     if (specified_data0) {
@@ -121,7 +121,7 @@ STATIC mp_obj_t paralleldisplaybus_parallelbus_obj_reset(mp_obj_t self_in) {
     paralleldisplaybus_parallelbus_obj_t *self = self_in;
 
     if (!common_hal_paralleldisplaybus_parallelbus_reset(self)) {
-        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }

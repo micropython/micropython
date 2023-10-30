@@ -46,7 +46,7 @@
 //| """
 
 STATIC NORETURN void math_error(void) {
-    mp_raise_ValueError(translate("math domain error"));
+    mp_raise_ValueError(MP_ERROR_TEXT("math domain error"));
 }
 
 #define MATH_FUN_1(py_name, c_name) \

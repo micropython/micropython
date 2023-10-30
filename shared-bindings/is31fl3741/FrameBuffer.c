@@ -89,13 +89,13 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_make_new(const mp_obj_type_t *type, size_
     self->base.type = &is31fl3741_FrameBuffer_type;
 
     if (args[ARG_width].u_int <= 0) {
-        mp_raise_ValueError(translate("width must be greater than zero"));
+        mp_raise_ValueError(MP_ERROR_TEXT("width must be greater than zero"));
     }
 
     self->scale = args[ARG_scale].u_bool;
     if (self->scale) {
         if (((args[ARG_height].u_int % 3) != 0) || ((args[ARG_width].u_int % 3) != 0)) {
-            mp_raise_ValueError(translate("Scale dimensions must divide by 3"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Scale dimensions must divide by 3"));
         }
 
         self->scale_width = args[ARG_width].u_int / 3;
@@ -162,7 +162,7 @@ STATIC mp_obj_t is31fl3741_FrameBuffer_set_brightness(mp_obj_t self_in, mp_obj_t
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
 
     uint8_t current = (uint8_t)(brightness * 0xFF);

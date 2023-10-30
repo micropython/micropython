@@ -95,7 +95,7 @@ static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
     // initialize PCNT
     const int8_t unit = peripherals_pcnt_init(&pcnt_config);
     if (unit == -1) {
-        mp_raise_RuntimeError(translate("All PCNT units in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
     }
 
     // set the GPIO back to high-impedance, as pcnt_unit_config sets it as pull-up
@@ -123,7 +123,7 @@ static void init_timer(frequencyio_frequencyin_obj_t *self) {
     // initialize Timer
     peripherals_timer_init(&config, &self->timer);
     if (self->timer.idx == TIMER_MAX || self->timer.group == TIMER_GROUP_MAX) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     timer_idx_t idx = self->timer.idx;

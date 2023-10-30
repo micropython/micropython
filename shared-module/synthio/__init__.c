@@ -425,7 +425,7 @@ STATIC void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp
     if (o != mp_const_none) {
         mp_get_buffer_raise(o, bufinfo, MP_BUFFER_READ);
         if (bufinfo->typecode != 'h') {
-            mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), what);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be array of type 'h'"), what);
         }
         bufinfo->len /= 2;
         mp_arg_validate_length_range(bufinfo->len, 2, max_len, what);
@@ -550,7 +550,7 @@ bool synthio_block_assign_slot_maybe(mp_obj_t obj, synthio_block_slot_t *slot) {
 
 void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr arg_name) {
     if (!synthio_block_assign_slot_maybe(obj, slot)) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
     }
 }
 

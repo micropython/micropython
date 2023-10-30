@@ -131,7 +131,7 @@ STATIC mp_obj_t pulseio_pulseout_obj_send(mp_obj_t self_in, mp_obj_t pulses) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(pulses, &bufinfo, MP_BUFFER_READ);
     if (bufinfo.typecode != 'H') {
-        mp_raise_TypeError(translate("Array must contain halfwords (type 'H')"));
+        mp_raise_TypeError(MP_ERROR_TEXT("Array must contain halfwords (type 'H')"));
     }
     common_hal_pulseio_pulseout_send(self, (uint16_t *)bufinfo.buf, bufinfo.len / 2);
     return mp_const_none;

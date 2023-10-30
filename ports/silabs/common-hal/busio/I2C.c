@@ -71,7 +71,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
             common_hal_mcu_pin_claim(sda);
             in_used = true;
         } else {
-            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
         }
     } else {
         raise_ValueError_invalid_pins();

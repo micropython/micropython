@@ -365,7 +365,7 @@ bool common_hal_busdisplay_busdisplay_refresh(busdisplay_busdisplay_obj_t *self,
         uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.
         if (current_ms_since_real_refresh > maximum_ms_per_real_frame) {
-            mp_raise_RuntimeError(translate("Below minimum frame rate"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Below minimum frame rate"));
         }
         uint32_t current_ms_since_last_call = current_time - self->last_refresh_call;
         self->last_refresh_call = current_time;
@@ -404,7 +404,7 @@ void common_hal_busdisplay_busdisplay_set_auto_refresh(busdisplay_busdisplay_obj
 mp_obj_t common_hal_busdisplay_busdisplay_set_root_group(busdisplay_busdisplay_obj_t *self, displayio_group_t *root_group) {
     bool ok = displayio_display_core_set_root_group(&self->core, root_group);
     if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Group already used"));
     }
     return mp_const_none;
 }

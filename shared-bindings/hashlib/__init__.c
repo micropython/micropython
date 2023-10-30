@@ -59,7 +59,7 @@ STATIC mp_obj_t hashlib_new(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
     hashlib_hash_obj_t *self = mp_obj_malloc(hashlib_hash_obj_t, &hashlib_hash_type);
 
     if (!common_hal_hashlib_new(self, algorithm)) {
-        mp_raise_ValueError(translate("Unsupported hash algorithm"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported hash algorithm"));
     }
 
     if (args[ARG_data].u_obj != mp_const_none) {

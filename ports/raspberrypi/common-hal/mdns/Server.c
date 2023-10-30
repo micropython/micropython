@@ -77,11 +77,11 @@ void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
 
 void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface) {
     if (network_interface != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
-        mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
+        mp_raise_ValueError(MP_ERROR_TEXT("mDNS only works with built-in WiFi"));
         return;
     }
     if (object_inited) {
-        mp_raise_RuntimeError(translate("mDNS already initialized"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("mDNS already initialized"));
     }
     mdns_server_construct(self, false);
 }
@@ -263,7 +263,7 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
         NETIF_STA, &alloc_search_result_cb, &state,
         &state.request_id);
     if (err != ERR_OK) {
-        mp_raise_RuntimeError(translate("Unable to start mDNS query"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to start mDNS query"));
     }
 
     uint64_t start_ticks = supervisor_ticks_ms64();
@@ -315,7 +315,7 @@ void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const cha
     }
     int8_t slot = mdns_resp_add_service(NETIF_STA, self->instance_name, service_type, proto, port, NULL, NULL);
     if (slot < 0) {
-        mp_raise_RuntimeError(translate("Out of MDNS service slots"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Out of MDNS service slots"));
         return;
     }
     self->service_type[slot] = service_type;

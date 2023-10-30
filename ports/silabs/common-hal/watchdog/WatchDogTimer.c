@@ -93,7 +93,7 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self,
                 break;
             default:
                 mp_raise_ValueError(
-                    translate("Timeout value supported: 1,2,4,8,16,32,64,128,256"));
+                    MP_ERROR_TEXT("Timeout value supported: 1,2,4,8,16,32,64,128,256"));
 
         }
 
@@ -125,7 +125,7 @@ void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self,
     if (self->mode != new_mode) {
         if (new_mode == WATCHDOGMODE_RAISE) {
             mp_raise_NotImplementedError(
-                translate("RAISE mode is not implemented"));
+                MP_ERROR_TEXT("RAISE mode is not implemented"));
         } else if (new_mode == WATCHDOGMODE_NONE) {
             self->mode = WATCHDOGMODE_NONE;
             common_hal_watchdog_deinit(self);

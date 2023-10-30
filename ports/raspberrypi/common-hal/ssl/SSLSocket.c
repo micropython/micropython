@@ -137,7 +137,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     socketpool_socket_obj_t *socket, bool server_side, const char *server_hostname) {
 
     if (socket->type != SOCKETPOOL_SOCK_STREAM) {
-        mp_raise_RuntimeError(translate("Invalid socket for TLS"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid socket for TLS"));
     }
 
     ssl_sslsocket_obj_t *o = m_new_obj_with_finaliser(ssl_sslsocket_obj_t);

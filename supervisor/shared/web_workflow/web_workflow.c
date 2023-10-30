@@ -238,22 +238,22 @@ void supervisor_web_workflow_status(void) {
             // TODO: Use these unicode to show signal strength: ▂▄▆█
             return;
         }
-        serial_write_compressed(translate("Wi-Fi: "));
+        serial_write_compressed(MP_ERROR_TEXT("Wi-Fi: "));
         _last_wifi_status = _wifi_status;
         if (_wifi_status == WIFI_RADIO_ERROR_AUTH_EXPIRE ||
             _wifi_status == WIFI_RADIO_ERROR_AUTH_FAIL) {
-            serial_write_compressed(translate("Authentication failure"));
+            serial_write_compressed(MP_ERROR_TEXT("Authentication failure"));
         } else if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
             mp_printf(&mp_plat_print, "%d", _wifi_status);
         } else if (ipv4_address == 0) {
             _last_ip = 0;
-            serial_write_compressed(translate("No IP"));
+            serial_write_compressed(MP_ERROR_TEXT("No IP"));
         } else {
         }
     } else {
         // Keep Wi-Fi print separate so its data can be matched with the one above.
-        serial_write_compressed(translate("Wi-Fi: "));
-        serial_write_compressed(translate("off"));
+        serial_write_compressed(MP_ERROR_TEXT("Wi-Fi: "));
+        serial_write_compressed(MP_ERROR_TEXT("off"));
     }
 }
 #endif

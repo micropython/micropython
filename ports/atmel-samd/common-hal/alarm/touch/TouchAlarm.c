@@ -28,5 +28,5 @@
 #include "shared-bindings/microcontroller/__init__.h"
 
 void common_hal_alarm_touch_touchalarm_construct(alarm_touch_touchalarm_obj_t *self, const mcu_pin_obj_t *pin) {
-    mp_raise_NotImplementedError(translate("Touch alarms not available"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Touch alarms not available"));
 }

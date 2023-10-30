@@ -118,7 +118,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     // Find a free RMT Channel and configure it
     rmt_channel_t channel = peripherals_find_and_reserve_rmt(RECEIVE_MODE);
     if (channel == RMT_CHANNEL_MAX) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
     rmt_config_t config = RMT_DEFAULT_CONFIG_RX(pin->number, channel);
     config.rx_config.filter_en = true;
@@ -189,7 +189,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
         index += self->len;
     }
     if (index < 0 || index >= self->len) {
-        mp_raise_IndexError(translate("index out of range"));
+        mp_raise_IndexError(MP_ERROR_TEXT("index out of range"));
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     return value;
@@ -199,7 +199,7 @@ uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     update_internal_buffer(self);
 
     if (self->len == 0) {
-        mp_raise_IndexError(translate("pop from an empty PulseIn"));
+        mp_raise_IndexError(MP_ERROR_TEXT("pop from an empty PulseIn"));
     }
 
     uint16_t value = self->buffer[self->start];

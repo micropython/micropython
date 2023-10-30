@@ -105,7 +105,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
             } else {
                 if (self->max_results == 0) {
                     // No room for any results should error.
-                    mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate wifi scan memory"));
+                    mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("Failed to allocate wifi scan memory"));
                 }
                 // Unable to allocate more results, so load what we can.
                 self->total_results = self->max_results;

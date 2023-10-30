@@ -151,7 +151,7 @@ STATIC uint8_t _pixelbuf_get_as_uint8(mp_obj_t obj) {
         return (uint8_t)mp_obj_get_float(obj);
     }
     mp_raise_TypeError_varg(
-        translate("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
+        MP_ERROR_TEXT("can't convert %q to %q"), mp_obj_get_type_qstr(obj), MP_QSTR_int);
 }
 
 static void pixelbuf_parse_color(pixelbuf_pixelbuf_obj_t *self, mp_obj_t color, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *w) {

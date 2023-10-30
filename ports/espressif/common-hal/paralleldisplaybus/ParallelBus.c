@@ -49,12 +49,12 @@ void common_hal_paralleldisplaybus_parallelbus_construct_nonsequential(paralleld
     const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
 
     if (n_pins != 8 && n_pins != 16) {
-        mp_raise_ValueError_varg(translate("Number of data_pins must be 8 or 16, not %d"), n_pins);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Number of data_pins must be 8 or 16, not %d"), n_pins);
     }
 
     for (uint8_t i = 0; i < n_pins; i++) {
         if (!common_hal_mcu_pin_is_free(data_pins[i])) {
-            mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Bus pin %d is already in use"), i);
         }
     }
 
@@ -106,7 +106,7 @@ void common_hal_paralleldisplaybus_parallelbus_construct_nonsequential(paralleld
 
     if (!self->handle) {
         port_i2s_reset_instance(0);
-        mp_raise_RuntimeError(translate("Internal error"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal error"));
     }
 }
 

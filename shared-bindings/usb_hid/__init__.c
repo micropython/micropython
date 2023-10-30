@@ -58,7 +58,7 @@
 //|
 STATIC mp_obj_t usb_hid_disable(void) {
     if (!common_hal_usb_hid_disable()) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -129,7 +129,7 @@ STATIC mp_obj_t usb_hid_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         (uint8_t)mp_arg_validate_int_range(args[ARG_boot_device].u_int, 0, 2, MP_QSTR_boot_device);
 
     if (!common_hal_usb_hid_enable(devices, boot_device)) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
 
     return mp_const_none;

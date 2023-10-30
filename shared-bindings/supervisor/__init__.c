@@ -130,7 +130,7 @@ STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
     if (!mp_obj_is_str_or_bytes(args.filename.u_obj) && args.filename.u_obj != mp_const_none) {
-        mp_raise_TypeError(translate("argument has wrong type"));
+        mp_raise_TypeError(MP_ERROR_TEXT("argument has wrong type"));
     }
     if (args.filename.u_obj == mp_const_none) {
         args.filename.u_obj = mp_const_empty_bytes;

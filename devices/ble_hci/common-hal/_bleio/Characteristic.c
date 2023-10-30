@@ -108,10 +108,10 @@ size_t common_hal_bleio_characteristic_get_value(bleio_characteristic_obj_t *sel
 
 void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self, mp_buffer_info_t *bufinfo) {
     if (self->fixed_length && bufinfo->len != self->max_length) {
-        mp_raise_ValueError(translate("Value length != required fixed length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Value length != required fixed length"));
     }
     if (bufinfo->len > self->max_length) {
-        mp_raise_ValueError(translate("Value length > max_length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Value length > max_length"));
     }
 
     // Do GATT operations only if this characteristic has been added to a registered service.
@@ -125,7 +125,7 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
             } else if (self->props & CHAR_PROP_WRITE_NO_RESPONSE) {
                 // att_write_cmd(conn_handle, self->handle, bufinfo->buff, bufinfo->len);
             } else {
-                mp_raise_bleio_BluetoothError(translate("Characteristic not writable"));
+                mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Characteristic not writable"));
             }
         } else {
             // Always write the value locally even if no connections are active.
@@ -168,7 +168,7 @@ bleio_characteristic_properties_t common_hal_bleio_characteristic_get_properties
 void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *self, bleio_descriptor_obj_t *descriptor) {
     if (self->handle != common_hal_bleio_adapter_obj.last_added_characteristic_handle) {
         mp_raise_bleio_BluetoothError(
-            translate("Descriptor can only be added to most recently added characteristic"));
+            MP_ERROR_TEXT("Descriptor can only be added to most recently added characteristic"));
     }
 
     descriptor->handle = bleio_adapter_add_attribute(&common_hal_bleio_adapter_obj, MP_OBJ_TO_PTR(descriptor));
@@ -181,11 +181,11 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
     if (self->cccd == NULL) {
-        mp_raise_bleio_BluetoothError(translate("No CCCD for this Characteristic"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("No CCCD for this Characteristic"));
     }
 
     if (!common_hal_bleio_service_get_is_remote(self->service)) {
-        mp_raise_bleio_RoleError(translate("Can't set CCCD on local Characteristic"));
+        mp_raise_bleio_RoleError(MP_ERROR_TEXT("Can't set CCCD on local Characteristic"));
     }
 
     const uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);
@@ -199,7 +199,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, 
     (void)cccd_value;
     // uint8_t rsp[sizeof(bt_att_error_rsp)];
     // if (att_write_req(conn_handle, self->cccd->handle, &cccd_value, sizeof(cccd_value)) == 0) {
-    //     mp_raise_bleio_BluetoothError(translate("Could not write CCCD"));
+    //     mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Could not write CCCD"));
     // }
 }
 

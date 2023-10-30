@@ -67,7 +67,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 displayio_group_t *native_group(mp_obj_t group_obj) {
     mp_obj_t native_group = mp_obj_cast_to_native_base(group_obj, &displayio_group_type);
     if (native_group == MP_OBJ_NULL) {
-        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Must be a %q subclass."), MP_QSTR_Group);
     }
     mp_obj_assert_native_inited(native_group);
     return MP_OBJ_TO_PTR(native_group);
@@ -201,7 +201,7 @@ STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
     mp_int_t index = common_hal_displayio_group_index(self, layer);
     if (index < 0) {
-        mp_raise_ValueError(translate("object not in sequence"));
+        mp_raise_ValueError(MP_ERROR_TEXT("object not in sequence"));
     }
     return MP_OBJ_NEW_SMALL_INT(index);
 }
@@ -303,7 +303,7 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
     displayio_group_t *self = native_group(self_in);
 
     if (mp_obj_is_type(index_obj, &mp_type_slice)) {
-        mp_raise_NotImplementedError(translate("Slices not supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
     } else {
         size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
 

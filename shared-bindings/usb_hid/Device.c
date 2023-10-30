@@ -125,7 +125,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 
     if ((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(in_report_lengths)) != report_ids_count ||
         (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(out_report_lengths)) != report_ids_count) {
-        mp_raise_ValueError_varg(translate("%q, %q, and %q must all be the same length"),
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q, %q, and %q must all be the same length"),
             MP_QSTR_report_ids, MP_QSTR_in_report_lengths, MP_QSTR_out_report_lengths);
     }
 
@@ -153,7 +153,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     if (report_ids_array[0] == 0 && report_ids_count > 1) {
-        mp_raise_ValueError_varg(translate("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
     }
 
     common_hal_usb_hid_device_construct(

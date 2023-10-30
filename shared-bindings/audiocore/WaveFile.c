@@ -80,7 +80,7 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
 
     audioio_wavefile_obj_t *self = mp_obj_malloc(audioio_wavefile_obj_t, &audioio_wavefile_type);
     if (!mp_obj_is_type(arg, &mp_type_vfs_fat_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;
     size_t buffer_size = 0;

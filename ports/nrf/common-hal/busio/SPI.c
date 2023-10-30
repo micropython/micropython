@@ -146,7 +146,7 @@ static nrf_spim_frequency_t baudrate_to_spim_frequency(const uint32_t baudrate) 
 void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *clock, const mcu_pin_obj_t *mosi, const mcu_pin_obj_t *miso, bool half_duplex) {
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Half duplex SPI is not implemented"));
     }
 
     // Find a free instance, with most desirable (highest freq and not shared) allocated first.
@@ -159,7 +159,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     }
 
     if (self->spim_peripheral == NULL) {
-        mp_raise_ValueError(translate("All SPI peripherals are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All SPI peripherals are in use"));
     }
 
     nrfx_spim_config_t config = NRFX_SPIM_DEFAULT_CONFIG(NRFX_SPIM_PIN_NOT_USED, NRFX_SPIM_PIN_NOT_USED,

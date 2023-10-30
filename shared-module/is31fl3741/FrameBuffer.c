@@ -58,7 +58,7 @@ void common_hal_is31fl3741_FrameBuffer_construct(is31fl3741_FrameBuffer_obj_t *s
     mp_obj_tuple_get(mapping, &len, &items);
 
     if (len != (size_t)(self->scale_width * self->scale_height * 3)) {
-        mp_raise_ValueError(translate("LED mappings must match display size"));
+        mp_raise_ValueError(MP_ERROR_TEXT("LED mappings must match display size"));
     }
 
     self->mapping = common_hal_is31fl3741_allocator_impl(sizeof(uint16_t) * len);

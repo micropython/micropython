@@ -147,7 +147,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(is31fl3741_IS31FL3741_set_led_obj, 4, 4, is3
 STATIC mp_obj_t is31fl3741_IS31FL3741_write(mp_obj_t self_in, mp_obj_t mapping, mp_obj_t buffer) {
     is31fl3741_IS31FL3741_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (!mp_obj_is_tuple_compatible(mapping)) {
-        mp_raise_ValueError(translate("Mapping must be a tuple"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Mapping must be a tuple"));
     }
 
     mp_obj_t *map_items;

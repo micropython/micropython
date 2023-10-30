@@ -60,7 +60,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
 
     self->timer = timer ? timer : common_hal_rgbmatrix_timer_allocate(self);
     if (self->timer == NULL) {
-        mp_raise_ValueError(translate("No timer available"));
+        mp_raise_ValueError(MP_ERROR_TEXT("No timer available"));
     }
 
     self->width = width;
@@ -123,11 +123,11 @@ STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t 
                 mp_arg_error_invalid(MP_QSTR_args);
                 break;
             case PROTOMATTER_ERR_MALLOC:
-                mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate %q buffer"), MP_QSTR_RGBMatrix);
+                mp_raise_msg_varg(&mp_type_MemoryError, MP_ERROR_TEXT("Failed to allocate %q buffer"), MP_QSTR_RGBMatrix);
                 break;
             default:
                 mp_raise_msg_varg(&mp_type_RuntimeError,
-                    translate("Internal error #%d"), (int)stat);
+                    MP_ERROR_TEXT("Internal error #%d"), (int)stat);
                 break;
         }
     }

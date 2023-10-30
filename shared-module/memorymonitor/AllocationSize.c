@@ -44,7 +44,7 @@ void common_hal_memorymonitor_allocationsize_pause(memorymonitor_allocationsize_
 
 void common_hal_memorymonitor_allocationsize_resume(memorymonitor_allocationsize_obj_t *self) {
     if (self->previous != NULL) {
-        mp_raise_RuntimeError(translate("Already running"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Already running"));
     }
     self->next = MP_STATE_VM(active_allocationsizes);
     self->previous = (memorymonitor_allocationsize_obj_t **)&MP_STATE_VM(active_allocationsizes);

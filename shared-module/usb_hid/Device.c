@@ -230,11 +230,11 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
     }
 
     if (!tud_hid_ready()) {
-        mp_raise_msg(&mp_type_OSError, translate("USB busy"));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB busy"));
     }
 
     if (!tud_hid_report(report_id, report, len)) {
-        mp_raise_msg(&mp_type_OSError, translate("USB error"));
+        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB error"));
     }
 }
 

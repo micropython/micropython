@@ -259,7 +259,7 @@ TIM_TypeDef *stm_peripherals_find_timer(void) {
             return mcu_tim_banks[i];
         }
     }
-    mp_raise_RuntimeError(translate("All timers in use"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     return NULL;
 }
 

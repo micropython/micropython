@@ -50,10 +50,10 @@ bool vm_used_ble;
 
 //     switch (sec_status) {
 //         case BLE_GAP_SEC_STATUS_UNSPECIFIED:
-//             mp_raise_bleio_SecurityError(translate("Unspecified issue. Can be that the pairing prompt on the other device was declined or ignored."));
+//             mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Unspecified issue. Can be that the pairing prompt on the other device was declined or ignored."));
 //             return;
 //         default:
-//             mp_raise_bleio_SecurityError(translate("Unknown security error: 0x%04x"), sec_status);
+//             mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Unknown security error: 0x%04x"), sec_status);
 //     }
 // }
 
@@ -96,14 +96,14 @@ bleio_adapter_obj_t common_hal_bleio_adapter_obj = {
 
 bleio_adapter_obj_t *common_hal_bleio_allocate_adapter_or_raise(void) {
     if (common_hal_bleio_adapter_obj.allocated) {
-        mp_raise_RuntimeError(translate("Too many Adapters"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Too many Adapters"));
     }
     return &common_hal_bleio_adapter_obj;
 }
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
     }
 }
 

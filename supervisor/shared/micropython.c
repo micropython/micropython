@@ -62,7 +62,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     #ifdef CIRCUITPY_BOOT_OUTPUT_FILE
     if (boot_output != NULL) {
         // Ensure boot_out.txt is capped at 1 filesystem block and ends with a newline
-        #define TRUNCATED translate("[truncated due to length]")
+        #define TRUNCATED MP_ERROR_TEXT("[truncated due to length]")
         size_t truncated_message_len = decompress_length(TRUNCATED);
         size_t maxlen = 512 - truncated_message_len; // includes trailing '\0' so we do not need to account for trailing newline '\n' in vstr_add_byte
         if (len + boot_output->len > maxlen) {

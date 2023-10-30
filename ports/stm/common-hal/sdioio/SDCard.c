@@ -112,7 +112,7 @@ STATIC int check_pins(sdioio_sdcard_obj_t *self,
     }
 
     if (sdio_taken) {
-        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
     } else {
         raise_ValueError_invalid_pin();
     }
@@ -160,13 +160,13 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
 
     HAL_StatusTypeDef r = HAL_SD_Init(&self->handle);
     if (r != HAL_OK) {
-        mp_raise_ValueError_varg(translate("SDIO Init Error %d"), (int)r);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("SDIO Init Error %d"), (int)r);
     }
 
     HAL_SD_CardInfoTypeDef info;
     r = HAL_SD_GetCardInfo(&self->handle, &info);
     if (r != HAL_OK) {
-        mp_raise_ValueError_varg(translate("SDIO GetCardInfo Error %d"), (int)r);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("SDIO GetCardInfo Error %d"), (int)r);
     }
 
     self->num_data = 1;
@@ -206,7 +206,7 @@ uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t *self) {
 
 STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
-        mp_raise_ValueError(translate("Buffer must be a multiple of 512 bytes"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer must be a multiple of 512 bytes"));
     }
 }
 

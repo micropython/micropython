@@ -72,7 +72,7 @@ void bleio_uuid_construct_from_efr_ble_uuid(bleio_uuid_obj_t *self,
     ble_uuid_any_t *efr_ble_uuid) {
 
     if (self->efr_ble_uuid.uuid.type == BLE_UUID_TYPE_16) {
-        mp_raise_bleio_BluetoothError(translate("Unexpected efr uuid type"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unexpected efr uuid type"));
     }
     self->efr_ble_uuid.uuid16.value = efr_ble_uuid->uuid16.value;
 }

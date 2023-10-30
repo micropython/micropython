@@ -162,11 +162,11 @@ STATIC uint32_t _check_pins_free(const mcu_pin_obj_t *first_pin, uint8_t pin_cou
         for (size_t i = 0; i < pin_count; i++) {
             uint8_t pin_number = first_pin->number + i;
             if (pin_number >= NUM_BANK0_GPIOS) {
-                mp_raise_ValueError(translate("Pin count too large"));
+                mp_raise_ValueError(MP_ERROR_TEXT("Pin count too large"));
             }
             const mcu_pin_obj_t *pin = mcu_get_pin_by_number(pin_number);
             if (!pin) {
-                mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_Pin);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), MP_QSTR_Pin);
             }
 
             if (exclusive_pin_use || _pin_reference_count[pin_number] == 0) {
@@ -428,21 +428,21 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
     if (instruction == pio_instr_bits_jmp) {
         uint16_t condition = (full_instruction & 0x00e0) >> 5;
         if ((condition == 0x6) && !state->inputs.has_jmp_pin) {
-            mp_raise_ValueError_varg(translate("Missing jmp_pin. %q[%u] jumps on pin"), what_program, i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Missing jmp_pin. %q[%u] jumps on pin"), what_program, i);
         }
     }
     if (instruction == pio_instr_bits_wait) {
         uint16_t wait_source = (full_instruction & 0x0060) >> 5;
         uint16_t wait_index = full_instruction & 0x001f;
         if (wait_source == 0 && (state->inputs.pins_we_use & (1 << wait_index)) == 0) { // GPIO
-            mp_raise_ValueError_varg(translate("%q[%u] uses extra pin"), what_program, i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q[%u] uses extra pin"), what_program, i);
         }
         if (wait_source == 1) { // Input pin
             if (!state->inputs.has_in_pin) {
-                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] waits based on pin"), what_program, i);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Missing first_in_pin. %q[%u] waits based on pin"), what_program, i);
             }
             if (wait_index >= state->inputs.in_pin_count) {
-                mp_raise_ValueError_varg(translate("%q[%u] waits on input outside of count"), what_program, i);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q[%u] waits on input outside of count"), what_program, i);
             }
         }
     }
@@ -451,10 +451,10 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t bit_count = full_instruction & 0x001f;
         if (source == 0) {
             if (!state->inputs.has_in_pin) {
-                mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] shifts in from pin(s)"), what_program, i);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Missing first_in_pin. %q[%u] shifts in from pin(s)"), what_program, i);
             }
             if (bit_count > state->inputs.in_pin_count) {
-                mp_raise_ValueError_varg(translate("%q[%u] shifts in more bits than pin count"), what_program, i);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q[%u] shifts in more bits than pin count"), what_program, i);
             }
         }
         if (state->inputs.auto_push) {
@@ -469,10 +469,10 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         // Check for pins or pindirs destination.
         if (destination == 0x0 || destination == 0x4) {
             if (!state->inputs.has_out_pin) {
-                mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] shifts out to pin(s)"), what_program, i);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Missing first_out_pin. %q[%u] shifts out to pin(s)"), what_program, i);
             }
             if (bit_count > state->inputs.out_pin_count) {
-                mp_raise_ValueError_varg(translate("%q[%u] shifts out more bits than pin count"), what_program, i);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("%q[%u] shifts out more bits than pin count"), what_program, i);
             }
         }
         if (state->inputs.auto_pull) {
@@ -485,7 +485,7 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t destination = (full_instruction & 0x00e0) >> 5;
         // Check for pins or pindirs destination.
         if ((destination == 0x00 || destination == 0x4) && !state->inputs.has_set_pin) {
-            mp_raise_ValueError_varg(translate("Missing first_set_pin. %q[%u] sets pin(s)"), what_program, i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Missing first_set_pin. %q[%u] sets pin(s)"), what_program, i);
         }
     }
     if (instruction == pio_instr_bits_mov) {
@@ -493,10 +493,10 @@ static void consider_instruction(introspect_t *state, uint16_t full_instruction,
         uint16_t destination = (full_instruction & 0x00e0) >> 5;
         // Check for pins or pindirs destination.
         if (destination == 0x0 && !state->inputs.has_out_pin) {
-            mp_raise_ValueError_varg(translate("Missing first_out_pin. %q[%u] writes pin(s)"), what_program, i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Missing first_out_pin. %q[%u] writes pin(s)"), what_program, i);
         }
         if (source == 0x0 && !state->inputs.has_in_pin) {
-            mp_raise_ValueError_varg(translate("Missing first_in_pin. %q[%u] reads pin(s)"), what_program, i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Missing first_in_pin. %q[%u] reads pin(s)"), what_program, i);
         }
         if (destination == 0x6) {
             state->outputs.in_loaded = true;
@@ -560,10 +560,10 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     consider_program(&state, may_exec, may_exec_len, MP_QSTR_may_exec);
 
     if (!state.outputs.in_loaded && state.outputs.in_used) {
-        mp_raise_ValueError_varg(translate("Program does IN without loading ISR"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Program does IN without loading ISR"));
     }
     if (!state.outputs.out_loaded && state.outputs.out_used) {
-        mp_raise_ValueError_varg(translate("Program does OUT without loading OSR"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Program does OUT without loading OSR"));
     }
 
     uint32_t initial_pin_state = mask_and_rotate(first_out_pin, out_pin_count, initial_out_pin_state);
@@ -574,10 +574,10 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         mask_and_rotate(first_set_pin, set_pin_count, 0xffffffff);
     // Check that OUT and SET settings agree because we don't have a way of picking one over the other.
     if ((initial_pin_state & set_out_overlap) != (initial_set_pin_state & set_out_overlap)) {
-        mp_raise_ValueError(translate("Initial set pin state conflicts with initial out pin state"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Initial set pin state conflicts with initial out pin state"));
     }
     if ((initial_pin_direction & set_out_overlap) != (initial_set_pin_direction & set_out_overlap)) {
-        mp_raise_ValueError(translate("Initial set pin direction conflicts with initial out pin direction"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Initial set pin direction conflicts with initial out pin direction"));
     }
     initial_pin_state |= initial_set_pin_state;
     initial_pin_direction |= initial_set_pin_direction;
@@ -601,7 +601,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         }
     }
     if (initial_pin_direction & (pull_up | pull_down)) {
-        mp_raise_ValueError(translate("pull masks conflict with direction masks"));
+        mp_raise_ValueError(MP_ERROR_TEXT("pull masks conflict with direction masks"));
     }
     bool ok = rp2pio_statemachine_construct(
         self,
@@ -624,7 +624,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
         sideset_enable,
         wrap_target, wrap, offset);
     if (!ok) {
-        mp_raise_RuntimeError(translate("All state machines in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All state machines in use"));
     }
 }
 
@@ -668,7 +668,7 @@ void common_hal_rp2pio_statemachine_set_frequency(rp2pio_statemachine_obj_t *sel
     }
     // 0 is interpreted as 0x10000 so it's valid.
     if (div256 / 256 > 0x10000 || frequency > clock_get_hz(clk_sys)) {
-        mp_raise_ValueError_varg(translate("%q out of range"), MP_QSTR_frequency);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q out of range"), MP_QSTR_frequency);
     }
     self->actual_frequency = frequency256 / div256;
 
@@ -893,14 +893,14 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
 
 bool common_hal_rp2pio_statemachine_write(rp2pio_statemachine_obj_t *self, const uint8_t *data, size_t len, uint8_t stride_in_bytes, bool swap) {
     if (!self->out) {
-        mp_raise_RuntimeError(translate("No out in program"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No out in program"));
     }
     return _transfer(self, data, len, stride_in_bytes, NULL, 0, 0, swap, false);
 }
 
 bool common_hal_rp2pio_statemachine_readinto(rp2pio_statemachine_obj_t *self, uint8_t *data, size_t len, uint8_t stride_in_bytes, bool swap) {
     if (!self->in) {
-        mp_raise_RuntimeError(translate("No in in program"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No in in program"));
     }
     return _transfer(self, NULL, 0, 0, data, len, stride_in_bytes, false, swap);
 }
@@ -909,7 +909,7 @@ bool common_hal_rp2pio_statemachine_write_readinto(rp2pio_statemachine_obj_t *se
     const uint8_t *data_out, size_t out_len, uint8_t out_stride_in_bytes,
     uint8_t *data_in, size_t in_len, uint8_t in_stride_in_bytes, bool swap_out, bool swap_in) {
     if (!self->in || !self->out) {
-        mp_raise_RuntimeError(translate("No in or out in program"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No in or out in program"));
     }
     return _transfer(self, data_out, out_len, out_stride_in_bytes, data_in, in_len, in_stride_in_bytes, swap_out, swap_in);
 }
@@ -993,10 +993,10 @@ bool common_hal_rp2pio_statemachine_background_write(rp2pio_statemachine_obj_t *
 
     if (SM_DMA_ALLOCATED(pio_index, sm)) {
         if (stride_in_bytes != self->background_stride_in_bytes) {
-            mp_raise_ValueError(translate("Mismatched data size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Mismatched data size"));
         }
         if (swap != self->byteswap) {
-            mp_raise_ValueError(translate("Mismatched swap flag"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Mismatched swap flag"));
         }
 
         while (self->pending_buffers) {

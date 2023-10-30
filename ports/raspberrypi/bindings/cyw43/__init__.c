@@ -118,7 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(cyw43_get_power_management_obj, cyw43_get_power
 
 const mcu_pin_obj_t *validate_obj_is_pin_including_cyw43(mp_obj_t obj, qstr arg_name) {
     if (!mp_obj_is_type(obj, &mcu_pin_type) && !mp_obj_is_type(obj, &cyw43_pin_type)) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), arg_name, mcu_pin_type.name, cyw43_pin_type.name, mp_obj_get_type(obj)->name);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), arg_name, mcu_pin_type.name, cyw43_pin_type.name, mp_obj_get_type(obj)->name);
     }
     return MP_OBJ_TO_PTR(obj);
 }

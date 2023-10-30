@@ -114,7 +114,7 @@ STATIC mp_obj_t bleio_packet_buffer_readinto(mp_obj_t self_in, mp_obj_t buffer_o
 
     mp_int_t size = common_hal_bleio_packet_buffer_readinto(self, bufinfo.buf, bufinfo.len);
     if (size < 0) {
-        mp_raise_ValueError_varg(translate("Buffer too short by %d bytes"), size * -1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Buffer too short by %d bytes"), size * -1);
     }
 
     return MP_OBJ_NEW_SMALL_INT(size);
@@ -164,7 +164,7 @@ STATIC mp_obj_t bleio_packet_buffer_write(mp_uint_t n_args, const mp_obj_t *pos_
         // gatts write events, which may not have been sent yet.
         //
         // IDEAL:
-        // mp_raise_ConnectionError(translate("Not connected"));
+        // mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
         // TEMPORARY:
         num_bytes_written = 0;
     }
@@ -189,7 +189,7 @@ STATIC mp_obj_t bleio_packet_buffer_get_incoming_packet_length(mp_obj_t self_in)
 
     mp_int_t size = common_hal_bleio_packet_buffer_get_incoming_packet_length(self);
     if (size < 0) {
-        mp_raise_ValueError(translate("No connection: length cannot be determined"));
+        mp_raise_ValueError(MP_ERROR_TEXT("No connection: length cannot be determined"));
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }
@@ -206,7 +206,7 @@ STATIC mp_obj_t bleio_packet_buffer_get_outgoing_packet_length(mp_obj_t self_in)
 
     mp_int_t size = common_hal_bleio_packet_buffer_get_outgoing_packet_length(self);
     if (size < 0) {
-        mp_raise_ValueError(translate("No connection: length cannot be determined"));
+        mp_raise_ValueError(MP_ERROR_TEXT("No connection: length cannot be determined"));
     }
     return MP_OBJ_NEW_SMALL_INT(size);
 }

@@ -55,7 +55,7 @@ void common_hal_i2cdisplaybus_i2cdisplaybus_construct(i2cdisplaybus_i2cdisplaybu
     if (!common_hal_busio_i2c_probe(i2c, device_address)) {
         self->base.type = &mp_type_NoneType;
         common_hal_i2cdisplaybus_i2cdisplaybus_deinit(self);
-        mp_raise_ValueError_varg(translate("Unable to find I2C Display at %x"), device_address);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Unable to find I2C Display at %x"), device_address);
     }
 
     // Write to the device and return 0 on success or an appropriate error code from mperrno.h

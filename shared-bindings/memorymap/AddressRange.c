@@ -103,7 +103,7 @@ STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_
         mp_arg_validate_int_min(args[ARG_length].u_int, 1, MP_QSTR_length);
     // Check for address range wrap here as this can break port-specific code due to size_t overflow.
     if (start + length - 1 < start) {
-        mp_raise_ValueError(translate("Address range wraps around"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Address range wraps around"));
     }
 
     memorymap_addressrange_obj_t *self = mp_obj_malloc(memorymap_addressrange_obj_t, &memorymap_addressrange_type);
@@ -168,7 +168,7 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
         } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(common_hal_memorymap_addressrange_get_length(self), index_in, &slice)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -182,15 +182,15 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
                     mp_buffer_info_t bufinfo;
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     if (bufinfo.len != src_len) {
-                        mp_raise_ValueError(translate("Slice and value different lengths."));
+                        mp_raise_ValueError(MP_ERROR_TEXT("Slice and value different lengths."));
                     }
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                     if (1 != mp_binary_get_size('@', bufinfo.typecode, NULL)) {
-                        mp_raise_ValueError(translate("Array values should be single bytes."));
+                        mp_raise_ValueError(MP_ERROR_TEXT("Array values should be single bytes."));
                     }
                 } else {
-                    mp_raise_NotImplementedError(translate("array/bytes required on right side"));
+                    mp_raise_NotImplementedError(MP_ERROR_TEXT("array/bytes required on right side"));
                 }
 
                 common_hal_memorymap_addressrange_set_bytes(self, slice.start, src_items, src_len);

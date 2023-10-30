@@ -52,7 +52,7 @@ STATIC xfer_result_t _xfer_result;
 STATIC size_t _actual_len;
 bool common_hal_usb_core_device_construct(usb_core_device_obj_t *self, uint8_t device_number) {
     if (!tuh_inited()) {
-        mp_raise_RuntimeError(translate("No usb host port initialized"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No usb host port initialized"));
     }
 
     if (device_number == 0 || device_number > CFG_TUH_DEVICE_MAX + CFG_TUH_HUB) {
@@ -179,7 +179,7 @@ STATIC size_t _xfer(tuh_xfer_t *xfer, mp_int_t timeout) {
     xfer_result_t result = _xfer_result;
     _xfer_result = 0xff;
     if (result == XFER_RESULT_STALLED) {
-        mp_raise_usb_core_USBError(translate("Pipe error"));
+        mp_raise_usb_core_USBError(MP_ERROR_TEXT("Pipe error"));
     }
     if (result == 0xff) {
         tuh_edpt_abort_xfer(xfer->daddr, xfer->ep_addr);
@@ -208,7 +208,7 @@ STATIC bool _open_endpoint(usb_core_device_obj_t *self, mp_int_t endpoint) {
     }
 
     if (self->configuration_descriptor == NULL) {
-        mp_raise_usb_core_USBError(translate("No configuration set"));
+        mp_raise_usb_core_USBError(MP_ERROR_TEXT("No configuration set"));
     }
 
     tusb_desc_configuration_t *desc_cfg = (tusb_desc_configuration_t *)self->configuration_descriptor;
@@ -305,7 +305,7 @@ mp_int_t common_hal_usb_core_device_ctrl_transfer(usb_core_device_obj_t *self,
     xfer_result_t result = _xfer_result;
     _xfer_result = 0xff;
     if (result == XFER_RESULT_STALLED) {
-        mp_raise_usb_core_USBError(translate("Pipe error"));
+        mp_raise_usb_core_USBError(MP_ERROR_TEXT("Pipe error"));
     }
     if (result == 0xff) {
         tuh_edpt_abort_xfer(xfer.daddr, xfer.ep_addr);

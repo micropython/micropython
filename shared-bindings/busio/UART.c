@@ -142,7 +142,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     const mcu_pin_obj_t *cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj, MP_QSTR_cts);
     const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj, MP_QSTR_rs485_dir);
     if ((tx == NULL) && (rx == NULL)) {
-        mp_raise_ValueError(translate("tx and rx cannot both be None"));
+        mp_raise_ValueError(MP_ERROR_TEXT("tx and rx cannot both be None"));
     }
 
     // Pins must be distinct.
@@ -187,7 +187,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 STATIC busio_uart_obj_t *native_uart(mp_obj_t uart_obj) {
     mp_obj_t native_uart = mp_obj_cast_to_native_base(uart_obj, MP_OBJ_FROM_PTR(&busio_uart_type));
     if (native_uart == MP_OBJ_NULL) {
-        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_UART);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Must be a %q subclass."), MP_QSTR_UART);
     }
     mp_obj_assert_native_inited(native_uart);
     return MP_OBJ_TO_PTR(native_uart);

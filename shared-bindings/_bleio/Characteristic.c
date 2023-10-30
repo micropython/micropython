@@ -133,7 +133,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
     if (initial_value_bufinfo.len > max_length ||
         (fixed_length && initial_value_bufinfo.len != max_length)) {
-        mp_raise_ValueError(translate("initial_value length is wrong"));
+        mp_raise_ValueError(MP_ERROR_TEXT("initial_value length is wrong"));
     }
 
     const char *user_description = NULL;

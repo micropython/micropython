@@ -207,7 +207,7 @@ STATIC mp_obj_t audioio_audioout_obj_pause(mp_obj_t self_in) {
     check_for_deinit(self);
 
     if (!common_hal_audioio_audioout_get_playing(self)) {
-        mp_raise_RuntimeError(translate("Not playing"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Not playing"));
     }
     common_hal_audioio_audioout_pause(self);
     return mp_const_none;

@@ -338,20 +338,20 @@ STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_o
         } else {
             mp_str_print_quoted(&print, (byte *)"EOF", 3, true);
         }
-        handle(&mp_type_ValueError, translate("Invalid byte %.*s"), vstr.len, vstr.buf);
+        handle(&mp_type_ValueError, MP_ERROR_TEXT("Invalid byte %.*s"), vstr.len, vstr.buf);
     } else {
         switch (error) {
             case GETENV_ERR_OPEN:
-                handle(&mp_type_ValueError, translate("%S"), translate("File not found"));
+                handle(&mp_type_ValueError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("File not found"));
                 break;
             case GETENV_ERR_UNICODE:
-                handle(&mp_type_ValueError, translate("%S"), translate("Invalid unicode escape"));
+                handle(&mp_type_ValueError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("Invalid unicode escape"));
                 break;
             case GETENV_ERR_NOT_FOUND:
-                handle(&mp_type_ValueError, translate("%S"), translate("Key not found"));
+                handle(&mp_type_ValueError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("Key not found"));
                 break;
             default:
-                handle(&mp_type_RuntimeError, translate("%S"), translate("Internal error"));
+                handle(&mp_type_RuntimeError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("Internal error"));
                 break;
         }
     }
@@ -359,7 +359,7 @@ STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_o
 
 STATIC void common_hal_os_getenv_showerr(const char *key, os_getenv_err_t result) {
     if (result != GETENV_OK && result != GETENV_ERR_OPEN && result != GETENV_ERR_NOT_FOUND) {
-        mp_cprintf(&mp_plat_print, translate("An error occurred while retrieving '%s':\n"), key);
+        mp_cprintf(&mp_plat_print, MP_ERROR_TEXT("An error occurred while retrieving '%s':\n"), key);
         handle_getenv_error(result, print_dont_raise);
     }
 }

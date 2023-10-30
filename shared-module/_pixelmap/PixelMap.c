@@ -121,7 +121,7 @@ mp_obj_t shared_module_pixelmap_pixelmap_getslice(pixelmap_pixelmap_obj_t *self,
 void shared_module_pixelmap_pixelmap_setslice(pixelmap_pixelmap_obj_t *self, const mp_obj_t values, mp_bound_slice_t slice, size_t slice_len) {
     size_t num_items = mp_obj_get_int(mp_obj_len(values));
     if (num_items != slice_len) {
-        mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
     }
 
     bool auto_write = auto_write_get_and_clear(self);

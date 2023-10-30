@@ -145,7 +145,7 @@ STATIC mp_obj_t analogbufio_bufferedin_obj_readinto(mp_obj_t self_in, mp_obj_t b
     if (bufinfo.typecode == 'H') {
         bytes_per_sample = 2;
     } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError_varg(translate("%q must be a bytearray or array of type 'H' or 'B'"), MP_QSTR_buffer);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be a bytearray or array of type 'H' or 'B'"), MP_QSTR_buffer);
     }
 
     mp_uint_t captured = common_hal_analogbufio_bufferedin_readinto(self, bufinfo.buf, bufinfo.len, bytes_per_sample);

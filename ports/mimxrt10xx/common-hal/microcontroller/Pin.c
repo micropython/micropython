@@ -139,5 +139,5 @@ const mcu_periph_obj_t *find_pin_function_sz(const mcu_periph_obj_t *list, size_
             return &list[i];
         }
     }
-    mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
+    mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q pin"), name);
 }

@@ -111,7 +111,7 @@ usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp,
     // Return the singleton if given the same pins.
     if (self->dp != NULL) {
         if (self->dp != dp || self->dm != dm) {
-            mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q in use"), MP_QSTR_usb_host);
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q in use"), MP_QSTR_usb_host);
         }
         return self;
     }
@@ -128,11 +128,11 @@ usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp,
     // PIO with room for 31 instructions and two free SM.
     if (!_has_program_room(pio_cfg.pio_tx_num, 22) || _sm_free_count(pio_cfg.pio_tx_num) < 1 ||
         !_has_program_room(pio_cfg.pio_rx_num, 31) || _sm_free_count(pio_cfg.pio_rx_num) < 2) {
-        mp_raise_RuntimeError(translate("All state machines in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All state machines in use"));
     }
     pio_cfg.tx_ch = dma_claim_unused_channel(false); // DMA channel
     if (pio_cfg.tx_ch < 0) {
-        mp_raise_RuntimeError(translate("All dma channels in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All dma channels in use"));
     }
 
     self->base.type = &usb_host_port_type;

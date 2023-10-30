@@ -171,7 +171,7 @@ digitalinout_result_t common_hal_digitalio_digitalinout_set_pull(
 digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     digitalio_digitalinout_obj_t *self) {
     if (self->output) {
-        mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot get pull while in output mode"));
         return PULL_NONE;
     } else {
         return self->pull;

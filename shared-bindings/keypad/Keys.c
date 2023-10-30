@@ -122,7 +122,7 @@ STATIC mp_obj_t keypad_keys_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     return MP_OBJ_FROM_PTR(self);
     #else
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_Keys);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_Keys);
 
     #endif
 }

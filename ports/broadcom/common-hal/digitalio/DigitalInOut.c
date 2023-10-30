@@ -151,7 +151,7 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     digitalio_digitalinout_obj_t *self) {
     uint32_t pin = self->pin->number;
     if (self->output) {
-        mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot get pull while in output mode"));
         return PULL_NONE;
     } else {
         if (gpio_get_pull(pin) == BP_PULL_UP) {

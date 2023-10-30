@@ -86,7 +86,7 @@ STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, s
         self->lmk_set = true;
         memcpy(self->peer_info.lmk, common_hal_espnow_get_bytes_len(lmk, ESP_NOW_KEY_LEN), ESP_NOW_KEY_LEN);
     } else if (self->peer_info.encrypt) {
-        mp_raise_ValueError_varg(translate("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
     }
 
     return self;
@@ -199,7 +199,7 @@ STATIC mp_obj_t espnow_peer_set_encrypted(const mp_obj_t self_in, const mp_obj_t
     self->peer_info.encrypt = mp_obj_is_true(value);
 
     if (!self->lmk_set) {
-        mp_raise_ValueError_varg(translate("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
     }
 
     esp_now_mod_peer(&self->peer_info);

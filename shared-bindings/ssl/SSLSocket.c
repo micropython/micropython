@@ -100,12 +100,12 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
-        mp_raise_ValueError(translate("port must be >= 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
     }
 
     bool ok = common_hal_ssl_sslsocket_bind(self, host, hostlen, (uint32_t)port);
     if (!ok) {
-        mp_raise_ValueError(translate("Error: Failure to bind"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Error: Failure to bind"));
     }
 
     return mp_const_none;
@@ -136,7 +136,7 @@ STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
-        mp_raise_ValueError(translate("port must be >= 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
     }
 
     common_hal_ssl_sslsocket_connect(self, host, hostlen, (uint32_t)port);
@@ -189,7 +189,7 @@ STATIC mp_obj_t ssl_sslsocket_recv_into(size_t n_args, const mp_obj_t *args) {
     if (n_args == 3) {
         mp_int_t given_len = mp_obj_get_int(args[2]);
         if (given_len > len) {
-            mp_raise_ValueError(translate("buffer too small for requested bytes"));
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer too small for requested bytes"));
         }
         if (given_len > 0 && given_len < len) {
             len = given_len;

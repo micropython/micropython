@@ -74,7 +74,7 @@ STATIC bool hostname_valid(const char *ptr, size_t len) {
 STATIC void validate_hex_password(const uint8_t *buf, size_t len) {
     for (size_t i = 0; i < len; i++) {
         if (!unichar_isxdigit(buf[i])) {
-            mp_raise_ValueError_varg(translate("Invalid hex password"));
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid hex password"));
         }
     }
 }
@@ -132,7 +132,7 @@ STATIC mp_obj_t wifi_radio_set_hostname(mp_obj_t self_in, mp_obj_t hostname_in) 
     mp_arg_validate_length_range(hostname.len, 1, 253, MP_QSTR_hostname);
 
     if (!hostname_valid(hostname.buf, hostname.len)) {
-        mp_raise_ValueError(translate("invalid hostname"));
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid hostname"));
     }
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -166,7 +166,7 @@ STATIC mp_obj_t wifi_radio_set_mac_address(mp_obj_t self_in, mp_obj_t mac_addres
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
 
     if (mac_address.len != MAC_ADDRESS_LENGTH) {
-        mp_raise_ValueError(translate("Invalid MAC address"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid MAC address"));
     }
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -224,7 +224,7 @@ STATIC mp_obj_t wifi_radio_set_mac_address_ap(mp_obj_t self_in, mp_obj_t mac_add
     mp_get_buffer_raise(mac_address_in, &mac_address, MP_BUFFER_READ);
 
     if (mac_address.len != MAC_ADDRESS_LENGTH) {
-        mp_raise_ValueError(translate("Invalid MAC address"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid MAC address"));
     }
 
     wifi_radio_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -386,7 +386,7 @@ STATIC mp_obj_t wifi_radio_start_ap(size_t n_args, const mp_obj_t *pos_args, mp_
     mp_int_t channel = mp_arg_validate_int_range(args[ARG_channel].u_int, 1, 13, MP_QSTR_channel);
 
     if (authmode == AUTHMODE_OPEN && password.len > 0) {
-        mp_raise_ValueError(translate("AuthMode.OPEN is not used with password"));
+        mp_raise_ValueError(MP_ERROR_TEXT("AuthMode.OPEN is not used with password"));
     }
 
     if (authmode != AUTHMODE_OPEN) {
@@ -489,17 +489,17 @@ STATIC mp_obj_t wifi_radio_connect(size_t n_args, const mp_obj_t *pos_args, mp_m
     if (args[ARG_bssid].u_obj != mp_const_none) {
         mp_get_buffer_raise(args[ARG_bssid].u_obj, &bssid, MP_BUFFER_READ);
         if (bssid.len != MAC_ADDRESS_LENGTH) {
-            mp_raise_ValueError(translate("Invalid BSSID"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid BSSID"));
         }
     }
 
     wifi_radio_error_t error = common_hal_wifi_radio_connect(self, ssid.buf, ssid.len, password.buf, password.len, args[ARG_channel].u_int, timeout, bssid.buf, bssid.len);
     if (error == WIFI_RADIO_ERROR_AUTH_FAIL) {
-        mp_raise_ConnectionError(translate("Authentication failure"));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Authentication failure"));
     } else if (error == WIFI_RADIO_ERROR_NO_AP_FOUND) {
-        mp_raise_ConnectionError(translate("No network with that ssid"));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("No network with that ssid"));
     } else if (error != WIFI_RADIO_ERROR_NONE) {
-        mp_raise_msg_varg(&mp_type_ConnectionError, translate("Unknown failure %d"), error);
+        mp_raise_msg_varg(&mp_type_ConnectionError, MP_ERROR_TEXT("Unknown failure %d"), error);
     }
 
     return mp_const_none;
