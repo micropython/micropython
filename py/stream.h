@@ -43,6 +43,7 @@
 #define MP_STREAM_GET_DATA_OPTS (8)  // Get data/message options
 #define MP_STREAM_SET_DATA_OPTS (9)  // Set data/message options
 #define MP_STREAM_GET_FILENO    (10) // Get fileno of underlying file
+#define MP_STREAM_TRUNCATE      (11)
 
 // These poll ioctl values are compatible with Linux
 #define MP_STREAM_POLL_RD       (0x0001)
@@ -86,6 +87,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_close_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream___exit___obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_tell_obj);
+MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_truncate_obj);
 MP_DECLARE_CONST_FUN_OBJ_1(mp_stream_flush_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_ioctl_obj);
 
