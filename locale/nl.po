@@ -2984,6 +2984,10 @@ msgstr "deling door nul"
 msgid "dtype must be float, or complex"
 msgstr ""
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "dtype of int32 is not supported"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "leeg"
@@ -3850,6 +3854,10 @@ msgstr "bewerking is voor ndarrays niet geïmplementeerd"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
 msgstr "bewerking wordt niet ondersteund voor dit type"
+
+#: extmod/ulab/code/ndarray_operators.c
+msgid "operation not supported for the input types"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "ord expects a character"

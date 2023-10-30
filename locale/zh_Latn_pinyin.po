@@ -3014,6 +3014,10 @@ msgstr "bèi líng chú"
 msgid "dtype must be float, or complex"
 msgstr "dtype bì xū shì fú diǎn xíng huò fù shù"
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "dtype of int32 is not supported"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "kòngxián"
@@ -3880,6 +3884,10 @@ msgstr "cāozuò wèi zài ndarrays shàng shíxiàn"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
 msgstr "gěi dìng lèixíng bù zhīchí gāi cāozuò"
+
+#: extmod/ulab/code/ndarray_operators.c
+msgid "operation not supported for the input types"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
