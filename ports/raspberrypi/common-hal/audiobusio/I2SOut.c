@@ -104,10 +104,10 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
     const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
     if (main_clock != NULL) {
-        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_main_clock);
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_main_clock);
     }
     if (bit_clock->number != word_select->number - 1) {
-        mp_raise_ValueError(translate("Bit clock and word select must be sequential GPIO pins"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Bit clock and word select must be sequential GPIO pins"));
     }
 
     const uint16_t *program = i2s_program;
@@ -182,7 +182,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     uint32_t frequency = bits_per_sample_output * audiosample_sample_rate(sample);
     uint8_t channel_count = audiosample_channel_count(sample);
     if (channel_count > 2) {
-        mp_raise_ValueError(translate("Too many channels in sample."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Too many channels in sample."));
     }
 
     common_hal_rp2pio_statemachine_set_frequency(&self->state_machine, clocks_per_bit * frequency);
@@ -206,10 +206,10 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
 
     if (result == AUDIO_DMA_DMA_BUSY) {
         common_hal_audiobusio_i2sout_stop(self);
-        mp_raise_RuntimeError(translate("No DMA channel found"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No DMA channel found"));
     } else if (result == AUDIO_DMA_MEMORY_ERROR) {
         common_hal_audiobusio_i2sout_stop(self);
-        mp_raise_RuntimeError(translate("Unable to allocate buffers for signed conversion"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to allocate buffers for signed conversion"));
     }
 
     self->playing = true;

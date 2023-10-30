@@ -188,7 +188,7 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
     self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL,
         &self->pwm_irq);
     if (!self->pwm) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     self->pwm->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_1;

@@ -216,7 +216,7 @@ void common_hal_socketpool_socketpool_raise_gaierror_noname(void) {
     vstr_t vstr;
     mp_print_t print;
     vstr_init_print(&vstr, 64, &print);
-    mp_printf(&print, "%S", translate("Name or service not known"));
+    mp_printf(&print, "%S", MP_ERROR_TEXT("Name or service not known"));
 
     mp_obj_t exc_args[] = {
         MP_OBJ_NEW_SMALL_INT(SOCKETPOOL_EAI_NONAME),

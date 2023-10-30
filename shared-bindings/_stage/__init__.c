@@ -88,7 +88,7 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     mp_obj_t native_display = mp_obj_cast_to_native_base(args[6],
         &busdisplay_busdisplay_type);
     if (!mp_obj_is_type(native_display, &busdisplay_busdisplay_type)) {
-        mp_raise_TypeError(translate("argument num/types mismatch"));
+        mp_raise_TypeError(MP_ERROR_TEXT("argument num/types mismatch"));
     }
     busdisplay_busdisplay_obj_t *display = MP_OBJ_TO_PTR(native_display);
     uint8_t scale = mp_obj_get_int(args[7]);

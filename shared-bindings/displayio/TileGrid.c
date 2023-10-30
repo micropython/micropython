@@ -105,12 +105,12 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
     } else {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_bitmap);
     }
     mp_obj_t pixel_shader = args[ARG_pixel_shader].u_obj;
     if (!mp_obj_is_type(pixel_shader, &displayio_colorconverter_type) &&
         !mp_obj_is_type(pixel_shader, &displayio_palette_type)) {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_pixel_shader);
     }
     uint16_t tile_width = args[ARG_tile_width].u_int;
     if (tile_width == 0) {
@@ -121,10 +121,10 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         tile_height = bitmap_height;
     }
     if (bitmap_width % tile_width != 0) {
-        mp_raise_ValueError(translate("Tile width must exactly divide bitmap width"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Tile width must exactly divide bitmap width"));
     }
     if (bitmap_height % tile_height != 0) {
-        mp_raise_ValueError(translate("Tile height must exactly divide bitmap height"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Tile height must exactly divide bitmap height"));
     }
 
     int16_t x = args[ARG_x].u_int;
@@ -341,7 +341,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_pixel_shader_obj, displayio_til
 STATIC mp_obj_t displayio_tilegrid_obj_set_pixel_shader(mp_obj_t self_in, mp_obj_t pixel_shader) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
     common_hal_displayio_tilegrid_set_pixel_shader(self, pixel_shader);
@@ -376,18 +376,18 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bit
         new_bitmap_width = bmp->width;
         new_bitmap_height = bmp->height;
     } else {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_bitmap);
     }
 
     if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
         if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
-            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+            mp_raise_ValueError(MP_ERROR_TEXT("New bitmap must be same size as old bitmap"));
         }
     } else if (mp_obj_is_type(self->bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
         if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
-            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+            mp_raise_ValueError(MP_ERROR_TEXT("New bitmap must be same size as old bitmap"));
         }
     }
 
@@ -427,7 +427,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
 
 
     if (mp_obj_is_type(index_obj, &mp_type_slice)) {
-        mp_raise_NotImplementedError(translate("Slices not supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
     } else {
         uint16_t x = 0;
         uint16_t y = 0;
@@ -444,7 +444,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
         }
         if (x >= common_hal_displayio_tilegrid_get_width(self) ||
             y >= common_hal_displayio_tilegrid_get_height(self)) {
-            mp_raise_IndexError(translate("Tile index out of bounds"));
+            mp_raise_IndexError(MP_ERROR_TEXT("Tile index out of bounds"));
         }
 
         if (value_obj == MP_OBJ_SENTINEL) {

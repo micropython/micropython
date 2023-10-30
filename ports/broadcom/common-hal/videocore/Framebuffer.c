@@ -25,7 +25,7 @@ void common_hal_videocore_framebuffer_construct(videocore_framebuffer_obj_t *sel
         &bits_per_pixel);
     if (self->framebuffer == NULL) {
         if (gc_alloc_possible()) {
-            mp_raise_ValueError(translate("no fb"));
+            mp_raise_ValueError(MP_ERROR_TEXT("no fb"));
         } else {
             mp_printf(&mp_plat_print, "no fb\n");
         }

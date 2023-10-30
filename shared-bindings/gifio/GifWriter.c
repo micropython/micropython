@@ -137,7 +137,7 @@ static mp_obj_t gifio_gifwriter_add_frame(size_t n_args, const mp_obj_t *pos_arg
 
     mp_float_t delay = mp_arg_validate_obj_float_non_negative(args[ARG_delay].u_obj, MICROPY_FLOAT_CONST(0.1), MP_QSTR_delay);
     if (delay > MICROPY_FLOAT_CONST(655.)) {
-        mp_raise_ValueError_varg(translate("%q must be <= %d"), MP_QSTR_delay, 655);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be <= %d"), MP_QSTR_delay, 655);
     }
 
     int delay_centiseconds = (int)(delay * 100);

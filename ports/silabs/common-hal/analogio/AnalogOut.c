@@ -63,7 +63,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     }
 
     if (self->dac == NULL) {
-        mp_raise_ValueError(translate("DAC Device Init Error"));
+        mp_raise_ValueError(MP_ERROR_TEXT("DAC Device Init Error"));
     }
 
     // Use default settings

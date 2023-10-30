@@ -39,11 +39,11 @@ void common_hal_paralleldisplaybus_parallelbus_construct(paralleldisplaybus_para
 
     uint8_t data_pin = data0->number;
     if (data_pin % 8 != 0) {
-        mp_raise_ValueError(translate("Data 0 pin must be byte aligned"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Data 0 pin must be byte aligned"));
     }
     for (uint8_t i = 0; i < 8; i++) {
         if (!pin_number_is_free(data_pin + i)) {
-            mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Bus pin %d is already in use"), i);
         }
     }
     NRF_GPIO_Type *g;

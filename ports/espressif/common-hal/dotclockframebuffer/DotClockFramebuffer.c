@@ -75,7 +75,7 @@ static void claim_and_record(const mcu_pin_obj_t *pin, uint64_t *used_pins_mask)
 static int valid_pin(const mcu_pin_obj_t *pin, qstr name) {
     int result = common_hal_mcu_pin_number(pin);
     if (result == NO_PIN) {
-        mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q pin"), name);
     }
     return result;
 }
@@ -94,7 +94,7 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
     bool de_idle_high, bool pclk_active_high, bool pclk_idle_high, int overscan_left) {
 
     if (num_red != 5 || num_green != 6 || num_blue != 5) {
-        mp_raise_ValueError(translate("Must provide 5/6/5 RGB pins"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Must provide 5/6/5 RGB pins"));
     }
 
     claim_and_record(de, &self->used_pins_mask);

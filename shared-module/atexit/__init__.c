@@ -43,7 +43,7 @@ void atexit_gc_collect(void) {
 
 void shared_module_atexit_register(mp_obj_t *func, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     if (!mp_obj_is_callable(func)) {
-        mp_raise_TypeError_varg(translate("'%q' object is not callable"), mp_obj_get_type_qstr(func));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("'%q' object is not callable"), mp_obj_get_type_qstr(func));
     }
     size_t n_kw_args = (kw_args) ? kw_args->used : 0;
     atexit_callback_t cb = {

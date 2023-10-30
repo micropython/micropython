@@ -138,7 +138,7 @@ void port_i2s_allocate_init(i2s_t *self, bool left_justified) {
     };
     esp_err_t err = i2s_new_channel(&chan_config, &self->handle, NULL);
     if (err == ESP_ERR_NOT_FOUND) {
-        mp_raise_RuntimeError(translate("Peripheral in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Peripheral in use"));
     }
 
     i2s_event_callbacks_t callbacks = {

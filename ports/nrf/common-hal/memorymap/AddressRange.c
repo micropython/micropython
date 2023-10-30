@@ -83,7 +83,7 @@ void common_hal_memorymap_addressrange_construct(memorymap_addressrange_obj_t *s
     }
 
     if (!allowed) {
-        mp_raise_ValueError(translate("Address range not allowed"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Address range not allowed"));
     }
 
     self->start_address = start_address;

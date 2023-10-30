@@ -183,7 +183,7 @@ STATIC mp_obj_t epaperdisplay_epaperdisplay_make_new(const mp_obj_type_t *type, 
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
-        mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Display rotation must be in 90 degree increments"));
     }
 
     primary_display_t *disp = allocate_display_or_raise();
@@ -217,7 +217,7 @@ STATIC mp_obj_t epaperdisplay_epaperdisplay_make_new(const mp_obj_type_t *type, 
         refresh_buf = refresh_bufinfo.buf;
         refresh_buf_len = refresh_bufinfo.len;
     } else {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_refresh_display_command);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_refresh_display_command);
     }
 
     self->base.type = &epaperdisplay_epaperdisplay_type;
@@ -248,7 +248,7 @@ static epaperdisplay_epaperdisplay_obj_t *native_display(mp_obj_t display_obj) {
 
 // Undocumented show() implementation with a friendly error message.
 STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
-    mp_raise_AttributeError(translate(".show(x) removed. Use .root_group = x"));
+    mp_raise_AttributeError(MP_ERROR_TEXT(".show(x) removed. Use .root_group = x"));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(epaperdisplay_epaperdisplay_show_obj, epaperdisplay_epaperdisplay_obj_show);
@@ -287,7 +287,7 @@ STATIC mp_obj_t epaperdisplay_epaperdisplay_obj_refresh(mp_obj_t self_in) {
     epaperdisplay_epaperdisplay_obj_t *self = native_display(self_in);
     bool ok = common_hal_epaperdisplay_epaperdisplay_refresh(self);
     if (!ok) {
-        mp_raise_RuntimeError(translate("Refresh too soon"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Refresh too soon"));
     }
     return mp_const_none;
 }

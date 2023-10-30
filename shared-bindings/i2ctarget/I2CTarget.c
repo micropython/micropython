@@ -94,7 +94,7 @@ STATIC mp_obj_t i2ctarget_i2c_target_make_new(const mp_obj_type_t *type, size_t 
         addresses[i++] = value;
     }
     if (i == 0) {
-        mp_raise_ValueError(translate("addresses is empty"));
+        mp_raise_ValueError(MP_ERROR_TEXT("addresses is empty"));
     }
 
     common_hal_i2ctarget_i2c_target_construct(self, scl, sda, addresses, i, args[ARG_smbus].u_bool);

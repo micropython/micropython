@@ -74,7 +74,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
 
     if (!common_hal_espnow_deinited(self)) {
-        mp_raise_RuntimeError(translate("Already running"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Already running"));
     }
 
     // Allocate a new object

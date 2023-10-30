@@ -57,7 +57,7 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
     uint32_t output_length_used = input_length / dma->sample_spacing;
 
     if (output_length_used > output_length) {
-        mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal audio buffer too small"));
     }
 
     uint32_t out_i = 0;
@@ -66,7 +66,7 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
 
         output_length_used *= 2;
         if (output_length_used > output_length) {
-            mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal audio buffer too small"));
         }
 
         // Correct "rail-to-rail" scaling of arbitrary-depth input to output
@@ -120,7 +120,7 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
     } else {
         // (dma->sample_resolution > 8 && dma->output_resolution <= 8)
         // Not currently used, but might be in the future.
-        mp_raise_RuntimeError(translate("Audio conversion not implemented"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Audio conversion not implemented"));
     }
     #pragma GCC diagnostic pop
     return output_length_used;

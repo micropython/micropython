@@ -52,7 +52,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     // Allocate and initialize PCNT unit, CHANNEL_0.
     const int8_t unit = peripherals_pcnt_init(&pcnt_config_channel_0);
     if (unit == -1) {
-        mp_raise_RuntimeError(translate("All PCNT units in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
     }
 
     pcnt_config_t pcnt_config_channel_1 = {

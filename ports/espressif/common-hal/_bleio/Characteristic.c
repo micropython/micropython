@@ -165,10 +165,10 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
         // Validate data length for local characteristics only.
         // TODO: Test this once we can get servers going.
         if (self->fixed_length && bufinfo->len != self->max_length) {
-            mp_raise_ValueError(translate("Value length != required fixed length"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Value length != required fixed length"));
         }
         if (bufinfo->len > self->max_length) {
-            mp_raise_ValueError(translate("Value length > max_length"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Value length > max_length"));
         }
 
         if (bufinfo == NULL) {
@@ -216,11 +216,11 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
     if (self->cccd_handle == BLEIO_HANDLE_INVALID) {
-        mp_raise_bleio_BluetoothError(translate("No CCCD for this Characteristic"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("No CCCD for this Characteristic"));
     }
 
     if (!common_hal_bleio_service_get_is_remote(self->service)) {
-        mp_raise_bleio_RoleError(translate("Can't set CCCD on local Characteristic"));
+        mp_raise_bleio_RoleError(MP_ERROR_TEXT("Can't set CCCD on local Characteristic"));
     }
 
     const uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);

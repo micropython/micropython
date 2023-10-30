@@ -125,7 +125,7 @@ void validate_no_duplicate_pins(mp_obj_t seq, qstr arg_name) {
             mp_obj_t pin2_obj = mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
             const mcu_pin_obj_t *pin2 = validate_obj_is_pin_in(pin2_obj, arg_name);
             if (pin1 == pin2) {
-                mp_raise_TypeError_varg(translate("%q contains duplicate pins"), arg_name);
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q contains duplicate pins"), arg_name);
             }
         }
     }
@@ -146,7 +146,7 @@ void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, 
             mp_obj_t pin2_obj = mp_obj_subscr(seq2, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
             const mcu_pin_obj_t *pin2 = validate_obj_is_pin_in(pin2_obj, arg_name2);
             if (pin1 == pin2) {
-                mp_raise_TypeError_varg(translate("%q and %q contain duplicate pins"), arg_name1, arg_name2);
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q and %q contain duplicate pins"), arg_name1, arg_name2);
             }
         }
     }
@@ -181,7 +181,7 @@ void assert_pin_free(const mcu_pin_obj_t *pin) {
         qstr name = MP_QSTR_Pin;
 
         get_pin_name(pin, &package, &module, &name);
-        mp_raise_ValueError_varg(translate("%q in use"), name);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), name);
     }
 }
 
@@ -202,5 +202,5 @@ NORETURN void raise_ValueError_invalid_pins(void) {
 }
 
 NORETURN void raise_ValueError_invalid_pin_name(qstr pin_name) {
-    mp_raise_ValueError_varg(translate("Invalid %q pin"), pin_name);
+    mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q pin"), pin_name);
 }

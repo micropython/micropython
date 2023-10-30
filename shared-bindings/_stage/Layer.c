@@ -70,20 +70,20 @@ STATIC mp_obj_t layer_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     self->graphic = bufinfo.buf;
     if (bufinfo.len != 2048) {
-        mp_raise_ValueError(translate("graphic must be 2048 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("graphic must be 2048 bytes long"));
     }
 
     mp_get_buffer_raise(args[3], &bufinfo, MP_BUFFER_READ);
     self->palette = bufinfo.buf;
     if (bufinfo.len != 32) {
-        mp_raise_ValueError(translate("palette must be 32 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("palette must be 32 bytes long"));
     }
 
     if (n_args > 4) {
         mp_get_buffer_raise(args[4], &bufinfo, MP_BUFFER_READ);
         self->map = bufinfo.buf;
         if (bufinfo.len < (self->width * self->height) / 2) {
-            mp_raise_ValueError(translate("map buffer too small"));
+            mp_raise_ValueError(MP_ERROR_TEXT("map buffer too small"));
         }
     } else {
         self->map = NULL;

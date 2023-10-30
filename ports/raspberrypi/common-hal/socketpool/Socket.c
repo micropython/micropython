@@ -732,14 +732,14 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
     if (family != SOCKETPOOL_AF_INET) {
-        mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
     }
 
     socketpool_socket_obj_t *socket = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     socket->base.type = &socketpool_socket_type;
 
     if (!socketpool_socket(self, family, type, socket)) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
     }
     mark_user_socket(socket);
     return socket;
@@ -856,7 +856,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         DEBUG_printf("collecting garbage to open socket\n");
         gc_collect();
         if (!register_open_socket(accepted)) {
-            mp_raise_RuntimeError(translate("Out of sockets"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
         }
     }
     mark_user_socket(accepted);

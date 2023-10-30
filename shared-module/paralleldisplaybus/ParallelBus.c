@@ -33,5 +33,5 @@ __attribute__((weak))
 void common_hal_paralleldisplaybus_parallelbus_construct_nonsequential(paralleldisplaybus_parallelbus_obj_t *self,
     uint8_t n_pins, const mcu_pin_obj_t **data_pins, const mcu_pin_obj_t *command, const mcu_pin_obj_t *chip_select,
     const mcu_pin_obj_t *write, const mcu_pin_obj_t *read, const mcu_pin_obj_t *reset, uint32_t frequency) {
-    mp_raise_NotImplementedError(translate("This microcontroller only supports data0=, not data_pins=, because it requires contiguous pins."));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("This microcontroller only supports data0=, not data_pins=, because it requires contiguous pins."));
 }

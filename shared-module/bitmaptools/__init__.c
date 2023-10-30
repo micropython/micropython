@@ -1059,7 +1059,7 @@ void common_hal_bitmaptools_blit(displayio_bitmap_t *destination, displayio_bitm
     bool skip_dest_index_none) {
 
     if (destination->read_only) {
-        mp_raise_RuntimeError(translate("Read-only"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Read-only"));
     }
     // Copy region of "source" bitmap into "destination" bitmap at location x,y in the "destination"
     // If skip_value is encountered in the source bitmap, it will not be copied.

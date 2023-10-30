@@ -204,7 +204,7 @@ void common_hal_wifi_init(bool user_initiated) {
     esp_err_t result = esp_wifi_init(&config);
     if (result == ESP_ERR_NO_MEM) {
         if (gc_alloc_possible()) {
-            mp_raise_msg(&mp_type_MemoryError, translate("Failed to allocate Wifi memory"));
+            mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("Failed to allocate Wifi memory"));
         }
         ESP_LOGE(TAG, "Failed to allocate Wifi memory");
     } else if (result != ESP_OK) {
@@ -253,7 +253,7 @@ void wifi_reset(void) {
 
 void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_address) {
     if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
-        mp_raise_ValueError(translate("Only IPv4 addresses supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Only IPv4 addresses supported"));
     }
     mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
     size_t len;
@@ -264,7 +264,7 @@ void ipaddress_ipaddress_to_esp_idf(mp_obj_t ip_address, ip_addr_t *esp_ip_addre
 
 void ipaddress_ipaddress_to_esp_idf_ip4(mp_obj_t ip_address, esp_ip4_addr_t *esp_ip_address) {
     if (!mp_obj_is_type(ip_address, &ipaddress_ipv4address_type)) {
-        mp_raise_ValueError(translate("Only IPv4 addresses supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Only IPv4 addresses supported"));
     }
     mp_obj_t packed = common_hal_ipaddress_ipv4address_get_packed(ip_address);
     size_t len;

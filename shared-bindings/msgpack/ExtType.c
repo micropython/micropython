@@ -69,7 +69,7 @@ STATIC mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in)
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int code = mp_obj_get_int(code_in);
     if (code < 0 || code > 127) {
-        mp_raise_AttributeError(translate("code outside range 0~127"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("code outside range 0~127"));
     }
     self->code = code;
     return mp_const_none;

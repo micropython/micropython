@@ -97,7 +97,7 @@ void displayio_display_bus_construct(displayio_display_bus_t *self,
     } else
     #endif
     {
-        mp_raise_ValueError(translate("Unsupported display bus type"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported display bus type"));
     }
     self->bus = bus;
 }

@@ -147,7 +147,7 @@ STATIC supervisor_allocation *allocate_pystack(safe_mode_t safe_mode) {
         if (pystack) {
             return pystack;
         }
-        serial_write_compressed(translate("Invalid CIRCUITPY_PYSTACK_SIZE\n"));
+        serial_write_compressed(MP_ERROR_TEXT("Invalid CIRCUITPY_PYSTACK_SIZE\n"));
     }
     #endif
     return allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
@@ -243,7 +243,7 @@ void supervisor_execution_status(void) {
                exception != NULL) {
         mp_printf(&mp_plat_print, "%d@%s %q", _exec_result.exception_line, _exec_result.exception_filename, exception->base.type->name);
     } else {
-        serial_write_compressed(translate("Done"));
+        serial_write_compressed(MP_ERROR_TEXT("Done"));
     }
 }
 #endif
@@ -275,7 +275,7 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
         return false;
     }
     mp_hal_stdout_tx_str(_current_executing_filename);
-    serial_write_compressed(translate(" output:\n"));
+    serial_write_compressed(MP_ERROR_TEXT(" output:\n"));
 
     #if CIRCUITPY_STATUS_BAR
     supervisor_status_bar_update();
@@ -393,12 +393,12 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, supervisor_allocation 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     if (autoreload_is_enabled()) {
         serial_write_compressed(
-            translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+            MP_ERROR_TEXT("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
     } else {
-        serial_write_compressed(translate("Auto-reload is off.\n"));
+        serial_write_compressed(MP_ERROR_TEXT("Auto-reload is off.\n"));
     }
     if (safe_mode != SAFE_MODE_NONE) {
-        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
+        serial_write_compressed(MP_ERROR_TEXT("Running in safe mode! Not running saved code.\n"));
     }
 }
 
@@ -463,7 +463,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
                 found_main = maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
                 if (!found_main) {
                     serial_write(info->filename);
-                    serial_write_compressed(translate(" not found.\n"));
+                    serial_write_compressed(MP_ERROR_TEXT(" not found.\n"));
                 }
             }
         }
@@ -476,7 +476,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
             if (!found_main) {
                 found_main = maybe_run_list(double_extension_filenames, MP_ARRAY_SIZE(double_extension_filenames));
                 if (found_main) {
-                    serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+                    serial_write_compressed(MP_ERROR_TEXT("WARNING: Your code filename has two extensions\n"));
                 }
             }
             #else
@@ -487,9 +487,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
         if ((_exec_result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
-            serial_write_compressed(translate("\nCode stopped by auto-reload. Reloading soon.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("\nCode stopped by auto-reload. Reloading soon.\n"));
         } else {
-            serial_write_compressed(translate("\nCode done running.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("\nCode done running.\n"));
         }
 
 
@@ -610,7 +610,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         // sleep.
         #if CIRCUITPY_ALARM
         if (fake_sleeping && common_hal_alarm_woken_from_sleep()) {
-            serial_write_compressed(translate("Woken up by alarm.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("Woken up by alarm.\n"));
             supervisor_set_run_reason(RUN_REASON_STARTUP);
             skip_repl = true;
             break;
@@ -628,7 +628,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
                 printed_safe_mode_message = true;
             }
             serial_write("\r\n");
-            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
             printed_press_any_key = true;
         }
         if (!serial_connected()) {
@@ -673,7 +673,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
                     // Does not return.
                 } else {
                     serial_write_compressed(
-                        translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
+                        MP_ERROR_TEXT("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
                     fake_sleeping = true;
                 }
             } else {
@@ -856,9 +856,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
         uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
         common_hal_mcu_processor_get_uid(raw_id);
-        mp_cprintf(&mp_plat_print, translate("UID:"));
+        mp_cprintf(&mp_plat_print, MP_ERROR_TEXT("UID:"));
         for (size_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-            mp_cprintf(&mp_plat_print, translate("%02X"), raw_id[i]);
+            mp_cprintf(&mp_plat_print, MP_ERROR_TEXT("%02X"), raw_id[i]);
         }
         mp_printf(&mp_plat_print, "\n");
         port_boot_info();
@@ -1116,7 +1116,7 @@ int __attribute__((used)) main(void) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!simulate_reset) {
-                serial_write_compressed(translate("soft reboot\n"));
+                serial_write_compressed(MP_ERROR_TEXT("soft reboot\n"));
             }
             simulate_reset = false;
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {

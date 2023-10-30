@@ -131,7 +131,7 @@ mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
         elem->value = adapter_obj;
     }
     #else
-    mp_raise_NotImplementedError(translate("Read-only"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Read-only"));
     #endif
     return mp_const_none;
 }

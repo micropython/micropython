@@ -268,7 +268,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
     if (native_layer != MP_OBJ_NULL) {
         displayio_tilegrid_t *tilegrid = native_layer;
         if (tilegrid->in_group) {
-            mp_raise_ValueError(translate("Layer already in a group"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Layer already in a group"));
         } else {
             tilegrid->in_group = true;
         }
@@ -281,7 +281,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
     if (native_layer != MP_OBJ_NULL) {
         displayio_group_t *group = native_layer;
         if (group->in_group) {
-            mp_raise_ValueError(translate("Layer already in a group"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Layer already in a group"));
         } else {
             group->in_group = true;
         }
@@ -290,7 +290,7 @@ static void _add_layer(displayio_group_t *self, mp_obj_t layer) {
             group, self->hidden || self->hidden_by_parent);
         return;
     }
-    mp_raise_ValueError(translate("Layer must be a Group or TileGrid subclass"));
+    mp_raise_ValueError(MP_ERROR_TEXT("Layer must be a Group or TileGrid subclass"));
 }
 
 static void _remove_layer(displayio_group_t *self, size_t index) {

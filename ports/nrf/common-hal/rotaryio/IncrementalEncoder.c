@@ -67,12 +67,12 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     };
     nrfx_err_t err = nrfx_gpiote_in_init(self->pin_a, &cfg, _intr_handler);
     if (err != NRFX_SUCCESS) {
-        mp_raise_RuntimeError(translate("All channels in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
     }
     err = nrfx_gpiote_in_init(self->pin_b, &cfg, _intr_handler);
     if (err != NRFX_SUCCESS) {
         nrfx_gpiote_in_uninit(self->pin_a);
-        mp_raise_RuntimeError(translate("All channels in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
     }
     nrfx_gpiote_in_event_enable(self->pin_a, true);
     nrfx_gpiote_in_event_enable(self->pin_b, true);

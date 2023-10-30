@@ -96,7 +96,7 @@ void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
     if (self->mode == WATCHDOGMODE_RESET) {
         if (gc_alloc_possible()) {
-            mp_raise_RuntimeError(translate("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("WatchDogTimer cannot be deinitialized once mode is set to RESET"));
         }
         // Don't change anything because RESET cannot be undone.
         return;
@@ -117,7 +117,7 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_floa
         // with the new value.
         uint64_t ticks = timeout * 31250ULL;
         if (ticks > UINT32_MAX) {
-            mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
+            mp_raise_ValueError(MP_ERROR_TEXT("timeout duration exceeded the maximum supported value"));
         }
         nrfx_timer_clear(timer);
         nrfx_timer_compare(timer, NRF_TIMER_CC_CHANNEL0, ticks, true);
@@ -151,7 +151,7 @@ void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_w
 
         uint64_t ticks = nrfx_timer_ms_to_ticks(timer, self->timeout * 1000);
         if (ticks > UINT32_MAX) {
-            mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
+            mp_raise_ValueError(MP_ERROR_TEXT("timeout duration exceeded the maximum supported value"));
         }
 
         // true enables interrupt.
@@ -162,7 +162,7 @@ void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_w
     } else if (new_mode == WATCHDOGMODE_RESET) {
         uint64_t ticks = self->timeout * 1000.0f;
         if (ticks > UINT32_MAX) {
-            mp_raise_ValueError(translate("timeout duration exceeded the maximum supported value"));
+            mp_raise_ValueError(MP_ERROR_TEXT("timeout duration exceeded the maximum supported value"));
         }
 
         nrfx_wdt_config_t config = {

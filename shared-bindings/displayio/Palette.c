@@ -149,21 +149,21 @@ STATIC mp_obj_t palette_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t val
     mp_buffer_info_t bufinfo;
     if (mp_get_buffer(value, &bufinfo, MP_BUFFER_READ)) {
         if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-            mp_raise_ValueError(translate("color buffer must be a bytearray or array of type 'b' or 'B'"));
+            mp_raise_ValueError(MP_ERROR_TEXT("color buffer must be a bytearray or array of type 'b' or 'B'"));
         }
         uint8_t *buf = bufinfo.buf;
         if (bufinfo.len == 3 || bufinfo.len == 4) {
             color = buf[0] << 16 | buf[1] << 8 | buf[2];
         } else {
-            mp_raise_ValueError(translate("color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"));
+            mp_raise_ValueError(MP_ERROR_TEXT("color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"));
         }
     } else if (mp_obj_get_int_maybe(value, &int_value)) {
         if (int_value < 0 || int_value > 0xffffff) {
-            mp_raise_TypeError(translate("color must be between 0x000000 and 0xffffff"));
+            mp_raise_TypeError(MP_ERROR_TEXT("color must be between 0x000000 and 0xffffff"));
         }
         color = int_value;
     } else {
-        mp_raise_TypeError(translate("color buffer must be a buffer, tuple, list, or int"));
+        mp_raise_TypeError(MP_ERROR_TEXT("color buffer must be a buffer, tuple, list, or int"));
     }
     common_hal_displayio_palette_set_color(self, index, color);
     return mp_const_none;

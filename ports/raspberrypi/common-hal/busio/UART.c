@@ -111,7 +111,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     uint8_t uart_id = ((((tx != NULL) ? tx->number : rx->number) + 4) / 8) % NUM_UARTS;
 
     if (uart_status[uart_id] != STATUS_FREE) {
-        mp_raise_ValueError(translate("UART peripheral in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("UART peripheral in use"));
     }
     // These may raise exceptions if pins are already in use.
     self->tx_pin = pin_init(uart_id, tx, 0);
@@ -205,7 +205,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx_pin == NO_PIN) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_tx);
     }
 
     if (self->rs485_dir_pin != NO_PIN) {
@@ -233,7 +233,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, 
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx_pin == NO_PIN) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_rx);
     }
 
     if (len == 0) {

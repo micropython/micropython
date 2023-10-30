@@ -63,7 +63,7 @@ STATIC void claim_and_never_reset_pins(mp_obj_t seq) {
 
 STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_t rgb_pin_count, bool allow_inefficient) {
     if (rgb_pin_count <= 0 || rgb_pin_count % 6 != 0 || rgb_pin_count > 30) {
-        mp_raise_ValueError_varg(translate("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("The length of rgb_pins must be 6, 12, 18, 24, or 30"));
     }
 
 // Most ports have a strict requirement for how the rgbmatrix pins are laid
@@ -77,13 +77,13 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 
         if (pin_port != port) {
             mp_raise_ValueError_varg(
-                translate("rgb_pins[%d] is not on the same port as clock"), i);
+                MP_ERROR_TEXT("rgb_pins[%d] is not on the same port as clock"), i);
         }
 
         uint32_t pin_mask = 1 << (rgb_pins[i] % 32);
         if (pin_mask & bit_mask) {
             mp_raise_ValueError_varg(
-                translate("rgb_pins[%d] duplicates another pin assignment"), i);
+                MP_ERROR_TEXT("rgb_pins[%d] duplicates another pin assignment"), i);
         }
 
         bit_mask |= pin_mask;
@@ -130,7 +130,7 @@ STATIC void preflight_pins_or_throw(uint8_t clock_pin, uint8_t *rgb_pins, uint8_
 
     if (bytes_per_element != ideal_bytes_per_element) {
         mp_raise_ValueError_varg(
-            translate("Pinout uses %d bytes per element, which consumes more than the ideal %d bytes.  If this cannot be avoided, pass allow_inefficient=True to the constructor"),
+            MP_ERROR_TEXT("Pinout uses %d bytes per element, which consumes more than the ideal %d bytes.  If this cannot be avoided, pass allow_inefficient=True to the constructor"),
             bytes_per_element, ideal_bytes_per_element);
     }
     #endif
@@ -249,7 +249,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     validate_pins(MP_QSTR_addr_pins, addr_pins, MP_ARRAY_SIZE(self->addr_pins), args[ARG_addr_list].u_obj, &addr_count);
 
     if (rgb_count % 6) {
-        mp_raise_ValueError_varg(translate("Must use a multiple of 6 rgb pins, not %d"), rgb_count);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Must use a multiple of 6 rgb pins, not %d"), rgb_count);
     }
 
     int tile = mp_arg_validate_int_min(args[ARG_tile].u_int, 1, MP_QSTR_tile);
@@ -258,7 +258,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_make_new(const mp_obj_type_t *type, size_t n
     if (args[ARG_height].u_int != 0) {
         if (computed_height != args[ARG_height].u_int) {
             mp_raise_ValueError_varg(
-                translate("%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"), addr_count, rgb_count, tile, computed_height, args[ARG_height].u_int);
+                MP_ERROR_TEXT("%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"), addr_count, rgb_count, tile, computed_height, args[ARG_height].u_int);
         }
     }
 
@@ -318,7 +318,7 @@ STATIC mp_obj_t rgbmatrix_rgbmatrix_set_brightness(mp_obj_t self_in, mp_obj_t va
     check_for_deinit(self);
     mp_float_t brightness = mp_obj_get_float(value_in);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
     common_hal_rgbmatrix_rgbmatrix_set_paused(self, brightness <= 0);
 

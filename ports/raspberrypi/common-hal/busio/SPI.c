@@ -58,7 +58,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     size_t instance_index = NO_INSTANCE;
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Half duplex SPI is not implemented"));
     }
 
     if (clock->number % 4 == 2) {
@@ -92,7 +92,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
 
     if ((spi_get_hw(self->peripheral)->cr1 & SPI_SSPCR1_SSE_BITS) != 0) {
-        mp_raise_ValueError(translate("SPI peripheral in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("SPI peripheral in use"));
     }
 
     self->target_frequency = 250000;

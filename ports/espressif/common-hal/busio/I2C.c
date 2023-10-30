@@ -70,13 +70,13 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (gpio_get_level(sda->number) == 0 || gpio_get_level(scl->number) == 0) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
-        mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No pull up found on SDA or SCL; check your wiring"));
     }
     #endif
 
     self->xSemaphore = xSemaphoreCreateMutex();
     if (self->xSemaphore == NULL) {
-        mp_raise_RuntimeError(translate("Unable to create lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to create lock"));
     }
     self->sda_pin = sda;
     self->scl_pin = scl;
@@ -84,7 +84,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     self->has_lock = 0;
 
     if (self->i2c_num == I2C_NUM_MAX) {
-        mp_raise_ValueError(translate("All I2C peripherals are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All I2C peripherals are in use"));
     }
 
     // Delete any previous driver.
@@ -113,7 +113,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         if (err == ESP_FAIL) {
             mp_raise_OSError(MP_EIO);
         } else {
-            mp_raise_RuntimeError(translate("init I2C"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("init I2C"));
         }
     }
 

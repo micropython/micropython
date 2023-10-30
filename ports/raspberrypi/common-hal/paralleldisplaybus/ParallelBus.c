@@ -50,13 +50,13 @@ void common_hal_paralleldisplaybus_parallelbus_construct(paralleldisplaybus_para
     uint8_t data_pin = data0->number;
     for (uint8_t i = 0; i < 8; i++) {
         if (!pin_number_is_free(data_pin + i)) {
-            mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Bus pin %d is already in use"), i);
         }
     }
 
     uint8_t write_pin = write->number;
     if (!pin_number_is_free(write_pin)) {
-        mp_raise_ValueError_varg(translate("Bus pin %d is already in use"), write_pin);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Bus pin %d is already in use"), write_pin);
     }
 
     self->command.base.type = &digitalio_digitalinout_type;

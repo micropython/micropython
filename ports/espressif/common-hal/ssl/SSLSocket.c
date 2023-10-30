@@ -71,9 +71,9 @@ void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
         } else if (err == ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
-            mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Failed SSL handshake"));
         } else {
-            mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, result);
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, result);
         }
     } else {
         // Connection successful, set the timeout on the underlying socket. We can't rely on the IDF
@@ -167,9 +167,9 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
         } else if (err == ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
-            mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Failed SSL handshake"));
         } else {
-            mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, sent);
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, sent);
         }
     }
     return sent;

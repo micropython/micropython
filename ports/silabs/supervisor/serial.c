@@ -59,7 +59,7 @@ void EUSART0_RX_IRQHandler(void) {
 
     received_data = EUSART0->RXDATA;
     if (1 != ringbuf_put_n(&con_uart_rx_ringbuf, (uint8_t *)&received_data, 1)) {
-        mp_raise_OverflowError_varg(translate("Console UART RX buffer overflow"));
+        mp_raise_OverflowError_varg(MP_ERROR_TEXT("Console UART RX buffer overflow"));
     }
 
     CORE_EXIT_ATOMIC();

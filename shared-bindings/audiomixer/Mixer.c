@@ -100,7 +100,7 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_int_t sample_rate = mp_arg_validate_int_min(args[ARG_sample_rate].u_int, 1, MP_QSTR_sample_rate);
     mp_int_t bits_per_sample = args[ARG_bits_per_sample].u_int;
     if (bits_per_sample != 8 && bits_per_sample != 16) {
-        mp_raise_ValueError(translate("bits_per_sample must be 8 or 16"));
+        mp_raise_ValueError(MP_ERROR_TEXT("bits_per_sample must be 8 or 16"));
     }
     audiomixer_mixer_obj_t *self =
         mp_obj_malloc_var(audiomixer_mixer_obj_t, mp_obj_t, voice_count, &audiomixer_mixer_type);

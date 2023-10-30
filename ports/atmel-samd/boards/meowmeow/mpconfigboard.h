@@ -6,7 +6,7 @@
 #define CALIBRATE_CRYSTALLESS 1
 
 // Explanation of how a user got into safe mode.
-#define BOARD_USER_SAFE_MODE_ACTION translate("You pressed both buttons at start up.")
+#define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("You pressed both buttons at start up.")
 
 #define DEFAULT_I2C_BUS_SCL (&pin_PA01)
 #define DEFAULT_I2C_BUS_SDA (&pin_PA00)

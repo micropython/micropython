@@ -113,7 +113,7 @@ STATIC mp_obj_t fourwire_fourwire_obj_reset(mp_obj_t self_in) {
     fourwire_fourwire_obj_t *self = self_in;
 
     if (!common_hal_fourwire_fourwire_reset(self)) {
-        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }

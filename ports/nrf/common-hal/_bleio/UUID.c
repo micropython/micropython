@@ -78,7 +78,7 @@ void common_hal_bleio_uuid_pack_into(bleio_uuid_obj_t *self, uint8_t *buf) {
 
 void bleio_uuid_construct_from_nrf_ble_uuid(bleio_uuid_obj_t *self, ble_uuid_t *nrf_ble_uuid) {
     if (nrf_ble_uuid->type == BLE_UUID_TYPE_UNKNOWN) {
-        mp_raise_bleio_BluetoothError(translate("Unexpected nrfx uuid type"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unexpected nrfx uuid type"));
     }
     self->nrf_ble_uuid.uuid = nrf_ble_uuid->uuid;
     self->nrf_ble_uuid.type = nrf_ble_uuid->type;

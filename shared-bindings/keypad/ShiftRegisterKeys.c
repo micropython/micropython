@@ -175,7 +175,7 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     return MP_OBJ_FROM_PTR(self);
 
     #else
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_ShiftRegisterKeys);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_ShiftRegisterKeys);
     #endif
 }
 

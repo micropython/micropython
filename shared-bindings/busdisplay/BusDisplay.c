@@ -199,13 +199,13 @@ STATIC mp_obj_t busdisplay_busdisplay_make_new(const mp_obj_type_t *type, size_t
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
-        mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Display rotation must be in 90 degree increments"));
     }
 
     const bool sh1107_addressing = args[ARG_SH1107_addressing].u_bool;
     const mp_int_t color_depth = args[ARG_color_depth].u_int;
     if (sh1107_addressing && color_depth != 1) {
-        mp_raise_ValueError_varg(translate("%q must be 1 when %q is True"), MP_QSTR_color_depth, MP_QSTR_SH1107_addressing);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be 1 when %q is True"), MP_QSTR_color_depth, MP_QSTR_SH1107_addressing);
     }
 
     primary_display_t *disp = allocate_display_or_raise();
@@ -247,7 +247,7 @@ static busdisplay_busdisplay_obj_t *native_display(mp_obj_t display_obj) {
 
 // Undocumented show() implementation with a friendly error message.
 STATIC mp_obj_t busdisplay_busdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
-    mp_raise_AttributeError(translate(".show(x) removed. Use .root_group = x"));
+    mp_raise_AttributeError(MP_ERROR_TEXT(".show(x) removed. Use .root_group = x"));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(busdisplay_busdisplay_show_obj, busdisplay_busdisplay_obj_show);
@@ -334,7 +334,7 @@ STATIC mp_obj_t busdisplay_busdisplay_obj_get_brightness(mp_obj_t self_in) {
     busdisplay_busdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = common_hal_busdisplay_busdisplay_get_brightness(self);
     if (brightness < 0) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Brightness not adjustable"));
     }
     return mp_obj_new_float(brightness);
 }
@@ -344,11 +344,11 @@ STATIC mp_obj_t busdisplay_busdisplay_obj_set_brightness(mp_obj_t self_in, mp_ob
     busdisplay_busdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0 || brightness > 1.0) {
-        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
     bool ok = common_hal_busdisplay_busdisplay_set_brightness(self, brightness);
     if (!ok) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Brightness not adjustable"));
     }
     return mp_const_none;
 }
@@ -462,7 +462,7 @@ STATIC mp_obj_t busdisplay_busdisplay_obj_fill_row(size_t n_args, const mp_obj_t
     mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
     if (self->core.colorspace.depth != 16) {
-        mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Display must have a 16 bit colorspace."));
     }
 
     displayio_area_t area = {
@@ -492,7 +492,7 @@ STATIC mp_obj_t busdisplay_busdisplay_obj_fill_row(size_t n_args, const mp_obj_t
         displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
         return result;
     } else {
-        mp_raise_ValueError(translate("Buffer too small"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer too small"));
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(busdisplay_busdisplay_fill_row_obj, 1, busdisplay_busdisplay_obj_fill_row);

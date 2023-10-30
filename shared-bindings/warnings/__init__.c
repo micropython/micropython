@@ -65,7 +65,7 @@ STATIC mp_obj_t warnings_warn(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_obj_t category_obj = args[ARG_category].u_obj;
     if (!mp_obj_is_type(category_obj, &mp_type_type) ||
         !mp_obj_is_subclass_fast(category_obj, MP_OBJ_FROM_PTR(&mp_type_Warning))) {
-        mp_raise_TypeError_varg(translate("%q must be a subclass of %q"), MP_QSTR_category, MP_QSTR_Warning);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be a subclass of %q"), MP_QSTR_category, MP_QSTR_Warning);
     }
 
     common_hal_warnings_warn(mp_obj_str_get_str(args[ARG_message].u_obj), MP_OBJ_TO_PTR(category_obj));

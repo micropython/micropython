@@ -1666,18 +1666,18 @@ void mp_import_all(mp_obj_t module) {
     #if CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
     if (module == &displayio_module) {
         #if CIRCUITPY_BUSDISPLAY
-        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_Display, MP_QSTR_displayio, MP_QSTR_busdisplay);
-        warnings_warn(&mp_type_FutureWarning, translate("%q renamed %q"), MP_QSTR_Display, MP_QSTR_BusDisplay);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_Display, MP_QSTR_displayio, MP_QSTR_busdisplay);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_Display, MP_QSTR_BusDisplay);
         #endif
         #if CIRCUITPY_EPAPERDISPLAY
-        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_EPaperDisplay, MP_QSTR_displayio, MP_QSTR_epaperdisplay);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_EPaperDisplay, MP_QSTR_displayio, MP_QSTR_epaperdisplay);
         #endif
         #if CIRCUITPY_FOURWIRE
-        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_FourWire, MP_QSTR_displayio, MP_QSTR_fourwire);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_FourWire, MP_QSTR_displayio, MP_QSTR_fourwire);
         #endif
         #if CIRCUITPY_I2CDISPLAYBUS
-        warnings_warn(&mp_type_FutureWarning, translate("%q moved from %q to %q"), MP_QSTR_I2CDisplay, MP_QSTR_displayio, MP_QSTR_i2cdisplaybus);
-        warnings_warn(&mp_type_FutureWarning, translate("%q renamed %q"), MP_QSTR_I2CDisplay, MP_QSTR_I2CDisplayBus);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_I2CDisplay, MP_QSTR_displayio, MP_QSTR_i2cdisplaybus);
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_I2CDisplay, MP_QSTR_I2CDisplayBus);
         #endif
     }
     #endif

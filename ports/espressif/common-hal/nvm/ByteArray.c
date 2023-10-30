@@ -51,7 +51,7 @@ static void get_nvs_handle(nvs_handle_t *nvs_handle) {
 
     // Open NVS handle
     if (nvs_open("CPY", NVS_READWRITE, nvs_handle) != ESP_OK) {
-        mp_raise_RuntimeError(translate("NVS Error"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("NVS Error"));
     }
 }
 

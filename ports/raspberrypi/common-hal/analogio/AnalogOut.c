@@ -33,7 +33,7 @@
 #include "py/runtime.h"
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self, const mcu_pin_obj_t *pin) {
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_AnalogOut);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_AnalogOut);
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {

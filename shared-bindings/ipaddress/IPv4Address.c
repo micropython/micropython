@@ -63,14 +63,14 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
     } else if (mp_obj_is_str(address)) {
         GET_STR_DATA_LEN(address, str_data, str_len);
         if (!ipaddress_parse_ipv4address((const char *)str_data, str_len, &value)) {
-            mp_raise_ValueError(translate("Not a valid IP string"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Not a valid IP string"));
         }
         buf = (uint8_t *)&value;
     } else {
         mp_buffer_info_t buf_info;
         if (mp_get_buffer(address, &buf_info, MP_BUFFER_READ)) {
             if (buf_info.len != 4) {
-                mp_raise_ValueError_varg(translate("Address must be %d bytes long"), 4);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Address must be %d bytes long"), 4);
             }
             buf = buf_info.buf;
         }

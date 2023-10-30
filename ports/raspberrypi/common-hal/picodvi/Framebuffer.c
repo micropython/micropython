@@ -139,7 +139,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     const mcu_pin_obj_t *blue_dp, const mcu_pin_obj_t *blue_dn,
     mp_uint_t color_depth) {
     if (active_picodvi != NULL) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q in use"), MP_QSTR_picodvi);
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q in use"), MP_QSTR_picodvi);
     }
 
     bool color_framebuffer = color_depth >= 8;
@@ -152,15 +152,15 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
         timing = &dvi_timing_800x480p_60hz;
     } else {
         if (height != 480 && height != 240) {
-            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_height);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_height);
         }
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_width);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_width);
     }
 
     // If the width is > 400, then it must not be color frame buffer and vice
     // versa.
     if ((width > 400) == color_framebuffer) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_color_depth);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_color_depth);
     }
 
     bool invert_diffpairs = clk_dn->number < clk_dp->number;
@@ -215,7 +215,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     }
 
     if (pio_index == NUM_PIOS) {
-        mp_raise_RuntimeError(translate("All state machines in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All state machines in use"));
     }
 
     self->width = width;
@@ -251,7 +251,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
 
     // Do the pwmio check last because it claims the pwm slice.
     if (!pwmio_claim_slice_ab_channels(slice)) {
-        mp_raise_ValueError(translate("All timers for this pin are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All timers for this pin are in use"));
     }
     self->pwm_slice = slice;
 

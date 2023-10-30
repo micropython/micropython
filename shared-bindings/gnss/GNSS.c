@@ -54,12 +54,12 @@ STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         mp_obj_list_get(args[ARG_system].u_obj, &systems_size, &systems);
         for (size_t i = 0; i < systems_size; ++i) {
             if (!mp_obj_is_type(systems[i], &gnss_satellitesystem_type)) {
-                mp_raise_TypeError(translate("System entry must be gnss.SatelliteSystem"));
+                mp_raise_TypeError(MP_ERROR_TEXT("System entry must be gnss.SatelliteSystem"));
             }
             selection |= gnss_satellitesystem_obj_to_type(systems[i]);
         }
     } else {
-        mp_raise_TypeError(translate("System entry must be gnss.SatelliteSystem"));
+        mp_raise_TypeError(MP_ERROR_TEXT("System entry must be gnss.SatelliteSystem"));
     }
 
     common_hal_gnss_construct(self, selection);

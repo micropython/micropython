@@ -67,7 +67,7 @@ STATIC void extract_tuple(mp_obj_t xy_tuple, int16_t *x, int16_t *y, int16_t x_d
         *x = x_default;
         *y = y_default;
     } else if (!mp_obj_is_obj(xy_tuple)) {
-        mp_raise_ValueError(translate("clip point must be (x,y) tuple"));
+        mp_raise_ValueError(MP_ERROR_TEXT("clip point must be (x,y) tuple"));
     } else {
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(xy_tuple, 2, &items);
@@ -209,7 +209,7 @@ STATIC mp_obj_t bitmaptools_obj_rotozoom(size_t n_args, const mp_obj_t *pos_args
 
     // ensure that the destination bitmap has at least as many `bits_per_value` as the source
     if (destination->bits_per_value < source->bits_per_value) {
-        mp_raise_ValueError(translate("source palette too large"));
+        mp_raise_ValueError(MP_ERROR_TEXT("source palette too large"));
     }
 
     // Confirm the destination location target (ox,oy); if None, default to bitmap midpoint
@@ -361,13 +361,13 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
         || destination->height != source2->height
         || destination->bits_per_value != source2->bits_per_value
         ) {
-        mp_raise_ValueError(translate("Bitmap size and bits per value must match"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Bitmap size and bits per value must match"));
     }
 
     switch (colorspace) {
         case DISPLAYIO_COLORSPACE_L8:
             if (destination->bits_per_value != 8) {
-                mp_raise_ValueError(translate("For L8 colorspace, input bitmap must have 8 bits per pixel"));
+                mp_raise_ValueError(MP_ERROR_TEXT("For L8 colorspace, input bitmap must have 8 bits per pixel"));
             }
             break;
 
@@ -376,12 +376,12 @@ STATIC mp_obj_t bitmaptools_alphablend(size_t n_args, const mp_obj_t *pos_args, 
         case DISPLAYIO_COLORSPACE_BGR565:
         case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
             if (destination->bits_per_value != 16) {
-                mp_raise_ValueError(translate("For RGB colorspaces, input bitmap must have 16 bits per pixel"));
+                mp_raise_ValueError(MP_ERROR_TEXT("For RGB colorspaces, input bitmap must have 16 bits per pixel"));
             }
             break;
 
         default:
-            mp_raise_ValueError(translate("Unsupported colorspace"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Unsupported colorspace"));
     }
 
     uint32_t skip_source1_index;
@@ -448,7 +448,7 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
     value = args[ARG_value].u_int;
     color_depth = (1 << destination->bits_per_value);
     if (color_depth <= value) {
-        mp_raise_ValueError(translate("out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out of range of target"));
     }
 
     int16_t x1 = args[ARG_x1].u_int;
@@ -501,23 +501,23 @@ STATIC mp_obj_t bitmaptools_obj_boundary_fill(size_t n_args, const mp_obj_t *pos
     fill_color_value = args[ARG_fill_color_value].u_int;
     color_depth = (1 << destination->bits_per_value);
     if (color_depth <= fill_color_value) {
-        mp_raise_ValueError(translate("value out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("value out of range of target"));
     }
 
     uint32_t replaced_color_value;
     replaced_color_value = args[ARG_replaced_color_value].u_int;
     if (replaced_color_value != INT_MAX && color_depth <= replaced_color_value) {
-        mp_raise_ValueError(translate("background value out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("background value out of range of target"));
     }
 
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
 
     if (x < 0 || x >= destination->width) {
-        mp_raise_ValueError(translate("out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out of range of target"));
     }
     if (y < 0 || y >= destination->height) {
-        mp_raise_ValueError(translate("out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out of range of target"));
     }
 
     common_hal_bitmaptools_boundary_fill(destination, x, y, fill_color_value, replaced_color_value);
@@ -562,7 +562,7 @@ STATIC mp_obj_t bitmaptools_obj_draw_line(size_t n_args, const mp_obj_t *pos_arg
     value = args[ARG_value].u_int;
     color_depth = (1 << destination->bits_per_value);
     if (color_depth <= value) {
-        mp_raise_ValueError(translate("out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out of range of target"));
     }
 
     int16_t x1 = args[ARG_x1].u_int;
@@ -651,17 +651,17 @@ STATIC mp_obj_t bitmaptools_obj_draw_polygon(size_t n_args, const mp_obj_t *pos_
     size_t xs_len = xs_buf.len / xs_size;
     size_t ys_len = ys_buf.len / ys_size;
     if (xs_size != ys_size) {
-        mp_raise_ValueError(translate("Coordinate arrays types have different sizes"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Coordinate arrays types have different sizes"));
     }
     if (xs_len != ys_len) {
-        mp_raise_ValueError(translate("Coordinate arrays have different lengths"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Coordinate arrays have different lengths"));
     }
 
     uint32_t value, color_depth;
     value = args[ARG_value].u_int;
     color_depth = (1 << destination->bits_per_value);
     if (color_depth <= value) {
-        mp_raise_ValueError(translate("out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out of range of target"));
     }
 
     bool close = args[ARG_close].u_bool;
@@ -735,7 +735,7 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
     int y2 = args[ARG_y2].u_int == -1 ? bitmap->height : args[ARG_y2].u_int;
 
     if ((x1 < 0) || (y1 < 0) || (x1 > x2) || (y1 > y2) || (x2 > bitmap->width) || (y2 > bitmap->height)) {
-        mp_raise_IndexError(translate("pixel coordinates out of bounds"));
+        mp_raise_IndexError(MP_ERROR_TEXT("pixel coordinates out of bounds"));
     }
 
     size_t output_element_count = (x2 - x1) * (y2 - y1);
@@ -745,7 +745,7 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
     bool skip_specified = args[ARG_skip_index].u_obj != mp_const_none;
     uint32_t skip_index = skip_specified ? mp_obj_get_int(args[ARG_skip_index].u_obj) : 0;
     if (input_element_count < output_element_count) {
-        mp_raise_IndexError(translate("index out of range"));
+        mp_raise_IndexError(MP_ERROR_TEXT("index out of range"));
     }
 
     common_hal_bitmaptools_arrayblit(bitmap, bufinfo.buf, element_size, x1, y1, x2, y2, skip_specified, skip_index);
@@ -805,14 +805,14 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
 
     int element_size = args[ARG_element_size].u_int;
     if (element_size != 1 && element_size != 2 && element_size != 4) {
-        mp_raise_ValueError_varg(translate("invalid element_size %d, must be, 1, 2, or 4"), element_size);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("invalid element_size %d, must be, 1, 2, or 4"), element_size);
     }
 
     int bits_per_pixel = args[ARG_bits_per_pixel].u_int;
     switch (bits_per_pixel) {
         case 24:
             if (element_size != 1) {
-                mp_raise_ValueError_varg(translate("invalid element size %d for bits_per_pixel %d\n"), element_size, bits_per_pixel);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("invalid element size %d for bits_per_pixel %d\n"), element_size, bits_per_pixel);
             }
             break;
         case 1:
@@ -823,7 +823,7 @@ STATIC mp_obj_t bitmaptools_readinto(size_t n_args, const mp_obj_t *pos_args, mp
         case 32:
             break;
         default:
-            mp_raise_ValueError_varg(translate("invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"), bits_per_pixel);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"), bits_per_pixel);
     }
 
     bool reverse_pixels_in_element = args[ARG_reverse_pixels_in_element].u_bool;
@@ -889,11 +889,11 @@ STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_m
     displayio_colorspace_t colorspace = cp_enum_value(&displayio_colorspace_type, args[ARG_source_colorspace].u_obj, MP_QSTR_source_colorspace);
 
     if (source_bitmap->width != dest_bitmap->width || source_bitmap->height != dest_bitmap->height) {
-        mp_raise_TypeError(translate("bitmap sizes must match"));
+        mp_raise_TypeError(MP_ERROR_TEXT("bitmap sizes must match"));
     }
 
     if (dest_bitmap->bits_per_value != 16 && dest_bitmap->bits_per_value != 1) {
-        mp_raise_TypeError(translate("source_bitmap must have value_count of 2 or 65536"));
+        mp_raise_TypeError(MP_ERROR_TEXT("source_bitmap must have value_count of 2 or 65536"));
     }
 
 
@@ -903,18 +903,18 @@ STATIC mp_obj_t bitmaptools_dither(size_t n_args, const mp_obj_t *pos_args, mp_m
         case DISPLAYIO_COLORSPACE_BGR565:
         case DISPLAYIO_COLORSPACE_BGR565_SWAPPED:
             if (source_bitmap->bits_per_value != 16) {
-                mp_raise_TypeError(translate("source_bitmap must have value_count of 65536"));
+                mp_raise_TypeError(MP_ERROR_TEXT("source_bitmap must have value_count of 65536"));
             }
             break;
 
         case DISPLAYIO_COLORSPACE_L8:
             if (source_bitmap->bits_per_value != 8) {
-                mp_raise_TypeError(translate("source_bitmap must have value_count of 8"));
+                mp_raise_TypeError(MP_ERROR_TEXT("source_bitmap must have value_count of 8"));
             }
             break;
 
         default:
-            mp_raise_TypeError(translate("unsupported colorspace for dither"));
+            mp_raise_TypeError(MP_ERROR_TEXT("unsupported colorspace for dither"));
     }
 
 
@@ -985,7 +985,7 @@ STATIC mp_obj_t bitmaptools_obj_draw_circle(size_t n_args, const mp_obj_t *pos_a
     value = args[ARG_value].u_int;
     color_depth = (1 << destination->bits_per_value);
     if (color_depth <= value) {
-        mp_raise_ValueError(translate("out of range of target"));
+        mp_raise_ValueError(MP_ERROR_TEXT("out of range of target"));
     }
 
 
@@ -1068,7 +1068,7 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
 
     // ensure that the target bitmap (self) has at least as many `bits_per_value` as the source
     if (destination->bits_per_value < source->bits_per_value) {
-        mp_raise_ValueError(translate("source palette too large"));
+        mp_raise_ValueError(MP_ERROR_TEXT("source palette too large"));
     }
 
     // Check x1,y1,x2,y2 are within source bitmap boundary

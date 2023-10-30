@@ -187,7 +187,7 @@ bool common_hal_displayio_colorconverter_get_dither(displayio_colorconverter_t *
 
 void common_hal_displayio_colorconverter_make_transparent(displayio_colorconverter_t *self, uint32_t transparent_color) {
     if (self->transparent_color != NO_TRANSPARENT_COLOR) {
-        mp_raise_RuntimeError(translate("Only one color can be transparent at a time"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Only one color can be transparent at a time"));
     }
     self->transparent_color = transparent_color;
 }

@@ -88,10 +88,10 @@ STATIC void set_filters(canio_listener_obj_t *self, size_t nmatch, canio_match_o
 
 void common_hal_canio_listener_construct(canio_listener_obj_t *self, canio_can_obj_t *can, size_t nmatch, canio_match_obj_t **matches, float timeout) {
     if (can->fifo_in_use) {
-        mp_raise_ValueError(translate("All RX FIFOs in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All RX FIFOs in use"));
     }
     if (nmatch > 1) {
-        mp_raise_ValueError(translate("Filters too complex"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Filters too complex"));
     }
 
     // Nothing can fail now so it's safe to assign self->can

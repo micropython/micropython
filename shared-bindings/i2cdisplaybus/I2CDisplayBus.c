@@ -90,7 +90,7 @@ STATIC mp_obj_t i2cdisplaybus_i2cdisplaybus_obj_reset(mp_obj_t self_in) {
     i2cdisplaybus_i2cdisplaybus_obj_t *self = self_in;
 
     if (!common_hal_i2cdisplaybus_i2cdisplaybus_reset(self)) {
-        mp_raise_RuntimeError_varg(translate("No %q pin"), MP_QSTR_reset);
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_reset);
     }
     return mp_const_none;
 }

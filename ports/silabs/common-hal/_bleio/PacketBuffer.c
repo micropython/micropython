@@ -289,7 +289,7 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self,
     }
     if (self->outgoing[0] == NULL) {
         mp_raise_bleio_BluetoothError(
-            translate("Writes not supported on Characteristic"));
+            MP_ERROR_TEXT("Writes not supported on Characteristic"));
     }
     if (self->conn_handle == BLE_CONN_HANDLE_INVALID) {
         return -1;
@@ -305,13 +305,13 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self,
     if (total_len > outgoing_packet_length) {
         // Supplied data will not fit in a single BLE packet.
         mp_raise_ValueError_varg(
-            translate("Total data to write is larger than %q"),
+            MP_ERROR_TEXT("Total data to write is larger than %q"),
             MP_QSTR_outgoing_packet_length);
     }
     if (total_len > self->max_packet_size) {
         // Supplied data will not fit in a single BLE packet.
         mp_raise_ValueError_varg(
-            translate("Total data to write is larger than %q"),
+            MP_ERROR_TEXT("Total data to write is larger than %q"),
             MP_QSTR_max_packet_size);
     }
     outgoing_packet_length = MIN(outgoing_packet_length, self->max_packet_size);

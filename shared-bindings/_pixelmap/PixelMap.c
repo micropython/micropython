@@ -78,12 +78,12 @@ STATIC mp_obj_t pixelmap_pixelmap_make_new(const mp_obj_type_t *type, size_t n_a
             for (size_t j = 0; j < len1; j++) {
                 mp_obj_t item1 = items1[j];
                 if (!mp_obj_is_small_int(item1)) {
-                    mp_raise_TypeError(translate("nested index must be int"));
+                    mp_raise_TypeError(MP_ERROR_TEXT("nested index must be int"));
                 }
                 mp_arg_validate_index_range(MP_OBJ_SMALL_INT_VALUE(item1), 0, buflen - 1, MP_QSTR_index);
             }
         } else {
-            mp_raise_TypeError(translate("index must be tuple or int"));
+            mp_raise_TypeError(MP_ERROR_TEXT("index must be tuple or int"));
         }
     }
 

@@ -78,12 +78,12 @@ void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
 
 void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface) {
     if (network_interface != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
-        mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
+        mp_raise_ValueError(MP_ERROR_TEXT("mDNS only works with built-in WiFi"));
         return;
     }
     mdns_server_construct(self, false);
     if (common_hal_mdns_server_deinited(self)) {
-        mp_raise_RuntimeError(translate("mDNS already initialized"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("mDNS already initialized"));
     }
 }
 
@@ -167,7 +167,7 @@ size_t mdns_server_find(mdns_server_obj_t *self, const char *service_type, const
 mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_float_t timeout) {
     mdns_search_once_t *search = mdns_query_async_new(NULL, service_type, protocol, MDNS_TYPE_PTR, timeout * 1000, 255, NULL);
     if (search == NULL) {
-        mp_raise_RuntimeError(translate("Unable to start mDNS query"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to start mDNS query"));
     }
     uint8_t num_results;
     mdns_result_t *results;
