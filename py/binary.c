@@ -51,8 +51,6 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
             switch (val_type) {
                 case 'b':
                 case 'B':
-                case '?':
-                case 'c':
                     size = 1;
                     break;
                 case 'h':
@@ -96,8 +94,6 @@ size_t mp_binary_get_size(char struct_type, char val_type, size_t *palign) {
                 case BYTEARRAY_TYPECODE:
                 case 'b':
                 case 'B':
-                case '?':
-                case 'c':
                     align = size = 1;
                     break;
                 case 'h':
@@ -164,10 +160,6 @@ mp_obj_t mp_binary_get_val_array(char typecode, void *p, size_t index) {
         case 'H':
             val = ((unsigned short *)p)[index];
             break;
-        case '?':
-            return ((unsigned char *)p)[index] == 0 ? mp_const_false : mp_const_true;
-        case 'c':
-            return mp_obj_new_bytes(&(((byte *)p)[index]), 1);
         case 'i':
             return mp_obj_new_int(((int *)p)[index]);
         case 'I':
@@ -244,14 +236,9 @@ mp_obj_t mp_binary_get_val(char struct_type, char val_type, byte *p_base, byte *
 
     if (val_type == 'O') {
         return (mp_obj_t)(mp_uint_t)val;
-    } else if (val_type == '?') {
-        return val == 0 ? mp_const_false : mp_const_true;
     } else if (val_type == 'S') {
         const char *s_val = (const char *)(uintptr_t)(mp_uint_t)val;
         return mp_obj_new_str(s_val, strlen(s_val));
-    } else if (val_type == 'c') {
-        byte byteval = (byte)val;
-        return mp_obj_new_bytes(&byteval, 1);
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (val_type == 'f') {
         union {
@@ -321,15 +308,6 @@ void mp_binary_set_val(char struct_type, char val_type, mp_obj_t val_in, byte *p
         case 'O':
             val = (mp_uint_t)val_in;
             break;
-        case '?':
-            val = mp_obj_is_true(val_in) ? 1 : 0;
-            break;
-        case 'c': {
-            mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(val_in, &bufinfo, MP_BUFFER_READ);
-            val = *(byte *)bufinfo.buf;
-            break;
-        }
         #if MICROPY_PY_BUILTINS_FLOAT
         case 'f': {
             union {
@@ -395,15 +373,6 @@ void mp_binary_set_val_array(char typecode, void *p, size_t index, mp_obj_t val_
         case 'O':
             ((mp_obj_t *)p)[index] = val_in;
             break;
-        case '?':
-            ((unsigned char *)p)[index] = mp_obj_is_true(val_in) ? 1 : 0;
-            break;
-        case 'c': {
-            mp_buffer_info_t bufinfo;
-            mp_get_buffer_raise(val_in, &bufinfo, MP_BUFFER_READ);
-            ((byte *)p)[index] = *(byte *)bufinfo.buf;
-            break;
-        }
         default:
             #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
             if (mp_obj_is_exact_type(val_in, &mp_type_int)) {
@@ -424,7 +393,6 @@ void mp_binary_set_val_array_from_int(char typecode, void *p, size_t index, mp_i
             break;
         case BYTEARRAY_TYPECODE:
         case 'B':
-        case '?':
             ((unsigned char *)p)[index] = val;
             break;
         case 'h':

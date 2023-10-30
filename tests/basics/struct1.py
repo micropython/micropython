@@ -20,10 +20,6 @@ print(struct.pack("<h", 1))
 print(struct.pack(">h", 1))
 print(struct.pack("<b", 1))
 print(struct.pack(">b", 1))
-print(struct.pack("<?", True))
-print(struct.pack(">?", True))
-print(struct.pack("<c", b"\x01"))
-print(struct.pack(">c", b"\x01"))
 print(struct.pack("<x"))
 print(struct.pack(">x"))
 
@@ -69,6 +65,10 @@ print(struct.unpack("B3pB", b"c\x04ABb"))
 
 print(struct.unpack("B1pB", b"c\x00ABb"))
 print(struct.unpack("B1pB", b"c\x01ABb"))
+
+print(struct.calcsize("B1pB"))
+print(struct.calcsize("B0pB"))
+print(struct.calcsize("B3pB"))
 
 # network byte order
 print(struct.pack('!i', 123))
