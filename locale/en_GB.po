@@ -2997,6 +2997,10 @@ msgstr "division by zero"
 msgid "dtype must be float, or complex"
 msgstr "dtype must be float, or complex"
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "dtype of int32 is not supported"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "empty"
@@ -3862,6 +3866,10 @@ msgstr "operation is not implemented on ndarrays"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
 msgstr "operation is not supported for given type"
+
+#: extmod/ulab/code/ndarray_operators.c
+msgid "operation not supported for the input types"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "ord expects a character"

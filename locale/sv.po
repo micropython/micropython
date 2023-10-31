@@ -3010,6 +3010,10 @@ msgstr "division med noll"
 msgid "dtype must be float, or complex"
 msgstr "dtype måste vara float eller complex"
 
+#: extmod/ulab/code/ndarray_operators.c
+msgid "dtype of int32 is not supported"
+msgstr ""
+
 #: py/objdeque.c
 msgid "empty"
 msgstr "tom"
@@ -3877,6 +3881,10 @@ msgstr "åtgärden är inte implementerad för ndarray:er"
 #: extmod/ulab/code/ndarray.c
 msgid "operation is not supported for given type"
 msgstr "åtgärden stöds inte för given typ"
+
+#: extmod/ulab/code/ndarray_operators.c
+msgid "operation not supported for the input types"
+msgstr ""
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
