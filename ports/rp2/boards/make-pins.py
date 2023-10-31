@@ -189,7 +189,7 @@ class Pins(object):
         self.cpu_pins = []  # list of NamedPin objects
         self.board_pins = []  # list of NamedPin objects
         self.ext_pins = []  # list of NamedPin objects
-        for i in range(0, 10):
+        for i in range(0, 32):
             self.ext_pins.append(NamedPin("EXT_GPIO{:d}".format(i), Pin(i, True)))
 
     def find_pin(self, pin_name):

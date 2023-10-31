@@ -300,3 +300,23 @@ extern void lwip_lock_release(void);
 #define MICROPY_PY_BLUETOOTH_ENTER uint32_t atomic_state = 0;
 #define MICROPY_PY_BLUETOOTH_EXIT (void)atomic_state;
 #endif
+
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP()
+#endif
+
+#ifndef MICROPY_BOARD_EARLY_INIT
+#define MICROPY_BOARD_EARLY_INIT()
+#endif
+
+#ifndef MICROPY_BOARD_LATE_INIT
+#define MICROPY_BOARD_LATE_INIT()
+#endif
+
+#ifndef MICROPY_BOARD_EARLY_RESET
+#define MICROPY_BOARD_EARLY_RESET()
+#endif
+
+#ifndef MICROPY_BOARD_LATE_RESET
+#define MICROPY_BOARD_LATE_RESET()
+#endif
