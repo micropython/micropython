@@ -1,0 +1,53 @@
+# Port-specific tests exclusion list.
+
+exclude_tests = exclude_tests.union(
+    (
+        # Native code generation is not yet supported.
+        "micropython/native_closure.py",
+        "micropython/native_const.py",
+        "micropython/native_const_intbig.py",
+        "micropython/native_for.py",
+        "micropython/native_fun_attrs.py",
+        "micropython/native_gen.py",
+        "micropython/native_misc.py",
+        "micropython/native_try.py",
+        "micropython/native_try_deep.py",
+        "micropython/native_while.py",
+        "micropython/native_with.py",
+
+        # Viper code generator is not yet supported.
+        "micropython/viper_addr.py",
+        "micropython/viper_args.py",
+        "micropython/viper_binop_arith.py",
+        "micropython/viper_binop_arith_uint.py",
+        "micropython/viper_binop_bitwise_uint.py",
+        "micropython/viper_binop_comp.py",
+        "micropython/viper_binop_comp_imm.py",
+        "micropython/viper_binop_comp_uint.py",
+        "micropython/viper_binop_divmod.py",
+        "micropython/viper_binop_multi_comp.py",
+        "micropython/viper_cond.py",
+        "micropython/viper_const.py",
+        "micropython/viper_const_intbig.py",
+        "micropython/viper_error.py",
+        "micropython/viper_globals.py",
+        "micropython/viper_import.py",
+        "micropython/viper_misc.py",
+        "micropython/viper_misc2.py",
+        "micropython/viper_misc3.py",
+        "micropython/viper_misc_intbig.py",
+        "micropython/viper_ptr16_load.py",
+        "micropython/viper_ptr16_store.py",
+        "micropython/viper_ptr32_load.py",
+        "micropython/viper_ptr32_store.py",
+        "micropython/viper_ptr8_load.py",
+        "micropython/viper_ptr8_store.py",
+        "micropython/viper_storeattr.py",
+        "micropython/viper_subscr.py",
+        "micropython/viper_subscr_multi.py",
+        "micropython/viper_try.py",
+        "micropython/viper_types.py",
+        "micropython/viper_unop.py",
+        "micropython/viper_with.py",
+    )
+)
