@@ -212,7 +212,7 @@ STATIC mp_obj_t mdns_server_advertise_service(mp_uint_t n_args, const mp_obj_t *
     for (size_t i = 0; i < num_txt_records; i++) {
         mp_obj_t txt_record = mp_obj_subscr(txt_records, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
         if (!mp_obj_is_str_or_bytes(txt_record)) {
-            mp_raise_ValueError(translate("Failed to add service TXT record; non-string or bytes found in txt_records"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Failed to add service TXT record; non-string or bytes found in txt_records"));
         }
         txt_records_array[i] = mp_obj_str_get_str(txt_record);
     }

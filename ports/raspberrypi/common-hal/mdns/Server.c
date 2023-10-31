@@ -302,7 +302,7 @@ STATIC void srv_txt_cb(struct mdns_service *service, void *ptr) {
     for (size_t i = 0; i < self->num_txt_records; i++) {
         res = mdns_resp_add_service_txtitem(service, self->txt_records[i], strlen(self->txt_records[i]));
         if (res != ERR_OK) {
-            mp_raise_RuntimeError(translate("Failed to add service TXT record"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Failed to add service TXT record"));
             return;
         }
     }
