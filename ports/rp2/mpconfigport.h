@@ -274,7 +274,7 @@ extern void mp_thread_end_atomic_section(uint32_t);
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         MICROPY_EVENT_POLL_HOOK_FAST; \
-        best_effort_wfe_or_timeout(make_timeout_time_ms(1)); \
+        __wfe(); \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
