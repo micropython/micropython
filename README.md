@@ -114,7 +114,8 @@ In addition, the following ports are provided in this repository:
  - [nrf](ports/nrf) -- Nordic Semiconductor nRF51 and nRF52.
  - [pic16bit](ports/pic16bit) -- Microchip PIC 16-bit.
  - [powerpc](ports/powerpc) -- IBM PowerPC (including Microwatt)
- - [qemu-arm](ports/qemu-arm) -- QEMU-based emulated target, for testing)
+ - [qemu-arm](ports/qemu-arm) -- QEMU-based Arm emulated target (for testing)
+ - [qemu-riscv](ports/qemu-riscv) -- QEMU-based RISC-V emulated target (for testing)
  - [renesas-ra](ports/renesas-ra) -- Renesas RA family.
  - [rp2](ports/rp2) -- Raspberry Pi RP2040 (including Pico and Pico W).
  - [samd](ports/samd) -- Microchip (formerly Atmel) SAMD21 and SAMD51.
