@@ -368,6 +368,9 @@ STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
 
     // Class methods
     { MP_ROM_QSTR(MP_QSTR_source_freq), MP_ROM_PTR(&esp32_rmt_source_obj) },
+
+    // Constants
+    { MP_ROM_QSTR(MP_QSTR_PULSE_MAX), MP_ROM_INT(32767) },
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_rmt_locals_dict, esp32_rmt_locals_dict_table);
 
