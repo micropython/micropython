@@ -66,11 +66,14 @@ typedef struct {
 
 #if defined(STM32F0)
 
-static const flash_layout_t flash_layout[] = {
-    { FLASH_BASE, FLASH_PAGE_SIZE, (FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (FLASH_PAGE_SIZE)
+#define FLASH_LAYOUT_NUM_SECTORS    ((FLASH_BANK1_END + 1 - FLASH_BASE) / FLASH_PAGE_SIZE)
 
 #elif defined(STM32F4)
+
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (0)
 
 static const flash_layout_t flash_layout[] = {
     { 0x08000000, 0x04000, 4 },
@@ -87,6 +90,8 @@ static const flash_layout_t flash_layout[] = {
 };
 
 #elif defined(STM32F7)
+
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (0)
 
 // FLASH_FLAG_PGSERR (Programming Sequence Error) was renamed to
 // FLASH_FLAG_ERSERR (Erasing Sequence Error) in STM32F7
@@ -113,27 +118,31 @@ static const flash_layout_t flash_layout[] = {
 
 #elif defined(STM32G0) || defined(STM32G4) || defined(STM32L0) || defined(STM32L4) || defined(STM32WB) || defined(STM32WL)
 
-static const flash_layout_t flash_layout[] = {
-    { (uint32_t)FLASH_BASE, (uint32_t)FLASH_PAGE_SIZE, 512 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (FLASH_PAGE_SIZE)
+#define FLASH_LAYOUT_NUM_SECTORS    (512)
 
 #elif defined(STM32L1)
 
-static const flash_layout_t flash_layout[] = {
-    { (uint32_t)FLASH_BASE, 0x200, 1024 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (0x200)
+#define FLASH_LAYOUT_NUM_SECTORS    (1024)
 
 #elif defined(STM32H5)
 
-static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 8192, 256 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE_NS)
+#define FLASH_LAYOUT_SECTOR_SIZE    (0x2000)
+#define FLASH_LAYOUT_NUM_SECTORS    (256)
 
 #elif defined(STM32H7)
 
-static const flash_layout_t flash_layout[] = {
-    { 0x08000000, 0x20000, 16 },
-};
+#define FLASH_LAYOUT_IS_HOMOGENEOUS (1)
+#define FLASH_LAYOUT_START_ADDR     (FLASH_BASE)
+#define FLASH_LAYOUT_SECTOR_SIZE    (0x20000)
+#define FLASH_LAYOUT_NUM_SECTORS    (16)
 
 #else
 #error Unsupported processor
@@ -156,14 +165,14 @@ static uint32_t get_bank(uint32_t addr) {
     if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0) {
         #endif
         // no bank swap
-        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+        if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
             return FLASH_BANK_1;
         } else {
             return FLASH_BANK_2;
         }
     } else {
         // bank swap
-        if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+        if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
             return FLASH_BANK_2;
         } else {
             return FLASH_BANK_1;
@@ -174,12 +183,12 @@ static uint32_t get_bank(uint32_t addr) {
 #if (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE))
 // get the page of a given flash address
 static uint32_t get_page(uint32_t addr) {
-    if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+    if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
         // bank 1
-        return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+        return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
     } else {
         // bank 2
-        return (addr - (FLASH_BASE + FLASH_BANK_SIZE)) / FLASH_PAGE_SIZE;
+        return (addr - (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) / FLASH_LAYOUT_SECTOR_SIZE;
     }
 }
 #endif
@@ -187,18 +196,18 @@ static uint32_t get_page(uint32_t addr) {
 #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
 
 static uint32_t get_page(uint32_t addr) {
-    return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+    return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
 }
 
 #elif defined(STM32G0) || defined(STM32G4)
 
 static uint32_t get_page(uint32_t addr) {
-    return (addr - FLASH_BASE) / FLASH_PAGE_SIZE;
+    return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
 }
 
 static uint32_t get_bank(uint32_t addr) {
     // no bank swap
-    if (addr < (FLASH_BASE + FLASH_BANK_SIZE)) {
+    if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
         return FLASH_BANK_1;
     } else {
         #if defined(FLASH_OPTR_DBANK)
@@ -212,13 +221,33 @@ static uint32_t get_bank(uint32_t addr) {
 #endif
 
 bool flash_is_valid_addr(uint32_t addr) {
+    #if FLASH_LAYOUT_IS_HOMOGENEOUS
+    uint32_t base = FLASH_LAYOUT_START_ADDR;
+    uint32_t end_of_flash = FLASH_LAYOUT_START_ADDR + FLASH_LAYOUT_NUM_SECTORS * FLASH_LAYOUT_SECTOR_SIZE;
+    #else
+    uint32_t base = flash_layout[0].base_address;
     uint8_t last = MP_ARRAY_SIZE(flash_layout) - 1;
     uint32_t end_of_flash = flash_layout[last].base_address +
         flash_layout[last].sector_count * flash_layout[last].sector_size;
-    return flash_layout[0].base_address <= addr && addr < end_of_flash;
+    #endif
+    return base <= addr && addr < end_of_flash;
 }
 
 int32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *size) {
+    #if FLASH_LAYOUT_IS_HOMOGENEOUS
+    if (addr >= FLASH_LAYOUT_START_ADDR) {
+        uint32_t sector_index = (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
+        if (sector_index < FLASH_LAYOUT_NUM_SECTORS) {
+            if (start_addr != NULL) {
+                *start_addr = FLASH_LAYOUT_START_ADDR + sector_index * FLASH_LAYOUT_SECTOR_SIZE;
+            }
+            if (size != NULL) {
+                *size = FLASH_LAYOUT_SECTOR_SIZE;
+            }
+            return sector_index;
+        }
+    }
+    #else
     if (addr >= flash_layout[0].base_address) {
         uint32_t sector_index = 0;
         for (int i = 0; i < MP_ARRAY_SIZE(flash_layout); ++i) {
@@ -239,6 +268,7 @@ int32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *siz
             }
         }
     }
+    #endif
     return -1;
 }
 
