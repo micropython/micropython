@@ -272,11 +272,10 @@ int32_t flash_get_sector_info(uint32_t addr, uint32_t *start_addr, uint32_t *siz
     return -1;
 }
 
-int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
-    // check there is something to write
-    if (num_word32 == 0) {
-        return 0;
-    }
+// Erase a single flash page which starts at the given address.
+// The address will be converted to a bank and sector number.
+int flash_erase(uint32_t flash_dest) {
+    const unsigned int num_sectors = 1;
 
     #if MICROPY_HW_STM32WB_FLASH_SYNCRONISATION
     // Acquire lock on the flash peripheral.
@@ -306,23 +305,23 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGERR);
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.PageAddress = flash_dest;
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
+    EraseInitStruct.NbPages = num_sectors;
     #elif defined(STM32G0) || defined(STM32G4)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.Page = get_page(flash_dest);
     EraseInitStruct.Banks = get_bank(flash_dest);
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
+    EraseInitStruct.NbPages = num_sectors;
     #elif defined(STM32L0) || defined(STM32L1)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR);
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.PageAddress = flash_dest;
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
+    EraseInitStruct.NbPages = num_sectors;
     #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.Page = get_page(flash_dest);
-    EraseInitStruct.NbPages = (4 * num_word32 + FLASH_PAGE_SIZE - 4) / FLASH_PAGE_SIZE;
+    EraseInitStruct.NbPages = num_sectors;
     #elif defined(STM32L4)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
     // The sector returned by flash_get_sector_info can not be used
@@ -330,7 +329,7 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     EraseInitStruct.TypeErase = FLASH_TYPEERASE_PAGES;
     EraseInitStruct.Banks = get_bank(flash_dest);
     EraseInitStruct.Page = get_page(flash_dest);
-    EraseInitStruct.NbPages = get_page(flash_dest + 4 * num_word32 - 1) - EraseInitStruct.Page + 1;
+    EraseInitStruct.NbPages = num_sectors;
     #else
 
     #if defined(STM32H5)
@@ -354,7 +353,7 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     EraseInitStruct.Banks = get_bank(flash_dest);
     #endif
     EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
-    EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
+    EraseInitStruct.NbSectors = num_sectors;
     #if defined(STM32H5)
     EraseInitStruct.Sector &= 0x7f; // second bank should start counting at 0
     #endif

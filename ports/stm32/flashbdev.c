@@ -161,7 +161,7 @@ static void flash_bdev_irq_handler(void) {
 
     // This code erases the flash directly, waiting for it to finish
     if (!(flash_flags & FLASH_FLAG_ERASED)) {
-        flash_erase(flash_cache_sector_start, flash_cache_sector_size / 4);
+        flash_erase(flash_cache_sector_start);
         flash_flags |= FLASH_FLAG_ERASED;
         return;
     }
