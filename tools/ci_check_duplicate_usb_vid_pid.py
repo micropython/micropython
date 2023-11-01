@@ -63,7 +63,6 @@ DEFAULT_CLUSTERLIST = {
         "espressif_esp32s2_devkitc_1_n8r2",
     ],
     "0x239A:0x102E": ["weact_studio_pico", "weact_studio_pico_16mb"],
-    "0x00111011:0x00C60001": ["weact_esp32c6_n4", "weact_esp32c6_n8"],
     "0x303A:0x8166": ["yd_esp32_s3_n8r8", "yd_esp32_s3_n16r8"],
     "0x2341:0x056B": ["arduino_nano_esp32s3", "arduino_nano_esp32s3_inverted_statusled"],
     "0x2E8A:0x1020": ["waveshare_rp2040_plus_4mb", "waveshare_rp2040_plus_16mb"],
