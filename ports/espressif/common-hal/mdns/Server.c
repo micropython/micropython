@@ -208,10 +208,25 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_int_t port) {
+void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_int_t port, const char *txt_records[], size_t num_txt_records) {
     if (mdns_service_exists(service_type, protocol, NULL)) {
         mdns_service_port_set(service_type, protocol, port);
     } else {
+        // TODO: Add support for TXT record
+        /* NOTE: The `mdns_txt_item_t *txt` argument of mdns_service_add uses a struct
+         * that splits out the TXT record into keys and values, though it seems little
+         * is done with those fields aside from concatenating them with an optional
+         * equals sign and calculating the total length of the concatenated string.
+         *
+         * There should be little issue with the underlying implementation to populate
+         * the mdns_txt_item_t struct with only a key containing exactly the desired TXT
+         * record. As long as the underlying implementation calculates the length of the
+         * key + NULL value correctly, it should work.
+         *
+         * Ref: RFC 6763, section 6.1:
+         * > The format of each constituent string within the DNS TXT record is a single
+         * > length byte, followed by 0-255 bytes of text data.
+         */
         mdns_service_add(NULL, service_type, protocol, port, NULL, 0);
     }
 }

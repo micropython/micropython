@@ -355,7 +355,7 @@ bool supervisor_start_web_workflow(bool reload) {
             }
         }
         if (!common_hal_mdns_server_deinited(&mdns)) {
-            common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+            common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port, NULL, 0);
         }
         #endif
 
