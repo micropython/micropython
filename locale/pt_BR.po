@@ -1044,6 +1044,15 @@ msgstr "Falha ao enviar comando."
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Houve uma falha na aquisição do mutex, err 0x%04x"
 
+#: ports/raspberrypi/common-hal/mdns/Server.c
+msgid "Failed to add service TXT record"
+msgstr ""
+
+#: shared-bindings/mdns/Server.c
+msgid ""
+"Failed to add service TXT record; non-string or bytes found in txt_records"
+msgstr ""
+
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
 msgstr "Houve uma falha ao alocar o buffer %q"
