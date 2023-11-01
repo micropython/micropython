@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-10-29 05:03+0000\n"
+"PO-Revision-Date: 2023-11-01 07:01+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3042,7 +3042,7 @@ msgstr "dtype deve ser flutuante ou complexo"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "dtype of int32 is not supported"
-msgstr ""
+msgstr "dtype de int32 não é suportado"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3919,7 +3919,7 @@ msgstr "operação não é compatível com o tipo informado"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "operation not supported for the input types"
-msgstr ""
+msgstr "a operação não é suportada para os tipos de entrada"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
