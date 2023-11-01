@@ -465,7 +465,7 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     }
 
     // Erase the flash page.
-    ret = flash_erase(sector_start, sector_size / sizeof(uint32_t));
+    ret = flash_erase(sector_start);
     if (ret != 0) {
         return ret;
     }
