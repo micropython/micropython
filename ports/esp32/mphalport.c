@@ -214,7 +214,12 @@ uint64_t mp_hal_time_ns(void) {
     return ns;
 }
 
-// Wake up the main task if it is sleeping
+// Wake up the main task if it is sleeping.
+void mp_hal_wake_main_task(void) {
+    xTaskNotifyGive(mp_main_task_handle);
+}
+
+// Wake up the main task if it is sleeping, to be called from an ISR.
 void mp_hal_wake_main_task_from_isr(void) {
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     vTaskNotifyGiveFromISR(mp_main_task_handle, &xHigherPriorityTaskWoken);
