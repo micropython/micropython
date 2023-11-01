@@ -117,33 +117,6 @@ const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
     return desc_str;
 }
 
-#if defined(MCU_SAMD21)
-
 void USB_Handler_wrapper(void) {
     tud_int_handler(0);
-    tud_task();
 }
-
-#elif defined(MCU_SAMD51)
-
-void USB_0_Handler_wrapper(void) {
-    tud_int_handler(0);
-    tud_task();
-}
-
-void USB_1_Handler_wrapper(void) {
-    tud_int_handler(0);
-    tud_task();
-}
-
-void USB_2_Handler_wrapper(void) {
-    tud_int_handler(0);
-    tud_task();
-}
-
-void USB_3_Handler_wrapper(void) {
-    tud_int_handler(0);
-    tud_task();
-}
-
-#endif

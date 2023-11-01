@@ -310,10 +310,10 @@ const ISR isr_vector[] __attribute__((section(".isr_vector"))) = {
     &Sercom7_Handler, // 77 Serial Communication Interface 7 (SERCOM7): SERCOM7_3 - 6
     0,                // 78 Control Area Network 0 (CAN0)
     0,                // 79 Control Area Network 1 (CAN1)
-    &USB_0_Handler_wrapper, // 80 Universal Serial Bus (USB): USB_EORSM_DNRS, ...
-    &USB_1_Handler_wrapper, // 81 Universal Serial Bus (USB): USB_SOF_HSOF
-    &USB_2_Handler_wrapper, // 82 Universal Serial Bus (USB): USB_TRCPT0_0 - _7
-    &USB_3_Handler_wrapper, // 83 Universal Serial Bus (USB): USB_TRCPT1_0 - _7
+    &USB_Handler_wrapper, // 80 Universal Serial Bus (USB): USB_EORSM_DNRS, ...
+    &USB_Handler_wrapper, // 81 Universal Serial Bus (USB): USB_SOF_HSOF
+    &USB_Handler_wrapper, // 82 Universal Serial Bus (USB): USB_TRCPT0_0 - _7
+    &USB_Handler_wrapper, // 83 Universal Serial Bus (USB): USB_TRCPT1_0 - _7
     0,                // 84 Ethernet MAC (GMAC)
     0,                // 85 Timer Counter Control 0 (TCC0): TCC0_CNT_A ...
     0,                // 86 Timer Counter Control 0 (TCC0): TCC0_MC_0
