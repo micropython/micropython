@@ -124,6 +124,11 @@ class Stm32Pin(boardgen.Pin):
         # be the P for one channel, and the N for a different channel.
         # e.g. "ADC123_INP12/ADC123_INN11".
         for adc_name in adc.split("/"):
+            if adc_name.startswith("C_"):
+                # Currently unsupported, H7 dual-pad. The C_ADC entries should
+                # only be available directly from machine.ADC (not via the pin
+                # object).
+                continue
             m = re.match("ADC([1-5]+)_(IN[NP]?)([0-9]+)$", adc_name)
             if not m:
                 raise boardgen.PinGeneratorError(
