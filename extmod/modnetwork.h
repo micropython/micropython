@@ -80,6 +80,7 @@ struct _mod_network_socket_obj_t;
 typedef struct _mod_network_nic_protocol_t {
     // API for non-socket operations
     int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
+    void (*deinit)(void);
 
     // API for socket operations; return -1 on error
     int (*socket)(struct _mod_network_socket_obj_t *socket, int *_errno);
