@@ -110,6 +110,7 @@ jobs:
           -**/third*party/**
           -**/3rd*party/**
           -**/external/**
+          -**/lib/**
         input: ${{ steps.step1.outputs.sarif-output }}/cpp.sarif
         output: ${{ steps.step1.outputs.sarif-output }}/cpp.sarif
 
