@@ -1701,7 +1701,7 @@ STATIC int create_l2cap_channel(uint16_t mtu, mp_bluetooth_nimble_l2cap_channel_
     // multiply that by the "MTUs per channel" (set to 3 above).
     const size_t buf_blocks = MP_CEIL_DIVIDE(mtu, L2CAP_BUF_BLOCK_SIZE) * L2CAP_BUF_SIZE_MTUS_PER_CHANNEL;
 
-    mp_bluetooth_nimble_l2cap_channel_t *chan = m_new_obj_var(mp_bluetooth_nimble_l2cap_channel_t, uint8_t, OS_MEMPOOL_SIZE(buf_blocks, L2CAP_BUF_BLOCK_SIZE) * sizeof(os_membuf_t));
+    mp_bluetooth_nimble_l2cap_channel_t *chan = m_new_obj_var(mp_bluetooth_nimble_l2cap_channel_t, sdu_mem, uint8_t, OS_MEMPOOL_SIZE(buf_blocks, L2CAP_BUF_BLOCK_SIZE) * sizeof(os_membuf_t));
     MP_STATE_PORT(bluetooth_nimble_root_pointers)->l2cap_chan = chan;
 
     // Will be set in BLE_L2CAP_EVENT_COC_CONNECTED or BLE_L2CAP_EVENT_COC_ACCEPT.

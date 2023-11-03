@@ -1155,7 +1155,7 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     // (currently 10, plus 1 for base, plus 1 for base-protocol).
     // Note: mp_obj_type_t is (2 + 3 + #slots) words, so going from 11 to 12 slots
     // moves from 4 to 5 gc blocks.
-    mp_obj_type_t *o = m_new_obj_var0(mp_obj_type_t, void *, 10 + (bases_len ? 1 : 0) + (base_protocol ? 1 : 0));
+    mp_obj_type_t *o = m_new_obj_var0(mp_obj_type_t, slots, void *, 10 + (bases_len ? 1 : 0) + (base_protocol ? 1 : 0));
     o->base.type = &mp_type_type;
     o->flags = base_flags;
     o->name = name;
