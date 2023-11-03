@@ -568,7 +568,7 @@ Example usage::
 
     from machine import Pin, Encoder
 
-    qe = Encoder(0, Pin(0), Pin(1)) # create Quadrature Encoder object
+    qe = Encoder(0, Pin("D0"), Pin("D1")) # create Quadrature Encoder object
     qe.value()                      # get current counter values
     qe.value(0)                     # set value and cycles to 0
     qe.init(cpc=128)                # specify 128 counts/cycle
@@ -597,7 +597,7 @@ Example usage::
 
     from machine import Pin, Counter
 
-    counter = Counter(0, Pin(0))          # create Counter object
+    counter = Counter(0, Pin("D0"))          # create Counter object
     counter.value()                       # get current counter value
     counter.value(0)                      # set the counter to 0
     counter.init(cpc=128)                 # specify 128 counts/cycle
