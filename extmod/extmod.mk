@@ -267,6 +267,9 @@ SRC_THIRDPARTY_C += $(addprefix $(LWIP_DIR)/,\
 	core/ipv6/nd6.c \
 	netif/ethernet.c \
 	)
+ifeq ($(MICROPY_PY_LWIP_LOOPBACK),1)
+CFLAGS_EXTMOD += -DLWIP_NETIF_LOOPBACK=1
+endif
 ifeq ($(MICROPY_PY_LWIP_SLIP),1)
 CFLAGS_EXTMOD += -DMICROPY_PY_LWIP_SLIP=1
 SRC_THIRDPARTY_C += $(LWIP_DIR)/netif/slipif.c
