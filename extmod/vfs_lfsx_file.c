@@ -90,9 +90,9 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
     }
 
     #if LFS_BUILD_VERSION == 1
-    MP_OBJ_VFS_LFSx_FILE *o = m_new_obj_var_with_finaliser(MP_OBJ_VFS_LFSx_FILE, uint8_t, self->lfs.cfg->prog_size);
+    MP_OBJ_VFS_LFSx_FILE *o = m_new_obj_var_with_finaliser(MP_OBJ_VFS_LFSx_FILE, file_buffer, uint8_t, self->lfs.cfg->prog_size);
     #else
-    MP_OBJ_VFS_LFSx_FILE *o = m_new_obj_var_with_finaliser(MP_OBJ_VFS_LFSx_FILE, uint8_t, self->lfs.cfg->cache_size);
+    MP_OBJ_VFS_LFSx_FILE *o = m_new_obj_var_with_finaliser(MP_OBJ_VFS_LFSx_FILE, file_buffer, uint8_t, self->lfs.cfg->cache_size);
     #endif
     o->base.type = type;
     o->vfs = self;
