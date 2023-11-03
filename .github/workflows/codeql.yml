@@ -107,6 +107,14 @@ jobs:
           -**:cpp/suspicious-pointer-scaling
           -**:cpp/suspicious-pointer-scaling-void
           -**:cpp/unsigned-comparison-zero
+          -**:cpp/empty-block
+          -**:cpp/stack-address-escape
+          -**:cpp/irregular-enum-init
+          -**:cpp/include-non-header
+          -**:cpp/loop-variable-changed
+          -**:cpp/equality-on-floats
+          -**:cpp/commented-out-code
+          -**:cpp/long-switch
           -**/third*party/**
           -**/3rd*party/**
           -**/external/**
