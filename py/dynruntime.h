@@ -79,7 +79,7 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 /******************************************************************************/
 // Types and objects
 
-#define MP_OBJ_NEW_QSTR(x) MP_OBJ_NEW_QSTR_##x
+#define MP_OBJ_NEW_QSTR(x)                  (mp_fun_table.native_to_obj(x, MP_NATIVE_TYPE_QSTR))
 
 #define mp_type_type                        (*mp_fun_table.type_type)
 #define mp_type_NoneType                    (*mp_obj_get_type(mp_const_none))
@@ -125,7 +125,8 @@ static inline void *m_realloc_dyn(void *ptr, size_t new_num_bytes) {
 #define mp_obj_get_int_truncated(o)         (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_UINT))
 #define mp_obj_str_get_str(s)               (mp_obj_str_get_data_dyn((s), NULL))
 #define mp_obj_str_get_data(o, len)         (mp_obj_str_get_data_dyn((o), (len)))
-#define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer_raise((o), (bufinfo), (fl)))
+#define mp_get_buffer(o, bufinfo, fl)       (mp_fun_table.get_buffer((o), (bufinfo), (fl)))
+#define mp_get_buffer_raise(o, bufinfo, fl) (mp_fun_table.get_buffer((o), (bufinfo), (fl) | MP_BUFFER_RAISE_IF_UNSUPPORTED))
 #define mp_get_stream_raise(s, flags)       (mp_fun_table.get_stream_raise((s), (flags)))
 #define mp_obj_is_true(o)                   (mp_fun_table.native_from_obj(o, MP_NATIVE_TYPE_BOOL))
 

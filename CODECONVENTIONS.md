@@ -11,7 +11,7 @@ It's also ok to drop file extensions.
 
 Besides prefix, first line of a commit message should describe a
 change clearly and to the point, and be a grammatical sentence with
-final full stop. First line should fit within 72 characters. Examples
+final full stop. First line must fit within 72 characters. Examples
 of good first line of commit messages:
 
     py/objstr: Add splitlines() method.
@@ -27,12 +27,9 @@ change beyond 5 lines would likely require such detailed description.
 To get good practical examples of good commits and their messages, browse
 the `git log` of the project.
 
-When committing you are encouraged to sign-off your commit by adding
-"Signed-off-by" lines and similar, eg using "git commit -s".  If you don't
-explicitly sign-off in this way then the commit message, which includes your
-name and email address in the "Author" line, implies your sign-off.  In either
-case, of explicit or implicit sign-off, you are certifying and signing off
-against the following:
+When committing you must sign-off your commit by adding "Signed-off-by:"
+line(s) at the end of the commit message, e.g. using `git commit -s`.  You
+are then certifying and signing off against the following:
 
 * That you wrote the change yourself, or took it from a project with
   a compatible license (in the latter case the commit message, and possibly
@@ -49,10 +46,9 @@ against the following:
 * Your contribution including commit message will be publicly and
   indefinitely available for anyone to access, including redistribution
   under the terms of the project's license.
-* Your signature for all of the above, which is the "Signed-off-by" line
-  or the "Author" line in the commit message, includes your full real name and
-  a valid and active email address by which you can be contacted in the
-  foreseeable future.
+* Your signature for all of the above, which is the "Signed-off-by" line,
+  includes your full real name and a valid and active email address by
+  which you can be contacted in the foreseeable future.
 
 Code auto-formatting
 ====================
@@ -255,7 +251,7 @@ Documentation conventions
 =========================
 
 MicroPython generally follows CPython in documentation process and
-conventions. reStructuredText syntax is used for the documention.
+conventions. reStructuredText syntax is used for the documentation.
 
 Specific conventions/suggestions:
 

@@ -32,6 +32,7 @@
 #include "py/stream.h"
 #include "shared/netutils/netutils.h"
 #include "modmachine.h"
+#include "ppp_set_auth.h"
 
 #include "netif/ppp/ppp.h"
 #include "netif/ppp/pppos.h"
@@ -64,7 +65,11 @@ static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {
 
     switch (err_code) {
         case PPPERR_NONE:
+            #if CONFIG_LWIP_IPV6
             self->connected = (pppif->ip_addr.u_addr.ip4.addr != 0);
+            #else
+            self->connected = (pppif->ip_addr.addr != 0);
+            #endif // CONFIG_LWIP_IPV6
             break;
         case PPPERR_USER:
             self->clean_close = true;
@@ -103,9 +108,10 @@ static void pppos_client_task(void *self_in) {
     ppp_if_obj_t *self = (ppp_if_obj_t *)self_in;
     uint8_t buf[256];
 
-    while (ulTaskNotifyTake(pdTRUE, 0) == 0) {
+    int len = 0;
+    while (ulTaskNotifyTake(pdTRUE, len <= 0) == 0) {
         int err;
-        int len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
+        len = mp_stream_rw(self->stream, buf, sizeof(buf), &err, 0);
         if (len > 0) {
             pppos_input_tcpip(self->pcb, (u8_t *)buf, len);
         }
@@ -113,6 +119,8 @@ static void pppos_client_task(void *self_in) {
 
     self->client_task_handle = NULL;
     vTaskDelete(NULL);
+    for (;;) {
+    }
 }
 
 STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {
@@ -247,7 +255,11 @@ STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {
         ip_addr_t dns;
         mp_obj_t *items;
         mp_obj_get_array_fixed_n(args[1], 4, &items);
+        #if CONFIG_LWIP_IPV6
         netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns.u_addr.ip4, NETUTILS_BIG);
+        #else
+        netutils_parse_ipv4_addr(items[3], (uint8_t *)&dns, NETUTILS_BIG);
+        #endif // CONFIG_LWIP_IPV6
         dns_setserver(0, &dns);
         return mp_const_none;
     }
@@ -265,11 +277,56 @@ STATIC mp_obj_t ppp_isconnected(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ppp_isconnected_obj, ppp_isconnected);
 
+STATIC mp_obj_t ppp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (n_args != 1 && kwargs->used != 0) {
+        mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
+    }
+    ppp_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+
+    if (kwargs->used != 0) {
+        for (size_t i = 0; i < kwargs->alloc; i++) {
+            if (mp_map_slot_is_filled(kwargs, i)) {
+                switch (mp_obj_str_get_qstr(kwargs->table[i].key)) {
+                    default:
+                        break;
+                }
+            }
+        }
+        return mp_const_none;
+    }
+
+    if (n_args != 2) {
+        mp_raise_TypeError(MP_ERROR_TEXT("can query only one param"));
+    }
+
+    mp_obj_t val = mp_const_none;
+
+    switch (mp_obj_str_get_qstr(args[1])) {
+        case MP_QSTR_ifname: {
+            if (self->pcb != NULL) {
+                struct netif *pppif = ppp_netif(self->pcb);
+                char ifname[NETIF_NAMESIZE + 1] = {0};
+                netif_index_to_name(netif_get_index(pppif), ifname);
+                if (ifname[0] != 0) {
+                    val = mp_obj_new_str((char *)ifname, strlen(ifname));
+                }
+            }
+            break;
+        }
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unknown config param"));
+    }
+
+    return val;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ppp_config_obj, 1, ppp_config);
+
 STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&ppp_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&ppp_connect_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&ppp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&ppp_status_obj) },
+    { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&ppp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&ppp_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&ppp_delete_obj) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_NONE), MP_ROM_INT(PPPAUTHTYPE_NONE) },

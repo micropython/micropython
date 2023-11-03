@@ -212,7 +212,7 @@ void NICLAV_board_low_power(int mode) {
         // Disable all power rails, except core voltage.
         NICLAV_board_pmic_enable(false);
 
-        // Reset all busses, peripherals, GPIO clocks etc..
+        // Reset all buses, peripherals, GPIO clocks etc..
         RCC->AHB1RSTR = 0x0A00C023U;
         RCC->AHB2RSTR = 0x00000271U;
         RCC->AHB3RSTR = 0x00015031U;

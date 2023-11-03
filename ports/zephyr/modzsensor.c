@@ -145,4 +145,4 @@ const mp_obj_module_t mp_module_zsensor = {
 
 MP_REGISTER_MODULE(MP_QSTR_zsensor, mp_module_zsensor);
 
-#endif // MICROPY_PY_UHASHLIB
+#endif // MICROPY_PY_HASHLIB

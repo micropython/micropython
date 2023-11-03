@@ -203,7 +203,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uio) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_io) },
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
@@ -226,6 +226,6 @@ const mp_obj_module_t mp_module_io = {
     .globals = (mp_obj_dict_t *)&mp_module_io_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_uio, mp_module_io);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_io, mp_module_io);
 
 #endif

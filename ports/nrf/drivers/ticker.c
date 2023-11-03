@@ -137,7 +137,7 @@ int set_ticker_callback(uint32_t index, ticker_callback_ptr func, int32_t initia
     ticker->INTENCLR = masks[index];
     ticker->TASKS_CAPTURE[index] = 1;
     uint32_t t = FastTicker->CC[index];
-    // Need to make sure that set tick is aligned to lastest tick
+    // Need to make sure that set tick is aligned to latest tick
     // Use CC[3] as a reference, as that is always up-to-date.
     int32_t cc3 = FastTicker->CC[3];
     int32_t delta = t+initial_delay_us-cc3;

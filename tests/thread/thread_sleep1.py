@@ -2,13 +2,11 @@
 #
 # MIT license; Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
 
-try:
-    import utime
+import time
 
-    sleep_ms = utime.sleep_ms
-except ImportError:
-    import time
-
+if hasattr(time, "sleep_ms"):
+    sleep_ms = time.sleep_ms
+else:
     sleep_ms = lambda t: time.sleep(t / 1000)
 
 import _thread

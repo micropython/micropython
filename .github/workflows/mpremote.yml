@@ -11,13 +11,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
-        # Version is determined from git,
-        # should be deep enough to get to latest tag
-        fetch-depth: '1000'
-    - run: |
-        git fetch --prune --unshallow --tags
+        # Setting this to zero means fetch all history and tags,
+        # which hatch-vcs can use to discover the version tag.
+        fetch-depth: 0
     - uses: actions/setup-python@v4
     - name: Install build tools
       run: pip install build

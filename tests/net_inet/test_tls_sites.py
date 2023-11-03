@@ -1,21 +1,16 @@
-try:
-    import usocket as _socket
-except:
-    import _socket
-try:
-    import ussl as ssl
-except:
-    import ssl
+import socket
+import ssl
 
-    # CPython only supports server_hostname with SSLContext
-    ssl = ssl.SSLContext()
+# CPython only supports server_hostname with SSLContext
+if hasattr(ssl, "SSLContext"):
+    ssl = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
 
 
 def test_one(site, opts):
-    ai = _socket.getaddrinfo(site, 443)
+    ai = socket.getaddrinfo(site, 443)
     addr = ai[0][-1]
 
-    s = _socket.socket()
+    s = socket.socket()
 
     try:
         s.connect(addr)

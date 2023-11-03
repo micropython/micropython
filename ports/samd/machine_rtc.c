@@ -27,8 +27,8 @@
 
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
-#include "modmachine.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "sam.h"
 
 #if MICROPY_PY_MACHINE_RTC

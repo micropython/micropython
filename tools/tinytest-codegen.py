@@ -65,11 +65,10 @@ exclude_tests = (
     "basics/bytes_compare3.py",
     "extmod/ticks_diff.py",
     "extmod/time_ms_us.py",
-    "extmod/uheapq_timeq.py",
     # unicode char issue
-    "extmod/ujson_loads.py",
+    "extmod/json_loads.py",
     # doesn't output to python stdout
-    "extmod/ure_debug.py",
+    "extmod/re_debug.py",
     "extmod/vfs_basic.py",
     "extmod/vfs_fat_ramdisk.py",
     "extmod/vfs_fat_fileio.py",

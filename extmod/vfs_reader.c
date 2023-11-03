@@ -69,10 +69,10 @@ STATIC void mp_reader_vfs_close(void *data) {
     m_del_obj(mp_reader_vfs_t, reader);
 }
 
-void mp_reader_new_file(mp_reader_t *reader, const char *filename) {
+void mp_reader_new_file(mp_reader_t *reader, qstr filename) {
     mp_reader_vfs_t *rf = m_new_obj(mp_reader_vfs_t);
     mp_obj_t args[2] = {
-        mp_obj_new_str(filename, strlen(filename)),
+        MP_OBJ_NEW_QSTR(filename),
         MP_OBJ_NEW_QSTR(MP_QSTR_rb),
     };
     rf->file = mp_vfs_open(MP_ARRAY_SIZE(args), &args[0], (mp_map_t *)&mp_const_empty_map);

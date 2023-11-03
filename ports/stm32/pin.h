@@ -53,7 +53,7 @@ typedef struct {
     uint32_t pin_mask;
     pin_gpio_t *gpio;
     const pin_af_obj_t *af;
-} pin_obj_t;
+} machine_pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
 extern const mp_obj_type_t pin_af_type;
@@ -61,38 +61,22 @@ extern const mp_obj_type_t pin_af_type;
 // Include all of the individual pin objects
 #include "genhdr/pins.h"
 
-typedef struct {
-    const char *name;
-    const pin_obj_t *pin;
-} pin_named_pin_t;
-
-extern const pin_named_pin_t pin_board_pins[];
-extern const pin_named_pin_t pin_cpu_pins[];
-
-// extern pin_map_obj_t pin_map_obj;
-
-typedef struct {
-    mp_obj_base_t base;
-    qstr name;
-    const pin_named_pin_t *named_pins;
-} pin_named_pins_obj_t;
-
 extern const mp_obj_type_t pin_board_pins_obj_type;
 extern const mp_obj_type_t pin_cpu_pins_obj_type;
 
-extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
-extern const mp_obj_dict_t pin_board_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 MP_DECLARE_CONST_FUN_OBJ_KW(pin_init_obj);
 
 void pin_init0(void);
-uint32_t pin_get_mode(const pin_obj_t *pin);
-uint32_t pin_get_pull(const pin_obj_t *pin);
-uint32_t pin_get_af(const pin_obj_t *pin);
-const pin_obj_t *pin_find(mp_obj_t user_obj);
-const pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
-const pin_af_obj_t *pin_find_af(const pin_obj_t *pin, uint8_t fn, uint8_t unit);
-const pin_af_obj_t *pin_find_af_by_index(const pin_obj_t *pin, mp_uint_t af_idx);
-const pin_af_obj_t *pin_find_af_by_name(const pin_obj_t *pin, const char *name);
+uint32_t pin_get_mode(const machine_pin_obj_t *pin);
+uint32_t pin_get_pull(const machine_pin_obj_t *pin);
+uint32_t pin_get_af(const machine_pin_obj_t *pin);
+const machine_pin_obj_t *pin_find(mp_obj_t user_obj);
+const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
+const pin_af_obj_t *pin_find_af(const machine_pin_obj_t *pin, uint8_t fn, uint8_t unit);
+const pin_af_obj_t *pin_find_af_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
+const pin_af_obj_t *pin_find_af_by_name(const machine_pin_obj_t *pin, const char *name);
 
 #endif // MICROPY_INCLUDED_STM32_PIN_H

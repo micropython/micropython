@@ -36,7 +36,7 @@ import makeqstrdata as qstrutil
 
 # MicroPython constants
 MPY_VERSION = 6
-MPY_SUB_VERSION = 1
+MPY_SUB_VERSION = 2
 MP_CODE_BYTECODE = 2
 MP_CODE_NATIVE_VIPER = 4
 MP_NATIVE_ARCH_X86 = 1
@@ -232,34 +232,20 @@ def extract_qstrs(source_files):
     def read_qstrs(f):
         with open(f) as f:
             vals = set()
-            objs = set()
             for line in f:
-                while line:
-                    m = re.search(r"MP_OBJ_NEW_QSTR\((MP_QSTR_[A-Za-z0-9_]*)\)", line)
-                    if m:
-                        objs.add(m.group(1))
-                    else:
-                        m = re.search(r"MP_QSTR_[A-Za-z0-9_]*", line)
-                        if m:
-                            vals.add(m.group())
-                    if m:
-                        s = m.span()
-                        line = line[: s[0]] + line[s[1] :]
-                    else:
-                        line = ""
-            return vals, objs
+                for m in re.finditer(r"MP_QSTR_[A-Za-z0-9_]*", line):
+                    vals.add(m.group())
+            return vals
 
     static_qstrs = ["MP_QSTR_" + qstrutil.qstr_escape(q) for q in qstrutil.static_qstr_list]
 
     qstr_vals = set()
-    qstr_objs = set()
     for f in source_files:
-        vals, objs = read_qstrs(f)
+        vals = read_qstrs(f)
         qstr_vals.update(vals)
-        qstr_objs.update(objs)
     qstr_vals.difference_update(static_qstrs)
 
-    return static_qstrs, qstr_vals, qstr_objs
+    return static_qstrs, qstr_vals
 
 
 ################################################################################
@@ -471,7 +457,6 @@ def do_relocation_text(env, text_addr, r):
     # Extract relevant info about symbol that's being relocated
     s = r.sym
     s_bind = s.entry["st_info"]["bind"]
-    s_shndx = s.entry["st_shndx"]
     s_type = s.entry["st_info"]["type"]
     r_offset = r["r_offset"] + text_addr
     r_info_type = r["r_info_type"]
@@ -731,7 +716,7 @@ def load_object_file(env, felf):
                 env.unresolved_syms.append(sym)
 
 
-def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
+def link_objects(env, native_qstr_vals_len):
     # Build GOT information
     if env.arch.name == "EM_XTENSA":
         build_got_xtensa(env)
@@ -762,7 +747,7 @@ def link_objects(env, native_qstr_vals_len, native_qstr_objs_len):
     # Create section to contain mp_native_obj_table
     env.obj_table_section = Section(
         ".external.obj_table",
-        bytearray(native_qstr_objs_len * env.arch.word_size),
+        bytearray(0 * env.arch.word_size),  # currently empty
         env.arch.word_size,
     )
 
@@ -900,7 +885,7 @@ class MPYOutput:
             self.write_uint(n)
 
 
-def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
+def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
     # Write jump instruction to start of text
     jump = env.arch.asm_jump(entry_offset)
     env.full_text[: len(jump)] = jump
@@ -928,7 +913,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
     out.write_uint(1 + len(native_qstr_vals))
 
     # MPY: n_obj
-    out.write_uint(len(native_qstr_objs))
+    out.write_uint(0)
 
     # MPY: qstr table
     out.write_qstr(fmpy)  # filename
@@ -936,10 +921,7 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
         out.write_qstr(q)
 
     # MPY: object table
-    for q in native_qstr_objs:
-        out.write_bytes(bytearray([MP_PERSISTENT_OBJ_STR]))
-        out.write_uint(len(q))
-        out.write_bytes(bytes(q, "utf8") + b"\x00")
+    # <empty>
 
     # MPY: kind/len
     out.write_uint(len(env.full_text) << 3 | (MP_CODE_NATIVE_VIPER - MP_CODE_BYTECODE))
@@ -966,11 +948,15 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals, native_qstr_objs):
         out.write_bytes(env.full_rodata)
 
     # MPY: relocation information
+    # See py/persistentcode.c:mp_native_relocate for meaning of the `kind` integer values.
     prev_kind = None
+    prev_base = None
+    prev_offset = None
+    prev_n = None
     for base, addr, kind in env.mpy_relocs:
         if isinstance(kind, str) and kind.startswith(".text"):
             kind = 0
-        elif kind in (".rodata", ".data.rel.ro"):
+        elif isinstance(kind, str) and kind.startswith((".rodata", ".data.rel.ro")):
             if env.arch.separate_rodata:
                 kind = rodata_const_table_idx
             else:
@@ -1014,7 +1000,7 @@ def do_preprocess(args):
     if args.output is None:
         assert args.files[0].endswith(".c")
         args.output = args.files[0][:-1] + "config.h"
-    static_qstrs, qstr_vals, qstr_objs = extract_qstrs(args.files)
+    static_qstrs, qstr_vals = extract_qstrs(args.files)
     with open(args.output, "w") as f:
         print(
             "#include <stdint.h>\n"
@@ -1027,11 +1013,6 @@ def do_preprocess(args):
             print("#define %s (%u)" % (q, i + 1), file=f)
         for i, q in enumerate(sorted(qstr_vals)):
             print("#define %s (mp_native_qstr_table[%d])" % (q, i + 1), file=f)
-        for i, q in enumerate(sorted(qstr_objs)):
-            print(
-                "#define MP_OBJ_NEW_QSTR_%s ((mp_obj_t)mp_native_obj_table[%d])" % (q, i),
-                file=f,
-            )
         print("extern const uint16_t mp_native_qstr_table[];", file=f)
         print("extern const mp_uint_t mp_native_obj_table[];", file=f)
 
@@ -1041,25 +1022,19 @@ def do_link(args):
         assert args.files[0].endswith(".o")
         args.output = args.files[0][:-1] + "mpy"
     native_qstr_vals = []
-    native_qstr_objs = []
     if args.qstrs is not None:
         with open(args.qstrs) as f:
             for l in f:
                 m = re.match(r"#define MP_QSTR_([A-Za-z0-9_]*) \(mp_native_", l)
                 if m:
                     native_qstr_vals.append(m.group(1))
-                else:
-                    m = re.match(r"#define MP_OBJ_NEW_QSTR_MP_QSTR_([A-Za-z0-9_]*)", l)
-                    if m:
-                        native_qstr_objs.append(m.group(1))
     log(LOG_LEVEL_2, "qstr vals: " + ", ".join(native_qstr_vals))
-    log(LOG_LEVEL_2, "qstr objs: " + ", ".join(native_qstr_objs))
     env = LinkEnv(args.arch)
     try:
         for file in args.files:
             load_object_file(env, file)
-        link_objects(env, len(native_qstr_vals), len(native_qstr_objs))
-        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals, native_qstr_objs)
+        link_objects(env, len(native_qstr_vals))
+        build_mpy(env, env.find_addr("mpy_init"), args.output, native_qstr_vals)
     except LinkError as er:
         print("LinkError:", er.args[0])
         sys.exit(1)

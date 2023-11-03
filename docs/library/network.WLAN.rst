@@ -133,4 +133,20 @@ Methods
    hostname       The hostname that will be sent to DHCP (STA interfaces) and mDNS (if supported, both STA and AP). (Deprecated, use :func:`network.hostname` instead)
    reconnects     Number of reconnect attempts to make (integer, 0=none, -1=unlimited)
    txpower        Maximum transmit power in dBm (integer or float)
+   pm             WiFi Power Management setting (see below for allowed values)
    =============  ===========
+
+Constants
+---------
+
+.. data:: WLAN.PM_PERFORMANCE
+        WLAN.PM_POWERSAVE
+        WLAN.PM_NONE
+
+    Allowed values for the ``WLAN.config(pm=...)`` network interface parameter:
+
+        * ``PM_PERFORMANCE``: enable WiFi power management to balance power
+          savings and WiFi performance
+        * ``PM_POWERSAVE``: enable WiFi power management with additional power
+          savings and reduced WiFi performance
+        * ``PM_NONE``: disable wifi power management

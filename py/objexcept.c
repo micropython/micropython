@@ -178,7 +178,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
             return;
         }
 
-        #if MICROPY_PY_UERRNO
+        #if MICROPY_PY_ERRNO
         // try to provide a nice OSError error message
         if (o->base.type == &mp_type_OSError && o->args->len > 0 && o->args->len < 3 && mp_obj_is_small_int(o->args->items[0])) {
             qstr qst = mp_errno_to_str(o->args->items[0]);
@@ -217,7 +217,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     mp_obj_tuple_t *o_tuple;
     if (n_args == 0) {
-        // No args, can use the empty tuple straightaway
+        // No args, can use the empty tuple straight away
         o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
     } else {
         // Try to allocate memory for the tuple containing the args

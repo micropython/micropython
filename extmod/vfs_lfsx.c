@@ -323,7 +323,7 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
         size_t from = 1;
         char *cwd = vstr_str(&self->cur_dir);
         while (from < CWD_LEN) {
-            for (; cwd[from] == '/' && from < CWD_LEN; ++from) {
+            for (; from < CWD_LEN && cwd[from] == '/'; ++from) {
                 // Scan for the start
             }
             if (from > to) {
@@ -331,7 +331,7 @@ STATIC mp_obj_t MP_VFS_LFSx(chdir)(mp_obj_t self_in, mp_obj_t path_in) {
                 vstr_cut_out_bytes(&self->cur_dir, to, from - to);
                 from = to;
             }
-            for (; cwd[from] != '/' && from < CWD_LEN; ++from) {
+            for (; from < CWD_LEN && cwd[from] != '/'; ++from) {
                 // Scan for the next /
             }
             if ((from - to) == 1 && cwd[to] == '.') {

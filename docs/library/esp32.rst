@@ -44,10 +44,6 @@ Functions
 
     Read the raw value of the internal temperature sensor, returning an integer.
 
-.. function:: hall_sensor()
-
-    Read the raw value of the internal Hall sensor, returning an integer.
-
 .. function:: idf_heap_info(capabilities)
 
     Returns information about the ESP-IDF heap memory regions. One of them contains
@@ -55,8 +51,6 @@ Functions
     buffers and other data. This data is useful to get a sense of how much memory
     is available to ESP-IDF and the networking stack in particular. It may shed
     some light on situations where ESP-IDF operations fail due to allocation failures.
-    The information returned is *not* useful to troubleshoot Python allocation failures,
-    use `micropython.mem_info()` instead.
 
     The capabilities parameter corresponds to ESP-IDF's ``MALLOC_CAP_XXX`` values but the
     two most useful ones are predefined as `esp32.HEAP_DATA` for data heap regions and
@@ -71,6 +65,21 @@ Functions
         >>> import esp32; esp32.idf_heap_info(esp32.HEAP_DATA)
         [(240, 0, 0, 0), (7288, 0, 0, 0), (16648, 4, 4, 4), (79912, 35712, 35512, 35108),
          (15072, 15036, 15036, 15036), (113840, 0, 0, 0)]
+
+    .. note:: Free IDF heap memory in the `esp32.HEAP_DATA` region is available
+       to be automatically added to the MicroPython heap to prevent a
+       MicroPython allocation from failing. However, the information returned
+       here is otherwise *not* useful to troubleshoot Python allocation
+       failures. :func:`micropython.mem_info()` and :func:`gc.mem_free()` should
+       be used instead:
+
+       The "max new split" value in :func:`micropython.mem_info()` output
+       corresponds to the largest free block of ESP-IDF heap that could be
+       automatically added on demand to the MicroPython heap.
+
+       The result of :func:`gc.mem_free()` is the total of the current "free"
+       and "max new split" values printed by :func:`micropython.mem_info()`.
+
 
 Flash partitions
 ----------------
@@ -111,6 +120,11 @@ methods to enable over-the-air (OTA) updates.
 
     Sets the partition as the boot partition.
 
+    .. note:: Do not enter :func:`deepsleep<machine.deepsleep>` after changing
+       the OTA boot partition, without first performing a hard
+       :func:`reset<machine.reset>` or power cycle. This ensures the bootloader
+       will validate the new image before booting.
+
 .. method:: Partition.get_next_update()
 
     Gets the next update partition after this one, and returns a new Partition object.
@@ -126,7 +140,7 @@ methods to enable over-the-air (OTA) updates.
     and  an ``OSError(-261)`` is raised if called on firmware that doesn't have the
     feature enabled.
     It is OK to call ``mark_app_valid_cancel_rollback`` on every boot and it is not
-    necessary when booting firmare that was loaded using esptool.
+    necessary when booting firmware that was loaded using esptool.
 
 Constants
 ~~~~~~~~~
@@ -278,6 +292,14 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 
 Ultra-Low-Power co-processor
 ----------------------------
+
+This class gives access to the Ultra Low Power (ULP) co-processor on the ESP32,
+ESP32-S2 and ESP32-S3 chips.
+
+.. warning::
+
+    This class does not provide access to the RISCV ULP co-processor available
+    on the ESP32-S2 and ESP32-S3 chips.
 
 .. class:: ULP()
 

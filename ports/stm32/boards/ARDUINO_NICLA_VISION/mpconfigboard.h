@@ -130,14 +130,10 @@ void NICLAV_board_osc_enable(int enable);
 // SPI flash #1, block device config
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
-#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
-    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
-    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
-    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-    )
-#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
-#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
-#define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH            (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH_CONFIG     (&spiflash_config)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
+#define MICROPY_HW_BDEV_SPIFLASH_EXTENDED   (&spi_bdev)
 #endif
 
 // 4 wait states
@@ -156,7 +152,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_LPUART1_TX       (pin_A9)
 #define MICROPY_HW_LPUART1_RX       (pin_A10)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B8)
 #define MICROPY_HW_I2C1_SDA         (pin_B9)
 
@@ -184,9 +180,9 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_CAN_IS_RESERVED(id) (id != PYB_CAN_1)
 
 // LEDs
-#define MICROPY_HW_LED1             (pyb_pin_LEDR) // red
-#define MICROPY_HW_LED2             (pyb_pin_LEDG) // green
-#define MICROPY_HW_LED3             (pyb_pin_LEDB) // yellow
+#define MICROPY_HW_LED1             (pyb_pin_LED_RED) // red
+#define MICROPY_HW_LED2             (pyb_pin_LED_GREEN) // green
+#define MICROPY_HW_LED3             (pyb_pin_LED_BLUE) // yellow
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 

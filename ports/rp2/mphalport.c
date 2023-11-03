@@ -39,6 +39,10 @@
 #include "lib/cyw43-driver/src/cyw43.h"
 #endif
 
+// This needs to be added to the result of time_us_64() to get the number of
+// microseconds since the Epoch.
+STATIC uint64_t time_us_64_offset_from_epoch;
+
 #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
@@ -109,7 +113,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     }
     #endif
     #if MICROPY_PY_OS_DUPTERM
-    ret |= mp_uos_dupterm_poll(poll_flags);
+    ret |= mp_os_dupterm_poll(poll_flags);
     #endif
     return ret;
 }
@@ -126,7 +130,7 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         #if MICROPY_PY_OS_DUPTERM
-        int dupterm_c = mp_uos_dupterm_rx_chr();
+        int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
             return dupterm_c;
         }
@@ -164,7 +168,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     #endif
 
     #if MICROPY_PY_OS_DUPTERM
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
     #endif
 }
 
@@ -176,11 +180,28 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     }
 }
 
-uint64_t mp_hal_time_ns(void) {
+void mp_hal_time_ns_set_from_rtc(void) {
+    // Delay at least one RTC clock cycle so it's registers have updated with the most
+    // recent time settings.
+    sleep_us(23);
+
+    // Sample RTC and time_us_64() as close together as possible, so the offset
+    // calculated for the latter can be as accurate as possible.
     datetime_t t;
     rtc_get_datetime(&t);
+    uint64_t us = time_us_64();
+
+    // Calculate the difference between the RTC Epoch seconds and time_us_64().
     uint64_t s = timeutils_seconds_since_epoch(t.year, t.month, t.day, t.hour, t.min, t.sec);
-    return s * 1000000000ULL;
+    time_us_64_offset_from_epoch = (uint64_t)s * 1000000ULL - us;
+}
+
+uint64_t mp_hal_time_ns(void) {
+    // The RTC only has seconds resolution, so instead use time_us_64() to get a more
+    // precise measure of Epoch time.  Both these "clocks" are clocked from the same
+    // source so they remain synchronised, and only differ by a fixed offset (calculated
+    // in mp_hal_time_ns_set_from_rtc).
+    return (time_us_64_offset_from_epoch + time_us_64()) * 1000ULL;
 }
 
 // Generate a random locally administered MAC address (LAA)
@@ -204,10 +225,12 @@ MP_WEAK void mp_hal_get_mac(int idx, uint8_t buf[6]) {
     // The mac should come from cyw43 otp when CYW43_USE_OTP_MAC is defined
     // This is loaded into the state after the driver is initialised
     // cyw43_hal_generate_laa_mac is only called by the driver to generate a mac if otp is not set
-    memcpy(buf, cyw43_state.mac, 6);
-    #else
-    mp_hal_generate_laa_mac(idx, buf);
+    if (idx == MP_HAL_MAC_WLAN0) {
+        memcpy(buf, cyw43_state.mac, 6);
+        return;
+    }
     #endif
+    mp_hal_generate_laa_mac(idx, buf);
 }
 
 void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {

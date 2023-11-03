@@ -56,16 +56,21 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
 
-MAKE_PIN_AF = boards/make-pin-table.py
-PIN_AF_TABLE_CSV = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
+MAKE_PINS = boards/make-pins.py
 BOARD_PINS = $(BOARD_DIR)/pins.csv
-GEN_PIN_AF = pin_af_table.c
+PREFIX_FILE = boards/pins_prefix.c
+AF_FILE = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 
 CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
 CFLAGS += $(CFLAGS_EXTRA)
 
+CFLAGS += -DMICROPY_HW_CODESIZE=$(MICROPY_HW_CODESIZE)
+
 LDFLAGS += -nostdlib $(addprefix -T,$(LD_FILES)) -Map=$@.map --cref
+LDFLAGS += --defsym=_codesize=$(MICROPY_HW_CODESIZE)
 
 LIBS += $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -75,7 +80,7 @@ ifeq ($(DEBUG),1)
 CFLAGS += -O0
 else
 CFLAGS += -Os -DNDEBUG
-LDFLAGS += --gc-sections
+LDFLAGS += --gc-sections --print-memory-usage
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 
@@ -93,17 +98,13 @@ MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 SRC_C += \
 	mcu/$(MCU_SERIES_LOWER)/clock_config.c \
 	help.c \
-	machine_adc.c \
 	machine_bitstream.c \
 	machine_dac.c \
 	machine_i2c.c \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_spi.c \
-	machine_uart.c \
-	machine_wdt.c \
 	main.c \
-	modutime.c \
 	modmachine.c \
 	modsamd.c \
 	mphalport.c \
@@ -111,10 +112,13 @@ SRC_C += \
 	pin_af.c \
 	samd_flash.c \
 	samd_isr.c \
+	samd_qspiflash.c \
 	samd_soc.c \
+	samd_spiflash.c \
 	tusb_port.c \
 
 SHARED_SRC_C += \
+	drivers/dht/dht.c \
 	shared/runtime/mpirq.c \
 	shared/libc/printf.c \
 	shared/libc/string0.c \
@@ -135,10 +139,33 @@ ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
 	)
 
 LIBM_SRC_C += $(addprefix lib/libm/,\
+	acoshf.c \
+	asinfacosf.c \
+	asinhf.c \
+	atan2f.c \
+	atanf.c \
+	atanhf.c \
+	ef_rem_pio2.c \
 	ef_sqrt.c \
+	erf_lgamma.c \
 	fmodf.c \
+	kf_cos.c \
+	kf_rem_pio2.c \
+	kf_sin.c \
+	kf_tan.c \
+	log1pf.c \
 	math.c \
 	nearbyintf.c \
+	roundf.c \
+	sf_cos.c \
+	sf_erf.c \
+	sf_frexp.c \
+	sf_ldexp.c \
+	sf_modf.c \
+	sf_sin.c \
+	sf_tan.c \
+	wf_lgamma.c \
+	wf_tgamma.c \
 	)
 
 TINYUSB_SRC_C += $(addprefix lib/tinyusb/src/,\
@@ -154,7 +181,7 @@ DRIVERS_SRC_C += \
 	drivers/bus/softspi.c \
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX) $(GEN_PINS_SRC)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -165,19 +192,13 @@ OBJ += $(addprefix $(BUILD)/, $(ASF4_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-endif
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 all: $(BUILD)/firmware.uf2
 
 $(BUILD)/firmware.elf: $(OBJ)
 	$(ECHO) "LINK $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIBS)
-	$(Q)$(SIZE) $@
 
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -O binary -j .isr_vector -j .text -j .data $^ $(BUILD)/firmware.bin
@@ -185,10 +206,14 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
 
-pin_af.c: $(BUILD)/$(GEN_PIN_AF) | $(HEADER_BUILD)
+# pin_af.c: $(BUILD)/$(GEN_PIN_AF) | $(HEADER_BUILD)
 
-$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV) $(BOARD_PINS) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --board $(BOARD_PINS) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
+# Use a pattern rule here so that make will only call make-pins.py once to make
+# both pins_$(BOARD).c and pins.h
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
+	    --mcu $(MCU_SERIES)
 
 include $(TOP)/py/mkrules.mk

@@ -26,8 +26,8 @@ FROZEN_MANIFEST ?= variants/manifest.py
 PROG ?= micropython
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = ../unix/qstrdefsport.h
-QSTR_GLOBAL_DEPENDENCIES = $(VARIANT_DIR)/mpconfigvariant.h
+QSTR_DEFS += ../unix/qstrdefsport.h
+QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -57,7 +57,6 @@ SRC_C = \
 	ports/unix/main.c \
 	ports/unix/input.c \
 	ports/unix/modmachine.c \
-	ports/unix/modtime.c \
 	ports/unix/gccollect.c \
 	windows_mphal.c \
 	realpath.c \
@@ -83,12 +82,9 @@ LIB += -lws2_32
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
 
 ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool -DMICROPY_MODULE_FROZEN_MPY=1 -DMPZ_DIG_SIZE=16
+CFLAGS += -DMPZ_DIG_SIZE=16
 endif
 
 CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))

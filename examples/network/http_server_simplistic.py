@@ -1,9 +1,6 @@
 # Do not use this code in real projects! Read
 # http_server_simplistic_commented.py for details.
-try:
-    import usocket as socket
-except:
-    import socket
+import socket
 
 
 CONTENT = b"""\
@@ -28,7 +25,6 @@ def main():
     while True:
         res = s.accept()
         client_s = res[0]
-        client_addr = res[1]
         req = client_s.recv(4096)
         print("Request:")
         print(req)

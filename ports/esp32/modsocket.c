@@ -46,7 +46,6 @@
 #include "py/stream.h"
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
-#include "mdns.h"
 #include "modnetwork.h"
 
 #include "lwip/sockets.h"
@@ -58,6 +57,10 @@
 #define SOCKET_POLL_US (100000)
 #define MDNS_QUERY_TIMEOUT_MS (5000)
 #define MDNS_LOCAL_SUFFIX ".local"
+
+#ifndef NO_QSTR
+#include "mdns.h"
+#endif
 
 enum {
     SOCKET_STATE_NEW,
@@ -73,7 +76,7 @@ typedef struct _socket_obj_t {
     uint8_t proto;
     uint8_t state;
     unsigned int retries;
-    #if MICROPY_PY_USOCKET_EVENTS
+    #if MICROPY_PY_SOCKET_EVENTS
     mp_obj_t events_callback;
     struct _socket_obj_t *events_next;
     #endif
@@ -81,28 +84,28 @@ typedef struct _socket_obj_t {
 
 void _socket_settimeout(socket_obj_t *sock, uint64_t timeout_ms);
 
-#if MICROPY_PY_USOCKET_EVENTS
+#if MICROPY_PY_SOCKET_EVENTS
 // Support for callbacks on asynchronous socket events (when socket becomes readable)
 
 // This divisor is used to reduce the load on the system, so it doesn't poll sockets too often
 #define USOCKET_EVENTS_DIVISOR (8)
 
-STATIC uint8_t usocket_events_divisor;
-STATIC socket_obj_t *usocket_events_head;
+STATIC uint8_t socket_events_divisor;
+STATIC socket_obj_t *socket_events_head;
 
-void usocket_events_deinit(void) {
-    usocket_events_head = NULL;
+void socket_events_deinit(void) {
+    socket_events_head = NULL;
 }
 
 // Assumes the socket is not already in the linked list, and adds it
-STATIC void usocket_events_add(socket_obj_t *sock) {
-    sock->events_next = usocket_events_head;
-    usocket_events_head = sock;
+STATIC void socket_events_add(socket_obj_t *sock) {
+    sock->events_next = socket_events_head;
+    socket_events_head = sock;
 }
 
 // Assumes the socket is already in the linked list, and removes it
-STATIC void usocket_events_remove(socket_obj_t *sock) {
-    for (socket_obj_t **s = &usocket_events_head;; s = &(*s)->events_next) {
+STATIC void socket_events_remove(socket_obj_t *sock) {
+    for (socket_obj_t **s = &socket_events_head;; s = &(*s)->events_next) {
         if (*s == sock) {
             *s = (*s)->events_next;
             return;
@@ -111,20 +114,20 @@ STATIC void usocket_events_remove(socket_obj_t *sock) {
 }
 
 // Polls all registered sockets for readability and calls their callback if they are readable
-void usocket_events_handler(void) {
-    if (usocket_events_head == NULL) {
+void socket_events_handler(void) {
+    if (socket_events_head == NULL) {
         return;
     }
-    if (--usocket_events_divisor) {
+    if (--socket_events_divisor) {
         return;
     }
-    usocket_events_divisor = USOCKET_EVENTS_DIVISOR;
+    socket_events_divisor = USOCKET_EVENTS_DIVISOR;
 
     fd_set rfds;
     FD_ZERO(&rfds);
     int max_fd = 0;
 
-    for (socket_obj_t *s = usocket_events_head; s != NULL; s = s->events_next) {
+    for (socket_obj_t *s = socket_events_head; s != NULL; s = s->events_next) {
         FD_SET(s->fd, &rfds);
         max_fd = MAX(max_fd, s->fd);
     }
@@ -137,14 +140,14 @@ void usocket_events_handler(void) {
     }
 
     // Call the callbacks
-    for (socket_obj_t *s = usocket_events_head; s != NULL; s = s->events_next) {
+    for (socket_obj_t *s = socket_events_head; s != NULL; s = s->events_next) {
         if (FD_ISSET(s->fd, &rfds)) {
             mp_call_function_1_protected(s->events_callback, s);
         }
     }
 }
 
-#endif // MICROPY_PY_USOCKET_EVENTS
+#endif // MICROPY_PY_SOCKET_EVENTS
 
 static inline void check_for_exceptions(void) {
     mp_handle_pending(true);
@@ -164,11 +167,7 @@ static int _socket_getaddrinfo3(const char *nodename, const char *servname,
         memcpy(nodename_no_local, nodename, nodename_len - local_len);
         nodename_no_local[nodename_len - local_len] = '\0';
 
-        #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-        struct ip4_addr addr = {0};
-        #else
         esp_ip4_addr_t addr = {0};
-        #endif
 
         esp_err_t err = mdns_query_a(nodename_no_local, MDNS_QUERY_TIMEOUT_MS, &addr);
         if (err != ESP_OK) {
@@ -299,7 +298,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_bind_obj, socket_bind);
 STATIC mp_obj_t socket_listen(size_t n_args, const mp_obj_t *args) {
     socket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
-    int backlog = MICROPY_PY_USOCKET_LISTEN_BACKLOG_DEFAULT;
+    int backlog = MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT;
     if (n_args > 1) {
         backlog = mp_obj_get_int(args[1]);
         backlog = (backlog < 0) ? 0 : backlog;
@@ -387,7 +386,8 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
 
     switch (opt) {
         // level: SOL_SOCKET
-        case SO_REUSEADDR: {
+        case SO_REUSEADDR:
+        case SO_BROADCAST: {
             int val = mp_obj_get_int(args[3]);
             int ret = lwip_setsockopt(self->fd, SOL_SOCKET, opt, &val, sizeof(int));
             if (ret != 0) {
@@ -396,18 +396,30 @@ STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             break;
         }
 
-            #if MICROPY_PY_USOCKET_EVENTS
+        case SO_BINDTODEVICE: {
+            size_t len;
+            const char *val = mp_obj_str_get_data(args[3], &len);
+            char ifname[NETIF_NAMESIZE] = {0};
+            memcpy(&ifname, val, len);
+            int ret = lwip_setsockopt(self->fd, SOL_SOCKET, opt, &ifname, NETIF_NAMESIZE);
+            if (ret != 0) {
+                mp_raise_OSError(errno);
+            }
+            break;
+        }
+
+            #if MICROPY_PY_SOCKET_EVENTS
         // level: SOL_SOCKET
         // special "register callback" option
         case 20: {
             if (args[3] == mp_const_none) {
                 if (self->events_callback != MP_OBJ_NULL) {
-                    usocket_events_remove(self);
+                    socket_events_remove(self);
                     self->events_callback = MP_OBJ_NULL;
                 }
             } else {
                 if (self->events_callback == MP_OBJ_NULL) {
-                    usocket_events_add(self);
+                    socket_events_add(self);
                 }
                 self->events_callback = args[3];
             }
@@ -734,9 +746,9 @@ STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
         return ret;
     } else if (request == MP_STREAM_CLOSE) {
         if (socket->fd >= 0) {
-            #if MICROPY_PY_USOCKET_EVENTS
+            #if MICROPY_PY_SOCKET_EVENTS
             if (socket->events_callback != MP_OBJ_NULL) {
-                usocket_events_remove(socket);
+                socket_events_remove(socket);
                 socket->events_callback = MP_OBJ_NULL;
             }
             #endif
@@ -836,7 +848,7 @@ STATIC mp_obj_t esp_socket_initialize() {
     static int initialized = 0;
     if (!initialized) {
         ESP_LOGI("modsocket", "Initializing");
-        tcpip_adapter_init();
+        esp_netif_init();
         initialized = 1;
     }
     return mp_const_none;
@@ -844,7 +856,7 @@ STATIC mp_obj_t esp_socket_initialize() {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_socket_initialize_obj, esp_socket_initialize);
 
 STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_usocket) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_socket) },
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_socket_initialize_obj) },
     { MP_ROM_QSTR(MP_QSTR_socket), MP_ROM_PTR(&socket_type) },
     { MP_ROM_QSTR(MP_QSTR_getaddrinfo), MP_ROM_PTR(&esp_socket_getaddrinfo_obj) },
@@ -859,17 +871,19 @@ STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(IPPROTO_IP) },
     { MP_ROM_QSTR(MP_QSTR_SOL_SOCKET), MP_ROM_INT(SOL_SOCKET) },
     { MP_ROM_QSTR(MP_QSTR_SO_REUSEADDR), MP_ROM_INT(SO_REUSEADDR) },
+    { MP_ROM_QSTR(MP_QSTR_SO_BROADCAST), MP_ROM_INT(SO_BROADCAST) },
+    { MP_ROM_QSTR(MP_QSTR_SO_BINDTODEVICE), MP_ROM_INT(SO_BINDTODEVICE) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_socket_globals, mp_module_socket_globals_table);
 
-const mp_obj_module_t mp_module_usocket = {
+const mp_obj_module_t mp_module_socket = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_socket_globals,
 };
 
-// Note: This port doesn't define MICROPY_PY_USOCKET or MICROPY_PY_LWIP so
+// Note: This port doesn't define MICROPY_PY_SOCKET or MICROPY_PY_LWIP so
 // this will not conflict with the common implementation provided by
-// extmod/mod{lwip,usocket}.c.
-MP_REGISTER_MODULE(MP_QSTR_usocket, mp_module_usocket);
+// extmod/mod{lwip,socket}.c.
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_socket, mp_module_socket);

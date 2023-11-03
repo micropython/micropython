@@ -28,13 +28,6 @@
 
 #include "py/obj.h"
 
-extern const mp_obj_type_t machine_adc_type;
-extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_i2c_type;
-extern const mp_obj_type_t machine_i2s_type;
-extern const mp_obj_type_t machine_spi_type;
-extern const mp_obj_type_t machine_timer_type;
-
 void machine_init(void);
 void machine_deinit(void);
 void machine_i2s_init0();
@@ -49,6 +42,7 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_idle_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj);
+MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_cause_obj);
 
 MP_DECLARE_CONST_FUN_OBJ_0(machine_disable_irq_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_enable_irq_obj);

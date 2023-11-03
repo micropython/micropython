@@ -40,6 +40,11 @@
 
 #include "py/smallint.h"
 
+// makeqstrdata.py has a fixed list of qstrs at the start that we can assume
+// are available with know indices on all MicroPython implementations, and
+// avoid needing to duplicate the string data in the .mpy file. This is the
+// last one in that list (anything with a qstr less than or equal to this is
+// assumed to be in the list).
 #define QSTR_LAST_STATIC MP_QSTR_zip
 
 #if MICROPY_DYNAMIC_COMPILER
@@ -391,6 +396,10 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 }
 
 void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
+    // Set exception handler to close the reader if an exception is raised.
+    MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, reader->close, reader->data);
+    nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
+
     byte header[4];
     read_bytes(reader, header, sizeof(header));
     byte arch = MPY_FEATURE_DECODE_ARCH(header[2]);
@@ -435,7 +444,8 @@ void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *cm) {
     cm->n_obj = n_obj;
     #endif
 
-    reader->close(reader->data);
+    // Deregister exception handler and close the reader.
+    nlr_pop_jump_callback(true);
 }
 
 void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *context) {
@@ -446,7 +456,7 @@ void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *con
 
 #if MICROPY_HAS_FILE_READER
 
-void mp_raw_code_load_file(const char *filename, mp_compiled_module_t *context) {
+void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *context) {
     mp_reader_t reader;
     mp_reader_new_file(&reader, filename);
     mp_raw_code_load(&reader, context);
@@ -633,12 +643,12 @@ STATIC void fd_print_strn(void *env, const char *str, size_t len) {
     (void)ret;
 }
 
-void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename) {
+void mp_raw_code_save_file(mp_compiled_module_t *cm, qstr filename) {
     MP_THREAD_GIL_EXIT();
-    int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    int fd = open(qstr_str(filename), O_WRONLY | O_CREAT | O_TRUNC, 0644);
     MP_THREAD_GIL_ENTER();
     if (fd < 0) {
-        mp_raise_OSError_with_filename(errno, filename);
+        mp_raise_OSError_with_filename(errno, qstr_str(filename));
     }
     mp_print_t fd_print = {(void *)(intptr_t)fd, fd_print_strn};
     mp_raw_code_save(cm, &fd_print);

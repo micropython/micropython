@@ -1,4 +1,4 @@
-import utime
+import time
 import machine
 from hwconfig import LED, BUTTON
 
@@ -18,4 +18,4 @@ while 1:
         print("Well, you're *really* slow")
     else:
         print("You are as slow as %d microseconds!" % delay)
-    utime.sleep_ms(10)
+    time.sleep_ms(10)

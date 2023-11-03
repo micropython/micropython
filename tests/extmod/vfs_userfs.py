@@ -1,21 +1,21 @@
 # test VFS functionality with a user-defined filesystem
-# also tests parts of uio.IOBase implementation
+# also tests parts of io.IOBase implementation
 
-import usys
+import sys
 
 try:
-    import uio
+    import io
 
-    uio.IOBase
-    import uos
+    io.IOBase
+    import os
 
-    uos.mount
+    os.mount
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
 
-class UserFile(uio.IOBase):
+class UserFile(io.IOBase):
     def __init__(self, mode, data):
         assert isinstance(data, bytes)
         self.is_text = mode.find("b") == -1
@@ -68,17 +68,31 @@ user_files = {
     "/data.txt": b"some data in a text file",
     "/usermod1.py": b"print('in usermod1')\nimport usermod2",
     "/usermod2.py": b"print('in usermod2')",
+    "/usermod3.py": b"syntax error",
+    "/usermod4.mpy": b"syntax error",
 }
-uos.mount(UserFS(user_files), "/userfs")
+os.mount(UserFS(user_files), "/userfs")
 
 # open and read a file
 f = open("/userfs/data.txt")
 print(f.read())
 
 # import files from the user filesystem
-usys.path.append("/userfs")
+sys.path.append("/userfs")
 import usermod1
 
+# import a .py file with a syntax error (file should be closed on error)
+try:
+    import usermod3
+except SyntaxError:
+    print("SyntaxError in usermod3")
+
+# import a .mpy file with a syntax error (file should be closed on error)
+try:
+    import usermod4
+except ValueError:
+    print("ValueError in usermod4")
+
 # unmount and undo path addition
-uos.umount("/userfs")
-usys.path.pop()
+os.umount("/userfs")
+sys.path.pop()

@@ -98,8 +98,8 @@ static inline void restore_irq_pri(uint32_t state) {
 //
 // The default priority grouping is set to NVIC_PRIORITYGROUP_4 in the
 // HAL_Init function. This corresponds to 4 bits for the priority field
-// and 0 bits for the sub-priority field (which means that for all intensive
-// purposes that the sub-priorities below are ignored).
+// and 0 bits for the sub-priority field (which means that for all intents
+// and purposes, the sub-priorities below are ignored).
 //
 // While a given interrupt is being processed, only higher priority (lower number)
 // interrupts will preempt a given interrupt. If sub-priorities are active
@@ -154,6 +154,8 @@ static inline void restore_irq_pri(uint32_t state) {
 #define IRQ_PRI_TIM5            NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 6, 0)
 
 #define IRQ_PRI_CAN             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 7, 0)
+
+#define IRQ_PRI_SUBGHZ_RADIO    NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 8, 0)
 
 #define IRQ_PRI_SPI             NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 8, 0)
 

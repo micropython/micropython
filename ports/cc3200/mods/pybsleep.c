@@ -160,13 +160,13 @@ void pyb_sleep_init0 (void) {
     // register and enable the PRCM interrupt
     osi_InterruptRegister(INT_PRCM, (P_OSI_INTR_ENTRY)PRCMInterruptHandler, INT_PRIORITY_LVL_1);
 
-    // disable all LPDS and hibernate wake up sources (WLAN is disabed/enabled before entering LDPS mode)
+    // disable all LPDS and hibernate wake up sources (WLAN is disabled/enabled before entering LDPS mode)
     MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_GPIO);
     MAP_PRCMLPDSWakeupSourceDisable(PRCM_LPDS_TIMER);
     MAP_PRCMHibernateWakeupSourceDisable(PRCM_HIB_SLOW_CLK_CTR | PRCM_HIB_GPIO2  | PRCM_HIB_GPIO4  | PRCM_HIB_GPIO13 |
                                          PRCM_HIB_GPIO17       | PRCM_HIB_GPIO11 | PRCM_HIB_GPIO24 | PRCM_HIB_GPIO26);
 
-    // check the reset casue (if it's soft reset, leave it as it is)
+    // check the reset cause (if it's soft reset, leave it as it is)
     if (pybsleep_reset_cause != PYB_SLP_SOFT_RESET) {
         switch (MAP_PRCMSysResetCauseGet()) {
         case PRCM_POWER_ON:

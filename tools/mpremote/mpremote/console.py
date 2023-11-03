@@ -172,5 +172,5 @@ else:
     try:
         set_conout_mode(mode, mask)
         VT_ENABLED = True
-    except WindowsError as e:
+    except WindowsError:
         VT_ENABLED = False

@@ -106,6 +106,7 @@ int main(int argc, char **argv) {
     };
     rtc_init();
     rtc_set_datetime(&t);
+    mp_hal_time_ns_set_from_rtc();
 
     // Initialise stack extents and GC heap.
     mp_stack_set_top(&__StackTop);
@@ -122,7 +123,7 @@ int main(int argc, char **argv) {
     #endif
     #endif
 
-    #if MICROPY_PY_NETWORK_CYW43
+    #if MICROPY_PY_NETWORK_CYW43 || MICROPY_PY_BLUETOOTH_CYW43
     {
         cyw43_init(&cyw43_state);
         cyw43_irq_init();
@@ -178,7 +179,7 @@ int main(int argc, char **argv) {
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }
-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
             ret = pyexec_file_if_exists("main.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
@@ -206,6 +207,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_BLUETOOTH
         mp_bluetooth_deinit();
         #endif
+        machine_pwm_deinit_all();
         machine_pin_deinit();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
@@ -259,40 +261,3 @@ uint32_t rosc_random_u32(void) {
     }
     return value;
 }
-
-const char rp2_help_text[] =
-    "Welcome to MicroPython!\n"
-    "\n"
-    "For online help please visit https://micropython.org/help/.\n"
-    "\n"
-    "For access to the hardware use the 'machine' module.  RP2 specific commands\n"
-    "are in the 'rp2' module.\n"
-    "\n"
-    "Quick overview of some objects:\n"
-    "  machine.Pin(pin) -- get a pin, eg machine.Pin(0)\n"
-    "  machine.Pin(pin, m, [p]) -- get a pin and configure it for IO mode m, pull mode p\n"
-    "    methods: init(..), value([v]), high(), low(), irq(handler)\n"
-    "  machine.ADC(pin) -- make an analog object from a pin\n"
-    "    methods: read_u16()\n"
-    "  machine.PWM(pin) -- make a PWM object from a pin\n"
-    "    methods: deinit(), freq([f]), duty_u16([d]), duty_ns([d])\n"
-    "  machine.I2C(id) -- create an I2C object (id=0,1)\n"
-    "    methods: readfrom(addr, buf, stop=True), writeto(addr, buf, stop=True)\n"
-    "             readfrom_mem(addr, memaddr, arg), writeto_mem(addr, memaddr, arg)\n"
-    "  machine.SPI(id, baudrate=1000000) -- create an SPI object (id=0,1)\n"
-    "    methods: read(nbytes, write=0x00), write(buf), write_readinto(wr_buf, rd_buf)\n"
-    "  machine.Timer(freq, callback) -- create a software timer object\n"
-    "    eg: machine.Timer(freq=1, callback=lambda t:print(t))\n"
-    "\n"
-    "Pins are numbered 0-29, and 26-29 have ADC capabilities\n"
-    "Pin IO modes are: Pin.IN, Pin.OUT, Pin.ALT\n"
-    "Pin pull modes are: Pin.PULL_UP, Pin.PULL_DOWN\n"
-    "\n"
-    "Useful control commands:\n"
-    "  CTRL-C -- interrupt a running program\n"
-    "  CTRL-D -- on a blank line, do a soft reset of the board\n"
-    "  CTRL-E -- on a blank line, enter paste mode\n"
-    "\n"
-    "For further help on a specific object, type help(obj)\n"
-    "For a list of available modules, type help('modules')\n"
-;

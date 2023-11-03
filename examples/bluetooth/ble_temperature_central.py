@@ -1,5 +1,11 @@
 # This example finds and connects to a BLE temperature sensor (e.g. the one in ble_temperature.py).
 
+# This example demonstrates the low-level bluetooth module. For most
+# applications, we recommend using the higher-level aioble library which takes
+# care of all IRQ handling and connection management. See
+# https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
+# and in particular the temp_client.py example included with aioble.
+
 import bluetooth
 import random
 import struct
@@ -39,14 +45,7 @@ _ADV_NONCONN_IND = const(0x03)
 _ENV_SENSE_UUID = bluetooth.UUID(0x181A)
 # org.bluetooth.characteristic.temperature
 _TEMP_UUID = bluetooth.UUID(0x2A6E)
-_TEMP_CHAR = (
-    _TEMP_UUID,
-    bluetooth.FLAG_READ | bluetooth.FLAG_NOTIFY,
-)
-_ENV_SENSE_SERVICE = (
-    _ENV_SENSE_UUID,
-    (_TEMP_CHAR,),
-)
+
 
 # org.bluetooth.characteristic.gap.appearance.xml
 _ADV_APPEARANCE_GENERIC_THERMOMETER = const(768)

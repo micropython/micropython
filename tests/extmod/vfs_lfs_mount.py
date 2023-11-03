@@ -1,10 +1,10 @@
 # Test for VfsLittle using a RAM device, with mount/umount
 
 try:
-    import uos
+    import os
 
-    uos.VfsLfs1
-    uos.VfsLfs2
+    os.VfsLfs1
+    os.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -42,7 +42,7 @@ def test(vfs_class):
 
     # mount bdev unformatted
     try:
-        uos.mount(bdev, "/lfs")
+        os.mount(bdev, "/lfs")
     except Exception as er:
         print(repr(er))
 
@@ -53,7 +53,7 @@ def test(vfs_class):
     vfs = vfs_class(bdev)
 
     # mount
-    uos.mount(vfs, "/lfs")
+    os.mount(vfs, "/lfs")
 
     # import
     with open("/lfs/lfsmod.py", "w") as f:
@@ -61,23 +61,23 @@ def test(vfs_class):
     import lfsmod
 
     # import package
-    uos.mkdir("/lfs/lfspkg")
+    os.mkdir("/lfs/lfspkg")
     with open("/lfs/lfspkg/__init__.py", "w") as f:
         f.write('print("package")\n')
     import lfspkg
 
     # chdir and import module from current directory (needs "" in sys.path)
-    uos.mkdir("/lfs/subdir")
-    uos.chdir("/lfs/subdir")
-    uos.rename("/lfs/lfsmod.py", "/lfs/subdir/lfsmod2.py")
+    os.mkdir("/lfs/subdir")
+    os.chdir("/lfs/subdir")
+    os.rename("/lfs/lfsmod.py", "/lfs/subdir/lfsmod2.py")
     import lfsmod2
 
     # umount
-    uos.umount("/lfs")
+    os.umount("/lfs")
 
     # mount read-only
     vfs = vfs_class(bdev)
-    uos.mount(vfs, "/lfs", readonly=True)
+    os.mount(vfs, "/lfs", readonly=True)
 
     # test reading works
     with open("/lfs/subdir/lfsmod2.py") as f:
@@ -90,25 +90,25 @@ def test(vfs_class):
         print(repr(er))
 
     # umount
-    uos.umount("/lfs")
+    os.umount("/lfs")
 
     # mount bdev again
-    uos.mount(bdev, "/lfs")
+    os.mount(bdev, "/lfs")
 
     # umount
-    uos.umount("/lfs")
+    os.umount("/lfs")
 
     # clear imported modules
-    usys.modules.clear()
+    sys.modules.clear()
 
 
 # initialise path
-import usys
+import sys
 
-usys.path.clear()
-usys.path.append("/lfs")
-usys.path.append("")
+sys.path.clear()
+sys.path.append("/lfs")
+sys.path.append("")
 
 # run tests
-test(uos.VfsLfs1)
-test(uos.VfsLfs2)
+test(os.VfsLfs1)
+test(os.VfsLfs2)

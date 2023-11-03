@@ -4,18 +4,15 @@
     ],
     "docs": "",
     "features": [
-        "Ethernet",
-        "SDRAM",
-        "MicroSD",
-        "MicroUSB",
-        "Microphone",
-        "AudioCodec",
-        "SPDIF",
+        "Audio Codec",
         "CAN",
         "Camera",
-        "SIM Socket",
-        "OpenSDA",
-        "JLink"
+        "Ethernet",
+        "External Flash",
+        "External RAM",
+        "Microphone",
+        "USB",
+        "microSD"
     ],
     "images": [
         "IMX-RT1170-EVK-TOP.jpg"

@@ -32,6 +32,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "extmod/modnetwork.h"
+#include "extint.h"
 #include "pendsv.h"
 #include "sdio.h"
 
@@ -61,7 +62,7 @@
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
 
-#define CYW43_HOST_NAME                 mod_network_hostname
+#define CYW43_HOST_NAME                 mod_network_hostname_data
 
 #define CYW43_SDPCM_SEND_COMMON_WAIT    __WFI();
 #define CYW43_DO_IOCTL_WAIT             __WFI();
@@ -92,6 +93,13 @@
 #define CYW43_PIN_WL_REG_ON             pyb_pin_WL_REG_ON
 #define CYW43_PIN_WL_HOST_WAKE          pyb_pin_WL_HOST_WAKE
 #define CYW43_PIN_WL_SDIO_1             pyb_pin_WL_SDIO_1
+#define CYW43_PIN_WL_GPIO_1             pyb_pin_WL_GPIO_1
+#define CYW43_PIN_WL_GPIO_4             pyb_pin_WL_GPIO_4
+
+#define CYW43_PIN_BT_REG_ON             pyb_pin_BT_REG_ON
+#define CYW43_PIN_BT_HOST_WAKE          pyb_pin_BT_HOST_WAKE
+#define CYW43_PIN_BT_DEV_WAKE           pyb_pin_BT_DEV_WAKE
+#define CYW43_PIN_BT_CTS                pyb_pin_BT_CTS
 
 #if MICROPY_HW_ENABLE_RF_SWITCH
 #define CYW43_PIN_WL_RFSW_VDD           pyb_pin_WL_RFSW_VDD
@@ -112,6 +120,12 @@ static inline void cyw43_delay_ms(uint32_t ms) {
     uint32_t start = mp_hal_ticks_us();
     while (mp_hal_ticks_us() - start < us) {
         MICROPY_EVENT_POLL_HOOK;
+    }
+}
+
+static inline void cyw43_hal_pin_config_irq_falling(cyw43_hal_pin_obj_t pin, int enable) {
+    if (enable) {
+        extint_set(pin, GPIO_MODE_IT_FALLING);
     }
 }
 

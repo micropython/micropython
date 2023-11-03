@@ -40,11 +40,9 @@ set(MICROPY_SOURCE_PORT
     machine_i2c.c
     machine_spi.c
     machine_pin.c
-    machine_uart.c
     modbluetooth_zephyr.c
     modmachine.c
-    modusocket.c
-    modutime.c
+    modsocket.c
     modzephyr.c
     modzsensor.c
     mphalport.c

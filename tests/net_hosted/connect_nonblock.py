@@ -1,10 +1,6 @@
 # test that socket.connect() on a non-blocking socket raises EINPROGRESS
 
-try:
-    import usocket as socket
-    import uerrno as errno
-except:
-    import socket, errno
+import socket, errno
 
 
 def test(peer_addr):

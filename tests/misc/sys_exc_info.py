@@ -1,7 +1,4 @@
-try:
-    import usys as sys
-except ImportError:
-    import sys
+import sys
 
 try:
     sys.exc_info

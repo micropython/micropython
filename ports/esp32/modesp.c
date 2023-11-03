@@ -29,8 +29,8 @@
 
 #include <stdio.h>
 
+#include "esp_flash.h"
 #include "esp_log.h"
-#include "esp_spi_flash.h"
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
@@ -53,33 +53,33 @@ STATIC mp_obj_t esp_osdebug(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_osdebug_obj, 1, 2, esp_osdebug);
 
-STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t buf_in) {
+STATIC mp_obj_t esp_flash_read_(mp_obj_t offset_in, mp_obj_t buf_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-    esp_err_t res = spi_flash_read(offset, bufinfo.buf, bufinfo.len);
+    esp_err_t res = esp_flash_read(NULL, bufinfo.buf, offset, bufinfo.len);
     if (res != ESP_OK) {
         mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read_);
 
-STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, mp_obj_t buf_in) {
+STATIC mp_obj_t esp_flash_write_(mp_obj_t offset_in, mp_obj_t buf_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-    esp_err_t res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
+    esp_err_t res = esp_flash_write(NULL, bufinfo.buf, offset, bufinfo.len);
     if (res != ESP_OK) {
         mp_raise_OSError(MP_EIO);
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write_);
 
 STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     mp_int_t sector = mp_obj_get_int(sector_in);
-    esp_err_t res = spi_flash_erase_sector(sector);
+    esp_err_t res = esp_flash_erase_region(NULL, sector * 4096, 4096);
     if (res != ESP_OK) {
         mp_raise_OSError(MP_EIO);
     }
@@ -88,7 +88,9 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
 STATIC mp_obj_t esp_flash_size(void) {
-    return mp_obj_new_int_from_uint(spi_flash_get_chip_size());
+    uint32_t size;
+    esp_flash_get_size(NULL, &size);
+    return mp_obj_new_int_from_uint(size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
@@ -98,14 +100,14 @@ STATIC mp_obj_t esp_flash_user_start(void) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
 
 STATIC mp_obj_t esp_gpio_matrix_in(mp_obj_t pin, mp_obj_t sig, mp_obj_t inv) {
-    gpio_matrix_in(mp_obj_get_int(pin), mp_obj_get_int(sig), mp_obj_get_int(inv));
+    esp_rom_gpio_connect_in_signal(mp_obj_get_int(pin), mp_obj_get_int(sig), mp_obj_get_int(inv));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_gpio_matrix_in_obj, esp_gpio_matrix_in);
 
 STATIC mp_obj_t esp_gpio_matrix_out(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    gpio_matrix_out(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), mp_obj_get_int(args[2]), mp_obj_get_int(args[3]));
+    esp_rom_gpio_connect_out_signal(mp_obj_get_int(args[0]), mp_obj_get_int(args[1]), mp_obj_get_int(args[2]), mp_obj_get_int(args[3]));
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_gpio_matrix_out_obj, 4, 4, esp_gpio_matrix_out);

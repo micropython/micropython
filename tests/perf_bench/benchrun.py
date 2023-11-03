@@ -1,10 +1,10 @@
 def bm_run(N, M):
     try:
-        from utime import ticks_us, ticks_diff
+        from time import ticks_us, ticks_diff
     except ImportError:
-        import time
+        from time import perf_counter
 
-        ticks_us = lambda: int(time.perf_counter() * 1000000)
+        ticks_us = lambda: int(perf_counter() * 1000000)
         ticks_diff = lambda a, b: a - b
 
     # Pick sensible parameters given N, M

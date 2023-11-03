@@ -1,0 +1,23 @@
+create server1
+create server2
+OSError
+sleep
+create server3
+OSError
+create server4
+server4 closed
+sleep 0
+CancelledError
+sleep 1
+create task server 1
+CancelledError
+sleep 2
+create task server 2
+CancelledError
+sleep 3
+create task server 3
+CancelledError
+sleep 4
+create task server 4
+CancelledError
+done

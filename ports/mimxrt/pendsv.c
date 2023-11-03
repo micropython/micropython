@@ -28,9 +28,7 @@
 
 #include "py/runtime.h"
 #include "pendsv.h"
-
-#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
-#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
+#include "irq.h"
 
 #if defined(PENDSV_DISPATCH_NUM_SLOTS)
 pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];

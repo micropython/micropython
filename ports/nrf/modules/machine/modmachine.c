@@ -30,23 +30,17 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "extmod/machine_mem.h"
-#include "extmod/machine_pulse.h"
-#include "extmod/machine_i2c.h"
+#include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "gccollect.h"
 #include "pin.h"
-#include "uart.h"
 #include "spi.h"
 #include "i2c.h"
 #include "timer.h"
 #if MICROPY_PY_MACHINE_HW_PWM || MICROPY_PY_MACHINE_SOFT_PWM
 #include "pwm.h"
-#endif
-#if MICROPY_PY_MACHINE_ADC
-#include "adc.h"
 #endif
 #if MICROPY_PY_MACHINE_TEMP
 #include "temp.h"
@@ -205,7 +199,7 @@ STATIC mp_obj_t machine_disable_irq(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),           MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__),           MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_info),               MP_ROM_PTR(&machine_info_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),              MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_soft_reset),         MP_ROM_PTR(&machine_soft_reset_obj) },
@@ -266,6 +260,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t*)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

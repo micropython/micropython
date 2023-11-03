@@ -162,8 +162,8 @@ STATIC bool test_qstr(mp_obj_t obj, qstr name) {
         return dest[0] != MP_OBJ_NULL;
     } else {
         // try builtin module
-        return mp_map_lookup((mp_map_t *)&mp_builtin_module_map,
-            MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
+        return mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP) ||
+               mp_map_lookup((mp_map_t *)&mp_builtin_extensible_module_map, MP_OBJ_NEW_QSTR(name), MP_MAP_LOOKUP);
     }
 }
 

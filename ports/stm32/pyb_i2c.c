@@ -67,7 +67,7 @@
 ///
 /// You can specify a timeout (in ms):
 ///
-///     i2c.send(b'123', timeout=2000)   # timout after 2 seconds
+///     i2c.send(b'123', timeout=2000)   # timeout after 2 seconds
 ///
 /// A controller must specify the recipient's address:
 ///
@@ -290,8 +290,8 @@ void i2c_init0(void) {
 
 int pyb_i2c_init(I2C_HandleTypeDef *i2c) {
     int i2c_unit;
-    const pin_obj_t *scl_pin;
-    const pin_obj_t *sda_pin;
+    const machine_pin_obj_t *scl_pin;
+    const machine_pin_obj_t *sda_pin;
 
     if (0) {
     #if defined(MICROPY_HW_I2C1_SCL)

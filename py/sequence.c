@@ -156,7 +156,7 @@ bool mp_seq_cmp_objs(mp_uint_t op, const mp_obj_t *items1, size_t len1, const mp
             continue;
         }
 
-        // Othewise, if they are not equal, we can have final decision based on them
+        // Otherwise, if they are not equal, we can have final decision based on them
         if (op == MP_BINARY_OP_EQUAL) {
             // In particular, if we are checking for equality, here're the answer
             return false;

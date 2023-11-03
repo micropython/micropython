@@ -2,9 +2,9 @@
 
 try:
     import gc
-    import uos
+    import os
 
-    uos.VfsPosix
+    os.VfsPosix
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -13,27 +13,29 @@ except (ImportError, AttributeError):
 # Skip the test if it does exist.
 temp_dir = "micropy_test_dir"
 try:
-    uos.stat(temp_dir)
+    import os
+
+    os.stat(temp_dir)
     print("SKIP")
     raise SystemExit
 except OSError:
     pass
 
 # getcwd and chdir
-curdir = uos.getcwd()
-uos.chdir("/")
-print(uos.getcwd())
-uos.chdir(curdir)
-print(uos.getcwd() == curdir)
+curdir = os.getcwd()
+os.chdir("/")
+print(os.getcwd())
+os.chdir(curdir)
+print(os.getcwd() == curdir)
 
 # stat
-print(type(uos.stat("/")))
+print(type(os.stat("/")))
 
 # listdir and ilistdir
-print(type(uos.listdir("/")))
+print(type(os.listdir("/")))
 
 # mkdir
-uos.mkdir(temp_dir)
+os.mkdir(temp_dir)
 
 # file create
 f = open(temp_dir + "/test", "w")
@@ -78,14 +80,17 @@ with open(nextfd, "w") as f:
     print("next_file_no <= base_file_no", next_file_no <= base_file_no)
 
 for n in names + [basefd, nextfd]:
-    uos.remove(n)
+    os.remove(n)
 
 # rename
-uos.rename(temp_dir + "/test", temp_dir + "/test2")
-print(uos.listdir(temp_dir))
+os.rename(temp_dir + "/test", temp_dir + "/test2")
+print(os.listdir(temp_dir))
 
 # construct new VfsPosix with path argument
-vfs = uos.VfsPosix(temp_dir)
+vfs = os.VfsPosix(temp_dir)
+# when VfsPosix is used the intended way via os.mount(), it can only be called
+# with relative paths when the CWD is inside or at its root, so simulate that
+os.chdir(temp_dir)
 print(list(i[0] for i in vfs.ilistdir(".")))
 
 # stat, statvfs (statvfs may not exist)
@@ -97,22 +102,42 @@ if hasattr(vfs, "statvfs"):
 print(type(list(vfs.ilistdir("."))[0][0]))
 print(type(list(vfs.ilistdir(b"."))[0][0]))
 
+# chdir should not affect absolute paths (regression test)
+vfs.mkdir("/subdir")
+vfs.mkdir("/subdir/micropy_test_dir")
+with vfs.open("/subdir/micropy_test_dir/test2", "w") as f:
+    f.write("wrong")
+vfs.chdir("/subdir")
+with vfs.open("/test2", "r") as f:
+    print(f.read())
+os.chdir(curdir)
+vfs.remove("/subdir/micropy_test_dir/test2")
+vfs.rmdir("/subdir/micropy_test_dir")
+vfs.rmdir("/subdir")
+
+# done with vfs, restore CWD
+os.chdir(curdir)
+
 # remove
-uos.remove(temp_dir + "/test2")
-print(uos.listdir(temp_dir))
+os.remove(temp_dir + "/test2")
+print(os.listdir(temp_dir))
 
 # remove with error
 try:
-    uos.remove(temp_dir + "/test2")
+    import os
+
+    os.remove(temp_dir + "/test2")
 except OSError:
     print("remove OSError")
 
 # rmdir
-uos.rmdir(temp_dir)
-print(temp_dir in uos.listdir())
+os.rmdir(temp_dir)
+print(temp_dir in os.listdir())
 
 # rmdir with error
 try:
-    uos.rmdir(temp_dir)
+    import os
+
+    os.rmdir(temp_dir)
 except OSError:
     print("rmdir OSError")

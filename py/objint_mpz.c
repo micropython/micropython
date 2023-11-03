@@ -165,6 +165,8 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
             mpz_abs_inpl(&self2->mpz, &self->mpz);
             return MP_OBJ_FROM_PTR(self2);
         }
+        case MP_UNARY_OP_INT_MAYBE:
+            return o_in;
         default:
             return MP_OBJ_NULL;      // op not supported
     }

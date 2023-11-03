@@ -273,41 +273,58 @@ STATIC void fill_rect(const mp_obj_framebuf_t *fb, int x, int y, int w, int h, u
 STATIC mp_obj_t framebuf_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args_in) {
     mp_arg_check_num(n_args, n_kw, 4, 5, false);
 
-    mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, type);
-    o->buf_obj = args_in[0];
+    mp_int_t width = mp_obj_get_int(args_in[1]);
+    mp_int_t height = mp_obj_get_int(args_in[2]);
+    mp_int_t format = mp_obj_get_int(args_in[3]);
+    mp_int_t stride = n_args >= 5 ? mp_obj_get_int(args_in[4]) : width;
 
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
-    o->buf = bufinfo.buf;
-
-    o->width = mp_obj_get_int(args_in[1]);
-    o->height = mp_obj_get_int(args_in[2]);
-    o->format = mp_obj_get_int(args_in[3]);
-    if (n_args >= 5) {
-        o->stride = mp_obj_get_int(args_in[4]);
-    } else {
-        o->stride = o->width;
+    if (width < 1 || height < 1 || width > 0xffff || height > 0xffff || stride > 0xffff || stride < width) {
+        mp_raise_ValueError(NULL);
     }
 
-    switch (o->format) {
+    size_t height_required = height;
+    size_t bpp = 1;
+
+    switch (format) {
         case FRAMEBUF_MVLSB:
-        case FRAMEBUF_RGB565:
+            height_required = (height + 7) & ~7;
             break;
         case FRAMEBUF_MHLSB:
         case FRAMEBUF_MHMSB:
-            o->stride = (o->stride + 7) & ~7;
+            stride = (stride + 7) & ~7;
             break;
         case FRAMEBUF_GS2_HMSB:
-            o->stride = (o->stride + 3) & ~3;
+            stride = (stride + 3) & ~3;
+            bpp = 2;
             break;
         case FRAMEBUF_GS4_HMSB:
-            o->stride = (o->stride + 1) & ~1;
+            stride = (stride + 1) & ~1;
+            bpp = 4;
             break;
         case FRAMEBUF_GS8:
+            bpp = 8;
+            break;
+        case FRAMEBUF_RGB565:
+            bpp = 16;
             break;
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("invalid format"));
     }
+
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
+
+    if (height_required * stride * bpp / 8 > bufinfo.len) {
+        mp_raise_ValueError(NULL);
+    }
+
+    mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, type);
+    o->buf_obj = args_in[0];
+    o->buf = bufinfo.buf;
+    o->width = width;
+    o->height = height;
+    o->format = format;
+    o->stride = stride;
 
     return MP_OBJ_FROM_PTR(o);
 }
@@ -319,12 +336,8 @@ STATIC void framebuf_args(const mp_obj_t *args_in, mp_int_t *args_out, int n) {
 }
 
 STATIC mp_int_t framebuf_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    (void)flags;
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(self_in);
-    bufinfo->buf = self->buf;
-    bufinfo->len = self->stride * self->height * (self->format == FRAMEBUF_RGB565 ? 2 : 1);
-    bufinfo->typecode = 'B'; // view framebuf as bytes
-    return 0;
+    return mp_get_buffer(self->buf_obj, bufinfo, flags) ? 0 : 1;
 }
 
 STATIC mp_obj_t framebuf_fill(mp_obj_t self_in, mp_obj_t col_in) {
@@ -851,28 +864,15 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif
 
-// this factory function is provided for backwards compatibility with old FrameBuffer1 class
+#if !MICROPY_ENABLE_DYNRUNTIME
+// This factory function is provided for backwards compatibility with the old
+// FrameBuffer1 class which did not support a format argument.
 STATIC mp_obj_t legacy_framebuffer1(size_t n_args, const mp_obj_t *args_in) {
-    mp_obj_framebuf_t *o = mp_obj_malloc(mp_obj_framebuf_t, (mp_obj_type_t *)&mp_type_framebuf);
-
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args_in[0], &bufinfo, MP_BUFFER_WRITE);
-    o->buf = bufinfo.buf;
-
-    o->width = mp_obj_get_int(args_in[1]);
-    o->height = mp_obj_get_int(args_in[2]);
-    o->format = FRAMEBUF_MVLSB;
-    if (n_args >= 4) {
-        o->stride = mp_obj_get_int(args_in[3]);
-    } else {
-        o->stride = o->width;
-    }
-
-    return MP_OBJ_FROM_PTR(o);
+    mp_obj_t args[] = {args_in[0], args_in[1], args_in[2], MP_OBJ_NEW_SMALL_INT(FRAMEBUF_MVLSB), n_args >= 4 ? args_in[3] : args_in[1] };
+    return framebuf_make_new(&mp_type_framebuf, 5, 0, args);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(legacy_framebuffer1_obj, 3, 4, legacy_framebuffer1);
 
-#if !MICROPY_ENABLE_DYNRUNTIME
 STATIC const mp_rom_map_elem_t framebuf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_framebuf) },
     { MP_ROM_QSTR(MP_QSTR_FrameBuffer), MP_ROM_PTR(&mp_type_framebuf) },

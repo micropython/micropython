@@ -33,9 +33,9 @@ if platform.python_version_tuple()[0] == "2":
 
     str_cons = lambda val, enc=None: str(val)
     bytes_cons = lambda val, enc=None: bytearray(val)
-    is_str_type = lambda o: type(o) is str
+    is_str_type = lambda o: isinstance(o, str)
     is_bytes_type = lambda o: type(o) is bytearray
-    is_int_type = lambda o: type(o) is int or type(o) is long
+    is_int_type = lambda o: isinstance(o, int) or isinstance(o, long)  # noqa: F821
 
     def hexlify_to_str(b):
         x = hexlify_py2(b)
@@ -46,9 +46,9 @@ else:
 
     str_cons = str
     bytes_cons = bytes
-    is_str_type = lambda o: type(o) is str
-    is_bytes_type = lambda o: type(o) is bytes
-    is_int_type = lambda o: type(o) is int
+    is_str_type = lambda o: isinstance(o, str)
+    is_bytes_type = lambda o: isinstance(o, bytes)
+    is_int_type = lambda o: isinstance(o, int)
 
     def hexlify_to_str(b):
         return str(hexlify(b, ":"), "ascii")
@@ -88,7 +88,7 @@ class FreezeError(Exception):
 
 class Config:
     MPY_VERSION = 6
-    MPY_SUB_VERSION = 1
+    MPY_SUB_VERSION = 2
     MICROPY_LONGINT_IMPL_NONE = 0
     MICROPY_LONGINT_IMPL_LONGLONG = 1
     MICROPY_LONGINT_IMPL_MPZ = 2
@@ -756,7 +756,7 @@ class CompiledModule:
                 const_int_content += (digs.count(",") + 1) * bits_per_dig // 8
                 const_obj_content += 4 * 4
                 return "MP_ROM_PTR(&%s)" % obj_name
-        elif type(obj) is float:
+        elif isinstance(obj, float):
             macro_name = "%s_macro" % obj_name
             print(
                 "#if MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A || MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_B"
@@ -777,7 +777,7 @@ class CompiledModule:
             print("#endif")
             const_obj_content += 3 * 4
             return macro_name
-        elif type(obj) is complex:
+        elif isinstance(obj, complex):
             print(
                 "static const mp_obj_complex_t %s = {{&mp_type_complex}, (mp_float_t)%.16g, (mp_float_t)%.16g};"
                 % (obj_name, obj.real, obj.imag)
@@ -1120,7 +1120,6 @@ class RawCodeNative(RawCode):
 
         i_top = len(self.fun_data)
         i = 0
-        qi = 0
         while i < i_top:
             # copy machine code (max 16 bytes)
             i16 = min(i + 16, i_top)
@@ -1276,7 +1275,7 @@ def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERRODATA:
                     rodata_size = reader.read_uint()
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERBSS:
-                    bss_size = reader.read_uint()
+                    reader.read_uint()  # bss_size
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERRODATA:
                     reader.read_bytes(rodata_size)
                 if native_scope_flags & MP_SCOPE_FLAG_VIPERRELOC:
@@ -1285,10 +1284,10 @@ def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
                         if op == 0xFF:
                             break
                         if op & 1:
-                            addr = reader.read_uint()
+                            reader.read_uint()  # addr
                         op >>= 1
                         if op <= 5 and op & 1:
-                            n = reader.read_uint()
+                            reader.read_uint()  # n
             else:
                 assert kind == MP_CODE_NATIVE_ASM
                 native_n_pos_args = reader.read_uint()
@@ -1397,15 +1396,16 @@ def disassemble_mpy(compiled_modules):
         cm.disassemble()
 
 
-def freeze_mpy(base_qstrs, compiled_modules):
+def freeze_mpy(firmware_qstr_idents, compiled_modules):
     # add to qstrs
     new = {}
     for q in global_qstrs.qstrs:
-        # don't add duplicates
-        if q is None or q.qstr_esc in base_qstrs or q.qstr_esc in new:
+        # don't add duplicates that are already in the firmware
+        if q is None or q.qstr_esc in firmware_qstr_idents or q.qstr_esc in new:
             continue
         new[q.qstr_esc] = (len(new), q.qstr_esc, q.str, bytes_cons(q.str, "utf8"))
-    new = sorted(new.values(), key=lambda x: x[0])
+    # Sort by string value (because this is a sorted pool).
+    new = sorted(new.values(), key=lambda x: x[2])
 
     print('#include "py/mpconfig.h"')
     print('#include "py/objint.h"')
@@ -1454,7 +1454,15 @@ def freeze_mpy(base_qstrs, compiled_modules):
     # As in qstr.c, set so that the first dynamically allocated pool is twice this size; must be <= the len
     qstr_pool_alloc = min(len(new), 10)
 
-    global bc_content, const_str_content, const_int_content, const_obj_content, const_table_qstr_content, const_table_ptr_content, raw_code_count, raw_code_content
+    global \
+        bc_content, \
+        const_str_content, \
+        const_int_content, \
+        const_obj_content, \
+        const_table_qstr_content, \
+        const_table_ptr_content, \
+        raw_code_count, \
+        raw_code_content
     qstr_content = 0
     bc_content = 0
     const_str_content = 0
@@ -1486,6 +1494,7 @@ def freeze_mpy(base_qstrs, compiled_modules):
     print("const qstr_pool_t mp_qstr_frozen_const_pool = {")
     print("    &mp_qstr_const_pool, // previous pool")
     print("    MP_QSTRnumber_of, // previous pool size")
+    print("    true, // is_sorted")
     print("    %u, // allocated entries" % qstr_pool_alloc)
     print("    %u, // used entries" % len(new))
     print("    (qstr_hash_t *)mp_qstr_frozen_const_hashes,")
@@ -1780,14 +1789,16 @@ def main():
     config.native_arch = MP_NATIVE_ARCH_NONE
 
     # set config values for qstrs, and get the existing base set of qstrs
+    # already in the firmware
     if args.qstr_header:
-        qcfgs, base_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        qcfgs, extra_qstrs = qstrutil.parse_input_headers([args.qstr_header])
+        firmware_qstr_idents = set(qstrutil.static_qstr_list_ident) | set(extra_qstrs.keys())
         config.MICROPY_QSTR_BYTES_IN_LEN = int(qcfgs["BYTES_IN_LEN"])
         config.MICROPY_QSTR_BYTES_IN_HASH = int(qcfgs["BYTES_IN_HASH"])
     else:
         config.MICROPY_QSTR_BYTES_IN_LEN = 1
         config.MICROPY_QSTR_BYTES_IN_HASH = 1
-        base_qstrs = list(qstrutil.static_qstr_list)
+        firmware_qstr_idents = set(qstrutil.static_qstr_list)
 
     # Create initial list of global qstrs.
     global_qstrs = GlobalQStrList()
@@ -1809,7 +1820,7 @@ def main():
 
     if args.freeze:
         try:
-            freeze_mpy(base_qstrs, compiled_modules)
+            freeze_mpy(firmware_qstr_idents, compiled_modules)
         except FreezeError as er:
             print(er, file=sys.stderr)
             sys.exit(1)

@@ -1,5 +1,7 @@
 # Test freezing inline-asm code.
 
+# ruff: noqa: F821 - @asm_thumb decorator adds names to function scope
+
 import micropython
 
 

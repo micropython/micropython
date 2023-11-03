@@ -31,7 +31,7 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/runtime.h"
-#include "extmod/machine_i2c.h"
+#include "extmod/modmachine.h"
 
 #define SOFT_I2C_DEFAULT_TIMEOUT_US (50000) // 50ms
 

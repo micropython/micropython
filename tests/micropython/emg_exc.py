@@ -1,10 +1,10 @@
 # test that emergency exceptions work
 
 import micropython
-import usys
+import sys
 
 try:
-    import uio
+    import io
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -25,8 +25,8 @@ def f():
     micropython.heap_unlock()
 
     # print the exception
-    buf = uio.StringIO()
-    usys.print_exception(exc, buf)
+    buf = io.StringIO()
+    sys.print_exception(exc, buf)
     for l in buf.getvalue().split("\n"):
         if l.startswith("  File "):
             print(l.split('"')[2])

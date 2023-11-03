@@ -7,6 +7,9 @@
  *
  * Copyright (c) 2014-2018 by Paul Sokolovsky
  *
+ * Optimised for MicroPython:
+ * Copyright (c) 2023 by Jim Mussared
+ *
  * This software is provided 'as-is', without any express
  * or implied warranty.  In no event will the authors be
  * held liable for any damages arising from the use of
@@ -39,20 +42,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "defl_static.h"
-
 #include "uzlib_conf.h"
 #if UZLIB_CONF_DEBUG_LOG
 #include <stdio.h>
-#endif
-
-/* calling convention */
-#ifndef TINFCC
- #ifdef __WATCOMC__
-  #define TINFCC __cdecl
- #else
-  #define TINFCC
- #endif
 #endif
 
 #ifdef __cplusplus
@@ -60,17 +52,17 @@ extern "C" {
 #endif
 
 /* ok status, more data produced */
-#define TINF_OK             0
+#define UZLIB_OK             0
 /* end of compressed stream reached */
-#define TINF_DONE           1
-#define TINF_DATA_ERROR    (-3)
-#define TINF_CHKSUM_ERROR  (-4)
-#define TINF_DICT_ERROR    (-5)
+#define UZLIB_DONE           1
+#define UZLIB_DATA_ERROR    (-3)
+#define UZLIB_CHKSUM_ERROR  (-4)
+#define UZLIB_DICT_ERROR    (-5)
 
 /* checksum types */
-#define TINF_CHKSUM_NONE  0
-#define TINF_CHKSUM_ADLER 1
-#define TINF_CHKSUM_CRC   2
+#define UZLIB_CHKSUM_NONE  0
+#define UZLIB_CHKSUM_ADLER 1
+#define UZLIB_CHKSUM_CRC   2
 
 /* helper macros */
 #define TINF_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(*(arr)))
@@ -82,7 +74,7 @@ typedef struct {
    unsigned short trans[288]; /* code -> symbol translation table */
 } TINF_TREE;
 
-struct uzlib_uncomp {
+typedef struct _uzlib_uncomp_t {
     /* Pointer to the next byte in the input buffer */
     const unsigned char *source;
     /* Pointer to the next byte past the input buffer (source_limit = source + len) */
@@ -92,7 +84,8 @@ struct uzlib_uncomp {
        also return -1 in case of EOF (or irrecoverable error). Note that
        besides returning the next byte, it may also update source and
        source_limit fields, thus allowing for buffered operation. */
-    int (*source_read_cb)(struct uzlib_uncomp *uncomp);
+    void *source_read_data;
+    int (*source_read_cb)(void *);
 
     unsigned int tag;
     unsigned int bitcount;
@@ -119,9 +112,7 @@ struct uzlib_uncomp {
 
     TINF_TREE ltree; /* dynamic length/symbol tree */
     TINF_TREE dtree; /* dynamic distance tree */
-};
-
-#include "tinf_compat.h"
+} uzlib_uncomp_t;
 
 #define TINF_PUT(d, c) \
     { \
@@ -129,38 +120,43 @@ struct uzlib_uncomp {
         if (d->dict_ring) { d->dict_ring[d->dict_idx++] = c; if (d->dict_idx == d->dict_size) d->dict_idx = 0; } \
     }
 
-unsigned char TINFCC uzlib_get_byte(TINF_DATA *d);
+unsigned char uzlib_get_byte(uzlib_uncomp_t *d);
 
 /* Decompression API */
 
-void TINFCC uzlib_init(void);
-void TINFCC uzlib_uncompress_init(TINF_DATA *d, void *dict, unsigned int dictLen);
-int  TINFCC uzlib_uncompress(TINF_DATA *d);
-int  TINFCC uzlib_uncompress_chksum(TINF_DATA *d);
+void uzlib_uncompress_init(uzlib_uncomp_t *d, void *dict, unsigned int dictLen);
+int  uzlib_uncompress(uzlib_uncomp_t *d);
+int  uzlib_uncompress_chksum(uzlib_uncomp_t *d);
 
-int TINFCC uzlib_zlib_parse_header(TINF_DATA *d);
-int TINFCC uzlib_gzip_parse_header(TINF_DATA *d);
+#define UZLIB_HEADER_ZLIB             0
+#define UZLIB_HEADER_GZIP             1
+int uzlib_parse_zlib_gzip_header(uzlib_uncomp_t *d, int *wbits);
 
 /* Compression API */
 
-typedef const uint8_t *uzlib_hash_entry_t;
+typedef struct {
+    void *dest_write_data;
+    void (*dest_write_cb)(void *data, uint8_t byte);
+    unsigned long outbits;
+    int noutbits;
+    uint8_t *hist_buf;
+    size_t hist_max;
+    size_t hist_start;
+    size_t hist_len;
+} uzlib_lz77_state_t;
 
-struct uzlib_comp {
-    struct Outbuf out;
+void uzlib_lz77_init(uzlib_lz77_state_t *state, uint8_t *hist, size_t hist_max);
+void uzlib_lz77_compress(uzlib_lz77_state_t *state, const uint8_t *src, unsigned len);
 
-    uzlib_hash_entry_t *hash_table;
-    unsigned int hash_bits;
-    unsigned int dict_size;
-};
-
-void TINFCC uzlib_compress(struct uzlib_comp *c, const uint8_t *src, unsigned slen);
+void uzlib_start_block(uzlib_lz77_state_t *state);
+void uzlib_finish_block(uzlib_lz77_state_t *state);
 
 /* Checksum API */
 
 /* prev_sum is previous value for incremental computation, 1 initially */
-uint32_t TINFCC uzlib_adler32(const void *data, unsigned int length, uint32_t prev_sum);
+uint32_t uzlib_adler32(const void *data, unsigned int length, uint32_t prev_sum);
 /* crc is previous value for incremental computation, 0xffffffff initially */
-uint32_t TINFCC uzlib_crc32(const void *data, unsigned int length, uint32_t crc);
+uint32_t uzlib_crc32(const void *data, unsigned int length, uint32_t crc);
 
 #ifdef __cplusplus
 } /* extern "C" */

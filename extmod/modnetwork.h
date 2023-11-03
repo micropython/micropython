@@ -43,6 +43,7 @@
 
 // Common option flags per-socket.
 #define MOD_NETWORK_SO_REUSEADDR    (0x0004)
+#define MOD_NETWORK_SO_BROADCAST    (0x0020)
 #define MOD_NETWORK_SO_KEEPALIVE    (0x0008)
 #define MOD_NETWORK_SO_SNDTIMEO     (0x1005)
 #define MOD_NETWORK_SO_RCVTIMEO     (0x1006)
@@ -55,10 +56,17 @@
 extern char mod_network_country_code[2];
 
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
-#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (16)
+// Doesn't include the null terminator.
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
 #endif
 
-extern char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN];
+// This is a null-terminated string.
+extern char mod_network_hostname_data[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1];
+
+// To support backwards-compatible (esp32, esp8266, cyw43)
+// `if.config(hostname=...)` to forward directly to the implementation of
+// `network.hostname(...)`.
+mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args);
 
 #if MICROPY_PY_LWIP
 struct netif;
@@ -101,7 +109,7 @@ typedef struct _mod_network_socket_obj_t {
     int32_t timeout;
     mp_obj_t callback;
     int32_t state   : 8;
-    #if MICROPY_PY_USOCKET_EXTENDED_STATE
+    #if MICROPY_PY_SOCKET_EXTENDED_STATE
     // Extended socket state for NICs/ports that need it.
     void *_private;
     #endif

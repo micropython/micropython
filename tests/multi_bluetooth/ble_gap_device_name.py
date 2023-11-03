@@ -75,6 +75,8 @@ def instance0():
             print(ble.config("gap_name"))
             ble.gap_advertise(20_000)
 
+            multitest.broadcast("peripheral:adv:{}".format(iteration))
+
             # Wait for central to connect, then wait for it to disconnect.
             wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
             wait_for_event(_IRQ_CENTRAL_DISCONNECT, 4 * TIMEOUT_MS)
@@ -89,7 +91,7 @@ def instance1():
         value_handle = None
         for iteration in range(2):
             # Wait for peripheral to start advertising.
-            time.sleep_ms(500)
+            multitest.wait("peripheral:adv:{}".format(iteration))
 
             # Connect to peripheral.
             print("gap_connect")

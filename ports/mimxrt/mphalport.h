@@ -31,6 +31,7 @@
 #include "ticks.h"
 #include "py/ringbuf.h"
 #include "pin.h"
+#include "irq.h"
 #include "fsl_clock.h"
 
 #define MICROPY_HAL_VERSION             "2.8.0"
@@ -38,9 +39,28 @@
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT   (500)
 
 #define MP_HAL_PIN_FMT                  "%q"
+#define MP_HAL_PIN_MODE_INPUT           PIN_MODE_IN
+#define MP_HAL_PIN_MODE_OUTPUT          PIN_MODE_OUT
+#define MP_HAL_PIN_MODE_ALT             PIN_MODE_ALT
+#define MP_HAL_PIN_MODE_OPEN_DRAIN      PIN_MODE_OPEN_DRAIN
+
+#define MP_HAL_PIN_PULL_NONE            PIN_PULL_DISABLED
+#define MP_HAL_PIN_PULL_UP              PIN_PULL_UP_100K
+#define MP_HAL_PIN_PULL_DOWN            PIN_PULL_DOWN_100K
+
+#define MP_HAL_PIN_SPEED_LOW            (0)
+#define MP_HAL_PIN_SPEED_MEDIUM         (1)
+#define MP_HAL_PIN_SPEED_HIGH           (2)
+#define MP_HAL_PIN_SPEED_VERY_HIGH      (3)
+
+#define MP_HAL_PIN_TRIGGER_NONE         kGPIO_NoIntmode
+#define MP_HAL_PIN_TRIGGER_FALL         kGPIO_IntFallingEdge
+#define MP_HAL_PIN_TRIGGER_RISE         kGPIO_IntRisingEdge
+#define MP_HAL_PIN_TRIGGER_RISE_FALL    kGPIO_IntRisingOrFallingEdge
+
 extern ringbuf_t stdin_ringbuf;
 
-// Define an alias fo systick_ms, because the shared softtimer.c uses
+// Define an alias for systick_ms, because the shared softtimer.c uses
 // the symbol uwTick for the systick ms counter.
 #define uwTick systick_ms
 

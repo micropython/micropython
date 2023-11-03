@@ -1,19 +1,19 @@
-import uos, nrf
+import os, nrf
 
 try:
-    from uos import VfsLfs1
+    from os import VfsLfs1
 
-    uos.VfsLfs1.mkfs(nrf.Flash())
+    os.VfsLfs1.mkfs(nrf.Flash())
 except ImportError:
     try:
-        from uos import VfsLfs2
+        from os import VfsLfs2
 
-        uos.VfsLfs2.mkfs(nrf.Flash())
+        os.VfsLfs2.mkfs(nrf.Flash())
     except ImportError:
         try:
-            from uos import VfsFat
+            from os import VfsFat
 
-            uos.VfsFat.mkfs(nrf.Flash())
+            os.VfsFat.mkfs(nrf.Flash())
         except ImportError:
             pass
         except OSError as e:

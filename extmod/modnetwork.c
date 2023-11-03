@@ -35,7 +35,7 @@
 #if MICROPY_PY_NETWORK
 
 #include "shared/netutils/netutils.h"
-#include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 #if MICROPY_PY_NETWORK_CYW43
 // So that CYW43_LINK_xxx constants are available to MICROPY_PORT_NETWORK_INTERFACES.
@@ -56,7 +56,7 @@ char mod_network_country_code[2] = "XX";
 #error "MICROPY_PY_NETWORK_HOSTNAME_DEFAULT must be set in mpconfigport.h or mpconfigboard.h"
 #endif
 
-char mod_network_hostname[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN] = MICROPY_PY_NETWORK_HOSTNAME_DEFAULT;
+char mod_network_hostname_data[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1] = MICROPY_PY_NETWORK_HOSTNAME_DEFAULT;
 
 #ifdef MICROPY_PORT_NETWORK_INTERFACES
 
@@ -116,20 +116,21 @@ STATIC mp_obj_t network_country(size_t n_args, const mp_obj_t *args) {
 // TODO: Non-static to allow backwards-compatible pyb.country.
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_country_obj, 0, 1, network_country);
 
-STATIC mp_obj_t network_hostname(size_t n_args, const mp_obj_t *args) {
+mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        return mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
+        return mp_obj_new_str(mod_network_hostname_data, strlen(mod_network_hostname_data));
     } else {
         size_t len;
         const char *str = mp_obj_str_get_data(args[0], &len);
-        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
+        if (len > MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
             mp_raise_ValueError(NULL);
         }
-        strcpy(mod_network_hostname, str);
+        memcpy(mod_network_hostname_data, str, len);
+        mod_network_hostname_data[len] = 0;
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_hostname_obj, 0, 1, network_hostname);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_network_hostname_obj, 0, 1, mod_network_hostname);
 
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },

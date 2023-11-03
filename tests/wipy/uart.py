@@ -156,7 +156,7 @@ except Exception:
 for uart_id in uart_id_range:
     uart = UART(uart_id, 1000000)
     uart.deinit()
-    # test printing an unitialized uart
+    # test printing an uninitialized uart
     print(uart)
     # initialize it back and check that it works again
     uart.init(115200)

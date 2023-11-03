@@ -38,7 +38,7 @@
 
 #include "shared/netutils/netutils.h"
 #include "extmod/modnetwork.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "extmod/virtpin.h"
 #include "modmachine.h"
 #include "drivers/bus/spi.h"

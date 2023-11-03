@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_l4a6zg.jpg"
+    ],
+    "mcu": "stm32l4",
+    "product": "Nucleo L4A6ZG",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

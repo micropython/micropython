@@ -232,8 +232,12 @@ STATIC int qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t 
         while (!(QUADSPI->SR & QUADSPI_SR_FTF)) {
         }
 
-        // This assumes len==2
-        *(uint16_t *)&QUADSPI->DR = data;
+        if (len == 1) {
+            *(uint8_t *)&QUADSPI->DR = data;
+        } else {
+            // This assumes len==2
+            *(uint16_t *)&QUADSPI->DR = data;
+        }
     }
 
     // Wait for write to finish

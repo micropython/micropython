@@ -2,8 +2,10 @@
 # and provides rules to build 3rd-party components for extmod modules.
 
 SRC_EXTMOD_C += \
+	extmod/machine_adc.c \
 	extmod/machine_bitstream.c \
 	extmod/machine_i2c.c \
+	extmod/machine_i2s.c \
 	extmod/machine_mem.c \
 	extmod/machine_pinbase.c \
 	extmod/machine_pulse.c \
@@ -11,37 +13,39 @@ SRC_EXTMOD_C += \
 	extmod/machine_signal.c \
 	extmod/machine_spi.c \
 	extmod/machine_timer.c \
+	extmod/machine_uart.c \
+	extmod/machine_wdt.c \
+	extmod/modasyncio.c \
+	extmod/modbinascii.c \
 	extmod/modbluetooth.c \
 	extmod/modbtree.c \
+	extmod/modcryptolib.c \
+	extmod/moddeflate.c \
 	extmod/modframebuf.c \
+	extmod/modhashlib.c \
+	extmod/modheapq.c \
+	extmod/modjson.c \
 	extmod/modlwip.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
-	extmod/moduasyncio.c \
-	extmod/modubinascii.c \
-	extmod/moducryptolib.c \
+	extmod/modos.c \
+	extmod/modplatform.c\
+	extmod/modrandom.c \
+	extmod/modre.c \
+	extmod/modselect.c \
+	extmod/modsocket.c \
+	extmod/modssl_axtls.c \
+	extmod/modssl_mbedtls.c \
+	extmod/modtime.c \
 	extmod/moductypes.c \
-	extmod/moduhashlib.c \
-	extmod/moduheapq.c \
-	extmod/modujson.c \
-	extmod/moduos.c \
-	extmod/moduplatform.c\
-	extmod/modurandom.c \
-	extmod/modure.c \
-	extmod/moduselect.c \
-	extmod/modusocket.c \
-	extmod/modussl_axtls.c \
-	extmod/modussl_mbedtls.c \
-	extmod/modutimeq.c \
-	extmod/moduwebsocket.c \
-	extmod/moduzlib.c \
 	extmod/modwebrepl.c \
+	extmod/modwebsocket.c \
 	extmod/network_cyw43.c \
+	extmod/network_esp_hosted.c \
 	extmod/network_lwip.c \
 	extmod/network_ninaw10.c \
 	extmod/network_wiznet5k.c \
-	extmod/uos_dupterm.c \
-	extmod/utime_mphal.c \
+	extmod/os_dupterm.c \
 	extmod/vfs.c \
 	extmod/vfs_blockdev.c \
 	extmod/vfs_fat.c \
@@ -102,14 +106,14 @@ SRC_THIRDPARTY_C += $(addprefix $(LITTLEFS_DIR)/,\
 	lfs2_util.c \
 	)
 
-$(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-missing-field-initializers
+$(BUILD)/$(LITTLEFS_DIR)/lfs2.o: CFLAGS += -Wno-shadow
 endif
 
 ################################################################################
 # ussl
 
-ifeq ($(MICROPY_PY_USSL),1)
-CFLAGS_EXTMOD += -DMICROPY_PY_USSL=1
+ifeq ($(MICROPY_PY_SSL),1)
+CFLAGS_EXTMOD += -DMICROPY_PY_SSL=1
 ifeq ($(MICROPY_SSL_AXTLS),1)
 AXTLS_DIR = lib/axtls
 GIT_SUBMODULES += $(AXTLS_DIR)
@@ -172,7 +176,6 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	md4.c \
 	md5.c \
 	md.c \
-	md_wrap.c \
 	oid.c \
 	padlock.c \
 	pem.c \
@@ -197,9 +200,11 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	ssl_cli.c \
 	ssl_cookie.c \
 	ssl_srv.c \
+	ssl_msg.c \
 	ssl_ticket.c \
 	ssl_tls.c \
 	timing.c \
+	constant_time.c \
 	x509.c \
 	x509_create.c \
 	x509_crl.c \
@@ -293,7 +298,7 @@ SRC_THIRDPARTY_C += $(addprefix $(BTREE_DIR)/,\
 CFLAGS_EXTMOD += -DMICROPY_PY_BTREE=1
 # we need to suppress certain warnings to get berkeley-db to compile cleanly
 # and we have separate BTREE_DEFS so the definitions don't interfere with other source code
-$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter $(BTREE_DEFS)
+$(BUILD)/$(BTREE_DIR)/%.o: CFLAGS += -Wno-old-style-definition -Wno-sign-compare -Wno-unused-parameter -Wno-deprecated-non-prototype -Wno-unknown-warning-option $(BTREE_DEFS)
 $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
@@ -337,7 +342,50 @@ SRC_THIRDPARTY_C += $(addprefix $(WIZNET5K_DIR)/,\
 	Internet/DHCP/dhcp.c \
 	)
 endif
+endif # MICROPY_PY_NETWORK_WIZNET5K
+
+ifeq ($(MICROPY_PY_NETWORK_ESP_HOSTED),1)
+ESP_HOSTED_DIR = drivers/esp-hosted
+PROTOBUF_C_DIR = lib/protobuf-c
+PROTOC ?= protoc-c
+GIT_SUBMODULES += $(PROTOBUF_C_DIR)
+
+CFLAGS += -DMICROPY_PY_NETWORK_ESP_HOSTED=1
+CFLAGS_EXTMOD += -DMICROPY_PY_NETWORK_ESP_HOSTED=1
+INC += -I$(TOP)/$(ESP_HOSTED_DIR)
+
+ESP_HOSTED_SRC_C = $(addprefix $(ESP_HOSTED_DIR)/,\
+	esp_hosted_wifi.c \
+	esp_hosted_netif.c \
+	esp_hosted_hal.c \
+	)
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+ESP_HOSTED_SRC_C += $(ESP_HOSTED_DIR)/esp_hosted_bthci.c
 endif
+
+# Include the protobuf-c support functions
+ESP_HOSTED_SRC_C += $(addprefix $(PROTOBUF_C_DIR)/,\
+	protobuf-c/protobuf-c.c \
+	)
+
+$(BUILD)/$(PROTOBUF_C_DIR)/%.o: CFLAGS += -Wno-unused-but-set-variable
+
+# Generate esp_hosted-pb-c.c|h from esp_hosted.proto
+PROTO_GEN_SRC = $(BUILD)/extmod/esp_hosted.pb-c.c
+ESP_HOSTED_SRC_C += $(PROTO_GEN_SRC)
+
+$(PROTO_GEN_SRC): $(TOP)/$(ESP_HOSTED_DIR)/esp_hosted.proto
+	$(PROTOC) --proto_path=$(dir $<) --c_out=$(dir $@) $<
+
+# Scope the protobuf include paths to the esp_hosted source files, only
+ESP_HOSTED_OBJS = $(addprefix $(BUILD)/, $(ESP_HOSTED_SRC_C:.c=.o))
+$(ESP_HOSTED_OBJS): $(PROTO_GEN_SRC)
+$(ESP_HOSTED_OBJS): CFLAGS += -I$(dir $(PROTO_GEN_SRC)) -I$(TOP)/$(PROTOBUF_C_DIR)
+
+DRIVERS_SRC_C += $(ESP_HOSTED_SRC_C)
+
+endif # MICROPY_PY_NETWORK_ESP_HOSTED
 
 ################################################################################
 # bluetooth

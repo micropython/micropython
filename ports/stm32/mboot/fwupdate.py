@@ -3,7 +3,7 @@
 
 from micropython import const
 import struct, time
-import uzlib, machine, stm
+import deflate, machine, stm
 
 # Constants to be used with update_mpy
 VFS_FAT = 1
@@ -36,7 +36,7 @@ def dfu_read(filename):
     if hdr == b"Dfu":
         pass
     elif hdr == b"\x1f\x8b\x08":
-        f = uzlib.DecompIO(f, 16 + 15)
+        f = deflate.DeflateIO(f, deflate.GZIP)
     else:
         print("Invalid firmware", filename)
         return None
@@ -231,7 +231,7 @@ def update_app_elements(
     # Check firmware is of .dfu or .dfu.gz type
     try:
         with open(filename, "rb") as f:
-            hdr = uzlib.DecompIO(f, 16 + 15).read(6)
+            hdr = deflate.DeflateIO(f, deflate.GZIP).read(6)
     except Exception:
         with open(filename, "rb") as f:
             hdr = f.read(6)
@@ -252,7 +252,7 @@ def update_app_elements(
         _ELEM_TYPE_FSLOAD, struct.pack("<B", mount_point) + bytes(filename, "ascii")
     )
     if status_addr is not None:
-        # mboot will write 0 to status_addr on succes, or a negative number on failure
+        # mboot will write 0 to status_addr on success, or a negative number on failure
         machine.mem32[status_addr] = 1
         elems += _create_element(_ELEM_TYPE_STATUS, struct.pack("<L", status_addr))
     elems += _create_element(_ELEM_TYPE_END, b"")

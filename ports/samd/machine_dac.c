@@ -25,9 +25,12 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_DAC
+
 #include <stdint.h>
 #include "py/obj.h"
-#include "py/runtime.h"
 #include "py/mphal.h"
 
 #include "sam.h"
@@ -149,7 +152,7 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
 
 STATIC void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     dac_obj_t *self = self_in;
-    mp_printf(print, "DAC(%u, Pin=%s, vref=%d)", self->id, pin_name(self->gpio_id), self->vref);
+    mp_printf(print, "DAC(%u, Pin=%q, vref=%d)", self->id, pin_find_by_id(self->gpio_id)->name, self->vref);
 }
 
 STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
@@ -183,3 +186,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, dac_print,
     locals_dict, &dac_locals_dict
     );
+
+#endif

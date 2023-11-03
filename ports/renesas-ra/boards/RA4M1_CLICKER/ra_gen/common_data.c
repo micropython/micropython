@@ -1,4 +1,3 @@
-/* generated common source file - do not edit */
 #include "common_data.h"
 ioport_instance_ctrl_t g_ioport_ctrl;
 const ioport_instance_t g_ioport =

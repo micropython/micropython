@@ -89,10 +89,10 @@ typedef struct _pyb_lcd_obj_t {
 
     // hardware control for the LCD
     const spi_t *spi;
-    const pin_obj_t *pin_cs1;
-    const pin_obj_t *pin_rst;
-    const pin_obj_t *pin_a0;
-    const pin_obj_t *pin_bl;
+    const machine_pin_obj_t *pin_cs1;
+    const machine_pin_obj_t *pin_rst;
+    const machine_pin_obj_t *pin_a0;
+    const machine_pin_obj_t *pin_bl;
 
     // character buffer for stdout-like output
     char char_buffer[LCD_CHAR_BUF_W * LCD_CHAR_BUF_H];

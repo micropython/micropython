@@ -48,7 +48,7 @@
 
 typedef struct _pyb_servo_obj_t {
     mp_obj_base_t base;
-    const pin_obj_t *pin;
+    const machine_pin_obj_t *pin;
     uint8_t pulse_min;          // units of 10us
     uint8_t pulse_max;          // units of 10us
     uint8_t pulse_centre;       // units of 10us

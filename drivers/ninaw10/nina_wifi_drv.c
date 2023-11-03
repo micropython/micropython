@@ -105,7 +105,7 @@ typedef enum {
     NINA_CMD_AP_GET_BSSID           = 0x3C,
     NINA_CMD_AP_GET_CHANNEL         = 0x3D,
 
-    // Disonnect/status commands.
+    // Disconnect/status commands.
     NINA_CMD_DISCONNECT             = 0x30,
     NINA_CMD_CONN_STATUS            = 0x20,
     NINA_CMD_CONN_REASON            = 0x1F,
@@ -684,6 +684,14 @@ int nina_ioctl(uint32_t cmd, size_t len, uint8_t *buf, uint32_t iface) {
                 return -1;
             }
             break;
+        case NINA_CMD_GET_ANALOG_READ: {
+            if (len != 2 || nina_send_command_read_vals(NINA_CMD_GET_ANALOG_READ,
+                1, ARG_8BITS, NINA_ARGS(ARG_BYTE(buf[0])),
+                1, ARG_8BITS, NINA_VALS({(uint16_t *)&len, buf})) != 0) {
+                return -1;
+            }
+            break;
+        }
         default:
             return 0;
     }

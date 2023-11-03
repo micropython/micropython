@@ -51,10 +51,10 @@ def irq(event, data):
     elif event == _IRQ_PERIPHERAL_DISCONNECT:
         print("_IRQ_PERIPHERAL_DISCONNECT")
     elif event == _IRQ_GATTC_CHARACTERISTIC_RESULT:
-        # conn_handle, def_handle, value_handle, properties, uuid = data
+        # conn_handle, end_handle, value_handle, properties, uuid = data
         if data[-1] == CHAR_UUID:
             print("_IRQ_GATTC_CHARACTERISTIC_RESULT", data[-1])
-            waiting_events[event] = data[2]
+            waiting_events[event] = (data[2], data[1])
         else:
             return
     elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
@@ -179,11 +179,11 @@ def instance1():
 
         # Discover characteristics.
         ble.gattc_discover_characteristics(conn_handle, 1, 65535)
-        value_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
+        value_handle, end_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
         wait_for_event(_IRQ_GATTC_CHARACTERISTIC_DONE, TIMEOUT_MS)
 
         # Discover CCCD.
-        ble.gattc_discover_descriptors(conn_handle, value_handle, value_handle + 5)
+        ble.gattc_discover_descriptors(conn_handle, value_handle, end_handle)
         cccd_handle = wait_for_event(_IRQ_GATTC_DESCRIPTOR_RESULT, TIMEOUT_MS)
         wait_for_event(_IRQ_GATTC_DESCRIPTOR_DONE, TIMEOUT_MS)
 

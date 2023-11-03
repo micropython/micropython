@@ -82,10 +82,17 @@ Methods
 
 .. method:: StateMachine.exec(instr)
 
-    Execute a single PIO instruction. Uses `asm_pio_encode` to encode the
-    instruction from the given string *instr*.
+    Execute a single PIO instruction.
+
+    If *instr* is a string then uses `asm_pio_encode` to encode the instruction
+    from the given string.
 
     >>> sm.exec("set(0, 1)")
+
+    If *instr* is an integer then it is treated as an already encoded PIO
+    machine code instruction to be executed.
+
+    >>> sm.exec(rp2.asm_pio_encode("out(y, 8)", 0))
 
 .. method:: StateMachine.get(buf=None, shift=0)
 

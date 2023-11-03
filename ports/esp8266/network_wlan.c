@@ -39,6 +39,7 @@
 #include "spi_flash.h"
 #include "ets_alt_task.h"
 #include "lwip/dns.h"
+#include "modnetwork.h"
 
 typedef struct _wlan_if_obj_t {
     mp_obj_base_t base;
@@ -46,11 +47,10 @@ typedef struct _wlan_if_obj_t {
 } wlan_if_obj_t;
 
 void error_check(bool status, const char *msg);
-const mp_obj_type_t wlan_if_type;
 
 STATIC const wlan_if_obj_t wlan_objs[] = {
-    {{&wlan_if_type}, STATION_IF},
-    {{&wlan_if_type}, SOFTAP_IF},
+    {{&esp_network_wlan_type}, STATION_IF},
+    {{&esp_network_wlan_type}, SOFTAP_IF},
 };
 
 STATIC void require_if(mp_obj_t wlan_if, int if_no) {
@@ -60,7 +60,8 @@ STATIC void require_if(mp_obj_t wlan_if, int if_no) {
     }
 }
 
-STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t esp_wlan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
     int idx = 0;
     if (n_args > 0) {
         idx = mp_obj_get_int(args[0]);
@@ -70,7 +71,6 @@ STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_FROM_PTR(&wlan_objs[idx]);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_get_wlan_obj, 0, 1, get_wlan);
 
 STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {
     wlan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -152,7 +152,7 @@ STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
         error_check(wifi_station_set_config(&config), "Cannot set STA config");
     }
 
-    wifi_station_set_hostname(mod_network_hostname);
+    wifi_station_set_hostname(mod_network_hostname_data);
 
     error_check(wifi_station_connect(), "Cannot connect to AP");
 
@@ -402,12 +402,7 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case MP_QSTR_hostname:
                     case MP_QSTR_dhcp_hostname: {
                         // TODO: Deprecated. Use network.hostname(name) instead.
-                        size_t len;
-                        const char *str = mp_obj_str_get_data(kwargs->table[i].value, &len);
-                        if (len >= MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN) {
-                            mp_raise_ValueError(NULL);
-                        }
-                        strcpy(mod_network_hostname, str);
+                        mod_network_hostname(1, &kwargs->table[i].value);
                         break;
                     }
                     case MP_QSTR_protocol: {
@@ -417,6 +412,10 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                     case MP_QSTR_txpower: {
                         int8_t power = mp_obj_get_float(kwargs->table[i].value) * 4;
                         system_phy_set_max_tpw(power);
+                        break;
+                    }
+                    case MP_QSTR_pm: {
+                        wifi_set_sleep_type(mp_obj_get_int(kwargs->table[i].value));
                         break;
                     }
                     default:
@@ -477,13 +476,17 @@ STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
             break;
         case MP_QSTR_hostname:
         case MP_QSTR_dhcp_hostname: {
-            req_if = STATION_IF;
             // TODO: Deprecated. Use network.hostname() instead.
-            val = mp_obj_new_str(mod_network_hostname, strlen(mod_network_hostname));
+            req_if = STATION_IF;
+            val = mod_network_hostname(0, NULL);
             break;
         }
         case MP_QSTR_protocol: {
             val = mp_obj_new_int(wifi_get_phy_mode());
+            break;
+        }
+        case MP_QSTR_pm: {
+            val = MP_OBJ_NEW_SMALL_INT(wifi_get_sleep_type());
             break;
         }
         default:
@@ -511,14 +514,20 @@ STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&esp_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&esp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_ifconfig_obj) },
+
+    // Constants
+    { MP_ROM_QSTR(MP_QSTR_PM_NONE), MP_ROM_INT(NONE_SLEEP_T) },
+    { MP_ROM_QSTR(MP_QSTR_PM_PERFORMANCE), MP_ROM_INT(MODEM_SLEEP_T) },
+    { MP_ROM_QSTR(MP_QSTR_PM_POWERSAVE), MP_ROM_INT(LIGHT_SLEEP_T) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(wlan_if_locals_dict, wlan_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    wlan_if_type,
+    esp_network_wlan_type,
     MP_QSTR_WLAN,
     MP_TYPE_FLAG_NONE,
+    make_new, esp_wlan_make_new,
     locals_dict, &wlan_if_locals_dict
     );
 

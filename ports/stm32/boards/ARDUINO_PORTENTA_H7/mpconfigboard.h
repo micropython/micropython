@@ -132,13 +132,9 @@ void PORTENTA_board_osc_enable(int enable);
 // SPI flash #1, block device config
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
-#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
-    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
-    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
-    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-    )
-#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
-#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
+#define MICROPY_HW_BDEV_SPIFLASH    (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH_CONFIG (&spiflash_config)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev)
 #endif
 
@@ -161,7 +157,7 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_UART7_RTS        (pyb_pin_BT_RTS)
 #define MICROPY_HW_UART7_CTS        (pyb_pin_BT_CTS)
 
-// I2C busses
+// I2C buses
 #define MICROPY_HW_I2C1_SCL         (pin_B6)
 #define MICROPY_HW_I2C1_SDA         (pin_B7)
 
@@ -181,9 +177,9 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_USRSW_PRESSED    (1)
 
 // LEDs
-#define MICROPY_HW_LED1             (pyb_pin_LEDR) // red
-#define MICROPY_HW_LED2             (pyb_pin_LEDG) // green
-#define MICROPY_HW_LED3             (pyb_pin_LEDB) // yellow
+#define MICROPY_HW_LED1             (pyb_pin_LED_RED) // red
+#define MICROPY_HW_LED2             (pyb_pin_LED_GREEN) // green
+#define MICROPY_HW_LED3             (pyb_pin_LED_BLUE) // yellow
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 
@@ -205,6 +201,11 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_SDCARD_D2        (pin_B3)
 #define MICROPY_HW_SDCARD_D3        (pin_B4)
 #define MICROPY_HW_SDCARD_MOUNT_AT_BOOT (0)
+
+// FDCAN bus
+#define MICROPY_HW_CAN1_NAME        "FDCAN1"
+#define MICROPY_HW_CAN1_TX          (pin_H13)
+#define MICROPY_HW_CAN1_RX          (pin_B8)
 
 // USB config
 #define MICROPY_HW_USB_HS           (1)

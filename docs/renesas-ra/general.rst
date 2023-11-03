@@ -18,7 +18,7 @@ The following boards are officially supported.
 
 * RA4M1-CLICKER
 
-For the manual and other references for the board and RA Family MCU, please refer to the web page: `EK-RA4M1 CLICKER <https://www.mikroe.com/ra4m1-clicker>`_
+For the manual and other references for the board and RA Family MCU, please refer to the web page: `RA4M1 CLICKER <https://www.mikroe.com/ra4m1-clicker>`_
 
 * EK-RA6M2
 

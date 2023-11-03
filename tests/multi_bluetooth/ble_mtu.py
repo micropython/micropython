@@ -1,23 +1,18 @@
-# Test MTU exchange (initiated by both central and peripheral) and the effect on
-# notify and write size.
-
-# Seven connections are made (four central->peripheral, three peripheral->central).
+# Test MTU exchange (initiated by central) and the effect on notify and write
+# size.
+#
+# See ble_mtu_peripheral.py which tests peripheral-initiated MTU exchange (not supported on btstack).
+#
+# Four connections are made:
 #
 # Test | Requested | Preferred | Result | Notes
 #   0  |  300 (C)  |  256 (P)  |  256   |
 #   1  |  300 (C)  |  200 (P)  |  200   |
 #   2  |  300 (C)  |  400 (P)  |  300   |
 #   3  |  300 (C)  |  50  (P)  |  50    | Shorter than 64 so the notification is truncated.
-#   4  |  290 (P)  |  256 (C)  |  256   |
-#   5  |  290 (P)  |  190 (C)  |  190   |
-#   6  |  290 (P)  |  350 (C)  |  290   |
 #
 # For each connection a notification is sent by the server (peripheral) and a characteristic
 # is written by the client (central) to ensure that the expected size is transmitted.
-#
-# Note: This currently fails on btstack for two reasons:
-# - btstack doesn't truncate writes to the MTU (it fails instead)
-# - btstack (in central mode) doesn't handle the peripheral initiating the MTU exchange
 
 from micropython import const
 import time, machine, bluetooth
@@ -97,37 +92,28 @@ def instance0():
     multitest.globals(BDADDR=ble.config("mac"))
     ((char_handle,),) = ble.gatts_register_services(SERVICES)
     ble.gatts_set_buffer(char_handle, 500, False)
-    print("gap_advertise")
-    ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
     multitest.next()
+
+    default_mtus = [256, 200, 400, 50]
     try:
-        for i in range(7):
-            if i == 1:
-                ble.config(mtu=200)
-            elif i == 2:
-                ble.config(mtu=400)
-            elif i == 3:
-                ble.config(mtu=50)
-            elif i >= 4:
-                ble.config(mtu=290)
-            else:
-                # This is the NimBLE default.
-                ble.config(mtu=256)
+        for i in range(4):
+            ble.config(mtu=default_mtus[i])
+
+            print("gap_advertise")
+            ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
+            multitest.broadcast(f"peripheral:adv:{i}")
 
             # Wait for central to connect to us.
             conn_handle = wait_for_event(_IRQ_CENTRAL_CONNECT, TIMEOUT_MS)
 
-            if i >= 4:
-                print("gattc_exchange_mtu")
-                ble.gattc_exchange_mtu(conn_handle)
-
             mtu = wait_for_event(_IRQ_MTU_EXCHANGED, TIMEOUT_MS)
+
+            multitest.wait(f"client:discovery:{i}")
 
             print("gatts_notify")
             ble.gatts_notify(conn_handle, char_handle, str(i) * 64)
 
-            # Extra timeout while client does service discovery.
-            wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS * 2)
+            wait_for_event(_IRQ_GATTS_WRITE, TIMEOUT_MS)
 
             print("gatts_read")
             data = ble.gatts_read(char_handle)
@@ -135,10 +121,6 @@ def instance0():
 
             # Wait for the central to disconnect.
             wait_for_event(_IRQ_CENTRAL_DISCONNECT, TIMEOUT_MS)
-
-            print("gap_advertise")
-            ble.gap_advertise(20_000, b"\x02\x01\x06\x04\xffMPY")
-
     finally:
         ble.active(0)
 
@@ -147,40 +129,35 @@ def instance0():
 def instance1():
     multitest.next()
     try:
-        for i in range(7):
-            if i < 4:
-                ble.config(mtu=300)
-            elif i == 5:
-                ble.config(mtu=190)
-            elif i == 6:
-                ble.config(mtu=350)
-            else:
-                ble.config(mtu=256)
+        for i in range(4):
+            ble.config(mtu=300)
 
-            # Connect to peripheral and then disconnect.
-            # Extra scan timeout allows for the peripheral to receive the previous disconnect
-            # event and start advertising again.
+            multitest.wait(f"peripheral:adv:{i}")
+
             print("gap_connect")
-            ble.gap_connect(BDADDR[0], BDADDR[1], 5000)
+            ble.gap_connect(BDADDR[0], BDADDR[1], TIMEOUT_MS)
             conn_handle = wait_for_event(_IRQ_PERIPHERAL_CONNECT, TIMEOUT_MS)
 
-            if i < 4:
-                print("gattc_exchange_mtu")
-                ble.gattc_exchange_mtu(conn_handle)
+            # Central-initiated mtu exchange.
+            print("gattc_exchange_mtu")
+            ble.gattc_exchange_mtu(conn_handle)
 
             mtu = wait_for_event(_IRQ_MTU_EXCHANGED, TIMEOUT_MS)
-
-            wait_for_event(_IRQ_GATTC_NOTIFY, TIMEOUT_MS)
 
             print("gattc_discover_characteristics")
             ble.gattc_discover_characteristics(conn_handle, 1, 65535)
             value_handle = wait_for_event(_IRQ_GATTC_CHARACTERISTIC_RESULT, TIMEOUT_MS)
             wait_for_event(_IRQ_GATTC_CHARACTERISTIC_DONE, TIMEOUT_MS)
 
-            # Write 20 more than the MTU to test truncation.
+            multitest.broadcast(f"client:discovery:{i}")
+
+            wait_for_event(_IRQ_GATTC_NOTIFY, TIMEOUT_MS)
+
             print("gattc_write")
-            ble.gattc_write(conn_handle, value_handle, chr(ord("a") + i) * (mtu + 20), 1)
+            ble.gattc_write(conn_handle, value_handle, chr(ord("a") + i) * (mtu - 3), 1)
             wait_for_event(_IRQ_GATTC_WRITE_DONE, TIMEOUT_MS)
+
+            time.sleep_ms(300)
 
             # Disconnect from peripheral.
             print("gap_disconnect:", ble.gap_disconnect(conn_handle))

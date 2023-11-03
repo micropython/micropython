@@ -31,7 +31,7 @@
 
 #if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 
 // if a port didn't define MSB/LSB constants then provide them
 #ifndef MICROPY_PY_MACHINE_SPI_MSB

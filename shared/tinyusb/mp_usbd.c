@@ -31,7 +31,7 @@
 #if MICROPY_HW_ENABLE_USBDEV
 
 #ifndef NO_QSTR
-#include "tusb.h" // TinyUSB is not avaiable when running the string preprocessor
+#include "tusb.h" // TinyUSB is not available when running the string preprocessor
 #include "device/usbd.h"
 #include "device/usbd_pvt.h"
 #endif

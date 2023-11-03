@@ -100,7 +100,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             } else if (exec_flags & EXEC_FLAG_SOURCE_IS_READER) {
                 lex = mp_lexer_new(MP_QSTR__lt_stdin_gt_, *(mp_reader_t *)source);
             } else if (exec_flags & EXEC_FLAG_SOURCE_IS_FILENAME) {
-                lex = mp_lexer_new_from_file(source);
+                lex = mp_lexer_new_from_file(qstr_from_str(source));
             } else {
                 lex = (mp_lexer_t *)source;
             }
@@ -592,7 +592,7 @@ friendly_repl_reset:
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs
             // interrupts to be enabled or no transfers occur. So we try to
-            // do the user a favor and reenable interrupts.
+            // do the user a favor and re-enable interrupts.
             if (query_irq() == IRQ_STATE_DISABLED) {
                 enable_irq(IRQ_STATE_ENABLED);
                 mp_hal_stdout_tx_str("MPY: enabling IRQs\r\n");

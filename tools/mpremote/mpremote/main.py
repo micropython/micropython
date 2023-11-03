@@ -18,7 +18,7 @@ MicroPython device over a serial connection.  Commands supported are:
 """
 
 import argparse
-import os, sys
+import os, sys, time
 from collections.abc import Mapping
 from textwrap import dedent
 
@@ -34,12 +34,17 @@ from .commands import (
     do_eval,
     do_run,
     do_resume,
+    do_rtc,
     do_soft_reset,
 )
 from .mip import do_mip
 from .repl import do_repl
 
 _PROG = "mpremote"
+
+
+def do_sleep(state, args):
+    time.sleep(args.ms[0])
 
 
 def do_help(state, _args=None):
@@ -98,6 +103,12 @@ def argparse_connect():
     return cmd_parser
 
 
+def argparse_sleep():
+    cmd_parser = argparse.ArgumentParser(description="sleep before executing next command")
+    cmd_parser.add_argument("ms", nargs=1, type=float, help="milliseconds to sleep for")
+    return cmd_parser
+
+
 def argparse_edit():
     cmd_parser = argparse.ArgumentParser(description="edit files on the device")
     cmd_parser.add_argument("files", nargs="+", help="list of remote paths")
@@ -119,6 +130,7 @@ def argparse_mount():
 
 def argparse_repl():
     cmd_parser = argparse.ArgumentParser(description="connect to given device")
+    _bool_flag(cmd_parser, "escape-non-printable", "e", False, "escape non-printable characters")
     cmd_parser.add_argument(
         "--capture",
         type=str,
@@ -158,6 +170,12 @@ def argparse_run():
         cmd_parser, "follow", "f", True, "follow output until the script completes (default)"
     )
     cmd_parser.add_argument("path", nargs=1, help="path to script to execute")
+    return cmd_parser
+
+
+def argparse_rtc():
+    cmd_parser = argparse.ArgumentParser(description="get (default) or set the device RTC")
+    _bool_flag(cmd_parser, "set", "s", False, "set the RTC to the current local time")
     return cmd_parser
 
 
@@ -211,6 +229,10 @@ _COMMANDS = {
         do_connect,
         argparse_connect,
     ),
+    "sleep": (
+        do_sleep,
+        argparse_sleep,
+    ),
     "disconnect": (
         do_disconnect,
         argparse_none("disconnect current device"),
@@ -251,6 +273,10 @@ _COMMANDS = {
         do_run,
         argparse_run,
     ),
+    "rtc": (
+        do_rtc,
+        argparse_rtc,
+    ),
     "fs": (
         do_filesystem,
         argparse_filesystem,
@@ -280,7 +306,7 @@ _BUILTIN_COMMAND_EXPANSIONS = {
         "command": "connect list",
         "help": "list available serial ports",
     },
-    # Filesystem shortcuts.
+    # Filesystem shortcuts (use `cp` instead of `fs cp`).
     "cat": "fs cat",
     "ls": "fs ls",
     "cp": "fs cp",
@@ -288,31 +314,29 @@ _BUILTIN_COMMAND_EXPANSIONS = {
     "touch": "fs touch",
     "mkdir": "fs mkdir",
     "rmdir": "fs rmdir",
+    # Disk used/free.
     "df": [
         "exec",
-        "import uos\nprint('mount \\tsize \\tused \\tavail \\tuse%')\nfor _m in [''] + uos.listdir('/'):\n _s = uos.stat('/' + _m)\n if not _s[0] & 1 << 14: continue\n _s = uos.statvfs(_m)\n if _s[0]:\n  _size = _s[0] * _s[2]; _free = _s[0] * _s[3]; print(_m, _size, _size - _free, _free, int(100 * (_size - _free) / _size), sep='\\t')",
+        "import os\nprint('mount \\tsize \\tused \\tavail \\tuse%')\nfor _m in [''] + os.listdir('/'):\n _s = os.stat('/' + _m)\n if not _s[0] & 1 << 14: continue\n _s = os.statvfs(_m)\n if _s[0]:\n  _size = _s[0] * _s[2]; _free = _s[0] * _s[3]; print(_m, _size, _size - _free, _free, int(100 * (_size - _free) / _size), sep='\\t')",
     ],
     # Other shortcuts.
-    "reset t_ms=100": {
+    "reset": {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, machine; utime.sleep_ms(t_ms); machine.reset()",
+            "import time, machine; time.sleep_ms(100); machine.reset()",
         ],
-        "help": "reset the device after delay",
+        "help": "hard reset the device",
     },
-    "bootloader t_ms=100": {
+    "bootloader": {
         "command": [
             "exec",
             "--no-follow",
-            "import utime, machine; utime.sleep_ms(t_ms); machine.bootloader()",
+            "import time, machine; time.sleep_ms(100); machine.bootloader()",
         ],
         "help": "make the device enter its bootloader",
     },
-    "setrtc": [
-        "exec",
-        "import machine; machine.RTC().datetime((2020, 1, 1, 0, 10, 0, 0, 0))",
-    ],
+    # Simple aliases.
     "--help": "help",
     "--version": "version",
 }
@@ -391,6 +415,8 @@ def do_command_expansion(args):
         cmd = args.pop(0)
         exp_args, exp_sub, _ = _command_expansions[cmd]
         for exp_arg in exp_args:
+            if args and args[0] == "+":
+                break
             exp_arg_name = exp_arg[0]
             if args and "=" not in args[0]:
                 # Argument given without a name.
@@ -423,7 +449,7 @@ def do_command_expansion(args):
 
 class State:
     def __init__(self):
-        self.pyb = None
+        self.transport = None
         self._did_action = False
         self._auto_soft_reset = True
 
@@ -434,20 +460,20 @@ class State:
         return not self._did_action
 
     def ensure_connected(self):
-        if self.pyb is None:
+        if self.transport is None:
             do_connect(self)
 
     def ensure_raw_repl(self, soft_reset=None):
         self.ensure_connected()
         soft_reset = self._auto_soft_reset if soft_reset is None else soft_reset
-        if soft_reset or not self.pyb.in_raw_repl:
-            self.pyb.enter_raw_repl(soft_reset=soft_reset)
+        if soft_reset or not self.transport.in_raw_repl:
+            self.transport.enter_raw_repl(soft_reset=soft_reset)
             self._auto_soft_reset = False
 
     def ensure_friendly_repl(self):
         self.ensure_connected()
-        if self.pyb.in_raw_repl:
-            self.pyb.exit_raw_repl()
+        if self.transport.in_raw_repl:
+            self.transport.exit_raw_repl()
 
 
 def main():

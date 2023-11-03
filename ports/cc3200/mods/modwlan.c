@@ -38,7 +38,7 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared/netutils/netutils.h"
 #include "modnetwork.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "modwlan.h"
 #include "pybrtc.h"
 #include "debug.h"
@@ -432,7 +432,7 @@ void wlan_sl_init (int8_t mode, const char *ssid, uint8_t ssid_len, uint8_t auth
     // switch to the requested mode
     wlan_set_mode(mode);
 
-    // stop and start again (we need to in the propper mode from now on)
+    // stop and start again (we need to be in the proper mode from now on)
     wlan_reenable(mode);
 
     // Set Tx power level for station or AP mode
@@ -608,7 +608,7 @@ STATIC void wlan_set_ssid (const char *ssid, uint8_t len, bool add_mac) {
         // save the ssid
         memcpy(&wlan_obj.ssid, ssid, len);
         // append the last 2 bytes of the MAC address, since the use of this functionality is under our control
-        // we can assume that the lenght of the ssid is less than (32 - 5)
+        // we can assume that the length of the ssid is less than (32 - 5)
         if (add_mac) {
             snprintf((char *)&wlan_obj.ssid[len], sizeof(wlan_obj.ssid) - len, "-%02x%02x", wlan_obj.mac[4], wlan_obj.mac[5]);
             len += 5;

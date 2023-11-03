@@ -129,7 +129,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 STATIC size_t thread_stack_size = 0;
 
 STATIC mp_obj_t mod_thread_get_ident(void) {
-    return mp_obj_new_int_from_uint((uintptr_t)mp_thread_get_state());
+    return mp_obj_new_int_from_uint(mp_thread_get_id());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_get_ident_obj, mod_thread_get_ident);
 
@@ -174,6 +174,7 @@ STATIC void *thread_entry(void *args_in) {
     // The GC starts off unlocked on this thread.
     ts.gc_lock_depth = 0;
 
+    ts.nlr_jump_callback_top = NULL;
     ts.mp_pending_exception = MP_OBJ_NULL;
 
     // set locals and globals from the calling context
@@ -268,9 +269,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     th_args->fun = args[0];
 
     // spawn the thread!
-    mp_thread_create(thread_entry, th_args, &th_args->stack_size);
-
-    return mp_const_none;
+    return mp_obj_new_int_from_uint(mp_thread_create(thread_entry, th_args, &th_args->stack_size));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_start_new_thread_obj, 2, 3, mod_thread_start_new_thread);
 

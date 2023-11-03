@@ -92,13 +92,8 @@ STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
             // remove from poll list on error.
             socket->callback = MP_OBJ_NULL;
             mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
-        } else if (flags) {
+        } else if (flags & SOCKET_POLL_RD) {
             mp_call_function_1(socket->callback, MP_OBJ_FROM_PTR(socket));
-            if (flags & SOCKET_POLL_ERR) {
-                // remove from poll list on error.
-                socket->callback = MP_OBJ_NULL;
-                mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
-            }
         }
     }
 }
@@ -121,7 +116,7 @@ STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
             reason == NINA_ESP_REASON_NOT_AUTHED ||
             reason == NINA_ESP_REASON_4WAY_HANDSHAKE_TIMEOUT ||
             reason >= NINA_ESP_REASON_BEACON_TIMEOUT) {
-            debug_printf(&mp_plat_print, "poll_connect() status: %d reason %d\n", status, reason);
+            debug_printf("poll_connect() status: %d reason %d\n", status, reason);
             if (nina_connect(self->ssid, self->security, self->key, 0) != 0) {
                 mp_raise_msg_varg(&mp_type_OSError,
                     MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"),
@@ -428,7 +423,11 @@ STATIC mp_obj_t network_ninaw10_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_
     nina_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t buf;
     mp_get_buffer_raise(buf_in, &buf, MP_BUFFER_READ | MP_BUFFER_WRITE);
-    nina_ioctl(mp_obj_get_int(cmd_in), buf.len, buf.buf, self->itf);
+    int ret = nina_ioctl(mp_obj_get_int(cmd_in), buf.len, buf.buf, self->itf);
+    if (ret != 0) {
+        mp_raise_msg_varg(&mp_type_OSError,
+            MP_ERROR_TEXT("ioctl %d failed %d"), mp_obj_get_int(cmd_in), ret);
+    }
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(network_ninaw10_ioctl_obj, network_ninaw10_ioctl);
@@ -447,7 +446,7 @@ STATIC int network_ninaw10_socket_poll(mod_network_socket_obj_t *socket, uint32_
     }
     mp_uint_t start = mp_hal_ticks_ms();
     for (; !(flags & rwf); mp_hal_delay_ms(5)) {
-        if (nina_socket_poll(socket->fileno, &flags) < 0 || (flags & SOCKET_POLL_ERR)) {
+        if (nina_socket_poll(socket->fileno, &flags) < 0) {
             nina_socket_errno(_errno);
             debug_printf("socket_poll(%d) -> errno %d flags %d\n", socket->fileno, *_errno, flags);
             return -1;

@@ -62,6 +62,6 @@ Access the MicroPython REPL (the Python prompt) via USB serial or UART with 1152
 
 You can see the MicroPython REPL prompt like below::
 
-   MicroPython v1.18-293-g339aa09b8-dirty on 2022-03-26; RA6M2_EK with RA6M2
+   MicroPython v1.20.0 on 2023-04-27; EK-RA6M2 with RA6M2
    Type "help()" for more information.
    >>>

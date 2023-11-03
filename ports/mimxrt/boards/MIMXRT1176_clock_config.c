@@ -172,7 +172,7 @@ void BOARD_BootClockRUN(void) {
            (ANADIG_OSC->OSC_24M_CTRL & ANADIG_OSC_OSC_24M_CTRL_OSC_24M_STABLE_MASK)) {
     }
 
-    /* Swicth both core, M7 Systick and Bus_Lpsr to OscRC48MDiv2 first */
+    /* Switch both core, M7 Systick and Bus_Lpsr to OscRC48MDiv2 first */
     rootCfg.mux = kCLOCK_M7_ClockRoot_MuxOscRc48MDiv2;
     rootCfg.div = 1;
     #if __CORTEX_M == 7
@@ -382,62 +382,62 @@ void BOARD_BootClockRUN(void) {
     rootCfg.div = 1;
     CLOCK_SetRootClock(kCLOCK_Root_Can3, &rootCfg);
 
-    /* Configure LPUART1 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART1 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART1_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart1, &rootCfg);
 
-    /* Configure LPUART2 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART2 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART2_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart2, &rootCfg);
 
-    /* Configure LPUART3 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART3 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART3_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart3, &rootCfg);
 
-    /* Configure LPUART4 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART4 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART4_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart4, &rootCfg);
 
-    /* Configure LPUART5 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART5 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART5_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart5, &rootCfg);
 
-    /* Configure LPUART6 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART6 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART6_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart6, &rootCfg);
 
-    /* Configure LPUART7 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART7 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART7_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart7, &rootCfg);
 
-    /* Configure LPUART8 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART8 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART8_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart8, &rootCfg);
 
-    /* Configure LPUART9 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART9 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART9_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart9, &rootCfg);
 
-    /* Configure LPUART10 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART10 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART10_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart10, &rootCfg);
 
-    /* Configure LPUART11 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART11 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART11_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart11, &rootCfg);
 
-    /* Configure LPUART12 using SYS_PLL3_PFD3_CLK */
+    /* Configure LPUART12 using SYS_PLL2_PFD3_CLK */
     rootCfg.mux = kCLOCK_LPUART12_ClockRoot_MuxSysPll2Pfd3;
     rootCfg.div = 4;
     CLOCK_SetRootClock(kCLOCK_Root_Lpuart12, &rootCfg);

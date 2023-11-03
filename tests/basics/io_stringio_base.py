@@ -1,10 +1,7 @@
 # Checks that an instance type inheriting from a native base that uses
 # MP_TYPE_FLAG_ITER_IS_STREAM will still have a getiter.
 
-try:
-    import uio as io
-except ImportError:
-    import io
+import io
 
 a = io.StringIO()
 a.write("hello\nworld\nmicro\npython\n")

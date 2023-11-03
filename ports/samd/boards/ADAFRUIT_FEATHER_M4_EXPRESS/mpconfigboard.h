@@ -3,3 +3,5 @@
 
 #define MICROPY_HW_XOSC32K          (1)
 #define MICROPY_HW_MCU_OSC32KULP    (1)
+
+#define MICROPY_HW_QSPIFLASH        GD25Q16C

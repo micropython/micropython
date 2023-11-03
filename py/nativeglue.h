@@ -154,7 +154,7 @@ typedef struct _mp_fun_table_t {
     mp_obj_t (*obj_new_float_from_d)(double d);
     float (*obj_get_float_to_f)(mp_obj_t o);
     double (*obj_get_float_to_d)(mp_obj_t o);
-    void (*get_buffer_raise)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+    bool (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
     const mp_stream_p_t *(*get_stream_raise)(mp_obj_t self_in, int flags);
     const mp_print_t *plat_print;
     const mp_obj_type_t *type_type;

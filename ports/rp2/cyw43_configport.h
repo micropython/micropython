@@ -33,7 +33,6 @@
 #include "extmod/modnetwork.h"
 #include "pendsv.h"
 
-#define CYW43_CHIPSET_FIRMWARE_INCLUDE_FILE "w43439A0_7_95_49_00_combined.h"
 #define CYW43_WIFI_NVRAM_INCLUDE_FILE   "wifi_nvram_43439.h"
 #define CYW43_IOCTL_TIMEOUT_US          (1000000)
 #define CYW43_SLEEP_MAX                 (10)
@@ -49,7 +48,7 @@
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
 
-#define CYW43_HOST_NAME                 mod_network_hostname
+#define CYW43_HOST_NAME                 mod_network_hostname_data
 
 #define CYW43_SDPCM_SEND_COMMON_WAIT \
     if (get_core_num() == 0) { \
@@ -90,6 +89,16 @@
 #define cyw43_hal_generate_laa_mac      mp_hal_generate_laa_mac
 
 #define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
+
+// Bluetooth requires dynamic memory allocation to load its firmware (the allocation
+// call is made from pico-sdk).  This allocation is always done at thread-level, not
+// from an IRQ, so is safe to delegate to the MicroPython GC heap.
+#ifndef cyw43_malloc
+#define cyw43_malloc(nmemb) m_tracked_calloc(nmemb, 1)
+#endif
+#ifndef cyw43_free
+#define cyw43_free m_tracked_free
+#endif
 
 void cyw43_post_poll_hook(void);
 extern volatile int cyw43_has_pending;

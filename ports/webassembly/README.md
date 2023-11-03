@@ -49,7 +49,7 @@ using the require command and the general API outlined below. For example:
 var mp_js = require('./build/micropython.js');
 
 mp_js_init(64 * 1024);
-mp_js_do_str("print('hello world')\n");
+await mp_js_do_str("print('hello world')\n");
 ```
 
 Running with HTML
@@ -77,7 +77,7 @@ something to stdout.  The following code demonstrates basic functionality:
       Module["onRuntimeInitialized"] = async function() {
         mp_js_startup();
         mp_js_init(64 * 1024);
-        mp_js_do_str("print('hello world')");
+        await mp_js_do_str("print('hello world')");
       };
     </script>
   </body>
@@ -108,7 +108,7 @@ Initialize MicroPython with the given stack size in bytes. This must be
 called before attempting to interact with MicroPython.
 
 ```
-mp_js_do_str(code)
+await mp_js_do_str(code)
 ```
 
 Execute the input code. `code` must be a `string`.
@@ -121,7 +121,7 @@ Initialize MicroPython repl. Must be called before entering characters into
 the repl.
 
 ```
-mp_js_process_char(char)
+await mp_js_process_char(char)
 ```
 
 Input character into MicroPython repl. `char` must be of type `number`. This

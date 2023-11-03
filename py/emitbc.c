@@ -439,7 +439,7 @@ void mp_emit_bc_set_source_line(emit_t *emit, mp_uint_t source_line) {
 }
 
 void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
-    // Assiging a label ends any dead-code region, and all following opcodes
+    // Assigning a label ends any dead-code region, and all following opcodes
     // should be emitted (until another unconditional flow control).
     emit->suppress = false;
 

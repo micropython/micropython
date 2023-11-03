@@ -10,6 +10,7 @@
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_high(pin))
 
 #define MICROPY_HW_NUM_PIN_IRQS (3 * 32)
+#define MICROPY_PY_MACHINE_SDCARD    (0)
 
 // Define mapping logical UART # to hardware UART #
 // RX/TX      HW-UART    Logical UART
@@ -27,6 +28,12 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_AD_B0_14_LPUART3_TX }, { IOMUXC_GPIO_AD_B0_15_LPUART3_RX }, \
     { IOMUXC_GPIO_EMC_32_LPUART4_TX },   { IOMUXC_GPIO_EMC_33_LPUART4_RX }, \
+
+#define IOMUX_TABLE_UART_CTS_RTS \
+    { IOMUXC_GPIO_AD_B0_08_LPUART1_CTS_B }, { IOMUXC_GPIO_AD_B0_09_LPUART1_RTS_B }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_B0_12_LPUART3_CTS_B }, { IOMUXC_GPIO_AD_B0_13_LPUART3_RTS_B }, \
+    { 0 }, { 0 },
 
 #define MICROPY_HW_SPI_INDEX { 1 }
 

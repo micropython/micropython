@@ -63,7 +63,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         ret |= MP_STREAM_POLL_RD;
     }
     if (poll_flags & MP_STREAM_POLL_WR) {
-        ret |= mp_uos_dupterm_poll(poll_flags);
+        ret |= mp_os_dupterm_poll(poll_flags);
     }
     return ret;
 }
@@ -95,7 +95,7 @@ void mp_hal_debug_str(const char *str) {
 #endif
 
 void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
 }
 
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
@@ -146,7 +146,7 @@ STATIC void dupterm_task_handler(os_event_t *evt) {
     }
     lock = 1;
     while (1) {
-        int c = mp_uos_dupterm_rx_chr();
+        int c = mp_os_dupterm_rx_chr();
         if (c < 0) {
             break;
         }

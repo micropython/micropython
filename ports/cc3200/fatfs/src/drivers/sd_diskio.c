@@ -269,7 +269,7 @@ DSTATUS sd_disk_init (void) {
                 //  Fill in the RCA
                 sd_disk_info.usRCA = (ulResp[0] >> 16);
 
-                // Get tha card capacity
+                // Get the card capacity
                 CardCapacityGet(&sd_disk_info);
             }
 
@@ -363,7 +363,7 @@ DRESULT sd_disk_read (BYTE* pBuffer, DWORD ulSectorNumber, UINT SectorCount) {
 
 //*****************************************************************************
 //
-//! Wrties sector(s) to the disk drive.
+//! Writes sector(s) to the disk drive.
 //!
 //!
 //! This function writes specified number of sectors to the drive

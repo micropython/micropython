@@ -4,10 +4,9 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly",
-        "Micro USB",
+        "External Flash",
         "RGB LED",
-        "SPI Flash"
+        "USB"
     ],
     "images": [
         "itsybitsy_m0_express.jpg"

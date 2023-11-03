@@ -27,8 +27,6 @@
 #ifndef TIMER_H__
 #define TIMER_H__
 
-extern const mp_obj_type_t machine_timer_type;
-
 void timer_init0(void);
 
 #endif // TIMER_H__

@@ -89,6 +89,10 @@ void mp_thread_set_state(mp_state_thread_t *state) {
     vTaskSetThreadLocalStoragePointer(NULL, 0, state);
 }
 
+mp_uint_t mp_thread_get_id(void) {
+    return (mp_uint_t)xTaskGetCurrentTaskHandle();
+}
+
 void mp_thread_start(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
     for (mp_thread_t *th = thread; th != NULL; th = th->next) {
@@ -111,7 +115,7 @@ STATIC void freertos_entry(void *arg) {
     }
 }
 
-void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
+mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
@@ -148,6 +152,9 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
 
     // adjust stack_size to provide room to recover from hitting the limit
     *stack_size -= 512;
+
+    MP_STATIC_ASSERT(sizeof(mp_uint_t) >= sizeof(TaskHandle_t));
+    return (mp_uint_t)id;
 }
 
 void mp_thread_finish(void) {

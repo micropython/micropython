@@ -105,10 +105,11 @@ LIB_SRC_C += \
 	lib/oofatfs/ffunicode.c \
 	lib/uzlib/adler32.c \
 	lib/uzlib/crc32.c \
-	lib/uzlib/tinfgzip.c \
+	lib/uzlib/header.c \
 	lib/uzlib/tinflate.c
 
 SRC_C += \
+	adc.c \
 	main.c \
 	elem.c \
 	fsload.c \
@@ -124,7 +125,6 @@ SRC_C += \
 	ports/stm32/flash.c \
 	ports/stm32/flashbdev.c \
 	ports/stm32/i2cslave.c \
-	ports/stm32/machine_adc.c \
 	ports/stm32/powerctrlboot.c \
 	ports/stm32/qspi.c \
 	ports/stm32/spibdev.c \
@@ -152,12 +152,14 @@ endif
 
 $(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_ll_usb.o: CFLAGS += -Wno-attributes
 SRC_HAL += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal.c \
 	hal_cortex.c \
 	hal_dma.c \
 	hal_flash.c \
 	hal_flash_ex.c \
 	hal_pcd.c \
 	hal_pcd_ex.c \
+	hal_pwr_ex.c \
 	hal_rcc.c \
 	hal_rcc_ex.c \
 	ll_usb.c \
@@ -225,10 +227,8 @@ GEN_QSTRDEFS_GENERATED = $(HEADER_BUILD)/qstrdefs.generated.h
 GEN_ROOT_POINTERS = $(HEADER_BUILD)/root_pointers.h
 GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(HEADER_BUILD)/pins_qstr.h
 GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
 GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 
 $(OBJ): $(GEN_QSTRDEFS_GENERATED) $(GEN_ROOT_POINTERS) $(GEN_PINS_AF_DEFS)
 
@@ -243,10 +243,10 @@ $(GEN_ROOT_POINTERS): | $(HEADER_BUILD)
 
 $(GEN_PINS_AF_DEFS): $(BOARD_PINS) $(MAKE_PINS) ../$(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af ../$(AF_FILE) \
-		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) \
-		--af-const $(GEN_PINS_AF_CONST) --af-defs $(GEN_PINS_AF_DEFS) \
-		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv ../$(AF_FILE) --prefix $(PREFIX_FILE) \
+		--output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
+		--output-af-const $(GEN_PINS_AF_CONST) --output-af-defs $(GEN_PINS_AF_DEFS) \
+		--mboot-mode
 
 #########################################
 

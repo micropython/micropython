@@ -451,7 +451,7 @@ STATIC size_t tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse
         LL_C1_IPCC_ClearFlag_CHx(IPCC, ch);
 
         if (ch == IPCC_CH_BLE) {
-            // Renable IRQs for BLE now that we've cleared the flag.
+            // Re-enable IRQs for BLE now that we've cleared the flag.
             LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
         }
     }

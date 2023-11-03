@@ -4,17 +4,17 @@
     ],
     "docs": "",
     "features": [
+        "BLE",
         "Battery Charging",
+        "External Flash",
+        "External RAM",
         "RGB LED",
-        "SPIRAM",
         "USB-C",
-        "WiFi",
-        "BLE"
+        "WiFi"
     ],
     "features_non_filterable": [
         "TinyPICO Compatible"
     ],
-    "id": "tinys3",
     "images": [
         "unexpectedmaker_tinys3.jpg"
     ],

@@ -30,7 +30,7 @@
 // Entries for sys.path
 Q(/flash)
 
-// For uos.sep
+// For os.sep
 Q(/)
 
 Q(a)

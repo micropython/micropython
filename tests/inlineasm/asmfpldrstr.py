@@ -1,4 +1,4 @@
-import uarray as array
+import array
 
 
 @micropython.asm_thumb  # test vldr, vstr

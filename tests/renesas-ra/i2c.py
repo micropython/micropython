@@ -2,11 +2,11 @@ import os
 import time
 
 n = os.uname().machine
-if "RA6M2_EK" in n:
+if "EK-RA6M2" in n:
     i2c_id = 2
-elif "RA6M1_EK" in n:
+elif "EK-RA6M1" in n:
     i2c_id = 0
-elif ("RA4M1_CLICKER" in n) or ("RA4M1_EK" in n) or ("RA4W1_EK" in n):
+elif ("RA4M1 CLICKER" in n) or ("EK-RA4M1" in n) or ("EK-RA4W1" in n):
     print("SKIP")
     raise SystemExit
 else:

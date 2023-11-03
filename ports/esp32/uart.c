@@ -26,79 +26,99 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
-#include "driver/uart.h"
-#include "soc/uart_periph.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "uart.h"
 
+#if MICROPY_HW_ENABLE_UART_REPL
+
+#include <stdio.h>
+#include "hal/uart_hal.h"
+
+// Backwards compatibility for when MICROPY_HW_UART_REPL was a ESP-IDF UART
+// driver enum. Only UART_NUM_0 was supported with that version of the driver.
+#define UART_NUM_0 0
+
 STATIC void uart_irq_handler(void *arg);
 
+// Declaring the HAL structure on the stack saves a tiny amount of static RAM
+#define REPL_HAL_DEFN() { .dev = UART_LL_GET_HW(MICROPY_HW_UART_REPL) }
+
+// RXFIFO Full interrupt threshold. Set the same as the ESP-IDF UART driver
+#define RXFIFO_FULL_THR (SOC_UART_FIFO_LEN - 8)
+
+// RXFIFO RX timeout threshold. This is in bit periods, so 10==one byte. Same as ESP-IDF UART driver.
+#define RXFIFO_RX_TIMEOUT (10)
+
 void uart_stdout_init(void) {
-    uart_config_t uartcfg = {
-        .baud_rate = MICROPY_HW_UART_REPL_BAUD,
-        .data_bits = UART_DATA_8_BITS,
-        .parity = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
-        .rx_flow_ctrl_thresh = 0
-    };
-    uart_param_config(MICROPY_HW_UART_REPL, &uartcfg);
+    uart_hal_context_t repl_hal = REPL_HAL_DEFN();
+    uint32_t sclk_freq;
 
-    const uint32_t rxbuf = 129; // IDF requires > 128 min
-    const uint32_t txbuf = 0;
+    #if UART_SCLK_DEFAULT == SOC_MOD_CLK_APB
+    sclk_freq = APB_CLK_FREQ; // Assumes no frequency scaling
+    #else
+    // ESP32-H2 and ESP32-C2, I think
+    #error "This SoC uses a different default UART SCLK source, code needs updating."
+    #endif
 
-    uart_driver_install(MICROPY_HW_UART_REPL, rxbuf, txbuf, 0, NULL, 0);
+    uart_hal_init(&repl_hal, MICROPY_HW_UART_REPL); // Sets defaults: 8n1, no flow control
+    uart_hal_set_baudrate(&repl_hal, MICROPY_HW_UART_REPL_BAUD, sclk_freq);
+    uart_hal_rxfifo_rst(&repl_hal);
+    uart_hal_txfifo_rst(&repl_hal);
 
-    uart_isr_handle_t handle;
-    uart_isr_free(MICROPY_HW_UART_REPL);
-    uart_isr_register(MICROPY_HW_UART_REPL, uart_irq_handler, NULL, ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM, &handle);
-    uart_enable_rx_intr(MICROPY_HW_UART_REPL);
+    ESP_ERROR_CHECK(
+        esp_intr_alloc(uart_periph_signal[MICROPY_HW_UART_REPL].irq,
+            ESP_INTR_FLAG_LOWMED | ESP_INTR_FLAG_IRAM,
+            uart_irq_handler,
+            NULL,
+            NULL)
+        );
+
+    // Enable RX interrupts
+    uart_hal_set_rxfifo_full_thr(&repl_hal, RXFIFO_FULL_THR);
+    uart_hal_set_rx_timeout(&repl_hal, RXFIFO_RX_TIMEOUT);
+    uart_hal_ena_intr_mask(&repl_hal, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT);
 }
 
 int uart_stdout_tx_strn(const char *str, size_t len) {
+    uart_hal_context_t repl_hal = REPL_HAL_DEFN();
     size_t remaining = len;
+    uint32_t written = 0;
     // TODO add a timeout
     for (;;) {
-        int ret = uart_tx_chars(MICROPY_HW_UART_REPL, str, remaining);
-        if (ret == -1) {
-            return -1;
-        }
-        remaining -= ret;
-        if (remaining <= 0) {
+        uart_hal_write_txfifo(&repl_hal, (const void *)str, remaining, &written);
+
+        if (written >= remaining) {
             break;
         }
-        str += ret;
+        remaining -= written;
+        str += written;
         ulTaskNotifyTake(pdFALSE, 1);
     }
-    return len - remaining;
+    return len;
 }
 
 // all code executed in ISR must be in IRAM, and any const data must be in DRAM
 STATIC void IRAM_ATTR uart_irq_handler(void *arg) {
-    volatile uart_dev_t *uart = &UART0;
-    #if CONFIG_IDF_TARGET_ESP32S3
-    uart->int_clr.rxfifo_full_int_clr = 1;
-    uart->int_clr.rxfifo_tout_int_clr = 1;
-    #else
-    uart->int_clr.rxfifo_full = 1;
-    uart->int_clr.rxfifo_tout = 1;
-    uart->int_clr.frm_err = 1;
-    #endif
-    while (uart->status.rxfifo_cnt) {
-        #if CONFIG_IDF_TARGET_ESP32
-        uint8_t c = uart->fifo.rw_byte;
-        #elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-        uint8_t c = READ_PERI_REG(UART_FIFO_AHB_REG(0)); // UART0
-        #endif
-        if (c == mp_interrupt_char) {
+    uint8_t rbuf[SOC_UART_FIFO_LEN];
+    int len;
+    uart_hal_context_t repl_hal = REPL_HAL_DEFN();
+
+    uart_hal_clr_intsts_mask(&repl_hal, UART_INTR_RXFIFO_FULL | UART_INTR_RXFIFO_TOUT | UART_INTR_FRAM_ERR);
+
+    len = uart_hal_get_rxfifo_len(&repl_hal);
+
+    uart_hal_read_rxfifo(&repl_hal, rbuf, &len);
+
+    for (int i = 0; i < len; i++) {
+        if (rbuf[i] == mp_interrupt_char) {
             mp_sched_keyboard_interrupt();
         } else {
             // this is an inline function so will be in IRAM
-            ringbuf_put(&stdin_ringbuf, c);
+            ringbuf_put(&stdin_ringbuf, rbuf[i]);
         }
     }
 }
+
+#endif // MICROPY_HW_ENABLE_UART_REPL
