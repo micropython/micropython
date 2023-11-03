@@ -31,6 +31,7 @@
 #include "py/mphal.h"
 #include "py/objint.h"
 #include "shared/runtime/mpirq.h"
+#include "extmod/modmachine.h"
 #include "modmachine.h"
 #include "fsl_clock.h"
 #include "fsl_enc.h"

@@ -13,7 +13,7 @@ Example usage::
 
     from machine import Pin, Encoder
 
-    qe = Encoder(0, Pin(0), Pin(1)) # create Quadrature Encoder object
+    qe = Encoder(0, Pin("D0"), Pin("D1")) # create Quadrature Encoder object
     qe.value()                      # get current counter values
     qe.value(0)                     # Set value and cycles to 0
     qe.init(cpc=128)                # Specify 128 counts/cycle
@@ -177,7 +177,7 @@ Example usage::
 
     from machine import Pin, Counter
 
-    counter = Counter(0, Pin(0))          # create Counter object
+    counter = Counter(0, Pin("D0"))       # create Counter object
     counter.value()                       # get current counter value
     counter.value(0)                      # Set the counter to 0
     counter.init(cpc=128)                 # Specify 128 counts/cycle
@@ -352,20 +352,21 @@ assignment to the Encoder or Counter are:
 
 **Teensy 4.0**:
 
-  Pins 0, 1, 2, 3, 4, 5, 7, 8, 26, 27, 30, 31, 32, 33. Pin 0 and 5 share the
-  same signal and cannot be used independently.
-  Pins 26, 27, 30 and 31 cannot be used for the match output.
+  Pins D0, D1, D2, D3, D4, D5, D7, D8, D26, D27, D30, D31, D32, D33.
+  Pin D0 and D5 share the same signal and cannot be used independently.
+  Pins D26, D27, D30 and D31 cannot be used for the match output.
 
 **Teensy 4.1**:
 
-  Pins 0, 1, 2, 3, 4, 5, 7, 8, 26, 27, 30, 31, 32, 33, 37, 42, 43, 44, 45, 46 and 47.
-  Pins 26, 27, 30 and 31 cannot be used for the match output.
+  Pins D0, D1, D2, D3, D4, D5, D7, D8, D26, D27, D30, D31, D32, D33,
+  D37, D42, D43, D44, D45, D46 and D47.
+  Pins D26, D27, D30 and D31 cannot be used for the match output.
   Some pins are assigned to the same signal and cannot be used independently. These are:
 
-  - Pin 0, 5 and 37,
-  - Pin 2 and 43,
-  - Pin 3 and 42, and
-  - Pin 4 and 47.
+  - Pins D0, D5 and D37,
+  - Pins D2 and D43,
+  - Pins D3 and D42, and
+  - Pins D4 and D47.
 
 **Seeed ARCH MIX**
 
