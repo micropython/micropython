@@ -92,9 +92,7 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
 Available Pins follow the ranges and labelling of the respective board, like:
 
-- 0-33 for Teensy 4.0,
-- 0-21 for the MIMXRT10xx-EVK board, or 'D0-Dxx', or 'A0-Ann',
-- 0-14 for the Olimex RT1010Py board, or 'D0'-'Dxx' and 'A0'-'Ann'
+- 'D0-Dxx', or 'A0-Ann' for Teensy 4.0, MIMXRT10xx-EVK ns Olimex board,
 - 'J3_xx', 'J4_xx', 'J5_xx' for the Seeed ARCH MIX board,
 
 or the pin names of the Pin.board or Pin.cpu classes.
@@ -106,9 +104,9 @@ Notes:
 * At the MIMXRT1010_EVK, pins D4, D5 and D9 of the Arduino connector are by
   default not connected to the MCU. For details refer to the schematics.
 * At the MIMXRT1170_EVK board, the inner rows of the Arduino connectors are assigned as follows:
-    - D16 - D23: J9, odd pin numbers; D17 is by default not connected.
-    - D24 - D27: J26, odd pin numbers; J63-J66 have to be closed to enable these pins.
-    - D29 - D36: J25, odd pin numbers; D29 and D30 are by default not connected.
+    - 'D16' - 'D23': J9, odd pin numbers; 'D17' is by default not connected.
+    - 'D24' - 'D27': J26, odd pin numbers; J63-J66 have to be closed to enable these pins.
+    - 'D29' - 'D36': J25, odd pin numbers; 'D29' and 'D30' are by default not connected.
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin.  Useful for illuminating active-low LEDs
@@ -146,22 +144,22 @@ handling signal groups. ::
     from machine import Pin, PWM
 
     # create PWM object from a pin and set the frequency and duty cycle
-    pwm2 = PWM(Pin(2), freq=2000, duty_u16=32768)
+    pwm2 = PWM(Pin('D2'), freq=2000, duty_u16=32768)
     pwm2.freq()             # get the current frequency
     pwm2.freq(1000)         # set/change the frequency
     pwm2.duty_u16()         # get the current duty cycle, range 0-65535
     pwm2.duty_u16(200)      # set the duty cycle, range 0-65535
     pwm2.deinit()           # turn off PWM on the pin
     # create a complementary signal pair on Pin 2 and 3
-    pwm2 = PWM((2, 3), freq=2000, duty_ns=20000)
+    pwm2 = PWM(('D2', 'D3'), freq=2000, duty_ns=20000)
 
     # Create a group of four synchronized signals.
-    # Start with Pin(4) at submodule 0, which creates the sync pulse.
-    pwm4 = PWM(Pin(4), freq=1000, align=PWM.HEAD)
-    # Pins 5, 6, and 9 are pins at the same module
-    pwm5 = PWM(Pin(5), freq=1000, duty_u16=10000, align=PWM.HEAD, sync=True)
-    pwm6 = PWM(Pin(6), freq=1000, duty_u16=20000, align=PWM.HEAD, sync=True)
-    pwm9 = PWM(Pin(9), freq=1000, duty_u16=30000, align=PWM.HEAD, sync=True)
+    # Start with Pin('D4') at submodule 0, which creates the sync pulse.
+    pwm4 = PWM(Pin('D4'), freq=1000, align=PWM.HEAD)
+    # Pins D5, D6, and D9 are pins at the same module
+    pwm5 = PWM(Pin('D5'), freq=1000, duty_u16=10000, align=PWM.HEAD, sync=True)
+    pwm6 = PWM(Pin('D6', freq=1000, duty_u16=20000, align=PWM.HEAD, sync=True)
+    pwm9 = PWM(Pin('D9'), freq=1000, duty_u16=30000, align=PWM.HEAD, sync=True)
 
     pwm3                    # show the PWM objects properties
 
@@ -256,7 +254,7 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
-    adc = ADC(Pin(32))          # create ADC object on ADC pin
+    adc = ADC(Pin('A2'))        # create ADC object on ADC pin
     adc.read_u16()              # read value, 0-65536 across voltage range 0.0v - 3.3v
 
 The resolution of the ADC is 12 bit with 10 to 11 bit accuracy, irrespective of the
@@ -274,7 +272,7 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
     # construct a SoftSPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(0), mosi=Pin(2), miso=Pin(4))
+    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin('D0'), mosi=Pin('D2'), miso=Pin('D4'))
 
     spi.init(baudrate=200000) # set the baudrate
 
@@ -303,7 +301,7 @@ rates (up to 30Mhz).  Hardware SPI is accessed via the
     from machine import SPI, Pin
 
     spi = SPI(0, 10000000)
-    cs_pin = Pin(6, Pin.OUT, value=1)
+    cs_pin = Pin('D6', Pin.OUT, value=1)
     cs_pin(0)
     spi.write('Hello World')
     cs_pin(1)
@@ -331,7 +329,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
 
     from machine import Pin, SoftI2C
 
-    i2c = SoftI2C(scl=Pin(5), sda=Pin(4), freq=100000)
+    i2c = SoftI2C(scl=Pin('D5'), sda=Pin('D4'), freq=100000)
 
     i2c.scan()              # scan for devices
 
@@ -365,7 +363,7 @@ See :ref:`machine.I2S <machine.I2S>`. Example using a Teensy 4.1 board with a si
 external Codec like UDA1334.::
 
     from machine import I2S, Pin
-    i2s = I2S(2, sck=Pin(26), ws=Pin(27), sd=Pin(7),
+    i2s = I2S(2, sck=Pin('D26'), ws=Pin('D27'), sd=Pin('D7'),
         mode=I2S.TX, bts=16,format=I2S.STEREO,
         rate=44100,ibuf=40000)
     i2s.write(buf)             # write buffer of audio samples to I2S device
@@ -397,7 +395,7 @@ Example using the Teensy audio shield::
 
     from machine import I2C, I2S, Pin
     from sgtl5000 import CODEC
-    i2s = I2S(1, sck=Pin(21), ws=Pin(20), sd=Pin(7), mck=Pin(23),
+    i2s = I2S(1, sck=Pin('D21'), ws=Pin('D20'), sd=Pin('D7'), mck=Pin('D23'),
         mode=I2S.TX, bits=16,rate=44100,format=I2S.STEREO,
         ibuf=40000,
     )
@@ -475,7 +473,7 @@ The OneWire driver is implemented in software and works on all pins::
     from machine import Pin
     import onewire
 
-    ow = onewire.OneWire(Pin(12)) # create a OneWire bus on GPIO12
+    ow = onewire.OneWire(Pin('D12')) # create a OneWire bus on GPIO12
     ow.scan()                     # return a list of devices on the bus
     ow.reset()                    # reset the bus
     ow.readbyte()                 # read a byte
@@ -505,12 +503,12 @@ The DHT driver is implemented in software and works on all pins::
     import dht
     import machine
 
-    d = dht.DHT11(machine.Pin(4))
+    d = dht.DHT11(machine.Pin('D4'))
     d.measure()
     d.temperature() # eg. 23 (°C)
     d.humidity()    # eg. 41 (% RH)
 
-    d = dht.DHT22(machine.Pin(4))
+    d = dht.DHT22(machine.Pin('D4'))
     d.measure()
     d.temperature() # eg. 23.6 (°C)
     d.humidity()    # eg. 41.3 (% RH)
