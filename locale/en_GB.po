@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-10-27 08:51+0000\n"
+"PO-Revision-Date: 2023-11-06 21:31+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -190,7 +190,7 @@ msgstr "%q length must be >= %d"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q moved from %q to %q"
-msgstr ""
+msgstr "%q moved from %q to %q"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -231,7 +231,7 @@ msgstr "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 
 #: shared-bindings/warnings/__init__.c
 msgid "%q must be a subclass of %q"
-msgstr ""
+msgstr "%q must be a subclass of %q"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
@@ -270,7 +270,7 @@ msgstr "%q out of range"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q renamed %q"
-msgstr ""
+msgstr "%q renamed %q"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
@@ -1037,12 +1037,13 @@ msgstr "Failed to acquire mutex, err 0x%04x"
 
 #: ports/raspberrypi/common-hal/mdns/Server.c
 msgid "Failed to add service TXT record"
-msgstr ""
+msgstr "Failed to add service TXT record"
 
 #: shared-bindings/mdns/Server.c
 msgid ""
 "Failed to add service TXT record; non-string or bytes found in txt_records"
 msgstr ""
+"Failed to add service TXT record; non-string or bytes found in txt_records"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
@@ -3008,7 +3009,7 @@ msgstr "dtype must be float, or complex"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "dtype of int32 is not supported"
-msgstr ""
+msgstr "dtype of int32 is not supported"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3878,7 +3879,7 @@ msgstr "operation is not supported for given type"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "operation not supported for the input types"
-msgstr ""
+msgstr "operation not supported for the input types"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
