@@ -26,7 +26,6 @@
  */
 
 #include "py/binary.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
 

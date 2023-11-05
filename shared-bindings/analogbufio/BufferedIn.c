@@ -31,7 +31,6 @@
 #include "py/binary.h"
 #include "py/mphal.h"
 #include "py/nlr.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogbufio/BufferedIn.h"

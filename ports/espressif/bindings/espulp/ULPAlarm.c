@@ -27,7 +27,6 @@
 #include "bindings/espulp/ULPAlarm.h"
 
 #include "py/runtime.h"
-#include "py/objproperty.h"
 
 //| class ULPAlarm:
 //|     """Trigger an alarm when the ULP requests wake-up."""

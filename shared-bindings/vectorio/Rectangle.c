@@ -166,7 +166,7 @@ STATIC MP_DEFINE_CONST_DICT(vectorio_rectangle_locals_dict, vectorio_rectangle_l
 MP_DEFINE_CONST_OBJ_TYPE(
     vectorio_rectangle_type,
     MP_QSTR_Rectangle,
-    MP_TYPE_FLAG_NONE,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     make_new, vectorio_rectangle_make_new,
     locals_dict, &vectorio_rectangle_locals_dict,
     protocol, &rectangle_draw_protocol
