@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-05 20:33+0000\n"
+"PO-Revision-Date: 2023-11-06 21:31+0000\n"
 "Last-Translator: jessyjones <amarsy.alya@gmail.com>\n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -225,11 +225,11 @@ msgstr "%q doit être >= %d"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr "%q doit être un bytearray ou une matrice de type 'H' ou 'B'"
+msgstr "%q doit être un bytearray ou un array de type 'H' ou 'B'"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr "%q doit être a bytearray ou une matrice de type 'h', 'H', 'b', ou 'B'"
+msgstr "%q doit être un bytearray ou un array de type 'h', 'H', 'b', ou 'B'"
 
 #: shared-bindings/warnings/__init__.c
 msgid "%q must be a subclass of %q"
@@ -237,11 +237,11 @@ msgstr "%q doit être une sous-classe de %q"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
-msgstr "%q doit être une matrice de type 'H'"
+msgstr "%q doit être un array de type 'H'"
 
 #: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
-msgstr "%q doit être une matrice de type 'h'"
+msgstr "%q doit être un array de type 'h'"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
@@ -617,12 +617,12 @@ msgstr "Un autre envoi est déjà actif"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
-msgstr "La matrice doit contenir des demi-mots (type 'H')"
+msgstr "L'array doit contenir des demi-mots (type 'H')"
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
 msgid "Array values should be single bytes."
-msgstr "Les valeurs de la matrice doivent être des octets singuliers."
+msgstr "Les valeurs de l'array doivent être des octets singuliers."
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
@@ -902,7 +902,7 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays have different lengths"
-msgstr "Les matrices de coordonnées sont de longueur différentes"
+msgstr "Les tableaux de coordonnées sont de longueur différentes"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
@@ -1040,7 +1040,7 @@ msgstr "La FFT est définie uniquement pour les ndarrays"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
-msgstr "FFT n'est implémenté que pour les matrices linéaires"
+msgstr "FFT n'est implémenté que pour les arrays linéaires"
 
 #: ports/espressif/common-hal/ssl/SSLSocket.c
 msgid "Failed SSL handshake"
@@ -2014,7 +2014,7 @@ msgstr "La dimension d'échelle doit être un multiple de 3"
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Scan already in progress. Stop with stop_scan."
-msgstr "San déjà en cours. Arrêtez-le avec stop_scan."
+msgstr "Scan déjà en cours. Arrêtez-le avec stop_scan."
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
@@ -2545,7 +2545,7 @@ msgstr "Le paramêtre argsort doit être un ndarray"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort is not implemented for flattened arrays"
-msgstr "argsort n'est pas implémenté pour les matrices aplaties"
+msgstr "argsort n'est pas implémenté pour les arrays aplatis"
 
 #: py/runtime.c shared-bindings/supervisor/__init__.c
 msgid "argument has wrong type"
@@ -2570,7 +2570,7 @@ msgstr "les paramètres doivent être des ndarrays"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array and index length must be equal"
-msgstr "la taille de la matrice et de l'index doivent être égaux"
+msgstr "la taille de l'array et de l'index doivent être égaux"
 
 #: extmod/ulab/code/numpy/io/io.c
 msgid "array has too many dimensions"
@@ -2578,7 +2578,7 @@ msgstr "la tableau à trop de dimensions"
 
 #: extmod/ulab/code/ndarray.c
 msgid "array is too big"
-msgstr "matrice trop grande"
+msgstr "array trop grand"
 
 #: py/objarray.c shared-bindings/alarm/SleepMemory.c
 #: shared-bindings/memorymap/AddressRange.c shared-bindings/nvm/ByteArray.c
@@ -2591,7 +2591,7 @@ msgstr "débordement asm"
 
 #: py/compile.c
 msgid "async for/with outside async function"
-msgstr "async for/with utilisé hors d'une fonction asyn"
+msgstr "async for/with utilisé hors d'une fonction async"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
