@@ -156,6 +156,7 @@ typedef struct _mp_machine_i2c_p_t {
     bool transfer_supports_write1;
     #endif
     void (*init)(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
+    void (*deinit)(mp_obj_base_t *obj);
     int (*start)(mp_obj_base_t *obj);
     int (*stop)(mp_obj_base_t *obj);
     int (*read)(mp_obj_base_t *obj, uint8_t *dest, size_t len, bool nack);
