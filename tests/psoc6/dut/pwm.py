@@ -1,68 +1,45 @@
-### PWM
+### PWM - WIP
+""" Setup description: 
+    Connect pwm_pin to gpio_pin. PWM signal is generated at 50% duty cycle currently. Every time the level changes, the gpio_pin 
+    is triggered and elapsed tick is calculated. Based on values ton and toff, experimental duty cycle is calculated.
+
+    *Known issue: This test will not work for any duty cycle except for 65535 or 0 values since there are fixes required in module.
+"""
 import os
 import time
-from machine import PWM
+from machine import PWM, Pin
+import time
 
 # Allocate pin based on board
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
-    pin_name = "P12_0"
+    pwm_pin = "P12_0"
+    gpio_pin = "P13_6"
+
 elif "CY8CPROTO-063-BLE" in machine:
-    pin_name = "P6_2"
+    pwm_pin = "P6_2"
+    gpio_pin = "P5_2"
 
-def generate_new_signal(pwm_obj, freq, duty_cycle_u16):
-    pwm_obj.freq(freq)
-    pwm_obj.duty_u16(duty_cycle_u16)
-    
-pwm = PWM(pin_name, freq=50, duty_u16=32768, invert =0)
+gpio_flag = 0
 
-print("Initial freq: ", pwm.freq())
-print("Initial duty cycle: ", pwm.duty_u16())
+input_pin = Pin(gpio_pin, Pin.IN)
 
-# Generate signal with freq = 1Hz and Duty cycle of 25%
-generate_new_signal(pwm, 1, 16384)
-print("Signal with freq = 1Hz and Duty cycle of 25%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
+t0 = time.ticks_cpu()
 
-# Generate signal with freq = 1Hz and Duty cycle of 50%
-generate_new_signal(pwm, 1, 32768)
-print("Signal with freq = 1Hz and Duty cycle of 50%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
+pwm = PWM(pwm_pin, freq=10, duty_u16=32768, invert=0)
 
-# Generate signal with freq = 1Hz and Duty cycle of 75%
-generate_new_signal(pwm, 1, 49151)
-print("Signal with freq = 1Hz and Duty cycle of 75%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
+while gpio_flag != 1:
+    if input_pin.value() == 1:
+        gpio_flag = 1
+        t1 = time.ticks_cpu()
+        toff = t1 - t0
 
-# Generate signal with freq = 1Hz and Duty cycle of 100%
-generate_new_signal(pwm, 1, 65535)
-print("Signal with freq = 1Hz and Duty cycle of 100%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
+while gpio_flag != 0:
+    if input_pin.value() == 0:
+        gpio_flag = 0
+        t2 = time.ticks_cpu()
+        ton = t2 - t1
 
-# Generate signal with freq = 25Hz and Duty cycle of 25%
-generate_new_signal(pwm, 25, 16384)
-print("Signal with freq = 25Hz and Duty cycle of 250%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
+duty_cycle = (ton / (ton + toff)) * 100
 
-# Generate signal with freq = 50Hz and Duty cycle of 50%
-generate_new_signal(pwm, 50, 32768)
-print("Signal with freq = 50Hz and Duty cycle of 50%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
-
-# Generate signal with freq = 75Hz and Duty cycle of 75%
-generate_new_signal(pwm, 75, 49151)
-print("Signal with freq = 75Hz and Duty cycle of 75%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
-
-# Generate signal with freq = 100Hz and Duty cycle of 100%
-generate_new_signal(pwm, 100, 65535)
-print("Signal with freq = 100Hz and Duty cycle of 100%")
-print("Current freq: ", pwm.freq())
-print("Current duty cycle: ", pwm.duty_u16())
+print("Experimental duty cycle(%) = ", duty_cycle)

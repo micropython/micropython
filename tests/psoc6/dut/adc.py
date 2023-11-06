@@ -1,4 +1,9 @@
-### ADC
+### ADC Functional test
+""" Setup description: 
+    Connect 3.3V input to adc_pin0 and 0V input to adc_pin1. With the setup done, run the test.
+
+    *Known issue: The max output voltage currently is ~2.3V for 3.3V input.
+"""
 import os
 import time
 from machine import PWM, ADC
@@ -6,22 +11,16 @@ from machine import PWM, ADC
 # Allocate pin based on board
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
-    pin_name = "P12_0"
-    adc_pin = "P10_0"
+    adc_pin0 = "P10_0"
+    adc_pin1 = "P10_1"
 elif "CY8CPROTO-063-BLE" in machine:
-    pin_name = "P6_2"
-    adc_pin = "P10_0"
+    adc_pin0 = "P10_0"
+    adc_pin1 = "P10_1"
 
-adc = ADC(adc_pin, sample_ns=1000)
-pwm = PWM(pin_name, freq=1000, duty_u16=65535, invert =0)
+adc0 = ADC(adc_pin0, sample_ns=1000)
+adc1 = ADC(adc_pin1, sample_ns=1000)
 
-print("Initial Voltage (microvolts) is max: ",adc.read_uv()>1500)
-print("Initial Voltage (raw data) is max: ",adc.read_u16()>50)
-pwm.duty_u16(0)
-time.sleep_ms(100)
-print("Off signal Voltage (microvolts) is ~0 : ",adc.read_uv()<1500)
-print("Off signal Voltage (raw data) is ~0 : ",adc.read_u16()<50)
-pwm.duty_u16(65535)
-time.sleep_ms(100)
-print("On signal Voltage (microvolts) is max: ",adc.read_uv()>1500)
-print("On signal Voltage (raw data) is max: ",adc.read_u16()>50)
+print("Volatge (in microvolts) on pin", adc_pin0, "is max: ", adc0.read_uv() > 1000000)
+print("Volatge (raw count) on pin", adc_pin0, "is max: ", adc0.read_u16() > 500)
+print("Volatge (in microvolts) on pin", adc_pin1, "is max: ", adc1.read_uv() < 1000000)
+print("Volatge (raw count) on pin", adc_pin1, "is max: ", adc1.read_u16() < 500)
