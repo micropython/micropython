@@ -233,6 +233,11 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
 }
 
 qstr qstr_find_strn(const char *str, size_t str_len) {
+    if (str_len == 0) {
+        // strncmp behaviour is undefined for str==NULL.
+        return MP_QSTR_;
+    }
+
     // work out hash of str
     size_t str_hash = qstr_compute_hash((const byte *)str, str_len);
 
