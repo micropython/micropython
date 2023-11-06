@@ -28,7 +28,6 @@
 #include <stdint.h>
 
 #include "shared/runtime/context_manager_helpers.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/microcontroller/Pin.h"

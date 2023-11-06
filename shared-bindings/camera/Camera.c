@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/objproperty.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/camera/Camera.h"
