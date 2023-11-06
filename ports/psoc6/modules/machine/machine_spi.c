@@ -4,10 +4,8 @@
 
 // mpy includes
 #include "py/runtime.h"
-#include "extmod/machine_spi.h"
-#include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "py/mperrno.h"
-#include "extmod/machine_spi.h"
 
 // MTB includes
 #include "cybsp.h"

@@ -14,7 +14,7 @@ typedef struct _machine_pwm_obj_t {
     uint8_t pin;
     uint32_t fz;
     uint8_t duty_type;
-    mp_float_t duty;
+    mp_int_t duty;
     bool invert;
 } machine_pwm_obj_t;
 

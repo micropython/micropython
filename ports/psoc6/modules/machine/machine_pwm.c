@@ -18,8 +18,6 @@ enum {
 };
 
 STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_float_t duty_u16);
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_float_t duty_ns);
 
 // To check whether the PWM is active
 STATIC void pwm_is_active(machine_pwm_obj_t *self) {
@@ -148,7 +146,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 }
 
 // sets the duty cycle as a ratio duty_u16 / 65535.
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_float_t duty_u16) {
+STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     pwm_is_active(self);
     // Check the value is more than the max value
     self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
@@ -166,7 +164,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 }
 
 // sets the pulse width in nanoseconds
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_float_t duty_ns) {
+STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     pwm_is_active(self);
     self->duty = duty_ns;
     self->duty_type = DUTY_NS;

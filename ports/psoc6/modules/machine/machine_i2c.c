@@ -4,7 +4,7 @@
 
 
 // mpy includes
-#include "extmod/machine_i2c.h"
+#include "extmod/modmachine.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
 
