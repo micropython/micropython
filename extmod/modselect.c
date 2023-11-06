@@ -41,6 +41,7 @@
 
 #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
 
+#include <string.h>
 #include <poll.h>
 
 #if !((MP_STREAM_POLL_RD) == (POLLIN) && \
@@ -142,14 +143,47 @@ STATIC void poll_obj_set_revents(poll_obj_t *poll_obj, mp_uint_t revents) {
     }
 }
 
+// How much (in pollfds) to grow the allocation for poll_set->pollfds by.
+#define POLL_SET_ALLOC_INCREMENT (4)
+
 STATIC struct pollfd *poll_set_add_fd(poll_set_t *poll_set, int fd) {
     struct pollfd *free_slot = NULL;
 
     if (poll_set->used == poll_set->max_used) {
         // No free slots below max_used, so expand max_used (and possibly allocate).
         if (poll_set->max_used >= poll_set->alloc) {
-            poll_set->pollfds = m_renew(struct pollfd, poll_set->pollfds, poll_set->alloc, poll_set->alloc + 4);
-            poll_set->alloc += 4;
+            size_t new_alloc = poll_set->alloc + POLL_SET_ALLOC_INCREMENT;
+            // Try to grow in-place.
+            struct pollfd *new_fds = m_renew_maybe(struct pollfd, poll_set->pollfds, poll_set->alloc, new_alloc, false);
+            if (!new_fds) {
+                // Failed to grow in-place. Do a new allocation and copy over the pollfd values.
+                new_fds = m_new(struct pollfd, new_alloc);
+                memcpy(new_fds, poll_set->pollfds, sizeof(struct pollfd) * poll_set->alloc);
+
+                // Update existing poll_obj_t to update their pollfd field to
+                // point to the same offset inside the new allocation.
+                for (mp_uint_t i = 0; i < poll_set->map.alloc; ++i) {
+                    if (!mp_map_slot_is_filled(&poll_set->map, i)) {
+                        continue;
+                    }
+
+                    poll_obj_t *poll_obj = MP_OBJ_TO_PTR(poll_set->map.table[i].value);
+                    if (!poll_obj) {
+                        // This is the one we're currently adding,
+                        // poll_set_add_obj doesn't assign elem->value until
+                        // afterwards.
+                        continue;
+                    }
+
+                    poll_obj->pollfd = new_fds + (poll_obj->pollfd - poll_set->pollfds);
+                }
+
+                // Delete the old allocation.
+                m_del(struct pollfd, poll_set->pollfds, poll_set->alloc);
+            }
+
+            poll_set->pollfds = new_fds;
+            poll_set->alloc = new_alloc;
         }
         free_slot = &poll_set->pollfds[poll_set->max_used++];
     } else {

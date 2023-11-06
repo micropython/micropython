@@ -34,11 +34,22 @@ poller.register(1, select.POLLIN)
 # Poll for input, should return an empty list.
 print(poller.poll(0))
 
-# Test registering a very large number of file descriptors.
+# Test registering a very large number of file descriptors (will trigger
+# EINVAL due to more than OPEN_MAX fds).
 poller = select.poll()
 for fd in range(6000):
     poller.register(fd)
 try:
     poller.poll()
+    assert False
 except OSError as er:
     print(er.errno == errno.EINVAL)
+
+# Register stdout/stderr, plus many extra ones to trigger the fd vector
+# resizing. Then unregister the excess ones and verify poll still works.
+poller = select.poll()
+for fd in range(1, 1000):
+    poller.register(fd)
+for i in range(3, 1000):
+    poller.unregister(i)
+print(sorted(poller.poll()))
