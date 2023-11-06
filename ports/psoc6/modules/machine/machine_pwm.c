@@ -14,7 +14,7 @@ typedef struct _machine_pwm_obj_t {
     machine_pin_phy_obj_t *pin;
     uint32_t fz;
     uint8_t duty_type;
-    mp_float_t duty;
+    mp_int_t duty;
     bool invert;
 } machine_pwm_obj_t;
 
@@ -63,7 +63,9 @@ enum {
     DUTY_NS
 };
 
-STATIC inline cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
+STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+
+STATIC cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
     return cyhal_pwm_set_duty_cycle(pwm_obj, duty_cycle * 100, fz); // duty_cycle in percentage
 }
 
@@ -172,12 +174,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 }
 
 // sets the duty cycle as a ratio duty_u16 / 65535.
-<<<<<<< HEAD
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
-    pwm_is_active(self);
-=======
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_float_t duty_u16) {
->>>>>>> 032779024 (ports/psoc6/../machine_pwm.c: Added deinit and pin phy refactor.)
     // Check the value is more than the max value
     self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
     self->duty_type = DUTY_U16;
@@ -193,12 +190,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 }
 
 // sets the pulse width in nanoseconds
-<<<<<<< HEAD
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
-    pwm_is_active(self);
-=======
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_float_t duty_ns) {
->>>>>>> 032779024 (ports/psoc6/../machine_pwm.c: Added deinit and pin phy refactor.)
     self->duty = duty_ns;
     self->duty_type = DUTY_NS;
     pwm_freq_duty_set(&self->pwm_obj, self->fz, duty_ns);
