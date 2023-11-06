@@ -105,6 +105,7 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
         if (num_blocks > 1) {
             dest += 512;
             num_blocks -= 1;
+            block_num += 1;
             // Fall through and do a read from flash.
         } else {
             return 0; // Done and ok.
