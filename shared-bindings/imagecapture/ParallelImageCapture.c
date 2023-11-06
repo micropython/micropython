@@ -25,7 +25,6 @@
  */
 
 #include "py/obj.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 
 #include "shared/runtime/context_manager_helpers.h"
