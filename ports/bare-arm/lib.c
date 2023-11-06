@@ -110,8 +110,9 @@ char *strchr(const char *s, int c) {
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
-    while (*s1 && *s2 && n-- > 0) {
+    while (n > 0 && *s1 && *s2) {
         int c = *s1++ - *s2++;
+        --n;
         if (c) {
             return c;
         }
