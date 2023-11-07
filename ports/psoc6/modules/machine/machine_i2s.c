@@ -16,13 +16,12 @@
 #include "cyhal.h"
 
 // port-specific includes
-#include "drivers/machine/psoc6_gpio.h"
+#include "extmod/modmachine.h"
 #include "modmachine.h"
 #include "mplogger.h"
-#include "pins.h"
 #include <FreeRTOS.h>
 
-#if MICROPY_PY_MACHINE_I2S
+#if MICROPY_PY_MACHINE_PSOC6_I2S
 
 #define MCLK_CODEC_DELAY_MS (10u)         /* in ms */
 #define MCLK_FREQ_HZ        ((384U) * (AUDIO_IN_SAMPLE_FREQ))/* in Hz */
@@ -587,4 +586,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 MP_REGISTER_ROOT_POINTER(void *machine_i2s_obj[2]);
 
-#endif // MICROPY_PY_MACHINE_I2S
+#endif // MICROPY_PY_MACHINE_PSOC6_I2S

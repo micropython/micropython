@@ -116,12 +116,14 @@
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc6/modules/machine/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
-#define MICROPY_PY_MACHINE_I2S                  (1)
 
 #define MICROPY_PY_MACHINE_SPI                  (1)
 #define MICROPY_PY_MACHINE_SPI_MSB              (0)
 #define MICROPY_PY_MACHINE_SPI_LSB              (1)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
+
+#define MICROPY_PY_MACHINE_PSOC6_I2S            (1)
+#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/psoc6/modules/machine/machine_i2s.c"
 
 // VFS
 #define MICROPY_VFS                             (1)
