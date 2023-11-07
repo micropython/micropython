@@ -92,45 +92,9 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 STATIC mp_obj_t machine_unique_id(void) {
-    // Each device has a unique 128-bit serial number which is a concatenation of four 32-bit
-    // words contained at the following addresses. The uniqueness of the serial number is
-    // guaranteed only when using all 128 bits.
-    // Atmel SAM D21E / SAM D21G / SAM D21J
-    // SMART ARM-Based Microcontroller
-    // DATASHEET
-    // 9.6 (SAMD51) or 9.3.3 (or 10.3.3 depending on which manual)(SAMD21) Serial Number
-    //
-    // EXAMPLE (SAMD21)
-    // ----------------
-    // OpenOCD:
-    // Word0:
-    // > at91samd21g18.cpu mdw 0x0080A00C 1
-    // 0x0080a00c: 6e27f15f
-    // Words 1-3:
-    // > at91samd21g18.cpu mdw 0x0080A040 3
-    // 0x0080a040: 50534b54 332e3120 ff091645
-    //
-    // MicroPython (this code and same order as shown in Arduino IDE)
-    // >>> binascii.hexlify(machine.unique_id())
-    // b'6e27f15f50534b54332e3120ff091645'
-
-    #if defined(MCU_SAMD21)
-    uint32_t *id_addresses[4] = {(uint32_t *)0x0080A00C, (uint32_t *)0x0080A040,
-                                 (uint32_t *)0x0080A044, (uint32_t *)0x0080A048};
-    #elif defined(MCU_SAMD51)
-    uint32_t *id_addresses[4] = {(uint32_t *)0x008061FC, (uint32_t *)0x00806010,
-                                 (uint32_t *)0x00806014, (uint32_t *)0x00806018};
-    #endif
-    uint8_t raw_id[16];
-
-    for (int i = 0; i < 4; i++) {
-        for (int k = 0; k < 4; k++) {
-            // 'Reverse' the read bytes into a 32 bit word (Consistent with Arduino)
-            raw_id[4 * i + k] = (*(id_addresses[i]) >> (24 - k * 8)) & 0xff;
-        }
-    }
-
-    return mp_obj_new_bytes((byte *)&raw_id, sizeof(raw_id));
+    samd_unique_id_t id;
+    samd_get_unique_id(&id);
+    return mp_obj_new_bytes((byte *)&id.bytes, sizeof(id.bytes));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 

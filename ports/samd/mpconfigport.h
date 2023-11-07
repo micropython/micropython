@@ -67,6 +67,11 @@
 #ifndef MICROPY_HW_USB_CDC
 #define MICROPY_HW_USB_CDC (1)
 #endif
+// SAMD unique ID is 16 bytes (hex string == 32)
+#ifndef MICROPY_HW_USB_DESC_STR_MAX
+#define MICROPY_HW_USB_DESC_STR_MAX (32)
+#endif
+
 #endif
 
 // Control over Python builtins

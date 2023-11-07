@@ -31,12 +31,13 @@
 #include "mp_usbd.h"
 #include "string.h"
 #include "tusb.h"
-
-#define SERIAL_TODO "000000000000" // TODO
+#include "samd_soc.h"
 
 void mp_usbd_port_get_serial_number(char *serial_buf) {
-    MP_STATIC_ASSERT(sizeof(SERIAL_TODO) <= MICROPY_HW_USB_DESC_STR_MAX);
-    strcpy(serial_buf, SERIAL_TODO);
+    samd_unique_id_t id;
+    samd_get_unique_id(&id);
+    MP_STATIC_ASSERT(sizeof(id.bytes) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
+    mp_usbd_hex_str(serial_buf, id.bytes, sizeof(id.bytes));
 }
 
 void USB_Handler_wrapper(void) {
