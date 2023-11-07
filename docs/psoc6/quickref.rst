@@ -140,24 +140,10 @@ Methods
    Set pin value to its complement.
 
 
-<<<<<<< HEAD
-=======
-Constants
-^^^^^^^^^
-The following constants are used to configure the pin objects in addition to the ones mentioned in the :mod:`machine.Pin` class.
-
-.. data:: Pin.STATE_LOW
-          Pin.STATE_HIGH
-          
-    Selects the pin value.
-
-<<<<<<< HEAD
->>>>>>> 6a6924d9a (docs: Added docs and docs conf for PSoC6 port.)
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
 using ``on()`` or ``value(1)``.
-=======
->>>>>>> 57a502306 (docs: Added docs and docs conf for PSoC6 port.)
+
 
 Software I2C bus
 ----------------
@@ -258,7 +244,6 @@ The :mod:`network` module
 
 See :ref:`network.WLAN <network.WLAN>`
 
-<<<<<<< HEAD
 For some methods and constants, the PSoC6 network port implements certain specialization and slightly different behavior. This is explained in this section.
 
 Methods
@@ -317,49 +302,6 @@ Security modes constants:
 .. note::
     Power modes configuration not implemented.
      
-<<<<<<< HEAD
-
-=======
-=======
-The network module is used to configure the WiFi connection.The WiFi interface for the station mode is only configured for
-this port.Create WLAN interface object using ::
-
-    import network
-    wlan = network.WLAN(network.STA_IF) # create station interface
-
-Scan for the available wireless networks using 
-
-::
-
-   wlan.scan()             
-    
-Scan function returns a list of tuple information about access points
-(ssid, bssid, channel, RSSI, security, hidden) .There are 7 levels of security:
-
- * ``0 - open``,
- * ``1 - WEP``,
- * ``2 - WPA``,
- * ``3 - WPA2``,
- * ``4 - WPA2_WPA``,
- * ``5 - WPA3``,
- * ``6 - WPS``,
- * ``7 - Unknown security``.          
-    
-These are the other functions available in the network module
-
-::   
-
-  wlan.active(True)           # activate the interface
-  wlan.scan()                 # scan for access points
-  wlan.isconnected()          # check if the station is connected to an AP
-  wlan.connect('ssid', 'key') # connect to an AP
-  wlan.disconnect()           # disconnect from the connected AP
-  wlan.status()               # check the link status and returns 1 for linkup & 0 for linkdown
-  wlan.ifconfig()             # get the interface's IP/netmask/gateway/DNS addresses
-     
-   
->>>>>>> 57a502306 (docs: Added docs and docs conf for PSoC6 port.)
->>>>>>> 6a6924d9a (docs: Added docs and docs conf for PSoC6 port.)
 Here is a function you can run (or put in your boot.py file) to automatically connect to your WiFi network:
 
 ::
