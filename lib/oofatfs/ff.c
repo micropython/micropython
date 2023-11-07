@@ -5422,7 +5422,7 @@ FRESULT f_mkfs (
 )
 {
     const UINT n_fats = 1;      /* Number of FATs for FAT/FAT32 volume (1 or 2) */
-    const UINT n_rootdir = 512; /* Number of root directory entries for FAT volume */
+    UINT n_rootdir = 512;       /* Number of root directory entries for FAT volume */
     static const WORD cst[] = {1, 4, 16, 64, 256, 512, 0};  /* Cluster size boundary for FAT volume (4Ks unit) */
 #if FF_MKFS_FAT32
     static const WORD cst32[] = {1, 2, 4, 8, 16, 32, 0};    /* Cluster size boundary for FAT32 volume (128Ks unit) */
@@ -5703,6 +5703,7 @@ FRESULT f_mkfs (
                 }
                 sz_fat = (n + ss - 1) / ss;     /* FAT size [sector] */
                 sz_rsv = 1;                     /* Number of reserved sectors */
+                n_rootdir = (sz_vol <= 256)? 64 : n_rootdir; /* Shrink root dir for <= 128K device */
                 sz_dir = (DWORD)n_rootdir * SZDIRE / ss;    /* Rootdir size [sector] */
             }
             b_fat = b_vol + sz_rsv;                     /* FAT base */

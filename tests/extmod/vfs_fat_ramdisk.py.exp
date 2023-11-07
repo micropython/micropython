@@ -1,7 +1,7 @@
 True
 True
 label: LABEL TEST
-statvfs: (512, 512, 16, 16, 16, 0, 0, 0, 0, 255)
+statvfs: (512, 512, 44, 44, 44, 0, 0, 0, 0, 255)
 getcwd: /
 True
 [('foo_file.txt', 32768, 0, 6)]
