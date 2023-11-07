@@ -62,6 +62,13 @@
 #define MICROPY_HW_ENABLE_USBDEV            (1)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
+#endif
+#endif
+
 // Control over Python builtins
 #define MICROPY_PY_BUILTINS_BYTES_HEX       (1)
 #define MICROPY_PY_BUILTINS_MEMORYVIEW      (1)
@@ -140,6 +147,15 @@
 #define MICROPY_PLATFORM_VERSION            "ASF4"
 
 #define MP_STATE_PORT MP_STATE_VM
+
+// Miscellaneous settings
+
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0xf055)
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x9802)
+#endif
 
 // Additional entries for use with pendsv_schedule_dispatch.
 #ifndef MICROPY_BOARD_PENDSV_ENTRIES

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2023 Angus Gratton
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,24 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_TUSB_CONFIG_H
-#define MICROPY_INCLUDED_SAMD_TUSB_CONFIG_H
 
-// Common configuration
+#include "py/mpconfig.h"
 
-#if defined(MCU_SAMD21)
-#define CFG_TUSB_MCU                OPT_MCU_SAMD21
-#elif defined(MCU_SAMD51)
-#define CFG_TUSB_MCU                OPT_MCU_SAMD51
+#if MICROPY_HW_ENABLE_USBDEV
+
+#include "mp_usbd.h"
+#include "string.h"
+#include "tusb.h"
+
+#define SERIAL_TODO "000000000000" // TODO
+
+void mp_usbd_port_get_serial_number(char *serial_buf) {
+    MP_STATIC_ASSERT(sizeof(SERIAL_TODO) <= MICROPY_HW_USB_DESC_STR_MAX);
+    strcpy(serial_buf, SERIAL_TODO);
+}
+
+void USB_Handler_wrapper(void) {
+    tud_int_handler(0);
+}
+
 #endif
-#define CFG_TUSB_RHPORT0_MODE       OPT_MODE_DEVICE
-#define CFG_TUSB_MEM_SECTION
-#define CFG_TUSB_MEM_ALIGN          TU_ATTR_ALIGNED(4)
-
-// Device configuration
-
-#define CFG_TUD_ENDOINT0_SIZE       (64)
-#define CFG_TUD_CDC                 (1)
-#define CFG_TUD_CDC_RX_BUFSIZE      (64)
-#define CFG_TUD_CDC_TX_BUFSIZE      (64)
-
-#endif // MICROPY_INCLUDED_SAMD_TUSB_CONFIG_H
