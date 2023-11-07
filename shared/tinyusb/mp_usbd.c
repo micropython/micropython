@@ -62,4 +62,14 @@ static void mp_usbd_task_callback(mp_sched_node_t *node) {
     mp_usbd_task();
 }
 
+void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len) {
+    size_t hex_len = bytes_len * 2;
+    for (int i = 0; i < hex_len; i += 2) {
+        static const char *hexdig = "0123456789abcdef";
+        out_str[i] = hexdig[bytes[i / 2] >> 4];
+        out_str[i + 1] = hexdig[bytes[i / 2] & 0x0f];
+    }
+    out_str[hex_len] = 0;
+}
+
 #endif
