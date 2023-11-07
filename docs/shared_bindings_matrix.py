@@ -170,7 +170,7 @@ def build_module_map():
             search_identifier = ADDITIONAL_MODULES[module]
         else:
             search_identifier = "CIRCUITPY_" + module.lstrip("_").upper()
-        re_pattern = f"{re.escape(search_identifier)}\s*\??=\s*(.+)"
+        re_pattern = fr"{re.escape(search_identifier)}\s*\??=\s*(.+)"
         find_config = re.findall(re_pattern, configs)
         if not find_config:
             continue
@@ -242,12 +242,12 @@ def get_repository_url(directory):
         with open(readme, "r") as fp:
             for line in fp.readlines():
                 if m := re.match(
-                    "\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*",
+                    r"\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*",
                     line,
                 ):
                     path = m.group(1)
                     break
-                if m := re.search("<(http[^>]+)>", line):
+                if m := re.search(r"<(http[^>]+)>", line):
                     path = m.group(1)
                     break
     if path is None:
