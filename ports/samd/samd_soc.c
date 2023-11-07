@@ -153,3 +153,39 @@ void sercom_deinit_all(void) {
 }
 
 #endif
+
+void samd_get_unique_id(samd_unique_id_t *id) {
+    // Atmel SAM D21E / SAM D21G / SAM D21J
+    // SMART ARM-Based Microcontroller
+    // DATASHEET
+    // 9.6 (SAMD51) or 9.3.3 (or 10.3.3 depending on which manual)(SAMD21) Serial Number
+    //
+    // EXAMPLE (SAMD21)
+    // ----------------
+    // OpenOCD:
+    // Word0:
+    // > at91samd21g18.cpu mdw 0x0080A00C 1
+    // 0x0080a00c: 6e27f15f
+    // Words 1-3:
+    // > at91samd21g18.cpu mdw 0x0080A040 3
+    // 0x0080a040: 50534b54 332e3120 ff091645
+    //
+    // MicroPython (this code and same order as shown in Arduino IDE)
+    // >>> binascii.hexlify(machine.unique_id())
+    // b'6e27f15f50534b54332e3120ff091645'
+
+    #if defined(MCU_SAMD21)
+    uint32_t *id_addresses[4] = {(uint32_t *)0x0080A00C, (uint32_t *)0x0080A040,
+                                 (uint32_t *)0x0080A044, (uint32_t *)0x0080A048};
+    #elif defined(MCU_SAMD51)
+    uint32_t *id_addresses[4] = {(uint32_t *)0x008061FC, (uint32_t *)0x00806010,
+                                 (uint32_t *)0x00806014, (uint32_t *)0x00806018};
+    #endif
+
+    for (int i = 0; i < 4; i++) {
+        for (int k = 0; k < 4; k++) {
+            // 'Reverse' the read bytes into a 32 bit word (Consistent with Arduino)
+            id->bytes[4 * i + k] = (*(id_addresses[i]) >> (24 - k * 8)) & 0xff;
+        }
+    }
+}
