@@ -17,9 +17,18 @@ CONFIG_BOOTLOADER_SKIP_VALIDATE_IN_DEEP_SLEEP=y
 CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 
 # Change default log level to "ERROR" (instead of "INFO")
-CONFIG_LOG_DEFAULT_LEVEL_INFO=n
 CONFIG_LOG_DEFAULT_LEVEL_ERROR=y
-CONFIG_LOG_DEFAULT_LEVEL=1
+
+# Set the maximum included log level higher than the default,
+# so esp.osdebug() can enable more logging at runtime.
+#
+# To increase the max log verbosity to Debug or Verbose instead, comment
+# CONFIG_LOG_MAXIMUM_LEVEL_INFO=y and uncomment one of the other settings.
+#
+# If not needed, the next line can be commented entirely to save binary size.
+CONFIG_LOG_MAXIMUM_LEVEL_INFO=y
+#CONFIG_LOG_MAXIMUM_LEVEL_DEBUG=y
+#CONFIG_LOG_MAXIMUM_LEVEL_VERBOSE=y
 
 # Main XTAL Config
 # Only on: ESP32
