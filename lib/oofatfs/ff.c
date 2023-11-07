@@ -5704,7 +5704,11 @@ FRESULT f_mkfs (
                 }
                 sz_fat = (n + ss - 1) / ss;     /* FAT size [sector] */
                 sz_rsv = 1;                     /* Number of reserved sectors */
-                n_rootdir = (sz_vol <= 256)? 64 : n_rootdir; /* Shrink root dir for <= 128K device */
+               // CIRCUITPY-CHANGE: For fewer than 256 clusters (128kB filesystem),
+               // shrink the root directory size from 512 entries to 128 entries. Note that
+               // long filenames will use two entries. This change affects only the root directory,
+               // not subdirectories
+                n_rootdir = (sz_vol <= 256) ? 128 : n_rootdir;
                 sz_dir = (DWORD)n_rootdir * SZDIRE / ss;    /* Rootdir size [sector] */
             }
             b_fat = b_vol + sz_rsv;                     /* FAT base */
