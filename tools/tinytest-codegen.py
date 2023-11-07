@@ -32,10 +32,24 @@ def script_to_map(test_file):
     return r
 
 
+def flatten_iterable(iterable):
+    flattened = set()
+    for element in iterable:
+        if isinstance(element, (list, tuple, set)):
+            flattened = flattened.union(flatten_iterable(element))
+        elif isinstance(element, str):
+            flattened.add(element)
+        else:
+            raise TypeError("Invalid type %s for element `%s`" % (type(element), element))
+    return flattened
+
+
 def load_profile(profile_file, test_dirs, exclude_tests):
     profile_globals = {"test_dirs": test_dirs, "exclude_tests": exclude_tests}
     exec(profile_file.read(), profile_globals)
-    return profile_globals["test_dirs"], profile_globals["exclude_tests"]
+    return flatten_iterable(profile_globals["test_dirs"]), flatten_iterable(
+        profile_globals["exclude_tests"]
+    )
 
 
 test_function = (
@@ -127,8 +141,10 @@ if not args.stdin:
         test_dirs, exclude_tests = load_profile(args.profile, test_dirs, exclude_tests)
     if args.exclude:
         exclude_tests = exclude_tests.union(args.exclude)
-    for group in test_dirs:
-        tests += [test for test in glob("{}/*.py".format(group)) if test not in exclude_tests]
+    for group in sorted(test_dirs):
+        tests += [
+            test for test in sorted(glob("{}/*.py".format(group))) if test not in exclude_tests
+        ]
 else:
     for l in sys.stdin:
         tests.append(l.rstrip())
