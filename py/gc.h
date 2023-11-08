@@ -85,6 +85,7 @@ void *gc_realloc(void *ptr, size_t n_bytes, bool allow_move);
 // very sparingly because it can leak memory.
 bool gc_never_free(void *ptr);
 
+// CIRCUITPY-CHANGE
 // True if the pointer is on the MP heap. Doesn't require that it is the start
 // of a block.
 bool gc_ptr_on_heap(void *ptr);

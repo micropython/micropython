@@ -363,6 +363,7 @@ bool gc_is_locked(void) {
     return MP_STATE_THREAD(gc_lock_depth) != 0;
 }
 
+// CIRCUITPY-CHANGE
 bool gc_ptr_on_heap(void *ptr) {
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         if (ptr >= (void *)area->gc_pool_start   // must be above start of pool
