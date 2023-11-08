@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "py/gc.h"
 #include "py/runtime0.h"
 #include "py/nlr.h"
 #include "py/objlist.h"
@@ -274,6 +275,13 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, siz
     sock->state = sock->type == SOCK_STREAM ? SOCKET_STATE_NEW : SOCKET_STATE_CONNECTED;
 
     sock->fd = lwip_socket(sock->domain, sock->type, sock->proto);
+    if (sock->fd < 0 && errno == ENFILE) {
+        // ESP32 LWIP has a hard socket limit, ENFILE is returned when this is
+        // reached. Similar to the logic elsewhere for MemoryError, try running
+        // GC before failing outright.
+        gc_collect();
+        sock->fd = lwip_socket(sock->domain, sock->type, sock->proto);
+    }
     if (sock->fd < 0) {
         mp_raise_OSError(errno);
     }
