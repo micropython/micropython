@@ -91,6 +91,11 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH  (0)
 #define MICROPY_FLOAT_IMPL               (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_GC_ALLOC_THRESHOLD       (0)
+#define MICROPY_GC_SPLIT_HEAP            (1)
+#define MICROPY_GC_SPLIT_HEAP_AUTO       (1)
+#define MP_PLAT_ALLOC_HEAP(size) port_malloc(size, true)
+#define MP_PLAT_FREE_HEAP(ptr) port_free(ptr)
+#include "supervisor/port_heap.h"
 #define MICROPY_HELPER_LEXER_UNIX        (0)
 #define MICROPY_HELPER_REPL              (1)
 #define MICROPY_KBD_EXCEPTION            (1)
@@ -155,7 +160,6 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_QSTR_BYTES_IN_HASH       (1)
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
-#define CIRCUITPY_SETTABLE_PYSTACK       (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
@@ -429,6 +433,18 @@ void background_callback_run_all(void);
 
 #ifndef CIRCUITPY_PYSTACK_SIZE
 #define CIRCUITPY_PYSTACK_SIZE 1536
+#endif
+
+// The VM heap starts at this size and doubles in size as needed until it runs
+// out of memory in the outer heap. Once it can't double, it'll then grow into
+// the largest contiguous free area.
+#ifndef CIRCUITPY_HEAP_START_SIZE
+#define CIRCUITPY_HEAP_START_SIZE (8 * 1024)
+#endif
+
+// How much of the c stack we leave to ensure we can process exceptions.
+#ifndef CIRCUITPY_EXCEPTION_STACK_SIZE
+#define CIRCUITPY_EXCEPTION_STACK_SIZE 1024
 #endif
 
 // Wait this long before sleeping immediately after startup, to see if we are connected via USB or BLE.

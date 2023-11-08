@@ -499,10 +499,6 @@ uint32_t *port_stack_get_top(void) {
     return &_ld_stack_top;
 }
 
-bool port_has_fixed_stack(void) {
-    return true;
-}
-
 uint32_t *port_heap_get_bottom(void) {
     return &_ld_heap_start;
 }

@@ -218,7 +218,7 @@ void print_safe_mode_message(safe_mode_t reason) {
                 message = MP_ERROR_TEXT("NLR jump failed. Likely memory corruption.");
                 break;
             case SAFE_MODE_NO_HEAP:
-                message = MP_ERROR_TEXT("Unable to allocate the heap.");
+                message = MP_ERROR_TEXT("Unable to allocate to the heap.");
                 break;
             case SAFE_MODE_SDK_FATAL_ERROR:
                 message = MP_ERROR_TEXT("Third-party firmware fatal error.");

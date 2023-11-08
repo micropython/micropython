@@ -233,15 +233,15 @@ void reset_cpu(void) {
     }
 }
 
-bool port_has_fixed_stack(void) {
-    return false;
-}
-
 // From the linker script
 extern uint32_t _ld_cp_dynamic_mem_start;
 extern uint32_t _ld_cp_dynamic_mem_end;
 uint32_t *port_stack_get_limit(void) {
-    return &_ld_cp_dynamic_mem_start;
+    #pragma GCC diagnostic push
+
+    #pragma GCC diagnostic ignored "-Warray-bounds"
+    return port_stack_get_top() - (CIRCUITPY_DEFAULT_STACK_SIZE + CIRCUITPY_EXCEPTION_STACK_SIZE) / sizeof(uint32_t);
+    #pragma GCC diagnostic pop
 }
 
 uint32_t *port_stack_get_top(void) {
@@ -249,11 +249,11 @@ uint32_t *port_stack_get_top(void) {
 }
 
 uint32_t *port_heap_get_bottom(void) {
-    return port_stack_get_limit();
+    return &_ld_cp_dynamic_mem_start;
 }
 
 uint32_t *port_heap_get_top(void) {
-    return port_stack_get_top();
+    return port_stack_get_limit();
 }
 
 uint32_t __uninitialized_ram(saved_word);

@@ -176,7 +176,10 @@ ifeq ($(GCC_VERSION_GTEQ_11),1)
 CFLAGS += -Wno-stringop-overread -Wno-stringop-overflow
 endif
 
-LDFLAGS = $(CFLAGS) -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
+# Somehow the lto doesn't know it needs __ffssi2 until it is too late. (Maybe
+# because the code uses __builtin_ffs().) So, explicitly say we'll need it up
+# front. -u is to say a symbol is undefined from the start.
+LDFLAGS = $(CFLAGS) -u __ffssi2 -nostartfiles -Wl,-nostdlib -Wl,-T,$(GENERATED_LD_FILE) -Wl,-Map=$@.map -Wl,-cref -Wl,-gc-sections -specs=nano.specs
 
 # Use toolchain libm if we're not using our own.
 ifndef INTERNAL_LIBM
@@ -301,6 +304,8 @@ SRC_C += \
 	reset.c \
 	timer_handler.c \
 	$(SRC_PERIPHERALS) \
+
+$(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
 
 $(BUILD)/lib/tinyusb/src/portable/microchip/samd/dcd_samd.o: CFLAGS += -Wno-missing-prototypes
 

@@ -55,7 +55,6 @@
 #include "common-hal/socketpool/Socket.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/background_callback.h"
-#include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/RunMode.h"
@@ -321,55 +320,29 @@ safe_mode_t port_init(void) {
     return SAFE_MODE_NONE;
 }
 
-safe_mode_t port_heap_init(safe_mode_t sm) {
-    mp_int_t reserved = 0;
-    if (filesystem_present() && common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
-        common_hal_espidf_set_reserved_psram(reserved);
-    }
+void port_heap_init(void) {
+    // The IDF sets up the heap, so we don't need to.
+}
 
-    #if defined(CONFIG_SPIRAM_USE_MEMMAP)
-    {
-        intptr_t heap_start = common_hal_espidf_get_psram_start();
-        intptr_t heap_end = common_hal_espidf_get_psram_end();
-        size_t spiram_size = heap_end - heap_start;
-        if (spiram_size > 0) {
-            heap = (uint32_t *)heap_start;
-            heap_size = (heap_end - heap_start) / sizeof(uint32_t);
-            common_hal_espidf_reserve_psram();
-        } else {
-            ESP_LOGE(TAG, "CONFIG_SPIRAM_USE_MMAP enabled but no spiram heap available");
-        }
+void *port_malloc(size_t size, bool dma_capable) {
+    size_t caps = MALLOC_CAP_8BIT;
+    if (dma_capable) {
+        caps |= MALLOC_CAP_DMA;
     }
-    #elif defined(CONFIG_SPIRAM_USE_CAPS_ALLOC)
-    {
-        intptr_t psram_start = common_hal_espidf_get_psram_start();
-        intptr_t psram_end = common_hal_espidf_get_psram_end();
-        size_t psram_amount = psram_end - psram_start;
-        size_t biggest_block = heap_caps_get_largest_free_block(MALLOC_CAP_SPIRAM);
-        size_t try_alloc = MIN(biggest_block, psram_amount - common_hal_espidf_get_reserved_psram());
-        heap = heap_caps_malloc(try_alloc, MALLOC_CAP_SPIRAM);
+    return heap_caps_malloc(size, caps);
+}
 
-        if (heap) {
-            heap_size = try_alloc;
-        } else {
-            ESP_LOGE(TAG, "CONFIG_SPIRAM_USE_CAPS_ALLOC but no spiram heap available");
-        }
-    }
-    #endif
+void port_free(void *ptr) {
+    heap_caps_free(ptr);
+}
 
-    if (heap == NULL) {
-        size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
-        heap_size = MIN(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), heap_total / 2);
-        heap = malloc(heap_size);
-        heap_size = heap_size / sizeof(uint32_t);
-    }
-    if (heap == NULL) {
-        heap_size = 0;
-        return SAFE_MODE_NO_HEAP;
-    }
+void port_realloc(void *ptr, size_t size) {
+    heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
+}
 
-    return sm;
-
+size_t port_heap_get_largest_free_size(void) {
+    size_t free_size = heap_caps_get_largest_free_block(0);
+    return free_size;
 }
 
 void reset_port(void) {
@@ -455,14 +428,6 @@ void reset_cpu(void) {
     esp_restart();
 }
 
-uint32_t *port_heap_get_bottom(void) {
-    return heap;
-}
-
-uint32_t *port_heap_get_top(void) {
-    return heap + heap_size;
-}
-
 uint32_t *port_stack_get_limit(void) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"
@@ -483,10 +448,6 @@ uint32_t *port_stack_get_top(void) {
     // pyexec_friendly_repl, could lie inside the "extra" area and be invisible
     // to the garbage collector.
     return port_stack_get_limit() + ESP_TASK_MAIN_STACK / (sizeof(uint32_t) / sizeof(StackType_t));
-}
-
-bool port_has_fixed_stack(void) {
-    return true;
 }
 
 void port_set_saved_word(uint32_t value) {

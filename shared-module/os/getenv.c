@@ -42,7 +42,6 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/memory.h"
 
 #define GETENV_PATH "/settings.toml"
 

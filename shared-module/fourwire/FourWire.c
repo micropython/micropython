@@ -42,9 +42,6 @@ void common_hal_fourwire_fourwire_construct(fourwire_fourwire_obj_t *self,
 
     self->bus = spi;
     common_hal_busio_spi_never_reset(self->bus);
-    // Our object is statically allocated off the heap so make sure the bus object lives to the end
-    // of the heap as well.
-    gc_never_free(self->bus);
 
     self->frequency = baudrate;
     self->polarity = polarity;
@@ -175,4 +172,9 @@ void common_hal_fourwire_fourwire_end_transaction(mp_obj_t obj) {
     fourwire_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
     common_hal_digitalio_digitalinout_set_value(&self->chip_select, true);
     common_hal_busio_spi_unlock(self->bus);
+}
+
+void common_hal_fourwire_fourwire_collect_ptrs(mp_obj_t obj) {
+    fourwire_fourwire_obj_t *self = MP_OBJ_TO_PTR(obj);
+    gc_collect_ptr((void *)self->bus);
 }

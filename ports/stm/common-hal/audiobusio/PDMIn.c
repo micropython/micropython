@@ -29,7 +29,6 @@
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "supervisor/memory.h"
 #include "MEMS_Audio_ll_stm32l4.h"
 
 

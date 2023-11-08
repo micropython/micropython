@@ -218,10 +218,6 @@ uint32_t *port_heap_get_top(void) {
     return heap + heap_size;
 }
 
-bool port_has_fixed_stack(void) {
-    return true;
-}
-
 uint32_t *port_stack_get_limit(void) {
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wcast-align"

@@ -89,6 +89,8 @@ ifeq ($(CIRCUITPY_SWO_TRACE), 1)
   CFLAGS += -finstrument-functions -finstrument-functions-exclude-file-list=tinyusb -finstrument-functions-exclude-function-list='USB_OTG1_IRQHandler,usb_irq_handler,nlr_push,CLOCK_EnableClock,CLOCK_SetDiv,CLOCK_SetMux,__DMB,__ISB,__DSB,SCB_EnableICache,SCB_EnableDCache,ARM_MPU_Disable,ARM_MPU_Enable,SCB_DisableDCache,SCB_DisableICache,__enable_irq,__disable_irq,__set_MSP,port_get_raw_ticks,supervisor_ticks_ms64'
 endif
 
+$(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
+
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 
 LD_SCRIPT_FLAG := -Wl,-T,

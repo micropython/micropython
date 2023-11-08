@@ -504,6 +504,7 @@ void epaperdisplay_epaperdisplay_reset(epaperdisplay_epaperdisplay_obj_t *self) 
 
 void epaperdisplay_epaperdisplay_collect_ptrs(epaperdisplay_epaperdisplay_obj_t *self) {
     displayio_display_core_collect_ptrs(&self->core);
+    displayio_display_bus_collect_ptrs(&self->bus);
     gc_collect_ptr((void *)self->start_sequence);
     gc_collect_ptr((void *)self->stop_sequence);
 }

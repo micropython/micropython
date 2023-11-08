@@ -76,6 +76,7 @@ void displayio_display_bus_construct(displayio_display_bus_t *self,
         self->begin_transaction = common_hal_paralleldisplaybus_parallelbus_begin_transaction;
         self->send = common_hal_paralleldisplaybus_parallelbus_send;
         self->end_transaction = common_hal_paralleldisplaybus_parallelbus_end_transaction;
+        self->collect_ptrs = common_hal_paralleldisplaybus_parallelbus_collect_ptrs;
     } else
     #endif
     #if CIRCUITPY_FOURWIRE
@@ -85,6 +86,7 @@ void displayio_display_bus_construct(displayio_display_bus_t *self,
         self->begin_transaction = common_hal_fourwire_fourwire_begin_transaction;
         self->send = common_hal_fourwire_fourwire_send;
         self->end_transaction = common_hal_fourwire_fourwire_end_transaction;
+        self->collect_ptrs = common_hal_fourwire_fourwire_collect_ptrs;
     } else
     #endif
     #if CIRCUITPY_I2CDISPLAYBUS
@@ -94,6 +96,7 @@ void displayio_display_bus_construct(displayio_display_bus_t *self,
         self->begin_transaction = common_hal_i2cdisplaybus_i2cdisplaybus_begin_transaction;
         self->send = common_hal_i2cdisplaybus_i2cdisplaybus_send;
         self->end_transaction = common_hal_i2cdisplaybus_i2cdisplaybus_end_transaction;
+        self->collect_ptrs = common_hal_i2cdisplaybus_i2cdisplaybus_collect_ptrs;
     } else
     #endif
     {
@@ -230,4 +233,8 @@ void displayio_display_bus_set_region_to_update(displayio_display_bus_t *self, d
         self->send(self->bus, DISPLAY_DATA, chip_select, data, data_length / 2);
         displayio_display_bus_end_transaction(self);
     }
+}
+
+void displayio_display_bus_collect_ptrs(displayio_display_bus_t *self) {
+    self->collect_ptrs(self->bus);
 }

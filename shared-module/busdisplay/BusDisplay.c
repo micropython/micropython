@@ -441,4 +441,5 @@ void reset_busdisplay(busdisplay_busdisplay_obj_t *self) {
 
 void busdisplay_busdisplay_collect_ptrs(busdisplay_busdisplay_obj_t *self) {
     displayio_display_core_collect_ptrs(&self->core);
+    displayio_display_bus_collect_ptrs(&self->bus);
 }

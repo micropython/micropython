@@ -41,6 +41,7 @@ typedef struct {
     display_bus_begin_transaction begin_transaction;
     display_bus_send send;
     display_bus_end_transaction end_transaction;
+    display_bus_collect_ptrs collect_ptrs;
     uint16_t ram_width;
     uint16_t ram_height;
     int16_t colstart;

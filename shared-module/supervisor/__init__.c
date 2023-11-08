@@ -35,3 +35,12 @@ supervisor_status_bar_obj_t shared_module_supervisor_status_bar_obj = {
         .type = &supervisor_status_bar_type,
     },
 };
+
+// String of the last traceback.
+char *prev_traceback_string = NULL;
+
+// Custom settings for next code run.
+supervisor_next_code_info_t *next_code_configuration = NULL;
+
+// Custom USB settings.
+usb_identification_t *custom_usb_identification = NULL;

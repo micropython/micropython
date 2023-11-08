@@ -81,7 +81,7 @@ typedef struct {
         rgbmatrix_rgbmatrix_obj_t rgbmatrix;
         #endif
         #if CIRCUITPY_IS31FL3741
-        is31fl3741_FrameBuffer_obj_t is31fl3741;
+        is31fl3741_framebuffer_obj_t is31fl3741;
         #endif
         #if CIRCUITPY_SHARPDISPLAY
         sharpdisplay_framebuffer_obj_t sharpdisplay;
