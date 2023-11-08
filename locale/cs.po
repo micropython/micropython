@@ -1293,10 +1293,6 @@ msgstr "Chybný BLE parametr"
 msgid "Invalid BSSID"
 msgstr "Chybné BSSID"
 
-#: main.c
-msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr "Špatný CIRCUITPY_PYSTACK_SIZE\n"
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "Chybná MAC adresa"
@@ -2192,8 +2188,8 @@ msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Unable to allocate the heap."
-msgstr "Nelze alokovat heap."
+msgid "Unable to allocate to the heap."
+msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2768,7 +2764,7 @@ msgstr "nelze nastavit velikost bloku 512"
 msgid "can't set attribute"
 msgstr ""
 
-#: py/runtime.c shared-bindings/supervisor/Runtime.c
+#: py/runtime.c
 msgid "can't set attribute '%q'"
 msgstr "nelze nastavit atribut '%q'"
 
@@ -3036,14 +3032,6 @@ msgstr "epoch_time není podporován na této desce"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr ""
-
-#: ports/espressif/common-hal/espcamera/Camera.c
-msgid ""
-"espcamera.Camera requires reserved PSRAM to be configured. See the "
-"documentation for instructions."
-msgstr ""
-"espcamera.Camera vyžaduje reservovanou PSRAM. V dokumentaci nalezneš "
-"instrukce."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4446,6 +4434,19 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "Špatný CIRCUITPY_PYSTACK_SIZE\n"
+
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "Nelze alokovat heap."
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera.Camera vyžaduje reservovanou PSRAM. V dokumentaci nalezneš "
+#~ "instrukce."
 
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr "'await', 'async for' nebo 'async' je volán mimo async"

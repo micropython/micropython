@@ -1295,10 +1295,6 @@ msgstr ""
 msgid "Invalid BSSID"
 msgstr ""
 
-#: main.c
-msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr ""
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr ""
@@ -2190,7 +2186,7 @@ msgid "Unable to allocate buffers for signed conversion"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
-msgid "Unable to allocate the heap."
+msgid "Unable to allocate to the heap."
 msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
@@ -2761,7 +2757,7 @@ msgstr ""
 msgid "can't set attribute"
 msgstr ""
 
-#: py/runtime.c shared-bindings/supervisor/Runtime.c
+#: py/runtime.c
 msgid "can't set attribute '%q'"
 msgstr ""
 
@@ -3028,12 +3024,6 @@ msgstr ""
 #: ports/nrf/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
-msgstr ""
-
-#: ports/espressif/common-hal/espcamera/Camera.c
-msgid ""
-"espcamera.Camera requires reserved PSRAM to be configured. See the "
-"documentation for instructions."
 msgstr ""
 
 #: py/runtime.c

@@ -1302,10 +1302,6 @@ msgstr "wú xiào BLE cān shù"
 msgid "Invalid BSSID"
 msgstr "Wúxiào de BSSID"
 
-#: main.c
-msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr "wú xiào CIRCUITPY_PYSTACK_SIZE\n"
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "wú xiào de MAC dì zhǐ"
@@ -2207,8 +2203,8 @@ msgid "Unable to allocate buffers for signed conversion"
 msgstr "Wúfǎ fēnpèi huǎnchōng qū yòng yú qiānmíng zhuǎnhuàn"
 
 #: supervisor/shared/safe_mode.c
-msgid "Unable to allocate the heap."
-msgstr "wú fǎ fēn pèi duī."
+msgid "Unable to allocate to the heap."
+msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2785,7 +2781,7 @@ msgstr "wúfǎ shèzhì 512 kuài dàxiǎo"
 msgid "can't set attribute"
 msgstr "wúfǎ shèzhì shǔxìng"
 
-#: py/runtime.c shared-bindings/supervisor/Runtime.c
+#: py/runtime.c
 msgid "can't set attribute '%q'"
 msgstr "wú fǎ shè zhì shǔ xìng '%q'"
 
@@ -3059,14 +3055,6 @@ msgstr "epoch_time bǎn bù zhī chí cǐ bǎn běn"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "cuòwù = 0x%08lX"
-
-#: ports/espressif/common-hal/espcamera/Camera.c
-msgid ""
-"espcamera.Camera requires reserved PSRAM to be configured. See the "
-"documentation for instructions."
-msgstr ""
-"espcamera.Camera xū yào pèi zhì bǎo liú de PSRAM. yǒu guān shuō míng, qǐng "
-"cān yuè wén dàng."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4473,6 +4461,19 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "wú xiào CIRCUITPY_PYSTACK_SIZE\n"
+
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "wú fǎ fēn pèi duī."
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera.Camera xū yào pèi zhì bǎo liú de PSRAM. yǒu guān shuō míng, "
+#~ "qǐng cān yuè wén dàng."
 
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr ""

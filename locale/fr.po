@@ -1321,10 +1321,6 @@ msgstr "Paramètre BLE invalide"
 msgid "Invalid BSSID"
 msgstr "BSSID invalide"
 
-#: main.c
-msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr "Taille CIRCUITPY_PYSTACK_SIZE invalide\n"
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "Adresse MAC invalide"
@@ -2244,8 +2240,8 @@ msgid "Unable to allocate buffers for signed conversion"
 msgstr "Impossible d'allouer des tampons pour une conversion signée"
 
 #: supervisor/shared/safe_mode.c
-msgid "Unable to allocate the heap."
-msgstr "Impossible d'allouer le tas."
+msgid "Unable to allocate to the heap."
+msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2828,7 +2824,7 @@ msgstr "impossible de définir une taille de bloc de 512"
 msgid "can't set attribute"
 msgstr "attribut non modifiable"
 
-#: py/runtime.c shared-bindings/supervisor/Runtime.c
+#: py/runtime.c
 msgid "can't set attribute '%q'"
 msgstr "attribut '%q' non modifiable"
 
@@ -3106,14 +3102,6 @@ msgstr "epoch_time n'est pas supporté sur ce panneau"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "erreur = 0x%08lX"
-
-#: ports/espressif/common-hal/espcamera/Camera.c
-msgid ""
-"espcamera.Camera requires reserved PSRAM to be configured. See the "
-"documentation for instructions."
-msgstr ""
-"espcamera.Camera a besoin de PSRAM réservée. Voir la documentation pour les "
-"instructions."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4525,6 +4513,19 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "Taille CIRCUITPY_PYSTACK_SIZE invalide\n"
+
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "Impossible d'allouer le tas."
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera.Camera a besoin de PSRAM réservée. Voir la documentation pour "
+#~ "les instructions."
 
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr "'await', 'async for' ou 'async with' dehors d'une fonction async"
