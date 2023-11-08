@@ -59,12 +59,15 @@
 //|   from board import *
 //|
 //|   i2c = busio.I2C(SCL, SDA)
+//|   i2c.try_lock()
 //|   print(i2c.scan())
+//|   i2c.unlock()
 //|   i2c.deinit()
 //|
-//| This example will initialize the the device, run
-//| :py:meth:`~busio.I2C.scan` and then :py:meth:`~busio.I2C.deinit` the
-//| hardware. The last step is optional because CircuitPython automatically
+//| This example will initialize the the device, lock the I2C bus, run
+//| :py:meth:`~busio.I2C.scan`, unlock the bus,
+//| and then :py:meth:`~busio.I2C.deinit` the hardware.
+//| The last step is optional because CircuitPython automatically
 //| resets hardware after a program finishes.
 //|
 //| Note that drivers will typically handle communication if provided the bus

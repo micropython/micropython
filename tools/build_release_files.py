@@ -139,7 +139,7 @@ for board in build_boards:
         # Flush so we will see something before 10 minutes has passed.
         print(flush=True)
 
-        if (not build_all) and (language is LANGUAGE_FIRST) and (exit_status is 0):
+        if (not build_all) and (language == LANGUAGE_FIRST) and (exit_status == 0):
             try:
                 with open(
                     f"../ports/{board_info['port']}/{build_dir}/firmware.size.json", "r"
