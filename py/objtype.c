@@ -44,6 +44,7 @@
 #define ENABLE_SPECIAL_ACCESSORS \
     (MICROPY_PY_DESCRIPTORS || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY)
 
+static mp_obj_t mp_obj_is_subclass(mp_obj_t object, mp_obj_t classinfo);
 static mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
@@ -1260,9 +1261,15 @@ static mp_obj_t super_make_new(const mp_obj_type_t *type_in, size_t n_args, size
     // 0 arguments are turned into 2 in the compiler
     // 1 argument is not yet implemented
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
-    if (!mp_obj_is_type(args[0], &mp_type_type)) {
+
+    // Per CPython: "If the second argument is an object, isinstance(obj, type) must be true.
+    // If the second argument is a type, issubclass(type2, type) must be true (this is useful for classmethods)."
+    const mp_obj_type_t *second_arg_type = mp_obj_get_type(args[1]);
+    mp_obj_t second_arg_obj = second_arg_type == &mp_type_type ? args[1] : MP_OBJ_FROM_PTR(second_arg_type);
+    if (mp_obj_is_subclass(second_arg_obj, args[0]) == mp_const_false) {
         mp_raise_TypeError(NULL);
     }
+
     mp_obj_super_t *o = m_new_obj(mp_obj_super_t);
     *o = (mp_obj_super_t) {{type_in}, args[0], args[1]};
     return MP_OBJ_FROM_PTR(o);
