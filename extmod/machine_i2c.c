@@ -328,7 +328,12 @@ STATIC mp_obj_t machine_i2c_scan(mp_obj_t self_in) {
         if (ret == 0) {
             mp_obj_list_append(list, MP_OBJ_NEW_SMALL_INT(addr));
         }
-        #ifdef MICROPY_EVENT_POLL_HOOK
+        // This scan loop may run for some time, so process any pending events/exceptions,
+        // or allow the port to run any necessary background tasks.  But do it as fast as
+        // possible, in particular we are not waiting on any events.
+        #if defined(MICROPY_EVENT_POLL_HOOK_FAST)
+        MICROPY_EVENT_POLL_HOOK_FAST;
+        #elif defined(MICROPY_EVENT_POLL_HOOK)
         MICROPY_EVENT_POLL_HOOK
         #endif
     }
