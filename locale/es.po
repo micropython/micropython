@@ -1314,10 +1314,6 @@ msgstr "Parámetro BLE invalido"
 msgid "Invalid BSSID"
 msgstr "BSSID inválido"
 
-#: main.c
-msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr "CIRCUITPY_PYSTACK_SIZE inválido\n"
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "Dirección MAC inválida"
@@ -2229,8 +2225,8 @@ msgid "Unable to allocate buffers for signed conversion"
 msgstr "No se pudieron asignar buffers para la conversión con signo"
 
 #: supervisor/shared/safe_mode.c
-msgid "Unable to allocate the heap."
-msgstr "Imposible de asignar el heap."
+msgid "Unable to allocate to the heap."
+msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2809,7 +2805,7 @@ msgstr "no se puede definir un tamaño de bloque de 512"
 msgid "can't set attribute"
 msgstr "no se puede asignar el atributo"
 
-#: py/runtime.c shared-bindings/supervisor/Runtime.c
+#: py/runtime.c
 msgid "can't set attribute '%q'"
 msgstr "no se puede configurar el attributo '%q'"
 
@@ -3083,14 +3079,6 @@ msgstr "epoch_time no esta soportado en esta tarjeta"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
-
-#: ports/espressif/common-hal/espcamera/Camera.c
-msgid ""
-"espcamera.Camera requires reserved PSRAM to be configured. See the "
-"documentation for instructions."
-msgstr ""
-"espcamera. La cámara requiere una configuración de PSRAM reservada. "
-"Refiérase a la documentación para más instrucciones."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4497,6 +4485,19 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "CIRCUITPY_PYSTACK_SIZE inválido\n"
+
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "Imposible de asignar el heap."
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera. La cámara requiere una configuración de PSRAM reservada. "
+#~ "Refiérase a la documentación para más instrucciones."
 
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr "'await', 'async for' o 'async with' fuera de la función async"

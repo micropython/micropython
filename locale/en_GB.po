@@ -1291,10 +1291,6 @@ msgstr "Invalid BLE parameter"
 msgid "Invalid BSSID"
 msgstr "Invalid BSSID"
 
-#: main.c
-msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-msgstr "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-
 #: shared-bindings/wifi/Radio.c
 msgid "Invalid MAC address"
 msgstr "Invalid MAC address"
@@ -2194,8 +2190,8 @@ msgid "Unable to allocate buffers for signed conversion"
 msgstr "Unable to allocate buffers for signed conversion"
 
 #: supervisor/shared/safe_mode.c
-msgid "Unable to allocate the heap."
-msgstr "Unable to allocate the heap."
+msgid "Unable to allocate to the heap."
+msgstr ""
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2772,7 +2768,7 @@ msgstr "can't set 512 block size"
 msgid "can't set attribute"
 msgstr "can't set attribute"
 
-#: py/runtime.c shared-bindings/supervisor/Runtime.c
+#: py/runtime.c
 msgid "can't set attribute '%q'"
 msgstr "can't set attribute '%q'"
 
@@ -3043,14 +3039,6 @@ msgstr "epoch_time not supported on this board"
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
-
-#: ports/espressif/common-hal/espcamera/Camera.c
-msgid ""
-"espcamera.Camera requires reserved PSRAM to be configured. See the "
-"documentation for instructions."
-msgstr ""
-"espcamera.Camera requires reserved PSRAM to be configured. See the "
-"documentation for instructions."
 
 #: py/runtime.c
 msgid "exceptions must derive from BaseException"
@@ -4453,6 +4441,19 @@ msgstr "zi must be of float type"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi must be of shape (n_section, 2)"
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "Unable to allocate the heap."
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
 
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr "'await', 'async for' or 'async with' outside async function"
