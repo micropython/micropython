@@ -38,15 +38,14 @@
 #include "device/usbd_pvt.h"
 #endif
 
-// Legacy TinyUSB task function wrapper, called by some ports from the interpreter hook
-void usbd_task(void) {
-    tud_task_ext(0, false);
-}
-
 // TinyUSB task function wrapper, as scheduled from the USB IRQ
-static void mp_usbd_task(mp_sched_node_t *node);
+static void mp_usbd_task_callback(mp_sched_node_t *node);
 
 extern void __real_dcd_event_handler(dcd_event_t const *event, bool in_isr);
+
+void mp_usbd_task(void) {
+    tud_task_ext(0, false);
+}
 
 // If -Wl,--wrap=dcd_event_handler is passed to the linker, then this wrapper
 // will be called and allows MicroPython to schedule the TinyUSB task when
@@ -55,12 +54,12 @@ TU_ATTR_FAST_FUNC void __wrap_dcd_event_handler(dcd_event_t const *event, bool i
     static mp_sched_node_t usbd_task_node;
 
     __real_dcd_event_handler(event, in_isr);
-    mp_sched_schedule_node(&usbd_task_node, mp_usbd_task);
+    mp_sched_schedule_node(&usbd_task_node, mp_usbd_task_callback);
 }
 
-static void mp_usbd_task(mp_sched_node_t *node) {
+static void mp_usbd_task_callback(mp_sched_node_t *node) {
     (void)node;
-    tud_task_ext(0, false);
+    mp_usbd_task();
 }
 
 #endif
