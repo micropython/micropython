@@ -5,10 +5,14 @@
  */
 
 // MCU config
-#define MICROPY_HW_BOARD_NAME       "PORTENTA C33"
+#define MICROPY_HW_BOARD_NAME       "Arduino Portenta C33"
 #define MICROPY_HW_MCU_NAME         "RA6M5"
 #define MICROPY_HW_MCU_SYSCLK       200000000
 #define MICROPY_HW_MCU_PCLK         100000000
+#define MICROPY_HW_FLASH_FS_LABEL   "Portenta C33"
+
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-portenta-c33"
 
 // module config
 #define MICROPY_EMIT_THUMB          (1)
