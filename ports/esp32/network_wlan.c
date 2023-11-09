@@ -107,21 +107,21 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
             switch (disconn->reason) {
                 case WIFI_REASON_BEACON_TIMEOUT:
                     // AP has dropped out; try to reconnect.
-                    message = "\nbeacon timeout";
+                    message = "beacon timeout";
                     break;
                 case WIFI_REASON_NO_AP_FOUND:
                     // AP may not exist, or it may have momentarily dropped out; try to reconnect.
-                    message = "\nno AP found";
+                    message = "no AP found";
                     break;
                 case WIFI_REASON_AUTH_FAIL:
                     // Password may be wrong, or it just failed to connect; try to reconnect.
-                    message = "\nauthentication failed";
+                    message = "authentication failed";
                     break;
                 default:
                     // Let other errors through and try to reconnect.
                     break;
             }
-            ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
+            ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d:%s", disconn->reason, message);
 
             wifi_sta_connected = false;
             if (wifi_sta_connect_requested) {
@@ -351,6 +351,14 @@ STATIC mp_obj_t network_wlan_status(size_t n_args, const mp_obj_t *args) {
             if (wifi_sta_connected) {
                 // Happy path, connected with IP
                 return MP_OBJ_NEW_SMALL_INT(STAT_GOT_IP);
+            } else if (wifi_sta_disconn_reason == WIFI_REASON_NO_AP_FOUND) {
+                return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_NO_AP_FOUND);
+            } else if ((wifi_sta_disconn_reason == WIFI_REASON_AUTH_FAIL) || (wifi_sta_disconn_reason == WIFI_REASON_CONNECTION_FAIL)) {
+                // wrong password
+                return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_AUTH_FAIL);
+            } else if (wifi_sta_disconn_reason == WIFI_REASON_ASSOC_LEAVE) {
+                // After wlan.disconnect()
+                return MP_OBJ_NEW_SMALL_INT(STAT_IDLE);
             } else if (wifi_sta_connect_requested
                        && (conf_wifi_sta_reconnects == 0
                            || wifi_sta_reconnects < conf_wifi_sta_reconnects)) {
