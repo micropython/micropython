@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-03 09:00+0000\n"
+"PO-Revision-Date: 2023-11-10 15:45+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2227,7 +2227,7 @@ msgstr "Não é possível alocar buffers para conversão assinada"
 
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate to the heap."
-msgstr ""
+msgstr "Não é possível alocar a área de alocação dinâmica de variáveis."
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
