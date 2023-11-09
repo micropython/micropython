@@ -49,6 +49,7 @@ typedef struct _machine_uart_obj_t {
     uint8_t bits;
     uint8_t parity;
     uint8_t stop;
+    uint8_t flow_control;
     uint8_t tx;
     uint8_t rx;
     sercom_pad_config_t tx_pad_config;
@@ -110,6 +111,85 @@ void common_uart_irq_handler(int uart_id) {
             uart->USART.INTENCLR.reg = (uint8_t) ~(SERCOM_USART_INTENCLR_DRE | SERCOM_USART_INTENCLR_RXC);
         }
     }
+}
+
+// Configure the Sercom device
+STATIC void machine_sercom_configure(machine_uart_obj_t *self) {
+    Sercom *uart = sercom_instance[self->id];
+
+    // Reset (clear) the peripheral registers.
+    while (uart->USART.SYNCBUSY.bit.SWRST) {
+    }
+    uart->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
+    while (uart->USART.SYNCBUSY.bit.SWRST) {
+    }
+
+    uint8_t txpo = self->tx_pad_config.pad_nr;
+    #if defined(MCU_SAMD21)
+    if (self->tx_pad_config.pad_nr == 2) { // Map pad 2 to TXPO = 1
+        txpo = 1;
+    } else
+    #endif
+    if (self->tx_pad_config.pad_nr != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid UART pin"));
+    }
+    #if MICROPY_HW_UART_RTSCTS
+    if ((self->flow_control & FLOW_CONTROL_RTS) && self->rts_pad_config.pad_nr == 2) {
+        txpo = 2;
+        mp_hal_set_pin_mux(self->rts, self->rts_pad_config.alt_fct);
+    }
+    if ((self->flow_control & FLOW_CONTROL_CTS) && self->cts_pad_config.pad_nr == 3) {
+        txpo = 2;
+        mp_hal_set_pin_mux(self->cts, self->cts_pad_config.alt_fct);
+    }
+    #endif
+
+    uart->USART.CTRLA.reg =
+        SERCOM_USART_CTRLA_DORD // Data order
+        | SERCOM_USART_CTRLA_FORM(self->parity != 0 ? 1 : 0)  // Enable parity or not
+        | SERCOM_USART_CTRLA_RXPO(self->rx_pad_config.pad_nr) // Set Pad#
+        | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
+        | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
+    ;
+    uart->USART.CTRLB.reg =
+        SERCOM_USART_CTRLB_RXEN   // Enable Rx & Tx
+        | SERCOM_USART_CTRLB_TXEN
+        | ((self->parity & 1) << SERCOM_USART_CTRLB_PMODE_Pos)
+        | (self->stop << SERCOM_USART_CTRLB_SBMODE_Pos)
+        | SERCOM_USART_CTRLB_CHSIZE((self->bits & 7) | (self->bits & 1))
+    ;
+    while (uart->USART.SYNCBUSY.bit.CTRLB) {
+    }
+
+    // USART is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
+    // baud rate; 65536 * (1 - 16 * 115200/bus_freq)
+    uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_peripheral_freq() / 2) / get_peripheral_freq();
+    uart->USART.BAUD.bit.BAUD = baud; // Set Baud
+
+    sercom_register_irq(self->id, &common_uart_irq_handler);
+
+    // Enable RXC interrupt
+    uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
+    #if defined(MCU_SAMD21)
+    NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
+    #elif defined(MCU_SAMD51)
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
+    #endif
+    #if MICROPY_HW_UART_TXBUF
+    // Enable DRE interrupt
+    // SAMD21 has just 1 IRQ for all USART events, so no need for an additional NVIC enable
+    #if defined(MCU_SAMD51)
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 0);
+    #endif
+    #endif
+
+    sercom_enable(uart, 1);
+}
+
+void machine_uart_set_baudrate(mp_obj_t self_in, uint32_t baudrate) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->baudrate = baudrate;
+    machine_sercom_configure(self);
 }
 
 STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -194,22 +274,22 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     if (args[ARG_rx].u_obj != mp_const_none) {
         self->rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
     }
+    self->flow_control = 0;
     #if MICROPY_HW_UART_RTSCTS
-    uint8_t flow_control = 0;
     // Set RTS/CTS pins if configured.
     if (args[ARG_rts].u_obj != mp_const_none) {
         self->rts = mp_hal_get_pin_obj(args[ARG_rts].u_obj);
         self->rts_pad_config = get_sercom_config(self->rts, self->id);
-        flow_control = FLOW_CONTROL_RTS;
+        self->flow_control = FLOW_CONTROL_RTS;
     }
     if (args[ARG_cts].u_obj != mp_const_none) {
         self->cts = mp_hal_get_pin_obj(args[ARG_cts].u_obj);
         self->cts_pad_config = get_sercom_config(self->cts, self->id);
-        flow_control |= FLOW_CONTROL_CTS;
+        self->flow_control |= FLOW_CONTROL_CTS;
     }
     // rts only flow control is not allowed. Otherwise the state of the
     // cts pin is undefined.
-    if (flow_control == FLOW_CONTROL_RTS) {
+    if (self->flow_control == FLOW_CONTROL_RTS) {
         mp_raise_ValueError(MP_ERROR_TEXT("cts missing for flow control"));
     }
     #endif
@@ -278,75 +358,8 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         // Next: Set up the clocks
         enable_sercom_clock(self->id);
 
-        // Next: Configure the USART
-        Sercom *uart = sercom_instance[self->id];
-        // Reset (clear) the peripheral registers.
-        while (uart->USART.SYNCBUSY.bit.SWRST) {
-        }
-        uart->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
-        while (uart->USART.SYNCBUSY.bit.SWRST) {
-        }
-
-        uint8_t txpo = self->tx_pad_config.pad_nr;
-        #if defined(MCU_SAMD21)
-        if (self->tx_pad_config.pad_nr == 2) { // Map pad 2 to TXPO = 1
-            txpo = 1;
-        } else
-        #endif
-        if (self->tx_pad_config.pad_nr != 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid UART pin"));
-        }
-        #if MICROPY_HW_UART_RTSCTS
-        if ((flow_control & FLOW_CONTROL_RTS) && self->rts_pad_config.pad_nr == 2) {
-            txpo = 2;
-            mp_hal_set_pin_mux(self->rts, self->rts_pad_config.alt_fct);
-        }
-        if ((flow_control & FLOW_CONTROL_CTS) && self->cts_pad_config.pad_nr == 3) {
-            txpo = 2;
-            mp_hal_set_pin_mux(self->cts, self->cts_pad_config.alt_fct);
-        }
-        #endif
-
-        uart->USART.CTRLA.reg =
-            SERCOM_USART_CTRLA_DORD // Data order
-            | SERCOM_USART_CTRLA_FORM(self->parity != 0 ? 1 : 0)  // Enable parity or not
-            | SERCOM_USART_CTRLA_RXPO(self->rx_pad_config.pad_nr) // Set Pad#
-            | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
-            | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
-        ;
-        uart->USART.CTRLB.reg =
-            SERCOM_USART_CTRLB_RXEN   // Enable Rx & Tx
-            | SERCOM_USART_CTRLB_TXEN
-            | ((self->parity & 1) << SERCOM_USART_CTRLB_PMODE_Pos)
-            | (self->stop << SERCOM_USART_CTRLB_SBMODE_Pos)
-            | SERCOM_USART_CTRLB_CHSIZE((self->bits & 7) | (self->bits & 1))
-        ;
-        while (uart->USART.SYNCBUSY.bit.CTRLB) {
-        }
-
-        // USART is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
-        // baud rate; 65536 * (1 - 16 * 115200/bus_freq)
-        uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_peripheral_freq() / 2) / get_peripheral_freq();
-        uart->USART.BAUD.bit.BAUD = baud; // Set Baud
-
-        sercom_register_irq(self->id, &common_uart_irq_handler);
-
-        // Enable RXC interrupt
-        uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
-        #if defined(MCU_SAMD21)
-        NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
-        #elif defined(MCU_SAMD51)
-        NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
-        #endif
-        #if MICROPY_HW_UART_TXBUF
-        // Enable DRE interrupt
-        // SAMD21 has just 1 IRQ for all USART events, so no need for an additional NVIC enable
-        #if defined(MCU_SAMD51)
-        NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 0);
-        #endif
-        #endif
-
-        sercom_enable(uart, 1);
+        // Configure the sercom module
+        machine_sercom_configure(self);
     }
 }
 

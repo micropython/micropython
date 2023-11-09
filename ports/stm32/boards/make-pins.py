@@ -49,6 +49,11 @@ PinAf = namedtuple(
     ],
 )
 
+# Only support ADC1, ADC2, ADC3 for now (e.g. cannot support ADC4 & ADC5 on
+# STM32G4).
+MIN_ADC_UNIT = 1
+MAX_ADC_UNIT = 3
+
 
 class Stm32Pin(boardgen.Pin):
     def __init__(self, cpu_pin_name):
@@ -134,8 +139,12 @@ class Stm32Pin(boardgen.Pin):
                 raise boardgen.PinGeneratorError(
                     "Invalid adc '{:s}' for pin '{:s}'".format(adc_name, self.name())
                 )
-            adc_units = [int(x) for x in m.group(1)]
-            _adc_mode = m.group(2)
+            adc_units = [int(x) for x in m.group(1) if MIN_ADC_UNIT <= int(x) <= MAX_ADC_UNIT]
+            adc_mode = m.group(2)
+            if adc_mode == "INN":
+                # On H7 we have INN/INP, all other parts use IN only. Only use
+                # IN or INP channels.
+                continue
             adc_channel = int(m.group(3))
 
             # Pick the entry with the most ADC units, e.g. "ADC1_INP16/ADC12_INN1/ADC12_INP0" --> "ADC12_INN1".
@@ -247,6 +256,8 @@ class Stm32PinGenerator(boardgen.PinGenerator):
             )
             # Don't include pins that weren't in pins.csv.
             for pin in self.available_pins():
+                if pin._hidden:
+                    continue
                 if adc_unit in pin._adc_units:
                     print(
                         "    [{:d}] = {:s},".format(pin._adc_channel, self._cpu_pin_pointer(pin)),

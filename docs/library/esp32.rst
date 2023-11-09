@@ -193,7 +193,7 @@ numbers specified in ``write_pulses`` are multiplied by the resolution to
 define the pulses.
 
 ``clock_div`` is an 8-bit divider (0-255) and each pulse can be defined by
-multiplying the resolution by a 15-bit (0-32,768) number. There are eight
+multiplying the resolution by a 15-bit (1-``PULSE_MAX``) number. There are eight
 channels (0-7) and each can have a different clock divider.
 
 So, in the example above, the 80MHz clock is divided by 8. Thus the
@@ -226,7 +226,7 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     ``100``) and the output level to apply the carrier to (a boolean as per
     *idle_level*).
 
-.. method:: RMT.source_freq()
+.. classmethod:: RMT.source_freq()
 
     Returns the source clock frequency. Currently the source clock is not
     configurable so this will always return 80MHz.
@@ -264,10 +264,10 @@ For more details see Espressif's `ESP-IDF RMT documentation.
     **Mode 3:** *duration* and *data* are lists or tuples of equal length,
     specifying individual durations and the output level for each.
 
-    Durations are in integer units of the channel resolution (as described
-    above), between 1 and 32767 units. Output levels are any value that can
-    be converted to a boolean, with ``True`` representing high voltage and
-    ``False`` representing low.
+    Durations are in integer units of the channel resolution (as
+    described above), between 1 and ``PULSE_MAX`` units. Output levels
+    are any value that can be converted to a boolean, with ``True``
+    representing high voltage and ``False`` representing low.
 
     If transmission of an earlier sequence is in progress then this method will
     block until that transmission is complete before beginning the new sequence.
@@ -289,6 +289,13 @@ For more details see Espressif's `ESP-IDF RMT documentation.
 
     Passing in no argument will not change the channel.  This function returns
     the current channel number.
+
+Constants
+---------
+
+.. data:: RMT.PULSE_MAX
+
+   Maximum integer that can be set for a pulse duration.
 
 Ultra-Low-Power co-processor
 ----------------------------

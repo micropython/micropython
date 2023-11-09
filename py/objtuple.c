@@ -264,7 +264,7 @@ void mp_obj_tuple_get(mp_obj_t self_in, size_t *len, mp_obj_t **items) {
 void mp_obj_tuple_del(mp_obj_t self_in) {
     assert(mp_obj_is_type(self_in, &mp_type_tuple));
     mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);
-    m_del_var(mp_obj_tuple_t, mp_obj_t, self->len, self);
+    m_del_var(mp_obj_tuple_t, items, mp_obj_t, self->len, self);
 }
 
 /******************************************************************************/

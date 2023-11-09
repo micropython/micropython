@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 
-// Call instead of tud_task()
+// Call this to explicitly run the TinyUSB device task.
 void mp_usbd_task(void);
 
 // Function to be implemented in port code.

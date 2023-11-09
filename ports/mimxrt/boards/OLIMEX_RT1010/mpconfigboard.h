@@ -18,18 +18,18 @@
 // LPUART4 on D5/D6    -> 2
 
 #define MICROPY_HW_UART_NUM     (sizeof(uart_index_table) / sizeof(uart_index_table)[0])
-#define MICROPY_HW_UART_INDEX   { 0, 1, 4 }
+#define MICROPY_HW_UART_INDEX   { 0, 1, 3, 4 }
 
 #define IOMUX_TABLE_UART \
     { IOMUXC_GPIO_10_LPUART1_TXD }, { IOMUXC_GPIO_09_LPUART1_RXD }, \
     { 0 }, { 0 }, \
-    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_08_LPUART3_TXD }, { IOMUXC_GPIO_07_LPUART3_RXD }, \
     { IOMUXC_GPIO_06_LPUART4_TXD }, { IOMUXC_GPIO_05_LPUART4_RXD },
 
 #define IOMUX_TABLE_UART_CTS_RTS \
     { IOMUXC_GPIO_08_LPUART1_CTS_B }, { IOMUXC_GPIO_07_LPUART1_RTS_B }, \
     { 0 }, { 0 }, \
-    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_AD_14_LPUART3_CTS_B }, { IOMUXC_GPIO_AD_13_LPUART3_RTS_B }, \
     { IOMUXC_GPIO_AD_14_LPUART4_CTS_B }, { IOMUXC_GPIO_AD_13_LPUART4_RTS_B },
 
 #define MICROPY_HW_SPI_INDEX { 0, 1, 2 }

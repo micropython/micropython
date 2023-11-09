@@ -221,7 +221,7 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
         o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
     } else {
         // Try to allocate memory for the tuple containing the args
-        o_tuple = m_new_obj_var_maybe(mp_obj_tuple_t, mp_obj_t, n_args);
+        o_tuple = m_new_obj_var_maybe(mp_obj_tuple_t, items, mp_obj_t, n_args);
 
         #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
         // If we are called by mp_obj_new_exception_msg_varg then it will have

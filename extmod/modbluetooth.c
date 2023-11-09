@@ -1276,6 +1276,7 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
         mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
         mp_stack_set_limit(MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE - 1024);
         ts.gc_lock_depth = 0;
+        ts.nlr_jump_callback_top = NULL;
         ts.mp_pending_exception = MP_OBJ_NULL;
         mp_locals_set(mp_state_ctx.thread.dict_locals); // set from the outer context
         mp_globals_set(mp_state_ctx.thread.dict_globals); // set from the outer context

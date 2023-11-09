@@ -1,5 +1,5 @@
 ----------------
-[   4] \(rule\|file_input_2\)(1) (n=10)
+[   1] file_input_2(1) (n=10)
          tok(6)
 [   4]   \(rule\|for_stmt\)(22) (n=4)
            id(i)

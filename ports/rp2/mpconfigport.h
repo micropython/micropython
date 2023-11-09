@@ -250,23 +250,8 @@ extern void mp_thread_end_atomic_section(uint32_t);
 #define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
 #define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
 
-#if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
-#define MICROPY_VM_HOOK_COUNT (10)
-#define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
-#define MICROPY_VM_HOOK_POLL if (get_core_num() == 0 && --vm_hook_divisor == 0) { \
-        vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
-        MICROPY_HW_USBDEV_TASK_HOOK \
-}
-#define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
-#define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
-#else
-#define MICROPY_HW_USBDEV_TASK_HOOK
-#endif
-
 #define MICROPY_EVENT_POLL_HOOK_FAST \
     do { \
-        if (get_core_num() == 0) { MICROPY_HW_USBDEV_TASK_HOOK } \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
     } while (0)
@@ -274,7 +259,7 @@ extern void mp_thread_end_atomic_section(uint32_t);
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
         MICROPY_EVENT_POLL_HOOK_FAST; \
-        best_effort_wfe_or_timeout(make_timeout_time_ms(1)); \
+        __wfe(); \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))

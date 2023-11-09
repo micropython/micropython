@@ -93,6 +93,8 @@ LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
+LDFLAGS += --wrap=dcd_event_handler
+
 MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 
 SRC_C += \
@@ -131,6 +133,7 @@ SHARED_SRC_C += \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 	shared/tinyusb/mp_cdc_common.c \
+	shared/tinyusb/mp_usbd.c
 
 ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
 	hal/src/hal_atomic.c \

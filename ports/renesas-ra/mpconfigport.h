@@ -272,7 +272,7 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void mp_usbd_task(void); mp_usbd_task();
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \

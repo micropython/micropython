@@ -128,6 +128,7 @@
 
 // A port must provide these types, but they are otherwise opaque.
 typedef struct _machine_adc_obj_t machine_adc_obj_t;
+typedef struct _machine_adc_block_obj_t machine_adc_block_obj_t;
 typedef struct _machine_i2s_obj_t machine_i2s_obj_t;
 typedef struct _machine_pwm_obj_t machine_pwm_obj_t;
 typedef struct _machine_uart_obj_t machine_uart_obj_t;
@@ -200,6 +201,7 @@ extern const machine_mem_obj_t machine_mem32_obj;
 // Their Python bindings are implemented in extmod, and their implementation
 // is provided by a port.
 extern const mp_obj_type_t machine_adc_type;
+extern const mp_obj_type_t machine_adc_block_type;
 extern const mp_obj_type_t machine_i2c_type;
 extern const mp_obj_type_t machine_i2s_type;
 extern const mp_obj_type_t machine_mem_type;
