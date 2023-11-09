@@ -35,7 +35,8 @@ poller.register(1, select.POLLIN)
 print(poller.poll(0))
 
 # Test registering a very large number of file descriptors (will trigger
-# EINVAL due to more than OPEN_MAX fds).
+# EINVAL due to more than OPEN_MAX fds). Typically it's 1024 (and on GitHub CI
+# we force this via `ulimit -n 1024`).
 poller = select.poll()
 for fd in range(6000):
     poller.register(fd)

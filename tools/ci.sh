@@ -6,6 +6,9 @@ else
     MAKEOPTS="-j$(sysctl -n hw.ncpu)"
 fi
 
+# Ensure known OPEN_MAX (NO_FILES) limit.
+ulimit -n 1024
+
 ########################################################################################
 # general helper functions
 
