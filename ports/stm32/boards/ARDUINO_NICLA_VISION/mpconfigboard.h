@@ -4,10 +4,12 @@
  * Copyright (c) 2023 Arduino SA
  */
 
-#define MICROPY_HW_BOARD_NAME       "NICLAVISION"
+#define MICROPY_HW_BOARD_NAME       "Arduino Nicla Vision"
 #define MICROPY_HW_MCU_NAME         "STM32H747"
-#define MICROPY_PY_SYS_PLATFORM     "Nicla Vision"
-#define MICROPY_HW_FLASH_FS_LABEL   "niclavision"
+#define MICROPY_HW_FLASH_FS_LABEL   "Nicla Vision"
+
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-nicla-vision"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define UINT_FMT                    "%u"

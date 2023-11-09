@@ -4,10 +4,12 @@
  * Copyright (c) 2023 Arduino SA
  */
 
-#define MICROPY_HW_BOARD_NAME       "GIGA"
+#define MICROPY_HW_BOARD_NAME       "Arduino GIGA R1 WiFi"
 #define MICROPY_HW_MCU_NAME         "STM32H747"
-#define MICROPY_PY_SYS_PLATFORM     "Giga"
-#define MICROPY_HW_FLASH_FS_LABEL   "Giga"
+#define MICROPY_HW_FLASH_FS_LABEL   "GIGA R1 WiFi"
+
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-giga-r1-wifi"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define UINT_FMT                    "%u"

@@ -1,6 +1,9 @@
 #define MICROPY_HW_BOARD_NAME               "Arduino Nano ESP32"
 #define MICROPY_HW_MCU_NAME                 "ESP32S3"
 
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-nano-esp32"
+
 #define MICROPY_PY_MACHINE_DAC              (0)
 
 #define MICROPY_HW_I2C0_SCL                 (12)
