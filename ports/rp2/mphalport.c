@@ -30,6 +30,7 @@
 #include "extmod/misc.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared/timeutils/timeutils.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "tusb.h"
 #include "uart.h"
 #include "hardware/rtc.h"
@@ -52,6 +53,19 @@ STATIC uint64_t time_us_64_offset_from_epoch;
 STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
 
+#endif
+
+#if MICROPY_HW_USB_CDC
+// Explicitly run the USB stack in case the scheduler is locked (eg we are in an
+// interrupt handler) and there is in/out data pending on the USB CDC interface.
+#define MICROPY_EVENT_POLL_HOOK_WITH_USB \
+    do { \
+        MICROPY_EVENT_POLL_HOOK; \
+        mp_usbd_task(); \
+    } while (0)
+
+#else
+#define MICROPY_EVENT_POLL_HOOK_WITH_USB MICROPY_EVENT_POLL_HOOK
 #endif
 
 #if MICROPY_HW_USB_CDC
@@ -135,7 +149,7 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        MICROPY_EVENT_POLL_HOOK
+        MICROPY_EVENT_POLL_HOOK_WITH_USB;
     }
 }
 
@@ -155,7 +169,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             int timeout = 0;
             // Wait with a max of USC_CDC_TIMEOUT ms
             while (n > tud_cdc_write_available() && timeout++ < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
-                MICROPY_EVENT_POLL_HOOK
+                MICROPY_EVENT_POLL_HOOK_WITH_USB;
             }
             if (timeout >= MICROPY_HW_USB_CDC_TX_TIMEOUT) {
                 break;
