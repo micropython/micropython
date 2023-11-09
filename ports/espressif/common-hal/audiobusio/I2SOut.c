@@ -49,16 +49,13 @@
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
     const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
-    if (main_clock != NULL) {
-        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_main_clock);
-    }
     port_i2s_allocate_init(&self->i2s, left_justified);
 
     i2s_std_config_t i2s_config = {
         .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(48000),
         .slot_cfg = I2S_STD_MSB_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO),
         .gpio_cfg = {
-            .mclk = I2S_GPIO_UNUSED,
+            .mclk = main_clock != NULL ? main_clock->number : I2S_GPIO_UNUSED,
             .bclk = bit_clock->number,
             .ws = word_select->number,
             .dout = data->number,
@@ -68,6 +65,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     CHECK_ESP_RESULT(i2s_channel_init_std_mode(self->i2s.handle, &i2s_config));
     self->bit_clock = bit_clock;
     self->word_select = word_select;
+    self->mclk = main_clock;
     self->data = data;
     claim_pin(bit_clock);
     claim_pin(word_select);
@@ -96,6 +94,11 @@ void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self) {
         reset_pin_number(self->word_select->number);
     }
     self->word_select = NULL;
+
+    if (self->mclk) {
+        reset_pin_number(self->mclk->number);
+    }
+    self->mclk = NULL;
 
     if (self->data) {
         reset_pin_number(self->data->number);
