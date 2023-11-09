@@ -218,10 +218,27 @@ if(MICROPY_FROZEN_MANIFEST)
         set(MICROPY_CROSS_FLAGS "-f${MICROPY_CROSS_FLAGS}")
     endif()
 
+    # Set default path variables to be passed to makemanifest.py. These will
+    # be available in path substitutions. Additional variables can be set
+    # per-board in mpconfigboard.cmake.
+    set(MICROPY_MANIFEST_PORT_DIR ${MICROPY_PORT_DIR})
+    set(MICROPY_MANIFEST_BOARD_DIR ${MICROPY_BOARD_DIR})
+    set(MICROPY_MANIFEST_MPY_DIR ${MICROPY_DIR})
+    set(MICROPY_MANIFEST_MPY_LIB_DIR ${MICROPY_LIB_DIR})
+
+    # Find all MICROPY_MANIFEST_* variables and turn them into command line arguments.
+    get_cmake_property(_manifest_vars VARIABLES)
+    list(FILTER _manifest_vars INCLUDE REGEX "MICROPY_MANIFEST_.*")
+    foreach(_manifest_var IN LISTS _manifest_vars)
+        list(APPEND _manifest_var_args "-v")
+        string(REGEX REPLACE "MICROPY_MANIFEST_(.*)" "\\1" _manifest_var_name ${_manifest_var})
+        list(APPEND _manifest_var_args "${_manifest_var_name}=${${_manifest_var}}")
+    endforeach()
+
     add_custom_target(
         BUILD_FROZEN_CONTENT ALL
         BYPRODUCTS ${MICROPY_FROZEN_CONTENT}
-        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} -v "MPY_DIR=${MICROPY_DIR}" -v "MPY_LIB_DIR=${MICROPY_LIB_DIR}" -v "PORT_DIR=${MICROPY_PORT_DIR}" -v "BOARD_DIR=${MICROPY_BOARD_DIR}" -b "${CMAKE_BINARY_DIR}" ${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
+        COMMAND ${Python3_EXECUTABLE} ${MICROPY_DIR}/tools/makemanifest.py -o ${MICROPY_FROZEN_CONTENT} ${_manifest_var_args} -b "${CMAKE_BINARY_DIR}" ${MICROPY_CROSS_FLAGS} --mpy-tool-flags=${MICROPY_MPY_TOOL_FLAGS} ${MICROPY_FROZEN_MANIFEST}
         DEPENDS
             ${MICROPY_QSTRDEFS_GENERATED}
             ${MICROPY_ROOT_POINTERS}
