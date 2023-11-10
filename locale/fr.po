@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2023-11-10 20:54+0000\n"
-"Last-Translator: jessyjones <amarsy.alya@gmail.com>\n"
+"Last-Translator: Jacques Supcik <jacques@supcik.net>\n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
@@ -2204,7 +2204,7 @@ msgstr "L'USB est occupé"
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices need more endpoints than are available."
-msgstr "Les appareils USB nécessitent plus de connections que disponibles."
+msgstr "Les appareils USB nécessitent plus de connexions que disponibles."
 
 #: supervisor/shared/safe_mode.c
 msgid "USB devices specify too many interface names."
@@ -3371,7 +3371,7 @@ msgstr "les formes d'entrée et de sortie sont différentes"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
-msgstr "paramètre entrant doit être un nombre entier, un tuple, ou une liste"
+msgstr "le paramètre entrant doit être un nombre entier, un tuple, ou une liste"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
