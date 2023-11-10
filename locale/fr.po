@@ -8,14 +8,15 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-06 21:31+0000\n"
-"Last-Translator: jessyjones <amarsy.alya@gmail.com>\n"
+"PO-Revision-Date: 2023-11-10 16:02+0100\n"
+"Last-Translator: Jacques Supcik <jacques@supcik.net>\n"
+"Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Poedit 3.4.1\n"
 
 #: main.c
 msgid ""
@@ -23,7 +24,7 @@ msgid ""
 "Code done running.\n"
 msgstr ""
 "\n"
-"Exécution du code complété.\n"
+"Exécution du code terminée.\n"
 
 #: main.c
 msgid ""
@@ -259,7 +260,7 @@ msgstr "%q doit être une puissance de 2"
 
 #: shared-bindings/wifi/Monitor.c
 msgid "%q out of bounds"
-msgstr "%q est hors limites"
+msgstr "%q est hors intervalle"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -2533,11 +2534,11 @@ msgstr "l'argument est une séquence vide"
 
 #: py/objobject.c
 msgid "arg must be user-type"
-msgstr "L'argument doit être du type utilisateur"
+msgstr "l’argument doit être du type utilisateur"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort argument must be an ndarray"
-msgstr "Le paramêtre argsort doit être un ndarray"
+msgstr "le paramêtre argsort doit être un ndarray"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "argsort is not implemented for flattened arrays"
@@ -2549,12 +2550,12 @@ msgstr "l'argument est d'un mauvais type"
 
 #: py/compile.c
 msgid "argument name reused"
-msgstr "Le nom de l'argument est réutilisé"
+msgstr "le nom de l'argument est réutilisé"
 
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
-msgstr "Nombre/types de paramètres ne correspondent pas"
+msgstr "nombre/types de paramètres ne correspondent pas"
 
 #: py/runtime.c
 msgid "argument should be a '%q' not a '%q'"
@@ -2615,7 +2616,7 @@ msgstr "axis trop long"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "background value out of range of target"
-msgstr "La valeur du fond est hors de portée de la cible"
+msgstr "la valeur du fond est hors de l'intervalle de la cible"
 
 #: py/builtinevex.c
 msgid "bad compile mode"
@@ -2639,11 +2640,11 @@ msgstr "opération binaire '%q' non implémentée"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
-msgstr "Les tailles des images doivent correspondre"
+msgstr "les tailles des images doivent correspondre"
 
 #: extmod/modrandom.c
 msgid "bits must be 32 or less"
-msgstr "Les bits doivent être 32 ou moins"
+msgstr "les bits doivent être 32 ou moins"
 
 #: shared-bindings/audiomixer/Mixer.c
 msgid "bits_per_sample must be 8 or 16"
@@ -2651,7 +2652,7 @@ msgstr "'bits_per_sample' doivent être 8 ou 16"
 
 #: py/emitinlinethumb.c
 msgid "branch not in range"
-msgstr "branche hors-bornes"
+msgstr "branche hors intervalle"
 
 #: extmod/ulab/code/numpy/create.c extmod/ulab/code/utils/utils.c
 msgid "buffer is smaller than requested size"
@@ -2687,11 +2688,11 @@ msgstr "bytes length n'est pas un multiple de la taille d'un élément"
 
 #: py/objstr.c
 msgid "bytes value out of range"
-msgstr "valeur des octets hors bornes"
+msgstr "valeur des octets hors intervalle"
 
 #: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is out of range"
-msgstr "étalonnage hors bornes"
+msgstr "étalonnage hors intervalle"
 
 #: ports/atmel-samd/bindings/samd/Clock.c
 msgid "calibration is read only"
@@ -2904,7 +2905,7 @@ msgstr "typage"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "channel re-init"
-msgstr "Ré-initialisation du canal"
+msgstr "ré-initialisation du canal"
 
 #: shared-bindings/_stage/Text.c
 msgid "chars buffer too small"
@@ -2912,11 +2913,11 @@ msgstr "tampon de caractères trop petit"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(0x110000)"
-msgstr "paramètre de chr() hors les bornes de range(0x11000)"
+msgstr "paramètre de chr() hors intervalle (0~0x10FFF)"
 
 #: py/modbuiltins.c
 msgid "chr() arg not in range(256)"
-msgstr "paramètre de chr() hors les bornes de range(256)"
+msgstr "paramètre de chr() hors intervalle (0~255)"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "clip point must be (x,y) tuple"
@@ -2924,7 +2925,7 @@ msgstr "point de coupure doît être un tuple (x,y)"
 
 #: shared-bindings/msgpack/ExtType.c
 msgid "code outside range 0~127"
-msgstr "code hors bornes 0~127"
+msgstr "code hors intervalle 0~127"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
@@ -3307,7 +3308,7 @@ msgstr "archive .mpy incompatible"
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr "Fichier .mpy incompatible"
+msgstr "fichier .mpy incompatible"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3333,7 +3334,7 @@ msgstr "l'index doit être un tuple ou entier"
 #: ports/espressif/common-hal/pulseio/PulseIn.c
 #: shared-bindings/bitmaptools/__init__.c
 msgid "index out of range"
-msgstr "index est hors bornes"
+msgstr "index est hors intervalle"
 
 #: py/obj.c
 msgid "indices must be integers"
@@ -3370,7 +3371,7 @@ msgstr "les formes d'entrée et de sortie sont différentes"
 
 #: extmod/ulab/code/numpy/create.c
 msgid "input argument must be an integer, a tuple, or a list"
-msgstr "Paramètre entrant doit être un chiffre entier, un tuple, ou une liste"
+msgstr "paramètre entrant doit être un nombre entier, un tuple, ou une liste"
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "input array length must be power of 2"
@@ -3552,7 +3553,7 @@ msgstr "le niveau doit être compris entre 0 et 1"
 
 #: py/objarray.c
 msgid "lhs and rhs should be compatible"
-msgstr "Les parties gauches et droites doivent être compatibles"
+msgstr "les parties gauches et droites doivent être compatibles"
 
 #: py/emitnative.c
 msgid "local '%q' has type '%q' but source is '%q'"
@@ -3621,7 +3622,7 @@ msgstr "maxiter devrait être > 0"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "median argument must be an ndarray"
-msgstr "Paramètre pour median doit être un ndarray"
+msgstr "le paramètre pour median doit être un ndarray"
 
 #: py/runtime.c
 #, c-format
@@ -3976,7 +3977,7 @@ msgstr "out doit être de dtype float"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "out of range of target"
-msgstr "dépassement des bornes de target"
+msgstr "hors de l'intervalle de la cible"
 
 #: py/objint_mpz.c
 msgid "overflow converting long int to machine word"
@@ -4094,7 +4095,7 @@ msgstr "rsplit(None, n)"
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 msgid "sampling rate out of range"
-msgstr "taux d'échantillonage hors bornes"
+msgstr "taux d'échantillonage hors intervalle"
 
 #: py/modmicropython.c
 msgid "schedule queue full"
@@ -4211,7 +4212,7 @@ msgstr "struct ne peut être indexé"
 
 #: extmod/moductypes.c
 msgid "struct: index out of range"
-msgstr "struct : index hors limites"
+msgstr "struct : index hors intervalle"
 
 #: extmod/moductypes.c
 msgid "struct: no fields"
@@ -4247,19 +4248,19 @@ msgstr "le délai (timeout) doit être < 655.35 secondes"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v1 card"
-msgstr "Délai d'expiration dépassé en attendant une carte v1"
+msgstr "délai d'expiration dépassé en attendant une carte v1"
 
 #: shared-module/sdcardio/SDCard.c
 msgid "timeout waiting for v2 card"
-msgstr "Délai d'expiration dépassé en attendant une carte v2"
+msgstr "délai d'expiration dépassé en attendant une carte v2"
 
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "timer re-init"
-msgstr "Ré-initialisation du miniteur"
+msgstr "ré-initialisation du miniteur"
 
 #: shared-bindings/time/__init__.c
 msgid "timestamp out of range for platform time_t"
-msgstr "timestamp hors bornes pour 'time_t' de la plateforme"
+msgstr "timestamp hors intervalle pour le 'time_t' de la plateforme"
 
 #: extmod/ulab/code/ndarray.c
 msgid "tobytes can be invoked for dense arrays only"
@@ -4271,7 +4272,7 @@ msgstr "args trop nombreux"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
-msgstr "Trop de dimensions"
+msgstr "trop de dimensions"
 
 #: extmod/ulab/code/ndarray.c
 msgid "too many indices"
@@ -4437,7 +4438,7 @@ msgstr "la valeur doit tenir dans %d octet(s)"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "value out of range of target"
-msgstr "valeur hors de porté de la cible"
+msgstr "valeur hors de l'intervalle de la cible"
 
 #: extmod/moddeflate.c
 msgid "wbits"
@@ -4804,7 +4805,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "PDMIn non disponible"
 
 #~ msgid "out of range of source"
-#~ msgstr "dépassement des bornes de source"
+#~ msgstr "en dehors de l'intervalle de la source"
 
 #~ msgid "pixel value requires too many bits"
 #~ msgstr "la valeur du pixel requiet trop de bits"
@@ -4928,7 +4929,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Pour le quitter, redémarrez sans demander le mode sans-échec."
 
 #~ msgid "You are in safe mode because:\n"
-#~ msgstr "Vous êtres en mode sûr parce que :\n"
+#~ msgstr "Vous êtes en mode sûr parce que :\n"
 
 #~ msgid ""
 #~ "You pressed the reset button during boot. Press again to exit safe mode."
@@ -5076,10 +5077,10 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "les deux boutons appuyés lors du démarrage.\n"
 
 #~ msgid "pressing the left button at start up\n"
-#~ msgstr "appuyer le bouton de gauche au démarage\n"
+#~ msgstr "appuyer le bouton de gauche au démarrage\n"
 
 #~ msgid "Only one TouchAlarm can be set in deep sleep."
-#~ msgstr "Seulement une TouchAlarm peu être réglée en sommeil profond."
+#~ msgstr "Seulement une TouchAlarm peut être réglée en sommeil profond."
 
 #~ msgid "Firmware image is invalid"
 #~ msgstr "Image du microprogramme est invalide"
@@ -5131,7 +5132,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Toutes les cibles I2C sont utilisées"
 
 #~ msgid "Failed to init wifi"
-#~ msgstr "Echec de l'initialisation du Wifi"
+#~ msgstr "Échec de l'initialisation du Wifi"
 
 #~ msgid "input must be a tensor of rank 2"
 #~ msgstr "l'entrée doit être un tenseur de rang 2"
@@ -5196,7 +5197,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #~ msgid "Cannot reset into bootloader because no bootloader is present."
 #~ msgstr ""
-#~ "Ne peut être redémarré vers le bootloader car il n'y a pas de bootloader."
+#~ "Ne peut être redémarré vers le bootloader, car il n'y a pas de bootloader."
 
 #~ msgid "Cannot transfer without MOSI and MISO pins."
 #~ msgstr "Pas de transfert sans broches MOSI et MISO."
@@ -5205,7 +5206,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Impossible d'écrire sans broche MOSI."
 
 #~ msgid "Clock pin init failed."
-#~ msgstr "Échec de l'initialization de la broche d'horloge."
+#~ msgstr "Échec de l'initialisation de la broche d'horloge."
 
 #~ msgid "Command must be an int between 0 and 255"
 #~ msgstr "La commande doit être un chiffre entier entre 0 et 255"
@@ -5248,11 +5249,11 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Tuple de longueur %d attendu, obtenu %d"
 
 #~ msgid "Failed to allocate RX buffer"
-#~ msgstr "Echec de l'allocation du tampon RX"
+#~ msgstr "Échec de l'allocation du tampon RX"
 
 #, c-format
 #~ msgid "Failed to allocate RX buffer of %d bytes"
-#~ msgstr "Echec de l'allocation de %d octets du tampon RX"
+#~ msgstr "Échec de l'allocation de %d octets du tampon RX"
 
 #, c-format
 #~ msgid "Framebuffer requires %d bytes"
@@ -5353,10 +5354,10 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "'Layer' doit être un 'Group' ou une sous-classe 'TileGrid'."
 
 #~ msgid "MISO pin init failed."
-#~ msgstr "Échec de l'initialization de la broche MISO."
+#~ msgstr "Échec de l'initialisation de la broche MISO."
 
 #~ msgid "MOSI pin init failed."
-#~ msgstr "Échec de l'initialization de la broche MOSI."
+#~ msgstr "Échec de l'initialisation de la broche MOSI."
 
 #~ msgid "Messages limited to 8 bytes"
 #~ msgstr "Messages limités à 8 octets"
@@ -5385,7 +5386,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Nombre de broches doit être au moins 1"
 
 #~ msgid "Pin does not have ADC capabilities"
-#~ msgstr "La broche 'pin' ne supporte pas les capacitées ADC"
+#~ msgstr "La broche 'pin' ne supporte pas les capacités ADC"
 
 #~ msgid "Program must contain at least one 16-bit instruction."
 #~ msgstr "Le programme doit contenir au moins une instruction de 16 bits."
@@ -5409,11 +5410,11 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Erreur de réinitialisation SPI"
 
 #~ msgid "Sample rate must be positive"
-#~ msgstr "Le taux d'échantillonage doit être positif"
+#~ msgstr "Le taux d'échantillonnage doit être positif"
 
 #, c-format
 #~ msgid "Sample rate too high. It must be less than %d"
-#~ msgstr "Taux d'échantillonage trop élevé. Doit être inférieur à %d"
+#~ msgstr "Taux d'échantillonnage trop élevé. Doit être inférieur à %d"
 
 #~ msgid "Set pin count must be between 1 and 5"
 #~ msgstr "Nombre de broches configurées doit être entre 1 et 5"
@@ -5452,10 +5453,10 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "les bits doivent être compris entre 5 et 9"
 
 #~ msgid "bytes > 8 bits not supported"
-#~ msgstr "octets > 8 bits non supporté"
+#~ msgstr "octets > 8 bits non supportés"
 
 #~ msgid "calibration value out of range +/-127"
-#~ msgstr "valeur de étalonnage hors bornes +/-127"
+#~ msgstr "valeur d'étalonnage hors intervalle +/-127"
 
 #~ msgid "circle can only be registered in one parent"
 #~ msgstr "le cercle ne peut être enregistré que dans un seul parent"
@@ -5595,7 +5596,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Fréquence non valide"
 
 #~ msgid "Data 0 pin must be byte aligned."
-#~ msgstr "La broche Data 0 doit être aligné sur l'octet."
+#~ msgstr "La broche Data 0 doit être alignée sur l'octet."
 
 #~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
 #~ msgstr "bits_per_pixel %d est invalid, doit être 1, 4, 8, 16, 24 ou 32"
@@ -5639,7 +5640,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "interp est défini pour les matrices 1D de longueur égale"
 
 #~ msgid "trapz is defined for 1D arrays"
-#~ msgstr "trapz est définie pour matrices à une dimension"
+#~ msgstr "trapz est définie pour des matrices à une dimension"
 
 #~ msgid "wrong operand type"
 #~ msgstr "type d'opérande incorrect"
@@ -5654,7 +5655,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ "CircuitPython is in safe mode because you pressed the reset button during "
 #~ "boot. Press again to exit safe mode.\n"
 #~ msgstr ""
-#~ "CircuitPython est en mode sans échec car vous avez appuyé sur le bouton "
+#~ "CircuitPython est en mode sans échec, car vous avez appuyé sur le bouton "
 #~ "de réinitialisation pendant le démarrage. Appuyez à nouveau pour quitter "
 #~ "le mode sans échec.\n"
 
@@ -5668,7 +5669,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ "The CircuitPython heap was corrupted because the stack was too small.\n"
 #~ "Please increase the stack size if you know how, or if not:"
 #~ msgstr ""
-#~ "Le tas CircuitPython a été corrompu car la pile était trop petite.\n"
+#~ "Le tas CircuitPython a été corrompu, car la pile était trop petite.\n"
 #~ "Veuillez augmenter la taille de la pile si vous savez comment, ou sinon :"
 
 #~ msgid ""
@@ -5702,13 +5703,13 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Erreur USB"
 
 #~ msgid "%q indices must be integers, not %q"
-#~ msgstr "indices %q doivent être des chiffres entier, et non %q"
+#~ msgstr "indices %q doivent être des chiffres entiers, et non %q"
 
 #~ msgid "'%q' object cannot assign attribute '%q'"
 #~ msgstr "l'objet '%q' ne peut avoir l'attribut '%q'"
 
 #~ msgid "'%q' object does not support item assignment"
-#~ msgstr "l'objet '%q' ne supporte pas l'assignement d'objets"
+#~ msgstr "l'objet '%q' ne supporte pas l'assignation d'objets"
 
 #~ msgid "'%q' object does not support item deletion"
 #~ msgstr "l'objet '%q' ne supporte pas la suppression d'objet"
@@ -5762,10 +5763,10 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "'/' ne peut être remonté quand l'USB est actif."
 
 #~ msgid "Timeout waiting for DRDY"
-#~ msgstr "Délais expiré en attandant DRDY"
+#~ msgstr "Délai expiré en attendant DRDY"
 
 #~ msgid "Timeout waiting for VSYNC"
-#~ msgstr "Délais expiré en attandant VSYNC"
+#~ msgstr "Délai expiré en attendant VSYNC"
 
 #~ msgid "byte code not implemented"
 #~ msgstr "bytecode non implémenté"
@@ -5805,7 +5806,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ "Le nombre total de données à écrire est supérieur à outgoing_packet_length"
 
 #~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-#~ msgstr "IOs 0, 2 & 4 ne supportent pas l'éleveuse interne en mode someil"
+#~ msgstr "IOs 0, 2 & 4 ne supportent pas de pullup interne en mode sommeil"
 
 #~ msgid "buffer must be a bytes-like object"
 #~ msgstr "le tampon doit être un objet bytes-like"
@@ -5888,7 +5889,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ "Timer was reserved for internal use - declare PWM pins earlier in the "
 #~ "program"
 #~ msgstr ""
-#~ "Le minuteur est reservé pour un usage interne - déclarez la broche PWM "
+#~ "Le minuteur est réservé pour un usage interne - déclarez la broche PWM "
 #~ "plus tôt dans le programme"
 
 #~ msgid "Group full"
@@ -5901,7 +5902,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "bits doivent être 7, 8 ou 9"
 
 #~ msgid "Only IN/OUT of up to 8 supported"
-#~ msgstr "Seulement des IN/OUT jusqu'à 8 est supporté"
+#~ msgstr "Seulement des IN/OUT jusqu'à 8 sont supportés"
 
 #~ msgid "SDA or SCL needs a pull up"
 #~ msgstr "SDA ou SCL a besoin d'une résistance de tirage ('pull up')"
@@ -5918,19 +5919,19 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ "%d, pas %d"
 
 #~ msgid "Unknown failure"
-#~ msgstr "Echec inconnu"
+#~ msgstr "Échec inconnu"
 
 #~ msgid "Only one alarm.touch alarm can be set."
-#~ msgstr "Seulement une alarme alarm.touch peut être réglée."
+#~ msgstr "Une seule alarme alarm.touch peut être réglée."
 
 #~ msgid "TouchAlarm not available in light sleep"
-#~ msgstr "TouchAlarm n'est pas disponible en mode someil léger"
+#~ msgstr "TouchAlarm n'est pas disponible en mode sommeil léger"
 
 #~ msgid "input argument must be an integer or a 2-tuple"
 #~ msgstr "l'argument d'entrée doit être un entier ou un tuple 2"
 
 #~ msgid "operation is not implemented for flattened array"
-#~ msgstr "l'opération n'est pas implémentée pour un tableau applatit"
+#~ msgstr "l'opération n'est pas implémentée pour un tableau aplati"
 
 #~ msgid "tuple index out of range"
 #~ msgstr "index du tuple hors de portée"
@@ -5956,7 +5957,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ "Appuyez sur une touche pour entrer sur REPL ou CTRL-D pour recharger."
 
 #~ msgid "Only IPv4 SOCK_STREAM sockets supported"
-#~ msgstr "Seules les sockets IPv4 SOCK_STREAM sont prises en charge"
+#~ msgstr "Seules les sockets IPv4 SOCK_STREAM sont pris en charge"
 
 #~ msgid "arctan2 is implemented for scalars and ndarrays only"
 #~ msgstr ""
@@ -6120,7 +6121,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Impossible de configurer STA"
 
 #~ msgid "Cannot update i/f status"
-#~ msgstr "le status i/f ne peut être mis à jour"
+#~ msgstr "l’état i/f ne peut être mis à jour"
 
 #~ msgid "Characteristic UUID doesn't match Service UUID"
 #~ msgstr "L'UUID de 'Characteristic' ne correspond pas à l'UUID du Service"
@@ -6151,27 +6152,27 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #, fuzzy
 #~ msgid "Failed to acquire mutex"
-#~ msgstr "Echec de l'obtention de mutex"
+#~ msgstr "Échec de l'obtention de mutex"
 
 #, fuzzy
 #~ msgid "Failed to add characteristic, err 0x%04x"
-#~ msgstr "Echec de l'ajout de caractéristique, err 0x%04x"
+#~ msgstr "Échec de l'ajout de caractéristique, err 0x%04x"
 
 #, fuzzy
 #~ msgid "Failed to add service"
-#~ msgstr "Echec de l'ajout de service"
+#~ msgstr "Échec de l'ajout de service"
 
 #, fuzzy
 #~ msgid "Failed to add service, err 0x%04x"
-#~ msgstr "Echec de l'ajout de service, err 0x%04x"
+#~ msgstr "Échec de l'ajout de service, err 0x%04x"
 
 #, fuzzy
 #~ msgid "Failed to change softdevice state"
-#~ msgstr "Echec de la modification de l'état du périphérique"
+#~ msgstr "Échec de la modification de l'état du périphérique"
 
 #, fuzzy
 #~ msgid "Failed to connect:"
-#~ msgstr "Echec de connection:"
+#~ msgstr "Échec de connexion:"
 
 #, fuzzy
 #~ msgid "Failed to continue scanning"
@@ -6183,19 +6184,19 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #, fuzzy
 #~ msgid "Failed to create mutex"
-#~ msgstr "Echec de la création de mutex"
+#~ msgstr "Échec de la création de mutex"
 
 #, fuzzy
 #~ msgid "Failed to discover services"
-#~ msgstr "Echec de la découverte de services"
+#~ msgstr "Échec de la découverte de services"
 
 #, fuzzy
 #~ msgid "Failed to get local address"
-#~ msgstr "Echec de l'obtention de l'adresse locale"
+#~ msgstr "Échec de l'obtention de l'adresse locale"
 
 #, fuzzy
 #~ msgid "Failed to get softdevice state"
-#~ msgstr "Echec de l'obtention de l'état du périphérique"
+#~ msgstr "Échec de l'obtention de l'état du périphérique"
 
 #, fuzzy
 #~ msgid "Failed to notify or indicate attribute value, err %0x04x"
@@ -6222,7 +6223,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #, fuzzy
 #~ msgid "Failed to register Vendor-Specific UUID, err 0x%04x"
-#~ msgstr "Echec de l'ajout de l'UUID du fournisseur, err 0x%04x"
+#~ msgstr "Échec de l'ajout de l'UUID du fournisseur, err 0x%04x"
 
 #, fuzzy
 #~ msgid "Failed to release mutex"
@@ -6230,7 +6231,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #, fuzzy
 #~ msgid "Failed to start advertising"
-#~ msgstr "Echec du démarrage de la diffusion"
+#~ msgstr "Échec du démarrage de la diffusion"
 
 #, fuzzy
 #~ msgid "Failed to start advertising, err 0x%04x"
@@ -6246,11 +6247,11 @@ msgstr "zi doit être de forme (n_section, 2)"
 
 #, fuzzy
 #~ msgid "Failed to stop advertising"
-#~ msgstr "Echec de l'arrêt de diffusion"
+#~ msgstr "Échec de l'arrêt de diffusion"
 
 #, fuzzy
 #~ msgid "Failed to stop advertising, err 0x%04x"
-#~ msgstr "Echec de l'arrêt de diffusion, err 0x%04x"
+#~ msgstr "Échec de l'arrêt de diffusion, err 0x%04x"
 
 #, fuzzy
 #~ msgid "Failed to write attribute value, err 0x%04x"
@@ -6264,13 +6265,13 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "L'effacement de la flash a échoué"
 
 #~ msgid "Flash erase failed to start, err 0x%04x"
-#~ msgstr "Echec du démarrage de l'effacement de la flash, err 0x%04x"
+#~ msgstr "Échec du démarrage de l'effacement de la flash, err 0x%04x"
 
 #~ msgid "Flash write failed"
 #~ msgstr "L'écriture de la flash échoué"
 
 #~ msgid "Flash write failed to start, err 0x%04x"
-#~ msgstr "Echec du démarrage de l'écriture de la flash, err 0x%04x"
+#~ msgstr "Échec du démarrage de l'écriture de la flash, err 0x%04x"
 
 #~ msgid "Function requires lock."
 #~ msgstr "La fonction nécessite un verrou."
@@ -6329,16 +6330,16 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "Pas de support matériel pour une sortie analogique"
 
 #~ msgid "Only Windows format, uncompressed BMP supported %d"
-#~ msgstr "Seul les BMP non-compressé au format Windows sont supportés %d"
+#~ msgstr "Seuls les BMP non compressés au format Windows sont supportés %d"
 
 #~ msgid "Only bit maps of 8 bit color or less are supported"
-#~ msgstr "Seules les bitmaps de 8bits par couleur ou moins sont supportées"
+#~ msgstr "Seuls les bitmaps de 8bits par couleur ou moins sont supportés"
 
 #~ msgid ""
 #~ "Only monochrome, indexed 8bpp, and 16bpp or greater BMPs supported: %d "
 #~ "bpp given"
 #~ msgstr ""
-#~ "Seul les BMP monochromes, 8bit indexé et 16bit sont supportés: %d bpp "
+#~ "Seuls les BMP monochromes, 8bit indexés et 16bit sont supportés: %d bpp "
 #~ "fourni"
 
 #, fuzzy
@@ -6422,7 +6423,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "UART(1) ne peut pas lire"
 
 #~ msgid "UUID integer value not in range 0 to 0xffff"
-#~ msgstr "valeur de l'entier UUID est hors-bornes 0 à 0xffff"
+#~ msgstr "valeur de l'entier UUID pas comprise entre 0 et 0xffff"
 
 #~ msgid "Unable to remount filesystem"
 #~ msgstr "Impossible de remonter le système de fichiers"
@@ -6510,7 +6511,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "débit impossible"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
-#~ msgstr "intervalle hors bornes 0.0020 à 10.24"
+#~ msgstr "intervalle hors limites 0.0020 à 10.24"
 
 #~ msgid "invalid I2C peripheral"
 #~ msgstr "périphérique I2C invalide"
@@ -6568,7 +6569,7 @@ msgstr "zi doit être de forme (n_section, 2)"
 #~ msgstr "échec du scan"
 
 #~ msgid "services includes an object that is not a Service"
-#~ msgstr "'services' inclut un object qui n'est pas un 'Service'"
+#~ msgstr "'services' inclut un objet qui n'est pas un 'Service'"
 
 #~ msgid "tile index out of bounds"
 #~ msgstr "indice de tuile hors limites"
