@@ -60,17 +60,18 @@ CIRCUITPY_BLE_NAME
 ~~~~~~~~~~~~~~~~~~
 Default BLE name the board advertises as, including for the BLE workflow.
 
+CIRCUITPY_HEAP_START_SIZE
+~~~~~~~~~~~~~~~~~~~~~~
+Sets the initial size of the python heap. Must be a multiple of 4. The heap will grow by doubling
+this initial size until the outer heap cannot fit it. Larger values will reserve more RAM for python
+use and prevent the supervisor and SDK from large allocations of their own. Smaller values will
+likely grow sooner than large start sizes.
+
 CIRCUITPY_PYSTACK_SIZE
 ~~~~~~~~~~~~~~~~~~~~~~
 Sets the size of the python stack. Must be a multiple of 4. The default value is currently 1536.
 Increasing the stack reduces the size of the heap available to python code.
 Used to avoid "Pystack exhausted" errors when the code can't be reworked to avoid it.
-
-CIRCUITPY_RESERVED_PSRAM
-~~~~~~~~~~~~~~~~~~~~~~~~
-On boards with Espressif microcontrollers with PSRAM (also called SPIRAM), permanently reserve a portion of PSRAM for use by esp-idf.
-This storage is removed from the CircuitPython "heap" and is available for allocation by esp-idf routines in the core instead.
-Generally, only set this to a non-zero value when it is required by a specific core module.
 
 CIRCUITPY_WEB_API_PASSWORD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
