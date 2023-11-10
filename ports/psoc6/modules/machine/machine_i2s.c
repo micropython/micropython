@@ -27,13 +27,14 @@
  #define HFCLK1_CLK_DIVIDER  4u
 
 /* Audio Subsystem Clock. Typical values depends on the desired sample rate:
- * 8KHz / 16 KHz / 32 KHz / 48 KHz    : 24.576 MHz
- * 22.05 KHz / 44.1 KHz               : 22.579 MHz
+ * 8KHz / 16 KHz / 32 KHz / 48 KHz    : 98.304 MHz
+ * 22.05 KHz / 44.1 KHz               : 90.000 MHz
  */
 
 /* Clock Settings */
-#define AUDIO_SYS_CLOCK_HZ  98000000u   /* in Hz (Ideally 98.304 MHz) */
-
+#define AUDIO_SYS_CLOCK_HZ    98000000u   /* in Hz (Ideally 98.304 MHz) */
+#define AUDIO_SYS_CLOCK_HZ_1  90000000u
+uint32_t Audio_sys_clock_fz;
 
 void clock_init(void);
 
@@ -119,12 +120,8 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     // is Bits valid?
     int8_t i2s_bits = args[ARG_bits].u_int;
     if ((i2s_bits != 16) &&
-        (i2s_bits != 32) &&
-        (i2s_bits != 24) &&
-        (i2s_bits != 20) &&
-        (i2s_bits != 18) &&
-        (i2s_bits != 16) &&
-        (i2s_bits != 8)) {
+        (i2s_bits != 32)
+        ) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid bits"));
     }
 
@@ -143,6 +140,11 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->bits = i2s_bits;
     self->format = i2s_format;
     self->rate = args[ARG_rate].u_int;
+    if (self->rate == (8000 || 16000 || 32000 || 48000)) {
+        Audio_sys_clock_fz = AUDIO_SYS_CLOCK_HZ;
+    } else {
+        Audio_sys_clock_fz = AUDIO_SYS_CLOCK_HZ_1;
+    }
     self->ibuf = args[ARG_ibuf].u_int;
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->io_mode = BLOCKING;
@@ -165,12 +167,12 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S tx initialisation failed with return code %lx !"), result);
         }
-    } else { // Rx is slave
+    } else { // Rx is master
         cyhal_i2s_pins_t rx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
         cyhal_i2s_config_t rx_config =
         {
             .is_tx_slave = false,
-            .is_rx_slave = true,
+            .is_rx_slave = false,
             .mclk_hz = 0,
             .channel_length = 32,
             .word_length = self->bits,
@@ -328,7 +330,7 @@ void clock_init(void) {
     }
 
     /* Set the PLL0/PLL frequency to AUDIO_SYS_CLOCK_HZ based on AUDIO_IN_SAMPLE_FREQ */
-    result = cyhal_clock_set_frequency(&clock_pll, AUDIO_SYS_CLOCK_HZ, NULL);
+    result = cyhal_clock_set_frequency(&clock_pll,  Audio_sys_clock_fz, NULL);
     if (CY_RSLT_SUCCESS != result) {
         mp_printf(&mp_plat_print, "set_freq fail");
     }
