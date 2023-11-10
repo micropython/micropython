@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-11-06 21:31+0000\n"
+"PO-Revision-Date: 2023-11-10 15:45+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -2191,7 +2191,7 @@ msgstr "Unable to allocate buffers for signed conversion"
 
 #: supervisor/shared/safe_mode.c
 msgid "Unable to allocate to the heap."
-msgstr ""
+msgstr "Unable to allocate to the heap."
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
