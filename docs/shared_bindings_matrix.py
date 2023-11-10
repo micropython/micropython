@@ -191,7 +191,7 @@ def get_settings_from_makefile(port_dir, board_name):
     settings = {}
     for line in contents.stdout.split("\n"):
         if line.startswith('CFLAGS ='):
-            for m in re.findall('-D([A-Z][A-Z0-9_]*)=(\d+)', line):
+            for m in re.findall(r'-D([A-Z][A-Z0-9_]*)=(\d+)', line):
                 settings[m[0]] = m[1]
         elif m := re.match(r"^([A-Z][A-Z0-9_]*) = (.*)$", line):
             settings[m.group(1)] = m.group(2)
@@ -215,12 +215,12 @@ def get_repository_url(directory):
         with open(readme, "r") as fp:
             for line in fp.readlines():
                 if m := re.match(
-                    "\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*",
+                    r"\s+:target:\s+(http\S+(docs.circuitpython|readthedocs)\S+)\s*",
                     line,
                 ):
                     path = m.group(1)
                     break
-                if m := re.search("<(http[^>]+)>", line):
+                if m := re.search(r"<(http[^>]+)>", line):
                     path = m.group(1)
                     break
     if path is None:
