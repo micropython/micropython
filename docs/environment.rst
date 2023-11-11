@@ -61,7 +61,7 @@ CIRCUITPY_BLE_NAME
 Default BLE name the board advertises as, including for the BLE workflow.
 
 CIRCUITPY_HEAP_START_SIZE
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 Sets the initial size of the python heap, allocated from the outer heap. Must be a multiple of 4.
 The default is currently 8192.
 The python heap will grow by doubling and redoubling this initial size until it cannot fit in the outer heap.
