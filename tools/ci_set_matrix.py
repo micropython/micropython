@@ -257,7 +257,7 @@ def set_docs(run: bool):
                 if pattern_doc.search(file) and (
                     (
                         subprocess.run(
-                            f"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + file} | grep -o -m 1 '^[+-]\/\/|'",
+                            rf"git diff -U0 $BASE_SHA...$HEAD_SHA {github_workspace + file} | grep -o -m 1 '^[+-]\/\/|'",
                             capture_output=True,
                             shell=True,
                         ).stdout
