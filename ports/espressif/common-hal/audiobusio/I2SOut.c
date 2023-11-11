@@ -69,6 +69,9 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     self->data = data;
     claim_pin(bit_clock);
     claim_pin(word_select);
+    if (main_clock) {
+        claim_pin(main_clock);
+    }
     claim_pin(data);
 }
 
