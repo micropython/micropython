@@ -27,6 +27,7 @@
 import sys
 import os
 import subprocess
+import hashlib
 
 # Always use the mpy-cross from this repo.
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../mpy-cross"))
@@ -175,6 +176,7 @@ def main():
     # Process the manifest
     str_paths = []
     mpy_files = []
+    hashes = {}
     ts_newest = 0
     for result in manifest.files():
         if result.kind == manifestfile.KIND_FREEZE_AS_STR:
@@ -208,6 +210,16 @@ def main():
                         raise SystemExit(1)
                 ts_outfile = get_timestamp(outfile)
             mpy_files.append(outfile)
+
+            # Remember (part of) the hash of each file so that partial
+            # updates will work.
+            h = hashlib.sha256()
+            with open(result.full_path,"rb") as f:
+                h.update(f.read())
+            modname = result.target_path[:-3].replace("/",".")
+            if modname.endswith(".__init__"):
+                modname = modname[:-9]
+            hashes[modname] = h.digest()[:8]
         else:
             assert result.kind == manifestfile.KIND_FREEZE_MPY
             mpy_files.append(result.full_path)
@@ -224,6 +236,21 @@ def main():
 
     # Freeze .mpy files
     if mpy_files:
+        with open(f"{args.build_dir}/_hash.py","w") as f:
+            print(f"""
+hash = {hashes !r}
+""", file=f)
+        outfile = "{}/frozen_mpy/_hash.mpy".format(args.build_dir, result.target_path[:-3])
+        mpy_cross.compile(
+            f"{args.build_dir}/_hash.py",
+            dest=outfile,
+            src_path="_hash.py",
+            opt=result.opt,
+            mpy_cross=MPY_CROSS,
+            extra_args=args.mpy_cross_flags.split(),
+        )
+        mpy_files.append(outfile)
+
         res, output_mpy = system(
             [
                 sys.executable,
