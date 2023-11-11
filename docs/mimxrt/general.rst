@@ -25,8 +25,12 @@ The following boards are supported by the port:
 - MIMXRT1050-EVK
 - MIMXRT1060-EVK
 - MIMXRT1064-EVK
+- MIMXRT1170-EVK
 - Teensy 4.0
 - Teensy 4.1
+- Olimex RT1010py
+- Seeed Arch Mix
+- Adafruit Metro M7
 
 Supported MCUs
 --------------
@@ -34,6 +38,8 @@ Supported MCUs
 +-------------+--------------------+-------------------------+
 | Product     | CPU                | Memory                  |
 +=============+====================+=========================+
+| i.MX RT1171 | Cortex-M7 @960 MHz | 2 MB SRAM               |
++-------------+--------------------+-------------------------+
 | i.MX RT1064 | Cortex-M7 @600 MHz | 1 MB SRAM, 4 MB Flash   |
 +-------------+--------------------+-------------------------+
 | i.MX RT1061 | Cortex-M7 @600 MHz | 1 MB SRAM               |
@@ -71,8 +77,8 @@ operating modes, internal functioning, etc.
 For your convenience, a few technical specifications are provided below:
 
 * Architecture: ARM Cortex M7
-* CPU frequency: up to 600MHz
-* Total RAM available: up to 1 MByte (see table)
+* CPU frequency: up to 960MHz
+* Total RAM available: up to 2 MByte (see table)
 * BootROM: 96KB
 * External FlashROM: code and data, via SPI Flash; usual size 2 - 16 MB
   Some boards provide additional external RAM and SPI flash.
