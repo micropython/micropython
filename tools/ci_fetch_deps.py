@@ -18,20 +18,29 @@ PORT_DEPS = {
         "lib/protomatter/",
         "lib/quirc/",
         "lib/tinyusb/",
+        "lib/tlsf",
         "data/nvm.toml/",
     ],
-    "broadcom": ["extmod/ulab/", "lib/tinyusb/"],
-    "cxd56": ["extmod/ulab/", "lib/tinyusb/"],
+    "broadcom": ["extmod/ulab/", "lib/tlsf", "lib/tinyusb/"],
+    "cxd56": ["extmod/ulab/", "lib/tlsf", "lib/tinyusb/"],
     "espressif": [
         "extmod/ulab/",
         "lib/certificates/",
         "lib/protomatter/",
         "lib/quirc/",
+        "lib/tlsf",
         "lib/tinyusb/",
     ],
-    "litex": ["extmod/ulab/", "lib/tinyusb/"],
-    "mimxrt10xx": ["extmod/ulab/", "lib/tinyusb/", "data/nvm.toml/"],
-    "nrf": ["extmod/ulab/", "lib/mp3/", "lib/protomatter/", "lib/tinyusb/", "data/nvm.toml/"],
+    "litex": ["extmod/ulab/", "lib/tinyusb/", "lib/tlsf"],
+    "mimxrt10xx": ["extmod/ulab/", "lib/tinyusb/", "lib/tlsf", "data/nvm.toml/"],
+    "nrf": [
+        "extmod/ulab/",
+        "lib/mp3/",
+        "lib/protomatter/",
+        "lib/tinyusb/",
+        "lib/tlsf",
+        "data/nvm.toml/",
+    ],
     "raspberrypi": [
         "extmod/ulab/",
         "lib/adafruit_floppy/",
@@ -41,10 +50,18 @@ PORT_DEPS = {
         "lib/protomatter/",
         "lib/quirc/",
         "lib/tinyusb/",
+        "lib/tlsf",
         "data/nvm.toml/",
     ],
-    "silabs": ["extmod/ulab/", "data/nvm.toml/"],
-    "stm": ["extmod/ulab/", "lib/mp3/", "lib/protomatter/", "lib/tinyusb/", "data/nvm.toml/"]
+    "silabs": ["extmod/ulab/", "data/nvm.toml/", "lib/tlsf"],
+    "stm": [
+        "extmod/ulab/",
+        "lib/mp3/",
+        "lib/protomatter/",
+        "lib/tinyusb/",
+        "lib/tlsf",
+        "data/nvm.toml/",
+    ]
     # omit unix which is part of the "test" target below
 }
 
