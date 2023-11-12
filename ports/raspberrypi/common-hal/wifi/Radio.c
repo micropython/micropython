@@ -206,18 +206,12 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     }
 
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_DOWN) {
-        mp_raise_NotImplementedError(translate("Stopping AP is not supported."));
+        // Disassociate from WLAN
+        cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
+        // Stop AP
+        cyw43_wifi_set_up(&cyw43_state, CYW43_ITF_AP, false, 0);
+        bindings_cyw43_wifi_enforce_pm();
     }
-
-    /*
-     * AP cannot be disconnected. cyw43_wifi_leave is broken.
-     * This code snippet should work, but doesn't.
-     *
-     * cyw43_wifi_leave(&cyw43_state, CYW43_ITF_AP);
-     * cyw43_wifi_leave(&cyw43_state, CYW43_ITF_STA);
-     *
-     * bindings_cyw43_wifi_enforce_pm();
-     */
 }
 
 static bool connection_unchanged(wifi_radio_obj_t *self, const uint8_t *ssid, size_t ssid_len) {
