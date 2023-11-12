@@ -327,7 +327,7 @@ clean-stm:
 
 .PHONY: fetch-all-submodules
 fetch-all-submodules:
-	tools/fetch-submodules.sh
+	$(PYTHON) tools/ci_fetch_deps.py all
 
 .PHONY: remove-all-submodules
 remove-all-submodules:

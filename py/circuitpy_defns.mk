@@ -856,7 +856,12 @@ $(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized
 # Fetch only submodules needed for this particular port.
 .PHONY: fetch-port-submodules
 fetch-port-submodules:
-	$(TOP)/tools/fetch-submodules.sh data extmod frozen lib tools ports/$(shell basename $(CURDIR))
+	$(PYTHON) $(TOP)/tools/ci_fetch_deps.py $(shell basename $(CURDIR))
+
+# Fetch only submodules needed for this particular board.
+.PHONY: fetch-board-submodules
+fetch-board-submodules:
+	$(PYTHON) $(TOP)/tools/ci_fetch_deps.py $(BOARD)
 
 .PHONY: invalid-board
 invalid-board:
