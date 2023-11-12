@@ -89,8 +89,7 @@ void __dbpanic(DB *db) {
     mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);
 }
 
-STATIC void check_btree_is_open(mp_obj_t obj) {
-    mp_obj_btree_t *self = MP_OBJ_TO_PTR(obj);
+STATIC void check_btree_is_open(mp_obj_btree_t *self) {
     if (!self->db) {
         mp_raise_ValueError(MP_ERROR_TEXT("Cannot access closed database."));
     }
