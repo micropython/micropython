@@ -89,6 +89,13 @@ void __dbpanic(DB *db) {
     mp_printf(&mp_plat_print, "__dbpanic(%p)\n", db);
 }
 
+STATIC void check_btree_is_open(mp_obj_t obj) {
+    mp_obj_btree_t *self = MP_OBJ_TO_PTR(obj);
+    if (!self->db) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Cannot access closed database."));
+    }
+}
+
 STATIC mp_obj_btree_t *btree_new(DB *db, mp_obj_t stream) {
     mp_obj_btree_t *o = mp_obj_malloc(mp_obj_btree_t, (mp_obj_type_t *)&btree_type);
     o->stream = stream;
@@ -114,19 +121,28 @@ STATIC void btree_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind
 
 STATIC mp_obj_t btree_flush(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    check_btree_is_open(self);
     return MP_OBJ_NEW_SMALL_INT(__bt_sync(self->db, 0));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(btree_flush_obj, btree_flush);
 
 STATIC mp_obj_t btree_close(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(__bt_close(self->db));
+    int res;
+    if (self->db) {
+        res = __bt_close(self->db);
+        self->db = NULL;
+    } else {
+        res = RET_SUCCESS; // Closing an already-closed DB always succeeds.
+    }
+    return MP_OBJ_NEW_SMALL_INT(res);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(btree_close_obj, btree_close);
 
 STATIC mp_obj_t btree_put(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
+    check_btree_is_open(self);
     DBT key, val;
     buf_to_dbt(args[1], &key);
     buf_to_dbt(args[2], &val);
@@ -136,6 +152,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_put_obj, 3, 4, btree_put);
 
 STATIC mp_obj_t btree_get(size_t n_args, const mp_obj_t *args) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
+    check_btree_is_open(self);
     DBT key, val;
     buf_to_dbt(args[1], &key);
     int res = __bt_get(self->db, &key, &val, 0);
@@ -153,6 +170,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(btree_get_obj, 2, 3, btree_get);
 
 STATIC mp_obj_t btree_seq(size_t n_args, const mp_obj_t *args) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(args[0]);
+    check_btree_is_open(self);
     int flags = MP_OBJ_SMALL_INT_VALUE(args[1]);
     DBT key, val;
     if (n_args > 2) {
@@ -225,6 +243,7 @@ STATIC mp_obj_t btree_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
 
 STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    check_btree_is_open(self);
     DBT key, val;
     int res;
     bool desc = self->flags & FLAG_DESC;
@@ -281,6 +300,7 @@ STATIC mp_obj_t btree_iternext(mp_obj_t self_in) {
 
 STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(self_in);
+    check_btree_is_open(self);
     if (value == MP_OBJ_NULL) {
         // delete
         DBT key;
@@ -314,6 +334,7 @@ STATIC mp_obj_t btree_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
 
 STATIC mp_obj_t btree_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     mp_obj_btree_t *self = MP_OBJ_TO_PTR(lhs_in);
+    check_btree_is_open(self);
     switch (op) {
         case MP_BINARY_OP_CONTAINS: {
             DBT key, val;
