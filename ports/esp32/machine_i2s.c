@@ -354,14 +354,14 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     self->io_mode = BLOCKING;
 
     i2s_config_t i2s_config;
-    i2s_config.communication_format = I2S_COMM_FORMAT_I2S;
+    i2s_config.communication_format = I2S_COMM_FORMAT_STAND_I2S;
     i2s_config.mode = mode;
     i2s_config.bits_per_sample = get_dma_bits(mode, bits);
     i2s_config.channel_format = get_dma_format(mode, format);
     i2s_config.sample_rate = self->rate;
     i2s_config.intr_alloc_flags = ESP_INTR_FLAG_LOWMED;
-    i2s_config.dma_buf_count = get_dma_buf_count(mode, bits, format, self->ibuf);
-    i2s_config.dma_buf_len = DMA_BUF_LEN_IN_I2S_FRAMES;
+    i2s_config.dma_desc_num = get_dma_buf_count(mode, bits, format, self->ibuf);
+    i2s_config.dma_frame_num = DMA_BUF_LEN_IN_I2S_FRAMES;
     i2s_config.use_apll = false;
     i2s_config.tx_desc_auto_clear = true;
     i2s_config.fixed_mclk = 0;
@@ -369,7 +369,7 @@ STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
     i2s_config.bits_per_chan = 0;
 
     // I2S queue size equals the number of DMA buffers
-    check_esp_err(i2s_driver_install(self->i2s_id, &i2s_config, i2s_config.dma_buf_count, &self->i2s_event_queue));
+    check_esp_err(i2s_driver_install(self->i2s_id, &i2s_config, i2s_config.dma_desc_num, &self->i2s_event_queue));
 
     // apply low-level workaround for bug in some ESP-IDF versions that swap
     // the left and right channels
