@@ -46,6 +46,8 @@ void pwmout_reset(void) {
         mcu_tim_pin_obj_t *l_tim = &mcu_tim_list[tim_index];
         if (l_tim->pin != NULL) {
             sl_pwm_deinit(&pwm_handle[tim_index]);
+            common_hal_reset_pin(l_tim->pin);
+            l_tim->pin = NULL;
         }
     }
 
