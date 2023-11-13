@@ -54,21 +54,6 @@ static size_t psram_size_usable(void) {
     #endif
 }
 
-bool common_hal_espidf_set_reserved_psram(size_t amount) {
-    #ifdef CONFIG_SPIRAM
-    if (!esp_psram_is_initialized()) {
-        return false;
-    }
-    if (amount > psram_size_usable()) {
-        return false;
-    }
-    reserved_psram = amount;
-    return true;
-    #else
-    return false;
-    #endif
-}
-
 size_t common_hal_espidf_get_total_psram(void) {
     return psram_size_usable();
 }
