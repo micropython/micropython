@@ -427,6 +427,10 @@ endif # MICROPY_PY_BLUETOOTH
 ifeq ($(MICROPY_PY_OPENAMP),1)
 SRC_C += mpmetalport.c
 $(BUILD)/mpmetalport.o: $(BUILD)/openamp/metal/config.h
+ifeq ($(MICROPY_PY_OPENAMP_REMOTEPROC),1)
+SRC_C += mpremoteprocport.c
+$(BUILD)/mpremoteprocport.o: $(BUILD)/openamp/metal/config.h
+endif
 endif
 
 # SRC_O should be placed first to work around this LTO bug with binutils <2.35:
