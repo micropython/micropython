@@ -29,10 +29,6 @@
 #define MICROPY_HW_BOARD_NAME       "Heltec ESP32-S3-WIFI-LoRa-V3"
 #define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-// Schematic: https://resource.heltec.cn/download/WiFi_LoRa32_V3/HTIT-WB32LA(F)_V3_Schematic_Diagram.pdf
-// Datasheet: https://resource.heltec.cn/download/WiFi_LoRa32_V3/HTIT-WB32LA_V3(Rev1.1).pdf
-// Pinout: https://resource.heltec.cn/download/WiFi_LoRa32_V3/HTIT-WB32LA(F)_V3.png
-
 #define MICROPY_HW_LED_STATUS (&pin_GPIO35) // Pulled from schematic
 
 // I2C

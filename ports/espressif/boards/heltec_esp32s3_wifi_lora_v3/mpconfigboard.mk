@@ -1,8 +1,10 @@
-USB_VID = 0x303A
-USB_PID = 0x1001
+# Product URL: https://heltec.org/project/wifi-lora-32-v3/
+# Schematic: https://resource.heltec.cn/download/WiFi_LoRa32_V3/HTIT-WB32LA(F)_V3_Schematic_Diagram.pdf
+# Datasheet: https://resource.heltec.cn/download/WiFi_LoRa32_V3/HTIT-WB32LA_V3(Rev1.1).pdf
+# Pinout: https://resource.heltec.cn/download/WiFi_LoRa32_V3/HTIT-WB32LA(F)_V3.png
 
-CIRCUITPY_CREATOR_ID = 0x19960000
-CIRCUITPY_CREATION_ID = 0x00242705
+CIRCUITPY_CREATOR_ID = 0x148E173C
+CIRCUITPY_CREATION_ID = 0x00530001
 
 USB_PRODUCT = "ESP32-S3-WIFI-LoRa-V3"
 USB_MANUFACTURER = "Heltec"
