@@ -43,6 +43,3 @@
 #define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)
 
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (1)
-
-// espcamera.FrameSize.QXGA, half a megabyte result image.jpeg
-#define DEFAULT_RESERVED_PSRAM      (1572864)

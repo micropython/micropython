@@ -40,6 +40,3 @@
 // UART pins attached to the USB-serial converter chip
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO43)
 #define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO44)
-
-// a 800x480 16BPP framebuffer + some breathing room
-#define DEFAULT_RESERVED_PSRAM      (800 * 800 * 2)

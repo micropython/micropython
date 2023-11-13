@@ -37,6 +37,3 @@
 #define DEFAULT_SPI_BUS_MOSI (&pin_GPIO7)
 
 #define DOUBLE_TAP_PIN (&pin_GPIO4)
-
-// a 1024x768 16BPP framebuffer + some breathing room
-#define DEFAULT_RESERVED_PSRAM      (1024 * 1024 * 2)

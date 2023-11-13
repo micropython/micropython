@@ -42,7 +42,6 @@
 #else
 #define esp_himem_reserved_area_size() (0)
 #endif
-size_t reserved_psram = DEFAULT_RESERVED_PSRAM;
 #endif
 
 static size_t psram_size_usable(void) {
@@ -52,21 +51,6 @@ static size_t psram_size_usable(void) {
     return s - esp_himem_reserved_area_size();
     #else
     return 0;
-    #endif
-}
-
-bool common_hal_espidf_set_reserved_psram(size_t amount) {
-    #ifdef CONFIG_SPIRAM
-    if (!esp_psram_is_initialized()) {
-        return false;
-    }
-    if (amount > psram_size_usable()) {
-        return false;
-    }
-    reserved_psram = amount;
-    return true;
-    #else
-    return false;
     #endif
 }
 
