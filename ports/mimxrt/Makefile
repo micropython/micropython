@@ -91,14 +91,6 @@ INC += -I$(TOP)/shared/tinyusb
 INC += -I.
 INC += -Ihal
 
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-INC += \
-    -I$(TOP)/extmod/nimble \
-    -I$(TOP)/lib/mynewt-nimble/nimble/host/include \
-    -I$(TOP)/lib/mynewt-nimble/nimble/include \
-    -I$(TOP)/lib/mynewt-nimble/porting/nimble/include
-endif
-
 # All settings for Ethernet support are controller by the value of MICROPY_PY_LWIP
 ifeq ($(MICROPY_PY_LWIP),1)
 INC += -Ilwip_inc
@@ -256,13 +248,6 @@ SRC_C += \
 	systick.c \
 	ticks.c \
 	usbd.c \
-
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-SRC_C += \
-	drivers/ninaw10/nina_bt_hci.c \
-    mpbthciport.c \
-    mpnimbleport.c
-endif
 
 SHARED_SRC_C += \
 	shared/libc/printf.c \
