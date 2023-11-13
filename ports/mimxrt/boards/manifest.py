@@ -4,6 +4,7 @@ require("onewire")
 require("ds18x20")
 require("dht")
 require("neopixel")
+require("bundle-networking")
 include(
     "$(MPY_LIB_DIR)/micropython/bluetooth/aioble/manifest.py",
     client=True,

@@ -311,6 +311,7 @@ function ci_webassembly_run_tests {
 
 function ci_mimxrt_setup {
     ci_gcc_arm_setup
+    sudo apt-get install protobuf-c-compiler
 }
 
 function ci_mimxrt_build {
