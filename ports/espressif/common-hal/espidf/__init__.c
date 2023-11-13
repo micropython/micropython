@@ -42,7 +42,6 @@
 #else
 #define esp_himem_reserved_area_size() (0)
 #endif
-size_t reserved_psram = DEFAULT_RESERVED_PSRAM;
 #endif
 
 static size_t psram_size_usable(void) {
