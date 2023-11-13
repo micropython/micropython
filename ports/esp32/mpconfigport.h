@@ -126,7 +126,7 @@
 #define MICROPY_PY_MACHINE_DAC              (SOC_DAC_SUPPORTED)
 #endif
 #ifndef MICROPY_PY_MACHINE_I2S
-#define MICROPY_PY_MACHINE_I2S              (1)
+#define MICROPY_PY_MACHINE_I2S              (SOC_I2S_SUPPORTED)
 #endif
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/esp32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_FINALISER    (1)
