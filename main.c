@@ -199,13 +199,13 @@ STATIC void start_mp(safe_mode_t safe_mode) {
     #if MICROPY_ENABLE_PYSTACK
     size_t pystack_size = 0;
     _pystack = _allocate_memory(safe_mode, "CIRCUITPY_PYSTACK_SIZE", CIRCUITPY_PYSTACK_SIZE, &pystack_size);
-    mp_pystack_init(_pystack, _pystack + pystack_size / sizeof(size_t));
+    mp_pystack_init(_pystack, _pystack + pystack_size);
     #endif
 
     #if MICROPY_ENABLE_GC
     size_t heap_size = 0;
     _heap = _allocate_memory(safe_mode, "CIRCUITPY_HEAP_START_SIZE", CIRCUITPY_HEAP_START_SIZE, &heap_size);
-    gc_init(_heap, _heap + heap_size / 4);
+    gc_init(_heap, _heap + heap_size);
     #endif
     mp_init();
     mp_obj_list_init((mp_obj_list_t *)mp_sys_path, 0);
