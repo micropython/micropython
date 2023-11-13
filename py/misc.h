@@ -52,10 +52,15 @@ typedef unsigned int uint;
 
 // Static assertion macro
 #define MP_STATIC_ASSERT(cond) ((void)sizeof(char[1 - 2 * !(cond)]))
-#if defined(_MSC_VER)
-#define MP_STATIC_ASSERT_NOT_MSC(cond) (1)
+// In C++ things like comparing extern const pointers are not constant-expressions so cannot be used
+// in MP_STATIC_ASSERT. Note that not all possible compiler versions will reject this. Some gcc versions
+// do, others only with -Werror=vla, msvc always does.
+// The (void) is needed to avoid "left operand of comma operator has no effect [-Werror=unused-value]"
+// when using this macro on the left-hand side of a comma.
+#if defined(_MSC_VER) || defined(__cplusplus)
+#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) ((void)1)
 #else
-#define MP_STATIC_ASSERT_NOT_MSC(cond) MP_STATIC_ASSERT(cond)
+#define MP_STATIC_ASSERT_NONCONSTEXPR(cond) MP_STATIC_ASSERT(cond)
 #endif
 
 // Round-up integer division
