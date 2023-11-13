@@ -71,10 +71,6 @@ int main(void) {
     ticks_init();
     pendsv_init();
 
-    #if MICROPY_PY_BLUETOOTH
-    mp_bluetooth_hci_init();
-    #endif
-
     #if MICROPY_PY_LWIP
     // lwIP doesn't allow to reinitialise itself by subsequent calls to this function
     // because the system timeout list (next_timeout) is only ever reset by BSS clearing.
@@ -83,10 +79,6 @@ int main(void) {
     #if LWIP_MDNS_RESPONDER
     mdns_resp_init();
     #endif
-    #endif
-
-    #if MICROPY_PY_BLUETOOTH
-    mp_bluetooth_hci_init();
     #endif
 
     #if MICROPY_PY_NETWORK_CYW43
