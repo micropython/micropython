@@ -30,36 +30,37 @@
 #include "extmod/modbluetooth.h"
 #include "extmod/modmachine.h"
 #include "extmod/mpbthci.h"
+#include "shared/runtime/softtimer.h"
 #include "modmachine.h"
 #include "mpbthciport.h"
-#include "pico/stdlib.h"
 
 #if MICROPY_PY_BLUETOOTH
 
 #define debug_printf(...) // mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 #define error_printf(...) mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 
-// Poll timer ID.
-static alarm_id_t poll_timer_id = 0;
-
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
+// Soft timer and scheduling node for scheduling a HCI poll.
+static soft_timer_entry_t mp_bluetooth_hci_soft_timer;
 static mp_sched_node_t mp_bluetooth_hci_sched_node;
 
-void mp_bluetooth_hci_init(void) {
+// This is called by soft_timer and executes at PendSV level.
+static void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
+    mp_bluetooth_hci_poll_now();
 }
 
-static int64_t mp_bluetooth_hci_timer_callback(alarm_id_t id, void *user_data) {
-    poll_timer_id = 0;
-    mp_bluetooth_hci_poll_now();
-    return 0;
+void mp_bluetooth_hci_init(void) {
+    soft_timer_static_init(
+        &mp_bluetooth_hci_soft_timer,
+        SOFT_TIMER_MODE_ONE_SHOT,
+        0,
+        mp_bluetooth_hci_soft_timer_callback
+        );
 }
 
 void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
-    if (poll_timer_id != 0) {
-        cancel_alarm(poll_timer_id);
-    }
-    poll_timer_id = add_alarm_in_ms(ms, mp_bluetooth_hci_timer_callback, NULL, true);
+    soft_timer_reinsert(&mp_bluetooth_hci_soft_timer, ms);
 }
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
@@ -110,10 +111,8 @@ int mp_bluetooth_hci_uart_deinit(void) {
     debug_printf("mp_bluetooth_hci_uart_deinit\n");
 
     // If a poll callback is set cancel it now.
-    if (poll_timer_id > 0) {
-        cancel_alarm(poll_timer_id);
-    }
-    poll_timer_id = 0;
+    soft_timer_remove(&mp_bluetooth_hci_soft_timer);
+
     return 0;
 }
 
