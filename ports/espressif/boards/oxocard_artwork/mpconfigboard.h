@@ -34,14 +34,14 @@
 // clang-format off
 #define CIRCUITPY_BOARD_I2C (1)
 #define CIRCUITPY_BOARD_I2C_PIN {               \
-            { .scl = &pin_GPIO22, .sda = &pin_GPIO21 }}
+        { .scl = &pin_GPIO22, .sda = &pin_GPIO21 }}
 // clang-format on
 
 // clang-format off
 #define CIRCUITPY_BOARD_SPI (2)
 #define CIRCUITPY_BOARD_SPI_PIN {                                       \
-            { .clock = &pin_GPIO14, .mosi = &pin_GPIO13, .miso = &pin_GPIO12 }, \
-            { .clock = &pin_GPIO7,  .mosi = &pin_GPIO5,  .miso = &pin_GPIO8  }}
+        { .clock = &pin_GPIO14, .mosi = &pin_GPIO13, .miso = &pin_GPIO12 }, \
+        { .clock = &pin_GPIO7,  .mosi = &pin_GPIO5,  .miso = &pin_GPIO8  }}
 // clang-format on
 
 // UART pins attached to the USB-serial converter chip
