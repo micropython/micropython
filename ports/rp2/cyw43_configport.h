@@ -116,12 +116,7 @@ static inline void cyw43_delay_us(uint32_t us) {
 }
 
 static inline void cyw43_delay_ms(uint32_t ms) {
-    uint32_t us = ms * 1000;
-    int32_t start = mp_hal_ticks_us();
-    while (mp_hal_ticks_us() - start < us) {
-        cyw43_yield();
-        MICROPY_EVENT_POLL_HOOK_FAST;
-    }
+    mp_hal_delay_ms(ms);
 }
 
 #define CYW43_EVENT_POLL_HOOK MICROPY_EVENT_POLL_HOOK_FAST
