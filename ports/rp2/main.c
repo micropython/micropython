@@ -37,6 +37,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "tusb.h"
 #include "uart.h"
 #include "modmachine.h"
@@ -212,6 +213,7 @@ int main(int argc, char **argv) {
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }

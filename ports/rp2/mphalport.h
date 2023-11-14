@@ -31,9 +31,13 @@
 #include "hardware/clocks.h"
 #include "hardware/structs/systick.h"
 #include "RP2040.h" // cmsis, for __WFI
+#include "pendsv.h"
 
 #define SYSTICK_MAX (0xffffff)
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
+
+#define MICROPY_PY_PENDSV_ENTER   pendsv_suspend()
+#define MICROPY_PY_PENDSV_EXIT    pendsv_resume()
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
