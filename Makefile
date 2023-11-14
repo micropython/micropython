@@ -227,7 +227,7 @@ pseudoxml:
 all-source:
 
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d' > $@
+	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -x locale/synthetic.po -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d' > $@
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
 # However, this was a frequent source of merge conflicts.  Weblate can perform

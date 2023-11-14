@@ -239,6 +239,9 @@ endif
 ifeq ($(CIRCUITPY_KEYPAD),1)
 SRC_PATTERNS += keypad/%
 endif
+ifeq ($(CIRCUITPY_LOCALE),1)
+SRC_PATTERNS += locale/%
+endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
 endif
@@ -544,6 +547,7 @@ $(filter $(SRC_PATTERNS), \
 	displayio/Colorspace.c \
 	fontio/Glyph.c \
 	imagecapture/ParallelImageCapture.c \
+	locale/__init__.c \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
