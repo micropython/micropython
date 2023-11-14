@@ -192,10 +192,9 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     absolute_time_t t = make_timeout_time_ms(ms);
-    while (!time_reached(t)) {
+    do {
         MICROPY_EVENT_POLL_HOOK_FAST;
-        best_effort_wfe_or_timeout(t);
-    }
+    } while (!best_effort_wfe_or_timeout(t));
 }
 
 void mp_hal_time_ns_set_from_rtc(void) {
