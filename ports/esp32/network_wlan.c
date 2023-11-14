@@ -41,6 +41,7 @@
 
 #include "esp_wifi.h"
 #include "esp_log.h"
+#include "esp_psram.h"
 
 #ifndef NO_QSTR
 #include "mdns.h"
@@ -206,6 +207,23 @@ void esp_initialise_wifi(void) {
         wlan_ap_obj.active = false;
 
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+        #if CONFIG_SPIRAM_IGNORE_NOTFOUND
+        if (!esp_psram_is_initialized()) {
+            // If PSRAM failed to initialize, disable "Wi-Fi Cache TX Buffers"
+            // (default SPIRAM config ESP32_WIFI_CACHE_TX_BUFFER_NUM==32, this is 54,400 bytes of heap)
+            cfg.cache_tx_buf_num = 0;
+            cfg.feature_caps &= ~CONFIG_FEATURE_CACHE_TX_BUF_BIT;
+
+            // Set some other options back to the non-SPIRAM default values
+            // to save more RAM.
+            //
+            // These can be determined from ESP-IDF components/esp_wifi/Kconfig and the
+            // WIFI_INIT_CONFIG_DEFAULT macro
+            cfg.tx_buf_type = 1; // Dynamic, this "magic number" is defined in IDF KConfig
+            cfg.static_tx_buf_num = 0; // Probably don't need, due to tx_buf_type
+            cfg.dynamic_tx_buf_num = 32; // ESP-IDF default value (maximum)
+        }
+        #endif
         ESP_LOGD("modnetwork", "Initializing WiFi");
         esp_exceptions(esp_wifi_init(&cfg));
         esp_exceptions(esp_wifi_set_storage(WIFI_STORAGE_RAM));
