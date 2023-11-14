@@ -29,6 +29,7 @@
 #include <stddef.h>
 
 enum {
+    PENDSV_DISPATCH_SOFT_TIMER,
     #if MICROPY_PY_LWIP
     PENDSV_DISPATCH_LWIP,
     #endif
