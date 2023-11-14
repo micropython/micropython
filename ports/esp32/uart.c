@@ -50,7 +50,11 @@ STATIC void uart_irq_handler(void *arg);
 
 void uart_stdout_init(void) {
     uart_hal_context_t repl_hal = REPL_HAL_DEFN();
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
     uart_sclk_t sclk;
+    #else
+    soc_module_clk_t sclk;
+    #endif
     uint32_t sclk_freq;
 
     uart_hal_get_sclk(&repl_hal, &sclk); // To restore SCLK after uart_hal_init() resets it
