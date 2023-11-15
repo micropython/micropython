@@ -67,15 +67,29 @@ STATIC mp_obj_t task_queue_make_new(const mp_obj_type_t *type, size_t n_args, si
 /******************************************************************************/
 // Ticks for task ordering in pairing heap
 
-STATIC mp_obj_t ticks(void) {
-    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
-}
+// CIRCUITPY-CHANGE: ticks() must match adafruit_ticks()
+#define _TICKS_PERIOD (1lu << 29)
+#define _TICKS_MAX (_TICKS_PERIOD - 1)
+#define _TICKS_HALFPERIOD (_TICKS_PERIOD >> 1)
 
+#if !CIRCUITPY || (defined(__unix__) || defined(__APPLE__))
+STATIC mp_obj_t ticks(void) {
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & _TICKS_MAX);
+}
+#else
+// We don't share the implementation above because our supervisor_ticks_ms
+// starts the epoch about 65 seconds before the first overflow (see
+// shared-bindings/supervisor/__init__.c). We assume/require that
+// supervisor.ticks_ms is picked as the ticks implementation under
+// CircuitPython for the Python-coded bits of asyncio.
+#define ticks() supervisor_ticks_ms()
+#endif
+
+// CIRCUITPY-CHANGE: ticks_diff must match adafruit_ticks
 STATIC mp_int_t ticks_diff(mp_obj_t t1_in, mp_obj_t t0_in) {
     mp_uint_t t0 = MP_OBJ_SMALL_INT_VALUE(t0_in);
     mp_uint_t t1 = MP_OBJ_SMALL_INT_VALUE(t1_in);
-    mp_int_t diff = ((t1 - t0 + MICROPY_PY_TIME_TICKS_PERIOD / 2) & (MICROPY_PY_TIME_TICKS_PERIOD - 1))
-        - MICROPY_PY_TIME_TICKS_PERIOD / 2;
+    mp_int_t diff = ((t1 - t0 + _TICKS_HALFPERIOD) & _TICKS_MAX) - _TICKS_HALFPERIOD;
     return diff;
 }
 
