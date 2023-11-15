@@ -226,7 +226,7 @@ pseudoxml:
 .PHONY: all-source
 all-source:
 
-TRANSLATE_COMMAND=find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -x locale/synthetic.po -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d'
+TRANSLATE_COMMAND=find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -x locale/synthetic.pot -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d'
 locale/circuitpython.pot: all-source
 	$(TRANSLATE_COMMAND) > $@
 
