@@ -33,6 +33,7 @@ SRC_BITMAP := \
 	shared-bindings/audiomixer/MixerVoice.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
+	shared-bindings/locale/__init__.c \
 	shared-bindings/rainbowio/__init__.c \
 	shared-bindings/struct/__init__.c \
 	shared-bindings/synthio/__init__.c \
@@ -82,6 +83,7 @@ CFLAGS += \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
 	-DCIRCUITPY_FUTURE=1 \
 	-DCIRCUITPY_GIFIO=1 \
+	-DCIRCUITPY_LOCALE=1 \
 	-DCIRCUITPY_OS_GETENV=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \
 	-DCIRCUITPY_STRUCT=1 \

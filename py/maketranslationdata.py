@@ -92,7 +92,10 @@ def translate(translation_file, i18ns):
             unescaped = original
             for s in C_ESCAPES:
                 unescaped = unescaped.replace(C_ESCAPES[s], s)
-            translation = table.gettext(unescaped)
+            if original == "en_US":
+                translation = table.info()["language"]
+            else:
+                translation = table.gettext(unescaped)
             # Add in carriage returns to work in terminals
             translation = translation.replace("\n", "\r\n")
             translations.append((original, translation))
