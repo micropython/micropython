@@ -25,6 +25,8 @@
  */
 
 #include <string.h>
+#include <unistd.h>
+#include "py/mpconfig.h"
 #include "py/mphal.h"
 
 /*
@@ -33,26 +35,25 @@
  * implementation below can be used.
  */
 
+// CIRCUITPY-CHANGE: changes
 // Send "cooked" string of given length, where every occurrence of
-// LF character is replaced with CR LF ("\n" is converted to "\r\n").
-// This is an optimised version to reduce the number of calls made
-// to mp_hal_stdout_tx_strn.
+// LF character is replaced with CR LF.
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
-    const char *last = str;
-    while (len--) {
-        if (*str == '\n') {
-            if (str > last) {
-                mp_hal_stdout_tx_strn(last, str - last);
-            }
-            mp_hal_stdout_tx_strn("\r\n", 2);
-            ++str;
-            last = str;
-        } else {
-            ++str;
+    bool last_cr = false;
+    while (len > 0) {
+        size_t i = 0;
+        if (str[0] == '\n' && !last_cr) {
+            mp_hal_stdout_tx_strn("\r", 1);
+            i = 1;
         }
-    }
-    if (str > last) {
-        mp_hal_stdout_tx_strn(last, str - last);
+        // Lump all characters on the next line together.
+        while ((last_cr || str[i] != '\n') && i < len) {
+            last_cr = str[i] == '\r';
+            i++;
+        }
+        mp_hal_stdout_tx_strn(str, i);
+        str = &str[i];
+        len -= i;
     }
 }
 
