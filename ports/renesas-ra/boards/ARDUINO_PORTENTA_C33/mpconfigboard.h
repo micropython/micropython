@@ -63,8 +63,8 @@ void PORTENTA_C33_board_enter_bootloader(void);
 #endif
 
 // I2C
-#define MICROPY_HW_I2C2_SCL         (pin_P407)
-#define MICROPY_HW_I2C2_SDA         (pin_P408)
+#define MICROPY_HW_I2C0_SCL         (pin_P408)
+#define MICROPY_HW_I2C0_SDA         (pin_P407)
 
 // SPI
 #define MICROPY_HW_SPI1_SSL         (pin_P104)
