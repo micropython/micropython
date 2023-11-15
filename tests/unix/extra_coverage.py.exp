@@ -56,10 +56,11 @@ audiomixer      binascii        bitmaptools     cexample
 cmath           collections     cppexample      displayio
 errno           example_package                 gc
 hashlib         heapq           io              json
-math            os              platform        qrio
-rainbowio       random          re              select
-struct          synthio         sys             time
-traceback       uctypes         ulab            zlib
+locale          math            os              platform
+qrio            rainbowio       random          re
+select          struct          synthio         sys
+time            traceback       uctypes         ulab
+zlib
 me
 
 rainbowio       random
