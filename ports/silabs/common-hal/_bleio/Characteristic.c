@@ -273,7 +273,8 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
                 bufinfo->buf);
         }
     } else {
-        if (self->props & BT_GATT_CHRC_READ) {
+        if (self->props & BT_GATT_CHRC_READ || self->props & BT_GATT_CHRC_WRITE
+            || self->props & BT_GATT_CHRC_WRITE_WITHOUT_RESP) {
             sc = sl_bt_gatt_server_write_attribute_value(self->handle,
                 0,
                 bufinfo->len,
