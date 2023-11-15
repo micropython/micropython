@@ -91,7 +91,6 @@ msgstr ""
 #: ports/atmel-samd/common-hal/alarm/__init__.c
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
 #: ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
@@ -1605,7 +1604,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
