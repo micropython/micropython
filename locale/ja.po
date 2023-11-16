@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-21 00:49+0000\n"
-"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
+"PO-Revision-Date: 2023-11-16 15:03+0000\n"
+"Last-Translator: Yutaro Urata <yutarourata04@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 #: main.c
 msgid ""
@@ -638,8 +638,7 @@ msgstr "オートリロードはオフです。\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr ""
-"オートリロードがオンです。ファイルをUSB経由で保存するだけで実行できます。REPL"
+msgstr "オートリロードがオンです。ファイルをUSB経由で保存するだけで実行できます。REPL"
 "に入ると無効化します。\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
@@ -753,9 +752,8 @@ msgstr ""
 
 #: py/objtype.c
 msgid "Call super().__init__() before accessing native object."
-msgstr ""
-"ネイティブオブジェクトにアクセスする前にsuper().__init__()を呼び出してくださ"
-"い"
+msgstr "ネイティブオブジェクトにアクセスする前にsuper()."
+"__init__()を呼び出してください"
 
 #: ports/cxd56/common-hal/camera/Camera.c
 msgid "Camera init"
@@ -1600,8 +1598,7 @@ msgstr ""
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr ""
-"オブジェクトは解放済みでもう使われていません。新しいオブジェクトを作成してく"
+msgstr "オブジェクトは解放済みでもう使われていません。新しいオブジェクトを作成してく"
 "ださい"
 
 #: ports/nrf/common-hal/busio/UART.c
@@ -1809,8 +1806,7 @@ msgstr "Prefixバッファはヒープ上になければなりません"
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
-msgstr ""
-"REPLに入るため、エンターキーを押す。リーロードするため、Ctl-Dを入力する。\n"
+msgstr "REPLに入るため、エンターキーを押す。リーロードするため、Ctl-Dを入力する。\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
@@ -2156,8 +2152,7 @@ msgstr "UUIDの整数値は0から0xffffの間でなければなりません"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"
-msgstr ""
-"UUID文字列が 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' の形式になっていません"
+msgstr "UUID文字列が 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx' の形式になっていません"
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
@@ -2846,8 +2841,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be 3 bytes (RGB) or 4 bytes (RGB + pad byte)"
-msgstr ""
-"色バッファは3バイト (RGB) か4バイト (RGB + pad byte) でなければなりません"
+msgstr "色バッファは3バイト (RGB) か4バイト (RGB + pad byte) でなければなりません"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
@@ -2855,8 +2849,7 @@ msgstr "カラーバッファはbuffer, tuple, list, int のいずれかです"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-"色バッファは、bytearrayまたはタイプが 'b' か 'B' のarrayでなければなりません"
+msgstr "色バッファは、bytearrayまたはタイプが 'b' か 'B' のarrayでなければなりません"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -2942,9 +2935,8 @@ msgstr ""
 #: shared-bindings/audiobusio/PDMIn.c
 msgid ""
 "destination buffer must be a bytearray or array of type 'B' for bit_depth = 8"
-msgstr ""
-"bit_depth = 8のとき、宛先バッファはbytearrayまたはタイプ'B'のarrayでなければ"
-"なりません"
+msgstr "bit_depth = "
+"8のとき、宛先バッファはbytearrayまたはタイプ'B'のarrayでなければなりません"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
@@ -3257,8 +3249,7 @@ msgstr "インデクスは整数でなければなりません"
 
 #: extmod/ulab/code/ndarray.c
 msgid "indices must be integers, slices, or Boolean lists"
-msgstr ""
-"インデクスは、整数、スライス、boolのリストのいずれかでなければなりません"
+msgstr "インデクスは、整数、スライス、boolのリストのいずれかでなければなりません"
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "init I2C"

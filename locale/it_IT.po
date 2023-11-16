@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-05-21 00:49+0000\n"
+"PO-Revision-Date: 2023-11-16 15:03+0000\n"
 "Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
 "Language-Team: \n"
 "Language: it_IT\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.18-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 #: main.c
 msgid ""
@@ -2866,8 +2866,7 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
-msgstr ""
-"buffer del colore deve essere un bytearray o un array di tipo 'b' o 'B'"
+msgstr "buffer del colore deve essere un bytearray o un array di tipo 'b' o 'B'"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color must be between 0x000000 and 0xffffff"
@@ -3187,8 +3186,7 @@ msgstr "mancante il #%d argomento posizonale obbligatorio della funzione"
 #: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
-"la funzione prende %d argomenti posizionali ma ne sono stati forniti %d"
+msgstr "la funzione prende %d argomenti posizionali ma ne sono stati forniti %d"
 
 #: shared-bindings/time/__init__.c
 msgid "function takes exactly 9 arguments"

@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-10 20:54+0000\n"
-"Last-Translator: Jacques Supcik <jacques@supcik.net>\n"
+"PO-Revision-Date: 2023-11-16 15:03+0000\n"
+"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 #: main.c
 msgid ""
@@ -32,8 +32,8 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 "\n"
-"Le code a été arrêté par l'actualisation automatique. Rechargement "
-"prochain.\n"
+"Le code a été arrêté par l'actualisation automatique. Rechargement prochain."
+"\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -293,13 +293,11 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
-"%q[%u] décale vers l'intérieur de plus de bits que le nombre de broches"
+msgstr "%q[%u] décale vers l'intérieur de plus de bits que le nombre de broches"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
-"%q[%u] décale vers l'extérieur de plus de bits que le nombre de broches"
+msgstr "%q[%u] décale vers l'extérieur de plus de bits que le nombre de broches"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
@@ -841,8 +839,7 @@ msgstr "Ne peut démonter '/' quand est visible par USB."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
-"Impossible de redémarrer dans le bootloader puisque aucun n'est présent"
+msgstr "Impossible de redémarrer dans le bootloader puisque aucun n'est présent"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"

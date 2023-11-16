@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-08-24 22:46+0000\n"
-"Last-Translator: Pablo Martinez Bernal <elpekenin@elpekenin.dev>\n"
+"PO-Revision-Date: 2023-11-16 15:03+0000\n"
+"Last-Translator: RubenD <rubendariopm14@gmail.com>\n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.0\n"
+"X-Generator: Weblate 5.2\n"
 
 #: main.c
 msgid ""
@@ -710,8 +710,7 @@ msgstr "Buffer no es un bytearray."
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
 msgid "Buffer length %d too big. It must be less than %d"
-msgstr ""
-"La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
+msgstr "La longitud del buffer %d es demasiado grande. Tiene que ser menor a %d"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
@@ -955,8 +954,7 @@ msgstr "Data es muy grande para el paquete de anuncio"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
-"Pines de sueño profundo deben usar eje de subida con jalado hacia abajo"
+msgstr "Pines de sueño profundo deben usar eje de subida con jalado hacia abajo"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -1209,8 +1207,7 @@ msgstr "Dispositivo I2C en uso"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "In-buffer elements must be <= 4 bytes long"
-msgstr ""
-"Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
+msgstr "Los elementos del búfer de entrada deben ser de una longitud <= 4 bytes"
 
 #: shared-bindings/_pew/PewPew.c
 msgid "Incorrect buffer size"
@@ -1842,8 +1839,7 @@ msgstr "El polígono necesita al menos 3 puntos"
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr ""
-"Falta de potencia. Asegura que estás suministrando suficiente potencia."
+msgstr "Falta de potencia. Asegura que estás suministrando suficiente potencia."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2057,8 +2053,7 @@ msgstr "Lectura de temperatura expirada"
 
 #: supervisor/shared/safe_mode.c
 msgid "The `microcontroller` module was used to boot into safe mode."
-msgstr ""
-"El modulo `microcontrolador` fue usado para inicializar en modo seguro."
+msgstr "El modulo `microcontrolador` fue usado para inicializar en modo seguro."
 
 #: py/obj.c
 msgid "The above exception was the direct cause of the following exception:"
@@ -3762,8 +3757,7 @@ msgstr "no es una constante"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
-msgstr ""
-"no todos los argumentos fueron convertidos durante el formato de string"
+msgstr "no todos los argumentos fueron convertidos durante el formato de string"
 
 #: py/objstr.c
 msgid "not enough arguments for format string"

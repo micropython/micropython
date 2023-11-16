@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2020-10-05 12:12+0000\n"
-"Last-Translator: Michal Čihař <michal@cihar.com>\n"
+"PO-Revision-Date: 2023-11-16 15:03+0000\n"
+"Last-Translator: Michal Čihař <michal@weblate.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.3-dev\n"
+"X-Generator: Weblate 5.2\n"
 
 #: main.c
 msgid ""
@@ -632,9 +632,8 @@ msgstr "자동 재 장전이 꺼져 있습니다\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr ""
-"자동 새로 고침이 켜져 있습니다. USB를 통해 파일을 저장하여 실행하십시오. 비활"
-"성화하려면 REPL을 입력하십시오.\n"
+msgstr "자동 새로 고침이 켜져 있습니다. USB를 통해 파일을 저장하여 실행하십시오. "
+"비활성화하려면 REPL을 입력하십시오.\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
@@ -2149,8 +2148,7 @@ msgstr "UUID문자열이 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'형식이 아닙�
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
-msgstr ""
-"UUID값이 문자열(str), 정수(int) 또는 바이트버퍼가(byte buffer) 아닙니다"
+msgstr "UUID값이 문자열(str), 정수(int) 또는 바이트버퍼가(byte buffer) 아닙니다"
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
