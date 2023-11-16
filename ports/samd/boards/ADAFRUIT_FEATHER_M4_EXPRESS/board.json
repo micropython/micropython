@@ -15,7 +15,8 @@
     ],
     "mcu": "samd51",
     "variants": {
-        "WLAN": "WiFi support using a ESP32 module with NINA firmware"
+        "WLAN": "WiFi support using a ESP32 module with NINA firmware",
+        "WLAN_BLE": "WiFi and BLE support using a ESP32 module with NINA firmware"
     },
     "product": "Feather M4 Express",
     "thumbnail": "",
