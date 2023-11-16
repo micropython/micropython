@@ -59,7 +59,7 @@ const mcu_pin_obj_t pin_GPIO27 = PIN(27, ADC_UNIT_2, ADC_CHANNEL_7, TOUCH_PAD_NU
 // no GPIO29
 // no GPIO30
 // no GPIO31
-const mcu_pin_obj_t pin_GPIO32 = PIN(32, ADC_UNIT_1, ADC_CHANNEL_1, TOUCH_PAD_NUM9);
+const mcu_pin_obj_t pin_GPIO32 = PIN(32, ADC_UNIT_1, ADC_CHANNEL_4, TOUCH_PAD_NUM9);
 const mcu_pin_obj_t pin_GPIO33 = PIN(33, ADC_UNIT_1, ADC_CHANNEL_5, TOUCH_PAD_NUM8);
 const mcu_pin_obj_t pin_GPIO34 = PIN(34, ADC_UNIT_1, ADC_CHANNEL_6, NO_TOUCH_CHANNEL);
 const mcu_pin_obj_t pin_GPIO35 = PIN(35, ADC_UNIT_1, ADC_CHANNEL_7, NO_TOUCH_CHANNEL);

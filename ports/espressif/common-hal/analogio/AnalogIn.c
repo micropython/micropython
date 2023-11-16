@@ -54,7 +54,7 @@
 
 void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     const mcu_pin_obj_t *pin) {
-    if (pin->adc_index == 0 || pin->adc_channel == ADC_CHANNEL_MAX) {
+    if (pin->adc_index == NO_ADC || pin->adc_channel == NO_ADC_CHANNEL) {
         raise_ValueError_invalid_pin();
     }
     common_hal_mcu_pin_claim(pin);
