@@ -156,7 +156,7 @@ static const DMA_InitTypeDef dma_init_struct_i2s = {
 };
 #endif
 
-#if ENABLE_SDIO && !defined(STM32H7)
+#if ENABLE_SDIO && !defined(STM32H5) && !defined(STM32H7)
 // Parameters to dma_init() for SDIO tx and rx.
 static const DMA_InitTypeDef dma_init_struct_sdio = {
     #if defined(STM32F4) || defined(STM32F7)
