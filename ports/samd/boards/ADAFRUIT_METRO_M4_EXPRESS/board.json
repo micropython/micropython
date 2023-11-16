@@ -15,6 +15,9 @@
         "metro_m4_express_airlift.jpg"
     ],
     "mcu": "samd51",
+    "variants": {
+        "WLAN_BLE": "WiFi and BLE support using a ESP32 module with NINA firmware"
+    },
     "product": "Metro M4 Express Airlift",
     "thumbnail": "",
     "url": "https://www.adafruit.com/product/4000",
