@@ -16,7 +16,7 @@ def _git_version():
 
 
 clone_supports_filter = (
-    False if "NO_USE_CLONE_FILTER" in os.environ else _git_version() >= (2, 27, 0)
+    False if "NO_USE_CLONE_FILTER" in os.environ else _git_version() >= (2, 36, 0)
 )
 
 if clone_supports_filter:
