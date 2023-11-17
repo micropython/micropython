@@ -180,6 +180,7 @@ static bool synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
 
     uint32_t dds_rate;
     const int16_t *waveform = synth->waveform_bufinfo.buf;
+    uint32_t waveform_start = 0;
     uint32_t waveform_length = synth->waveform_bufinfo.len;
 
     uint32_t ring_dds_rate = 0;
@@ -202,8 +203,14 @@ static bool synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
         if (note->waveform_buf.buf) {
             waveform = note->waveform_buf.buf;
             waveform_length = note->waveform_buf.len;
+            if (note->loop_start > 0 && note->loop_start < waveform_length) {
+                waveform_start = note->loop_start;
+            }
+            if (note->loop_end > waveform_start && note->loop_end < waveform_length) {
+                waveform_length = note->loop_end;
+            }
         }
-        dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * waveform_length, sample_rate);
+        dds_rate = synthio_frequency_convert_scaled_to_dds((uint64_t)frequency_scaled * (waveform_length - waveform_start), sample_rate);
         if (note->ring_frequency_scaled != 0 && note->ring_waveform_buf.buf) {
             ring_waveform = note->ring_waveform_buf.buf;
             ring_waveform_length = note->ring_waveform_buf.len;
@@ -215,6 +222,7 @@ static bool synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
         }
     }
 
+    uint32_t offset = waveform_start << SYNTHIO_FREQUENCY_SHIFT;
     uint32_t lim = waveform_length << SYNTHIO_FREQUENCY_SHIFT;
     uint32_t accum = synth->accum[chan];
 
@@ -225,7 +233,7 @@ static bool synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
 
     // can happen if note waveform gets set mid-note, but the expensive modulo is usually avoided
     if (accum > lim) {
-        accum %= lim;
+        accum = accum % lim + offset;
     }
 
     // first, fill with waveform
@@ -233,7 +241,7 @@ static bool synth_note_into_buffer(synthio_synth_t *synth, int chan, int32_t *ou
         accum += dds_rate;
         // because dds_rate is low enough, the subtraction is guaranteed to go back into range, no expensive modulo needed
         if (accum > lim) {
-            accum -= lim;
+            accum = accum - lim + offset;
         }
         int16_t idx = accum >> SYNTHIO_FREQUENCY_SHIFT;
         out_buffer32[i] = waveform[idx];

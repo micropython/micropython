@@ -135,6 +135,24 @@ void common_hal_synthio_note_set_ring_waveform(synthio_note_obj_t *self, mp_obj_
     self->ring_waveform_obj = ring_waveform_in;
 }
 
+mp_int_t common_hal_synthio_note_get_loop_start(synthio_note_obj_t *self) {
+    return self->loop_start;
+}
+
+void common_hal_synthio_note_set_loop_start(synthio_note_obj_t *self, mp_int_t value_in) {
+    mp_int_t val = mp_arg_validate_int_range(value_in, 0, 32767, MP_QSTR_loop_start);
+    self->loop_start = val;
+}
+
+mp_int_t common_hal_synthio_note_get_loop_end(synthio_note_obj_t *self) {
+    return self->loop_end;
+}
+
+void common_hal_synthio_note_set_loop_end(synthio_note_obj_t *self, mp_int_t value_in) {
+    mp_int_t val = mp_arg_validate_int_range(value_in, 0, 32767, MP_QSTR_loop_end);
+    self->loop_end = val;
+}
+
 void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {
     if (sample_rate == self->sample_rate) {
         return;

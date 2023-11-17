@@ -35,3 +35,9 @@ void common_hal_synthio_note_set_ring_waveform(synthio_note_obj_t *self, mp_obj_
 
 mp_obj_t common_hal_synthio_note_get_envelope_obj(synthio_note_obj_t *self);
 void common_hal_synthio_note_set_envelope(synthio_note_obj_t *self, mp_obj_t value);
+
+mp_int_t common_hal_synthio_note_get_loop_start(synthio_note_obj_t *self);
+void common_hal_synthio_note_set_loop_start(synthio_note_obj_t *self, mp_int_t value_in);
+
+mp_int_t common_hal_synthio_note_get_loop_end(synthio_note_obj_t *self);
+void common_hal_synthio_note_set_loop_end(synthio_note_obj_t *self, mp_int_t value_in);
