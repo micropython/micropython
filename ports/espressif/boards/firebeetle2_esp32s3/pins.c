@@ -77,7 +77,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     // Right header, module facing down.
     { MP_ROM_QSTR(MP_QSTR_IO47),     MP_ROM_PTR(&pin_GPIO47)},
     { MP_ROM_QSTR(MP_QSTR_D14),      MP_ROM_PTR(&pin_GPIO47)},
-    { MP_ROM_QSTR(MP_QSTR_PWR),      MP_ROM_PTR(&pin_GPIO12)},
+    { MP_ROM_QSTR(MP_QSTR_PWR),      MP_ROM_PTR(&pin_GPIO47)},
 
     { MP_ROM_QSTR(MP_QSTR_IO11),     MP_ROM_PTR(&pin_GPIO11)},
     { MP_ROM_QSTR(MP_QSTR_D11),      MP_ROM_PTR(&pin_GPIO11)},
@@ -113,6 +113,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_CAM_VSYNC), MP_ROM_PTR(&pin_GPIO6)},
     { MP_ROM_QSTR(MP_QSTR_CAM_HREF),  MP_ROM_PTR(&pin_GPIO42)},
     { MP_ROM_QSTR(MP_QSTR_CAM_PCLK),  MP_ROM_PTR(&pin_GPIO5)},
+    { MP_ROM_QSTR(MP_QSTR_CAM_XCLK),  MP_ROM_PTR(&pin_GPIO45)},
 
     { MP_ROM_QSTR(MP_QSTR_CAM_I2C),   MP_ROM_PTR(&board_cam_i2c_obj)},
 };
