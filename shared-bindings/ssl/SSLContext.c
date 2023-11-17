@@ -93,13 +93,26 @@ STATIC mp_obj_t ssl_sslcontext_load_cert_chain(size_t n_args, const mp_obj_t *po
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_sslcontext_load_cert_chain_obj, 1, ssl_sslcontext_load_cert_chain);
 
-//|     def load_verify_locations(self, cadata: Optional[str] = None) -> None:
-//|         """Load a set of certification authority (CA) certificates used to validate
-//|         other peers' certificates."""
-
+//|     def load_verify_locations(
+//|         self,
+//|         cafile: Optional[str] = None,
+//|         capath: Optional[str] = None,
+//|         cadata: Optional[str] = None,
+//|     ) -> None:
+//|         """
+//|         Load a set of certification authority (CA) certificates used to validate
+//|         other peers' certificates.
+//|
+//|         :param str cafile: path to a file of contcatenated CA certificates in PEM format. **Not implemented**.
+//|         :param str capath: path to a directory of CA certificate files in PEM format. **Not implemented**.
+//|         :param str cadata: A single CA certificate in PEM format. **Limitation**: CPython allows one
+//|           or more certificates, but this implementation is limited to one.
+//|         """
 STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_cadata };
+    enum { ARG_cafile, ARG_capath, ARG_cadata };
     static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_cafile, MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_capath, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_cadata, MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
     ssl_sslcontext_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -107,10 +120,15 @@ STATIC mp_obj_t ssl_sslcontext_load_verify_locations(size_t n_args, const mp_obj
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    const char *cadata = NULL;
-    if (args[ARG_cadata].u_obj != mp_const_none) {
-        cadata = mp_obj_str_get_str(args[ARG_cadata].u_obj);
+    if (args[ARG_cafile].u_obj != mp_const_none) {
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_cafile);
     }
+
+    if (args[ARG_capath].u_obj != mp_const_none) {
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_capath);
+    }
+
+    const char *cadata = mp_obj_str_get_str(args[ARG_cadata].u_obj);
 
     common_hal_ssl_sslcontext_load_verify_locations(self, cadata);
     return mp_const_none;
