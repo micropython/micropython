@@ -1,0 +1,10 @@
+==========
+InvalidStateError if still running: InvalidStateError()
+==========
+CancelledError when retrieving result from cancelled task: CancelledError()
+==========
+Error raised when result is attempted on task with error: ValueError()
+==========
+Empty Result should be None: None
+==========
+Happy path, result is returned: hello world

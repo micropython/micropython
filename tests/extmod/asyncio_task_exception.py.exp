@@ -1,0 +1,10 @@
+==========
+Tasks that aren't done yet raise an InvalidStateError: InvalidStateError()
+==========
+Cancelled tasks cannot retrieve exception: CancelledError()
+==========
+None when no exception: None
+==========
+Returned Exception: ValueError()
+==========
+None

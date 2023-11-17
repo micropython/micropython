@@ -1,0 +1,12 @@
+==========
+Waiting for task to complete
+done <Task> StopIteration()
+Task has completed
+==========
+Task has completed
+done <Task> StopIteration()
+Callback Added
+==========
+Second call to add_done_callback emits error: RuntimeError('>1 callback unsupported',)
+==========
+done <Task> ValueError()
