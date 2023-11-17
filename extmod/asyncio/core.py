@@ -23,6 +23,10 @@ class TimeoutError(Exception):
     pass
 
 
+class InvalidStateError(Exception):
+    pass
+
+
 # Used when calling Loop.call_exception_handler
 _exc_context = {"message": "Task exception wasn't retrieved", "exception": None, "future": None}
 
