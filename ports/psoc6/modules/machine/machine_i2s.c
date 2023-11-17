@@ -34,7 +34,9 @@
 /* Clock Settings */
 #define AUDIO_SYS_CLOCK_HZ    98000000u   /* in Hz (Ideally 98.304 MHz) */
 #define AUDIO_SYS_CLOCK_HZ_1  90000000u
+
 uint32_t Audio_sys_clock_fz;
+uint8_t clock_set;
 
 void clock_init(void);
 
@@ -149,8 +151,11 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
     self->callback_for_non_blocking = MP_OBJ_NULL;
     self->io_mode = BLOCKING;
 
-    clock_init();
-    cyhal_system_delay_ms(1);
+    if (clock_set == 0) {
+        clock_init();
+        cyhal_system_delay_ms(1);
+    }
+
 
     if (i2s_mode == TX) {  // TX is a master
         cyhal_i2s_pins_t tx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
@@ -193,6 +198,21 @@ STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
 
+STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
+
+    machine_i2s_obj_t *self;
+    if (MP_STATE_PORT(machine_i2s_obj[i2s_id]) == NULL) {
+        self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
+        MP_STATE_PORT(machine_i2s_obj[i2s_id]) = self;
+        self->i2s_id = i2s_id;
+    } else {
+        self = MP_STATE_PORT(machine_i2s_obj[i2s_id]);
+        machine_i2s_deinit(MP_OBJ_FROM_PTR(self));
+    }
+
+    return self;
+}
+
 
 STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -216,12 +236,13 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
-    i2s_mode_t i2s_id = mp_obj_get_int(args[0]);
-    if (i2s_id != 0) {
+    mp_int_t i2s_id = mp_obj_get_int(args[0]);
+    if ((i2s_id != 0) && (i2s_id != 1)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid id"));
     }
+    machine_i2s_obj_t *self = mp_machine_i2s_make_new_instance(i2s_id);
 
-    machine_i2s_obj_t *self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
+    // machine_i2s_obj_t *self = mp_obj_malloc(machine_i2s_obj_t, &machine_i2s_type);
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw_args, args + n_pos_args);
     machine_i2s_init_helper(self, n_pos_args - 1, args + 1, &kw_args);
@@ -256,6 +277,18 @@ STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
+
+STATIC mp_obj_t machine_i2s_stop(mp_obj_t self_in) {
+    machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->mode == TX) {
+        cyhal_i2s_stop_tx(&self->i2s_obj);
+    } else {
+        cyhal_i2s_stop_rx(&self->i2s_obj);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_stop_obj, machine_i2s_stop);
+
 
 // Shift() is typically used as a volume control.
 // shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB
@@ -323,6 +356,8 @@ void clock_init(void) {
     cyhal_clock_t clock_pll;
     cy_rslt_t result;
 
+    clock_set = 1;
+
     /* Initialize, take ownership of PLL0/PLL */
     result = cyhal_clock_reserve(&clock_pll, &CYHAL_CLOCK_PLL[0]);
     if (CY_RSLT_SUCCESS != result) {
@@ -378,6 +413,7 @@ STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write),           MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),          MP_ROM_PTR(&machine_i2s_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),             MP_ROM_PTR(&machine_i2s_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stop),           MP_ROM_PTR(&machine_i2s_stop_obj) },
 
     // Static method
     { MP_ROM_QSTR(MP_QSTR_shift),           MP_ROM_PTR(&machine_i2s_shift_obj) },
@@ -435,7 +471,6 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S read failed with return code %lx !"), result);
         }
-        cyhal_i2s_stop_rx(&self->i2s_obj);
         return bufinfo.len;
     }
 }
@@ -476,8 +511,6 @@ STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S transmission failed with return code %lx !"), result);
         }
-        cyhal_system_delay_ms(1000);
-        cyhal_i2s_stop_tx(&self->i2s_obj);
         return bufinfo.len;
     }
 }

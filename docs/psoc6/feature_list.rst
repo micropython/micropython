@@ -130,7 +130,9 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.Timer   | mode = Timer.PERIODIC is not supported                                                                               |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
-| machine.SPI     | Option ``MICROPY_PY_MACHINE_SPI``, ``MICROPY_PY_MACHINE_SPI_MSB`` , ``MICROPY_PY_MACHINE_SPI_MSB`` enabled.          |    
+| machine.SPI     | Option ``MICROPY_PY_MACHINE_SPI``, ``MICROPY_PY_MACHINE_SPI_MSB`` , ``MICROPY_PY_MACHINE_SPI_MSB`` enabled.          |
++-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
+| machine.I2S     | Non Blocking Mode & asyncio mode is not supported                                                                    |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | psoc6           | Option to enable the external instead of the internal flash: ``MICROPY_ENABLE_EXT_QSPI_FLASH``.                      |
 |                 |                                                                                                                      |

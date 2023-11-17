@@ -530,3 +530,39 @@ To use the APIs:
     adc = adcBlock.connect(0, "P10_0")          # connect channel 0 to pin P10_0
     val = adc.read_uv()                         # read an analog value in micro volts
 
+I2S bus
+-------
+
+See :ref:`machine.I2S <machine.I2S>`. 
+
+PSoC6 implements additional method which is explained below.
+
+Methods
+^^^^^^^
+    .. method:: I2S.stop() 
+    
+    This method is to stop either the transmission or reception. This function should be called by user once the readinto or 
+    write is done. 
+
+::
+
+    from machine import I2S, Pin
+    import array
+    buf=bytearray(10) #Initilase buffer with required values for transmission & as empty buffer for reception
+
+    audio_out = I2S(0, sck="P13_1", ws="P13_2", sd="P13_3", mode=I2S.TX, bits=16, format=I2S.STEREO, rate=22050, ibuf=20000) #create I2S object
+    num_written = audio_out.write(buf) # write buffer of audio samples to I2S device 
+    
+
+    audio_in = I2S(1, sck="P5_4", ws="P5_5", sd="P5_6", mode=I2S.RX, bits=16, format=I2S.STEREO, rate=22050, ibuf=20000) # create I2S object
+    num_read = audio_in.readinto(buf)# fill buffer with audio samples from I2S device
+    audio_out.stop() # stop transmission
+    audio_in.stop()  # stop reception
+
+PSoc6 supports two I2S Bus. So id could be either 0 or 1. Please note that if both instances are running together then the sample rate should
+be either 8/16/32/48 or 22.05/44.01. Both the set of frequencies can't work together(For eg eg. 8 & 22.01 will cause error)
+Supported sample rates are 8KHz, 16KHz, 32KHz, 48KHz, 22.05KHz, 44.1KHz.
+PSoC6 supports only STEREO Mode. 
+
+.. note:: I2S Blocking mode is only supported 
+
