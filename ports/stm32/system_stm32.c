@@ -461,6 +461,11 @@ MP_WEAK void SystemClock_Config(void) {
     PeriphClkInitStruct.QspiClockSelection = MICROPY_HW_RCC_QSPI_CLKSOURCE;
     #endif
 
+    #if defined(MICROPY_HW_RCC_OSPI_CLKSOURCE)
+    PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_OSPI;
+    PeriphClkInitStruct.OspiClockSelection = MICROPY_HW_RCC_OSPI_CLKSOURCE;
+    #endif
+
     #if defined(MICROPY_HW_RCC_SPI123_CLKSOURCE)
     PeriphClkInitStruct.PeriphClockSelection |= RCC_PERIPHCLK_SPI123;
     PeriphClkInitStruct.Spi123ClockSelection = MICROPY_HW_RCC_SPI123_CLKSOURCE;
