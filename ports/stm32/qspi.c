@@ -350,10 +350,28 @@ static int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest)
     return 0;
 }
 
-static int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+static int qspi_read_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest, uint8_t mode) {
     (void)self_in;
-
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
+
+    uint32_t dmode = 0;
+    uint32_t admode = 0;
+    uint32_t dcyc = 0;
+    uint32_t abmode = 0;
+
+    if (mode == MP_QSPI_TRANSFER_CMD_QADDR_QDATA) {
+        dmode = 3; // 4 data lines used
+        admode = 3; // 4 address lines used
+        dcyc = 4; // 4 dummy cycles (2  bytes)
+        abmode = 3; // alternate-byte bytes sent on 4 lines
+    } else if (mode == MP_QSPI_TRANSFER_CMD_ADDR_DATA) {
+        dmode = 1; // 1 data lines used
+        admode = 1; // 1 address lines used
+        dcyc = 8; // 8 dummy cycles (1 byte)
+        abmode = 0; // No alternate-byte bytes sent
+    } else {
+        return -1;
+    }
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
@@ -363,12 +381,12 @@ static int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, 
         0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
             | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
             | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
-            | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
-            | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+            | dmode << QUADSPI_CCR_DMODE_Pos // data lines
+            | dcyc << QUADSPI_CCR_DCYC_Pos // dummy cycles
             | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
-            | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+            | abmode << QUADSPI_CCR_ABMODE_Pos // alternate byte count / lines
             | adsize << QUADSPI_CCR_ADSIZE_Pos // 32 or 24-bit address size
-            | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
+            | admode << QUADSPI_CCR_ADMODE_Pos // address lines
             | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
             | cmd << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
     ;
@@ -419,7 +437,7 @@ const mp_qspi_proto_t qspi_proto = {
     .write_cmd_data = qspi_write_cmd_data,
     .write_cmd_addr_data = qspi_write_cmd_addr_data,
     .read_cmd = qspi_read_cmd,
-    .read_cmd_qaddr_qdata = qspi_read_cmd_qaddr_qdata,
+    .read_cmd_addr_data = qspi_read_cmd_addr_data,
 };
 
 #endif // defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
