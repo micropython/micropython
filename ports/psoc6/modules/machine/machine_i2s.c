@@ -172,12 +172,12 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
         if (result != CY_RSLT_SUCCESS) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2S tx initialisation failed with return code %lx !"), result);
         }
-    } else { // Rx is master
+    } else { // Rx is slave
         cyhal_i2s_pins_t rx_pins = { .sck = self->sck, .ws = self->ws, .data = self->sd, .mclk = NC };
         cyhal_i2s_config_t rx_config =
         {
             .is_tx_slave = false,
-            .is_rx_slave = false,
+            .is_rx_slave = true,
             .mclk_hz = 0,
             .channel_length = 32,
             .word_length = self->bits,
