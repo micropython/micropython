@@ -66,6 +66,12 @@
 #endif
 #endif
 
+#if !BUILDING_MBOOT
+#define diag_printf(...) mp_printf(MICROPY_ERROR_PRINTER, __VA_ARGS__)
+#else
+#define diag_printf(...)
+#endif
+
 // List of all possible flash devices used by device.
 // MICROPY_HW_SPIFLASH_DEVICES can be set to a comma separated list in mpconfigboard.h
 static const external_flash_device possible_devices[] = {
@@ -103,7 +109,7 @@ static int mp_spiflash_write_cmd_data(mp_spiflash_t *self, uint8_t cmd, size_t l
     return ret;
 }
 
-static int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src, uint8_t *dest) {
+static int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src, uint8_t *dest, uint8_t mode) {
     int ret = 0;
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
@@ -120,7 +126,7 @@ static int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, 
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
     } else {
         if (dest != NULL) {
-            ret = c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, cmd, addr, len, dest);
+            ret = c->bus.u_qspi.proto->read_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, dest, mode);
         } else {
             ret = c->bus.u_qspi.proto->write_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, src);
         }
@@ -144,12 +150,15 @@ static int mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len, ui
 static int mp_spiflash_read_data(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
     const mp_spiflash_config_t *c = self->config;
     uint8_t cmd;
+    uint8_t mode;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
         cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_READ_32 : CMD_READ;
+        mode = MP_QSPI_TRANSFER_CMD_ADDR_DATA;
     } else {
         cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_C4READ_32 : CMD_C4READ;
+        mode = MP_QSPI_TRANSFER_CMD_QADDR_QDATA;
     }
-    return mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, NULL, dest);
+    return mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, NULL, dest, mode);
 }
 
 static int mp_spiflash_write_cmd(mp_spiflash_t *self, uint8_t cmd) {
@@ -237,8 +246,8 @@ int mp_spiflash_init(mp_spiflash_t *self) {
         #if MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES
         generic_config.total_size = MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES;
         #else
-        mp_printf(MICROPY_ERROR_PRINTER, "Set MICROPY_HW_SPIFLASH_DEVICES or MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES");
-        mp_printf(MICROPY_ERROR_PRINTER, "jedec ids: 0x%x 0x%x 0x%x\n", jedec_ids[0], jedec_ids[1], jedec_ids[2]);
+        diag_printf("Set MICROPY_HW_SPIFLASH_DEVICES or MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES");
+        diag_printf("jedec ids: 0x%x 0x%x 0x%x\n", jedec_ids[0], jedec_ids[1], jedec_ids[2]);
         #endif
     }
 
@@ -315,7 +324,7 @@ static int mp_spiflash_erase_block_internal(mp_spiflash_t *self, uint32_t addr) 
 
     // erase the sector
     uint8_t cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_SEC_ERASE_32 : CMD_SEC_ERASE;
-    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, 0, NULL, NULL);
+    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, 0, NULL, NULL, 0);
     if (ret != 0) {
         return ret;
     }
@@ -340,7 +349,7 @@ static int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, size_t len
 
     // write the page
     uint8_t cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_WRITE_32 : CMD_WRITE;
-    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, src, NULL);
+    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, src, NULL, 0);
     if (ret != 0) {
         return ret;
     }
@@ -484,7 +493,7 @@ static int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
 
     // Restriction for now, so we don't need to erase multiple pages
     if (offset + len > SECTOR_SIZE) {
-        mp_printf(MICROPY_ERROR_PRINTER, "mp_spiflash_cached_write_part: len is too large\n");
+        diag_printf("mp_spiflash_cached_write_part: len is too large\n");
         return -MP_EIO;
     }
 
