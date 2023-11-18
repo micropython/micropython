@@ -45,4 +45,4 @@ const mp_obj_module_t videocore_module = {
     .globals = (mp_obj_dict_t *)&videocore_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_videocore, videocore_module, CIRCUITPY_VIDEOCORE);
+MP_REGISTER_MODULE(MP_QSTR_videocore, videocore_module);

@@ -34,7 +34,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Mixer:
 //|     """Mixes one or more audio samples together into one sample."""
@@ -101,14 +100,14 @@ STATIC mp_obj_t audiomixer_mixer_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_int_t sample_rate = mp_arg_validate_int_min(args[ARG_sample_rate].u_int, 1, MP_QSTR_sample_rate);
     mp_int_t bits_per_sample = args[ARG_bits_per_sample].u_int;
     if (bits_per_sample != 8 && bits_per_sample != 16) {
-        mp_raise_ValueError(translate("bits_per_sample must be 8 or 16"));
+        mp_raise_ValueError(MP_ERROR_TEXT("bits_per_sample must be 8 or 16"));
     }
-    audiomixer_mixer_obj_t *self = m_new_obj_var(audiomixer_mixer_obj_t, mp_obj_t, voice_count);
-    self->base.type = &audiomixer_mixer_type;
+    audiomixer_mixer_obj_t *self =
+        mp_obj_malloc_var(audiomixer_mixer_obj_t, mp_obj_t, voice_count, &audiomixer_mixer_type);
     common_hal_audiomixer_mixer_construct(self, voice_count, args[ARG_buffer_size].u_int, bits_per_sample, args[ARG_samples_signed].u_bool, channel_count, sample_rate);
 
     for (int v = 0; v < voice_count; v++) {
-        self->voice[v] = audiomixer_mixervoice_type.make_new(&audiomixer_mixervoice_type, 0, 0, NULL);
+        self->voice[v] = MP_OBJ_TYPE_GET_SLOT(&audiomixer_mixervoice_type, make_new)(&audiomixer_mixervoice_type, 0, 0, NULL);
         common_hal_audiomixer_mixervoice_set_parent(self->voice[v], self);
     }
     self->voice_tuple = mp_obj_new_tuple(self->voice_count, self->voice);
@@ -202,7 +201,7 @@ MP_PROPERTY_GETTER(audiomixer_mixer_voice_obj,
 STATIC mp_obj_t audiomixer_mixer_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_voice, ARG_loop };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
         { MP_QSTR_voice,     MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 0} },
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
@@ -273,13 +272,11 @@ STATIC const audiosample_p_t audiomixer_mixer_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)audiomixer_mixer_get_buffer_structure,
 };
 
-const mp_obj_type_t audiomixer_mixer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Mixer,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audiomixer_mixer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiomixer_mixer_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audiomixer_mixer_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiomixer_mixer_type,
+    MP_QSTR_Mixer,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audiomixer_mixer_make_new,
+    locals_dict, &audiomixer_mixer_locals_dict,
+    protocol, &audiomixer_mixer_proto
+    );

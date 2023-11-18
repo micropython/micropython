@@ -118,8 +118,9 @@ STATIC const mp_rom_map_elem_t supervisor_status_bar_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_status_bar_locals_dict, supervisor_status_bar_locals_dict_table);
 
-const mp_obj_type_t supervisor_status_bar_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Status_Bar,
-    .locals_dict = (mp_obj_dict_t *)&supervisor_status_bar_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    supervisor_status_bar_type,
+    MP_QSTR_Status_Bar,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &supervisor_status_bar_locals_dict
+    );

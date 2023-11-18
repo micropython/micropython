@@ -27,6 +27,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/supervisor/__init__.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
@@ -85,9 +86,30 @@ MP_WEAK void post_usb_init(void) {
 }
 
 void usb_init(void) {
-    init_usb_hardware();
 
-    tusb_init();
+    usb_identification_t defaults;
+    usb_identification_t *identification;
+    if (custom_usb_identification != NULL) {
+        identification = custom_usb_identification;
+    } else {
+        // This compiles to less code than using a struct initializer.
+        defaults.vid = USB_VID;
+        defaults.pid = USB_PID;
+        strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
+        strcpy(defaults.product_name, USB_PRODUCT);
+        identification = &defaults;
+        // This memory only needs to be live through the end of usb_build_descriptors.
+    }
+    if (!usb_build_descriptors(identification)) {
+        return;
+    }
+    init_usb_hardware();
+    #if CIRCUITPY_USB_HID
+    usb_hid_build_report_descriptor();
+    #endif
+
+    // Only init device. Host gets inited by the `usb_host` module common-hal.
+    tud_init(TUD_OPT_RHPORT);
 
     post_usb_init();
 
@@ -122,66 +144,6 @@ void usb_set_defaults(void) {
     #endif
 };
 
-#if CIRCUITPY_USB_IDENTIFICATION
-supervisor_allocation *usb_identification_allocation = NULL;
-#endif
-
-// Some dynamic USB data must be saved after boot.py. How much is needed?
-size_t usb_boot_py_data_size(void) {
-    size_t size = sizeof(usb_identification_t);
-
-    #if CIRCUITPY_USB_HID
-    size += usb_hid_report_descriptor_length();
-    #endif
-
-    return size;
-}
-
-// Fill in the data to save.
-void usb_get_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
-    #if CIRCUITPY_USB_IDENTIFICATION
-    if (usb_identification_allocation) {
-        memcpy(temp_storage, usb_identification_allocation->ptr, sizeof(usb_identification_t));
-        free_memory(usb_identification_allocation);
-    }
-    #else
-    if (false) {
-    }
-    #endif
-    else {
-        usb_identification_t defaults;
-        // This compiles to less code than using a struct initializer.
-        defaults.vid = USB_VID;
-        defaults.pid = USB_PID;
-        strcpy(defaults.manufacturer_name, USB_MANUFACTURER);
-        strcpy(defaults.product_name, USB_PRODUCT);
-        memcpy(temp_storage, &defaults, sizeof(defaults));
-    }
-
-    temp_storage += sizeof(usb_identification_t);
-    temp_storage_size -= sizeof(usb_identification_t);
-
-    #if CIRCUITPY_USB_HID
-    usb_hid_build_report_descriptor(temp_storage, temp_storage_size);
-    #endif
-}
-
-// After VM is gone, save data into non-heap storage (storage_allocations).
-void usb_return_boot_py_data(uint8_t *temp_storage, size_t temp_storage_size) {
-    usb_identification_t identification;
-    memcpy(&identification, temp_storage, sizeof(usb_identification_t));
-
-    temp_storage += sizeof(usb_identification_t);
-    temp_storage_size -= sizeof(usb_identification_t);
-
-    #if CIRCUITPY_USB_HID
-    usb_hid_save_report_descriptor(temp_storage, temp_storage_size);
-    #endif
-
-    // Now we can also build the rest of the descriptors and place them in storage_allocations.
-    usb_build_descriptors(&identification);
-}
-
 // Call this when ready to run code.py or a REPL, and a VM has been started.
 void usb_setup_with_vm(void) {
     #if CIRCUITPY_USB_HID
@@ -199,7 +161,7 @@ void usb_disconnect(void) {
 
 void usb_background(void) {
     if (usb_enabled()) {
-        #if CFG_TUSB_OS == OPT_OS_NONE
+        #if CFG_TUSB_OS == OPT_OS_NONE || CFG_TUSB_OS == OPT_OS_PICO
         tud_task();
         #if CIRCUITPY_USB_HOST
         tuh_task();

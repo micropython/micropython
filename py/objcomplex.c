@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,12 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_BUILTINS_COMPLEX
 
 #include <math.h>
 #include "py/formatfloat.h"
 
+// CIRCUITPY-CHANGE: compilation warning removal
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wfloat-equal"
 
@@ -88,13 +87,14 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
                 // a string, parse it
                 size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_decimal(s, l, true, true, NULL);
+                return mp_parse_num_complex(s, l, NULL);
             } else if (mp_obj_is_type(args[0], &mp_type_complex)) {
                 // a complex, just return it
                 return args[0];
             } else {
-                // something else, try to cast it to a complex
-                return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
+                mp_float_t real, imag;
+                mp_obj_get_complex(args[0], &real, &imag);
+                return mp_obj_new_complex(real, imag);
             }
 
         case 2:
@@ -155,22 +155,17 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_complex = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_complex,
-    .print = complex_print,
-    .make_new = complex_make_new,
-    .attr = complex_attr,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = complex_unary_op,
-        .binary_op = complex_binary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_complex, MP_QSTR_complex, MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    make_new, complex_make_new,
+    print, complex_print,
+    unary_op, complex_unary_op,
+    binary_op, complex_binary_op,
+    attr, complex_attr
+    );
 
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
-    mp_obj_complex_t *o = m_new_obj(mp_obj_complex_t);
-    o->base.type = &mp_type_complex;
+    mp_obj_complex_t *o = mp_obj_malloc(mp_obj_complex_t, &mp_type_complex);
     o->real = real;
     o->imag = imag;
     return MP_OBJ_FROM_PTR(o);
@@ -211,13 +206,13 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
         }
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
-            mp_raise_TypeError(MP_ERROR_TEXT("can't do truncated division of a complex number"));
+            mp_raise_TypeError(MP_ERROR_TEXT("can't truncate-divide a complex number"));
 
         case MP_BINARY_OP_TRUE_DIVIDE:
         case MP_BINARY_OP_INPLACE_TRUE_DIVIDE:
             if (rhs_imag == 0) {
                 if (rhs_real == 0) {
-                    mp_raise_ZeroDivisionError();
+                    mp_raise_msg(&mp_type_ZeroDivisionError, MP_ERROR_TEXT("complex divide by zero"));
                 }
                 lhs_real /= rhs_real;
                 lhs_imag /= rhs_real;
@@ -267,7 +262,5 @@ mp_obj_t mp_obj_complex_binary_op(mp_binary_op_t op, mp_float_t lhs_real, mp_flo
     }
     return mp_obj_new_complex(lhs_real, lhs_imag);
 }
-
-#pragma GCC diagnostic pop
 
 #endif

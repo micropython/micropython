@@ -93,4 +93,4 @@ const mp_obj_module_t atexit_module = {
     .globals = (mp_obj_dict_t *)&atexit_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_atexit, atexit_module, CIRCUITPY_ATEXIT);
+MP_REGISTER_MODULE(MP_QSTR_atexit, atexit_module);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  * Copyright (c) 2015 Daniel Campora
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +31,6 @@
 
 #include "py/runtime.h"
 #include "shared/netutils/netutils.h"
-#include "supervisor/shared/translate/translate.h"
 
 // Takes an array with a raw IPv4 address and returns something like '192.168.0.1'.
 mp_obj_t netutils_format_ipv4_addr(uint8_t *ip, netutils_endian_t endian) {

@@ -8,7 +8,7 @@
 
 #define MICROPY_HW_NEOPIXEL (&pin_PA30)
 
-// Clock rates are off: Salae reads 12MHz which is the limit even though we set it to the safer 8MHz.
+// Clock rates are off: Saleae reads 12MHz which is the limit even though we set it to the safer 8MHz.
 #define SPI_FLASH_BAUDRATE  (8000000)
 
 #define SPI_FLASH_MOSI_PIN          &pin_PB22

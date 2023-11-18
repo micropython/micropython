@@ -1,7 +1,28 @@
-// Copyright (c) 2014-2018 Paul Sokolovsky
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2014-2018 Paul Sokolovsky
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <assert.h>
 #include <string.h>
@@ -10,8 +31,6 @@
 #include "py/runtime.h"
 #include "py/objtuple.h"
 #include "py/binary.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_UCTYPES
 
@@ -76,8 +95,7 @@ STATIC NORETURN void syntax_error(void) {
 
 STATIC mp_obj_t uctypes_struct_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
-    mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-    o->base.type = type;
+    mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, type);
     o->addr = (void *)(uintptr_t)mp_obj_int_get_truncated(args[0]);
     o->desc = args[1];
     o->flags = LAYOUT_NATIVE;
@@ -172,7 +190,7 @@ STATIC mp_uint_t uctypes_struct_size(mp_obj_t desc_in, int layout_type, mp_uint_
             // but scalar structure field is lowered into native Python int, so all
             // type info is lost. So, we cannot say if it's scalar type description,
             // or such lowered scalar.
-            mp_raise_TypeError(MP_ERROR_TEXT("cannot unambiguously get sizeof scalar"));
+            mp_raise_TypeError(MP_ERROR_TEXT("can't unambiguously get sizeof scalar"));
         }
         syntax_error();
     }
@@ -444,8 +462,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
 
     switch (agg_type) {
         case STRUCT: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = sub->items[1];
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -460,8 +477,7 @@ STATIC mp_obj_t uctypes_struct_attr_op(mp_obj_t self_in, qstr attr, mp_obj_t set
             MP_FALLTHROUGH
         }
         case PTR: {
-            mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-            o->base.type = &uctypes_struct_type;
+            mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
             o->desc = MP_OBJ_FROM_PTR(sub);
             o->addr = self->addr + offset;
             o->flags = self->flags;
@@ -486,8 +502,8 @@ STATIC void uctypes_struct_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_obj_t value) {
-    mp_obj_uctypes_struct_t *self = mp_obj_cast_to_native_base(base_in, &uctypes_struct_type);
+STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t self_in, mp_obj_t index_in, mp_obj_t value) {
+    mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (value == MP_OBJ_NULL) {
         // delete
@@ -533,8 +549,7 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
             } else if (value == MP_OBJ_SENTINEL) {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[2], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[2];
                 o->addr = self->addr + size * index;
                 o->flags = self->flags;
@@ -544,15 +559,14 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
             }
 
         } else if (agg_type == PTR) {
-            byte *p = *(void **)(void *)self->addr;
+            byte *p = *(void **)self->addr;
             if (mp_obj_is_small_int(t->items[1])) {
                 uint val_type = GET_TYPE(MP_OBJ_SMALL_INT_VALUE(t->items[1]), VAL_TYPE_BITS);
                 return get_aligned(val_type, p, index);
             } else {
                 mp_uint_t dummy = 0;
                 mp_uint_t size = uctypes_struct_size(t->items[1], self->flags, &dummy);
-                mp_obj_uctypes_struct_t *o = m_new_obj(mp_obj_uctypes_struct_t);
-                o->base.type = &uctypes_struct_type;
+                mp_obj_uctypes_struct_t *o = mp_obj_malloc(mp_obj_uctypes_struct_t, &uctypes_struct_type);
                 o->desc = t->items[1];
                 o->addr = p + size * index;
                 o->flags = self->flags;
@@ -568,13 +582,13 @@ STATIC mp_obj_t uctypes_struct_subscr(mp_obj_t base_in, mp_obj_t index_in, mp_ob
 STATIC mp_obj_t uctypes_struct_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_uctypes_struct_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
-        case MP_UNARY_OP_INT:
+        case MP_UNARY_OP_INT_MAYBE:
             if (mp_obj_is_type(self->desc, &mp_type_tuple)) {
                 mp_obj_tuple_t *t = MP_OBJ_TO_PTR(self->desc);
                 mp_int_t offset = MP_OBJ_SMALL_INT_VALUE(t->items[0]);
                 uint agg_type = GET_TYPE(offset, AGG_TYPE_BITS);
                 if (agg_type == PTR) {
-                    byte *p = *(void **)(void *)self->addr;
+                    byte *p = *(void **)self->addr;
                     return mp_obj_new_int((mp_int_t)(uintptr_t)p);
                 }
             }
@@ -620,19 +634,17 @@ STATIC mp_obj_t uctypes_struct_bytes_at(mp_obj_t ptr, mp_obj_t size) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(uctypes_struct_bytes_at_obj, uctypes_struct_bytes_at);
 
-STATIC const mp_obj_type_t uctypes_struct_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_struct,
-    .print = uctypes_struct_print,
-    .make_new = uctypes_struct_make_new,
-    .attr = uctypes_struct_attr,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = uctypes_struct_subscr,
-        .unary_op = uctypes_struct_unary_op,
-        .buffer_p = { .get_buffer = uctypes_get_buffer },
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    uctypes_struct_type,
+    MP_QSTR_struct,
+    MP_TYPE_FLAG_NONE,
+    make_new, uctypes_struct_make_new,
+    print, uctypes_struct_print,
+    attr, uctypes_struct_attr,
+    subscr, uctypes_struct_subscr,
+    unary_op, uctypes_struct_unary_op,
+    buffer, uctypes_get_buffer
+    );
 
 STATIC const mp_rom_map_elem_t mp_module_uctypes_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uctypes) },
@@ -705,5 +717,9 @@ const mp_obj_module_t mp_module_uctypes = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_uctypes_globals,
 };
+
+// uctypes is not a Python standard library module (hence "uctypes"
+// not "ctypes") and therefore shouldn't be extensible.
+MP_REGISTER_MODULE(MP_QSTR_uctypes, mp_module_uctypes);
 
 #endif

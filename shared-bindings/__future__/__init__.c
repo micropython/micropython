@@ -38,7 +38,7 @@
 //| """
 //|
 //| annotations: Any
-//| """In CPython, ``from __future import annotations``
+//| """In CPython, ``from __future__ import annotations``
 //| indicates that evaluation of annotations is postponed, as described in PEP 563.
 //| CircuitPython (and MicroPython) ignore annotations entirely, whether or not this feature is imported.
 //| This is a limitation of CircuitPython and MicroPython for efficiency reasons.
@@ -57,4 +57,4 @@ const mp_obj_module_t future_module = {
     .globals = (mp_obj_dict_t *)&future_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR___future__, future_module, CIRCUITPY_FUTURE);
+MP_REGISTER_MODULE(MP_QSTR___future__, future_module);

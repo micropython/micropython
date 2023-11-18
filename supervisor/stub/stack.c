@@ -35,15 +35,3 @@ void assert_heap_ok(void) {
 
 void stack_init(void) {
 }
-
-void stack_resize(void) {
-}
-
-bool set_next_stack_size(uint32_t size) {
-    (void)size;
-    return true;
-}
-
-uint32_t get_current_stack_size(void) {
-    return 0;
-}

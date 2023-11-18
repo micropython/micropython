@@ -1,5 +1,3 @@
-PROG ?= micropython-coverage
-
 # Disable optimisations and enable assert() on coverage builds.
 DEBUG ?= 1
 
@@ -8,16 +6,12 @@ CFLAGS += \
 	-Wformat -Wmissing-declarations -Wmissing-prototypes \
 	-Wold-style-definition -Wpointer-arith -Wshadow -Wuninitialized -Wunused-parameter \
 	-DMICROPY_UNIX_COVERAGE \
-	-DMODULE_CEXAMPLE_ENABLED=1 -DMODULE_CPPEXAMPLE_ENABLED=1
+	-DMICROPY_CPYTHON_EXCEPTION_CHAIN=1
 
 LDFLAGS += -fprofile-arcs -ftest-coverage
 
 FROZEN_MANIFEST ?= $(VARIANT_DIR)/manifest.py
 USER_C_MODULES = $(TOP)/examples/usercmodule
-
-MICROPY_VFS_FAT = 1
-MICROPY_VFS_LFS1 = 1
-MICROPY_VFS_LFS2 = 1
 
 SRC_QRIO := $(patsubst ../../%,%,$(wildcard ../../shared-bindings/qrio/*.c ../../shared-module/qrio/*.c ../../lib/quirc/lib/*.c))
 SRC_C += $(SRC_QRIO)
@@ -28,6 +22,7 @@ $(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include sha
 SRC_BITMAP := \
 	shared/runtime/context_manager_helpers.c \
 	displayio_min.c \
+	shared-bindings/__future__/__init__.c \
 	shared-bindings/aesio/aes.c \
 	shared-bindings/aesio/__init__.c \
 	shared-bindings/audiocore/__init__.c \
@@ -38,6 +33,7 @@ SRC_BITMAP := \
 	shared-bindings/audiomixer/MixerVoice.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
+	shared-bindings/locale/__init__.c \
 	shared-bindings/rainbowio/__init__.c \
 	shared-bindings/struct/__init__.c \
 	shared-bindings/synthio/__init__.c \
@@ -85,7 +81,9 @@ CFLAGS += \
 	-DCIRCUITPY_AUDIOCORE_DEBUG=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
+	-DCIRCUITPY_FUTURE=1 \
 	-DCIRCUITPY_GIFIO=1 \
+	-DCIRCUITPY_LOCALE=1 \
 	-DCIRCUITPY_OS_GETENV=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \
 	-DCIRCUITPY_STRUCT=1 \
@@ -94,5 +92,7 @@ CFLAGS += \
 	-DCIRCUITPY_TRACEBACK=1 \
 	-DCIRCUITPY_ZLIB=1
 
-SRC_C += coverage.c
+# CIRCUITPY-CHANGE: test native base classes.
+SRC_C += coverage.c native_base_class.c
 SRC_CXX += coveragecpp.cpp
+CIRCUITPY_MESSAGE_COMPRESSION_LEVEL = 1

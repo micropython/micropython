@@ -1,6 +1,15 @@
-CONFIG_ESP32S2_SPIRAM_SUPPORT=n
-
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
 # LWIP
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="Maker_badge"
 # end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

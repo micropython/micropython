@@ -33,7 +33,7 @@ Functions and types
 
 .. class:: bytes()
 
-    |see_cpython| `bytes`.
+    |see_cpython| `python:bytes`.
 
 .. function:: callable()
 
@@ -68,7 +68,7 @@ Functions and types
 
 .. class:: frozenset()
 
-`frozenset()` is not enabled on non-Express CircuitPython boards.
+`frozenset()` is not enabled on the smallest CircuitPython boards for space reasons.
 
 .. function:: getattr()
 
@@ -88,12 +88,12 @@ Functions and types
 
    .. classmethod:: from_bytes(bytes, byteorder)
 
-      In CircuitPython, ``byteorder`` parameter must be positional (this is
+      In CircuitPython, the ``byteorder`` parameter must be positional (this is
       compatible with CPython).
 
    .. method:: to_bytes(size, byteorder)
 
-      In CircuitPython, ``byteorder`` parameter must be positional (this is
+      In CircuitPython, the ``byteorder`` parameter must be positional (this is
       compatible with CPython).
 
 .. function:: isinstance()
@@ -138,7 +138,7 @@ Functions and types
 
 .. function:: reversed()
 
-`reversed()` is not enabled on non-Express CircuitPython boards.
+`reversed()` is not enabled on the smallest CircuitPython boards for space reasons.
 
 .. function:: round()
 
@@ -224,9 +224,13 @@ Exceptions
 
 .. exception:: SystemExit
 
+    |see_cpython| `python:SystemExit`.
+
 .. exception:: TimeoutError
 
 .. exception:: TypeError
+
+    |see_cpython| `python:TypeError`.
 
 .. exception:: UnicodeError
 

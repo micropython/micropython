@@ -32,8 +32,7 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
-
-#include "supervisor/memory.h"
+#include "supervisor/port.h"
 
 #define SHARPMEM_BIT_WRITECMD_LSB (0x80)
 #define JDI_BIT_WRITECMD_LSB      (0x90)
@@ -86,9 +85,6 @@ void common_hal_sharpdisplay_framebuffer_reset(sharpdisplay_framebuffer_obj_t *s
 }
 
 void common_hal_sharpdisplay_framebuffer_reconstruct(sharpdisplay_framebuffer_obj_t *self) {
-    // Look up the allocation by the old pointer and get the new pointer from it.
-    supervisor_allocation *alloc = allocation_from_ptr(self->bufinfo.buf);
-    self->bufinfo.buf = alloc ? alloc->ptr : NULL;
 }
 
 void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_obj_t *self, mp_buffer_info_t *bufinfo) {
@@ -96,12 +92,11 @@ void common_hal_sharpdisplay_framebuffer_get_bufinfo(sharpdisplay_framebuffer_ob
         int row_stride = common_hal_sharpdisplay_framebuffer_get_row_stride(self);
         int height = common_hal_sharpdisplay_framebuffer_get_height(self);
         self->bufinfo.len = row_stride * height + 2;
-        supervisor_allocation *alloc = allocate_memory(align32_size(self->bufinfo.len), false, true);
-        if (alloc == NULL) {
+        self->bufinfo.buf = port_malloc(self->bufinfo.len, false);
+        if (self->bufinfo.buf == NULL) {
             m_malloc_fail(self->bufinfo.len);
         }
-        self->bufinfo.buf = alloc->ptr;
-        memset(alloc->ptr, 0, self->bufinfo.len);
+        memset(self->bufinfo.buf, 0, self->bufinfo.len);
 
         uint8_t *data = self->bufinfo.buf;
         if (self->jdi_display) {
@@ -136,7 +131,7 @@ void common_hal_sharpdisplay_framebuffer_deinit(sharpdisplay_framebuffer_obj_t *
 
     common_hal_reset_pin(self->chip_select.pin);
 
-    free_memory(allocation_from_ptr(self->bufinfo.buf));
+    port_free(self->bufinfo.buf);
 
     memset(self, 0, sizeof(*self));
 }

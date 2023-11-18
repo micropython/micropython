@@ -54,28 +54,18 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     self->framebuffer = framebuffer;
     self->framebuffer_protocol = mp_proto_get_or_throw(MP_QSTR_protocol_framebuffer, framebuffer);
 
-    uint16_t ram_width = 0x100;
-    uint16_t ram_height = 0x100;
     uint16_t depth = fb_getter_default(get_color_depth, 16);
     displayio_display_core_construct(
         &self->core,
-        NULL,
         self->framebuffer_protocol->get_width(self->framebuffer),
         self->framebuffer_protocol->get_height(self->framebuffer),
-        ram_width,
-        ram_height,
-        0,
-        0,
         0, // rotation
         depth,
         fb_getter_default(get_grayscale, (depth < 8)),
         fb_getter_default(get_pixels_in_byte_share_row, false),
         fb_getter_default(get_bytes_per_cell, 2),
         fb_getter_default(get_reverse_pixels_in_byte, false),
-        fb_getter_default(get_reverse_pixels_in_word, false),
-        // Region update related settings that aren't used by framebuffer display.
-        NO_COMMAND, NO_COMMAND, NO_COMMAND, NO_COMMAND,
-        false, false, false, false
+        fb_getter_default(get_reverse_pixels_in_word, false)
         );
 
     self->first_pixel_offset = fb_getter_default(get_first_pixel_offset, 0);
@@ -85,7 +75,7 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
     }
 
     self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
-    size_t framebuffer_size = self->first_pixel_offset + self->row_stride * self->core.height;
+    size_t framebuffer_size = self->first_pixel_offset + self->row_stride * (self->core.height - 1) + self->core.width * self->core.colorspace.depth / 8;
 
     mp_arg_validate_length_min(self->bufinfo.len, framebuffer_size, MP_QSTR_framebuffer);
 
@@ -100,15 +90,8 @@ void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebu
 
     // Set the group after initialization otherwise we may send pixels while we delay in
     // initialization.
-    common_hal_framebufferio_framebufferdisplay_show(self, &circuitpython_splash);
+    displayio_display_core_set_root_group(&self->core, &circuitpython_splash);
     common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, auto_refresh);
-}
-
-bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
-    if (root_group == NULL) {
-        root_group = &circuitpython_splash;
-    }
-    return displayio_display_core_set_root_group(&self->core, root_group);
 }
 
 uint16_t common_hal_framebufferio_framebufferdisplay_get_width(framebufferio_framebufferdisplay_obj_t *self) {
@@ -252,7 +235,9 @@ STATIC void _refresh_display(framebufferio_framebufferdisplay_obj_t *self) {
     displayio_display_core_start_refresh(&self->core);
     const displayio_area_t *current_area = _get_refresh_areas(self);
     if (current_area) {
-        uint8_t dirty_row_bitmask[(self->core.height + 7) / 8];
+        bool transposed = (self->core.rotation == 90 || self->core.rotation == 270);
+        int row_count = transposed ? self->core.width : self->core.height;
+        uint8_t dirty_row_bitmask[(row_count + 7) / 8];
         memset(dirty_row_bitmask, 0, sizeof(dirty_row_bitmask));
         self->framebuffer_protocol->get_bufinfo(self->framebuffer, &self->bufinfo);
         while (current_area != NULL) {
@@ -288,12 +273,12 @@ uint16_t common_hal_framebufferio_framebufferdisplay_get_rotation(framebufferio_
 
 
 bool common_hal_framebufferio_framebufferdisplay_refresh(framebufferio_framebufferdisplay_obj_t *self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame) {
-    if (!self->auto_refresh && !self->first_manual_refresh) {
+    if (!self->auto_refresh && !self->first_manual_refresh && (target_ms_per_frame != NO_FPS_LIMIT)) {
         uint64_t current_time = supervisor_ticks_ms64();
         uint32_t current_ms_since_real_refresh = current_time - self->core.last_refresh;
         // Test to see if the real frame time is below our minimum.
         if (current_ms_since_real_refresh > maximum_ms_per_real_frame) {
-            mp_raise_RuntimeError(translate("Below minimum frame rate"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Below minimum frame rate"));
         }
         uint32_t current_ms_since_last_call = current_time - self->last_refresh_call;
         self->last_refresh_call = current_time;
@@ -358,7 +343,7 @@ void framebufferio_framebufferdisplay_reset(framebufferio_framebufferdisplay_obj
     const mp_obj_type_t *fb_type = mp_obj_get_type(self->framebuffer);
     if (fb_type != NULL && fb_type != &mp_type_NoneType) {
         common_hal_framebufferio_framebufferdisplay_set_auto_refresh(self, true);
-        common_hal_framebufferio_framebufferdisplay_show(self, NULL);
+        displayio_display_core_set_root_group(&self->core, &circuitpython_splash);
         self->core.full_refresh = true;
     } else {
         release_framebufferdisplay(self);
@@ -375,7 +360,7 @@ mp_obj_t common_hal_framebufferio_framebufferdisplay_get_root_group(framebufferi
 mp_obj_t common_hal_framebufferio_framebufferdisplay_set_root_group(framebufferio_framebufferdisplay_obj_t *self, displayio_group_t *root_group) {
     bool ok = displayio_display_core_set_root_group(&self->core, root_group);
     if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Group already used"));
     }
     return mp_const_none;
 }

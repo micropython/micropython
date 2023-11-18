@@ -30,7 +30,6 @@
 #include <stdint.h>
 #include "py/obj.h"
 #include "peripherals/pins.h"
-#include "supervisor/memory.h"
 
 typedef struct MemsAudio_t MemsAudio;
 typedef struct MemsAudio_STM32L4SAIPDM_t MemsAudio_STM32L4SAIPDM;
@@ -43,7 +42,6 @@ typedef struct {
     uint8_t bit_depth;
     bool mono;
     uint8_t oversample;
-    supervisor_allocation *audio_allocation;
     MemsAudio *audio;
     MemsAudio_STM32L4SAIPDM *audio_impl;
     /**

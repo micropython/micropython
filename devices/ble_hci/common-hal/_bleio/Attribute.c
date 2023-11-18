@@ -45,5 +45,5 @@ bleio_uuid_obj_t *bleio_attribute_get_uuid(mp_obj_t *attribute) {
         bleio_service_obj_t *service = MP_OBJ_TO_PTR(attribute);
         return service->uuid;
     }
-    mp_raise_RuntimeError(translate("Invalid BLE attribute"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid BLE attribute"));
 }

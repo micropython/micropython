@@ -2,7 +2,6 @@
 
 #include "py/runtime.h"
 #include "py/mpstate.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "shared-bindings/countio/Edge.h"
 #include "shared-bindings/digitalio/Pull.h"
@@ -17,22 +16,22 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
 
     if (pwm_gpio_to_channel(pin->number) != PWM_CHAN_B) {
-        mp_raise_RuntimeError(translate("Pin must be on PWM Channel B"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Pin must be on PWM Channel B"));
     }
 
     if (edge == EDGE_RISE_AND_FALL) {
-        mp_raise_NotImplementedError(translate("RISE_AND_FALL not available on this chip"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("RISE_AND_FALL not available on this chip"));
     }
 
     self->pin = pin->number;
     self->slice_num = pwm_gpio_to_slice_num(self->pin);
 
     if (MP_STATE_PORT(counting)[self->slice_num] != NULL) {
-        mp_raise_RuntimeError(translate("PWM slice already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("PWM slice already in use"));
     }
 
     if (!pwmio_claim_slice_ab_channels(self->slice_num)) {
-        mp_raise_RuntimeError(translate("PWM slice channel A already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("PWM slice channel A already in use"));
     }
 
     pwm_clear_irq(self->slice_num);
@@ -112,3 +111,5 @@ void counter_interrupt_handler(void) {
         self->count += 65536;
     }
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t counting[enum_NUM_PWM_SLICES]);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include "py/builtin.h"
 #include "py/mpconfig.h"
 #include "py/objmodule.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_HELP
 
@@ -79,8 +77,6 @@ STATIC void mp_help_add_from_names(mp_obj_t list, const char *name) {
 }
 #endif
 
-// These externs were originally declared inside mp_help_print_modules(),
-// but they triggered -Wnested-externs, so they were moved outside.
 #if MICROPY_MODULE_FROZEN
 extern const char mp_frozen_names[];
 #endif
@@ -89,6 +85,7 @@ STATIC void mp_help_print_modules(void) {
     mp_obj_t list = mp_obj_new_list(0, NULL);
 
     mp_help_add_from_map(list, &mp_builtin_module_map);
+    mp_help_add_from_map(list, &mp_builtin_extensible_module_map);
 
     #if MICROPY_MODULE_FROZEN
     mp_help_add_from_names(list, mp_frozen_names);
@@ -125,7 +122,7 @@ STATIC void mp_help_print_modules(void) {
 
     #if MICROPY_ENABLE_EXTERNAL_IMPORT
     // let the user know there may be other modules available from the filesystem
-    serial_write_compressed(translate("Plus any modules on the filesystem\n"));
+    serial_write_compressed(MP_ERROR_TEXT("Plus any modules on the filesystem\n"));
     #endif
 }
 #endif
@@ -141,10 +138,10 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
 
     // try to print something sensible about the given object
-    mp_cprintf(MP_PYTHON_PRINTER, translate("object "));
+    mp_cprintf(MP_PYTHON_PRINTER, MP_ERROR_TEXT("object "));
     mp_obj_print(obj, PRINT_STR);
 
-    mp_cprintf(MP_PYTHON_PRINTER, translate(" is of type %q\n"), type->name);
+    mp_cprintf(MP_PYTHON_PRINTER, MP_ERROR_TEXT(" is of type %q\n"), type->name);
 
     mp_map_t *map = NULL;
     if (type == &mp_type_module) {
@@ -153,14 +150,15 @@ STATIC void mp_help_print_obj(const mp_obj_t obj) {
         if (type == &mp_type_type) {
             type = MP_OBJ_TO_PTR(obj);
         }
-        if (type->locals_dict != NULL) {
-            map = &type->locals_dict->map;
+        if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
+            map = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
         }
     }
     if (map != NULL) {
         for (uint i = 0; i < map->alloc; i++) {
-            if (map->table[i].key != MP_OBJ_NULL) {
-                mp_help_print_info_about_object(map->table[i].key, map->table[i].value);
+            mp_obj_t key = map->table[i].key;
+            if (key != MP_OBJ_NULL) {
+                mp_help_print_info_about_object(key, map->table[i].value);
             }
         }
     }
@@ -170,7 +168,7 @@ STATIC mp_obj_t mp_builtin_help(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // print a general help message. Translate only works on single strings on one line.
         mp_cprintf(MP_PYTHON_PRINTER,
-            translate("Welcome to Adafruit CircuitPython %s!\n\nVisit circuitpython.org for more information.\n\nTo list built-in modules type `help(\"modules\")`.\n"),
+            MP_ERROR_TEXT("Welcome to Adafruit CircuitPython %s!\n\nVisit circuitpython.org for more information.\n\nTo list built-in modules type `help(\"modules\")`.\n"),
             MICROPY_GIT_TAG);
     } else {
         // try to print something sensible about the given object

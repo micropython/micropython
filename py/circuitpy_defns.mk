@@ -70,7 +70,7 @@ endif
 CIRCUITPY_LTO ?= 0
 CIRCUITPY_LTO_PARTITION ?= balanced
 ifeq ($(CIRCUITPY_LTO),1)
-CFLAGS += -flto -flto-partition=$(CIRCUITPY_LTO_PARTITION) -DCIRCUITPY_LTO=1
+CFLAGS += -flto=jobserver -flto-partition=$(CIRCUITPY_LTO_PARTITION) -DCIRCUITPY_LTO=1
 else
 CFLAGS += -DCIRCUITPY_LTO=0
 endif
@@ -83,12 +83,6 @@ CFLAGS += -DCIRCUITPY_TRANSLATE_OBJECT=$(CIRCUITPY_TRANSLATE_OBJECT)
 
 ###
 # Handle frozen modules.
-
-ifneq ($(FROZEN_DIR),)
-# To use frozen source modules, put your .py files in a subdirectory (eg scripts/)
-# and then invoke make with FROZEN_DIR=scripts (be sure to build from scratch).
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
 
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen or FROZEN_MPY_DIRS="dir1 dir2"
@@ -158,6 +152,9 @@ endif
 ifeq ($(CIRCUITPY_BUSDEVICE),1)
 SRC_PATTERNS += adafruit_bus_device/%
 endif
+ifeq ($(CIRCUITPY_BUSDISPLAY),1)
+SRC_PATTERNS += busdisplay/%
+endif
 ifeq ($(CIRCUITPY_BUSIO),1)
 SRC_PATTERNS += busio/%
 endif
@@ -182,6 +179,9 @@ endif
 ifeq ($(CIRCUITPY__EVE),1)
 SRC_PATTERNS += _eve/%
 endif
+ifeq ($(CIRCUITPY_EPAPERDISPLAY),1)
+SRC_PATTERNS += epaperdisplay/%
+endif
 ifeq ($(CIRCUITPY_ESPCAMERA),1)
 SRC_PATTERNS += espcamera/%
 endif
@@ -196,6 +196,9 @@ SRC_PATTERNS += espulp/%
 endif
 ifeq ($(CIRCUITPY_FLOPPYIO),1)
 SRC_PATTERNS += floppyio/%
+endif
+ifeq ($(CIRCUITPY_FOURWIRE),1)
+SRC_PATTERNS += fourwire/%
 endif
 ifeq ($(CIRCUITPY_FRAMEBUFFERIO),1)
 SRC_PATTERNS += framebufferio/%
@@ -218,6 +221,9 @@ endif
 ifeq ($(CIRCUITPY_HASHLIB),1)
 SRC_PATTERNS += hashlib/%
 endif
+ifeq ($(CIRCUITPY_I2CDISPLAYBUS),1)
+SRC_PATTERNS += i2cdisplaybus/%
+endif
 ifeq ($(CIRCUITPY_I2CTARGET),1)
 SRC_PATTERNS += i2ctarget/%
 endif
@@ -232,6 +238,9 @@ SRC_PATTERNS += is31fl3741/%
 endif
 ifeq ($(CIRCUITPY_KEYPAD),1)
 SRC_PATTERNS += keypad/%
+endif
+ifeq ($(CIRCUITPY_LOCALE),1)
+SRC_PATTERNS += locale/%
 endif
 ifeq ($(CIRCUITPY_MATH),1)
 SRC_PATTERNS += math/%
@@ -266,8 +275,8 @@ endif
 ifeq ($(CIRCUITPY_DUALBANK),1)
 SRC_PATTERNS += dualbank/%
 endif
-ifeq ($(CIRCUITPY_PARALLELDISPLAY),1)
-SRC_PATTERNS += paralleldisplay/%
+ifeq ($(CIRCUITPY_PARALLELDISPLAYBUS),1)
+SRC_PATTERNS += paralleldisplaybus/%
 endif
 ifeq ($(CIRCUITPY_PEW),1)
 SRC_PATTERNS += _pew/%
@@ -301,6 +310,9 @@ SRC_PATTERNS += random/%
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_PATTERNS += rgbmatrix/%
+endif
+ifeq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),1)
+SRC_PATTERNS += dotclockframebuffer/%
 endif
 ifeq ($(CIRCUITPY_RP2PIO),1)
 SRC_PATTERNS += rp2pio/%
@@ -386,6 +398,9 @@ endif
 ifeq ($(CIRCUITPY_VIDEOCORE),1)
 SRC_PATTERNS += videocore/%
 endif
+ifeq ($(CIRCUITPY_WARNINGS),1)
+SRC_PATTERNS += warnings/%
+endif
 ifeq ($(CIRCUITPY_WATCHDOG),1)
 SRC_PATTERNS += watchdog/%
 endif
@@ -441,6 +456,8 @@ SRC_COMMON_HAL_ALL = \
 	countio/__init__.c \
 	digitalio/DigitalInOut.c \
 	digitalio/__init__.c \
+	dotclockframebuffer/DotClockFramebuffer.c \
+	dotclockframebuffer/__init__.c \
 	dualbank/__init__.c \
 	frequencyio/FrequencyIn.c \
 	frequencyio/__init__.c \
@@ -466,7 +483,7 @@ SRC_COMMON_HAL_ALL = \
 	nvm/ByteArray.c \
 	nvm/__init__.c \
 	os/__init__.c \
-	paralleldisplay/ParallelBus.c \
+	paralleldisplaybus/ParallelBus.c \
 	ps2io/Ps2.c \
 	ps2io/__init__.c \
 	pulseio/PulseIn.c \
@@ -530,13 +547,13 @@ $(filter $(SRC_PATTERNS), \
 	displayio/Colorspace.c \
 	fontio/Glyph.c \
 	imagecapture/ParallelImageCapture.c \
+	locale/__init__.c \
 	math/__init__.c \
 	microcontroller/ResetReason.c \
 	microcontroller/RunMode.c \
 	msgpack/__init__.c \
 	msgpack/ExtType.c \
-	paralleldisplay/__init__.c \
-	paralleldisplay/ParallelBus.c \
+	paralleldisplaybus/__init__.c \
 	qrio/PixelPolicy.c \
 	qrio/QRInfo.c \
 	supervisor/RunReason.c \
@@ -588,31 +605,35 @@ SRC_SHARED_MODULE_ALL = \
 	adafruit_bus_device/__init__.c \
 	adafruit_bus_device/i2c_device/I2CDevice.c \
 	adafruit_bus_device/spi_device/SPIDevice.c \
+	busdisplay/__init__.c \
+	busdisplay/BusDisplay.c \
 	canio/Match.c \
 	canio/Message.c \
 	canio/RemoteTransmissionRequest.c \
 	displayio/Bitmap.c \
 	displayio/ColorConverter.c \
-	displayio/Display.c \
-	displayio/EPaperDisplay.c \
-	displayio/FourWire.c \
 	displayio/Group.c \
-	displayio/I2CDisplay.c \
 	displayio/OnDiskBitmap.c \
 	displayio/Palette.c \
-	displayio/Shape.c \
 	displayio/TileGrid.c \
 	displayio/area.c \
 	displayio/__init__.c \
+	dotclockframebuffer/__init__.c \
+	epaperdisplay/__init__.c \
+	epaperdisplay/EPaperDisplay.c \
 	floppyio/__init__.c \
 	fontio/BuiltinFont.c \
 	fontio/__init__.c \
+	fourwire/__init__.c \
+	fourwire/FourWire.c \
 	framebufferio/FramebufferDisplay.c \
 	framebufferio/__init__.c \
 	getpass/__init__.c \
 	gifio/__init__.c \
 	gifio/GifWriter.c \
 	gifio/OnDiskGif.c \
+	i2cdisplaybus/__init__.c \
+	i2cdisplaybus/I2CDisplayBus.c \
 	imagecapture/ParallelImageCapture.c \
 	ipaddress/IPv4Address.c \
 	ipaddress/__init__.c \
@@ -633,7 +654,7 @@ SRC_SHARED_MODULE_ALL = \
 	onewireio/__init__.c \
 	onewireio/OneWire.c \
 	os/__init__.c \
-	paralleldisplay/ParallelBus.c \
+	paralleldisplaybus/ParallelBus.c \
 	qrio/__init__.c \
 	qrio/QRDecoder.c \
 	rainbowio/__init__.c \
@@ -666,12 +687,14 @@ SRC_SHARED_MODULE_ALL = \
 	usb/core/__init__.c \
 	usb/core/Device.c \
 	ustack/__init__.c \
-	zlib/__init__.c \
 	vectorio/Circle.c \
 	vectorio/Polygon.c \
 	vectorio/Rectangle.c \
 	vectorio/VectorShape.c \
 	vectorio/__init__.c \
+	warnings/__init__.c \
+	watchdog/__init__.c \
+	zlib/__init__.c \
 
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE = $(filter $(SRC_PATTERNS), $(SRC_SHARED_MODULE_ALL))
@@ -714,7 +737,7 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 	subband.c \
 	trigtabs.c \
 )
-$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x,0)' -D'MPDEC_FREE(x)=m_free(x)'
+$(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
 SRC_MOD += $(addprefix lib/protomatter/src/, \
@@ -744,6 +767,7 @@ endif
 # All possible sources are listed here, and are filtered by SRC_PATTERNS.
 SRC_SHARED_MODULE_INTERNAL = \
 $(filter $(SRC_PATTERNS), \
+	displayio/bus_core.c \
 	displayio/display_core.c \
 	os/getenv.c \
 	usb/utf16le.c \
@@ -759,6 +783,7 @@ SRC_LIBM = \
 $(addprefix lib/,\
 	libm/math.c \
 	libm/roundf.c \
+	libm/fabsf.c \
 	libm/fmodf.c \
 	libm/nearbyintf.c \
 	libm/ef_sqrt.c \
@@ -793,6 +818,7 @@ endif
 $(patsubst %.c,$(BUILD)/%.o,$(SRC_LIBM)): CFLAGS += -Wno-missing-prototypes
 endif
 
+# Sources used in all ports except unix.
 SRC_CIRCUITPY_COMMON = \
 	shared/libc/string0.c \
 	shared/readline/readline.c \
@@ -834,7 +860,12 @@ $(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized
 # Fetch only submodules needed for this particular port.
 .PHONY: fetch-port-submodules
 fetch-port-submodules:
-	$(TOP)/tools/fetch-submodules.sh data extmod frozen lib tools ports/$(shell basename $(CURDIR))
+	$(PYTHON) $(TOP)/tools/ci_fetch_deps.py $(shell basename $(CURDIR))
+
+# Fetch only submodules needed for this particular board.
+.PHONY: fetch-board-submodules
+fetch-board-submodules:
+	$(PYTHON) $(TOP)/tools/ci_fetch_deps.py $(BOARD)
 
 .PHONY: invalid-board
 invalid-board:
@@ -842,3 +873,8 @@ invalid-board:
 	echo "Valid boards:" && \
 	printf '%s\n' $(ALL_BOARDS_IN_PORT) | column -xc $$(tput cols || echo 80) 1>&2 && \
 	false
+
+# Print out the value of a make variable.
+# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
+print-%:
+	@echo "$* = "$($*)

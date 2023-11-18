@@ -51,10 +51,10 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     self->data_pin_number = data_pin->number;
 
     if (sample_rate != 16000) {
-        mp_raise_ValueError(translate("only sample_rate=16000 is supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("only sample_rate=16000 is supported"));
     }
     if (bit_depth != 16) {
-        mp_raise_ValueError(translate("only bit_depth=16 is supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("only bit_depth=16 is supported"));
     }
     nrf_pdm->PSEL.CLK = self->clock_pin_number;
     nrf_pdm->PSEL.DIN = self->data_pin_number;

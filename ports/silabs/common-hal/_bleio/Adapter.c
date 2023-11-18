@@ -93,7 +93,7 @@ void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self,
 
     sc = sl_bt_system_get_identity_address(&get_address, &address_type);
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Get address fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Get address fail."));
     }
     snprintf((char *)device_name, DEVICE_NAME_LEN + 1,
         "CIRCUITPY-%X%X", get_address.addr[1], get_address.addr[0]);
@@ -127,8 +127,7 @@ bleio_address_obj_t *common_hal_bleio_adapter_get_address(bleio_adapter_obj_t *s
         return NULL;
     }
 
-    address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
+    address = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
     common_hal_bleio_address_construct(address, get_address.addr,
         BLEIO_ADDRESS_TYPE_RANDOM_STATIC);
     return address;
@@ -203,7 +202,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self,
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
             mp_raise_bleio_BluetoothError(
-                translate("Scan already in progress. Stop with stop_scan."));
+                MP_ERROR_TEXT("Scan already in progress. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }
@@ -296,7 +295,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(
     sc = sl_bt_advertiser_create_set(&self->advertising_handle);
 
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Create_set fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Create_set fail."));
         return sc;
     }
     sc = sl_bt_advertiser_set_channel_map(self->advertising_handle, 7);
@@ -307,7 +306,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(
     sc = sl_bt_system_get_identity_address(&address, &address_type);
 
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Get address fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Get address fail."));
         return sc;
     }
     // Pad and reverse unique ID to get System ID.
@@ -344,7 +343,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(
         0);            // max. num. adv. events
 
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Set_timing fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Set_timing fail."));
         return sc;
     }
 
@@ -355,7 +354,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(
         advertising_data);
 
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Set data fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Set data fail."));
         return sc;
     }
 
@@ -368,7 +367,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(
         enable_connect);
 
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Start advertise fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Start advertise fail."));
     } else {
         self->user_advertising = true;
     }
@@ -381,7 +380,7 @@ STATIC void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > BLE_EXT_ADV_MAX_SIZE ||
         (connectable && data_len > BLE_EXT_ADV_MAX_SIZE)) {
         mp_raise_ValueError(
-            translate("Data too large for advertisement packet"));
+            MP_ERROR_TEXT("Data too large for advertisement packet"));
     }
 }
 
@@ -407,12 +406,12 @@ void common_hal_bleio_adapter_start_advertising(
 
     if (advertising_data_bufinfo->len > 31 && scan_response_data_bufinfo->len > 0) {
         mp_raise_bleio_BluetoothError(
-            translate("Extended advertisements not supported"));
+            MP_ERROR_TEXT("Extended advertisements not supported"));
     }
 
     if (advertising_data_bufinfo->len > 0 && directed_to != NULL) {
         mp_raise_bleio_BluetoothError(
-            translate("Data not supported with directed advertising"));
+            MP_ERROR_TEXT("Data not supported with directed advertising"));
     }
 
     if (anonymous) {
@@ -423,7 +422,7 @@ void common_hal_bleio_adapter_start_advertising(
         timeout = INT32_MAX;
     } else if (timeout > INT32_MAX) {
         mp_raise_bleio_BluetoothError(
-            translate("Maximum timeout length is %d seconds"), INT32_MAX / 1000);
+            MP_ERROR_TEXT("Maximum timeout length is %d seconds"), INT32_MAX / 1000);
     }
 
     _common_hal_bleio_adapter_start_advertising(self, connectable, anonymous,
@@ -526,7 +525,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self,
     }
 
     mp_raise_bleio_BluetoothError(
-        translate("Failed to connect: internal error"));
+        MP_ERROR_TEXT("Failed to connect: internal error"));
     return mp_const_none;
 }
 
@@ -588,7 +587,7 @@ void common_hal_bleio_adapter_erase_bonding(bleio_adapter_obj_t *self) {
     sl_status_t sc;
     sc = sl_bt_sm_delete_bondings();
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("All bonding deleted fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("All bonding deleted fail."));
     }
 }
 

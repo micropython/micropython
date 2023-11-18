@@ -64,9 +64,10 @@ STATIC void digitalio_drive_mode_print(const mp_print_t *print, mp_obj_t self_in
     mp_printf(print, "%q.%q.%q", MP_QSTR_digitalio, MP_QSTR_DriveMode, drive_mode);
 }
 
-const mp_obj_type_t digitalio_drive_mode_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DriveMode,
-    .print = digitalio_drive_mode_print,
-    .locals_dict = (mp_obj_dict_t *)&digitalio_drive_mode_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    digitalio_drive_mode_type,
+    MP_QSTR_DriveMode,
+    MP_TYPE_FLAG_NONE,
+    print, digitalio_drive_mode_print,
+    locals_dict, &digitalio_drive_mode_locals_dict
+    );

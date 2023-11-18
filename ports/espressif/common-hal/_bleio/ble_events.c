@@ -49,7 +49,7 @@ void ble_event_remove_heap_handlers(void) {
     ble_event_handler_entry_t *it = MP_STATE_VM(ble_event_handler_entries);
     while (it != NULL) {
         // If the param is on the heap, then delete the handler.
-        if (HEAP_PTR(it->param)) {
+        if (gc_ptr_on_heap(it->param)) {
             ble_event_remove_handler(it->func, it->param);
         }
         it = it->next;
@@ -126,3 +126,5 @@ int ble_event_run_handlers(struct ble_gap_event *event) {
     #endif
     return 0;
 }
+
+MP_REGISTER_ROOT_POINTER(struct ble_event_handler_entry *ble_event_handler_entries);

@@ -7,18 +7,17 @@
 #include "eic_handler.h"
 #include "samd/external_interrupts.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
     if (!pin->has_extint) {
-        mp_raise_RuntimeError(translate("Pin must support hardware interrupts"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Pin must support hardware interrupts"));
     }
 
 
     if (eic_get_enable()) {
         if (!eic_channel_free(pin->extint_channel)) {
-            mp_raise_RuntimeError(translate("A hardware interrupt channel is already in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("A hardware interrupt channel is already in use"));
         }
     } else {
         turn_on_external_interrupt_controller();

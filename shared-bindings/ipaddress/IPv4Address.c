@@ -63,22 +63,21 @@ STATIC mp_obj_t ipaddress_ipv4address_make_new(const mp_obj_type_t *type, size_t
     } else if (mp_obj_is_str(address)) {
         GET_STR_DATA_LEN(address, str_data, str_len);
         if (!ipaddress_parse_ipv4address((const char *)str_data, str_len, &value)) {
-            mp_raise_ValueError(translate("Not a valid IP string"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Not a valid IP string"));
         }
         buf = (uint8_t *)&value;
     } else {
         mp_buffer_info_t buf_info;
         if (mp_get_buffer(address, &buf_info, MP_BUFFER_READ)) {
             if (buf_info.len != 4) {
-                mp_raise_ValueError_varg(translate("Address must be %d bytes long"), 4);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Address must be %d bytes long"), 4);
             }
             buf = buf_info.buf;
         }
     }
 
 
-    ipaddress_ipv4address_obj_t *self = m_new_obj(ipaddress_ipv4address_obj_t);
-    self->base.type = &ipaddress_ipv4address_type;
+    ipaddress_ipv4address_obj_t *self = mp_obj_malloc(ipaddress_ipv4address_obj_t, &ipaddress_ipv4address_type);
 
     common_hal_ipaddress_ipv4address_construct(self, buf, 4);
 
@@ -176,15 +175,13 @@ STATIC const mp_rom_map_elem_t ipaddress_ipv4address_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ipaddress_ipv4address_locals_dict, ipaddress_ipv4address_locals_dict_table);
 
-const mp_obj_type_t ipaddress_ipv4address_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Address,
-    .make_new = ipaddress_ipv4address_make_new,
-    .locals_dict = (mp_obj_dict_t *)&ipaddress_ipv4address_locals_dict,
-    .print = ipaddress_ipv4address_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = ipaddress_ipv4address_unary_op,
-        .binary_op = ipaddress_ipv4address_binary_op,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ipaddress_ipv4address_type,
+    MP_QSTR_Address,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, ipaddress_ipv4address_make_new,
+    locals_dict, &ipaddress_ipv4address_locals_dict,
+    print, ipaddress_ipv4address_print,
+    unary_op, ipaddress_ipv4address_unary_op,
+    binary_op, ipaddress_ipv4address_binary_op
+    );

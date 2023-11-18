@@ -24,19 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
-#define MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H
-
-#include "shared-bindings/displayio/Display.h"
-#include "shared-bindings/displayio/EPaperDisplay.h"
+#if CIRCUITPY_BUSDISPLAY
+#include "shared-bindings/busdisplay/BusDisplay.h"
+#endif
+#include "shared-bindings/displayio/Group.h"
+#if CIRCUITPY_EPAPERDISPLAY
+#include "shared-bindings/epaperdisplay/EPaperDisplay.h"
+#endif
 #if CIRCUITPY_FRAMEBUFFERIO
 #include "shared-bindings/framebufferio/FramebufferDisplay.h"
 #endif
-#include "shared-bindings/displayio/FourWire.h"
-#include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/displayio/I2CDisplay.h"
-#if CIRCUITPY_PARALLELDISPLAY
-#include "shared-bindings/paralleldisplay/ParallelBus.h"
+#if CIRCUITPY_FOURWIRE
+#include "shared-bindings/fourwire/FourWire.h"
+#endif
+#if CIRCUITPY_I2CDISPLAYBUS
+#include "shared-bindings/i2cdisplaybus/I2CDisplayBus.h"
+#endif
+#if CIRCUITPY_PARALLELDISPLAYBUS
+#include "shared-bindings/paralleldisplaybus/ParallelBus.h"
 #endif
 #if CIRCUITPY_RGBMATRIX
 #include "shared-bindings/rgbmatrix/RGBMatrix.h"
@@ -47,6 +52,9 @@
 #if CIRCUITPY_SHARPDISPLAY
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
+#if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+#include "common-hal/dotclockframebuffer/DotClockFramebuffer.h"
+#endif
 // Port unique frame buffers.
 #if CIRCUITPY_VIDEOCORE
 #include "bindings/videocore/Framebuffer.h"
@@ -55,19 +63,25 @@
 #include "bindings/picodvi/Framebuffer.h"
 #endif
 
+#pragma once
+
 typedef struct {
     union {
         mp_obj_base_t bus_base;
-        displayio_fourwire_obj_t fourwire_bus;
-        displayio_i2cdisplay_obj_t i2cdisplay_bus;
-        #if CIRCUITPY_PARALLELDISPLAY
-        paralleldisplay_parallelbus_obj_t parallel_bus;
+        #if CIRCUITPY_FOURWIRE
+        fourwire_fourwire_obj_t fourwire_bus;
+        #endif
+        #if CIRCUITPY_I2CDISPLAYBUS
+        i2cdisplaybus_i2cdisplaybus_obj_t i2cdisplay_bus;
+        #endif
+        #if CIRCUITPY_PARALLELDISPLAYBUS
+        paralleldisplaybus_parallelbus_obj_t parallel_bus;
         #endif
         #if CIRCUITPY_RGBMATRIX
         rgbmatrix_rgbmatrix_obj_t rgbmatrix;
         #endif
         #if CIRCUITPY_IS31FL3741
-        is31fl3741_FrameBuffer_obj_t is31fl3741;
+        is31fl3741_framebuffer_obj_t is31fl3741;
         #endif
         #if CIRCUITPY_SHARPDISPLAY
         sharpdisplay_framebuffer_obj_t sharpdisplay;
@@ -78,14 +92,21 @@ typedef struct {
         #if CIRCUITPY_PICODVI
         picodvi_framebuffer_obj_t picodvi;
         #endif
+        #if CIRCUITPY_DOTCLOCKFRAMEBUFFER
+        dotclockframebuffer_framebuffer_obj_t dotclock;
+        #endif
     };
 } primary_display_bus_t;
 
 typedef struct {
     union {
         mp_obj_base_t display_base;
-        displayio_display_obj_t display;
-        displayio_epaperdisplay_obj_t epaper_display;
+        #if CIRCUITPY_BUSDISPLAY
+        busdisplay_busdisplay_obj_t display;
+        #endif
+        #if CIRCUITPY_EPAPERDISPLAY
+        epaperdisplay_epaperdisplay_obj_t epaper_display;
+        #endif
         #if CIRCUITPY_FRAMEBUFFERIO
         framebufferio_framebufferdisplay_obj_t framebuffer_display;
         #endif
@@ -105,5 +126,3 @@ primary_display_t *allocate_display(void);
 primary_display_t *allocate_display_or_raise(void);
 primary_display_bus_t *allocate_display_bus(void);
 primary_display_bus_t *allocate_display_bus_or_raise(void);
-
-#endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO___INIT___H

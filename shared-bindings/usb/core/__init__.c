@@ -48,11 +48,16 @@
 //|     ...
 //|
 MP_DEFINE_USB_CORE_EXCEPTION(USBError, OSError)
-NORETURN void mp_raise_usb_core_USBError(const compressed_string_t *fmt, ...) {
-    va_list argptr;
-    va_start(argptr,fmt);
-    mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_usb_core_USBError, fmt, argptr);
-    va_end(argptr);
+NORETURN void mp_raise_usb_core_USBError(mp_rom_error_text_t fmt, ...) {
+    mp_obj_t exception;
+    if (fmt == NULL) {
+        exception = mp_obj_new_exception(&mp_type_usb_core_USBError);
+    } else {
+        va_list argptr;
+        va_start(argptr, fmt);
+        exception = mp_obj_new_exception_msg_vlist(&mp_type_usb_core_USBError, fmt, argptr);
+        va_end(argptr);
+    }
     nlr_raise(exception);
 }
 
@@ -100,8 +105,7 @@ STATIC mp_obj_t _next_device(usb_core_devices_obj_t *iter) {
 
         // We passed the filters. Now make a properly allocated object to
         // return to the user.
-        usb_core_device_obj_t *self = m_new_obj(usb_core_device_obj_t);
-        self->base.type = &usb_core_device_type;
+        usb_core_device_obj_t *self = mp_obj_malloc(usb_core_device_obj_t, &usb_core_device_type);
 
         common_hal_usb_core_device_construct(self, i);
         iter->next_index = i + 1;
@@ -122,15 +126,12 @@ STATIC mp_obj_t usb_core_devices_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-const mp_obj_type_t usb_core_devices_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_USBDevices,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = usb_core_devices_iternext,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_core_devices_type,
+    MP_QSTR_USBDevices,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, usb_core_devices_iternext
+    );
 
 STATIC mp_obj_t usb_core_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_find_all, ARG_idVendor, ARG_idProduct };
@@ -195,4 +196,4 @@ const mp_obj_module_t usb_core_module = {
     .globals = (mp_obj_dict_t *)&usb_core_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usb_dot_core, usb_core_module, CIRCUITPY_USB_HOST);
+MP_REGISTER_MODULE(MP_QSTR_usb_dot_core, usb_core_module);

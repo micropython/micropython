@@ -57,4 +57,4 @@ const mp_obj_module_t ps2io_module = {
     .globals = (mp_obj_dict_t *)&ps2io_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ps2io, ps2io_module, CIRCUITPY_PS2IO);
+MP_REGISTER_MODULE(MP_QSTR_ps2io, ps2io_module);

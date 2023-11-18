@@ -47,7 +47,7 @@
 #if ENABLE_DEBUG_PRINTING
 #define DBGPrintf mp_printf
 #else
-#define DBGPrintf(p,...)
+#define DBGPrintf(p, ...)
 #endif
 
 
@@ -197,11 +197,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (uart_taken) {
-        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
     }
 
     if (is_onedirection && ((rts != NULL) || (cts != NULL))) {
-        mp_raise_ValueError(translate("Both RX and TX required for flow control"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Both RX and TX required for flow control"));
     }
 
     // Filter for sane settings for RS485
@@ -210,13 +210,13 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             rs485_dir->gpio, rs485_dir->number, rs485_dir->mux_idx, rs485_dir->mux_reg, rs485_dir->cfg_reg,
             rs485_dir->mux_reset, rs485_dir->pad_reset);
         if ((rts != NULL) || (cts != NULL)) {
-            mp_raise_ValueError(translate("Cannot specify RTS or CTS in RS485 mode"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Cannot specify RTS or CTS in RS485 mode"));
         }
         // For IMXRT the RTS pin is used for RS485 direction ???? - Can be will try
         // it if this is an rts pin.
     } else {
         if (rs485_invert) {
-            mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
+            mp_raise_ValueError(MP_ERROR_TEXT("RS485 inversion specified when not in RS485 mode"));
         }
     }
 
@@ -348,7 +348,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if (self->rx != NULL) {
         if (receiver_buffer == NULL) {
-            self->ringbuf = gc_alloc(receiver_buffer_size, false, true /*long-lived*/);
+            self->ringbuf = gc_alloc(receiver_buffer_size, false);
         } else {
             self->ringbuf = receiver_buffer;
         }
@@ -401,7 +401,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx == NULL) {
-        mp_raise_ValueError(translate("No RX pin"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_rx);
     }
 
     if (len == 0) {
@@ -458,7 +458,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx == NULL) {
-        mp_raise_ValueError(translate("No TX pin"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_tx);
     }
     if (self->rs485_dir && len) {
         GPIO_PinWrite(self->rs485_dir->gpio, self->rs485_dir->number, !self->rs485_invert);

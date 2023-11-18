@@ -34,7 +34,7 @@ rm -fr /workspaces/dosfstools-4.2 /workspaces/dosfstools-4.2.tar.gz
 # prepare source-code tree
 cd /workspaces/circuitpython/
 echo -e "[on-create.sh] fetching submodules"
-make fetch-submodules
+make fetch-all-submodules
 echo -e "[on-create.sh] fetching tags"
 git fetch --tags --recurse-submodules=no --shallow-since="2021-07-01" https://github.com/adafruit/circuitpython HEAD
 

@@ -67,8 +67,8 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     self->width = read_word(bmp_header, 9);
     self->height = read_word(bmp_header, 11);
 
-    displayio_colorconverter_t *colorconverter = m_new_obj(displayio_colorconverter_t);
-    colorconverter->base.type = &displayio_colorconverter_type;
+    displayio_colorconverter_t *colorconverter =
+        mp_obj_malloc(displayio_colorconverter_t, &displayio_colorconverter_type);
     common_hal_displayio_colorconverter_construct(colorconverter, false, DISPLAYIO_COLORSPACE_RGB888);
     self->colorconverter = colorconverter;
 
@@ -88,15 +88,14 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
             number_of_colors = 1 << bits_per_pixel;
         }
 
-        displayio_palette_t *palette = m_new_obj(displayio_palette_t);
-        palette->base.type = &displayio_palette_type;
+        displayio_palette_t *palette = mp_obj_malloc(displayio_palette_t, &displayio_palette_type);
         common_hal_displayio_palette_construct(palette, number_of_colors, false);
 
         if (number_of_colors > 1) {
             uint16_t palette_size = number_of_colors * sizeof(uint32_t);
             uint16_t palette_offset = 0xe + header_size;
 
-            uint32_t *palette_data = m_malloc(palette_size, false);
+            uint32_t *palette_data = m_malloc(palette_size);
 
             f_rewind(&self->file->fp);
             f_lseek(&self->file->fp, palette_offset);
@@ -106,7 +105,7 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
                 mp_raise_OSError(MP_EIO);
             }
             if (palette_bytes_read != palette_size) {
-                mp_raise_ValueError(translate("Unable to read color palette data"));
+                mp_raise_ValueError(MP_ERROR_TEXT("Unable to read color palette data"));
             }
             for (uint16_t i = 0; i < number_of_colors; i++) {
                 common_hal_displayio_palette_set_color(palette, i, palette_data[i]);
@@ -119,11 +118,11 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
         self->palette = palette;
 
     } else if (!(header_size == 12 || header_size == 40 || header_size == 108 || header_size == 124)) {
-        mp_raise_ValueError_varg(translate("Only Windows format, uncompressed BMP supported: given header size is %d"), header_size);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Only Windows format, uncompressed BMP supported: given header size is %d"), header_size);
     }
 
     if (bits_per_pixel == 8 && number_of_colors == 0) {
-        mp_raise_ValueError_varg(translate("Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: %d bpp given"), bits_per_pixel);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: %d bpp given"), bits_per_pixel);
     }
 
     uint8_t bytes_per_pixel = (self->bits_per_pixel / 8)  ? (self->bits_per_pixel / 8) : 1;

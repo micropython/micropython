@@ -10,3 +10,13 @@ for i in (-4, -2, 0, 2, 4):
 a = '123'
 c = a * 3
 print(a, c)
+
+# check inplace multiplication
+a = '456'
+a *= 3
+print(a)
+
+# check reverse inplace multiplication
+a = 3
+a *= '789'
+print(a)

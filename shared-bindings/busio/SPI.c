@@ -39,7 +39,6 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 //| class SPI:
@@ -52,7 +51,22 @@
 //|     `!MOSI`, `!MISO`. Its up to the client to manage the appropriate
 //|     select line, often abbreviated `!CS` or `!SS`. (This is common because
 //|     multiple secondaries can share the `!clock`, `!MOSI` and `!MISO` lines
-//|     and therefore the hardware.)"""
+//|     and therefore the hardware.)
+//|
+//|     .. raw:: html
+//|
+//|         <p>
+//|         <details>
+//|         <summary>Available on these boards</summary>
+//|         <ul>
+//|         {% for board in support_matrix_reverse["busio.SPI"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
+//|         </ul>
+//|         </details>
+//|         </p>
+//|
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -91,8 +105,7 @@
 // TODO(tannewt): Support LSB SPI.
 STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if CIRCUITPY_BUSIO_SPI
-    busio_spi_obj_t *self = m_new_obj(busio_spi_obj_t);
-    self->base.type = &busio_spi_type;
+    busio_spi_obj_t *self = mp_obj_malloc(busio_spi_obj_t, &busio_spi_type);
     enum { ARG_clock, ARG_MOSI, ARG_MISO, ARG_half_duplex };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_clock, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -108,7 +121,7 @@ STATIC mp_obj_t busio_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const mcu_pin_obj_t *miso = validate_obj_is_free_pin_or_none(args[ARG_MISO].u_obj, MP_QSTR_miso);
 
     if (!miso && !mosi) {
-        mp_raise_ValueError(translate("Must provide MISO or MOSI pin"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Must provide MISO or MOSI pin"));
     }
 
     common_hal_busio_spi_construct(self, clock, mosi, miso, args[ARG_half_duplex].u_bool);
@@ -148,7 +161,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_spi_obj___exit___obj, 4, 4, bus
 STATIC void check_lock(busio_spi_obj_t *self) {
     asm ("");
     if (!common_hal_busio_spi_has_lock(self)) {
-        mp_raise_RuntimeError(translate("Function requires lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 
@@ -319,7 +332,7 @@ STATIC mp_obj_t busio_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_m
         { MP_QSTR_buffer,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_start,      MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_end,        MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = INT_MAX} },
-        { MP_QSTR_write_value,MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_write_value, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
     busio_spi_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
@@ -423,7 +436,7 @@ STATIC mp_obj_t busio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_args
     in_length *= in_stride_in_bytes;
 
     if (out_length != in_length) {
-        mp_raise_ValueError(translate("buffer slices must be of equal length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer slices must be of equal length"));
     }
 
     if (out_length == 0) {
@@ -476,12 +489,13 @@ STATIC const mp_rom_map_elem_t busio_spi_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(busio_spi_locals_dict, busio_spi_locals_dict_table);
 
-const mp_obj_type_t busio_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .make_new = busio_spi_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, busio_spi_make_new,
+    locals_dict, &busio_spi_locals_dict
+    );
 
 busio_spi_obj_t *validate_obj_is_spi_bus(mp_obj_t obj, qstr arg_name) {
     return mp_arg_validate_type(obj, &busio_spi_type, arg_name);

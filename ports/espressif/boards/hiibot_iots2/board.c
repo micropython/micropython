@@ -65,7 +65,7 @@ uint8_t display_init_sequence[] = {
 };
 
 static void display_init(void) {
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
 
     common_hal_busio_spi_construct(
@@ -77,9 +77,9 @@ static void display_init(void) {
 
     common_hal_busio_spi_never_reset(spi);
 
-    bus->base.type = &displayio_fourwire_type;
+    bus->base.type = &fourwire_fourwire_type;
 
-    common_hal_displayio_fourwire_construct(
+    common_hal_fourwire_fourwire_construct(
         bus,
         spi,
         &pin_GPIO35,    // DC
@@ -90,10 +90,10 @@ static void display_init(void) {
         0               // phase
         );
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
 
-    common_hal_displayio_display_construct(
+    common_hal_busdisplay_busdisplay_construct(
         display,
         bus,
         240,            // width (after rotation)
@@ -126,25 +126,6 @@ static void display_init(void) {
 }
 
 void board_init(void) {
-    // USB
-    common_hal_never_reset_pin(&pin_GPIO19);
-    common_hal_never_reset_pin(&pin_GPIO20);
-
-    // Debug UART
-    #ifdef DEBUG
-    common_hal_never_reset_pin(&pin_GPIO43);
-    common_hal_never_reset_pin(&pin_GPIO44);
-    #endif
-
-    // SPI Flash and RAM
-    common_hal_never_reset_pin(&pin_GPIO26);
-    common_hal_never_reset_pin(&pin_GPIO27);
-    common_hal_never_reset_pin(&pin_GPIO28);
-    common_hal_never_reset_pin(&pin_GPIO29);
-    common_hal_never_reset_pin(&pin_GPIO30);
-    common_hal_never_reset_pin(&pin_GPIO31);
-    common_hal_never_reset_pin(&pin_GPIO32);
-
     // Display
     display_init();
 }

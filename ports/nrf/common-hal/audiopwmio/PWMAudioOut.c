@@ -37,7 +37,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 
 // TODO: This should be the same size as PWMOut.c:pwms[], but there's no trivial way to accomplish that
 STATIC audiopwmio_pwmaudioout_obj_t *active_audio[4];
@@ -189,7 +188,7 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
     self->pwm = pwmout_allocate(256, PWM_PRESCALER_PRESCALER_DIV_1, true, NULL, NULL,
         &self->pwm_irq);
     if (!self->pwm) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     self->pwm->PRESCALER = PWM_PRESCALER_PRESCALER_DIV_1;
@@ -266,9 +265,9 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     mp_arg_validate_length_max(max_buffer_length, UINT16_MAX, MP_QSTR_buffer);
 
     uint16_t buffer_length = (uint16_t)max_buffer_length;
-    self->buffers[0] = m_malloc(buffer_length * 2 * sizeof(uint16_t), false);
+    self->buffers[0] = m_malloc(buffer_length * 2 * sizeof(uint16_t));
     if (!self->single_buffer) {
-        self->buffers[1] = m_malloc(buffer_length * 2 * sizeof(uint16_t), false);
+        self->buffers[1] = m_malloc(buffer_length * 2 * sizeof(uint16_t));
     }
 
 

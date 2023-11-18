@@ -237,6 +237,15 @@ const mcu_periph_obj_t mcu_i2s_tx_sync_list[4] = {
     PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_B2_16),
 };
 
+const mcu_periph_obj_t mcu_i2s_mclk_list[4] = {
+    PERIPH_PIN(1, 0, 0, 0, &pin_GPIO_AD_17),
+    PERIPH_PIN(1, 4, 0, 0, &pin_GPIO_DISP_B2_03),
+
+    PERIPH_PIN(2, 2, 0, 0, &pin_GPIO_EMC_B2_04),
+
+    PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_B2_17),
+};
+
 const mcu_periph_obj_t mcu_mqs_left_list[2] = {
     PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_EMC_B1_41),
     PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_DISP_B2_01),

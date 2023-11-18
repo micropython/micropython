@@ -41,7 +41,6 @@
 #include "shared-bindings/digitalio/DriveMode.h"
 #include "shared-bindings/digitalio/Pull.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 #if CIRCUITPY_CYW43
 #include "bindings/cyw43/__init__.h"
@@ -52,18 +51,18 @@ STATIC void check_result(digitalinout_result_t result) {
         case DIGITALINOUT_OK:
             return;
         case DIGITALINOUT_PIN_BUSY:
-            mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_Pin);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), MP_QSTR_Pin);
         #if CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
         case DIGITALINOUT_INPUT_ONLY:
-            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_direction);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_direction);
         #endif
         #if CIRCUITPY_DIGITALIO_HAVE_INVALID_PULL
         case DIGITALINOUT_INVALID_PULL:
-            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_pull);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_pull);
         #endif
         #if CIRCUITPY_DIGITALIO_HAVE_INVALID_DRIVE_MODE
         case DIGITALINOUT_INVALID_DRIVE_MODE:
-            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_drive_mode);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_drive_mode);
         #endif
     }
 }
@@ -90,8 +89,7 @@ STATIC mp_obj_t digitalio_digitalinout_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    digitalio_digitalinout_obj_t *self = m_new_obj(digitalio_digitalinout_obj_t);
-    self->base.type = &digitalio_digitalinout_type;
+    digitalio_digitalinout_obj_t *self = mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
 
     const mcu_pin_obj_t *pin = common_hal_digitalio_validate_pin(args[0]);
     common_hal_digitalio_digitalinout_construct(self, pin);
@@ -249,7 +247,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_value(mp_obj_t self_in, mp_obj_t 
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
-        mp_raise_AttributeError(translate("Cannot set value when direction is input."));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot set value when direction is input."));
         return mp_const_none;
     }
     common_hal_digitalio_digitalinout_set_value(self, mp_obj_is_true(value));
@@ -270,7 +268,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_get_drive_mode(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
-        mp_raise_AttributeError(translate("Drive mode not used when direction is input."));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Drive mode not used when direction is input."));
         return mp_const_none;
     }
     digitalio_drive_mode_t drive_mode = common_hal_digitalio_digitalinout_get_drive_mode(self);
@@ -285,7 +283,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_drive_mode(mp_obj_t self_in, mp_o
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_INPUT) {
-        mp_raise_AttributeError(translate("Drive mode not used when direction is input."));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Drive mode not used when direction is input."));
         return mp_const_none;
     }
     digitalio_drive_mode_t c_drive_mode = DRIVE_MODE_PUSH_PULL;
@@ -314,7 +312,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_get_pull(mp_obj_t self_in) {
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_OUTPUT) {
-        mp_raise_AttributeError(translate("Pull not used when direction is output."));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Pull not used when direction is output."));
         return mp_const_none;
     }
     digitalio_pull_t pull = common_hal_digitalio_digitalinout_get_pull(self);
@@ -331,7 +329,7 @@ STATIC mp_obj_t digitalio_digitalinout_obj_set_pull(mp_obj_t self_in, mp_obj_t p
     digitalio_digitalinout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (common_hal_digitalio_digitalinout_get_direction(self) == DIRECTION_OUTPUT) {
-        mp_raise_AttributeError(translate("Pull not used when direction is output."));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Pull not used when direction is output."));
         return mp_const_none;
     }
 
@@ -361,17 +359,18 @@ STATIC const mp_rom_map_elem_t digitalio_digitalinout_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(digitalio_digitalinout_locals_dict, digitalio_digitalinout_locals_dict_table);
 
-const mp_obj_type_t digitalio_digitalinout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DigitalInOut,
-    .make_new = digitalio_digitalinout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&digitalio_digitalinout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    digitalio_digitalinout_type,
+    MP_QSTR_DigitalInOut,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, digitalio_digitalinout_make_new,
+    locals_dict, &digitalio_digitalinout_locals_dict
+    );
 
 // Helper for validating digitalio.DigitalInOut arguments
 digitalio_digitalinout_obj_t *assert_digitalinout(mp_obj_t obj) {
     if (!mp_obj_is_type(obj, &digitalio_digitalinout_type)) {
-        mp_raise_TypeError(translate("argument num/types mismatch"));
+        mp_raise_TypeError(MP_ERROR_TEXT("argument num/types mismatch"));
     }
     digitalio_digitalinout_obj_t *pin = MP_OBJ_TO_PTR(obj);
     check_for_deinit(pin);

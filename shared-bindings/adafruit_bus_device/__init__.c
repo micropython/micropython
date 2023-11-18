@@ -76,6 +76,6 @@ const mp_obj_module_t adafruit_bus_device_module = {
     .globals = (mp_obj_dict_t *)&adafruit_bus_device_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_adafruit_bus_device, adafruit_bus_device_module, CIRCUITPY_BUSDEVICE);
-MP_REGISTER_MODULE(MP_QSTR_adafruit_bus_device_dot_i2c_device, adafruit_bus_device_i2c_device_module, CIRCUITPY_BUSDEVICE);
-MP_REGISTER_MODULE(MP_QSTR_adafruit_bus_device_dot_spi_device, adafruit_bus_device_spi_device_module, CIRCUITPY_BUSDEVICE);
+MP_REGISTER_MODULE(MP_QSTR_adafruit_bus_device, adafruit_bus_device_module);
+MP_REGISTER_MODULE(MP_QSTR_adafruit_bus_device_dot_i2c_device, adafruit_bus_device_i2c_device_module);
+MP_REGISTER_MODULE(MP_QSTR_adafruit_bus_device_dot_spi_device, adafruit_bus_device_spi_device_module);

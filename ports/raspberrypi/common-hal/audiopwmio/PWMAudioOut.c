@@ -39,7 +39,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "src/rp2040/hardware_structs/include/hardware/structs/dma.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
@@ -116,13 +115,13 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
 
     if (self->stereo) {
         if (pwm_gpio_to_slice_num(left_channel->number) != pwm_gpio_to_slice_num(right_channel->number)) {
-            mp_raise_ValueError(translate("Pins must share PWM slice"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Pins must share PWM slice"));
         }
         if (pwm_gpio_to_channel(left_channel->number) != 0) {
-            mp_raise_ValueError(translate("Stereo left must be on PWM channel A"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Stereo left must be on PWM channel A"));
         }
         if (pwm_gpio_to_channel(right_channel->number) != 1) {
-            mp_raise_ValueError(translate("Stereo right must be on PWM channel B"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Stereo right must be on PWM channel B"));
         }
     }
 
@@ -150,7 +149,7 @@ void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *s
         }
     }
     if (result != PWMOUT_OK) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     self->quiescent_value = quiescent_value >> SAMPLE_BITS_TO_DISCARD;
@@ -200,7 +199,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
         }
     }
     if (pacing_timer == NUM_DMA_TIMERS) {
-        mp_raise_RuntimeError(translate("No DMA pacing timer found"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No DMA pacing timer found"));
     }
     uint32_t tx_register = (uint32_t)&pwm_hw->slice[self->left_pwm.slice].cc;
     if (self->stereo) {
@@ -238,11 +237,11 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
 
     if (result == AUDIO_DMA_DMA_BUSY) {
         common_hal_audiopwmio_pwmaudioout_stop(self);
-        mp_raise_RuntimeError(translate("No DMA channel found"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No DMA channel found"));
     }
     if (result == AUDIO_DMA_MEMORY_ERROR) {
         common_hal_audiopwmio_pwmaudioout_stop(self);
-        mp_raise_RuntimeError(translate("Unable to allocate buffers for signed conversion"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to allocate buffers for signed conversion"));
     }
     // OK! We got all of the resources we need and dma is ready.
 }

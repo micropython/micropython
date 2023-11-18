@@ -48,7 +48,7 @@
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS          (0)
 #define MICROPY_PY_COLLECTIONS_DEQUE                (0)
 #define MICROPY_PY_COLLECTIONS_ORDEREDDICT          (0)
-#define MICROPY_PY_UERRNO_LIST \
+#define MICROPY_PY_ERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
     X(EIO) \
@@ -62,7 +62,7 @@
 
 #define MICROPY_FATFS_EXFAT    (0)
 // FAT32 mkfs takes about 500 bytes.
-#define MICROPY_FF_MKFS_FAT32 (0)
+#define MICROPY_FATFS_MKFS_FAT32 (0)
 
 // Only support simpler HID descriptors on SAMD21.
 #define CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR (1)
@@ -85,7 +85,7 @@
 #define SPI_FLASH_MAX_BAUDRATE 24000000
 #define MICROPY_PY_BUILTINS_NOTIMPLEMENTED          (1)
 #define MICROPY_PY_FUNCTION_ATTRS                   (1)
-//      MICROPY_PY_UERRNO_LIST - Use the default
+//      MICROPY_PY_ERRNO_LIST - Use the default
 
 #endif // SAM_D5X_E5X
 
@@ -173,6 +173,30 @@
 #define BOARD_HAS_CRYSTAL (0)
 #endif
 
+#ifndef BOARD_XOSC_FREQ_HZ
+// 0 Indicates XOSC is not used.
+  #define BOARD_XOSC_FREQ_HZ (0)
+#else
+// For now, only allow external clock sources that divide cleanly into
+// the system clock frequency of 120 MHz.
+  #if (120000000 % BOARD_XOSC_FREQ_HZ) != 0
+    #error "BOARD_XOSC_FREQ_HZ must be an integer factor of 120 MHz"
+  #endif
+#endif
+
+#if BOARD_XOSC_FREQ_HZ != 0
+// External clock sources are currently not implemented for SAMD21 chips.
+  #ifdef SAMD21
+    #error "BOARD_XOSC_FREQ_HZ is non-zero but external clock sources are not yet supported for SAMD21 chips"
+  #endif
+  #ifndef BOARD_XOSC_IS_CRYSTAL
+    #error "BOARD_XOSC_IS_CRYSTAL must be defined to 0 or 1 if BOARD_XOSC_FREQ_HZ is not 0"
+  #endif
+#else
+// It doesn't matter what the value is in this case.
+  #define BOARD_XOSC_IS_CRYSTAL (0)
+#endif
+
 // if CALIBRATE_CRYSTALLESS is requested, make room for storing
 // calibration data generated from external USB.
 #ifndef CIRCUITPY_INTERNAL_CONFIG_SIZE
@@ -245,14 +269,5 @@
 // due to limitations of chips is handled in mpconfigboard.mk
 
 #include "peripherals/samd/dma.h"
-
-#if CIRCUITPY_AUDIOCORE
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS \
-    mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT];
-#else
-#define MICROPY_PORT_ROOT_POINTERS \
-    CIRCUITPY_COMMON_ROOT_POINTERS
-#endif
 
 #endif  // __INCLUDED_MPCONFIGPORT_H

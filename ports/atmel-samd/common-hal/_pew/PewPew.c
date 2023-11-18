@@ -35,7 +35,6 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/util.h"
 #include "samd/timers.h"
-#include "supervisor/shared/translate/translate.h"
 #include "timer_handler.h"
 
 
@@ -78,7 +77,7 @@ void pew_init() {
         // Find a spare timer.
         uint8_t index = find_free_timer();
         if (index == 0xff) {
-            mp_raise_RuntimeError(translate("All timers in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
         }
         Tc *tc = tc_insts[index];
 

@@ -28,7 +28,6 @@
 #include "common-hal/analogio/AnalogIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared/runtime/interrupt_char.h"
-#include "supervisor/shared/translate/translate.h"
 #include "em_cmu.h"
 #include "em_iadc.h"
 
@@ -66,7 +65,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
     }
 
     if (self->id == NUM_INPUTS + 1) {
-        mp_raise_ValueError(translate("ADC busy pin"));
+        mp_raise_ValueError(MP_ERROR_TEXT("ADC busy pin"));
     }
 
     // Declare init structs

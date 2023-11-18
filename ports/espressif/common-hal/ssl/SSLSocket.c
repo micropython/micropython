@@ -33,7 +33,9 @@
 #include "shared/runtime/interrupt_char.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
+#include "lwip/sockets.h"
 
 ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self,
     uint8_t *ip, uint32_t *port) {
@@ -55,19 +57,23 @@ void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
 
 void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
+    // Yield briefly so that the IDF can clean up memory before we need more.
+    port_yield();
     int result = esp_tls_conn_new_sync(host, hostlen, port, &self->ssl_config, self->tls);
     self->sock->connected = result >= 0;
     if (result < 0) {
         int esp_tls_code;
         int flags;
-        esp_err_t err = esp_tls_get_and_clear_last_error(self->tls->error_handle, &esp_tls_code, &flags);
+        esp_tls_error_handle_t tls_error_handle;
+        esp_tls_get_error_handle(self->tls, &tls_error_handle);
+        esp_err_t err = esp_tls_get_and_clear_last_error(tls_error_handle, &esp_tls_code, &flags);
 
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
         } else if (err == ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
-            mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Failed SSL handshake"));
         } else {
-            mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, result);
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, result);
         }
     } else {
         // Connection successful, set the timeout on the underlying socket. We can't rely on the IDF
@@ -154,14 +160,16 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
     if (sent < 0) {
         int esp_tls_code;
         int flags;
-        esp_err_t err = esp_tls_get_and_clear_last_error(self->tls->error_handle, &esp_tls_code, &flags);
+        esp_tls_error_handle_t tls_error_handle;
+        esp_tls_get_error_handle(self->tls, &tls_error_handle);
+        esp_err_t err = esp_tls_get_and_clear_last_error(tls_error_handle, &esp_tls_code, &flags);
 
         if (err == ESP_ERR_MBEDTLS_SSL_SETUP_FAILED) {
             mp_raise_espidf_MemoryError();
         } else if (err == ESP_ERR_MBEDTLS_SSL_HANDSHAKE_FAILED) {
-            mp_raise_OSError_msg_varg(translate("Failed SSL handshake"));
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Failed SSL handshake"));
         } else {
-            mp_raise_OSError_msg_varg(translate("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, sent);
+            mp_raise_OSError_msg_varg(MP_ERROR_TEXT("Unhandled ESP TLS error %d %d %x %d"), esp_tls_code, flags, err, sent);
         }
     }
     return sent;

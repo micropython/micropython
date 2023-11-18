@@ -104,4 +104,6 @@ void ffi_closure_free(void *ptr) {
 }
 #endif
 
+MP_REGISTER_ROOT_POINTER(void *mmap_region_head);
+
 #endif // MICROPY_EMIT_NATIVE || (MICROPY_PY_FFI && MICROPY_FORCE_PLAT_ALLOC_EXEC)

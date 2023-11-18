@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@
 #define MICROPY_INCLUDED_LIB_UTILS_PYEXEC_H
 
 #include "py/obj.h"
+
+// CIRCUITPY-CHANGE: multiple changes
 
 typedef enum {
     PYEXEC_MODE_FRIENDLY_REPL,
@@ -65,6 +67,10 @@ extern uint8_t pyexec_repl_active;
 
 #if CIRCUITPY_ATEXIT
 int pyexec_exit_handler(const void *source, pyexec_result_t *result);
+#endif
+
+#if CIRCUITPY_WATCHDOG
+pyexec_result_t *pyexec_result(void);
 #endif
 
 #if MICROPY_REPL_INFO

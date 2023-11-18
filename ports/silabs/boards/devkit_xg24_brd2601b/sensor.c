@@ -27,7 +27,6 @@
 #include "py/runtime.h"
 #include "common-hal/busio/I2C.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "em_i2c.h"
 #include "sl_i2cspm.h"
 #include "sl_i2cspm_sensor_config.h"
@@ -37,11 +36,12 @@
 #include "sl_sensor_hall.h"
 #include "sl_sensor_pressure.h"
 
-STATIC mp_obj_t sensor_init(busio_i2c_obj_t *i2c) {
+STATIC mp_obj_t sensor_init(mp_obj_t i2c_in) {
+    // busio_i2c_obj_t *i2c = MP_OBJ_TO_PTR(i2c_in);
     sl_status_t sc;
 
     if (!common_hal_mcu_pin_is_free(&pin_PC9)) {
-        mp_raise_ValueError(translate("Pin PC9 is busy "));
+        mp_raise_ValueError(MP_ERROR_TEXT("Pin PC9 is busy "));
         return mp_const_false;
     }
 
@@ -167,9 +167,9 @@ STATIC mp_obj_t sensor_imu_get(void) {
     avec_obj[0] = mp_obj_new_int(avec[0]);
     avec_obj[1] = mp_obj_new_int(avec[1]);
     avec_obj[2] = mp_obj_new_int(avec[2]);
-    ret[0] = mp_obj_new_list(3,ovec_obj);
-    ret[1] = mp_obj_new_list(3,avec_obj);
-    return mp_obj_new_tuple(2,ret);
+    ret[0] = mp_obj_new_list(3, ovec_obj);
+    ret[1] = mp_obj_new_list(3, avec_obj);
+    return mp_obj_new_tuple(2, ret);
 }
 
 STATIC mp_obj_t sensor_imu_calibrate(void) {
@@ -181,15 +181,15 @@ STATIC mp_obj_t sensor_imu_calibrate(void) {
     return mp_const_true;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(sensor_init_obj,sensor_init);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_deinit_obj,sensor_deinit);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_temperature_obj,sensor_get_temperature);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_humidity_obj,sensor_get_humidity);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_lux_obj,sensor_get_lux);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_hall_obj,sensor_get_hall);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_pressure_obj,sensor_get_pressure);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_imu_get_obj,sensor_imu_get);
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_imu_calibrate_obj,sensor_imu_calibrate);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(sensor_init_obj, sensor_init);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_deinit_obj, sensor_deinit);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_temperature_obj, sensor_get_temperature);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_humidity_obj, sensor_get_humidity);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_lux_obj, sensor_get_lux);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_hall_obj, sensor_get_hall);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_get_pressure_obj, sensor_get_pressure);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_imu_get_obj, sensor_imu_get);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(sensor_imu_calibrate_obj, sensor_imu_calibrate);
 
 
 STATIC const mp_rom_map_elem_t sensor_globals_table[] = {
@@ -211,4 +211,4 @@ const mp_obj_module_t sensor_module = {
     .globals = (mp_obj_dict_t *)&sensor_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_sensor, sensor_module,1);
+MP_REGISTER_MODULE(MP_QSTR_sensor, sensor_module);

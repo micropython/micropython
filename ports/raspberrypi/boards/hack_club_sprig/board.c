@@ -27,12 +27,12 @@
 #include "supervisor/board.h"
 #include "mpconfigboard.h"
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/fourwire/FourWire.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 #include "supervisor/shared/board.h"
 
-displayio_fourwire_obj_t board_display_obj;
+fourwire_fourwire_obj_t board_display_obj;
 
 // display init sequence from CircuitPython library https://github.com/adafruit/Adafruit_CircuitPython_ST7735R/blob/dfae353330cf051d1f31db9e4b681c8d70900cc5/adafruit_st7735r.py
 uint8_t display_init_sequence[] = {
@@ -78,13 +78,13 @@ uint8_t display_init_sequence[] = {
 
 
 void board_init(void) {
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
     busio_spi_obj_t *spi = &bus->inline_bus;
     common_hal_busio_spi_construct(spi, &pin_GPIO18, &pin_GPIO19, &pin_GPIO16, false);
     common_hal_busio_spi_never_reset(spi);
 
-    bus->base.type = &displayio_fourwire_type;
-    common_hal_displayio_fourwire_construct(bus,
+    bus->base.type = &fourwire_fourwire_type;
+    common_hal_fourwire_fourwire_construct(bus,
         spi,
         &pin_GPIO22, // DC
         &pin_GPIO20, // CS
@@ -93,9 +93,9 @@ void board_init(void) {
         0,
         0);
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(display,
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
+    common_hal_busdisplay_busdisplay_construct(display,
         bus,
         160, // Width
         128, // Height

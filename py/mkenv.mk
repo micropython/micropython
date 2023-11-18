@@ -12,26 +12,37 @@ endif
 THIS_MAKEFILE := $(lastword $(MAKEFILE_LIST))
 TOP := $(patsubst %/py/mkenv.mk,%,$(THIS_MAKEFILE))
 
+# CIRCUITPY-CHANGE: verbosity differences, STEPECHO
 # Turn on increased build verbosity by defining BUILD_VERBOSE in your main
-# Makefile or in your environment. You can also use V=1 on the make command
-# line.
+# Makefile or in your environment. You can also use V="steps commands rules" or any combination thereof
+# on the make command line.
 
 ifeq ("$(origin V)", "command line")
 BUILD_VERBOSE=$(V)
 endif
 ifndef BUILD_VERBOSE
-$(info Use make V=1, make V=2 or set BUILD_VERBOSE similarly in your environment to increase build verbosity.)
-BUILD_VERBOSE = 0
+$(info - Verbosity options: any combination of "steps commands rules", as `make V=...` or env var BUILD_VERBOSE)
+BUILD_VERBOSE = ""
 endif
-ifeq ($(BUILD_VERBOSE),0)
-Q = @
-STEPECHO = @:
-else ifeq ($(BUILD_VERBOSE),1)
-Q = @
+
+ifneq ($(filter steps,$(BUILD_VERBOSE)),)
 STEPECHO = @echo
 else
+STEPECHO = @:
+endif
+
+ifneq ($(filter commands,$(BUILD_VERBOSE)),)
 Q =
-STEPECHO = @echo
+else
+Q = @
+endif
+
+ifneq ($(filter rules,$(BUILD_VERBOSE)),)
+# This clever shell redefinition will print out the makefile line that is causing an action.
+# Note that -j can cause the order to be confusing.
+# https://www.cmcrossroads.com/article/tracing-rule-execution-gnu-make
+OLD_SHELL := $(SHELL)
+SHELL = $(warning BUILDING $@)$(OLD_SHELL)
 endif
 
 # default settings; can be overridden in main Makefile
@@ -39,23 +50,19 @@ endif
 PY_SRC ?= $(TOP)/py
 BUILD ?= build
 
-ECHO = @echo
-
-CAT = cat
-CD = cd
-CP = cp
-FIND = find
-MKDIR = mkdir
-PYTHON = python3
 RM = rm
-RSYNC = rsync
+ECHO = @echo
+CP = cp
+MKDIR = mkdir
 SED = sed
+CAT = cat
 TOUCH = touch
-# Linux has 'nproc', macOS has 'sysctl -n hw.logicalcpu', this is cross-platform
-NPROC = $(PYTHON) -c 'import multiprocessing as mp; print(mp.cpu_count())'
+PYTHON = python3
+ZIP = zip
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
+CPP = $(CC) -E
 CXX = $(CROSS_COMPILE)g++
 GDB = $(CROSS_COMPILE)gdb
 LD = $(CROSS_COMPILE)ld
@@ -67,12 +74,14 @@ AR = $(CROSS_COMPILE)ar
 MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py
 MPY_TOOL = $(PYTHON) $(TOP)/tools/mpy-tool.py
+# CIRCUITPY-CHANGE
 PREPROCESS_FROZEN_MODULES = PYTHONPATH=$(TOP)/tools/python-semver $(TOP)/tools/preprocess_frozen_modules.py
 
-MPY_LIB_DIR = $(TOP)/../micropython-lib
+MPY_LIB_SUBMODULE_DIR = $(TOP)/lib/micropython-lib
+MPY_LIB_DIR = $(MPY_LIB_SUBMODULE_DIR)
 
 ifeq ($(MICROPY_MPYCROSS),)
-MICROPY_MPYCROSS = $(TOP)/mpy-cross/mpy-cross
+MICROPY_MPYCROSS = $(TOP)/mpy-cross/build/mpy-cross
 MICROPY_MPYCROSS_DEPENDENCY = $(MICROPY_MPYCROSS)
 endif
 

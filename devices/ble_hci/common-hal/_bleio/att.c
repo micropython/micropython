@@ -44,7 +44,6 @@
 #include "shared-bindings/_bleio/Service.h"
 #include "shared-bindings/_bleio/UUID.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 
 STATIC uint16_t max_mtu = BT_ATT_DEFAULT_LE_MTU;  // 23
 STATIC unsigned long timeout = 5000;
@@ -1723,57 +1722,57 @@ void att_process_data(uint16_t conn_handle, uint8_t dlen, uint8_t data[]) {
 
 // FIX Do we need all of these?
 static void check_att_err(uint8_t err) {
-    const compressed_string_t *msg = NULL;
+    mp_rom_error_text_t msg = NULL;
     switch (err) {
         case 0:
             return;
         case BT_ATT_ERR_INVALID_HANDLE:
-            msg = translate("Invalid handle");
+            msg = MP_ERROR_TEXT("Invalid handle");
             break;
         case BT_ATT_ERR_READ_NOT_PERMITTED:
-            msg = translate("Read not permitted");
+            msg = MP_ERROR_TEXT("Read not permitted");
             break;
         case BT_ATT_ERR_WRITE_NOT_PERMITTED:
-            msg = translate("Write not permitted");
+            msg = MP_ERROR_TEXT("Write not permitted");
             break;
         case BT_ATT_ERR_INVALID_PDU:
-            msg = translate("Invalid PDU");
+            msg = MP_ERROR_TEXT("Invalid PDU");
             break;
         case BT_ATT_ERR_NOT_SUPPORTED:
-            msg = translate("Not supported");
+            msg = MP_ERROR_TEXT("Not supported");
             break;
         case BT_ATT_ERR_INVALID_OFFSET:
-            msg = translate("Invalid offset");
+            msg = MP_ERROR_TEXT("Invalid offset");
             break;
         case BT_ATT_ERR_PREPARE_QUEUE_FULL:
-            msg = translate("Prepare queue full");
+            msg = MP_ERROR_TEXT("Prepare queue full");
             break;
         case BT_ATT_ERR_ATTRIBUTE_NOT_FOUND:
-            msg = translate("Attribute not found");
+            msg = MP_ERROR_TEXT("Attribute not found");
             break;
         case BT_ATT_ERR_ATTRIBUTE_NOT_LONG:
-            msg = translate("Attribute not long");
+            msg = MP_ERROR_TEXT("Attribute not long");
             break;
         case BT_ATT_ERR_ENCRYPTION_KEY_SIZE:
-            msg = translate("Encryption key size");
+            msg = MP_ERROR_TEXT("Encryption key size");
             break;
         case BT_ATT_ERR_INVALID_ATTRIBUTE_LEN:
-            msg = translate("Invalid attribute length");
+            msg = MP_ERROR_TEXT("Invalid attribute length");
             break;
         case BT_ATT_ERR_UNLIKELY:
-            msg = translate("Unlikely");
+            msg = MP_ERROR_TEXT("Unlikely");
             break;
         case BT_ATT_ERR_UNSUPPORTED_GROUP_TYPE:
-            msg = translate("Unsupported group type");
+            msg = MP_ERROR_TEXT("Unsupported group type");
             break;
         case BT_ATT_ERR_INSUFFICIENT_RESOURCES:
-            msg = translate("Insufficient resources");
+            msg = MP_ERROR_TEXT("Insufficient resources");
             break;
         case BT_ATT_ERR_DB_OUT_OF_SYNC:
-            msg = translate("DB out of sync");
+            msg = MP_ERROR_TEXT("DB out of sync");
             break;
         case BT_ATT_ERR_VALUE_NOT_ALLOWED:
-            msg = translate("Value not allowed");
+            msg = MP_ERROR_TEXT("Value not allowed");
             break;
     }
     if (msg) {
@@ -1782,15 +1781,15 @@ static void check_att_err(uint8_t err) {
 
     switch (err) {
         case BT_ATT_ERR_AUTHENTICATION:
-            msg = translate("Insufficient authentication");
+            msg = MP_ERROR_TEXT("Insufficient authentication");
             break;
         case BT_ATT_ERR_INSUFFICIENT_ENCRYPTION:
-            msg = translate("Insufficient encryption");
+            msg = MP_ERROR_TEXT("Insufficient encryption");
             break;
     }
     if (msg) {
         mp_raise_bleio_SecurityError(msg);
     }
 
-    mp_raise_bleio_BluetoothError(translate("Unknown ATT error: 0x%02x"), err);
+    mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown ATT error: 0x%02x"), err);
 }

@@ -1,0 +1,16 @@
+# tests for autoindent
+if 1:
+print(1)
+
+
+
+if 0:
+  print(2)
+else:
+  print(3)
+
+if 0:
+	print(4)
+else:
+	print(5)
+

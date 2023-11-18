@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,14 +54,12 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, siz
         MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&arg_vals);
 
     // create enumerate object
-    mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
-    o->base.type = type;
+    mp_obj_enumerate_t *o = mp_obj_malloc(mp_obj_enumerate_t, type);
     o->iter = mp_getiter(arg_vals.iterable.u_obj, NULL);
     o->cur = arg_vals.start.u_int;
     #else
-    (void)n_kw;
-    mp_obj_enumerate_t *o = m_new_obj(mp_obj_enumerate_t);
-    o->base.type = type;
+    mp_arg_check_num(n_args, n_kw, 1, 2, false);
+    mp_obj_enumerate_t *o = mp_obj_malloc(mp_obj_enumerate_t, type);
     o->iter = mp_getiter(args[0], NULL);
     o->cur = n_args > 1 ? mp_obj_get_int(args[1]) : 0;
     #endif
@@ -69,16 +67,13 @@ STATIC mp_obj_t enumerate_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(o);
 }
 
-const mp_obj_type_t mp_type_enumerate = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_enumerate,
-    .make_new = enumerate_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .iternext = enumerate_iternext,
-        .getiter = mp_identity_getiter,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_enumerate,
+    MP_QSTR_enumerate,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, enumerate_make_new,
+    iter, enumerate_iternext
+    );
 
 STATIC mp_obj_t enumerate_iternext(mp_obj_t self_in) {
     assert(mp_obj_is_type(self_in, &mp_type_enumerate));

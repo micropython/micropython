@@ -6,7 +6,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
+ * Copyright (c) 2013-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,8 +72,8 @@
 #define FF_USE_MKFS     1
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
-#ifdef MICROPY_FF_MKFS_FAT32
-#define FF_MKFS_FAT32   MICROPY_FF_MKFS_FAT32
+#ifdef MICROPY_FATFS_MKFS_FAT32
+#define FF_MKFS_FAT32   MICROPY_FATFS_MKFS_FAT32
 #else
 #define FF_MKFS_FAT32   0
 #endif
@@ -266,6 +266,12 @@
 /  type of optical media. When FF_MAX_SS is larger than FF_MIN_SS, FatFs is configured
 /  for variable sector size mode and disk_ioctl() function needs to implement
 /  GET_SECTOR_SIZE command. */
+
+#ifdef MICROPY_FATFS_WINDOW_ALIGNMENT
+#define FF_WINDOW_ALIGNMENT   (MICROPY_FATFS_WINDOW_ALIGNMENT)
+#else
+#define FF_WINDOW_ALIGNMENT   1
+#endif
 
 
 #define FF_USE_TRIM     0

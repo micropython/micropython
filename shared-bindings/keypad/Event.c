@@ -45,8 +45,7 @@
 //|         """
 //|         ...
 STATIC mp_obj_t keypad_event_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    keypad_event_obj_t *self = m_new_obj(keypad_event_obj_t);
-    self->base.type = &keypad_event_type;
+    keypad_event_obj_t *self = mp_obj_malloc(keypad_event_obj_t, &keypad_event_type);
     enum { ARG_key_number, ARG_pressed, ARG_timestamp };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_key_number, MP_ARG_INT, {.u_int = 0} },
@@ -181,15 +180,13 @@ STATIC const mp_rom_map_elem_t keypad_event_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(keypad_event_locals_dict, keypad_event_locals_dict_table);
 
-const mp_obj_type_t keypad_event_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Event,
-    .make_new = keypad_event_make_new,
-    .print = keypad_event_print,
-    .locals_dict = (mp_obj_dict_t *)&keypad_event_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = keypad_event_unary_op,
-        .binary_op = keypad_event_binary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_event_type,
+    MP_QSTR_Event,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, keypad_event_make_new,
+    print, keypad_event_print,
+    locals_dict, &keypad_event_locals_dict,
+    unary_op, keypad_event_unary_op,
+    binary_op, keypad_event_binary_op
+    );

@@ -35,7 +35,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define UARTDRV_USART_BUFFER_SIZE 6
 
@@ -54,7 +53,7 @@ volatile Ecode_t errflag; // Used to restart read halts
 void uart_reset(void) {
     if ((!never_reset) && in_used) {
         if (UARTDRV_DeInit(&uartdrv_usart_handle) != ECODE_EMDRV_UARTDRV_OK) {
-            mp_raise_ValueError(translate("UART Deinit fail"));
+            mp_raise_ValueError(MP_ERROR_TEXT("UART Deinit fail"));
         }
         in_used = false;
     }
@@ -79,7 +78,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL)
         || (rs485_invert == true)) {
-        mp_raise_NotImplementedError(translate("RS485"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
     }
 
     if ((tx != NULL) && (rx != NULL)) {
@@ -111,9 +110,9 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             uartdrv_usart_init.txQueue = (UARTDRV_Buffer_FifoQueue_t *)
                 &uartdrv_usart_tx_buffer;
 
-            if (UARTDRV_InitUart(self->handle,&uartdrv_usart_init)
+            if (UARTDRV_InitUart(self->handle, &uartdrv_usart_init)
                 != ECODE_EMDRV_UARTDRV_OK) {
-                mp_raise_RuntimeError(translate("UART init"));
+                mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
             }
             common_hal_mcu_pin_claim(tx);
             common_hal_mcu_pin_claim(rx);
@@ -123,7 +122,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             if (receiver_buffer != NULL) {
                 ringbuf_init(&self->ringbuf, receiver_buffer, receiver_buffer_size);
             } else {
-                if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size, true)) {
+                if (!ringbuf_alloc(&self->ringbuf, receiver_buffer_size)) {
                     m_malloc_fail(receiver_buffer_size);
                 }
             }
@@ -131,7 +130,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             context = self;
 
         } else {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
         }
 
     } else {
@@ -159,7 +158,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     }
 
     if (UARTDRV_DeInit(self->handle) != ECODE_EMDRV_UARTDRV_OK) {
-        mp_raise_RuntimeError(translate("UART de-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART de-init"));
     }
 
     common_hal_reset_pin(self->rx);
@@ -183,7 +182,7 @@ void UARTDRV_Receive_Callback(UARTDRV_Handle_t *handle,
     taskENTER_CRITICAL();
     ringbuf_put_n(&context->ringbuf, &context->rx_char, 1);
     taskEXIT_CRITICAL();
-    errflag = UARTDRV_Receive(context->handle,&context->rx_char,1,
+    errflag = UARTDRV_Receive(context->handle, &context->rx_char, 1,
         (UARTDRV_Callback_t)UARTDRV_Receive_Callback);
     if (context->sigint_enabled) {
         if (context->rx_char == CHAR_CTRL_C) {
@@ -213,7 +212,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data,
         RUN_BACKGROUND_TASKS;
         // restart if it failed in the callback
         if (errflag != ECODE_EMDRV_UARTDRV_OK) {
-            errflag = UARTDRV_Receive(self->handle,&self->rx_char,1,
+            errflag = UARTDRV_Receive(self->handle, &self->rx_char, 1,
                 (UARTDRV_Callback_t)UARTDRV_Receive_Callback);
         }
         // Allow user to break out of a timeout with a KeyboardInterrupt.
@@ -242,7 +241,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self,
 
     Ecode_t ret = UARTDRV_TransmitB(self->handle, (uint8_t *)data, len);
     if (ret != ECODE_EMDRV_UARTDRV_OK) {
-        mp_raise_RuntimeError(translate("UART write"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART write"));
     }
     return len;
 }
@@ -263,7 +262,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self,
     uartdrv_usart_init.baudRate = baudrate;
     if (UARTDRV_InitUart(self->handle, &uartdrv_usart_init)
         != ECODE_EMDRV_UARTDRV_OK) {
-        mp_raise_RuntimeError(translate("UART re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART re-init"));
     }
 }
 

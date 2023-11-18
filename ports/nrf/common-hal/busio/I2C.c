@@ -32,7 +32,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrfx_twim.h"
 #include "nrfx_spim.h"
@@ -111,7 +110,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     }
 
     if (self->twim_peripheral == NULL) {
-        mp_raise_ValueError(translate("All I2C peripherals are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All I2C peripherals are in use"));
     }
 
     #if CIRCUITPY_REQUIRE_I2C_PULLUPS
@@ -130,7 +129,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
     if (!nrf_gpio_pin_read(sda->number) || !nrf_gpio_pin_read(scl->number)) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
-        mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No pull up found on SDA or SCL; check your wiring"));
     }
     #endif
 

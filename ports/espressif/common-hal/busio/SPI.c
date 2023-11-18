@@ -30,7 +30,7 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "driver/spi_common_internal.h"
+#include "esp_private/spi_common_internal.h"
 
 #define SPI_MAX_DMA_BITS (SPI_MAX_DMA_LEN * 8)
 #define MAX_SPI_TRANSACTIONS 10
@@ -67,7 +67,7 @@ static void set_spi_config(busio_spi_obj_t *self,
     };
     esp_err_t result = spi_bus_add_device(self->host_id, &device_config, &spi_handle[self->host_id]);
     if (result != ESP_OK) {
-        mp_raise_RuntimeError(translate("SPI configuration failed"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("SPI configuration failed"));
     }
     self->baudrate = closest_clock;
     self->polarity = polarity;
@@ -88,7 +88,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     };
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Half duplex SPI is not implemented"));
     }
 
     for (spi_host_device_t host_id = SPI2_HOST; host_id < SOC_SPI_PERIPH_NUM; host_id++) {
@@ -98,12 +98,12 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     }
 
     if (self->host_id == 0) {
-        mp_raise_ValueError(translate("All SPI peripherals are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All SPI peripherals are in use"));
     }
 
     esp_err_t result = spi_bus_initialize(self->host_id, &bus_config, SPI_DMA_CH_AUTO);
     if (result == ESP_ERR_NO_MEM) {
-        mp_raise_msg(&mp_type_MemoryError, translate("ESP-IDF memory allocation failed"));
+        mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("ESP-IDF memory allocation failed"));
     } else if (result == ESP_ERR_INVALID_ARG) {
         raise_ValueError_invalid_pins();
     }
@@ -186,7 +186,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     const uint8_t *data, size_t len) {
     if (self->MOSI == NULL) {
-        mp_raise_ValueError(translate("No MOSI Pin"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_mosi);
     }
     return common_hal_busio_spi_transfer(self, data, NULL, len);
 }
@@ -194,7 +194,7 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     uint8_t *data, size_t len, uint8_t write_value) {
     if (self->MISO == NULL) {
-        mp_raise_ValueError(translate("No MISO Pin"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_miso);
     }
     if (self->MOSI == NULL) {
         return common_hal_busio_spi_transfer(self, NULL, data, len);
@@ -210,10 +210,10 @@ bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
         return true;
     }
     if (self->MOSI == NULL && data_out != NULL) {
-        mp_raise_ValueError(translate("No MOSI Pin"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_mosi);
     }
     if (self->MISO == NULL && data_in != NULL) {
-        mp_raise_ValueError(translate("No MISO Pin"));
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_miso);
     }
 
     spi_transaction_t transactions[MAX_SPI_TRANSACTIONS];

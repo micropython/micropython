@@ -7,7 +7,6 @@
 
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Rectangle:
 //|     def __init__(
@@ -45,8 +44,7 @@ static mp_obj_t vectorio_rectangle_make_new(const mp_obj_type_t *type, size_t n_
     mp_int_t height = args[ARG_height].u_int;
     mp_arg_validate_int_min(height, 1, MP_QSTR_height);
 
-    vectorio_rectangle_t *self = m_new_obj(vectorio_rectangle_t);
-    self->base.type = &vectorio_rectangle_type;
+    vectorio_rectangle_t *self = mp_obj_malloc(vectorio_rectangle_t, &vectorio_rectangle_type);
     uint16_t color_index = args[ARG_color_index].u_int;
     common_hal_vectorio_rectangle_construct(self, width, height, color_index);
 
@@ -165,13 +163,11 @@ STATIC const mp_rom_map_elem_t vectorio_rectangle_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(vectorio_rectangle_locals_dict, vectorio_rectangle_locals_dict_table);
 
-const mp_obj_type_t vectorio_rectangle_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Rectangle,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = vectorio_rectangle_make_new,
-    .locals_dict = (mp_obj_dict_t *)&vectorio_rectangle_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &rectangle_draw_protocol,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    vectorio_rectangle_type,
+    MP_QSTR_Rectangle,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, vectorio_rectangle_make_new,
+    locals_dict, &vectorio_rectangle_locals_dict,
+    protocol, &rectangle_draw_protocol
+    );

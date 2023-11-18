@@ -24,12 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_PORT_H
-#define MICROPY_INCLUDED_SUPERVISOR_PORT_H
+#pragma once
 
-#include "py/mpconfig.h"
+#include <stdbool.h>
+#include <stddef.h>
 
-#include "supervisor/memory.h"
 #include "supervisor/shared/safe_mode.h"
 
 // Provided by the linker;
@@ -57,9 +56,6 @@ uint32_t *port_stack_get_limit(void);
 
 // Get stack top address
 uint32_t *port_stack_get_top(void);
-
-// True if stack is not located inside heap (at the top)
-bool port_has_fixed_stack(void);
 
 // Get heap bottom address
 uint32_t *port_heap_get_bottom(void);
@@ -132,5 +128,3 @@ void port_boot_info(void);
 // Some ports want to mark additional pointers as gc roots.
 // A default weak implementation is provided that does nothing.
 void port_gc_collect(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

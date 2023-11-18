@@ -1,11 +1,11 @@
 # Test for VfsLfs using a RAM device, mtime feature
 
 try:
-    import utime, uos
+    import time, os
 
-    utime.time
-    utime.sleep
-    uos.VfsLfs2
+    time.time
+    time.sleep
+    os.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -47,11 +47,11 @@ def test(bdev, vfs_class):
     vfs = vfs_class(bdev, mtime=True)
 
     # Create an empty file, should have a timestamp.
-    current_time = int(utime.time())
+    current_time = int(time.time())
     vfs.open("test1", "wt").close()
 
     # Wait 1 second so mtime will increase by at least 1.
-    utime.sleep(1)
+    time.sleep(1)
 
     # Create another empty file, should have a timestamp.
     vfs.open("test2", "wt").close()
@@ -68,13 +68,13 @@ def test(bdev, vfs_class):
     print(stat1[8] < stat2[8])
 
     # Wait 1 second so mtime will increase by at least 1.
-    utime.sleep(1)
+    time.sleep(1)
 
-    # Open test1 for reading and ensure mtime did not change.
+    # Open test1 for reading and ensre mtime did not change.
     vfs.open("test1", "rt").close()
     print(vfs.stat("test1") == stat1)
 
-    # Open test1 for writing and ensure mtime increased from the previous value.
+    # Open test1 for writing and ensre mtime increased from the previous value.
     vfs.open("test1", "wt").close()
     stat1_old = stat1
     stat1 = vfs.stat("test1")
@@ -101,5 +101,10 @@ def test(bdev, vfs_class):
     vfs.umount()
 
 
-bdev = RAMBlockDevice(30)
-test(bdev, uos.VfsLfs2)
+try:
+    bdev = RAMBlockDevice(30)
+except MemoryError:
+    print("SKIP")
+    raise SystemExit
+
+test(bdev, os.VfsLfs2)

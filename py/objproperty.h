@@ -28,6 +28,12 @@
 
 #include "py/obj.h"
 
+// CIRCUITPY-CHANGE: MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS marks classes with
+// properties, descriptors, __delattr__ or __setattr___.
+// When defining native classes that use properties, you *must* set the
+// MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS flag. Otherwise, the property will be
+// ignored.
+
 #if MICROPY_PY_BUILTINS_PROPERTY
 
 typedef struct _mp_obj_property_t {

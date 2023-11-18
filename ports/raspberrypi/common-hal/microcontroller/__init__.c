@@ -38,7 +38,6 @@
 #include "supervisor/filesystem.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "src/rp2040/hardware_structs/include/hardware/structs/sio.h"
 #include "src/rp2_common/hardware_sync/include/hardware/sync.h"

@@ -53,8 +53,7 @@
 STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
-    bleio_uuid_obj_t *self = m_new_obj(bleio_uuid_obj_t);
-    self->base.type = type;
+    bleio_uuid_obj_t *self = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
 
     const mp_obj_t value = all_args[0];
     uint8_t uuid128[16];
@@ -62,7 +61,7 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
     if (mp_obj_is_int(value)) {
         mp_int_t uuid16 = mp_obj_get_int(value);
         if (uuid16 < 0 || uuid16 > 0xffff) {
-            mp_raise_ValueError(translate("UUID integer value must be 0-0xffff"));
+            mp_raise_ValueError(MP_ERROR_TEXT("UUID integer value must be 0-0xffff"));
         }
 
         // NULL means no 128-bit value.
@@ -87,7 +86,7 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
                 good_uuid = hex_idx == 32;
             }
             if (!good_uuid) {
-                mp_raise_ValueError(translate("UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"));
+                mp_raise_ValueError(MP_ERROR_TEXT("UUID string not 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'"));
             }
 
             size_t hex_idx = 0;
@@ -99,11 +98,11 @@ STATIC mp_obj_t bleio_uuid_make_new(const mp_obj_type_t *type, size_t n_args, si
             // Last possibility is that it's a buf.
             mp_buffer_info_t bufinfo;
             if (!mp_get_buffer(value, &bufinfo, MP_BUFFER_READ)) {
-                mp_raise_ValueError(translate("UUID value is not str, int or byte buffer"));
+                mp_raise_ValueError(MP_ERROR_TEXT("UUID value is not str, int or byte buffer"));
             }
 
             if (bufinfo.len != 16) {
-                mp_raise_ValueError(translate("Byte buffer must be 16 bytes."));
+                mp_raise_ValueError(MP_ERROR_TEXT("Byte buffer must be 16 bytes."));
             }
 
             memcpy(uuid128, bufinfo.buf, 16);
@@ -143,7 +142,7 @@ STATIC mp_obj_t bleio_uuid_get_uuid128(mp_obj_t self_in) {
 
     uint8_t uuid128[16];
     if (common_hal_bleio_uuid_get_size(self) != 128) {
-        mp_raise_AttributeError(translate("not a 128-bit UUID"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("not a 128-bit UUID"));
     }
     common_hal_bleio_uuid_get_uuid128(self, uuid128);
     return mp_obj_new_bytes(uuid128, 16);
@@ -191,7 +190,7 @@ STATIC mp_obj_t bleio_uuid_pack_into(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     size_t offset = args[ARG_offset].u_int;
     if (offset + common_hal_bleio_uuid_get_size(self) / 8 > bufinfo.len) {
-        mp_raise_ValueError(translate("Buffer + offset too small %d %d %d"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer + offset too small %d %d %d"));
     }
 
     common_hal_bleio_uuid_pack_into(self, bufinfo.buf + offset);
@@ -281,15 +280,13 @@ void bleio_uuid_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-const mp_obj_type_t bleio_uuid_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_UUID,
-    .print = bleio_uuid_print,
-    .make_new = bleio_uuid_make_new,
-    .locals_dict = (mp_obj_dict_t *)&bleio_uuid_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = bleio_uuid_unary_op,
-        .binary_op = bleio_uuid_binary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_uuid_type,
+    MP_QSTR_UUID,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    print, bleio_uuid_print,
+    make_new, bleio_uuid_make_new,
+    locals_dict, &bleio_uuid_locals_dict,
+    unary_op, bleio_uuid_unary_op,
+    binary_op, bleio_uuid_binary_op
+    );

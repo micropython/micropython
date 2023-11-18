@@ -231,7 +231,7 @@ void clocks_init(void) {
     CLOCK_DisableClock(kCLOCK_Lpuart7);
     CLOCK_DisableClock(kCLOCK_Lpuart8);
     /* Set UART_CLK_PODF. */
-    CLOCK_SetDiv(kCLOCK_UartDiv, 0);
+    CLOCK_SetDiv(kCLOCK_UartDiv, 1);
     /* Set Uart clock source. */
     CLOCK_SetMux(kCLOCK_UartMux, 0);
     /* Disable LCDIF clock gate. */
@@ -383,7 +383,7 @@ void clocks_init(void) {
     /* Set SAI3 MCLK3 clock source. */
     IOMUXC_SetSaiMClkClockSource(IOMUXC_GPR, kIOMUXC_GPR_SAI3MClk3Sel, 0);
     /* Set MQS configuration. */
-    IOMUXC_MQSConfig(IOMUXC_GPR,kIOMUXC_MqsPwmOverSampleRate32, 0);
+    IOMUXC_MQSConfig(IOMUXC_GPR, kIOMUXC_MqsPwmOverSampleRate32, 0);
     /* Set ENET Ref clock source. */
     #if defined(IOMUXC_GPR_GPR1_ENET_REF_CLK_DIR_MASK)
     IOMUXC_GPR->GPR1 &= ~IOMUXC_GPR_GPR1_ENET_REF_CLK_DIR_MASK;
@@ -399,4 +399,5 @@ void clocks_init(void) {
     IOMUXC_GPR->GPR5 &= ~IOMUXC_GPR_GPR5_VREF_1M_CLK_GPT2_MASK;
     /* Set SystemCoreClock variable. */
     SystemCoreClock = BOARD_BOOTCLOCKRUN_CORE_CLOCK;
+    CLOCK_SetMode(kCLOCK_ModeRun);
 }

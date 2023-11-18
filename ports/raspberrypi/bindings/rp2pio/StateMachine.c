@@ -40,7 +40,6 @@
 #include "py/mperrno.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 //| class StateMachine:
@@ -62,6 +61,7 @@
 //|         program: ReadableBuffer,
 //|         frequency: int,
 //|         *,
+//|         may_exec: Optional[ReadableBuffer] = None,
 //|         init: Optional[ReadableBuffer] = None,
 //|         first_out_pin: Optional[microcontroller.Pin] = None,
 //|         out_pin_count: int = 1,
@@ -93,6 +93,7 @@
 //|         user_interruptible: bool = True,
 //|         wrap_target: int = 0,
 //|         wrap: int = -1,
+//|         offset: int = -1,
 //|     ) -> None:
 //|         """Construct a StateMachine object on the given pins with the given program.
 //|
@@ -100,6 +101,10 @@
 //|         :param int frequency: the target clock frequency of the state machine. Actual may be less. Use 0 for system clock speed.
 //|         :param ReadableBuffer init: a program to run once at start up. This is run after program
 //|              is started so instructions may be intermingled
+//|         :param ReadableBuffer may_exec: Instructions that may be executed via `StateMachine.run` calls.
+//|             Some elements of the `StateMachine`'s configuration are inferred from the instructions used;
+//|             for instance, if there is no ``in`` or ``push`` instruction, then the `StateMachine` is configured without a receive FIFO.
+//|             In this case, passing a ``may_exec`` program containing an ``in`` instruction such as ``in x``, a receive FIFO will be configured.
 //|         :param ~microcontroller.Pin first_out_pin: the first pin to use with the OUT instruction
 //|         :param int out_pin_count: the count of consecutive pins to use with OUT starting at first_out_pin
 //|         :param int initial_out_pin_state: the initial output value for out pins starting at first_out_pin
@@ -146,13 +151,15 @@
 //|         :param int wrap: The instruction after which to wrap to the ``wrap``
 //|             instruction. As a special case, -1 (the default) indicates the
 //|             last instruction of the program.
+//|         :param int offset: A specific offset in the state machine's program memory where the program must be loaded.
+//|             The default value, -1, allows the program to be loaded at any offset.
+//|             This is appropriate for most programs.
 //|         """
 //|         ...
 
 STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    rp2pio_statemachine_obj_t *self = m_new_obj(rp2pio_statemachine_obj_t);
-    self->base.type = &rp2pio_statemachine_type;
-    enum { ARG_program, ARG_frequency, ARG_init,
+    rp2pio_statemachine_obj_t *self = mp_obj_malloc(rp2pio_statemachine_obj_t, &rp2pio_statemachine_type);
+    enum { ARG_program, ARG_frequency, ARG_init, ARG_may_exec,
            ARG_first_out_pin, ARG_out_pin_count, ARG_initial_out_pin_state, ARG_initial_out_pin_direction,
            ARG_first_in_pin, ARG_in_pin_count,
            ARG_pull_in_pin_up, ARG_pull_in_pin_down,
@@ -166,11 +173,13 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
            ARG_auto_push, ARG_push_threshold, ARG_in_shift_right,
            ARG_user_interruptible,
            ARG_wrap_target,
-           ARG_wrap,};
+           ARG_wrap,
+           ARG_offset, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_program, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_frequency, MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_init, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_may_exec, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
 
         { MP_QSTR_first_out_pin, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_out_pin_count, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
@@ -209,6 +218,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 
         { MP_QSTR_wrap_target, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
         { MP_QSTR_wrap, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
+        { MP_QSTR_offset, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -219,6 +229,10 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
     mp_buffer_info_t init_bufinfo;
     init_bufinfo.len = 0;
     mp_get_buffer(args[ARG_init].u_obj, &init_bufinfo, MP_BUFFER_READ);
+
+    mp_buffer_info_t may_exec_bufinfo;
+    may_exec_bufinfo.len = 0;
+    mp_get_buffer(args[ARG_may_exec].u_obj, &may_exec_bufinfo, MP_BUFFER_READ);
 
     // We don't validate pin in use here because we may be ok sharing them within a PIO.
     const mcu_pin_obj_t *first_out_pin =
@@ -249,12 +263,12 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
 
     mp_arg_validate_length_range(bufinfo.len, 2, 64, MP_QSTR_program);
     if (bufinfo.len % 2 != 0) {
-        mp_raise_ValueError(translate("Program size invalid"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Program size invalid"));
     }
 
     mp_arg_validate_length_range(init_bufinfo.len, 0, 64, MP_QSTR_init);
     if (init_bufinfo.len % 2 != 0) {
-        mp_raise_ValueError(translate("Init program size invalid"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Init program size invalid"));
     }
 
     int wrap = args[ARG_wrap].u_int;
@@ -264,6 +278,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         bufinfo.buf, bufinfo.len / 2,
         args[ARG_frequency].u_int,
         init_bufinfo.buf, init_bufinfo.len / 2,
+        may_exec_bufinfo.buf, may_exec_bufinfo.len / 2,
         first_out_pin, out_pin_count, args[ARG_initial_out_pin_state].u_int, args[ARG_initial_out_pin_direction].u_int,
         first_in_pin, in_pin_count, args[ARG_pull_in_pin_up].u_int, args[ARG_pull_in_pin_down].u_int,
         first_set_pin, set_pin_count, args[ARG_initial_set_pin_state].u_int, args[ARG_initial_set_pin_direction].u_int,
@@ -276,7 +291,7 @@ STATIC mp_obj_t rp2pio_statemachine_make_new(const mp_obj_type_t *type, size_t n
         args[ARG_wait_for_txstall].u_bool,
         args[ARG_auto_push].u_bool, push_threshold, args[ARG_in_shift_right].u_bool,
         args[ARG_user_interruptible].u_bool,
-        wrap_target, wrap);
+        wrap_target, wrap, args[ARG_offset].u_int);
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -342,7 +357,7 @@ STATIC mp_obj_t rp2pio_statemachine_run(mp_obj_t self_obj, mp_obj_t instruction_
     mp_get_buffer_raise(instruction_obj, &bufinfo, MP_BUFFER_READ);
 
     if (bufinfo.len % 2 != 0) {
-        mp_raise_ValueError(translate("Program size invalid"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Program size invalid"));
     }
     common_hal_rp2pio_statemachine_run(self, bufinfo.buf, (size_t)bufinfo.len / 2);
     return mp_const_none;
@@ -400,7 +415,7 @@ STATIC mp_obj_t rp2pio_statemachine_write(size_t n_args, const mp_obj_t *pos_arg
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer elements must be 4 bytes long or less"));
     }
     int32_t start = args[ARG_start].u_int;
     size_t length = bufinfo.len / stride_in_bytes;
@@ -476,10 +491,10 @@ STATIC void fill_buf_info(sm_buf_info *info, mp_obj_t obj, size_t *stride_in_byt
         mp_get_buffer_raise(obj, &info->info, MP_BUFFER_READ);
         size_t stride = mp_binary_get_size('@', info->info.typecode, NULL);
         if (stride > 4) {
-            mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Buffer elements must be 4 bytes long or less"));
         }
         if (*stride_in_bytes && stride != *stride_in_bytes) {
-            mp_raise_ValueError(translate("Mismatched data size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Mismatched data size"));
         }
         *stride_in_bytes = stride;
     } else {
@@ -612,7 +627,7 @@ STATIC mp_obj_t rp2pio_statemachine_readinto(size_t n_args, const mp_obj_t *pos_
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_WRITE);
     int stride_in_bytes = mp_binary_get_size('@', bufinfo.typecode, NULL);
     if (stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Buffer elements must be 4 bytes long or less"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer elements must be 4 bytes long or less"));
     }
     int32_t start = args[ARG_start].u_int;
     size_t length = bufinfo.len / stride_in_bytes;
@@ -686,7 +701,7 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
     mp_get_buffer_raise(args[ARG_buffer_out].u_obj, &buf_out_info, MP_BUFFER_READ);
     int out_stride_in_bytes = mp_binary_get_size('@', buf_out_info.typecode, NULL);
     if (out_stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("Out-buffer elements must be <= 4 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Out-buffer elements must be <= 4 bytes long"));
     }
     int32_t out_start = args[ARG_out_start].u_int;
     size_t out_length = buf_out_info.len / out_stride_in_bytes;
@@ -696,7 +711,7 @@ STATIC mp_obj_t rp2pio_statemachine_write_readinto(size_t n_args, const mp_obj_t
     mp_get_buffer_raise(args[ARG_buffer_in].u_obj, &buf_in_info, MP_BUFFER_WRITE);
     int in_stride_in_bytes = mp_binary_get_size('@', buf_in_info.typecode, NULL);
     if (in_stride_in_bytes > 4) {
-        mp_raise_ValueError(translate("In-buffer elements must be <= 4 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("In-buffer elements must be <= 4 bytes long"));
     }
     int32_t in_start = args[ARG_in_start].u_int;
     size_t in_length = buf_in_info.len / in_stride_in_bytes;
@@ -844,9 +859,10 @@ STATIC const mp_rom_map_elem_t rp2pio_statemachine_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(rp2pio_statemachine_locals_dict, rp2pio_statemachine_locals_dict_table);
 
-const mp_obj_type_t rp2pio_statemachine_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_StateMachine,
-    .make_new = rp2pio_statemachine_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rp2pio_statemachine_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2pio_statemachine_type,
+    MP_QSTR_StateMachine,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, rp2pio_statemachine_make_new,
+    locals_dict, &rp2pio_statemachine_locals_dict
+    );

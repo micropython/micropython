@@ -39,6 +39,7 @@
 #include "lib/oofatfs/ff.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
+#include "audio_dma.h"
 #include "supervisor/flash.h"
 #include "supervisor/usb.h"
 
@@ -97,9 +98,16 @@ void port_internal_flash_flush(void) {
     }
     // Make sure we don't have an interrupt while we do flash operations.
     common_hal_mcu_disable_interrupts();
+    // and audio DMA must be paused as well
+    #if CIRCUITPY_AUDIOCORE
+    uint32_t channel_mask = audio_dma_pause_all();
+    #endif
     flash_range_erase(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, SECTOR_SIZE);
     flash_range_program(CIRCUITPY_CIRCUITPY_DRIVE_START_ADDR + _cache_lba, _cache, SECTOR_SIZE);
     _cache_lba = NO_CACHE;
+    #if CIRCUITPY_AUDIOCORE
+    audio_dma_unpause_mask(channel_mask);
+    #endif
     common_hal_mcu_enable_interrupts();
 }
 

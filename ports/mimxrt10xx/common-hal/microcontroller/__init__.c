@@ -36,9 +36,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
-#include "supervisor/linker.h"
 #include "supervisor/shared/safe_mode.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "pins.h"
 
@@ -69,7 +67,7 @@ void PLACE_IN_ITCM(common_hal_mcu_enable_interrupts)(void) {
 void common_hal_mcu_on_next_reset(mcu_runmode_t runmode) {
     if (runmode == RUNMODE_BOOTLOADER) {
         if (!bootloader_available()) {
-            mp_raise_ValueError(translate("Cannot reset into bootloader because no bootloader is present"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Cannot reset into bootloader because no bootloader is present"));
         }
         // Pretend to be the first of the two reset presses needed to enter the
         // bootloader. That way one reset will end in the bootloader.

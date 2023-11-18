@@ -4,8 +4,8 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2015 Paul Sokolovsky
- * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2021 Jim Mussared
+ * Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2021 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ extern const char mp_frozen_str_content[];
 
 #include "py/emitglue.h"
 
-extern const mp_raw_code_t *const mp_frozen_mpy_content[];
+extern const mp_frozen_module_t *const mp_frozen_mpy_content[];
 
 #endif // MICROPY_MODULE_FROZEN_MPY
 

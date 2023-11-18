@@ -18,3 +18,7 @@ FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Requests
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_NeoPixel
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_Display_Text
 FROZEN_MPY_DIRS += $(TOP)/frozen/Adafruit_CircuitPython_LIS3DH
+
+CIRCUITPY_ESP_PSRAM_SIZE = 2MB
+CIRCUITPY_ESP_PSRAM_MODE = qio
+CIRCUITPY_ESP_PSRAM_FREQ = 40m

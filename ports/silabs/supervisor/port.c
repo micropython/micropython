@@ -192,6 +192,10 @@ void reset_port(void) {
     #if CIRCUITPY_RTC
     rtc_reset();
     #endif
+
+    #if CIRCUITPY_WATCHDOG
+    watchdog_reset();
+    #endif
 }
 
 void reset_to_bootloader(void) {
@@ -212,10 +216,6 @@ uint32_t *port_heap_get_bottom(void) {
 
 uint32_t *port_heap_get_top(void) {
     return heap + heap_size;
-}
-
-bool port_has_fixed_stack(void) {
-    return true;
 }
 
 uint32_t *port_stack_get_limit(void) {

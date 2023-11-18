@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,6 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 /******************************************************************************/
 /* slice object                                                               */
 
@@ -47,6 +45,12 @@ STATIC void slice_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
     mp_print_str(print, ", ");
     mp_obj_print_helper(print, o->step, PRINT_REPR);
     mp_print_str(print, ")");
+}
+
+STATIC mp_obj_t slice_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+    // Needed to explicitly opt out of default __hash__.
+    // REVISIT: CPython implements comparison operators for slice.
+    return MP_OBJ_NULL;
 }
 
 #if MICROPY_PY_BUILTINS_SLICE_INDICES
@@ -122,23 +126,32 @@ STATIC const mp_rom_map_elem_t slice_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(slice_locals_dict, slice_locals_dict_table);
 #endif
 
-const mp_obj_type_t mp_type_slice = {
-    { &mp_type_type },
-    .name = MP_QSTR_slice,
-    .print = slice_print,
-    #if MICROPY_PY_BUILTINS_SLICE_INDICES || MICROPY_PY_BUILTINS_SLICE_ATTRS
-    .make_new = slice_make_new,
-    #endif
-    #if MICROPY_PY_BUILTINS_SLICE_ATTRS
-    .attr = slice_attr,
-    #elif MICROPY_PY_BUILTINS_SLICE_INDICES
-    .locals_dict = (mp_obj_dict_t *)&slice_locals_dict,
-    #endif
-};
+#if MICROPY_PY_BUILTINS_SLICE_ATTRS
+#define SLICE_TYPE_ATTR_OR_LOCALS_DICT attr, slice_attr,
+#elif MICROPY_PY_BUILTINS_SLICE_INDICES
+#define SLICE_TYPE_ATTR_OR_LOCALS_DICT locals_dict, &slice_locals_dict,
+#else
+#define SLICE_TYPE_ATTR_OR_LOCALS_DICT
+#endif
+
+#if MICROPY_PY_BUILTINS_SLICE_INDICES || MICROPY_PY_BUILTINS_SLICE_ATTRS
+#define SLICE_MAKE_NEW make_new, slice_make_new,
+#else
+#define SLICE_MAKE_NEW
+#endif
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_slice,
+    MP_QSTR_slice,
+    MP_TYPE_FLAG_NONE,
+    unary_op, slice_unary_op,
+    SLICE_TYPE_ATTR_OR_LOCALS_DICT
+    SLICE_MAKE_NEW
+    print, slice_print
+    );
 
 mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
-    mp_obj_slice_t *o = m_new_obj(mp_obj_slice_t);
-    o->base.type = &mp_type_slice;
+    mp_obj_slice_t *o = mp_obj_malloc(mp_obj_slice_t, &mp_type_slice);
     o->start = ostart;
     o->stop = ostop;
     o->step = ostep;

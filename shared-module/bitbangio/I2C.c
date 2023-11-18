@@ -32,7 +32,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 STATIC void delay(bitbangio_i2c_obj_t *self) {
     // We need to use an accurate delay to get acceptable I2C
@@ -56,7 +55,7 @@ STATIC void scl_release(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_switch_to_output(&self->scl, true, DRIVE_MODE_OPEN_DRAIN);
     // raise exception on timeout
     if (count == 0) {
-        mp_raise_msg(&mp_type_TimeoutError, translate("Clock stretch too long"));
+        mp_raise_msg(&mp_type_TimeoutError, MP_ERROR_TEXT("Clock stretch too long"));
     }
 }
 

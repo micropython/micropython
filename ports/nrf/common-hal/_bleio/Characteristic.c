@@ -102,7 +102,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
         self->initial_value_len = initial_value_bufinfo->len;
         if (gc_alloc_possible()) {
             if (gc_nbytes(initial_value_bufinfo->buf) > 0) {
-                uint8_t *initial_value = m_malloc(self->initial_value_len, false);
+                uint8_t *initial_value = m_malloc(self->initial_value_len);
                 memcpy(initial_value, initial_value_bufinfo->buf, self->initial_value_len);
                 self->initial_value = initial_value;
             } else {
@@ -117,7 +117,7 @@ void common_hal_bleio_characteristic_construct(bleio_characteristic_obj_t *self,
 
     const mp_int_t max_length_max = fixed_length ? BLE_GATTS_FIX_ATTR_LEN_MAX : BLE_GATTS_VAR_ATTR_LEN_MAX;
     if (max_length < 0 || max_length > max_length_max) {
-        mp_raise_ValueError_varg(translate("max_length must be 0-%d when fixed_length is %s"),
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("max_length must be 0-%d when fixed_length is %s"),
             max_length_max, fixed_length ? "True" : "False");
     }
     self->max_length = max_length;
@@ -172,10 +172,10 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
         } else {
             // Validate data length for local characteristics only.
             if (self->fixed_length && bufinfo->len != self->max_length) {
-                mp_raise_ValueError(translate("Value length != required fixed length"));
+                mp_raise_ValueError(MP_ERROR_TEXT("Value length != required fixed length"));
             }
             if (bufinfo->len > self->max_length) {
-                mp_raise_ValueError(translate("Value length > max_length"));
+                mp_raise_ValueError(MP_ERROR_TEXT("Value length > max_length"));
             }
 
             // Always write the value locally even if no connections are active.
@@ -255,11 +255,11 @@ void common_hal_bleio_characteristic_add_descriptor(bleio_characteristic_obj_t *
 
 void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self, bool notify, bool indicate) {
     if (self->cccd_handle == BLE_GATT_HANDLE_INVALID) {
-        mp_raise_bleio_BluetoothError(translate("No CCCD for this Characteristic"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("No CCCD for this Characteristic"));
     }
 
     if (!common_hal_bleio_service_get_is_remote(self->service)) {
-        mp_raise_bleio_RoleError(translate("Can't set CCCD on local Characteristic"));
+        mp_raise_bleio_RoleError(MP_ERROR_TEXT("Can't set CCCD on local Characteristic"));
     }
 
     const uint16_t conn_handle = bleio_connection_get_conn_handle(self->service->connection);

@@ -48,7 +48,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/time/__init__.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 
 #ifdef SAMD21
 #include "hpl/gclk/hpl_gclk_base.h"
@@ -296,12 +295,12 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     #ifdef SAM_D5X_E5X
     ((EIC->INTENSET.bit.EXTINT & mask) != 0 || (EIC->EVCTRL.bit.EXTINTEO & mask) != 0)) {
     #endif
-        mp_raise_RuntimeError(translate("EXTINT channel already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("EXTINT channel already in use"));
     }
 
     uint8_t timer_index = find_free_timer();
     if (timer_index == 0xff) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
     Tc *tc = tc_insts[timer_index];
 
@@ -330,7 +329,7 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
     frequencyin_samd51_start_dpll();
     if (dpll_gclk == 0xff && !clock_get_enabled(0, GCLK_SOURCE_DPLL1)) {
         common_hal_frequencyio_frequencyin_deinit(self);
-        mp_raise_RuntimeError(translate("No available clocks"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No available clocks"));
     }
     set_timer_handler(timer_index, dpll_gclk, TC_HANDLER_NO_INTERRUPT);
     turn_on_clocks(true, timer_index, dpll_gclk);
@@ -400,7 +399,7 @@ void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t*
         reference_tc = find_free_timer();
         if (reference_tc == 0xff) {
             common_hal_frequencyio_frequencyin_deinit(self);
-            mp_raise_RuntimeError(translate("All timers in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
         }
         frequencyin_reference_tc_init();
     }

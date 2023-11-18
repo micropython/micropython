@@ -84,7 +84,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     BP_Function_Enum miso_alt = 0;
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Half duplex SPI is not implemented"));
     }
 
     // BCM_VERSION != 2711 have 3 SPI but as listed in peripherals/gen/pins.c two are on

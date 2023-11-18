@@ -48,7 +48,7 @@ extern uint32_t reset_reason_saved;
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
-        mp_raise_ValueError(translate("Cannot wake on pin edge, only level"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Cannot wake on pin edge, only level"));
     }
     if (pin->number >= NUMBER_OF_PINS) {
         raise_ValueError_invalid_pin();

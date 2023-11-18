@@ -24,7 +24,7 @@
 #
 
 .SUFFIXES:				# ignore builtin rules
-.PHONY: all clean slc-clean slc-generate dependents
+.PHONY: all clean slc-clean slc-generate dependents flash
 # Values set by the initial generation
 PROJECTNAME = circuitpython_efr32
 # If the build directory is not given, make it reflect the board name.
@@ -37,8 +37,6 @@ OUTPUT_DIR = $(SILABS_BUILD)
 PY_GEN_PINS_SRC ?= tools/make_pins.py
 # SLC tool path
 SLC_PATH = $(realpath $(CURDIR))/tools/slc_cli_linux
-
-BUILD_VERBOSE ?= 1
 
 CFLAGS = $(INCLUDES) $(C_DEFS) $(C_FLAGS) \
 	-Wno-expansion-to-defined \
@@ -95,22 +93,17 @@ endif
 SRC_S = boards/mp_efr32xg24_gchelper.s
 
 SRC_COMMON_HAL_EXPANDED = $(addprefix shared-bindings/, $(SRC_COMMON_HAL)) \
-						  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
-						  $(addprefix common-hal/, $(SRC_COMMON_HAL))
+			  $(addprefix shared-bindings/, $(SRC_BINDINGS_ENUMS)) \
+		          $(addprefix common-hal/, $(SRC_COMMON_HAL))
 
 SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE)) \
-							 $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
-							 $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
+			     $(addprefix shared-module/, $(SRC_SHARED_MODULE)) \
+			     $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 # There may be duplicates between SRC_COMMON_HAL_EXPANDED and SRC_SHARED_MODULE_EXPANDED,
 # because a few modules have files both in common-hal/ and shared-module/.
 # Doing a $(sort ...) removes duplicates as part of sorting.
 SRC_COMMON_HAL_SHARED_MODULE_EXPANDED = $(sort $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED))
-
-ifneq ($(FROZEN_MPY_DIR),)
-FROZEN_MPY_PY_FILES := $(shell find -L $(FROZEN_MPY_DIR) -type f -name '*.py')
-FROZEN_MPY_MPY_FILES := $(addprefix $(BUILD)/,$(FROZEN_MPY_PY_FILES:.py=.mpy))
-endif
 
 OBJ += $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_COMMON_HAL_SHARED_MODULE_EXPANDED:.c=.o))
@@ -125,7 +118,7 @@ $(BUILD)/$(FATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_MOD) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR +=
 
@@ -145,14 +138,17 @@ $(OUTPUT_DIR)/firmware.bin: $(SILABS_BUILD)/$(PROJECTNAME).Makefile $(OUTPUT_DIR
 	@echo 'Done.'
 endif
 
-$(SILABS_BUILD)/$(PROJECTNAME).Makefile:
-	+@$(MAKE) --no-print-directory slc-generate
+$(SILABS_BUILD)/$(PROJECTNAME).Makefile: | $(HEADER_BUILD)/mpversion.h
+	+@$(MAKE) -j1 --no-print-directory slc-generate
 
 $(OUTPUT_DIR)/firmware.out: $(SILABS_BUILD)/pin_functions.h $(SILABS_BUILD)/pins.c $(OBJ) $(OBJS) $(LIB_FILES)
-	@echo 'Linking $(OUTPUT_DIR)/firmware.out'
-	@echo "$(OBJS) $(OBJ)" > $(OUTPUT_DIR)/linker_objs
-	$(CC) $(LD_FLAGS) @$(OUTPUT_DIR)/linker_objs $(LIBS) -o $(OUTPUT_DIR)/firmware.out
-	$(OBJCOPY) $(OUTPUT_DIR)/firmware.out -O binary $(OUTPUT_DIR)/firmware.bin
+	$(STEPECHO) 'Linking $(OUTPUT_DIR)/firmware.out'
+	$(Q)echo "$(OBJS) $(OBJ)" > $(OUTPUT_DIR)/linker_objs
+	$(Q)$(CC) $(LD_FLAGS) @$(OUTPUT_DIR)/linker_objs -Wl,--print-memory-usage $(LIBS) -o $(OUTPUT_DIR)/firmware.out
+	$(Q)$(OBJCOPY) $(OUTPUT_DIR)/firmware.out -O binary $(OUTPUT_DIR)/firmware.bin
+
+flash: $(OUTPUT_DIR)/firmware.bin
+	$(Q)commander flash -d EFR32MG24 --address 08000000 $(OUTPUT_DIR)/firmware.bin
 
 $(OUTPUT_DIR)/firmware.hex:
 
@@ -181,38 +177,11 @@ endif
 	@sed -i 's/ autogen\// $(SILABS_BUILD)\/autogen\//g' $(SILABS_BUILD)/circuitpython_efr32.project.mak
 	@sed -i 's/-T"autogen\//-T"$(SILABS_BUILD)\/autogen\//g' $(SILABS_BUILD)/circuitpython_efr32.project.mak
 
-#Override ECHO
-$(OBJS): ECHO =
-$(OBJS):
-
-$(OUTPUT_DIR)/%.o: %.c
-	@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CC) $(CFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.cpp
-	@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.cc
-	@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CXX) $(CXXFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.s
-	@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CC) $(ASMFLAGS) -c -o $@ $<
-
-$(OUTPUT_DIR)/%.o: %.S
-	@echo 'Building $<'
-	@$(MKDIR_P) $(@D)
-	$(ECHO)$(CC) $(ASMFLAGS) -c -o $@ $<
+# tools/slc_cli_linux/bin/slc-cli/developer/exporter_templates/arm_gcc/arm_gcc.Makefile includes
+# build rules and defines ECHO = @ when VERBOSE = 1 which is not compatible with py/mkenv.mk:
+# ECHO = @echo
+# so override ECHO
+$(OBJS): ECHO = $(Q)
+#$(OBJS):
 
 include $(TOP)/py/mkrules.mk
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

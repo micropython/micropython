@@ -95,7 +95,8 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
             dest[i] = 0;
         }
 
-        build_partition(dest + 446, 0, 0x01 /* FAT12 */, PART1_START_BLOCK, supervisor_flash_get_block_count());
+        // Specifying "Big FAT12/16 CHS" allows mounting by Android
+        build_partition(dest + 446, 0, 0x06 /* Big FAT12/16 CHS */, PART1_START_BLOCK, supervisor_flash_get_block_count());
         build_partition(dest + 462, 0, 0, 0, 0);
         build_partition(dest + 478, 0, 0, 0, 0);
         build_partition(dest + 494, 0, 0, 0, 0);
@@ -105,6 +106,7 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
         if (num_blocks > 1) {
             dest += 512;
             num_blocks -= 1;
+            block_num += 1;
             // Fall through and do a read from flash.
         } else {
             return 0; // Done and ok.
@@ -203,12 +205,13 @@ STATIC const mp_rom_map_elem_t supervisor_flash_obj_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_flash_obj_locals_dict, supervisor_flash_obj_locals_dict_table);
 
-const mp_obj_type_t supervisor_flash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-    .make_new = supervisor_flash_obj_make_new,
-    .locals_dict = (struct _mp_obj_dict_t *)&supervisor_flash_obj_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    supervisor_flash_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    make_new, supervisor_flash_obj_make_new,
+    locals_dict, &supervisor_flash_obj_locals_dict
+    );
 
 void supervisor_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;

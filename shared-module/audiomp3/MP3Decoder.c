@@ -35,7 +35,6 @@
 #include "py/runtime.h"
 
 #include "shared-module/audiomp3/MP3Decoder.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/background_callback.h"
 #include "lib/mp3/src/mp3common.h"
 
@@ -190,7 +189,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
 
     self->inbuf_length = 2048;
     self->inbuf_offset = self->inbuf_length;
-    self->inbuf = m_malloc(self->inbuf_length, false);
+    self->inbuf = m_malloc(self->inbuf_length);
     if (self->inbuf == NULL) {
         common_hal_audiomp3_mp3file_deinit(self);
         m_malloc_fail(self->inbuf_length);
@@ -199,7 +198,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
     if (self->decoder == NULL) {
         common_hal_audiomp3_mp3file_deinit(self);
         mp_raise_msg(&mp_type_MemoryError,
-            translate("Couldn't allocate decoder"));
+            MP_ERROR_TEXT("Couldn't allocate decoder"));
     }
 
     if ((intptr_t)buffer & 1) {
@@ -210,13 +209,13 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
         self->buffers[0] = (int16_t *)(void *)buffer;
         self->buffers[1] = (int16_t *)(void *)(buffer + MAX_BUFFER_LEN);
     } else {
-        self->buffers[0] = m_malloc(MAX_BUFFER_LEN, false);
+        self->buffers[0] = m_malloc(MAX_BUFFER_LEN);
         if (self->buffers[0] == NULL) {
             common_hal_audiomp3_mp3file_deinit(self);
             m_malloc_fail(MAX_BUFFER_LEN);
         }
 
-        self->buffers[1] = m_malloc(MAX_BUFFER_LEN, false);
+        self->buffers[1] = m_malloc(MAX_BUFFER_LEN);
         if (self->buffers[1] == NULL) {
             common_hal_audiomp3_mp3file_deinit(self);
             m_malloc_fail(MAX_BUFFER_LEN);
@@ -248,7 +247,7 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file
     background_callback_end_critical_section();
     if (!result) {
         mp_raise_msg(&mp_type_RuntimeError,
-            translate("Failed to parse MP3 file"));
+            MP_ERROR_TEXT("Failed to parse MP3 file"));
     }
 
     self->sample_rate = fi.samprate;

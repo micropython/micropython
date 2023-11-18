@@ -30,7 +30,6 @@
 #include "py/mphal.h"
 #include "py/mpstate.h"
 #include "py/runtime.h"
-#include "supervisor/linker.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/port.h"

@@ -47,19 +47,19 @@ void check_nrf_error(uint32_t err_code) {
     }
     switch (err_code) {
         case NRF_ERROR_NO_MEM:
-            mp_raise_msg(&mp_type_MemoryError, translate("Nordic system firmware out of memory"));
+            mp_raise_msg(&mp_type_MemoryError, MP_ERROR_TEXT("Nordic system firmware out of memory"));
             return;
         case NRF_ERROR_TIMEOUT:
             mp_raise_msg(&mp_type_TimeoutError, NULL);
             return;
         case NRF_ERROR_INVALID_PARAM:
-            mp_raise_ValueError(translate("Invalid BLE parameter"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid BLE parameter"));
             return;
         case BLE_ERROR_INVALID_CONN_HANDLE:
-            mp_raise_ConnectionError(translate("Not connected"));
+            mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
             return;
         default:
-            mp_raise_bleio_BluetoothError(translate("Unknown system firmware error: %04x"), err_code);
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown system firmware error: %04x"), err_code);
             break;
     }
 }
@@ -70,13 +70,13 @@ void check_gatt_status(uint16_t gatt_status) {
     }
     switch (gatt_status) {
         case BLE_GATT_STATUS_ATTERR_INSUF_AUTHENTICATION:
-            mp_raise_bleio_SecurityError(translate("Insufficient authentication"));
+            mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient authentication"));
             return;
         case BLE_GATT_STATUS_ATTERR_INSUF_ENCRYPTION:
-            mp_raise_bleio_SecurityError(translate("Insufficient encryption"));
+            mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Insufficient encryption"));
             return;
         default:
-            mp_raise_bleio_BluetoothError(translate("Unknown gatt error: 0x%04x"), gatt_status);
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Unknown gatt error: 0x%04x"), gatt_status);
     }
 }
 
@@ -87,10 +87,10 @@ void check_sec_status(uint8_t sec_status) {
 
     switch (sec_status) {
         case BLE_GAP_SEC_STATUS_UNSPECIFIED:
-            mp_raise_bleio_SecurityError(translate("Unspecified issue. Can be that the pairing prompt on the other device was declined or ignored."));
+            mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Unspecified issue. Can be that the pairing prompt on the other device was declined or ignored."));
             return;
         default:
-            mp_raise_bleio_SecurityError(translate("Unknown security error: 0x%04x"), sec_status);
+            mp_raise_bleio_SecurityError(MP_ERROR_TEXT("Unknown security error: 0x%04x"), sec_status);
     }
 }
 
@@ -126,7 +126,7 @@ bleio_adapter_obj_t common_hal_bleio_adapter_obj;
 
 void common_hal_bleio_check_connected(uint16_t conn_handle) {
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
     }
 }
 

@@ -127,4 +127,4 @@ const mp_obj_module_t _bhb_user_cmodule = {
     .globals = (mp_obj_dict_t *)&_bhb_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__bhb, _bhb_user_cmodule, MODULE_BHB_ENABLED);
+MP_REGISTER_MODULE(MP_QSTR__bhb, _bhb_user_cmodule);

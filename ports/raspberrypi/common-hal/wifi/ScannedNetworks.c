@@ -97,8 +97,7 @@ mp_obj_t common_hal_wifi_scannednetworks_next(wifi_scannednetworks_obj_t *self) 
     }
 
 
-    wifi_network_obj_t *entry = m_new_obj(wifi_network_obj_t);
-    entry->base.type = &wifi_network_type;
+    wifi_network_obj_t *entry = mp_obj_malloc(wifi_network_obj_t, &wifi_network_type);
     scan_result_get(&entry->record);
 
     return MP_OBJ_FROM_PTR(entry);

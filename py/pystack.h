@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+ * Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 #ifndef MICROPY_INCLUDED_PY_PYSTACK_H
 #define MICROPY_INCLUDED_PY_PYSTACK_H
 
-#include "py/mpconfig.h"
 #include "py/mpstate.h"
 
 // Enable this debugging option to check that the amount of memory freed is
@@ -41,7 +40,7 @@ void *mp_pystack_alloc(size_t n_bytes);
 // This function can free multiple continuous blocks at once: just pass the
 // pointer to the block that was allocated first and it and all subsequently
 // allocated blocks will be freed.
-static MP_INLINE void mp_pystack_free(void *ptr) {
+static inline void mp_pystack_free(void *ptr) {
     assert((uint8_t *)ptr >= MP_STATE_THREAD(pystack_start));
     assert((uint8_t *)ptr <= MP_STATE_THREAD(pystack_cur));
     #if MP_PYSTACK_DEBUG
@@ -59,16 +58,16 @@ static MP_INLINE void mp_pystack_free(void *ptr) {
     MP_STATE_THREAD(pystack_cur) = (uint8_t *)ptr;
 }
 
-static MP_INLINE void mp_pystack_realloc(void *ptr, size_t n_bytes) {
+static inline void mp_pystack_realloc(void *ptr, size_t n_bytes) {
     mp_pystack_free(ptr);
     mp_pystack_alloc(n_bytes);
 }
 
-static MP_INLINE size_t mp_pystack_usage(void) {
+static inline size_t mp_pystack_usage(void) {
     return MP_STATE_THREAD(pystack_cur) - MP_STATE_THREAD(pystack_start);
 }
 
-static MP_INLINE size_t mp_pystack_limit(void) {
+static inline size_t mp_pystack_limit(void) {
     return MP_STATE_THREAD(pystack_end) - MP_STATE_THREAD(pystack_start);
 }
 
@@ -78,43 +77,43 @@ static MP_INLINE size_t mp_pystack_limit(void) {
 
 #define mp_local_alloc(n_bytes) alloca(n_bytes)
 
-static MP_INLINE void mp_local_free(void *ptr) {
+static inline void mp_local_free(void *ptr) {
     (void)ptr;
 }
 
-static MP_INLINE void *mp_nonlocal_alloc(size_t n_bytes) {
+static inline void *mp_nonlocal_alloc(size_t n_bytes) {
     return m_new(uint8_t, n_bytes);
 }
 
-static MP_INLINE void *mp_nonlocal_realloc(void *ptr, size_t old_n_bytes, size_t new_n_bytes) {
+static inline void *mp_nonlocal_realloc(void *ptr, size_t old_n_bytes, size_t new_n_bytes) {
     return m_renew(uint8_t, ptr, old_n_bytes, new_n_bytes);
 }
 
-static MP_INLINE void mp_nonlocal_free(void *ptr, size_t n_bytes) {
+static inline void mp_nonlocal_free(void *ptr, size_t n_bytes) {
     m_del(uint8_t, ptr, n_bytes);
 }
 
 #else
 
-static MP_INLINE void *mp_local_alloc(size_t n_bytes) {
+static inline void *mp_local_alloc(size_t n_bytes) {
     return mp_pystack_alloc(n_bytes);
 }
 
-static MP_INLINE void mp_local_free(void *ptr) {
+static inline void mp_local_free(void *ptr) {
     mp_pystack_free(ptr);
 }
 
-static MP_INLINE void *mp_nonlocal_alloc(size_t n_bytes) {
+static inline void *mp_nonlocal_alloc(size_t n_bytes) {
     return mp_pystack_alloc(n_bytes);
 }
 
-static MP_INLINE void *mp_nonlocal_realloc(void *ptr, size_t old_n_bytes, size_t new_n_bytes) {
+static inline void *mp_nonlocal_realloc(void *ptr, size_t old_n_bytes, size_t new_n_bytes) {
     (void)old_n_bytes;
     mp_pystack_realloc(ptr, new_n_bytes);
     return ptr;
 }
 
-static MP_INLINE void mp_nonlocal_free(void *ptr, size_t n_bytes) {
+static inline void mp_nonlocal_free(void *ptr, size_t n_bytes) {
     (void)n_bytes;
     mp_pystack_free(ptr);
 }

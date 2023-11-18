@@ -30,27 +30,34 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 
+#if CIRCUITPY_BUSDISPLAY
+#include "shared-bindings/busdisplay/BusDisplay.h"
+#endif
 #include "shared-bindings/displayio/__init__.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/ColorConverter.h"
-#include "shared-bindings/displayio/Display.h"
-#include "shared-bindings/displayio/EPaperDisplay.h"
-#include "shared-bindings/displayio/FourWire.h"
 #include "shared-bindings/displayio/Group.h"
-#include "shared-bindings/displayio/I2CDisplay.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
-#if CIRCUITPY_PARALLELDISPLAY
-#include "shared-bindings/paralleldisplay/ParallelBus.h"
-#endif
-#include "shared-bindings/displayio/Shape.h"
 #include "shared-bindings/displayio/TileGrid.h"
+#if CIRCUITPY_EPAPERDISPLAY
+#include "shared-bindings/epaperdisplay/EPaperDisplay.h"
+#endif
+#if CIRCUITPY_FOURWIRE
+#include "shared-bindings/fourwire/FourWire.h"
+#endif
+#if CIRCUITPY_I2CDISPLAYBUS
+#include "shared-bindings/i2cdisplaybus/I2CDisplayBus.h"
+#endif
 #include "shared-module/displayio/__init__.h"
 
-//| """Native helpers for driving displays
+//| """High level, display object compositing system
 //|
-//| The `displayio` module contains classes to manage display output
-//| including synchronizing with refresh rates and partial updating.
+//| The `displayio` module contains classes to define what objects to display.
+//| It is optimized for low memory use and, therefore, computes final pixel
+//| values for dirty regions as needed.
+//|
+//| Separate modules manage transmitting the display contents to a display.
 //|
 //| For more a more thorough explanation and guide for using `displayio`, please
 //| refer to `this Learn guide
@@ -61,7 +68,10 @@
 //| """The `displayio.Group` that is the displayed serial terminal (REPL)."""
 //|
 
-//| import paralleldisplay
+//| from busdisplay import BusDisplay as Display
+//| from epaperdisplay import EPaperDisplay
+//| from fourwire import FourWire
+//| from i2cdisplaybus import I2CDisplayBus as I2CDisplay
 //|
 
 //| def release_displays() -> None:
@@ -85,18 +95,23 @@ STATIC const mp_rom_map_elem_t displayio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Bitmap), MP_ROM_PTR(&displayio_bitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_ColorConverter), MP_ROM_PTR(&displayio_colorconverter_type) },
     { MP_ROM_QSTR(MP_QSTR_Colorspace), MP_ROM_PTR(&displayio_colorspace_type) },
-    { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&displayio_display_type) },
-    { MP_ROM_QSTR(MP_QSTR_EPaperDisplay), MP_ROM_PTR(&displayio_epaperdisplay_type) },
     { MP_ROM_QSTR(MP_QSTR_Group), MP_ROM_PTR(&displayio_group_type) },
     { MP_ROM_QSTR(MP_QSTR_OnDiskBitmap), MP_ROM_PTR(&displayio_ondiskbitmap_type) },
     { MP_ROM_QSTR(MP_QSTR_Palette), MP_ROM_PTR(&displayio_palette_type) },
-    { MP_ROM_QSTR(MP_QSTR_Shape), MP_ROM_PTR(&displayio_shape_type) },
     { MP_ROM_QSTR(MP_QSTR_TileGrid), MP_ROM_PTR(&displayio_tilegrid_type) },
 
-    { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&displayio_fourwire_type) },
-    { MP_ROM_QSTR(MP_QSTR_I2CDisplay), MP_ROM_PTR(&displayio_i2cdisplay_type) },
-    #if CIRCUITPY_PARALLELDISPLAY
-    { MP_ROM_QSTR(MP_QSTR_ParallelBus), MP_ROM_PTR(&paralleldisplay_parallelbus_type) },
+    // Remove these in CircuitPython 10
+    #if CIRCUITPY_BUSDISPLAY
+    { MP_ROM_QSTR(MP_QSTR_Display), MP_ROM_PTR(&busdisplay_busdisplay_type) },
+    #endif
+    #if CIRCUITPY_EPAPERDISPLAY
+    { MP_ROM_QSTR(MP_QSTR_EPaperDisplay), MP_ROM_PTR(&epaperdisplay_epaperdisplay_type) },
+    #endif
+    #if CIRCUITPY_FOURWIRE
+    { MP_ROM_QSTR(MP_QSTR_FourWire), MP_ROM_PTR(&fourwire_fourwire_type) },
+    #endif
+    #if CIRCUITPY_I2CDISPLAYBUS
+    { MP_ROM_QSTR(MP_QSTR_I2CDisplay), MP_ROM_PTR(&i2cdisplaybus_i2cdisplaybus_type) },
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_release_displays), MP_ROM_PTR(&displayio_release_displays_obj) },
@@ -109,4 +124,4 @@ const mp_obj_module_t displayio_module = {
     .globals = (mp_obj_dict_t *)&displayio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module, CIRCUITPY_DISPLAYIO);
+MP_REGISTER_MODULE(MP_QSTR_displayio, displayio_module);

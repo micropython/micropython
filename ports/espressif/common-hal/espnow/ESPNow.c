@@ -88,7 +88,7 @@ static void send_cb(const uint8_t *mac, esp_now_send_status_t status) {
 // Callback triggered when an ESP-NOW packet is received.
 // Write the peer MAC address and the message into the recv_buffer as an ESPNow packet.
 // If the buffer is full, drop the message and increment the dropped count.
-static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
+static void recv_cb(const esp_now_recv_info_t *esp_now_info, const uint8_t *msg, int msg_len) {
     espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
     ringbuf_t *buf = self->recv_buffer;
 
@@ -117,7 +117,7 @@ static void recv_cb(const uint8_t *mac, const uint8_t *msg, int msg_len) {
     header.time_ms = mp_hal_ticks_ms();
 
     ringbuf_put_n(buf, (uint8_t *)&header, sizeof(header));
-    ringbuf_put_n(buf, mac, ESP_NOW_ETH_ALEN);
+    ringbuf_put_n(buf, esp_now_info->src_addr, ESP_NOW_ETH_ALEN);
     ringbuf_put_n(buf, msg, msg_len);
 
     self->read_success++;
@@ -143,7 +143,7 @@ void common_hal_espnow_init(espnow_obj_t *self) {
     }
 
     self->recv_buffer = m_new_obj(ringbuf_t);
-    if (!ringbuf_alloc(self->recv_buffer, self->recv_buffer_size, true)) {
+    if (!ringbuf_alloc(self->recv_buffer, self->recv_buffer_size /*, true*/)) {
         m_malloc_fail(self->recv_buffer_size);
     }
 

@@ -285,4 +285,4 @@ const mp_obj_module_t espcamera_module = {
     .globals = (mp_obj_dict_t *)&espcamera_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_espcamera, espcamera_module, CIRCUITPY_ESPCAMERA);
+MP_REGISTER_MODULE(MP_QSTR_espcamera, espcamera_module);

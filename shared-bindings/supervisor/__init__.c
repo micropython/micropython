@@ -30,10 +30,10 @@
 #include "py/objstr.h"
 
 #include "shared/runtime/interrupt_char.h"
+#include "supervisor/port.h"
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/traceback.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
 
 #if CIRCUITPY_USB_IDENTIFICATION
@@ -131,7 +131,7 @@ STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
     if (!mp_obj_is_str_or_bytes(args.filename.u_obj) && args.filename.u_obj != mp_const_none) {
-        mp_raise_TypeError(translate("argument has wrong type"));
+        mp_raise_TypeError(MP_ERROR_TEXT("argument has wrong type"));
     }
     if (args.filename.u_obj == mp_const_none) {
         args.filename.u_obj = mp_const_empty_bytes;
@@ -154,18 +154,18 @@ STATIC mp_obj_t supervisor_set_next_code_file(size_t n_args, const mp_obj_t *pos
     }
     size_t len;
     const char *filename = mp_obj_str_get_data(args.filename.u_obj, &len);
-    free_memory(next_code_allocation);
+    if (next_code_configuration != NULL) {
+        port_free(next_code_configuration);
+        next_code_configuration = NULL;
+    }
     if (options != 0 || len != 0) {
-        next_code_allocation = allocate_memory(align32_size(sizeof(next_code_info_t) + len + 1), false, true);
-        if (next_code_allocation == NULL) {
-            m_malloc_fail(sizeof(next_code_info_t) + len + 1);
+        next_code_configuration = port_malloc(sizeof(supervisor_next_code_info_t) + len + 1, false);
+        if (next_code_configuration == NULL) {
+            m_malloc_fail(sizeof(supervisor_next_code_info_t) + len + 1);
         }
-        next_code_info_t *next_code = (next_code_info_t *)next_code_allocation->ptr;
-        next_code->options = options | SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
-        memcpy(&next_code->filename, filename, len);
-        next_code->filename[len] = '\0';
-    } else {
-        next_code_allocation = NULL;
+        next_code_configuration->options = options | SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+        memcpy(&next_code_configuration->filename, filename, len);
+        next_code_configuration->filename[len] = '\0';
     }
     return mp_const_none;
 }
@@ -230,15 +230,14 @@ MP_DEFINE_CONST_FUN_OBJ_0(supervisor_ticks_ms_obj, supervisor_ticks_ms);
 //|     ...
 //|
 STATIC mp_obj_t supervisor_get_previous_traceback(void) {
-    if (prev_traceback_allocation) {
-        size_t len = strlen((const char *)prev_traceback_allocation->ptr);
+    if (prev_traceback_string) {
+        size_t len = strlen(prev_traceback_string);
         if (len > 0) {
-            mp_obj_str_t *o = m_new_obj(mp_obj_str_t);
-            o->base.type = &mp_type_str;
+            mp_obj_str_t *o = mp_obj_malloc(mp_obj_str_t, &mp_type_str);
             o->len = len;
             // callers probably aren't going to compare this string, so skip computing the hash
             o->hash = 0;
-            o->data = (const byte *)prev_traceback_allocation->ptr;
+            o->data = (const byte *)prev_traceback_string;
             return MP_OBJ_FROM_PTR(o);
         }
     }
@@ -294,34 +293,33 @@ STATIC mp_obj_t supervisor_set_usb_identification(size_t n_args, const mp_obj_t 
     } args;
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, (mp_arg_val_t *)&args);
 
-    if (!usb_identification_allocation) {
-        usb_identification_allocation = allocate_memory(sizeof(usb_identification_t), false, true);
+    if (custom_usb_identification == NULL) {
+        custom_usb_identification = port_malloc(sizeof(usb_identification_t), false);
     }
-    usb_identification_t *identification = (usb_identification_t *)usb_identification_allocation->ptr;
 
     mp_arg_validate_int_range(args.vid.u_int, -1, (1 << 16) - 1, MP_QSTR_vid);
     mp_arg_validate_int_range(args.pid.u_int, -1, (1 << 16) - 1, MP_QSTR_pid);
 
-    identification->vid = args.vid.u_int > -1 ? args.vid.u_int : USB_VID;
-    identification->pid = args.pid.u_int > -1 ? args.pid.u_int : USB_PID;
+    custom_usb_identification->vid = args.vid.u_int > -1 ? args.vid.u_int : USB_VID;
+    custom_usb_identification->pid = args.pid.u_int > -1 ? args.pid.u_int : USB_PID;
 
     mp_buffer_info_t info;
     if (args.manufacturer.u_obj != mp_const_none) {
         mp_get_buffer_raise(args.manufacturer.u_obj, &info, MP_BUFFER_READ);
         mp_arg_validate_length_range(info.len, 0, 126, MP_QSTR_manufacturer);
-        memcpy(identification->manufacturer_name, info.buf, info.len);
-        identification->manufacturer_name[info.len] = 0;
+        memcpy(custom_usb_identification->manufacturer_name, info.buf, info.len);
+        custom_usb_identification->manufacturer_name[info.len] = 0;
     } else {
-        strcpy(identification->manufacturer_name, USB_MANUFACTURER);
+        strcpy(custom_usb_identification->manufacturer_name, USB_MANUFACTURER);
     }
 
     if (args.product.u_obj != mp_const_none) {
         mp_get_buffer_raise(args.product.u_obj, &info, MP_BUFFER_READ);
         mp_arg_validate_length_range(info.len, 0, 126, MP_QSTR_product);
-        memcpy(identification->product_name, info.buf, info.len);
-        identification->product_name[info.len] = 0;
+        memcpy(custom_usb_identification->product_name, info.buf, info.len);
+        custom_usb_identification->product_name[info.len] = 0;
     } else {
-        strcpy(identification->product_name, USB_PRODUCT);
+        strcpy(custom_usb_identification->product_name, USB_PRODUCT);
     }
 
     return mp_const_none;
@@ -356,4 +354,4 @@ const mp_obj_module_t supervisor_module = {
     .globals = (mp_obj_dict_t *)&supervisor_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_supervisor, supervisor_module, CIRCUITPY_SUPERVISOR);
+MP_REGISTER_MODULE(MP_QSTR_supervisor, supervisor_module);

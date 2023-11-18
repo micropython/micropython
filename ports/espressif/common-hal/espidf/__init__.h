@@ -26,4 +26,4 @@
 
 #pragma once
 
-#include "bindings/espidf/__init__.h"
+void cp_check_esp_error(esp_err_t err);

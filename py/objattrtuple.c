@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,8 +71,7 @@ STATIC void mp_obj_attrtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 }
 
 mp_obj_t mp_obj_new_attrtuple(const qstr *fields, size_t n, const mp_obj_t *items) {
-    mp_obj_tuple_t *o = m_new_obj_var(mp_obj_tuple_t, mp_obj_t, n + 1);
-    o->base.type = &mp_type_attrtuple;
+    mp_obj_tuple_t *o = mp_obj_malloc_var(mp_obj_tuple_t, mp_obj_t, n + 1, &mp_type_attrtuple);
     o->len = n;
     for (size_t i = 0; i < n; i++) {
         o->items[i] = items[i];
@@ -81,18 +80,17 @@ mp_obj_t mp_obj_new_attrtuple(const qstr *fields, size_t n, const mp_obj_t *item
     return MP_OBJ_FROM_PTR(o);
 }
 
-const mp_obj_type_t mp_type_attrtuple = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_tuple, // reuse tuple to save on a qstr
-    .print = mp_obj_attrtuple_print,
-    .attr = mp_obj_attrtuple_attr,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_obj_tuple_unary_op,
-        .binary_op = mp_obj_tuple_binary_op,
-        .subscr = mp_obj_tuple_subscr,
-        .getiter = mp_obj_tuple_getiter,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_attrtuple,
+    MP_QSTR_tuple,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    // reuse tuple to save on a qstr
+    print, mp_obj_attrtuple_print,
+    unary_op, mp_obj_tuple_unary_op,
+    binary_op, mp_obj_tuple_binary_op,
+    attr, mp_obj_attrtuple_attr,
+    subscr, mp_obj_tuple_subscr,
+    iter, mp_obj_tuple_getiter
+    );
 
 #endif // MICROPY_PY_ATTRTUPLE

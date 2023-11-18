@@ -33,7 +33,6 @@
 #include "shared-bindings/util.h"
 #include "shared-bindings/synthio/MidiTrack.h"
 #include "shared-bindings/synthio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class MidiTrack:
 //|     """Simple MIDI synth"""
@@ -76,8 +75,8 @@
 STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_tempo, ARG_sample_rate, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_tempo, MP_ARG_INT | MP_ARG_REQUIRED },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
+        { MP_QSTR_tempo, MP_ARG_INT | MP_ARG_REQUIRED, {} },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
@@ -88,8 +87,7 @@ STATIC mp_obj_t synthio_miditrack_make_new(const mp_obj_type_t *type, size_t n_a
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    synthio_miditrack_obj_t *self = m_new_obj(synthio_miditrack_obj_t);
-    self->base.type = &synthio_miditrack_type;
+    synthio_miditrack_obj_t *self = mp_obj_malloc(synthio_miditrack_obj_t, &synthio_miditrack_type);
 
     common_hal_synthio_miditrack_construct(self,
         (uint8_t *)bufinfo.buf, bufinfo.len,
@@ -187,13 +185,11 @@ STATIC const audiosample_p_t synthio_miditrack_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)synthio_miditrack_get_buffer_structure,
 };
 
-const mp_obj_type_t synthio_miditrack_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MidiTrack,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = synthio_miditrack_make_new,
-    .locals_dict = (mp_obj_dict_t *)&synthio_miditrack_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &synthio_miditrack_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    synthio_miditrack_type,
+    MP_QSTR_MidiTrack,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, synthio_miditrack_make_new,
+    locals_dict, &synthio_miditrack_locals_dict,
+    protocol, &synthio_miditrack_proto
+    );

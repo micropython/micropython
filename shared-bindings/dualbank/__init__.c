@@ -70,7 +70,7 @@
 #if CIRCUITPY_STORAGE_EXTEND
 STATIC void raise_error_if_storage_extended(void) {
     if (supervisor_flash_get_extended()) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q is %q"), MP_QSTR_storage, MP_QSTR_extended);
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q is %q"), MP_QSTR_storage, MP_QSTR_extended);
     }
 }
 #endif
@@ -100,7 +100,7 @@ STATIC mp_obj_t dualbank_flash(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (args[ARG_offset].u_int < 0) {
-        mp_raise_ValueError(translate("offset must be >= 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("offset must be >= 0"));
     }
 
     mp_buffer_info_t bufinfo;
@@ -141,4 +141,4 @@ const mp_obj_module_t dualbank_module = {
     .globals = (mp_obj_dict_t *)&dualbank_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_dualbank, dualbank_module, CIRCUITPY_DUALBANK);
+MP_REGISTER_MODULE(MP_QSTR_dualbank, dualbank_module);

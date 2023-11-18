@@ -50,7 +50,7 @@ float common_hal_mcu_processor_get_temperature(void) {
     if (sd_en) {
         uint32_t err_code = sd_temp_get(&temp);
         if (err_code != NRF_SUCCESS) {
-            mp_raise_OSError_msg(translate("Cannot get temperature"));
+            mp_raise_OSError_msg(MP_ERROR_TEXT("Cannot get temperature"));
         }
         return temp / 4.0f;
     } // Fall through if SD not enabled.

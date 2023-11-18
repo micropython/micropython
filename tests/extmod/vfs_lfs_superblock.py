@@ -1,9 +1,9 @@
 # Test for VfsLfs using a RAM device, when the first superblock does not exist
 
 try:
-    import uos
+    import os
 
-    uos.VfsLfs2
+    os.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -36,12 +36,12 @@ lfs2_data = b"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x
 bdev = RAMBlockDevice(64, lfs2_data)
 
 # Create the VFS explicitly, no auto-detection is needed for this.
-vfs = uos.VfsLfs2(bdev)
+vfs = os.VfsLfs2(bdev)
 print(list(vfs.ilistdir()))
 
 # Mount the block device directly; this relies on auto-detection.
-uos.mount(bdev, "/userfs")
-print(uos.listdir("/userfs"))
+os.mount(bdev, "/userfs")
+print(os.listdir("/userfs"))
 
 # Clean up.
-uos.umount("/userfs")
+os.umount("/userfs")

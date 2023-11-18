@@ -33,7 +33,6 @@
 #include "peripheral_clk_config.h"
 
 #include "supervisor/board.h"
-#include "supervisor/shared/translate/translate.h"
 #include "common-hal/busio/__init__.h"
 
 #include "hal/include/hal_gpio.h"
@@ -59,7 +58,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     uint8_t dopo = 255;
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Half duplex SPI is not implemented"));
     }
 
     // Ensure the object starts in its deinit state.

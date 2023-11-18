@@ -49,7 +49,6 @@
 #include "supervisor/board.h"
 #include "supervisor/cpu.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/memory.h"
 #include "supervisor/port.h"
 #include "supervisor/serial.h"
 #include "supervisor/shared/reload.h"
@@ -58,7 +57,6 @@
 #include "supervisor/shared/status_leds.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/shared/traceback.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/workflow.h"
 #include "supervisor/usb.h"
 #include "supervisor/workflow.h"
@@ -66,7 +64,10 @@
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Processor.h"
+#include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/supervisor/Runtime.h"
+
+#include "shared-bindings/os/__init__.h"
 
 #if CIRCUITPY_ALARM
 #include "shared-bindings/alarm/__init__.h"
@@ -91,6 +92,10 @@
 
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
+#endif
+
+#if CIRCUITPY_EPAPERDISPLAY
+#include "shared-bindings/epaperdisplay/EPaperDisplay.h"
 #endif
 
 #if CIRCUITPY_KEYPAD
@@ -132,24 +137,36 @@ static void reset_devices(void) {
     #endif
 }
 
-#if MICROPY_ENABLE_PYSTACK
-STATIC supervisor_allocation *allocate_pystack(safe_mode_t safe_mode) {
-    #if CIRCUITPY_OS_GETENV && CIRCUITPY_SETTABLE_PYSTACK
+STATIC uint8_t *_heap;
+STATIC uint8_t *_pystack;
+
+#if MICROPY_ENABLE_PYSTACK || MICROPY_ENABLE_GC
+STATIC uint8_t *_allocate_memory(safe_mode_t safe_mode, const char *env_key, size_t default_size, size_t *final_size) {
+    *final_size = default_size;
+    #if CIRCUITPY_OS_GETENV
     if (safe_mode == SAFE_MODE_NONE) {
-        mp_int_t pystack_size = CIRCUITPY_PYSTACK_SIZE;
-        (void)common_hal_os_getenv_int("CIRCUITPY_PYSTACK_SIZE", &pystack_size);
-        supervisor_allocation *pystack = allocate_memory(pystack_size >= 384 ? pystack_size : 0, false, false);
-        if (pystack) {
-            return pystack;
+        (void)common_hal_os_getenv_int(env_key, (mp_int_t *)final_size);
+        if (*final_size < 0) {
+            *final_size = default_size;
         }
-        serial_write_compressed(translate("Invalid CIRCUITPY_PYSTACK_SIZE\n"));
     }
     #endif
-    return allocate_memory(CIRCUITPY_PYSTACK_SIZE, false, false);
+    uint8_t *ptr = port_malloc(*final_size, false);
+
+    #if CIRCUITPY_OS_GETENV
+    if (ptr == NULL) {
+        // Fallback to the build size.
+        ptr = port_malloc(default_size, false);
+    }
+    #endif
+    if (ptr == NULL) {
+        reset_into_safe_mode(SAFE_MODE_NO_HEAP);
+    }
+    return ptr;
 }
 #endif
 
-STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack) {
+STATIC void start_mp(safe_mode_t safe_mode) {
     supervisor_workflow_reset();
 
     // Stack limit should be less than real stack size, so we have a chance
@@ -157,13 +174,12 @@ STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack
     // stack is set to our current state. Not the actual top.
     mp_stack_ctrl_init();
 
-    uint32_t *stack_bottom = stack_get_bottom();
-    if (stack_bottom != NULL) {
-        size_t stack_length = stack_get_length();
-        mp_stack_set_top(stack_bottom + (stack_length / sizeof(uint32_t)));
-        mp_stack_set_limit(stack_length - 1024);
-    }
+    uint32_t *stack_bottom = port_stack_get_limit();
+    uint32_t *stack_top = port_stack_get_top();
 
+    size_t stack_length = (stack_top - stack_bottom) * sizeof(uint32_t);
+    mp_stack_set_top(stack_top);
+    mp_stack_set_limit(stack_length - CIRCUITPY_EXCEPTION_STACK_SIZE);
 
     #if MICROPY_MAX_STACK_USAGE
     // _ezero (same as _ebss) is an int, so start 4 bytes above it.
@@ -181,11 +197,15 @@ STATIC void start_mp(supervisor_allocation *heap, supervisor_allocation *pystack
     readline_init0();
 
     #if MICROPY_ENABLE_PYSTACK
-    mp_pystack_init(pystack->ptr, pystack->ptr + get_allocation_length(pystack) / sizeof(size_t));
+    size_t pystack_size = 0;
+    _pystack = _allocate_memory(safe_mode, "CIRCUITPY_PYSTACK_SIZE", CIRCUITPY_PYSTACK_SIZE, &pystack_size);
+    mp_pystack_init(_pystack, _pystack + pystack_size);
     #endif
 
     #if MICROPY_ENABLE_GC
-    gc_init(heap->ptr, heap->ptr + get_allocation_length(heap) / 4);
+    size_t heap_size = 0;
+    _heap = _allocate_memory(safe_mode, "CIRCUITPY_HEAP_START_SIZE", CIRCUITPY_HEAP_START_SIZE, &heap_size);
+    gc_init(_heap, _heap + heap_size);
     #endif
     mp_init();
     mp_obj_list_init((mp_obj_list_t *)mp_sys_path, 0);
@@ -217,7 +237,18 @@ STATIC void stop_mp(void) {
     usb_background();
     #endif
 
+    // Set the qstr pool back to the const pools. The heap allocated ones will
+    // be overwritten.
+    qstr_reset();
+
     gc_deinit();
+    port_free(_heap);
+    _heap = NULL;
+
+    #if MICROPY_ENABLE_PYSTACK
+    port_free(_pystack);
+    _pystack = NULL;
+    #endif
 }
 
 STATIC const char *_current_executing_filename = NULL;
@@ -234,8 +265,14 @@ void supervisor_execution_status(void) {
                exception != NULL) {
         mp_printf(&mp_plat_print, "%d@%s %q", _exec_result.exception_line, _exec_result.exception_filename, exception->base.type->name);
     } else {
-        serial_write_compressed(translate("Done"));
+        serial_write_compressed(MP_ERROR_TEXT("Done"));
     }
+}
+#endif
+
+#if CIRCUITPY_WATCHDOG
+pyexec_result_t *pyexec_result(void) {
+    return &_exec_result;
 }
 #endif
 
@@ -260,7 +297,7 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
         return false;
     }
     mp_hal_stdout_tx_str(_current_executing_filename);
-    serial_write_compressed(translate(" output:\n"));
+    serial_write_compressed(MP_ERROR_TEXT(" output:\n"));
 
     #if CIRCUITPY_STATUS_BAR
     supervisor_status_bar_update();
@@ -285,33 +322,34 @@ STATIC void count_strn(void *data, const char *str, size_t len) {
     *(size_t *)data += len;
 }
 
-STATIC void cleanup_after_vm(supervisor_allocation *heap, supervisor_allocation *pystack, mp_obj_t exception) {
+STATIC void cleanup_after_vm(mp_obj_t exception) {
     // Get the traceback of any exception from this run off the heap.
     // MP_OBJ_SENTINEL means "this run does not contribute to traceback storage, don't touch it"
     // MP_OBJ_NULL (=0) means "this run completed successfully, clear any stored traceback"
     if (exception != MP_OBJ_SENTINEL) {
-        free_memory(prev_traceback_allocation);
+        if (prev_traceback_string != NULL) {
+            port_free(prev_traceback_string);
+            prev_traceback_string = NULL;
+        }
         // ReloadException is exempt from traceback printing in pyexec_file(), so treat it as "no
         // traceback" here too.
         if (exception && exception != MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_reload_exception))) {
             size_t traceback_len = 0;
             mp_print_t print_count = {&traceback_len, count_strn};
             mp_obj_print_exception(&print_count, exception);
-            prev_traceback_allocation = allocate_memory(align32_size(traceback_len + 1), false, true);
+            prev_traceback_string = (char *)port_malloc(traceback_len + 1, false);
             // Empirically, this never fails in practice - even when the heap is totally filled up
             // with single-block-sized objects referenced by a root pointer, exiting the VM frees
             // up several hundred bytes, sufficient for the traceback (which tends to be shortened
             // because there wasn't memory for the full one). There may be convoluted ways of
             // making it fail, but at this point I believe they are not worth spending code on.
-            if (prev_traceback_allocation != NULL) {
+            if (prev_traceback_string != NULL) {
                 vstr_t vstr;
-                vstr_init_fixed_buf(&vstr, traceback_len, (char *)prev_traceback_allocation->ptr);
+                vstr_init_fixed_buf(&vstr, traceback_len, prev_traceback_string);
                 mp_print_t print = {&vstr, (mp_print_strn_t)vstr_add_strn};
                 mp_obj_print_exception(&print, exception);
-                ((char *)prev_traceback_allocation->ptr)[traceback_len] = '\0';
+                prev_traceback_string[traceback_len] = '\0';
             }
-        } else {
-            prev_traceback_allocation = NULL;
         }
     }
 
@@ -365,11 +403,6 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, supervisor_allocation 
     // Free the heap last because other modules may reference heap memory and need to shut down.
     filesystem_flush();
     stop_mp();
-    free_memory(heap);
-    #if MICROPY_ENABLE_PYSTACK
-    free_memory(pystack);
-    #endif
-    supervisor_move_memory();
 
     // Let the workflows know we've reset in case they want to restart.
     supervisor_workflow_reset();
@@ -378,12 +411,12 @@ STATIC void cleanup_after_vm(supervisor_allocation *heap, supervisor_allocation 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
     if (autoreload_is_enabled()) {
         serial_write_compressed(
-            translate("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
+            MP_ERROR_TEXT("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
     } else {
-        serial_write_compressed(translate("Auto-reload is off.\n"));
+        serial_write_compressed(MP_ERROR_TEXT("Auto-reload is off.\n"));
     }
     if (safe_mode != SAFE_MODE_NONE) {
-        serial_write_compressed(translate("Running in safe mode! Not running saved code.\n"));
+        serial_write_compressed(MP_ERROR_TEXT("Running in safe mode! Not running saved code.\n"));
     }
 }
 
@@ -409,7 +442,6 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     // Do the filesystem flush check before reload in case another write comes
     // in while we're doing the flush.
     if (safe_mode == SAFE_MODE_NONE) {
-        stack_resize();
         filesystem_flush();
     }
     if (safe_mode == SAFE_MODE_NONE && !autoreload_pending()) {
@@ -418,34 +450,31 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         };
         #if CIRCUITPY_FULL_BUILD
         static const char *const double_extension_filenames[] = {
-            "code.txt.py", "code.py.txt", "code.txt.txt","code.py.py",
-            "main.txt.py", "main.py.txt", "main.txt.txt","main.py.py"
+            "code.txt.py", "code.py.txt", "code.txt.txt", "code.py.py",
+            "main.txt.py", "main.py.txt", "main.txt.txt", "main.py.py"
         };
         #endif
 
-        supervisor_allocation *pystack = NULL;
-        #if MICROPY_ENABLE_PYSTACK
-        pystack = allocate_pystack(safe_mode);
-        #endif
-        supervisor_allocation *heap = allocate_remaining_memory();
-        start_mp(heap, pystack);
+        start_mp(safe_mode);
 
         #if CIRCUITPY_USB
         usb_setup_with_vm();
         #endif
 
+        // Make sure we are in the root directory before looking at files.
+        common_hal_os_chdir("/");
+
         // Check if a different run file has been allocated
-        if (next_code_allocation) {
-            next_code_info_t *info = ((next_code_info_t *)next_code_allocation->ptr);
-            info->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
-            next_code_options = info->options;
-            if (info->filename[0] != '\0') {
+        if (next_code_configuration != NULL) {
+            next_code_configuration->options &= ~SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+            next_code_options = next_code_configuration->options;
+            if (next_code_configuration->filename[0] != '\0') {
                 // This is where the user's python code is actually executed:
-                const char *const filenames[] = { info->filename };
+                const char *const filenames[] = { next_code_configuration->filename };
                 found_main = maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
                 if (!found_main) {
-                    serial_write(info->filename);
-                    serial_write_compressed(translate(" not found.\n"));
+                    serial_write(next_code_configuration->filename);
+                    serial_write_compressed(MP_ERROR_TEXT(" not found.\n"));
                 }
             }
         }
@@ -458,7 +487,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
             if (!found_main) {
                 found_main = maybe_run_list(double_extension_filenames, MP_ARRAY_SIZE(double_extension_filenames));
                 if (found_main) {
-                    serial_write_compressed(translate("WARNING: Your code filename has two extensions\n"));
+                    serial_write_compressed(MP_ERROR_TEXT("WARNING: Your code filename has two extensions\n"));
                 }
             }
             #else
@@ -469,23 +498,23 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         // Print done before resetting everything so that we get the message over
         // BLE before it is reset and we have a delay before reconnect.
         if ((_exec_result.return_code & PYEXEC_RELOAD) && supervisor_get_run_reason() == RUN_REASON_AUTO_RELOAD) {
-            serial_write_compressed(translate("\nCode stopped by auto-reload. Reloading soon.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("\nCode stopped by auto-reload. Reloading soon.\n"));
         } else {
-            serial_write_compressed(translate("\nCode done running.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("\nCode done running.\n"));
         }
 
 
         // Finished executing python code. Cleanup includes filesystem flush and a board reset.
-        cleanup_after_vm(heap, pystack, _exec_result.exception);
+        cleanup_after_vm(_exec_result.exception);
         _exec_result.exception = NULL;
 
         // If a new next code file was set, that is a reason to keep it (obviously). Stuff this into
         // the options because it can be treated like any other reason-for-stickiness bit. The
         // source is different though: it comes from the options that will apply to the next run,
         // while the rest of next_code_options is what applied to this run.
-        if (next_code_allocation != NULL &&
-            (((next_code_info_t *)next_code_allocation->ptr)->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET)) {
-            next_code_options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
+        if (next_code_configuration != NULL &&
+            next_code_configuration->options & SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET) {
+            next_code_configuration->options |= SUPERVISOR_NEXT_CODE_OPT_NEWLY_SET;
         }
 
         if (_exec_result.return_code & PYEXEC_RELOAD) {
@@ -520,7 +549,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
 
     // Program has finished running.
     bool printed_press_any_key = false;
-    #if CIRCUITPY_DISPLAYIO
+    #if CIRCUITPY_EPAPERDISPLAY
     size_t time_to_epaper_refresh = 1;
     #endif
 
@@ -592,7 +621,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
         // sleep.
         #if CIRCUITPY_ALARM
         if (fake_sleeping && common_hal_alarm_woken_from_sleep()) {
-            serial_write_compressed(translate("Woken up by alarm.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("Woken up by alarm.\n"));
             supervisor_set_run_reason(RUN_REASON_STARTUP);
             skip_repl = true;
             break;
@@ -610,7 +639,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
                 printed_safe_mode_message = true;
             }
             serial_write("\r\n");
-            serial_write_compressed(translate("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
+            serial_write_compressed(MP_ERROR_TEXT("Press any key to enter the REPL. Use CTRL-D to reload.\n"));
             printed_press_any_key = true;
         }
         if (!serial_connected()) {
@@ -655,7 +684,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
                     // Does not return.
                 } else {
                     serial_write_compressed(
-                        translate("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
+                        MP_ERROR_TEXT("Pretending to deep sleep until alarm, CTRL-C or file write.\n"));
                     fake_sleeping = true;
                 }
             } else {
@@ -668,7 +697,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
             // Refresh the ePaper display if we have one. That way it'll show an error message.
             // Skip if we're about to autoreload. Otherwise we may delay when user code can update
             // the display.
-            #if CIRCUITPY_DISPLAYIO
+            #if CIRCUITPY_EPAPERDISPLAY
             if (time_to_epaper_refresh > 0 && !autoreload_pending()) {
                 time_to_epaper_refresh = maybe_refresh_epaperdisplay();
             }
@@ -710,7 +739,7 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
                 }
                 time_to_next_change = total_time - tick_diff;
             }
-            #if CIRCUITPY_DISPLAYIO
+            #if CIRCUITPY_EPAPERDISPLAY
             if (time_to_epaper_refresh > 0 && time_to_next_change > 0) {
                 time_to_next_change = MIN(time_to_next_change, time_to_epaper_refresh);
             }
@@ -739,9 +768,9 @@ STATIC bool run_code_py(safe_mode_t safe_mode, bool *simulate_reset) {
     #endif
 
     // free code allocation if unused
-    if ((next_code_options & next_code_stickiness_situation) == 0) {
-        free_memory(next_code_allocation);
-        next_code_allocation = NULL;
+    if (next_code_configuration != NULL && (next_code_configuration->options & next_code_stickiness_situation) == 0) {
+        port_free(next_code_configuration);
+        next_code_configuration = NULL;
     }
 
     #if CIRCUITPY_STATUS_LED
@@ -773,12 +802,7 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
         return;
     }
 
-    supervisor_allocation *pystack = NULL;
-    #if MICROPY_ENABLE_PYSTACK
-    pystack = allocate_pystack(safe_mode);
-    #endif
-    supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap, pystack);
+    start_mp(safe_mode);
 
     static const char *const safemode_py_filenames[] = {"safemode.py", "safemode.txt"};
     maybe_run_list(safemode_py_filenames, MP_ARRAY_SIZE(safemode_py_filenames));
@@ -789,7 +813,7 @@ STATIC void __attribute__ ((noinline)) run_safemode_py(safe_mode_t safe_mode) {
         set_safe_mode(SAFE_MODE_SAFEMODE_PY_ERROR);
     }
 
-    cleanup_after_vm(heap, pystack, _exec_result.exception);
+    cleanup_after_vm(_exec_result.exception);
     _exec_result.exception = NULL;
 }
 #endif
@@ -810,12 +834,7 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
 
     // Do USB setup even if boot.py is not run.
 
-    supervisor_allocation *pystack = NULL;
-    #if MICROPY_ENABLE_PYSTACK
-    pystack = allocate_pystack(safe_mode);
-    #endif
-    supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap, pystack);
+    start_mp(safe_mode);
 
     #if CIRCUITPY_USB
     // Set up default USB values after boot.py VM starts but before running boot.py.
@@ -838,9 +857,9 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         #if CIRCUITPY_MICROCONTROLLER && COMMON_HAL_MCU_PROCESSOR_UID_LENGTH > 0
         uint8_t raw_id[COMMON_HAL_MCU_PROCESSOR_UID_LENGTH];
         common_hal_mcu_processor_get_uid(raw_id);
-        mp_cprintf(&mp_plat_print, translate("UID:"));
+        mp_cprintf(&mp_plat_print, MP_ERROR_TEXT("UID:"));
         for (size_t i = 0; i < COMMON_HAL_MCU_PROCESSOR_UID_LENGTH; i++) {
-            mp_cprintf(&mp_plat_print, translate("%02X"), raw_id[i]);
+            mp_cprintf(&mp_plat_print, MP_ERROR_TEXT("%02X"), raw_id[i]);
         }
         mp_printf(&mp_plat_print, "\n");
         port_boot_info();
@@ -888,46 +907,30 @@ STATIC void __attribute__ ((noinline)) run_boot_py(safe_mode_t safe_mode) {
         #endif
     }
 
-    #if CIRCUITPY_USB
-    // Some data needs to be carried over from the USB settings in boot.py
-    // to the next VM, while the heap is still available.
-    // Its size can vary, so save it temporarily on the stack,
-    // and then when the heap goes away, copy it in into a
-    // storage_allocation.
-    size_t size = usb_boot_py_data_size();
-    uint8_t usb_boot_py_data[size];
-    usb_get_boot_py_data(usb_boot_py_data, size);
-    #endif
-
     port_post_boot_py(true);
 
-    cleanup_after_vm(heap, pystack, _exec_result.exception);
+    cleanup_after_vm(_exec_result.exception);
     _exec_result.exception = NULL;
 
     port_post_boot_py(false);
-
-    #if CIRCUITPY_USB
-    // Now give back the data we saved from the heap going away.
-    usb_return_boot_py_data(usb_boot_py_data, size);
-    #endif
 }
 
 STATIC int run_repl(safe_mode_t safe_mode) {
     int exit_code = PYEXEC_FORCED_EXIT;
-    stack_resize();
     filesystem_flush();
-    supervisor_allocation *pystack = NULL;
-    #if MICROPY_ENABLE_PYSTACK
-    pystack = allocate_pystack(safe_mode);
-    #endif
-    supervisor_allocation *heap = allocate_remaining_memory();
-    start_mp(heap, pystack);
+
+    start_mp(safe_mode);
 
     #if CIRCUITPY_USB
     usb_setup_with_vm();
     #endif
 
     autoreload_suspend(AUTORELOAD_SUSPEND_REPL);
+
+    if (get_safe_mode() == SAFE_MODE_NONE) {
+        const char *const filenames[] = { "repl.py" };
+        (void)maybe_run_list(filenames, MP_ARRAY_SIZE(filenames));
+    }
 
     // Set the status LED to the REPL color before running the REPL. For
     // NeoPixels and DotStars this will be sticky but for PWM or single LED it
@@ -964,7 +967,7 @@ STATIC int run_repl(safe_mode_t safe_mode) {
         exit_code = PYEXEC_DEEP_SLEEP;
     }
     #endif
-    cleanup_after_vm(heap, pystack, MP_OBJ_SENTINEL);
+    cleanup_after_vm(MP_OBJ_SENTINEL);
 
     // Also reset bleio. The above call omits it in case workflows should continue. In this case,
     // we're switching straight to another VM so we want to reset.
@@ -987,14 +990,16 @@ int __attribute__((used)) main(void) {
     // initialise the cpu and peripherals
     set_safe_mode(port_init());
 
+    port_heap_init();
+
     // Turn on RX and TX LEDs if we have them.
     init_rxtx_leds();
 
     #if CIRCUITPY_BOOT_COUNTER
     // Increment counter before possibly entering safe mode
-    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj,0,1,&value_out);
+    common_hal_nvm_bytearray_get_bytes(&common_hal_mcu_nvm_obj, 0, 1, &value_out);
     ++value_out;
-    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj,0,&value_out,1);
+    common_hal_nvm_bytearray_set_bytes(&common_hal_mcu_nvm_obj, 0, &value_out, 1);
     #endif
 
     // Start the debug serial
@@ -1089,7 +1094,7 @@ int __attribute__((used)) main(void) {
         }
         if (exit_code == PYEXEC_FORCED_EXIT) {
             if (!simulate_reset) {
-                serial_write_compressed(translate("soft reboot\n"));
+                serial_write_compressed(MP_ERROR_TEXT("soft reboot\n"));
             }
             simulate_reset = false;
             if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
@@ -1161,6 +1166,10 @@ void gc_collect(void) {
 MP_WEAK void port_gc_collect() {
 }
 
+size_t gc_get_max_new_split(void) {
+    return port_heap_get_largest_free_size();
+}
+
 void NORETURN nlr_jump_fail(void *val) {
     reset_into_safe_mode(SAFE_MODE_NLR_JUMP_FAIL);
     while (true) {
@@ -1169,7 +1178,9 @@ void NORETURN nlr_jump_fail(void *val) {
 
 #ifndef NDEBUG
 static void NORETURN __fatal_error(const char *msg) {
+    #if CIRCUITPY_DEBUG == 0
     reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
+    #endif
     while (true) {
     }
 }

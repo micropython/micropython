@@ -328,7 +328,7 @@ void synthio_synth_synthesize(synthio_synth_t *synth, uint8_t **bufptr, uint32_t
             continue;
         }
 
-        uint16_t loudness[2] = {synth->envelope_state[chan].level,synth->envelope_state[chan].level};
+        uint16_t loudness[2] = {synth->envelope_state[chan].level, synth->envelope_state[chan].level};
 
         if (!synth_note_into_buffer(synth, chan, tmp_buffer32, dur, loudness)) {
             // for some other reason, such as being above nyquist, note
@@ -396,8 +396,8 @@ void synthio_synth_init(synthio_synth_t *synth, uint32_t sample_rate, int channe
     synthio_synth_parse_waveform(&synth->waveform_bufinfo, waveform_obj);
     mp_arg_validate_int_range(channel_count, 1, 2, MP_QSTR_channel_count);
     synth->buffer_length = SYNTHIO_MAX_DUR * SYNTHIO_BYTES_PER_SAMPLE * channel_count;
-    synth->buffers[0] = m_malloc(synth->buffer_length, false);
-    synth->buffers[1] = m_malloc(synth->buffer_length, false);
+    synth->buffers[0] = m_malloc(synth->buffer_length);
+    synth->buffers[1] = m_malloc(synth->buffer_length);
     synth->channel_count = channel_count;
     synth->other_channel = -1;
     synth->waveform_obj = waveform_obj;
@@ -425,7 +425,7 @@ STATIC void parse_common(mp_buffer_info_t *bufinfo, mp_obj_t o, int16_t what, mp
     if (o != mp_const_none) {
         mp_get_buffer_raise(o, bufinfo, MP_BUFFER_READ);
         if (bufinfo->typecode != 'h') {
-            mp_raise_ValueError_varg(translate("%q must be array of type 'h'"), what);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be array of type 'h'"), what);
         }
         bufinfo->len /= 2;
         mp_arg_validate_length_range(bufinfo->len, 2, max_len, what);
@@ -511,7 +511,7 @@ mp_float_t synthio_block_slot_get(synthio_block_slot_t *slot) {
 
     block->last_tick = synthio_global_tick;
     // previously verified by call to mp_proto_get in synthio_block_assign_slot
-    const synthio_block_proto_t *p = mp_type_get_protocol_slot(mp_obj_get_type(slot->obj));
+    const synthio_block_proto_t *p = MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(slot->obj), protocol);
     mp_float_t value = p->tick(slot->obj);
     block->value = value;
     return value;
@@ -550,7 +550,7 @@ bool synthio_block_assign_slot_maybe(mp_obj_t obj, synthio_block_slot_t *slot) {
 
 void synthio_block_assign_slot(mp_obj_t obj, synthio_block_slot_t *slot, qstr arg_name) {
     if (!synthio_block_assign_slot_maybe(obj, slot)) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), arg_name, MP_QSTR_BlockInput, mp_obj_get_type_qstr(obj));
     }
 }
 

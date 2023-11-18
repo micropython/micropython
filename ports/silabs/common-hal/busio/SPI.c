@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/board.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 // Note that any bugs introduced in this file can cause crashes
@@ -59,7 +58,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
     if (half_duplex) {
         mp_raise_NotImplementedError(
-            translate("Half duplex SPI is not implemented"));
+            MP_ERROR_TEXT("Half duplex SPI is not implemented"));
     }
 
     if ((sck != NULL) && (mosi != NULL) && (miso != NULL)) {
@@ -92,10 +91,10 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
 
             sc = SPIDRV_Init(self->handle, &spidrv_eusart_init);
             if (sc != ECODE_EMDRV_SPIDRV_OK) {
-                mp_raise_ValueError(translate("SPI init error"));
+                mp_raise_ValueError(MP_ERROR_TEXT("SPI init error"));
             }
         } else {
-            mp_raise_ValueError(translate("Hardware busy, try alternative pins"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
         }
     } else {
         raise_ValueError_invalid_pins();
@@ -129,7 +128,7 @@ void common_hal_busio_spi_deinit(busio_spi_obj_t *self) {
 
     Ecode_t sc = SPIDRV_DeInit(self->handle);
     if (sc != ECODE_EMDRV_SPIDRV_OK) {
-        mp_raise_RuntimeError(translate("SPI re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("SPI re-init"));
     }
 
     in_used = false;
@@ -157,7 +156,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     sc = SPIDRV_DeInit(self->handle);
     if (sc != ECODE_EMDRV_SPIDRV_OK) {
-        mp_raise_RuntimeError(translate("SPI re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("SPI re-init"));
     }
     in_used = false;
     self->baudrate = baudrate;
@@ -179,7 +178,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
 
     sc = SPIDRV_Init(self->handle, &spidrv_eusart_init);
     if (sc != ECODE_EMDRV_SPIDRV_OK) {
-        mp_raise_RuntimeError(translate("SPI re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("SPI re-init"));
     }
     in_used = true;
     return true;

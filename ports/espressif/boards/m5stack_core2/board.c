@@ -27,20 +27,20 @@
 #include "mpconfigboard.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/busio/I2C.h"
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/fourwire/FourWire.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/board/__init__.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "components/driver/include/driver/gpio.h"
+#include "components/driver/gpio/include/driver/gpio.h"
 #include "components/hal/include/hal/gpio_hal.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "../../pmic/axp192/axp192.h"
 
-displayio_fourwire_obj_t board_display_obj;
+fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 #define PMIC_POWER_SOURCE_USB   0
@@ -48,21 +48,21 @@ displayio_fourwire_obj_t board_display_obj;
 
 // display init sequence according to M5Gfx
 uint8_t display_init_sequence[] = {
-    0x01,DELAY,0x80,            // Software reset then delay 0x80 (128ms)
-    0xC8,0x03,0xFF,0x93,0x42,   // Turn on the external command
-    0xC0,0x02,0x12, 0x12,       // Power Control 1
-    0xC1,0x01,0x03,             // Power Control 2
-    0xC5,0x01,0xF2,             // VCOM Control 1
-    0xB0,0x01,0xE0,             // RGB Interface SYNC Mode
-    0xF6,0x03,0x01, 0x00, 0x00, // Interface control
-    0XE0,0x0F,0x00,0x0C,0x11,0x04,0x11,0x08,0x37,0x89,0x4C,0x06,0x0C,0x0A,0x2E,0x34,0x0F,   // Positive Gamma Correction
-    0xE1,0x0F,0x00,0x0B,0x11,0x05,0x13,0x09,0x33,0x67,0x48,0x07,0x0E,0x0B,0x2E,0x33,0x0F,   // Negative Gamma Correction
-    0xB6,0x04,0x08,0x82,0x1D,0x04,  // Display Function Control
-    0x3A,0x01,0x55,             // COLMOD: Pixel Format Set 16 bit
-    0x21,0x00,                  // Display inversion ON
-    0x36,0x01,0x08,             // Memory Access Control: RGB order
-    0x11,DELAY,0x78,            // Exit Sleep then delay 0x78 (120ms)
-    0x29,DELAY,0x78,            // Display on then delay 0x78 (120ms)
+    0x01, DELAY, 0x80,            // Software reset then delay 0x80 (128ms)
+    0xC8, 0x03, 0xFF, 0x93, 0x42,   // Turn on the external command
+    0xC0, 0x02, 0x12, 0x12,       // Power Control 1
+    0xC1, 0x01, 0x03,             // Power Control 2
+    0xC5, 0x01, 0xF2,             // VCOM Control 1
+    0xB0, 0x01, 0xE0,             // RGB Interface SYNC Mode
+    0xF6, 0x03, 0x01, 0x00, 0x00, // Interface control
+    0XE0, 0x0F, 0x00, 0x0C, 0x11, 0x04, 0x11, 0x08, 0x37, 0x89, 0x4C, 0x06, 0x0C, 0x0A, 0x2E, 0x34, 0x0F,   // Positive Gamma Correction
+    0xE1, 0x0F, 0x00, 0x0B, 0x11, 0x05, 0x13, 0x09, 0x33, 0x67, 0x48, 0x07, 0x0E, 0x0B, 0x2E, 0x33, 0x0F,   // Negative Gamma Correction
+    0xB6, 0x04, 0x08, 0x82, 0x1D, 0x04,  // Display Function Control
+    0x3A, 0x01, 0x55,             // COLMOD: Pixel Format Set 16 bit
+    0x21, 0x00,                  // Display inversion ON
+    0x36, 0x01, 0x08,             // Memory Access Control: RGB order
+    0x11, DELAY, 0x78,            // Exit Sleep then delay 0x78 (120ms)
+    0x29, DELAY, 0x78,            // Display on then delay 0x78 (120ms)
 };
 
 static bool pmic_set_power_source(uint8_t source, busio_i2c_obj_t *i2c) {
@@ -333,10 +333,10 @@ static bool pmic_init(busio_i2c_obj_t *i2c) {
 
 static bool display_init(void) {
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
-    displayio_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
-    bus->base.type = &displayio_fourwire_type;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    bus->base.type = &fourwire_fourwire_type;
 
-    common_hal_displayio_fourwire_construct(
+    common_hal_fourwire_fourwire_construct(
         bus,
         spi,
         &pin_GPIO15,    // DC
@@ -347,10 +347,10 @@ static bool display_init(void) {
         0               // phase
         );
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
 
-    common_hal_displayio_display_construct(
+    common_hal_busdisplay_busdisplay_construct(
         display,
         bus,
         320,            // width (after rotation)

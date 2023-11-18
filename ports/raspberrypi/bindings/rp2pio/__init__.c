@@ -72,4 +72,4 @@ const mp_obj_module_t rp2pio_module = {
     .globals = (mp_obj_dict_t *)&rp2pio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_rp2pio, rp2pio_module, CIRCUITPY_RP2PIO);
+MP_REGISTER_MODULE(MP_QSTR_rp2pio, rp2pio_module);

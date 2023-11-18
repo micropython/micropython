@@ -66,7 +66,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         }
     }
     if (!found) {
-        mp_raise_ValueError(translate("NeoPixel not supported on pin"));
+        mp_raise_ValueError(MP_ERROR_TEXT("NeoPixel not supported on pin"));
         return;
     }
 

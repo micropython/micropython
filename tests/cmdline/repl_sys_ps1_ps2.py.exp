@@ -1,0 +1,10 @@
+MicroPython \.\+ version
+Use \.\+
+>>> # test changing ps1/ps2
+>>> import sys
+>>> sys.ps1 = "PS1"
+PS1sys.ps2 = "PS2"
+PS1(1 +
+PS22)
+3
+PS1

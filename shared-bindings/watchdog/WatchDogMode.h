@@ -1,5 +1,5 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H
 
-#include "py/obj.h"
+#include "py/enum.h"
 
 typedef enum {
     WATCHDOGMODE_NONE,
@@ -36,14 +36,5 @@ typedef enum {
 } watchdog_watchdogmode_t;
 
 extern const mp_obj_type_t watchdog_watchdogmode_type;
-
-watchdog_watchdogmode_t watchdog_watchdogmode_obj_to_type(mp_obj_t obj);
-mp_obj_t watchdog_watchdogmode_type_to_obj(watchdog_watchdogmode_t mode);
-
-typedef struct {
-    mp_obj_base_t base;
-} watchdog_watchdogmode_obj_t;
-extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_raise_obj;
-extern const watchdog_watchdogmode_obj_t watchdog_watchdogmode_reset_obj;
 
 #endif // MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGMODE_H

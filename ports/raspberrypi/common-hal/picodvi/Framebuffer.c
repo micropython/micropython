@@ -31,6 +31,7 @@
 #include "shared-bindings/time/__init__.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rp2pio/StateMachine.h"
+#include "supervisor/port.h"
 
 #include "src/common/pico_stdlib/include/pico/stdlib.h"
 #include "src/rp2040/hardware_structs/include/hardware/structs/mpu.h"
@@ -123,8 +124,6 @@ static void __not_in_flash_func(core1_scanline_callback)(void) {
     self->next_scanline += 1;
     if (self->next_scanline >= self->height) {
         self->next_scanline = 0;
-        // Update the framebuffer pointer in case it moved.
-        self->framebuffer = self->allocation->ptr;
     }
 }
 
@@ -139,7 +138,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     const mcu_pin_obj_t *blue_dp, const mcu_pin_obj_t *blue_dn,
     mp_uint_t color_depth) {
     if (active_picodvi != NULL) {
-        mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q in use"), MP_QSTR_picodvi);
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q in use"), MP_QSTR_picodvi);
     }
 
     bool color_framebuffer = color_depth >= 8;
@@ -152,15 +151,15 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
         timing = &dvi_timing_800x480p_60hz;
     } else {
         if (height != 480 && height != 240) {
-            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_height);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_height);
         }
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_width);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_width);
     }
 
     // If the width is > 400, then it must not be color frame buffer and vice
     // versa.
     if ((width > 400) == color_framebuffer) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_color_depth);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_color_depth);
     }
 
     bool invert_diffpairs = clk_dn->number < clk_dp->number;
@@ -215,7 +214,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     }
 
     if (pio_index == NUM_PIOS) {
-        mp_raise_RuntimeError(translate("All state machines in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All state machines in use"));
     }
 
     self->width = width;
@@ -243,15 +242,15 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     size_t framebuffer_size = self->pitch * self->height;
     self->tmdsbuf_size = tmds_bufs_per_scanline * scanline_width / DVI_SYMBOLS_PER_WORD + 1;
     size_t total_allocation_size = sizeof(uint32_t) * (framebuffer_size + DVI_N_TMDS_BUFFERS * self->tmdsbuf_size);
-    self->allocation = allocate_memory(total_allocation_size, false, true);
-    if (self->allocation == NULL) {
+    self->framebuffer = (uint32_t *)port_malloc(total_allocation_size, true);
+    if (self->framebuffer == NULL) {
         m_malloc_fail(total_allocation_size);
         return;
     }
 
     // Do the pwmio check last because it claims the pwm slice.
     if (!pwmio_claim_slice_ab_channels(slice)) {
-        mp_raise_ValueError(translate("All timers for this pin are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All timers for this pin are in use"));
     }
     self->pwm_slice = slice;
 
@@ -270,7 +269,6 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     // For the output.
     user_irq_claim(DMA_IRQ_1);
     self->framebuffer_len = framebuffer_size;
-    self->framebuffer = self->allocation->ptr;
     self->color_depth = color_depth;
 
     self->dvi.timing = timing;
@@ -383,7 +381,7 @@ void common_hal_picodvi_framebuffer_deinit(picodvi_framebuffer_obj_t *self) {
 
     active_picodvi = NULL;
 
-    free_memory(self->allocation);
+    port_free(self->framebuffer);
     self->framebuffer = NULL;
 
     self->base.type = &mp_type_NoneType;

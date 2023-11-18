@@ -40,7 +40,6 @@
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
@@ -98,7 +97,10 @@ void i2sout_reset(void) {
 // Caller validates that pins are free.
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select,
-    const mcu_pin_obj_t *data, bool left_justified) {
+    const mcu_pin_obj_t *data, const mcu_pin_obj_t *main_clock, bool left_justified) {
+    if (main_clock != NULL) {
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_main_clock);
+    }
     uint8_t serializer = 0xff;
     uint8_t bc_clock_unit = 0xff;
     uint8_t ws_clock_unit = 0xff;
@@ -157,7 +159,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         raise_ValueError_invalid_pin_name(MP_QSTR_word_select);
     }
     if (bc_clock_unit != ws_clock_unit) {
-        mp_raise_ValueError(translate("Bit clock and word select must share a clock unit"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Bit clock and word select must share a clock unit"));
     }
     if (serializer == 0xff) {
         raise_ValueError_invalid_pin_name(MP_QSTR_data);
@@ -174,12 +176,12 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     } else {
         #ifdef SAMD21
         if ((I2S->CTRLA.vec.SEREN & (1 << serializer)) != 0) {
-            mp_raise_RuntimeError(translate("Serializer in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Serializer in use"));
         }
         #endif
         #ifdef SAM_D5X_E5X
         if (I2S->CTRLA.bit.TXEN == 1) {
-            mp_raise_RuntimeError(translate("Serializer in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Serializer in use"));
         }
         #endif
     }
@@ -231,7 +233,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     }
     #ifdef SAMD21
     if ((I2S->CTRLA.vec.CKEN & (1 << self->clock_unit)) == 1) {
-        mp_raise_RuntimeError(translate("Clock unit in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Clock unit in use"));
     }
     #endif
     uint8_t bits_per_sample = audiosample_bits_per_sample(sample);
@@ -241,7 +243,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     // Find a free GCLK to generate the MCLK signal.
     uint8_t gclk = find_free_gclk(divisor);
     if (gclk > GCLK_GEN_NUM) {
-        mp_raise_RuntimeError(translate("Unable to find free GCLK"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to find free GCLK"));
     }
     self->gclk = gclk;
 
@@ -255,7 +257,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     }
     uint8_t channel_count = audiosample_channel_count(sample);
     if (channel_count > 2) {
-        mp_raise_ValueError(translate("Too many channels in sample"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Too many channels in sample"));
     }
     #ifdef SAMD21
     uint32_t serctrl = (self->clock_unit << I2S_SERCTRL_CLKSEL_Pos) | SERCTRL(SERMODE_TX) | I2S_SERCTRL_TXSAME_SAME | I2S_SERCTRL_EXTEND_MSBIT | I2S_SERCTRL_TXDEFAULT_ONE | I2S_SERCTRL_SLOTADJ_LEFT;
@@ -306,10 +308,10 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
 
     if (result == AUDIO_DMA_DMA_BUSY) {
         common_hal_audiobusio_i2sout_stop(self);
-        mp_raise_RuntimeError(translate("No DMA channel found"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No DMA channel found"));
     } else if (result == AUDIO_DMA_MEMORY_ERROR) {
         common_hal_audiobusio_i2sout_stop(self);
-        mp_raise_RuntimeError(translate("Unable to allocate buffers for signed conversion"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to allocate buffers for signed conversion"));
     }
 
     I2S->INTFLAG.reg = I2S_INTFLAG_TXUR0 | I2S_INTFLAG_TXUR1;

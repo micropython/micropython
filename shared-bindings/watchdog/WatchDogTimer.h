@@ -27,14 +27,14 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_WATCHDOG_WATCHDOGTIMER_H
 
-#include <py/obj.h>
+#include "py/obj.h"
 #include "shared-bindings/watchdog/WatchDogMode.h"
 
 typedef struct _watchdog_watchdogtimer_obj_t watchdog_watchdogtimer_obj_t;
 
 extern void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self);
 
-extern void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_watchdogmode_t);
+extern void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_watchdogmode_t mode);
 extern watchdog_watchdogmode_t common_hal_watchdog_get_mode(watchdog_watchdogtimer_obj_t *self);
 
 extern void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_float_t timeout);

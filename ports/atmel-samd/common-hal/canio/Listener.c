@@ -306,24 +306,24 @@ void common_hal_canio_listener_construct(canio_listener_obj_t *self, canio_can_o
         can->fifo1_in_use = true;
         can->hw->IR.reg = CAN_IR_RF1N | CAN_IR_RF1W | CAN_IR_RF1F | CAN_IR_RF1L;
     } else {
-        mp_raise_ValueError(translate("All RX FIFOs in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All RX FIFOs in use"));
     }
 
     if (!nmatch) {
         if (can->hw->GFC.bit.ANFS == CAN_GFC_ANFS_RXF1_Val - self->fifo_idx) {
-            mp_raise_ValueError(translate("Already have all-matches listener"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Already have all-matches listener"));
         }
         if (can->hw->GFC.bit.ANFE == CAN_GFC_ANFE_RXF1_Val - self->fifo_idx) {
-            mp_raise_ValueError(translate("Already have all-matches listener"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Already have all-matches listener"));
         }
     }
 
     if (num_filters_needed(nmatch, matches, false) > num_filters_available(can, false)) {
-        mp_raise_ValueError(translate("Filters too complex"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Filters too complex"));
     }
 
     if (num_filters_needed(nmatch, matches, true) > num_filters_available(can, true)) {
-        mp_raise_ValueError(translate("Filters too complex"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Filters too complex"));
     }
 
     // Nothing can fail now so it's safe to assign self->can
@@ -368,8 +368,8 @@ mp_obj_t common_hal_canio_listener_receive(canio_listener_obj_t *self) {
     int index = self->hw->RXFS.bit.F0GI;
     canio_can_rx_fifo_t *hw_message = &self->fifo[index];
     bool rtr = hw_message->rxf0.bit.RTR;
-    canio_message_obj_t *message = m_new_obj(canio_message_obj_t);
-    message->base.type = rtr ? &canio_remote_transmission_request_type : &canio_message_type;
+    canio_message_obj_t *message =
+        mp_obj_malloc(canio_message_obj_t, rtr ? &canio_remote_transmission_request_type : &canio_message_type);
     message->extended = hw_message->rxf0.bit.XTD;
     if (message->extended) {
         message->id = hw_message->rxf0.bit.ID;

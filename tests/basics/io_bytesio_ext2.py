@@ -1,8 +1,4 @@
-try:
-    import uio as io
-except ImportError:
-    import io
-
+import io
 a = io.BytesIO(b"foobar")
 try:
     a.seek(-10)

@@ -25,7 +25,6 @@
  */
 
 #include "py/obj.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/objarray.h"
 
@@ -92,8 +91,7 @@ STATIC mp_obj_t sdcardio_sdcard_make_new(const mp_obj_type_t *type, size_t n_arg
     busio_spi_obj_t *spi = validate_obj_is_spi_bus(args[ARG_spi].u_obj, MP_QSTR_spi);
     const mcu_pin_obj_t *cs = validate_obj_is_free_pin(args[ARG_cs].u_obj, MP_QSTR_cs);
 
-    sdcardio_sdcard_obj_t *self = m_new_obj(sdcardio_sdcard_obj_t);
-    self->base.type = &sdcardio_SDCard_type;
+    sdcardio_sdcard_obj_t *self = mp_obj_malloc(sdcardio_sdcard_obj_t, &sdcardio_SDCard_type);
 
     common_hal_sdcardio_sdcard_construct(self, spi, cs, args[ARG_baudrate].u_int);
 
@@ -195,9 +193,10 @@ STATIC const mp_rom_map_elem_t sdcardio_sdcard_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(sdcardio_sdcard_locals_dict, sdcardio_sdcard_locals_dict_table);
 
-const mp_obj_type_t sdcardio_SDCard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SDCard,
-    .make_new = sdcardio_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t *)&sdcardio_sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    sdcardio_SDCard_type,
+    MP_QSTR_SDCard,
+    MP_TYPE_FLAG_NONE,
+    make_new, sdcardio_sdcard_make_new,
+    locals_dict, &sdcardio_sdcard_locals_dict
+    );

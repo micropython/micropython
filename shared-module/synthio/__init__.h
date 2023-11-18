@@ -35,6 +35,7 @@
 #define SYNTHIO_FREQUENCY_SHIFT (16)
 
 #include "shared-module/audiocore/__init__.h"
+#include "shared-bindings/synthio/__init__.h"
 
 typedef struct {
     uint16_t dur;
@@ -48,11 +49,6 @@ typedef struct {
     int16_t attack_step, decay_step, release_step;
     uint16_t attack_level, sustain_level;
 } synthio_envelope_definition_t;
-
-typedef enum {
-    SYNTHIO_ENVELOPE_STATE_ATTACK, SYNTHIO_ENVELOPE_STATE_DECAY,
-    SYNTHIO_ENVELOPE_STATE_SUSTAIN, SYNTHIO_ENVELOPE_STATE_RELEASE
-} envelope_state_e;
 
 typedef struct {
     int16_t level;

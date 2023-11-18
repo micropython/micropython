@@ -243,14 +243,14 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
     if (family != SOCKETPOOL_AF_INET) {
-        mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
     }
 
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
 
     if (!_socketpool_socket(self, family, type, sock)) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
     }
     mark_user_socket(sock->num, sock);
     return sock;
@@ -349,7 +349,7 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     int opt = 1;
     int err = lwip_setsockopt(self->num, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
     if (err != 0) {
-        mp_raise_RuntimeError(translate("Cannot set socket options"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot set socket options"));
     }
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
     return result == 0;
@@ -402,7 +402,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
     #pragma GCC diagnostic ignored "-Wcast-align"
     dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
     #pragma GCC diagnostic pop
-    freeaddrinfo(result_i);
+    lwip_freeaddrinfo(result_i);
 
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(port);
@@ -411,7 +411,7 @@ void common_hal_socketpool_socket_connect(socketpool_socket_obj_t *self,
 
     // Switch to blocking mode for this one call
     int opts;
-    opts = lwip_fcntl(self->num,F_GETFL,0);
+    opts = lwip_fcntl(self->num, F_GETFL, 0);
     opts = opts & (~O_NONBLOCK);
     lwip_fcntl(self->num, F_SETFL, opts);
 
@@ -582,7 +582,7 @@ mp_uint_t common_hal_socketpool_socket_sendto(socketpool_socket_obj_t *self,
     #pragma GCC diagnostic ignored "-Wcast-align"
     dest_addr.sin_addr.s_addr = ((struct sockaddr_in *)result_i->ai_addr)->sin_addr.s_addr;
     #pragma GCC diagnostic pop
-    freeaddrinfo(result_i);
+    lwip_freeaddrinfo(result_i);
 
     dest_addr.sin_family = AF_INET;
     dest_addr.sin_port = htons(port);

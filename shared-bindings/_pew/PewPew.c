@@ -32,7 +32,6 @@
 #include "shared-bindings/util.h"
 #include "PewPew.h"
 #include "common-hal/_pew/PewPew.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PewPew:
 //|     """This is an internal module to be used by the ``pew.py`` library from
@@ -86,7 +85,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_obj_get_array(args[ARG_cols].u_obj, &cols_size, &cols);
 
     if (bufinfo.len != rows_size * cols_size) {
-        mp_raise_ValueError(translate("Incorrect buffer size"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Incorrect buffer size"));
     }
 
     for (size_t i = 0; i < rows_size; ++i) {
@@ -110,9 +109,7 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 
     pew_obj_t *pew = MP_STATE_VM(pew_singleton);
     if (!pew) {
-        pew = m_new_obj(pew_obj_t);
-        pew->base.type = &pewpew_type;
-        pew = gc_make_long_lived(pew);
+        pew = mp_obj_malloc(pew_obj_t, &pewpew_type);
         MP_STATE_VM(pew_singleton) = pew;
     }
 
@@ -132,9 +129,11 @@ STATIC mp_obj_t pewpew_make_new(const mp_obj_type_t *type, size_t n_args, size_t
 STATIC const mp_rom_map_elem_t pewpew_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pewpew_locals_dict, pewpew_locals_dict_table);
-const mp_obj_type_t pewpew_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PewPew,
-    .make_new = pewpew_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pewpew_locals_dict,
-};
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    pewpew_type,
+    MP_QSTR_PewPew,
+    MP_TYPE_FLAG_NONE,
+    make_new, pewpew_make_new,
+    locals_dict, &pewpew_locals_dict
+    );

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,6 @@
 #include "py/frozenmod.h"
 
 #if MICROPY_PY_IO
-
-extern const mp_obj_type_t mp_type_fileio;
-extern const mp_obj_type_t mp_type_textio;
 
 #if MICROPY_PY_IO_IOBASE
 
@@ -95,21 +92,18 @@ STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, in
 }
 
 STATIC const mp_stream_p_t iobase_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = iobase_read,
     .write = iobase_write,
     .ioctl = iobase_ioctl,
 };
 
-STATIC const mp_obj_type_t mp_type_iobase = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_IOBase,
-    .make_new = iobase_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &iobase_p,
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_iobase,
+    MP_QSTR_IOBase,
+    MP_TYPE_FLAG_NONE,
+    make_new, iobase_make_new,
+    protocol, &iobase_p
+    );
 
 #endif // MICROPY_PY_IO_IOBASE
 
@@ -125,8 +119,7 @@ typedef struct _mp_obj_bufwriter_t {
 STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     size_t alloc = mp_obj_get_int(args[1]);
-    mp_obj_bufwriter_t *o = m_new_obj_var(mp_obj_bufwriter_t, byte, alloc);
-    o->base.type = type;
+    mp_obj_bufwriter_t *o = mp_obj_malloc_var(mp_obj_bufwriter_t, byte, alloc, type);
     o->stream = args[0];
     o->alloc = alloc;
     o->len = 0;
@@ -196,39 +189,26 @@ STATIC const mp_rom_map_elem_t bufwriter_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
 
 STATIC const mp_stream_p_t bufwriter_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .write = bufwriter_write,
 };
 
-STATIC const mp_obj_type_t mp_type_bufwriter = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_BufferedWriter,
-    .make_new = bufwriter_make_new,
-    .locals_dict = (mp_obj_dict_t *)&bufwriter_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &bufwriter_stream_p,
-        ),
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bufwriter,
+    MP_QSTR_BufferedWriter,
+    MP_TYPE_FLAG_NONE,
+    make_new, bufwriter_make_new,
+    protocol, &bufwriter_stream_p,
+    locals_dict, &bufwriter_locals_dict
+    );
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
 STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
-    #if CIRCUITPY
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_io) },
-    #else
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uio) },
-    #endif
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
     { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
     #if MICROPY_PY_IO_IOBASE
     { MP_ROM_QSTR(MP_QSTR_IOBase), MP_ROM_PTR(&mp_type_iobase) },
-    #endif
-    #if MICROPY_PY_IO_FILEIO
-    { MP_ROM_QSTR(MP_QSTR_FileIO), MP_ROM_PTR(&mp_type_fileio) },
-    #if MICROPY_CPYTHON_COMPAT
-    { MP_ROM_QSTR(MP_QSTR_TextIOWrapper), MP_ROM_PTR(&mp_type_textio) },
-    #endif
     #endif
     { MP_ROM_QSTR(MP_QSTR_StringIO), MP_ROM_PTR(&mp_type_stringio) },
     #if MICROPY_PY_IO_BYTESIO
@@ -245,5 +225,7 @@ const mp_obj_module_t mp_module_io = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_io_globals,
 };
+
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_io, mp_module_io);
 
 #endif

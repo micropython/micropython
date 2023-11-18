@@ -38,7 +38,6 @@
 #include "shared-bindings/storage/__init__.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/flash.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/usb.h"
 
 #if CIRCUITPY_USB_MSC
@@ -260,7 +259,7 @@ void common_hal_storage_remount(const char *mount_path, bool readonly, bool disa
 
     #if CIRCUITPY_USB_MSC
     if (!usb_msc_ejected() && storage_usb_is_enabled) {
-        mp_raise_RuntimeError(translate("Cannot remount '/' when visible via USB."));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot remount '/' when visible via USB."));
     }
     #endif
 

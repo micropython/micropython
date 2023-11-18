@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Serial:
 //|     """Receives cdc commands over USB"""
@@ -278,14 +277,11 @@ STATIC const mp_stream_p_t usb_cdc_serial_stream_p = {
     .pyserial_dont_return_none_compatibility = true,
 };
 
-const mp_obj_type_t usb_cdc_serial_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Serial,
-    .locals_dict = (mp_obj_dict_t *)&usb_cdc_serial_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &usb_cdc_serial_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_cdc_serial_type,
+    MP_QSTR_Serial,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &usb_cdc_serial_locals_dict,
+    iter, mp_stream_unbuffered_iter,
+    protocol, &usb_cdc_serial_stream_p
+    );

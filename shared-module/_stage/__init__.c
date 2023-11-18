@@ -37,7 +37,7 @@ void render_stage(
     int16_t vx, int16_t vy,
     mp_obj_t *layers, size_t layers_size,
     uint16_t *buffer, size_t buffer_size,
-    displayio_display_obj_t *display,
+    busdisplay_busdisplay_obj_t *display,
     uint8_t scale, uint16_t background) {
 
 
@@ -46,12 +46,12 @@ void render_stage(
     area.y1 = y0 * scale;
     area.x2 = x1 * scale;
     area.y2 = y1 * scale;
-    displayio_display_core_set_region_to_update(&display->core, &area);
+    displayio_display_bus_set_region_to_update(&display->bus, &display->core, &area);
 
-    while (!displayio_display_core_begin_transaction(&display->core)) {
+    while (!displayio_display_bus_begin_transaction(&display->bus)) {
         RUN_BACKGROUND_TASKS;
     }
-    display->core.send(display->core.bus, DISPLAY_COMMAND,
+    display->bus.send(display->bus.bus, DISPLAY_COMMAND,
         CHIP_SELECT_TOGGLE_EVERY_BYTE,
         &display->write_ram_command, 1);
     size_t index = 0;
@@ -78,7 +78,7 @@ void render_stage(
                     index += 1;
                     // The buffer is full, send it.
                     if (index >= buffer_size) {
-                        display->core.send(display->core.bus, DISPLAY_DATA,
+                        display->bus.send(display->bus.bus, DISPLAY_DATA,
                             CHIP_SELECT_UNTOUCHED,
                             ((uint8_t *)buffer), buffer_size * 2);
                         index = 0;
@@ -89,10 +89,10 @@ void render_stage(
     }
     // Send the remaining data.
     if (index) {
-        display->core.send(display->core.bus, DISPLAY_DATA,
+        display->bus.send(display->bus.bus, DISPLAY_DATA,
             CHIP_SELECT_UNTOUCHED,
             ((uint8_t *)buffer), index * 2);
     }
 
-    displayio_display_core_end_transaction(&display->core);
+    displayio_display_bus_end_transaction(&display->bus);
 }

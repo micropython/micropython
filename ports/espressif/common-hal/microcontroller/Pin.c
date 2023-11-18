@@ -30,13 +30,73 @@
 
 #include "py/mphal.h"
 
-#include "components/driver/include/driver/gpio.h"
+#include "components/driver/gpio/include/driver/gpio.h"
 #include "components/hal/include/hal/gpio_hal.h"
 
 STATIC uint64_t _never_reset_pin_mask;
 STATIC uint64_t _skip_reset_once_pin_mask;
 STATIC uint64_t _preserved_pin_mask;
 STATIC uint64_t _in_use_pin_mask;
+
+#define GPIO_SEL_0              (BIT(0))                    /*!< Pin 0 selected */
+#define GPIO_SEL_1              (BIT(1))                    /*!< Pin 1 selected */
+#define GPIO_SEL_2              (BIT(2))                    /*!< Pin 2 selected */
+#define GPIO_SEL_3              (BIT(3))                    /*!< Pin 3 selected */
+#define GPIO_SEL_4              (BIT(4))                    /*!< Pin 4 selected */
+#define GPIO_SEL_5              (BIT(5))                    /*!< Pin 5 selected */
+#define GPIO_SEL_6              (BIT(6))                    /*!< Pin 6 selected */
+#define GPIO_SEL_7              (BIT(7))                    /*!< Pin 7 selected */
+#define GPIO_SEL_8              (BIT(8))                    /*!< Pin 8 selected */
+#define GPIO_SEL_9              (BIT(9))                    /*!< Pin 9 selected */
+#define GPIO_SEL_10             (BIT(10))                   /*!< Pin 10 selected */
+#define GPIO_SEL_11             (BIT(11))                   /*!< Pin 11 selected */
+#define GPIO_SEL_12             (BIT(12))                   /*!< Pin 12 selected */
+#define GPIO_SEL_13             (BIT(13))                   /*!< Pin 13 selected */
+#define GPIO_SEL_14             (BIT(14))                   /*!< Pin 14 selected */
+#define GPIO_SEL_15             (BIT(15))                   /*!< Pin 15 selected */
+#define GPIO_SEL_16             (BIT(16))                   /*!< Pin 16 selected */
+#define GPIO_SEL_17             (BIT(17))                   /*!< Pin 17 selected */
+#define GPIO_SEL_18             (BIT(18))                   /*!< Pin 18 selected */
+#define GPIO_SEL_19             (BIT(19))                   /*!< Pin 19 selected */
+#define GPIO_SEL_20             (BIT(20))                   /*!< Pin 20 selected */
+#if SOC_GPIO_PIN_COUNT > 21
+#define GPIO_SEL_21             (BIT(21))                   /*!< Pin 21 selected */
+#endif
+#if SOC_GPIO_PIN_COUNT > 22
+#define GPIO_SEL_22             (BIT(22))                   /*!< Pin 22 selected */
+#define GPIO_SEL_23             (BIT(23))                   /*!< Pin 23 selected */
+#define GPIO_SEL_24             (BIT(24))                   /*!< Pin 24 selected */
+#define GPIO_SEL_25             (BIT(25))                   /*!< Pin 25 selected */
+#define GPIO_SEL_26             (BIT(26))                   /*!< Pin 26 selected */
+#define GPIO_SEL_27             (BIT(27))                   /*!< Pin 27 selected */
+#endif
+#if SOC_GPIO_PIN_COUNT > 28
+#define GPIO_SEL_28             (BIT(28))                   /*!< Pin 28 selected */
+#define GPIO_SEL_29             (BIT(29))                   /*!< Pin 29 selected */
+#define GPIO_SEL_30             (BIT(30))                   /*!< Pin 30 selected */
+#define GPIO_SEL_31             (BIT(31))                   /*!< Pin 31 selected */
+#define GPIO_SEL_32             ((uint64_t)PIN_BIT(32))     /*!< Pin 32 selected */
+#define GPIO_SEL_33             ((uint64_t)PIN_BIT(33))     /*!< Pin 33 selected */
+#define GPIO_SEL_34             ((uint64_t)PIN_BIT(34))     /*!< Pin 34 selected */
+#define GPIO_SEL_35             ((uint64_t)PIN_BIT(35))     /*!< Pin 35 selected */
+#define GPIO_SEL_36             ((uint64_t)PIN_BIT(36))     /*!< Pin 36 selected */
+#define GPIO_SEL_37             ((uint64_t)PIN_BIT(37))     /*!< Pin 37 selected */
+#define GPIO_SEL_38             ((uint64_t)PIN_BIT(38))     /*!< Pin 38 selected */
+#define GPIO_SEL_39             ((uint64_t)PIN_BIT(39))     /*!< Pin 39 selected */
+#endif
+#if SOC_GPIO_PIN_COUNT > 40
+#define GPIO_SEL_40             ((uint64_t)PIN_BIT(40))     /*!< Pin 40 selected */
+#define GPIO_SEL_41             ((uint64_t)PIN_BIT(41))     /*!< Pin 41 selected */
+#define GPIO_SEL_42             ((uint64_t)PIN_BIT(42))     /*!< Pin 42 selected */
+#define GPIO_SEL_43             ((uint64_t)PIN_BIT(43))     /*!< Pin 43 selected */
+#define GPIO_SEL_44             ((uint64_t)PIN_BIT(44))     /*!< Pin 44 selected */
+#define GPIO_SEL_45             ((uint64_t)PIN_BIT(45))     /*!< Pin 45 selected */
+#define GPIO_SEL_46             ((uint64_t)PIN_BIT(46))     /*!< Pin 46 selected */
+#endif
+#if SOC_GPIO_PIN_COUNT > 47
+#define GPIO_SEL_47             ((uint64_t)PIN_BIT(47))     /*!< Pin 47 selected */
+#define GPIO_SEL_48             ((uint64_t)PIN_BIT(48))     /*!< Pin 48 selected */
+#endif
 
 // Bit mask of all pins that should never EVER be reset.
 // Typically these are SPI flash and PSRAM control pins, and communication pins.
@@ -70,6 +130,51 @@ static const uint64_t pin_mask_reset_forbidden =
     #endif
     #endif // ESP32C3
 
+    #if defined(CONFIG_IDF_TARGET_ESP32C6)
+    // Never ever reset pins used to communicate with SPI flash.
+    GPIO_SEL_24 |         // SPICS0
+    GPIO_SEL_25 |         // SPIQ
+    GPIO_SEL_26 |         // SPIWP
+    GPIO_SEL_28 |         // SPIHD
+    GPIO_SEL_29 |         // SPICLK
+    GPIO_SEL_30 |         // SPID
+    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
+    // Never ever reset serial/JTAG communication pins.
+    GPIO_SEL_12 |         // USB D-
+    GPIO_SEL_13 |         // USB D+
+    #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Never reset debug UART/console pins.
+    GPIO_SEL_16 |
+    GPIO_SEL_17 |
+    #endif
+    #endif // ESP32C6
+
+    #if defined(CONFIG_IDF_TARGET_ESP32H2)
+    // Never ever reset pins used to communicate with the in-package SPI flash.
+    GPIO_SEL_15 |
+    GPIO_SEL_16 |
+    GPIO_SEL_17 |
+    GPIO_SEL_18 |
+    GPIO_SEL_19 |
+    GPIO_SEL_20 |
+    GPIO_SEL_21 |
+    // It isn't clear what these are used for but they aren't broken out for
+    // user use.
+    GPIO_SEL_6 |
+    GPIO_SEL_7 |
+    #if CIRCUITPY_ESP_USB_SERIAL_JTAG
+    // Never ever reset serial/JTAG communication pins.
+    GPIO_SEL_26 |         // USB D-
+    GPIO_SEL_27 |         // USB D+
+    #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Never reset debug UART/console pins.
+    GPIO_SEL_23 |
+    GPIO_SEL_24 |
+    #endif
+    #endif // ESP32C6
+
     #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
     // Never ever reset pins used to communicate with SPI flash and PSRAM.
     GPIO_SEL_19 |         // USB D-
@@ -97,6 +202,11 @@ static const uint64_t pin_mask_reset_forbidden =
     // Never ever reset USB pins.
     GPIO_SEL_19 |         // USB D-
     GPIO_SEL_20 |         // USB D+
+    #endif
+    #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
+    // Don't reset/use the IDF UART console.
+    GPIO_SEL_43 | // UART TX
+    GPIO_SEL_44 | // UART RX
     #endif
     #endif // ESP32S2, ESP32S3
 
@@ -193,10 +303,12 @@ void preserve_pin_number(gpio_num_t pin_number) {
         _preserved_pin_mask |= PIN_BIT(pin_number);
     }
     if (_preserved_pin_mask) {
+        #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
         // Allow pin holds to work during deep sleep. This increases power consumption noticeably
         // during deep sleep, so enable holds only if we actually are holding some pins.
         // 270uA or so extra current is consumed even with no pins held.
         gpio_deep_sleep_hold_en();
+        #endif
     }
 }
 
@@ -218,6 +330,14 @@ void reset_pin_number(gpio_num_t pin_number) {
     _reset_pin(pin_number);
 }
 
+void reset_pin_mask(uint64_t mask) {
+    for (int i = 0; i < 64; i++, mask >>= 1) {
+        if (mask & 1) {
+            reset_pin_number(i);
+        }
+    }
+}
+
 void common_hal_mcu_pin_reset_number(uint8_t i) {
     reset_pin_number((gpio_num_t)i);
 }
@@ -232,7 +352,9 @@ void common_hal_reset_pin(const mcu_pin_obj_t *pin) {
 void reset_all_pins(void) {
     // Undo deep sleep holds in case we woke up from deep sleep.
     // We still need to unhold individual pins, which is done by _reset_pin.
+    #if defined(SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP) && !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     gpio_deep_sleep_hold_dis();
+    #endif
 
     for (uint8_t i = 0; i < GPIO_PIN_COUNT; i++) {
         uint32_t iomux_address = GPIO_PIN_MUX_REG[i];
@@ -244,7 +366,7 @@ void reset_all_pins(void) {
         }
         _reset_pin(i);
     }
-    _in_use_pin_mask = _never_reset_pin_mask;
+    _in_use_pin_mask = _never_reset_pin_mask | pin_mask_reset_forbidden;
     // Don't continue to skip resetting these pins.
     _skip_reset_once_pin_mask = 0;
 }

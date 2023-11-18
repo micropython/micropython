@@ -116,11 +116,11 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     uint16_t maxlen, bool idle_state) {
     // STM32 has one shared EXTI for each pin number, 0-15
     if (!stm_peripherals_exti_is_free(pin->number)) {
-        mp_raise_RuntimeError(translate("Pin interrupt already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Pin interrupt already in use"));
     }
 
     // Allocate pulse buffer
-    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         // TODO: free the EXTI here?
         m_malloc_fail(maxlen * sizeof(uint16_t));
@@ -167,7 +167,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     refcount++;
 
     if (!stm_peripherals_exti_reserve(pin->number)) {
-        mp_raise_RuntimeError(translate("Pin interrupt already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Pin interrupt already in use"));
     }
     GPIO_InitTypeDef GPIO_InitStruct = {0};
     GPIO_InitStruct.Pin = pin_mask(pin->number);
@@ -256,7 +256,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
     }
     if (index < 0 || index >= self->len) {
         stm_peripherals_exti_enable(self->pin->number);
-        mp_raise_IndexError_varg(translate("%q out of range"), MP_QSTR_index);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("%q out of range"), MP_QSTR_index);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     stm_peripherals_exti_enable(self->pin->number);
@@ -265,7 +265,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_PulseIn);
     }
     stm_peripherals_exti_disable(self->pin->number);
     uint16_t value = self->buffer[self->start];

@@ -56,14 +56,13 @@ STATIC mp_obj_t bleio_address_make_new(const mp_obj_type_t *type, size_t n_args,
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    bleio_address_obj_t *self = m_new_obj(bleio_address_obj_t);
-    self->base.type = &bleio_address_type;
+    bleio_address_obj_t *self = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
 
     const mp_obj_t address = args[ARG_address].u_obj;
     mp_buffer_info_t buf_info;
     mp_get_buffer_raise(address, &buf_info, MP_BUFFER_READ);
     if (buf_info.len != NUM_BLEIO_ADDRESS_BYTES) {
-        mp_raise_ValueError_varg(translate("Address must be %d bytes long"), NUM_BLEIO_ADDRESS_BYTES);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Address must be %d bytes long"), NUM_BLEIO_ADDRESS_BYTES);
     }
 
     const mp_int_t address_type = args[ARG_address_type].u_int;
@@ -200,15 +199,13 @@ STATIC const mp_rom_map_elem_t bleio_address_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bleio_address_locals_dict, bleio_address_locals_dict_table);
 
-const mp_obj_type_t bleio_address_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Address,
-    .make_new = bleio_address_make_new,
-    .print = bleio_address_print,
-    .locals_dict = (mp_obj_dict_t *)&bleio_address_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = bleio_address_unary_op,
-        .binary_op = bleio_address_binary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_address_type,
+    MP_QSTR_Address,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, bleio_address_make_new,
+    print, bleio_address_print,
+    locals_dict, &bleio_address_locals_dict,
+    unary_op, bleio_address_unary_op,
+    binary_op, bleio_address_binary_op
+    );

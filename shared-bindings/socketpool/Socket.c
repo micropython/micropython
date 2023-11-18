@@ -51,7 +51,8 @@
 //|     def __hash__(self) -> int:
 //|         """Returns a hash for the Socket."""
 //|         ...
-// Provided by mp_generic_unary_op().
+// Provided inherently.
+// See https://github.com/micropython/micropython/pull/10348.
 
 //|     def __enter__(self) -> Socket:
 //|         """No-op used by Context Managers."""
@@ -102,12 +103,12 @@ STATIC mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
-        mp_raise_ValueError(translate("port must be >= 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
     }
 
     bool ok = common_hal_socketpool_socket_bind(self, host, hostlen, (uint32_t)port);
     if (!ok) {
-        mp_raise_ValueError(translate("Error: Failure to bind"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Error: Failure to bind"));
     }
 
     return mp_const_none;
@@ -138,7 +139,7 @@ STATIC mp_obj_t socketpool_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
-        mp_raise_ValueError(translate("port must be >= 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
     }
 
     common_hal_socketpool_socket_connect(self, host, hostlen, (uint32_t)port);
@@ -216,7 +217,7 @@ STATIC mp_obj_t _socketpool_socket_recv_into(size_t n_args, const mp_obj_t *args
     if (n_args == 3) {
         mp_int_t given_len = mp_obj_get_int(args[2]);
         if (given_len > len) {
-            mp_raise_ValueError(translate("buffer too small for requested bytes"));
+            mp_raise_ValueError(MP_ERROR_TEXT("buffer too small for requested bytes"));
         }
         if (given_len > 0 && given_len < len) {
             len = given_len;
@@ -318,7 +319,7 @@ STATIC mp_obj_t socketpool_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_
     const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
     mp_int_t port = mp_obj_get_int(addr_items[1]);
     if (port < 0) {
-        mp_raise_ValueError(translate("port must be >= 0"));
+        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
     }
 
     mp_int_t ret = common_hal_socketpool_socket_sendto(self, host, hostlen, (uint32_t)port, bufinfo.buf, bufinfo.len);
@@ -447,13 +448,10 @@ STATIC const mp_stream_p_t socket_stream_p = {
     .is_text = false,
 };
 
-const mp_obj_type_t socketpool_socket_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Socket,
-    .locals_dict = (mp_obj_dict_t *)&socketpool_socket_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        .protocol = &socket_stream_p,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    socketpool_socket_type,
+    MP_QSTR_Socket,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &socketpool_socket_locals_dict,
+    protocol, &socket_stream_p
+    );

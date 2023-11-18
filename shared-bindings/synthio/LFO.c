@@ -88,8 +88,7 @@ STATIC mp_obj_t synthio_lfo_make_new(const mp_obj_type_t *type_in, size_t n_args
     mp_arg_val_t args[MP_ARRAY_SIZE(lfo_properties)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(lfo_properties), lfo_properties, args);
 
-    synthio_lfo_obj_t *self = m_new_obj(synthio_lfo_obj_t);
-    self->base.base.type = &synthio_lfo_type;
+    synthio_lfo_obj_t *self = mp_obj_malloc(synthio_lfo_obj_t, &synthio_lfo_type);
 
     self->waveform_bufinfo = ((mp_buffer_info_t) {.buf = (void *)triangle, .len = MP_ARRAY_SIZE(triangle)});
     if (args[ARG_waveform].u_obj != mp_const_none) {
@@ -292,14 +291,12 @@ STATIC const synthio_block_proto_t lfo_proto = {
     .tick = common_hal_synthio_lfo_tick,
 };
 
-const mp_obj_type_t synthio_lfo_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_LFO,
-    .make_new = synthio_lfo_make_new,
-    .locals_dict = (mp_obj_dict_t *)&synthio_lfo_locals_dict,
-    .print = lfo_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &lfo_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    synthio_lfo_type,
+    MP_QSTR_LFO,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, synthio_lfo_make_new,
+    locals_dict, &synthio_lfo_locals_dict,
+    print, lfo_print,
+    protocol, &lfo_proto
+    );

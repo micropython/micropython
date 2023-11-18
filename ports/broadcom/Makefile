@@ -127,8 +127,9 @@ endif
 
 CFLAGS += $(INC) -Wall -Werror -std=gnu11 $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS)
 
+$(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
 
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 
 LDFLAGS += $(CFLAGS) -T peripherals/broadcom/link$(SUFFIX).ld -Wl,--gc-sections -Wl,-Map=$@.map # -Wl,--cref
 
@@ -148,7 +149,7 @@ else
 $(BUILD)/kernel$(SUFFIX).elf: $(OBJ)
 	$(STEPECHO) "LINK $@"
 	$(Q)echo $(OBJ) > $(BUILD)/firmware.objs
-	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--start-group $(LIBS) -Wl,--end-group
+	$(Q)$(CC) -o $@ $(LDFLAGS) @$(BUILD)/firmware.objs -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
 endif
 
 $(BUILD)/kernel$(SUFFIX).img: $(BUILD)/kernel$(SUFFIX).elf
@@ -171,10 +172,13 @@ $(BUILD)/firmware.disk.img.zip: $(BUILD)/kernel$(SUFFIX).img
 	$(Q)zip $@ $(BUILD)/circuitpython-disk.img
 	$(Q)rm $(BUILD)/circuitpython-disk.img
 
+.PHONY: $(BUILD)/rpiboot rpiboot
+rpiboot: $(BUILD)/rpiboot
+$(BUILD)/rpiboot: $(BUILD)/kernel$(SUFFIX).img
+	mkdir -vp $@
+	cp -vf $(BUILD)/kernel$(SUFFIX).img $@/
+	cp -vfr config.txt firmware/bootcode.bin firmware/fixup* firmware/start* firmware/*.dtb $@/
+	#sed -i -e "s/BOOT_UART=0/BOOT_UART=1/" $@/bootcode.bin $@/bootcode.bin
+	echo uart_2ndstage=1 >> $@/config.txt
+
 include $(TOP)/py/mkrules.mk
-
-
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)

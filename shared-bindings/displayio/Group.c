@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Group:
 //|     """Manage a group of sprites and groups and how they are inter-related."""
@@ -56,10 +55,9 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    mp_int_t scale = mp_arg_validate_int_range(args[ARG_scale].u_int, 1, 32767,MP_QSTR_scale);
+    mp_int_t scale = mp_arg_validate_int_range(args[ARG_scale].u_int, 1, 32767, MP_QSTR_scale);
 
-    displayio_group_t *self = m_new_obj(displayio_group_t);
-    self->base.type = &displayio_group_type;
+    displayio_group_t *self = mp_obj_malloc(displayio_group_t, &displayio_group_type);
     common_hal_displayio_group_construct(self, scale, args[ARG_x].u_int, args[ARG_y].u_int);
 
     return MP_OBJ_FROM_PTR(self);
@@ -69,7 +67,7 @@ STATIC mp_obj_t displayio_group_make_new(const mp_obj_type_t *type, size_t n_arg
 displayio_group_t *native_group(mp_obj_t group_obj) {
     mp_obj_t native_group = mp_obj_cast_to_native_base(group_obj, &displayio_group_type);
     if (native_group == MP_OBJ_NULL) {
-        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_Group);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Must be a %q subclass."), MP_QSTR_Group);
     }
     mp_obj_assert_native_inited(native_group);
     return MP_OBJ_TO_PTR(native_group);
@@ -203,7 +201,7 @@ STATIC mp_obj_t displayio_group_obj_index(mp_obj_t self_in, mp_obj_t layer) {
     displayio_group_t *self = native_group(self_in);
     mp_int_t index = common_hal_displayio_group_index(self, layer);
     if (index < 0) {
-        mp_raise_ValueError(translate("object not in sequence"));
+        mp_raise_ValueError(MP_ERROR_TEXT("object not in sequence"));
     }
     return MP_OBJ_NEW_SMALL_INT(index);
 }
@@ -305,7 +303,7 @@ STATIC mp_obj_t group_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t valu
     displayio_group_t *self = native_group(self_in);
 
     if (mp_obj_is_type(index_obj, &mp_type_slice)) {
-        mp_raise_NotImplementedError(translate("Slices not supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
     } else {
         size_t index = mp_get_index(&displayio_group_type, common_hal_displayio_group_get_len(self), index_obj, false);
 
@@ -350,15 +348,13 @@ STATIC const mp_rom_map_elem_t displayio_group_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_group_locals_dict, displayio_group_locals_dict_table);
 
-const mp_obj_type_t displayio_group_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Group,
-    .make_new = displayio_group_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_group_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = group_subscr,
-        .unary_op = group_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_group_type,
+    MP_QSTR_Group,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, displayio_group_make_new,
+    locals_dict, &displayio_group_locals_dict,
+    subscr, group_subscr,
+    unary_op, group_unary_op,
+    iter, mp_obj_generic_subscript_getiter
+    );

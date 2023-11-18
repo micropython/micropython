@@ -25,12 +25,15 @@
  * THE SOFTWARE.
  */
 
+#include <stdarg.h>
 #include <stdint.h>
 #include <sys/time.h>
 #include "supervisor/board.h"
 #include "supervisor/port.h"
 #include "supervisor/filesystem.h"
 #include "supervisor/shared/reload.h"
+#include "supervisor/serial.h"
+#include "py/mpprint.h"
 #include "py/runtime.h"
 
 #include "freertos/FreeRTOS.h"
@@ -52,7 +55,6 @@
 #include "common-hal/socketpool/Socket.h"
 #include "common-hal/wifi/__init__.h"
 #include "supervisor/background_callback.h"
-#include "supervisor/memory.h"
 #include "supervisor/shared/tick.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/RunMode.h"
@@ -71,10 +73,6 @@
 #include "peripherals/touch.h"
 #endif
 
-#if CIRCUITPY_AUDIOBUSIO
-#include "common-hal/audiobusio/__init__.h"
-#endif
-
 #if CIRCUITPY_BLEIO
 #include "shared-bindings/_bleio/__init__.h"
 #endif
@@ -83,21 +81,26 @@
 #include "esp_camera.h"
 #endif
 
-#ifndef CONFIG_IDF_TARGET_ESP32
-#include "soc/cache_memory.h"
-#endif
-
 #include "soc/efuse_reg.h"
+#if defined(SOC_LP_AON_SUPPORTED)
+#include "soc/lp_aon_reg.h"
+#define CP_SAVED_WORD_REGISTER LP_AON_STORE0_REG
+#else
 #include "soc/rtc_cntl_reg.h"
-
-#include "esp_debug_helpers.h"
+#define CP_SAVED_WORD_REGISTER RTC_CNTL_STORE0_REG
+#endif
+#include "soc/spi_pins.h"
 
 #include "bootloader_flash_config.h"
+
+#include "esp_debug_helpers.h"
 #include "esp_efuse.h"
 #include "esp_ipc.h"
 #include "esp_rom_efuse.h"
+#include "esp_timer.h"
 
 #ifdef CONFIG_IDF_TARGET_ESP32
+#include "hal/efuse_hal.h"
 #include "esp32/rom/efuse.h"
 #endif
 
@@ -184,7 +187,7 @@ static void _never_reset_spi_ram_flash(void) {
     if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32D2WDQ5) {
         never_reset_pin_number(D2WD_PSRAM_CLK_IO);
         never_reset_pin_number(D2WD_PSRAM_CS_IO);
-    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 && esp_efuse_get_chip_ver() >= 3) {
+    } else if (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4 && efuse_hal_get_major_chip_version() >= 3) {
         // This chip is ESP32-PICO-V3 and doesn't have PSRAM.
     } else if ((pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD2) || (pkg_ver == EFUSE_RD_CHIP_VER_PKG_ESP32PICOD4)) {
         never_reset_pin_number(PICO_PSRAM_CLK_IO);
@@ -243,16 +246,17 @@ safe_mode_t port_init(void) {
 
     circuitpython_task = xTaskGetCurrentTaskHandle();
 
+    #if !defined(DEBUG)
+    #define DEBUG (0)
+    #endif
+
     // Send the ROM output out of the UART. This includes early logs.
-    #ifdef DEBUG
-    ets_install_uart_printf();
+    #if DEBUG
+    esp_rom_install_uart_printf();
     #endif
 
     heap = NULL;
-
-    #ifndef DEBUG
-    #define DEBUG (0)
-    #endif
+    heap_size = 0;
 
     #define pin_GPIOn(n) pin_GPIO##n
     #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
@@ -281,6 +285,7 @@ safe_mode_t port_init(void) {
     #endif
 
     #if ENABLE_JTAG
+    ESP_LOGI(TAG, "Marking JTAG pins never_reset");
     // JTAG
     #ifdef CONFIG_IDF_TARGET_ESP32C3
     common_hal_never_reset_pin(&pin_GPIO4);
@@ -295,32 +300,7 @@ safe_mode_t port_init(void) {
     #endif
     #endif
 
-    #ifdef CONFIG_SPIRAM
-    {
-        intptr_t heap_start = common_hal_espidf_get_psram_start();
-        intptr_t heap_end = common_hal_espidf_get_psram_end();
-        size_t spiram_size = heap_end - heap_start;
-        if (spiram_size > 0) {
-            heap = (uint32_t *)heap_start;
-            heap_size = (heap_end - heap_start) / sizeof(uint32_t);
-        } else {
-            ESP_LOGE(TAG, "CONFIG_SPIRAM enabled but no spiram heap available");
-        }
-    }
-    #endif
-
     _never_reset_spi_ram_flash();
-
-    if (heap == NULL) {
-        size_t heap_total = heap_caps_get_total_size(MALLOC_CAP_8BIT);
-        heap_size = MIN(heap_caps_get_largest_free_block(MALLOC_CAP_8BIT), heap_total / 2);
-        heap = malloc(heap_size);
-        heap_size = heap_size / sizeof(uint32_t);
-    }
-    if (heap == NULL) {
-        heap_size = 0;
-        return SAFE_MODE_NO_HEAP;
-    }
 
     esp_reset_reason_t reason = esp_reset_reason();
     switch (reason) {
@@ -340,6 +320,31 @@ safe_mode_t port_init(void) {
     return SAFE_MODE_NONE;
 }
 
+void port_heap_init(void) {
+    // The IDF sets up the heap, so we don't need to.
+}
+
+void *port_malloc(size_t size, bool dma_capable) {
+    size_t caps = MALLOC_CAP_8BIT;
+    if (dma_capable) {
+        caps |= MALLOC_CAP_DMA;
+    }
+    return heap_caps_malloc(size, caps);
+}
+
+void port_free(void *ptr) {
+    heap_caps_free(ptr);
+}
+
+void port_realloc(void *ptr, size_t size) {
+    heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
+}
+
+size_t port_heap_get_largest_free_size(void) {
+    size_t free_size = heap_caps_get_largest_free_block(0);
+    return free_size;
+}
+
 void reset_port(void) {
     // TODO deinit for esp32-camera
     #if CIRCUITPY_ESPCAMERA
@@ -350,10 +355,6 @@ void reset_port(void) {
 
     #if CIRCUITPY_ANALOGIO
     analogout_reset();
-    #endif
-
-    #if CIRCUITPY_AUDIOBUSIO
-    i2s_reset();
     #endif
 
     #if CIRCUITPY_BUSIO
@@ -421,18 +422,10 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-    #ifndef CONFIG_IDF_TARGET_ESP32C3
+    #ifndef CONFIG_IDF_TARGET_ARCH_RISCV
     esp_backtrace_print(100);
     #endif
     esp_restart();
-}
-
-uint32_t *port_heap_get_bottom(void) {
-    return heap;
-}
-
-uint32_t *port_heap_get_top(void) {
-    return heap + heap_size;
 }
 
 uint32_t *port_stack_get_limit(void) {
@@ -457,17 +450,12 @@ uint32_t *port_stack_get_top(void) {
     return port_stack_get_limit() + ESP_TASK_MAIN_STACK / (sizeof(uint32_t) / sizeof(StackType_t));
 }
 
-bool port_has_fixed_stack(void) {
-    return true;
-}
-
-// Place the word to save just after our BSS section that gets blanked.
 void port_set_saved_word(uint32_t value) {
-    REG_WRITE(RTC_CNTL_STORE0_REG, value);
+    REG_WRITE(CP_SAVED_WORD_REGISTER, value);
 }
 
 uint32_t port_get_saved_word(void) {
-    return REG_READ(RTC_CNTL_STORE0_REG);
+    return REG_READ(CP_SAVED_WORD_REGISTER);
 }
 
 uint64_t port_get_raw_ticks(uint8_t *subticks) {
@@ -529,13 +517,19 @@ void port_idle_until_interrupt(void) {
 
 void port_post_boot_py(bool heap_valid) {
     if (!heap_valid && filesystem_present()) {
-        mp_int_t reserved;
-        if (common_hal_os_getenv_int("CIRCUITPY_RESERVED_PSRAM", &reserved) == GETENV_OK) {
-            common_hal_espidf_set_reserved_psram(reserved);
-        }
-        common_hal_espidf_reserve_psram();
     }
 }
+
+
+#if CIRCUITPY_CONSOLE_UART
+static int vprintf_adapter(const char *fmt, va_list ap) {
+    return mp_vprintf(&mp_plat_print, fmt, ap);
+}
+
+void port_serial_early_init(void) {
+    esp_log_set_vprintf(vprintf_adapter);
+}
+#endif
 
 // Wrap main in app_main that the IDF expects.
 extern void main(void);

@@ -33,12 +33,11 @@
 #include "eic_handler.h"
 #include "samd/external_interrupts.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
     const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
     if (!pin_a->has_extint || !pin_b->has_extint) {
-        mp_raise_RuntimeError(translate("Both pins must support hardware interrupts"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Both pins must support hardware interrupts"));
     }
 
     // TODO: The SAMD51 has a peripheral dedicated to quadrature encoder debugging. Use it instead
@@ -46,7 +45,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
 
     if (eic_get_enable()) {
         if (!eic_channel_free(pin_a->extint_channel) || !eic_channel_free(pin_b->extint_channel)) {
-            mp_raise_RuntimeError(translate("A hardware interrupt channel is already in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("A hardware interrupt channel is already in use"));
         }
     } else {
         turn_on_external_interrupt_controller();

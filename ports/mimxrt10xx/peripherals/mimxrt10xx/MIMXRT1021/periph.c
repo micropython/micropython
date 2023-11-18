@@ -268,6 +268,20 @@ const mcu_periph_obj_t mcu_i2s_tx_sync_list[7] = {
     PERIPH_PIN(3, 3, kIOMUXC_SAI3_TX_SYNC_SELECT_INPUT, 1, &pin_GPIO_EMC_34),
 };
 
+const mcu_periph_obj_t mcu_i2s_mclk_list[9] = {
+    PERIPH_PIN(1, 2, kIOMUXC_SAI1_MCLK_SELECT_INPUT, 0, &pin_GPIO_SD_B0_00),
+    PERIPH_PIN(1, 3, kIOMUXC_SAI1_MCLK_SELECT_INPUT, 1, &pin_GPIO_AD_B0_03),
+    PERIPH_PIN(1, 3, kIOMUXC_SAI1_MCLK_SELECT_INPUT, 2, &pin_GPIO_AD_B1_00),
+    PERIPH_PIN(1, 3, kIOMUXC_SAI1_MCLK_SELECT_INPUT, 3, &pin_GPIO_EMC_20),
+
+    PERIPH_PIN(2, 3, kIOMUXC_SAI2_MCLK_SELECT_INPUT, 0, &pin_GPIO_SD_B0_00),
+    PERIPH_PIN(2, 3, kIOMUXC_SAI2_MCLK_SELECT_INPUT, 1, &pin_GPIO_EMC_16),
+
+    PERIPH_PIN(3, 3, kIOMUXC_SAI3_MCLK_SELECT_INPUT, 0, &pin_GPIO_SD_B1_05),
+    PERIPH_PIN(3, 3, kIOMUXC_SAI3_MCLK_SELECT_INPUT, 1, &pin_GPIO_EMC_17),
+    PERIPH_PIN(3, 3, kIOMUXC_SAI3_MCLK_SELECT_INPUT, 2, &pin_GPIO_EMC_28),
+};
+
 const mcu_periph_obj_t mcu_mqs_left_list[3] = {
     PERIPH_PIN(3, 2, 0, 0, &pin_GPIO_EMC_17),
     PERIPH_PIN(3, 3, 0, 0, &pin_GPIO_EMC_38),

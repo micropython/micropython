@@ -63,7 +63,7 @@
 
 void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
     if (!common_hal_bleio_connection_get_connected(self)) {
-        mp_raise_ConnectionError(translate("Connection has been disconnected and can no longer be used. Create a new connection."));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Connection has been disconnected and can no longer be used. Create a new connection."));
     }
 }
 
@@ -244,12 +244,9 @@ STATIC const mp_rom_map_elem_t bleio_connection_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bleio_connection_locals_dict, bleio_connection_locals_dict_table);
 
-const mp_obj_type_t bleio_connection_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Connection,
-    .locals_dict = (mp_obj_dict_t *)&bleio_connection_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_connection_type,
+    MP_QSTR_Connection,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &bleio_connection_locals_dict
+    );

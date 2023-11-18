@@ -57,11 +57,11 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     }
 
     if ((i2c_get_hw(self->peripheral)->enable & I2C_IC_ENABLE_ENABLE_BITS) != 0) {
-        mp_raise_ValueError(translate("I2C peripheral in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("I2C peripheral in use"));
     }
 
     if (num_addresses > 1) {
-        mp_raise_ValueError(translate("Only one address is allowed"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Only one address is allowed"));
     }
 
     self->addresses = addresses;

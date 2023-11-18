@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2019 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2015 Paul Sokolovsky
+ * Copyright (c) 2013-2019 Damien P. George
+ * Copyright (c) 2014-2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,13 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/gc.h"
+#include "py/bc.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
 
-#include "genhdr/moduledefs.h"
-
-#if MICROPY_MODULE_BUILTIN_INIT
-STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj);
+#if CIRCUITPY_WARNINGS
+#include "shared-module/warnings/__init__.h"
 #endif
 
 STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -63,41 +61,72 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_printf(print, "<module '%s'>", module_name);
 }
 
+STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
+
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
+        #if CIRCUITPY_DISPLAYIO && CIRCUITPY_WARNINGS
+        if (self == &displayio_module) {
+            #if CIRCUITPY_BUSDISPLAY
+            if (attr == MP_QSTR_Display) {
+                warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_Display, MP_QSTR_displayio, MP_QSTR_busdisplay);
+                warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_Display, MP_QSTR_BusDisplay);
+            }
+            #endif
+            #if CIRCUITPY_EPAPERDISPLAY
+            if (attr == MP_QSTR_EPaperDisplay) {
+                warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_EPaperDisplay, MP_QSTR_displayio, MP_QSTR_epaperdisplay);
+            }
+            #endif
+            #if CIRCUITPY_FOURWIRE
+            if (attr == MP_QSTR_FourWire) {
+                warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_FourWire, MP_QSTR_displayio, MP_QSTR_fourwire);
+            }
+            #endif
+            #if CIRCUITPY_I2CDISPLAYBUS
+            if (attr == MP_QSTR_I2CDisplay) {
+                warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q moved from %q to %q"), MP_QSTR_I2CDisplay, MP_QSTR_displayio, MP_QSTR_i2cdisplaybus);
+                warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_I2CDisplay, MP_QSTR_I2CDisplayBus);
+            }
+            #endif
+        }
+        #endif
         // load attribute
         mp_map_elem_t *elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
         if (elem != NULL) {
             dest[0] = elem->value;
+        #if MICROPY_CPYTHON_COMPAT
+        } else if (attr == MP_QSTR___dict__) {
+            dest[0] = MP_OBJ_FROM_PTR(self->globals);
+        #endif
         #if MICROPY_MODULE_GETATTR
         } else if (attr != MP_QSTR___getattr__) {
             elem = mp_map_lookup(&self->globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___getattr__), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 dest[0] = mp_call_function_1(elem->value, MP_OBJ_NEW_QSTR(attr));
+            } else {
+                module_attr_try_delegation(self_in, attr, dest);
             }
         #endif
+        } else {
+            module_attr_try_delegation(self_in, attr, dest);
         }
     } else {
         // delete/store attribute
         mp_obj_dict_t *dict = self->globals;
         if (dict->map.is_fixed) {
-            mp_map_elem_t *elem = mp_map_lookup(&dict->map, MP_OBJ_NEW_QSTR(attr), MP_MAP_LOOKUP);
             #if MICROPY_CAN_OVERRIDE_BUILTINS
             if (dict == &mp_module_builtins_globals) {
                 if (MP_STATE_VM(mp_module_builtins_override_dict) == NULL) {
-                    MP_STATE_VM(mp_module_builtins_override_dict) = gc_make_long_lived(MP_OBJ_TO_PTR(mp_obj_new_dict(1)));
+                    MP_STATE_VM(mp_module_builtins_override_dict) = MP_OBJ_TO_PTR(mp_obj_new_dict(1));
                 }
                 dict = MP_STATE_VM(mp_module_builtins_override_dict);
             } else
             #endif
-            // Return success if the given value is already in the dictionary. This is the case for
-            // native packages with native submodules.
-            if (elem != NULL && elem->value == dest[1]) {
-                dest[0] = MP_OBJ_NULL; // indicate success
-                return;
-            } else {
+            {
                 // can't delete or store to fixed map
+                module_attr_try_delegation(self_in, attr, dest);
                 return;
             }
         }
@@ -106,20 +135,19 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
         } else {
             // store attribute
-            mp_obj_t long_lived = MP_OBJ_FROM_PTR(gc_make_long_lived(MP_OBJ_TO_PTR(dest[1])));
-            // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
-            mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), long_lived);
+            mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), dest[1]);
         }
         dest[0] = MP_OBJ_NULL; // indicate success
     }
 }
 
-const mp_obj_type_t mp_type_module = {
-    { &mp_type_type },
-    .name = MP_QSTR_module,
-    .print = module_print,
-    .attr = module_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_module,
+    MP_QSTR_module,
+    MP_TYPE_FLAG_NONE,
+    print, module_print,
+    attr, module_attr
+    );
 
 mp_obj_t mp_obj_new_module(qstr module_name) {
     mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
@@ -131,12 +159,12 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     }
 
     // create new module object
-    mp_obj_module_t *o = m_new_ll_obj(mp_obj_module_t);
-    o->base.type = &mp_type_module;
-    o->globals = gc_make_long_lived(MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE)));
+    mp_module_context_t *o = m_new_obj(mp_module_context_t);
+    o->module.base.type = &mp_type_module;
+    o->module.globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
 
     // store __name__ entry in the module
-    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
+    mp_obj_dict_store(MP_OBJ_FROM_PTR(o->module.globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
 
     // store the new module into the slot in the global dict holding all modules
     el->value = MP_OBJ_FROM_PTR(o);
@@ -145,182 +173,113 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     return MP_OBJ_FROM_PTR(o);
 }
 
-mp_obj_dict_t *mp_obj_module_get_globals(mp_obj_t self_in) {
-    assert(mp_obj_is_type(self_in, &mp_type_module));
-    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->globals;
-}
-
-void mp_obj_module_set_globals(mp_obj_t self_in, mp_obj_dict_t *globals) {
-    assert(mp_obj_is_type(self_in, &mp_type_module));
-    mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
-    self->globals = globals;
-}
-
 /******************************************************************************/
 // Global module table and related functions
 
 STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___main__), MP_ROM_PTR(&mp_module___main__) },
-    { MP_ROM_QSTR(MP_QSTR_builtins), MP_ROM_PTR(&mp_module_builtins) },
-    { MP_ROM_QSTR(MP_QSTR_micropython), MP_ROM_PTR(&mp_module_micropython) },
-
-    #if MICROPY_PY_IO
-    #if CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_io), MP_ROM_PTR(&mp_module_io) },
-    #else
-    { MP_ROM_QSTR(MP_QSTR_uio), MP_ROM_PTR(&mp_module_io) },
-    #endif
-    #endif
-    #if MICROPY_PY_COLLECTIONS
-    { MP_ROM_QSTR(MP_QSTR_collections), MP_ROM_PTR(&mp_module_collections) },
-    #endif
-// CircuitPython: Now in shared-bindings/, so not defined here.
-    #if MICROPY_PY_STRUCT
-    { MP_ROM_QSTR(MP_QSTR_ustruct), MP_ROM_PTR(&mp_module_ustruct) },
-    #endif
-
-    #if MICROPY_PY_BUILTINS_FLOAT
-    #if MICROPY_PY_MATH
-    { MP_ROM_QSTR(MP_QSTR_math), MP_ROM_PTR(&mp_module_math) },
-    #endif
-    #if MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH
-    { MP_ROM_QSTR(MP_QSTR_cmath), MP_ROM_PTR(&mp_module_cmath) },
-    #endif
-    #endif
-    #if MICROPY_PY_SYS
-    { MP_ROM_QSTR(MP_QSTR_sys), MP_ROM_PTR(&mp_module_sys) },
-    #endif
-    #if MICROPY_PY_GC && MICROPY_ENABLE_GC
-    { MP_ROM_QSTR(MP_QSTR_gc), MP_ROM_PTR(&mp_module_gc) },
-    #endif
-    #if MICROPY_PY_THREAD
-    { MP_ROM_QSTR(MP_QSTR__thread), MP_ROM_PTR(&mp_module_thread) },
-    #endif
-
-    // extmod modules
-
-    // Modules included in CircuitPython are registered using MP_REGISTER_MODULE,
-    // and do not have the "u" prefix.
-
-    #if MICROPY_PY_UASYNCIO && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR__uasyncio), MP_ROM_PTR(&mp_module_uasyncio) },
-    #endif
-    #if MICROPY_PY_UERRNO && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_uerrno), MP_ROM_PTR(&mp_module_uerrno) },
-    #endif
-    #if MICROPY_PY_UCTYPES
-    { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
-    #endif
-    #if MICROPY_PY_UZLIB
-    { MP_ROM_QSTR(MP_QSTR_uzlib), MP_ROM_PTR(&mp_module_uzlib) },
-    #endif
-    #if MICROPY_PY_UJSON && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_ujson), MP_ROM_PTR(&mp_module_ujson) },
-    #endif
-    #if MICROPY_PY_URE && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
-    #endif
-    #if MICROPY_PY_UHEAPQ
-    { MP_ROM_QSTR(MP_QSTR_uheapq), MP_ROM_PTR(&mp_module_uheapq) },
-    #endif
-    #if MICROPY_PY_UTIMEQ
-    { MP_ROM_QSTR(MP_QSTR_utimeq), MP_ROM_PTR(&mp_module_utimeq) },
-    #endif
-    #if MICROPY_PY_UHASHLIB
-    { MP_ROM_QSTR(MP_QSTR_hashlib), MP_ROM_PTR(&mp_module_uhashlib) },
-    #endif
-    #if MICROPY_PY_UBINASCII && !CIRCUITPY
-    { MP_ROM_QSTR(MP_QSTR_ubinascii), MP_ROM_PTR(&mp_module_ubinascii) },
-    #endif
-    #if MICROPY_PY_URANDOM
-    { MP_ROM_QSTR(MP_QSTR_urandom), MP_ROM_PTR(&mp_module_urandom) },
-    #endif
-    #if MICROPY_PY_USELECT
-    { MP_ROM_QSTR(MP_QSTR_uselect), MP_ROM_PTR(&mp_module_uselect) },
-    #endif
-    #if MICROPY_PY_FRAMEBUF
-    { MP_ROM_QSTR(MP_QSTR_framebuf), MP_ROM_PTR(&mp_module_framebuf) },
-    #endif
-    #if MICROPY_PY_BTREE
-    { MP_ROM_QSTR(MP_QSTR_btree), MP_ROM_PTR(&mp_module_btree) },
-    #endif
-
-    // extra builtin modules as defined by a port
-    MICROPY_PORT_BUILTIN_MODULES
-
-    #ifdef MICROPY_REGISTERED_MODULES
-    // builtin modules declared with MP_REGISTER_MODULE()
+    // built-in modules declared with MP_REGISTER_MODULE()
     MICROPY_REGISTERED_MODULES
-    #endif
-
-    #if defined(MICROPY_DEBUG_MODULES) && defined(MICROPY_PORT_BUILTIN_DEBUG_MODULES)
-    , MICROPY_PORT_BUILTIN_DEBUG_MODULES
-    #endif
 };
-
 MP_DEFINE_CONST_MAP(mp_builtin_module_map, mp_builtin_module_table);
 
-// Tries to find a loaded module, otherwise attempts to load a builtin, otherwise MP_OBJ_NULL.
-mp_obj_t mp_module_get_loaded_or_builtin(qstr module_name) {
-    // First try loaded modules.
-    mp_map_elem_t *elem = mp_map_lookup(&MP_STATE_VM(mp_loaded_modules_dict).map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
+STATIC const mp_rom_map_elem_t mp_builtin_extensible_module_table[] = {
+    // built-in modules declared with MP_REGISTER_EXTENSIBLE_MODULE()
+    MICROPY_REGISTERED_EXTENSIBLE_MODULES
+};
+MP_DEFINE_CONST_MAP(mp_builtin_extensible_module_map, mp_builtin_extensible_module_table);
 
+#if MICROPY_MODULE_ATTR_DELEGATION && defined(MICROPY_MODULE_DELEGATIONS)
+typedef struct _mp_module_delegation_entry_t {
+    mp_rom_obj_t mod;
+    mp_attr_fun_t fun;
+} mp_module_delegation_entry_t;
+
+STATIC const mp_module_delegation_entry_t mp_builtin_module_delegation_table[] = {
+    // delegation entries declared with MP_REGISTER_MODULE_DELEGATION()
+    MICROPY_MODULE_DELEGATIONS
+};
+#endif
+
+// Attempts to find (and initialise) a built-in, otherwise returns
+// MP_OBJ_NULL.
+mp_obj_t mp_module_get_builtin(qstr module_name, bool extensible) {
+    #if CIRCUITPY_PARALLELDISPLAYBUS && CIRCUITPY_WARNINGS
+    if (module_name == MP_QSTR_paralleldisplay) {
+        warnings_warn(&mp_type_FutureWarning, MP_ERROR_TEXT("%q renamed %q"), MP_QSTR_paralleldisplay, MP_QSTR_paralleldisplaybus);
+    }
+    #endif
+    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)(extensible ? &mp_builtin_extensible_module_map : &mp_builtin_module_map), MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
     if (!elem) {
-        #if MICROPY_MODULE_WEAK_LINKS
-        return mp_module_get_builtin(module_name);
-        #else
-        // Otherwise try builtin.
-        elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-        if (!elem) {
+        #if MICROPY_PY_SYS
+        // Special case for sys, which isn't extensible but can always be
+        // imported with the alias `usys`.
+        if (module_name == MP_QSTR_usys) {
+            return MP_OBJ_FROM_PTR(&mp_module_sys);
+        }
+        #endif
+
+        if (extensible) {
+            // At this point we've already tried non-extensible built-ins, the
+            // filesystem, and now extensible built-ins. No match, so fail
+            // the import.
             return MP_OBJ_NULL;
         }
 
-        #if MICROPY_MODULE_BUILTIN_INIT
-        // If found, it's a newly loaded built-in, so init it.
-        mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
-        #endif
-        #endif
-    }
-
-    return elem->value;
-}
-
-#if MICROPY_MODULE_WEAK_LINKS
-// Tries to find a loaded module, otherwise attempts to load a builtin, otherwise MP_OBJ_NULL.
-mp_obj_t mp_module_get_builtin(qstr module_name) {
-    // Try builtin.
-    mp_map_elem_t *elem = mp_map_lookup((mp_map_t *)&mp_builtin_module_map, MP_OBJ_NEW_QSTR(module_name), MP_MAP_LOOKUP);
-    if (!elem) {
+        // We're trying to match a non-extensible built-in (i.e. before trying
+        // the filesystem), but if the user is importing `ufoo`, _and_ `foo`
+        // is an extensible module, then allow it as a way of forcing the
+        // built-in. Essentially, this makes it as if all the extensible
+        // built-ins also had non-extensible aliases named `ufoo`. Newer code
+        // should be using sys.path to force the built-in, but this retains
+        // the old behaviour of the u-prefix being used to force a built-in
+        // import.
+        // CIRCUITPY-CHANGE: Don't look for `ufoo`.
         return MP_OBJ_NULL;
     }
 
     #if MICROPY_MODULE_BUILTIN_INIT
-    // If found, it's a newly loaded built-in, so init it.
-    mp_module_call_init(MP_OBJ_NEW_QSTR(module_name), elem->value);
+    // If found, it's a newly loaded built-in, so init it. This can run
+    // multiple times, so the module must ensure that it handles being
+    // initialised multiple times.
+    mp_obj_t dest[2];
+    mp_load_method_maybe(elem->value, MP_QSTR___init__, dest);
+    if (dest[0] != MP_OBJ_NULL) {
+        mp_call_method_n_kw(0, 0, dest);
+    }
     #endif
 
     return elem->value;
 }
-#endif
 
-#if MICROPY_MODULE_BUILTIN_INIT
-STATIC void mp_module_register(mp_obj_t module_name, mp_obj_t module) {
-    mp_map_t *mp_loaded_modules_map = &MP_STATE_VM(mp_loaded_modules_dict).map;
-    mp_map_lookup(mp_loaded_modules_map, module_name, MP_MAP_LOOKUP_ADD_IF_NOT_FOUND)->value = module;
+STATIC void module_attr_try_delegation(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    #if MICROPY_MODULE_ATTR_DELEGATION && defined(MICROPY_MODULE_DELEGATIONS)
+    // Delegate lookup to a module's custom attr method.
+    size_t n = MP_ARRAY_SIZE(mp_builtin_module_delegation_table);
+    for (size_t i = 0; i < n; ++i) {
+        if (*(mp_obj_t *)(&mp_builtin_module_delegation_table[i].mod) == self_in) {
+            mp_builtin_module_delegation_table[i].fun(self_in, attr, dest);
+            break;
+        }
+    }
+    #else
+    (void)self_in;
+    (void)attr;
+    (void)dest;
+    #endif
 }
 
-STATIC void mp_module_call_init(mp_obj_t module_name, mp_obj_t module_obj) {
-    // Look for __init__ and call it if it exists
-    mp_obj_t dest[2];
-    mp_load_method_maybe(module_obj, MP_QSTR___init__, dest);
-    if (dest[0] != MP_OBJ_NULL) {
-        mp_call_method_n_kw(0, 0, dest);
-        // Register module so __init__ is not called again.
-        // If a module can be referenced by more than one name (eg due to weak links)
-        // then __init__ will still be called for each distinct import, and it's then
-        // up to the particular module to make sure it's __init__ code only runs once.
-        mp_module_register(module_name, module_obj);
+void mp_module_generic_attr(qstr attr, mp_obj_t *dest, const uint16_t *keys, mp_obj_t *values) {
+    for (size_t i = 0; keys[i] != MP_QSTRnull; ++i) {
+        if (attr == keys[i]) {
+            if (dest[0] == MP_OBJ_NULL) {
+                // load attribute (MP_OBJ_NULL returned for deleted items)
+                dest[0] = values[i];
+            } else {
+                // delete or store (delete stores MP_OBJ_NULL)
+                values[i] = dest[1];
+                dest[0] = MP_OBJ_NULL; // indicate success
+            }
+            return;
+        }
     }
 }
-#endif

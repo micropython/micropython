@@ -139,7 +139,7 @@ STATIC const mp_rom_map_elem_t keypad_eventqueue_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(keypad_eventqueue_locals_dict, keypad_eventqueue_locals_dict_table);
 
-#if MICROPY_PY_USELECT
+#if MICROPY_PY_SELECT
 STATIC mp_uint_t eventqueue_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     keypad_eventqueue_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -165,15 +165,13 @@ STATIC const mp_stream_p_t eventqueue_p = {
 #endif
 
 
-const mp_obj_type_t keypad_eventqueue_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_EventQueue,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = keypad_eventqueue_unary_op,
-        #if MICROPY_PY_USELECT
-        .protocol = &eventqueue_p,
-        #endif
-        ),
-    .locals_dict = (mp_obj_t)&keypad_eventqueue_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_eventqueue_type,
+    MP_QSTR_EventQueue,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    unary_op, keypad_eventqueue_unary_op,
+    #if MICROPY_PY_SELECT
+    protocol, &eventqueue_p,
+    #endif
+    locals_dict, &keypad_eventqueue_locals_dict
+    );

@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
 #include "shared-bindings/audiocore/RawSample.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class RawSample:
 //|     """A raw audio sample buffer in memory"""
@@ -73,15 +72,14 @@
 STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_buffer, ARG_channel_count, ARG_sample_rate };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_buffer, MP_ARG_OBJ | MP_ARG_REQUIRED, {.u_obj = MP_OBJ_NULL } },
         { MP_QSTR_channel_count, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 1 } },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 8000} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    audioio_rawsample_obj_t *self = m_new_obj(audioio_rawsample_obj_t);
-    self->base.type = &audioio_rawsample_type;
+    audioio_rawsample_obj_t *self = mp_obj_malloc(audioio_rawsample_obj_t, &audioio_rawsample_type);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_buffer].u_obj, &bufinfo, MP_BUFFER_READ);
     uint8_t bytes_per_sample = 1;
@@ -89,7 +87,7 @@ STATIC mp_obj_t audioio_rawsample_make_new(const mp_obj_type_t *type, size_t n_a
     if (bufinfo.typecode == 'h' || bufinfo.typecode == 'H') {
         bytes_per_sample = 2;
     } else if (bufinfo.typecode != 'b' && bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError_varg(translate("%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"), MP_QSTR_buffer);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"), MP_QSTR_buffer);
     }
     common_hal_audioio_rawsample_construct(self, ((uint8_t *)bufinfo.buf), bufinfo.len,
         bytes_per_sample, signed_samples, args[ARG_channel_count].u_int,
@@ -176,13 +174,11 @@ STATIC const audiosample_p_t audioio_rawsample_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)audioio_rawsample_get_buffer_structure,
 };
 
-const mp_obj_type_t audioio_rawsample_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RawSample,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audioio_rawsample_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audioio_rawsample_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audioio_rawsample_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audioio_rawsample_type,
+    MP_QSTR_RawSample,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audioio_rawsample_make_new,
+    locals_dict, &audioio_rawsample_locals_dict,
+    protocol, &audioio_rawsample_proto
+    );

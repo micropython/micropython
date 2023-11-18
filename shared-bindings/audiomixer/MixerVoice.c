@@ -33,7 +33,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class MixerVoice:
 //|     """Voice objects used with Mixer
@@ -46,8 +45,7 @@
 // TODO: support mono or stereo voices
 STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    audiomixer_mixervoice_obj_t *self = m_new_obj(audiomixer_mixervoice_obj_t);
-    self->base.type = &audiomixer_mixervoice_type;
+    audiomixer_mixervoice_obj_t *self = mp_obj_malloc(audiomixer_mixervoice_obj_t, &audiomixer_mixervoice_type);
 
     common_hal_audiomixer_mixervoice_construct(self);
 
@@ -66,7 +64,7 @@ STATIC mp_obj_t audiomixer_mixervoice_make_new(const mp_obj_type_t *type, size_t
 STATIC mp_obj_t audiomixer_mixervoice_obj_play(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_sample, ARG_loop };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_sample,    MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
         { MP_QSTR_loop,      MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
     };
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
@@ -107,7 +105,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(audiomixer_mixervoice_get_level_obj, audiomixer_mixerv
 STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_level };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_level,     MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_level,     MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
     };
     audiomixer_mixervoice_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -116,7 +114,7 @@ STATIC mp_obj_t audiomixer_mixervoice_obj_set_level(size_t n_args, const mp_obj_
     mp_float_t level = mp_obj_get_float(args[ARG_level].u_obj);
 
     if (level > 1 || level < 0) {
-        mp_raise_ValueError(translate("level must be between 0 and 1"));
+        mp_raise_ValueError(MP_ERROR_TEXT("level must be between 0 and 1"));
     }
 
     common_hal_audiomixer_mixervoice_set_level(self, level);
@@ -155,9 +153,10 @@ STATIC const mp_rom_map_elem_t audiomixer_mixervoice_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiomixer_mixervoice_locals_dict, audiomixer_mixervoice_locals_dict_table);
 
-const mp_obj_type_t audiomixer_mixervoice_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MixerVoice,
-    .make_new = audiomixer_mixervoice_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiomixer_mixervoice_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiomixer_mixervoice_type,
+    MP_QSTR_MixerVoice,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audiomixer_mixervoice_make_new,
+    locals_dict, &audiomixer_mixervoice_locals_dict
+    );

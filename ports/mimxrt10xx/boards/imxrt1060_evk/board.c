@@ -28,6 +28,8 @@
 #include "supervisor/board.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
+#include "shared-bindings/usb_host/Port.h"
+
 // These pins should never ever be reset; doing so could interfere with basic operation.
 // Used in common-hal/microcontroller/Pin.c
 const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
@@ -54,5 +56,9 @@ const mcu_pin_obj_t *mimxrt10xx_reset_forbidden_pins[] = {
     &pin_GPIO_AD_B0_03, // OC/Fault Pin
     NULL,                       // Must end in NULL.
 };
+
+void board_init(void) {
+    common_hal_usb_host_port_construct(&pin_USB_OTG2_DP, &pin_USB_OTG2_DN);
+}
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

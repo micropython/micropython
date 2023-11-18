@@ -44,7 +44,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "supervisor/shared/tick.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/port.h"
 
 // This timer is shared amongst all PulseIn objects as a higher resolution clock.
@@ -156,10 +155,10 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         raise_ValueError_invalid_pin();
     }
     if (eic_get_enable() && !eic_channel_free(pin->extint_channel)) {
-        mp_raise_RuntimeError(translate("EXTINT channel already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("EXTINT channel already in use"));
     }
 
-    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t), false);
+    self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t));
     if (self->buffer == NULL) {
         m_malloc_fail(maxlen * sizeof(uint16_t));
     }
@@ -183,7 +182,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
             }
         }
         if (tc == NULL) {
-            mp_raise_RuntimeError(translate("All timers in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
         }
 
         pulsein_tc_index = index;
@@ -318,11 +317,11 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_PulseIn);
     }
     if (self->errored_too_fast) {
         self->errored_too_fast = 0;
-        mp_raise_RuntimeError(translate("Input taking too long"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Input taking too long"));
     }
     common_hal_mcu_disable_interrupts();
     uint16_t value = self->buffer[self->start];
@@ -353,7 +352,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
     if (index < 0 || index >= self->len) {
         common_hal_mcu_enable_interrupts();
         // Can't use mp_arg_validate_index_range() here due to the critical section.
-        mp_raise_IndexError_varg(translate("%q out of range"), MP_QSTR_index);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("%q out of range"), MP_QSTR_index);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
     common_hal_mcu_enable_interrupts();

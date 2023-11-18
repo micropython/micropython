@@ -61,7 +61,7 @@ void ble_drv_remove_heap_handlers(void) {
     ble_drv_evt_handler_entry_t *it = MP_STATE_VM(ble_drv_evt_handler_entries);
     while (it != NULL) {
         // If the param is on the heap, then delete the handler.
-        if (HEAP_PTR(it->param)) {
+        if (gc_ptr_on_heap(it->param)) {
             ble_drv_remove_event_handler(it->func, it->param);
         }
         it = it->next;
@@ -95,7 +95,7 @@ void ble_drv_add_event_handler(ble_drv_evt_handler_t func, void *param) {
     }
 
     // Add a new handler to the front of the list
-    ble_drv_evt_handler_entry_t *handler = m_new_ll(ble_drv_evt_handler_entry_t, 1);
+    ble_drv_evt_handler_entry_t *handler = m_new(ble_drv_evt_handler_entry_t, 1);
     ble_drv_add_event_handler_entry(handler, func, param);
 }
 
@@ -196,3 +196,5 @@ void SD_EVT_IRQHandler(void) {
     ble_serial_enable();
     #endif
 }
+
+MP_REGISTER_ROOT_POINTER(ble_drv_evt_handler_entry_t * ble_drv_evt_handler_entries);

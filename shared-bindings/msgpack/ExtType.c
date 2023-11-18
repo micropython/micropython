@@ -37,8 +37,7 @@
 //|         :param int code: type code in range 0~127.
 //|         :param bytes data: representation."""
 STATIC mp_obj_t mod_msgpack_exttype_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    mod_msgpack_extype_obj_t *self = m_new_obj(mod_msgpack_extype_obj_t);
-    self->base.type = &mod_msgpack_exttype_type;
+    mod_msgpack_extype_obj_t *self = mp_obj_malloc(mod_msgpack_extype_obj_t, &mod_msgpack_exttype_type);
     enum { ARG_code, ARG_data };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_code, MP_ARG_INT | MP_ARG_REQUIRED },
@@ -70,7 +69,7 @@ STATIC mp_obj_t mod_msgpack_exttype_set_code(mp_obj_t self_in, mp_obj_t code_in)
     mod_msgpack_extype_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int code = mp_obj_get_int(code_in);
     if (code < 0 || code > 127) {
-        mp_raise_AttributeError(translate("code outside range 0~127"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("code outside range 0~127"));
     }
     self->code = code;
     return mp_const_none;
@@ -109,9 +108,10 @@ STATIC mp_rom_map_elem_t mod_msgpack_exttype_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(mod_msgpack_exttype_locals_dict, mod_msgpack_exttype_locals_dict_table);
 
-const mp_obj_type_t mod_msgpack_exttype_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ExtType,
-    .make_new = mod_msgpack_exttype_make_new,
-    .locals_dict = (mp_obj_dict_t *)&mod_msgpack_exttype_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mod_msgpack_exttype_type,
+    MP_QSTR_ExtType,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, mod_msgpack_exttype_make_new,
+    locals_dict, &mod_msgpack_exttype_locals_dict
+    );

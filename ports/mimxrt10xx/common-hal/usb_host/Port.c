@@ -29,9 +29,13 @@
 
 #include "py/runtime.h"
 
-bool usb_host_init;
+#include "tusb.h"
 
-void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm) {
+#include "imx_usb.h"
+
+usb_host_port_obj_t usb_host_instance;
+
+usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm) {
     const mcu_pin_obj_t *supported_dp;
     const mcu_pin_obj_t *supported_dm;
     if (CIRCUITPY_USB_HOST_INSTANCE == 0) {
@@ -41,18 +45,27 @@ void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin
         supported_dp = &pin_USB_OTG2_DP;
         supported_dm = &pin_USB_OTG2_DN;
     }
+    // Return the singleton if given the same pins.
+    usb_host_port_obj_t *self = &usb_host_instance;
+    if (self->dp != NULL) {
+        if (self->dp != dp || self->dm != dm) {
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q in use"), MP_QSTR_usb_host);
+        }
+        return self;
+    }
     if (dp != supported_dp || dm != supported_dm) {
         raise_ValueError_invalid_pins();
     }
-    self->init = true;
-    usb_host_init = true;
-}
 
-void common_hal_usb_host_port_deinit(usb_host_port_obj_t *self) {
-    self->init = false;
-    usb_host_init = false;
-}
+    assert_pin_free(dp);
+    assert_pin_free(dm);
 
-bool common_hal_usb_host_port_deinited(usb_host_port_obj_t *self) {
-    return !self->init;
+    init_usb_instance(CIRCUITPY_USB_HOST_INSTANCE);
+    tuh_init(TUH_OPT_RHPORT);
+
+    self->base.type = &usb_host_port_type;
+    self->dp = dp;
+    self->dm = dm;
+
+    return self;
 }

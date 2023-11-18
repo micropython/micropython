@@ -34,7 +34,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AnalogOut:
 //|     """Output analog values (a specific voltage).
@@ -63,8 +62,7 @@ STATIC mp_obj_t analogio_analogout_make_new(const mp_obj_type_t *type, mp_uint_t
 
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[0], MP_QSTR_pin);
 
-    analogio_analogout_obj_t *self = m_new_obj(analogio_analogout_obj_t);
-    self->base.type = &analogio_analogout_type;
+    analogio_analogout_obj_t *self = mp_obj_malloc(analogio_analogout_obj_t, &analogio_analogout_type);
     common_hal_analogio_analogout_construct(self, pin);
 
     return MP_OBJ_FROM_PTR(self);
@@ -132,9 +130,10 @@ STATIC const mp_rom_map_elem_t analogio_analogout_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(analogio_analogout_locals_dict, analogio_analogout_locals_dict_table);
 
-const mp_obj_type_t analogio_analogout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_AnalogOut,
-    .make_new = analogio_analogout_make_new,
-    .locals_dict = (mp_obj_t)&analogio_analogout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    analogio_analogout_type,
+    MP_QSTR_AnalogOut,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, analogio_analogout_make_new,
+    locals_dict, &analogio_analogout_locals_dict
+    );

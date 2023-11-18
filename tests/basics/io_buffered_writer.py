@@ -1,4 +1,4 @@
-import uio as io
+import io
 
 try:
     io.BytesIO
@@ -25,3 +25,6 @@ bts = io.BytesIO()
 buf = io.BufferedWriter(bts, 1)
 buf.write(b"foo")
 print(bts.getvalue())
+
+# hashing a BufferedWriter
+print(type(hash(buf)))

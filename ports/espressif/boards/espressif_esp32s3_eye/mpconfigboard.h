@@ -43,5 +43,3 @@
         {.clock = &pin_GPIO21, .mosi = &pin_GPIO47, .miso = NULL}, \
         {.clock = &pin_GPIO39, .mosi = &pin_GPIO40, .miso = &pin_GPIO38}, \
 }
-
-#define DEFAULT_RESERVED_PSRAM      (1048576)

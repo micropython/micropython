@@ -26,12 +26,10 @@
  */
 
 #include "py/binary.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
 
 #include "shared-bindings/alarm/SleepMemory.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class SleepMemory:
 //|     """Store raw bytes in RAM that persists during deep sleep.
@@ -106,7 +104,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
         } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(common_hal_alarm_sleep_memory_get_length(self), index_in, &slice)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -120,19 +118,19 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
                     mp_buffer_info_t bufinfo;
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     if (bufinfo.len != src_len) {
-                        mp_raise_ValueError(translate("Slice and value different lengths."));
+                        mp_raise_ValueError(MP_ERROR_TEXT("Slice and value different lengths."));
                     }
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                     if (1 != mp_binary_get_size('@', bufinfo.typecode, NULL)) {
-                        mp_raise_ValueError(translate("Array values should be single bytes."));
+                        mp_raise_ValueError(MP_ERROR_TEXT("Array values should be single bytes."));
                     }
                 } else {
-                    mp_raise_NotImplementedError(translate("array/bytes required on right side"));
+                    mp_raise_NotImplementedError(MP_ERROR_TEXT("array/bytes required on right side"));
                 }
 
                 if (!common_hal_alarm_sleep_memory_set_bytes(self, slice.start, src_items, src_len)) {
-                    mp_raise_RuntimeError(translate("Unable to write to sleep_memory."));
+                    mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to write to sleep_memory."));
                 }
                 return mp_const_none;
                 #else
@@ -162,7 +160,7 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
 
                 uint8_t short_value = byte_value;
                 if (!common_hal_alarm_sleep_memory_set_bytes(self, index, &short_value, 1)) {
-                    mp_raise_RuntimeError(translate("Unable to write to sleep_memory."));
+                    mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to write to sleep_memory."));
                 }
                 return mp_const_none;
             }
@@ -170,13 +168,11 @@ STATIC mp_obj_t alarm_sleep_memory_subscr(mp_obj_t self_in, mp_obj_t index_in, m
     }
 }
 
-const mp_obj_type_t alarm_sleep_memory_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SleepMemory,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .locals_dict = (mp_obj_t)&alarm_sleep_memory_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = alarm_sleep_memory_subscr,
-        .unary_op = alarm_sleep_memory_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    alarm_sleep_memory_type,
+    MP_QSTR_SleepMemory,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &alarm_sleep_memory_locals_dict,
+    subscr, alarm_sleep_memory_subscr,
+    unary_op, alarm_sleep_memory_unary_op
+    );

@@ -28,7 +28,7 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/Display.h"
+#include "shared-bindings/busdisplay/BusDisplay.h"
 #include "shared-module/_stage/__init__.h"
 #include "shared-module/displayio/display_core.h"
 #include "Layer.h"
@@ -46,7 +46,7 @@
 //|     y1: int,
 //|     layers: List[Layer],
 //|     buffer: WriteableBuffer,
-//|     display: displayio.Display,
+//|     display: busdisplay.BusDisplay,
 //|     scale: int,
 //|     background: int,
 //| ) -> None:
@@ -59,7 +59,7 @@
 //|     :param layers: A list of the :py:class:`~_stage.Layer` objects.
 //|     :type layers: list[Layer]
 //|     :param ~circuitpython_typing.WriteableBuffer buffer: A buffer to use for rendering.
-//|     :param ~displayio.Display display: The display to use.
+//|     :param ~busdisplay.BusDisplay display: The display to use.
 //|     :param int scale: How many times should the image be scaled up.
 //|     :param int background: What color to display when nothing is there.
 //|
@@ -86,11 +86,11 @@ STATIC mp_obj_t stage_render(size_t n_args, const mp_obj_t *args) {
     size_t buffer_size = bufinfo.len / 2; // 16-bit indexing
 
     mp_obj_t native_display = mp_obj_cast_to_native_base(args[6],
-        &displayio_display_type);
-    if (!mp_obj_is_type(native_display, &displayio_display_type)) {
-        mp_raise_TypeError(translate("argument num/types mismatch"));
+        &busdisplay_busdisplay_type);
+    if (!mp_obj_is_type(native_display, &busdisplay_busdisplay_type)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("argument num/types mismatch"));
     }
-    displayio_display_obj_t *display = MP_OBJ_TO_PTR(native_display);
+    busdisplay_busdisplay_obj_t *display = MP_OBJ_TO_PTR(native_display);
     uint8_t scale = mp_obj_get_int(args[7]);
     int16_t vx = mp_obj_get_int(args[8]);
     int16_t vy = mp_obj_get_int(args[9]);
@@ -118,4 +118,4 @@ const mp_obj_module_t stage_module = {
     .globals = (mp_obj_dict_t *)&stage_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__stage, stage_module, CIRCUITPY_STAGE);
+MP_REGISTER_MODULE(MP_QSTR__stage, stage_module);
