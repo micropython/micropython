@@ -45,7 +45,6 @@
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "extmod/vfs_lfs.h"
-
 #include "boardctrl.h"
 #include "systick.h"
 #include "pendsv.h"
@@ -67,13 +66,18 @@
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
+#include "lwip/memp.h"
 #endif
 #if MICROPY_PY_BLUETOOTH
 #include "mpbthciport.h"
 #include "extmod/modbluetooth.h"
 #endif
 #include "extmod/modnetwork.h"
-
+#if MICROPY_HW_HAS_OSPI_RAM
+#include "r_ospi.h"
+extern ospi_instance_ctrl_t g_ospi_ram0_ctrl;
+extern const spi_flash_cfg_t g_ospi_ram0_cfg;
+#endif
 #define RA_EARLY_PRINT  1       /* for enabling mp_print in boardctrl. */
 
 #if MICROPY_PY_THREAD
@@ -288,6 +292,9 @@ int main(void) {
     #if LWIP_MDNS_RESPONDER
     mdns_resp_init();
     #endif
+    #if MICROPY_HW_ETH_MDC
+    systick_enable_dispatch(SYSTICK_DISPATCH_LWIP, mod_network_lwip_poll_wrapper);
+    #endif
     #endif
 
 soft_reset:
@@ -306,7 +313,17 @@ soft_reset:
     mp_stack_set_limit((char *)&_estack - (char *)&_sstack - 1024);
 
     // GC init
+    #if MICROPY_ENABLE_GC
     gc_init(MICROPY_HEAP_START, MICROPY_HEAP_END);
+    #if MICROPY_GC_SPLIT_HEAP
+    assert(MICROPY_GC_SPLIT_HEAP_N_HEAPS > 0);
+    #if MICROPY_HW_HAS_OSPI_RAM
+    if (FSP_SUCCESS == R_OSPI_Open(&g_ospi_ram0_ctrl, &g_ospi_ram0_cfg)) {
+        gc_add(MICROPY_EXTRA_HEAP_START, MICROPY_EXTRA_HEAP_END);
+    }
+    #endif
+    #endif
+    #endif
 
     #if MICROPY_ENABLE_PYSTACK
     static mp_obj_t pystack[384];
@@ -341,7 +358,9 @@ soft_reset:
     #endif
 
     #if MICROPY_PY_LWIP
+    #if MICROPY_PY_NETWORK_ESP_HOSTED
     mod_network_lwip_init();
+    #endif
     #endif
 
     // Initialise the local flash filesystem.

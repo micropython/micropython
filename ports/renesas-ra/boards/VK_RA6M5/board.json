@@ -2,9 +2,14 @@
     "deploy": [
         "../deploy.md"
     ],
-    "docs": "",
+    "docs": "https://vekatech.com/VK-RA6M5_docs/brochures/VK-RA6M5%20Flyer%20R2.pdf",
     "features": [
-        "DAC"
+        "DAC",
+        "USB",
+        "microSD",
+        "Ethernet",
+        "External RAM",
+        "External Flash"
     ],
     "images": [
         "VK-RA6M5.jpg"
@@ -12,6 +17,6 @@
     "mcu": "ra6m5",
     "product": "VK-RA6M5",
     "thumbnail": "",
-    "url": "https://vekatech.com/VK-RA6M5_docs/brochures/VK-RA6M5%20Flyer%20R2.pdf",
+    "url": "https://vekatech.com",
     "vendor": "Vekatech"
 }

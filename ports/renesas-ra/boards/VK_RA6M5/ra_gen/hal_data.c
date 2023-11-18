@@ -5,6 +5,214 @@
 #define ADC_TRIGGER_ADC0_B      ADC_TRIGGER_SYNC_ELC
 #define ADC_TRIGGER_ADC1        ADC_TRIGGER_SYNC_ELC
 #define ADC_TRIGGER_ADC1_B      ADC_TRIGGER_SYNC_ELC
+ospi_instance_ctrl_t g_ospi_ram0_ctrl;
+
+static ospi_timing_setting_t g_ospi_ram0_timing_settings = {
+    .command_to_command_interval = OSPI_COMMAND_INTERVAL_CLOCKS_5,
+    .cs_pullup_lag = OSPI_COMMAND_CS_PULLUP_CLOCKS_7, .cs_pulldown_lead =
+        OSPI_COMMAND_CS_PULLDOWN_CLOCKS_3
+};
+
+static ospi_timing_setting_t g_ospi_ram0_write_settings = {
+    .command_to_command_interval = OSPI_COMMAND_INTERVAL_CLOCKS_11,
+    .cs_pullup_lag = OSPI_COMMAND_CS_PULLUP_CLOCKS_2, .cs_pulldown_lead =
+        OSPI_COMMAND_CS_PULLDOWN_CLOCKS_3
+};
+
+static ospi_timing_setting_t g_ospi_ram0_read_settings = {
+    .command_to_command_interval = OSPI_COMMAND_INTERVAL_CLOCKS_11,
+    .cs_pullup_lag = OSPI_COMMAND_CS_PULLUP_CLOCKS_7, .cs_pulldown_lead =
+        OSPI_COMMAND_CS_PULLDOWN_CLOCKS_3
+};
+
+const ospi_opi_command_set_t g_ospi_ram0_opi_command_set = {
+/* Tramslates to Memory Write Command */
+    .dual_read_command = 0xA000,
+/* Tramslates to Memory Read Command */
+    .page_program_command = 0x2000, .command_bytes = 2
+};
+static const ospi_extended_cfg_t g_ospi_ram0_extended_cfg = { .channel =
+                                                                  (ospi_device_number_t)0, .memory_size = 0x00800000U, .memory_type =
+                                                                  OSPI_DEVICE_RAM, .data_latch_delay_clocks = 0x80,
+                                                              .om_dqs_enable_counter_dopi = 7, .om_dqs_enable_counter_sopi = 0, /* Unused by OSPI RAM */
+                                                              .single_continuous_mode_read_idle_time = 127,
+                                                              .single_continuous_mode_write_idle_time = 127,
+                                                              .p_mem_mapped_read_timing_settings = &g_ospi_ram0_read_settings,
+                                                              .p_mem_mapped_write_timing_settings = &g_ospi_ram0_write_settings,
+                                                              .p_timing_settings = &g_ospi_ram0_timing_settings, .p_opi_commands =
+                                                                  &g_ospi_ram0_opi_command_set, .opi_mem_read_dummy_cycles = 5,
+                                                              .opi_mem_write_dummy_cycles = 5,
+                                                              .p_autocalibration_preamble_pattern_addr = (uint8_t *)0x00,
+                                                              .dopi_byte_order = OSPI_DOPI_BYTE_ORDER_1032,
+                                                              .ram_chip_select_max_period_setting = 384,
+                                                              #if OSPI_CFG_DMAC_SUPPORT_ENABLE
+                                                              .p_lower_lvl_transfer = NULL
+                                                              #endif
+};
+const spi_flash_cfg_t g_ospi_ram0_cfg = { .spi_protocol =
+                                              SPI_FLASH_PROTOCOL_DOPI, .read_mode = SPI_FLASH_READ_MODE_STANDARD, /* Unused by OSPI RAM */
+                                          .address_bytes = SPI_FLASH_ADDRESS_BYTES_4, .dummy_clocks =
+                                              SPI_FLASH_DUMMY_CLOCKS_DEFAULT, /* Unused by OSPI RAM */
+                                          .page_program_address_lines = (spi_flash_data_lines_t)0U, /* Unused by OSPI RAM */
+                                          .write_status_bit = 0U, /* Unused by OSPI RAM */
+                                          .write_enable_bit = 0U, /* Unused by OSPI RAM */
+                                          .page_size_bytes = 16, .page_program_command = 0U, /* Unused by OSPI RAM */
+                                          .write_enable_command = 0U, /* Unused by OSPI RAM */
+                                          .status_command = 0U, /* Unused by OSPI RAM */
+                                          .read_command = 0U, /* Unused by OSPI RAM */
+                                          .xip_enter_command = 0U, /* Unused by OSPI Flash */
+                                          .xip_exit_command = 0U, /* Unused by OSPI Flash */
+                                          .erase_command_list_length = 0U, /* Unused by OSPI RAM */
+                                          .p_erase_command_list = NULL, /* Unused by OSPI RAM */
+                                          .p_extend = &g_ospi_ram0_extended_cfg, };
+/** This structure encompasses everything that is needed to use an instance of this interface. */
+const spi_flash_instance_t g_ospi_ram0 = { .p_ctrl = &g_ospi_ram0_ctrl, .p_cfg =
+                                               &g_ospi_ram0_cfg, .p_api = &g_ospi_on_spi_flash, };
+usb_instance_ctrl_t g_basic0_ctrl;
+
+#if !defined(g_usb_descriptor)
+extern usb_descriptor_t g_usb_descriptor;
+#endif
+#define RA_NOT_DEFINED (1)
+const usb_cfg_t g_basic0_cfg = { .usb_mode = USB_MODE_PERI, .usb_speed =
+                                     USB_SPEED_FS, .module_number = 0, .type = USB_CLASS_PCDC,
+                                 #if defined(g_usb_descriptor)
+                                 .p_usb_reg = g_usb_descriptor,
+                                 #else
+                                 .p_usb_reg = &g_usb_descriptor,
+                                 #endif
+                                 .usb_complience_cb = NULL,
+                                 #if defined(VECTOR_NUMBER_USBFS_INT)
+                                 .irq = VECTOR_NUMBER_USBFS_INT,
+                                 #else
+                                 .irq = FSP_INVALID_VECTOR,
+                                 #endif
+                                 #if defined(VECTOR_NUMBER_USBFS_RESUME)
+                                 .irq_r = VECTOR_NUMBER_USBFS_RESUME,
+                                 #else
+                                 .irq_r = FSP_INVALID_VECTOR,
+                                 #endif
+                                 #if defined(VECTOR_NUMBER_USBFS_FIFO_0)
+                                 .irq_d0 = VECTOR_NUMBER_USBFS_FIFO_0,
+                                 #else
+                                 .irq_d0 = FSP_INVALID_VECTOR,
+                                 #endif
+                                 #if defined(VECTOR_NUMBER_USBFS_FIFO_1)
+                                 .irq_d1 = VECTOR_NUMBER_USBFS_FIFO_1,
+                                 #else
+                                 .irq_d1 = FSP_INVALID_VECTOR,
+                                 #endif
+                                 #if defined(VECTOR_NUMBER_USBHS_USB_INT_RESUME)
+                                 .hsirq = VECTOR_NUMBER_USBHS_USB_INT_RESUME,
+                                 #else
+                                 .hsirq = FSP_INVALID_VECTOR,
+                                 #endif
+                                 #if defined(VECTOR_NUMBER_USBHS_FIFO_0)
+                                 .hsirq_d0 = VECTOR_NUMBER_USBHS_FIFO_0,
+                                 #else
+                                 .hsirq_d0 = FSP_INVALID_VECTOR,
+                                 #endif
+                                 #if defined(VECTOR_NUMBER_USBHS_FIFO_1)
+                                 .hsirq_d1 = VECTOR_NUMBER_USBHS_FIFO_1,
+                                 #else
+                                 .hsirq_d1 = FSP_INVALID_VECTOR,
+                                 #endif
+                                 .ipl = (12), .ipl_r = (12), .ipl_d0 = (12), .ipl_d1 = (12), .hsipl =
+                                     (12), .hsipl_d0 = (12), .hsipl_d1 = (12),
+                                 #if (BSP_CFG_RTOS != 0)
+                                 .p_usb_apl_callback = NULL,
+                                 #else
+                                 .p_usb_apl_callback = NULL,
+                                 #endif
+                                 #if defined(NULL)
+                                 .p_context = NULL,
+                                 #else
+                                 .p_context = &NULL,
+                                 #endif
+                                 #if (RA_NOT_DEFINED == RA_NOT_DEFINED)
+                                 #else
+                                 .p_transfer_tx = &RA_NOT_DEFINED,
+                                 #endif
+                                 #if (RA_NOT_DEFINED == RA_NOT_DEFINED)
+                                 #else
+                                 .p_transfer_rx = &RA_NOT_DEFINED,
+                                 #endif
+};
+#undef RA_NOT_DEFINED
+
+/* Instance structure to use this module. */
+const usb_instance_t g_basic0 = { .p_ctrl = &g_basic0_ctrl, .p_cfg =
+                                      &g_basic0_cfg, .p_api = &g_usb_on_usb, };
+
+ether_phy_instance_ctrl_t g_ether_phy0_ctrl;
+
+const ether_phy_cfg_t g_ether_phy0_cfg = {
+
+    .channel = 0, .phy_lsi_address = 5, .phy_reset_wait_time = 0x00020000,
+    .mii_bit_access_wait_time = 8, .phy_lsi_type =
+        ETHER_PHY_LSI_TYPE_ICS1894, .flow_control =
+        ETHER_PHY_FLOW_CONTROL_DISABLE, .mii_type =
+        ETHER_PHY_MII_TYPE_RMII, .p_context = NULL, .p_extend = NULL,
+
+};
+/* Instance structure to use this module. */
+const ether_phy_instance_t g_ether_phy0 = { .p_ctrl = &g_ether_phy0_ctrl,
+                                            .p_cfg = &g_ether_phy0_cfg, .p_api = &g_ether_phy_on_ether_phy };
+ether_instance_ctrl_t g_ether0_ctrl;
+
+uint8_t g_ether0_mac_address[6] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55 };
+
+__attribute__((__aligned__(16))) ether_instance_descriptor_t g_ether0_tx_descriptors[4] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(16))) ether_instance_descriptor_t g_ether0_rx_descriptors[4] ETHER_BUFFER_PLACE_IN_SECTION;
+
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer0[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer1[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer2[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer3[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer4[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer5[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer6[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+__attribute__((__aligned__(32))) uint8_t g_ether0_ether_buffer7[1536] ETHER_BUFFER_PLACE_IN_SECTION;
+
+uint8_t *pp_g_ether0_ether_buffers[8] = { (uint8_t *)&g_ether0_ether_buffer0[0],
+                                          (uint8_t *)&g_ether0_ether_buffer1[0],
+                                          (uint8_t *)&g_ether0_ether_buffer2[0],
+                                          (uint8_t *)&g_ether0_ether_buffer3[0],
+                                          (uint8_t *)&g_ether0_ether_buffer4[0],
+                                          (uint8_t *)&g_ether0_ether_buffer5[0],
+                                          (uint8_t *)&g_ether0_ether_buffer6[0],
+                                          (uint8_t *)&g_ether0_ether_buffer7[0], };
+
+const ether_extended_cfg_t g_ether0_extended_cfg_t = { .p_rx_descriptors =
+                                                           g_ether0_rx_descriptors, .p_tx_descriptors = g_ether0_tx_descriptors, };
+
+const ether_cfg_t g_ether0_cfg = { .channel = 0, .zerocopy =
+                                       ETHER_ZEROCOPY_DISABLE, .multicast = ETHER_MULTICAST_ENABLE,
+                                   .promiscuous = ETHER_PROMISCUOUS_DISABLE, .flow_control =
+                                       ETHER_FLOW_CONTROL_DISABLE, .padding = ETHER_PADDING_DISABLE,
+                                   .padding_offset = 1, .broadcast_filter = 0, .p_mac_address =
+                                       g_ether0_mac_address,
+
+                                   .num_tx_descriptors = 4, .num_rx_descriptors = 4,
+
+                                   .pp_ether_buffers = pp_g_ether0_ether_buffers,
+
+                                   .ether_buffer_size = 1536,
+
+                                   #if defined(VECTOR_NUMBER_EDMAC0_EINT)
+                                   .irq = VECTOR_NUMBER_EDMAC0_EINT,
+                                   #else
+                                   .irq = FSP_INVALID_VECTOR,
+                                   #endif
+
+                                   .interrupt_priority = (12),
+
+                                   .p_callback = ETH_IRQHandler, .p_ether_phy_instance = &g_ether_phy0,
+                                   .p_context = NULL, .p_extend = &g_ether0_extended_cfg_t, };
+
+/* Instance structure to use this module. */
+const ether_instance_t g_ether0 = { .p_ctrl = &g_ether0_ctrl, .p_cfg =
+                                        &g_ether0_cfg, .p_api = &g_ether_on_ether };
 dtc_instance_ctrl_t g_transfer2_ctrl;
 
 transfer_info_t g_transfer2_info = { .transfer_settings_word_b.dest_addr_mode =

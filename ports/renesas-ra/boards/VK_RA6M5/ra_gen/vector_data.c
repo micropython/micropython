@@ -35,6 +35,14 @@ BSP_DONT_REMOVE const fsp_vector_t g_vector_table[BSP_ICU_VECTOR_MAX_ENTRIES] BS
     [28] = sdhimmc_accs_isr,         /* SDHIMMC0 ACCS (Card access) */
     [29] = sdhimmc_card_isr,         /* SDHIMMC0 CARD (Card detect) */
     [30] = sdhimmc_dma_req_isr,         /* SDHIMMC0 DMA REQ (DMA transfer request) */
+    [31] = ether_eint_isr,         /* EDMAC0 EINT (EDMAC 0 interrupt) */
+    [32] = usbfs_interrupt_handler, /* USBFS INT (USBFS interrupt) */
+    [33] = usbfs_resume_handler, /* USBFS RESUME (USBFS resume interrupt) */
+    [34] = usbfs_d0fifo_handler, /* USBFS FIFO 0 (DMA transfer request 0) */
+    [35] = usbfs_d1fifo_handler, /* USBFS FIFO 1 (DMA transfer request 1) */
+    [36] = usbhs_interrupt_handler, /* USBHS USB INT RESUME (USBHS interrupt) */
+    [37] = usbhs_d0fifo_handler, /* USBHS FIFO 0 (DMA transfer request 0) */
+    [38] = usbhs_d1fifo_handler, /* USBHS FIFO 1 (DMA transfer request 1) */
 };
 const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENTRIES] =
 {
@@ -69,5 +77,13 @@ const bsp_interrupt_event_t g_interrupt_event_link_select[BSP_ICU_VECTOR_MAX_ENT
     [28] = BSP_PRV_IELS_ENUM(EVENT_SDHIMMC0_ACCS),         /* SDHIMMC0 ACCS (Card access) */
     [29] = BSP_PRV_IELS_ENUM(EVENT_SDHIMMC0_CARD),         /* SDHIMMC0 CARD (Card detect) */
     [30] = BSP_PRV_IELS_ENUM(EVENT_SDHIMMC0_DMA_REQ),         /* SDHIMMC0 DMA REQ (DMA transfer request) */
+    [31] = BSP_PRV_IELS_ENUM(EVENT_EDMAC0_EINT),         /* EDMAC0 EINT (EDMAC 0 interrupt) */
+    [32] = BSP_PRV_IELS_ENUM(EVENT_USBFS_INT), /* USBFS INT (USBFS interrupt) */
+    [33] = BSP_PRV_IELS_ENUM(EVENT_USBFS_RESUME), /* USBFS RESUME (USBFS resume interrupt) */
+    [34] = BSP_PRV_IELS_ENUM(EVENT_USBFS_FIFO_0), /* USBFS FIFO 0 (DMA transfer request 0) */
+    [35] = BSP_PRV_IELS_ENUM(EVENT_USBFS_FIFO_1), /* USBFS FIFO 1 (DMA transfer request 1) */
+    [36] = BSP_PRV_IELS_ENUM(EVENT_USBHS_USB_INT_RESUME), /* USBHS USB INT RESUME (USBHS interrupt) */
+    [37] = BSP_PRV_IELS_ENUM(EVENT_USBHS_FIFO_0), /* USBHS FIFO 0 (DMA transfer request 0) */
+    [38] = BSP_PRV_IELS_ENUM(EVENT_USBHS_FIFO_1), /* USBHS FIFO 1 (DMA transfer request 1) */
 };
 #endif

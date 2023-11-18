@@ -3,7 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2023 Vekatech Ltd.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +24,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_RENESAS_RA_GCCOLLECT_H
-#define MICROPY_INCLUDED_RENESAS_RA_GCCOLLECT_H
+#ifndef MICROPY_INCLUDED_RA_ETH_H
+#define MICROPY_INCLUDED_RA_ETH_H
 
-// variables defining memory layout
-// (these probably belong somewhere else...)
-extern uint32_t _etext;
-extern uint32_t _sidata;
-extern uint32_t _ram_start;
-extern uint32_t _sdata;
-extern uint32_t _edata;
-extern uint32_t _sbss;
-extern uint32_t _ebss;
-extern uint32_t _heap_start;
-extern uint32_t _heap_end;
-extern uint32_t _sstack;
-extern uint32_t _estack;
-extern uint32_t _ram_end;
+typedef struct _eth_t eth_t;
+extern eth_t eth_instance;
 
-#if MICROPY_HW_HAS_OSPI_RAM
-extern uint32_t _octa_ram_start;
-extern uint32_t _octa_ram_end;
-#endif
+void eth_init(eth_t *self, int mac_idx);
+void eth_set_trace(eth_t *self, uint32_t value);
+struct netif *eth_netif(eth_t *self);
+int eth_link_status(eth_t *self);
+int eth_start(eth_t *self);
+int eth_stop(eth_t *self);
+void eth_low_power_mode(eth_t *self, bool enable);
 
-#endif // MICROPY_INCLUDED_RENESAS_RA_GCCOLLECT_H
+#endif // MICROPY_INCLUDED_RA_ETH_H
