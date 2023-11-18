@@ -354,3 +354,6 @@
 [submodule "lib/tlsf"]
 	path = lib/tlsf
 	url = https://github.com/espressif/tlsf.git
+[submodule "frozen/CircuitPython_AXP313A"]
+	path = frozen/CircuitPython_AXP313A
+	url = https://github.com/bill88t/CircuitPython_AXP313A
