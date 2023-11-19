@@ -67,20 +67,43 @@ STATIC const mp_rom_map_elem_t timings800_table[] = {
 };
 MP_DEFINE_CONST_DICT(timings800_dict, timings800_table);
 
+STATIC const mp_rom_map_elem_t timings1024_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_frequency), MP_ROM_INT(10000000) }, // nominal 16MHz, but display is unstable/tears at that frequency
+    { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_INT(1024) },
+    { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_INT(600) },
+    { MP_ROM_QSTR(MP_QSTR_hsync_pulse_width), MP_ROM_INT(30) },
+    { MP_ROM_QSTR(MP_QSTR_hsync_front_porch), MP_ROM_INT(210) },
+    { MP_ROM_QSTR(MP_QSTR_hsync_back_porch), MP_ROM_INT(16) },
+    { MP_ROM_QSTR(MP_QSTR_hsync_idle_low), MP_ROM_FALSE },
+    { MP_ROM_QSTR(MP_QSTR_vsync_pulse_width), MP_ROM_INT(13) },
+    { MP_ROM_QSTR(MP_QSTR_vsync_front_porch), MP_ROM_INT(22) },
+    { MP_ROM_QSTR(MP_QSTR_vsync_back_porch), MP_ROM_INT(10) },
+    { MP_ROM_QSTR(MP_QSTR_vsync_idle_low), MP_ROM_FALSE },
+    { MP_ROM_QSTR(MP_QSTR_de_idle_high), MP_ROM_FALSE },
+    { MP_ROM_QSTR(MP_QSTR_pclk_active_high), MP_ROM_FALSE },
+    { MP_ROM_QSTR(MP_QSTR_pclk_idle_high), MP_ROM_FALSE },
+};
+MP_DEFINE_CONST_DICT(timings1024_dict, timings1024_table);
+
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     { MP_ROM_QSTR(MP_QSTR_TFT_PINS), MP_ROM_PTR(&tft_pins_dict) },
     { MP_ROM_QSTR(MP_QSTR_TFT_TIMINGS), MP_ROM_PTR(&timings800_dict) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_TIMINGS800), MP_ROM_PTR(&timings800_dict) },
+    { MP_ROM_QSTR(MP_QSTR_TFT_TIMINGS1024), MP_ROM_PTR(&timings1024_dict) },
     { MP_ROM_QSTR(MP_QSTR_TFT_BACKLIGHT), MP_ROM_PTR(&pin_GPIO10) },
 
     // GPIO pins available on Mabee connector port (also shared with I2S & USB D+/D-)
     { MP_ROM_QSTR(MP_QSTR_GPIO20), MP_ROM_PTR(&pin_GPIO20) },
     { MP_ROM_QSTR(MP_QSTR_GPIO19), MP_ROM_PTR(&pin_GPIO19) },
 
+    // I2S pins are shared with USB D+/D-, these are only useful if USB is disabled
+    #if CIRCUITPY_USB == 0
     { MP_ROM_QSTR(MP_QSTR_I2S_BIT_CLOCK), MP_ROM_PTR(&pin_GPIO20) },
     { MP_ROM_QSTR(MP_QSTR_I2S_WORD_SELECT), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_I2S_DATA), MP_ROM_PTR(&pin_GPIO19) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO43) },
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO44) },
@@ -89,15 +112,15 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO17) },
     { MP_ROM_QSTR(MP_QSTR_TOUCH_RESET), MP_ROM_PTR(&pin_GPIO38) },
 
-    { MP_ROM_QSTR(MP_QSTR_SDIO_CMD), MP_ROM_PTR(&pin_GPIO11) },
-    { MP_ROM_QSTR(MP_QSTR_SDIO_D0), MP_ROM_PTR(&pin_GPIO13) },
-    { MP_ROM_QSTR(MP_QSTR_SDIO_CLK), MP_ROM_PTR(&pin_GPIO12) },
+    // IO10 <> SD_CS is cut at factory (non-placed resistor position R34) and pulled up.
+    // Permanent SDIO 1-bit mode?
+    // Until SDIO 1-bit mode is support on Espressif ports these pins aren't useful
+    // { MP_ROM_QSTR(MP_QSTR_SDIO_CMD), MP_ROM_PTR(&pin_GPIO11) },
+    // { MP_ROM_QSTR(MP_QSTR_SDIO_D0), MP_ROM_PTR(&pin_GPIO13) },
+    // { MP_ROM_QSTR(MP_QSTR_SDIO_CLK), MP_ROM_PTR(&pin_GPIO12) },
 
     // boot mode button can be used in SW as well
     { MP_ROM_QSTR(MP_QSTR_BUTTON), MP_ROM_PTR(&pin_GPIO1) },
-
-    // IO10 <> SD_CS is cut at factory (non-placed resistor position R34) and pulled up.
-    // Permanent SDIO 1-bit mode?
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
 };
