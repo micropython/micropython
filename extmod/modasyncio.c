@@ -230,11 +230,6 @@ STATIC mp_obj_t task_get_coro(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_get_coro_obj, task_get_coro);
 
-STATIC mp_obj_t task_set_exception(mp_obj_t self_in, const mp_obj_t arg) {
-    mp_raise_msg(&mp_type_RuntimeError, NULL);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(task_set_exception_obj, task_set_exception);
-
 STATIC mp_obj_t task_exception(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -260,11 +255,6 @@ STATIC mp_obj_t task_exception(mp_obj_t self_in) {
     return self->data;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(task_exception_obj, task_exception);
-
-STATIC mp_obj_t task_set_result(mp_obj_t self_in, const mp_obj_t arg) {
-    mp_raise_msg(&mp_type_RuntimeError, NULL);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(task_set_result_obj, task_set_result);
 
 STATIC mp_obj_t task_result(mp_obj_t self_in) {
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
@@ -375,14 +365,8 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         } else if (attr == MP_QSTR_get_coro) {
             dest[0] = MP_OBJ_FROM_PTR(&task_get_coro_obj);
             dest[1] = self_in;
-        } else if (attr == MP_QSTR_set_result) {
-            dest[0] = MP_OBJ_FROM_PTR(&task_set_result_obj);
-            dest[1] = self_in;
         } else if (attr == MP_QSTR_result) {
             dest[0] = MP_OBJ_FROM_PTR(&task_result_obj);
-            dest[1] = self_in;
-        } else if (attr == MP_QSTR_set_exception) {
-            dest[0] = MP_OBJ_FROM_PTR(&task_set_exception_obj);
             dest[1] = self_in;
         } else if (attr == MP_QSTR_exception) {
             dest[0] = MP_OBJ_FROM_PTR(&task_exception_obj);
