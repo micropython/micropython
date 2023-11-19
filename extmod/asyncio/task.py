@@ -192,9 +192,6 @@ class Task:
         self.state = True
         return 1
 
-    def set_result(self, result):
-        raise RuntimeError()
-
     def result(self):
         """
         Return the result of the Task.
@@ -215,9 +212,6 @@ class Task:
             return None
 
         return self.data.value
-
-    def set_exception(self, exception):
-        raise RuntimeError()
 
     def exception(self):
         """
