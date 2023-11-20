@@ -82,6 +82,18 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
     return done;
 }
 
+mp_uint_t mp_stream_seek(mp_obj_t stream, mp_off_t offset, int whence, int *errcode) {
+    struct mp_stream_seek_t seek_s;
+    seek_s.offset = offset;
+    seek_s.whence = whence;
+    const mp_stream_p_t *stream_p = mp_get_stream(stream);
+    mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, errcode);
+    if (res == MP_STREAM_ERROR) {
+        return -1;
+    }
+    return seek_s.offset;
+}
+
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
     if (MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
