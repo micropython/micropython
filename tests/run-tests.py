@@ -59,7 +59,7 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\
-import sys, os, io
+import sys, os, io, vfs
 class __File(io.IOBase):
   def __init__(self):
     self.off = 0
@@ -83,7 +83,7 @@ class __FS:
       raise OSError(-2) # ENOENT
   def open(self, path, mode):
     return __File()
-os.mount(__FS(), '/__vfstest')
+vfs.mount(__FS(), '/__vfstest')
 os.chdir('/__vfstest')
 __import__('__injected_test')
 """
