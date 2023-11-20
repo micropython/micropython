@@ -323,12 +323,18 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *args) {
         check_esp_err(rmt_wait_tx_done(self->channel_id, portMAX_DELAY));
     }
 
+    #if !CONFIG_IDF_TARGET_ESP32S3
+    check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false));
+    #endif
+
     if (self->loop_en) {
         check_esp_err(rmt_set_tx_intr_en(self->channel_id, false));
         check_esp_err(rmt_set_tx_loop_mode(self->channel_id, true));
     }
 
+    #if CONFIG_IDF_TARGET_ESP32S3
     check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false));
+    #endif
 
     return mp_const_none;
 }
