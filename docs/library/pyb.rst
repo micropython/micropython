@@ -217,7 +217,7 @@ Miscellaneous functions
 
    Mount a block device and make it available as part of the filesystem.
    ``device`` must be an object that provides the block protocol. (The
-   following is also deprecated. See :class:`os.AbstractBlockDev` for the
+   following is also deprecated. See :class:`vfs.AbstractBlockDev` for the
    correct way to create a block device.)
 
     - ``readblocks(self, blocknum, buf)``
