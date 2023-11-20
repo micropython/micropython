@@ -83,41 +83,11 @@ msgstr " výstup:\n"
 msgid "%%c requires int or char"
 msgstr "%%c vyžaduje int nebo char"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr "%02X"
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr "%d adresní pin, %d rgb pin a %d dlaždice indikuje výšku %d, ne %d"
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
-msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -301,11 +271,6 @@ msgstr "%q[%u] používá extra pin"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
 msgstr "%q[%u] čeká na vstup mimo rozsah"
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
-msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -829,7 +794,8 @@ msgstr "Není možné znovu připojit '/', pokud je viditelné pomocí USB."
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr "Reset do bootloaderu není možný, protože žádný bootloader není přítomen"
+msgstr ""
+"Reset do bootloaderu není možný, protože žádný bootloader není přítomen"
 
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
@@ -1176,7 +1142,8 @@ msgstr "Alokace heapu při neběžícím VM."
 #: supervisor/shared/safe_mode.c
 msgid ""
 "Heap was corrupted because the stack was too small. Increase stack size."
-msgstr "Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
+msgstr ""
+"Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1626,7 +1593,8 @@ msgstr "Ok"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
@@ -4433,18 +4401,102 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
-#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-#~ msgstr "Špatný CIRCUITPY_PYSTACK_SIZE\n"
-
-#~ msgid "Unable to allocate the heap."
-#~ msgstr "Nelze alokovat heap."
+#~ msgid ""
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Kód byl dokončen. Čekám na opětovné nahrání.\n"
 
 #~ msgid ""
-#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
-#~ "documentation for instructions."
+#~ "\n"
+#~ "Code stopped by auto-reload.\n"
 #~ msgstr ""
-#~ "espcamera.Camera vyžaduje reservovanou PSRAM. V dokumentaci nalezneš "
-#~ "instrukce."
+#~ "\n"
+#~ "Program byl zastaven automatickým načtením.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Prosím vytvořte tiket s obsahem vaší jednotky CIRCUITPY na adrese\n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Pro ukončení, prosím resetujte desku bez "
+
+#, c-format
+#~ msgid "%02X"
+#~ msgstr "%02X"
+
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr "%d adresní piny a %d rgb piny označují výšku %d, nikoli %d"
+
+#~ msgid "%q"
+#~ msgstr "%q"
+
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "Indexy %q musí být celá čísla, ne %q"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "%q délka musí být >= 1"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "Seznam %q musí být seznam"
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q musí být >= 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q musí být > = 1"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q musí být string"
+
+#~ msgid "%q must be a tuple of length 2"
+#~ msgstr "%q musí být n-tice délky 2"
+
+#~ msgid "%q must be an int"
+#~ msgstr "%q musí být int"
+
+#~ msgid "%q must be between %d and %d"
+#~ msgstr "%q musí být mezi %d a %d"
+
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q musí být typu %q"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q musí být typu %q nebo None"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "pin %q není platný"
+
+#~ msgid "%q should be an int"
+#~ msgstr "%q by měl být int"
+
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "%q s ID 0 musím být délky 1"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "'%q' nemůže přiřadit atribut '%q'"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "Objekt '%q' nepodporuje přiřazení položek"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "Objekt '%q' nepodporuje mazání položek"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "Objekt '%q' nemá žádný atribut"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "Objekt '%q' nelze zapsat"
 
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr "'await', 'async for' nebo 'async' je volán mimo async"
@@ -4455,29 +4507,64 @@ msgstr ""
 #~ msgid "'continue' outside loop"
 #~ msgstr "'continue' je volán mimo cyklus"
 
-#~ msgid "invalid architecture"
-#~ msgstr "špatná architektura"
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "Objekt 'coroutine' není iterátor"
 
-#~ msgid "__init__() should return None, not '%q'"
-#~ msgstr "__init__() by měl vracet hodnotu None, nikoli '%q'"
-
-#~ msgid "cannot unambiguously get sizeof scalar"
-#~ msgstr "velikost scalar nelze jednoznačně určit"
-
-#~ msgid "Bit clock and word select must be sequential pins"
-#~ msgstr "Bitové hodiny a výběr slov musí být sekvenční piny"
+#~ msgid "64 bit types"
+#~ msgstr "64 bit typy"
 
 #~ msgid "ADC2 is being used by WiFi"
 #~ msgstr "WiFi používá ADC2"
 
-#~ msgid "'coroutine' object is not an iterator"
-#~ msgstr "Objekt 'coroutine' není iterátor"
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Lze zadat maximálně %d %q (nikoli %d)"
+
+#~ msgid "Attempted heap allocation when VM not running."
+#~ msgstr "Pokus o alokaci haldy, když neběží VM."
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Bitové hodiny a výběr slov musí být sekvenční piny"
+
+#~ msgid "Boot device must be first device (interface #0)."
+#~ msgstr "Bootovací zařízení musí být první (rozhraní #0)."
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Jas musí být 0-1,0"
 
 #~ msgid "Buffer is too small"
 #~ msgstr "Vyrovnávací paměť je příliš malá"
 
+#~ msgid "CircuitPython was unable to allocate the heap."
+#~ msgstr "CircuitPython nedokázal alokovat haldu."
+
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Poškozený soubor .mpy"
+
+#~ msgid "Crash into the HardFault_Handler."
+#~ msgstr "Pád do HardFault_Handler."
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "Chyba v MIDI přenosu na pozici %d"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Očekává se %q"
+
+#~ msgid "Failed to init wifi"
+#~ msgstr "Chyba inicializace WiFi"
+
+#~ msgid "Fatal error."
+#~ msgstr "Fatální chyba."
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Obraz firmwaru je nevalidní"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Hardware je zaneprázdněn, zkuste alternativní piny"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV musí být dlouhé %d bajtů"
 
 #~ msgid ""
 #~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
@@ -4486,8 +4573,18 @@ msgstr ""
 #~ "Nekompatibilní soubor .mpy. Aktualizujte prosím všechny soubory .mpy. "
 #~ "Další informace naleznete na adrese http://adafru.it/mpy-update."
 
-#~ msgid "Hardware busy, try alternative pins"
-#~ msgstr "Hardware je zaneprázdněn, zkuste alternativní piny"
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "Špatný CIRCUITPY_PYSTACK_SIZE\n"
+
+#~ msgid "Invalid memory access."
+#~ msgstr "Neplatný přístup k paměti."
+
+#~ msgid "Invalid pins"
+#~ msgstr "Neplatné piny"
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Maximální hodnota x při zrcadlení je %d"
 
 #~ msgid "Missing MISO or MOSI Pin"
 #~ msgstr "Chybí pin MISO nebo MOSI"
@@ -4513,150 +4610,28 @@ msgstr ""
 #~ msgid "No TX pin"
 #~ msgstr "Žádný TX pin"
 
-#~ msgid "Brightness must be 0-1.0"
-#~ msgstr "Jas musí být 0-1,0"
-
-#, c-format
-#~ msgid "Error in MIDI stream at position %d"
-#~ msgstr "Chyba v MIDI přenosu na pozici %d"
-
-#, c-format
-#~ msgid "Maximum x value when mirrored is %d"
-#~ msgstr "Maximální hodnota x při zrcadlení je %d"
-
-#~ msgid "64 bit types"
-#~ msgstr "64 bit typy"
-
 #~ msgid "No key was specified"
 #~ msgstr "Nebyl zadán klíč"
-
-#~ msgid "%q pin invalid"
-#~ msgstr "pin %q není platný"
-
-#~ msgid ""
-#~ "\n"
-#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Prosím vytvořte tiket s obsahem vaší jednotky CIRCUITPY na adrese\n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-
-#~ msgid "Attempted heap allocation when VM not running."
-#~ msgstr "Pokus o alokaci haldy, když neběží VM."
-
-#~ msgid "Boot device must be first device (interface #0)."
-#~ msgstr "Bootovací zařízení musí být první (rozhraní #0)."
-
-#~ msgid "CircuitPython was unable to allocate the heap."
-#~ msgstr "CircuitPython nedokázal alokovat haldu."
-
-#~ msgid "Crash into the HardFault_Handler."
-#~ msgstr "Pád do HardFault_Handler."
-
-#~ msgid "Fatal error."
-#~ msgstr "Fatální chyba."
-
-#~ msgid "Invalid memory access."
-#~ msgstr "Neplatný přístup k paměti."
-
-#~ msgid "%q must be of type %q"
-#~ msgstr "%q musí být typu %q"
-
-#~ msgid "%q must be of type %q or None"
-#~ msgstr "%q musí být typu %q nebo None"
-
-#~ msgid "Expected a %q"
-#~ msgstr "Očekává se %q"
-
-#, c-format
-#~ msgid "IV must be %d bytes long"
-#~ msgstr "IV musí být dlouhé %d bajtů"
-
-#~ msgid "%q length must be >= 1"
-#~ msgstr "%q délka musí být >= 1"
-
-#~ msgid "%q must be a string"
-#~ msgstr "%q musí být string"
-
-#~ msgid "%q must be an int"
-#~ msgstr "%q musí být int"
-
-#~ msgid "%q with a report ID of 0 must be of length 1"
-#~ msgstr "%q s ID 0 musím být délky 1"
-
-#~ msgid "At most %d %q may be specified (not %d)"
-#~ msgstr "Lze zadat maximálně %d %q (nikoli %d)"
-
-#~ msgid "Invalid pins"
-#~ msgstr "Neplatné piny"
 
 #, c-format
 #~ msgid "No more than %d HID devices allowed"
 #~ msgstr "Ne více než %d HID zařízení je povoleno"
 
-#~ msgid "Firmware image is invalid"
-#~ msgstr "Obraz firmwaru je nevalidní"
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "Nelze alokovat heap."
 
-#~ msgid "%q must be >= 0"
-#~ msgstr "%q musí být >= 0"
+#~ msgid "__init__() should return None, not '%q'"
+#~ msgstr "__init__() by měl vracet hodnotu None, nikoli '%q'"
 
-#~ msgid "%q must be >= 1"
-#~ msgstr "%q musí být > = 1"
-
-#~ msgid "Failed to init wifi"
-#~ msgstr "Chyba inicializace WiFi"
-
-#~ msgid "%q must be a tuple of length 2"
-#~ msgstr "%q musí být n-tice délky 2"
-
-#~ msgid "%q must be between %d and %d"
-#~ msgstr "%q musí být mezi %d a %d"
-
-#~ msgid "%q should be an int"
-#~ msgstr "%q by měl být int"
+#~ msgid "cannot unambiguously get sizeof scalar"
+#~ msgstr "velikost scalar nelze jednoznačně určit"
 
 #~ msgid ""
-#~ "\n"
-#~ "Code stopped by auto-reload.\n"
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
 #~ msgstr ""
-#~ "\n"
-#~ "Program byl zastaven automatickým načtením.\n"
+#~ "espcamera.Camera vyžaduje reservovanou PSRAM. V dokumentaci nalezneš "
+#~ "instrukce."
 
-#~ msgid "%q list must be a list"
-#~ msgstr "Seznam %q musí být seznam"
-
-#~ msgid "%q indices must be integers, not %q"
-#~ msgstr "Indexy %q musí být celá čísla, ne %q"
-
-#~ msgid "'%q' object cannot assign attribute '%q'"
-#~ msgstr "'%q' nemůže přiřadit atribut '%q'"
-
-#~ msgid "'%q' object does not support item assignment"
-#~ msgstr "Objekt '%q' nepodporuje přiřazení položek"
-
-#~ msgid "'%q' object does not support item deletion"
-#~ msgstr "Objekt '%q' nepodporuje mazání položek"
-
-#~ msgid "'%q' object has no attribute '%q'"
-#~ msgstr "Objekt '%q' nemá žádný atribut"
-
-#~ msgid "'%q' object is not subscriptable"
-#~ msgstr "Objekt '%q' nelze zapsat"
-
-#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-#~ msgstr "%d adresní piny a %d rgb piny označují výšku %d, nikoli %d"
-
-#~ msgid ""
-#~ "\n"
-#~ "Code done running. Waiting for reload.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Kód byl dokončen. Čekám na opětovné nahrání.\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "To exit, please reset the board without "
-#~ msgstr ""
-#~ "\n"
-#~ "Pro ukončení, prosím resetujte desku bez "
+#~ msgid "invalid architecture"
+#~ msgstr "špatná architektura"
