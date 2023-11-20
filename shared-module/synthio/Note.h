@@ -48,10 +48,10 @@ typedef struct synthio_note_obj {
     int32_t ring_frequency_scaled, ring_frequency_bent;
 
     mp_buffer_info_t waveform_buf;
+    uint32_t waveform_loop_start, waveform_loop_end;
     mp_buffer_info_t ring_waveform_buf;
+    uint32_t ring_waveform_loop_start, ring_waveform_loop_end;
     synthio_envelope_definition_t envelope_def;
-
-    uint32_t loop_start, loop_end;
 } synthio_note_obj_t;
 
 void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate);
