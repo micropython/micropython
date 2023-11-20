@@ -2,9 +2,9 @@
 import gc
 
 try:
-    import os
+    import vfs
 
-    os.VfsLfs2
+    vfs.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -37,29 +37,29 @@ class RAMBlockDevice:
 
 def test(bdev, vfs_class):
     vfs_class.mkfs(bdev)
-    vfs = vfs_class(bdev)
-    vfs.mkdir("/test_d1")
-    vfs.mkdir("/test_d2")
-    vfs.mkdir("/test_d3")
+    fs = vfs_class(bdev)
+    fs.mkdir("/test_d1")
+    fs.mkdir("/test_d2")
+    fs.mkdir("/test_d3")
 
     for i in range(10):
         print(i)
 
         # We want to partially iterate the ilistdir iterator to leave it in an
         # open state, which will then test the finaliser when it's garbage collected.
-        idir = vfs.ilistdir("/")
+        idir = fs.ilistdir("/")
         print(any(idir))
 
         # Alternate way of partially iterating the ilistdir object, modifying the
         # filesystem while it's open.
-        for dname, *_ in vfs.ilistdir("/"):
-            vfs.rmdir(dname)
+        for dname, *_ in fs.ilistdir("/"):
+            fs.rmdir(dname)
             break
-        vfs.mkdir(dname)
+        fs.mkdir(dname)
 
         # Also create a fully drained iterator and ensure trying to reuse it
         # throws the correct exception.
-        idir_emptied = vfs.ilistdir("/")
+        idir_emptied = fs.ilistdir("/")
         l = list(idir_emptied)
         print(len(l))
         try:
@@ -68,8 +68,8 @@ def test(bdev, vfs_class):
             pass
 
         gc.collect()
-        vfs.open("/test", "w").close()
+        fs.open("/test", "w").close()
 
 
 bdev = RAMBlockDevice(30)
-test(bdev, os.VfsLfs2)
+test(bdev, vfs.VfsLfs2)
