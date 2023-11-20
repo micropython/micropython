@@ -83,42 +83,12 @@ msgstr " utdata:\n"
 msgid "%%c requires int or char"
 msgstr "%%c kräver int eller char"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr "%02X"
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr "%S"
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
 "%d adresspinnar, %d rgb-pinnar och %d brickor anger en höjd på %d, inte %d"
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
-msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -304,11 +274,6 @@ msgstr "%q[%u] använder extra pinnar"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
 msgstr "%q[%u] väntar på input utanför count"
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
-msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -1385,7 +1350,8 @@ msgstr "Mappning måste vara en tuple"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr "Startfördröjningen för mikrofonen måste vara i intervallet 0,0 till 1,0"
+msgstr ""
+"Startfördröjningen för mikrofonen måste vara i intervallet 0,0 till 1,0"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -1632,8 +1598,9 @@ msgstr "OK"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
-msgstr "Endast 8 eller 16 bitars mono med "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
@@ -1832,8 +1799,8 @@ msgstr "Prefixbufferten måste finnas på heap"
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
 msgstr ""
-"Tryck på valfri tangent för att gå in i REPL. Använd CTRL-D för att ladda om."
-"\n"
+"Tryck på valfri tangent för att gå in i REPL. Använd CTRL-D för att ladda "
+"om.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
@@ -4455,120 +4422,39 @@ msgstr "zi måste vara av typ float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
 
-#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-#~ msgstr "Ogiltig CIRCUITPY_PYSTACK_SIZE\n"
-
-#~ msgid "Unable to allocate the heap."
-#~ msgstr "Kan inte allokera heap."
+#~ msgid ""
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Koden har kört klart. Väntar på omladdning.\n"
 
 #~ msgid ""
-#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
-#~ "documentation for instructions."
+#~ "\n"
+#~ "Code stopped by auto-reload.\n"
 #~ msgstr ""
-#~ "espcamera.Camera kräver reserverat PSRAM att vara konfigurerat. Se "
-#~ "dokumentationen för instruktioner."
+#~ "\n"
+#~ "Koden stoppades av auto-omladdning.\n"
 
-#~ msgid "'await', 'async for' or 'async with' outside async function"
-#~ msgstr "'await', 'async for' eller 'async with' utanför asynk-funktion"
-
-#~ msgid "'break' outside loop"
-#~ msgstr "'break' utanför loop"
-
-#~ msgid "'continue' outside loop"
-#~ msgstr "'continue' utanför loop"
-
-#~ msgid "invalid architecture"
-#~ msgstr "ogiltig arkitektur"
-
-#~ msgid "unsupported type for %q: '%q'"
-#~ msgstr "typen %q stöder inte '%q'"
-
-#~ msgid "Splitting with sub-captures"
-#~ msgstr "Splitting med sub-captures"
-
-#~ msgid "__init__() should return None, not '%q'"
-#~ msgstr "__init__() ska returnera None, inte '%q'"
-
-#~ msgid "attributes not supported yet"
-#~ msgstr "attribut stöds inte än"
-
-#~ msgid "can't do truncated division of a complex number"
-#~ msgstr "kan inte göra trunkerad division av komplext tal"
-
-#~ msgid "cannot import name %q"
-#~ msgstr "kan inte importera namn %q"
-
-#~ msgid "cannot unambiguously get sizeof scalar"
-#~ msgstr "Kan inte entydigt få sizeof scalar"
-
-#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
+#~ msgid ""
+#~ "\n"
+#~ "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ "\n"
+#~ "\r"
 #~ msgstr ""
-#~ "nyckelordsargument är ännu inte implementerade - använd vanliga argument"
+#~ "\n"
+#~ "Ogiltig CIRCUITPY_PYSTACK_SIZE\n"
+#~ "\n"
+#~ "\n"
 
-#~ msgid "length argument not allowed for this type"
-#~ msgstr "argumentet length är inte är tillåten för denna typ"
-
-#~ msgid "offset out of bounds"
-#~ msgstr "offset utanför gränserna"
-
-#~ msgid "slice step can't be zero"
-#~ msgstr "segmentsteg kan inte vara noll"
-
-#~ msgid "string not supported; use bytes or bytearray"
-#~ msgstr "sträng stöds inte; använd bytes eller bytearray"
-
-#~ msgid "Bit clock and word select must be sequential pins"
-#~ msgstr "Bitklocka och word select måste vara sekventiella pinnar"
-
-#~ msgid "Initialization failed due to lack of memory"
-#~ msgstr "Initieringen misslyckades på grund av minnesbrist"
-
-#~ msgid "RAISE mode is not implemented"
-#~ msgstr "RAISE-läge är inte implementerat"
-
-#~ msgid "WatchDogTimer is not currently running"
-#~ msgstr "WatchDogTimer körs för närvarande inte"
-
-#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
 #~ msgstr ""
-#~ "WatchDogTimer.mode kan inte ändras när den är inställd på WatchDogMode."
-#~ "RESET"
-
-#~ msgid "watchdog not initialized"
-#~ msgstr "watchdog är inte initierad"
-
-#~ msgid "ADC2 is being used by WiFi"
-#~ msgstr "ADC2 används av WiFi"
-
-#, c-format
-#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-#~ msgstr "Kan inte konfigurera ADC DMA controller, Felkod:%d"
-
-#, c-format
-#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-#~ msgstr "Kan inte inititiera ADC DMA-controller, Felkod:%d"
-
-#, c-format
-#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-#~ msgstr "Kan inte starta ADC DMA controller, Felkod:%d"
-
-#~ msgid "xTaskCreate failed"
-#~ msgstr "xTaskCreate misslyckades"
-
-#~ msgid "Unable to write to address."
-#~ msgstr "Det går inte att skriva till adress."
-
-#~ msgid "queue overflow"
-#~ msgstr "köstorlek överskreds"
-
-#~ msgid "Stopping AP is not supported."
-#~ msgstr "Stoppa AP stöds inte."
-
-#~ msgid "Wifi is in access point mode."
-#~ msgstr "WiFi är i accesspunktläge."
-
-#~ msgid "Wifi is in station mode."
-#~ msgstr "WiFi är i stationsläge."
+#~ "\n"
+#~ "Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
 
 #~ msgid ""
 #~ "\n"
@@ -4579,24 +4465,432 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ "Skicka in ett ärende med ditt program till https://github.com/adafruit/"
 #~ "circuitpython/issues."
 
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "För att avsluta, gör reset på kortet utan "
+
+#~ msgid ""
+#~ "\n"
+#~ "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
+#~ "=== "
+#~ msgstr ""
+#~ "\n"
+#~ "klistra in-läge; Ctrl-C för att avbryta, Ctrl-D för att avsluta\n"
+#~ "=== "
+
+#, c-format
+#~ msgid "%02X"
+#~ msgstr "%02X"
+
+#, c-format
+#~ msgid "%S"
+#~ msgstr "%S"
+
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr "%d adresspinnar och %d RGB-pinnar indikerar en höjd av %d, inte %d"
+
+#~ msgid "%q"
+#~ msgstr "%q"
+
+#~ msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
+#~ msgstr ""
+#~ "%q ``måste`` vara en bytearray eller matris av typen 'h', 'H', 'b' eller "
+#~ "'B'"
+
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "%q index måste vara heltal, inte %q"
+
+#~ msgid "%q length must be %q"
+#~ msgstr "längden på %q måste vara %q"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "längden på %q måste vara >= 1"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "%q-listan måste vara en lista"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "%q måste vara <=%d"
+
+#~ msgid "%q must be 0-255"
+#~ msgstr "%q måste vara 0-255"
+
+#~ msgid "%q must be 1-255"
+#~ msgstr "%q måste vara 1-255"
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q måste vara >= 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q måste vara >= 1"
+
+#~ msgid "%q must be None or 1-255"
+#~ msgstr "%q måste vara None eller 1-255"
+
+#~ msgid "%q must be None or between 1 and len(report_descriptor)-1"
+#~ msgstr "%q måste vara None eller mellan 1 och len(report_descriptor)-1"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q måste vara en sträng"
+
+#~ msgid "%q must be a tuple of length 2"
+#~ msgstr "%q måste vara en tuple av längd 2"
+
+#~ msgid "%q must be an int"
+#~ msgstr "%q måste vara en int"
+
+#~ msgid "%q must be between %d and %d"
+#~ msgstr "%q måste vara mellan %d och %d"
+
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q måste vara av typen %q"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q måste vara av typen %q eller None"
+
+#~ msgid "%q must of type %q"
+#~ msgstr "%q måste av typen %q"
+
+#~ msgid "%q must store bytes"
+#~ msgstr "%q måste lagra bytes"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "Pinne %q ogiltig"
+
+#~ msgid "%q should be an int"
+#~ msgstr "%q ska vara en int"
+
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "%q med report-ID 0 måste ha längd 1"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "Objektet '%q' kan inte tilldela attributet '%q'"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "Objektet '%q' stöder inte tilldelning"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "Objektet '%q' stöder inte borttagning av objekt"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "Objektet '%q' har inget attribut '%q'"
+
+#~ msgid "'%q' object is not bytes-like"
+#~ msgstr "%q-objektet är inte byte-lik"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "Objektet '%q' är inte indexbar"
+
+#~ msgid "'%s' integer %d is not within range %d..%d"
+#~ msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
+
+#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+#~ msgstr "'%s' heltal 0x%x ryms inte i mask 0x%x"
+
+#~ msgid "'%s' object cannot assign attribute '%q'"
+#~ msgstr "Objektet '%s' kan inte tilldela attributet '%q'"
+
+#~ msgid "'%s' object does not support '%q'"
+#~ msgstr "Objektet '%s' har inte stöd för '%q'"
+
+#~ msgid "'%s' object does not support item assignment"
+#~ msgstr "Objektet '%s' stöder inte tilldelningen"
+
+#~ msgid "'%s' object does not support item deletion"
+#~ msgstr "Objektet '%s' stöder inte borttagning av objekt"
+
+#~ msgid "'%s' object is not an iterator"
+#~ msgstr "Objektet '%s' är inte en iterator"
+
+#~ msgid "'%s' object is not callable"
+#~ msgstr "Objektet '%s' kan inte anropas"
+
+#~ msgid "'%s' object is not iterable"
+#~ msgstr "Objektet '%s' är inte itererable"
+
+#~ msgid "'%s' object is not subscriptable"
+#~ msgstr "Objektet '%s' är inte indexbar"
+
+#~ msgid "'async for' or 'async with' outside async function"
+#~ msgstr "'async for' eller 'async with' utanför async-funktion"
+
+#~ msgid "'await', 'async for' or 'async with' outside async function"
+#~ msgstr "'await', 'async for' eller 'async with' utanför asynk-funktion"
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' utanför loop"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' utanför loop"
+
 #~ msgid "'coroutine' object is not an iterator"
 #~ msgstr "objektet 'coroutine\" är inte en iterator"
+
+#~ msgid "(x,y) integers required"
+#~ msgstr "(x,y) heltal krävs"
+
+#~ msgid "64 bit types"
+#~ msgstr "64-bitars typer"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 används av WiFi"
+
+#~ msgid "Address type out of range"
+#~ msgstr "Adresstyp utanför intervallet"
+
+#~ msgid "All I2C targets are in use"
+#~ msgstr "Alla I2C-mål används"
+
+#~ msgid "AnalogIn not supported on given pin"
+#~ msgstr "AnalogIn stöds inte på angiven pinne"
+
+#~ msgid "AnalogOut functionality not supported"
+#~ msgstr "AnalogOut-funktionalitet stöds inte"
+
+#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+#~ msgstr ""
+#~ "AnalogOut hanterar bara 16 bitar. Värdet måste vara mindre än 65536."
+
+#~ msgid "AnalogOut not supported on given pin"
+#~ msgstr "AnalogOut stöds inte på angiven pinne"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Högst %d %q kan anges (inte %d)"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "Försökte tilldela heap när MicroPython VM inte körs."
+
+#~ msgid "Attempted heap allocation when VM not running."
+#~ msgstr ""
+#~ "Försök till heap-allokering när den virtuella maskinen inte är igång."
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Bitklocka och word select måste vara sekventiella pinnar"
+
+#, c-format
+#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+#~ msgstr "Bitdjup måste vara inom 1 till 6, inte %d"
+
+#~ msgid "Boot device must be first device (interface #0)."
+#~ msgstr "Startenheten måste vara den första enheten (gränssnitt #0)."
+
+#~ msgid "Both buttons were pressed at start up.\n"
+#~ msgstr "Båda knapparna trycktes ned vid start.\n"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "Ljusstyrka måste vara mellan 0 och 255"
+
+#, c-format
+#~ msgid "Buffer incorrect size. Should be %d bytes."
+#~ msgstr "Buffert har felaktig storlek. Ska vara %d byte."
 
 #~ msgid "Buffer is too small"
 #~ msgstr "Bufferten är för liten"
 
-#~ msgid "Fault detected by hardware."
-#~ msgstr "Fel upptäckt av hårdvara."
+#~ msgid "Buffer must be at least length 1"
+#~ msgstr "Bufferten måste ha minst längd 1"
 
-#~ msgid "The power dipped. Make sure you are providing enough power."
-#~ msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Bufferten är för stor och kan inte allokeras"
 
-#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgid "Button A was pressed at start up.\n"
+#~ msgstr "Knapp A trycktes ned vid start.\n"
+
+#~ msgid "Bytes must be between 0 and 255."
+#~ msgstr "Bytes måste vara mellan 0 och 255."
+
+#~ msgid "Cannot output both channels on the same pin"
+#~ msgstr "Det går inte att mata ut båda kanalerna på samma pinne"
+
+#~ msgid "Cannot read without MISO pin."
+#~ msgstr "Kan inte läsa utan MISO-pinne."
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "Kan inte återmontera '/' när USB är aktivt."
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present."
 #~ msgstr ""
-#~ "pixel_shader måste vara displayio.Palette eller displayio.ColorConverter"
+#~ "Det går inte att återställa till bootloader eftersom bootloader saknas."
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "Det går inte att överföra utan MOSI- och MISO-pinnar"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins."
+#~ msgstr "Kan inte överföra utan MOSI- och MISO-pinnar."
+
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Kan inte entydigt få sizeof scalar"
+
+#~ msgid "Cannot write without MOSI pin."
+#~ msgstr "Kan inte skriva utan MOSI-pinne."
+
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython är i säkert läge eftersom du tryckte på "
+#~ "återställningsknappen under start. Tryck igen för att lämna säkert läge.\n"
+
+#~ msgid "CircuitPython was unable to allocate the heap."
+#~ msgstr "CircuitPython kunde inte allokera heap."
+
+#~ msgid "Clock pin init failed."
+#~ msgstr "Initiering av klockpinne misslyckades."
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Kolumnposten måste vara digitalio. DigitalInOut"
+
+#~ msgid "Command must be an int between 0 and 255"
+#~ msgstr "Kommandot måste vara en int mellan 0 och 255"
 
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Skadad .mpy-fil"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Korrupt rå kod"
+
+#~ msgid "Could not initialize Camera"
+#~ msgstr "Kunde inte initiera Camera"
+
+#~ msgid "Could not initialize GNSS"
+#~ msgstr "Kan inte initiera GNSS"
+
+#~ msgid "Could not initialize SDCard"
+#~ msgstr "Kan inte initiera SD-kort"
+
+#~ msgid "Could not initialize UART"
+#~ msgstr "Det gick inte att initiera UART"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Det gick inte att initiera kanalen"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Det gick inte att initialisera timern"
+
+#~ msgid "Could not re-init channel"
+#~ msgstr "Det gick inte att återinitiera kanalen"
+
+#~ msgid "Could not re-init timer"
+#~ msgstr "Det gick inte att återinitiera timern"
+
+#~ msgid "Could not restart PWM"
+#~ msgstr "Det gick inte att starta om PWM"
+
+#~ msgid "Couldn't allocate first buffer"
+#~ msgstr "Det gick inte att allokera den första bufferten"
+
+#~ msgid "Couldn't allocate input buffer"
+#~ msgstr "Det gick inte att allokera indatabufferten"
+
+#~ msgid "Couldn't allocate second buffer"
+#~ msgstr "Det gick inte att allokera den andra bufferten"
+
+#~ msgid "Crash into the HardFault_Handler."
+#~ msgstr "Krasch in i HardFault_Handler."
+
+#~ msgid "Data 0 pin must be byte aligned."
+#~ msgstr "Datapinne 0 måste vara byte-justerad."
+
+#~ msgid "DigitalInOut not supported on given pin"
+#~ msgstr "DigitalInOut stöds inte på given pinne"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "Fel i MIDI-ström vid position %d"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Förväntade %q"
+
+#~ msgid "Expected a %q or %q"
+#~ msgstr "Förväntade %q eller %q"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Förväntade en karaktäristik"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "Förväntar en DigitalInOut"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Förväntade en tjänst"
+
+#~ msgid "Expected a UART"
+#~ msgstr "Förväntar en UART"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Förväntade en UUID"
+
+#~ msgid "Expected an %q"
+#~ msgstr "Förväntade en %q"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Förväntade en adress"
+
+#~ msgid "Expected an alarm"
+#~ msgstr "Förväntade ett larm"
+
+#, c-format
+#~ msgid "Expected tuple of length %d, got %d"
+#~ msgstr "Förväntad tupel med längd %d, fick %d"
+
+#~ msgid "Failed to allocate RX buffer"
+#~ msgstr "Det gick inte att tilldela RX-buffert"
+
+#, c-format
+#~ msgid "Failed to allocate RX buffer of %d bytes"
+#~ msgstr "Det gick inte att allokera RX-bufferten på %d byte"
+
+#~ msgid "Failed to init wifi"
+#~ msgstr "Kunde inte initiera WiFi"
+
+#~ msgid "Fatal error."
+#~ msgstr "Fatalt fel."
+
+#~ msgid "Fault detected by hardware."
+#~ msgstr "Fel upptäckt av hårdvara."
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Firmware-avbilden är ogiltig"
+
+#, c-format
+#~ msgid "Framebuffer requires %d bytes"
+#~ msgstr "Framebuffer kräver %d byte"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Infångningsfrekvens är för hög. Infångning pausad."
+
+#~ msgid "Group full"
+#~ msgstr "Gruppen är full"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Hårdvaran är upptagen, prova alternativa pinnar"
+
+#~ msgid "Hostname must be between 1 and 253 characters"
+#~ msgstr "Hostname måste vara mellan 1 och 253 tecken"
+
+#~ msgid "I2C Init Error"
+#~ msgstr "I2C init-fel"
+
+#~ msgid "I2C operation not supported"
+#~ msgstr "I2C-åtgärd stöds inte"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut är inte tillgängligt"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV måste vara %d byte lång"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
 
 #~ msgid ""
 #~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
@@ -4605,32 +4899,14 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ "Inkompatibel .mpy-fil. Uppdatera alla .mpy-filer. Se http://adafru.it/mpy-"
 #~ "update för mer information."
 
-#~ msgid "can't convert to %q"
-#~ msgstr "kan inte konvertera till %q"
+#~ msgid "Initial set pin direcion conflicts with initial out pin direction"
+#~ msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"
 
-#~ msgid "can't have multiple **x"
-#~ msgstr "kan inte ha flera **x"
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "Initieringen misslyckades på grund av minnesbrist"
 
-#~ msgid "can't have multiple *x"
-#~ msgstr "kan inte ha flera *x"
-
-#~ msgid "constant must be an integer"
-#~ msgstr "konstant måste vara ett heltal"
-
-#~ msgid "incompatible native .mpy architecture"
-#~ msgstr "inkompatibel nativ .mpy-arkitektur"
-
-#~ msgid "invalid format"
-#~ msgstr "ogiltigt format"
-
-#~ msgid "keywords must be strings"
-#~ msgstr "nyckelord måste vara strängar"
-
-#~ msgid "non-keyword arg after */**"
-#~ msgstr "icke nyckelord arg efter * / **"
-
-#~ msgid "non-keyword arg after keyword arg"
-#~ msgstr "icke nyckelord arg efter nyckelord arg"
+#~ msgid "Instruction %d jumps on pin"
+#~ msgstr "Instruktion %d hoppar på pinne"
 
 #, c-format
 #~ msgid "Instruction %d shifts in more bits than pin count"
@@ -4647,6 +4923,161 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #, c-format
 #~ msgid "Instruction %d waits on input outside of count"
 #~ msgstr "Instruktion %d väntar på inmatning utanför intervallet"
+
+#~ msgid "Invalid %q pin selection"
+#~ msgstr "Ogiltigt val av %q pinne"
+
+#~ msgid "Invalid AuthMode"
+#~ msgstr "Ogiltig AuthMode"
+
+#~ msgid "Invalid BMP file"
+#~ msgstr "Ogiltig BMP-fil"
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "Ogiltig CIRCUITPY_PYSTACK_SIZE\n"
+
+#~ msgid "Invalid DAC pin supplied"
+#~ msgstr "Ogiltig DAC-pinne angiven"
+
+#~ msgid "Invalid I2C pin selection"
+#~ msgstr "Ogiltigt val av I2C-pinne"
+
+#~ msgid "Invalid MIDI file"
+#~ msgstr "Ogiltig MIDI-fil"
+
+#~ msgid "Invalid PWM frequency"
+#~ msgstr "Ogiltig PWM-frekvens"
+
+#~ msgid "Invalid Pin"
+#~ msgstr "Ogiltig pinne"
+
+#~ msgid "Invalid SPI pin selection"
+#~ msgstr "Ogiltigt val av SPI-pinne"
+
+#~ msgid "Invalid UART pin selection"
+#~ msgstr "Ogiltigt val av UART-pinne"
+
+#~ msgid "Invalid buffer size"
+#~ msgstr "Ogiltig buffertstorlek"
+
+#~ msgid "Invalid byteorder string"
+#~ msgstr "Ogiltig byteorder-sträng"
+
+#~ msgid "Invalid capture period. Valid range: 1 - 500"
+#~ msgstr "Ogiltig inspelningsperiod. Giltigt intervall: 1 - 500"
+
+#~ msgid "Invalid channel count"
+#~ msgstr "Ogiltigt kanalantal"
+
+#, c-format
+#~ msgid "Invalid data_count %d"
+#~ msgstr "Ogiltig data_count %d"
+
+#~ msgid "Invalid direction."
+#~ msgstr "Ogiltig riktning."
+
+#~ msgid "Invalid file"
+#~ msgstr "Felaktig fil"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Ogiltig frekvens"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Ogiltig frekvens angiven"
+
+#~ msgid "Invalid memory access."
+#~ msgstr "Ogiltig minnesåtkomst."
+
+#~ msgid "Invalid mode"
+#~ msgstr "Ogiltigt läge"
+
+#~ msgid "Invalid number of bits"
+#~ msgstr "Ogiltigt antal bitar"
+
+#~ msgid "Invalid phase"
+#~ msgstr "Ogiltig fas"
+
+#~ msgid "Invalid pin"
+#~ msgstr "Ogiltig pinne"
+
+#~ msgid "Invalid pin for left channel"
+#~ msgstr "Ogiltig pinne för vänster kanal"
+
+#~ msgid "Invalid pin for right channel"
+#~ msgstr "Ogiltig pinne för höger kanal"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Ogiltiga pinnar"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Ogiltiga pinnar för PWMOut"
+
+#~ msgid "Invalid polarity"
+#~ msgstr "Ogiltig polaritet"
+
+#~ msgid "Invalid properties"
+#~ msgstr "Ogiltiga egenskaper"
+
+#~ msgid "Invalid run mode."
+#~ msgstr "Ogiltigt körläge."
+
+#~ msgid "Invalid security_mode"
+#~ msgstr "Ogiltigt säkerhetsläge"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "Ogiltig användning av TLS Socket"
+
+#~ msgid "Invalid voice"
+#~ msgstr "Ogiltig kanal"
+
+#~ msgid "Invalid voice count"
+#~ msgstr "Ogiltigt kanalantal"
+
+#~ msgid "Invalid wave file"
+#~ msgstr "Ogiltig wave-fil"
+
+#~ msgid "Invalid word/bit length"
+#~ msgstr "Ogiltig word-/bitlängd"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "Misslyckades att sätta SO_REUSEADDR"
+
+#~ msgid "Layer already in a group."
+#~ msgstr "Lagret finns redan i en grupp."
+
+#~ msgid "Layer must be a Group or TileGrid subclass."
+#~ msgstr "Layer måste vara en subklass av Group eller TileGrid."
+
+#~ msgid "Length must be an int"
+#~ msgstr "Length måste vara en int"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Length måste vara positiv"
+
+#~ msgid "MISO pin init failed."
+#~ msgstr "init för MISO-pinne misslyckades."
+
+#~ msgid "MOSI pin init failed."
+#~ msgstr "init för MOSI-pinne misslyckades."
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Maximum x-värde vid spegling är %d"
+
+#~ msgid "Messages limited to 8 bytes"
+#~ msgstr "Meddelanden begränsad till 8 byte"
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR jump misslyckades. Troligen korrupt minne."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "MicroPython fatalt fel."
+
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "MISO- eller MOSI-pinne saknas"
+
+#~ msgid "Missing MISO or MOSI pin"
+#~ msgstr "Saknad MISO- eller MOSI-pinne"
 
 #, c-format
 #~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
@@ -4676,23 +5107,19 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
 #~ msgstr "Saknar jmp_pin. Instruktion %d hoppar på pin"
 
-#~ msgid "inputs are not iterable"
-#~ msgstr "indata är inte iterbara"
+#, c-format
+#~ msgid "More than %d report ids not supported"
+#~ msgstr "Fler än %d rapport-id stöds inte"
 
-#~ msgid "Too many display busses"
-#~ msgstr "För många display-bussar"
+#~ msgid "Must provide SCK pin"
+#~ msgstr "Måste ange SCK-pinne"
 
-#~ msgid "Cannot transfer without MOSI and MISO pins"
-#~ msgstr "Det går inte att överföra utan MOSI- och MISO-pinnar"
+#~ msgid "Negative step not supported"
+#~ msgstr "Negativt step stöds inte"
 
-#~ msgid "Hardware busy, try alternative pins"
-#~ msgstr "Hårdvaran är upptagen, prova alternativa pinnar"
-
-#~ msgid "Missing MISO or MOSI Pin"
-#~ msgstr "MISO- eller MOSI-pinne saknas"
-
-#~ msgid "Missing MISO or MOSI pin"
-#~ msgstr "Saknad MISO- eller MOSI-pinne"
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "Ingen I2C-enhet på adress: %x"
 
 #~ msgid "No MISO Pin"
 #~ msgstr "Ingen MISO-pinne"
@@ -4712,119 +5139,208 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "No TX pin"
 #~ msgstr "Ingen TX-pinne"
 
-#~ msgid "no reset pin available"
-#~ msgstr "ingen reset-pinne tillgänglig"
+#~ msgid "No hardware support on clk pin"
+#~ msgstr "Inget hårdvarustöd på clk-pinne"
 
-#~ msgid "Sleep Memory not available"
-#~ msgstr "Sömnminne inte tillgängligt"
-
-#~ msgid "input and output shapes are not compatible"
-#~ msgstr "indata- och utdataformer är inte kompatibla"
-
-#~ msgid "shape must be a tuple"
-#~ msgstr "shape måste vara en tuple"
-
-#~ msgid "Brightness must be 0-1.0"
-#~ msgstr "Ljusstyrkan måste vara mellan 0 och 1,0"
-
-#, c-format
-#~ msgid "Error in MIDI stream at position %d"
-#~ msgstr "Fel i MIDI-ström vid position %d"
-
-#, c-format
-#~ msgid "Maximum x value when mirrored is %d"
-#~ msgstr "Maximum x-värde vid spegling är %d"
-
-#~ msgid "x value out of bounds"
-#~ msgstr "x-värde utanför intervall"
-
-#~ msgid "y value out of bounds"
-#~ msgstr "y-värde utanför intervall"
-
-#~ msgid "I2SOut not available"
-#~ msgstr "I2SOut är inte tillgängligt"
-
-#~ msgid "PDMIn not available"
-#~ msgstr "PDMIn inte tillgänglig"
-
-#~ msgid "out of range of source"
-#~ msgstr "utanför räckvidd för source"
-
-#~ msgid "pixel value requires too many bits"
-#~ msgstr "pixelvärdet kräver för många bitar"
-
-#~ msgid "value_count must be > 0"
-#~ msgstr "value_count måste vara > 0"
-
-#~ msgid "64 bit types"
-#~ msgstr "64-bitars typer"
+#~ msgid "No hardware support on pin"
+#~ msgstr "Inget hårdvarustöd på pinne"
 
 #~ msgid "No key was specified"
 #~ msgstr "Ingen nyckel angavs"
 
-#~ msgid "Scan already in progess. Stop with stop_scan."
-#~ msgstr "Skanning pågår redan. Avsluta med stop_scan."
+#~ msgid "No more channels available"
+#~ msgstr "Inga fler kanaler tillgängliga"
 
 #, c-format
-#~ msgid "Unkown error code %d"
-#~ msgstr "Okänd felkod %d"
+#~ msgid "No more than %d HID devices allowed"
+#~ msgstr "Högst %d HID-enheter är tillåtna"
 
-#~ msgid "too many arguments provided with the given format"
-#~ msgstr "för många argument för det givna formatet"
+#~ msgid "No more timers available"
+#~ msgstr "Ingen timer tillgänglig"
 
-#~ msgid ""
-#~ "\n"
-#~ "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-#~ "\n"
-#~ "\r"
-#~ msgstr ""
-#~ "\n"
-#~ "Ogiltig CIRCUITPY_PYSTACK_SIZE\n"
-#~ "\n"
-#~ "\n"
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Inga fler timers tillgängliga på denna pinne."
 
-#~ msgid "Supply at least one UART pin"
-#~ msgstr "Ange minst en UART-pinne"
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Påståendet om Nordic Soft Device-fel."
 
-#~ msgid "%q pin invalid"
-#~ msgstr "Pinne %q ogiltig"
-
-#~ msgid ""
-#~ "\n"
-#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Vänligen skapa ett ärende med innehållet i din CIRCUITPY-enhet på\n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-
-#~ msgid "Attempted heap allocation when VM not running."
-#~ msgstr ""
-#~ "Försök till heap-allokering när den virtuella maskinen inte är igång."
-
-#~ msgid "Boot device must be first device (interface #0)."
-#~ msgstr "Startenheten måste vara den första enheten (gränssnitt #0)."
-
-#~ msgid "Both buttons were pressed at start up.\n"
-#~ msgstr "Båda knapparna trycktes ned vid start.\n"
-
-#~ msgid "Button A was pressed at start up.\n"
-#~ msgstr "Knapp A trycktes ned vid start.\n"
-
-#~ msgid "CircuitPython was unable to allocate the heap."
-#~ msgstr "CircuitPython kunde inte allokera heap."
-
-#~ msgid "Crash into the HardFault_Handler."
-#~ msgstr "Krasch in i HardFault_Handler."
-
-#~ msgid "Fatal error."
-#~ msgstr "Fatalt fel."
-
-#~ msgid "Invalid memory access."
-#~ msgstr "Ogiltig minnesåtkomst."
+#~ msgid "Nordic soft device out of memory"
+#~ msgstr "Nordic soft-enheten har slut på minne"
 
 #~ msgid "Nordic system firmware failure assertion."
 #~ msgstr "Felaktigt tillstånd i Nordic systemfirmware."
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "Kör inte sparad kod.\n"
+
+#~ msgid "Not settable"
+#~ msgstr "Går inte sätta"
+
+#~ msgid "Only 8 or 16 bit mono with "
+#~ msgstr "Endast 8 eller 16 bitars mono med "
+
+#~ msgid "Only IN/OUT of up to 8 supported"
+#~ msgstr "Endast IN/OUT på upp till 8 stöds"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Endast IPv4 SOCK_STREAM sockets stöds"
+
+#~ msgid "Only one TouchAlarm can be set in deep sleep."
+#~ msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
+
+#~ msgid "Only one alarm.touch alarm can be set."
+#~ msgstr "Endast ett larm av typ alarm.touch kan ställas in."
+
+#~ msgid "Only raw int or string supported for ip"
+#~ msgstr "Enbart int eller string stöds för ip"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Endast raw int stöds för ip"
+
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr "Utbuffertelement ska vara max fyra byte långa"
+
+#, c-format
+#~ msgid "Output buffer must be at least %d bytes"
+#~ msgstr "Utdatabuffert måste vara minst %d byte"
+
+#~ msgid "PDMIn not available"
+#~ msgstr "PDMIn inte tillgänglig"
+
+#~ msgid ""
+#~ "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+#~ msgstr "PWM duty_cykel måste vara mellan 0 och 65535 (16 bitars upplösning)"
+
+#~ msgid "ParallelBus not yet supported"
+#~ msgstr "ParallelBus stöds ännu inte"
+
+#~ msgid "Pin count must be at least 1"
+#~ msgstr "Antalet pinnar måste vara minst 1"
+
+#~ msgid "Pin does not have ADC capabilities"
+#~ msgstr "Pinnen har inte ADC-funktionalitet"
+
+#~ msgid "Pin number already reserved by EXTI"
+#~ msgstr "PInn-nummer redan reserverat av EXTI"
+
+#~ msgid "PinAlarm not yet implemented"
+#~ msgstr "PinAlarm är inte implementerat ännu"
+
+#~ msgid "Pins 21+ not supported from ULP"
+#~ msgstr "Pins 21+ stöds inte av ULP"
+
+#~ msgid "Pop from an empty Ps2 buffer"
+#~ msgstr "Pop från en tom Ps2-buffert"
+
+#~ msgid ""
+#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
+#~ "instead"
+#~ msgstr ""
+#~ "Port accepterar inte PWM carrier. Ange pinne frekvens och arbetscykel "
+#~ "istället"
+
+#~ msgid ""
+#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
+#~ "Carrier instead"
+#~ msgstr ""
+#~ "Porten accepterar inte pinne eller frekvens. Skapa och skicka en PWMOut "
+#~ "Carrier istället"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr ""
+#~ "Tryck på valfri knapp för att gå in i REPL. Använd CTRL-D för att ladda "
+#~ "om."
+
+#~ msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+#~ msgstr "Fingerar djup sömn tills larm, valfri tangent eller filskrivning.\n"
+
+#~ msgid "Program must contain at least one 16-bit instruction."
+#~ msgstr "Programmet måste innehålla minst en 16-bitars instruktion."
+
+#~ msgid "Program too large"
+#~ msgstr "Programmet är för stort"
+
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "PulseIn stöds inte av detta chip"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseIn stöds inte av detta chip"
+
+#~ msgid "RAISE mode is not implemented"
+#~ msgstr "RAISE-läge är inte implementerat"
+
+#~ msgid "RS485 Not yet supported on this device"
+#~ msgstr "RS485 stöds ännu inte på den här enheten"
+
+#~ msgid "RTC calibration is not supported on this board"
+#~ msgstr "RTC-kalibrering stöds inte av detta kort"
+
+#~ msgid "RTS/CTS/RS485 Not yet supported on this device"
+#~ msgstr "RTS/CTS/RS485 Stöds ännu inte på den här enheten"
+
+#~ msgid "Read-only object"
+#~ msgstr "Skrivskyddat objekt"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Radvärdet måste vara digitalio.DigitalInOut"
+
+#~ msgid "Running in safe mode! "
+#~ msgstr "Kör i säkert läge! "
+
+#~ msgid "Running in safe mode! Auto-reload is off.\n"
+#~ msgstr "Kör i säkert läge! Autoladdning är avstängd.\n"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA eller SCL behöver en pullup"
+
+#~ msgid "SPI Init Error"
+#~ msgstr "SPI Init-fel"
+
+#~ msgid "SPI Re-initialization error"
+#~ msgstr "SPI reinitialiseringsfel"
+
+#~ msgid "Sample rate must be positive"
+#~ msgstr "Samplingsfrekvensen måste vara positiv"
+
+#, c-format
+#~ msgid "Sample rate too high. It must be less than %d"
+#~ msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
+
+#~ msgid "Scan already in progess. Stop with stop_scan."
+#~ msgstr "Skanning pågår redan. Avsluta med stop_scan."
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "Vald CTS-pinne är inte giltig"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "Vald CTS-pinne är inte giltig"
+
+#~ msgid "Set pin count must be between 1 and 5"
+#~ msgstr "Inställt antal pinnar måste vara mellan 1 och 5"
+
+#~ msgid "Side set pin count must be between 1 and 5"
+#~ msgstr "Sido-setets antal pinnar måste vara mellan 1 och 5"
+
+#~ msgid "Sleep Memory not available"
+#~ msgstr "Sömnminne inte tillgängligt"
+
+#~ msgid "Splitting with sub-captures"
+#~ msgstr "Splitting med sub-captures"
+
+#~ msgid "Stack size must be at least 256"
+#~ msgstr "Stackstorleken måste vara minst 256"
+
+#~ msgid "Station must be started"
+#~ msgstr "Stationen måste startas"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "Stoppa AP stöds inte."
+
+#~ msgid "Stream missing readinto() or write() method."
+#~ msgstr "Stream saknar readinto() eller write() metod."
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Ange minst en UART-pinne"
 
 #~ msgid "The BOOT button was pressed at start up.\n"
 #~ msgstr "BOOT-knappen trycktes ner vid start.\n"
@@ -4834,6 +5350,13 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ "Increase the stack size if you know how. If not:"
 #~ msgstr ""
 #~ "CircuitPython-heapen blev korrupt eftersom stacken är för liten.\n"
+#~ "Öka stackstorleken om du vet hur, eller om inte:"
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "CircuitPythons heap blev korrupt eftersom stacken var för liten.\n"
 #~ "Öka stackstorleken om du vet hur, eller om inte:"
 
 #~ msgid "The SW38 button was pressed at start up.\n"
@@ -4848,6 +5371,13 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgstr ""
 #~ "Modulen `microcontroller` användes för att starta upp i felsäkert läge. "
 #~ "Tryck på reset för att avsluta felsäkert läget."
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "Modulen \"microkontroller\" användes för att starta i säkert läge. Tryck "
+#~ "på reset för att lämna säkert läge.\n"
 
 #~ msgid "The central button was pressed at start up.\n"
 #~ msgstr "Mittknappen trycktes in vid start.\n"
@@ -4865,524 +5395,46 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ "tillräckligt med ström för hela kretsen och tryck på reset (efter "
 #~ "utmatning av CIRCUITPY)."
 
-#~ msgid "To exit, please reset the board without requesting safe mode."
-#~ msgstr "För att avsluta, återställ kortet utan att begära säkert läge."
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "Mikrokontrollerns matningsspänning droppade. Se till att "
+#~ "strömförsörjningen ger\n"
+#~ "tillräckligt med ström för hela kretsen och tryck på reset (efter "
+#~ "utmatning av CIRCUITPY).\n"
 
-#~ msgid "You are in safe mode because:\n"
-#~ msgstr "Du är i felsäkert läge eftersom:\n"
+#~ msgid "The power dipped. Make sure you are providing enough power."
+#~ msgstr "Spänningen sjönk. Se till att du ger tillräckligt med ström."
+
+#~ msgid "Tile value out of bounds"
+#~ msgstr "Tile-värde utanför intervall"
+
+#~ msgid "Timeout waiting for DRDY"
+#~ msgstr "Timeout i väntan på DRDY"
+
+#~ msgid "Timeout waiting for VSYNC"
+#~ msgstr "Timeout i väntan på VSYNC"
 
 #~ msgid ""
-#~ "You pressed the reset button during boot. Press again to exit safe mode."
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
 #~ msgstr ""
-#~ "Du tryckte på resetknappen under uppstarten. Tryck igen för att avsluta "
-#~ "felsäkert läge."
-
-#~ msgid ""
-#~ "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
-#~ "documentation for instructions."
-#~ msgstr ""
-#~ "esp32_camera.Camera kräver reserverad PSRAM att konfigureras. Se "
-#~ "dokumentationen för instruktioner."
-
-#~ msgid "%q must be of type %q"
-#~ msgstr "%q måste vara av typen %q"
-
-#~ msgid "%q must be of type %q or None"
-#~ msgstr "%q måste vara av typen %q eller None"
-
-#~ msgid "Expected a %q"
-#~ msgstr "Förväntade %q"
-
-#~ msgid "Expected a %q or %q"
-#~ msgstr "Förväntade %q eller %q"
-
-#~ msgid "Expected an %q"
-#~ msgstr "Förväntade en %q"
-
-#, c-format
-#~ msgid "IV must be %d bytes long"
-#~ msgstr "IV måste vara %d byte lång"
-
-#~ msgid "Not settable"
-#~ msgstr "Går inte sätta"
-
-#~ msgid "expected '%q' but got '%q'"
-#~ msgstr "förväntade '%q' men fick '%q'"
-
-#~ msgid "expected '%q' or '%q' but got '%q'"
-#~ msgstr "förväntade '%q' eller '%q' men fick '%q'"
-
-#~ msgid "Read-only object"
-#~ msgstr "Skrivskyddat objekt"
-
-#~ msgid "frequency is read-only for this board"
-#~ msgstr "frekvens är skrivskyddad för detta kort"
-
-#~ msgid "Pins 21+ not supported from ULP"
-#~ msgstr "Pins 21+ stöds inte av ULP"
-
-#~ msgid "Unable to write"
-#~ msgstr "Kan inte skriva"
-
-#~ msgid "%q length must be >= 1"
-#~ msgstr "längden på %q måste vara >= 1"
-
-#~ msgid "%q must be a string"
-#~ msgstr "%q måste vara en sträng"
-
-#~ msgid "%q must be an int"
-#~ msgstr "%q måste vara en int"
-
-#~ msgid "%q with a report ID of 0 must be of length 1"
-#~ msgstr "%q med report-ID 0 måste ha längd 1"
-
-#~ msgid "At most %d %q may be specified (not %d)"
-#~ msgstr "Högst %d %q kan anges (inte %d)"
-
-#~ msgid "Invalid pins"
-#~ msgstr "Ogiltiga pinnar"
-
-#, c-format
-#~ msgid "No more than %d HID devices allowed"
-#~ msgstr "Högst %d HID-enheter är tillåtna"
-
-#~ msgid "byteorder is not a string"
-#~ msgstr "byteorder är inte en sträng"
-
-#~ msgid "can't convert %q to int"
-#~ msgstr "kan inte konvertera %q till int"
-
-#~ msgid "complex division by zero"
-#~ msgstr "komplex division med noll"
-
-#~ msgid "int() arg 2 must be >= 2 and <= 36"
-#~ msgstr "int() arg 2 måste vara >= 2 och <= 36"
-
-#~ msgid "long int not supported in this build"
-#~ msgstr "long int stöds inte i denna build"
-
-#~ msgid "slice step cannot be zero"
-#~ msgstr "segmentsteg kan inte vara noll"
-
-#~ msgid "step must be non-zero"
-#~ msgstr "step måste vara icke-noll"
-
-#~ msgid "string indices must be integers, not %q"
-#~ msgstr "strängindex måste vara heltal, inte %q"
-
-#~ msgid "time.struct_time() takes a 9-sequence"
-#~ msgstr "time.struct_time() kräver en 9-sekvens"
-
-#~ msgid "zero step"
-#~ msgstr "noll steg"
-
-#~ msgid "invalid traceback"
-#~ msgstr "Ogilitig källspårning"
-
-#~ msgid "WatchDogTimer.timeout must be greater than 0"
-#~ msgstr "WatchDogTimer.timeout måste vara större än 0"
-
-#~ msgid "non-Device in %q"
-#~ msgstr "icke-enhet i %q"
-
-#~ msgid "single '}' encountered in format string"
-#~ msgstr "Enkelt '}' påträffades i formatsträngen"
-
-#~ msgid "threshold must be in the range 0-65536"
-#~ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
-
-#~ msgid "timeout must be 0.0-100.0 seconds"
-#~ msgstr "timeout måste vara 0.0-100.0 sekunder"
-
-#~ msgid "unmatched '{' in format"
-#~ msgstr "omatchad '{' i format"
-
-#~ msgid "watchdog timeout must be greater than 0"
-#~ msgstr "watchdog timeout måste vara större än 0"
+#~ "Timern är reserverad för internt bruk - deklarera PWM-pinne tidigare i "
+#~ "programmet"
 
 #~ msgid "To exit, please reset the board without "
 #~ msgstr "För att avsluta, gör reset på kortet utan "
 
-#~ msgid "You requested starting safe mode by "
-#~ msgstr "Du begärt att starta i felsäkert läge genom att "
+#~ msgid "To exit, please reset the board without requesting safe mode."
+#~ msgstr "För att avsluta, återställ kortet utan att begära säkert läge."
 
-#~ msgid "pressing BOOT button at start up.\n"
-#~ msgstr "genom att trycka på BOOT-knappen vid start.\n"
+#~ msgid "Too many display busses"
+#~ msgstr "För många display-bussar"
 
-#~ msgid "pressing SW38 button at start up.\n"
-#~ msgstr "genom att trycka på SW38-knappen vid start.\n"
-
-#~ msgid "pressing VOLUME button at start up.\n"
-#~ msgstr "genom att trycka på VOLUME-knappen vid start.\n"
-
-#~ msgid "pressing boot button at start up.\n"
-#~ msgstr "genom att trycka på startknappen vid start.\n"
-
-#~ msgid "pressing both buttons at start up.\n"
-#~ msgstr "genom att trycka båda knapparna vid uppstart.\n"
-
-#~ msgid "pressing central button at start up.\n"
-#~ msgstr "trycka på mittknappen vid start.\n"
-
-#~ msgid "pressing button A at start up.\n"
-#~ msgstr "genom att tryck på knappen A vid start.\n"
-
-#~ msgid "pressing the left button at start up\n"
-#~ msgstr "genom att håll ner vänster knapp vid start\n"
-
-#~ msgid "Only one TouchAlarm can be set in deep sleep."
-#~ msgstr "Endast ett TouchAlarm kan ställas in för djupsömn."
-
-#~ msgid "Firmware image is invalid"
-#~ msgstr "Firmware-avbilden är ogiltig"
-
-#~ msgid "Stream missing readinto() or write() method."
-#~ msgstr "Stream saknar readinto() eller write() metod."
-
-#~ msgid "%q must be >= 0"
-#~ msgstr "%q måste vara >= 0"
-
-#~ msgid "%q must be >= 1"
-#~ msgstr "%q måste vara >= 1"
-
-#~ msgid "address out of bounds"
-#~ msgstr "adress utanför gränsen"
-
-#~ msgid "destination_length must be an int >= 0"
-#~ msgstr "destination_length måste vara ett heltal >= 0"
-
-#~ msgid "type object 'generator' has no attribute '__await__'"
-#~ msgstr "typobjekt 'generator' har inget attribut '__await__'"
-
-#~ msgid "color should be an int"
-#~ msgstr "color ska vara en int"
-
-#~ msgid "end_x should be an int"
-#~ msgstr "color ska vara en int"
-
-#~ msgid "palette_index should be an int"
-#~ msgstr "palette_index ska vara en int"
-
-#~ msgid "start_x should be an int"
-#~ msgstr "start_x ska vara en int"
-
-#~ msgid "y should be an int"
-#~ msgstr "y ska vara en int"
-
-#~ msgid "%q ``must`` be a bytearray or array of type 'h', 'H', 'b' or 'B'"
-#~ msgstr ""
-#~ "%q ``måste`` vara en bytearray eller matris av typen 'h', 'H', 'b' eller "
-#~ "'B'"
-
-#~ msgid ""
-#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
-#~ "or 'B'"
-#~ msgstr ""
-#~ "sample_source buffert måste vara en bytearray eller matris av typ 'h', "
-#~ "'H', 'b' eller 'B'"
-
-#~ msgid "Expected an alarm"
-#~ msgstr "Förväntade ett larm"
-
-#~ msgid "All I2C targets are in use"
-#~ msgstr "Alla I2C-mål används"
-
-#~ msgid "Failed to init wifi"
-#~ msgstr "Kunde inte initiera WiFi"
-
-#~ msgid "input must be a tensor of rank 2"
-#~ msgstr "indata måste vara en tensor av rank 2"
-
-#~ msgid "maximum number of dimensions is 4"
-#~ msgstr "maximalt antal dimensioner är 4"
-
-#~ msgid "Watchdog timer expired."
-#~ msgstr "Watchdog-timern har löpt ut."
-
-#~ msgid "ssid can't be more than 32 bytes"
-#~ msgstr "ssid kan vara max 32 bytes"
-
-#~ msgid "%q must be a tuple of length 2"
-#~ msgstr "%q måste vara en tuple av längd 2"
-
-#~ msgid "%q must be between %d and %d"
-#~ msgstr "%q måste vara mellan %d och %d"
-
-#~ msgid "%q should be an int"
-#~ msgstr "%q ska vara en int"
-
-#~ msgid "(x,y) integers required"
-#~ msgstr "(x,y) heltal krävs"
-
-#~ msgid "Address type out of range"
-#~ msgstr "Adresstyp utanför intervallet"
-
-#~ msgid "AnalogIn not supported on given pin"
-#~ msgstr "AnalogIn stöds inte på angiven pinne"
-
-#~ msgid "AnalogOut functionality not supported"
-#~ msgstr "AnalogOut-funktionalitet stöds inte"
-
-#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-#~ msgstr ""
-#~ "AnalogOut hanterar bara 16 bitar. Värdet måste vara mindre än 65536."
-
-#~ msgid "AnalogOut not supported on given pin"
-#~ msgstr "AnalogOut stöds inte på angiven pinne"
-
-#, c-format
-#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-#~ msgstr "Bitdjup måste vara inom 1 till 6, inte %d"
-
-#, c-format
-#~ msgid "Buffer incorrect size. Should be %d bytes."
-#~ msgstr "Buffert har felaktig storlek. Ska vara %d byte."
-
-#~ msgid "Buffer must be at least length 1"
-#~ msgstr "Bufferten måste ha minst längd 1"
-
-#~ msgid "Bytes must be between 0 and 255."
-#~ msgstr "Bytes måste vara mellan 0 och 255."
-
-#~ msgid "Cannot output both channels on the same pin"
-#~ msgstr "Det går inte att mata ut båda kanalerna på samma pinne"
-
-#~ msgid "Cannot read without MISO pin."
-#~ msgstr "Kan inte läsa utan MISO-pinne."
-
-#~ msgid "Cannot reset into bootloader because no bootloader is present."
-#~ msgstr ""
-#~ "Det går inte att återställa till bootloader eftersom bootloader saknas."
-
-#~ msgid "Cannot transfer without MOSI and MISO pins."
-#~ msgstr "Kan inte överföra utan MOSI- och MISO-pinnar."
-
-#~ msgid "Cannot write without MOSI pin."
-#~ msgstr "Kan inte skriva utan MOSI-pinne."
-
-#~ msgid "Clock pin init failed."
-#~ msgstr "Initiering av klockpinne misslyckades."
-
-#~ msgid "Command must be an int between 0 and 255"
-#~ msgstr "Kommandot måste vara en int mellan 0 och 255"
-
-#~ msgid "Could not initialize Camera"
-#~ msgstr "Kunde inte initiera Camera"
-
-#~ msgid "Could not initialize GNSS"
-#~ msgstr "Kan inte initiera GNSS"
-
-#~ msgid "Could not initialize SDCard"
-#~ msgstr "Kan inte initiera SD-kort"
-
-#~ msgid "Could not initialize UART"
-#~ msgstr "Det gick inte att initiera UART"
-
-#~ msgid "Could not re-init channel"
-#~ msgstr "Det gick inte att återinitiera kanalen"
-
-#~ msgid "Could not re-init timer"
-#~ msgstr "Det gick inte att återinitiera timern"
-
-#~ msgid "Could not restart PWM"
-#~ msgstr "Det gick inte att starta om PWM"
-
-#~ msgid "Couldn't allocate first buffer"
-#~ msgstr "Det gick inte att allokera den första bufferten"
-
-#~ msgid "Couldn't allocate input buffer"
-#~ msgstr "Det gick inte att allokera indatabufferten"
-
-#~ msgid "Couldn't allocate second buffer"
-#~ msgstr "Det gick inte att allokera den andra bufferten"
-
-#~ msgid "DigitalInOut not supported on given pin"
-#~ msgstr "DigitalInOut stöds inte på given pinne"
-
-#, c-format
-#~ msgid "Expected tuple of length %d, got %d"
-#~ msgstr "Förväntad tupel med längd %d, fick %d"
-
-#~ msgid "Failed to allocate RX buffer"
-#~ msgstr "Det gick inte att tilldela RX-buffert"
-
-#, c-format
-#~ msgid "Failed to allocate RX buffer of %d bytes"
-#~ msgstr "Det gick inte att allokera RX-bufferten på %d byte"
-
-#, c-format
-#~ msgid "Framebuffer requires %d bytes"
-#~ msgstr "Framebuffer kräver %d byte"
-
-#~ msgid "Hostname must be between 1 and 253 characters"
-#~ msgstr "Hostname måste vara mellan 1 och 253 tecken"
-
-#~ msgid "I2C Init Error"
-#~ msgstr "I2C init-fel"
-
-#~ msgid "Invalid %q pin selection"
-#~ msgstr "Ogiltigt val av %q pinne"
-
-#~ msgid "Invalid AuthMode"
-#~ msgstr "Ogiltig AuthMode"
-
-#~ msgid "Invalid BMP file"
-#~ msgstr "Ogiltig BMP-fil"
-
-#~ msgid "Invalid DAC pin supplied"
-#~ msgstr "Ogiltig DAC-pinne angiven"
-
-#~ msgid "Invalid MIDI file"
-#~ msgstr "Ogiltig MIDI-fil"
-
-#~ msgid "Invalid PWM frequency"
-#~ msgstr "Ogiltig PWM-frekvens"
-
-#~ msgid "Invalid Pin"
-#~ msgstr "Ogiltig pinne"
-
-#~ msgid "Invalid buffer size"
-#~ msgstr "Ogiltig buffertstorlek"
-
-#~ msgid "Invalid byteorder string"
-#~ msgstr "Ogiltig byteorder-sträng"
-
-#~ msgid "Invalid capture period. Valid range: 1 - 500"
-#~ msgstr "Ogiltig inspelningsperiod. Giltigt intervall: 1 - 500"
-
-#~ msgid "Invalid channel count"
-#~ msgstr "Ogiltigt kanalantal"
-
-#, c-format
-#~ msgid "Invalid data_count %d"
-#~ msgstr "Ogiltig data_count %d"
-
-#~ msgid "Invalid direction."
-#~ msgstr "Ogiltig riktning."
-
-#~ msgid "Invalid file"
-#~ msgstr "Felaktig fil"
-
-#~ msgid "Invalid mode"
-#~ msgstr "Ogiltigt läge"
-
-#~ msgid "Invalid number of bits"
-#~ msgstr "Ogiltigt antal bitar"
-
-#~ msgid "Invalid phase"
-#~ msgstr "Ogiltig fas"
-
-#~ msgid "Invalid pin"
-#~ msgstr "Ogiltig pinne"
-
-#~ msgid "Invalid pin for left channel"
-#~ msgstr "Ogiltig pinne för vänster kanal"
-
-#~ msgid "Invalid pin for right channel"
-#~ msgstr "Ogiltig pinne för höger kanal"
-
-#~ msgid "Invalid polarity"
-#~ msgstr "Ogiltig polaritet"
-
-#~ msgid "Invalid properties"
-#~ msgstr "Ogiltiga egenskaper"
-
-#~ msgid "Invalid run mode."
-#~ msgstr "Ogiltigt körläge."
-
-#~ msgid "Invalid security_mode"
-#~ msgstr "Ogiltigt säkerhetsläge"
-
-#~ msgid "Invalid voice"
-#~ msgstr "Ogiltig kanal"
-
-#~ msgid "Invalid voice count"
-#~ msgstr "Ogiltigt kanalantal"
-
-#~ msgid "Invalid wave file"
-#~ msgstr "Ogiltig wave-fil"
-
-#~ msgid "Invalid word/bit length"
-#~ msgstr "Ogiltig word-/bitlängd"
-
-#~ msgid "Layer already in a group."
-#~ msgstr "Lagret finns redan i en grupp."
-
-#~ msgid "Layer must be a Group or TileGrid subclass."
-#~ msgstr "Layer måste vara en subklass av Group eller TileGrid."
-
-#~ msgid "MISO pin init failed."
-#~ msgstr "init för MISO-pinne misslyckades."
-
-#~ msgid "MOSI pin init failed."
-#~ msgstr "init för MOSI-pinne misslyckades."
-
-#~ msgid "Messages limited to 8 bytes"
-#~ msgstr "Meddelanden begränsad till 8 byte"
-
-#, c-format
-#~ msgid "More than %d report ids not supported"
-#~ msgstr "Fler än %d rapport-id stöds inte"
-
-#~ msgid "No hardware support on clk pin"
-#~ msgstr "Inget hårdvarustöd på clk-pinne"
-
-#~ msgid "No hardware support on pin"
-#~ msgstr "Inget hårdvarustöd på pinne"
-
-#, c-format
-#~ msgid "Output buffer must be at least %d bytes"
-#~ msgstr "Utdatabuffert måste vara minst %d byte"
-
-#~ msgid ""
-#~ "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-#~ msgstr "PWM duty_cykel måste vara mellan 0 och 65535 (16 bitars upplösning)"
-
-#~ msgid "Pin count must be at least 1"
-#~ msgstr "Antalet pinnar måste vara minst 1"
-
-#~ msgid "Pin does not have ADC capabilities"
-#~ msgstr "Pinnen har inte ADC-funktionalitet"
-
-#~ msgid "Program must contain at least one 16-bit instruction."
-#~ msgstr "Programmet måste innehålla minst en 16-bitars instruktion."
-
-#~ msgid "Program too large"
-#~ msgstr "Programmet är för stort"
-
-#~ msgid "RS485 Not yet supported on this device"
-#~ msgstr "RS485 stöds ännu inte på den här enheten"
-
-#~ msgid "RTC calibration is not supported on this board"
-#~ msgstr "RTC-kalibrering stöds inte av detta kort"
-
-#~ msgid "RTS/CTS/RS485 Not yet supported on this device"
-#~ msgstr "RTS/CTS/RS485 Stöds ännu inte på den här enheten"
-
-#~ msgid "SPI Init Error"
-#~ msgstr "SPI Init-fel"
-
-#~ msgid "SPI Re-initialization error"
-#~ msgstr "SPI reinitialiseringsfel"
-
-#~ msgid "Sample rate must be positive"
-#~ msgstr "Samplingsfrekvensen måste vara positiv"
-
-#, c-format
-#~ msgid "Sample rate too high. It must be less than %d"
-#~ msgstr "Samplingsfrekvensen är för hög. Den måste vara mindre än %d"
-
-#~ msgid "Set pin count must be between 1 and 5"
-#~ msgstr "Inställt antal pinnar måste vara mellan 1 och 5"
-
-#~ msgid "Side set pin count must be between 1 and 5"
-#~ msgstr "Sido-setets antal pinnar måste vara mellan 1 och 5"
-
-#~ msgid "Stack size must be at least 256"
-#~ msgstr "Stackstorleken måste vara minst 256"
-
-#~ msgid "Tile value out of bounds"
-#~ msgstr "Tile-värde utanför intervall"
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr "Total data som ska skrivas är större än outgoing_packet_length"
 
 #~ msgid "UART Buffer allocation error"
 #~ msgstr "UART-buffertallokeringsfel"
@@ -5396,89 +5448,74 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "UART Re-init error"
 #~ msgstr "UART reinit-fel"
 
+#~ msgid "UART not yet supported"
+#~ msgstr "UART stöds ännu inte"
+
 #~ msgid "UART write error"
 #~ msgstr "UART skrivfel"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB upptagen"
+
+#~ msgid "USB Error"
+#~ msgstr "USB-fel"
+
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "Kan inte allokera heap."
+
+#, c-format
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Kan inte konfigurera ADC DMA controller, Felkod:%d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Kan inte inititiera ADC DMA-controller, Felkod:%d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Kan inte starta ADC DMA controller, Felkod:%d"
+
+#~ msgid "Unable to write"
+#~ msgstr "Kan inte skriva"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "Det går inte att skriva till adress."
+
+#~ msgid "Unknown failure"
+#~ msgstr "Okänt fel"
+
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Okänt mjukvarufel: %04x"
+
+#, c-format
+#~ msgid "Unkown error code %d"
+#~ msgstr "Okänd felkod %d"
 
 #~ msgid "Unsupported baudrate"
 #~ msgstr "Baudrate stöd inte"
 
-#~ msgid "WiFi password must be between 8 and 63 characters"
-#~ msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
-
-#~ msgid "bits must be in range 5 to 9"
-#~ msgstr "bits måste mellan 5 och 9"
-
-#~ msgid "bytes > 8 bits not supported"
-#~ msgstr "bytes> 8 bitar stöds inte"
-
-#~ msgid "calibration value out of range +/-127"
-#~ msgstr "kalibreringsvärde utanför intervallet +/- 127"
-
-#~ msgid "can only be registered in one parent"
-#~ msgstr "kan endast registreras med en förälder"
-
-#~ msgid "circle can only be registered in one parent"
-#~ msgstr "circle kan endast registreras i en förälder"
-
-#~ msgid "max_connections must be between 0 and 10"
-#~ msgstr "max_connections måste vara mellan 0 och 10"
-
-#~ msgid "max_length must be >= 0"
-#~ msgstr "max_length måste vara >= 0"
-
-#~ msgid "polygon can only be registered in one parent"
-#~ msgstr "polygon kan endast registreras i en förälder"
-
-#~ msgid "pull_threshold must be between 1 and 32"
-#~ msgstr "pull_threshold måste vara mellan 1 och 32"
-
-#~ msgid "push_threshold must be between 1 and 32"
-#~ msgstr "push_threshold måste vara mellan 1 och 32"
-
-#~ msgid "stop must be 1 or 2"
-#~ msgstr "stop måste vara 1 eller 2"
-
-#~ msgid "tile must be greater than zero"
-#~ msgstr "tile måste vara större än noll"
-
-#~ msgid "timeout must be >= 0.0"
-#~ msgstr "timeout måste vara >= 0.0"
-
-#, c-format
-#~ msgid "width must be from 2 to 8 (inclusive), not %d"
-#~ msgstr "width måste vara mellan 2 och 8, inte %d"
-
 #~ msgid "Unsupported operation"
 #~ msgstr "Åtgärd som inte stöds"
-
-#~ msgid "divisor must be 4"
-#~ msgstr "divisor måste vara 4"
-
-#~ msgid ""
-#~ "\n"
-#~ "Code stopped by auto-reload.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Koden stoppades av auto-omladdning.\n"
-
-#~ msgid "Brightness must be between 0 and 255"
-#~ msgstr "Ljusstyrka måste vara mellan 0 och 255"
-
-#~ msgid "cannot perform relative import"
-#~ msgstr "kan inte utföra relativ import"
-
-#, c-format
-#~ msgid "No I2C device at address: %x"
-#~ msgstr "Ingen I2C-enhet på adress: %x"
 
 #~ msgid "Unsupported pull value."
 #~ msgstr "Ogiltigt Pull-värde."
 
-#~ msgid "Station must be started"
-#~ msgstr "Stationen måste startas"
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"
 
-#~ msgid "%q must <= %d"
-#~ msgstr "%q måste vara <=%d"
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "WatchDogTimer körs för närvarande inte"
+
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr ""
+#~ "WatchDogTimer.mode kan inte ändras när den är inställd på WatchDogMode."
+#~ "RESET"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout måste vara större än 0"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Watchdog-timern har löpt ut."
 
 #, c-format
 #~ msgid ""
@@ -5495,11 +5532,178 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ "\n"
 #~ "För att lista inbyggda moduler, ange `help(\"modules\")`.\n"
 
-#~ msgid "integer required"
-#~ msgstr "heltal krävs"
+#~ msgid "WiFi password must be between 8 and 63 characters"
+#~ msgstr "WiFi-lösenord måste vara mellan 8 och 63 tecken"
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "WiFi är i accesspunktläge."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "WiFi är i stationsläge."
+
+#~ msgid "You are in safe mode because:\n"
+#~ msgstr "Du är i felsäkert läge eftersom:\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr "Du är i säkert läge: något öväntat hände.\n"
+
+#~ msgid ""
+#~ "You pressed the reset button during boot. Press again to exit safe mode."
+#~ msgstr ""
+#~ "Du tryckte på resetknappen under uppstarten. Tryck igen för att avsluta "
+#~ "felsäkert läge."
+
+#~ msgid "You requested starting safe mode by "
+#~ msgstr "Du begärt att starta i felsäkert läge genom att "
+
+#~ msgid "__init__() should return None, not '%q'"
+#~ msgstr "__init__() ska returnera None, inte '%q'"
 
 #~ msgid "abort() called"
 #~ msgstr "abort() anropad"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "adressen %08x är inte justerad till %d byte"
+
+#~ msgid "address out of bounds"
+#~ msgstr "adress utanför gränsen"
+
+#~ msgid "arctan2 is implemented for scalars and ndarrays only"
+#~ msgstr "arctan2 är enbart implementerad för scalar och ndarray"
+
+#~ msgid "argument must be ndarray"
+#~ msgstr "argument måste vara ndarray"
+
+#~ msgid "attributes not supported yet"
+#~ msgstr "attribut stöds inte än"
+
+#~ msgid "axis must be -1, 0, None, or 1"
+#~ msgstr "axis ska vara -1, 0, None eller 1"
+
+#~ msgid "axis must be -1, 0, or 1"
+#~ msgstr "axis ska vara -1, 0 eller 1"
+
+#~ msgid "axis must be None, 0, or 1"
+#~ msgstr "axis ska vara None, 0, eller 1"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits måste vara 7, 8 eller 9"
+
+#~ msgid "bits must be 8"
+#~ msgstr "bits måste vara 8"
+
+#~ msgid "bits must be in range 5 to 9"
+#~ msgstr "bits måste mellan 5 och 9"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "buffer måste vara en byte-liknande objekt"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "buffertar måste vara samma längd"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "buttons måste vara digitalio.DigitalInOut"
+
+#~ msgid "byte code not implemented"
+#~ msgstr "byte-kod inte implementerad"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder är inte en sträng"
+
+#~ msgid "bytes > 8 bits not supported"
+#~ msgstr "bytes> 8 bitar stöds inte"
+
+#~ msgid "calibration value out of range +/-127"
+#~ msgstr "kalibreringsvärde utanför intervallet +/- 127"
+
+#~ msgid "can only be registered in one parent"
+#~ msgstr "kan endast registreras med en förälder"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "kan bara spara bytecode"
+
+#~ msgid "can't convert %q to int"
+#~ msgstr "kan inte konvertera %q till int"
+
+#~ msgid "can't convert address to int"
+#~ msgstr "kan inte konvertera address till int"
+
+#~ msgid "can't convert to %q"
+#~ msgstr "kan inte konvertera till %q"
+
+#~ msgid "can't do truncated division of a complex number"
+#~ msgstr "kan inte göra trunkerad division av komplext tal"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "kan inte ha flera **x"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "kan inte ha flera *x"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr "kan inte 'pend throw' för nystartad generator"
+
+#~ msgid "cannot import name %q"
+#~ msgstr "kan inte importera namn %q"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "kan inte utföra relativ import"
+
+#~ msgid "cannot reshape array (incompatible input/output shape)"
+#~ msgstr "kan inte omforma matris (inkompatibel indata-/utdataform)"
+
+#~ msgid "cannot unambiguously get sizeof scalar"
+#~ msgstr "Kan inte entydigt få sizeof scalar"
+
+#~ msgid "circle can only be registered in one parent"
+#~ msgstr "circle kan endast registreras i en förälder"
+
+#~ msgid "color should be an int"
+#~ msgstr "color ska vara en int"
+
+#~ msgid "complex division by zero"
+#~ msgstr "komplex division med noll"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "konstant måste vara ett heltal"
+
+#~ msgid "could not broadast input array from shape"
+#~ msgstr "Kan inte sända indatamatris från form"
+
+#~ msgid "ddof must be smaller than length of data set"
+#~ msgstr "ddof måste vara mindre än längden på datauppsättningen"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr "destination_length måste vara ett heltal >= 0"
+
+#~ msgid "divisor must be 4"
+#~ msgstr "divisor måste vara 4"
+
+#~ msgid "empty %q list"
+#~ msgstr "tom %q-lista"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "color ska vara en int"
+
+#~ msgid ""
+#~ "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "esp32_camera.Camera kräver reserverad PSRAM att konfigureras. Se "
+#~ "dokumentationen för instruktioner."
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera.Camera kräver reserverat PSRAM att vara konfigurerat. Se "
+#~ "dokumentationen för instruktioner."
+
+#~ msgid "expected '%q' but got '%q'"
+#~ msgstr "förväntade '%q' men fick '%q'"
+
+#~ msgid "expected '%q' or '%q' but got '%q'"
+#~ msgstr "förväntade '%q' eller '%q' men fick '%q'"
 
 #~ msgid "f-string expression part cannot include a '#'"
 #~ msgstr "f-stränguttrycksdelen kan inte innehålla en '#'"
@@ -5516,221 +5720,144 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "f-string: single '}' is not allowed"
 #~ msgstr "f-string: singel '}' är inte tillåten"
 
-#~ msgid "invalid arguments"
-#~ msgstr "ogiltiga argument"
+#~ msgid "first argument must be an iterable"
+#~ msgstr "första argumentet måste vara en iterable"
 
-#~ msgid "raw f-strings are not implemented"
-#~ msgstr "råa f-strängar inte implementerade"
+#~ msgid "firstbit must be MSB"
+#~ msgstr "firstbit måste vara MSB"
 
-#~ msgid "unindent does not match any outer indentation level"
-#~ msgstr "indentering inte matchar någon yttre indenteringsnivå"
+#~ msgid "frequency is read-only for this board"
+#~ msgstr "frekvens är skrivskyddad för detta kort"
 
-#~ msgid "%q list must be a list"
-#~ msgstr "%q-listan måste vara en lista"
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "funktionen tar inte nyckelordsargument"
 
-#~ msgid "%q must of type %q"
-#~ msgstr "%q måste av typen %q"
+#~ msgid "function is implemented for scalars and ndarrays only"
+#~ msgstr "funktionen är endast implementerad för scalar och ndarray"
 
-#~ msgid "Column entry must be digitalio.DigitalInOut"
-#~ msgstr "Kolumnposten måste vara digitalio. DigitalInOut"
+#~ msgid "incompatible native .mpy architecture"
+#~ msgstr "inkompatibel nativ .mpy-arkitektur"
 
-#~ msgid "Expected a Characteristic"
-#~ msgstr "Förväntade en karaktäristik"
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "indata- och utdataformer är inte kompatibla"
 
-#~ msgid "Expected a DigitalInOut"
-#~ msgstr "Förväntar en DigitalInOut"
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "indataargumentet måste vara ett heltal eller en 2-tupel"
 
-#~ msgid "Expected a Service"
-#~ msgstr "Förväntade en tjänst"
+#~ msgid "input must be a tensor of rank 2"
+#~ msgstr "indata måste vara en tensor av rank 2"
 
-#~ msgid "Expected a UART"
-#~ msgstr "Förväntar en UART"
+#~ msgid "inputs are not iterable"
+#~ msgstr "indata är inte iterbara"
 
-#~ msgid "Expected a UUID"
-#~ msgstr "Förväntade en UUID"
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int() arg 2 måste vara >= 2 och <= 36"
 
-#~ msgid "Expected an Address"
-#~ msgstr "Förväntade en adress"
-
-#~ msgid "Row entry must be digitalio.DigitalInOut"
-#~ msgstr "Radvärdet måste vara digitalio.DigitalInOut"
-
-#~ msgid "buttons must be digitalio.DigitalInOut"
-#~ msgstr "buttons måste vara digitalio.DigitalInOut"
-
-#~ msgid "Invalid frequency"
-#~ msgstr "Ogiltig frekvens"
-
-#~ msgid "Data 0 pin must be byte aligned."
-#~ msgstr "Datapinne 0 måste vara byte-justerad."
-
-#~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-#~ msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
-
-#~ msgid ""
-#~ "\n"
-#~ "paste mode; Ctrl-C to cancel, Ctrl-D to finish\n"
-#~ "=== "
-#~ msgstr ""
-#~ "\n"
-#~ "klistra in-läge; Ctrl-C för att avbryta, Ctrl-D för att avsluta\n"
-#~ "=== "
-
-#~ msgid "ParallelBus not yet supported"
-#~ msgstr "ParallelBus stöds ännu inte"
-
-#~ msgid "raw REPL; CTRL-B to exit\n"
-#~ msgstr "rå REPL. CTRL-B för att avsluta\n"
-
-#~ msgid "%q length must be %q"
-#~ msgstr "längden på %q måste vara %q"
-
-#~ msgid "%q must be 0-255"
-#~ msgstr "%q måste vara 0-255"
-
-#~ msgid "%q must be 1-255"
-#~ msgstr "%q måste vara 1-255"
-
-#~ msgid "%q must be None or between 1 and len(report_descriptor)-1"
-#~ msgstr "%q måste vara None eller mellan 1 och len(report_descriptor)-1"
-
-#~ msgid "limit should be an int"
-#~ msgstr "limit måste vara en int"
-
-#~ msgid "no available NIC"
-#~ msgstr "ingen tillgänglig NIC"
-
-#~ msgid ""
-#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-#~ "instead"
-#~ msgstr ""
-#~ "Port accepterar inte PWM carrier. Ange pinne frekvens och arbetscykel "
-#~ "istället"
-
-#~ msgid ""
-#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
-#~ "Carrier instead"
-#~ msgstr ""
-#~ "Porten accepterar inte pinne eller frekvens. Skapa och skicka en PWMOut "
-#~ "Carrier istället"
-
-#~ msgid "Instruction %d jumps on pin"
-#~ msgstr "Instruktion %d hoppar på pinne"
-
-#~ msgid "%q must store bytes"
-#~ msgstr "%q måste lagra bytes"
-
-#~ msgid "Buffer too large and unable to allocate"
-#~ msgstr "Bufferten är för stor och kan inte allokeras"
+#~ msgid "integer required"
+#~ msgstr "heltal krävs"
 
 #~ msgid "interp is defined for 1D arrays of equal length"
 #~ msgstr "interp är definierad för 1D-matriser med samma längd"
 
-#~ msgid "trapz is defined for 1D arrays"
-#~ msgstr "trapz är definierat för 1D-matriser"
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "ogiltig I2C-kringutrustning"
 
-#~ msgid "wrong operand type"
-#~ msgstr "fel operandtyp"
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "ogiltig SPI-kringutrustning"
 
-#~ msgid "%q must be None or 1-255"
-#~ msgstr "%q måste vara None eller 1-255"
+#~ msgid "invalid architecture"
+#~ msgstr "ogiltig arkitektur"
 
-#~ msgid "Only raw int or string supported for ip"
-#~ msgstr "Enbart int eller string stöds för ip"
+#~ msgid "invalid arguments"
+#~ msgstr "ogiltiga argument"
 
-#~ msgid "Only raw int supported for ip"
-#~ msgstr "Endast raw int stöds för ip"
-
-#~ msgid ""
-#~ "CircuitPython is in safe mode because you pressed the reset button during "
-#~ "boot. Press again to exit safe mode.\n"
-#~ msgstr ""
-#~ "CircuitPython är i säkert läge eftersom du tryckte på "
-#~ "återställningsknappen under start. Tryck igen för att lämna säkert läge.\n"
-
-#~ msgid "Not running saved code.\n"
-#~ msgstr "Kör inte sparad kod.\n"
-
-#~ msgid "Running in safe mode! "
-#~ msgstr "Kör i säkert läge! "
-
-#~ msgid ""
-#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
-#~ "Please increase the stack size if you know how, or if not:"
-#~ msgstr ""
-#~ "CircuitPythons heap blev korrupt eftersom stacken var för liten.\n"
-#~ "Öka stackstorleken om du vet hur, eller om inte:"
-
-#~ msgid ""
-#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
-#~ "to exit safe mode.\n"
-#~ msgstr ""
-#~ "Modulen \"microkontroller\" användes för att starta i säkert läge. Tryck "
-#~ "på reset för att lämna säkert läge.\n"
-
-#~ msgid ""
-#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "Mikrokontrollerns matningsspänning droppade. Se till att "
-#~ "strömförsörjningen ger\n"
-#~ "tillräckligt med ström för hela kretsen och tryck på reset (efter "
-#~ "utmatning av CIRCUITPY).\n"
-
-#~ msgid "You are in safe mode: something unanticipated happened.\n"
-#~ msgstr "Du är i säkert läge: något öväntat hände.\n"
-
-#~ msgid "Pin number already reserved by EXTI"
-#~ msgstr "PInn-nummer redan reserverat av EXTI"
-
-#~ msgid "USB Busy"
-#~ msgstr "USB upptagen"
-
-#~ msgid "USB Error"
-#~ msgstr "USB-fel"
-
-#~ msgid "%q indices must be integers, not %q"
-#~ msgstr "%q index måste vara heltal, inte %q"
-
-#~ msgid "'%q' object cannot assign attribute '%q'"
-#~ msgstr "Objektet '%q' kan inte tilldela attributet '%q'"
-
-#~ msgid "'%q' object does not support item assignment"
-#~ msgstr "Objektet '%q' stöder inte tilldelning"
-
-#~ msgid "'%q' object does not support item deletion"
-#~ msgstr "Objektet '%q' stöder inte borttagning av objekt"
-
-#~ msgid "'%q' object has no attribute '%q'"
-#~ msgstr "Objektet '%q' har inget attribut '%q'"
-
-#~ msgid "'%q' object is not subscriptable"
-#~ msgstr "Objektet '%q' är inte indexbar"
-
-#~ msgid "'%s' integer %d is not within range %d..%d"
-#~ msgstr "'%s' heltal %d ligger inte inom intervallet %d..%d"
-
-#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-#~ msgstr "'%s' heltal 0x%x ryms inte i mask 0x%x"
-
-#~ msgid "Cannot unambiguously get sizeof scalar"
-#~ msgstr "Kan inte entydigt få sizeof scalar"
-
-#~ msgid "Length must be an int"
-#~ msgstr "Length måste vara en int"
-
-#~ msgid "Length must be non-negative"
-#~ msgstr "Length måste vara positiv"
+#~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+#~ msgstr "ogiltig bits_per_pixel %d, måste vara 1, 4, 8, 16, 24 eller 32"
 
 #~ msgid "invalid decorator"
 #~ msgstr "ogiltig dekorator"
 
+#~ msgid "invalid dupterm index"
+#~ msgstr "ogiltigt dupterm index"
+
+#~ msgid "invalid format"
+#~ msgstr "ogiltigt format"
+
+#~ msgid "invalid traceback"
+#~ msgstr "Ogilitig källspårning"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io måste vara rtc io"
+
+#~ msgid "iterables are not of the same length"
+#~ msgstr "iterables är inte av samma längd"
+
+#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
+#~ msgstr ""
+#~ "nyckelordsargument är ännu inte implementerade - använd vanliga argument"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "nyckelord måste vara strängar"
+
+#~ msgid "length argument not allowed for this type"
+#~ msgstr "argumentet length är inte är tillåten för denna typ"
+
+#~ msgid "limit should be an int"
+#~ msgstr "limit måste vara en int"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int stöds inte i denna build"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "matrisdimensioner matchar inte"
+
+#~ msgid "max_connections must be between 0 and 10"
+#~ msgstr "max_connections måste vara mellan 0 och 10"
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_length måste vara > 0"
+
+#~ msgid "max_length must be >= 0"
+#~ msgstr "max_length måste vara >= 0"
+
+#~ msgid "maximum number of dimensions is 4"
+#~ msgstr "maximalt antal dimensioner är 4"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "måste ange alla av sck/mosi/miso"
+
+#~ msgid "n must be between 0, and 9"
+#~ msgstr "n måste vara mellan 0 och 9"
+
 #~ msgid "name reused for argument"
 #~ msgstr "namn återanvänt för argument"
 
+#~ msgid "no available NIC"
+#~ msgstr "ingen tillgänglig NIC"
+
+#~ msgid "no reset pin available"
+#~ msgstr "ingen reset-pinne tillgänglig"
+
+#~ msgid "non-Device in %q"
+#~ msgstr "icke-enhet i %q"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "icke nyckelord arg efter * / **"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "icke nyckelord arg efter nyckelord arg"
+
+#~ msgid "norm is defined for 1D and 2D arrays"
+#~ msgstr "norm är definierad för 1D- och 2D-matriser"
+
+#~ msgid "number of arguments must be 2, or 3"
+#~ msgstr "antal argument måste vara 2 eller 3"
+
 #~ msgid "object '%q' is not a tuple or list"
 #~ msgstr "objektet '%q' är inte en tuple eller list"
+
+#~ msgid "object '%s' is not a tuple or list"
+#~ msgstr "objektet '%s' är inte en tupel eller lista"
 
 #~ msgid "object does not support item assignment"
 #~ msgstr "Objektet stöder inte tilldelning"
@@ -5744,316 +5871,30 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "object of type '%q' has no len()"
 #~ msgstr "objekt av typen '%q' har inte len()"
 
-#~ msgid "struct: cannot index"
-#~ msgstr "struct: kan inte indexera"
-
-#~ msgid "Cannot remount '/' when USB is active."
-#~ msgstr "Kan inte återmontera '/' när USB är aktivt."
-
-#~ msgid "Timeout waiting for DRDY"
-#~ msgstr "Timeout i väntan på DRDY"
-
-#~ msgid "Timeout waiting for VSYNC"
-#~ msgstr "Timeout i väntan på VSYNC"
-
-#~ msgid "byte code not implemented"
-#~ msgstr "byte-kod inte implementerad"
-
-#~ msgid "can't pend throw to just-started generator"
-#~ msgstr "kan inte 'pend throw' för nystartad generator"
-
-#~ msgid "invalid dupterm index"
-#~ msgstr "ogiltigt dupterm index"
-
-#~ msgid "schedule stack full"
-#~ msgstr "schemastack full"
-
-#~ msgid "Corrupt raw code"
-#~ msgstr "Korrupt rå kod"
-
-#~ msgid "can only save bytecode"
-#~ msgstr "kan bara spara bytecode"
-
-#~ msgid "Viper functions don't currently support more than 4 arguments"
-#~ msgstr "Viper-funktioner stöder för närvarande inte mer än fyra argument"
-
-#~ msgid "address %08x is not aligned to %d bytes"
-#~ msgstr "adressen %08x är inte justerad till %d byte"
-
-#~ msgid "function does not take keyword arguments"
-#~ msgstr "funktionen tar inte nyckelordsargument"
-
-#~ msgid "parameter annotation must be an identifier"
-#~ msgstr "parametern annotation måste vara en identifierare"
-
-#~ msgid "Total data to write is larger than outgoing_packet_length"
-#~ msgstr "Total data som ska skrivas är större än outgoing_packet_length"
-
-#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-#~ msgstr "IO 0, 2 & 4 stöder inte intern pullup för sovläge"
-
-#~ msgid "buffer must be a bytes-like object"
-#~ msgstr "buffer måste vara en byte-liknande objekt"
-
-#~ msgid "io must be rtc io"
-#~ msgstr "io måste vara rtc io"
-
-#~ msgid "trigger level must be 0 or 1"
-#~ msgstr "triggernivå måste vara 0 eller 1"
-
-#~ msgid "wakeup conflict"
-#~ msgstr "wakeup-konflikt"
-
-#~ msgid "Attempted heap allocation when MicroPython VM not running."
-#~ msgstr "Försökte tilldela heap när MicroPython VM inte körs."
-
-#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
-#~ msgstr "MicroPython NLR jump misslyckades. Troligen korrupt minne."
-
-#~ msgid "MicroPython fatal error."
-#~ msgstr "MicroPython fatalt fel."
-
-#~ msgid "argument must be ndarray"
-#~ msgstr "argument måste vara ndarray"
-
-#~ msgid "matrix dimensions do not match"
-#~ msgstr "matrisdimensioner matchar inte"
-
-#~ msgid "norm is defined for 1D and 2D arrays"
-#~ msgstr "norm är definierad för 1D- och 2D-matriser"
-
-#~ msgid "vectors must have same lengths"
-#~ msgstr "vektorer måste ha samma längd"
-
-#~ msgid "Nordic Soft Device failure assertion."
-#~ msgstr "Påståendet om Nordic Soft Device-fel."
-
-#~ msgid "Nordic soft device out of memory"
-#~ msgstr "Nordic soft-enheten har slut på minne"
-
-#~ msgid "Unknown soft device error: %04x"
-#~ msgstr "Okänt mjukvarufel: %04x"
-
-#~ msgid "first argument must be an iterable"
-#~ msgstr "första argumentet måste vara en iterable"
-
-#~ msgid "iterables are not of the same length"
-#~ msgstr "iterables är inte av samma längd"
-
-#~ msgid "Selected CTS pin not valid"
-#~ msgstr "Vald CTS-pinne är inte giltig"
-
-#~ msgid "Selected RTS pin not valid"
-#~ msgstr "Vald CTS-pinne är inte giltig"
-
-#~ msgid "Could not initialize channel"
-#~ msgstr "Det gick inte att initiera kanalen"
-
-#~ msgid "Could not initialize timer"
-#~ msgstr "Det gick inte att initialisera timern"
-
-#~ msgid "Invalid frequency supplied"
-#~ msgstr "Ogiltig frekvens angiven"
-
-#~ msgid "Invalid pins for PWMOut"
-#~ msgstr "Ogiltiga pinnar för PWMOut"
-
-#~ msgid "No more channels available"
-#~ msgstr "Inga fler kanaler tillgängliga"
-
-#~ msgid "No more timers available"
-#~ msgstr "Ingen timer tillgänglig"
-
-#~ msgid "No more timers available on this pin."
-#~ msgstr "Inga fler timers tillgängliga på denna pinne."
-
-#~ msgid ""
-#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
-#~ "program"
-#~ msgstr ""
-#~ "Timern är reserverad för internt bruk - deklarera PWM-pinne tidigare i "
-#~ "programmet"
-
-#~ msgid "Group full"
-#~ msgstr "Gruppen är full"
-
-#~ msgid "In buffer elements must be 4 bytes long or less"
-#~ msgstr "Inbuffertelement måste vara 4 byte långa eller mindre"
-
-#~ msgid "Out buffer elements must be 4 bytes long or less"
-#~ msgstr "Utbuffertelement ska vara max fyra byte långa"
-
-#~ msgid "Initial set pin direcion conflicts with initial out pin direction"
-#~ msgstr "Initial pinn-riktning står i konflikt med initial utpinn-riktning"
-
-#~ msgid "UART not yet supported"
-#~ msgstr "UART stöds ännu inte"
-
-#~ msgid "bits must be 7, 8 or 9"
-#~ msgstr "bits måste vara 7, 8 eller 9"
-
-#~ msgid "Only IN/OUT of up to 8 supported"
-#~ msgstr "Endast IN/OUT på upp till 8 stöds"
-
-#~ msgid "SDA or SCL needs a pull up"
-#~ msgstr "SDA eller SCL behöver en pullup"
-
-#~ msgid "Invalid use of TLS Socket"
-#~ msgstr "Ogiltig användning av TLS Socket"
-
-#~ msgid "Issue setting SO_REUSEADDR"
-#~ msgstr "Misslyckades att sätta SO_REUSEADDR"
-
-#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-#~ msgstr "%d adresspinnar och %d RGB-pinnar indikerar en höjd av %d, inte %d"
-
-#~ msgid "Unknown failure"
-#~ msgstr "Okänt fel"
-
-#~ msgid "Only one alarm.touch alarm can be set."
-#~ msgstr "Endast ett larm av typ alarm.touch kan ställas in."
-
-#~ msgid "input argument must be an integer or a 2-tuple"
-#~ msgstr "indataargumentet måste vara ett heltal eller en 2-tupel"
+#~ msgid "offset out of bounds"
+#~ msgstr "offset utanför gränserna"
 
 #~ msgid "operation is not implemented for flattened array"
 #~ msgstr "operationen inte implementeras för tillplattad matris"
 
-#~ msgid "tuple index out of range"
-#~ msgstr "tupelindex utanför intervallet"
+#~ msgid "out of range of source"
+#~ msgstr "utanför räckvidd för source"
 
-#~ msgid ""
-#~ "\n"
-#~ "Code done running. Waiting for reload.\n"
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index ska vara en int"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "parametern annotation måste vara en identifierare"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "pixelvärdet kräver för många bitar"
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 #~ msgstr ""
-#~ "\n"
-#~ "Koden har kört klart. Väntar på omladdning.\n"
+#~ "pixel_shader måste vara displayio.Palette eller displayio.ColorConverter"
 
-#~ msgid "PinAlarm not yet implemented"
-#~ msgstr "PinAlarm är inte implementerat ännu"
-
-#~ msgid "Pretending to deep sleep until alarm, any key or file write.\n"
-#~ msgstr "Fingerar djup sömn tills larm, valfri tangent eller filskrivning.\n"
-
-#~ msgid "Frequency captured is above capability. Capture Paused."
-#~ msgstr "Infångningsfrekvens är för hög. Infångning pausad."
-
-#~ msgid "max_length must be > 0"
-#~ msgstr "max_length måste vara > 0"
-
-#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-#~ msgstr ""
-#~ "Tryck på valfri knapp för att gå in i REPL. Använd CTRL-D för att ladda "
-#~ "om."
-
-#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
-#~ msgstr "Endast IPv4 SOCK_STREAM sockets stöds"
-
-#~ msgid "arctan2 is implemented for scalars and ndarrays only"
-#~ msgstr "arctan2 är enbart implementerad för scalar och ndarray"
-
-#~ msgid "axis must be -1, 0, None, or 1"
-#~ msgstr "axis ska vara -1, 0, None eller 1"
-
-#~ msgid "axis must be -1, 0, or 1"
-#~ msgstr "axis ska vara -1, 0 eller 1"
-
-#~ msgid "axis must be None, 0, or 1"
-#~ msgstr "axis ska vara None, 0, eller 1"
-
-#~ msgid "cannot reshape array (incompatible input/output shape)"
-#~ msgstr "kan inte omforma matris (inkompatibel indata-/utdataform)"
-
-#~ msgid "could not broadast input array from shape"
-#~ msgstr "Kan inte sända indatamatris från form"
-
-#~ msgid "ddof must be smaller than length of data set"
-#~ msgstr "ddof måste vara mindre än längden på datauppsättningen"
-
-#~ msgid "function is implemented for scalars and ndarrays only"
-#~ msgstr "funktionen är endast implementerad för scalar och ndarray"
-
-#~ msgid "n must be between 0, and 9"
-#~ msgstr "n måste vara mellan 0 och 9"
-
-#~ msgid "number of arguments must be 2, or 3"
-#~ msgstr "antal argument måste vara 2 eller 3"
-
-#~ msgid "right hand side must be an ndarray, or a scalar"
-#~ msgstr "höger sida måste vara en ndarray, eller en scalar"
-
-#~ msgid "shape must be a 2-tuple"
-#~ msgstr "shape måste vara en 2-tupel"
-
-#~ msgid "sorted axis can't be longer than 65535"
-#~ msgstr "sorterad axel kan inte vara längre än 65535"
-
-#~ msgid "wrong argument type"
-#~ msgstr "fel typ av argument"
-
-#~ msgid "specify size or data, but not both"
-#~ msgstr "ange storlek eller data, men inte båda"
-
-#~ msgid "Must provide SCK pin"
-#~ msgstr "Måste ange SCK-pinne"
-
-#~ msgid ""
-#~ "\n"
-#~ "To exit, please reset the board without "
-#~ msgstr ""
-#~ "\n"
-#~ "För att avsluta, gör reset på kortet utan "
-
-#~ msgid "PulseOut not supported on this chip"
-#~ msgstr "PulseIn stöds inte av detta chip"
-
-#~ msgid "tuple/list required on RHS"
-#~ msgstr "tupel/lista krävs för RHS"
-
-#~ msgid "'%s' object cannot assign attribute '%q'"
-#~ msgstr "Objektet '%s' kan inte tilldela attributet '%q'"
-
-#~ msgid "'%s' object does not support '%q'"
-#~ msgstr "Objektet '%s' har inte stöd för '%q'"
-
-#~ msgid "'%s' object does not support item assignment"
-#~ msgstr "Objektet '%s' stöder inte tilldelningen"
-
-#~ msgid "'%s' object does not support item deletion"
-#~ msgstr "Objektet '%s' stöder inte borttagning av objekt"
-
-#~ msgid "'%s' object is not an iterator"
-#~ msgstr "Objektet '%s' är inte en iterator"
-
-#~ msgid "'%s' object is not callable"
-#~ msgstr "Objektet '%s' kan inte anropas"
-
-#~ msgid "'%s' object is not iterable"
-#~ msgstr "Objektet '%s' är inte itererable"
-
-#~ msgid "'%s' object is not subscriptable"
-#~ msgstr "Objektet '%s' är inte indexbar"
-
-#~ msgid "Invalid I2C pin selection"
-#~ msgstr "Ogiltigt val av I2C-pinne"
-
-#~ msgid "Invalid SPI pin selection"
-#~ msgstr "Ogiltigt val av SPI-pinne"
-
-#~ msgid "Invalid UART pin selection"
-#~ msgstr "Ogiltigt val av UART-pinne"
-
-#~ msgid "Pop from an empty Ps2 buffer"
-#~ msgstr "Pop från en tom Ps2-buffert"
-
-#~ msgid "Running in safe mode! Auto-reload is off.\n"
-#~ msgstr "Kör i säkert läge! Autoladdning är avstängd.\n"
-
-#~ msgid "can't convert address to int"
-#~ msgstr "kan inte konvertera address till int"
-
-#~ msgid "object '%s' is not a tuple or list"
-#~ msgstr "objektet '%s' är inte en tupel eller lista"
+#~ msgid "polygon can only be registered in one parent"
+#~ msgstr "polygon kan endast registreras i en förälder"
 
 #~ msgid "pop from an empty set"
 #~ msgstr "pop från en tom uppsättning"
@@ -6064,44 +5905,184 @@ msgstr "zi måste vara i formen (n_section, 2)"
 #~ msgid "popitem(): dictionary is empty"
 #~ msgstr "popitem(): ordlistan är tom"
 
+#~ msgid "pressing BOOT button at start up.\n"
+#~ msgstr "genom att trycka på BOOT-knappen vid start.\n"
+
+#~ msgid "pressing SW38 button at start up.\n"
+#~ msgstr "genom att trycka på SW38-knappen vid start.\n"
+
+#~ msgid "pressing VOLUME button at start up.\n"
+#~ msgstr "genom att trycka på VOLUME-knappen vid start.\n"
+
+#~ msgid "pressing boot button at start up.\n"
+#~ msgstr "genom att trycka på startknappen vid start.\n"
+
+#~ msgid "pressing both buttons at start up.\n"
+#~ msgstr "genom att trycka båda knapparna vid uppstart.\n"
+
+#~ msgid "pressing button A at start up.\n"
+#~ msgstr "genom att tryck på knappen A vid start.\n"
+
+#~ msgid "pressing central button at start up.\n"
+#~ msgstr "trycka på mittknappen vid start.\n"
+
+#~ msgid "pressing the left button at start up\n"
+#~ msgstr "genom att håll ner vänster knapp vid start\n"
+
+#~ msgid "pull_threshold must be between 1 and 32"
+#~ msgstr "pull_threshold måste vara mellan 1 och 32"
+
+#~ msgid "push_threshold must be between 1 and 32"
+#~ msgstr "push_threshold måste vara mellan 1 och 32"
+
+#~ msgid "queue overflow"
+#~ msgstr "köstorlek överskreds"
+
+#~ msgid "raw REPL; CTRL-B to exit\n"
+#~ msgstr "rå REPL. CTRL-B för att avsluta\n"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "råa f-strängar inte implementerade"
+
+#~ msgid "right hand side must be an ndarray, or a scalar"
+#~ msgstr "höger sida måste vara en ndarray, eller en scalar"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "sample_source buffert måste vara en bytearray eller matris av typ 'h', "
+#~ "'H', 'b' eller 'B'"
+
+#~ msgid "schedule stack full"
+#~ msgstr "schemastack full"
+
+#~ msgid "shape must be a 2-tuple"
+#~ msgstr "shape måste vara en 2-tupel"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "shape måste vara en tuple"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "Enkelt '}' påträffades i formatsträngen"
+
+#~ msgid "slice step can't be zero"
+#~ msgstr "segmentsteg kan inte vara noll"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "segmentsteg kan inte vara noll"
+
+#~ msgid "sorted axis can't be longer than 65535"
+#~ msgstr "sorterad axel kan inte vara längre än 65535"
+
+#~ msgid "specify size or data, but not both"
+#~ msgstr "ange storlek eller data, men inte båda"
+
+#~ msgid "ssid can't be more than 32 bytes"
+#~ msgstr "ssid kan vara max 32 bytes"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x ska vara en int"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step måste vara icke-noll"
+
+#~ msgid "stop must be 1 or 2"
+#~ msgstr "stop måste vara 1 eller 2"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "strängindex måste vara heltal, inte %q"
+
+#~ msgid "string not supported; use bytes or bytearray"
+#~ msgstr "sträng stöds inte; använd bytes eller bytearray"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "struct: kan inte indexera"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "tröskelvärdet måste ligga i intervallet 0-65536"
+
+#~ msgid "tile must be greater than zero"
+#~ msgstr "tile måste vara större än noll"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() kräver en 9-sekvens"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "timeout måste vara 0.0-100.0 sekunder"
+
+#~ msgid "timeout must be >= 0.0"
+#~ msgstr "timeout måste vara >= 0.0"
+
+#~ msgid "too many arguments provided with the given format"
+#~ msgstr "för många argument för det givna formatet"
+
+#~ msgid "trapz is defined for 1D arrays"
+#~ msgstr "trapz är definierat för 1D-matriser"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "triggernivå måste vara 0 eller 1"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "tupelindex utanför intervallet"
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tupel/lista krävs för RHS"
+
+#~ msgid "type object 'generator' has no attribute '__await__'"
+#~ msgstr "typobjekt 'generator' har inget attribut '__await__'"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "indentering inte matchar någon yttre indenteringsnivå"
+
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "okänt format '%c' för objekt av typ '%s'"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "omatchad '{' i format"
+
+#~ msgid "unsupported type for %q: '%q'"
+#~ msgstr "typen %q stöder inte '%q'"
 
 #~ msgid "unsupported types for %q: '%s', '%s'"
 #~ msgstr "typ som inte stöds för %q: '%s', '%s'"
 
-#~ msgid "'%q' object is not bytes-like"
-#~ msgstr "%q-objektet är inte byte-lik"
+#~ msgid "value_count must be > 0"
+#~ msgstr "value_count måste vara > 0"
 
-#~ msgid "'async for' or 'async with' outside async function"
-#~ msgstr "'async for' eller 'async with' utanför async-funktion"
+#~ msgid "vectors must have same lengths"
+#~ msgstr "vektorer måste ha samma längd"
 
-#~ msgid "PulseIn not supported on this chip"
-#~ msgstr "PulseIn stöds inte av detta chip"
+#~ msgid "wakeup conflict"
+#~ msgstr "wakeup-konflikt"
 
-#~ msgid "I2C operation not supported"
-#~ msgstr "I2C-åtgärd stöds inte"
+#~ msgid "watchdog not initialized"
+#~ msgstr "watchdog är inte initierad"
 
-#~ msgid "Negative step not supported"
-#~ msgstr "Negativt step stöds inte"
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdog timeout måste vara större än 0"
 
-#~ msgid "bits must be 8"
-#~ msgstr "bits måste vara 8"
+#, c-format
+#~ msgid "width must be from 2 to 8 (inclusive), not %d"
+#~ msgstr "width måste vara mellan 2 och 8, inte %d"
 
-#~ msgid "buffers must be the same length"
-#~ msgstr "buffertar måste vara samma längd"
+#~ msgid "wrong argument type"
+#~ msgstr "fel typ av argument"
 
-#~ msgid "empty %q list"
-#~ msgstr "tom %q-lista"
+#~ msgid "wrong operand type"
+#~ msgstr "fel operandtyp"
 
-#~ msgid "firstbit must be MSB"
-#~ msgstr "firstbit måste vara MSB"
+#~ msgid "x value out of bounds"
+#~ msgstr "x-värde utanför intervall"
 
-#~ msgid "invalid I2C peripheral"
-#~ msgstr "ogiltig I2C-kringutrustning"
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate misslyckades"
 
-#~ msgid "invalid SPI peripheral"
-#~ msgstr "ogiltig SPI-kringutrustning"
+#~ msgid "y should be an int"
+#~ msgstr "y ska vara en int"
 
-#~ msgid "must specify all of sck/mosi/miso"
-#~ msgstr "måste ange alla av sck/mosi/miso"
+#~ msgid "y value out of bounds"
+#~ msgstr "y-värde utanför intervall"
+
+#~ msgid "zero step"
+#~ msgstr "noll steg"

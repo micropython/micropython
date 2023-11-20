@@ -74,40 +74,10 @@ msgstr ""
 msgid "%%c requires int or char"
 msgstr ""
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr ""
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
@@ -291,11 +261,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -1607,7 +1572,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c

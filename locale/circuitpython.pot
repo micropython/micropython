@@ -72,11 +72,6 @@ msgstr ""
 msgid "%%c requires int or char"
 msgstr ""
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""

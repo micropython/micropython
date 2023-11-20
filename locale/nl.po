@@ -72,40 +72,10 @@ msgstr " uitvoer:\n"
 msgid "%%c requires int or char"
 msgstr "%%c vereist een int of char"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr ""
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
@@ -289,11 +259,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -1613,8 +1578,9 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
-msgstr "Alleen 8 of 16 bit mono met "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
@@ -4431,186 +4397,12 @@ msgstr "zi moet van type float zijn"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
 
-#~ msgid "'await', 'async for' or 'async with' outside async function"
-#~ msgstr "'await', 'async for' of 'async with' buiten async functie"
-
-#~ msgid "'break' outside loop"
-#~ msgstr "'break' buiten de loop"
-
-#~ msgid "'continue' outside loop"
-#~ msgstr "'continue' buiten de loop"
-
-#~ msgid "unsupported type for %q: '%q'"
-#~ msgstr "niet ondersteund type voor %q: '%q'"
-
-#~ msgid "Splitting with sub-captures"
-#~ msgstr "Splitting met sub-captures"
-
-#~ msgid "__init__() should return None, not '%q'"
-#~ msgstr "__init__() moet None teruggeven, niet '%q'"
-
-#~ msgid "attributes not supported yet"
-#~ msgstr "attributen nog niet ondersteund"
-
-#~ msgid "can't do truncated division of a complex number"
-#~ msgstr "kan geen afgekapte deling doen van een comlex nummer"
-
-#~ msgid "cannot import name %q"
-#~ msgstr "kan naam %q niet importeren"
-
-#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
-#~ msgstr ""
-#~ "trefwoord argument(en) zijn niet geïmplementeerd, gebruik normale "
-#~ "argumenten"
-
-#~ msgid "length argument not allowed for this type"
-#~ msgstr "voor dit type is length niet toegestaan"
-
-#~ msgid "offset out of bounds"
-#~ msgstr "offset buiten bereik"
-
-#~ msgid "slice step can't be zero"
-#~ msgstr "segmentstap mag niet nul zijn"
-
-#~ msgid "string not supported; use bytes or bytearray"
-#~ msgstr "string niet ondersteund; gebruik bytes of bytearray"
-
-#~ msgid "Initialization failed due to lack of memory"
-#~ msgstr "De initialisatie is mislukt vanwege een gebrek aan geheugen"
-
-#~ msgid "WatchDogTimer is not currently running"
-#~ msgstr "WatchDogTimer is momenteel niet actief"
-
-#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-#~ msgstr ""
-#~ "WatchDogTimer.mode kan niet worden gewijzigd zodra de modus is ingesteld "
-#~ "op WatchDogMode.RESET"
-
-#~ msgid "watchdog not initialized"
-#~ msgstr "watchdog niet geïnitialiseerd"
-
-#~ msgid "ADC2 is being used by WiFi"
-#~ msgstr "ADC2 wordt gebruikt door WiFi"
-
-#~ msgid "queue overflow"
-#~ msgstr "wachtrij overloop"
-
-#~ msgid "'coroutine' object is not an iterator"
-#~ msgstr "'coroutine' object is geen iterator"
-
-#~ msgid "Buffer is too small"
-#~ msgstr "Buffer is te klein"
-
-#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-#~ msgstr ""
-#~ "pixel_shader moet displayio.Palette of displayio.ColorConverter zijn"
-
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "Corrupt .mpy bestand"
-
 #~ msgid ""
-#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
-#~ "it/mpy-update for more info."
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
 #~ msgstr ""
-#~ "Incompatibel .mpy bestand. Update alle .mpy bestanden. Zie http://adafru."
-#~ "it/mpy-update voor meer informatie."
-
-#~ msgid "can't convert to %q"
-#~ msgstr "kan niet naar %q converteren"
-
-#~ msgid "can't have multiple **x"
-#~ msgstr "kan niet meerdere **x hebben"
-
-#~ msgid "can't have multiple *x"
-#~ msgstr "kan geen meerdere *x hebben"
-
-#~ msgid "constant must be an integer"
-#~ msgstr "constant moet een integer zijn"
-
-#~ msgid "invalid format"
-#~ msgstr "ongeldig formaat"
-
-#~ msgid "keywords must be strings"
-#~ msgstr "trefwoorden moeten van type string zijn"
-
-#~ msgid "non-keyword arg after */**"
-#~ msgstr "niet-trefwoord argument na */**"
-
-#~ msgid "non-keyword arg after keyword arg"
-#~ msgstr "niet-trefwoord argument na trefwoord argument"
-
-#~ msgid "inputs are not iterable"
-#~ msgstr "invoer is niet itereerbaar"
-
-#~ msgid "Too many display busses"
-#~ msgstr "Teveel beeldscherm bussen"
-
-#~ msgid "Hardware busy, try alternative pins"
-#~ msgstr "Hardware bezig, probeer alternatieve pinnen"
-
-#~ msgid "Missing MISO or MOSI Pin"
-#~ msgstr "Ontbrekende MISO of MOSI Pin"
-
-#~ msgid "No MISO Pin"
-#~ msgstr "Geen MISO pin"
-
-#~ msgid "No MOSI Pin"
-#~ msgstr "Geen MOSI pin"
-
-#~ msgid "No RX pin"
-#~ msgstr "Geen RX pin"
-
-#~ msgid "No TX pin"
-#~ msgstr "Geen TX pin"
-
-#~ msgid "no reset pin available"
-#~ msgstr "geen reset pin beschikbaar"
-
-#~ msgid "input and output shapes are not compatible"
-#~ msgstr "in- en uitvoervormen zijn niet compatibel"
-
-#~ msgid "shape must be a tuple"
-#~ msgstr "vorm moet een tupel zijn"
-
-#~ msgid "Brightness must be 0-1.0"
-#~ msgstr "Helderheid moet tussen de 0 en 1.0 liggen"
-
-#, c-format
-#~ msgid "Maximum x value when mirrored is %d"
-#~ msgstr "Maximale x waarde indien gespiegeld is %d"
-
-#~ msgid "x value out of bounds"
-#~ msgstr "x-waarde buiten bereik"
-
-#~ msgid "y value out of bounds"
-#~ msgstr "y-waarde buiten bereik"
-
-#~ msgid "I2SOut not available"
-#~ msgstr "I2SOut is niet beschikbaar"
-
-#~ msgid "out of range of source"
-#~ msgstr "buiten bereik van bron"
-
-#~ msgid "pixel value requires too many bits"
-#~ msgstr "pixel waarde vereist te veel bits"
-
-#~ msgid "value_count must be > 0"
-#~ msgstr "value_count moet groter dan 0 zijn"
-
-#~ msgid "No key was specified"
-#~ msgstr "Een sleutel was niet gespecificeerd"
-
-#~ msgid "Scan already in progess. Stop with stop_scan."
-#~ msgstr "Scan wordt al uitvoerd. Stop met stop_scan."
-
-#~ msgid "too many arguments provided with the given format"
-#~ msgstr "te veel argumenten opgegeven bij dit formaat"
-
-#~ msgid "Supply at least one UART pin"
-#~ msgstr "Geef op zijn minst 1 UART pin op"
-
-#~ msgid "%q pin invalid"
-#~ msgstr "%q pin onjuist"
+#~ "\n"
+#~ "Code is uitgevoerd. Wachten op herladen.\n"
 
 #~ msgid ""
 #~ "\n"
@@ -4621,102 +4413,21 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ "Meld een probleem met de inhoud van de CIRCUITPY drive op:\n"
 #~ "https://github.com/adafruit/circuitpython/issues\n"
 
-#~ msgid "CircuitPython was unable to allocate the heap."
-#~ msgstr "CircuitPython kon het heap geheugen niet toewijzen."
+#~ msgid ""
+#~ "\n"
+#~ "To exit, please reset the board without "
+#~ msgstr ""
+#~ "\n"
+#~ "Om te verlaten, herstart de module zonder "
 
-#~ msgid "Crash into the HardFault_Handler."
-#~ msgstr "Crash naar de HardFault_Handler."
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr "%d adres pins en %d RGB pins geven een hoogte van %d aan, niet %d"
 
-#~ msgid "Invalid memory access."
-#~ msgstr "Ongeldig geheugen adres."
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "%q indices moeten integers zijn, geen %q"
 
-#~ msgid "Expected a %q"
-#~ msgstr "Verwacht een %q"
-
-#, c-format
-#~ msgid "IV must be %d bytes long"
-#~ msgstr "IV %d bytes lang zijn"
-
-#~ msgid "Not settable"
-#~ msgstr "Niet instelbaar"
-
-#~ msgid "expected '%q' but got '%q'"
-#~ msgstr "verwachtte '%q' maar ontving '%q'"
-
-#~ msgid "expected '%q' or '%q' but got '%q'"
-#~ msgstr "verwachtte '%q' of '%q' maar ontving '%q'"
-
-#~ msgid "Read-only object"
-#~ msgstr "Alleen-lezen object"
-
-#~ msgid "At most %d %q may be specified (not %d)"
-#~ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
-
-#~ msgid "Invalid pins"
-#~ msgstr "Ongeldige pinnen"
-
-#~ msgid "byteorder is not a string"
-#~ msgstr "byteorder is geen string"
-
-#~ msgid "complex division by zero"
-#~ msgstr "complexe deling door 0"
-
-#~ msgid "int() arg 2 must be >= 2 and <= 36"
-#~ msgstr "int() argument 2 moet >=2 en <= 36 zijn"
-
-#~ msgid "long int not supported in this build"
-#~ msgstr "long int wordt niet ondersteund in deze build"
-
-#~ msgid "slice step cannot be zero"
-#~ msgstr "segmentstap mag niet nul zijn"
-
-#~ msgid "step must be non-zero"
-#~ msgstr "step mag geen nul zijn"
-
-#~ msgid "string indices must be integers, not %q"
-#~ msgstr "string indices moeten integers zijn, geen %q"
-
-#~ msgid "time.struct_time() takes a 9-sequence"
-#~ msgstr "time.struct_time() accepteert een 9-rij"
-
-#~ msgid "zero step"
-#~ msgstr "nul-stap"
-
-#~ msgid "WatchDogTimer.timeout must be greater than 0"
-#~ msgstr "WatchDogTimer.timeout moet groter dan 0 zijn"
-
-#~ msgid "single '}' encountered in format string"
-#~ msgstr "enkele '}' aangetroffen in formaat tekenreeks (string)"
-
-#~ msgid "threshold must be in the range 0-65536"
-#~ msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
-
-#~ msgid "timeout must be 0.0-100.0 seconds"
-#~ msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
-
-#~ msgid "unmatched '{' in format"
-#~ msgstr "'{' zonder overeenkomst in formaat"
-
-#~ msgid "watchdog timeout must be greater than 0"
-#~ msgstr "watchdog time-out moet groter zijn dan 0"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Om te beëindigen, reset het bord zonder "
-
-#~ msgid "You requested starting safe mode by "
-#~ msgstr "Je hebt aangeven de veilige modus te starten door "
-
-#~ msgid "pressing boot button at start up.\n"
-#~ msgstr "druk bootknop in bij opstarten.\n"
-
-#~ msgid "pressing both buttons at start up.\n"
-#~ msgstr "druk beide knoppen in bij opstarten.\n"
-
-#~ msgid "Firmware image is invalid"
-#~ msgstr "Firmware image is ongeldig"
-
-#~ msgid "Stream missing readinto() or write() method."
-#~ msgstr "Stream mist readinto() of write() methode."
+#~ msgid "%q list must be a list"
+#~ msgstr "%q lijst moet een lijst zijn"
 
 #~ msgid "%q must be >= 0"
 #~ msgstr "%q moet >= 0 zijn"
@@ -4724,58 +4435,80 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "%q must be >= 1"
 #~ msgstr "%q moet >= 1 zijn"
 
-#~ msgid "address out of bounds"
-#~ msgstr "adres buiten bereik"
-
-#~ msgid "destination_length must be an int >= 0"
-#~ msgstr ""
-#~ "destination_lengte moest een int groter dan of gelijk zijn aan 0 zijn"
-
-#~ msgid "type object 'generator' has no attribute '__await__'"
-#~ msgstr "het type object 'generator' heeft geen attribuut '__await__'"
-
-#~ msgid "color should be an int"
-#~ msgstr "kleur moet een int zijn"
-
-#~ msgid "end_x should be an int"
-#~ msgstr "end_x moet een int zijn"
-
-#~ msgid "palette_index should be an int"
-#~ msgstr "palette_index moet een int zijn"
-
-#~ msgid "start_x should be an int"
-#~ msgstr "start_x moet een int zijn"
-
-#~ msgid "y should be an int"
-#~ msgstr "y moet een int zijn"
-
-#~ msgid ""
-#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
-#~ "or 'B'"
-#~ msgstr ""
-#~ "sample_source buffer moet een bytearray of array van type 'h', 'H', 'b' "
-#~ "of 'B' zijn"
-
-#~ msgid "Expected an alarm"
-#~ msgstr "Verwachtte een alarm"
-
-#~ msgid "Failed to init wifi"
-#~ msgstr "Kon WiFi niet initialiseren"
-
-#~ msgid "input must be a tensor of rank 2"
-#~ msgstr "invoer moet een tensor van rang 2 zijn"
-
-#~ msgid "maximum number of dimensions is 4"
-#~ msgstr "maximaal aantal dimensies is 4"
-
-#~ msgid "Watchdog timer expired."
-#~ msgstr "Watchdog-timer verstreken."
-
 #~ msgid "%q must be a tuple of length 2"
 #~ msgstr "%q moet een tuple van lengte 2 zijn"
 
+#~ msgid "%q pin invalid"
+#~ msgstr "%q pin onjuist"
+
 #~ msgid "%q should be an int"
 #~ msgstr "%q moet een int zijn"
+
+#~ msgid "'%q' object cannot assign attribute '%q'"
+#~ msgstr "'%q' object kan attribuut ' %q' niet toewijzen"
+
+#~ msgid "'%q' object does not support item assignment"
+#~ msgstr "'%q' object ondersteunt toewijzing van items niet"
+
+#~ msgid "'%q' object does not support item deletion"
+#~ msgstr "'%q' object ondersteunt verwijderen van items niet"
+
+#~ msgid "'%q' object has no attribute '%q'"
+#~ msgstr "'%q' object heeft geen attribuut '%q'"
+
+#~ msgid "'%q' object is not bytes-like"
+#~ msgstr "'%q' object is niet bytes-achtig"
+
+#~ msgid "'%q' object is not subscriptable"
+#~ msgstr "kan niet abonneren op '%q' object"
+
+#~ msgid "'%s' integer %d is not within range %d..%d"
+#~ msgstr "'%s' integer %d is niet in bereik %d..%d"
+
+#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
+#~ msgstr "'%s' integer 0x%x past niet in mask 0x%x"
+
+#~ msgid "'%s' object cannot assign attribute '%q'"
+#~ msgstr "'%s' object kan niet aan attribuut '%q' toewijzen"
+
+#~ msgid "'%s' object does not support '%q'"
+#~ msgstr "'%s' object ondersteunt '%q' niet"
+
+#~ msgid "'%s' object does not support item assignment"
+#~ msgstr "'%s' object ondersteunt item toewijzing niet"
+
+#~ msgid "'%s' object does not support item deletion"
+#~ msgstr "'%s' object ondersteunt item verwijdering niet"
+
+#~ msgid "'%s' object is not an iterator"
+#~ msgstr "'%s' object is geen iterator"
+
+#~ msgid "'%s' object is not callable"
+#~ msgstr "'%s' object is niet aanroepbaar"
+
+#~ msgid "'%s' object is not iterable"
+#~ msgstr "'%s' object is niet itereerbaar"
+
+#~ msgid "'%s' object is not subscriptable"
+#~ msgstr "'%s' object is niet onderschrijfbaar"
+
+#~ msgid "'async for' or 'async with' outside async function"
+#~ msgstr "'async for' of 'async with' buiten async functie"
+
+#~ msgid "'await', 'async for' or 'async with' outside async function"
+#~ msgstr "'await', 'async for' of 'async with' buiten async functie"
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' buiten de loop"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' buiten de loop"
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "'coroutine' object is geen iterator"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 wordt gebruikt door WiFi"
 
 #~ msgid "Address type out of range"
 #~ msgstr "Adres type buiten bereik"
@@ -4792,16 +4525,34 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "AnalogOut not supported on given pin"
 #~ msgstr "AnalogOut niet ondersteund door gegeven pin"
 
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Op zijn meest %d %q mogen worden gespecificeerd (niet %d)"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "heap allocatie geprobeerd terwijl MicroPython VM niet draait."
+
 #, c-format
 #~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
 #~ msgstr "Bitdiepte moet tussen 1 en 6 liggen, niet %d"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Helderheid moet tussen de 0 en 1.0 liggen"
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "Helderheid moet tussen de 0 en 255 liggen"
 
 #, c-format
 #~ msgid "Buffer incorrect size. Should be %d bytes."
 #~ msgstr "Buffer heeft incorrect grootte. Moet %d bytes zijn."
 
+#~ msgid "Buffer is too small"
+#~ msgstr "Buffer is te klein"
+
 #~ msgid "Buffer must be at least length 1"
 #~ msgstr "Buffer moet op zijn minst lengte 1 zijn"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Buffer is te groot en niet in staat te alloceren"
 
 #~ msgid "Bytes must be between 0 and 255."
 #~ msgstr "Bytes moeten tussen 0 en 255 liggen."
@@ -4812,6 +4563,9 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "Cannot read without MISO pin."
 #~ msgstr "Kan niet lezen zonder MISO pin."
 
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "Kan '/' niet hermounten als USB actief is."
+
 #~ msgid "Cannot reset into bootloader because no bootloader is present."
 #~ msgstr ""
 #~ "Kan niet resetten naar bootloader omdat er geen bootloader aanwezig is."
@@ -4819,14 +4573,36 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "Cannot transfer without MOSI and MISO pins."
 #~ msgstr "Kan niet overdragen zonder MOSI en MISO pinnen."
 
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Kan niet ondubbelzinning sizeof scalar verkrijgen"
+
 #~ msgid "Cannot write without MOSI pin."
 #~ msgstr "Kan niet schrijven zonder MOSI pin."
+
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython is in veilige modus omdat de rest knop werd ingedrukt "
+#~ "tijdens het opstarten. Druk nogmaals om veilige modus te verlaten\n"
+
+#~ msgid "CircuitPython was unable to allocate the heap."
+#~ msgstr "CircuitPython kon het heap geheugen niet toewijzen."
 
 #~ msgid "Clock pin init failed."
 #~ msgstr "Clock pin init mislukt."
 
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Column entry moet digitalio.DigitalInOut zijn"
+
 #~ msgid "Command must be an int between 0 and 255"
 #~ msgstr "Command moet een int tussen 0 en 255 zijn"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Corrupt .mpy bestand"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Corrupt raw code"
 
 #~ msgid "Could not initialize Camera"
 #~ msgstr "Kon camera niet initialiseren"
@@ -4839,6 +4615,12 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "Could not initialize UART"
 #~ msgstr "Kan UART niet initialiseren"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Kan kanaal niet initialiseren"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Kan timer niet initialiseren"
 
 #~ msgid "Could not re-init channel"
 #~ msgstr "Kan kanaal niet her-initialiseren"
@@ -4858,8 +4640,35 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "Couldn't allocate second buffer"
 #~ msgstr "Kan tweede buffer niet alloceren"
 
+#~ msgid "Crash into the HardFault_Handler."
+#~ msgstr "Crash naar de HardFault_Handler."
+
 #~ msgid "DigitalInOut not supported on given pin"
 #~ msgstr "DigitalInOut niet ondersteund door gegeven pin"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Verwacht een %q"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Verwachtte een Characteristic"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "Verwachtte een DigitalInOut"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Verwachtte een Service"
+
+#~ msgid "Expected a UART"
+#~ msgstr "Verwachtte een UART"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Verwachtte een UUID"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Verwachtte een adres"
+
+#~ msgid "Expected an alarm"
+#~ msgstr "Verwachtte een alarm"
 
 #, c-format
 #~ msgid "Expected tuple of length %d, got %d"
@@ -4872,15 +4681,54 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "Failed to allocate RX buffer of %d bytes"
 #~ msgstr "Mislukt een RX buffer van %d bytes te alloceren"
 
+#~ msgid "Failed to init wifi"
+#~ msgstr "Kon WiFi niet initialiseren"
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Firmware image is ongeldig"
+
 #, c-format
 #~ msgid "Framebuffer requires %d bytes"
 #~ msgstr "Framebuffer benodigd %d bytes"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr ""
+#~ "De vastgelegde frequentie is boven de capaciteit. Vastleggen gepauzeerd."
+
+#~ msgid "Group full"
+#~ msgstr "Groep is vol"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Hardware bezig, probeer alternatieve pinnen"
 
 #~ msgid "Hostname must be between 1 and 253 characters"
 #~ msgstr "Hostnaam moet tussen 1 en 253 karakters zijn"
 
 #~ msgid "I2C Init Error"
 #~ msgstr "I2C Init Fout"
+
+#~ msgid "I2C operation not supported"
+#~ msgstr "I2C actie niet ondersteund"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut is niet beschikbaar"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IO's 0, 2 en 4 ondersteunen geen interne pullup in slaapstand"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV %d bytes lang zijn"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Incompatibel .mpy bestand. Update alle .mpy bestanden. Zie http://adafru."
+#~ "it/mpy-update voor meer informatie."
+
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "De initialisatie is mislukt vanwege een gebrek aan geheugen"
 
 #~ msgid "Invalid %q pin selection"
 #~ msgstr "Ongeldige %q pin selectie"
@@ -4896,6 +4744,12 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "Invalid Pin"
 #~ msgstr "Ongeldige Pin"
+
+#~ msgid "Invalid SPI pin selection"
+#~ msgstr "Ongeldige SPI pin selectie"
+
+#~ msgid "Invalid UART pin selection"
+#~ msgstr "Ongeldige UART pin selectie"
 
 #~ msgid "Invalid buffer size"
 #~ msgstr "Ongeldige buffer grootte"
@@ -4915,6 +4769,15 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "Invalid file"
 #~ msgstr "Ongeldig bestand"
 
+#~ msgid "Invalid frequency"
+#~ msgstr "Onjuiste frequentie"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Ongeldige frequentie opgegeven"
+
+#~ msgid "Invalid memory access."
+#~ msgstr "Ongeldig geheugen adres."
+
 #~ msgid "Invalid number of bits"
 #~ msgstr "Ongeldig aantal bits"
 
@@ -4929,6 +4792,12 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 
 #~ msgid "Invalid pin for right channel"
 #~ msgstr "Ongeldige pin voor rechter kanaal"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Ongeldige pinnen"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "Ongeldige pinnen voor PWMOut"
 
 #~ msgid "Invalid polarity"
 #~ msgstr "Ongeldige polariteit"
@@ -4960,14 +4829,55 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "Layer must be a Group or TileGrid subclass."
 #~ msgstr "Laag moet een Groep of TileGrid subklasse zijn."
 
+#~ msgid "Length must be an int"
+#~ msgstr "Lengte moet een int zijn"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Lengte moet niet negatief zijn"
+
 #~ msgid "MISO pin init failed."
 #~ msgstr "MISO pin init mislukt."
 
 #~ msgid "MOSI pin init failed."
 #~ msgstr "MOSI pin init mislukt."
 
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Maximale x waarde indien gespiegeld is %d"
+
 #~ msgid "Messages limited to 8 bytes"
 #~ msgstr "Berichten zijn beperkt tot 8 bytes"
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR sprong mislukt. Waarschijnlijk geheugen corruptie."
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "MicroPython fatale fout."
+
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "Ontbrekende MISO of MOSI Pin"
+
+#~ msgid "Must provide SCK pin"
+#~ msgstr "SCK pin moet opgegeven worden"
+
+#~ msgid "Negative step not supported"
+#~ msgstr "Negatieve stappen niet ondersteund"
+
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "Geen I2C-apparaat op adres: %x"
+
+#~ msgid "No MISO Pin"
+#~ msgstr "Geen MISO pin"
+
+#~ msgid "No MOSI Pin"
+#~ msgstr "Geen MOSI pin"
+
+#~ msgid "No RX pin"
+#~ msgstr "Geen RX pin"
+
+#~ msgid "No TX pin"
+#~ msgstr "Geen TX pin"
 
 #~ msgid "No hardware support on clk pin"
 #~ msgstr "Geen hardware ondersteuning beschikbaar op clk pin"
@@ -4975,181 +4885,55 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "No hardware support on pin"
 #~ msgstr "Geen hardware ondersteuning op pin"
 
+#~ msgid "No key was specified"
+#~ msgstr "Een sleutel was niet gespecificeerd"
+
+#~ msgid "No more channels available"
+#~ msgstr "Geen kanalen meer beschikbaar"
+
+#~ msgid "No more timers available"
+#~ msgstr "Geen timers meer beschikbaar"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Geen timers meer beschikbaar op deze pin."
+
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Nordic Soft Device assertion mislukt."
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "Opgeslagen code wordt niet uitgevoerd.\n"
+
+#~ msgid "Not settable"
+#~ msgstr "Niet instelbaar"
+
+#~ msgid "Only 8 or 16 bit mono with "
+#~ msgstr "Alleen 8 of 16 bit mono met "
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Alleen IPv4 SOCK_STREAM sockets worden ondersteund"
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Alleen raw int ondersteund voor IP"
+
 #~ msgid ""
 #~ "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
 #~ msgstr ""
 #~ "PWM duty_cycle moet tussen 0 en 65535 inclusief zijn (16 bit resolutie)"
 
-#~ msgid "Pin does not have ADC capabilities"
-#~ msgstr "Pin heeft geen ADC mogelijkheden"
-
-#~ msgid "RTC calibration is not supported on this board"
-#~ msgstr "RTC calibratie niet ondersteund door dit board"
-
-#~ msgid "RTS/CTS/RS485 Not yet supported on this device"
-#~ msgstr "RTS/CTS/RS485 Nog niet ondersteund door dit apparaat"
-
-#~ msgid "SPI Init Error"
-#~ msgstr "SPI Init Fout"
-
-#~ msgid "SPI Re-initialization error"
-#~ msgstr "SPI Herinitialisatie Fout"
-
-#~ msgid "Sample rate must be positive"
-#~ msgstr "Sample rate moet positief zijn"
-
-#, c-format
-#~ msgid "Sample rate too high. It must be less than %d"
-#~ msgstr "Sample rate is te hoog. Moet minder dan %d zijn"
-
-#~ msgid "Stack size must be at least 256"
-#~ msgstr "Stack grootte moet op zijn minst 256 zijn"
-
-#~ msgid "Tile value out of bounds"
-#~ msgstr "Tile waarde buiten bereik"
-
-#~ msgid "UART Buffer allocation error"
-#~ msgstr "UART Buffer allocatie fout"
-
-#~ msgid "UART De-init error"
-#~ msgstr "UART De-init fout"
-
-#~ msgid "UART Init Error"
-#~ msgstr "UART Init Fout"
-
-#~ msgid "UART Re-init error"
-#~ msgstr "UART Re-init Fout"
-
-#~ msgid "UART write error"
-#~ msgstr "UART schrijf fout"
-
-#~ msgid "Unsupported baudrate"
-#~ msgstr "Niet-ondersteunde baudsnelheid"
-
-#~ msgid "WiFi password must be between 8 and 63 characters"
-#~ msgstr "WiFi wachtwoord moet tussen 8 en 63 karakters bevatten"
-
-#~ msgid "bytes > 8 bits not supported"
-#~ msgstr "butes > 8 niet ondersteund"
-
-#~ msgid "calibration value out of range +/-127"
-#~ msgstr "calibration waarde buiten bereik +/-127"
-
-#~ msgid "circle can only be registered in one parent"
-#~ msgstr ""
-#~ "cirkel kan slechts bij één object van een hoger niveau worden "
-#~ "geregistreerd"
-
-#~ msgid "polygon can only be registered in one parent"
-#~ msgstr ""
-#~ "polygoon kan slechts bij één object van een hoger niveau worden "
-#~ "geregistreerd"
-
-#~ msgid "stop must be 1 or 2"
-#~ msgstr "stop moet 1 of 2 zijn"
-
-#~ msgid "timeout must be >= 0.0"
-#~ msgstr "timeout moet groter dan 0.0 zijn"
-
-#~ msgid "Unsupported operation"
-#~ msgstr "Niet-ondersteunde operatie"
-
-#~ msgid "Brightness must be between 0 and 255"
-#~ msgstr "Helderheid moet tussen de 0 en 255 liggen"
-
-#~ msgid "cannot perform relative import"
-#~ msgstr "kan geen relatieve import uitvoeren"
-
-#, c-format
-#~ msgid "No I2C device at address: %x"
-#~ msgstr "Geen I2C-apparaat op adres: %x"
-
-#~ msgid "Unsupported pull value."
-#~ msgstr "Niet-ondersteunde pull-waarde."
-
-#, c-format
-#~ msgid ""
-#~ "Welcome to Adafruit CircuitPython %s!\n"
-#~ "\n"
-#~ "Please visit learn.adafruit.com/category/circuitpython for project "
-#~ "guides.\n"
-#~ "\n"
-#~ "To list built-in modules please do `help(\"modules\")`.\n"
-#~ msgstr ""
-#~ "Welkom bij Adafruit CircuitPython %s!\n"
-#~ "\n"
-#~ "Bezoek learn.adafruit.com/category/circuitpython voor projectgidsen.\n"
-#~ "\n"
-#~ "Voor een lijst van ingebouwde modules, gebruik `help(\"modules\")`.\n"
-
-#~ msgid "integer required"
-#~ msgstr "integer vereist"
-
-#~ msgid "abort() called"
-#~ msgstr "abort() aangeroepen"
-
-#~ msgid "f-string expression part cannot include a '#'"
-#~ msgstr "f-string expressie deel kan geen '#' bevatten"
-
-#~ msgid "f-string expression part cannot include a backslash"
-#~ msgstr "f-string expressie deel kan geen backslash bevatten"
-
-#~ msgid "f-string: empty expression not allowed"
-#~ msgstr "f-string: lege expressie niet toegestaan"
-
-#~ msgid "f-string: expecting '}'"
-#~ msgstr "f-string: verwacht '}'"
-
-#~ msgid "f-string: single '}' is not allowed"
-#~ msgstr "f-string: enkele '}' is niet toegestaan"
-
-#~ msgid "invalid arguments"
-#~ msgstr "ongeldige argumenten"
-
-#~ msgid "raw f-strings are not implemented"
-#~ msgstr "ruwe f-strings zijn niet geïmplementeerd"
-
-#~ msgid "unindent does not match any outer indentation level"
-#~ msgstr "inspringing komt niet overeen met hoger gelegen inspringingsniveaus"
-
-#~ msgid "%q list must be a list"
-#~ msgstr "%q lijst moet een lijst zijn"
-
-#~ msgid "Column entry must be digitalio.DigitalInOut"
-#~ msgstr "Column entry moet digitalio.DigitalInOut zijn"
-
-#~ msgid "Expected a Characteristic"
-#~ msgstr "Verwachtte een Characteristic"
-
-#~ msgid "Expected a DigitalInOut"
-#~ msgstr "Verwachtte een DigitalInOut"
-
-#~ msgid "Expected a Service"
-#~ msgstr "Verwachtte een Service"
-
-#~ msgid "Expected a UART"
-#~ msgstr "Verwachtte een UART"
-
-#~ msgid "Expected a UUID"
-#~ msgstr "Verwachtte een UUID"
-
-#~ msgid "Expected an Address"
-#~ msgstr "Verwachtte een adres"
-
-#~ msgid "Row entry must be digitalio.DigitalInOut"
-#~ msgstr "Rij invoeging moet digitalio.DigitalInOut zijn"
-
-#~ msgid "buttons must be digitalio.DigitalInOut"
-#~ msgstr "buttons moeten digitalio.DigitalInOut zijn"
-
-#~ msgid "Invalid frequency"
-#~ msgstr "Onjuiste frequentie"
-
 #~ msgid "ParallelBus not yet supported"
 #~ msgstr "ParallelBus nog niet ondersteund"
 
-#~ msgid "no available NIC"
-#~ msgstr "geen netwerkadapter (NIC) beschikbaar"
+#~ msgid "Pin does not have ADC capabilities"
+#~ msgstr "Pin heeft geen ADC mogelijkheden"
+
+#~ msgid "Pin number already reserved by EXTI"
+#~ msgstr "Pin nummer al gereserveerd door EXTI"
+
+#~ msgid "PinAlarm not yet implemented"
+#~ msgstr "PinAlarm nog niet geïmplementeerd"
+
+#~ msgid "Pop from an empty Ps2 buffer"
+#~ msgstr "Pop van een lege Ps2 buffer"
 
 #~ msgid ""
 #~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
@@ -5165,31 +4949,76 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ "Poort accepteert geen pin of frequentie. Stel een PWMOut Carrier samen en "
 #~ "geef die op"
 
-#~ msgid "Buffer too large and unable to allocate"
-#~ msgstr "Buffer is te groot en niet in staat te alloceren"
-
-#~ msgid "interp is defined for 1D arrays of equal length"
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
 #~ msgstr ""
-#~ "interp is gedefinieerd voor eendimensionale arrays van gelijke lengte"
+#~ "Druk een willekeurige toets om de REPL te starten. Gebruik CTRL+D om te "
+#~ "herstarten."
 
-#~ msgid "wrong operand type"
-#~ msgstr "verkeerd operandtype"
-
-#~ msgid "Only raw int supported for ip"
-#~ msgstr "Alleen raw int ondersteund voor IP"
-
-#~ msgid ""
-#~ "CircuitPython is in safe mode because you pressed the reset button during "
-#~ "boot. Press again to exit safe mode.\n"
+#~ msgid "Pretending to deep sleep until alarm, any key or file write.\n"
 #~ msgstr ""
-#~ "CircuitPython is in veilige modus omdat de rest knop werd ingedrukt "
-#~ "tijdens het opstarten. Druk nogmaals om veilige modus te verlaten\n"
+#~ "Simuleert diepe slaapstand tot alarm, een willekeurige toets of schrijven "
+#~ "naar bestand.\n"
 
-#~ msgid "Not running saved code.\n"
-#~ msgstr "Opgeslagen code wordt niet uitgevoerd.\n"
+#~ msgid "PulseIn not supported on this chip"
+#~ msgstr "PusleIn niet ondersteund door deze chip"
+
+#~ msgid "PulseOut not supported on this chip"
+#~ msgstr "PulseOut niet ondersteund door deze chip"
+
+#~ msgid "RTC calibration is not supported on this board"
+#~ msgstr "RTC calibratie niet ondersteund door dit board"
+
+#~ msgid "RTS/CTS/RS485 Not yet supported on this device"
+#~ msgstr "RTS/CTS/RS485 Nog niet ondersteund door dit apparaat"
+
+#~ msgid "Read-only object"
+#~ msgstr "Alleen-lezen object"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Rij invoeging moet digitalio.DigitalInOut zijn"
 
 #~ msgid "Running in safe mode! "
 #~ msgstr "Veilige modus wordt uitgevoerd! "
+
+#~ msgid "Running in safe mode! Auto-reload is off.\n"
+#~ msgstr "Draaiende in veilige modus! Auto-herlaad is uit.\n"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA of SCL hebben een pullup nodig"
+
+#~ msgid "SPI Init Error"
+#~ msgstr "SPI Init Fout"
+
+#~ msgid "SPI Re-initialization error"
+#~ msgstr "SPI Herinitialisatie Fout"
+
+#~ msgid "Sample rate must be positive"
+#~ msgstr "Sample rate moet positief zijn"
+
+#, c-format
+#~ msgid "Sample rate too high. It must be less than %d"
+#~ msgstr "Sample rate is te hoog. Moet minder dan %d zijn"
+
+#~ msgid "Scan already in progess. Stop with stop_scan."
+#~ msgstr "Scan wordt al uitvoerd. Stop met stop_scan."
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "Geselecteerde CTS pin niet geldig"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "Geselecteerde RTS pin niet geldig"
+
+#~ msgid "Splitting with sub-captures"
+#~ msgstr "Splitting met sub-captures"
+
+#~ msgid "Stack size must be at least 256"
+#~ msgstr "Stack grootte moet op zijn minst 256 zijn"
+
+#~ msgid "Stream missing readinto() or write() method."
+#~ msgstr "Stream mist readinto() of write() methode."
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Geef op zijn minst 1 UART pin op"
 
 #~ msgid ""
 #~ "The CircuitPython heap was corrupted because the stack was too small.\n"
@@ -5215,11 +5044,39 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ "voldoende vermogen heeft voor het hele systeem en druk reset (na "
 #~ "uitwerpen van CIRCUITPY).\n"
 
-#~ msgid "You are in safe mode: something unanticipated happened.\n"
-#~ msgstr "Je bent in de veilige modus: er is iets onverwachts gebeurd.\n"
+#~ msgid "Tile value out of bounds"
+#~ msgstr "Tile waarde buiten bereik"
 
-#~ msgid "Pin number already reserved by EXTI"
-#~ msgstr "Pin nummer al gereserveerd door EXTI"
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "Timer is gereserveerd voor intern gebruik - wijs PWM pins eerder in het "
+#~ "programma toe"
+
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Om te beëindigen, reset het bord zonder "
+
+#~ msgid "Too many display busses"
+#~ msgstr "Teveel beeldscherm bussen"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr "Totale data om te schrijven is groter dan outgoing_packet_length"
+
+#~ msgid "UART Buffer allocation error"
+#~ msgstr "UART Buffer allocatie fout"
+
+#~ msgid "UART De-init error"
+#~ msgstr "UART De-init fout"
+
+#~ msgid "UART Init Error"
+#~ msgstr "UART Init Fout"
+
+#~ msgid "UART Re-init error"
+#~ msgstr "UART Re-init Fout"
+
+#~ msgid "UART write error"
+#~ msgstr "UART schrijf fout"
 
 #~ msgid "USB Busy"
 #~ msgstr "USB Bezet"
@@ -5227,44 +5084,307 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "USB Error"
 #~ msgstr "USB Fout"
 
-#~ msgid "%q indices must be integers, not %q"
-#~ msgstr "%q indices moeten integers zijn, geen %q"
+#~ msgid "Unknown failure"
+#~ msgstr "Onbekende fout"
 
-#~ msgid "'%q' object cannot assign attribute '%q'"
-#~ msgstr "'%q' object kan attribuut ' %q' niet toewijzen"
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Onbekende soft device fout: %04x"
 
-#~ msgid "'%q' object does not support item assignment"
-#~ msgstr "'%q' object ondersteunt toewijzing van items niet"
+#~ msgid "Unsupported baudrate"
+#~ msgstr "Niet-ondersteunde baudsnelheid"
 
-#~ msgid "'%q' object does not support item deletion"
-#~ msgstr "'%q' object ondersteunt verwijderen van items niet"
+#~ msgid "Unsupported operation"
+#~ msgstr "Niet-ondersteunde operatie"
 
-#~ msgid "'%q' object has no attribute '%q'"
-#~ msgstr "'%q' object heeft geen attribuut '%q'"
+#~ msgid "Unsupported pull value."
+#~ msgstr "Niet-ondersteunde pull-waarde."
 
-#~ msgid "'%q' object is not subscriptable"
-#~ msgstr "kan niet abonneren op '%q' object"
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper-functies ondersteunen momenteel niet meer dan 4 argumenten"
 
-#~ msgid "'%s' integer %d is not within range %d..%d"
-#~ msgstr "'%s' integer %d is niet in bereik %d..%d"
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "WatchDogTimer is momenteel niet actief"
 
-#~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
-#~ msgstr "'%s' integer 0x%x past niet in mask 0x%x"
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr ""
+#~ "WatchDogTimer.mode kan niet worden gewijzigd zodra de modus is ingesteld "
+#~ "op WatchDogMode.RESET"
 
-#~ msgid "Cannot unambiguously get sizeof scalar"
-#~ msgstr "Kan niet ondubbelzinning sizeof scalar verkrijgen"
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.timeout moet groter dan 0 zijn"
 
-#~ msgid "Length must be an int"
-#~ msgstr "Lengte moet een int zijn"
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Watchdog-timer verstreken."
 
-#~ msgid "Length must be non-negative"
-#~ msgstr "Lengte moet niet negatief zijn"
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Welkom bij Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Bezoek learn.adafruit.com/category/circuitpython voor projectgidsen.\n"
+#~ "\n"
+#~ "Voor een lijst van ingebouwde modules, gebruik `help(\"modules\")`.\n"
+
+#~ msgid "WiFi password must be between 8 and 63 characters"
+#~ msgstr "WiFi wachtwoord moet tussen 8 en 63 karakters bevatten"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr "Je bent in de veilige modus: er is iets onverwachts gebeurd.\n"
+
+#~ msgid "You requested starting safe mode by "
+#~ msgstr "Je hebt aangeven de veilige modus te starten door "
+
+#~ msgid "__init__() should return None, not '%q'"
+#~ msgstr "__init__() moet None teruggeven, niet '%q'"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() aangeroepen"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "adres %08x is niet afgestemd op %d bytes"
+
+#~ msgid "address out of bounds"
+#~ msgstr "adres buiten bereik"
+
+#~ msgid "arctan2 is implemented for scalars and ndarrays only"
+#~ msgstr "arctan2 is alleen geïmplementeerd voor scalars en ndarrays"
+
+#~ msgid "argument must be ndarray"
+#~ msgstr "argument moet ndarray zijn"
+
+#~ msgid "attributes not supported yet"
+#~ msgstr "attributen nog niet ondersteund"
+
+#~ msgid "axis must be -1, 0, None, or 1"
+#~ msgstr "as moet -1, 0, None, of 1 zijn"
+
+#~ msgid "axis must be -1, 0, or 1"
+#~ msgstr "as moet -1, 0, of 1 zijn"
+
+#~ msgid "axis must be None, 0, or 1"
+#~ msgstr "as moet None, 0, of 1 zijn"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bits moet 7, 8, of 9 zijn"
+
+#~ msgid "bits must be 8"
+#~ msgstr "bits moet 8 zijn"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "buffer moet een byte-achtig object zijn"
+
+#~ msgid "buffers must be the same length"
+#~ msgstr "buffers moeten dezelfde lengte hebben"
+
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "buttons moeten digitalio.DigitalInOut zijn"
+
+#~ msgid "byte code not implemented"
+#~ msgstr "byte code niet geïmplementeerd"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder is geen string"
+
+#~ msgid "bytes > 8 bits not supported"
+#~ msgstr "butes > 8 niet ondersteund"
+
+#~ msgid "calibration value out of range +/-127"
+#~ msgstr "calibration waarde buiten bereik +/-127"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "kan alleen byte-code opslaan"
+
+#~ msgid "can't convert address to int"
+#~ msgstr "kan adres niet omzetten naar int"
+
+#~ msgid "can't convert to %q"
+#~ msgstr "kan niet naar %q converteren"
+
+#~ msgid "can't do truncated division of a complex number"
+#~ msgstr "kan geen afgekapte deling doen van een comlex nummer"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "kan niet meerdere **x hebben"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "kan geen meerdere *x hebben"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr "kan throw niet aan net gestartte generator toevoegen"
+
+#~ msgid "cannot import name %q"
+#~ msgstr "kan naam %q niet importeren"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "kan geen relatieve import uitvoeren"
+
+#~ msgid "cannot reshape array (incompatible input/output shape)"
+#~ msgstr "kan de array niet hervormen (niet verenigbare input/output vorm)"
+
+#~ msgid "circle can only be registered in one parent"
+#~ msgstr ""
+#~ "cirkel kan slechts bij één object van een hoger niveau worden "
+#~ "geregistreerd"
+
+#~ msgid "color should be an int"
+#~ msgstr "kleur moet een int zijn"
+
+#~ msgid "complex division by zero"
+#~ msgstr "complexe deling door 0"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "constant moet een integer zijn"
+
+#~ msgid "could not broadast input array from shape"
+#~ msgstr "kon de invoerarray niet vanuit vorm uitzenden"
+
+#~ msgid "ddof must be smaller than length of data set"
+#~ msgstr "ddof kleiner dan de lengte van de data set"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr ""
+#~ "destination_lengte moest een int groter dan of gelijk zijn aan 0 zijn"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "end_x moet een int zijn"
+
+#~ msgid "expected '%q' but got '%q'"
+#~ msgstr "verwachtte '%q' maar ontving '%q'"
+
+#~ msgid "expected '%q' or '%q' but got '%q'"
+#~ msgstr "verwachtte '%q' of '%q' maar ontving '%q'"
+
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-string expressie deel kan geen '#' bevatten"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-string expressie deel kan geen backslash bevatten"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: lege expressie niet toegestaan"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: verwacht '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: enkele '}' is niet toegestaan"
+
+#~ msgid "first argument must be an iterable"
+#~ msgstr "eerst argument moet een iterabel zijn"
+
+#~ msgid "firstbit must be MSB"
+#~ msgstr "het eerste bit moet het MSB zijn"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "functie accepteert geen keyword argumenten"
+
+#~ msgid "function is implemented for scalars and ndarrays only"
+#~ msgstr "funtie is alleen geïmplementeerd voor scalars en ndarrays"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "in- en uitvoervormen zijn niet compatibel"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "invoerargument moet een integer of 2-tuple zijn"
+
+#~ msgid "input must be a tensor of rank 2"
+#~ msgstr "invoer moet een tensor van rang 2 zijn"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "invoer is niet itereerbaar"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "int() argument 2 moet >=2 en <= 36 zijn"
+
+#~ msgid "integer required"
+#~ msgstr "integer vereist"
+
+#~ msgid "interp is defined for 1D arrays of equal length"
+#~ msgstr ""
+#~ "interp is gedefinieerd voor eendimensionale arrays van gelijke lengte"
+
+#~ msgid "invalid I2C peripheral"
+#~ msgstr "onjuist I2C randapparaat"
+
+#~ msgid "invalid SPI peripheral"
+#~ msgstr "onjuist SPI randapparaat"
+
+#~ msgid "invalid arguments"
+#~ msgstr "ongeldige argumenten"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "ongeldige dupterm index"
+
+#~ msgid "invalid format"
+#~ msgstr "ongeldig formaat"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "io moet rtc io zijn"
+
+#~ msgid "iterables are not of the same length"
+#~ msgstr "itereerbare objecten hebben niet dezelfde lengte"
+
+#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
+#~ msgstr ""
+#~ "trefwoord argument(en) zijn niet geïmplementeerd, gebruik normale "
+#~ "argumenten"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "trefwoorden moeten van type string zijn"
+
+#~ msgid "length argument not allowed for this type"
+#~ msgstr "voor dit type is length niet toegestaan"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "long int wordt niet ondersteund in deze build"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "matrix afmetingen komen niet overeen"
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "max_length moet >0 zijn"
+
+#~ msgid "maximum number of dimensions is 4"
+#~ msgstr "maximaal aantal dimensies is 4"
+
+#~ msgid "must specify all of sck/mosi/miso"
+#~ msgstr "sck/mosi/miso moeten alle gespecificeerd worden"
+
+#~ msgid "n must be between 0, and 9"
+#~ msgstr "n moet tussen 0 en 9 liggen"
 
 #~ msgid "name reused for argument"
 #~ msgstr "naam hergebruikt voor argument"
 
+#~ msgid "no available NIC"
+#~ msgstr "geen netwerkadapter (NIC) beschikbaar"
+
+#~ msgid "no reset pin available"
+#~ msgstr "geen reset pin beschikbaar"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "niet-trefwoord argument na */**"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "niet-trefwoord argument na trefwoord argument"
+
+#~ msgid "norm is defined for 1D and 2D arrays"
+#~ msgstr "norm is gedefinieerd voor 1D en 2D arrays"
+
+#~ msgid "number of arguments must be 2, or 3"
+#~ msgstr "aantal argumenten moet 2 of 3 zijn"
+
 #~ msgid "object '%q' is not a tuple or list"
 #~ msgstr "object '%q' is geen tuple of lijst"
+
+#~ msgid "object '%s' is not a tuple or list"
+#~ msgstr "object '%s' is geen tuple of lijst"
 
 #~ msgid "object does not support item assignment"
 #~ msgstr "object ondersteund toewijzen van elementen niet"
@@ -5278,277 +5398,32 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "object of type '%q' has no len()"
 #~ msgstr "object van type '%q' heeft geen len()"
 
-#~ msgid "struct: cannot index"
-#~ msgstr "struct: kan niet indexeren"
-
-#~ msgid "Cannot remount '/' when USB is active."
-#~ msgstr "Kan '/' niet hermounten als USB actief is."
-
-#~ msgid "byte code not implemented"
-#~ msgstr "byte code niet geïmplementeerd"
-
-#~ msgid "can't pend throw to just-started generator"
-#~ msgstr "kan throw niet aan net gestartte generator toevoegen"
-
-#~ msgid "invalid dupterm index"
-#~ msgstr "ongeldige dupterm index"
-
-#~ msgid "schedule stack full"
-#~ msgstr "schedule stack is vol"
-
-#~ msgid "Corrupt raw code"
-#~ msgstr "Corrupt raw code"
-
-#~ msgid "can only save bytecode"
-#~ msgstr "kan alleen byte-code opslaan"
-
-#~ msgid "Viper functions don't currently support more than 4 arguments"
-#~ msgstr "Viper-functies ondersteunen momenteel niet meer dan 4 argumenten"
-
-#~ msgid "address %08x is not aligned to %d bytes"
-#~ msgstr "adres %08x is niet afgestemd op %d bytes"
-
-#~ msgid "function does not take keyword arguments"
-#~ msgstr "functie accepteert geen keyword argumenten"
-
-#~ msgid "parameter annotation must be an identifier"
-#~ msgstr "parameter annotatie moet een identifier zijn"
-
-#~ msgid "Total data to write is larger than outgoing_packet_length"
-#~ msgstr "Totale data om te schrijven is groter dan outgoing_packet_length"
-
-#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-#~ msgstr "IO's 0, 2 en 4 ondersteunen geen interne pullup in slaapstand"
-
-#~ msgid "buffer must be a bytes-like object"
-#~ msgstr "buffer moet een byte-achtig object zijn"
-
-#~ msgid "io must be rtc io"
-#~ msgstr "io moet rtc io zijn"
-
-#~ msgid "trigger level must be 0 or 1"
-#~ msgstr "triggerniveau moet 0 of 1 zijn"
-
-#~ msgid "wakeup conflict"
-#~ msgstr "conflict bij ontwaken"
-
-#~ msgid "Attempted heap allocation when MicroPython VM not running."
-#~ msgstr "heap allocatie geprobeerd terwijl MicroPython VM niet draait."
-
-#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
-#~ msgstr "MicroPython NLR sprong mislukt. Waarschijnlijk geheugen corruptie."
-
-#~ msgid "MicroPython fatal error."
-#~ msgstr "MicroPython fatale fout."
-
-#~ msgid "argument must be ndarray"
-#~ msgstr "argument moet ndarray zijn"
-
-#~ msgid "matrix dimensions do not match"
-#~ msgstr "matrix afmetingen komen niet overeen"
-
-#~ msgid "norm is defined for 1D and 2D arrays"
-#~ msgstr "norm is gedefinieerd voor 1D en 2D arrays"
-
-#~ msgid "vectors must have same lengths"
-#~ msgstr "vectoren moeten van gelijke lengte zijn"
-
-#~ msgid "Nordic Soft Device failure assertion."
-#~ msgstr "Nordic Soft Device assertion mislukt."
-
-#~ msgid "Unknown soft device error: %04x"
-#~ msgstr "Onbekende soft device fout: %04x"
-
-#~ msgid "first argument must be an iterable"
-#~ msgstr "eerst argument moet een iterabel zijn"
-
-#~ msgid "iterables are not of the same length"
-#~ msgstr "itereerbare objecten hebben niet dezelfde lengte"
-
-#~ msgid "Selected CTS pin not valid"
-#~ msgstr "Geselecteerde CTS pin niet geldig"
-
-#~ msgid "Selected RTS pin not valid"
-#~ msgstr "Geselecteerde RTS pin niet geldig"
-
-#~ msgid "Could not initialize channel"
-#~ msgstr "Kan kanaal niet initialiseren"
-
-#~ msgid "Could not initialize timer"
-#~ msgstr "Kan timer niet initialiseren"
-
-#~ msgid "Invalid frequency supplied"
-#~ msgstr "Ongeldige frequentie opgegeven"
-
-#~ msgid "Invalid pins for PWMOut"
-#~ msgstr "Ongeldige pinnen voor PWMOut"
-
-#~ msgid "No more channels available"
-#~ msgstr "Geen kanalen meer beschikbaar"
-
-#~ msgid "No more timers available"
-#~ msgstr "Geen timers meer beschikbaar"
-
-#~ msgid "No more timers available on this pin."
-#~ msgstr "Geen timers meer beschikbaar op deze pin."
-
-#~ msgid ""
-#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
-#~ "program"
-#~ msgstr ""
-#~ "Timer is gereserveerd voor intern gebruik - wijs PWM pins eerder in het "
-#~ "programma toe"
-
-#~ msgid "Group full"
-#~ msgstr "Groep is vol"
-
-#~ msgid "bits must be 7, 8 or 9"
-#~ msgstr "bits moet 7, 8, of 9 zijn"
-
-#~ msgid "SDA or SCL needs a pull up"
-#~ msgstr "SDA of SCL hebben een pullup nodig"
-
-#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-#~ msgstr "%d adres pins en %d RGB pins geven een hoogte van %d aan, niet %d"
-
-#~ msgid "Unknown failure"
-#~ msgstr "Onbekende fout"
-
-#~ msgid "input argument must be an integer or a 2-tuple"
-#~ msgstr "invoerargument moet een integer of 2-tuple zijn"
+#~ msgid "offset out of bounds"
+#~ msgstr "offset buiten bereik"
 
 #~ msgid "operation is not implemented for flattened array"
 #~ msgstr "operatie is niet geïmplementeerd voor vlakke array"
 
-#~ msgid "tuple index out of range"
-#~ msgstr "tuple index buiten bereik"
+#~ msgid "out of range of source"
+#~ msgstr "buiten bereik van bron"
 
-#~ msgid ""
-#~ "\n"
-#~ "Code done running. Waiting for reload.\n"
+#~ msgid "palette_index should be an int"
+#~ msgstr "palette_index moet een int zijn"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "parameter annotatie moet een identifier zijn"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "pixel waarde vereist te veel bits"
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
 #~ msgstr ""
-#~ "\n"
-#~ "Code is uitgevoerd. Wachten op herladen.\n"
+#~ "pixel_shader moet displayio.Palette of displayio.ColorConverter zijn"
 
-#~ msgid "PinAlarm not yet implemented"
-#~ msgstr "PinAlarm nog niet geïmplementeerd"
-
-#~ msgid "Pretending to deep sleep until alarm, any key or file write.\n"
+#~ msgid "polygon can only be registered in one parent"
 #~ msgstr ""
-#~ "Simuleert diepe slaapstand tot alarm, een willekeurige toets of schrijven "
-#~ "naar bestand.\n"
-
-#~ msgid "Frequency captured is above capability. Capture Paused."
-#~ msgstr ""
-#~ "De vastgelegde frequentie is boven de capaciteit. Vastleggen gepauzeerd."
-
-#~ msgid "max_length must be > 0"
-#~ msgstr "max_length moet >0 zijn"
-
-#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-#~ msgstr ""
-#~ "Druk een willekeurige toets om de REPL te starten. Gebruik CTRL+D om te "
-#~ "herstarten."
-
-#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
-#~ msgstr "Alleen IPv4 SOCK_STREAM sockets worden ondersteund"
-
-#~ msgid "arctan2 is implemented for scalars and ndarrays only"
-#~ msgstr "arctan2 is alleen geïmplementeerd voor scalars en ndarrays"
-
-#~ msgid "axis must be -1, 0, None, or 1"
-#~ msgstr "as moet -1, 0, None, of 1 zijn"
-
-#~ msgid "axis must be -1, 0, or 1"
-#~ msgstr "as moet -1, 0, of 1 zijn"
-
-#~ msgid "axis must be None, 0, or 1"
-#~ msgstr "as moet None, 0, of 1 zijn"
-
-#~ msgid "cannot reshape array (incompatible input/output shape)"
-#~ msgstr "kan de array niet hervormen (niet verenigbare input/output vorm)"
-
-#~ msgid "could not broadast input array from shape"
-#~ msgstr "kon de invoerarray niet vanuit vorm uitzenden"
-
-#~ msgid "ddof must be smaller than length of data set"
-#~ msgstr "ddof kleiner dan de lengte van de data set"
-
-#~ msgid "function is implemented for scalars and ndarrays only"
-#~ msgstr "funtie is alleen geïmplementeerd voor scalars en ndarrays"
-
-#~ msgid "n must be between 0, and 9"
-#~ msgstr "n moet tussen 0 en 9 liggen"
-
-#~ msgid "number of arguments must be 2, or 3"
-#~ msgstr "aantal argumenten moet 2 of 3 zijn"
-
-#~ msgid "right hand side must be an ndarray, or a scalar"
-#~ msgstr "de rechterkant moet een ndarray of scalar zijn"
-
-#~ msgid "shape must be a 2-tuple"
-#~ msgstr "vorm moet een 2-tuple zijn"
-
-#~ msgid "wrong argument type"
-#~ msgstr "onjuist argumenttype"
-
-#~ msgid "Must provide SCK pin"
-#~ msgstr "SCK pin moet opgegeven worden"
-
-#~ msgid ""
-#~ "\n"
-#~ "To exit, please reset the board without "
-#~ msgstr ""
-#~ "\n"
-#~ "Om te verlaten, herstart de module zonder "
-
-#~ msgid "PulseOut not supported on this chip"
-#~ msgstr "PulseOut niet ondersteund door deze chip"
-
-#~ msgid "tuple/list required on RHS"
-#~ msgstr "tuple of lijst vereist op RHS"
-
-#~ msgid "Invalid SPI pin selection"
-#~ msgstr "Ongeldige SPI pin selectie"
-
-#~ msgid "Invalid UART pin selection"
-#~ msgstr "Ongeldige UART pin selectie"
-
-#~ msgid "'%s' object cannot assign attribute '%q'"
-#~ msgstr "'%s' object kan niet aan attribuut '%q' toewijzen"
-
-#~ msgid "'%s' object does not support '%q'"
-#~ msgstr "'%s' object ondersteunt '%q' niet"
-
-#~ msgid "'%s' object does not support item assignment"
-#~ msgstr "'%s' object ondersteunt item toewijzing niet"
-
-#~ msgid "'%s' object does not support item deletion"
-#~ msgstr "'%s' object ondersteunt item verwijdering niet"
-
-#~ msgid "'%s' object is not an iterator"
-#~ msgstr "'%s' object is geen iterator"
-
-#~ msgid "'%s' object is not callable"
-#~ msgstr "'%s' object is niet aanroepbaar"
-
-#~ msgid "'%s' object is not iterable"
-#~ msgstr "'%s' object is niet itereerbaar"
-
-#~ msgid "'%s' object is not subscriptable"
-#~ msgstr "'%s' object is niet onderschrijfbaar"
-
-#~ msgid "Pop from an empty Ps2 buffer"
-#~ msgstr "Pop van een lege Ps2 buffer"
-
-#~ msgid "Running in safe mode! Auto-reload is off.\n"
-#~ msgstr "Draaiende in veilige modus! Auto-herlaad is uit.\n"
-
-#~ msgid "can't convert address to int"
-#~ msgstr "kan adres niet omzetten naar int"
-
-#~ msgid "object '%s' is not a tuple or list"
-#~ msgstr "object '%s' is geen tuple of lijst"
+#~ "polygoon kan slechts bij één object van een hoger niveau worden "
+#~ "geregistreerd"
 
 #~ msgid "pop from an empty set"
 #~ msgstr "pop van een lege set"
@@ -5559,41 +5434,135 @@ msgstr "zi moet vorm (n_section, 2) hebben"
 #~ msgid "popitem(): dictionary is empty"
 #~ msgstr "popitem(): dictionary is leeg"
 
+#~ msgid "pressing boot button at start up.\n"
+#~ msgstr "druk bootknop in bij opstarten.\n"
+
+#~ msgid "pressing both buttons at start up.\n"
+#~ msgstr "druk beide knoppen in bij opstarten.\n"
+
+#~ msgid "queue overflow"
+#~ msgstr "wachtrij overloop"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "ruwe f-strings zijn niet geïmplementeerd"
+
+#~ msgid "right hand side must be an ndarray, or a scalar"
+#~ msgstr "de rechterkant moet een ndarray of scalar zijn"
+
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "sample_source buffer moet een bytearray of array van type 'h', 'H', 'b' "
+#~ "of 'B' zijn"
+
+#~ msgid "schedule stack full"
+#~ msgstr "schedule stack is vol"
+
+#~ msgid "shape must be a 2-tuple"
+#~ msgstr "vorm moet een 2-tuple zijn"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "vorm moet een tupel zijn"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "enkele '}' aangetroffen in formaat tekenreeks (string)"
+
+#~ msgid "slice step can't be zero"
+#~ msgstr "segmentstap mag niet nul zijn"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "segmentstap mag niet nul zijn"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "start_x moet een int zijn"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "step mag geen nul zijn"
+
+#~ msgid "stop must be 1 or 2"
+#~ msgstr "stop moet 1 of 2 zijn"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "string indices moeten integers zijn, geen %q"
+
+#~ msgid "string not supported; use bytes or bytearray"
+#~ msgstr "string niet ondersteund; gebruik bytes of bytearray"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "struct: kan niet indexeren"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "drempelwaarde moet in het bereik 0-65536 liggen"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() accepteert een 9-rij"
+
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "timeout moet tussen 0.0 en 100.0 seconden zijn"
+
+#~ msgid "timeout must be >= 0.0"
+#~ msgstr "timeout moet groter dan 0.0 zijn"
+
+#~ msgid "too many arguments provided with the given format"
+#~ msgstr "te veel argumenten opgegeven bij dit formaat"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "triggerniveau moet 0 of 1 zijn"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "tuple index buiten bereik"
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "tuple of lijst vereist op RHS"
+
+#~ msgid "type object 'generator' has no attribute '__await__'"
+#~ msgstr "het type object 'generator' heeft geen attribuut '__await__'"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "inspringing komt niet overeen met hoger gelegen inspringingsniveaus"
+
 #~ msgid "unknown format code '%c' for object of type '%s'"
 #~ msgstr "onbekende formaatcode '%c' voor object van type '%s'"
+
+#~ msgid "unmatched '{' in format"
+#~ msgstr "'{' zonder overeenkomst in formaat"
+
+#~ msgid "unsupported type for %q: '%q'"
+#~ msgstr "niet ondersteund type voor %q: '%q'"
 
 #~ msgid "unsupported types for %q: '%s', '%s'"
 #~ msgstr "niet ondersteunde types voor %q: '%s', '%s'"
 
-#~ msgid "'async for' or 'async with' outside async function"
-#~ msgstr "'async for' of 'async with' buiten async functie"
+#~ msgid "value_count must be > 0"
+#~ msgstr "value_count moet groter dan 0 zijn"
 
-#~ msgid "PulseIn not supported on this chip"
-#~ msgstr "PusleIn niet ondersteund door deze chip"
+#~ msgid "vectors must have same lengths"
+#~ msgstr "vectoren moeten van gelijke lengte zijn"
 
-#~ msgid "I2C operation not supported"
-#~ msgstr "I2C actie niet ondersteund"
+#~ msgid "wakeup conflict"
+#~ msgstr "conflict bij ontwaken"
 
-#~ msgid "Negative step not supported"
-#~ msgstr "Negatieve stappen niet ondersteund"
+#~ msgid "watchdog not initialized"
+#~ msgstr "watchdog niet geïnitialiseerd"
 
-#~ msgid "bits must be 8"
-#~ msgstr "bits moet 8 zijn"
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "watchdog time-out moet groter zijn dan 0"
 
-#~ msgid "buffers must be the same length"
-#~ msgstr "buffers moeten dezelfde lengte hebben"
+#~ msgid "wrong argument type"
+#~ msgstr "onjuist argumenttype"
 
-#~ msgid "firstbit must be MSB"
-#~ msgstr "het eerste bit moet het MSB zijn"
+#~ msgid "wrong operand type"
+#~ msgstr "verkeerd operandtype"
 
-#~ msgid "invalid I2C peripheral"
-#~ msgstr "onjuist I2C randapparaat"
+#~ msgid "x value out of bounds"
+#~ msgstr "x-waarde buiten bereik"
 
-#~ msgid "invalid SPI peripheral"
-#~ msgstr "onjuist SPI randapparaat"
+#~ msgid "y should be an int"
+#~ msgstr "y moet een int zijn"
 
-#~ msgid "must specify all of sck/mosi/miso"
-#~ msgstr "sck/mosi/miso moeten alle gespecificeerd worden"
+#~ msgid "y value out of bounds"
+#~ msgstr "y-waarde buiten bereik"
 
-#~ msgid "'%q' object is not bytes-like"
-#~ msgstr "'%q' object is niet bytes-achtig"
+#~ msgid "zero step"
+#~ msgstr "nul-stap"
