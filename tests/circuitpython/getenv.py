@@ -82,7 +82,7 @@ for i in range(13):
     run_test(f"key{i}", content_good)
 
 run_test(f"K", b"K = 7\r\n")
-print(os.getenv_int("K"))
+print(getenv_int("K"))
 
 # Test value without trailing newline
 run_test(f"noeol", b"noeol=3")

@@ -55,6 +55,6 @@ typedef struct synthio_note_obj {
 } synthio_note_obj_t;
 
 void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate);
-uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]);
+uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, int16_t loudness[2]);
 void synthio_note_start(synthio_note_obj_t *self, int32_t sample_rate);
 bool synthio_note_playing(synthio_note_obj_t *self);
