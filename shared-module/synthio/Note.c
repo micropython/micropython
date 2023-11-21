@@ -214,7 +214,7 @@ STATIC uint32_t pitch_bend(uint32_t frequency_scaled, int32_t bend_value) {
 #define ONE MICROPY_FLOAT_CONST(1.)
 #define ALMOST_ONE (MICROPY_FLOAT_CONST(32767.) / 32768)
 
-uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, uint16_t loudness[2]) {
+uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_t dur, int16_t loudness[2]) {
     int panning = synthio_block_slot_get_scaled(&self->panning, -ALMOST_ONE, ALMOST_ONE);
     int left_panning_scaled, right_panning_scaled;
     if (panning >= 0) {
@@ -225,7 +225,7 @@ uint32_t synthio_note_step(synthio_note_obj_t *self, int32_t sample_rate, int16_
         left_panning_scaled = 32767 + panning;
     }
 
-    int amplitude = synthio_block_slot_get_scaled(&self->amplitude, ZERO, ALMOST_ONE);
+    int amplitude = synthio_block_slot_get_scaled(&self->amplitude, -ALMOST_ONE, ALMOST_ONE);
     left_panning_scaled = (left_panning_scaled * amplitude) >> 15;
     right_panning_scaled = (right_panning_scaled * amplitude) >> 15;
     loudness[0] = (loudness[0] * left_panning_scaled) >> 15;
