@@ -29,6 +29,7 @@
 // extmod/machine_i2s.c via MICROPY_PY_MACHINE_I2S_INCLUDEFILE.
 
 #include <stdlib.h>
+#include <string.h>
 #include "py/mphal.h"
 #include "pin.h"
 #include "dma.h"
