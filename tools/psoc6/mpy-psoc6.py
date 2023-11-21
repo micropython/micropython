@@ -53,6 +53,87 @@ def mpy_firmware_remove(file_name, board):
     os.remove(mpy_get_fw_hex_file_name(file_name, board))
 
 
+def fwloader_download_install():
+    file_extension = ".zip"
+    fwloader_compressed = "fwloader" + file_extension
+
+    def get_fwloader_file_url_name():
+        if opsys == "linux":
+            file_os_suffix = "linux"
+        elif opsys == "win":
+            file_os_suffix = "windows"
+
+        version = "3.5.0.2114"
+        package_version = "2.50.0.1383"
+        file_name = (
+            "fw-loader-"
+            + version
+            + "-kitprog3-package-"
+            + package_version
+            + "-"
+            + file_os_suffix
+            + file_extension
+        )
+
+        base_url = "https://github.com/Infineon/Firmware-loader/releases/download/3.5.0/"
+        file_url = base_url + file_name
+
+        return file_url, file_name
+
+    def download_fwloader(file_url, file_name):
+        res = requests.get(file_url)
+        open(file_name, "wb").write(res.content)
+        os.rename(file_name, fwloader_compressed)
+
+    def extract_fwloader():
+        compress_file = zipfile.ZipFile(fwloader_compressed)
+        compress_file.extractall(".")
+        compress_file.close()
+
+    def fwloader_setup():
+        # Add fw-loader to path
+        os.environ["PATH"] += os.pathsep + os.path.join("fw-loader", "bin")
+
+        if opsys == "linux":
+            # Install udev rules
+            sh_args = ["sh", "fw-loader/udev_rules/install_rules.sh"]
+            try:
+                sh_proc = subprocess.Popen(sh_args)
+                sh_proc.wait()
+            except:
+                raise Exception("bash error")
+
+            os.chmod(os.path.join("fw-loader", "bin", "fw-loader"), 0o755)
+
+    print("Downloading fw-loader...")
+    file_url, file_name = get_fwloader_file_url_name()
+    download_fwloader(file_url, file_name)
+    print("Extracting fw-loader...")
+    extract_fwloader()
+    fwloader_setup()
+
+
+def fwloader_update_kitprog():
+    print("Updating kitprog3 firmware...")
+    fwloader_cmd = "fw-loader --update-kp3 all"
+    print(fwloader_cmd)
+    fwloader_args = shlex.split(fwloader_cmd)
+
+    try:
+        fwl_proc = subprocess.Popen(fwloader_args)
+        fwl_proc.wait()
+    except:
+        raise Exception("fwloader error")
+
+
+def fwloader_remove():
+    file_extension = ".zip"
+    fwloader_compressed = "fwlaoder" + file_extension
+    os.remove(fwloader_compressed)
+    shutil.rmtree("fw-loader")
+    shutil.rmtree("kp-firmware")
+
+
 def openocd_download_install():
     if opsys == "linux":
         file_os_suffix = "linux"
@@ -234,6 +315,10 @@ def device_setup(board, version, quiet=False):
         version = "latest"
 
     print("MicroPython PSoC6 Version :: ", version)
+
+    fwloader_download_install()
+    fwloader_update_kitprog()
+    fwloader_remove()
 
     openocd_download_install()
     openocd_board_conf_download(board)
@@ -457,4 +542,6 @@ def parser():
 
 if __name__ == "__main__":
     set_environment()
-    parser()
+    # parser()
+    fwloader_download_install()
+    fwloader_update_kitprog()
