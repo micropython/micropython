@@ -73,40 +73,10 @@ msgstr " 산출:\n"
 msgid "%%c requires int or char"
 msgstr "%%c 전수(int)또는 캐릭터(char)필요합니다"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr ""
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
@@ -290,11 +260,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -632,8 +597,9 @@ msgstr "자동 재 장전이 꺼져 있습니다\n"
 msgid ""
 "Auto-reload is on. Simply save files over USB to run them or enter REPL to "
 "disable.\n"
-msgstr "자동 새로 고침이 켜져 있습니다. USB를 통해 파일을 저장하여 실행하십시오. "
-"비활성화하려면 REPL을 입력하십시오.\n"
+msgstr ""
+"자동 새로 고침이 켜져 있습니다. USB를 통해 파일을 저장하여 실행하십시오. 비활"
+"성화하려면 REPL을 입력하십시오.\n"
 
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "Baudrate not supported by peripheral"
@@ -1607,7 +1573,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
@@ -2148,7 +2115,8 @@ msgstr "UUID문자열이 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'형식이 아닙�
 
 #: shared-bindings/_bleio/UUID.c
 msgid "UUID value is not str, int or byte buffer"
-msgstr "UUID값이 문자열(str), 정수(int) 또는 바이트버퍼가(byte buffer) 아닙니다"
+msgstr ""
+"UUID값이 문자열(str), 정수(int) 또는 바이트버퍼가(byte buffer) 아닙니다"
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to access unaligned IO register"
@@ -4404,26 +4372,42 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
-#~ msgid "'break' outside loop"
-#~ msgstr "'break' 는 루프 외부에 있습니다"
-
-#~ msgid "'continue' outside loop"
-#~ msgstr "'continue' 는 루프 외부에 있습니다"
-
-#~ msgid "invalid format"
-#~ msgstr "형식가 유효하지 않습니다"
-
-#~ msgid "Expected a %q"
-#~ msgstr "%q 이 예상되었습니다."
-
-#~ msgid "Invalid pins"
-#~ msgstr "핀이 유효하지 않습니다"
+#~ msgid ""
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "실행 완료 코드. 재장전 을 기다리는 중입니다\n"
 
 #~ msgid "%q must be >= 1"
 #~ msgstr "%q 는 >=1이어야합니다"
 
 #~ msgid "%q should be an int"
 #~ msgstr "%q 는 정수(int) 여야합니다"
+
+#~ msgid "'%s' object does not support item assignment"
+#~ msgstr "'%s' 을 지정할 수 없습니다"
+
+#~ msgid "'%s' object does not support item deletion"
+#~ msgstr "'%s' 은 삭제할 수 없습니다"
+
+#~ msgid "'%s' object is not an iterator"
+#~ msgstr "'%s' 은 수정할 수 없습니다"
+
+#~ msgid "'%s' object is not callable"
+#~ msgstr "'%s' 을 검색 할 수 없습니다"
+
+#~ msgid "'%s' object is not iterable"
+#~ msgstr "'%s' 은 변경할 수 없습니다"
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' 는 루프 외부에 있습니다"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' 는 루프 외부에 있습니다"
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "밝기는 0에서 255 사이 여야합니다"
 
 #, c-format
 #~ msgid "Buffer incorrect size. Should be %d bytes."
@@ -4435,11 +4419,47 @@ msgstr ""
 #~ msgid "Bytes must be between 0 and 255."
 #~ msgstr "바이트는 0에서 255 사이 여야합니다."
 
+#~ msgid "Can't add services in Central mode"
+#~ msgstr "센트랄(중앙) 모드에서는 서비스를 추가 할 수 없습니다"
+
+#~ msgid "Can't advertise in Central mode"
+#~ msgstr "센트랄(중앙) 모드로 광고 (브로드 캐스트) 할 수 없습니다"
+
+#~ msgid "Can't change the name in Central mode"
+#~ msgstr "센트랄(중앙) 모드에서는 이름을 변경할 수 없습니다"
+
 #~ msgid "Cannot read without MISO pin."
 #~ msgstr "MISO핀이 없으면 읽을 수 없습니다"
 
 #~ msgid "Command must be an int between 0 and 255"
 #~ msgstr "명령은 0에서 255 사이의 정수(int) 여야합니다"
+
+#~ msgid "Data too large for the advertisement packet"
+#~ msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니다"
+
+#~ msgid "Expected a %q"
+#~ msgstr "%q 이 예상되었습니다."
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "특성(Characteristic)이 예상되었습니다."
+
+#~ msgid "Expected a UUID"
+#~ msgstr "UUID이 예상되었습니다."
+
+#~ msgid "Failed to add service"
+#~ msgstr "서비스를 추가하지 못했습니다"
+
+#~ msgid "Failed to add service, err 0x%04x"
+#~ msgstr "서비스를 추가하지 못했습니다., 오류 0x%04x"
+
+#~ msgid "Failed to connect:"
+#~ msgstr "연결할 수 없다"
+
+#~ msgid "Failed to continue scanning"
+#~ msgstr "스캔을 계속할 수 없습니다"
+
+#~ msgid "Failed to continue scanning, err 0x%04x"
+#~ msgstr "스캔을 계속할 수 없습니다, 오류 0x%04x"
 
 #~ msgid "Invalid file"
 #~ msgstr "파일이 유효하지 않습니다"
@@ -4459,81 +4479,29 @@ msgstr ""
 #~ msgid "Invalid pin for right channel"
 #~ msgstr "오른쪽 채널 핀이 잘못되었습니다"
 
-#~ msgid "Brightness must be between 0 and 255"
-#~ msgstr "밝기는 0에서 255 사이 여야합니다"
-
-#~ msgid "integer required"
-#~ msgstr "정수가 필요합니다"
-
-#~ msgid "Expected a Characteristic"
-#~ msgstr "특성(Characteristic)이 예상되었습니다."
-
-#~ msgid "Expected a UUID"
-#~ msgstr "UUID이 예상되었습니다."
+#~ msgid "Invalid pins"
+#~ msgstr "핀이 유효하지 않습니다"
 
 #~ msgid "Length must be an int"
 #~ msgstr "길이는 정수(int) 여야합니다"
 
-#~ msgid "invalid dupterm index"
-#~ msgstr "Dupterm index가 유효하지 않습니다"
-
 #~ msgid "bits must be 7, 8 or 9"
 #~ msgstr "비트(bits)는 7, 8 또는 9 여야합니다"
 
-#~ msgid ""
-#~ "\n"
-#~ "Code done running. Waiting for reload.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "실행 완료 코드. 재장전 을 기다리는 중입니다\n"
-
-#~ msgid "'%s' object does not support item assignment"
-#~ msgstr "'%s' 을 지정할 수 없습니다"
-
-#~ msgid "'%s' object does not support item deletion"
-#~ msgstr "'%s' 은 삭제할 수 없습니다"
-
-#~ msgid "'%s' object is not an iterator"
-#~ msgstr "'%s' 은 수정할 수 없습니다"
-
-#~ msgid "'%s' object is not callable"
-#~ msgstr "'%s' 을 검색 할 수 없습니다"
-
-#~ msgid "'%s' object is not iterable"
-#~ msgstr "'%s' 은 변경할 수 없습니다"
-
-#~ msgid "Can't add services in Central mode"
-#~ msgstr "센트랄(중앙) 모드에서는 서비스를 추가 할 수 없습니다"
-
-#~ msgid "Can't advertise in Central mode"
-#~ msgstr "센트랄(중앙) 모드로 광고 (브로드 캐스트) 할 수 없습니다"
-
-#~ msgid "Can't change the name in Central mode"
-#~ msgstr "센트랄(중앙) 모드에서는 이름을 변경할 수 없습니다"
-
-#~ msgid "Data too large for the advertisement packet"
-#~ msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니다"
-
-#~ msgid "Failed to add service"
-#~ msgstr "서비스를 추가하지 못했습니다"
-
-#~ msgid "Failed to add service, err 0x%04x"
-#~ msgstr "서비스를 추가하지 못했습니다., 오류 0x%04x"
-
-#~ msgid "Failed to connect:"
-#~ msgstr "연결할 수 없다"
-
-#~ msgid "Failed to continue scanning"
-#~ msgstr "스캔을 계속할 수 없습니다"
-
-#~ msgid "Failed to continue scanning, err 0x%04x"
-#~ msgstr "스캔을 계속할 수 없습니다, 오류 0x%04x"
-
 #~ msgid "bits must be 8"
 #~ msgstr "비트(bits)는 8이어야합니다"
+
+#~ msgid "integer required"
+#~ msgstr "정수가 필요합니다"
 
 #~ msgid "invalid I2C peripheral"
 #~ msgstr "ICT주변 기기가 유효하지 않습니다"
 
 #~ msgid "invalid SPI peripheral"
 #~ msgstr "SPI주변 기기가 유효하지 않습니다"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "Dupterm index가 유효하지 않습니다"
+
+#~ msgid "invalid format"
+#~ msgstr "형식가 유효하지 않습니다"

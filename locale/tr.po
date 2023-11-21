@@ -78,16 +78,6 @@ msgstr " çıktı:\n"
 msgid "%%c requires int or char"
 msgstr "%%c int veya char tipine ihtiyaç duyar"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr "%02X"
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -95,26 +85,6 @@ msgid ""
 msgstr ""
 "%d adres pinleri, %d RGB pinleri ve %d döşemeleri %d'nin yüksekliği "
 "gösterir, %d'nin değil"
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
-msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -297,11 +267,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -1621,7 +1586,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
@@ -4421,6 +4387,66 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
+#~ msgid ""
+#~ "\n"
+#~ "Code stopped by auto-reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Program otomatik yeniden yükleme tarafından sonlandırıldı.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Lütfen, şu adrese CIRCUITPY sürücünüzün içerikleri ile beraber bir hata/"
+#~ "konu kaydı ekleyin\n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+
+#, c-format
+#~ msgid "%02X"
+#~ msgstr "%02X"
+
+#~ msgid "%q"
+#~ msgstr "%q"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "%q boyutu >=1 olmalıdır"
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q >= 0 olmalıdır"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q >= 1 olmalıdır"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q bir string olmalıdır"
+
+#~ msgid "%q must be a tuple of length 2"
+#~ msgstr "%q, boyutu 2 olan bir tuple olmalıdır"
+
+#~ msgid "%q must be an int"
+#~ msgstr "%q bir tam sayı olmalıdır"
+
+#~ msgid "%q must be between %d and %d"
+#~ msgstr "%q, %d ile %d arasında olmalıdır"
+
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q, %q türünde olmalıdır"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q, %q ya da None türünde olmalıdır"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "%q pini geçersiz"
+
+#~ msgid "%q should be an int"
+#~ msgstr "%q bir int olmalıdır"
+
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "Rapor kimliği 0 olan %q, 1 uzunluğunda olmalıdır"
+
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr ""
 #~ "asenkron fonksiyon dışında kullanılan 'await', 'async for' ya da 'async "
@@ -4432,23 +4458,102 @@ msgstr ""
 #~ msgid "'continue' outside loop"
 #~ msgstr "döngü dışında 'continue'"
 
-#~ msgid "Bit clock and word select must be sequential pins"
-#~ msgstr "Bit saati ve kelime seçimi pinleri sıralı olmalıdır"
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "'coroutine' nesnesi bir iteratör değildir"
 
-#~ msgid "Initialization failed due to lack of memory"
-#~ msgstr "Bellek yetersizliği nedeniyle başlatma başarısız oldu"
+#~ msgid "(x,y) integers required"
+#~ msgstr "(x, y) integerları gereklidir"
+
+#~ msgid "64 bit types"
+#~ msgstr "64 bit tipler"
 
 #~ msgid "ADC2 is being used by WiFi"
 #~ msgstr "ADC2, WiFi tarafından kullanılmaktadır"
 
-#~ msgid "'coroutine' object is not an iterator"
-#~ msgstr "'coroutine' nesnesi bir iteratör değildir"
+#~ msgid "Address type out of range"
+#~ msgstr "Adres tipi beklenen aralığın dışında"
+
+#~ msgid "All I2C targets are in use"
+#~ msgstr "Tüm I2C hedefleri kullanımda"
+
+#~ msgid "AnalogIn not supported on given pin"
+#~ msgstr "Verilen pin için AnalogIn desteklenmemektedir"
+
+#~ msgid "AnalogOut functionality not supported"
+#~ msgstr "AnalogOut işlevi desteklenmemektedir"
+
+#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+#~ msgstr "AnalogOut yalnızca 16 bitlik. Değer 65536'dan küçük olmalıdır."
+
+#~ msgid "AnalogOut not supported on given pin"
+#~ msgstr "Verilen pin için AnalogOut desteklenmemektedir"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "En az %d %q belirtilmeli (%d değil)"
+
+#~ msgid "Attempted heap allocation when VM not running."
+#~ msgstr "VM çalışmazken heap'ten alan tahsis edilmeye çalışıldı."
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Bit saati ve kelime seçimi pinleri sıralı olmalıdır"
+
+#, c-format
+#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+#~ msgstr "Bit derinliği 1-6 aralığında olmalı, %d değil"
+
+#~ msgid "Boot device must be first device (interface #0)."
+#~ msgstr "Önyükleme cihazı ilk cihaz olmalı (arayüz #0)."
+
+#~ msgid "Both buttons were pressed at start up.\n"
+#~ msgstr "Başlatma sırasında her iki düğmeye de basıldı.\n"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Parlaklık 0-1.0 aralığında olmalı"
+
+#, c-format
+#~ msgid "Buffer incorrect size. Should be %d bytes."
+#~ msgstr "Geçersiz arabellek boyutu. %d kadar olmalı"
 
 #~ msgid "Buffer is too small"
 #~ msgstr "Arabellek çok küçük"
 
+#~ msgid "Buffer must be at least length 1"
+#~ msgstr "Arabellek boyutu en az 1 olmalı"
+
+#~ msgid "Button A was pressed at start up.\n"
+#~ msgstr "Başlatma sırasında A düğmesine basıldı.\n"
+
+#~ msgid "Bytes must be between 0 and 255."
+#~ msgstr "Baytlar 0-255 aralığında olmalı"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "MOSI ve MISO pinleri olmadan transfer edilemiyor"
+
 #~ msgid "Corrupt .mpy file"
 #~ msgstr "Bozuk .mpy dosyası"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "%d konumundaki MIDI akışında hata"
+
+#~ msgid "Expected a %q"
+#~ msgstr "%q bekleniyor"
+
+#~ msgid "Expected a %q or %q"
+#~ msgstr "%q yada %q bekleniyor"
+
+#~ msgid "Expected an %q"
+#~ msgstr "%q bekleniyor"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Donanım meşgul, alternatif pinleri deneyin"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut uygundeğil"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV %d bayt uzunluğunda olmalı"
 
 #~ msgid ""
 #~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
@@ -4456,6 +4561,9 @@ msgstr ""
 #~ msgstr ""
 #~ "Uyumsuz .mpy dosyası. Lütfen tüm .mpy dosyalarını güncelleyin. Daha fazla "
 #~ "bilgi için http://adafru.it/mpy-update ."
+
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "Bellek yetersizliği nedeniyle başlatma başarısız oldu"
 
 #, c-format
 #~ msgid "Instruction %d shifts in more bits than pin count"
@@ -4473,11 +4581,12 @@ msgstr ""
 #~ msgid "Instruction %d waits on input outside of count"
 #~ msgstr "Komut %d sayım dışında, girişte bekler"
 
-#~ msgid "Cannot transfer without MOSI and MISO pins"
-#~ msgstr "MOSI ve MISO pinleri olmadan transfer edilemiyor"
+#~ msgid "Invalid memory access."
+#~ msgstr "Geçersiz bellek erişimi."
 
-#~ msgid "Hardware busy, try alternative pins"
-#~ msgstr "Donanım meşgul, alternatif pinleri deneyin"
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "İkizlendiğinde maksimum x değeri %d'dir"
 
 #~ msgid "Missing MISO or MOSI Pin"
 #~ msgstr "Eksik MISO veya MOSI pini"
@@ -4502,139 +4611,3 @@ msgstr ""
 
 #~ msgid "No TX pin"
 #~ msgstr "TX pini yok"
-
-#~ msgid "Brightness must be 0-1.0"
-#~ msgstr "Parlaklık 0-1.0 aralığında olmalı"
-
-#, c-format
-#~ msgid "Error in MIDI stream at position %d"
-#~ msgstr "%d konumundaki MIDI akışında hata"
-
-#, c-format
-#~ msgid "Maximum x value when mirrored is %d"
-#~ msgstr "İkizlendiğinde maksimum x değeri %d'dir"
-
-#~ msgid "I2SOut not available"
-#~ msgstr "I2SOut uygundeğil"
-
-#~ msgid "64 bit types"
-#~ msgstr "64 bit tipler"
-
-#~ msgid "%q pin invalid"
-#~ msgstr "%q pini geçersiz"
-
-#~ msgid ""
-#~ "\n"
-#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Lütfen, şu adrese CIRCUITPY sürücünüzün içerikleri ile beraber bir hata/"
-#~ "konu kaydı ekleyin\n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-
-#~ msgid "Attempted heap allocation when VM not running."
-#~ msgstr "VM çalışmazken heap'ten alan tahsis edilmeye çalışıldı."
-
-#~ msgid "Boot device must be first device (interface #0)."
-#~ msgstr "Önyükleme cihazı ilk cihaz olmalı (arayüz #0)."
-
-#~ msgid "Both buttons were pressed at start up.\n"
-#~ msgstr "Başlatma sırasında her iki düğmeye de basıldı.\n"
-
-#~ msgid "Button A was pressed at start up.\n"
-#~ msgstr "Başlatma sırasında A düğmesine basıldı.\n"
-
-#~ msgid "Invalid memory access."
-#~ msgstr "Geçersiz bellek erişimi."
-
-#~ msgid "%q must be of type %q"
-#~ msgstr "%q, %q türünde olmalıdır"
-
-#~ msgid "%q must be of type %q or None"
-#~ msgstr "%q, %q ya da None türünde olmalıdır"
-
-#~ msgid "Expected a %q"
-#~ msgstr "%q bekleniyor"
-
-#~ msgid "Expected a %q or %q"
-#~ msgstr "%q yada %q bekleniyor"
-
-#~ msgid "Expected an %q"
-#~ msgstr "%q bekleniyor"
-
-#, c-format
-#~ msgid "IV must be %d bytes long"
-#~ msgstr "IV %d bayt uzunluğunda olmalı"
-
-#~ msgid "%q length must be >= 1"
-#~ msgstr "%q boyutu >=1 olmalıdır"
-
-#~ msgid "%q must be a string"
-#~ msgstr "%q bir string olmalıdır"
-
-#~ msgid "%q must be an int"
-#~ msgstr "%q bir tam sayı olmalıdır"
-
-#~ msgid "%q with a report ID of 0 must be of length 1"
-#~ msgstr "Rapor kimliği 0 olan %q, 1 uzunluğunda olmalıdır"
-
-#~ msgid "At most %d %q may be specified (not %d)"
-#~ msgstr "En az %d %q belirtilmeli (%d değil)"
-
-#~ msgid "%q must be >= 0"
-#~ msgstr "%q >= 0 olmalıdır"
-
-#~ msgid "%q must be >= 1"
-#~ msgstr "%q >= 1 olmalıdır"
-
-#~ msgid "All I2C targets are in use"
-#~ msgstr "Tüm I2C hedefleri kullanımda"
-
-#~ msgid "%q must be a tuple of length 2"
-#~ msgstr "%q, boyutu 2 olan bir tuple olmalıdır"
-
-#~ msgid "%q must be between %d and %d"
-#~ msgstr "%q, %d ile %d arasında olmalıdır"
-
-#~ msgid "%q should be an int"
-#~ msgstr "%q bir int olmalıdır"
-
-#~ msgid "(x,y) integers required"
-#~ msgstr "(x, y) integerları gereklidir"
-
-#~ msgid "Address type out of range"
-#~ msgstr "Adres tipi beklenen aralığın dışında"
-
-#~ msgid "AnalogIn not supported on given pin"
-#~ msgstr "Verilen pin için AnalogIn desteklenmemektedir"
-
-#~ msgid "AnalogOut functionality not supported"
-#~ msgstr "AnalogOut işlevi desteklenmemektedir"
-
-#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-#~ msgstr "AnalogOut yalnızca 16 bitlik. Değer 65536'dan küçük olmalıdır."
-
-#~ msgid "AnalogOut not supported on given pin"
-#~ msgstr "Verilen pin için AnalogOut desteklenmemektedir"
-
-#, c-format
-#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-#~ msgstr "Bit derinliği 1-6 aralığında olmalı, %d değil"
-
-#, c-format
-#~ msgid "Buffer incorrect size. Should be %d bytes."
-#~ msgstr "Geçersiz arabellek boyutu. %d kadar olmalı"
-
-#~ msgid "Buffer must be at least length 1"
-#~ msgstr "Arabellek boyutu en az 1 olmalı"
-
-#~ msgid "Bytes must be between 0 and 255."
-#~ msgstr "Baytlar 0-255 aralığında olmalı"
-
-#~ msgid ""
-#~ "\n"
-#~ "Code stopped by auto-reload.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Program otomatik yeniden yükleme tarafından sonlandırıldı.\n"
