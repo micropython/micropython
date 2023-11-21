@@ -120,6 +120,24 @@ void common_hal_synthio_note_set_waveform(synthio_note_obj_t *self, mp_obj_t wav
     self->waveform_obj = waveform_in;
 }
 
+mp_int_t common_hal_synthio_note_get_waveform_loop_start(synthio_note_obj_t *self) {
+    return self->waveform_loop_start;
+}
+
+void common_hal_synthio_note_set_waveform_loop_start(synthio_note_obj_t *self, mp_int_t value_in) {
+    mp_int_t val = mp_arg_validate_int_range(value_in, 0, SYNTHIO_WAVEFORM_SIZE - 1, MP_QSTR_waveform_loop_start);
+    self->waveform_loop_start = val;
+}
+
+mp_int_t common_hal_synthio_note_get_waveform_loop_end(synthio_note_obj_t *self) {
+    return self->waveform_loop_end;
+}
+
+void common_hal_synthio_note_set_waveform_loop_end(synthio_note_obj_t *self, mp_int_t value_in) {
+    mp_int_t val = mp_arg_validate_int_range(value_in, 1, SYNTHIO_WAVEFORM_SIZE, MP_QSTR_waveform_loop_end);
+    self->waveform_loop_end = val;
+}
+
 mp_obj_t common_hal_synthio_note_get_ring_waveform_obj(synthio_note_obj_t *self) {
     return self->ring_waveform_obj;
 }
@@ -133,6 +151,24 @@ void common_hal_synthio_note_set_ring_waveform(synthio_note_obj_t *self, mp_obj_
         self->ring_waveform_buf = bufinfo_ring_waveform;
     }
     self->ring_waveform_obj = ring_waveform_in;
+}
+
+mp_int_t common_hal_synthio_note_get_ring_waveform_loop_start(synthio_note_obj_t *self) {
+    return self->ring_waveform_loop_start;
+}
+
+void common_hal_synthio_note_set_ring_waveform_loop_start(synthio_note_obj_t *self, mp_int_t value_in) {
+    mp_int_t val = mp_arg_validate_int_range(value_in, 0, SYNTHIO_WAVEFORM_SIZE - 1, MP_QSTR_ring_waveform_loop_start);
+    self->ring_waveform_loop_start = val;
+}
+
+mp_int_t common_hal_synthio_note_get_ring_waveform_loop_end(synthio_note_obj_t *self) {
+    return self->ring_waveform_loop_end;
+}
+
+void common_hal_synthio_note_set_ring_waveform_loop_end(synthio_note_obj_t *self, mp_int_t value_in) {
+    mp_int_t val = mp_arg_validate_int_range(value_in, 1, SYNTHIO_WAVEFORM_SIZE, MP_QSTR_ring_waveform_loop_end);
+    self->ring_waveform_loop_end = val;
 }
 
 void synthio_note_recalculate(synthio_note_obj_t *self, int32_t sample_rate) {
