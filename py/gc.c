@@ -238,6 +238,9 @@ void gc_add(void *start, void *end) {
 }
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
+
+size_t gc_heap_sys_reserve = MP_PLAT_DEFAULT_HEAP_SYS_RESERVE;
+
 // Try to automatically add a heap area large enough to fulfill 'failed_alloc'.
 STATIC bool gc_try_add_heap(size_t failed_alloc) {
     // 'needed' is the size of a heap large enough to hold failed_alloc, with
@@ -249,39 +252,20 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
     // rounding up of partial block sizes).
     size_t needed = failed_alloc + MAX(2048, failed_alloc * 13 / 512);
 
-    size_t avail = gc_get_max_new_split();
+    size_t max_new_split = gc_get_max_new_split();
 
     DEBUG_printf("gc_try_add_heap failed_alloc " UINT_FMT ", "
-        "needed " UINT_FMT ", avail " UINT_FMT " bytes \n",
+        "needed " UINT_FMT ", max_new_split " UINT_FMT " bytes \n",
         failed_alloc,
         needed,
-        avail);
+        max_new_split);
 
-    if (avail < needed) {
+    if (max_new_split < needed) {
         // Can't fit this allocation, or system heap has nearly run out anyway
         return false;
     }
 
-    // Deciding how much to grow the total heap by each time is tricky:
-    //
-    // - Grow by too small amounts, leads to heap fragmentation issues.
-    //
-    // - Grow by too large amounts, may lead to system heap running out of
-    //   space.
-    //
-    // Currently, this implementation is:
-    //
-    // - At minimum, aim to double the total heap size each time we add a new
-    //   heap.  i.e. without any large single allocations, total size will be
-    //   64KB -> 128KB -> 256KB -> 512KB -> 1MB, etc
-    //
-    // - If the failed allocation is too large to fit in that size, the new
-    //   heap is made exactly large enough for that allocation. Future growth
-    //   will double the total heap size again.
-    //
-    // - If the new heap won't fit in the available free space, add the largest
-    //   new heap that will fit (this may lead to failed system heap allocations
-    //   elsewhere, but some allocation will likely fail in this circumstance!)
+    // Measure the total Python heap size
     size_t total_heap = 0;
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area);
          area != NULL;
@@ -290,14 +274,60 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
         total_heap += ALLOC_TABLE_GAP_BYTE + sizeof(mp_state_mem_area_t);
     }
 
-    DEBUG_printf("total_heap " UINT_FMT " bytes\n", total_heap);
+    // Deciding how much to allocate for the new "split" heap is tricky:
+    //
+    // - Grow by too small amounts, leads to heap fragmentation issues.
+    //
+    // - Grow by too large amounts, may lead to system heap running out of
+    //   space.
+    //
 
-    size_t to_alloc = MIN(avail, MAX(total_heap, needed));
+    // Start by choosing the current total Python heap size for the new heap.
+    // With no other constraints, the total Python heap size would double each
+    // time: i.e 64KB -> 128KB -> 256KB -> 512KB -> 1MB, etc. This avoids
+    // fragmentation where possible.
 
-    mp_state_mem_area_t *new_heap = MP_PLAT_ALLOC_HEAP(to_alloc);
+    size_t new_heap_size = total_heap;
+
+    // If this "greedy" size will cut free system heap below
+    // gc_heap_sys_reserve then reduce it to conserve that limit.
+    //
+    // (gc_heap_sys_reserve still isn't a hard limit, if the only
+    // options are returning a MemoryError to Python or using up the reserved
+    // system heap space then MicroPython will use up the reserved system heap
+    // space.)
+
+    size_t total_free = gc_get_total_free();
+    if (total_free < gc_heap_sys_reserve) {
+        new_heap_size = needed;
+    } else if (total_free - new_heap_size < gc_heap_sys_reserve) {
+        new_heap_size = total_free - gc_heap_sys_reserve;
+    }
+
+    // If this size is smaller than the size 'needed' to avoid an immediate
+    // MemoryError, increase to this size so the current failing allocation
+    // can succeed.
+
+    if (new_heap_size < needed) {
+        new_heap_size = needed;
+    }
+
+    // If this size won't fit in the largest free system heap block, decrease
+    // it so it will fit (note: due to the check earlier, we already know
+    // max_new_split is large enough to hold 'needed')
+
+    if (new_heap_size > max_new_split) {
+        new_heap_size = max_new_split;
+    }
+
+    DEBUG_printf("total_heap " UINT_FMT " total_free "
+        UINT_FMT " TRY_RESERVE_SYSTEM_HEAP " UINT_FMT " bytes\n",
+        total_heap, total_free, gc_heap_sys_reserve);
+
+    mp_state_mem_area_t *new_heap = MP_PLAT_ALLOC_HEAP(new_heap_size);
 
     DEBUG_printf("MP_PLAT_ALLOC_HEAP " UINT_FMT " = %p\n",
-        to_alloc, new_heap);
+        new_heap_size, new_heap);
 
     if (new_heap == NULL) {
         // This should only fail:
@@ -307,7 +337,7 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
         return false;
     }
 
-    gc_add(new_heap, (void *)new_heap + to_alloc);
+    gc_add(new_heap, (void *)new_heap + new_heap_size);
 
     return true;
 }

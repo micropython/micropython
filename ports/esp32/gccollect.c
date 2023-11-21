@@ -84,4 +84,8 @@ size_t gc_get_max_new_split(void) {
     return heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT);
 }
 
+size_t gc_get_total_free(void) {
+    return heap_caps_get_free_size(MALLOC_CAP_DEFAULT);
+}
+
 #endif

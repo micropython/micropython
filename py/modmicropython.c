@@ -144,6 +144,20 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_locked_obj, mp_micropython_
 #endif
 #endif
 
+#if MICROPY_GC_SPLIT_HEAP_AUTO
+STATIC mp_obj_t mp_micropython_heap_sys_reserve(size_t n_args, const mp_obj_t *args) {
+    if (n_args > 0) {
+        mp_int_t new = mp_obj_get_int(args[0]);
+        if (new < 0) {
+            mp_raise_ValueError(NULL);
+        }
+        gc_heap_sys_reserve = new;
+    }
+    return mp_obj_new_int(gc_heap_sys_reserve);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_heap_sys_reserve_obj, 0, 1, mp_micropython_heap_sys_reserve);
+#endif
+
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_emergency_exception_buf);
 #endif
@@ -195,6 +209,9 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_heap_unlock), MP_ROM_PTR(&mp_micropython_heap_unlock_obj) },
     #if MICROPY_PY_MICROPYTHON_HEAP_LOCKED
     { MP_ROM_QSTR(MP_QSTR_heap_locked), MP_ROM_PTR(&mp_micropython_heap_locked_obj) },
+    #endif
+    #if MICROPY_GC_SPLIT_HEAP_AUTO
+    { MP_ROM_QSTR(MP_QSTR_heap_sys_reserve), MP_ROM_PTR(&mp_micropython_heap_sys_reserve_obj) },
     #endif
     #endif
     #if MICROPY_KBD_EXCEPTION

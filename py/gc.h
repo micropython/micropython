@@ -40,6 +40,10 @@ void gc_add(void *start, void *end);
 // Port must implement this function to return the maximum available block of
 // RAM to allocate a new heap area into using MP_PLAT_ALLOC_HEAP.
 size_t gc_get_max_new_split(void);
+// This function returns the total amount of free RAM available for heap.
+size_t gc_get_total_free(void);
+// Runtime tuneable "soft" limit for free system heap
+extern size_t gc_heap_sys_reserve;
 #endif // MICROPY_GC_SPLIT_HEAP_AUTO
 #endif // MICROPY_GC_SPLIT_HEAP
 

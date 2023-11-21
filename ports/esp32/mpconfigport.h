@@ -187,6 +187,15 @@ void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
 #define MP_SSIZE_MAX (0x7fffffff)
 
+#ifndef MP_PLAT_DEFAULT_HEAP_SYS_RESERVE
+// Try to keep some heap free for ESP-IDF system, unless Python is completely out of memory
+//
+// The default here is particularly high, because it's enough memory to initialise Wi-Fi and
+// create a TLS connection. If the program is not using these things, or if the heap doesn't
+// grow until after those things are created, then this will fragment memory more than needed.
+#define MP_PLAT_DEFAULT_HEAP_SYS_RESERVE (80 * 1024)
+#endif
+
 #if MICROPY_PY_SOCKET_EVENTS
 #define MICROPY_PY_SOCKET_EVENTS_HANDLER extern void socket_events_handler(void); socket_events_handler();
 #else

@@ -76,6 +76,7 @@ Functions
        The "max new split" value in :func:`micropython.mem_info()` output
        corresponds to the largest free block of ESP-IDF heap that could be
        automatically added on demand to the MicroPython heap.
+       See also :func:`micropython.heap_sys_reserve`.
 
        The result of :func:`gc.mem_free()` is the total of the current "free"
        and "max new split" values printed by :func:`micropython.mem_info()`.

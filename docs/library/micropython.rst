@@ -102,6 +102,28 @@ Functions
    Note: `heap_locked()` is not enabled on most ports by default,
    requires ``MICROPY_PY_MICROPYTHON_HEAP_LOCKED``.
 
+.. function:: heap_sys_reserve([new_value])
+
+   .. note:: This function is only present on ports using the "auto split heap"
+      feature.
+
+   Get or set the number of bytes of free heap RAM that MicroPython *tries* to
+   reserve for the system.
+
+   When called with no arguments, returns the currently set value. When called
+   with an argument, updates the currently set value.
+
+   This is a soft limit that prevents "greedily" growing the MicroPython heap
+   too large. If MicroPython has no choice but to grow the heap or fail then
+   it will still grow the MicroPython heap beyond this limit.
+
+   Setting a higher value may help if the system is failing to allocate memory
+   outside MicroPython. Setting a lower value or even zero may help if
+   MicroPython memory is becoming unnecessarily fragmented.
+
+   Changing this limit cannot resolve memory issues that are caused by requiring
+   more memory than is physically available in the system.
+
 .. function:: kbd_intr(chr)
 
    Set the character that will raise a `KeyboardInterrupt` exception.  By
