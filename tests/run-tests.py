@@ -180,6 +180,8 @@ def run_micropython(pyb, args, test_file, is_special=False):
         "basics/builtin_help.py",
         "thread/thread_exc2.py",
         "esp32/partition_ota.py",
+        "circuitpython/traceback_test.py",  # CIRCUITPY-CHANGE
+        "circuitpython/traceback_test_chained.py",  # CIRCUITPY-CHANGE
     )
     had_crash = False
     if pyb is None:
