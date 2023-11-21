@@ -977,6 +977,7 @@ the last matching regex is used:
         if args.test_dirs is None:
             test_dirs = (
                 "basics",
+                "circuitpython",  # CIRCUITPY-CHANGE
                 "micropython",
                 "misc",
                 "extmod",
