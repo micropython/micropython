@@ -128,7 +128,7 @@ def fwloader_update_kitprog():
 
 def fwloader_remove():
     file_extension = ".zip"
-    fwloader_compressed = "fwlaoder" + file_extension
+    fwloader_compressed = "fwloader" + file_extension
     os.remove(fwloader_compressed)
     shutil.rmtree("fw-loader")
     shutil.rmtree("kp-firmware")
@@ -303,7 +303,7 @@ def wait_user_termination():
     input("Press ENTER to continue...\n")
 
 
-def device_setup(board, version, quiet=False):
+def device_setup(board, version, update_dbg_fw=False, quiet=False):
     if board is None:
         board = select_board()
     else:
@@ -316,9 +316,10 @@ def device_setup(board, version, quiet=False):
 
     print("MicroPython PSoC6 Version :: ", version)
 
-    fwloader_download_install()
-    fwloader_update_kitprog()
-    fwloader_remove()
+    if update_dbg_fw:
+        fwloader_download_install()
+        fwloader_update_kitprog()
+        fwloader_remove()
 
     openocd_download_install()
     openocd_board_conf_download(board)
@@ -442,7 +443,7 @@ def quick_start(board, version):
         print("################################################")
 
     print_retro_banner()
-    device_setup(board, version)
+    device_setup(board, version, True)
     arduino_lab_download_and_launch()
     arduino_lab_install_package_remove()
     print_exit_banner()
@@ -457,7 +458,7 @@ def parser():
         quick_start(args.board, args.version)
 
     def parser_device_setup(args):
-        device_setup(args.board, args.version, args.q)
+        device_setup(args.board, args.version, args.u, args.q)
 
     def parser_firmware_deploy(args):
         openocd_program(args.board, args.hexfile)
@@ -502,6 +503,9 @@ def parser():
     parser_ds.add_argument(
         "-q", action="store_true", help="Quiet. Do not prompt any user confirmation request"
     )
+    parser_ds.add_argument(
+        "-u", action="store_true", help="Update board Kitprog3 debugger firmware"
+    )
     parser_ds.set_defaults(func=parser_device_setup)
 
     # firmware deploy
@@ -542,6 +546,4 @@ def parser():
 
 if __name__ == "__main__":
     set_environment()
-    # parser()
-    fwloader_download_install()
-    fwloader_update_kitprog()
+    parser()
