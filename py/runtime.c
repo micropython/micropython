@@ -171,6 +171,10 @@ void mp_init(void) {
     MP_STATE_VM(bluetooth) = MP_OBJ_NULL;
     #endif
 
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    MP_STATE_VM(usbd) = MP_OBJ_NULL;
+    #endif
+
     #if MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(gil_mutex));
     #endif
