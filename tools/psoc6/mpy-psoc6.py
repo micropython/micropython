@@ -467,14 +467,28 @@ def parser():
         device_erase(args.board, args.q)
 
     # Main parser
-    parser = argparse.ArgumentParser(description="Micropython PSoC6 utility script")
+    main_parser_desc = """
+    Micropython PSoC6 utility script
+
+    Available commands:
+
+    quick-start         Setup of MicroPython IDE and PSoC6 device
+    device-setup        Setup of MicroPython PSoC6 device
+    device-erase        Erase the external memory of the PSoC6 device
+    firmware-deploy     Firmware deployment on PSoC6 device (user provided binary file)
+                                                                  
+    mpy-psoc6.py <command> --help for more information about each specific command.
+    """
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawTextHelpFormatter, description=main_parser_desc
+    )
     subparser = parser.add_subparsers()
     parser.set_defaults(func=main_parser_func)
 
     # quick start
     parser_qs = subparser.add_parser(
         "quick-start",
-        description="Setup of MicroPython IDE and PSoC6 board. \
+        description="Setup of MicroPython IDE and PSoC6 device. \
                     Use this command for a guided installation and \
                     quick start using MicroPython PSoC6.",
     )
@@ -489,7 +503,7 @@ def parser():
     # device setup
     parser_ds = subparser.add_parser(
         "device-setup",
-        description="Setup of MicroPython PSoC6 board. \
+        description="Setup of MicroPython PSoC6 device. \
                     Use this command to install the deployment tools \
                     and MicroPython firmware binary, and deploy the \
                     firmware on the PSoC6 device.",
@@ -508,10 +522,27 @@ def parser():
     )
     parser_ds.set_defaults(func=parser_device_setup)
 
+    # device erase
+    parser_de = subparser.add_parser(
+        "device-erase",
+        description="Erase the external memory of the device. \
+                    Use this command to erase the external memory if available \
+                    for the selected board. \
+                    Running device-setup after this command \
+                    is required to re-enable MicroPython.",
+    )
+    parser_de.add_argument(
+        "-b", "--board", default=None, type=str, required=True, help="PSoC6 prototyping kit name"
+    )
+    parser_de.add_argument(
+        "-q", action="store_true", help="Quiet. Do not prompt any user confirmation request"
+    )
+    parser_de.set_defaults(func=parser_device_erase)
+
     # firmware deploy
     parser_fd = subparser.add_parser(
         "firmware-deploy",
-        description="Firmware deployment on MicroPython board. \
+        description="Firmware deployment on MicroPython device. \
                     Use this command to deploy an existing .hex file \
                     on a PSoC6 board. \
                     Requires openocd available on the system path.",
@@ -523,21 +554,6 @@ def parser():
         "-f", "--hexfile", type=str, required=True, help="MicroPython PSoC6 firmware .hex file"
     )
     parser_fd.set_defaults(func=parser_firmware_deploy)
-
-    # device erase
-    parser_de = subparser.add_parser(
-        "device-erase",
-        description="Erase the external memory of the device. \
-                    Use this command to erase the external memory if available \
-                    for the selected board.",
-    )
-    parser_de.add_argument(
-        "-b", "--board", default=None, type=str, required=True, help="PSoC6 prototyping kit name"
-    )
-    parser_de.add_argument(
-        "-q", action="store_true", help="Quiet. Do not prompt any user confirmation request"
-    )
-    parser_de.set_defaults(func=parser_device_erase)
 
     # Parser call
     args = parser.parse_args()
