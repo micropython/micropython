@@ -1,4 +1,4 @@
-import os
+import vfs
 import network
 from flashbdev import bdev
 
@@ -36,7 +36,7 @@ def fs_corrupted():
             """\
 The filesystem starting at sector %d with size %d sectors looks corrupt.
 You may want to make a flash snapshot and try to recover it. Otherwise,
-format it with os.VfsLfs2.mkfs(bdev), or completely erase the flash and
+format it with vfs.VfsLfs2.mkfs(bdev), or completely erase the flash and
 reprogram MicroPython.
 """
             % (bdev.start_sec, bdev.blocks)
@@ -48,9 +48,9 @@ def setup():
     check_bootsec()
     print("Performing initial setup")
     wifi()
-    os.VfsLfs2.mkfs(bdev)
-    vfs = os.VfsLfs2(bdev)
-    os.mount(vfs, "/")
+    vfs.VfsLfs2.mkfs(bdev)
+    fs = vfs.VfsLfs2(bdev)
+    vfs.mount(fs, "/")
     with open("boot.py", "w") as f:
         f.write(
             """\
