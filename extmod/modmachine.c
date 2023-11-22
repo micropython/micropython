@@ -232,6 +232,9 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
     #endif
+    #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+    { MP_ROM_QSTR(MP_QSTR_USBDevice), MP_ROM_PTR(&machine_usb_device_type) },
+    #endif
     #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
     #endif
