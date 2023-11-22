@@ -8,6 +8,24 @@ boards = [
 opsys = ""
 
 
+def colour_str_success(msg):
+    green_str_start = "\x1b[1;32;40m"
+    str_color_end = "\x1b[0m"
+    return green_str_start + msg + str_color_end
+
+
+def colour_str_error(msg):
+    green_str_start = "\x1b[1;31;40m"
+    str_color_end = "\x1b[0m"
+    return green_str_start + msg + str_color_end
+
+
+def colour_str_highlight(msg):
+    green_str_start = "\x1b[1;35;40m"
+    str_color_end = "\x1b[0m"
+    return green_str_start + msg + str_color_end
+
+
 def set_environment():
     global opsys
     if sys.platform == "linux" or sys.platform == "linux2":
@@ -16,7 +34,7 @@ def set_environment():
         opsys = "win"
     elif sys.platform == "darwin":
         opsys = "mac"
-        raise Exception("OS unsupported")
+        raise Exception(colour_str_error("OS unsupported"))
 
 
 def mpy_get_fw_hex_file_name(file_name, board):
@@ -28,6 +46,7 @@ def mpy_firmware_deploy(file_name, board, serial_adapter_sn=None):
     print("Deploying firmware...")
     hex_file = mpy_get_fw_hex_file_name(file_name, board)
     openocd_program(board, hex_file, serial_adapter_sn)
+    print(colour_str_success("Firmware deployed successfully"))
 
 
 def mpy_firmware_download(file_name, board, version):
@@ -101,7 +120,7 @@ def fwloader_download_install():
                 sh_proc = subprocess.Popen(sh_args)
                 sh_proc.wait()
             except:
-                raise Exception("bash error")
+                raise Exception(colour_str_error("bash error"))
 
             os.chmod(os.path.join("fw-loader", "bin", "fw-loader"), 0o755)
 
@@ -123,7 +142,9 @@ def fwloader_update_kitprog():
         fwl_proc = subprocess.Popen(fwloader_args)
         fwl_proc.wait()
     except:
-        raise Exception("fwloader error")
+        raise Exception(colour_str_error("fwloader error"))
+
+    print(colour_str_success("Debugger kitprog3 firmware updated successfully"))
 
 
 def fwloader_remove():
@@ -179,7 +200,7 @@ def openocd_download_install():
                 sh_proc = subprocess.Popen(sh_args)
                 sh_proc.wait()
             except:
-                raise Exception("bash error")
+                raise Exception(colour_str_error("bash error"))
 
     print("Downloading openocd...")
     file_url, file_name = get_openocd_file_url_name()
@@ -237,14 +258,13 @@ def openocd_program(board, hex_file, serial_adapter_sn=None):
         + str(hex_file)
         + ' verify reset exit;"'
     )
-    print(openocd_cmd)
     openocd_args = shlex.split(openocd_cmd)
 
     try:
         ocd_proc = subprocess.Popen(openocd_args)
         ocd_proc.wait()
     except:
-        raise Exception("openocd error")
+        raise Exception(colour_str_error("openocd error"))
 
 
 def openocd_remove():
@@ -267,14 +287,14 @@ def validate_board_name(board_name):
             break
 
     if not board_supported:
-        raise Exception("error: board is not supported")
+        raise Exception(colour_str_error("error: board is not supported"))
 
 
 def select_board():
     def validate_board_index(board_index):
         max_board_index = len(boards)
         if board_index < 0 or board_index > max_board_index:
-            raise Exception("error: board ID not valid")
+            raise Exception(colour_str_error("error: board ID not valid"))
 
     print("")
     print("      Supported MicroPython PSoC6 boards       ")
@@ -288,7 +308,7 @@ def select_board():
     print("")
     print("")
 
-    board_index = int(input("Please type the desired board ID: "))
+    board_index = int(input(colour_str_highlight("Please type the desired board ID: ")))
     validate_board_index(board_index)
     board = boards[board_index]["name"]
 
@@ -296,11 +316,15 @@ def select_board():
 
 
 def wait_and_request_board_connect():
-    input("Please CONNECT THE BOARD and PRESS ENTER to start the firmware deployment\n")
+    input(
+        colour_str_highlight(
+            "Please CONNECT THE BOARD and PRESS ENTER to start the firmware deployment\n"
+        )
+    )
 
 
 def wait_user_termination():
-    input("Press ENTER to continue...\n")
+    input(colour_str_highlight("Press ENTER to continue...\n"))
 
 
 def device_setup(board, version, update_dbg_fw=False, quiet=False):
@@ -331,11 +355,12 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
     mpy_firmware_deploy("hello-world", board)
     mpy_firmware_deploy("mpy-psoc6", board)
-    print(" Device firmware deployment completed.")
 
     openocd_remove()
     mpy_firmware_remove("hello-world", board)
     mpy_firmware_remove("mpy-psoc6", board)
+
+    print(colour_str_success("Device setup completed :)"))
 
     if not quiet:
         wait_user_termination()
@@ -343,7 +368,7 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
 def device_erase(board, quiet=False):
     if board != "CY8CPROTO-062-4343W":
-        raise Exception("error: board is not supported")
+        raise Exception(colour_str_error("error: board is not supported"))
 
     openocd_download_install()
     openocd_board_conf_download(board)
@@ -356,6 +381,8 @@ def device_erase(board, quiet=False):
 
     openocd_remove()
     mpy_firmware_remove("device-erase", board)
+
+    print(colour_str_success("Device erase completed :)"))
 
     if not quiet:
         wait_user_termination()
@@ -408,7 +435,7 @@ def arduino_lab_download_and_launch():
             ide_proc = subprocess.Popen(mpy_ide)
             ide_proc.wait()
         except:
-            raise Exception("error: Could not launch Arduino Lab IDE")
+            raise Exception(colour_str_error("error: Could not launch Arduino Lab IDE"))
 
         os.chdir(parent_dir)
 
@@ -438,9 +465,9 @@ def quick_start(board, version):
         print("################################################")
 
     def print_exit_banner():
-        print("################################################")
-        print("   The installation is completed. Have fun :)   ")
-        print("################################################")
+        print(colour_str_success("################################################"))
+        print(colour_str_success("   The quick-start is completed. Have fun :)    "))
+        print(colour_str_success("################################################"))
 
     print_retro_banner()
     device_setup(board, version, True)
