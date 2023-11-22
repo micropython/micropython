@@ -1,4 +1,4 @@
-import argparse, os, sys, shlex, shutil, subprocess, requests, tarfile, zipfile
+import argparse, os, sys, shlex, shutil, subprocess, time, requests, tarfile, zipfile
 
 boards = [
     {"name": "CY8CPROTO-062-4343W", "ocd_cfg_file": "psoc6_2m.cfg"},
@@ -135,16 +135,27 @@ def fwloader_download_install():
 
 
 def fwloader_update_kitprog():
+    def parse_output_for_error(fwloader_stdout):
+        fwloader_out_lines = fwloader_stdout.decode().split("\n")
+        for line in fwloader_out_lines:
+            if "Error" in line:
+                raise Exception(colour_str_error(line))
+
     print("Updating kitprog3 firmware...")
     fwloader_cmd = "fw-loader --update-kp3 all"
-    print(fwloader_cmd)
     fwloader_args = shlex.split(fwloader_cmd)
 
+    fwl_proc = subprocess.Popen(fwloader_args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
-        fwl_proc = subprocess.Popen(fwloader_args)
-        fwl_proc.wait()
+        out, err = fwl_proc.communicate(timeout=90)
     except:
+        fwl_proc.kill()
         raise Exception(colour_str_error("fwloader error"))
+
+    if err:
+        raise Exception(colour_str_error(err.decode()))
+
+    parse_output_for_error(out)
 
     print(colour_str_success("Debugger kitprog3 firmware updated successfully"))
 
@@ -262,11 +273,15 @@ def openocd_program(board, hex_file, serial_adapter_sn=None):
     )
     openocd_args = shlex.split(openocd_cmd)
 
+    ocd_proc = subprocess.Popen(openocd_args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
-        ocd_proc = subprocess.Popen(openocd_args)
-        ocd_proc.wait()
+        out, err = ocd_proc.communicate(timeout=20)
     except:
+        ocd_proc.kill()
         raise Exception(colour_str_error("openocd error"))
+
+    if err:
+        raise Exception(colour_str_error(err.decode()))
 
 
 def openocd_remove():
@@ -342,25 +357,29 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
     print("MicroPython PSoC6 Version :: ", version)
 
-    openocd_download_install()
-    openocd_board_conf_download(board)
-    mpy_firmware_download("hello-world", board, "v0.3.0")
-    mpy_firmware_download("mpy-psoc6", board, version)
-
     if not quiet:
         wait_and_request_board_connect()
 
     if update_dbg_fw:
         fwloader_download_install()
-        fwloader_update_kitprog()
-        fwloader_remove()
+        try:
+            fwloader_update_kitprog()
+        finally:
+            fwloader_remove()
+        time.sleep(10)  # Wait for the device to restart
 
-    mpy_firmware_deploy("hello-world", board)
-    mpy_firmware_deploy("mpy-psoc6", board)
+    openocd_download_install()
+    openocd_board_conf_download(board)
+    mpy_firmware_download("hello-world", board, "v0.3.0")
+    mpy_firmware_download("mpy-psoc6", board, version)
 
-    openocd_remove()
-    mpy_firmware_remove("hello-world", board)
-    mpy_firmware_remove("mpy-psoc6", board)
+    try:
+        mpy_firmware_deploy("hello-world", board)
+        mpy_firmware_deploy("mpy-psoc6", board)
+    finally:
+        openocd_remove()
+        mpy_firmware_remove("hello-world", board)
+        mpy_firmware_remove("mpy-psoc6", board)
 
     print(colour_str_success("Device setup completed :)"))
 
@@ -372,17 +391,18 @@ def device_erase(board, quiet=False):
     if board != "CY8CPROTO-062-4343W":
         raise Exception(colour_str_error("error: board is not supported"))
 
+    if not quiet:
+        wait_and_request_board_connect()
+
     openocd_download_install()
     openocd_board_conf_download(board)
     mpy_firmware_download("device-erase", board, "v0.3.0")
 
-    if not quiet:
-        wait_and_request_board_connect()
-
-    mpy_firmware_deploy("device-erase", board)
-
-    openocd_remove()
-    mpy_firmware_remove("device-erase", board)
+    try:
+        mpy_firmware_deploy("device-erase", board)
+    finally:
+        openocd_remove()
+        mpy_firmware_remove("device-erase", board)
 
     print(colour_str_success("Device erase completed :)"))
 
