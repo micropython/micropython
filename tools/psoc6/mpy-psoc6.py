@@ -32,6 +32,7 @@ def set_environment():
         opsys = "linux"
     elif sys.platform == "win32" or sys.platform == "cygwin":
         opsys = "win"
+        os.system('color')
     elif sys.platform == "darwin":
         opsys = "mac"
         raise Exception(colour_str_error("OS unsupported"))
@@ -340,11 +341,6 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
     print("MicroPython PSoC6 Version :: ", version)
 
-    if update_dbg_fw:
-        fwloader_download_install()
-        fwloader_update_kitprog()
-        fwloader_remove()
-
     openocd_download_install()
     openocd_board_conf_download(board)
     mpy_firmware_download("hello-world", board, "v0.3.0")
@@ -352,6 +348,11 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
     if not quiet:
         wait_and_request_board_connect()
+        
+    if update_dbg_fw:
+        fwloader_download_install()
+        fwloader_update_kitprog()
+        fwloader_remove()
 
     mpy_firmware_deploy("hello-world", board)
     mpy_firmware_deploy("mpy-psoc6", board)
