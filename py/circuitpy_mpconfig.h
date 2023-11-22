@@ -470,7 +470,9 @@ void background_callback_run_all(void);
 #error "boot counter requires CIRCUITPY_NVM enabled"
 #endif
 
+#ifndef CIRCUITPY_VERBOSE_BLE
 #define CIRCUITPY_VERBOSE_BLE 0
+#endif
 
 // Display the Blinka logo in the REPL on displayio displays.
 #ifndef CIRCUITPY_REPL_LOGO

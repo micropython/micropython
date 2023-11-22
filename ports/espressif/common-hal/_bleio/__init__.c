@@ -112,7 +112,8 @@ void check_nimble_error(int rc, const char *file, size_t line) {
 }
 
 void check_ble_error(int error_code, const char *file, size_t line) {
-    if (error_code == BLE_ERR_SUCCESS) {
+    // 0 means success. For BLE_HS_* codes, there is no defined "SUCCESS" value.
+    if (error_code == 0) {
         return;
     }
     switch (error_code) {
