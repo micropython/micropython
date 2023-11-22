@@ -163,11 +163,16 @@ static const flash_layout_t flash_layout[] = {
 #error Unsupported processor
 #endif
 
-#if defined(STM32H723xx) || defined(STM32H750xx)
+#if defined(STM32H7) && !defined(DUAL_BANK)
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {
     return FLASH_BANK_1;
+}
+
+// get the page of a given flash address
+static uint32_t get_page(uint32_t addr) {
+    return (addr - FLASH_LAYOUT_START_ADDR) / FLASH_LAYOUT_SECTOR_SIZE;
 }
 
 #elif (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32H5) || defined(STM32H7)
@@ -195,7 +200,6 @@ static uint32_t get_bank(uint32_t addr) {
     }
 }
 
-#if (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE))
 // get the page of a given flash address
 static uint32_t get_page(uint32_t addr) {
     if (addr < (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) {
@@ -206,7 +210,6 @@ static uint32_t get_page(uint32_t addr) {
         return (addr - (FLASH_LAYOUT_START_ADDR + FLASH_BANK_SIZE)) / FLASH_LAYOUT_SECTOR_SIZE;
     }
 }
-#endif
 
 #elif (defined(STM32L4) && !defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32WB) || defined(STM32WL)
 
@@ -352,10 +355,7 @@ int flash_erase(uint32_t flash_dest) {
     EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
     #elif defined(STM32H5) || defined(STM32H7)
     EraseInitStruct.Banks = get_bank(flash_dest);
-    EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
-    #if defined(STM32H5)
-    EraseInitStruct.Sector &= 0x7f; // second bank should start counting at 0
-    #endif
+    EraseInitStruct.Sector = get_page(flash_dest);
     #else
     #error Unsupported processor
     #endif
