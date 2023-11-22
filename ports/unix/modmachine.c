@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013-2023 Damien P. George
  * Copyright (c) 2015 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,13 +25,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-
-#include "py/runtime.h"
-#include "py/obj.h"
-
-#include "extmod/modmachine.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
 
 #if MICROPY_PLAT_DEV_MEM
 #include <errno.h>
@@ -41,7 +36,18 @@
 #define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
-#if MICROPY_PY_MACHINE
+#ifdef MICROPY_UNIX_MACHINE_IDLE
+#define MICROPY_PY_MACHINE_IDLE_ENTRY { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
+#else
+#define MICROPY_PY_MACHINE_IDLE_ENTRY
+#endif
+
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    MICROPY_PY_MACHINE_IDLE_ENTRY \
+    { MP_ROM_QSTR(MP_QSTR_PinBase), MP_ROM_PTR(&machine_pinbase_type) }, \
+
+// This variable is needed for machine.soft_reset(), but the variable is otherwise unused.
+int pyexec_system_exit = 0;
 
 uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     uintptr_t addr = mp_obj_get_int_truncated(addr_o);
@@ -81,32 +87,3 @@ STATIC mp_obj_t machine_idle(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 #endif
-
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
-
-    { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
-
-    #ifdef MICROPY_UNIX_MACHINE_IDLE
-    { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
-    #endif
-
-    { MP_ROM_QSTR(MP_QSTR_PinBase), MP_ROM_PTR(&machine_pinbase_type) },
-    { MP_ROM_QSTR(MP_QSTR_Signal), MP_ROM_PTR(&machine_signal_type) },
-    #if MICROPY_PY_MACHINE_PULSE
-    { MP_ROM_QSTR(MP_QSTR_time_pulse_us), MP_ROM_PTR(&machine_time_pulse_us_obj) },
-    #endif
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&machine_module_globals,
-};
-
-MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
-
-#endif // MICROPY_PY_MACHINE

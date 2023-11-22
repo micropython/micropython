@@ -111,10 +111,12 @@
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/rp2/modtime.c"
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/rp2/modmachine.c"
 #define MICROPY_PY_MACHINE_ADC                  (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE      "ports/rp2/machine_adc.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM            (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO         (1)
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"

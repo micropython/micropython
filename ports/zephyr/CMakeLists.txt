@@ -41,7 +41,6 @@ set(MICROPY_SOURCE_PORT
     machine_spi.c
     machine_pin.c
     modbluetooth_zephyr.c
-    modmachine.c
     modsocket.c
     modzephyr.c
     modzsensor.c

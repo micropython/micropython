@@ -1,6 +1,9 @@
 // Options to control how MicroPython is built for this port,
 // overriding defaults in py/mpconfig.h.
 
+// This needs to be defined before any ESP SDK headers are included.
+#define USE_US_TIMER 1
+
 // Board-specific definitions
 #include "mpconfigboard.h"
 
@@ -61,16 +64,17 @@
 #define MICROPY_PY_LWIP             (1)
 #define MICROPY_PY_LWIP_SOCK_RAW    (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/esp8266/modmachine.c"
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/esp8266/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_READ (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PWM      (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE "ports/esp8266/machine_pwm.c"
-#define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_SPI      (1)
 #define MICROPY_PY_MACHINE_SOFTSPI  (1)

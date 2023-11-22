@@ -324,7 +324,6 @@ SRC_C += \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_sdcard.c \
-	modmachine.c \
 	extint.c \
 	usrsw.c \
 	flash.c \

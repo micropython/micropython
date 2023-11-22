@@ -331,7 +331,6 @@ SRC_C += \
 	machine_bitstream.c \
 	machine_i2c.c \
 	machine_spi.c \
-	modmachine.c \
 	modpyb.c \
 	modstm.c \
 	network_lan.c \
@@ -677,7 +676,7 @@ $(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_
 	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
 		--output-af-const $(GEN_PINS_AF_CONST) --output-af-defs $(GEN_PINS_AF_DEFS)
 
-modmachine.c: $(GEN_PLLFREQTABLE_HDR)
+powerctrl.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@

@@ -69,7 +69,6 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_touchpad.c
     machine_dac.c
     machine_i2c.c
-    modmachine.c
     network_common.c
     network_lan.c
     network_ppp.c
