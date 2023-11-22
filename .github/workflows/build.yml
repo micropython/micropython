@@ -84,6 +84,7 @@ jobs:
       run: python3 -u ci_set_matrix.py
       working-directory: tools
       env:
+        PULL: ${{ github.event.number }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
   tests:
@@ -294,3 +295,5 @@ jobs:
     with:
       boards: ${{ toJSON(fromJSON(needs.scheduler.outputs.ports)[matrix.port]) }}
       cp-version: ${{ needs.scheduler.outputs.cp-version }}
+    env:
+      PULL: ${{ github.event.number }}
