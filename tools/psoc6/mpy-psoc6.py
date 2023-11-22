@@ -6,6 +6,7 @@ boards = [
 ]
 
 opsys = ""
+version = "0.1.0"
 
 
 def colour_str_success(msg):
@@ -32,7 +33,7 @@ def set_environment():
         opsys = "linux"
     elif sys.platform == "win32" or sys.platform == "cygwin":
         opsys = "win"
-        os.system('color')
+        os.system("color")  # Enable colouring in cmd and powershell
     elif sys.platform == "darwin":
         opsys = "mac"
         raise Exception(colour_str_error("OS unsupported"))
@@ -348,7 +349,7 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
     if not quiet:
         wait_and_request_board_connect()
-        
+
     if update_dbg_fw:
         fwloader_download_install()
         fwloader_update_kitprog()
@@ -495,6 +496,16 @@ def parser():
         device_erase(args.board, args.q)
 
     # Main parser
+    class ver_action(argparse.Action):
+        def __init__(self, option_strings, dest, **kwargs):
+            return super().__init__(
+                option_strings, dest, nargs=0, default=argparse.SUPPRESS, **kwargs
+            )
+
+        def __call__(self, parser, namespace, values, option_string, **kwargs):
+            print("mpy-psoc6 version: " + version)
+            parser.exit()
+
     main_parser_desc = """
     Micropython PSoC6 utility script
 
@@ -510,6 +521,7 @@ def parser():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawTextHelpFormatter, description=main_parser_desc
     )
+    parser.add_argument("-v", "--version", action=ver_action, help="mpy-psoc6 version")
     subparser = parser.add_subparsers()
     parser.set_defaults(func=main_parser_func)
 
