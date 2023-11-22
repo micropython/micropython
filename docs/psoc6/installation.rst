@@ -4,12 +4,22 @@ Installing MicroPython
 ======================
 
 To support the MicroPython PSoC6™ port installation the ``mpy-psoc6`` utility script is provided for Windows and
-Linux.
-You can easily download from your OS terminal with the following command:
+Linux. Additionally, a python script is available also cross-platform for Linux and Windows.
+
+
+.. warning::
+    
+    The plan is to replace the native bash and cmd line scripts for Linux and Windows by executable programs generated for each OS (including MacOS) from the python script in future releases.
+    New features in the installation utility will be only added to the executable and python script versions, as the native OS scripts will be deprecated in the future.
+
+
+You can easily download them terminal with the following command:
 
 .. tabs::
 
     .. group-tab:: Linux
+
+        Download the mpy-psoc6 utility script:
 
         .. code-block:: bash
 
@@ -29,6 +39,21 @@ You can easily download from your OS terminal with the following command:
 
                 curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
 
+    .. group-tab:: Python
+            
+            Download the mpy-psoc6 utility script:
+
+            .. code-block:: bash
+                
+                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
+
+            Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
+            Then install the following packages:
+
+            .. code-block:: bash                
+           
+                pip install requests
+
 
 Find all the available commands and options by running the script with the command help:
 
@@ -44,7 +69,13 @@ Find all the available commands and options by running the script with the comma
 
             .. code-block:: bash
             
-                mpy-psoc6.cmd help
+                .\mpy-psoc6.cmd help
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py --help
 
 .. _psoc6_quick_start:
 
@@ -66,7 +97,13 @@ micropython is to run the ``quick-start`` command of the script:
 
             .. code-block:: bash
                 
-                mpy-psoc6.cmd quick-start
+                .\mpy-psoc6.cmd quick-start
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py quick-start
 
 The command will take care of the following:
 
@@ -97,7 +134,13 @@ MicropPython firmware version:
 
             .. code-block:: bash
                 
-                mpy-psoc6.cmd device-setup
+                .\mpy-psoc6.cmd device-setup
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py device-setup
 
 
 You can run any command any time you want to upgrade to the latest MicroPython firmware version.
@@ -127,7 +170,13 @@ version need to be passed as arguments.
 
             .. code-block:: bash
                 
-                mpy-psoc6.cmd device-setup CY8CPROTO-062-4343W v0.1.1
+                .\mpy-psoc6.cmd device-setup CY8CPROTO-062-4343W v0.1.1
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py device-setup -b CY8CPROTO-062-4343W -v v0.1.1
 
 .. warning::
     
@@ -135,8 +184,29 @@ version need to be passed as arguments.
     Equally, provide a valid tag existing in the release section with the format *v.x.y.z*. 
     No fail safe mechanisms or error verifications are (yet) implemented on the ``mpy-psoc6`` utility, and the script will fail to retrieve the necessary firmware file.
 
+Updating the flasher firmware
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The evaluation PSoC6™ boards include an integrated hardware programmer tool using `KitProg <https://www.infineon.com/cms/en/design-support/tools/programming-testing/psoc-programming-solutions/#collapse-703c72c0-50f2-11ec-9758-005056945905-3>`_ firmware. 
+Some older boards will come preflashed with KitProg version 2. In MicroPython PSoC6™ port it is required to use KitProg version 3, and the setup process will fail for version 2.
+
+If you need to update the KitProg firmware, you can use the flag ``-u`` for updating the firmware version in the MicropPython device setup process. 
+
+.. tabs::
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py device-setup -u
+
+        
+.. warning::
+    
+    This option is only available in the python script utility.     
+
 Direct binary flashing
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 Another alternative to program the board is to directly provide the binary file. The ``firmware-deploy`` command is providing this option. 
 This commands is skipping all the tools download and installation, neither download the MicoPython firmware.
@@ -157,10 +227,16 @@ The board needs to be specified, and the path and name of the ``.hex`` file:
 
             .. code-block:: bash
                 
-                mpy-psoc6.cmd firmware-deploy CY8CPROTO-062-4343W pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
+                .\mpy-psoc6.cmd firmware-deploy CY8CPROTO-062-4343W pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py firmware-deploy -b CY8CPROTO-062-4343W -f pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
 
 Erasing the device (external) file system
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------------------
 
 Some PSoC6™ boards include an external flash memory which is used by the MicroPython file system. This memory will not be erased when
 reprogramming or erasing MicroPython firmware via ``device-setup`` or ``firmware-deploy``.
@@ -178,7 +254,13 @@ Use the ``device-erase`` command to erase of the external memory of your PSoC6�
 
             .. code-block:: bash
                 
-                mpy-psoc6.cmd device-erase
+                .\mpy-psoc6.cmd device-erase
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py device-erase 
 
 .. warning::
     

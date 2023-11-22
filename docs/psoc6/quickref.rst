@@ -413,7 +413,6 @@ SCK     P9_2           P6_2         P10_2
 =====  ===========  ============  ============
 
 .. 
-
     TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
     TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
     - From board manual? 
@@ -510,7 +509,6 @@ PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping a
 +---------+-------+
 
 .. 
-
     TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
     TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
     - From board manual? 
