@@ -159,6 +159,7 @@
 #define MICROPY_PY_RANDOM_EXTRA_FUNCS (1)
 #define MICROPY_PY_TIME             (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/nrf/modules/machine/modmachine.c"
 #define MICROPY_PY_MACHINE_PULSE    (0)
 #define MICROPY_PY_MACHINE_SOFTI2C  (MICROPY_PY_MACHINE_I2C)
 

@@ -110,7 +110,6 @@ SRC_C = \
 	uart.c \
 	esppwm.c \
 	espapa102.c \
-	modmachine.c \
 	machine_bitstream.c \
 	machine_pin.c \
 	machine_rtc.c \

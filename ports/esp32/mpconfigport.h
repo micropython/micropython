@@ -96,6 +96,7 @@
 #define MICROPY_PY_OS_UNAME                 (1)
 #define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_PY_MACHINE                  (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/esp32/modmachine.c"
 #define MICROPY_PY_MACHINE_ADC              (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
@@ -106,6 +107,7 @@
 #define MICROPY_PY_MACHINE_ADC_BLOCK_INCLUDEFILE "ports/esp32/machine_adc_block.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY         (1)

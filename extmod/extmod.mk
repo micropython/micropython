@@ -27,6 +27,7 @@ SRC_EXTMOD_C += \
 	extmod/modheapq.c \
 	extmod/modjson.c \
 	extmod/modlwip.c \
+	extmod/modmachine.c \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
 	extmod/modos.c \

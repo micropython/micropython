@@ -200,7 +200,6 @@ SRC_C += \
 	unix_mphal.c \
 	mpthreadport.c \
 	input.c \
-	modmachine.c \
 	alloc.c \
 	fatfs_port.c \
 	mpbthciport.c \

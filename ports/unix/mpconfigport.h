@@ -134,6 +134,9 @@ typedef long mp_off_t;
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
+// Implementation of the machine module.
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"
+
 // Unix-specific configuration of machine.mem*.
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr

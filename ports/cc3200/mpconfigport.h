@@ -121,6 +121,7 @@
 #define MICROPY_PY_TIME_TIME_TIME_NS                (1)
 #define MICROPY_PY_TIME_INCLUDEFILE                 "ports/cc3200/mods/modtime.c"
 #define MICROPY_PY_MACHINE                          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE              "ports/cc3200/mods/modmachine.c"
 #define MICROPY_PY_MACHINE_WDT                      (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE          "ports/cc3200/mods/machine_wdt.c"
 
