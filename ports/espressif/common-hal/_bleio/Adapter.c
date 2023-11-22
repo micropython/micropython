@@ -284,15 +284,21 @@ STATIC void _new_connection(uint16_t conn_handle) {
     esp_ble_tx_power_set(conn_handle, ESP_PWR_LVL_N0);
 
 
-    // Find an empty connection. One must always be available because the SD has the same
+    // Find an empty connection. One should always be available because the SD has the same
     // total connection limit.
-    bleio_connection_internal_t *connection;
+    bleio_connection_internal_t *connection = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         connection = &bleio_connections[i];
         if (connection->conn_handle == BLEIO_HANDLE_INVALID) {
             break;
         }
     }
+
+    // Shouldn't happen, but just return if no connection available.
+    if (!connection) {
+        return;
+    }
+
     connection->conn_handle = conn_handle;
     connection->connection_obj = mp_const_none;
     connection->pair_status = PAIR_NOT_PAIRED;

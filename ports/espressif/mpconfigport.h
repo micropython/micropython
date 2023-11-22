@@ -28,6 +28,9 @@
 #ifndef MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
 #define MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
 
+// Enable for debugging.
+// #define CIRCUITPY_VERBOSE_BLE               (1)
+
 #define MICROPY_NLR_THUMB                   (0)
 
 #define MICROPY_USE_INTERNAL_PRINTF         (0)

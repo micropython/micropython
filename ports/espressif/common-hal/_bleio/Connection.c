@@ -63,7 +63,7 @@ int bleio_connection_event_cb(struct ble_gap_event *event, void *connection_in) 
             connection->pair_status = PAIR_NOT_PAIRED;
 
             #if CIRCUITPY_VERBOSE_BLE
-            mp_printf(&mp_plat_print, "disconnected %02x\n", event->disconnect.reason);
+            mp_printf(&mp_plat_print, "event->disconnect.reason: 0x%x\n", event->disconnect.reason);
             #endif
             if (connection->connection_obj != mp_const_none) {
                 bleio_connection_obj_t *obj = connection->connection_obj;
@@ -209,6 +209,7 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
             _last_discovery_status = error->status;
             xTaskNotifyGive(discovery_task);
         }
+        return 0;
     }
     // If any of these memory allocations fail, we set _last_discovery_status
     // and let the process continue.
@@ -233,11 +234,14 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
         ((chr->properties & BLE_GATT_CHR_PROP_WRITE_NO_RSP) != 0 ? CHAR_PROP_WRITE_NO_RESPONSE : 0);
 
     // Call common_hal_bleio_characteristic_construct() to initialize some fields and set up evt handler.
+    mp_buffer_info_t mp_const_empty_bytes_bufinfo;
+    mp_get_buffer_raise(mp_const_empty_bytes, &mp_const_empty_bytes_bufinfo, MP_BUFFER_READ);
+
     common_hal_bleio_characteristic_construct(
         characteristic, service, chr->val_handle, uuid,
         props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
         0, false,   // max_length, fixed_length: values don't matter for gattc
-        mp_const_empty_bytes,
+        &mp_const_empty_bytes_bufinfo,
         NULL);
     // Set def_handle directly since it is only used in discovery.
     characteristic->def_handle = chr->def_handle;
@@ -260,6 +264,7 @@ STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
             _last_discovery_status = error->status;
         }
         xTaskNotifyGive(discovery_task);
+        return 0;
     }
     // If any of these memory allocations fail, we set _last_discovery_status
     // and let the process continue.
