@@ -1,15 +1,14 @@
-import os
+import vfs
 import machine, rp2
 
 
 # Try to mount the filesystem, and format the flash if it doesn't exist.
 bdev = rp2.Flash()
 try:
-    vfs = os.VfsFat(bdev)
-    os.mount(vfs, "/")
+    fs = vfs.VfsFat(bdev)
 except:
-    os.VfsFat.mkfs(bdev)
-    vfs = os.VfsFat(bdev)
-os.mount(vfs, "/")
+    vfs.VfsFat.mkfs(bdev)
+    fs = vfs.VfsFat(bdev)
+vfs.mount(fs, "/")
 
-del os, bdev, vfs
+del vfs, bdev, fs
