@@ -26,6 +26,7 @@
  */
 
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "uart.h"
 #include "rng.h"
 

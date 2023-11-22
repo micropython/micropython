@@ -17,44 +17,53 @@ Adafruit ItsyBitsy M0 Express pin assignment table
 === ==== ============ ==== ==== ====== ====== ====== ======
 Pin GPIO Pin name     IRQ  ADC  Serial Serial TCC/TC TCC/TC
 === ==== ============ ==== ==== ====== ====== ====== ======
-  0 PA11           D0  11   19    0/3    2/3   1/1    0/3
-  1 PA10           D1  10   18    0/2    2/2   1/0    0/2
-  2 PA14           D2  14    -    2/2    4/2   3/0    0/4
-  3 PA09           D3   9   17    0/1    2/1   0/1    1/3
-  4 PA08           D4   -   16    0/0    2/0   0/0    1/2
-  5 PA15           D5  15    -    2/3    4/3   3/1    0/5
-  7 PA21           D7   5    -    5/3    3/3   7/1    0/7
-  9 PA07           D9   7    7     -     0/3   1/1     -
- 10 PA18          D10   2    -    1/2    3/2   3/0    0/2
- 11 PA16          D11   0    -    1/0    3/0   2/0    0/6
- 12 PA19          D12   3    -    1/3    3/3   3/1    0/3
- 13 PA17          D13   1    -    1/1    3/1   2/1    0/7
- 14 PA02           A0   2    0     -      -     -      -
- 15 PB08           A1   8    2     -     4/0   4/0     -
- 16 PB09           A2   9    3     -     4/1   4/1     -
- 17 PA04           A3   4    4     -     0/0   0/0     -
- 18 PA05           A4   5    5     -     0/1   0/1     -
- 19 PB02           A5   2    -     -     5/0   6/0     -
- 20 PA22          SDA   6    -    3/0    5/0   4/0    0/4
- 21 PA23          SCL   7    -    3/1    5/1   4/1    0/5
- 22 PB10         MOSI  10    -     -     4/2   5/0    0/4
- 23 PA12         MISO  12    -    2/0    4/0   2/0    0/6
- 24 PB11          SCK  11    -     -     4/3   5/1    0/5
- 25 PA00  DOTSTAR_CLK   0    -     -     1/0   2/0     -
- 26 PA01 DOTSTAR_DATA   1    -     -     1/1   2/1     -
- 27 PB22   FLASH_MOSI   6    -     -     5/2   7/0     -
- 28 PB03   FLASH_MISO   3    -     -     5/1   6/1     -
- 29 PB23    FLASH_SCK   7    -     -     5/3   7/1     -
+  2 PA02           A0   2   0     -       -     -      - 
+ 40 PB08           A1   8   2     -      4/0   4/0     - 
+ 41 PB09           A2   9   3     -      4/1   4/1     - 
+  4 PA04           A3   4   4     -      0/0   0/0     - 
+  5 PA05           A4   5   5     -      0/1   0/1     - 
+ 34 PB02           A5   2  10     -      5/0   6/0     - 
+ 11 PA11           D0  11  19    0/3     2/3   1/1    0/3
+ 10 PA10           D1  10  18    0/2     2/2   1/0    0/2
+ 14 PA14           D2  14   -    2/2     4/2   3/0    0/4
+  9 PA09           D3   9  17    0/1     2/1   0/1    1/3
+  8 PA08           D4   -  16    0/0     2/0   0/0    1/2
+ 15 PA15           D5  15   -    2/3     4/3   3/1    0/5
+ 21 PA21           D7   5   -    5/3     3/3   7/1    0/7
+  7 PA07           D9   7   7     -      0/3   1/1     - 
+ 18 PA18          D10   2   -    1/2     3/2   3/0    0/2
+ 16 PA16          D11   0   -    1/0     3/0   2/0    0/6
+ 19 PA19          D12   3   -    1/3     3/3   3/1    0/3
+ 17 PA17          D13   1   -    1/1     3/1   2/1    0/7
+  0 PA00  DOTSTAR_CLK   0   -     -      1/0   2/0     - 
+  1 PA01 DOTSTAR_DATA   1   -     -      1/1   2/1     - 
+ 27 PA27     FLASH_CS  15   -     -       -     -      - 
+ 35 PB03   FLASH_MISO   3  11     -      5/1   6/1     - 
+ 54 PB22   FLASH_MOSI   6   -     -      5/2   7/0     - 
+ 55 PB23    FLASH_SCK   7   -     -      5/3   7/1     - 
+ 12 PA12         MISO  12   -    2/0     4/0   2/0    0/6
+ 42 PB10         MOSI  10   -     -      4/2   5/0    0/4
+ 43 PB11          SCK  11   -     -      4/3   5/1    0/5
+ 23 PA23          SCL   7   -    3/1     5/1   4/1    0/5
+ 22 PA22          SDA   6   -    3/0     5/0   4/0    0/4
+ 30 PA30        SWCLK  10   -     -      1/2   1/0     - 
+ 31 PA31        SWDIO  11   -     -      1/3   1/1     - 
+ 24 PA24       USB_DM  12   -    3/2     5/2   5/0    1/2
+ 25 PA25       USB_DP  13   -    3/3     5/3   5/1    1/3
+  3 PA03                3   1     -       -     -      - 
+  6 PA06                6   6     -      0/2   1/0     - 
+ 13 PA13               13   -    2/1     4/1   2/0    0/7
+ 20 PA20                4   -    5/2     3/2   7/0    0/4
+ 28 PA28                8   -     -       -     -      - 
 === ==== ============ ==== ==== ====== ====== ====== ======
 
 
 Description of the columns:
 
 - *Pin* - The number that is expected at ``machine.Pin(n)``, if the pin is given
-  as a number. This is NOT the GPIO number, but the board pin number, as
-  given in the board specific definition file.
-- *GPIO* - The GPIO number.
-- *Pin Name* - The name of a Pin which is expected argument to ``machine.Pin("name")``.
+  as a number.
+- *GPIO* - The GPIO name, which can be used as argument to ``machine.Pin("name")``.
+- *Pin Name* - The boards name, which can be used as argument to ``machine.Pin("name")``.
 - *IRQ* - The IRQ number assigned to that GPIO, used internally by ``Pin.irq()``. When
   using ``Pin.irq()``, different pins must use different IRQs
 - *ADC* - The ADC channel assigned to the pin. When using ADC, different pins must
@@ -183,10 +192,9 @@ Pin GPIO Pin name     IRQ  ADC  ADC  Serial Serial  TC    PWM   PWM
 Description of the columns:
 
 - *Pin* - The number that is expected at ``machine.Pin(n)``, if the pin is given
-  as a number. This is NOT the GPIO number, but the board pin number, as
-  given in the board specific definition file.
-- *GPIO* - The GPIO number.
-- *Pin Name* The name of a Pin which is expected argument to ``machine.Pin("name")``.
+  as a number.
+- *GPIO* - The GPIO name, which can be used as argument to ``machine.Pin("name")``.
+- *Pin Name* - The boards name, which can be used as argument to ``machine.Pin("name")``.
 - *IRQ* - The IRQ number assigned to that GPIO, used internally by ``Pin.irq()``. When
   using ``Pin.irq()``, different pins must use different IRQs
 - *ADC* - The ADC0/1 channel assigned to the pin. When using ADC, different pins must

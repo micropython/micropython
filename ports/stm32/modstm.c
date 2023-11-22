@@ -29,7 +29,7 @@
 
 #include "py/obj.h"
 #include "py/objint.h"
-#include "extmod/machine_mem.h"
+#include "extmod/modmachine.h"
 #include "rfcore.h"
 #include "portmodules.h"
 #include "subghz.h"

@@ -15,17 +15,16 @@ function ci_gcc_arm_setup {
 }
 
 ########################################################################################
-# code formatting
+# c code formatting
 
-function ci_code_formatting_setup {
+function ci_c_code_formatting_setup {
     sudo apt-get install uncrustify
-    pip3 install black
     uncrustify --version
-    black --version
 }
 
-function ci_code_formatting_run {
-    tools/codeformat.py -v
+function ci_c_code_formatting_run {
+    # Only run on C files. The ruff rule runs separately on Python.
+    tools/codeformat.py -v -c
 }
 
 ########################################################################################
@@ -357,19 +356,6 @@ function ci_stm32_nucleo_build {
 }
 
 ########################################################################################
-# ports/teensy
-
-function ci_teensy_setup {
-    ci_gcc_arm_setup
-}
-
-function ci_teensy_build {
-    make ${MAKEOPTS} -C mpy-cross
-    make ${MAKEOPTS} -C ports/teensy submodules
-    make ${MAKEOPTS} -C ports/teensy
-}
-
-########################################################################################
 # ports/unix
 
 CI_UNIX_OPTS_SYS_SETTRACE=(
@@ -459,6 +445,15 @@ function ci_unix_standard_build {
 }
 
 function ci_unix_standard_run_tests {
+    ci_unix_run_tests_full_helper standard
+}
+
+function ci_unix_standard_v2_build {
+    ci_unix_build_helper VARIANT=standard MICROPY_PREVIEW_VERSION_2=1
+    ci_unix_build_ffi_lib_helper gcc
+}
+
+function ci_unix_standard_v2_run_tests {
     ci_unix_run_tests_full_helper standard
 }
 

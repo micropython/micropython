@@ -4,10 +4,12 @@
  * Copyright (c) 2023 Arduino SA
  */
 
-#define MICROPY_HW_BOARD_NAME       "NICLAVISION"
+#define MICROPY_HW_BOARD_NAME       "Arduino Nicla Vision"
 #define MICROPY_HW_MCU_NAME         "STM32H747"
-#define MICROPY_PY_SYS_PLATFORM     "Nicla Vision"
-#define MICROPY_HW_FLASH_FS_LABEL   "niclavision"
+#define MICROPY_HW_FLASH_FS_LABEL   "Nicla Vision"
+
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-nicla-vision"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define UINT_FMT                    "%u"
@@ -106,6 +108,13 @@ void NICLAV_board_osc_enable(int enable);
 
 // SMPS configuration
 #define MICROPY_HW_PWR_SMPS_CONFIG      (PWR_LDO_SUPPLY)
+
+// Configure the analog switches for dual-pad pins.
+#define MICROPY_HW_ANALOG_SWITCH_PA0    (SYSCFG_SWITCH_PA0_OPEN)
+#define MICROPY_HW_ANALOG_SWITCH_PA1    (SYSCFG_SWITCH_PA1_OPEN)
+// PC2_C and PC3_C, which are connected to ULPI NXT and DIR pins.
+#define MICROPY_HW_ANALOG_SWITCH_PC2    (SYSCFG_SWITCH_PC2_CLOSE)
+#define MICROPY_HW_ANALOG_SWITCH_PC3    (SYSCFG_SWITCH_PC3_CLOSE)
 
 // There is an external 32kHz oscillator
 #define RTC_ASYNCH_PREDIV           (0)

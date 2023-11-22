@@ -31,39 +31,35 @@
 #include <stdint.h>
 #include "string.h"
 
-#include "modmachine.h"
 #include "py/runtime.h"
 #include "py/misc.h"
+#include "extmod/modmachine.h"
 #include "pin_af.h"
 #include "sam.h"
 
 
 extern const uint8_t tcc_channel_count[];
 
-#include "pin_af_table.c"
-
 // Just look for an table entry for a given pin and raise an error
 // in case of no match (which should not happen).
-
-const machine_pin_obj_t *get_pin_obj_ptr(int pin_id) {
-    for (int i = 0; i < MP_ARRAY_SIZE(pin_af_table); i++) {
-        if (pin_af_table[i]->pin_id == pin_id) { // Pin match
-            return pin_af_table[i];
+const machine_pin_obj_t *pin_find_by_id(int pin_id) {
+    const mp_map_t *cpu_map = &machine_pin_cpu_pins_locals_dict.map;
+    for (uint i = 0; i < cpu_map->alloc; i++) {
+        machine_pin_obj_t *pin = MP_OBJ_TO_PTR(cpu_map->table[i].value);
+        if (pin->pin_id == pin_id) {
+            return pin;
         }
     }
     mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
 }
 
-#if MICROPY_PY_MACHINE_PIN_BOARD_CPU
 STATIC const machine_pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
-    mp_map_t *named_map = mp_obj_dict_get_map((mp_obj_t)named_pins);
-    mp_map_elem_t *named_elem = mp_map_lookup(named_map, name, MP_MAP_LOOKUP);
-    if (named_elem != NULL && named_elem->value != NULL) {
+    mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t *)&named_pins->map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL) {
         return named_elem->value;
     }
     return NULL;
 }
-#endif
 
 const machine_pin_obj_t *pin_find(mp_obj_t pin) {
     // Is already a object of the proper type
@@ -72,10 +68,9 @@ const machine_pin_obj_t *pin_find(mp_obj_t pin) {
     }
     if (mp_obj_is_small_int(pin)) {
         // Pin defined by pin number for PAnn, PBnn, etc.
-        return get_pin_obj_ptr(mp_obj_get_int(pin));
+        return pin_find_by_id(mp_obj_get_int(pin));
     }
 
-    #if MICROPY_PY_MACHINE_PIN_BOARD_CPU
     const machine_pin_obj_t *self = NULL;
     // See if the pin name matches a board pin
     self = pin_find_named_pin(&machine_pin_board_pins_locals_dict, pin);
@@ -87,38 +82,8 @@ const machine_pin_obj_t *pin_find(mp_obj_t pin) {
     if (self != NULL) {
         return self;
     }
-    #else
-    if (mp_obj_is_str(pin)) {
-        // Search by name
-        size_t slen;
-        const char *s = mp_obj_str_get_data(pin, &slen);
-        // Check for a string like PA02 or PD12
-        if (slen == 4 && s[0] == 'P' && strchr("ABCD", s[1]) != NULL &&
-            strchr("0123456789", s[2]) != NULL && strchr("0123456789", s[2]) != NULL) {
-            int num = (s[1] - 'A') * 32 + (s[2] - '0') * 10 + (s[3] - '0');
-            return get_pin_obj_ptr(num);
-        } else {
-            for (int i = 0; i < MP_ARRAY_SIZE(pin_af_table); i++) {
-                size_t len;
-                const char *name = (char *)qstr_data(pin_af_table[i]->name, &len);
-                if (slen == len && strncmp(s, name, slen) == 0) {
-                    return pin_af_table[i];
-                }
-            }
-        }
-    }
-    #endif // MICROPY_PY_MACHINE_PIN_BOARD_CPU
 
     mp_raise_ValueError(MP_ERROR_TEXT("not a Pin"));
-}
-
-const char *pin_name(int id) {
-    for (int i = 0; i < sizeof(pin_af_table); i++) {
-        if (pin_af_table[i]->pin_id == id) {
-            return qstr_str(pin_af_table[i]->name);
-        }
-    }
-    return "-";
 }
 
 #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
@@ -127,7 +92,7 @@ const char *pin_name(int id) {
 // If not, an error will be raised.
 
 sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom_nr) {
-    const machine_pin_obj_t *pct_ptr = get_pin_obj_ptr(pin_id);
+    const machine_pin_obj_t *pct_ptr = pin_find_by_id(pin_id);
     if ((pct_ptr->sercom1 >> 4) == sercom_nr) {
         return (sercom_pad_config_t) {ALT_FCT_SERCOM1, pct_ptr->sercom1 & 0x0f};
     } else if ((pct_ptr->sercom2 >> 4) == sercom_nr) {
@@ -144,10 +109,10 @@ sercom_pad_config_t get_sercom_config(int pin_id, uint8_t sercom_nr) {
 // If not, an error will be raised.
 
 adc_config_t get_adc_config(int pin_id, int32_t flag) {
-    const machine_pin_obj_t *pct_ptr = get_pin_obj_ptr(pin_id);
+    const machine_pin_obj_t *pct_ptr = pin_find_by_id(pin_id);
     if (pct_ptr->adc0 != 0xff && (flag & (1 << pct_ptr->adc0)) == 0) {
         return (adc_config_t) {0, pct_ptr->adc0};
-    #if defined(MUC_SAMD51)
+    #if defined(MCU_SAMD51)
     } else if (pct_ptr->adc1 != 0xff && (flag & (1 << (pct_ptr->adc1 + 16))) == 0) {
         return (adc_config_t) {1, pct_ptr->adc1};
     #endif
@@ -166,7 +131,7 @@ adc_config_t get_adc_config(int pin_id, int32_t flag) {
 // tries to provide an unused device, if available.
 
 pwm_config_t get_pwm_config(int pin_id, int wanted_dev, uint8_t device_status[]) {
-    const machine_pin_obj_t *pct_ptr = get_pin_obj_ptr(pin_id);
+    const machine_pin_obj_t *pct_ptr = pin_find_by_id(pin_id);
     uint8_t tcc1 = pct_ptr->tcc1;
     uint8_t tcc2 = pct_ptr->tcc2;
 

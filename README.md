@@ -119,7 +119,6 @@ In addition, the following ports are provided in this repository:
  - [rp2](ports/rp2) -- Raspberry Pi RP2040 (including Pico and Pico W).
  - [samd](ports/samd) -- Microchip (formerly Atmel) SAMD21 and SAMD51.
  - [stm32](ports/stm32) -- STMicroelectronics STM32 family (including F0, F4, F7, G0, G4, H7, L0, L4, WB)
- - [teensy](ports/teensy) -- Teensy 3.x.
  - [webassembly](ports/webassembly) -- Emscripten port targeting browsers and NodeJS.
  - [zephyr](ports/zephyr) -- Zephyr RTOS.
 

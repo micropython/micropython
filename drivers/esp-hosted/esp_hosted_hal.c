@@ -34,9 +34,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
-#include "modmachine.h"
-#include "extmod/machine_spi.h"
-#include "mpconfigboard.h"
+#include "extmod/modmachine.h"
 #ifdef MICROPY_HW_WIFI_LED
 #include "led.h"
 #endif

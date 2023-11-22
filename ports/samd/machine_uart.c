@@ -24,17 +24,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "py/runtime.h"
 
-#if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
 
 #include "py/mphal.h"
-#include "py/stream.h"
 #include "py/ringbuf.h"
-#include "modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
-#include "clock_config.h"
 
 #define DEFAULT_UART_BAUDRATE (115200)
 #define DEFAULT_BUFFER_SIZE (256)
@@ -43,6 +40,8 @@
 #define FLOW_CONTROL_RTS (1)
 #define FLOW_CONTROL_CTS (2)
 
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
+
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     uint8_t id;
@@ -50,6 +49,7 @@ typedef struct _machine_uart_obj_t {
     uint8_t bits;
     uint8_t parity;
     uint8_t stop;
+    uint8_t flow_control;
     uint8_t tx;
     uint8_t rx;
     sercom_pad_config_t tx_pad_config;
@@ -68,30 +68,6 @@ typedef struct _machine_uart_obj_t {
     ringbuf_t write_buffer;
     #endif
 } machine_uart_obj_t;
-
-Sercom *sercom_instance[] = SERCOM_INSTS;
-MP_REGISTER_ROOT_POINTER(void *sercom_table[SERCOM_INST_NUM]);
-
-// Common Sercom functions used by all Serial devices
-void sercom_enable(Sercom *uart, int state) {
-    uart->USART.CTRLA.bit.ENABLE = state; // Set the state on/off
-    // Wait for the Registers to update.
-    while (uart->USART.SYNCBUSY.bit.ENABLE) {
-    }
-}
-
-void sercom_deinit_all(void) {
-    for (int i = 0; i < SERCOM_INST_NUM; i++) {
-        Sercom *uart = sercom_instance[i];
-        uart->USART.INTENCLR.reg = 0xff;
-        sercom_register_irq(i, NULL);
-        sercom_enable(uart, 0);
-        MP_STATE_PORT(sercom_table[i]) = NULL;
-    }
-}
-#endif
-
-#if MICROPY_PY_MACHINE_UART
 
 STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
@@ -137,7 +113,86 @@ void common_uart_irq_handler(int uart_id) {
     }
 }
 
-STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+// Configure the Sercom device
+STATIC void machine_sercom_configure(machine_uart_obj_t *self) {
+    Sercom *uart = sercom_instance[self->id];
+
+    // Reset (clear) the peripheral registers.
+    while (uart->USART.SYNCBUSY.bit.SWRST) {
+    }
+    uart->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
+    while (uart->USART.SYNCBUSY.bit.SWRST) {
+    }
+
+    uint8_t txpo = self->tx_pad_config.pad_nr;
+    #if defined(MCU_SAMD21)
+    if (self->tx_pad_config.pad_nr == 2) { // Map pad 2 to TXPO = 1
+        txpo = 1;
+    } else
+    #endif
+    if (self->tx_pad_config.pad_nr != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid UART pin"));
+    }
+    #if MICROPY_HW_UART_RTSCTS
+    if ((self->flow_control & FLOW_CONTROL_RTS) && self->rts_pad_config.pad_nr == 2) {
+        txpo = 2;
+        mp_hal_set_pin_mux(self->rts, self->rts_pad_config.alt_fct);
+    }
+    if ((self->flow_control & FLOW_CONTROL_CTS) && self->cts_pad_config.pad_nr == 3) {
+        txpo = 2;
+        mp_hal_set_pin_mux(self->cts, self->cts_pad_config.alt_fct);
+    }
+    #endif
+
+    uart->USART.CTRLA.reg =
+        SERCOM_USART_CTRLA_DORD // Data order
+        | SERCOM_USART_CTRLA_FORM(self->parity != 0 ? 1 : 0)  // Enable parity or not
+        | SERCOM_USART_CTRLA_RXPO(self->rx_pad_config.pad_nr) // Set Pad#
+        | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
+        | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
+    ;
+    uart->USART.CTRLB.reg =
+        SERCOM_USART_CTRLB_RXEN   // Enable Rx & Tx
+        | SERCOM_USART_CTRLB_TXEN
+        | ((self->parity & 1) << SERCOM_USART_CTRLB_PMODE_Pos)
+        | (self->stop << SERCOM_USART_CTRLB_SBMODE_Pos)
+        | SERCOM_USART_CTRLB_CHSIZE((self->bits & 7) | (self->bits & 1))
+    ;
+    while (uart->USART.SYNCBUSY.bit.CTRLB) {
+    }
+
+    // USART is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
+    // baud rate; 65536 * (1 - 16 * 115200/bus_freq)
+    uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_peripheral_freq() / 2) / get_peripheral_freq();
+    uart->USART.BAUD.bit.BAUD = baud; // Set Baud
+
+    sercom_register_irq(self->id, &common_uart_irq_handler);
+
+    // Enable RXC interrupt
+    uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
+    #if defined(MCU_SAMD21)
+    NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
+    #elif defined(MCU_SAMD51)
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
+    #endif
+    #if MICROPY_HW_UART_TXBUF
+    // Enable DRE interrupt
+    // SAMD21 has just 1 IRQ for all USART events, so no need for an additional NVIC enable
+    #if defined(MCU_SAMD51)
+    NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 0);
+    #endif
+    #endif
+
+    sercom_enable(uart, 1);
+}
+
+void machine_uart_set_baudrate(mp_obj_t self_in, uint32_t baudrate) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->baudrate = baudrate;
+    machine_sercom_configure(self);
+}
+
+STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
         "timeout=%u, timeout_char=%u, rxbuf=%d"
@@ -145,7 +200,7 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
         ", txbuf=%d"
         #endif
         #if MICROPY_HW_UART_RTSCTS
-        ", rts=%s, cts=%s"
+        ", rts=%q, cts=%q"
         #endif
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
@@ -154,13 +209,13 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
         , self->write_buffer.size - 1
         #endif
         #if MICROPY_HW_UART_RTSCTS
-        , self->rts != 0xff ? pin_name(self->rts) : "None"
-        , self->cts != 0xff ? pin_name(self->cts) : "None"
+        , self->rts != 0xff ? pin_find_by_id(self->rts)->name : MP_QSTR_None
+        , self->cts != 0xff ? pin_find_by_id(self->cts)->name : MP_QSTR_None
         #endif
         );
 }
 
-STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx,
            ARG_timeout, ARG_timeout_char, ARG_rxbuf, ARG_txbuf, ARG_rts, ARG_cts };
     static const mp_arg_t allowed_args[] = {
@@ -219,22 +274,22 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
     if (args[ARG_rx].u_obj != mp_const_none) {
         self->rx = mp_hal_get_pin_obj(args[ARG_rx].u_obj);
     }
+    self->flow_control = 0;
     #if MICROPY_HW_UART_RTSCTS
-    uint8_t flow_control = 0;
     // Set RTS/CTS pins if configured.
     if (args[ARG_rts].u_obj != mp_const_none) {
         self->rts = mp_hal_get_pin_obj(args[ARG_rts].u_obj);
         self->rts_pad_config = get_sercom_config(self->rts, self->id);
-        flow_control = FLOW_CONTROL_RTS;
+        self->flow_control = FLOW_CONTROL_RTS;
     }
     if (args[ARG_cts].u_obj != mp_const_none) {
         self->cts = mp_hal_get_pin_obj(args[ARG_cts].u_obj);
         self->cts_pad_config = get_sercom_config(self->cts, self->id);
-        flow_control |= FLOW_CONTROL_CTS;
+        self->flow_control |= FLOW_CONTROL_CTS;
     }
     // rts only flow control is not allowed. Otherwise the state of the
     // cts pin is undefined.
-    if (flow_control == FLOW_CONTROL_RTS) {
+    if (self->flow_control == FLOW_CONTROL_RTS) {
         mp_raise_ValueError(MP_ERROR_TEXT("cts missing for flow control"));
     }
     #endif
@@ -303,81 +358,12 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         // Next: Set up the clocks
         enable_sercom_clock(self->id);
 
-        // Next: Configure the USART
-        Sercom *uart = sercom_instance[self->id];
-        // Reset (clear) the peripheral registers.
-        while (uart->USART.SYNCBUSY.bit.SWRST) {
-        }
-        uart->USART.CTRLA.bit.SWRST = 1; // Reset all Registers, disable peripheral
-        while (uart->USART.SYNCBUSY.bit.SWRST) {
-        }
-
-        uint8_t txpo = self->tx_pad_config.pad_nr;
-        #if defined(MCU_SAMD21)
-        if (self->tx_pad_config.pad_nr == 2) { // Map pad 2 to TXPO = 1
-            txpo = 1;
-        } else
-        #endif
-        if (self->tx_pad_config.pad_nr != 0) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid UART pin"));
-        }
-        #if MICROPY_HW_UART_RTSCTS
-        if ((flow_control & FLOW_CONTROL_RTS) && self->rts_pad_config.pad_nr == 2) {
-            txpo = 2;
-            mp_hal_set_pin_mux(self->rts, self->rts_pad_config.alt_fct);
-        }
-        if ((flow_control & FLOW_CONTROL_CTS) && self->cts_pad_config.pad_nr == 3) {
-            txpo = 2;
-            mp_hal_set_pin_mux(self->cts, self->cts_pad_config.alt_fct);
-        }
-        #endif
-
-        uart->USART.CTRLA.reg =
-            SERCOM_USART_CTRLA_DORD // Data order
-            | SERCOM_USART_CTRLA_FORM(self->parity != 0 ? 1 : 0)  // Enable parity or not
-            | SERCOM_USART_CTRLA_RXPO(self->rx_pad_config.pad_nr) // Set Pad#
-            | SERCOM_USART_CTRLA_TXPO(txpo) // Set Pad#
-            | SERCOM_USART_CTRLA_MODE(1) // USART with internal clock
-        ;
-        uart->USART.CTRLB.reg =
-            SERCOM_USART_CTRLB_RXEN   // Enable Rx & Tx
-            | SERCOM_USART_CTRLB_TXEN
-            | ((self->parity & 1) << SERCOM_USART_CTRLB_PMODE_Pos)
-            | (self->stop << SERCOM_USART_CTRLB_SBMODE_Pos)
-            | SERCOM_USART_CTRLB_CHSIZE((self->bits & 7) | (self->bits & 1))
-        ;
-        while (uart->USART.SYNCBUSY.bit.CTRLB) {
-        }
-
-        // USART is driven by the clock of GCLK Generator 2, freq by get_peripheral_freq()
-        // baud rate; 65536 * (1 - 16 * 115200/bus_freq)
-        uint32_t baud = 65536 - ((uint64_t)(65536 * 16) * self->baudrate + get_peripheral_freq() / 2) / get_peripheral_freq();
-        uart->USART.BAUD.bit.BAUD = baud; // Set Baud
-
-        sercom_register_irq(self->id, &common_uart_irq_handler);
-
-        // Enable RXC interrupt
-        uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
-        #if defined(MCU_SAMD21)
-        NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
-        #elif defined(MCU_SAMD51)
-        NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
-        #endif
-        #if MICROPY_HW_UART_TXBUF
-        // Enable DRE interrupt
-        // SAMD21 has just 1 IRQ for all USART events, so no need for an additional NVIC enable
-        #if defined(MCU_SAMD51)
-        NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 0);
-        #endif
-        #endif
-
-        sercom_enable(uart, 1);
+        // Configure the sercom module
+        machine_sercom_configure(self);
     }
-
-    return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
@@ -405,17 +391,12 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
 
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    return machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+    mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+
+    return MP_OBJ_FROM_PTR(self);
 }
 
-// uart.init(baud, [kwargs])
-STATIC mp_obj_t machine_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return machine_uart_init_helper(args[0], n_args - 1, args + 1, kw_args);
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
-
-STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     // Check if it is the active object.
     if (MP_STATE_PORT(sercom_table)[self->id] == self) {
         Sercom *uart = sercom_instance[self->id];
@@ -426,18 +407,23 @@ STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
             sercom_enable(uart, 0);
         }
     }
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
 
-STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->read_buffer));
+STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+    return ringbuf_avail(&self->read_buffer);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
-STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    Sercom *uart = sercom_instance[self->id];
+
+    return uart->USART.INTFLAG.bit.DRE
+           #if MICROPY_HW_UART_TXBUF
+           && ringbuf_avail(&self->write_buffer) == 0
+           #endif
+           && uart->USART.INTFLAG.bit.TXC;
+}
+
+STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     uint32_t break_time_us = 13 * 1000000 / self->baudrate;
 
     // Wait for the tx buffer to drain.
@@ -457,43 +443,9 @@ STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
     mp_hal_pin_high(self->tx);
     // Enable Mux again
     mp_hal_set_pin_mux(self->tx, self->tx_pad_config.alt_fct);
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
-STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    Sercom *uart = sercom_instance[self->id];
-
-    if (uart->USART.INTFLAG.bit.DRE
-        #if MICROPY_HW_UART_TXBUF
-        && ringbuf_avail(&self->write_buffer) == 0
-        #endif
-        && uart->USART.INTFLAG.bit.TXC) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
-
-STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
-    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
-
-STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     Sercom *uart = sercom_instance[self->id];
     uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
@@ -523,7 +475,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     return size;
 }
 
-STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t i = 0;
     const uint8_t *src = buf_in;
@@ -562,7 +514,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     return size;
 }
 
-STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     Sercom *uart = sercom_instance[self->id];
@@ -588,7 +540,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
             #endif
             ) * 13000 * 2 / self->baudrate;
         do {
-            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+            if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
             MICROPY_EVENT_POLL_HOOK
@@ -601,21 +553,3 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     }
     return ret;
 }
-
-STATIC const mp_stream_p_t uart_stream_p = {
-    .read = machine_uart_read,
-    .write = machine_uart_write,
-    .ioctl = machine_uart_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_uart_type,
-    MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_uart_make_new,
-    print, machine_uart_print,
-    protocol, &uart_stream_p,
-    locals_dict, &machine_uart_locals_dict
-    );
-#endif

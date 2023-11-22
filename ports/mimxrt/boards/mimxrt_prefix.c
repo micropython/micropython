@@ -2,6 +2,7 @@
 
 #include "py/obj.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 
 #define PIN_AF(_name, _af_mode, _input_daisy, _instance, _input_register, _pad_config) \
@@ -29,7 +30,7 @@
         .pin = (uint32_t)(_pin), \
         .muxRegister = (uint32_t)&(IOMUXC->SW_MUX_CTL_PAD[kIOMUXC_SW_MUX_CTL_PAD_##_name]), \
         .configRegister = (uint32_t)&(IOMUXC->SW_PAD_CTL_PAD[kIOMUXC_SW_PAD_CTL_PAD_##_name]), \
-        .af_list_len = (uint8_t)(sizeof((_af_list)) / sizeof(machine_pin_af_obj_t)), \
+        .af_list_len = MP_ARRAY_SIZE(_af_list), \
         .adc_list_len = (_adc_list_len), \
         .af_list = (_af_list), \
         .adc_list = (_adc_list), \
@@ -43,7 +44,7 @@
         .pin = (uint32_t)(_pin), \
         .muxRegister = (uint32_t)&(IOMUXC_LPSR->SW_MUX_CTL_PAD[kIOMUXC_LPSR_SW_MUX_CTL_PAD_##_name]), \
         .configRegister = (uint32_t)&(IOMUXC_LPSR->SW_PAD_CTL_PAD[kIOMUXC_LPSR_SW_PAD_CTL_PAD_##_name]), \
-        .af_list_len = (uint8_t)(sizeof((_af_list)) / sizeof(machine_pin_af_obj_t)), \
+        .af_list_len = MP_ARRAY_SIZE(_af_list), \
         .adc_list_len = (_adc_list_len), \
         .af_list = (_af_list), \
         .adc_list = (_adc_list), \
@@ -57,7 +58,7 @@
         .pin = (uint32_t)(_pin), \
         .muxRegister = (uint32_t)&(IOMUXC_SNVS->SW_MUX_CTL_PAD_##_name), \
         .configRegister = (uint32_t)&(IOMUXC_SNVS->SW_PAD_CTL_PAD_##_name), \
-        .af_list_len = (uint8_t)(sizeof((_af_list)) / sizeof(machine_pin_af_obj_t)), \
+        .af_list_len = MP_ARRAY_SIZE(_af_list), \
         .adc_list_len = (_adc_list_len), \
         .af_list = (_af_list), \
         .adc_list = (_adc_list), \

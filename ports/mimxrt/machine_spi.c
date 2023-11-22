@@ -28,8 +28,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include CLOCK_CONFIG_H
 
 #include "fsl_cache.h"

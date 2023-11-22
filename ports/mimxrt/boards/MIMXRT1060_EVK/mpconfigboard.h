@@ -158,10 +158,6 @@
 #define ENET_PHY_ADDRESS    (2)
 #define ENET_PHY_OPS        phyksz8081_ops
 
-// Etherner PIN definitions
-#define ENET_RESET_PIN      &pin_GPIO_AD_B0_09
-#define ENET_INT_PIN        &pin_GPIO_AD_B0_10
-
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_B1_04_ENET_RX_DATA00, 0, 0xB0E9u }, \
     { IOMUXC_GPIO_B1_05_ENET_RX_DATA01, 0, 0xB0E9u }, \

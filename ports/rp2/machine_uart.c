@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020-2021 Damien P. George
+ * Copyright (c) 2020-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/stream.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
+
 #include "py/mphal.h"
 #include "py/mperrno.h"
 #include "py/ringbuf.h"
-#include "modmachine.h"
 
 #include "hardware/irq.h"
 #include "hardware/uart.h"
@@ -140,8 +140,27 @@ static inline void read_mutex_unlock(machine_uart_obj_t *u) {
 STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self) {
     if (read_mutex_try_lock(self)) {
         while (uart_is_readable(self->uart) && ringbuf_free(&self->read_buffer) > 0) {
-            // get a byte from uart and put into the buffer
-            ringbuf_put(&(self->read_buffer), uart_get_hw(self->uart)->dr);
+            // Get a byte from uart and put into the buffer. Every entry from
+            // the FIFO is accompanied by 4 error bits, that may be used for
+            // error handling.
+            uint16_t c = uart_get_hw(self->uart)->dr;
+            if (c & UART_UARTDR_OE_BITS) {
+                // Overrun Error: We missed at least one byte. Not much we can do here.
+            }
+            if (c & UART_UARTDR_BE_BITS) {
+                // Break Error: RX was held low for longer than one character
+                // (11 bits). We did *not* read the zero byte that we seemed to
+                // read from dr.
+                continue;
+            }
+            if (c & UART_UARTDR_PE_BITS) {
+                // Parity Error: The byte we read is invalid.
+            }
+            if (c & UART_UARTDR_FE_BITS) {
+                // Framing Error: We did not receive a valid stop bit.
+            }
+
+            ringbuf_put(&(self->read_buffer), c);
         }
         read_mutex_unlock(self);
     }
@@ -183,7 +202,13 @@ STATIC void uart1_irq_handler(void) {
 /******************************************************************************/
 // MicroPython bindings for UART
 
-STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) }, \
+    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) }, \
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
+
+STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, tx=%d, rx=%d, "
         "txbuf=%d, rxbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
@@ -192,7 +217,7 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
         self->timeout, self->timeout_char, _invert_name[self->invert]);
 }
 
-STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_cts, ARG_rts,
            ARG_timeout, ARG_timeout_char, ARG_invert, ARG_flow, ARG_txbuf, ARG_rxbuf};
     static const mp_arg_t allowed_args[] = {
@@ -378,7 +403,7 @@ STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, co
     }
 }
 
-STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
@@ -393,20 +418,12 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     // Initialise the UART peripheral.
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+    mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
 
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    // Initialise the UART peripheral.
-    machine_uart_init_helper(args[0], n_args - 1, args + 1, kw_args);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
-
-STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     uart_deinit(self->uart);
     if (self->uart_id == 0) {
         irq_set_enabled(UART0_IRQ, false);
@@ -416,63 +433,26 @@ STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
     self->baudrate = 0;
     MP_STATE_PORT(rp2_uart_rx_buffer[self->uart_id]) = NULL;
     MP_STATE_PORT(rp2_uart_tx_buffer[self->uart_id]) = NULL;
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
 
-STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     // get all bytes from the fifo first
     uart_drain_rx_fifo(self);
-    return MP_OBJ_NEW_SMALL_INT(ringbuf_avail(&self->read_buffer));
+    return ringbuf_avail(&self->read_buffer);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
-STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    return ringbuf_avail(&self->write_buffer) == 0
+           && (uart_get_hw(self->uart)->fr & UART_UARTFR_TXFE_BITS);
+}
+
+STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     uart_set_break(self->uart, true);
     mp_hal_delay_us(13000000 / self->baudrate + 1);
     uart_set_break(self->uart, false);
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
 
-STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (ringbuf_avail(&self->write_buffer) == 0 &&
-        uart_get_hw(self->uart)->fr & UART_UARTFR_TXFE_BITS) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
-
-STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
-    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
-    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
-
-    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
-    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
-
-};
-STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
-
-STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint64_t t = time_us_64() + (uint64_t)self->timeout * 1000;
     uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
@@ -502,7 +482,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     return size;
 }
 
-STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint64_t t = time_us_64() + (uint64_t)self->timeout * 1000;
     uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
@@ -542,7 +522,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     return size;
 }
 
-STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
@@ -560,7 +540,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
         uint64_t timeout = time_us_64() +
             (uint64_t)(33 + self->write_buffer.size) * 13000000ll * 2 / self->baudrate;
         do {
-            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+            if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
             MICROPY_EVENT_POLL_HOOK
@@ -573,23 +553,6 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     }
     return ret;
 }
-
-STATIC const mp_stream_p_t uart_stream_p = {
-    .read = machine_uart_read,
-    .write = machine_uart_write,
-    .ioctl = machine_uart_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_uart_type,
-    MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_uart_make_new,
-    print, machine_uart_print,
-    protocol, &uart_stream_p,
-    locals_dict, &machine_uart_locals_dict
-    );
 
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_rx_buffer[2]);
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_tx_buffer[2]);

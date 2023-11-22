@@ -65,7 +65,7 @@ bool can_init(pyb_can_obj_t *can_obj, uint32_t mode, uint32_t prescaler, uint32_
 
     CAN_TypeDef *CANx = NULL;
     uint32_t sce_irq = 0;
-    const pin_obj_t *pins[2];
+    const machine_pin_obj_t *pins[2];
 
     switch (can_obj->can_id) {
         #if defined(MICROPY_HW_CAN1_TX)

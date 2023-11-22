@@ -26,13 +26,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <string.h>
-#include <stdarg.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
 
-#include "py/nlr.h"
-#include "py/runtime.h"
-#include "py/stream.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "py/ringbuf.h"
@@ -41,9 +37,7 @@
 #include "shared/runtime/interrupt_char.h"
 
 #include "uart.h"
-#include "mpconfigboard.h"
 #include "nrf.h"
-#include "mphalport.h"
 
 #if NRFX_UART_ENABLED
 #include "nrfx_uart.h"
@@ -51,15 +45,12 @@
 #include "nrfx_uarte.h"
 #endif
 
-
-#if MICROPY_PY_MACHINE_UART
-
-typedef struct _machine_hard_uart_buf_t {
+typedef struct _machine_uart_buf_t {
     uint8_t tx_buf[1];
     uint8_t rx_buf[1];
     uint8_t rx_ringbuf_array[64];
     volatile ringbuf_t rx_ringbuf;
-} machine_hard_uart_buf_t;
+} machine_uart_buf_t;
 
 #if NRFX_UARTE_ENABLED
 
@@ -96,17 +87,17 @@ typedef struct _machine_hard_uart_buf_t {
 
 #endif
 
-typedef struct _machine_hard_uart_obj_t {
+typedef struct _machine_uart_obj_t {
     mp_obj_base_t       base;
     const nrfx_uart_t * p_uart;      // Driver instance
-    machine_hard_uart_buf_t buf;
+    machine_uart_buf_t buf;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
-} machine_hard_uart_obj_t;
+} machine_uart_obj_t;
 
 static const nrfx_uart_t instance0 = NRFX_UART_INSTANCE(0);
 
-STATIC machine_hard_uart_obj_t machine_hard_uart_obj[] = {
+STATIC machine_uart_obj_t machine_uart_obj[] = {
     {{&machine_uart_type}, .p_uart = &instance0}
 };
 
@@ -116,14 +107,14 @@ void uart_init0(void) {
 STATIC int uart_find(mp_obj_t id) {
     // given an integer id
     int uart_id = mp_obj_get_int(id);
-    if (uart_id >= 0 && uart_id < MP_ARRAY_SIZE(machine_hard_uart_obj)) {
+    if (uart_id >= 0 && uart_id < MP_ARRAY_SIZE(machine_uart_obj)) {
         return uart_id;
     }
     mp_raise_ValueError(MP_ERROR_TEXT("UART doesn't exist"));
 }
 
 STATIC void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context) {
-    machine_hard_uart_obj_t *self = p_context;
+    machine_uart_obj_t *self = p_context;
     if (p_event->type == NRFX_UART_EVT_RX_DONE) {
         nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
         int chr = self->buf.rx_buf[0];
@@ -143,15 +134,15 @@ STATIC void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context
     }
 }
 
-bool uart_rx_any(machine_hard_uart_obj_t *self) {
+bool uart_rx_any(machine_uart_obj_t *self) {
     return self->buf.rx_ringbuf.iput != self->buf.rx_ringbuf.iget;
 }
 
-int uart_rx_char(machine_hard_uart_obj_t *self) {
+int uart_rx_char(machine_uart_obj_t *self) {
     return ringbuf_get((ringbuf_t *)&self->buf.rx_ringbuf);
 }
 
-STATIC nrfx_err_t uart_tx_char(machine_hard_uart_obj_t *self, int c) {
+STATIC nrfx_err_t uart_tx_char(machine_uart_obj_t *self, int c) {
     while (nrfx_uart_tx_in_progress(self->p_uart)) {
         ;
     }
@@ -160,13 +151,13 @@ STATIC nrfx_err_t uart_tx_char(machine_hard_uart_obj_t *self, int c) {
 }
 
 
-void uart_tx_strn(machine_hard_uart_obj_t *uart_obj, const char *str, uint len) {
+void uart_tx_strn(machine_uart_obj_t *uart_obj, const char *str, uint len) {
     for (const char *top = str + len; str < top; str++) {
         uart_tx_char(uart_obj, *str);
     }
 }
 
-void uart_tx_strn_cooked(machine_hard_uart_obj_t *uart_obj, const char *str, uint len) {
+void uart_tx_strn_cooked(machine_uart_obj_t *uart_obj, const char *str, uint len) {
     for (const char *top = str + len; str < top; str++) {
         if (*str == '\n') {
             uart_tx_char(uart_obj, '\r');
@@ -178,16 +169,24 @@ void uart_tx_strn_cooked(machine_hard_uart_obj_t *uart_obj, const char *str, uin
 /******************************************************************************/
 /* MicroPython bindings                                                      */
 
-STATIC void machine_hard_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+// The UART class doesn't have any constants for this port.
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
+
+STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_printf(print, "UART(0)");
 }
 
-/// \method init(id, baudrate)
-///
-/// Initialise the UART bus with the given parameters:
-///   - `id`is bus id.
-///   - `baudrate` is the clock rate.
-STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    // Parse args (none supported at this stage).
+    mp_arg_parse_all(n_args, pos_args, kw_args, 0, NULL, NULL);
+}
+
+// UART(id, baudrate)
+//
+// Initialise the UART bus with the given parameters:
+//   - `id`is bus id.
+//   - `baudrate` is the clock rate.
+STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_baudrate, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -202,7 +201,7 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
 
     // get static peripheral object
     int uart_id = uart_find(args[ARG_id].u_obj);
-    machine_hard_uart_obj_t *self = &machine_hard_uart_obj[uart_id];
+    machine_uart_obj_t *self = &machine_uart_obj[uart_id];
 
     nrfx_uart_config_t config;
 
@@ -267,78 +266,36 @@ STATIC mp_obj_t machine_hard_uart_make_new(const mp_obj_type_t *type, size_t n_a
     return MP_OBJ_FROM_PTR(self);
 }
 
-/// \method writechar(char)
-/// Write a single character on the bus.  `char` is an integer to write.
-/// Return value: `None`.
-STATIC mp_obj_t machine_hard_uart_writechar(mp_obj_t self_in, mp_obj_t char_in) {
-    machine_hard_uart_obj_t *self = self_in;
+STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+    (void)self;
+}
 
-    // get the character to write (might be 9 bits)
-    int data = mp_obj_get_int(char_in);
-
+// Write a single character on the bus.  `data` is an integer to write.
+STATIC void mp_machine_uart_writechar(machine_uart_obj_t *self, uint16_t data) {
     nrfx_err_t err = uart_tx_char(self, data);
     if (err != NRFX_SUCCESS) {
         mp_hal_raise(err);
     }
-
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_hard_uart_writechar_obj, machine_hard_uart_writechar);
 
-/// \method readchar()
-/// Receive a single character on the bus.
-/// Return value: The character read, as an integer.  Returns -1 on timeout.
-STATIC mp_obj_t machine_hard_uart_readchar(mp_obj_t self_in) {
-    machine_hard_uart_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(uart_rx_char(self));
+// Receive a single character on the bus.
+// Return value: The character read, as an integer.  Returns -1 on timeout.
+STATIC mp_int_t mp_machine_uart_readchar(machine_uart_obj_t *self) {
+    return uart_rx_char(self);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_readchar_obj, machine_hard_uart_readchar);
 
 // uart.any()
-STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
-    machine_hard_uart_obj_t *self = self_in;
-    return MP_OBJ_NEW_SMALL_INT(ringbuf_avail((ringbuf_t *)&self->buf.rx_ringbuf));
+STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+    return ringbuf_avail((ringbuf_t *)&self->buf.rx_ringbuf);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
-
-// uart.sendbreak()
-STATIC mp_obj_t machine_hard_uart_sendbreak(mp_obj_t self_in) {
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_hard_uart_sendbreak_obj, machine_hard_uart_sendbreak);
 
 // uart.txdone()
-STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
-    machine_hard_uart_obj_t *self = self_in;
-    return mp_obj_new_bool(!nrfx_uart_tx_in_progress(self->p_uart));
+STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    return !nrfx_uart_tx_in_progress(self->p_uart);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
-STATIC const mp_rom_map_elem_t machine_hard_uart_locals_dict_table[] = {
-    // instance methods
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_writechar), MP_ROM_PTR(&machine_hard_uart_writechar_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readchar), MP_ROM_PTR(&machine_hard_uart_readchar_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_hard_uart_sendbreak_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
-
-    // class constants
-/*
-    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
-    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
-*/
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_hard_uart_locals_dict, machine_hard_uart_locals_dict_table);
-
-STATIC mp_uint_t machine_hard_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
-    machine_hard_uart_obj_t *self = self_in;
+STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+    machine_uart_obj_t *self = self_in;
     byte *buf = buf_in;
     uint32_t t = self->timeout + mp_hal_ticks_ms();
 
@@ -362,8 +319,8 @@ STATIC mp_uint_t machine_hard_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_
     return size;
 }
 
-STATIC mp_uint_t machine_hard_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    machine_hard_uart_obj_t *self = self_in;
+STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+    machine_uart_obj_t *self = self_in;
 
     nrfx_err_t err = nrfx_uart_tx(self->p_uart, buf_in, size);
     if (err == NRFX_SUCCESS) {
@@ -378,8 +335,8 @@ STATIC mp_uint_t machine_hard_uart_write(mp_obj_t self_in, const void *buf_in, m
     }
 }
 
-STATIC mp_uint_t machine_hard_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
-    machine_hard_uart_obj_t *self = self_in;
+STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+    machine_uart_obj_t *self = self_in;
     (void)self;
     mp_uint_t ret = 0;
 
@@ -399,22 +356,3 @@ STATIC mp_uint_t machine_hard_uart_ioctl(mp_obj_t self_in, mp_uint_t request, ui
     }
     return MP_STREAM_ERROR;
 }
-
-STATIC const mp_stream_p_t uart_stream_p = {
-    .read = machine_hard_uart_read,
-    .write = machine_hard_uart_write,
-    .ioctl = machine_hard_uart_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_uart_type,
-    MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_hard_uart_make_new,
-    print, machine_hard_uart_print,
-    protocol, &uart_stream_p,
-    locals_dict, &machine_hard_uart_locals_dict
-    );
-
-#endif // MICROPY_PY_MACHINE_UART

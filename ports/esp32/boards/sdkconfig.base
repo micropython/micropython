@@ -51,6 +51,9 @@ CONFIG_LWIP_PPP_CHAP_SUPPORT=y
 # Use 4kiB output buffer instead of default 16kiB
 CONFIG_MBEDTLS_ASYMMETRIC_CONTENT_LEN=y
 
+# Disable ALPN support as it's not implemented in MicroPython
+CONFIG_MBEDTLS_SSL_ALPN=n
+
 # Allow mbedTLS to allocate from PSRAM or internal memory
 #
 # (The ESP-IDF default is internal-only, partly for physical security to prevent
@@ -88,3 +91,8 @@ CONFIG_UART_ISR_IN_IRAM=y
 CONFIG_ADC_SUPPRESS_DEPRECATE_WARN=y
 CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
 CONFIG_I2S_SUPPRESS_DEPRECATE_WARN=y
+
+CONFIG_ETH_USE_SPI_ETHERNET=y
+CONFIG_ETH_SPI_ETHERNET_W5500=y
+CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL=y
+CONFIG_ETH_SPI_ETHERNET_DM9051=y

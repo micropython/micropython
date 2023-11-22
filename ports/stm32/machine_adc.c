@@ -24,7 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
+
 #include "py/mphal.h"
 #include "adc.h"
 
@@ -490,7 +492,26 @@ uint32_t adc_config_and_read_u16(ADC_TypeDef *adc, uint32_t channel, uint32_t sa
 
 #if !BUILDING_MBOOT
 
-const mp_obj_type_t machine_adc_type;
+#if defined(ADC_CHANNEL_VBAT)
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VBAT \
+    { MP_ROM_QSTR(MP_QSTR_CORE_VBAT), MP_ROM_INT(MACHINE_ADC_INT_CH_VBAT) },
+#else
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VBAT
+#endif
+
+#if defined(ADC_CHANNEL_VDDCORE)
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VDD \
+    { MP_ROM_QSTR(MP_QSTR_CORE_VDD), MP_ROM_INT(MACHINE_ADC_INT_CH_VDDCORE) },
+#else
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VDD
+#endif
+
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_VREF), MP_ROM_INT(MACHINE_ADC_CH_VREF) }, \
+    { MP_ROM_QSTR(MP_QSTR_CORE_VREF), MP_ROM_INT(MACHINE_ADC_INT_CH_VREFINT) }, \
+    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(MACHINE_ADC_INT_CH_TEMPSENSOR) }, \
+    MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VBAT \
+    MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS_CORE_VDD \
 
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
@@ -499,7 +520,7 @@ typedef struct _machine_adc_obj_t {
     uint32_t sample_time;
 } machine_adc_obj_t;
 
-STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     unsigned adc_id = 1;
     #if defined(ADC2)
@@ -516,7 +537,7 @@ STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 // ADC(id)
-STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -550,7 +571,7 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
             sample_time = ADC_SAMPLETIME_DEFAULT_INT;
         }
     } else {
-        const pin_obj_t *pin = pin_find(source);
+        const machine_pin_obj_t *pin = pin_find(source);
         if (pin->adc_num & PIN_ADC1) {
             #if defined(STM32WL)
             adc = ADC;
@@ -586,34 +607,8 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 // read_u16()
-STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
-    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(adc_config_and_read_u16(self->adc, self->channel, self->sample_time));
+STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+    return adc_config_and_read_u16(self->adc, self->channel, self->sample_time);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
-
-STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_VREF), MP_ROM_INT(MACHINE_ADC_CH_VREF) },
-    { MP_ROM_QSTR(MP_QSTR_CORE_VREF), MP_ROM_INT(MACHINE_ADC_INT_CH_VREFINT) },
-    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(MACHINE_ADC_INT_CH_TEMPSENSOR) },
-    #if defined(ADC_CHANNEL_VBAT)
-    { MP_ROM_QSTR(MP_QSTR_CORE_VBAT), MP_ROM_INT(MACHINE_ADC_INT_CH_VBAT) },
-    #endif
-    #if defined(ADC_CHANNEL_VDDCORE)
-    { MP_ROM_QSTR(MP_QSTR_CORE_VDD), MP_ROM_INT(MACHINE_ADC_INT_CH_VDDCORE) },
-    #endif
-};
-STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_adc_type,
-    MP_QSTR_ADC,
-    MP_TYPE_FLAG_NONE,
-    make_new, machine_adc_make_new,
-    print, machine_adc_print,
-    locals_dict, &machine_adc_locals_dict
-    );
 
 #endif

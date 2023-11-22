@@ -55,11 +55,14 @@ INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/hpl/tc
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include
 INC += -I$(TOP)/lib/asf4/$(MCU_SERIES_LOWER)/include/pio
 INC += -I$(TOP)/lib/tinyusb/src
+INC += -I$(TOP)/shared/tinyusb/
 
-MAKE_PIN_AF = boards/make-pin-table.py
-PIN_AF_TABLE_CSV = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
+MAKE_PINS = boards/make-pins.py
 BOARD_PINS = $(BOARD_DIR)/pins.csv
-GEN_PIN_AF = pin_af_table.c
+PREFIX_FILE = boards/pins_prefix.c
+AF_FILE = mcu/$(MCU_SERIES_LOWER)/pin-af-table.csv
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 
 CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib -mthumb $(CFLAGS_MCU) -fsingle-precision-constant -Wdouble-promotion
 CFLAGS += -DMCU_$(MCU_SERIES) -D__$(CMSIS_MCU)__
@@ -91,19 +94,19 @@ LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
+LDFLAGS += --wrap=dcd_event_handler
+
 MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH)
 
 SRC_C += \
 	mcu/$(MCU_SERIES_LOWER)/clock_config.c \
 	help.c \
-	machine_adc.c \
 	machine_bitstream.c \
 	machine_dac.c \
 	machine_i2c.c \
 	machine_pin.c \
 	machine_rtc.c \
 	machine_spi.c \
-	machine_uart.c \
 	main.c \
 	modmachine.c \
 	modsamd.c \
@@ -115,7 +118,7 @@ SRC_C += \
 	samd_qspiflash.c \
 	samd_soc.c \
 	samd_spiflash.c \
-	tusb_port.c \
+	usbd.c \
 
 SHARED_SRC_C += \
 	drivers/dht/dht.c \
@@ -131,6 +134,8 @@ SHARED_SRC_C += \
 	shared/runtime/sys_stdio_mphal.c \
 	shared/timeutils/timeutils.c \
 	shared/tinyusb/mp_cdc_common.c \
+	shared/tinyusb/mp_usbd.c \
+	shared/tinyusb/mp_usbd_descriptor.c \
 
 ASF4_SRC_C += $(addprefix lib/asf4/$(MCU_SERIES_LOWER)/,\
 	hal/src/hal_atomic.c \
@@ -181,7 +186,7 @@ DRIVERS_SRC_C += \
 	drivers/bus/softspi.c \
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(SRC_CXX) $(GEN_PINS_SRC)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -192,6 +197,7 @@ OBJ += $(addprefix $(BUILD)/, $(ASF4_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 all: $(BUILD)/firmware.uf2
 
@@ -205,10 +211,14 @@ $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 $(BUILD)/firmware.uf2: $(BUILD)/firmware.bin
 	$(Q)$(PYTHON) $(UF2CONV) -b $(TEXT0) -c -o $@ $<
 
-pin_af.c: $(BUILD)/$(GEN_PIN_AF) | $(HEADER_BUILD)
+# pin_af.c: $(BUILD)/$(GEN_PIN_AF) | $(HEADER_BUILD)
 
-$(BUILD)/$(GEN_PIN_AF): $(PIN_AF_TABLE_CSV) $(BOARD_PINS) | $(HEADER_BUILD)
-	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PIN_AF) --csv $(PIN_AF_TABLE_CSV) --board $(BOARD_PINS) --table $(BUILD)/$(GEN_PIN_AF) --mcu $(MCU_SERIES)
+# Use a pattern rule here so that make will only call make-pins.py once to make
+# both pins_$(BOARD).c and pins.h
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
+	    --mcu $(MCU_SERIES)
 
 include $(TOP)/py/mkrules.mk

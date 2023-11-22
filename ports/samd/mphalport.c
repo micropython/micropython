@@ -29,6 +29,7 @@
 #include "py/mphal.h"
 #include "py/stream.h"
 #include "shared/runtime/interrupt_char.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "extmod/misc.h"
 #include "samd_soc.h"
 #include "tusb.h"
@@ -41,6 +42,14 @@ extern volatile uint32_t ticks_us64_upper;
 
 STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0 };
+
+// Explicitly run the USB stack in case the scheduler is locked (eg we are in an
+// interrupt handler) and there is in/out data pending on the USB CDC interface.
+#define MICROPY_EVENT_POLL_HOOK_WITH_USB \
+    do { \
+        MICROPY_EVENT_POLL_HOOK; \
+        mp_usbd_task(); \
+    } while (0)
 
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
@@ -187,7 +196,7 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        MICROPY_EVENT_POLL_HOOK
+        MICROPY_EVENT_POLL_HOOK_WITH_USB;
     }
 }
 
@@ -201,7 +210,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             int timeout = 0;
             // Wait with a max of USC_CDC_TIMEOUT ms
             while (n > tud_cdc_write_available() && timeout++ < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
-                MICROPY_EVENT_POLL_HOOK
+                MICROPY_EVENT_POLL_HOOK_WITH_USB;
             }
             if (timeout >= MICROPY_HW_USB_CDC_TX_TIMEOUT) {
                 break;

@@ -27,12 +27,6 @@
 
 #include "py/runtime.h"
 #include "drivers/dht/dht.h"
-#include "extmod/machine_bitstream.h"
-#include "extmod/machine_mem.h"
-#include "extmod/machine_i2c.h"
-#include "extmod/machine_pulse.h"
-#include "extmod/machine_signal.h"
-#include "extmod/machine_spi.h"
 #include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
 #include "led.h"
@@ -127,10 +121,10 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     }
 
     #ifdef MIMXRT117x_SERIES
-    machine_pin_config(&pin_WAKEUP_DIG, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
+    machine_pin_config(pin_WAKEUP_DIG, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
     GPC_CM_EnableIrqWakeup(GPC_CPU_MODE_CTRL_0, GPIO13_Combined_0_31_IRQn, true);
     #elif defined IOMUXC_SNVS_WAKEUP_GPIO5_IO00
-    machine_pin_config(&pin_WAKEUP, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
+    machine_pin_config(pin_WAKEUP, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
     GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
     #endif
 
@@ -189,7 +183,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_LED),                 MP_ROM_PTR(&machine_led_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
+    #if MICROPY_PY_MACHINE_ADC
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) },
     #if MICROPY_PY_MACHINE_SDCARD
@@ -204,7 +200,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
+    #if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
+    #endif
     #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
     #endif

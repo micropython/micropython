@@ -31,11 +31,10 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 #include "spi.h"
 #include "ra/ra_spi.h"
-#include "modmachine.h"
 
 typedef struct _machine_hard_spi_obj_t {
     mp_obj_base_t base;

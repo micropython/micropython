@@ -61,8 +61,6 @@ AF_FILE = boards/$(MCU_SERIES)_af.csv
 BOARD_PINS = $(BOARD_DIR)/pins.csv
 PREFIX_FILE = boards/mimxrt_prefix.c
 GEN_FLEXRAM_CONFIG_SRC = $(BUILD)/flexram_config.s
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
 GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
 GEN_PINS_SRC = $(BUILD)/pins_gen.c
 
@@ -195,7 +193,6 @@ SRC_C += \
 	hal/pwm_backport.c \
 	help.c \
 	led.c \
-	machine_adc.c \
 	machine_bitstream.c \
 	machine_i2c.c \
 	machine_led.c \
@@ -203,7 +200,6 @@ SRC_C += \
 	machine_rtc.c \
 	machine_sdcard.c \
 	machine_spi.c \
-	machine_uart.c \
 	main.c \
 	mbedtls/mbedtls_port.c \
 	mimxrt_flash.c \
@@ -508,11 +504,8 @@ $(GEN_FLEXRAM_CONFIG_SRC):
 # both pins_gen.c and pins.h
 $(BUILD)/%_gen.c $(HEADER_BUILD)/%.h: $(BOARD_PINS) $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE)\
-		--iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
-		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) > $(GEN_PINS_SRC)
-
-$(GEN_PINS_SRC:.c=.o): $(GEN_PINS_SRC)
-	$(call compile_c)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) \
+	    --prefix $(PREFIX_FILE) --iomux $(abspath $(TOP)/$(MCU_DIR)/drivers/fsl_iomuxc.h) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR)
 
 include $(TOP)/py/mkrules.mk

@@ -49,7 +49,7 @@ extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 #include "uart.h"
 
 // Provided by the port.
-extern pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
+extern machine_uart_obj_t mp_bluetooth_hci_uart_obj;
 
 STATIC void cywbt_wait_cts_low(void) {
     mp_hal_pin_config(CYW43_PIN_BT_CTS, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);

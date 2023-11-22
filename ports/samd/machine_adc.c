@@ -25,17 +25,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
 
-#if MICROPY_PY_MACHINE_ADC
-
-#include <stdint.h>
-#include "py/obj.h"
 #include "py/mphal.h"
-
 #include "sam.h"
 #include "pin_af.h"
-#include "modmachine.h"
 
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
@@ -77,6 +72,9 @@ static uint8_t adc_vref_table[] = {
 
 #endif  // defined(MCU_SAMD21)
 
+// The ADC class doesn't have any constants for this port.
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS
+
 Adc *const adc_bases[] = ADC_INSTS;
 uint32_t busy_flags = 0;
 bool init_flags[2] = {false, false};
@@ -87,16 +85,16 @@ static uint8_t resolution[] = {
 
 extern mp_int_t log2i(mp_int_t num);
 
-STATIC void adc_obj_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
-    machine_adc_obj_t *self = MP_OBJ_TO_PTR(o);
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    mp_printf(print, "ADC(%s, device=%u, channel=%u, bits=%u, average=%u, vref=%d)",
-        pin_name(self->id), self->adc_config.device,
+    mp_printf(print, "ADC(%q, device=%u, channel=%u, bits=%u, average=%u, vref=%d)",
+        pin_find_by_id(self->id)->name, self->adc_config.device,
         self->adc_config.channel, self->bits, 1 << self->avg, self->vref);
 }
 
-STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_bits, ARG_average, ARG_vref };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -140,8 +138,7 @@ STATIC mp_obj_t adc_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_
 }
 
 // read_u16()
-STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
-    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     Adc *adc = adc_bases[self->adc_config.device];
     // Set the reference voltage. Default: external AREFA.
     adc->REFCTRL.reg = adc_vref_table[self->vref];
@@ -155,40 +152,19 @@ STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     while (adc->INTFLAG.bit.RESRDY == 0) {
     }
     // Get and return the result
-    return MP_OBJ_NEW_SMALL_INT(adc->RESULT.reg * (65536 / (1 << self->bits)));
+    return adc->RESULT.reg * (65536 / (1 << self->bits));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 
 // deinit() : release the ADC channel
-STATIC mp_obj_t machine_adc_deinit(mp_obj_t self_in) {
-    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
+STATIC void mp_machine_adc_deinit(machine_adc_obj_t *self) {
     busy_flags &= ~((1 << (self->adc_config.device * 16 + self->adc_config.channel)));
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_deinit_obj, machine_adc_deinit);
 
 void adc_deinit_all(void) {
     busy_flags = 0;
     init_flags[0] = 0;
     init_flags[1] = 0;
 }
-
-STATIC const mp_rom_map_elem_t adc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_adc_deinit_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(adc_locals_dict, adc_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_adc_type,
-    MP_QSTR_ADC,
-    MP_TYPE_FLAG_NONE,
-    make_new, adc_obj_make_new,
-    print, adc_obj_print,
-    locals_dict, &adc_locals_dict
-    );
 
 static void adc_init(machine_adc_obj_t *self) {
     // ADC & clock init is done only once per ADC
@@ -270,5 +246,3 @@ static void adc_init(machine_adc_obj_t *self) {
     // Set the port as given in self->id as ADC
     mp_hal_set_pin_mux(self->id, ALT_FCT_ADC);
 }
-
-#endif

@@ -150,9 +150,10 @@ int mp_bluetooth_hci_uart_readpacket(mp_bluetooth_hci_uart_readchar_t handler) {
 /******************************************************************************/
 // HCI over UART
 
+#include "extmod/modmachine.h"
 #include "uart.h"
 
-pyb_uart_obj_t mp_bluetooth_hci_uart_obj;
+machine_uart_obj_t mp_bluetooth_hci_uart_obj;
 mp_irq_obj_t mp_bluetooth_hci_uart_irq_obj;
 
 static uint8_t hci_uart_rxbuf[768];
@@ -169,13 +170,13 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     DEBUG_printf("mp_bluetooth_hci_uart_init (stm32)\n");
 
     // bits (8), stop (1), parity (none) and flow (rts/cts) are assumed to match MYNEWT_VAL_BLE_HCI_UART_ constants in syscfg.h.
-    mp_bluetooth_hci_uart_obj.base.type = &pyb_uart_type;
+    mp_bluetooth_hci_uart_obj.base.type = &machine_uart_type;
     mp_bluetooth_hci_uart_obj.uart_id = port;
     mp_bluetooth_hci_uart_obj.is_static = true;
     // We don't want to block indefinitely, but expect flow control is doing its job.
     mp_bluetooth_hci_uart_obj.timeout = 200;
     mp_bluetooth_hci_uart_obj.timeout_char = 200;
-    MP_STATE_PORT(pyb_uart_obj_all)[mp_bluetooth_hci_uart_obj.uart_id - 1] = &mp_bluetooth_hci_uart_obj;
+    MP_STATE_PORT(machine_uart_obj_all)[mp_bluetooth_hci_uart_obj.uart_id - 1] = &mp_bluetooth_hci_uart_obj;
 
     // Initialise the UART.
     uart_init(&mp_bluetooth_hci_uart_obj, baudrate, UART_WORDLENGTH_8B, UART_PARITY_NONE, UART_STOPBITS_1, UART_HWCONTROL_RTS | UART_HWCONTROL_CTS);

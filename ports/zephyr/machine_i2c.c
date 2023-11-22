@@ -36,8 +36,7 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_i2c.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_I2C
 

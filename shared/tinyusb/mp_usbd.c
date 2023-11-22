@@ -27,17 +27,49 @@
 #include <stdlib.h>
 
 #include "py/mpconfig.h"
+#include "py/runtime.h"
 
 #if MICROPY_HW_ENABLE_USBDEV
 
 #ifndef NO_QSTR
 #include "tusb.h" // TinyUSB is not available when running the string preprocessor
+#include "device/dcd.h"
 #include "device/usbd.h"
 #include "device/usbd_pvt.h"
 #endif
 
-void usbd_task(void) {
+// TinyUSB task function wrapper, as scheduled from the USB IRQ
+static void mp_usbd_task_callback(mp_sched_node_t *node);
+
+extern void __real_dcd_event_handler(dcd_event_t const *event, bool in_isr);
+
+void mp_usbd_task(void) {
     tud_task_ext(0, false);
+}
+
+// If -Wl,--wrap=dcd_event_handler is passed to the linker, then this wrapper
+// will be called and allows MicroPython to schedule the TinyUSB task when
+// dcd_event_handler() is called from an ISR.
+TU_ATTR_FAST_FUNC void __wrap_dcd_event_handler(dcd_event_t const *event, bool in_isr) {
+    static mp_sched_node_t usbd_task_node;
+
+    __real_dcd_event_handler(event, in_isr);
+    mp_sched_schedule_node(&usbd_task_node, mp_usbd_task_callback);
+}
+
+static void mp_usbd_task_callback(mp_sched_node_t *node) {
+    (void)node;
+    mp_usbd_task();
+}
+
+void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len) {
+    size_t hex_len = bytes_len * 2;
+    for (int i = 0; i < hex_len; i += 2) {
+        static const char *hexdig = "0123456789abcdef";
+        out_str[i] = hexdig[bytes[i / 2] >> 4];
+        out_str[i + 1] = hexdig[bytes[i / 2] & 0x0f];
+    }
+    out_str[hex_len] = 0;
 }
 
 #endif

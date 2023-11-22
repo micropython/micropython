@@ -7,6 +7,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_DIR}/shared/libc/abort_.c
     ${MICROPY_DIR}/shared/libc/printf.c
     ${MICROPY_EXTMOD_DIR}/btstack/modbluetooth_btstack.c
+    ${MICROPY_EXTMOD_DIR}/machine_adc.c
+    ${MICROPY_EXTMOD_DIR}/machine_adc_block.c
     ${MICROPY_EXTMOD_DIR}/machine_bitstream.c
     ${MICROPY_EXTMOD_DIR}/machine_i2c.c
     ${MICROPY_EXTMOD_DIR}/machine_i2s.c
@@ -15,6 +17,7 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/machine_pwm.c
     ${MICROPY_EXTMOD_DIR}/machine_signal.c
     ${MICROPY_EXTMOD_DIR}/machine_spi.c
+    ${MICROPY_EXTMOD_DIR}/machine_uart.c
     ${MICROPY_EXTMOD_DIR}/machine_wdt.c
     ${MICROPY_EXTMOD_DIR}/modbluetooth.c
     ${MICROPY_EXTMOD_DIR}/modframebuf.c

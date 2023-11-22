@@ -24,9 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include "extmod/machine_mem.h"
-#include "extmod/machine_pinbase.h"
-#include "extmod/machine_signal.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE
 

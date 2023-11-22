@@ -30,8 +30,7 @@
 #if MICROPY_PY_MACHINE_SPI
 
 #include "py/mphal.h"
-#include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
 #include "clock_config.h"
@@ -59,8 +58,6 @@ typedef struct _machine_spi_obj_t {
     uint8_t *dest;
     size_t rxlen;
 } machine_spi_obj_t;
-
-extern Sercom *sercom_instance[];
 
 void common_spi_irq_handler(int spi_id) {
     // handle Sercom IRQ RXC

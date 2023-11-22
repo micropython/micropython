@@ -35,7 +35,7 @@
 
 #include "py/nlr.h"
 #include "py/mphal.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 #include "genhdr/pins.h"
 #include "spi.h"
@@ -187,13 +187,14 @@ enum {
     ARG_INIT_firstbit
 };
 
-STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args);
-STATIC void machine_hard_spi_init(mp_obj_t self, mp_arg_val_t *args);
-STATIC void machine_hard_spi_deinit(mp_obj_t self);
+STATIC void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_arg_val_t *args);
 
-/* common code for both soft and hard implementations *************************/
+STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_hard_spi_obj_t *self = self_in;
+    mp_printf(print, "SPI(%u)", self->p_spi->drv_inst_idx);
+}
 
-STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 1000000} },
@@ -210,71 +211,6 @@ STATIC mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, s
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_NEW_id].u_obj == MP_OBJ_NEW_SMALL_INT(-1)) {
-        // TODO: implement soft SPI
-        // return machine_soft_spi_make_new(args);
-        return mp_const_none;
-    } else {
-        // hardware peripheral id given
-        return machine_hard_spi_make_new(args);
-    }
-}
-
-STATIC mp_obj_t machine_spi_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000000} },
-        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
-        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-    };
-
-    // parse args
-    mp_obj_t self = pos_args[0];
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_spi_type) {
-        machine_hard_spi_init(self, args);
-    }
-
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_spi_init_obj, 1, machine_spi_init);
-
-STATIC mp_obj_t machine_spi_deinit(mp_obj_t self) {
-    // dispatch to specific implementation
-    if (mp_obj_get_type(self) == &machine_spi_type) {
-        machine_hard_spi_deinit(self);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_spi_deinit_obj, machine_spi_deinit);
-
-STATIC const mp_rom_map_elem_t machine_spi_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_spi_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_spi_deinit_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_machine_spi_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_machine_spi_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_machine_spi_write_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write_readinto), MP_ROM_PTR(&mp_machine_spi_write_readinto_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_MSB), MP_ROM_INT(NRF_SPI_BIT_ORDER_MSB_FIRST) },
-    { MP_ROM_QSTR(MP_QSTR_LSB), MP_ROM_INT(NRF_SPI_BIT_ORDER_LSB_FIRST) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(machine_spi_locals_dict, machine_spi_locals_dict_table);
-
-/* code for hard implementation ***********************************************/
-
-STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_hard_spi_obj_t *self = self_in;
-    mp_printf(print, "SPI(%u)", self->p_spi->drv_inst_idx);
-}
-
-STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
     // get static peripheral object
     int spi_id = spi_find(args[ARG_NEW_id].u_obj);
     const machine_hard_spi_obj_t *self = &machine_hard_spi_obj[spi_id];
@@ -302,16 +238,12 @@ STATIC mp_obj_t machine_hard_spi_make_new(mp_arg_val_t *args) {
     self->p_config->irq_priority = 6;
 #endif
 
-    mp_obj_t self_obj = MP_OBJ_FROM_PTR(self);
-    machine_hard_spi_init(self_obj, &args[1]); // Skip instance id param.
+    machine_hard_spi_init_helper(self, &args[1]); // Skip instance id param.
 
-    return self_obj;
+    return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
-
-    const machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
+STATIC void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_arg_val_t *args) {
     int baudrate = args[ARG_INIT_baudrate].u_int;
 
     if (baudrate <= 125000) {
@@ -372,7 +304,24 @@ STATIC void machine_hard_spi_init(mp_obj_t self_in, mp_arg_val_t *args) {
     }
 }
 
-STATIC void machine_hard_spi_deinit(mp_obj_t self_in) {
+STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000000} },
+        { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_phase,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_bits,     MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 8} },
+        { MP_QSTR_firstbit, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+
+    // parse args
+    machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    machine_hard_spi_init_helper(self, args);
+}
+
+STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
     const machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     nrfx_spi_uninit(self->p_spi);
 }
@@ -382,48 +331,9 @@ STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const 
     spi_transfer(self, len, src, dest);
 }
 
-
-STATIC mp_obj_t mp_machine_spi_read(size_t n_args, const mp_obj_t *args) {
-    vstr_t vstr;
-    vstr_init_len(&vstr, mp_obj_get_int(args[1]));
-    memset(vstr.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, vstr.len);
-    spi_transfer(args[0], vstr.len, vstr.buf, vstr.buf);
-    return mp_obj_new_bytes_from_vstr(&vstr);
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_read_obj, 2, 3, mp_machine_spi_read);
-
-STATIC mp_obj_t mp_machine_spi_readinto(size_t n_args, const mp_obj_t *args) {
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
-    memset(bufinfo.buf, n_args == 3 ? mp_obj_get_int(args[2]) : 0, bufinfo.len);
-    spi_transfer(args[0], bufinfo.len, bufinfo.buf, bufinfo.buf);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj, 2, 3, mp_machine_spi_readinto);
-
-STATIC mp_obj_t mp_machine_spi_write(mp_obj_t self, mp_obj_t wr_buf) {
-    mp_buffer_info_t src;
-    mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    spi_transfer(self, src.len, (const uint8_t*)src.buf, NULL);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj, mp_machine_spi_write);
-
-STATIC mp_obj_t mp_machine_spi_write_readinto(mp_obj_t self, mp_obj_t wr_buf, mp_obj_t rd_buf) {
-    mp_buffer_info_t src;
-    mp_get_buffer_raise(wr_buf, &src, MP_BUFFER_READ);
-    mp_buffer_info_t dest;
-    mp_get_buffer_raise(rd_buf, &dest, MP_BUFFER_WRITE);
-    if (src.len != dest.len) {
-        mp_raise_ValueError(MP_ERROR_TEXT("buffers must be the same length"));
-    }
-    spi_transfer(self, src.len, src.buf, dest.buf);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj, mp_machine_spi_write_readinto);
-
-
 STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
+    .init = machine_hard_spi_init,
+    .deinit = machine_hard_spi_deinit,
     .transfer = machine_hard_spi_transfer,
 };
 
@@ -431,10 +341,10 @@ MP_DEFINE_CONST_OBJ_TYPE(
     machine_spi_type,
     MP_QSTR_SPI,
     MP_TYPE_FLAG_NONE,
-    make_new, machine_spi_make_new,
+    make_new, machine_hard_spi_make_new,
     print, machine_hard_spi_print,
     protocol, &machine_hard_spi_p,
-    locals_dict, &machine_spi_locals_dict
+    locals_dict, &mp_machine_spi_locals_dict
     );
 
 #endif // MICROPY_PY_MACHINE_HW_SPI

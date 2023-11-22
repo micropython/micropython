@@ -35,10 +35,10 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "extmod/modmachine.h"
 #include "shared/timeutils/timeutils.h"
 #include "hardware/rtc.h"
 #include "pico/util/datetime.h"
-#include "modmachine.h"
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;

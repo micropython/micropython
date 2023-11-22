@@ -28,6 +28,10 @@ _MODE_MODULE = "module"
 _MODE_ROOT_POINTER = "root_pointer"
 
 
+class PreprocessorError(Exception):
+    pass
+
+
 def is_c_source(fname):
     return os.path.splitext(fname)[1] in [".c"]
 
@@ -57,7 +61,10 @@ def preprocess():
 
     def pp(flags):
         def run(files):
-            return subprocess.check_output(args.pp + flags + files)
+            try:
+                return subprocess.check_output(args.pp + flags + files)
+            except subprocess.CalledProcessError as er:
+                raise PreprocessorError(str(er))
 
         return run
 
@@ -208,7 +215,12 @@ if __name__ == "__main__":
         for k, v in named_args.items():
             setattr(args, k, v)
 
-        preprocess()
+        try:
+            preprocess()
+        except PreprocessorError as er:
+            print(er)
+            sys.exit(1)
+
         sys.exit(0)
 
     args.mode = sys.argv[2]

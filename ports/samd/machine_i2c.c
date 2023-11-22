@@ -31,8 +31,7 @@
 
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_i2c.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 #include "samd_soc.h"
 #include "pin_af.h"
 #include "clock_config.h"
@@ -70,8 +69,6 @@ typedef struct _machine_i2c_obj_t {
     size_t len;
     uint8_t *buf;
 } machine_i2c_obj_t;
-
-extern Sercom *sercom_instance[];
 
 STATIC void i2c_send_command(Sercom *i2c, uint8_t command) {
     i2c->I2CM.CTRLB.bit.CMD = command;

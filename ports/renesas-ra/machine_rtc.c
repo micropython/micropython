@@ -28,6 +28,7 @@
 #include <stdio.h>
 
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "shared/timeutils/timeutils.h"
 #include "extint.h"
 #include "rtc.h"

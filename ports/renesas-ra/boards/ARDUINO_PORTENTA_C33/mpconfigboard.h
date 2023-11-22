@@ -5,10 +5,14 @@
  */
 
 // MCU config
-#define MICROPY_HW_BOARD_NAME       "PORTENTA C33"
+#define MICROPY_HW_BOARD_NAME       "Arduino Portenta C33"
 #define MICROPY_HW_MCU_NAME         "RA6M5"
 #define MICROPY_HW_MCU_SYSCLK       200000000
 #define MICROPY_HW_MCU_PCLK         100000000
+#define MICROPY_HW_FLASH_FS_LABEL   "Portenta C33"
+
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-portenta-c33"
 
 // module config
 #define MICROPY_EMIT_THUMB          (1)
@@ -59,8 +63,8 @@ void PORTENTA_C33_board_enter_bootloader(void);
 #endif
 
 // I2C
-#define MICROPY_HW_I2C2_SCL         (pin_P407)
-#define MICROPY_HW_I2C2_SDA         (pin_P408)
+#define MICROPY_HW_I2C0_SCL         (pin_P408)
+#define MICROPY_HW_I2C0_SDA         (pin_P407)
 
 // SPI
 #define MICROPY_HW_SPI1_SSL         (pin_P104)

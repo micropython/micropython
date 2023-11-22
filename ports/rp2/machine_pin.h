@@ -59,17 +59,16 @@ typedef struct _machine_pin_obj_t {
     const machine_pin_af_obj_t *af;
 } machine_pin_obj_t;
 
-extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_pin_af_type;
 
 // Include all of the individual pin objects
 #include "genhdr/pins.h"
 
 extern const mp_obj_type_t pin_cpu_pins_obj_type;
-extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
 
 extern const mp_obj_type_t pin_board_pins_obj_type;
-extern const mp_obj_dict_t pin_board_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 void machine_pin_ext_init(void);
 bool machine_pin_ext_is_adc_channel(const machine_pin_obj_t *self);

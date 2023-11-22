@@ -130,6 +130,9 @@
 #define MICROPY_PY_LWIP_SOCK_RAW    (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_ADC      (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/renesas-ra/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_READ (1)
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
 #endif
@@ -148,6 +151,11 @@
 #define MICROPY_PY_MACHINE_PWM_DUTY (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/renesas-ra/machine_pwm.c"
 #endif
+#define MICROPY_PY_MACHINE_UART     (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/renesas-ra/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_IRQ (1)
+#define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
+#define MICROPY_PY_MACHINE_UART_SENDBREAK (1)
 #if MICROPY_HW_ENABLE_HW_DAC
 #define MICROPY_PY_MACHINE_DAC      (1)
 #endif
@@ -264,7 +272,7 @@ static inline mp_uint_t disable_irq(void) {
 #define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #if MICROPY_HW_ENABLE_USBDEV
-#define MICROPY_HW_USBDEV_TASK_HOOK extern void usbd_task(void); usbd_task();
+#define MICROPY_HW_USBDEV_TASK_HOOK extern void mp_usbd_task(void); mp_usbd_task();
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \

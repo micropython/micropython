@@ -72,6 +72,10 @@ STATIC void pyb_lwip_poll(void) {
 
     // Run the lwIP internal updates
     sys_check_timeouts();
+
+    #if LWIP_NETIF_LOOPBACK
+    netif_poll_all();
+    #endif
 }
 
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {

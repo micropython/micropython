@@ -40,6 +40,11 @@
 
 #include "py/smallint.h"
 
+// makeqstrdata.py has a fixed list of qstrs at the start that we can assume
+// are available with know indices on all MicroPython implementations, and
+// avoid needing to duplicate the string data in the .mpy file. This is the
+// last one in that list (anything with a qstr less than or equal to this is
+// assumed to be in the list).
 #define QSTR_LAST_STATIC MP_QSTR_zip
 
 #if MICROPY_DYNAMIC_COMPILER

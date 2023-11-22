@@ -53,6 +53,7 @@ list(APPEND MICROPY_SOURCE_DRIVERS
 )
 
 list(APPEND MICROPY_SOURCE_PORT
+    adc.c
     main.c
     ppp_set_auth.c
     uart.c
@@ -66,11 +67,8 @@ list(APPEND MICROPY_SOURCE_PORT
     machine_timer.c
     machine_pin.c
     machine_touchpad.c
-    machine_adc.c
-    machine_adcblock.c
     machine_dac.c
     machine_i2c.c
-    machine_uart.c
     modmachine.c
     network_common.c
     network_lan.c
@@ -136,7 +134,6 @@ list(APPEND IDF_COMPONENTS
     spi_flash
     ulp
     vfs
-    xtensa
 )
 
 # Register the main IDF component.
@@ -163,7 +160,9 @@ idf_component_register(
 set(MICROPY_TARGET ${COMPONENT_TARGET})
 
 # Define mpy-cross flags, for use with frozen code.
+if(NOT IDF_TARGET STREQUAL "esp32c3")
 set(MICROPY_CROSS_FLAGS -march=xtensawin)
+endif()
 
 # Set compile options for this port.
 target_compile_definitions(${MICROPY_TARGET} PUBLIC

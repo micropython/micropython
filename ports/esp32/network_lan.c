@@ -44,6 +44,7 @@
 #endif
 
 #include "modnetwork.h"
+#include "extmod/modnetwork.h"
 
 typedef struct _lan_if_obj_t {
     base_if_obj_t base;
@@ -180,37 +181,15 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
     phy_config.phy_addr = self->phy_addr;
     phy_config.reset_gpio_num = self->phy_power_pin;
     self->phy = NULL;
-
     #if CONFIG_ETH_USE_SPI_ETHERNET
-    spi_device_handle_t spi_handle = NULL;
-    if (IS_SPI_PHY(args[ARG_phy_type].u_int)) {
-        spi_device_interface_config_t devcfg = {
-            .mode = 0,
-            .clock_speed_hz = MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ * 1000 * 1000,
-            .queue_size = 20,
-            .spics_io_num = self->phy_cs_pin,
-        };
-        switch (args[ARG_phy_type].u_int) {
-            #if CONFIG_ETH_SPI_ETHERNET_DM9051
-            case PHY_DM9051: {
-                devcfg.command_bits = 1;
-                devcfg.address_bits = 7;
-                break;
-            }
-            #endif
-            #if CONFIG_ETH_SPI_ETHERNET_W5500
-            case PHY_W5500: {
-                devcfg.command_bits = 16;
-                devcfg.address_bits = 8;
-                break;
-            }
-            #endif
-        }
-        spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
-        if (spi_bus_add_device(host, &devcfg, &spi_handle) != ESP_OK) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("spi_bus_add_device failed"));
-        }
-    }
+    spi_device_interface_config_t devcfg = {
+        .mode = 0,
+        .clock_speed_hz = MICROPY_PY_NETWORK_LAN_SPI_CLOCK_SPEED_MZ * 1000 * 1000,
+        .queue_size = 20,
+        .spics_io_num = self->phy_cs_pin,
+        .command_bits = 0, // Can both be set to 0, as the respective
+        .address_bits = 0, // driver fills in proper default values.
+    };
     #endif
 
     switch (args[ARG_phy_type].u_int) {
@@ -236,7 +215,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #if CONFIG_ETH_USE_SPI_ETHERNET
         #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
         case PHY_KSZ8851SNL: {
-            eth_ksz8851snl_config_t chip_config = ETH_KSZ8851SNL_DEFAULT_CONFIG(spi_handle);
+            spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+            eth_ksz8851snl_config_t chip_config = ETH_KSZ8851SNL_DEFAULT_CONFIG(host, &devcfg);
             chip_config.int_gpio_num = self->phy_int_pin;
             mac = esp_eth_mac_new_ksz8851snl(&chip_config, &mac_config);
             self->phy = esp_eth_phy_new_ksz8851snl(&phy_config);
@@ -245,7 +225,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #endif
         #if CONFIG_ETH_SPI_ETHERNET_DM9051
         case PHY_DM9051: {
-            eth_dm9051_config_t chip_config = ETH_DM9051_DEFAULT_CONFIG(spi_handle);
+            spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+            eth_dm9051_config_t chip_config = ETH_DM9051_DEFAULT_CONFIG(host, &devcfg);
             chip_config.int_gpio_num = self->phy_int_pin;
             mac = esp_eth_mac_new_dm9051(&chip_config, &mac_config);
             self->phy = esp_eth_phy_new_dm9051(&phy_config);
@@ -254,7 +235,8 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         #endif
         #if CONFIG_ETH_SPI_ETHERNET_W5500
         case PHY_W5500: {
-            eth_w5500_config_t chip_config = ETH_W5500_DEFAULT_CONFIG(spi_handle);
+            spi_host_device_t host = machine_hw_spi_get_host(args[ARG_spi].u_obj);
+            eth_w5500_config_t chip_config = ETH_W5500_DEFAULT_CONFIG(host, &devcfg);
             chip_config.int_gpio_num = self->phy_int_pin;
             mac = esp_eth_mac_new_w5500(&chip_config, &mac_config);
             self->phy = esp_eth_phy_new_w5500(&phy_config);
@@ -321,6 +303,7 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
 
     if (n_args > 1) {
         if (mp_obj_is_true(args[1])) {
+            esp_netif_set_hostname(self->base.netif, mod_network_hostname_data);
             self->base.active = (esp_eth_start(self->eth_handle) == ESP_OK);
             if (!self->base.active) {
                 mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("ethernet enable failed"));
@@ -344,7 +327,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_status_obj, lan_status);
 
 STATIC mp_obj_t lan_isconnected(mp_obj_t self_in) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return self->base.active ? mp_obj_new_bool(self->phy->get_link(self->phy) == ETH_LINK_UP) : mp_const_false;
+    return mp_obj_new_bool(self->base.active && (eth_status == ETH_GOT_IP));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_isconnected_obj, lan_isconnected);
 

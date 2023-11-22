@@ -35,9 +35,10 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
+#include "extmod/virtpin.h"
 #include "mphalport.h"
 #include "modmachine.h"
-#include "extmod/virtpin.h"
 #include "machine_pin.h"
 #include "machine_rtc.h"
 #include "modesp32.h"
@@ -57,9 +58,10 @@
 #define GPIO_FIRST_NON_OUTPUT (46)
 #endif
 
-// Return the gpio_num_t index for a given pin or pin-irq object.
-#define PIN_OBJ_INDEX(self) ((self) - &machine_pin_obj_table[0])
-#define PIN_IRQ_OBJ_INDEX(self) ((self) - &machine_pin_irq_obj_table[0])
+// Return the gpio_num_t index for a given machine_pin_obj_t pointer.
+#define PIN_OBJ_PTR_INDEX(self) ((self) - &machine_pin_obj_table[0])
+// Return the machine_pin_obj_t pointer corresponding to a machine_pin_irq_obj_t pointer.
+#define PIN_OBJ_PTR_FROM_IRQ_OBJ_PTR(self) ((machine_pin_obj_t *)((uintptr_t)(self) - offsetof(machine_pin_obj_t, irq)))
 
 STATIC const machine_pin_obj_t *machine_pin_find_named(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     const mp_map_t *named_map = &named_pins->map;
@@ -89,7 +91,7 @@ void machine_pins_deinit(void) {
 
 STATIC void machine_pin_isr_handler(void *arg) {
     machine_pin_obj_t *self = arg;
-    mp_obj_t handler = MP_STATE_PORT(machine_pin_irq_handler)[PIN_OBJ_INDEX(self)];
+    mp_obj_t handler = MP_STATE_PORT(machine_pin_irq_handler)[PIN_OBJ_PTR_INDEX(self)];
     mp_sched_schedule(handler, MP_OBJ_FROM_PTR(self));
     mp_hal_wake_main_task_from_isr();
 }
@@ -123,12 +125,12 @@ STATIC const machine_pin_obj_t *machine_pin_find(mp_obj_t pin_in) {
 
 gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {
     const machine_pin_obj_t *self = machine_pin_find(pin_in);
-    return PIN_OBJ_INDEX(self);
+    return PIN_OBJ_PTR_INDEX(self);
 }
 
 STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
-    mp_printf(print, "Pin(%u)", PIN_OBJ_INDEX(self));
+    mp_printf(print, "Pin(%u)", PIN_OBJ_PTR_INDEX(self));
 }
 
 // pin.init(mode=None, pull=-1, *, value, drive, hold)
@@ -146,34 +148,36 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
+    gpio_num_t index = PIN_OBJ_PTR_INDEX(self);
+
     // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
     if (args[ARG_mode].u_obj != mp_const_none) {
-        if (rtc_gpio_is_valid_gpio(PIN_OBJ_INDEX(self))) {
+        if (rtc_gpio_is_valid_gpio(index)) {
             #if !CONFIG_IDF_TARGET_ESP32C3
-            rtc_gpio_deinit(PIN_OBJ_INDEX(self));
+            rtc_gpio_deinit(index);
             #endif
         }
     }
 
     #if CONFIG_IDF_TARGET_ESP32C3
-    if (PIN_OBJ_INDEX(self) == 18 || PIN_OBJ_INDEX(self) == 19) {
+    if (index == 18 || index == 19) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }
     #endif
 
     // configure the pin for gpio
-    esp_rom_gpio_pad_select_gpio(PIN_OBJ_INDEX(self));
+    esp_rom_gpio_pad_select_gpio(index);
 
     // set initial value (do this before configuring mode/pull)
     if (args[ARG_value].u_obj != MP_OBJ_NULL) {
-        gpio_set_level(PIN_OBJ_INDEX(self), mp_obj_is_true(args[ARG_value].u_obj));
+        gpio_set_level(index, mp_obj_is_true(args[ARG_value].u_obj));
     }
 
     // set drive capability (do this before configuring mode)
-    if (args[ARG_drive].u_obj != MP_OBJ_NULL && GPIO_IS_VALID_OUTPUT_GPIO(PIN_OBJ_INDEX(self))) {
+    if (args[ARG_drive].u_obj != MP_OBJ_NULL && GPIO_IS_VALID_OUTPUT_GPIO(index)) {
         mp_int_t strength = mp_obj_get_int(args[ARG_drive].u_obj);
         if (0 <= strength && strength < GPIO_DRIVE_CAP_MAX) {
-            gpio_set_drive_capability(PIN_OBJ_INDEX(self), strength);
+            gpio_set_drive_capability(index, strength);
         }
     }
 
@@ -181,11 +185,11 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     if (args[ARG_mode].u_obj != mp_const_none) {
         mp_int_t pin_io_mode = mp_obj_get_int(args[ARG_mode].u_obj);
         #ifdef GPIO_FIRST_NON_OUTPUT
-        if (PIN_OBJ_INDEX(self) >= GPIO_FIRST_NON_OUTPUT && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
+        if (index >= GPIO_FIRST_NON_OUTPUT && (pin_io_mode & GPIO_MODE_DEF_OUTPUT)) {
             mp_raise_ValueError(MP_ERROR_TEXT("pin can only be input"));
         }
         #endif
-        gpio_set_direction(PIN_OBJ_INDEX(self), pin_io_mode);
+        gpio_set_direction(index, pin_io_mode);
     }
 
     // configure pull
@@ -195,24 +199,24 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
             mode = mp_obj_get_int(args[ARG_pull].u_obj);
         }
         if (mode & GPIO_PULL_DOWN) {
-            gpio_pulldown_en(PIN_OBJ_INDEX(self));
+            gpio_pulldown_en(index);
         } else {
-            gpio_pulldown_dis(PIN_OBJ_INDEX(self));
+            gpio_pulldown_dis(index);
         }
         if (mode & GPIO_PULL_UP) {
-            gpio_pullup_en(PIN_OBJ_INDEX(self));
+            gpio_pullup_en(index);
         } else {
-            gpio_pullup_dis(PIN_OBJ_INDEX(self));
+            gpio_pullup_dis(index);
         }
     }
 
     // configure pad hold
-    if (args[ARG_hold].u_obj != MP_OBJ_NULL && GPIO_IS_VALID_OUTPUT_GPIO(PIN_OBJ_INDEX(self))) {
+    if (args[ARG_hold].u_obj != MP_OBJ_NULL && GPIO_IS_VALID_OUTPUT_GPIO(index)) {
         // always disable pad hold to apply outstanding config changes
-        gpio_hold_dis(PIN_OBJ_INDEX(self));
+        gpio_hold_dis(index);
         // (re-)enable pad hold if requested
         if (mp_obj_is_true(args[ARG_hold].u_obj)) {
-            gpio_hold_en(PIN_OBJ_INDEX(self));
+            gpio_hold_en(index);
         }
     }
 
@@ -240,12 +244,13 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
 STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_obj_t *self = self_in;
+    gpio_num_t index = PIN_OBJ_PTR_INDEX(self);
     if (n_args == 0) {
         // get pin
-        return MP_OBJ_NEW_SMALL_INT(gpio_get_level(PIN_OBJ_INDEX(self)));
+        return MP_OBJ_NEW_SMALL_INT(gpio_get_level(index));
     } else {
         // set pin
-        gpio_set_level(PIN_OBJ_INDEX(self), mp_obj_is_true(args[0]));
+        gpio_set_level(index, mp_obj_is_true(args[0]));
         return mp_const_none;
     }
 }
@@ -265,7 +270,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_
 // pin.off()
 STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    gpio_set_level(PIN_OBJ_INDEX(self), 0);
+    gpio_set_level(PIN_OBJ_PTR_INDEX(self), 0);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
@@ -273,7 +278,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_off_obj, machine_pin_off);
 // pin.on()
 STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    gpio_set_level(PIN_OBJ_INDEX(self), 1);
+    gpio_set_level(PIN_OBJ_PTR_INDEX(self), 1);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
@@ -292,6 +297,7 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     if (n_args > 1 || kw_args->used != 0) {
         // configure irq
+        gpio_num_t index = PIN_OBJ_PTR_INDEX(self);
         mp_obj_t handler = args[ARG_handler].u_obj;
         uint32_t trigger = args[ARG_trigger].u_int;
         mp_obj_t wake_obj = args[ARG_wake].u_obj;
@@ -310,20 +316,20 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
                 mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
             }
 
-            if (!RTC_IS_VALID_EXT_PIN(PIN_OBJ_INDEX(self))) {
+            if (!RTC_IS_VALID_EXT_PIN(index)) {
                 mp_raise_ValueError(MP_ERROR_TEXT("invalid pin for wake"));
             }
 
             if (machine_rtc_config.ext0_pin == -1) {
-                machine_rtc_config.ext0_pin = PIN_OBJ_INDEX(self);
-            } else if (machine_rtc_config.ext0_pin != PIN_OBJ_INDEX(self)) {
+                machine_rtc_config.ext0_pin = index;
+            } else if (machine_rtc_config.ext0_pin != index) {
                 mp_raise_ValueError(MP_ERROR_TEXT("no resources"));
             }
 
             machine_rtc_config.ext0_level = trigger == GPIO_INTR_LOW_LEVEL ? 0 : 1;
             machine_rtc_config.ext0_wake_types = wake;
         } else {
-            if (machine_rtc_config.ext0_pin == PIN_OBJ_INDEX(self)) {
+            if (machine_rtc_config.ext0_pin == index) {
                 machine_rtc_config.ext0_pin = -1;
             }
 
@@ -331,15 +337,15 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
                 handler = MP_OBJ_NULL;
                 trigger = 0;
             }
-            gpio_isr_handler_remove(PIN_OBJ_INDEX(self));
-            MP_STATE_PORT(machine_pin_irq_handler)[PIN_OBJ_INDEX(self)] = handler;
-            gpio_set_intr_type(PIN_OBJ_INDEX(self), trigger);
-            gpio_isr_handler_add(PIN_OBJ_INDEX(self), machine_pin_isr_handler, (void *)self);
+            gpio_isr_handler_remove(index);
+            MP_STATE_PORT(machine_pin_irq_handler)[index] = handler;
+            gpio_set_intr_type(index, trigger);
+            gpio_isr_handler_add(index, machine_pin_isr_handler, (void *)self);
         }
     }
 
     // return the irq object
-    return MP_OBJ_FROM_PTR(&machine_pin_irq_obj_table[PIN_OBJ_INDEX(self)]);
+    return MP_OBJ_FROM_PTR(&self->irq);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
@@ -380,13 +386,14 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
 STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_obj_t *self = self_in;
+    gpio_num_t index = PIN_OBJ_PTR_INDEX(self);
 
     switch (request) {
         case MP_PIN_READ: {
-            return gpio_get_level(PIN_OBJ_INDEX(self));
+            return gpio_get_level(index);
         }
         case MP_PIN_WRITE: {
-            gpio_set_level(PIN_OBJ_INDEX(self), arg);
+            gpio_set_level(index, arg);
             return 0;
         }
     }
@@ -416,16 +423,17 @@ MP_DEFINE_CONST_OBJ_TYPE(
 STATIC mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     machine_pin_irq_obj_t *self = self_in;
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
-    machine_pin_isr_handler((void *)&machine_pin_obj_table[PIN_IRQ_OBJ_INDEX(self)]);
+    machine_pin_isr_handler((void *)PIN_OBJ_PTR_FROM_IRQ_OBJ_PTR(self));
     return mp_const_none;
 }
 
 STATIC mp_obj_t machine_pin_irq_trigger(size_t n_args, const mp_obj_t *args) {
     machine_pin_irq_obj_t *self = args[0];
-    uint32_t orig_trig = GPIO.pin[PIN_IRQ_OBJ_INDEX(self)].int_type;
+    gpio_num_t index = PIN_OBJ_PTR_INDEX(PIN_OBJ_PTR_FROM_IRQ_OBJ_PTR(self));
+    uint32_t orig_trig = GPIO.pin[index].int_type;
     if (n_args == 2) {
         // set trigger
-        gpio_set_intr_type(PIN_IRQ_OBJ_INDEX(self), mp_obj_get_int(args[1]));
+        gpio_set_intr_type(index, mp_obj_get_int(args[1]));
     }
     // return original trigger value
     return MP_OBJ_NEW_SMALL_INT(orig_trig);

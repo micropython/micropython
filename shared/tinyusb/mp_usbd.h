@@ -29,11 +29,16 @@
 
 #include "py/obj.h"
 
-// Call instead of tud_task()
+// Call this to explicitly run the TinyUSB device task.
 void mp_usbd_task(void);
 
 // Function to be implemented in port code.
 // Can write a string up to MICROPY_HW_USB_DESC_STR_MAX characters long, plus terminating byte.
 extern void mp_usbd_port_get_serial_number(char *buf);
+
+// Most ports need to write a hexadecimal serial number from a byte array, this
+// is a helper function for this. out_str must be long enough to hold a string of total
+// length (2 * bytes_len + 1) (including NUL terminator).
+void mp_usbd_hex_str(char *out_str, const uint8_t *bytes, size_t bytes_len);
 
 #endif // MICROPY_INCLUDED_SHARED_TINYUSB_USBD_H

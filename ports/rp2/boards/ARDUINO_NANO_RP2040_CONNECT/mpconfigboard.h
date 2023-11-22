@@ -4,6 +4,9 @@
 #define MICROPY_HW_BOARD_NAME           "Arduino Nano RP2040 Connect"
 #define MICROPY_HW_FLASH_STORAGE_BYTES  (8 * 1024 * 1024)
 
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-nano-rp2040-connect"
+
 // Enable networking.
 #define MICROPY_PY_NETWORK              (1)
 
