@@ -63,7 +63,12 @@
 #ifndef MICROPY_HW_USB_DESC_STR_MAX
 #define MICROPY_HW_USB_DESC_STR_MAX (32)
 #endif
+// Support machine.USBDevice
+#ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1)
 #endif
+
+#endif // MICROPY_HW_ENABLE_USBDEV
 
 #define MICROPY_PY_SYS_PLATFORM             "samd"
 
