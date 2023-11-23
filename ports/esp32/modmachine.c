@@ -58,7 +58,6 @@
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_lightsleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) }, \
@@ -283,13 +282,11 @@ STATIC mp_obj_t machine_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     MP_THREAD_GIL_EXIT();
     taskYIELD();
     MP_THREAD_GIL_ENTER();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_disable_irq(void) {
     uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();

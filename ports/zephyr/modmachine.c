@@ -43,7 +43,6 @@
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     MICROPY_PY_MACHINE_RESET_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&machine_pin_type) }, \
 
 STATIC mp_obj_t machine_reset(void) {
@@ -59,8 +58,6 @@ STATIC mp_obj_t machine_reset_cause(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     k_yield();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);

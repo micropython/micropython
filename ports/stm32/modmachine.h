@@ -39,7 +39,6 @@ MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj);
 
-MP_DECLARE_CONST_FUN_OBJ_0(machine_idle_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj);
 MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_cause_obj);
