@@ -31,7 +31,7 @@
 
 #include "py/runtime.h"
 
-#if MICROPY_PY_MACHINE_HW_SPI
+#if MICROPY_PY_MACHINE_SPI
 
 #include "py/nlr.h"
 #include "py/mphal.h"
@@ -347,4 +347,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &mp_machine_spi_locals_dict
     );
 
-#endif // MICROPY_PY_MACHINE_HW_SPI
+#endif // MICROPY_PY_MACHINE_SPI

@@ -137,7 +137,7 @@ soft_reset:
     mp_init();
     readline_init0();
 
-    #if MICROPY_PY_MACHINE_HW_SPI
+    #if MICROPY_PY_MACHINE_SPI
     spi_init0();
     #endif
 
