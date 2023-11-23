@@ -161,7 +161,6 @@ SECTIONS
         *modmachine.o(.literal*, .text*)
         *machine_wdt.o(.literal*, .text*)
         *machine_spi.o(.literal*, .text*)
-        *machine_hspi.o(.literal*, .text*)
         *hspi.o(.literal*, .text*)
         *modesp.o(.literal* .text*)
         *modespnow.o(.literal* .text*)

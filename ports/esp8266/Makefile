@@ -114,7 +114,7 @@ SRC_C = \
 	machine_bitstream.c \
 	machine_pin.c \
 	machine_rtc.c \
-	machine_hspi.c \
+	machine_spi.c \
 	modesp.c \
 	network_wlan.c \
 	ets_alt_task.c \
