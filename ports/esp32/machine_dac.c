@@ -32,7 +32,6 @@
 #include "modmachine.h"
 
 #if MICROPY_PY_MACHINE_DAC
-#if SOC_DAC_SUPPORTED
 
 #include "driver/gpio.h"
 #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 1, 0)
@@ -135,7 +134,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &mdac_locals_dict
     );
 
-#else
-#error DAC is not supported!
-#endif // SOC_DAC_SUPPORTED
 #endif // MICROPY_PY_MACHINE_DAC
