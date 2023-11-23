@@ -137,30 +137,13 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_builtin_callable_obj, mp_builtin_callable);
 STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     #if MICROPY_PY_BUILTINS_STR_UNICODE
     mp_uint_t c = mp_obj_get_int(o_in);
-    uint8_t str[4];
-    int len = 0;
-    if (c < 0x80) {
-        *str = c;
-        len = 1;
-    } else if (c < 0x800) {
-        str[0] = (c >> 6) | 0xC0;
-        str[1] = (c & 0x3F) | 0x80;
-        len = 2;
-    } else if (c < 0x10000) {
-        str[0] = (c >> 12) | 0xE0;
-        str[1] = ((c >> 6) & 0x3F) | 0x80;
-        str[2] = (c & 0x3F) | 0x80;
-        len = 3;
-    } else if (c < 0x110000) {
-        str[0] = (c >> 18) | 0xF0;
-        str[1] = ((c >> 12) & 0x3F) | 0x80;
-        str[2] = ((c >> 6) & 0x3F) | 0x80;
-        str[3] = (c & 0x3F) | 0x80;
-        len = 4;
-    } else {
+    if (c >= 0x110000) {
         mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
     }
-    return mp_obj_new_str_via_qstr((char *)str, len);
+    vstr_t vstr;
+    vstr_init(&vstr, 0);
+    vstr_add_char(&vstr, c);
+    return mp_obj_new_str_from_vstr(&vstr);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0xff) {
