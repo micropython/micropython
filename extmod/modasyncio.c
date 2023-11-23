@@ -387,15 +387,6 @@ STATIC void task_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-STATIC mp_obj_t task_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
-    switch (op) {
-        case MP_UNARY_OP_HASH:
-            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
-        default:
-            return MP_OBJ_NULL;      // op not supported
-    }
-}
-
 STATIC mp_obj_t task_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     mp_obj_task_t *self = MP_OBJ_TO_PTR(self_in);
@@ -439,8 +430,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_ITER_IS_CUSTOM,
     make_new, task_make_new,
     attr, task_attr,
-    iter, &task_getiter_iternext,
-    unary_op, task_unary_op
+    iter, &task_getiter_iternext
     );
 
 /******************************************************************************/
