@@ -64,7 +64,6 @@
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
     MICROPY_PY_MACHINE_RTC_ENTRY \
     \
-    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) }, \
@@ -122,11 +121,9 @@ STATIC mp_obj_t machine_unique_id(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_disable_irq(void) {
     uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();

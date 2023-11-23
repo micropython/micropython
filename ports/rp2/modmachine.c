@@ -54,7 +54,6 @@
     { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) }, \
     \
-    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
     \
@@ -121,11 +120,9 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     __wfe();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;

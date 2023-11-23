@@ -102,7 +102,6 @@
     { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) }, \
     MICROPY_PY_MACHINE_RNG_ENTRY \
-    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
@@ -381,11 +380,9 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
 // idle()
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     __WFI();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {

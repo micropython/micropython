@@ -36,14 +36,7 @@
 #define MICROPY_PAGE_MASK (MICROPY_PAGE_SIZE - 1)
 #endif
 
-#ifdef MICROPY_UNIX_MACHINE_IDLE
-#define MICROPY_PY_MACHINE_IDLE_ENTRY { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
-#else
-#define MICROPY_PY_MACHINE_IDLE_ENTRY
-#endif
-
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    MICROPY_PY_MACHINE_IDLE_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_PinBase), MP_ROM_PTR(&machine_pinbase_type) }, \
 
 // This variable is needed for machine.soft_reset(), but the variable is otherwise unused.
@@ -80,10 +73,10 @@ uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     return addr;
 }
 
-#ifdef MICROPY_UNIX_MACHINE_IDLE
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
+    #ifdef MICROPY_UNIX_MACHINE_IDLE
     MICROPY_UNIX_MACHINE_IDLE
-    return mp_const_none;
+    #else
+    // Do nothing.
+    #endif
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
-#endif

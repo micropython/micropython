@@ -65,6 +65,12 @@ STATIC mp_obj_t pyb_fault_debug(mp_obj_t value) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_fault_debug_obj, pyb_fault_debug);
 
+STATIC mp_obj_t pyb_idle(void) {
+    __WFI();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(pyb_idle_obj, pyb_idle);
+
 #if MICROPY_PY_PYB_LEGACY
 
 // Returns the number of milliseconds which have elapsed since `start`.
@@ -144,7 +150,7 @@ STATIC const mp_rom_map_elem_t pyb_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_repl_info), MP_ROM_PTR(&pyb_set_repl_info_obj) },
     #endif
 
-    { MP_ROM_QSTR(MP_QSTR_wfi), MP_ROM_PTR(&machine_idle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_wfi), MP_ROM_PTR(&pyb_idle_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) },
     #if IRQ_ENABLE_STATS

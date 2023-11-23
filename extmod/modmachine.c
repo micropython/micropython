@@ -35,6 +35,10 @@
 #include "drivers/dht/dht.h"
 #endif
 
+// The port must provide implementations of these low-level machine functions.
+
+STATIC void mp_machine_idle(void);
+
 // The port can provide additional machine-module implementation in this file.
 #ifdef MICROPY_PY_MACHINE_INCLUDEFILE
 #include MICROPY_PY_MACHINE_INCLUDEFILE
@@ -46,6 +50,12 @@ STATIC mp_obj_t machine_soft_reset(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
 
+STATIC mp_obj_t machine_idle(void) {
+    mp_machine_idle();
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
 
@@ -56,6 +66,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     // Reset related functions.
     { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&machine_soft_reset_obj) },
+
+    // Power related functions.
+    { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
 
     // Functions for bit protocols.
     #if MICROPY_PY_MACHINE_BITSTREAM

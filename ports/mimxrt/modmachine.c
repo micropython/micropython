@@ -67,7 +67,6 @@
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
     MICROPY_PY_MACHINE_SDCARD_ENTRY \
     \
-    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
@@ -127,11 +126,9 @@ STATIC mp_obj_t machine_freq(void) {
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
 
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {

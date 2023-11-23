@@ -62,7 +62,6 @@
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_main),                MP_ROM_PTR(&machine_main_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_rng),                 MP_ROM_PTR(&machine_rng_get_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
@@ -168,11 +167,9 @@ STATIC mp_obj_t machine_main(mp_obj_t main) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_main_obj, machine_main);
 
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     __WFI();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
 STATIC mp_obj_t machine_lightsleep(void) {
     pyb_sleep_sleep();
