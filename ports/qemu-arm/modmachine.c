@@ -27,9 +27,6 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
 
-#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    { MP_ROM_QSTR(MP_QSTR_PinBase), MP_ROM_PTR(&machine_pinbase_type) }, \
-
 // This variable is needed for machine.soft_reset(), but the variable is otherwise unused.
 int pyexec_system_exit = 0;
 
