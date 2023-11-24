@@ -10,12 +10,12 @@ quality, temperature, relative humidity, acceleration, angular rate of change,
 magnetic field, range, and sound. For solution optimization, the PCTEL WSC can
 be ordered with a subset of radios and sensors.
 
-For more details about this board, and its varaiants, navigate to
+For more details about this board, and its variants, navigate to
 https://pctel.com
 
 # Build instructions
 
-Configure your build enviroment according to the Adafruit instructions. To
+Configure your build environment according to the Adafruit instructions. To
 build circuitpython for WSC-1450 do:
 
     cd ports/nrf make BOARD=pctel_wsc_1450
@@ -31,7 +31,7 @@ niceties like UF2 flashing). Instead, WSC-1450 uses DAPLink. DAPLink handles
 everything from debugging to programming the device, as well as the boot
 sequence.
 
-1. Connect the WSC-1450 dev kit unsing a USB cable to the `DHD USB` port. This
+1. Connect the WSC-1450 dev kit using a USB cable to the `DHD USB` port. This
    will power up the board and open a file browser showing the contents of the
 target. (DAPlink magic)
 2. Copy the newly built firmware to the WSC-1450 target using drag-n-drop or
