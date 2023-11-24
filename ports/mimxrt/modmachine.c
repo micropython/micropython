@@ -57,17 +57,11 @@
 #endif
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) }, \
     MICROPY_PY_MACHINE_LED_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
     MICROPY_PY_MACHINE_SDCARD_ENTRY \
-    \
-    { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
@@ -85,27 +79,27 @@ typedef enum {
     MP_SOFT_RESET
 } reset_reason_t;
 
-STATIC mp_obj_t machine_unique_id(void) {
+STATIC mp_obj_t mp_machine_unique_id(void) {
     unsigned char id[8];
     mp_hal_get_unique_id(id);
     return mp_obj_new_bytes(id, sizeof(id));
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
-STATIC mp_obj_t machine_reset(void) {
+NORETURN STATIC void mp_machine_reset(void) {
     WDOG_TriggerSystemSoftwareReset(WDOG1);
-    return mp_const_none;
+    while (true) {
+        ;
+    }
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
-STATIC mp_obj_t machine_reset_cause(void) {
+STATIC mp_int_t mp_machine_reset_cause(void) {
     #ifdef MIMXRT117x_SERIES
     uint32_t user_reset_flag = kSRC_M7CoreIppUserResetFlag;
     #else
     uint32_t user_reset_flag = kSRC_IppUserResetFlag;
     #endif
     if (SRC->SRSR & user_reset_flag) {
-        return MP_OBJ_NEW_SMALL_INT(MP_DEEPSLEEP_RESET);
+        return MP_DEEPSLEEP_RESET;
     }
     uint16_t reset_cause =
         WDOG_GetStatusFlags(WDOG1) & (kWDOG_PowerOnResetFlag | kWDOG_TimeoutResetFlag | kWDOG_SoftwareResetFlag);
@@ -116,20 +110,26 @@ STATIC mp_obj_t machine_reset_cause(void) {
     } else {
         reset_cause = MP_SOFT_RESET;
     }
-    return MP_OBJ_NEW_SMALL_INT(reset_cause);
+    return reset_cause;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
-STATIC mp_obj_t machine_freq(void) {
+STATIC mp_obj_t mp_machine_get_freq(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_raise_NotImplementedError(NULL);
+}
 
 STATIC void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
 }
 
-STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    mp_raise_NotImplementedError(NULL);
+}
+
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_int_t seconds = mp_obj_get_int(args[0]) / 1000;
         if (seconds > 0) {
@@ -155,10 +155,7 @@ STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     while (true) {
         ;
     }
-
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
 STATIC mp_obj_t machine_disable_irq(void) {
     uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();

@@ -85,13 +85,9 @@
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),               MP_ROM_PTR(&machine_info_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset),              MP_ROM_PTR(&machine_reset_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),         MP_ROM_PTR(&machine_enable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),        MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_sleep),              MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_lightsleep),         MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_deepsleep),          MP_ROM_PTR(&machine_deepsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset_cause),        MP_ROM_PTR(&machine_reset_cause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin),                MP_ROM_PTR(&pin_type) }, \
     \
     MICROPY_PY_MACHINE_RTCOUNTER_ENTRY \
@@ -178,14 +174,16 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
+
+STATIC mp_obj_t mp_machine_unique_id(void) {
+    return mp_const_empty_bytes;
+}
 
 // Resets the board in a manner similar to pushing the external RESET button.
-STATIC mp_obj_t machine_reset(void) {
+NORETURN STATIC void mp_machine_reset(void) {
     NVIC_SystemReset();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
@@ -197,22 +195,25 @@ STATIC void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
 }
 
-STATIC mp_obj_t machine_lightsleep(void) {
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     __WFE();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_lightsleep_obj, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(void) {
-    __WFI();
-    return mp_const_none;
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_machine_reset();
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_deepsleep_obj, machine_deepsleep);
 
-STATIC mp_obj_t machine_reset_cause(void) {
-    return MP_OBJ_NEW_SMALL_INT(reset_cause);
+STATIC mp_int_t mp_machine_reset_cause(void) {
+    return reset_cause;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
+
+STATIC mp_obj_t mp_machine_get_freq(void) {
+    mp_raise_NotImplementedError(NULL);
+}
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_raise_NotImplementedError(NULL);
+}
 
 STATIC mp_obj_t machine_enable_irq(void) {
 #ifndef BLUETOOTH_SD

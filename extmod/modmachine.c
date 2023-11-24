@@ -43,6 +43,16 @@ STATIC void mp_machine_idle(void);
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args);
 #endif
 
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+STATIC mp_obj_t mp_machine_unique_id(void);
+NORETURN STATIC void mp_machine_reset(void);
+STATIC mp_int_t mp_machine_reset_cause(void);
+STATIC mp_obj_t mp_machine_get_freq(void);
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args);
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args);
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args);
+#endif
+
 // The port can provide additional machine-module implementation in this file.
 #ifdef MICROPY_PY_MACHINE_INCLUDEFILE
 #include MICROPY_PY_MACHINE_INCLUDEFILE
@@ -67,6 +77,46 @@ STATIC mp_obj_t machine_idle(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+
+STATIC mp_obj_t machine_unique_id(void) {
+    return mp_machine_unique_id();
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
+
+NORETURN STATIC mp_obj_t machine_reset(void) {
+    mp_machine_reset();
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
+
+STATIC mp_obj_t machine_reset_cause(void) {
+    return MP_OBJ_NEW_SMALL_INT(mp_machine_reset_cause());
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
+
+STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 0) {
+        return mp_machine_get_freq();
+    } else {
+        mp_machine_set_freq(n_args, args);
+        return mp_const_none;
+    }
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
+
+STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    mp_machine_lightsleep(n_args, args);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
+
+NORETURN STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_machine_deepsleep(n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
+
+#endif
+
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
 
@@ -75,14 +125,28 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
 
+    // Miscellaneous functions.
+    #if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+    { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) },
+    #endif
+
     // Reset related functions.
     { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&machine_soft_reset_obj) },
     #if MICROPY_PY_MACHINE_BOOTLOADER
     { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) },
     #endif
+    #if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
+    { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
+    #endif
 
     // Power related functions.
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
+    #if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+    { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lightsleep), MP_ROM_PTR(&machine_lightsleep_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
+    #endif
 
     // Functions for bit protocols.
     #if MICROPY_PY_MACHINE_BITSTREAM

@@ -65,6 +65,7 @@
 #define MICROPY_PY_LWIP_SOCK_RAW    (1)
 #define MICROPY_PY_MACHINE          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE "ports/esp8266/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/esp8266/machine_adc.c"
 #define MICROPY_PY_MACHINE_ADC_READ (1)
