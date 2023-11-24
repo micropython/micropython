@@ -39,6 +39,10 @@
 
 STATIC void mp_machine_idle(void);
 
+#if MICROPY_PY_MACHINE_BOOTLOADER
+NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args);
+#endif
+
 // The port can provide additional machine-module implementation in this file.
 #ifdef MICROPY_PY_MACHINE_INCLUDEFILE
 #include MICROPY_PY_MACHINE_INCLUDEFILE
@@ -49,6 +53,13 @@ STATIC mp_obj_t machine_soft_reset(void) {
     mp_raise_type(&mp_type_SystemExit);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
+
+#if MICROPY_PY_MACHINE_BOOTLOADER
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    mp_machine_bootloader(n_args, args);
+}
+MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
+#endif
 
 STATIC mp_obj_t machine_idle(void) {
     mp_machine_idle();
@@ -66,6 +77,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
 
     // Reset related functions.
     { MP_ROM_QSTR(MP_QSTR_soft_reset), MP_ROM_PTR(&machine_soft_reset_obj) },
+    #if MICROPY_PY_MACHINE_BOOTLOADER
+    { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) },
+    #endif
 
     // Power related functions.
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
