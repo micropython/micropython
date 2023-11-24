@@ -63,13 +63,7 @@
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
     \
@@ -183,19 +177,16 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 // Returns a string of 16 bytes (128 bits), which is the unique ID for the MCU.
-STATIC mp_obj_t machine_unique_id(void) {
+STATIC mp_obj_t mp_machine_unique_id(void) {
     uint8_t id[16];
     get_unique_id((uint8_t *)&id);
     return mp_obj_new_bytes(id, 16);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-STATIC mp_obj_t machine_reset(void) {
+NORETURN STATIC void mp_machine_reset(void) {
     powerctrl_mcu_reset();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 // Activate the bootloader without BOOT* pins.
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
@@ -218,17 +209,13 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 }
 
 // get or set the MCU frequencies
-STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        // get
-        return mp_obj_new_int(SystemCoreClock);
-    } else {
-        // set
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
-        return mp_const_none;
-    }
+STATIC mp_obj_t mp_machine_get_freq(void) {
+    return mp_obj_new_int(SystemCoreClock);
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
+}
 
 // idle()
 // This executies a wfi machine instruction which reduces power consumption
@@ -237,27 +224,22 @@ STATIC void mp_machine_idle(void) {
     __WFI();
 }
 
-STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         machine_rtc_wakeup(2, args2);
     }
     powerctrl_enter_stop_mode();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         machine_rtc_wakeup(2, args2);
     }
     powerctrl_enter_standby_mode();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
-STATIC mp_obj_t machine_reset_cause(void) {
-    return MP_OBJ_NEW_SMALL_INT(reset_cause);
+STATIC mp_int_t mp_machine_reset_cause(void) {
+    return reset_cause;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);

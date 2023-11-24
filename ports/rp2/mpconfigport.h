@@ -112,6 +112,7 @@
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/rp2/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER           (1)
 #define MICROPY_PY_MACHINE_ADC                  (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE      "ports/rp2/machine_adc.c"

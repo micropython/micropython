@@ -52,12 +52,7 @@
 #endif
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    { MP_ROM_QSTR(MP_QSTR_freq), MP_ROM_PTR(&machine_freq_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_unique_id), MP_ROM_PTR(&machine_unique_id_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_lightsleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) }, \
@@ -73,7 +68,6 @@
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP), MP_ROM_INT(MACHINE_WAKE_DEEPSLEEP) }, \
     \
     /* Reset reasons */ \
-    { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_HARD_RESET), MP_ROM_INT(MP_HARD_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET), MP_ROM_INT(MP_PWRON_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET), MP_ROM_INT(MP_WDT_RESET) }, \
@@ -103,65 +97,51 @@ STATIC bool is_soft_reset = 0;
 int esp_clk_cpu_freq(void);
 #endif
 
-STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        // get
-        return mp_obj_new_int(esp_rom_get_cpu_ticks_per_us() * 1000000);
-    } else {
-        // set
-        mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
-        if (freq != 20 && freq != 40 && freq != 80 && freq != 160
-            #if !CONFIG_IDF_TARGET_ESP32C3
-            && freq != 240
-            #endif
-            ) {
-            #if CONFIG_IDF_TARGET_ESP32C3
-            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz or 160MHz"));
-            #else
-            mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
-            #endif
-        }
-        #if CONFIG_IDF_TARGET_ESP32
-        esp_pm_config_esp32_t pm;
-        #elif CONFIG_IDF_TARGET_ESP32C3
-        esp_pm_config_esp32c3_t pm;
-        #elif CONFIG_IDF_TARGET_ESP32S2
-        esp_pm_config_esp32s2_t pm;
-        #elif CONFIG_IDF_TARGET_ESP32S3
-        esp_pm_config_esp32s3_t pm;
+STATIC mp_obj_t mp_machine_get_freq(void) {
+    return mp_obj_new_int(esp_rom_get_cpu_ticks_per_us() * 1000000);
+}
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
+    if (freq != 20 && freq != 40 && freq != 80 && freq != 160
+        #if !CONFIG_IDF_TARGET_ESP32C3
+        && freq != 240
         #endif
-        pm.max_freq_mhz = freq;
-        pm.min_freq_mhz = freq;
-        pm.light_sleep_enable = false;
-        esp_err_t ret = esp_pm_configure(&pm);
-        if (ret != ESP_OK) {
-            mp_raise_ValueError(NULL);
-        }
-        while (esp_rom_get_cpu_ticks_per_us() != freq) {
-            vTaskDelay(1);
-        }
-        return mp_const_none;
+        ) {
+        #if CONFIG_IDF_TARGET_ESP32C3
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz or 160MHz"));
+        #else
+        mp_raise_ValueError(MP_ERROR_TEXT("frequency must be 20MHz, 40MHz, 80Mhz, 160MHz or 240MHz"));
+        #endif
+    }
+    #if CONFIG_IDF_TARGET_ESP32
+    esp_pm_config_esp32_t pm;
+    #elif CONFIG_IDF_TARGET_ESP32C3
+    esp_pm_config_esp32c3_t pm;
+    #elif CONFIG_IDF_TARGET_ESP32S2
+    esp_pm_config_esp32s2_t pm;
+    #elif CONFIG_IDF_TARGET_ESP32S3
+    esp_pm_config_esp32s3_t pm;
+    #endif
+    pm.max_freq_mhz = freq;
+    pm.min_freq_mhz = freq;
+    pm.light_sleep_enable = false;
+    esp_err_t ret = esp_pm_configure(&pm);
+    if (ret != ESP_OK) {
+        mp_raise_ValueError(NULL);
+    }
+    while (esp_rom_get_cpu_ticks_per_us() != freq) {
+        vTaskDelay(1);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
-STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-
-    enum {ARG_sleep_ms};
-    const mp_arg_t allowed_args[] = {
-        { MP_QSTR_sleep_ms, MP_ARG_INT, { .u_int = 0 } },
-    };
-
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-
-    mp_int_t expiry = args[ARG_sleep_ms].u_int;
-
+STATIC void machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *args) {
     // First, disable any previously set wake-up source
     esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
-    if (expiry != 0) {
+    // Set the expiry time of the sleep, if given.
+    if (n_args != 0) {
+        mp_int_t expiry = mp_obj_get_int(args[0]);
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
     }
 
@@ -199,53 +179,45 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
             esp_deep_sleep_start();
             break;
     }
-    return mp_const_none;
 }
 
-STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, pos_args, kw_args);
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    machine_sleep_helper(MACHINE_WAKE_SLEEP, n_args, args);
 };
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_lightsleep_obj, 0, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    return machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, pos_args, kw_args);
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    machine_sleep_helper(MACHINE_WAKE_DEEPSLEEP, n_args, args);
+    mp_machine_reset();
 };
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_deepsleep_obj, 0,  machine_deepsleep);
 
-STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+STATIC mp_int_t mp_machine_reset_cause(void) {
     if (is_soft_reset) {
-        return MP_OBJ_NEW_SMALL_INT(MP_SOFT_RESET);
+        return MP_SOFT_RESET;
     }
     switch (esp_reset_reason()) {
         case ESP_RST_POWERON:
         case ESP_RST_BROWNOUT:
-            return MP_OBJ_NEW_SMALL_INT(MP_PWRON_RESET);
-            break;
+            return MP_PWRON_RESET;
 
         case ESP_RST_INT_WDT:
         case ESP_RST_TASK_WDT:
         case ESP_RST_WDT:
-            return MP_OBJ_NEW_SMALL_INT(MP_WDT_RESET);
-            break;
+            return MP_WDT_RESET;
 
         case ESP_RST_DEEPSLEEP:
-            return MP_OBJ_NEW_SMALL_INT(MP_DEEPSLEEP_RESET);
-            break;
+            return MP_DEEPSLEEP_RESET;
 
         case ESP_RST_SW:
         case ESP_RST_PANIC:
         case ESP_RST_EXT: // Comment in ESP-IDF: "For ESP32, ESP_RST_EXT is never returned"
-            return MP_OBJ_NEW_SMALL_INT(MP_HARD_RESET);
-            break;
+            return MP_HARD_RESET;
 
         case ESP_RST_SDIO:
         case ESP_RST_UNKNOWN:
         default:
-            return MP_OBJ_NEW_SMALL_INT(0);
-            break;
+            return 0;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0,  machine_reset_cause);
 
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
@@ -267,18 +239,15 @@ STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_wake_reason_obj, 0,  machine_wake_reason);
 
-STATIC mp_obj_t machine_reset(void) {
+NORETURN STATIC void mp_machine_reset(void) {
     esp_restart();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
-STATIC mp_obj_t machine_unique_id(void) {
+STATIC mp_obj_t mp_machine_unique_id(void) {
     uint8_t chipid[6];
     esp_efuse_mac_get_default(chipid);
     return mp_obj_new_bytes(chipid, 6);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 STATIC void mp_machine_idle(void) {
     MP_THREAD_GIL_EXIT();

@@ -48,14 +48,6 @@
 #define RP2_RESET_WDT (3)
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
-    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) }, \
-    \
-    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
-    \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
     \
@@ -66,32 +58,28 @@
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(RP2_RESET_PWRON) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(RP2_RESET_WDT) }, \
 
-STATIC mp_obj_t machine_unique_id(void) {
+STATIC mp_obj_t mp_machine_unique_id(void) {
     pico_unique_board_id_t id;
     pico_get_unique_board_id(&id);
     return mp_obj_new_bytes(id.id, sizeof(id.id));
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
-STATIC mp_obj_t machine_reset(void) {
+NORETURN STATIC void mp_machine_reset(void) {
     watchdog_reboot(0, SRAM_END, 0);
     for (;;) {
         __wfi();
     }
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
-STATIC mp_obj_t machine_reset_cause(void) {
+STATIC mp_int_t mp_machine_reset_cause(void) {
     int reset_cause;
     if (watchdog_caused_reboot()) {
         reset_cause = RP2_RESET_WDT;
     } else {
         reset_cause = RP2_RESET_PWRON;
     }
-    return MP_OBJ_NEW_SMALL_INT(reset_cause);
+    return reset_cause;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
@@ -101,28 +89,26 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
-    } else {
-        mp_int_t freq = mp_obj_get_int(args[0]);
-        if (!set_sys_clock_khz(freq / 1000, false)) {
-            mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
-        }
-        #if MICROPY_HW_ENABLE_UART_REPL
-        setup_default_uart();
-        mp_uart_init();
-        #endif
-        return mp_const_none;
-    }
+STATIC mp_obj_t mp_machine_get_freq(void) {
+    return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    mp_int_t freq = mp_obj_get_int(args[0]);
+    if (!set_sys_clock_khz(freq / 1000, false)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
+    }
+    #if MICROPY_HW_ENABLE_UART_REPL
+    setup_default_uart();
+    mp_uart_init();
+    #endif
+}
 
 STATIC void mp_machine_idle(void) {
     __wfe();
 }
 
-STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;
     bool use_timer_alarm = false;
 
@@ -131,7 +117,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
         if (delay_ms <= 1) {
             // Sleep is too small, just use standard delay.
             mp_hal_delay_ms(delay_ms);
-            return mp_const_none;
+            return;
         }
         use_timer_alarm = delay_ms < (1ULL << 32) / 1000;
         if (use_timer_alarm) {
@@ -148,7 +134,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     #if MICROPY_PY_NETWORK_CYW43
     if (cyw43_has_pending && cyw43_poll != NULL) {
         restore_interrupts(my_interrupts);
-        return mp_const_none;
+        return;
     }
     #endif
     // Disable USB and ADC clocks.
@@ -204,16 +190,12 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     // Bring back all clocks.
     clocks_init();
     restore_interrupts(my_interrupts);
-
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
-    machine_lightsleep(n_args, args);
-    return machine_reset();
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_machine_lightsleep(n_args, args);
+    mp_machine_reset();
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
 STATIC mp_obj_t machine_disable_irq(void) {
     uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();

@@ -97,14 +97,8 @@
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&machine_info_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) }, \
     MICROPY_PY_MACHINE_RNG_ENTRY \
     { MP_ROM_QSTR(MP_QSTR_sleep),               MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_deepsleep_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) }, \
     \
     { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
@@ -283,18 +277,15 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 // Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
-STATIC mp_obj_t machine_unique_id(void) {
+STATIC mp_obj_t mp_machine_unique_id(void) {
     byte *id = (byte *)MP_HAL_UNIQUE_ID_ADDRESS;
     return mp_obj_new_bytes(id, 12);
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-STATIC mp_obj_t machine_reset(void) {
+NORETURN STATIC void mp_machine_reset(void) {
     powerctrl_mcu_reset();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
 // Activate the bootloader without BOOT* pins.
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
@@ -323,57 +314,53 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 }
 
 // get or set the MCU frequencies
-STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        // get
-        mp_obj_t tuple[] = {
-            mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
-            mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
-            mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
-            #if !defined(STM32F0) && !defined(STM32G0)
-            mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
-            #endif
-        };
-        return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
-    } else {
-        // set
-        #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
-        #else
-        mp_int_t sysclk = mp_obj_get_int(args[0]);
-        mp_int_t ahb = sysclk;
-        #if defined(STM32H7)
-        if (ahb > 200000000) {
-            ahb /= 2;
-        }
+STATIC mp_obj_t mp_machine_get_freq(void) {
+    mp_obj_t tuple[] = {
+        mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
+        mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
+        mp_obj_new_int(HAL_RCC_GetPCLK1Freq()),
+        #if !defined(STM32F0) && !defined(STM32G0)
+        mp_obj_new_int(HAL_RCC_GetPCLK2Freq()),
         #endif
-        #if defined(STM32WB)
-        mp_int_t apb1 = ahb;
-        mp_int_t apb2 = ahb;
-        #else
-        mp_int_t apb1 = ahb / 4;
-        mp_int_t apb2 = ahb / 2;
-        #endif
-        if (n_args > 1) {
-            ahb = mp_obj_get_int(args[1]);
-            if (n_args > 2) {
-                apb1 = mp_obj_get_int(args[2]);
-                if (n_args > 3) {
-                    apb2 = mp_obj_get_int(args[3]);
-                }
+    };
+    return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
+}
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
+    #else
+    mp_int_t sysclk = mp_obj_get_int(args[0]);
+    mp_int_t ahb = sysclk;
+    #if defined(STM32H7)
+    if (ahb > 200000000) {
+        ahb /= 2;
+    }
+    #endif
+    #if defined(STM32WB)
+    mp_int_t apb1 = ahb;
+    mp_int_t apb2 = ahb;
+    #else
+    mp_int_t apb1 = ahb / 4;
+    mp_int_t apb2 = ahb / 2;
+    #endif
+    if (n_args > 1) {
+        ahb = mp_obj_get_int(args[1]);
+        if (n_args > 2) {
+            apb1 = mp_obj_get_int(args[2]);
+            if (n_args > 3) {
+                apb2 = mp_obj_get_int(args[3]);
             }
         }
-        int ret = powerctrl_set_sysclk(sysclk, ahb, apb1, apb2);
-        if (ret == -MP_EINVAL) {
-            mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
-        } else if (ret < 0) {
-            MICROPY_BOARD_FATAL_ERROR("can't change freq");
-        }
-        return mp_const_none;
-        #endif
     }
+    int ret = powerctrl_set_sysclk(sysclk, ahb, apb1, apb2);
+    if (ret == -MP_EINVAL) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid freq"));
+    } else if (ret < 0) {
+        MICROPY_BOARD_FATAL_ERROR("can't change freq");
+    }
+    #endif
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 4, machine_freq);
 
 // idle()
 // This executies a wfi machine instruction which reduces power consumption
@@ -382,27 +369,22 @@ STATIC void mp_machine_idle(void) {
     __WFI();
 }
 
-STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         pyb_rtc_wakeup(2, args2);
     }
     powerctrl_enter_stop_mode();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         pyb_rtc_wakeup(2, args2);
     }
     powerctrl_enter_standby_mode();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj, 0, 1, machine_deepsleep);
 
-STATIC mp_obj_t machine_reset_cause(void) {
-    return MP_OBJ_NEW_SMALL_INT(reset_cause);
+STATIC mp_int_t mp_machine_reset_cause(void) {
+    return reset_cause;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
