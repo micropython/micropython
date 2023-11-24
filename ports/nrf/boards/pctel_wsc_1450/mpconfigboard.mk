@@ -1,5 +1,5 @@
-USB_VID = 0x239A	# TODO: change to PCTEL vendor id
-USB_PID = 0x80FF	# TODO: change to a PCTEL product id
+USB_VID = 0x04E9
+USB_PID = 0x80FF
 USB_PRODUCT = "WSC-1450"
 USB_MANUFACTURER = "PCTEL"
 
