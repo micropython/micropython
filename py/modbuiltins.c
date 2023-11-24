@@ -140,10 +140,9 @@ STATIC mp_obj_t mp_builtin_chr(mp_obj_t o_in) {
     if (c >= 0x110000) {
         mp_raise_ValueError(MP_ERROR_TEXT("chr() arg not in range(0x110000)"));
     }
-    vstr_t vstr;
-    vstr_init(&vstr, 0);
-    vstr_add_char(&vstr, c);
-    return mp_obj_new_str_from_vstr(&vstr);
+    VSTR_FIXED(buf, 4);
+    vstr_add_char(&buf, c);
+    return mp_obj_new_str_via_qstr(buf.buf, buf.len);
     #else
     mp_int_t ord = mp_obj_get_int(o_in);
     if (0 <= ord && ord <= 0xff) {
