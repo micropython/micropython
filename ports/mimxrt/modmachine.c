@@ -63,9 +63,6 @@
     { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
     MICROPY_PY_MACHINE_SDCARD_ENTRY \
     \
-    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
-    \
     /* Reset reasons */ \
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MP_PWRON_RESET) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(MP_WDT_RESET) }, \
@@ -156,19 +153,6 @@ NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
         ;
     }
 }
-
-STATIC mp_obj_t machine_disable_irq(void) {
-    uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();
-    return mp_obj_new_int(state);
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
-
-STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
-    uint32_t state = mp_obj_get_int(state_in);
-    MICROPY_END_ATOMIC_SECTION(state);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     #if defined(MICROPY_BOARD_ENTER_BOOTLOADER)
