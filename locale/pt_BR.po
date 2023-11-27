@@ -6,15 +6,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Dan Halbert <halbert@halwitz.org>\n"
+"PO-Revision-Date: 2023-11-28 06:04+0000\n"
+"Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 #: main.c
 msgid ""
@@ -1615,7 +1615,7 @@ msgstr "Ok"
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 #, c-format
 msgid "Only 8 or 16 bit mono with %dx oversampling supported."
-msgstr ""
+msgstr "Somente mono de 8 ou 16 bits com %dx de sobreamostragem são suportados."
 
 #: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
