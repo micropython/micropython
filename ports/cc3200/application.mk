@@ -153,7 +153,6 @@ APP_SHARED_SRC_C = $(addprefix shared/,\
 
 APP_STM_SRC_C = $(addprefix ports/stm32/,\
 	bufhelper.c \
-	irq.c \
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_RTOS_SRC_C:.c=.o) $(APP_FTP_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(APP_MISC_SRC_C:.c=.o))
