@@ -353,7 +353,8 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
     prefix_bufinfo.len = 0;
     if (args[ARG_prefixes].u_obj != MP_OBJ_NULL) {
         mp_get_buffer_raise(args[ARG_prefixes].u_obj, &prefix_bufinfo, MP_BUFFER_READ);
-        if (gc_nbytes(prefix_bufinfo.buf) == 0) {
+        // An empty buffer may not be on the heap, but that doesn't matter.
+        if (prefix_bufinfo.len > 0 && gc_nbytes(prefix_bufinfo.buf) == 0) {
             mp_raise_ValueError(MP_ERROR_TEXT("Prefix buffer must be on the heap"));
         }
     }

@@ -31,8 +31,8 @@ msgid ""
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
 "\n"
-"dài mǎ yīn zì dòng chóng xīn jiā zǎi ér tíng zhǐ. jí jiāng chóng xīn jiā zǎi."
-"\n"
+"dài mǎ yīn zì dòng chóng xīn jiā zǎi ér tíng zhǐ. jí jiāng chóng xīn jiā "
+"zǎi.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -84,16 +84,6 @@ msgstr " shūchū:\n"
 msgid "%%c requires int or char"
 msgstr "%%c xūyào zhěngshù huòzhě zìfú"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr "%02X"
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -101,26 +91,6 @@ msgid ""
 msgstr ""
 "%d de zhǐ yǐn jiǎo, %d rgb yǐn jiǎo hé %d qiē piàn biǎo shì %d de gāo dù, ér "
 "bù shì %d"
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
-msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -305,11 +275,6 @@ msgstr "%q[%u] shǐyòng éwài de yǐnjiǎo"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
 msgstr "%q[%u] děngdài jìshù zhīwài de shūrù"
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
-msgstr "%s"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -979,7 +944,8 @@ msgstr "Fāngxiàng shūrù shí qūdòng móshì méiyǒu shǐyòng."
 
 #: py/obj.c
 msgid "During handling of the above exception, another exception occurred:"
-msgstr "zài chǔ lǐ shàng shù yì cháng qī jiān, fā shēng le lìng yí gè yì cháng:"
+msgstr ""
+"zài chǔ lǐ shàng shù yì cháng qī jiān, fā shēng le lìng yí gè yì cháng:"
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
@@ -1636,8 +1602,9 @@ msgstr "hái hǎo"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
-msgstr "Zhǐyǒu 8 huò 16 wèi dānwèi "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
+msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
@@ -1839,8 +1806,8 @@ msgstr "àn rèn hé jiàn jìn rù REPL. shǐ yòng CTRL-D zhòng xīn jiā zǎ
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
-"jiǎ zhuāng shēn dù shuì mián , zhí dào bào jǐng , CTRL-C huò wén jiàn xiě rù "
-".\n"
+"jiǎ zhuāng shēn dù shuì mián , zhí dào bào jǐng , CTRL-C huò wén jiàn xiě "
+"rù .\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
@@ -2824,7 +2791,8 @@ msgstr "wú fǎ fēn pèi xīn xíng zhuàng"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "cannot cast output with casting rule"
-msgstr "wú fǎ shǐ yòng qiáng zhì zhuǎn huàn guī zé qiáng zhì zhuǎn huàn shū chū"
+msgstr ""
+"wú fǎ shǐ yòng qiáng zhì zhuǎn huàn guī zé qiáng zhì zhuǎn huàn shū chū"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot convert complex to dtype"
@@ -2885,7 +2853,8 @@ msgstr ""
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a buffer, tuple, list, or int"
-msgstr "Yánsè huǎnchōng qū bìxū shì huǎnchōng qū, yuán zǔ, lièbiǎo huò zhěngshù"
+msgstr ""
+"Yánsè huǎnchōng qū bìxū shì huǎnchōng qū, yuán zǔ, lièbiǎo huò zhěngshù"
 
 #: shared-bindings/displayio/Palette.c
 msgid "color buffer must be a bytearray or array of type 'b' or 'B'"
@@ -3477,7 +3446,8 @@ msgstr "diédài méiyǒu shōuliǎn"
 
 #: py/objstr.c
 msgid "join expects a list of str/bytes objects consistent with self object"
-msgstr "tiānjiā yīgè fúhé zìshēn duìxiàng de zìfú chuàn/zì jié duìxiàng lièbiǎo"
+msgstr ""
+"tiānjiā yīgè fúhé zìshēn duìxiàng de zìfú chuàn/zì jié duìxiàng lièbiǎo"
 
 #: py/argcheck.c
 msgid "keyword argument(s) not implemented - use normal args instead"
@@ -4458,324 +4428,19 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
-#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-#~ msgstr "wú xiào CIRCUITPY_PYSTACK_SIZE\n"
-
-#~ msgid "Unable to allocate the heap."
-#~ msgstr "wú fǎ fēn pèi duī."
-
 #~ msgid ""
-#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
-#~ "documentation for instructions."
+#~ "\n"
+#~ "Code done running. Waiting for reload.\n"
 #~ msgstr ""
-#~ "espcamera.Camera xū yào pèi zhì bǎo liú de PSRAM. yǒu guān shuō míng, "
-#~ "qǐng cān yuè wén dàng."
-
-#~ msgid "'await', 'async for' or 'async with' outside async function"
-#~ msgstr ""
-#~ "'await', 'async for' huò 'async with' wèiyú yìbù (async) hánshù zhīwài"
-
-#~ msgid "'break' outside loop"
-#~ msgstr "'break' wèiyú xúnhuán zhīwài"
-
-#~ msgid "'continue' outside loop"
-#~ msgstr "'continue' wèiyú xúnhuán zhīwài"
-
-#~ msgid "invalid architecture"
-#~ msgstr "wú xiào de jià gòu"
-
-#~ msgid "unsupported type for %q: '%q'"
-#~ msgstr "%q de bù shòu zhīchí de lèixíng: '%q'"
-
-#~ msgid "Splitting with sub-captures"
-#~ msgstr "Yǔ zi bǔhuò fēnliè"
-
-#~ msgid "__init__() should return None, not '%q'"
-#~ msgstr "__Init __() yīnggāi fǎnhuí None, ér bùshì '%q'"
-
-#~ msgid "attributes not supported yet"
-#~ msgstr "shǔxìng shàngwèi zhīchí"
-
-#~ msgid "can't do truncated division of a complex number"
-#~ msgstr "bùnéng fēnjiě fùzá de shùzì"
-
-#~ msgid "cannot import name %q"
-#~ msgstr "wúfǎ dǎorù míngchēng %q"
-
-#~ msgid "cannot unambiguously get sizeof scalar"
-#~ msgstr "bù néng háo bù hán hu de dé dào dà xiǎo de lín"
-
-#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
-#~ msgstr "guānjiàn zì cānshù shàngwèi shíxiàn - qǐng shǐyòng chángguī cānshù"
-
-#~ msgid "length argument not allowed for this type"
-#~ msgstr "bù yǔnxǔ gāi lèixíng de chángdù cānshù"
-
-#~ msgid "offset out of bounds"
-#~ msgstr "piānlí biānjiè"
-
-#~ msgid "slice step can't be zero"
-#~ msgstr "qiēpiàn bù cháng bùnéng wéi líng"
-
-#~ msgid "string not supported; use bytes or bytearray"
-#~ msgstr "zìfú chuàn bù zhīchí; shǐyòng zì jié huò zì jié zǔ"
-
-#~ msgid "Bit clock and word select must be sequential pins"
-#~ msgstr "wèi shízhōng hé zì xuǎnzé bìxū shì liánxù de yǐn jiǎo"
-
-#~ msgid "Initialization failed due to lack of memory"
-#~ msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
-
-#~ msgid "RAISE mode is not implemented"
-#~ msgstr "wèi shí xiàn tí shēng mó shì"
-
-#~ msgid "WatchDogTimer is not currently running"
-#~ msgstr "WatchDogTimer dāngqián wèi yùnxíng"
-
-#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-#~ msgstr ""
-#~ "Yīdàn shèzhì wèi WatchDogMode.RESET, zé bùnéng gēnggǎi WatchDogTimer.Mode"
-
-#~ msgid "watchdog not initialized"
-#~ msgstr "wèi chū shǐ huà jiān shì qì"
-
-#~ msgid "ADC2 is being used by WiFi"
-#~ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
-
-#, c-format
-#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-#~ msgstr "wú fǎ pèi zhì ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
-
-#, c-format
-#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-#~ msgstr "wú fǎ chū shǐ huà ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
-
-#, c-format
-#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-#~ msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
-
-#~ msgid "xTaskCreate failed"
-#~ msgstr "xTaskCreate shī bài"
-
-#~ msgid "Unable to write to address."
-#~ msgstr "Wú fǎ xiě rù dì zhǐ."
-
-#~ msgid "queue overflow"
-#~ msgstr "duìliè yìchū"
-
-#~ msgid "Stopping AP is not supported."
-#~ msgstr "bù zhī chí tíng zhǐ AP."
-
-#~ msgid "Wifi is in access point mode."
-#~ msgstr "Wú xiàn wǎng luò chǔ yú jiē rù diǎn mó shì."
-
-#~ msgid "Wifi is in station mode."
-#~ msgstr "Wú xiàn wǎng luò chǔ yú gōng zuò zhàn mó shì."
+#~ "\n"
+#~ "Dàimǎ yǐ wánchéng yùnxíng. Zhèngzài děngdài chóngxīn jiāzài.\n"
 
 #~ msgid ""
 #~ "\n"
-#~ "Please file an issue with your program at https://github.com/adafruit/"
-#~ "circuitpython/issues."
+#~ "Code stopped by auto-reload.\n"
 #~ msgstr ""
 #~ "\n"
-#~ "qǐng zài https://github.com/adafruit/circuitpython/issues tí jiāo nín de "
-#~ "chéng xù wèn tí."
-
-#~ msgid "'coroutine' object is not an iterator"
-#~ msgstr "'coroutine' duìxiàng búshì yígè diédàiqì"
-
-#~ msgid "Buffer is too small"
-#~ msgstr "Huǎnchōng qū tài xiǎo"
-
-#~ msgid "Fault detected by hardware."
-#~ msgstr "yìng jiàn jiǎn cè dào gù zhàng."
-
-#~ msgid "The power dipped. Make sure you are providing enough power."
-#~ msgstr "lì liàng xià jiàng le. què bǎo nín tí gòng zú gòu de diàn lì."
-
-#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
-#~ msgstr ""
-#~ "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter"
-
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "sǔnhuài de .mpy wénjiàn"
-
-#~ msgid ""
-#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
-#~ "it/mpy-update for more info."
-#~ msgstr ""
-#~ "Bù jiānróng.Mpy wénjiàn. Qǐng gēngxīn suǒyǒu.Mpy wénjiàn. Yǒuguān xiángxì "
-#~ "xìnxī, qǐng cānyuè http://Adafru.It/mpy-update."
-
-#~ msgid "can't convert to %q"
-#~ msgstr "wúfǎ zhuǎnhuàn wèi %q"
-
-#~ msgid "can't have multiple **x"
-#~ msgstr "wúfǎ yǒu duō gè **x"
-
-#~ msgid "can't have multiple *x"
-#~ msgstr "wúfǎ yǒu duō gè *x"
-
-#~ msgid "constant must be an integer"
-#~ msgstr "chángshù bìxū shì yīgè zhěngshù"
-
-#~ msgid "incompatible native .mpy architecture"
-#~ msgstr "bù jiān róng de yuán shēng .mpy jià gòu"
-
-#~ msgid "invalid format"
-#~ msgstr "wúxiào géshì"
-
-#~ msgid "keywords must be strings"
-#~ msgstr "guānjiàn zì bìxū shì zìfú chuàn"
-
-#~ msgid "non-keyword arg after */**"
-#~ msgstr "zài */** zhīhòu fēi guānjiàn cí cānshù"
-
-#~ msgid "non-keyword arg after keyword arg"
-#~ msgstr "guānjiàn zì cānshù zhīhòu de fēi guānjiàn zì cānshù"
-
-#, c-format
-#~ msgid "Instruction %d shifts in more bits than pin count"
-#~ msgstr "zhǐ lìng %d yí wèi chāo guò yǐn jiǎo jì shù"
-
-#, c-format
-#~ msgid "Instruction %d shifts out more bits than pin count"
-#~ msgstr "zhǐ lìng %d yí chū de wèi bǐ yǐn jiǎo shù duō"
-
-#, c-format
-#~ msgid "Instruction %d uses extra pin"
-#~ msgstr "zhǐ lìng %d shǐ yòng é wài de yǐn jiǎo"
-
-#, c-format
-#~ msgid "Instruction %d waits on input outside of count"
-#~ msgstr "zhǐ lìng %d děng dài jì shù zhī wài de shū rù"
-
-#, c-format
-#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-#~ msgstr "shǒu xiān zài yǐn jiǎo zhōng quē shī. zhǐ lìng %d dú qǔ yǐn jiǎo"
-
-#, c-format
-#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-#~ msgstr ""
-#~ "shǒu xiān zài yǐn jiǎo zhōng quē shī. zhǐ lìng %d cóng yǐn jiǎo yí wèi"
-
-#, c-format
-#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
-#~ msgstr ""
-#~ "shǒu xiān zài yǐn jiǎo zhōng quē shī. jī yú yǐn jiǎo de zhǐ lìng %d děng "
-#~ "dài"
-
-#, c-format
-#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-#~ msgstr "xiān lòu chū yǐn jiǎo. zhǐ lìng %d yí chū dào yǐn jiǎo"
-
-#, c-format
-#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-#~ msgstr "xiān lòu chū yǐn jiǎo. zhǐ lìng %d xiě rù yǐn jiǎo"
-
-#, c-format
-#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-#~ msgstr "quē shǎo dì yī zǔ yǐn jiǎo. zhǐ lìng %d shè zhì yǐn jiǎo"
-
-#, c-format
-#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
-#~ msgstr "shī zōng de jmp_pin. zhǐ lìng %d zài yǐn jiǎo shàng tiào yuè"
-
-#~ msgid "inputs are not iterable"
-#~ msgstr "shū rù bù kě yí dòng"
-
-#~ msgid "Too many display busses"
-#~ msgstr "Xiǎnshì zǒngxiàn tài duōle"
-
-#~ msgid "Cannot transfer without MOSI and MISO pins"
-#~ msgstr "méiyǒu MOSI hé MISO yǐnjiǎo, wúfǎ chuánshū"
-
-#~ msgid "Hardware busy, try alternative pins"
-#~ msgstr "Yìngjiàn máng, qǐng chángshì qítā zhēnjiǎo"
-
-#~ msgid "Missing MISO or MOSI Pin"
-#~ msgstr "Quēshǎo MISO huò MOSI yǐn jiǎo"
-
-#~ msgid "Missing MISO or MOSI pin"
-#~ msgstr "quēshǎo MISO huò MOSI yǐn jiǎo"
-
-#~ msgid "No MISO Pin"
-#~ msgstr "Méiyǒu MISO yǐn jiǎo"
-
-#~ msgid "No MISO pin"
-#~ msgstr "wú MISO pin"
-
-#~ msgid "No MOSI Pin"
-#~ msgstr "Méiyǒu MOSI yǐn jiǎo"
-
-#~ msgid "No MOSI pin"
-#~ msgstr "wú MOSI pin"
-
-#~ msgid "No RX pin"
-#~ msgstr "Wèi zhǎodào RX yǐn jiǎo"
-
-#~ msgid "No TX pin"
-#~ msgstr "Wèi zhǎodào TX yǐn jiǎo"
-
-#~ msgid "no reset pin available"
-#~ msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
-
-#~ msgid "Sleep Memory not available"
-#~ msgstr "shuì mián jì yì bù kě yòng"
-
-#~ msgid "input and output shapes are not compatible"
-#~ msgstr "shū rù hé shū chū xíng zhuàng bù jiān róng"
-
-#~ msgid "shape must be a tuple"
-#~ msgstr "xíng zhuàng bì xū shì yí gè yuán zǔ"
-
-#~ msgid "Brightness must be 0-1.0"
-#~ msgstr "Liàngdù bìxū wèi 0-1.0"
-
-#, c-format
-#~ msgid "Error in MIDI stream at position %d"
-#~ msgstr "wèi yú %d wèi zhì de MIDI liú zhōng de cuò wù"
-
-#, c-format
-#~ msgid "Maximum x value when mirrored is %d"
-#~ msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
-
-#~ msgid "x value out of bounds"
-#~ msgstr "x zhí chāochū biānjiè"
-
-#~ msgid "y value out of bounds"
-#~ msgstr "y zhí chāochū biānjiè"
-
-#~ msgid "I2SOut not available"
-#~ msgstr "I2SOut bù kě yòng"
-
-#~ msgid "PDMIn not available"
-#~ msgstr "PDMIn bù kě yòng"
-
-#~ msgid "out of range of source"
-#~ msgstr "yuán fàn wéi wài"
-
-#~ msgid "pixel value requires too many bits"
-#~ msgstr "xiàngsù zhí xūyào tài duō wèi"
-
-#~ msgid "value_count must be > 0"
-#~ msgstr "zhí jìshù bìxū wèi > 0"
-
-#~ msgid "64 bit types"
-#~ msgstr "64 wèi lèixíng"
-
-#~ msgid "No key was specified"
-#~ msgstr "Wèi zhǐdìng mì yào"
-
-#~ msgid "Scan already in progess. Stop with stop_scan."
-#~ msgstr "Zhèngzài jìn háng sǎomiáo. Shǐyòng stop_scan tíngzhǐ."
-
-#, c-format
-#~ msgid "Unkown error code %d"
-#~ msgstr "wèi zhī cuò wù dài %d"
-
-#~ msgid "too many arguments provided with the given format"
-#~ msgstr "tígōng jǐ dìng géshì de cānshù tài duō"
+#~ "dàimǎ de yùnxíng yīnwéi zìdòng chóngxīn jiāzǎi ér tíngzhǐ.\n"
 
 #~ msgid ""
 #~ "\n"
@@ -4788,12 +4453,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ "\n"
 #~ "\n"
 
-#~ msgid "Supply at least one UART pin"
-#~ msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"
-
-#~ msgid "%q pin invalid"
-#~ msgstr "%q yǐn jiǎo wúxiào"
-
 #~ msgid ""
 #~ "\n"
 #~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
@@ -4803,758 +4462,21 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ "Qǐng tōngguò https://github.com/adafruit/circuitpython/issues\n"
 #~ "tíjiāo yǒuguān nín de CIRCUITPY qūdòngqì nèiróng de wèntí \n"
 
-#~ msgid "Attempted heap allocation when VM not running."
-#~ msgstr "shìtú zài xūnǐjī (VM) yùn xíng shí fēnpèi duī (heap)."
-
-#~ msgid "Boot device must be first device (interface #0)."
-#~ msgstr "yǐndǎo shèbèi bìxū shì dìyī tái shèbèi (interface #0)."
-
-#~ msgid "Both buttons were pressed at start up.\n"
-#~ msgstr "qǐ dòng shí àn xià le liǎng gè àn niǔ.\n"
-
-#~ msgid "Button A was pressed at start up.\n"
-#~ msgstr "qǐ dòng shí àn xià àn niǔ A.\n"
-
-#~ msgid "CircuitPython was unable to allocate the heap."
-#~ msgstr "CircuitPython wúfǎ fēnpèi duī."
-
-#~ msgid "Crash into the HardFault_Handler."
-#~ msgstr "gu4zhang4, jin4ru4 HardFault_Handler."
-
-#~ msgid "Fatal error."
-#~ msgstr "zhì mìng cuò wù."
-
-#~ msgid "Invalid memory access."
-#~ msgstr "Wúxiào de nèicún fǎngwèn."
-
-#~ msgid "Nordic system firmware failure assertion."
-#~ msgstr "běi ōu xì tǒng gù jiàn gù zhàng duàn yán."
-
-#~ msgid "The BOOT button was pressed at start up.\n"
-#~ msgstr "qǐ dòng shí àn xià le yǐn dǎo àn niǔ.\n"
-
 #~ msgid ""
-#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
-#~ "Increase the stack size if you know how. If not:"
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
 #~ msgstr ""
-#~ "diàn lù dàn duī bèi sǔn huài, yīn wéi duī zhàn tài xiǎo.\n"
-#~ "rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu:"
-
-#~ msgid "The SW38 button was pressed at start up.\n"
-#~ msgstr "qǐ dòng shí àn xià le SW38 àn niǔ .\n"
-
-#~ msgid "The VOLUME button was pressed at start up.\n"
-#~ msgstr "qǐ dòng shí àn xià yīn liàng àn niǔ.\n"
-
-#~ msgid ""
-#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
-#~ "to exit safe mode."
-#~ msgstr ""
-#~ "`wēi kòng zhì qì` mó kuài yòng yú qǐ dòng dào ān quán mó shì. àn chóng "
-#~ "zhì tuì chū ān quán mó shì."
-
-#~ msgid "The central button was pressed at start up.\n"
-#~ msgstr "qǐ dòng shí àn xià zhōng yāng àn niǔ.\n"
-
-#~ msgid "The left button was pressed at start up.\n"
-#~ msgstr "qǐ dòng shí àn xià zuǒ àn niǔ.\n"
-
-#~ msgid ""
-#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY)."
-#~ msgstr ""
-#~ "wēi kòng zhì qì de gōng lǜ xià jiàng. què bǎo diàn yuán tí gòng\n"
-#~ "zú gòu de gōng lǜ yòng yú zhěng gè diàn lù hé àn chóng zhì (tán chū "
-#~ "CIRCUITPY hòu)."
-
-#~ msgid "To exit, please reset the board without requesting safe mode."
-#~ msgstr ""
-#~ "yào tuì chū, qǐng zài bù qǐng qiú ān quán mó shì de qíng kuàng xià chóng "
-#~ "zhì zhǔ bǎn."
-
-#~ msgid "You are in safe mode because:\n"
-#~ msgstr "nín chǔ yú ān quán mó shì, yīn wéi:\n"
-
-#~ msgid ""
-#~ "You pressed the reset button during boot. Press again to exit safe mode."
-#~ msgstr ""
-#~ "zài qǐ dòng guò chéng zhōng, nín àn xià le chóng zhì àn niǔ. zài cì àn "
-#~ "xià yǐ tuì chū ān quán mó shì."
-
-#~ msgid ""
-#~ "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
-#~ "documentation for instructions."
-#~ msgstr ""
-#~ "esp32_camera. shè xiàng jī xū yào pèi zhì yù liú de PSRAM. yǒu guān shuō "
-#~ "míng, qǐng cān yuè wén dàng."
-
-#~ msgid "%q must be of type %q"
-#~ msgstr "%q bì xū shì %q lèi xíng"
-
-#~ msgid "%q must be of type %q or None"
-#~ msgstr "%q lèi xíng bì xū wéi %q huò wú"
-
-#~ msgid "Expected a %q"
-#~ msgstr "Yù qí %q"
-
-#~ msgid "Expected a %q or %q"
-#~ msgstr "yù qī wéi %q huò %q"
-
-#~ msgid "Expected an %q"
-#~ msgstr "yù qī wéi %q"
-
-#, c-format
-#~ msgid "IV must be %d bytes long"
-#~ msgstr "IV bì xū wéi %d zì jié cháng"
-
-#~ msgid "Not settable"
-#~ msgstr "bù kě shè zhì"
-
-#~ msgid "expected '%q' but got '%q'"
-#~ msgstr "yùqí wèi'%q'dàn dédàole'%q'"
-
-#~ msgid "expected '%q' or '%q' but got '%q'"
-#~ msgstr "yùqí wèi'%q'huò'%q', dàn huòdéle'%q'"
-
-#~ msgid "Read-only object"
-#~ msgstr "Zhǐ dú duìxiàng"
-
-#~ msgid "frequency is read-only for this board"
-#~ msgstr "cǐ zhǔ bǎn de pín lǜ wéi zhǐ dú"
-
-#~ msgid "Unable to write"
-#~ msgstr "wú fǎ xiě rù"
-
-#~ msgid "%q length must be >= 1"
-#~ msgstr "%q cháng dù bìxū >= 1"
-
-#~ msgid "%q must be a string"
-#~ msgstr "%q bìxū shì yí gè zì fú chuàn"
-
-#~ msgid "%q must be an int"
-#~ msgstr "%q bìxū shì zhěng xíng"
-
-#~ msgid "%q with a report ID of 0 must be of length 1"
-#~ msgstr "bào gào ID shì 0 de %q bì xū cháng dù wéi 1"
-
-#~ msgid "At most %d %q may be specified (not %d)"
-#~ msgstr "zuìduō kěyǐ zhǐdìng %d gè %q (érbúshì %d)"
-
-#~ msgid "Invalid pins"
-#~ msgstr "Wúxiào de yǐn jiǎo"
-
-#, c-format
-#~ msgid "No more than %d HID devices allowed"
-#~ msgstr "bù yǔn xǔ chāo guò %d HID shè bèi"
-
-#~ msgid "byteorder is not a string"
-#~ msgstr "byteorder bùshì zìfú chuàn"
-
-#~ msgid "can't convert %q to int"
-#~ msgstr "wú fǎ jiāng %q zhuǎn huàn wéi nèi zài"
-
-#~ msgid "complex division by zero"
-#~ msgstr "fùzá de fēngé wèi 0"
-
-#~ msgid "int() arg 2 must be >= 2 and <= 36"
-#~ msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
-
-#~ msgid "long int not supported in this build"
-#~ msgstr "cǐ bǎnběn bù zhīchí zhǎng zhěngshù"
-
-#~ msgid "slice step cannot be zero"
-#~ msgstr "qiēpiàn bù bùnéng wéi líng"
-
-#~ msgid "step must be non-zero"
-#~ msgstr "bùzhòu bìxū shìfēi líng"
-
-#~ msgid "string indices must be integers, not %q"
-#~ msgstr "zìfú chuàn suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
-
-#~ msgid "time.struct_time() takes a 9-sequence"
-#~ msgstr "time.struct_time() xūyào 9 xùliè"
-
-#~ msgid "zero step"
-#~ msgstr "líng bù"
-
-#~ msgid "invalid traceback"
-#~ msgstr "wú xiào zhuī sù"
-
-#~ msgid "WatchDogTimer.timeout must be greater than 0"
-#~ msgstr "WatchDogTimer.Timeout bìxū dàyú 0"
-
-#~ msgid "non-Device in %q"
-#~ msgstr "fēi shè bèi zài %q"
-
-#~ msgid "single '}' encountered in format string"
-#~ msgstr "zài géshì zìfú chuàn zhōng yù dào de dāngè '}'"
-
-#~ msgid "threshold must be in the range 0-65536"
-#~ msgstr "yùzhí bìxū zài fànwéi 0-65536"
-
-#~ msgid "timeout must be 0.0-100.0 seconds"
-#~ msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
-
-#~ msgid "unmatched '{' in format"
-#~ msgstr "géshì wèi pǐpèi '{'"
-
-#~ msgid "watchdog timeout must be greater than 0"
-#~ msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
-
-#~ msgid "To exit, please reset the board without "
-#~ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
-
-#~ msgid "You requested starting safe mode by "
-#~ msgstr "Nín qǐngqiú qǐdòng ānquán móshì "
-
-#~ msgid "pressing BOOT button at start up.\n"
-#~ msgstr "zài qǐdòng shí àn BOOT ànniǔ.\n"
-
-#~ msgid "pressing SW38 button at start up.\n"
-#~ msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
-
-#~ msgid "pressing VOLUME button at start up.\n"
-#~ msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
-
-#~ msgid "pressing boot button at start up.\n"
-#~ msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
-
-#~ msgid "pressing both buttons at start up.\n"
-#~ msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
-
-#~ msgid "pressing the left button at start up\n"
-#~ msgstr "qǐ dòng shí àn xià zuǒ àn niǔ\n"
-
-#~ msgid "Only one TouchAlarm can be set in deep sleep."
-#~ msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
-
-#~ msgid "Firmware image is invalid"
-#~ msgstr "gù jiàn yìng xiàng wú xiào"
-
-#~ msgid "Stream missing readinto() or write() method."
-#~ msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
-
-#~ msgid "%q must be >= 0"
-#~ msgstr "%q bìxū > = 0"
-
-#~ msgid "%q must be >= 1"
-#~ msgstr "%q bìxū >= 1"
-
-#~ msgid "address out of bounds"
-#~ msgstr "dìzhǐ chāochū biānjiè"
-
-#~ msgid "destination_length must be an int >= 0"
-#~ msgstr "mùbiāo chángdù bìxū shì > = 0 de zhěngshù"
-
-#~ msgid "type object 'generator' has no attribute '__await__'"
-#~ msgstr "lèi xíng duì xiàng 'generator' méi yǒu shǔ xìng '__await__'"
-
-#~ msgid "color should be an int"
-#~ msgstr "yánsè yīng wèi zhěngshù"
-
-#~ msgid "end_x should be an int"
-#~ msgstr "jiéwěi_x yīnggāi shì yīgè zhěngshù"
-
-#~ msgid "palette_index should be an int"
-#~ msgstr "yánsè suǒyǐn yīnggāi shì yīgè zhěngshù"
-
-#~ msgid "start_x should be an int"
-#~ msgstr "kāishǐ_x yīnggāi shì yīgè zhěngshù"
-
-#~ msgid "y should be an int"
-#~ msgstr "y yīnggāi shì yīgè zhěngshù"
-
-#~ msgid ""
-#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
-#~ "or 'B'"
-#~ msgstr ""
-#~ "yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', "
-#~ "'b' huò 'B' de shùzǔ"
-
-#~ msgid "Expected an alarm"
-#~ msgstr "yù qī yǒu jǐng bào"
-
-#~ msgid "All I2C targets are in use"
-#~ msgstr "suǒyǒu I2C mùbiāo dōu zài shǐyòng zhōng"
-
-#~ msgid "Failed to init wifi"
-#~ msgstr "Wúfǎ chūshǐhuà wifi"
-
-#~ msgid "input must be a tensor of rank 2"
-#~ msgstr "shū rù bì xū shì děng jí 2 de zhāng liàng"
-
-#~ msgid "maximum number of dimensions is 4"
-#~ msgstr "zuì dà chǐ cùn shù wéi 4"
-
-#~ msgid "Watchdog timer expired."
-#~ msgstr "Kān mén gǒu dìngshí qì yǐ guòqí."
-
-#~ msgid "ssid can't be more than 32 bytes"
-#~ msgstr "ssid bù néng chāo guò 32 gè zì jié"
-
-#~ msgid "%q must be a tuple of length 2"
-#~ msgstr "%q bìxū shì chángdù wèi 2 de yuánzǔ"
-
-#~ msgid "%q must be between %d and %d"
-#~ msgstr "%q bì xū zài %d hé %d zhī jiān"
-
-#~ msgid "%q should be an int"
-#~ msgstr "%q yīnggāi shì yīgè zhěngshù (int)"
-
-#~ msgid "(x,y) integers required"
-#~ msgstr "xūyào zhěngshù (x,y)"
-
-#~ msgid "Address type out of range"
-#~ msgstr "Dìzhǐ lèixíng chāochū fànwéi"
-
-#~ msgid "AnalogIn not supported on given pin"
-#~ msgstr "gěidìng de yǐnjiǎo bù zhīchí AnalogIn"
-
-#~ msgid "AnalogOut functionality not supported"
-#~ msgstr "Bù zhīchí AnalogOut gōngnéng"
-
-#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
-#~ msgstr "AnalogOut jǐn wèi 16 wèi. Zhí bìxū xiǎoyú 65536."
-
-#~ msgid "AnalogOut not supported on given pin"
-#~ msgstr "zhǐdìng de yǐn jiǎo bù zhīchí AnalogOut"
-
-#, c-format
-#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
-#~ msgstr "wèi shēndù bìxū shì 1 dào 6, ér búshì %d"
-
-#, c-format
-#~ msgid "Buffer incorrect size. Should be %d bytes."
-#~ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
-
-#~ msgid "Buffer must be at least length 1"
-#~ msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù wéi 1"
-
-#~ msgid "Bytes must be between 0 and 255."
-#~ msgstr "Zìjié bìxū jiè yú 0 dào 255 zhījiān."
-
-#~ msgid "Cannot output both channels on the same pin"
-#~ msgstr "Wúfǎ shūchū tóng yīgè yǐn jiǎo shàng de liǎng gè píndào"
-
-#~ msgid "Cannot read without MISO pin."
-#~ msgstr "Wúfǎ dòu qǔ méiyǒu MISO de yǐn jiǎo."
-
-#~ msgid "Cannot reset into bootloader because no bootloader is present."
-#~ msgstr "Wúfǎ chóng zhì wèi bootloader, yīnwèi méiyǒu bootloader cúnzài."
-
-#~ msgid "Cannot transfer without MOSI and MISO pins."
-#~ msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
-
-#~ msgid "Cannot write without MOSI pin."
-#~ msgstr "Wúfǎ xiě rù MOSI de yǐn jiǎo."
-
-#~ msgid "Clock pin init failed."
-#~ msgstr "Shízhōng de yǐn jiǎo chūshǐhuà shībài."
-
-#~ msgid "Command must be an int between 0 and 255"
-#~ msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
-
-#~ msgid "Could not initialize Camera"
-#~ msgstr "Wúfǎ chūshǐhuà xiàngjī"
-
-#~ msgid "Could not initialize GNSS"
-#~ msgstr "wú fǎ chū shǐ huà GNSS"
-
-#~ msgid "Could not initialize SDCard"
-#~ msgstr "wú fǎ chū shǐ huà SDCard"
-
-#~ msgid "Could not initialize UART"
-#~ msgstr "Wúfǎ chūshǐhuà UART"
-
-#~ msgid "Could not re-init channel"
-#~ msgstr "Wúfǎ chóngxīn chūshǐhuà píndào"
-
-#~ msgid "Could not re-init timer"
-#~ msgstr "Wúfǎ chóngxīn qǐdòng jìshí qì"
-
-#~ msgid "Could not restart PWM"
-#~ msgstr "Wúfǎ chóngqǐ PWM"
-
-#~ msgid "Couldn't allocate first buffer"
-#~ msgstr "Wúfǎ fēnpèi dì yī gè huǎnchōng qū"
-
-#~ msgid "Couldn't allocate input buffer"
-#~ msgstr "Wúfǎ fēnpèi shūrù huǎnchōng qū"
-
-#~ msgid "Couldn't allocate second buffer"
-#~ msgstr "Wúfǎ fēnpèi dì èr gè huǎnchōng qū"
-
-#~ msgid "DigitalInOut not supported on given pin"
-#~ msgstr "Gěi dìng de yǐn jiǎo bù zhīchí DigitalInOut"
-
-#, c-format
-#~ msgid "Expected tuple of length %d, got %d"
-#~ msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
-
-#~ msgid "Failed to allocate RX buffer"
-#~ msgstr "Fēnpèi RX huǎnchōng shībài"
-
-#, c-format
-#~ msgid "Failed to allocate RX buffer of %d bytes"
-#~ msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
-
-#, c-format
-#~ msgid "Framebuffer requires %d bytes"
-#~ msgstr "zhēn huǎn chōng qū xū yào %d zì jié"
-
-#~ msgid "Hostname must be between 1 and 253 characters"
-#~ msgstr "zhǔ jī míng bì xū jiè yú 1 hé 253 gè zì fú zhī jiān"
-
-#~ msgid "I2C Init Error"
-#~ msgstr "I2C chūshǐhuà cuòwù"
-
-#~ msgid "Invalid %q pin selection"
-#~ msgstr "wú xiào %q yǐn jiǎo xuǎn zé"
-
-#~ msgid "Invalid AuthMode"
-#~ msgstr "wú xiào AuthMode"
-
-#~ msgid "Invalid BMP file"
-#~ msgstr "Wúxiào de BMP wénjiàn"
-
-#~ msgid "Invalid DAC pin supplied"
-#~ msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
-
-#~ msgid "Invalid MIDI file"
-#~ msgstr "wú xiào de MIDI wén jiàn"
-
-#~ msgid "Invalid PWM frequency"
-#~ msgstr "Wúxiào de PWM pínlǜ"
-
-#~ msgid "Invalid Pin"
-#~ msgstr "wú xiào yǐn jiǎo"
-
-#~ msgid "Invalid buffer size"
-#~ msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
-
-#~ msgid "Invalid byteorder string"
-#~ msgstr "Wúxiào de zì jié shùnxù zìfú chuàn"
-
-#~ msgid "Invalid capture period. Valid range: 1 - 500"
-#~ msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
-
-#~ msgid "Invalid channel count"
-#~ msgstr "Wúxiào de tōngdào jìshù"
-
-#, c-format
-#~ msgid "Invalid data_count %d"
-#~ msgstr "wú xiào data_count %d"
-
-#~ msgid "Invalid direction."
-#~ msgstr "Wúxiào de fāngxiàng."
-
-#~ msgid "Invalid file"
-#~ msgstr "Wúxiào de wénjiàn"
-
-#~ msgid "Invalid mode"
-#~ msgstr "wú xiào mó shì"
-
-#~ msgid "Invalid number of bits"
-#~ msgstr "Wèi shù wúxiào"
-
-#~ msgid "Invalid phase"
-#~ msgstr "Jiēduàn wúxiào"
-
-#~ msgid "Invalid pin"
-#~ msgstr "Wúxiào de yǐn jiǎo"
-
-#~ msgid "Invalid pin for left channel"
-#~ msgstr "Zuǒ tōngdào de yǐn jiǎo wúxiào"
-
-#~ msgid "Invalid pin for right channel"
-#~ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
-
-#~ msgid "Invalid polarity"
-#~ msgstr "Wúxiào liǎng jí zhí"
-
-#~ msgid "Invalid properties"
-#~ msgstr "Wúxiào de shǔxìng"
-
-#~ msgid "Invalid run mode."
-#~ msgstr "Wúxiào de yùnxíng móshì."
-
-#~ msgid "Invalid security_mode"
-#~ msgstr "Ānquán móshì wúxiào"
-
-#~ msgid "Invalid voice"
-#~ msgstr "Yǔyīn wúxiào"
-
-#~ msgid "Invalid voice count"
-#~ msgstr "Wúxiào de yǔyīn jìshù"
-
-#~ msgid "Invalid wave file"
-#~ msgstr "Wúxiào de làng làngcháo wénjiàn"
-
-#~ msgid "Invalid word/bit length"
-#~ msgstr "Wúxiào de zì/wèi chángdù"
-
-#~ msgid "Layer already in a group."
-#~ msgstr "Tú céng yǐjīng zài yīgè zǔ zhōng."
-
-#~ msgid "Layer must be a Group or TileGrid subclass."
-#~ msgstr "Layer bìxū shì Group huò TileGrid zi lèi."
-
-#~ msgid "MISO pin init failed."
-#~ msgstr "MISO yǐn jiǎo chūshǐhuà shībài."
-
-#~ msgid "MOSI pin init failed."
-#~ msgstr "MOSI yǐn jiǎo shūrù shībài."
-
-#~ msgid "Messages limited to 8 bytes"
-#~ msgstr "Yóujiàn xiànzhì wèi 8 gè zì jié"
-
-#, c-format
-#~ msgid "More than %d report ids not supported"
-#~ msgstr "chāo guò %d bào gào bù zhī chí de ID"
-
-#~ msgid "No hardware support on clk pin"
-#~ msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
-
-#~ msgid "No hardware support on pin"
-#~ msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
-
-#, c-format
-#~ msgid "Output buffer must be at least %d bytes"
-#~ msgstr "shū chū huǎn chōng qū bì xū zhì shǎo wéi %d zì jié"
-
-#~ msgid ""
-#~ "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
-#~ msgstr ""
-#~ "PWM yìwù zhōuqí bìxū jiè yú 0 zhì 65535 de bāoróng xìng (16 wèi fēnbiàn "
-#~ "lǜ)"
-
-#~ msgid "Pin count must be at least 1"
-#~ msgstr "yǐn jiǎo jì shù bì xū zhì shǎo wéi 1"
-
-#~ msgid "Pin does not have ADC capabilities"
-#~ msgstr "Pin méiyǒu ADC nénglì"
-
-#~ msgid "Program must contain at least one 16-bit instruction."
-#~ msgstr "chéng xù bì xū zhì shǎo bāo hán yí gè 16 wèi zhǐ lìng ."
-
-#~ msgid "Program too large"
-#~ msgstr "chéng xù tài dà"
-
-#~ msgid "RS485 Not yet supported on this device"
-#~ msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
-
-#~ msgid "RTC calibration is not supported on this board"
-#~ msgstr "Cǐ bǎn bù zhīchí RTC jiàozhǔn"
-
-#~ msgid "RTS/CTS/RS485 Not yet supported on this device"
-#~ msgstr "RTS/CTS/RS485 gāi shèbèi shàng bù zhīchí"
-
-#~ msgid "SPI Init Error"
-#~ msgstr "SPI chūshǐhuà cuòwù"
-
-#~ msgid "SPI Re-initialization error"
-#~ msgstr "SPI chóngxīn chūshǐhuà cuòwù"
-
-#~ msgid "Sample rate must be positive"
-#~ msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
-
-#, c-format
-#~ msgid "Sample rate too high. It must be less than %d"
-#~ msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
-
-#~ msgid "Set pin count must be between 1 and 5"
-#~ msgstr "shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
-
-#~ msgid "Side set pin count must be between 1 and 5"
-#~ msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
-
-#~ msgid "Stack size must be at least 256"
-#~ msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
-
-#~ msgid "Tile value out of bounds"
-#~ msgstr "Píng pū zhí chāochū fànwéi"
-
-#~ msgid "UART Buffer allocation error"
-#~ msgstr "UART huǎnchōng qū fēnpèi cuòwù"
-
-#~ msgid "UART De-init error"
-#~ msgstr "UART qǔxiāo chūshǐhuà cuòwù"
-
-#~ msgid "UART Init Error"
-#~ msgstr "UART chūshǐhuà cuòwù"
-
-#~ msgid "UART Re-init error"
-#~ msgstr "UART chóngxīn chūshǐhuà cuòwù"
-
-#~ msgid "UART write error"
-#~ msgstr "UART xiě cuòwù"
-
-#~ msgid "Unsupported baudrate"
-#~ msgstr "Bù zhīchí de baudrate"
-
-#~ msgid "WiFi password must be between 8 and 63 characters"
-#~ msgstr "WiFi mìmǎ bìxū jiè yú 8 dào 63 gè zìfú zhī jiān"
-
-#~ msgid "bits must be in range 5 to 9"
-#~ msgstr "wèi bì xū zài fàn wéi nèi 5 zhì 9"
-
-#~ msgid "bytes > 8 bits not supported"
-#~ msgstr "zì jié > 8 wèi"
-
-#~ msgid "calibration value out of range +/-127"
-#~ msgstr "jiàozhǔn zhí chāochū fànwéi +/-127"
-
-#~ msgid "can only be registered in one parent"
-#~ msgstr "zhǐ néng zài yí gè jiā zhǎng zhōng zhù cè"
-
-#~ msgid "circle can only be registered in one parent"
-#~ msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
-
-#~ msgid "max_connections must be between 0 and 10"
-#~ msgstr "max_connections bì xū jiè yú 0 hé 10 zhī jiān"
-
-#~ msgid "max_length must be >= 0"
-#~ msgstr "zuì dà cháng dù bì xū >= 0"
-
-#~ msgid "polygon can only be registered in one parent"
-#~ msgstr "duōbiānxíng zhī néng zài yīgè fù jí zhōng zhùcè"
-
-#~ msgid "pull_threshold must be between 1 and 32"
-#~ msgstr "lā lì yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
-
-#~ msgid "push_threshold must be between 1 and 32"
-#~ msgstr "tuī sòng yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
-
-#~ msgid "stop must be 1 or 2"
-#~ msgstr "tíngzhǐ bìxū wèi 1 huò 2"
-
-#~ msgid "tile must be greater than zero"
-#~ msgstr "cí tiē bì xū dà yú líng"
-
-#~ msgid "timeout must be >= 0.0"
-#~ msgstr "chāoshí bìxū shì >= 0.0"
-
-#, c-format
-#~ msgid "width must be from 2 to 8 (inclusive), not %d"
-#~ msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
-
-#~ msgid "Unsupported operation"
-#~ msgstr "Bù zhīchí de cāozuò"
-
-#~ msgid "divisor must be 4"
-#~ msgstr "èr chóng zòu bì xū shì 4"
+#~ "\n"
+#~ "qǐng zài https://github.com/adafruit/circuitpython/issues tí jiāo nín de "
+#~ "chéng xù wèn tí."
 
 #~ msgid ""
 #~ "\n"
-#~ "Code stopped by auto-reload.\n"
+#~ "To exit, please reset the board without "
 #~ msgstr ""
 #~ "\n"
-#~ "dàimǎ de yùnxíng yīnwéi zìdòng chóngxīn jiāzǎi ér tíngzhǐ.\n"
-
-#~ msgid "Brightness must be between 0 and 255"
-#~ msgstr "liàngdù bìxū jièyú 0 dào 255 zhījiān"
-
-#~ msgid "cannot perform relative import"
-#~ msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
-
-#, c-format
-#~ msgid "No I2C device at address: %x"
-#~ msgstr "dì zhǐ wú I2C shè bèi: %x"
-
-#~ msgid "Unsupported pull value."
-#~ msgstr "Bù zhīchí de lādòng zhí."
-
-#~ msgid "%q must <= %d"
-#~ msgstr "%q bì xū <= %d"
-
-#, c-format
-#~ msgid ""
-#~ "Welcome to Adafruit CircuitPython %s!\n"
-#~ "\n"
-#~ "Please visit learn.adafruit.com/category/circuitpython for project "
-#~ "guides.\n"
-#~ "\n"
-#~ "To list built-in modules please do `help(\"modules\")`.\n"
-#~ msgstr ""
-#~ "Huānyíng lái dào Adafruit CircuitPython%s!\n"
-#~ "\n"
-#~ "Qǐng fǎngwèn learn.Adafruit.Com/category/circuitpython yǐ huòqǔ xiàngmù "
-#~ "zhǐnán.\n"
-#~ "\n"
-#~ "Yào liè chū nèizhì mókuài, qǐng zhíxíng `help(“modules”)`\n"
-
-#~ msgid "integer required"
-#~ msgstr "xūyào zhěngshù"
-
-#~ msgid "abort() called"
-#~ msgstr "abort() diàoyòng"
-
-#~ msgid "f-string expression part cannot include a '#'"
-#~ msgstr "f-string biǎodá shì bùfèn bùnéng bāohán '#'"
-
-#~ msgid "f-string expression part cannot include a backslash"
-#~ msgstr "f-string biǎodá shì bùfèn bùnéng bāohán fǎn xié gāng"
-
-#~ msgid "f-string: empty expression not allowed"
-#~ msgstr "f-string: bù yǔnxǔ shǐyòng kōng biǎodá shì"
-
-#~ msgid "f-string: expecting '}'"
-#~ msgstr "f-string: qídài '}'"
-
-#~ msgid "f-string: single '}' is not allowed"
-#~ msgstr "f-string: bù yǔnxǔ shǐyòng dāngè '}'"
-
-#~ msgid "invalid arguments"
-#~ msgstr "wúxiào de cānshù"
-
-#~ msgid "raw f-strings are not implemented"
-#~ msgstr "wèi zhíxíng yuánshǐ f-strings"
-
-#~ msgid "unindent does not match any outer indentation level"
-#~ msgstr "bùsuō jìn yǔ rènhé wàibù suō jìn jíbié dōu bù pǐpèi"
-
-#~ msgid "%q list must be a list"
-#~ msgstr "%q lièbiǎo bìxū shì lièbiǎo"
-
-#~ msgid "%q must of type %q"
-#~ msgstr "%q bì xū lèi xíng %q"
-
-#~ msgid "Column entry must be digitalio.DigitalInOut"
-#~ msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
-
-#~ msgid "Expected a Characteristic"
-#~ msgstr "Yùqí de tèdiǎn"
-
-#~ msgid "Expected a DigitalInOut"
-#~ msgstr "yù qī shù zì huà"
-
-#~ msgid "Expected a Service"
-#~ msgstr "Yùqí fúwù"
-
-#~ msgid "Expected a UART"
-#~ msgstr "qī dài UART"
-
-#~ msgid "Expected a UUID"
-#~ msgstr "Yùqí UUID"
-
-#~ msgid "Expected an Address"
-#~ msgstr "Qídài yīgè dìzhǐ"
-
-#~ msgid "Row entry must be digitalio.DigitalInOut"
-#~ msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
-
-#~ msgid "buttons must be digitalio.DigitalInOut"
-#~ msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
-
-#~ msgid "Invalid frequency"
-#~ msgstr "Wúxiào de pínlǜ"
-
-#~ msgid "Data 0 pin must be byte aligned."
-#~ msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."
-
-#~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
-#~ msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 4, 8, 16, 24, huò 32"
+#~ "Qǐng zài méiyǒu _ de qíngkuàng xià chóng zhì bǎn zǐ yǐ tuìchū "
 
 #~ msgid ""
 #~ "\n"
@@ -5565,14 +4487,32 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ "zhān tiē mó shì; Ctrl-C qǔ xiāo, Ctrl-D wán chéngh\n"
 #~ "=== "
 
-#~ msgid "ParallelBus not yet supported"
-#~ msgstr "Shàng bù zhīchí ParallelBus"
+#, c-format
+#~ msgid "%02X"
+#~ msgstr "%02X"
 
-#~ msgid "raw REPL; CTRL-B to exit\n"
-#~ msgstr "yuán shǐ REPL; CTRL-B tuì chū\n"
+#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
+#~ msgstr ""
+#~ "%d dìzhǐ yǐn jiǎo hé %d rgb yǐn jiǎo jiāng gāodù biǎoshì wèi %d, ér bùshì "
+#~ "%d"
+
+#~ msgid "%q"
+#~ msgstr "%q"
+
+#~ msgid "%q indices must be integers, not %q"
+#~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
 
 #~ msgid "%q length must be %q"
 #~ msgstr "%q cháng dù bì xū wéi %q"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "%q cháng dù bìxū >= 1"
+
+#~ msgid "%q list must be a list"
+#~ msgstr "%q lièbiǎo bìxū shì lièbiǎo"
+
+#~ msgid "%q must <= %d"
+#~ msgstr "%q bì xū <= %d"
 
 #~ msgid "%q must be 0-255"
 #~ msgstr "%q bì xū wéi 0-255"
@@ -5580,98 +4520,54 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "%q must be 1-255"
 #~ msgstr "%q bì xū wéi 1-255"
 
-#~ msgid "%q must be None or between 1 and len(report_descriptor)-1"
-#~ msgstr "%q bì xū wéi wú huò zài 1 hé len(report_descriptor)-1 zhī jiān"
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q bìxū > = 0"
 
-#~ msgid "no available NIC"
-#~ msgstr "méiyǒu kěyòng de NIC"
-
-#~ msgid ""
-#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
-#~ "instead"
-#~ msgstr ""
-#~ "Duānkǒu bù jiēshòu PWM zàibō. Tōngguò yǐn jiǎo, pínlǜ hé zhàn kōng bǐ"
-
-#~ msgid ""
-#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
-#~ "Carrier instead"
-#~ msgstr ""
-#~ "Duānkǒu bù jiēshòu yǐn jiǎo huò pínlǜ. Gòuzào bìng chuándì PWMOut zàibō"
-
-#~ msgid "Instruction %d jumps on pin"
-#~ msgstr "zhǐ lìng %d zài yǐn jiǎo shàng tiào zhuǎn"
-
-#~ msgid "%q must store bytes"
-#~ msgstr "%q bì xū cún chǔ zì jié"
-
-#~ msgid "Buffer too large and unable to allocate"
-#~ msgstr "Huǎn chōng qū tài dà , wú fǎ fēn pèi"
-
-#~ msgid "interp is defined for 1D arrays of equal length"
-#~ msgstr "interp shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
-
-#~ msgid "trapz is defined for 1D arrays"
-#~ msgstr "wéi 1D shù zǔ dìng yì xiàn jǐng"
-
-#~ msgid "wrong operand type"
-#~ msgstr "cuòwù de cāozuò shù lèixíng"
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q bìxū >= 1"
 
 #~ msgid "%q must be None or 1-255"
 #~ msgstr "%q bì xū wéi wú huò 1-255"
 
-#~ msgid "Only raw int supported for ip"
-#~ msgstr "Ip jǐn zhīchí raw int"
+#~ msgid "%q must be None or between 1 and len(report_descriptor)-1"
+#~ msgstr "%q bì xū wéi wú huò zài 1 hé len(report_descriptor)-1 zhī jiān"
 
-#~ msgid ""
-#~ "CircuitPython is in safe mode because you pressed the reset button during "
-#~ "boot. Press again to exit safe mode.\n"
-#~ msgstr ""
-#~ "CircuitPython chǔyú ānquán móshì, yīnwèi zài yǐndǎo guòchéng zhōng àn "
-#~ "xiàle chóng zhì ànniǔ. Zài àn yīcì tuìchū ānquán móshì.\n"
+#~ msgid "%q must be a string"
+#~ msgstr "%q bìxū shì yí gè zì fú chuàn"
 
-#~ msgid "Not running saved code.\n"
-#~ msgstr "Méiyǒu yùnxíng yǐ bǎocún de dàimǎ.\n"
+#~ msgid "%q must be a tuple of length 2"
+#~ msgstr "%q bìxū shì chángdù wèi 2 de yuánzǔ"
 
-#~ msgid "Running in safe mode! "
-#~ msgstr "Zài ānquán móshì xià yùnxíng! "
+#~ msgid "%q must be an int"
+#~ msgstr "%q bìxū shì zhěng xíng"
 
-#~ msgid ""
-#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
-#~ "Please increase the stack size if you know how, or if not:"
-#~ msgstr ""
-#~ "Yóuyú duīzhàn tài xiǎo,CircuitPython duī yǐ sǔnhuài.\n"
-#~ "Rúguǒ nín zhīdào rúhé zēngjiā duīzhàn dàxiǎo, fǒuzé:"
+#~ msgid "%q must be between %d and %d"
+#~ msgstr "%q bì xū zài %d hé %d zhī jiān"
 
-#~ msgid ""
-#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
-#~ "to exit safe mode.\n"
-#~ msgstr ""
-#~ "“Wēi kòngzhì qì” mókuài yòng yú qǐdòng ānquán móshì. Àn chóng zhì kě "
-#~ "tuìchū ānquán móshì.\n"
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q bì xū shì %q lèi xíng"
 
-#~ msgid ""
-#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
-#~ "enough power for the whole circuit and press reset (after ejecting "
-#~ "CIRCUITPY).\n"
-#~ msgstr ""
-#~ "wēi kòng zhì qì de gōng lǜ jiàng dī. Quèbǎo nín de diànyuán wèi zhěnggè\n"
-#~ "diànlù tígōng zúgòu de diànyuán, bìng àn xià fùwèi (Dànchū CIRCUITPY "
-#~ "zhīhòu).\n"
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q lèi xíng bì xū wéi %q huò wú"
 
-#~ msgid "You are in safe mode: something unanticipated happened.\n"
-#~ msgstr "Nín chǔyú ānquán móshì: Chū hū yìliào de shìqíng fāshēngle.\n"
+#~ msgid "%q must of type %q"
+#~ msgstr "%q bì xū lèi xíng %q"
 
-#~ msgid "Pin number already reserved by EXTI"
-#~ msgstr "Zhēn hào yǐ bèi EXTI bǎoliú"
+#~ msgid "%q must store bytes"
+#~ msgstr "%q bì xū cún chǔ zì jié"
 
-#~ msgid "USB Busy"
-#~ msgstr "USB máng"
+#~ msgid "%q pin invalid"
+#~ msgstr "%q yǐn jiǎo wúxiào"
 
-#~ msgid "USB Error"
-#~ msgstr "USB Cuòwù"
+#~ msgid "%q should be an int"
+#~ msgstr "%q yīnggāi shì yīgè zhěngshù (int)"
 
-#~ msgid "%q indices must be integers, not %q"
-#~ msgstr "%q suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "bào gào ID shì 0 de %q bì xū cháng dù wéi 1"
+
+#, c-format
+#~ msgid "%s"
+#~ msgstr "%s"
 
 #~ msgid "'%q' object cannot assign attribute '%q'"
 #~ msgstr "'%q' duì xiàng wú fǎ fēn pèi shǔ xìng '%q'"
@@ -5694,273 +4590,6 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "'%s' integer 0x%x does not fit in mask 0x%x"
 #~ msgstr "'%s' zhěngshù 0x%x bù shìyòng yú yǎn mǎ 0x%x"
 
-#~ msgid "Cannot unambiguously get sizeof scalar"
-#~ msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
-
-#~ msgid "Length must be an int"
-#~ msgstr "Chángdù bìxū shì yīgè zhěngshù"
-
-#~ msgid "Length must be non-negative"
-#~ msgstr "Chángdù bìxū shìfēi fùshù"
-
-#~ msgid "invalid decorator"
-#~ msgstr "wú xiào zhuāng shì"
-
-#~ msgid "name reused for argument"
-#~ msgstr "cān shǔ míngchēng bèi chóngxīn shǐyòng"
-
-#~ msgid "object '%q' is not a tuple or list"
-#~ msgstr "duìxiàng '%q' bùshì yuán zǔ huò lièbiǎo"
-
-#~ msgid "object does not support item assignment"
-#~ msgstr "duìxiàng bù zhīchí xiàngmù fēnpèi"
-
-#~ msgid "object does not support item deletion"
-#~ msgstr "duìxiàng bù zhīchí shānchú xiàngmù"
-
-#~ msgid "object is not subscriptable"
-#~ msgstr "duìxiàng bùnéng xià biāo"
-
-#~ msgid "object of type '%q' has no len()"
-#~ msgstr "lèixíng '%q' de duìxiàng méiyǒu len()"
-
-#~ msgid "struct: cannot index"
-#~ msgstr "jiégòu: bùnéng suǒyǐn"
-
-#~ msgid "Cannot remount '/' when USB is active."
-#~ msgstr "USB jīhuó shí wúfǎ chóngxīn bǎng ding '/'."
-
-#~ msgid "byte code not implemented"
-#~ msgstr "zì jié dàimǎ wèi zhíxíng"
-
-#~ msgid "can't pend throw to just-started generator"
-#~ msgstr "bùnéng bǎ tā rēng dào gāng qǐdòng de fā diànjī shàng"
-
-#~ msgid "invalid dupterm index"
-#~ msgstr "dupterm suǒyǐn wúxiào"
-
-#~ msgid "schedule stack full"
-#~ msgstr "jìhuà duīzhàn yǐ mǎn"
-
-#~ msgid "Corrupt raw code"
-#~ msgstr "Sǔnhuài de yuánshǐ dàimǎ"
-
-#~ msgid "can only save bytecode"
-#~ msgstr "zhǐ néng bǎocún zì jié mǎ jìlù"
-
-#~ msgid "Viper functions don't currently support more than 4 arguments"
-#~ msgstr "Viper hánshù mùqián bù zhīchí chāoguò 4 gè cānshù"
-
-#~ msgid "address %08x is not aligned to %d bytes"
-#~ msgstr "wèi zhǐ %08x wèi yǔ %d wèi yuán zǔ duìqí"
-
-#~ msgid "function does not take keyword arguments"
-#~ msgstr "hánshù méiyǒu guānjiàn cí cānshù"
-
-#~ msgid "parameter annotation must be an identifier"
-#~ msgstr "cānshù zhùshì bìxū shì biāozhì fú"
-
-#~ msgid "Total data to write is larger than outgoing_packet_length"
-#~ msgstr "Yào xiě rù de zǒng shùjù dàyú outgoing_packet_length"
-
-#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
-#~ msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
-
-#~ msgid "buffer must be a bytes-like object"
-#~ msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
-
-#~ msgid "io must be rtc io"
-#~ msgstr "IO bì xū shì RTC IO"
-
-#~ msgid "trigger level must be 0 or 1"
-#~ msgstr "chù fā jí bié bì xū wéi 0 huò 1"
-
-#~ msgid "wakeup conflict"
-#~ msgstr "huàn xǐng chōng tū"
-
-#~ msgid "Attempted heap allocation when MicroPython VM not running."
-#~ msgstr "MicroPython VM zài wèi yùnxíng shí chángshì fēnpèi duī."
-
-#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
-#~ msgstr "MicroPython NLR tiào zhuǎn shībài. Kěnéng shì nèicún sǔnhuài."
-
-#~ msgid "MicroPython fatal error."
-#~ msgstr "MicroPython zhìmìng cuòwù."
-
-#~ msgid "argument must be ndarray"
-#~ msgstr "Cānshù bìxū shì ndarray"
-
-#~ msgid "matrix dimensions do not match"
-#~ msgstr "jǔzhèn chǐcùn bù pǐpèi"
-
-#~ msgid "norm is defined for 1D and 2D arrays"
-#~ msgstr "wéi 1D hé 2D shù zǔ dìng yì guī fàn"
-
-#~ msgid "vectors must have same lengths"
-#~ msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
-
-#~ msgid "Nordic Soft Device failure assertion."
-#~ msgstr "Nordic ruǎn shèbèi gùzhàng shēngmíng."
-
-#~ msgid "Unknown soft device error: %04x"
-#~ msgstr "Wèizhī de ruǎn shèbèi cuòwù: %04x"
-
-#~ msgid "first argument must be an iterable"
-#~ msgstr "dì yī gè cānshù bìxū shì kě diédài de"
-
-#~ msgid "iterables are not of the same length"
-#~ msgstr "kě diédài xiàng de chángdù bùtóng"
-
-#~ msgid "Selected CTS pin not valid"
-#~ msgstr "Suǒ xuǎn de CTS yǐn jiǎo wúxiào"
-
-#~ msgid "Selected RTS pin not valid"
-#~ msgstr "Suǒ xuǎn de RTS yǐn jiǎo wúxiào"
-
-#~ msgid "Could not initialize channel"
-#~ msgstr "Wúfǎ chūshǐhuà píndào"
-
-#~ msgid "Could not initialize timer"
-#~ msgstr "Wúfǎ chūshǐhuà jìshí qì"
-
-#~ msgid "Invalid frequency supplied"
-#~ msgstr "Tígōng de pínlǜ wúxiào"
-
-#~ msgid "Invalid pins for PWMOut"
-#~ msgstr "PWMOut de yǐn jiǎo wú xiào"
-
-#~ msgid "No more channels available"
-#~ msgstr "Méiyǒu gèng duō kěyòng píndào"
-
-#~ msgid "No more timers available"
-#~ msgstr "Méiyǒu gèng duō kěyòng de jìshí qì"
-
-#~ msgid "No more timers available on this pin."
-#~ msgstr "Gāi yǐn jiǎo shàng méiyǒu kěyòng de dìngshí qì."
-
-#~ msgid ""
-#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
-#~ "program"
-#~ msgstr ""
-#~ "Dìngshí qì bǎoliú gōng nèibù shǐyòng-zài chéngxù de qiánmiàn shēngmíng "
-#~ "PWM yǐn jiǎo"
-
-#~ msgid "Group full"
-#~ msgstr "Fēnzǔ yǐ mǎn"
-
-#~ msgid "In buffer elements must be 4 bytes long or less"
-#~ msgstr ""
-#~ "zài huǎn chōng yuán jiàn zhōng bì xū shì 4 zì jié cháng huò gèng shǎo"
-
-#~ msgid "Out buffer elements must be 4 bytes long or less"
-#~ msgstr "chū huǎn chōng yuán jiàn bì xū shì 4 zì jié cháng huò gèng shǎo"
-
-#~ msgid "UART not yet supported"
-#~ msgstr "UART shàng wèi shòu zhī chí"
-
-#~ msgid "bits must be 7, 8 or 9"
-#~ msgstr "bǐtè bìxū shì 7,8 huò 9"
-
-#~ msgid "Only IN/OUT of up to 8 supported"
-#~ msgstr "jǐn zhī chí zuì duō 8 gè IN/OUT"
-
-#~ msgid "SDA or SCL needs a pull up"
-#~ msgstr "SDA huò SCL xūyào lādòng"
-
-#~ msgid "Invalid use of TLS Socket"
-#~ msgstr "TLS tào jiē zì de wú xiào shǐ yòng"
-
-#~ msgid "Issue setting SO_REUSEADDR"
-#~ msgstr "wèn tí shè zhì SO_REUSEADDR"
-
-#~ msgid "%d address pins and %d rgb pins indicate a height of %d, not %d"
-#~ msgstr ""
-#~ "%d dìzhǐ yǐn jiǎo hé %d rgb yǐn jiǎo jiāng gāodù biǎoshì wèi %d, ér bùshì "
-#~ "%d"
-
-#~ msgid "Unknown failure"
-#~ msgstr "Wèizhī gùzhàng"
-
-#~ msgid "input argument must be an integer or a 2-tuple"
-#~ msgstr "shūrù cānshù bìxū shì zhěngshù huò 2 yuán zǔ"
-
-#~ msgid "tuple index out of range"
-#~ msgstr "yuán zǔ suǒyǐn chāochū fànwéi"
-
-#~ msgid ""
-#~ "\n"
-#~ "Code done running. Waiting for reload.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Dàimǎ yǐ wánchéng yùnxíng. Zhèngzài děngdài chóngxīn jiāzài.\n"
-
-#~ msgid "Frequency captured is above capability. Capture Paused."
-#~ msgstr "Pínlǜ bǔhuò gāo yú nénglì. Bǔhuò zàntíng."
-
-#~ msgid "max_length must be > 0"
-#~ msgstr "Max_length bìxū > 0"
-
-#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
-#~ msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzài."
-
-#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
-#~ msgstr "Jǐn zhīchí IPv4 SOCK_STREAM tào jiē zì"
-
-#~ msgid "arctan2 is implemented for scalars and ndarrays only"
-#~ msgstr "arctan2 jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
-
-#~ msgid "axis must be -1, 0, None, or 1"
-#~ msgstr "zhóu bìxū wèi-1,0, wú huò 1"
-
-#~ msgid "axis must be -1, 0, or 1"
-#~ msgstr "zhóu bìxū wèi-1,0 huò 1"
-
-#~ msgid "axis must be None, 0, or 1"
-#~ msgstr "zhóu bìxū wèi None,0 huò 1"
-
-#~ msgid "cannot reshape array (incompatible input/output shape)"
-#~ msgstr "wúfǎ zhěngxíng shùzǔ (bù jiānróng de shūrù/shūchū xíngzhuàng)"
-
-#~ msgid "could not broadast input array from shape"
-#~ msgstr "wúfǎ guǎngbò xíngzhuàng de shūrù shùzǔ"
-
-#~ msgid "ddof must be smaller than length of data set"
-#~ msgstr "ddof bìxū xiǎoyú shùjù jí de chángdù"
-
-#~ msgid "function is implemented for scalars and ndarrays only"
-#~ msgstr "gāi hánshù jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
-
-#~ msgid "n must be between 0, and 9"
-#~ msgstr "n bìxū jiè yú 0 dào 9 zhī jiān"
-
-#~ msgid "number of arguments must be 2, or 3"
-#~ msgstr "cānshù shùliàng bìxū wèi 2 huò 3"
-
-#~ msgid "right hand side must be an ndarray, or a scalar"
-#~ msgstr "yòubiān bìxū shì ndarray huò biāoliàng"
-
-#~ msgid "shape must be a 2-tuple"
-#~ msgstr "xíngzhuàng bìxū shì 2 yuán zǔ"
-
-#~ msgid "sorted axis can't be longer than 65535"
-#~ msgstr "pái xù zhóu bù néng chāo guò 65535"
-
-#~ msgid "wrong argument type"
-#~ msgstr "cuòwù de cānshù lèixíng"
-
-#~ msgid "Must provide SCK pin"
-#~ msgstr "bì xū tí gòng SCK yǐn jiǎo"
-
-#~ msgid ""
-#~ "\n"
-#~ "To exit, please reset the board without "
-#~ msgstr ""
-#~ "\n"
-#~ "Qǐng zài méiyǒu _ de qíngkuàng xià chóng zhì bǎn zǐ yǐ tuìchū "
-
-#~ msgid "tuple/list required on RHS"
-#~ msgstr "RHS yāoqiú de yuán zǔ/lièbiǎo"
-
 #~ msgid "'%s' object does not support '%q'"
 #~ msgstr "'%s' duì xiàng bù zhīchí '%q'"
 
@@ -5982,48 +4611,98 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "'%s' object is not subscriptable"
 #~ msgstr "'%s' duìxiàng bùnéng fēnshù"
 
-#~ msgid "Invalid I2C pin selection"
-#~ msgstr "Wúxiào de I2C yǐn jiǎo xuǎnzé"
+#~ msgid "'await', 'async for' or 'async with' outside async function"
+#~ msgstr ""
+#~ "'await', 'async for' huò 'async with' wèiyú yìbù (async) hánshù zhīwài"
 
-#~ msgid "Invalid SPI pin selection"
-#~ msgstr "Wúxiào de SPI yǐn jiǎo xuǎnzé"
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' wèiyú xúnhuán zhīwài"
 
-#~ msgid "Invalid UART pin selection"
-#~ msgstr "Wúxiào de UART yǐn jiǎo xuǎnzé"
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' wèiyú xúnhuán zhīwài"
 
-#~ msgid "Pop from an empty Ps2 buffer"
-#~ msgstr "Cóng kōng de Ps2 huǎnchōng qū dànchū"
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr "'coroutine' duìxiàng búshì yígè diédàiqì"
 
-#~ msgid "Running in safe mode! Auto-reload is off.\n"
-#~ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
+#~ msgid "(x,y) integers required"
+#~ msgstr "xūyào zhěngshù (x,y)"
 
-#~ msgid "can't convert address to int"
-#~ msgstr "wúfǎ jiāng dìzhǐ zhuǎnhuàn wèi int"
+#~ msgid "64 bit types"
+#~ msgstr "64 wèi lèixíng"
 
-#~ msgid "object '%s' is not a tuple or list"
-#~ msgstr "duìxiàng '%s' bùshì yuán zǔ huò lièbiǎo"
-
-#~ msgid "pop from an empty set"
-#~ msgstr "cóng kōng jí dànchū"
-
-#~ msgid "pop from empty list"
-#~ msgstr "cóng kōng lièbiǎo zhòng dànchū"
-
-#~ msgid "popitem(): dictionary is empty"
-#~ msgstr "dànchū xiàngmù (): Zìdiǎn wèi kōng"
-
-#, fuzzy
-#~ msgid "unknown format code '%c' for object of type '%s'"
-#~ msgstr "lèixíng '%s' duìxiàng wèizhī de géshì dàimǎ '%c'"
-
-#~ msgid "unsupported types for %q: '%s', '%s'"
-#~ msgstr "bù zhīchí de lèixíng wèi %q: '%s', '%s'"
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 zhèngzài bèi WiFi shǐ yòng"
 
 #~ msgid "Address is not %d bytes long or is in wrong format"
 #~ msgstr "Dìzhǐ bùshì %d zì jié zhǎng, huòzhě géshì cuòwù"
 
+#~ msgid "Address type out of range"
+#~ msgstr "Dìzhǐ lèixíng chāochū fànwéi"
+
+#~ msgid "All I2C targets are in use"
+#~ msgstr "suǒyǒu I2C mùbiāo dōu zài shǐyòng zhōng"
+
+#~ msgid "AnalogIn not supported on given pin"
+#~ msgstr "gěidìng de yǐnjiǎo bù zhīchí AnalogIn"
+
+#~ msgid "AnalogOut functionality not supported"
+#~ msgstr "Bù zhīchí AnalogOut gōngnéng"
+
+#~ msgid "AnalogOut is only 16 bits. Value must be less than 65536."
+#~ msgstr "AnalogOut jǐn wèi 16 wèi. Zhí bìxū xiǎoyú 65536."
+
+#~ msgid "AnalogOut not supported on given pin"
+#~ msgstr "zhǐdìng de yǐn jiǎo bù zhīchí AnalogOut"
+
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "zuìduō kěyǐ zhǐdìng %d gè %q (érbúshì %d)"
+
+#~ msgid "Attempted heap allocation when MicroPython VM not running."
+#~ msgstr "MicroPython VM zài wèi yùnxíng shí chángshì fēnpèi duī."
+
 #~ msgid "Attempted heap allocation when MicroPython VM not running.\n"
 #~ msgstr "MicroPython VM wèi yùnxíng shí chángshì duī fēnpèi.\n"
+
+#~ msgid "Attempted heap allocation when VM not running."
+#~ msgstr "shìtú zài xūnǐjī (VM) yùn xíng shí fēnpèi duī (heap)."
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "wèi shízhōng hé zì xuǎnzé bìxū shì liánxù de yǐn jiǎo"
+
+#, c-format
+#~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
+#~ msgstr "wèi shēndù bìxū shì 1 dào 6, ér búshì %d"
+
+#~ msgid "Boot device must be first device (interface #0)."
+#~ msgstr "yǐndǎo shèbèi bìxū shì dìyī tái shèbèi (interface #0)."
+
+#~ msgid "Both buttons were pressed at start up.\n"
+#~ msgstr "qǐ dòng shí àn xià le liǎng gè àn niǔ.\n"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Liàngdù bìxū wèi 0-1.0"
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "liàngdù bìxū jièyú 0 dào 255 zhījiān"
+
+#, c-format
+#~ msgid "Buffer incorrect size. Should be %d bytes."
+#~ msgstr "Huǎnchōng qū dàxiǎo bù zhèngquè. Yīnggāi shì %d zì jié."
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Huǎnchōng qū tài xiǎo"
+
+#~ msgid "Buffer must be at least length 1"
+#~ msgstr "Huǎnchōng qū bìxū zhìshǎo chángdù wéi 1"
+
+#~ msgid "Buffer too large and unable to allocate"
+#~ msgstr "Huǎn chōng qū tài dà , wú fǎ fēn pèi"
+
+#~ msgid "Button A was pressed at start up.\n"
+#~ msgstr "qǐ dòng shí àn xià àn niǔ A.\n"
+
+#~ msgid "Bytes must be between 0 and 255."
+#~ msgstr "Zìjié bìxū jiè yú 0 dào 255 zhījiān."
 
 #~ msgid "Can not use dotstar with %s"
 #~ msgstr "Wúfǎ yǔ dotstar yīqǐ shǐyòng %s"
@@ -6043,26 +4722,158 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "Can't set CCCD for local Characteristic"
 #~ msgstr "Wúfǎ wéi běndì tèzhēng shèzhì CCCD"
 
+#~ msgid "Cannot output both channels on the same pin"
+#~ msgstr "Wúfǎ shūchū tóng yīgè yǐn jiǎo shàng de liǎng gè píndào"
+
+#~ msgid "Cannot read without MISO pin."
+#~ msgstr "Wúfǎ dòu qǔ méiyǒu MISO de yǐn jiǎo."
+
+#~ msgid "Cannot remount '/' when USB is active."
+#~ msgstr "USB jīhuó shí wúfǎ chóngxīn bǎng ding '/'."
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present."
+#~ msgstr "Wúfǎ chóng zhì wèi bootloader, yīnwèi méiyǒu bootloader cúnzài."
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "méiyǒu MOSI hé MISO yǐnjiǎo, wúfǎ chuánshū"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins."
+#~ msgstr "Méiyǒu MOSI/MISO jiù wúfǎ zhuǎnyí."
+
+#~ msgid "Cannot unambiguously get sizeof scalar"
+#~ msgstr "Wúfǎ míngquè de huòdé biāoliàng de dàxiǎo"
+
+#~ msgid "Cannot write without MOSI pin."
+#~ msgstr "Wúfǎ xiě rù MOSI de yǐn jiǎo."
+
 #~ msgid "Characteristic UUID doesn't match Service UUID"
 #~ msgstr "Zìfú UUID bù fúhé fúwù UUID"
 
 #~ msgid "Characteristic already in use by another Service."
 #~ msgstr "Qítā fúwù bùmén yǐ shǐyòng de gōngnéng."
 
+#~ msgid ""
+#~ "CircuitPython is in safe mode because you pressed the reset button during "
+#~ "boot. Press again to exit safe mode.\n"
+#~ msgstr ""
+#~ "CircuitPython chǔyú ānquán móshì, yīnwèi zài yǐndǎo guòchéng zhōng àn "
+#~ "xiàle chóng zhì ànniǔ. Zài àn yīcì tuìchū ānquán móshì.\n"
+
+#~ msgid "CircuitPython was unable to allocate the heap."
+#~ msgstr "CircuitPython wúfǎ fēnpèi duī."
+
+#~ msgid "Clock pin init failed."
+#~ msgstr "Shízhōng de yǐn jiǎo chūshǐhuà shībài."
+
+#~ msgid "Column entry must be digitalio.DigitalInOut"
+#~ msgstr "Liè tiáomù bìxū shì digitalio.DigitalInOut"
+
 #~ msgid "Command must be 0-255"
 #~ msgstr "Mìnglìng bìxū wèi 0-255"
+
+#~ msgid "Command must be an int between 0 and 255"
+#~ msgstr "Mìnglìng bìxū shì 0 dào 255 zhī jiān de int"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "sǔnhuài de .mpy wénjiàn"
+
+#~ msgid "Corrupt raw code"
+#~ msgstr "Sǔnhuài de yuánshǐ dàimǎ"
 
 #~ msgid "Could not decode ble_uuid, err 0x%04x"
 #~ msgstr "Wúfǎ jiěmǎ kě dú_uuid, err 0x%04x"
 
+#~ msgid "Could not initialize Camera"
+#~ msgstr "Wúfǎ chūshǐhuà xiàngjī"
+
+#~ msgid "Could not initialize GNSS"
+#~ msgstr "wú fǎ chū shǐ huà GNSS"
+
+#~ msgid "Could not initialize SDCard"
+#~ msgstr "wú fǎ chū shǐ huà SDCard"
+
+#~ msgid "Could not initialize UART"
+#~ msgstr "Wúfǎ chūshǐhuà UART"
+
+#~ msgid "Could not initialize channel"
+#~ msgstr "Wúfǎ chūshǐhuà píndào"
+
+#~ msgid "Could not initialize timer"
+#~ msgstr "Wúfǎ chūshǐhuà jìshí qì"
+
+#~ msgid "Could not re-init channel"
+#~ msgstr "Wúfǎ chóngxīn chūshǐhuà píndào"
+
+#~ msgid "Could not re-init timer"
+#~ msgstr "Wúfǎ chóngxīn qǐdòng jìshí qì"
+
+#~ msgid "Could not restart PWM"
+#~ msgstr "Wúfǎ chóngqǐ PWM"
+
+#~ msgid "Couldn't allocate first buffer"
+#~ msgstr "Wúfǎ fēnpèi dì yī gè huǎnchōng qū"
+
+#~ msgid "Couldn't allocate input buffer"
+#~ msgstr "Wúfǎ fēnpèi shūrù huǎnchōng qū"
+
+#~ msgid "Couldn't allocate second buffer"
+#~ msgstr "Wúfǎ fēnpèi dì èr gè huǎnchōng qū"
+
+#~ msgid "Crash into the HardFault_Handler."
+#~ msgstr "gu4zhang4, jin4ru4 HardFault_Handler."
+
 #~ msgid "Crash into the HardFault_Handler.\n"
 #~ msgstr "Bēngkuì dào HardFault_Handler.\n"
+
+#~ msgid "Data 0 pin must be byte aligned."
+#~ msgstr "shù jù 0 yǐn jiǎo bì xū àn zì jié duì qí."
 
 #~ msgid "Data too large for the advertisement packet"
 #~ msgstr "Guǎnggào bāo de shùjù tài dà"
 
+#~ msgid "DigitalInOut not supported on given pin"
+#~ msgstr "Gěi dìng de yǐn jiǎo bù zhīchí DigitalInOut"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "wèi yú %d wèi zhì de MIDI liú zhōng de cuò wù"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Yù qí %q"
+
+#~ msgid "Expected a %q or %q"
+#~ msgstr "yù qī wéi %q huò %q"
+
+#~ msgid "Expected a Characteristic"
+#~ msgstr "Yùqí de tèdiǎn"
+
+#~ msgid "Expected a DigitalInOut"
+#~ msgstr "yù qī shù zì huà"
+
 #~ msgid "Expected a Peripheral"
 #~ msgstr "Qídài yīgè wàiwéi shèbèi"
+
+#~ msgid "Expected a Service"
+#~ msgstr "Yùqí fúwù"
+
+#~ msgid "Expected a UART"
+#~ msgstr "qī dài UART"
+
+#~ msgid "Expected a UUID"
+#~ msgstr "Yùqí UUID"
+
+#~ msgid "Expected an %q"
+#~ msgstr "yù qī wéi %q"
+
+#~ msgid "Expected an Address"
+#~ msgstr "Qídài yīgè dìzhǐ"
+
+#~ msgid "Expected an alarm"
+#~ msgstr "yù qī yǒu jǐng bào"
+
+#, c-format
+#~ msgid "Expected tuple of length %d, got %d"
+#~ msgstr "Qīwàng de chángdù wèi %d de yuán zǔ, dédào %d"
 
 #~ msgid "Failed to acquire mutex"
 #~ msgstr "Wúfǎ huòdé mutex"
@@ -6078,6 +4889,13 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "Failed to add service, err 0x%04x"
 #~ msgstr "Tiānjiā fúwù shībài, err 0x%04x"
+
+#~ msgid "Failed to allocate RX buffer"
+#~ msgstr "Fēnpèi RX huǎnchōng shībài"
+
+#, c-format
+#~ msgid "Failed to allocate RX buffer of %d bytes"
+#~ msgstr "Fēnpèi RX huǎnchōng qū%d zì jié shībài"
 
 #~ msgid "Failed to change softdevice state"
 #~ msgstr "Gēnggǎi ruǎn shèbèi zhuàngtài shībài"
@@ -6105,6 +4923,9 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 
 #~ msgid "Failed to get softdevice state"
 #~ msgstr "Wúfǎ huòdé ruǎnjiàn shèbèi zhuàngtài"
+
+#~ msgid "Failed to init wifi"
+#~ msgstr "Wúfǎ chūshǐhuà wifi"
 
 #~ msgid "Failed to notify or indicate attribute value, err 0x%04x"
 #~ msgstr "Wúfǎ tōngzhī huò xiǎnshì shǔxìng zhí, err 0x%04x"
@@ -6163,6 +4984,15 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "Failed to write gatts value, err 0x%04x"
 #~ msgstr "Xiě rù gatts zhí,err 0x%04x shībài"
 
+#~ msgid "Fatal error."
+#~ msgstr "zhì mìng cuò wù."
+
+#~ msgid "Fault detected by hardware."
+#~ msgstr "yìng jiàn jiǎn cè dào gù zhàng."
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "gù jiàn yìng xiàng wú xiào"
+
 #~ msgid "Flash erase failed"
 #~ msgstr "Flash cā chú shībài"
 
@@ -6175,17 +5005,209 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "Flash write failed to start, err 0x%04x"
 #~ msgstr "Flash xiě rù shībài, err 0x%04x"
 
+#, c-format
+#~ msgid "Framebuffer requires %d bytes"
+#~ msgstr "zhēn huǎn chōng qū xū yào %d zì jié"
+
+#~ msgid "Frequency captured is above capability. Capture Paused."
+#~ msgstr "Pínlǜ bǔhuò gāo yú nénglì. Bǔhuò zàntíng."
+
+#~ msgid "Group full"
+#~ msgstr "Fēnzǔ yǐ mǎn"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Yìngjiàn máng, qǐng chángshì qítā zhēnjiǎo"
+
+#~ msgid "Hostname must be between 1 and 253 characters"
+#~ msgstr "zhǔ jī míng bì xū jiè yú 1 hé 253 gè zì fú zhī jiān"
+
+#~ msgid "I2C Init Error"
+#~ msgstr "I2C chūshǐhuà cuòwù"
+
 #~ msgid "I2C operation not supported"
 #~ msgstr "I2C cāozuò bù zhīchí"
 
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut bù kě yòng"
+
+#~ msgid "IOs 0, 2 & 4 do not support internal pullup in sleep"
+#~ msgstr "IOS 0, 2 + 4 bù zhī chí shuì mián zhōng de nèi bù shàng lā"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV bì xū wéi %d zì jié cháng"
+
+#~ msgid "In buffer elements must be 4 bytes long or less"
+#~ msgstr ""
+#~ "zài huǎn chōng yuán jiàn zhōng bì xū shì 4 zì jié cháng huò gèng shǎo"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Bù jiānróng.Mpy wénjiàn. Qǐng gēngxīn suǒyǒu.Mpy wénjiàn. Yǒuguān xiángxì "
+#~ "xìnxī, qǐng cānyuè http://Adafru.It/mpy-update."
+
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "yóu yú nèi cún bù zú, chū shǐ huà shī bài"
+
+#~ msgid "Instruction %d jumps on pin"
+#~ msgstr "zhǐ lìng %d zài yǐn jiǎo shàng tiào zhuǎn"
+
+#, c-format
+#~ msgid "Instruction %d shifts in more bits than pin count"
+#~ msgstr "zhǐ lìng %d yí wèi chāo guò yǐn jiǎo jì shù"
+
+#, c-format
+#~ msgid "Instruction %d shifts out more bits than pin count"
+#~ msgstr "zhǐ lìng %d yí chū de wèi bǐ yǐn jiǎo shù duō"
+
+#, c-format
+#~ msgid "Instruction %d uses extra pin"
+#~ msgstr "zhǐ lìng %d shǐ yòng é wài de yǐn jiǎo"
+
+#, c-format
+#~ msgid "Instruction %d waits on input outside of count"
+#~ msgstr "zhǐ lìng %d děng dài jì shù zhī wài de shū rù"
+
+#~ msgid "Invalid %q pin selection"
+#~ msgstr "wú xiào %q yǐn jiǎo xuǎn zé"
+
+#~ msgid "Invalid AuthMode"
+#~ msgstr "wú xiào AuthMode"
+
+#~ msgid "Invalid BMP file"
+#~ msgstr "Wúxiào de BMP wénjiàn"
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "wú xiào CIRCUITPY_PYSTACK_SIZE\n"
+
+#~ msgid "Invalid DAC pin supplied"
+#~ msgstr "Tí gōng liǎo wúxiào de DAC yǐn jiǎo"
+
+#~ msgid "Invalid I2C pin selection"
+#~ msgstr "Wúxiào de I2C yǐn jiǎo xuǎnzé"
+
+#~ msgid "Invalid MIDI file"
+#~ msgstr "wú xiào de MIDI wén jiàn"
+
+#~ msgid "Invalid PWM frequency"
+#~ msgstr "Wúxiào de PWM pínlǜ"
+
+#~ msgid "Invalid Pin"
+#~ msgstr "wú xiào yǐn jiǎo"
+
+#~ msgid "Invalid SPI pin selection"
+#~ msgstr "Wúxiào de SPI yǐn jiǎo xuǎnzé"
+
+#~ msgid "Invalid UART pin selection"
+#~ msgstr "Wúxiào de UART yǐn jiǎo xuǎnzé"
+
 #~ msgid "Invalid bit clock pin"
 #~ msgstr "Wúxiào de wèi shízhōng yǐn jiǎo"
+
+#~ msgid "Invalid buffer size"
+#~ msgstr "Wúxiào de huǎnchōng qū dàxiǎo"
+
+#~ msgid "Invalid byteorder string"
+#~ msgstr "Wúxiào de zì jié shùnxù zìfú chuàn"
+
+#~ msgid "Invalid capture period. Valid range: 1 - 500"
+#~ msgstr "Wúxiào de bǔhuò zhōuqí. Yǒuxiào fànwéi: 1-500"
+
+#~ msgid "Invalid channel count"
+#~ msgstr "Wúxiào de tōngdào jìshù"
 
 #~ msgid "Invalid clock pin"
 #~ msgstr "Wúxiào de shízhōng yǐn jiǎo"
 
 #~ msgid "Invalid data pin"
 #~ msgstr "Wúxiào de shùjù yǐn jiǎo"
+
+#, c-format
+#~ msgid "Invalid data_count %d"
+#~ msgstr "wú xiào data_count %d"
+
+#~ msgid "Invalid direction."
+#~ msgstr "Wúxiào de fāngxiàng."
+
+#~ msgid "Invalid file"
+#~ msgstr "Wúxiào de wénjiàn"
+
+#~ msgid "Invalid frequency"
+#~ msgstr "Wúxiào de pínlǜ"
+
+#~ msgid "Invalid frequency supplied"
+#~ msgstr "Tígōng de pínlǜ wúxiào"
+
+#~ msgid "Invalid memory access."
+#~ msgstr "Wúxiào de nèicún fǎngwèn."
+
+#~ msgid "Invalid mode"
+#~ msgstr "wú xiào mó shì"
+
+#~ msgid "Invalid number of bits"
+#~ msgstr "Wèi shù wúxiào"
+
+#~ msgid "Invalid phase"
+#~ msgstr "Jiēduàn wúxiào"
+
+#~ msgid "Invalid pin"
+#~ msgstr "Wúxiào de yǐn jiǎo"
+
+#~ msgid "Invalid pin for left channel"
+#~ msgstr "Zuǒ tōngdào de yǐn jiǎo wúxiào"
+
+#~ msgid "Invalid pin for right channel"
+#~ msgstr "Yòuxián tōngdào yǐn jiǎo wúxiào"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Wúxiào de yǐn jiǎo"
+
+#~ msgid "Invalid pins for PWMOut"
+#~ msgstr "PWMOut de yǐn jiǎo wú xiào"
+
+#~ msgid "Invalid polarity"
+#~ msgstr "Wúxiào liǎng jí zhí"
+
+#~ msgid "Invalid properties"
+#~ msgstr "Wúxiào de shǔxìng"
+
+#~ msgid "Invalid run mode."
+#~ msgstr "Wúxiào de yùnxíng móshì."
+
+#~ msgid "Invalid security_mode"
+#~ msgstr "Ānquán móshì wúxiào"
+
+#~ msgid "Invalid use of TLS Socket"
+#~ msgstr "TLS tào jiē zì de wú xiào shǐ yòng"
+
+#~ msgid "Invalid voice"
+#~ msgstr "Yǔyīn wúxiào"
+
+#~ msgid "Invalid voice count"
+#~ msgstr "Wúxiào de yǔyīn jìshù"
+
+#~ msgid "Invalid wave file"
+#~ msgstr "Wúxiào de làng làngcháo wénjiàn"
+
+#~ msgid "Invalid word/bit length"
+#~ msgstr "Wúxiào de zì/wèi chángdù"
+
+#~ msgid "Issue setting SO_REUSEADDR"
+#~ msgstr "wèn tí shè zhì SO_REUSEADDR"
+
+#~ msgid "Layer already in a group."
+#~ msgstr "Tú céng yǐjīng zài yīgè zǔ zhōng."
+
+#~ msgid "Layer must be a Group or TileGrid subclass."
+#~ msgstr "Layer bìxū shì Group huò TileGrid zi lèi."
+
+#~ msgid "Length must be an int"
+#~ msgstr "Chángdù bìxū shì yīgè zhěngshù"
+
+#~ msgid "Length must be non-negative"
+#~ msgstr "Chángdù bìxū shìfēi fùshù"
 
 #~ msgid ""
 #~ "Looks like our core CircuitPython code crashed hard. Whoops!\n"
@@ -6197,17 +5219,102 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ "shàng tíjiāo yīgè wèntí, qízhōng bāohán nín de CIRCUITPY qūdòngqì de "
 #~ "nèiróng hé cǐ xiāoxī:\n"
 
+#~ msgid "MISO pin init failed."
+#~ msgstr "MISO yǐn jiǎo chūshǐhuà shībài."
+
+#~ msgid "MOSI pin init failed."
+#~ msgstr "MOSI yǐn jiǎo shūrù shībài."
+
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Jìngxiàng shí de zuìdà X zhí wèi%d"
+
+#~ msgid "Messages limited to 8 bytes"
+#~ msgstr "Yóujiàn xiànzhì wèi 8 gè zì jié"
+
+#~ msgid "MicroPython NLR jump failed. Likely memory corruption."
+#~ msgstr "MicroPython NLR tiào zhuǎn shībài. Kěnéng shì nèicún sǔnhuài."
+
 #~ msgid "MicroPython NLR jump failed. Likely memory corruption.\n"
 #~ msgstr "MicroPython NLR tiàoyuè shībài. Kěnéng nèicún fǔbài.\n"
+
+#~ msgid "MicroPython fatal error."
+#~ msgstr "MicroPython zhìmìng cuòwù."
 
 #~ msgid "MicroPython fatal error.\n"
 #~ msgstr "MicroPython zhìmìng cuòwù.\n"
 
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "Quēshǎo MISO huò MOSI yǐn jiǎo"
+
+#~ msgid "Missing MISO or MOSI pin"
+#~ msgstr "quēshǎo MISO huò MOSI yǐn jiǎo"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+#~ msgstr "shǒu xiān zài yǐn jiǎo zhōng quē shī. zhǐ lìng %d dú qǔ yǐn jiǎo"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+#~ msgstr ""
+#~ "shǒu xiān zài yǐn jiǎo zhōng quē shī. zhǐ lìng %d cóng yǐn jiǎo yí wèi"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
+#~ msgstr ""
+#~ "shǒu xiān zài yǐn jiǎo zhōng quē shī. jī yú yǐn jiǎo de zhǐ lìng %d děng "
+#~ "dài"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+#~ msgstr "xiān lòu chū yǐn jiǎo. zhǐ lìng %d yí chū dào yǐn jiǎo"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+#~ msgstr "xiān lòu chū yǐn jiǎo. zhǐ lìng %d xiě rù yǐn jiǎo"
+
+#, c-format
+#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+#~ msgstr "quē shǎo dì yī zǔ yǐn jiǎo. zhǐ lìng %d shè zhì yǐn jiǎo"
+
+#, c-format
+#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
+#~ msgstr "shī zōng de jmp_pin. zhǐ lìng %d zài yǐn jiǎo shàng tiào yuè"
+
+#, c-format
+#~ msgid "More than %d report ids not supported"
+#~ msgstr "chāo guò %d bào gào bù zhī chí de ID"
+
 #~ msgid "Must be a Group subclass."
 #~ msgstr "Bìxū shì fēnzǔ zi lèi."
 
+#~ msgid "Must provide SCK pin"
+#~ msgstr "bì xū tí gòng SCK yǐn jiǎo"
+
 #~ msgid "Negative step not supported"
 #~ msgstr "Bù zhīchí fù bù"
+
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "dì zhǐ wú I2C shè bèi: %x"
+
+#~ msgid "No MISO Pin"
+#~ msgstr "Méiyǒu MISO yǐn jiǎo"
+
+#~ msgid "No MISO pin"
+#~ msgstr "wú MISO pin"
+
+#~ msgid "No MOSI Pin"
+#~ msgstr "Méiyǒu MOSI yǐn jiǎo"
+
+#~ msgid "No MOSI pin"
+#~ msgstr "wú MOSI pin"
+
+#~ msgid "No RX pin"
+#~ msgstr "Wèi zhǎodào RX yǐn jiǎo"
+
+#~ msgid "No TX pin"
+#~ msgstr "Wèi zhǎodào TX yǐn jiǎo"
 
 #~ msgid "No default I2C bus"
 #~ msgstr "Méiyǒu mòrèn I2C gōnggòng qìchē"
@@ -6218,6 +5325,49 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "No default UART bus"
 #~ msgstr "Méiyǒu mòrèn UART gōnggòng qìchē"
 
+#~ msgid "No hardware support on clk pin"
+#~ msgstr "Shízhōng yǐn jiǎo wú yìngjiàn zhīchí"
+
+#~ msgid "No hardware support on pin"
+#~ msgstr "Méiyǒu zài yǐn jiǎo shàng de yìngjiàn zhīchí"
+
+#~ msgid "No key was specified"
+#~ msgstr "Wèi zhǐdìng mì yào"
+
+#~ msgid "No more channels available"
+#~ msgstr "Méiyǒu gèng duō kěyòng píndào"
+
+#, c-format
+#~ msgid "No more than %d HID devices allowed"
+#~ msgstr "bù yǔn xǔ chāo guò %d HID shè bèi"
+
+#~ msgid "No more timers available"
+#~ msgstr "Méiyǒu gèng duō kěyòng de jìshí qì"
+
+#~ msgid "No more timers available on this pin."
+#~ msgstr "Gāi yǐn jiǎo shàng méiyǒu kěyòng de dìngshí qì."
+
+#~ msgid "Nordic Soft Device failure assertion."
+#~ msgstr "Nordic ruǎn shèbèi gùzhàng shēngmíng."
+
+#~ msgid "Nordic system firmware failure assertion."
+#~ msgstr "běi ōu xì tǒng gù jiàn gù zhàng duàn yán."
+
+#~ msgid "Not running saved code.\n"
+#~ msgstr "Méiyǒu yùnxíng yǐ bǎocún de dàimǎ.\n"
+
+#~ msgid "Not settable"
+#~ msgstr "bù kě shè zhì"
+
+#~ msgid "Only 8 or 16 bit mono with "
+#~ msgstr "Zhǐyǒu 8 huò 16 wèi dānwèi "
+
+#~ msgid "Only IN/OUT of up to 8 supported"
+#~ msgstr "jǐn zhī chí zuì duō 8 gè IN/OUT"
+
+#~ msgid "Only IPv4 SOCK_STREAM sockets supported"
+#~ msgstr "Jǐn zhīchí IPv4 SOCK_STREAM tào jiē zì"
+
 #~ msgid "Only bit maps of 8 bit color or less are supported"
 #~ msgstr "Jǐn zhīchí 8 wèi yánsè huò xiǎoyú"
 
@@ -6227,11 +5377,69 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgstr ""
 #~ "Jǐn zhīchí dān sè, suǒyǐn 8bpp hé 16bpp huò gèng dà de BMP: %d bpp tígōng"
 
+#~ msgid "Only one TouchAlarm can be set in deep sleep."
+#~ msgstr "zhǐ yǒu yí gè chù mō bì kě yǐ shè zhì zài shēn dù shuì mián."
+
+#~ msgid "Only raw int supported for ip"
+#~ msgstr "Ip jǐn zhīchí raw int"
+
 #~ msgid "Only slices with step=1 (aka None) are supported"
 #~ msgstr "Jǐn zhīchí 1 bù qiēpiàn"
 
+#~ msgid "Out buffer elements must be 4 bytes long or less"
+#~ msgstr "chū huǎn chōng yuán jiàn bì xū shì 4 zì jié cháng huò gèng shǎo"
+
+#, c-format
+#~ msgid "Output buffer must be at least %d bytes"
+#~ msgstr "shū chū huǎn chōng qū bì xū zhì shǎo wéi %d zì jié"
+
+#~ msgid "PDMIn not available"
+#~ msgstr "PDMIn bù kě yòng"
+
+#~ msgid ""
+#~ "PWM duty_cycle must be between 0 and 65535 inclusive (16 bit resolution)"
+#~ msgstr ""
+#~ "PWM yìwù zhōuqí bìxū jiè yú 0 zhì 65535 de bāoróng xìng (16 wèi fēnbiàn "
+#~ "lǜ)"
+
+#~ msgid "ParallelBus not yet supported"
+#~ msgstr "Shàng bù zhīchí ParallelBus"
+
+#~ msgid "Pin count must be at least 1"
+#~ msgstr "yǐn jiǎo jì shù bì xū zhì shǎo wéi 1"
+
+#~ msgid "Pin does not have ADC capabilities"
+#~ msgstr "Pin méiyǒu ADC nénglì"
+
+#~ msgid "Pin number already reserved by EXTI"
+#~ msgstr "Zhēn hào yǐ bèi EXTI bǎoliú"
+
 #~ msgid "Pixel beyond bounds of buffer"
 #~ msgstr "Xiàngsù chāochū huǎnchōng qū biānjiè"
+
+#~ msgid "Pop from an empty Ps2 buffer"
+#~ msgstr "Cóng kōng de Ps2 huǎnchōng qū dànchū"
+
+#~ msgid ""
+#~ "Port does not accept PWM carrier. Pass a pin, frequency and duty cycle "
+#~ "instead"
+#~ msgstr ""
+#~ "Duānkǒu bù jiēshòu PWM zàibō. Tōngguò yǐn jiǎo, pínlǜ hé zhàn kōng bǐ"
+
+#~ msgid ""
+#~ "Port does not accept pins or frequency. Construct and pass a PWMOut "
+#~ "Carrier instead"
+#~ msgstr ""
+#~ "Duānkǒu bù jiēshòu yǐn jiǎo huò pínlǜ. Gòuzào bìng chuándì PWMOut zàibō"
+
+#~ msgid "Press any key to enter the REPL. Use CTRL-D to reload."
+#~ msgstr "Àn xià rènhé jiàn jìnrù REPL. Shǐyòng CTRL-D chóngxīn jiāzài."
+
+#~ msgid "Program must contain at least one 16-bit instruction."
+#~ msgstr "chéng xù bì xū zhì shǎo bāo hán yí gè 16 wèi zhǐ lìng ."
+
+#~ msgid "Program too large"
+#~ msgstr "chéng xù tài dà"
 
 #~ msgid "PulseIn not yet supported"
 #~ msgstr "Shàng bù zhīchí PulseIn"
@@ -6239,11 +5447,94 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "PulseOut not yet supported"
 #~ msgstr "Shàng bù zhīchí PulseOut"
 
+#~ msgid "RAISE mode is not implemented"
+#~ msgstr "wèi shí xiàn tí shēng mó shì"
+
+#~ msgid "RS485 Not yet supported on this device"
+#~ msgstr "RS485 cǐ shè bèi shàng bù zhī chí"
+
+#~ msgid "RTC calibration is not supported on this board"
+#~ msgstr "Cǐ bǎn bù zhīchí RTC jiàozhǔn"
+
+#~ msgid "RTS/CTS/RS485 Not yet supported on this device"
+#~ msgstr "RTS/CTS/RS485 gāi shèbèi shàng bù zhīchí"
+
 #~ msgid "Range out of bounds"
 #~ msgstr "Fànwéi chāochū biānjiè"
 
+#~ msgid "Read-only object"
+#~ msgstr "Zhǐ dú duìxiàng"
+
+#~ msgid "Row entry must be digitalio.DigitalInOut"
+#~ msgstr "Xíng xiàng bìxū shì digitalio.DigitalInOut"
+
+#~ msgid "Running in safe mode! "
+#~ msgstr "Zài ānquán móshì xià yùnxíng! "
+
+#~ msgid "Running in safe mode! Auto-reload is off.\n"
+#~ msgstr "Zài ānquán móshì xià yùnxíng! Zìdòng chóngxīn jiāzài yǐ guānbì.\n"
+
+#~ msgid "SDA or SCL needs a pull up"
+#~ msgstr "SDA huò SCL xūyào lādòng"
+
+#~ msgid "SPI Init Error"
+#~ msgstr "SPI chūshǐhuà cuòwù"
+
+#~ msgid "SPI Re-initialization error"
+#~ msgstr "SPI chóngxīn chūshǐhuà cuòwù"
+
+#~ msgid "Sample rate must be positive"
+#~ msgstr "Cǎiyàng lǜ bìxū wèi zhèng shù"
+
+#, c-format
+#~ msgid "Sample rate too high. It must be less than %d"
+#~ msgstr "Cǎiyàng lǜ tài gāo. Tā bìxū xiǎoyú %d"
+
+#~ msgid "Scan already in progess. Stop with stop_scan."
+#~ msgstr "Zhèngzài jìn háng sǎomiáo. Shǐyòng stop_scan tíngzhǐ."
+
+#~ msgid "Selected CTS pin not valid"
+#~ msgstr "Suǒ xuǎn de CTS yǐn jiǎo wúxiào"
+
+#~ msgid "Selected RTS pin not valid"
+#~ msgstr "Suǒ xuǎn de RTS yǐn jiǎo wúxiào"
+
+#~ msgid "Set pin count must be between 1 and 5"
+#~ msgstr "shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
+
+#~ msgid "Side set pin count must be between 1 and 5"
+#~ msgstr "cè miàn shè zhì yǐn jiǎo shù bì xū jiè yú 1 hé 5 zhī jiān"
+
+#~ msgid "Sleep Memory not available"
+#~ msgstr "shuì mián jì yì bù kě yòng"
+
 #~ msgid "Soft device assert, id: 0x%08lX, pc: 0x%08lX"
 #~ msgstr "Ruǎn shèbèi wéihù, id: 0X%08lX, pc: 0X%08lX"
+
+#~ msgid "Splitting with sub-captures"
+#~ msgstr "Yǔ zi bǔhuò fēnliè"
+
+#~ msgid "Stack size must be at least 256"
+#~ msgstr "Duīzhàn dàxiǎo bìxū zhìshǎo 256"
+
+#~ msgid "Stopping AP is not supported."
+#~ msgstr "bù zhī chí tíng zhǐ AP."
+
+#~ msgid "Stream missing readinto() or write() method."
+#~ msgstr "Liú quēshǎo readinto() huò write() fāngfǎ."
+
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Dìngyì zhìshǎo yīgè UART yǐn jiǎo"
+
+#~ msgid "The BOOT button was pressed at start up.\n"
+#~ msgstr "qǐ dòng shí àn xià le yǐn dǎo àn niǔ.\n"
+
+#~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Increase the stack size if you know how. If not:"
+#~ msgstr ""
+#~ "diàn lù dàn duī bèi sǔn huài, yīn wéi duī zhàn tài xiǎo.\n"
+#~ "rú guǒ nín zhī dào rú hé zēng jiā duī zhàn dà xiǎo. rú guǒ méi yǒu:"
 
 #~ msgid ""
 #~ "The CircuitPython heap was corrupted because the stack was too small.\n"
@@ -6259,6 +5550,57 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ "zài rù nín de CIRCUITPY qūdòngqì:\n"
 
 #~ msgid ""
+#~ "The CircuitPython heap was corrupted because the stack was too small.\n"
+#~ "Please increase the stack size if you know how, or if not:"
+#~ msgstr ""
+#~ "Yóuyú duīzhàn tài xiǎo,CircuitPython duī yǐ sǔnhuài.\n"
+#~ "Rúguǒ nín zhīdào rúhé zēngjiā duīzhàn dàxiǎo, fǒuzé:"
+
+#~ msgid "The SW38 button was pressed at start up.\n"
+#~ msgstr "qǐ dòng shí àn xià le SW38 àn niǔ .\n"
+
+#~ msgid "The VOLUME button was pressed at start up.\n"
+#~ msgstr "qǐ dòng shí àn xià yīn liàng àn niǔ.\n"
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode."
+#~ msgstr ""
+#~ "`wēi kòng zhì qì` mó kuài yòng yú qǐ dòng dào ān quán mó shì. àn chóng "
+#~ "zhì tuì chū ān quán mó shì."
+
+#~ msgid ""
+#~ "The `microcontroller` module was used to boot into safe mode. Press reset "
+#~ "to exit safe mode.\n"
+#~ msgstr ""
+#~ "“Wēi kòngzhì qì” mókuài yòng yú qǐdòng ānquán móshì. Àn chóng zhì kě "
+#~ "tuìchū ānquán móshì.\n"
+
+#~ msgid "The central button was pressed at start up.\n"
+#~ msgstr "qǐ dòng shí àn xià zhōng yāng àn niǔ.\n"
+
+#~ msgid "The left button was pressed at start up.\n"
+#~ msgstr "qǐ dòng shí àn xià zuǒ àn niǔ.\n"
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY)."
+#~ msgstr ""
+#~ "wēi kòng zhì qì de gōng lǜ xià jiàng. què bǎo diàn yuán tí gòng\n"
+#~ "zú gòu de gōng lǜ yòng yú zhěng gè diàn lù hé àn chóng zhì (tán chū "
+#~ "CIRCUITPY hòu)."
+
+#~ msgid ""
+#~ "The microcontroller's power dipped. Make sure your power supply provides\n"
+#~ "enough power for the whole circuit and press reset (after ejecting "
+#~ "CIRCUITPY).\n"
+#~ msgstr ""
+#~ "wēi kòng zhì qì de gōng lǜ jiàng dī. Quèbǎo nín de diànyuán wèi zhěnggè\n"
+#~ "diànlù tígōng zúgòu de diànyuán, bìng àn xià fùwèi (Dànchū CIRCUITPY "
+#~ "zhīhòu).\n"
+
+#~ msgid ""
 #~ "The microcontroller's power dipped. Please make sure your power supply "
 #~ "provides\n"
 #~ "enough power for the whole circuit and press reset (after ejecting "
@@ -6268,6 +5610,9 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ "wèi\n"
 #~ "zhěnggè diànlù tígōng zúgòu de diànyuán bìng àn xià fùwèi (zài dànchū "
 #~ "CIRCUITPY hòu).\n"
+
+#~ msgid "The power dipped. Make sure you are providing enough power."
+#~ msgstr "lì liàng xià jiàng le. què bǎo nín tí gòng zú gòu de diàn lì."
 
 #~ msgid ""
 #~ "The reset button was pressed while booting CircuitPython. Press again to "
@@ -6279,11 +5624,146 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "Tile indices must be 0 - 255"
 #~ msgstr "Píng pū zhǐshù bìxū wèi 0 - 255"
 
+#~ msgid "Tile value out of bounds"
+#~ msgstr "Píng pū zhí chāochū fànwéi"
+
+#~ msgid ""
+#~ "Timer was reserved for internal use - declare PWM pins earlier in the "
+#~ "program"
+#~ msgstr ""
+#~ "Dìngshí qì bǎoliú gōng nèibù shǐyòng-zài chéngxù de qiánmiàn shēngmíng "
+#~ "PWM yǐn jiǎo"
+
+#~ msgid "To exit, please reset the board without "
+#~ msgstr "Yào tuìchū, qǐng chóng zhì bǎnkuài ér bùyòng "
+
+#~ msgid "To exit, please reset the board without requesting safe mode."
+#~ msgstr ""
+#~ "yào tuì chū, qǐng zài bù qǐng qiú ān quán mó shì de qíng kuàng xià chóng "
+#~ "zhì zhǔ bǎn."
+
+#~ msgid "Too many display busses"
+#~ msgstr "Xiǎnshì zǒngxiàn tài duōle"
+
+#~ msgid "Total data to write is larger than outgoing_packet_length"
+#~ msgstr "Yào xiě rù de zǒng shùjù dàyú outgoing_packet_length"
+
+#~ msgid "UART Buffer allocation error"
+#~ msgstr "UART huǎnchōng qū fēnpèi cuòwù"
+
+#~ msgid "UART De-init error"
+#~ msgstr "UART qǔxiāo chūshǐhuà cuòwù"
+
+#~ msgid "UART Init Error"
+#~ msgstr "UART chūshǐhuà cuòwù"
+
+#~ msgid "UART Re-init error"
+#~ msgstr "UART chóngxīn chūshǐhuà cuòwù"
+
+#~ msgid "UART not yet supported"
+#~ msgstr "UART shàng wèi shòu zhī chí"
+
+#~ msgid "UART write error"
+#~ msgstr "UART xiě cuòwù"
+
+#~ msgid "USB Busy"
+#~ msgstr "USB máng"
+
+#~ msgid "USB Error"
+#~ msgstr "USB Cuòwù"
+
 #~ msgid "UUID integer value not in range 0 to 0xffff"
 #~ msgstr "UUID zhěngshù zhí bùzài fànwéi 0 zhì 0xffff"
 
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "wú fǎ fēn pèi duī."
+
+#, c-format
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ pèi zhì ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ chū shǐ huà ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "wú fǎ qǐ dòng ADC DMA kòng zhì qì, cuò wù dài mǎ:%d"
+
+#~ msgid "Unable to write"
+#~ msgstr "wú fǎ xiě rù"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "Wú fǎ xiě rù dì zhǐ."
+
+#~ msgid "Unknown failure"
+#~ msgstr "Wèizhī gùzhàng"
+
+#~ msgid "Unknown soft device error: %04x"
+#~ msgstr "Wèizhī de ruǎn shèbèi cuòwù: %04x"
+
+#, c-format
+#~ msgid "Unkown error code %d"
+#~ msgstr "wèi zhī cuò wù dài %d"
+
+#~ msgid "Unsupported baudrate"
+#~ msgstr "Bù zhīchí de baudrate"
+
+#~ msgid "Unsupported operation"
+#~ msgstr "Bù zhīchí de cāozuò"
+
+#~ msgid "Unsupported pull value."
+#~ msgstr "Bù zhīchí de lādòng zhí."
+
+#~ msgid "Viper functions don't currently support more than 4 arguments"
+#~ msgstr "Viper hánshù mùqián bù zhīchí chāoguò 4 gè cānshù"
+
 #~ msgid "Voice index too high"
 #~ msgstr "Yǔyīn suǒyǐn tài gāo"
+
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "WatchDogTimer dāngqián wèi yùnxíng"
+
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr ""
+#~ "Yīdàn shèzhì wèi WatchDogMode.RESET, zé bùnéng gēnggǎi WatchDogTimer.Mode"
+
+#~ msgid "WatchDogTimer.timeout must be greater than 0"
+#~ msgstr "WatchDogTimer.Timeout bìxū dàyú 0"
+
+#~ msgid "Watchdog timer expired."
+#~ msgstr "Kān mén gǒu dìngshí qì yǐ guòqí."
+
+#, c-format
+#~ msgid ""
+#~ "Welcome to Adafruit CircuitPython %s!\n"
+#~ "\n"
+#~ "Please visit learn.adafruit.com/category/circuitpython for project "
+#~ "guides.\n"
+#~ "\n"
+#~ "To list built-in modules please do `help(\"modules\")`.\n"
+#~ msgstr ""
+#~ "Huānyíng lái dào Adafruit CircuitPython%s!\n"
+#~ "\n"
+#~ "Qǐng fǎngwèn learn.Adafruit.Com/category/circuitpython yǐ huòqǔ xiàngmù "
+#~ "zhǐnán.\n"
+#~ "\n"
+#~ "Yào liè chū nèizhì mókuài, qǐng zhíxíng `help(“modules”)`\n"
+
+#~ msgid "WiFi password must be between 8 and 63 characters"
+#~ msgstr "WiFi mìmǎ bìxū jiè yú 8 dào 63 gè zìfú zhī jiān"
+
+#~ msgid "Wifi is in access point mode."
+#~ msgstr "Wú xiàn wǎng luò chǔ yú jiē rù diǎn mó shì."
+
+#~ msgid "Wifi is in station mode."
+#~ msgstr "Wú xiàn wǎng luò chǔ yú gōng zuò zhàn mó shì."
+
+#~ msgid "You are in safe mode because:\n"
+#~ msgstr "nín chǔ yú ān quán mó shì, yīn wéi:\n"
+
+#~ msgid "You are in safe mode: something unanticipated happened.\n"
+#~ msgstr "Nín chǔyú ānquán móshì: Chū hū yìliào de shìqíng fāshēngle.\n"
 
 #~ msgid ""
 #~ "You are running in safe mode which means something unanticipated "
@@ -6292,32 +5772,232 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ "Nǐ zhèngzài ānquán móshì xià yùnxíng, zhè yì wèi zhuó yìwài fāshēng de "
 #~ "shìqíng.\n"
 
+#~ msgid ""
+#~ "You pressed the reset button during boot. Press again to exit safe mode."
+#~ msgstr ""
+#~ "zài qǐ dòng guò chéng zhōng, nín àn xià le chóng zhì àn niǔ. zài cì àn "
+#~ "xià yǐ tuì chū ān quán mó shì."
+
+#~ msgid "You requested starting safe mode by "
+#~ msgstr "Nín qǐngqiú qǐdòng ānquán móshì "
+
+#~ msgid "__init__() should return None, not '%q'"
+#~ msgstr "__Init __() yīnggāi fǎnhuí None, ér bùshì '%q'"
+
+#~ msgid "abort() called"
+#~ msgstr "abort() diàoyòng"
+
+#~ msgid "address %08x is not aligned to %d bytes"
+#~ msgstr "wèi zhǐ %08x wèi yǔ %d wèi yuán zǔ duìqí"
+
+#~ msgid "address out of bounds"
+#~ msgstr "dìzhǐ chāochū biānjiè"
+
+#~ msgid "arctan2 is implemented for scalars and ndarrays only"
+#~ msgstr "arctan2 jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
+
+#~ msgid "argument must be ndarray"
+#~ msgstr "Cānshù bìxū shì ndarray"
+
+#~ msgid "attributes not supported yet"
+#~ msgstr "shǔxìng shàngwèi zhīchí"
+
+#~ msgid "axis must be -1, 0, None, or 1"
+#~ msgstr "zhóu bìxū wèi-1,0, wú huò 1"
+
+#~ msgid "axis must be -1, 0, or 1"
+#~ msgstr "zhóu bìxū wèi-1,0 huò 1"
+
+#~ msgid "axis must be None, 0, or 1"
+#~ msgstr "zhóu bìxū wèi None,0 huò 1"
+
 #~ msgid "bad GATT role"
 #~ msgstr "zǒng xiédìng de bùliáng juésè"
+
+#~ msgid "bits must be 7, 8 or 9"
+#~ msgstr "bǐtè bìxū shì 7,8 huò 9"
 
 #~ msgid "bits must be 8"
 #~ msgstr "bǐtè bìxū shì 8"
 
+#~ msgid "bits must be in range 5 to 9"
+#~ msgstr "wèi bì xū zài fàn wéi nèi 5 zhì 9"
+
 #~ msgid "buf is too small. need %d bytes"
 #~ msgstr "huǎnchōng tài xiǎo. Xūyào%d zì jié"
+
+#~ msgid "buffer must be a bytes-like object"
+#~ msgstr "huǎnchōng qū bìxū shì zì jié lèi duìxiàng"
 
 #~ msgid "buffers must be the same length"
 #~ msgstr "huǎnchōng qū bìxū shì chángdù xiāngtóng"
 
+#~ msgid "buttons must be digitalio.DigitalInOut"
+#~ msgstr "ànniǔ bìxū shì digitalio.DigitalInOut"
+
+#~ msgid "byte code not implemented"
+#~ msgstr "zì jié dàimǎ wèi zhíxíng"
+
+#~ msgid "byteorder is not a string"
+#~ msgstr "byteorder bùshì zìfú chuàn"
+
 #~ msgid "byteorder is not an instance of ByteOrder (got a %s)"
 #~ msgstr "zì jié bùshì zì jié xù shílì (yǒu %s)"
+
+#~ msgid "bytes > 8 bits not supported"
+#~ msgstr "zì jié > 8 wèi"
+
+#~ msgid "calibration value out of range +/-127"
+#~ msgstr "jiàozhǔn zhí chāochū fànwéi +/-127"
+
+#~ msgid "can only be registered in one parent"
+#~ msgstr "zhǐ néng zài yí gè jiā zhǎng zhōng zhù cè"
+
+#~ msgid "can only save bytecode"
+#~ msgstr "zhǐ néng bǎocún zì jié mǎ jìlù"
+
+#~ msgid "can't convert %q to int"
+#~ msgstr "wú fǎ jiāng %q zhuǎn huàn wéi nèi zài"
+
+#~ msgid "can't convert address to int"
+#~ msgstr "wúfǎ jiāng dìzhǐ zhuǎnhuàn wèi int"
+
+#~ msgid "can't convert to %q"
+#~ msgstr "wúfǎ zhuǎnhuàn wèi %q"
+
+#~ msgid "can't do truncated division of a complex number"
+#~ msgstr "bùnéng fēnjiě fùzá de shùzì"
+
+#~ msgid "can't have multiple **x"
+#~ msgstr "wúfǎ yǒu duō gè **x"
+
+#~ msgid "can't have multiple *x"
+#~ msgstr "wúfǎ yǒu duō gè *x"
+
+#~ msgid "can't pend throw to just-started generator"
+#~ msgstr "bùnéng bǎ tā rēng dào gāng qǐdòng de fā diànjī shàng"
+
+#~ msgid "cannot import name %q"
+#~ msgstr "wúfǎ dǎorù míngchēng %q"
+
+#~ msgid "cannot perform relative import"
+#~ msgstr "wúfǎ zhíxíng xiāngguān dǎorù"
+
+#~ msgid "cannot reshape array (incompatible input/output shape)"
+#~ msgstr "wúfǎ zhěngxíng shùzǔ (bù jiānróng de shūrù/shūchū xíngzhuàng)"
+
+#~ msgid "cannot unambiguously get sizeof scalar"
+#~ msgstr "bù néng háo bù hán hu de dé dào dà xiǎo de lín"
 
 #~ msgid "characteristics includes an object that is not a Characteristic"
 #~ msgstr "tèxìng bāokuò bùshì zìfú de wùtǐ"
 
+#~ msgid "circle can only be registered in one parent"
+#~ msgstr "quānzi zhǐ néng zài yī wèi jiāzhǎng zhōng zhùcè"
+
 #~ msgid "color buffer must be a buffer or int"
 #~ msgstr "yánsè huǎnchōng qū bìxū shì huǎnchōng qū huò zhěngshù"
+
+#~ msgid "color should be an int"
+#~ msgstr "yánsè yīng wèi zhěngshù"
+
+#~ msgid "complex division by zero"
+#~ msgstr "fùzá de fēngé wèi 0"
+
+#~ msgid "constant must be an integer"
+#~ msgstr "chángshù bìxū shì yīgè zhěngshù"
+
+#~ msgid "could not broadast input array from shape"
+#~ msgstr "wúfǎ guǎngbò xíngzhuàng de shūrù shùzǔ"
+
+#~ msgid "ddof must be smaller than length of data set"
+#~ msgstr "ddof bìxū xiǎoyú shùjù jí de chángdù"
+
+#~ msgid "destination_length must be an int >= 0"
+#~ msgstr "mùbiāo chángdù bìxū shì > = 0 de zhěngshù"
+
+#~ msgid "divisor must be 4"
+#~ msgstr "èr chóng zòu bì xū shì 4"
+
+#~ msgid "end_x should be an int"
+#~ msgstr "jiéwěi_x yīnggāi shì yīgè zhěngshù"
+
+#~ msgid ""
+#~ "esp32_camera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "esp32_camera. shè xiàng jī xū yào pèi zhì yù liú de PSRAM. yǒu guān shuō "
+#~ "míng, qǐng cān yuè wén dàng."
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera.Camera xū yào pèi zhì bǎo liú de PSRAM. yǒu guān shuō míng, "
+#~ "qǐng cān yuè wén dàng."
+
+#~ msgid "expected '%q' but got '%q'"
+#~ msgstr "yùqí wèi'%q'dàn dédàole'%q'"
+
+#~ msgid "expected '%q' or '%q' but got '%q'"
+#~ msgstr "yùqí wèi'%q'huò'%q', dàn huòdéle'%q'"
 
 #~ msgid "expected a DigitalInOut"
 #~ msgstr "qídài de DigitalInOut"
 
+#~ msgid "f-string expression part cannot include a '#'"
+#~ msgstr "f-string biǎodá shì bùfèn bùnéng bāohán '#'"
+
+#~ msgid "f-string expression part cannot include a backslash"
+#~ msgstr "f-string biǎodá shì bùfèn bùnéng bāohán fǎn xié gāng"
+
+#~ msgid "f-string: empty expression not allowed"
+#~ msgstr "f-string: bù yǔnxǔ shǐyòng kōng biǎodá shì"
+
+#~ msgid "f-string: expecting '}'"
+#~ msgstr "f-string: qídài '}'"
+
+#~ msgid "f-string: single '}' is not allowed"
+#~ msgstr "f-string: bù yǔnxǔ shǐyòng dāngè '}'"
+
+#~ msgid "first argument must be an iterable"
+#~ msgstr "dì yī gè cānshù bìxū shì kě diédài de"
+
 #~ msgid "firstbit must be MSB"
 #~ msgstr "dì yī wèi bìxū shì MSB"
+
+#~ msgid "frequency is read-only for this board"
+#~ msgstr "cǐ zhǔ bǎn de pín lǜ wéi zhǐ dú"
+
+#~ msgid "function does not take keyword arguments"
+#~ msgstr "hánshù méiyǒu guānjiàn cí cānshù"
+
+#~ msgid "function is implemented for scalars and ndarrays only"
+#~ msgstr "gāi hánshù jǐn zhēnduì biāoliàng hé ndarray shíxiàn"
+
+#~ msgid "incompatible native .mpy architecture"
+#~ msgstr "bù jiān róng de yuán shēng .mpy jià gòu"
+
+#~ msgid "input and output shapes are not compatible"
+#~ msgstr "shū rù hé shū chū xíng zhuàng bù jiān róng"
+
+#~ msgid "input argument must be an integer or a 2-tuple"
+#~ msgstr "shūrù cānshù bìxū shì zhěngshù huò 2 yuán zǔ"
+
+#~ msgid "input must be a tensor of rank 2"
+#~ msgstr "shū rù bì xū shì děng jí 2 de zhāng liàng"
+
+#~ msgid "inputs are not iterable"
+#~ msgstr "shū rù bù kě yí dòng"
+
+#~ msgid "int() arg 2 must be >= 2 and <= 36"
+#~ msgstr "zhěngshù() cānshù 2 bìxū > = 2 qiě <= 36"
+
+#~ msgid "integer required"
+#~ msgstr "xūyào zhěngshù"
+
+#~ msgid "interp is defined for 1D arrays of equal length"
+#~ msgstr "interp shì wèi děng zhǎng de 1D shùzǔ dìngyì de"
 
 #~ msgid "interval not in range 0.0020 to 10.24"
 #~ msgstr "jùlí 0.0020 Zhì 10.24 Zhī jiān de jiàngé shíjiān"
@@ -6328,23 +6008,247 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "invalid SPI peripheral"
 #~ msgstr "wúxiào de SPI wàiwéi qì"
 
+#~ msgid "invalid architecture"
+#~ msgstr "wú xiào de jià gòu"
+
+#~ msgid "invalid arguments"
+#~ msgstr "wúxiào de cānshù"
+
+#~ msgid "invalid bits_per_pixel %d, must be, 1, 4, 8, 16, 24, or 32"
+#~ msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 4, 8, 16, 24, huò 32"
+
+#~ msgid "invalid decorator"
+#~ msgstr "wú xiào zhuāng shì"
+
+#~ msgid "invalid dupterm index"
+#~ msgstr "dupterm suǒyǐn wúxiào"
+
+#~ msgid "invalid format"
+#~ msgstr "wúxiào géshì"
+
+#~ msgid "invalid traceback"
+#~ msgstr "wú xiào zhuī sù"
+
+#~ msgid "io must be rtc io"
+#~ msgstr "IO bì xū shì RTC IO"
+
+#~ msgid "iterables are not of the same length"
+#~ msgstr "kě diédài xiàng de chángdù bùtóng"
+
+#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
+#~ msgstr "guānjiàn zì cānshù shàngwèi shíxiàn - qǐng shǐyòng chángguī cānshù"
+
+#~ msgid "keywords must be strings"
+#~ msgstr "guānjiàn zì bìxū shì zìfú chuàn"
+
+#~ msgid "length argument not allowed for this type"
+#~ msgstr "bù yǔnxǔ gāi lèixíng de chángdù cānshù"
+
+#~ msgid "long int not supported in this build"
+#~ msgstr "cǐ bǎnběn bù zhīchí zhǎng zhěngshù"
+
+#~ msgid "matrix dimensions do not match"
+#~ msgstr "jǔzhèn chǐcùn bù pǐpèi"
+
+#~ msgid "max_connections must be between 0 and 10"
+#~ msgstr "max_connections bì xū jiè yú 0 hé 10 zhī jiān"
+
+#~ msgid "max_length must be > 0"
+#~ msgstr "Max_length bìxū > 0"
+
+#~ msgid "max_length must be >= 0"
+#~ msgstr "zuì dà cháng dù bì xū >= 0"
+
+#~ msgid "maximum number of dimensions is 4"
+#~ msgstr "zuì dà chǐ cùn shù wéi 4"
+
 #~ msgid "must specify all of sck/mosi/miso"
 #~ msgstr "bìxū zhǐdìng suǒyǒu sck/mosi/misco"
+
+#~ msgid "n must be between 0, and 9"
+#~ msgstr "n bìxū jiè yú 0 dào 9 zhī jiān"
 
 #~ msgid "name must be a string"
 #~ msgstr "míngchēng bìxū shì yīgè zìfú chuàn"
 
+#~ msgid "name reused for argument"
+#~ msgstr "cān shǔ míngchēng bèi chóngxīn shǐyòng"
+
+#~ msgid "no available NIC"
+#~ msgstr "méiyǒu kěyòng de NIC"
+
+#~ msgid "no reset pin available"
+#~ msgstr "Méiyǒu kěyòng de fùwèi yǐn jiǎo"
+
+#~ msgid "non-Device in %q"
+#~ msgstr "fēi shè bèi zài %q"
+
+#~ msgid "non-keyword arg after */**"
+#~ msgstr "zài */** zhīhòu fēi guānjiàn cí cānshù"
+
+#~ msgid "non-keyword arg after keyword arg"
+#~ msgstr "guānjiàn zì cānshù zhīhòu de fēi guānjiàn zì cānshù"
+
+#~ msgid "norm is defined for 1D and 2D arrays"
+#~ msgstr "wéi 1D hé 2D shù zǔ dìng yì guī fàn"
+
+#~ msgid "number of arguments must be 2, or 3"
+#~ msgstr "cānshù shùliàng bìxū wèi 2 huò 3"
+
+#~ msgid "object '%q' is not a tuple or list"
+#~ msgstr "duìxiàng '%q' bùshì yuán zǔ huò lièbiǎo"
+
+#~ msgid "object '%s' is not a tuple or list"
+#~ msgstr "duìxiàng '%s' bùshì yuán zǔ huò lièbiǎo"
+
+#~ msgid "object does not support item assignment"
+#~ msgstr "duìxiàng bù zhīchí xiàngmù fēnpèi"
+
+#~ msgid "object does not support item deletion"
+#~ msgstr "duìxiàng bù zhīchí shānchú xiàngmù"
+
+#~ msgid "object is not subscriptable"
+#~ msgstr "duìxiàng bùnéng xià biāo"
+
+#~ msgid "object of type '%q' has no len()"
+#~ msgstr "lèixíng '%q' de duìxiàng méiyǒu len()"
+
+#~ msgid "offset out of bounds"
+#~ msgstr "piānlí biānjiè"
+
+#~ msgid "out of range of source"
+#~ msgstr "yuán fàn wéi wài"
+
+#~ msgid "palette_index should be an int"
+#~ msgstr "yánsè suǒyǐn yīnggāi shì yīgè zhěngshù"
+
+#~ msgid "parameter annotation must be an identifier"
+#~ msgstr "cānshù zhùshì bìxū shì biāozhì fú"
+
+#~ msgid "pixel value requires too many bits"
+#~ msgstr "xiàngsù zhí xūyào tài duō wèi"
+
+#~ msgid "pixel_shader must be displayio.Palette or displayio.ColorConverter"
+#~ msgstr ""
+#~ "pixel_shader bìxū shì displayio.Palette huò displayio.ColorConverter"
+
+#~ msgid "polygon can only be registered in one parent"
+#~ msgstr "duōbiānxíng zhī néng zài yīgè fù jí zhōng zhùcè"
+
+#~ msgid "pop from an empty set"
+#~ msgstr "cóng kōng jí dànchū"
+
+#~ msgid "pop from empty list"
+#~ msgstr "cóng kōng lièbiǎo zhòng dànchū"
+
+#~ msgid "popitem(): dictionary is empty"
+#~ msgstr "dànchū xiàngmù (): Zìdiǎn wèi kōng"
+
+#~ msgid "pressing BOOT button at start up.\n"
+#~ msgstr "zài qǐdòng shí àn BOOT ànniǔ.\n"
+
+#~ msgid "pressing SW38 button at start up.\n"
+#~ msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
+
+#~ msgid "pressing VOLUME button at start up.\n"
+#~ msgstr "zài qǐdòng shí àn SW38 ànniǔ.\n"
+
+#~ msgid "pressing boot button at start up.\n"
+#~ msgstr "Zài qǐdòng shí àn qǐdòng ànniǔ.\n"
+
+#~ msgid "pressing both buttons at start up.\n"
+#~ msgstr "zài qǐdòng shí tóngshí àn xià liǎng gè ànniǔ.\n"
+
+#~ msgid "pressing the left button at start up\n"
+#~ msgstr "qǐ dòng shí àn xià zuǒ àn niǔ\n"
+
+#~ msgid "pull_threshold must be between 1 and 32"
+#~ msgstr "lā lì yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
+
+#~ msgid "push_threshold must be between 1 and 32"
+#~ msgstr "tuī sòng yù zhí bì xū jiè yú 1 hé 32 zhī jiān"
+
+#~ msgid "queue overflow"
+#~ msgstr "duìliè yìchū"
+
+#~ msgid "raw REPL; CTRL-B to exit\n"
+#~ msgstr "yuán shǐ REPL; CTRL-B tuì chū\n"
+
+#~ msgid "raw f-strings are not implemented"
+#~ msgstr "wèi zhíxíng yuánshǐ f-strings"
+
 #~ msgid "rawbuf is not the same size as buf"
 #~ msgstr "yuánshǐ huǎnchōng qū hé huǎnchōng qū de dàxiǎo bùtóng"
+
+#~ msgid "right hand side must be an ndarray, or a scalar"
+#~ msgstr "yòubiān bìxū shì ndarray huò biāoliàng"
 
 #~ msgid "row must be packed and word aligned"
 #~ msgstr "xíng bìxū dǎbāo bìngqiě zì duìqí"
 
+#~ msgid ""
+#~ "sample_source buffer must be a bytearray or array of type 'h', 'H', 'b' "
+#~ "or 'B'"
+#~ msgstr ""
+#~ "yàngběn yuán_yuán huǎnchōng qū bìxū shì zì yǎnlèi huò lèixíng 'h', 'H', "
+#~ "'b' huò 'B' de shùzǔ"
+
+#~ msgid "schedule stack full"
+#~ msgstr "jìhuà duīzhàn yǐ mǎn"
+
 #~ msgid "services includes an object that is not a Service"
 #~ msgstr "fúwù bāokuò yīgè bùshì fúwù de wùjiàn"
 
+#~ msgid "shape must be a 2-tuple"
+#~ msgstr "xíngzhuàng bìxū shì 2 yuán zǔ"
+
+#~ msgid "shape must be a tuple"
+#~ msgstr "xíng zhuàng bì xū shì yí gè yuán zǔ"
+
+#~ msgid "single '}' encountered in format string"
+#~ msgstr "zài géshì zìfú chuàn zhōng yù dào de dāngè '}'"
+
+#~ msgid "slice step can't be zero"
+#~ msgstr "qiēpiàn bù cháng bùnéng wéi líng"
+
+#~ msgid "slice step cannot be zero"
+#~ msgstr "qiēpiàn bù bùnéng wéi líng"
+
+#~ msgid "sorted axis can't be longer than 65535"
+#~ msgstr "pái xù zhóu bù néng chāo guò 65535"
+
+#~ msgid "ssid can't be more than 32 bytes"
+#~ msgstr "ssid bù néng chāo guò 32 gè zì jié"
+
+#~ msgid "start_x should be an int"
+#~ msgstr "kāishǐ_x yīnggāi shì yīgè zhěngshù"
+
+#~ msgid "step must be non-zero"
+#~ msgstr "bùzhòu bìxū shìfēi líng"
+
+#~ msgid "stop must be 1 or 2"
+#~ msgstr "tíngzhǐ bìxū wèi 1 huò 2"
+
+#~ msgid "string indices must be integers, not %q"
+#~ msgstr "zìfú chuàn suǒyǐn bìxū shì zhěngshù, ér bùshì %q"
+
+#~ msgid "string not supported; use bytes or bytearray"
+#~ msgstr "zìfú chuàn bù zhīchí; shǐyòng zì jié huò zì jié zǔ"
+
+#~ msgid "struct: cannot index"
+#~ msgstr "jiégòu: bùnéng suǒyǐn"
+
+#~ msgid "threshold must be in the range 0-65536"
+#~ msgstr "yùzhí bìxū zài fànwéi 0-65536"
+
 #~ msgid "tile index out of bounds"
 #~ msgstr "kuài suǒyǐn chāochū fànwéi"
+
+#~ msgid "tile must be greater than zero"
+#~ msgstr "cí tiē bì xū dà yú líng"
+
+#~ msgid "time.struct_time() takes a 9-sequence"
+#~ msgstr "time.struct_time() xūyào 9 xùliè"
 
 #~ msgid "time.struct_time() takes exactly 1 argument"
 #~ msgstr "time.struct_time() xūyào wánquán 1 cānshù"
@@ -6352,8 +6256,39 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "timeout >100 (units are now seconds, not msecs)"
 #~ msgstr "chāoshí >100 (dānwèi shì miǎo, ér bùshì háomiǎo)"
 
+#~ msgid "timeout must be 0.0-100.0 seconds"
+#~ msgstr "Chāo shí shíjiān bìxū wèi 0.0 Dào 100.0 Miǎo"
+
+#~ msgid "timeout must be >= 0.0"
+#~ msgstr "chāoshí bìxū shì >= 0.0"
+
 #~ msgid "too many arguments"
 #~ msgstr "tài duō cānshù"
+
+#~ msgid "too many arguments provided with the given format"
+#~ msgstr "tígōng jǐ dìng géshì de cānshù tài duō"
+
+#~ msgid "trapz is defined for 1D arrays"
+#~ msgstr "wéi 1D shù zǔ dìng yì xiàn jǐng"
+
+#~ msgid "trigger level must be 0 or 1"
+#~ msgstr "chù fā jí bié bì xū wéi 0 huò 1"
+
+#~ msgid "tuple index out of range"
+#~ msgstr "yuán zǔ suǒyǐn chāochū fànwéi"
+
+#~ msgid "tuple/list required on RHS"
+#~ msgstr "RHS yāoqiú de yuán zǔ/lièbiǎo"
+
+#~ msgid "type object 'generator' has no attribute '__await__'"
+#~ msgstr "lèi xíng duì xiàng 'generator' méi yǒu shǔ xìng '__await__'"
+
+#~ msgid "unindent does not match any outer indentation level"
+#~ msgstr "bùsuō jìn yǔ rènhé wàibù suō jìn jíbié dōu bù pǐpèi"
+
+#, fuzzy
+#~ msgid "unknown format code '%c' for object of type '%s'"
+#~ msgstr "lèixíng '%s' duìxiàng wèizhī de géshì dàimǎ '%c'"
 
 #~ msgid "unknown format code '%c' for object of type 'float'"
 #~ msgstr "lèixíng 'float' duìxiàng wèizhī de géshì dàimǎ '%c'"
@@ -6361,8 +6296,57 @@ msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
 #~ msgid "unknown format code '%c' for object of type 'str'"
 #~ msgstr "lèixíng 'str' duìxiàng wèizhī de géshì dàimǎ '%c'"
 
+#~ msgid "unmatched '{' in format"
+#~ msgstr "géshì wèi pǐpèi '{'"
+
 #~ msgid "unsupported bitmap type"
 #~ msgstr "bù zhīchí de bitmap lèixíng"
 
+#~ msgid "unsupported type for %q: '%q'"
+#~ msgstr "%q de bù shòu zhīchí de lèixíng: '%q'"
+
+#~ msgid "unsupported types for %q: '%s', '%s'"
+#~ msgstr "bù zhīchí de lèixíng wèi %q: '%s', '%s'"
+
+#~ msgid "value_count must be > 0"
+#~ msgstr "zhí jìshù bìxū wèi > 0"
+
+#~ msgid "vectors must have same lengths"
+#~ msgstr "xiàngliàng bìxū jùyǒu xiāngtóng de chángdù"
+
+#~ msgid "wakeup conflict"
+#~ msgstr "huàn xǐng chōng tū"
+
+#~ msgid "watchdog not initialized"
+#~ msgstr "wèi chū shǐ huà jiān shì qì"
+
+#~ msgid "watchdog timeout must be greater than 0"
+#~ msgstr "kān mén gǒu chāoshí bìxū dàyú 0"
+
+#, c-format
+#~ msgid "width must be from 2 to 8 (inclusive), not %d"
+#~ msgstr "kuān dù bì xū cóng 2 dào 8 ( hán ), ér bù shì %d"
+
 #~ msgid "write_args must be a list, tuple, or None"
 #~ msgstr "xiě cānshù bìxū shì yuán zǔ, lièbiǎo huò None"
+
+#~ msgid "wrong argument type"
+#~ msgstr "cuòwù de cānshù lèixíng"
+
+#~ msgid "wrong operand type"
+#~ msgstr "cuòwù de cāozuò shù lèixíng"
+
+#~ msgid "x value out of bounds"
+#~ msgstr "x zhí chāochū biānjiè"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "xTaskCreate shī bài"
+
+#~ msgid "y should be an int"
+#~ msgstr "y yīnggāi shì yīgè zhěngshù"
+
+#~ msgid "y value out of bounds"
+#~ msgstr "y zhí chāochū biānjiè"
+
+#~ msgid "zero step"
+#~ msgstr "líng bù"

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Artyom Skrobov
+ * Copyright (c) 2023 Bill Sideris, independently providing these changes.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,29 +24,22 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#define MICROPY_HW_BOARD_NAME       "DFRobot FireBeetle 2 ESP32-S3"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-#include "py/objnamedtuple.h"
-#include "py/enum.h"
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO2, .sda = &pin_GPIO3}, \
+                                     {.scl = &pin_GPIO2, .sda = &pin_GPIO1}}
 
-#define SYNTHIO_WAVEFORM_SIZE 16384
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO17)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO15)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO16)
 
-typedef enum {
-    SYNTHIO_ENVELOPE_STATE_ATTACK, SYNTHIO_ENVELOPE_STATE_DECAY,
-    SYNTHIO_ENVELOPE_STATE_SUSTAIN, SYNTHIO_ENVELOPE_STATE_RELEASE
-} envelope_state_e;
+#define MICROPY_HW_LED_STATUS (&pin_GPIO21)
 
-typedef enum synthio_bend_mode_e {
-    SYNTHIO_BEND_MODE_STATIC, SYNTHIO_BEND_MODE_VIBRATO, SYNTHIO_BEND_MODE_SWEEP, SYNTHIO_BEND_MODE_SWEEP_IN
-} synthio_bend_mode_t;
+#define DEFAULT_UART_BUS_RX (&pin_GPIO44)
+#define DEFAULT_UART_BUS_TX (&pin_GPIO43)
 
-extern const mp_obj_type_t synthio_note_state_type;
-extern const cp_enum_obj_t bend_mode_VIBRATO_obj;
-extern const mp_obj_type_t synthio_bend_mode_type;
-typedef struct synthio_synth synthio_synth_t;
-extern int16_t shared_bindings_synthio_square_wave[];
-extern const mp_obj_namedtuple_type_t synthio_envelope_type_obj;
-void synthio_synth_envelope_set(synthio_synth_t *synth, mp_obj_t envelope_obj);
-mp_obj_t synthio_synth_envelope_get(synthio_synth_t *synth);
-mp_float_t common_hal_synthio_midi_to_hz_float(mp_float_t note);
-mp_float_t common_hal_synthio_voct_to_hz_float(mp_float_t note);
+#define DOUBLE_TAP_PIN (&pin_GPIO0)
+
+#define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (1)

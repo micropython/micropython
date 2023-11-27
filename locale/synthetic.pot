@@ -3,6 +3,10 @@ msgid "en_US"
 msgstr ""
 
 # This string should never be translated, but for technical reasons it has to appear as an MP_ERROR_TEXT
+msgid "%02X"
+msgstr ""
+
+# This string should never be translated, but for technical reasons it has to appear as an MP_ERROR_TEXT
 msgid "%S"
 msgstr ""
 

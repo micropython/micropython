@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
+"PO-Revision-Date: 2023-11-22 19:04+0000\n"
+"Last-Translator: gfbdrgng <hnaofegnp@hldrive.com>\n"
 "Language-Team: none\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.2.1-rc\n"
 
 #: main.c
 msgid ""
@@ -85,16 +85,6 @@ msgstr " вывод:\n"
 msgid "%%c requires int or char"
 msgstr "%%c требует int или char"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr "%02X"
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
@@ -102,26 +92,6 @@ msgid ""
 msgstr ""
 "Адресные контакты %d, контакты rgb %d и плитки %d обозначают высоту %d, а не "
 "%d"
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
-msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -191,8 +161,9 @@ msgid "%q length must be >= %d"
 msgstr "Длинна %q должна быть >= %d"
 
 #: py/objmodule.c py/runtime.c
+#, fuzzy
 msgid "%q moved from %q to %q"
-msgstr ""
+msgstr "%q перешел из% q в% q"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -232,8 +203,9 @@ msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr "%q должен быть массивом байтов или массивом типа «h», «H», «b» или «B»"
 
 #: shared-bindings/warnings/__init__.c
+#, fuzzy
 msgid "%q must be a subclass of %q"
-msgstr ""
+msgstr "%q должно быть подклассом %q"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
@@ -271,8 +243,9 @@ msgid "%q out of range"
 msgstr "%q вне диапазона"
 
 #: py/objmodule.c py/runtime.c
+#, fuzzy
 msgid "%q renamed %q"
-msgstr ""
+msgstr "%q переименован в %q"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
@@ -305,11 +278,6 @@ msgstr "%q[%u] использует дополнительный контакт"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
 msgstr "%q [%u] ожидает ввода за пределами графа"
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
-msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -422,8 +390,9 @@ msgid "'await' outside function"
 msgstr "«ожидание» внешняя функция"
 
 #: py/compile.c
+#, fuzzy
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "'break'/'continue' outside loop"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -464,8 +433,9 @@ msgstr ", в %q\n"
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#, fuzzy
 msgid ".show(x) removed. Use .root_group = x"
-msgstr ""
+msgstr ".show(x) removed. Use .root_group = x"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -661,7 +631,7 @@ msgstr "Ниже минимальной частоты кадров"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential GPIO pins"
-msgstr ""
+msgstr "Несколько часов и слов должны быть последовательными GPIO пинами"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -782,7 +752,8 @@ msgstr ""
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Can only alarm on two low pins from deep sleep."
-msgstr "Из глубокого сна может сигнализировать только по двум низким контактам."
+msgstr ""
+"Из глубокого сна может сигнализировать только по двум низким контактам."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
@@ -862,7 +833,8 @@ msgstr "Невозможно изменить частоту на таймере
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
-msgstr "Невозможно проснуться по изменению логического уровня, только по уровню"
+msgstr ""
+"Невозможно проснуться по изменению логического уровня, только по уровню"
 
 #: ports/espressif/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge. Only level."
@@ -1048,13 +1020,16 @@ msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Не удалось получить mutex, ошибка 0x%04x"
 
 #: ports/raspberrypi/common-hal/mdns/Server.c
+#, fuzzy
 msgid "Failed to add service TXT record"
-msgstr ""
+msgstr "Не удалось добавить запись обслуживания TXT"
 
 #: shared-bindings/mdns/Server.c
+#, fuzzy
 msgid ""
 "Failed to add service TXT record; non-string or bytes found in txt_records"
 msgstr ""
+"Не удалось добавить запись TXT; непрочный или байт, найденный в txt_записях"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
@@ -1652,8 +1627,9 @@ msgstr "Да"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
-msgstr "Только 8- или 16-битное моно с "
+#, c-format, fuzzy
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
+msgstr "Только 8 или 16 бит моно с поддержкой %d."
 
 #: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
@@ -1843,7 +1819,8 @@ msgstr "Полигону необходимо как минимум 3 точки
 
 #: supervisor/shared/safe_mode.c
 msgid "Power dipped. Make sure you are providing enough power."
-msgstr "Мощность просела. Убедитесь, что вы обеспечиваете достаточную мощность."
+msgstr ""
+"Мощность просела. Убедитесь, что вы обеспечиваете достаточную мощность."
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Prefix buffer must be on the heap"
@@ -2223,8 +2200,9 @@ msgid "Unable to allocate buffers for signed conversion"
 msgstr "Не удается выделить буферы для подписанного преобразования"
 
 #: supervisor/shared/safe_mode.c
+#, fuzzy
 msgid "Unable to allocate to the heap."
-msgstr ""
+msgstr "Не в состоянии выделить на кучу."
 
 #: ports/espressif/common-hal/busio/I2C.c
 msgid "Unable to create lock"
@@ -2486,9 +2464,9 @@ msgid "__init__() should return None"
 msgstr "__init__() должен возвращать значение None"
 
 #: py/objtype.c
-#, c-format
+#, c-format, fuzzy
 msgid "__init__() should return None, not '%s'"
-msgstr ""
+msgstr "__init__() should return None, not '%s'"
 
 #: py/objobject.c
 msgid "__new__ arg must be a user-type"
@@ -2569,8 +2547,9 @@ msgid "asm overflow"
 msgstr "Переполнение ASM"
 
 #: py/compile.c
+#, fuzzy
 msgid "async for/with outside async function"
-msgstr ""
+msgstr "async для/с внешней функцией async"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2585,8 +2564,9 @@ msgstr ""
 "последовательности"
 
 #: py/objstr.c
+#, fuzzy
 msgid "attributes not supported"
-msgstr ""
+msgstr "Атрибуты пока не поддерживаются"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
@@ -2703,7 +2683,8 @@ msgstr "Можно указать только одно неизвестное �
 
 #: py/objtype.c
 msgid "can't add special method to already-subclassed class"
-msgstr "Не удается добавить специальный метод к уже имеющемуся подклассу классу"
+msgstr ""
+"Не удается добавить специальный метод к уже имеющемуся подклассу классу"
 
 #: py/compile.c
 msgid "can't assign to expression"
@@ -2728,25 +2709,27 @@ msgid "can't convert %s to float"
 msgstr "не могу преобразовать %s в число с плавающей запятой"
 
 #: py/runtime.c
-#, c-format
+#, c-format, fuzzy
 msgid "can't convert %s to int"
-msgstr ""
+msgstr "не может конвертировать %s в int"
 
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "не может конвертировать «%q» в% q косвенно"
 
 #: py/objint.c
+#, fuzzy
 msgid "can't convert NaN to int"
-msgstr ""
+msgstr "не может превратить NaN в int"
 
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
 msgstr "Не может преобразовать сложный в плавающий"
 
 #: py/objint.c
+#, fuzzy
 msgid "can't convert inf to int"
-msgstr ""
+msgstr "не может конвертировать inf в int"
 
 #: py/obj.c
 msgid "can't convert to complex"
@@ -2781,8 +2764,9 @@ msgid "can't implicitly convert '%q' to 'bool'"
 msgstr "не может неявно преобразовать '%q' в 'bool'"
 
 #: py/runtime.c
+#, fuzzy
 msgid "can't import name %q"
-msgstr ""
+msgstr "не может импортировать имя %q"
 
 #: py/emitnative.c
 msgid "can't load from '%q'"
@@ -2839,12 +2823,14 @@ msgid ""
 msgstr "не может переключаться с ручного поля на автоматическую нумерацию поля"
 
 #: py/objcomplex.c
+#, fuzzy
 msgid "can't truncate-divide a complex number"
-msgstr ""
+msgstr "не может усечь сложное число"
 
 #: extmod/moductypes.c
+#, fuzzy
 msgid "can't unambiguously get sizeof scalar"
-msgstr ""
+msgstr "не может однозначно получить размер скаляра"
 
 #: extmod/modasyncio.c
 msgid "can't wait"
@@ -2934,8 +2920,9 @@ msgid "comparison of int and uint"
 msgstr "сравнение int и uint"
 
 #: py/objcomplex.c
+#, fuzzy
 msgid "complex divide by zero"
-msgstr ""
+msgstr "сложное разделение на ноль"
 
 #: py/objfloat.c py/parsenum.c
 msgid "complex values not supported"
@@ -3015,7 +3002,8 @@ msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "destination buffer must be an array of type 'H' for bit_depth = 16"
-msgstr "буфер назначения должен быть массивом типа «H» для битовой_глубины = 16"
+msgstr ""
+"буфер назначения должен быть массивом типа «H» для битовой_глубины = 16"
 
 #: py/objdict.c
 msgid "dict update sequence has wrong length"
@@ -3050,8 +3038,9 @@ msgid "dtype must be float, or complex"
 msgstr "Тип d должен быть плавающим или сложным"
 
 #: extmod/ulab/code/ndarray_operators.c
+#, fuzzy
 msgid "dtype of int32 is not supported"
-msgstr ""
+msgstr "dtype of int32 не поддерживается"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3185,8 +3174,9 @@ msgid "font must be 2048 bytes long"
 msgstr "Длина шрифта должна составлять 2048 байт"
 
 #: extmod/moddeflate.c
+#, fuzzy
 msgid "format"
-msgstr ""
+msgstr "формат"
 
 #: py/objstr.c
 msgid "format requires a dict"
@@ -3429,8 +3419,9 @@ msgid "interval must be in range %s-%s"
 msgstr "Интервал должен находиться в диапазоне %s-%s"
 
 #: py/compile.c
+#, fuzzy
 msgid "invalid arch"
-msgstr ""
+msgstr "недействительная арка"
 
 #: shared-bindings/bitmaptools/__init__.c
 #, c-format
@@ -3515,8 +3506,11 @@ msgstr ""
 "самообъектом"
 
 #: py/argcheck.c
+#, fuzzy
 msgid "keyword argument(s) not implemented - use normal args instead"
 msgstr ""
+"аргумент(ы) ключевых слов не реализован - вместо этого используйте обычные "
+"арги"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 msgid "label '%q' not defined"
@@ -3615,16 +3609,18 @@ msgid "memory allocation failed, heap is locked"
 msgstr "Не удалось выделить память, куча заблокирована"
 
 #: py/objarray.c
+#, fuzzy
 msgid "memoryview offset too large"
-msgstr ""
+msgstr "вид памяти компенсируется слишком большим"
 
 #: py/objarray.c
 msgid "memoryview: length is not a multiple of itemsize"
 msgstr "вид памяти: длина не является множеством элементов"
 
 #: extmod/modtime.c
+#, fuzzy
 msgid "mktime needs a tuple of length 8 or 9"
-msgstr ""
+msgstr "mktime нуждается в толщине 8 или 9"
 
 #: extmod/ulab/code/numpy/linalg/linalg.c
 msgid "mode must be complete, or reduced"
@@ -3671,8 +3667,9 @@ msgid "name not defined"
 msgstr "Имя не определено"
 
 #: py/persistentcode.c
+#, fuzzy
 msgid "native code in .mpy unsupported"
-msgstr ""
+msgstr "родной код в .mpy без поддержки"
 
 #: py/asmthumb.c
 msgid "native method too big"
@@ -3918,8 +3915,9 @@ msgid "operation is not supported for given type"
 msgstr "Операция не поддерживается для данного типа"
 
 #: extmod/ulab/code/ndarray_operators.c
+#, fuzzy
 msgid "operation not supported for the input types"
-msgstr ""
+msgstr "не поддерживается для типов ввода"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
@@ -4157,8 +4155,9 @@ msgid "source_bitmap must have value_count of 8"
 msgstr "source_bitmap должен иметь значение_счет 8"
 
 #: extmod/modre.c
+#, fuzzy
 msgid "splitting with sub-captures"
-msgstr ""
+msgstr "разделение с подзахватами"
 
 #: py/objstr.c
 msgid "start/end indices"
@@ -4173,17 +4172,19 @@ msgid "stream operation not supported"
 msgstr "Потоковая операция не поддерживается"
 
 #: py/objarray.c py/objstr.c
+#, fuzzy
 msgid "string argument without an encoding"
-msgstr ""
+msgstr "строковый аргумент без кодирования"
 
 #: py/objstrunicode.c
+#, fuzzy
 msgid "string index out of range"
-msgstr ""
+msgstr "строковый индекс вне диапазона"
 
 #: py/objstrunicode.c
-#, c-format
+#, c-format, fuzzy
 msgid "string indices must be integers, not %s"
-msgstr ""
+msgstr "струнные индексы должны быть целых чисел, а не %s"
 
 #: extmod/moductypes.c
 msgid "struct: can't index"
@@ -4214,8 +4215,9 @@ msgid "syntax error in uctypes descriptor"
 msgstr "Синтаксическая ошибка в дескрипторе UCTYPES"
 
 #: extmod/modtime.c
+#, fuzzy
 msgid "ticks interval overflow"
-msgstr ""
+msgstr "клещей интервал перегрузка"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
@@ -4393,8 +4395,9 @@ msgid "unsupported format character '%c' (0x%x) at index %d"
 msgstr "Неподдерживаемый символ формата '%c' (0x%x) при индексе %d"
 
 #: py/runtime.c
+#, fuzzy
 msgid "unsupported type for %q: '%s'"
-msgstr ""
+msgstr "неподдерживаемый тип для% q:%s \""
 
 #: py/runtime.c
 msgid "unsupported type for operator"
@@ -4422,8 +4425,9 @@ msgid "value out of range of target"
 msgstr "Величина выходящая за пределы диапазона цели"
 
 #: extmod/moddeflate.c
+#, fuzzy
 msgid "wbits"
-msgstr ""
+msgstr "wbits"
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4496,18 +4500,65 @@ msgstr "zi должно быть типа float"
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
 
-#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
-#~ msgstr "Недопустимый CIRCUITPY_PYSTACK_SIZE\n"
-
-#~ msgid "Unable to allocate the heap."
-#~ msgstr "Невозможно выделить кучу."
+#~ msgid ""
+#~ "\n"
+#~ "Code stopped by auto-reload.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Программа остановлена автоматической перезагрузкой.\n"
 
 #~ msgid ""
-#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
-#~ "documentation for instructions."
+#~ "\n"
+#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
 #~ msgstr ""
-#~ "espcamera.Для настройки камеры требуется зарезервированная PSRAM. "
-#~ "Инструкции см. в документации."
+#~ "\n"
+#~ "Пожалуйста, сообщите о проблеме, приложив содержимое вашего диска "
+#~ "CIRCUITPY на\n"
+#~ "https://github.com/adafruit/circuitpython/issues\n"
+
+#, c-format
+#~ msgid "%02X"
+#~ msgstr "%02X"
+
+#~ msgid "%q"
+#~ msgstr "%q"
+
+#~ msgid "%q length must be >= 1"
+#~ msgstr "Длинна %q должна быть >= 1"
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q должен быть >= 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q должен быть >= 1"
+
+#~ msgid "%q must be a string"
+#~ msgstr "%q должно быть строкой"
+
+#~ msgid "%q must be a tuple of length 2"
+#~ msgstr "%q должен быть кортежем длинной 2"
+
+#~ msgid "%q must be an int"
+#~ msgstr "%q должно быть int"
+
+#~ msgid "%q must be between %d and %d"
+#~ msgstr "%q должен быть между %d и %d"
+
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q должно быть типа %q"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q должно быть типа %q или None"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "Пин %q не допустим"
+
+#~ msgid "%q should be an int"
+#~ msgstr "%q должен быть int"
+
+#~ msgid "%q with a report ID of 0 must be of length 1"
+#~ msgstr "%q с идентификатором отчёта 0 должен иметь длину 1"
 
 #~ msgid "'await', 'async for' or 'async with' outside async function"
 #~ msgstr ""
@@ -4520,329 +4571,17 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "'continue' outside loop"
 #~ msgstr "«продолжить» вне цикла"
 
-#~ msgid "invalid architecture"
-#~ msgstr "Недопустимая архитектура"
-
-#~ msgid "unsupported type for %q: '%q'"
-#~ msgstr "Неподдерживаемый тип для %q: '%q'"
-
-#~ msgid "Splitting with sub-captures"
-#~ msgstr "Разделение с помощью субзахватов"
-
-#~ msgid "__init__() should return None, not '%q'"
-#~ msgstr "__init__() должен возвращать None, а не '%q'"
-
-#~ msgid "attributes not supported yet"
-#~ msgstr "Атрибуты пока не поддерживаются"
-
-#~ msgid "can't do truncated division of a complex number"
-#~ msgstr "Не могу сделать усеченное деление комплексного числа"
-
-#~ msgid "cannot import name %q"
-#~ msgstr "Не удается импортировать имя %Q"
-
-#~ msgid "cannot unambiguously get sizeof scalar"
-#~ msgstr "не может однозначно получить размер скаляра"
-
-#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
-#~ msgstr ""
-#~ "Аргументы ключевого слова еще не реализованы - вместо этого используйте "
-#~ "обычные аргументы"
-
-#~ msgid "length argument not allowed for this type"
-#~ msgstr "аргумент длины не допускается для этого типа"
-
-#~ msgid "offset out of bounds"
-#~ msgstr "Смещение за пределы"
-
-#~ msgid "slice step can't be zero"
-#~ msgstr "Шаг среза не может быть равен нулю"
-
-#~ msgid "string not supported; use bytes or bytearray"
-#~ msgstr "строка не поддерживается; Использование байтов или массива байтов"
-
-#~ msgid "Bit clock and word select must be sequential pins"
-#~ msgstr ""
-#~ "Битовый тактовый генератор и выбор слова должны быть последовательными "
-#~ "пинами"
-
-#~ msgid "Initialization failed due to lack of memory"
-#~ msgstr "Инициализация не удалась из-за нехватки памяти"
-
-#~ msgid "RAISE mode is not implemented"
-#~ msgstr "Режим RAISE не реализован"
-
-#~ msgid "WatchDogTimer is not currently running"
-#~ msgstr "Таймер Watch Dog в настоящее время не работает"
-
-#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
-#~ msgstr ""
-#~ "WatchDogTimer.mode не может быть изменен после установки значения "
-#~ "WatchDogMode.RESET"
-
-#~ msgid "watchdog not initialized"
-#~ msgstr "Сторожевой таймер не инициализирован"
-
-#~ msgid "ADC2 is being used by WiFi"
-#~ msgstr "ADC2 используется WiFi"
-
-#, c-format
-#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
-#~ msgstr "Невозможно настроить контроллер ADC DMA, код ошибки:%d"
-
-#, c-format
-#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
-#~ msgstr "Невозможно инициализировать контроллер ADC DMA, код ошибки:%d"
-
-#, c-format
-#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
-#~ msgstr "Не удается запустить контроллер ADC DMA, код ошибки:%d"
-
-#~ msgid "xTaskCreate failed"
-#~ msgstr "x Создать задачу не удалось"
-
-#~ msgid "Unable to write to address."
-#~ msgstr "Невозможно написать на адрес."
-
-#~ msgid "queue overflow"
-#~ msgstr "Переполнение очереди"
-
 #~ msgid "'coroutine' object is not an iterator"
 #~ msgstr "Объект 'coroutine' не является итератором"
 
-#~ msgid "Buffer is too small"
-#~ msgstr "Буфер слишком мал"
-
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "Файл .mpy поврежден"
-
-#~ msgid ""
-#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
-#~ "it/mpy-update for more info."
-#~ msgstr ""
-#~ "Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. http://"
-#~ "adafru.it/mpy-update для получения дополнительной информации."
-
-#, c-format
-#~ msgid "Instruction %d shifts in more bits than pin count"
-#~ msgstr ""
-#~ "Инструкция %d вводит (shifts in) большее количество бит, чем количество "
-#~ "пинов"
-
-#, c-format
-#~ msgid "Instruction %d shifts out more bits than pin count"
-#~ msgstr ""
-#~ "Инструкция %d выводит (shifts out) большее количество бит, чем количество "
-#~ "пинов"
-
-#, c-format
-#~ msgid "Instruction %d uses extra pin"
-#~ msgstr "Инструкция %d использует дополнительный пин"
-
-#, c-format
-#~ msgid "Instruction %d waits on input outside of count"
-#~ msgstr "Инструкция %d ожидает ввода за пределами count"
-
-#, c-format
-#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
-#~ msgstr "Отсутствует first_in_pin. Инструкция %d читает состояние пина (-ов)"
-
-#, c-format
-#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
-#~ msgstr ""
-#~ "Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на пин(ы)"
-
-#, c-format
-#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
-#~ msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе пина"
-
-#, c-format
-#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
-#~ msgstr ""
-#~ "Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на пин(ы)"
-
-#, c-format
-#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
-#~ msgstr "Отсутствует first_out_pin. Инструкция %d записывает пин(ы)"
-
-#, c-format
-#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
-#~ msgstr "Отсутствует first_set_pin. Инструкция %d устанавливает пин(ы)"
-
-#, c-format
-#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
-#~ msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на пин"
-
-#~ msgid "Cannot transfer without MOSI and MISO pins"
-#~ msgstr "Невозможно передать данные без пинов MOSI и MISO"
-
-#~ msgid "Hardware busy, try alternative pins"
-#~ msgstr "Оборудование занято, попробуйте использовать другие пины"
-
-#~ msgid "Missing MISO or MOSI Pin"
-#~ msgstr "Отсутствует пин MISO или MOSI"
-
-#~ msgid "Missing MISO or MOSI pin"
-#~ msgstr "Отсутствует пин MISO или MOSI"
-
-#~ msgid "No MISO Pin"
-#~ msgstr "Нет пина MISO"
-
-#~ msgid "No MISO pin"
-#~ msgstr "Нет пина MISO"
-
-#~ msgid "No MOSI Pin"
-#~ msgstr "Нет пина MOSI"
-
-#~ msgid "No MOSI pin"
-#~ msgstr "Нет пина MOSI"
-
-#~ msgid "No RX pin"
-#~ msgstr "Нет пина RX"
-
-#~ msgid "No TX pin"
-#~ msgstr "Нет пина TX"
-
-#~ msgid "no reset pin available"
-#~ msgstr "нет доступного контакта сброса"
-
-#~ msgid "Brightness must be 0-1.0"
-#~ msgstr "Яркость должна быть в диапазоне от 0 до 1.0"
-
-#, c-format
-#~ msgid "Error in MIDI stream at position %d"
-#~ msgstr "Ошибка в MIDI-потоке на позиции %d"
-
-#, c-format
-#~ msgid "Maximum x value when mirrored is %d"
-#~ msgstr "Максимальное значение x при зеркальном отображении - %d"
-
-#~ msgid "I2SOut not available"
-#~ msgstr "I2SOut недоступен"
+#~ msgid "(x,y) integers required"
+#~ msgstr "Требуются целые числа (x,y)"
 
 #~ msgid "64 bit types"
 #~ msgstr "64-битные типы"
 
-#~ msgid "No key was specified"
-#~ msgstr "Ключ не был указан"
-
-#~ msgid "Supply at least one UART pin"
-#~ msgstr "Предоставьте хотяб один пин UART"
-
-#~ msgid "%q pin invalid"
-#~ msgstr "Пин %q не допустим"
-
-#~ msgid ""
-#~ "\n"
-#~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Пожалуйста, сообщите о проблеме, приложив содержимое вашего диска "
-#~ "CIRCUITPY на\n"
-#~ "https://github.com/adafruit/circuitpython/issues\n"
-
-#~ msgid "Attempted heap allocation when VM not running."
-#~ msgstr "Попытка выделения heap пока виртуальная машина не запущена."
-
-#~ msgid "Boot device must be first device (interface #0)."
-#~ msgstr ""
-#~ "Загрузочное устройство должно быть первым устройством (интерфейс #0)."
-
-#~ msgid "Both buttons were pressed at start up.\n"
-#~ msgstr "Обе кнопки были нажаты при загрузке.\n"
-
-#~ msgid "Button A was pressed at start up.\n"
-#~ msgstr "Кнопка A была нажата при загрузке\n"
-
-#~ msgid "CircuitPython was unable to allocate the heap."
-#~ msgstr "CircuitPython не смог выделить heap."
-
-#~ msgid "Crash into the HardFault_Handler."
-#~ msgstr "Крашнулся в HardFault_Handler."
-
-#~ msgid "Fatal error."
-#~ msgstr "Фатальная ошибка."
-
-#~ msgid "Invalid memory access."
-#~ msgstr "Неправильный доступ к памяти."
-
-#, fuzzy
-#~ msgid "Nordic system firmware failure assertion."
-#~ msgstr "Сбой системной прошивки Nordic (assertion)."
-
-#~ msgid "%q must be of type %q"
-#~ msgstr "%q должно быть типа %q"
-
-#~ msgid "%q must be of type %q or None"
-#~ msgstr "%q должно быть типа %q или None"
-
-#~ msgid "Expected a %q"
-#~ msgstr "Ожидалось(ся) %q"
-
-#~ msgid "Expected a %q or %q"
-#~ msgstr "Ожидалось %q или %q"
-
-#, fuzzy
-#~ msgid "Expected an %q"
-#~ msgstr "Ожидалось %q"
-
-#, c-format
-#~ msgid "IV must be %d bytes long"
-#~ msgstr "IV должен быть длиной %d байт"
-
-#, fuzzy
-#~ msgid "Not settable"
-#~ msgstr "Невозможно установить"
-
-#~ msgid "%q length must be >= 1"
-#~ msgstr "Длинна %q должна быть >= 1"
-
-#~ msgid "%q must be a string"
-#~ msgstr "%q должно быть строкой"
-
-#~ msgid "%q must be an int"
-#~ msgstr "%q должно быть int"
-
-#~ msgid "%q with a report ID of 0 must be of length 1"
-#~ msgstr "%q с идентификатором отчёта 0 должен иметь длину 1"
-
-#~ msgid "At most %d %q may be specified (not %d)"
-#~ msgstr "Может быть указано не более %d %q (не %d)"
-
-#~ msgid "Invalid pins"
-#~ msgstr "Недопустимые пины"
-
-#, c-format
-#~ msgid "No more than %d HID devices allowed"
-#~ msgstr "Допускается не более %d HID устройств"
-
-#~ msgid "Firmware image is invalid"
-#~ msgstr "Образ прошивки неправильный"
-
-#~ msgid "%q must be >= 0"
-#~ msgstr "%q должен быть >= 0"
-
-#~ msgid "%q must be >= 1"
-#~ msgstr "%q должен быть >= 1"
-
-#~ msgid "Expected an alarm"
-#~ msgstr "Ожидался сигнал"
-
-#~ msgid "Failed to init wifi"
-#~ msgstr "Не удалось инициировать wifi"
-
-#~ msgid "%q must be a tuple of length 2"
-#~ msgstr "%q должен быть кортежем длинной 2"
-
-#~ msgid "%q must be between %d and %d"
-#~ msgstr "%q должен быть между %d и %d"
-
-#~ msgid "%q should be an int"
-#~ msgstr "%q должен быть int"
-
-#~ msgid "(x,y) integers required"
-#~ msgstr "Требуются целые числа (x,y)"
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "ADC2 используется WiFi"
 
 #~ msgid "Address type out of range"
 #~ msgstr "Тип адреса вне диапазона"
@@ -4859,16 +4598,46 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "AnalogOut not supported on given pin"
 #~ msgstr "AnalogOut не поддерживается на данном пине"
 
+#~ msgid "At most %d %q may be specified (not %d)"
+#~ msgstr "Может быть указано не более %d %q (не %d)"
+
+#~ msgid "Attempted heap allocation when VM not running."
+#~ msgstr "Попытка выделения heap пока виртуальная машина не запущена."
+
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr ""
+#~ "Битовый тактовый генератор и выбор слова должны быть последовательными "
+#~ "пинами"
+
 #, c-format
 #~ msgid "Bit depth must be from 1 to 6 inclusive, not %d"
 #~ msgstr "Битовая глубина должна быть от 1 до 6 включительно, а не %d"
+
+#~ msgid "Boot device must be first device (interface #0)."
+#~ msgstr ""
+#~ "Загрузочное устройство должно быть первым устройством (интерфейс #0)."
+
+#~ msgid "Both buttons were pressed at start up.\n"
+#~ msgstr "Обе кнопки были нажаты при загрузке.\n"
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Яркость должна быть в диапазоне от 0 до 1.0"
+
+#~ msgid "Brightness must be between 0 and 255"
+#~ msgstr "Яркость должна быть в диапазоне от 0 до 255"
 
 #, c-format
 #~ msgid "Buffer incorrect size. Should be %d bytes."
 #~ msgstr "Неправильный размер буфера. Должен быть %d байт."
 
+#~ msgid "Buffer is too small"
+#~ msgstr "Буфер слишком мал"
+
 #~ msgid "Buffer must be at least length 1"
 #~ msgstr "Буфер должен быть размером не менее 1"
+
+#~ msgid "Button A was pressed at start up.\n"
+#~ msgstr "Кнопка A была нажата при загрузке\n"
 
 #~ msgid "Bytes must be between 0 and 255."
 #~ msgstr "Bytes должен быть в диапазоне от 0 до 255."
@@ -4882,17 +4651,26 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "Cannot reset into bootloader because no bootloader is present."
 #~ msgstr "Невозможно перезагрузится в загрузчик так как он отсутствует."
 
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "Невозможно передать данные без пинов MOSI и MISO"
+
 #~ msgid "Cannot transfer without MOSI and MISO pins."
 #~ msgstr "Передача данных невозможна без пинов MOSI и MISO."
 
 #~ msgid "Cannot write without MOSI pin."
 #~ msgstr "Запись невозможна без пина MOSI."
 
+#~ msgid "CircuitPython was unable to allocate the heap."
+#~ msgstr "CircuitPython не смог выделить heap."
+
 #~ msgid "Clock pin init failed."
 #~ msgstr "Не удалось инициализировать пин Clock."
 
 #~ msgid "Command must be an int between 0 and 255"
 #~ msgstr "Команда должна быть целым числом (int) от 0 до 255"
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Файл .mpy поврежден"
 
 #~ msgid "Could not initialize Camera"
 #~ msgstr "Не удалось инициализировать камеру"
@@ -4924,8 +4702,28 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "Couldn't allocate second buffer"
 #~ msgstr "Не удалось выделить второй буфер"
 
+#~ msgid "Crash into the HardFault_Handler."
+#~ msgstr "Крашнулся в HardFault_Handler."
+
 #~ msgid "DigitalInOut not supported on given pin"
 #~ msgstr "DigitalInOut не поддерживается на данном пине"
+
+#, c-format
+#~ msgid "Error in MIDI stream at position %d"
+#~ msgstr "Ошибка в MIDI-потоке на позиции %d"
+
+#~ msgid "Expected a %q"
+#~ msgstr "Ожидалось(ся) %q"
+
+#~ msgid "Expected a %q or %q"
+#~ msgstr "Ожидалось %q или %q"
+
+#, fuzzy
+#~ msgid "Expected an %q"
+#~ msgstr "Ожидалось %q"
+
+#~ msgid "Expected an alarm"
+#~ msgstr "Ожидался сигнал"
 
 #, c-format
 #~ msgid "Expected tuple of length %d, got %d"
@@ -4938,15 +4736,64 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "Failed to allocate RX buffer of %d bytes"
 #~ msgstr "Не удалось выделить буфер RX размером %d байт"
 
+#~ msgid "Failed to init wifi"
+#~ msgstr "Не удалось инициировать wifi"
+
+#~ msgid "Fatal error."
+#~ msgstr "Фатальная ошибка."
+
+#~ msgid "Firmware image is invalid"
+#~ msgstr "Образ прошивки неправильный"
+
 #, c-format
 #~ msgid "Framebuffer requires %d bytes"
 #~ msgstr "Фреймбуфер требует %d байт"
+
+#~ msgid "Hardware busy, try alternative pins"
+#~ msgstr "Оборудование занято, попробуйте использовать другие пины"
 
 #~ msgid "Hostname must be between 1 and 253 characters"
 #~ msgstr "Имя хоста должно содержать от 1 до 253 символов"
 
 #~ msgid "I2C Init Error"
 #~ msgstr "Ошибка инициализации I2C"
+
+#~ msgid "I2SOut not available"
+#~ msgstr "I2SOut недоступен"
+
+#, c-format
+#~ msgid "IV must be %d bytes long"
+#~ msgstr "IV должен быть длиной %d байт"
+
+#~ msgid ""
+#~ "Incompatible .mpy file. Please update all .mpy files. See http://adafru."
+#~ "it/mpy-update for more info."
+#~ msgstr ""
+#~ "Несовместимый файл .mpy. Пожалуйста, обновите все файлы .mpy. См. http://"
+#~ "adafru.it/mpy-update для получения дополнительной информации."
+
+#~ msgid "Initialization failed due to lack of memory"
+#~ msgstr "Инициализация не удалась из-за нехватки памяти"
+
+#, c-format
+#~ msgid "Instruction %d shifts in more bits than pin count"
+#~ msgstr ""
+#~ "Инструкция %d вводит (shifts in) большее количество бит, чем количество "
+#~ "пинов"
+
+#, c-format
+#~ msgid "Instruction %d shifts out more bits than pin count"
+#~ msgstr ""
+#~ "Инструкция %d выводит (shifts out) большее количество бит, чем количество "
+#~ "пинов"
+
+#, c-format
+#~ msgid "Instruction %d uses extra pin"
+#~ msgstr "Инструкция %d использует дополнительный пин"
+
+#, c-format
+#~ msgid "Instruction %d waits on input outside of count"
+#~ msgstr "Инструкция %d ожидает ввода за пределами count"
 
 #~ msgid "Invalid %q pin selection"
 #~ msgstr "Неверный выбор пина %q"
@@ -4956,6 +4803,9 @@ msgstr "zi должен иметь форму (n_section, 2)"
 
 #~ msgid "Invalid BMP file"
 #~ msgstr "Неправилный файл BMP"
+
+#~ msgid "Invalid CIRCUITPY_PYSTACK_SIZE\n"
+#~ msgstr "Недопустимый CIRCUITPY_PYSTACK_SIZE\n"
 
 #~ msgid "Invalid DAC pin supplied"
 #~ msgstr "Передан неверный пин ЦАП"
@@ -4991,6 +4841,9 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "Invalid file"
 #~ msgstr "Неверный файл"
 
+#~ msgid "Invalid memory access."
+#~ msgstr "Неправильный доступ к памяти."
+
 #~ msgid "Invalid number of bits"
 #~ msgstr "Неверное количество бит"
 
@@ -5005,6 +4858,9 @@ msgstr "zi должен иметь форму (n_section, 2)"
 
 #~ msgid "Invalid pin for right channel"
 #~ msgstr "Недопустимый пин для правого канала"
+
+#~ msgid "Invalid pins"
+#~ msgstr "Недопустимые пины"
 
 #~ msgid "Invalid polarity"
 #~ msgstr "Неправильная полярность"
@@ -5042,12 +4898,74 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "MOSI pin init failed."
 #~ msgstr "Не удалось инициализировать пин MOSI."
 
+#, c-format
+#~ msgid "Maximum x value when mirrored is %d"
+#~ msgstr "Максимальное значение x при зеркальном отображении - %d"
+
 #~ msgid "Messages limited to 8 bytes"
 #~ msgstr "Сообщения ограничены 8 байтами"
+
+#~ msgid "Missing MISO or MOSI Pin"
+#~ msgstr "Отсутствует пин MISO или MOSI"
+
+#~ msgid "Missing MISO or MOSI pin"
+#~ msgstr "Отсутствует пин MISO или MOSI"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d reads pin(s)"
+#~ msgstr "Отсутствует first_in_pin. Инструкция %d читает состояние пина (-ов)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d shifts in from pin(s)"
+#~ msgstr ""
+#~ "Отсутствует first_out_pin. Инструкция %d вводит (shifts out) на пин(ы)"
+
+#, c-format
+#~ msgid "Missing first_in_pin. Instruction %d waits based on pin"
+#~ msgstr "Отсутствует first_in_pin. Инструкция %d ожидает на основе пина"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d shifts out to pin(s)"
+#~ msgstr ""
+#~ "Отсутствует first_out_pin. Инструкция %d выводит (shifts out) на пин(ы)"
+
+#, c-format
+#~ msgid "Missing first_out_pin. Instruction %d writes pin(s)"
+#~ msgstr "Отсутствует first_out_pin. Инструкция %d записывает пин(ы)"
+
+#, c-format
+#~ msgid "Missing first_set_pin. Instruction %d sets pin(s)"
+#~ msgstr "Отсутствует first_set_pin. Инструкция %d устанавливает пин(ы)"
+
+#, c-format
+#~ msgid "Missing jmp_pin. Instruction %d jumps on pin"
+#~ msgstr "Отсутствует jmp_pin. Инструкция %d перепрыгивает на пин"
 
 #, c-format
 #~ msgid "More than %d report ids not supported"
 #~ msgstr "Не поддерживается более %d идентификаторов отчетов (report ids)"
+
+#, c-format
+#~ msgid "No I2C device at address: %x"
+#~ msgstr "Нет устройства I2C по адресу: %x"
+
+#~ msgid "No MISO Pin"
+#~ msgstr "Нет пина MISO"
+
+#~ msgid "No MISO pin"
+#~ msgstr "Нет пина MISO"
+
+#~ msgid "No MOSI Pin"
+#~ msgstr "Нет пина MOSI"
+
+#~ msgid "No MOSI pin"
+#~ msgstr "Нет пина MOSI"
+
+#~ msgid "No RX pin"
+#~ msgstr "Нет пина RX"
+
+#~ msgid "No TX pin"
+#~ msgstr "Нет пина TX"
 
 #~ msgid "No hardware support on clk pin"
 #~ msgstr "Отсутствует аппаратная поддержка пина clk"
@@ -5055,25 +4973,121 @@ msgstr "zi должен иметь форму (n_section, 2)"
 #~ msgid "No hardware support on pin"
 #~ msgstr "Отсутствует аппаратная поддержка на пине"
 
+#~ msgid "No key was specified"
+#~ msgstr "Ключ не был указан"
+
+#, c-format
+#~ msgid "No more than %d HID devices allowed"
+#~ msgstr "Допускается не более %d HID устройств"
+
+#, fuzzy
+#~ msgid "Nordic system firmware failure assertion."
+#~ msgstr "Сбой системной прошивки Nordic (assertion)."
+
+#, fuzzy
+#~ msgid "Not settable"
+#~ msgstr "Невозможно установить"
+
+#~ msgid "Only 8 or 16 bit mono with "
+#~ msgstr "Только 8- или 16-битное моно с "
+
 #~ msgid "Pin count must be at least 1"
 #~ msgstr "Количество пинов должно быть не менее 1"
 
 #~ msgid "Pin does not have ADC capabilities"
 #~ msgstr "Пин не имеет возможности АЦП"
 
+#~ msgid "RAISE mode is not implemented"
+#~ msgstr "Режим RAISE не реализован"
+
 #~ msgid "Set pin count must be between 1 and 5"
 #~ msgstr "Число Set пинов должно быть от 1 до 5"
 
-#~ msgid ""
-#~ "\n"
-#~ "Code stopped by auto-reload.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Программа остановлена автоматической перезагрузкой.\n"
+#~ msgid "Splitting with sub-captures"
+#~ msgstr "Разделение с помощью субзахватов"
 
-#~ msgid "Brightness must be between 0 and 255"
-#~ msgstr "Яркость должна быть в диапазоне от 0 до 255"
+#~ msgid "Supply at least one UART pin"
+#~ msgstr "Предоставьте хотяб один пин UART"
+
+#~ msgid "Unable to allocate the heap."
+#~ msgstr "Невозможно выделить кучу."
 
 #, c-format
-#~ msgid "No I2C device at address: %x"
-#~ msgstr "Нет устройства I2C по адресу: %x"
+#~ msgid "Unable to configure ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Невозможно настроить контроллер ADC DMA, код ошибки:%d"
+
+#, c-format
+#~ msgid "Unable to initialize ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Невозможно инициализировать контроллер ADC DMA, код ошибки:%d"
+
+#, c-format
+#~ msgid "Unable to start ADC DMA controller, ErrorCode:%d"
+#~ msgstr "Не удается запустить контроллер ADC DMA, код ошибки:%d"
+
+#~ msgid "Unable to write to address."
+#~ msgstr "Невозможно написать на адрес."
+
+#~ msgid "WatchDogTimer is not currently running"
+#~ msgstr "Таймер Watch Dog в настоящее время не работает"
+
+#~ msgid "WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"
+#~ msgstr ""
+#~ "WatchDogTimer.mode не может быть изменен после установки значения "
+#~ "WatchDogMode.RESET"
+
+#~ msgid "__init__() should return None, not '%q'"
+#~ msgstr "__init__() должен возвращать None, а не '%q'"
+
+#~ msgid "attributes not supported yet"
+#~ msgstr "Атрибуты пока не поддерживаются"
+
+#~ msgid "can't do truncated division of a complex number"
+#~ msgstr "Не могу сделать усеченное деление комплексного числа"
+
+#~ msgid "cannot import name %q"
+#~ msgstr "Не удается импортировать имя %Q"
+
+#~ msgid "cannot unambiguously get sizeof scalar"
+#~ msgstr "не может однозначно получить размер скаляра"
+
+#~ msgid ""
+#~ "espcamera.Camera requires reserved PSRAM to be configured. See the "
+#~ "documentation for instructions."
+#~ msgstr ""
+#~ "espcamera.Для настройки камеры требуется зарезервированная PSRAM. "
+#~ "Инструкции см. в документации."
+
+#~ msgid "invalid architecture"
+#~ msgstr "Недопустимая архитектура"
+
+#~ msgid "keyword argument(s) not yet implemented - use normal args instead"
+#~ msgstr ""
+#~ "Аргументы ключевого слова еще не реализованы - вместо этого используйте "
+#~ "обычные аргументы"
+
+#~ msgid "length argument not allowed for this type"
+#~ msgstr "аргумент длины не допускается для этого типа"
+
+#~ msgid "no reset pin available"
+#~ msgstr "нет доступного контакта сброса"
+
+#~ msgid "offset out of bounds"
+#~ msgstr "Смещение за пределы"
+
+#~ msgid "queue overflow"
+#~ msgstr "Переполнение очереди"
+
+#~ msgid "slice step can't be zero"
+#~ msgstr "Шаг среза не может быть равен нулю"
+
+#~ msgid "string not supported; use bytes or bytearray"
+#~ msgstr "строка не поддерживается; Использование байтов или массива байтов"
+
+#~ msgid "unsupported type for %q: '%q'"
+#~ msgstr "Неподдерживаемый тип для %q: '%q'"
+
+#~ msgid "watchdog not initialized"
+#~ msgstr "Сторожевой таймер не инициализирован"
+
+#~ msgid "xTaskCreate failed"
+#~ msgstr "x Создать задачу не удалось"

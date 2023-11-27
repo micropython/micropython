@@ -83,42 +83,12 @@ msgstr " έξοδος:\n"
 msgid "%%c requires int or char"
 msgstr "%%c απαιτεί ακέραιο ή χαρακτήρα"
 
-#: main.c
-#, c-format
-msgid "%02X"
-msgstr "%02X"
-
-#: shared-module/os/getenv.c
-#, c-format
-msgid "%S"
-msgstr ""
-
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
 msgstr ""
 "%d pin διεύθυνσης, %d rgb ping και %d πλακίδια αναδεικνύουν ύψος %d, όχι %d"
-
-#: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/audiobusio/I2SOut.c
-#: ports/espressif/common-hal/rtc/RTC.c
-#: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
-#: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c
-#: ports/nrf/common-hal/audiobusio/I2SOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
-#: ports/raspberrypi/common-hal/analogio/AnalogOut.c
-#: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
-#: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
-#: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
-#: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
-#: shared-bindings/keypad/KeyMatrix.c shared-bindings/keypad/Keys.c
-#: shared-bindings/keypad/ShiftRegisterKeys.c
-msgid "%q"
-msgstr "%q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -301,11 +271,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
-
-#: py/runtime.c
-#, c-format
-msgid "%s"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -789,7 +754,8 @@ msgstr "Δεν μπορούν να αλλάξουν οι USB συσκευές τ
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
-msgstr "Δεν μπορεί να δημιουργηθεί νέο Adapter; χρησιμοποιείστε _bleio.adapter;"
+msgstr ""
+"Δεν μπορεί να δημιουργηθεί νέο Adapter; χρησιμοποιείστε _bleio.adapter;"
 
 #: shared-bindings/displayio/Bitmap.c
 #: shared-bindings/memorymonitor/AllocationSize.c
@@ -1628,7 +1594,8 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-msgid "Only 8 or 16 bit mono with "
+#, c-format
+msgid "Only 8 or 16 bit mono with %dx oversampling supported."
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/__init__.c
@@ -4427,53 +4394,6 @@ msgstr ""
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
 
-#~ msgid "'await', 'async for' or 'async with' outside async function"
-#~ msgstr "'await', 'async for' ή 'async with' εκτός ασύνχρονης συνάρτησης"
-
-#~ msgid "'break' outside loop"
-#~ msgstr "'break' εκτός επανάληψης"
-
-#~ msgid "'continue' outside loop"
-#~ msgstr "'continue' εκτός επανάληψης"
-
-#~ msgid "Bit clock and word select must be sequential pins"
-#~ msgstr "Ρολόι bit και word select πρέπει να είναι διαδοχικά pins"
-
-#~ msgid "ADC2 is being used by WiFi"
-#~ msgstr "Το ADC2 χρησιμοποιείται απο το WIFI"
-
-#~ msgid ""
-#~ "\n"
-#~ "Please file an issue with your program at https://github.com/adafruit/"
-#~ "circuitpython/issues."
-#~ msgstr ""
-#~ "\n"
-#~ "Παρακαλώ δημιουργήστε ένα πρόβλημα στο https://github.com/adafruit/"
-#~ "circuitpython/issues με το πρόγραμμά σας."
-
-#~ msgid "'coroutine' object is not an iterator"
-#~ msgstr ""
-#~ "'coroutine' αντικείμενο δεν μπορεί να χρησιμοποιηθεί σαν επαναλήπτης"
-
-#~ msgid "Buffer is too small"
-#~ msgstr "Πολύ μικρό buffer"
-
-#~ msgid "Corrupt .mpy file"
-#~ msgstr "Κατεστραμένο .mpy αρχείο"
-
-#~ msgid "Cannot transfer without MOSI and MISO pins"
-#~ msgstr "Δεν μπορεί να γίνει μεταφορά χωρίς MOSI και MISO pins"
-
-#~ msgid "Brightness must be 0-1.0"
-#~ msgstr "Η φωτινότητα πρέπει να είναι μεταξύ 0-1.0"
-
-#, fuzzy
-#~ msgid "64 bit types"
-#~ msgstr "64 bit τύποι"
-
-#~ msgid "%q pin invalid"
-#~ msgstr "%q άκυρο pin"
-
 #~ msgid ""
 #~ "\n"
 #~ "Please file an issue with the contents of your CIRCUITPY drive at \n"
@@ -4484,26 +4404,30 @@ msgstr ""
 #~ "στο\n"
 #~ "https://github.com/adafruit/circuitpython/issues\n"
 
-#~ msgid "Attempted heap allocation when VM not running."
-#~ msgstr "Προσπάθεια δέσμευσης heap όταν το VM δεν τρέχει."
+#~ msgid ""
+#~ "\n"
+#~ "Please file an issue with your program at https://github.com/adafruit/"
+#~ "circuitpython/issues."
+#~ msgstr ""
+#~ "\n"
+#~ "Παρακαλώ δημιουργήστε ένα πρόβλημα στο https://github.com/adafruit/"
+#~ "circuitpython/issues με το πρόγραμμά σας."
 
-#~ msgid "Boot device must be first device (interface #0)."
-#~ msgstr "Η συσκευή boot πρέπει να είναι η πρώτη συσκευή (interface #0)."
+#, c-format
+#~ msgid "%02X"
+#~ msgstr "%02X"
 
-#~ msgid "CircuitPython was unable to allocate the heap."
-#~ msgstr "Η CircuitPython δεν μπορέσε να δεσμεύσει το heap."
-
-#~ msgid "Crash into the HardFault_Handler."
-#~ msgstr "Κατέρευσε μέσα στο HardFault_Handler."
-
-#~ msgid "%q must be of type %q"
-#~ msgstr "%q πρέπει να είναι τύπου %q"
-
-#~ msgid "%q must be of type %q or None"
-#~ msgstr "%q πρέπει να είναι τύπου %q ή None"
+#~ msgid "%q"
+#~ msgstr "%q"
 
 #~ msgid "%q length must be >= 1"
 #~ msgstr "%q μήκος πρέπει να είναι >= 1"
+
+#~ msgid "%q must be >= 0"
+#~ msgstr "%q πρέπει να είναι >= 0"
+
+#~ msgid "%q must be >= 1"
+#~ msgstr "%q πρέπει να είναι >= 1"
 
 #~ msgid "%q must be a string"
 #~ msgstr "%q πρέπει να είναι string"
@@ -4511,14 +4435,64 @@ msgstr ""
 #~ msgid "%q must be an int"
 #~ msgstr "%q πρέπει να είναι int"
 
+#~ msgid "%q must be of type %q"
+#~ msgstr "%q πρέπει να είναι τύπου %q"
+
+#~ msgid "%q must be of type %q or None"
+#~ msgstr "%q πρέπει να είναι τύπου %q ή None"
+
+#~ msgid "%q pin invalid"
+#~ msgstr "%q άκυρο pin"
+
 #~ msgid "%q with a report ID of 0 must be of length 1"
 #~ msgstr "%q με ID αναφοράς 0 πρέπει να έχει μήκος 1"
+
+#~ msgid "'await', 'async for' or 'async with' outside async function"
+#~ msgstr "'await', 'async for' ή 'async with' εκτός ασύνχρονης συνάρτησης"
+
+#~ msgid "'break' outside loop"
+#~ msgstr "'break' εκτός επανάληψης"
+
+#~ msgid "'continue' outside loop"
+#~ msgstr "'continue' εκτός επανάληψης"
+
+#~ msgid "'coroutine' object is not an iterator"
+#~ msgstr ""
+#~ "'coroutine' αντικείμενο δεν μπορεί να χρησιμοποιηθεί σαν επαναλήπτης"
+
+#, fuzzy
+#~ msgid "64 bit types"
+#~ msgstr "64 bit τύποι"
+
+#~ msgid "ADC2 is being used by WiFi"
+#~ msgstr "Το ADC2 χρησιμοποιείται απο το WIFI"
 
 #~ msgid "At most %d %q may be specified (not %d)"
 #~ msgstr "Το πολύ %d %q μπορεί να είναι καθορισμένα (όχι %d)"
 
-#~ msgid "%q must be >= 0"
-#~ msgstr "%q πρέπει να είναι >= 0"
+#~ msgid "Attempted heap allocation when VM not running."
+#~ msgstr "Προσπάθεια δέσμευσης heap όταν το VM δεν τρέχει."
 
-#~ msgid "%q must be >= 1"
-#~ msgstr "%q πρέπει να είναι >= 1"
+#~ msgid "Bit clock and word select must be sequential pins"
+#~ msgstr "Ρολόι bit και word select πρέπει να είναι διαδοχικά pins"
+
+#~ msgid "Boot device must be first device (interface #0)."
+#~ msgstr "Η συσκευή boot πρέπει να είναι η πρώτη συσκευή (interface #0)."
+
+#~ msgid "Brightness must be 0-1.0"
+#~ msgstr "Η φωτινότητα πρέπει να είναι μεταξύ 0-1.0"
+
+#~ msgid "Buffer is too small"
+#~ msgstr "Πολύ μικρό buffer"
+
+#~ msgid "Cannot transfer without MOSI and MISO pins"
+#~ msgstr "Δεν μπορεί να γίνει μεταφορά χωρίς MOSI και MISO pins"
+
+#~ msgid "CircuitPython was unable to allocate the heap."
+#~ msgstr "Η CircuitPython δεν μπορέσε να δεσμεύσει το heap."
+
+#~ msgid "Corrupt .mpy file"
+#~ msgstr "Κατεστραμένο .mpy αρχείο"
+
+#~ msgid "Crash into the HardFault_Handler."
+#~ msgstr "Κατέρευσε μέσα στο HardFault_Handler."

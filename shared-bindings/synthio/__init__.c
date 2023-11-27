@@ -304,6 +304,11 @@ STATIC mp_obj_t voct_to_hz(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_voct_to_hz_obj, voct_to_hz);
 
+//|
+//| waveform_max_length: int
+//| """The maximum number of samples permitted in a waveform"""
+//|
+
 #if CIRCUITPY_AUDIOCORE_DEBUG
 STATIC mp_obj_t synthio_lfo_tick(size_t n, const mp_obj_t *args) {
     shared_bindings_synthio_lfo_tick(48000);
@@ -333,6 +338,7 @@ STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_midi_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
     { MP_ROM_QSTR(MP_QSTR_voct_to_hz), MP_ROM_PTR(&synthio_voct_to_hz_obj) },
+    { MP_ROM_QSTR(MP_QSTR_waveform_max_length), MP_ROM_INT(SYNTHIO_WAVEFORM_SIZE) },
     #if CIRCUITPY_AUDIOCORE_DEBUG
     { MP_ROM_QSTR(MP_QSTR_lfo_tick), MP_ROM_PTR(&synthio_lfo_tick_obj) },
     #endif

@@ -173,12 +173,15 @@ static const uint64_t pin_mask_reset_forbidden =
     GPIO_SEL_23 |
     GPIO_SEL_24 |
     #endif
-    #endif // ESP32C6
+    #endif // ESP32H2
 
     #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32S3)
-    // Never ever reset pins used to communicate with SPI flash and PSRAM.
+    #if CIRCUITPY_USB
+    // Never ever reset USB pins.
     GPIO_SEL_19 |         // USB D-
     GPIO_SEL_20 |         // USB D+
+    #endif
+    // Never ever reset pins used to communicate with SPI flash and PSRAM.
     #if defined(CONFIG_ESP32_SPIRAM_SUPPORT) || defined(CONFIG_ESP32S2_SPIRAM_SUPPORT) || defined(CONFIG_ESP32S3_SPIRAM_SUPPORT)
     // Note ESP32-C3 does not have SPIRAM support.
     // Board uses PSRAM, and needs another chip select.
@@ -197,11 +200,6 @@ static const uint64_t pin_mask_reset_forbidden =
     GPIO_SEL_35 |         // SPIIO6
     GPIO_SEL_36 |         // SPIIO7
     GPIO_SEL_37 |         // SPIDQS
-    #endif
-    #if CIRCUITPY_USB
-    // Never ever reset USB pins.
-    GPIO_SEL_19 |         // USB D-
-    GPIO_SEL_20 |         // USB D+
     #endif
     #if defined(CONFIG_ESP_CONSOLE_UART_DEFAULT) && CONFIG_ESP_CONSOLE_UART_DEFAULT && CONFIG_ESP_CONSOLE_UART_NUM == 0
     // Don't reset/use the IDF UART console.
