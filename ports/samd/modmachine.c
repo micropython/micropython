@@ -59,9 +59,6 @@
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
     MICROPY_PY_MACHINE_RTC_ENTRY \
     \
-    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) }, \
-    \
     /* Class constants. */ \
     /* Use numerical constants instead of the symbolic names, */ \
     /* since the names differ between SAMD21 and SAMD51. */ \
@@ -110,19 +107,6 @@ STATIC mp_obj_t mp_machine_unique_id(void) {
 STATIC void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
 }
-
-STATIC mp_obj_t machine_disable_irq(void) {
-    uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();
-    return mp_obj_new_int(state);
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
-
-STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
-    uint32_t state = mp_obj_get_int(state_in);
-    MICROPY_END_ATOMIC_SECTION(state);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 STATIC mp_int_t mp_machine_reset_cause(void) {
     #if defined(MCU_SAMD21)
