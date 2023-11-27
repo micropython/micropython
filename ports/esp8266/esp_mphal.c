@@ -166,6 +166,21 @@ void mp_hal_signal_dupterm_input(void) {
     system_os_post(DUPTERM_TASK_ID, 0, 0);
 }
 
+// this bit is unused in the Xtensa PS register
+#define ETS_LOOP_ITER_BIT (12)
+
+uint32_t esp_disable_irq(void) {
+    uint32_t state = disable_irq();
+    state = (state & ~(1 << ETS_LOOP_ITER_BIT)) | (ets_loop_iter_disable << ETS_LOOP_ITER_BIT);
+    ets_loop_iter_disable = 1;
+    return state;
+}
+
+void esp_enable_irq(uint32_t state) {
+    ets_loop_iter_disable = (state >> ETS_LOOP_ITER_BIT) & 1;
+    enable_irq(state & ~(1 << ETS_LOOP_ITER_BIT));
+}
+
 // Get pointer to esf_buf bookkeeping structure
 void *ets_get_esf_buf_ctlblk(void) {
     // Get literal ptr before start of esf_rx_buf_alloc func

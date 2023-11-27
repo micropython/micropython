@@ -126,9 +126,8 @@
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL
 
-#include "xtirq.h"
-#define MICROPY_BEGIN_ATOMIC_SECTION() disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state) enable_irq(state)
+#define MICROPY_BEGIN_ATOMIC_SECTION() esp_disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state) esp_enable_irq(state)
 
 // type definitions for the specific machine
 
@@ -173,3 +172,6 @@ extern const struct _mp_print_t mp_debug_print;
 #define WDEV_HWRNG ((volatile uint32_t *)0x3ff20e44)
 
 #define _assert(expr) ((expr) ? (void)0 : __assert_func(__FILE__, __LINE__, __func__, #expr))
+
+uint32_t esp_disable_irq(void);
+void esp_enable_irq(uint32_t state);
