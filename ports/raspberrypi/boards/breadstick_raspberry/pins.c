@@ -39,9 +39,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_APA102_SCK), MP_ROM_PTR(&pin_GPIO16) },
     { MP_ROM_QSTR(MP_QSTR_DOTSTAR_CLOCK), MP_ROM_PTR(&pin_GPIO16) },
 
-    // I2C pins
+    // I2C pins for IMU
     { MP_ROM_QSTR(MP_QSTR_IMU_SDA), MP_ROM_PTR(&pin_GPIO12) }, // I2C0-SDA
-    { MP_ROM_QSTR(MP_QSTR_IMU_SCL), MP_ROM_PTR(&pin_GPIO13) }, // I2C0-SCL to imu
+    { MP_ROM_QSTR(MP_QSTR_IMU_SCL), MP_ROM_PTR(&pin_GPIO13) }, // I2C0-SCL
 
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO22) }, // I2C1-SDA
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO23) }, // I2C1-SCL
@@ -49,7 +49,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     // SPI pins
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO11) }, // SPI1-TX
     { MP_ROM_QSTR(MP_QSTR_SCK), MP_ROM_PTR(&pin_GPIO10) }, // SPI1-SCK
-    { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_GPIO9) }, // SPI1-CSn  --- double check
+    { MP_ROM_QSTR(MP_QSTR_CS), MP_ROM_PTR(&pin_GPIO9) }, // SPI1-CSn
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_GPIO8) }, // SPI1-RX
 
     // UART pins
