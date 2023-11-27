@@ -43,9 +43,6 @@
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&machine_lightsleep_obj) }, \
     \
-    { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) }, \
-    { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) }, \
-    \
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&pyb_rtc_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&esp_timer_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Pin), MP_ROM_PTR(&pyb_pin_type) }, \
@@ -330,25 +327,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     print, esp_timer_print,
     locals_dict, &esp_timer_locals_dict
     );
-
-// this bit is unused in the Xtensa PS register
-#define ETS_LOOP_ITER_BIT (12)
-
-STATIC mp_obj_t machine_disable_irq(void) {
-    uint32_t state = disable_irq();
-    state = (state & ~(1 << ETS_LOOP_ITER_BIT)) | (ets_loop_iter_disable << ETS_LOOP_ITER_BIT);
-    ets_loop_iter_disable = 1;
-    return mp_obj_new_int(state);
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
-
-STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
-    uint32_t state = mp_obj_get_int(state_in);
-    ets_loop_iter_disable = (state >> ETS_LOOP_ITER_BIT) & 1;
-    enable_irq(state & ~(1 << ETS_LOOP_ITER_BIT));
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 // Custom version of this function that feeds system WDT if necessary
 mp_uint_t machine_time_pulse_us(mp_hal_pin_obj_t pin, int pulse_level, mp_uint_t timeout_us) {
