@@ -4,7 +4,10 @@ USB_PRODUCT = "stm32f411ce blackpill"
 USB_MANUFACTURER = "WeAct"
 
 # SPI_FLASH_FILESYSTEM = 1
-# EXTERNAL_FLASH_DEVICES = xxxxxx #See supervisor/shared/external_flash/devices.h for options
+
+# See supervisor/shared/external_flash/devices.h for options
+# EXTERNAL_FLASH_DEVICES = xxxxxx
+
 # LONGINT_IMPL = MPZ
 
 INTERNAL_FLASH_FILESYSTEM = 1
