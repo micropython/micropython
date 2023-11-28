@@ -12,9 +12,8 @@ To list supported modules, please enter::
 
     help('modules')
 
-Especially `machine` module and class :ref:`machine.Pin <machine.Pin>` are very important for using
-peripherals. Note that prefix 'u' is added to the module for MicroPython,
-so you can see "umachine" in the list but you can use it like "import machine".
+Especially `machine` module and class :ref:`machine.Pin <machine.Pin>` are very
+important for using peripherals.
 
 Using "from machine import Pin", Pin name is available corresponding to
 the RA MCU's pin name which are Pin.cpu.P000 and 'P000'.

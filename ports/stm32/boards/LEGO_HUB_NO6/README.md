@@ -24,7 +24,7 @@ The built-in bootloader has some drawbacks: it cannot be entered programmaticall
 and it does not keep the Hub powered up when running from battery (which requires
 keeping BAT_PWR_EN high).  As such, this board is configured to work with mboot as
 a secondary bootloader: mboot is placed at 0x08008000 and the main application
-firmware at 0x08010000.  When mboot is installed it can be entered programatically
+firmware at 0x08010000.  When mboot is installed it can be entered programmatically
 via machine.bootloader(), or by holding down the left arrow button when powering
 on the Hub and waiting until the display says "B" before releasing the button.
 

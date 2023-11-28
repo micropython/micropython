@@ -135,3 +135,13 @@ For more info, see https://www.winehq.org/docs/wineusr-guide/cui-programs .
 If built without line editing and history capabilities
 (MICROPY_USE_READLINE=0), the resulting binary can be run using the standard
 `wine` tool.
+
+
+Generating the icon file
+------------------------
+The windows builds use a .ico file for the executable logo.
+To generate such file from a .png file use ImageMagick, as was done for the icons in the logo/ directory:
+
+    magick convert vector-logo-2.png -define icon:auto-resize="256,128,96,64,48,32,16" vector-logo-2.ico
+
+Note that for versions prior to 7.0 the command is `convert` instead of `magick convert`.

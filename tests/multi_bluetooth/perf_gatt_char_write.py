@@ -128,7 +128,7 @@ def instance1():
             ticks_end = time.ticks_ms()
             ticks_total = time.ticks_diff(ticks_end, ticks_start)
 
-            print(
+            multitest.output_metric(
                 "Did {} writes in {} ms. {} ms/write, {} bytes/sec".format(
                     _NUM_NOTIFICATIONS,
                     ticks_total,

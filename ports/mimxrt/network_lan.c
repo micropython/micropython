@@ -28,7 +28,7 @@
 #include "py/mphal.h"
 #include "extmod/modnetwork.h"
 
-#if defined(MICROPY_HW_ETH_MDC)
+#if defined(IOMUX_TABLE_ENET)
 
 #include "fsl_phy.h"
 #include "eth.h"
@@ -264,4 +264,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 
-#endif // defined(MICROPY_HW_ETH_MDC)
+#endif // defined(IOMUX_TABLE_ENET)

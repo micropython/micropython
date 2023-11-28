@@ -451,7 +451,7 @@ STATIC size_t tl_check_msg(volatile tl_list_node_t *head, unsigned int ch, parse
         LL_C1_IPCC_ClearFlag_CHx(IPCC, ch);
 
         if (ch == IPCC_CH_BLE) {
-            // Renable IRQs for BLE now that we've cleared the flag.
+            // Re-enable IRQs for BLE now that we've cleared the flag.
             LL_C1_IPCC_EnableReceiveChannel(IPCC, IPCC_CH_BLE);
         }
     }
@@ -534,11 +534,22 @@ void rfcore_init(void) {
     // Ensure LSE is running
     rtc_init_finalise();
 
+    // In case we're waking from deepsleep, enforce core synchronisation
+    __HAL_RCC_HSEM_CLK_ENABLE();
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_PWR_STANDBY_SEMID)) {
+    }
+
     // Select LSE as RF wakeup source
     RCC->CSR = (RCC->CSR & ~RCC_CSR_RFWKPSEL) | 1 << RCC_CSR_RFWKPSEL_Pos;
 
     // Initialise IPCC and shared memory structures
     ipcc_init(IRQ_PRI_SDIO);
+
+    // When the device is out of standby, it is required to use the EXTI mechanism to wakeup CPU2
+    LL_C2_EXTI_EnableEvent_32_63(LL_EXTI_LINE_41);
+    LL_EXTI_EnableRisingTrig_32_63(LL_EXTI_LINE_41);
+
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_PWR_STANDBY_SEMID, 0);
 
     // Boot the second core
     __SEV();
@@ -589,16 +600,36 @@ static const struct {
 void rfcore_ble_init(void) {
     DEBUG_printf("rfcore_ble_init\n");
 
-    // Clear any outstanding messages from ipcc_init.
-    tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
-
     // Configure and reset the BLE controller.
-    tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params), 0);
-    tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), NULL, 0);
+    if (!rfcore_ble_reset()) {
+        // ble init can fail if core2 has previously locked up. Reset HSI & rfcore to retry.
+        LL_RCC_HSI_Disable();
+        mp_hal_delay_ms(100);
+        LL_RCC_HSI_Enable();
+
+        rfcore_init();
+        rfcore_ble_reset();
+    }
 
     // Enable PES rather than SEM7 to moderate flash access between the cores.
     uint8_t buf = 0; // FLASH_ACTIVITY_CONTROL_PES
     tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_C2_SET_FLASH_ACTIVITY_CONTROL), &buf, 1, 0);
+}
+
+bool rfcore_ble_reset(void) {
+    DEBUG_printf("rfcore_ble_reset\n");
+
+    // Clear any outstanding messages from ipcc_init.
+    tl_check_msg(&ipcc_mem_sys_queue, IPCC_CH_SYS, NULL);
+
+    // Configure and reset the BLE controller.
+    int ret = tl_sys_hci_cmd_resp(HCI_OPCODE(OGF_VENDOR, OCF_BLE_INIT), (const uint8_t *)&ble_init_params, sizeof(ble_init_params), 500);
+
+    if (ret == -MP_ETIMEDOUT) {
+        return false;
+    }
+    tl_ble_hci_cmd_resp(HCI_OPCODE(0x03, 0x0003), NULL, 0);
+    return true;
 }
 
 void rfcore_ble_hci_cmd(size_t len, const uint8_t *src) {

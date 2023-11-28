@@ -85,7 +85,7 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
 
 STATIC void uni_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
-    #if MICROPY_PY_UJSON
+    #if MICROPY_PY_JSON
     if (kind == PRINT_JSON) {
         mp_str_print_json(print, str_data, str_len);
         return;

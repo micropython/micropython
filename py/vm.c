@@ -1171,8 +1171,10 @@ unwind_return:
 
                 ENTRY(MP_BC_RAISE_FROM): {
                     MARK_EXC_IP_SELECTIVE();
-                    mp_warning(NULL, "exception chaining not supported");
-                    sp--; // ignore (pop) "from" argument
+                    mp_obj_t from_value = POP();
+                    if (from_value != mp_const_none) {
+                        mp_warning(NULL, "exception chaining not supported");
+                    }
                     mp_obj_t obj = mp_make_raise_obj(TOP());
                     RAISE(obj);
                 }
@@ -1332,6 +1334,10 @@ pending_exception_check:
                 #else
                     // No scheduler: Just check pending exception.
                     MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL
+                #endif
+                #if MICROPY_ENABLE_VM_ABORT
+                    // Check if the VM should abort execution.
+                    || MP_STATE_VM(vm_abort)
                 #endif
                 ) {
                     MARK_EXC_IP_SELECTIVE();

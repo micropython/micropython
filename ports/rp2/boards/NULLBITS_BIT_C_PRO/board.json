@@ -4,10 +4,10 @@
     ],
     "docs": "",
     "features": [
-        "Breadboard Friendly",
+        "Dual-core",
+        "External Flash",
         "RGB LED",
-        "USB-C",
-        "SPI Flash"
+        "USB-C"
     ],
     "images": [
         "nullbits_bit_c_pro.jpg"

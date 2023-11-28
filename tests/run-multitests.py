@@ -90,6 +90,12 @@ class multitest:
             except:
                 ip = HOST_IP
         return ip
+    @staticmethod
+    def expect_reboot(resume, delay_ms=0):
+        print("WAIT_FOR_REBOOT", resume, delay_ms)
+    @staticmethod
+    def output_metric(data):
+        print("OUTPUT_METRIC", data)
 
 {}
 
@@ -155,6 +161,14 @@ class PyInstanceSubProcess(PyInstance):
 
     def __str__(self):
         return self.argv[0].rsplit("/")[-1]
+
+    def prepare_script_from_file(self, filename, prepend, append):
+        # Make tests run in an isolated environment (i.e. `import io` would
+        # otherwise get the `tests/io` directory).
+        remove_cwd_from_sys_path = b"import sys\nsys.path.remove('')\n\n"
+        return remove_cwd_from_sys_path + super().prepare_script_from_file(
+            filename, prepend, append
+        )
 
     def run_script(self, script):
         output = b""
@@ -309,6 +323,7 @@ def run_test_on_instances(test_file, num_instances, instances):
     skip = False
     injected_globals = ""
     output = [[] for _ in range(num_instances)]
+    output_metrics = []
 
     # If the test calls get_network_ip() then inject HOST_IP so that devices can know
     # the IP address of the host.  Do this lazily to not require a TCP/IP connection
@@ -378,10 +393,27 @@ def run_test_on_instances(test_file, num_instances, instances):
                 last_read_time[idx] = time.time()
                 if out is not None and not any(m in out for m in IGNORE_OUTPUT_MATCHES):
                     trace_instance_output(idx, out)
+                    if out.startswith("WAIT_FOR_REBOOT"):
+                        _, resume, delay_ms = out.split(" ")
+
+                        if wait_for_reboot(instance, delay_ms):
+                            # Restart the test code, resuming from requested instance block
+                            if not resume.startswith("instance{}".format(idx)):
+                                raise SystemExit(
+                                    'ERROR: resume function must start with "instance{}"'.format(
+                                        idx
+                                    )
+                                )
+                            append_code = APPEND_CODE_TEMPLATE.format(injected_globals, resume[8:])
+                            instance.start_file(test_file, append=append_code)
+                            last_read_time[idx] = time.time()
+
                     if out.startswith("BROADCAST "):
                         for instance2 in instances:
                             if instance2 is not instance:
                                 instance2.write(bytes(out, "ascii") + b"\r\n")
+                    elif out.startswith("OUTPUT_METRIC "):
+                        output_metrics.append(out.split(" ", 1)[1])
                     else:
                         output[idx].append(out)
                 if err is not None:
@@ -403,7 +435,39 @@ def run_test_on_instances(test_file, num_instances, instances):
         output_str += "--- instance{} ---\n".format(idx)
         output_str += "\n".join(lines) + "\n"
 
-    return error, skip, output_str
+    return error, skip, output_str, output_metrics
+
+
+def wait_for_reboot(instance, extra_timeout_ms=0):
+    # Monitor device responses for reboot banner, waiting for idle.
+    extra_timeout = float(extra_timeout_ms) * 1000
+    INITIAL_TIMEOUT = 1 + extra_timeout
+    FULL_TIMEOUT = 5 + extra_timeout
+    t_start = t_last_activity = time.monotonic()
+    while True:
+        t = time.monotonic()
+        out, err = instance.readline()
+        if err is not None:
+            print("Reboot: communication error", err)
+            return False
+        if out:
+            t_last_activity = t
+            # Check for reboot banner, see py/pyexec.c "reset friendly REPL"
+            if re.match(r"^MicroPython v\d+\.\d+\.\d+.* on .*; .* with .*$", out):
+                time.sleep(0.1)
+                break
+
+        if t_last_activity == t_start:
+            if t - t_start > INITIAL_TIMEOUT:
+                print("Reboot: missed initial Timeout")
+                return False
+        else:
+            if t - t_start > FULL_TIMEOUT:
+                print("Reboot: Timeout")
+                return False
+
+    instance.pyb.enter_raw_repl()
+    return True
 
 
 def print_diff(a, b):
@@ -431,7 +495,9 @@ def run_tests(test_files, instances_truth, instances_test):
         sys.stdout.flush()
 
         # Run test on test instances
-        error, skip, output_test = run_test_on_instances(test_file, num_instances, instances_test)
+        error, skip, output_test, output_metrics = run_test_on_instances(
+            test_file, num_instances, instances_test
+        )
 
         if not skip:
             # Check if truth exists in a file, and read it in
@@ -441,7 +507,7 @@ def run_tests(test_files, instances_truth, instances_test):
                     output_truth = f.read()
             else:
                 # Run test on truth instances to get expected output
-                _, _, output_truth = run_test_on_instances(
+                _, _, output_truth, _ = run_test_on_instances(
                     test_file, num_instances, instances_truth
                 )
 
@@ -469,6 +535,11 @@ def run_tests(test_files, instances_truth, instances_test):
                 print(output_truth, end="")
                 print("### DIFF ###")
                 print_diff(output_truth, output_test)
+
+        # Print test output metrics, if there are any.
+        if output_metrics:
+            for metric in output_metrics:
+                print(test_file, ": ", metric, sep="")
 
         if cmd_args.show_output:
             print()
@@ -519,7 +590,7 @@ def main():
     cmd_args = cmd_parser.parse_args()
 
     # clear search path to make sure tests use only builtin modules and those in extmod
-    os.environ["MICROPYPATH"] = os.pathsep.join(("", ".frozen", "../extmod"))
+    os.environ["MICROPYPATH"] = os.pathsep.join((".frozen", "../extmod"))
 
     test_files = prepare_test_file_list(cmd_args.files)
     max_instances = max(t[1] for t in test_files)

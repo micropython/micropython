@@ -23,7 +23,7 @@ To build the example project, based on `main.c`, use:
 
     $ make
 
-That will create an exacutable called `embed` which you can run:
+That will create an executable called `embed` which you can run:
 
     $ ./embed
 

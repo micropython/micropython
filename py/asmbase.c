@@ -80,7 +80,7 @@ uint8_t *mp_asm_base_get_cur_to_write_bytes(void *as_in, size_t num_bytes_to_wri
 void mp_asm_base_label_assign(mp_asm_base_t *as, size_t label) {
     assert(label < as->max_num_labels);
 
-    // Assiging a label ends any dead-code region, and all following machine
+    // Assigning a label ends any dead-code region, and all following machine
     // code should be emitted (until another mp_asm_base_suppress_code() call).
     as->suppress = false;
 

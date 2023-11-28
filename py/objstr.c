@@ -109,7 +109,7 @@ void mp_str_print_quoted(const mp_print_t *print, const byte *str_data, size_t s
     mp_printf(print, "%c", quote_char);
 }
 
-#if MICROPY_PY_UJSON
+#if MICROPY_PY_JSON
 void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str_len) {
     // for JSON spec, see http://www.ietf.org/rfc/rfc4627.txt
     // if we are given a valid utf8-encoded string, we will print it in a JSON-conforming way
@@ -137,7 +137,7 @@ void mp_str_print_json(const mp_print_t *print, const byte *str_data, size_t str
 
 STATIC void str_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
-    #if MICROPY_PY_UJSON
+    #if MICROPY_PY_JSON
     if (kind == PRINT_JSON) {
         mp_str_print_json(print, str_data, str_len);
         return;
@@ -403,7 +403,16 @@ mp_obj_t mp_obj_str_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     } else {
         // LHS is str and RHS has an incompatible type
         // (except if operation is EQUAL, but that's handled by mp_obj_equal)
-        bad_implicit_conversion(rhs_in);
+
+        // CONTAINS must fail with a bad-implicit-conversion exception, because
+        // otherwise mp_binary_op() will fallback to `list(lhs).__contains__(rhs)`.
+        if (op == MP_BINARY_OP_CONTAINS) {
+            bad_implicit_conversion(rhs_in);
+        }
+
+        // All other operations are not supported, and may be handled by another
+        // type, eg for reverse operations.
+        return MP_OBJ_NULL;
     }
 
     switch (op) {
@@ -1636,7 +1645,9 @@ STATIC mp_obj_t str_modulo_format(mp_obj_t pattern, size_t n_args, const mp_obj_
         }
     }
 
-    if (arg_i != n_args) {
+    if (dict == MP_OBJ_NULL && arg_i != n_args) {
+        // NOTE: if `dict` exists, then `n_args` is 1 and the dict is always consumed; either
+        // positionally, or as a map of named args, even if none were actually referenced.
         mp_raise_TypeError(MP_ERROR_TEXT("format string didn't convert all arguments"));
     }
 

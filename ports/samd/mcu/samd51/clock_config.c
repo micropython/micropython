@@ -117,27 +117,32 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
 
 void check_usb_recovery_mode(void) {
     #if !MICROPY_HW_XOSC32K
-    mp_hal_delay_ms(500);
-    // Check USB status. If not connected, switch DFLL48M back to open loop
-    if (USB->DEVICE.DeviceEndpoint[0].EPCFG.reg == 0) {
-        // as per Errata 2.8.3
-        OSCCTRL->DFLLMUL.reg = 0;
-        while (OSCCTRL->DFLLSYNC.bit.DFLLMUL == 1) {
+    // Check USB status for up to 1 second. If not connected,
+    // switch DFLL48M back to open loop
+    for (int i = 0; i < 100; i++) {
+        if (USB->DEVICE.DeviceEndpoint[0].EPCFG.reg != 0) {
+            return;
         }
-        // Set the mode to open loop mode
-        OSCCTRL->DFLLCTRLB.reg = 0;
-        while (OSCCTRL->DFLLSYNC.bit.DFLLCTRLB == 1) {
-        }
-        OSCCTRL->DFLLCTRLA.reg = OSCCTRL_DFLLCTRLA_RUNSTDBY | OSCCTRL_DFLLCTRLA_ENABLE;
-        while (OSCCTRL->DFLLSYNC.bit.ENABLE == 1) {
-        }
-        OSCCTRL->DFLLVAL.reg = dfll48m_calibration; // Reload DFLLVAL register
-        while (OSCCTRL->DFLLSYNC.bit.DFLLVAL == 1) {
-        }
-        // Set the mode to open loop mode
-        OSCCTRL->DFLLCTRLB.reg = 0;
-        while (OSCCTRL->DFLLSYNC.bit.DFLLCTRLB == 1) {
-        }
+        mp_hal_delay_ms(10);
+    }
+    // No connection. Switch back to open loop mode.
+    // as per Errata 2.8.3
+    OSCCTRL->DFLLMUL.reg = 0;
+    while (OSCCTRL->DFLLSYNC.bit.DFLLMUL == 1) {
+    }
+    // Set the mode to open loop mode
+    OSCCTRL->DFLLCTRLB.reg = 0;
+    while (OSCCTRL->DFLLSYNC.bit.DFLLCTRLB == 1) {
+    }
+    OSCCTRL->DFLLCTRLA.reg = OSCCTRL_DFLLCTRLA_RUNSTDBY | OSCCTRL_DFLLCTRLA_ENABLE;
+    while (OSCCTRL->DFLLSYNC.bit.ENABLE == 1) {
+    }
+    OSCCTRL->DFLLVAL.reg = dfll48m_calibration; // Reload DFLLVAL register
+    while (OSCCTRL->DFLLSYNC.bit.DFLLVAL == 1) {
+    }
+    // Set the mode to open loop mode
+    OSCCTRL->DFLLCTRLB.reg = 0;
+    while (OSCCTRL->DFLLSYNC.bit.DFLLCTRLB == 1) {
     }
     #endif // MICROPY_HW_XOSC32K
 }
@@ -169,14 +174,14 @@ void check_usb_recovery_mode(void) {
 //
 // If MICROPY_HW_DFLL_USB_SYNC = 0, the DFLL48M oscillator is free running using
 // the pre-configured trim values. In that mode, the peripheral clock is
-// not exactly 48Mhz and has a substantional temperature drift.
+// not exactly 48Mhz and has a substitutional temperature drift.
 //
 // If MICROPY_HW_DFLL_USB_SYNC = 1, the DFLL48 is synchronized with the 1 kHz USB sync
-// signal. If after boot there is no USB sync withing 500ms, the configuratuion falls
+// signal. If after boot there is no USB sync within 1000 ms, the configuration falls
 // back to a free running 48Mhz oscillator.
 //
 // In all modes, the 48MHz signal has a substantial jitter, largest when
-// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the repective
+// MICROPY_HW_DFLL_USB_SYNC is active. That is caused by the respective
 // reference frequencies of 32kHz or 1 kHz being low. That affects most
 // PWM. Std Dev at 1kHz 0.156Hz (w. Crystal) up to 0.4 Hz (with USB sync).
 //
@@ -195,7 +200,7 @@ void init_clocks(uint32_t cpu_freq) {
     // GCLK4: 32kHz, source: XOSC32K, if crystal present, usage: DFLL48M reference
     // GCLK5: 48MHz, source: DFLL48M, usage: USB
     // DFLL48M: Reference sources:
-    //          - in closed loop mode: eiter XOSC32K or OSCULP32K or USB clock
+    //          - in closed loop mode: either XOSC32K or OSCULP32K or USB clock
     //          - in open loop mode: None
     // DPLL0: 48 - 200 MHz
 
@@ -223,16 +228,16 @@ void init_clocks(uint32_t cpu_freq) {
     OSC32KCTRL->RTCCTRL.reg = OSC32KCTRL_RTCCTRL_RTCSEL_XOSC1K;
     // Setup XOSC32K
     OSC32KCTRL->INTFLAG.reg = OSC32KCTRL_INTFLAG_XOSC32KRDY | OSC32KCTRL_INTFLAG_XOSC32KFAIL;
-    OSC32KCTRL->CFDCTRL.bit.CFDEN = 1; // Fall back to internal Osc on crystal fail
+    OSC32KCTRL->CFDCTRL.bit.CFDEN = 1; // Fall back to internal oscillator on crystal fail
     OSC32KCTRL->XOSC32K.reg =
         OSC32KCTRL_XOSC32K_CGM_HS |
         OSC32KCTRL_XOSC32K_XTALEN |
         OSC32KCTRL_XOSC32K_EN32K |
         OSC32KCTRL_XOSC32K_EN1K |
         OSC32KCTRL_XOSC32K_RUNSTDBY |
-        OSC32KCTRL_XOSC32K_STARTUP(4) |
+        OSC32KCTRL_XOSC32K_STARTUP(3) |
         OSC32KCTRL_XOSC32K_ENABLE;
-    // make sure osc32kcrtl is ready
+    // Wait until the oscillator is running and stable
     while (OSC32KCTRL->STATUS.bit.XOSC32KRDY == 0) {
     }
 

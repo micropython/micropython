@@ -25,7 +25,7 @@
  */
 
 #include "py/runtime.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "bufhelper.h"
 #include "spi.h"
 
@@ -112,7 +112,10 @@ STATIC mp_obj_t pyb_spi_init_helper(const pyb_spi_obj_t *self, size_t n_args, co
     }
 
     // init the SPI bus
-    spi_init(self->spi, init->NSS != SPI_NSS_SOFT);
+    int ret = spi_init(self->spi, init->NSS != SPI_NSS_SOFT);
+    if (ret != 0) {
+        mp_raise_OSError(-ret);
+    }
 
     return mp_const_none;
 }

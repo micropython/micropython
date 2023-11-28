@@ -35,22 +35,21 @@
 #include "modmachine.h"
 #include "mphalport.h"
 
-#include "driver/timer.h"
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 1, 1)
+#include "hal/timer_hal.h"
 #include "hal/timer_ll.h"
-#define HAVE_TIMER_LL (1)
-#endif
+#include "soc/timer_periph.h"
 
-#define TIMER_INTR_SEL TIMER_INTR_LEVEL
 #define TIMER_DIVIDER  8
 
 // TIMER_BASE_CLK is normally 80MHz. TIMER_DIVIDER ought to divide this exactly
-#define TIMER_SCALE    (TIMER_BASE_CLK / TIMER_DIVIDER)
+#define TIMER_SCALE    (APB_CLK_FREQ / TIMER_DIVIDER)
 
 #define TIMER_FLAGS    0
 
 typedef struct _machine_timer_obj_t {
     mp_obj_base_t base;
+
+    timer_hal_context_t hal_context;
     mp_uint_t group;
     mp_uint_t index;
 
@@ -83,15 +82,9 @@ void machine_timer_deinit_all(void) {
 
 STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_timer_obj_t *self = self_in;
-
-    timer_config_t config;
-    mp_printf(print, "Timer(%p; ", self);
-
-    timer_get_config(self->group, self->index, &config);
-
-    mp_printf(print, "alarm_en=%d, ", config.alarm_en);
-    mp_printf(print, "auto_reload=%d, ", config.auto_reload);
-    mp_printf(print, "counter_en=%d)", config.counter_en);
+    qstr mode = self->repeat ? MP_QSTR_PERIODIC : MP_QSTR_ONE_SHOT;
+    uint64_t period = self->period / (TIMER_SCALE / 1000); // convert to ms
+    mp_printf(print, "Timer(%u, mode=%q, period=%lu)", (self->group << 1) | self->index, mode, period);
 }
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -129,8 +122,14 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 }
 
 STATIC void machine_timer_disable(machine_timer_obj_t *self) {
+    if (self->hal_context.dev != NULL) {
+        // Disable the counter and alarm.
+        timer_ll_enable_counter(self->hal_context.dev, self->index, false);
+        timer_ll_enable_alarm(self->hal_context.dev, self->index, false);
+    }
+
     if (self->handle) {
-        timer_pause(self->group, self->index);
+        // Free the interrupt handler.
         esp_intr_free(self->handle);
         self->handle = NULL;
     }
@@ -141,64 +140,47 @@ STATIC void machine_timer_disable(machine_timer_obj_t *self) {
 
 STATIC void machine_timer_isr(void *self_in) {
     machine_timer_obj_t *self = self_in;
-    timg_dev_t *device = self->group ? &(TIMERG1) : &(TIMERG0);
 
-    #if HAVE_TIMER_LL
+    uint32_t intr_status = timer_ll_get_intr_status(self->hal_context.dev);
 
-    #if CONFIG_IDF_TARGET_ESP32 && ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-    device->hw_timer[self->index].update = 1;
-    #else
-    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
-    #if CONFIG_IDF_TARGET_ESP32S3
-    device->hw_timer[self->index].update.tn_update = 1;
-    #else
-    device->hw_timer[self->index].update.tx_update = 1;
-    #endif
-    #else
-    device->hw_timer[self->index].update.update = 1;
-    #endif
-    #endif
-    timer_ll_clear_intr_status(device, self->index);
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 0, 0)
-    timer_ll_set_alarm_enable(device, self->index, self->repeat);
-    #else
-    timer_ll_set_alarm_value(device, self->index, self->repeat);
-    #endif
-
-    #else
-
-    device->hw_timer[self->index].update = 1;
-    if (self->index) {
-        device->int_clr_timers.t1 = 1;
-    } else {
-        device->int_clr_timers.t0 = 1;
+    if (intr_status & TIMER_LL_EVENT_ALARM(self->index)) {
+        timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
+        if (self->repeat) {
+            timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
+        }
+        mp_sched_schedule(self->callback, self);
+        mp_hal_wake_main_task_from_isr();
     }
-    device->hw_timer[self->index].config.alarm_en = self->repeat;
-
-    #endif
-
-    mp_sched_schedule(self->callback, self);
-    mp_hal_wake_main_task_from_isr();
 }
 
 STATIC void machine_timer_enable(machine_timer_obj_t *self) {
-    timer_config_t config;
-    config.alarm_en = TIMER_ALARM_EN;
-    config.auto_reload = self->repeat;
-    config.counter_dir = TIMER_COUNT_UP;
-    config.divider = TIMER_DIVIDER;
-    config.intr_type = TIMER_INTR_LEVEL;
-    config.counter_en = TIMER_PAUSE;
-    #if SOC_TIMER_GROUP_SUPPORT_XTAL
-    config.clk_src = TIMER_SRC_CLK_APB;
-    #endif
+    // Initialise the timer.
+    timer_hal_init(&self->hal_context, self->group, self->index);
+    timer_ll_enable_counter(self->hal_context.dev, self->index, false);
+    timer_ll_set_clock_source(self->hal_context.dev, self->index, GPTIMER_CLK_SRC_APB);
+    timer_ll_set_clock_prescale(self->hal_context.dev, self->index, TIMER_DIVIDER);
+    timer_hal_set_counter_value(&self->hal_context, 0);
+    timer_ll_set_count_direction(self->hal_context.dev, self->index, GPTIMER_COUNT_UP);
 
-    check_esp_err(timer_init(self->group, self->index, &config));
-    check_esp_err(timer_set_counter_value(self->group, self->index, 0x00000000));
-    check_esp_err(timer_set_alarm_value(self->group, self->index, self->period));
-    check_esp_err(timer_enable_intr(self->group, self->index));
-    check_esp_err(timer_isr_register(self->group, self->index, machine_timer_isr, (void *)self, TIMER_FLAGS, &self->handle));
-    check_esp_err(timer_start(self->group, self->index));
+    // Allocate and enable the alarm interrupt.
+    timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), false);
+    timer_ll_clear_intr_status(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index));
+    ESP_ERROR_CHECK(
+        esp_intr_alloc(timer_group_periph_signals.groups[self->group].timer_irq_id[self->index],
+            TIMER_FLAGS, machine_timer_isr, self, &self->handle)
+        );
+    timer_ll_enable_intr(self->hal_context.dev, TIMER_LL_EVENT_ALARM(self->index), true);
+
+    // Enable the alarm to trigger at the given period.
+    timer_ll_set_alarm_value(self->hal_context.dev, self->index, self->period);
+    timer_ll_enable_alarm(self->hal_context.dev, self->index, true);
+
+    // Set the counter to reload at 0 if it's in repeat mode.
+    timer_ll_set_reload_value(self->hal_context.dev, self->index, 0);
+    timer_ll_enable_auto_reload(self->hal_context.dev, self->index, self->repeat);
+
+    // Enable the counter.
+    timer_ll_enable_counter(self->hal_context.dev, self->index, true);
 }
 
 STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -262,11 +244,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init)
 
 STATIC mp_obj_t machine_timer_value(mp_obj_t self_in) {
     machine_timer_obj_t *self = self_in;
-    double result;
-
-    timer_get_counter_time_sec(self->group, self->index, &result);
-
-    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result * 1000));  // value in ms
+    uint64_t result = timer_ll_get_counter_value(self->hal_context.dev, self->index);
+    return MP_OBJ_NEW_SMALL_INT((mp_uint_t)(result / (TIMER_SCALE / 1000))); // value in ms
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_value_obj, machine_timer_value);
 

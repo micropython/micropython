@@ -32,31 +32,15 @@
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_mac.h"
 #include "esp_sleep.h"
 #include "esp_pm.h"
-
-#if CONFIG_IDF_TARGET_ESP32
-#include "esp32/rom/rtc.h"
-#include "esp32/clk.h"
-#elif CONFIG_IDF_TARGET_ESP32S2
-#include "esp32s2/rom/rtc.h"
-#include "esp32s2/clk.h"
-#elif CONFIG_IDF_TARGET_ESP32S3
-#include "esp32s3/rom/rtc.h"
-#include "esp32s3/clk.h"
-#endif
 
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared/runtime/pyexec.h"
 #include "drivers/dht/dht.h"
-#include "extmod/machine_bitstream.h"
-#include "extmod/machine_mem.h"
-#include "extmod/machine_signal.h"
-#include "extmod/machine_pulse.h"
-#include "extmod/machine_pwm.h"
-#include "extmod/machine_i2c.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 #include "modmachine.h"
 #include "machine_rtc.h"
 
@@ -79,7 +63,7 @@ int esp_clk_cpu_freq(void);
 STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         // get
-        return mp_obj_new_int(esp_clk_cpu_freq());
+        return mp_obj_new_int(esp_rom_get_cpu_ticks_per_us() * 1000000);
     } else {
         // set
         mp_int_t freq = mp_obj_get_int(args[0]) / 1000000;
@@ -110,7 +94,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
         if (ret != ESP_OK) {
             mp_raise_ValueError(NULL);
         }
-        while (esp_clk_cpu_freq() != freq * 1000000) {
+        while (esp_rom_get_cpu_ticks_per_us() != freq) {
             vTaskDelay(1);
         }
         return mp_const_none;
@@ -130,6 +114,9 @@ STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const
 
 
     mp_int_t expiry = args[ARG_sleep_ms].u_int;
+
+    // First, disable any previously set wake-up source
+    esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
 
     if (expiry != 0) {
         esp_sleep_enable_timer_wakeup(((uint64_t)expiry) * 1000);
@@ -217,6 +204,13 @@ STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_reset_cause_obj, 0,  machine_reset_cause);
 
+NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
+    for (;;) {
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
+
 void machine_init(void) {
     is_soft_reset = 0;
 }
@@ -272,7 +266,7 @@ STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
@@ -286,6 +280,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_lightsleep), MP_ROM_PTR(&machine_lightsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_deepsleep), MP_ROM_PTR(&machine_deepsleep_obj) },
     { MP_ROM_QSTR(MP_QSTR_idle), MP_ROM_PTR(&machine_idle_obj) },
+    { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_disable_irq), MP_ROM_PTR(&machine_disable_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_irq), MP_ROM_PTR(&machine_enable_irq_obj) },
@@ -299,7 +294,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dht_readinto), MP_ROM_PTR(&dht_readinto_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_Timer), MP_ROM_PTR(&machine_timer_type) },
+    #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT), MP_ROM_PTR(&machine_wdt_type) },
+    #endif
     #if MICROPY_HW_ENABLE_SDCARD
     { MP_ROM_QSTR(MP_QSTR_SDCard), MP_ROM_PTR(&machine_sdcard_type) },
     #endif
@@ -312,8 +309,12 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
     { MP_ROM_QSTR(MP_QSTR_TouchPad), MP_ROM_PTR(&machine_touchpad_type) },
     #endif
+    #if MICROPY_PY_MACHINE_ADC
     { MP_ROM_QSTR(MP_QSTR_ADC), MP_ROM_PTR(&machine_adc_type) },
-    { MP_ROM_QSTR(MP_QSTR_ADCBlock), MP_ROM_PTR(&machine_adcblock_type) },
+    #endif
+    #if MICROPY_PY_MACHINE_ADC_BLOCK
+    { MP_ROM_QSTR(MP_QSTR_ADCBlock), MP_ROM_PTR(&machine_adc_block_type) },
+    #endif
     #if MICROPY_PY_MACHINE_DAC
     { MP_ROM_QSTR(MP_QSTR_DAC), MP_ROM_PTR(&machine_dac_type) },
     #endif
@@ -326,7 +327,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) },
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI), MP_ROM_PTR(&mp_machine_soft_spi_type) },
+    #if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&machine_uart_type) },
+    #endif
 
     // Reset reasons
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
@@ -353,6 +356,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

@@ -1,17 +1,11 @@
-try:
-    import usocket as _socket
-except:
-    import _socket
-try:
-    import ussl as ssl
-except:
-    import ssl
+import socket
+import ssl
 
 
 def main(use_stream=True):
-    s = _socket.socket()
+    s = socket.socket()
 
-    ai = _socket.getaddrinfo("google.com", 443)
+    ai = socket.getaddrinfo("google.com", 443)
     print("Address infos:", ai)
     addr = ai[0][-1]
 

@@ -4,6 +4,11 @@
 # any connected central every 10 seconds.
 #
 # Work-in-progress demo of implementing bonding and passkey auth.
+#
+# This example demonstrates the low-level bluetooth module. For most
+# applications, we recommend using the higher-level aioble library, which
+# includes an implementation of the secret store. See
+# https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
 
 import bluetooth
 import random

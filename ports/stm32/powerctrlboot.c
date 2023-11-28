@@ -28,13 +28,31 @@
 #include "irq.h"
 #include "powerctrl.h"
 
+#if defined(STM32WB)
+void stm32_system_init(void) {
+    if (RCC->CR == 0x00000560 && RCC->CFGR == 0x00070005) {
+        // Wake from STANDBY with HSI enabled as system clock.  The second core likely
+        // also needs HSI to remain enabled, so do as little as possible here.
+        #if (__FPU_PRESENT == 1) && (__FPU_USED == 1)
+        // set CP10 and CP11 Full Access.
+        SCB->CPACR |= (3 << (10 * 2)) | (3 << (11 * 2));
+        #endif
+        // Disable all interrupts.
+        RCC->CIER = 0x00000000;
+    } else {
+        // Other start-up (eg POR), use standard system init code.
+        SystemInit();
+    }
+}
+#endif
+
 void powerctrl_config_systick(void) {
     // Configure SYSTICK to run at 1kHz (1ms interval)
     SysTick->CTRL |= SYSTICK_CLKSOURCE_HCLK;
     SysTick_Config(HAL_RCC_GetHCLKFreq() / 1000);
     NVIC_SetPriority(SysTick_IRQn, IRQ_PRI_SYSTICK);
 
-    #if !BUILDING_MBOOT && (defined(STM32H7) || defined(STM32L4) || defined(STM32WB))
+    #if !BUILDING_MBOOT && (defined(STM32H5) || defined(STM32H7) || defined(STM32L4) || defined(STM32WB))
     // Set SysTick IRQ priority variable in case the HAL needs to use it
     uwTickPrio = IRQ_PRI_SYSTICK;
     #endif
@@ -155,15 +173,14 @@ void SystemClock_Config(void) {
 
     #if MICROPY_HW_ENABLE_RNG || MICROPY_HW_ENABLE_USB
     // Enable the 48MHz internal oscillator
-    RCC->CRRCR |= RCC_CRRCR_HSI48ON;
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    SYSCFG->CFGR3 |= SYSCFG_CFGR3_ENREF_HSI48;
-    while (!(RCC->CRRCR & RCC_CRRCR_HSI48RDY)) {
+    RCC->CR |= RCC_CR_HSI48ON;
+    RCC->APBENR2 |= RCC_APBENR2_SYSCFGEN;
+    while (!(RCC->CR & RCC_CR_HSI48RDY)) {
         // Wait for HSI48 to be ready
     }
 
-    // Select RC48 as HSI48 for USB and RNG
-    RCC->CCIPR |= RCC_CCIPR_HSI48SEL;
+    // Select HSI48 for USB
+    RCC->CCIPR2 &= ~(3 << RCC_CCIPR2_USBSEL_Pos);
 
     #if MICROPY_HW_ENABLE_USB
     // Synchronise HSI48 with 1kHz USB SoF
@@ -172,6 +189,118 @@ void SystemClock_Config(void) {
     CRS->CFGR = 2 << CRS_CFGR_SYNCSRC_Pos | 0x22 << CRS_CFGR_FELIM_Pos
         | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
     #endif
+    #endif
+}
+
+#elif defined(STM32H5)
+
+void SystemClock_Config(void) {
+    // Set power voltage scaling.
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE0);
+    while (!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {
+    }
+
+    #if MICROPY_HW_CLK_USE_HSI
+    LL_RCC_HSI_Enable();
+    while (!LL_RCC_HSI_IsReady()) {
+    }
+    const uint32_t pll1_source = LL_RCC_PLL1SOURCE_HSI;
+    #else
+    // Enable HSE.
+    #if MICROPY_HW_CLK_USE_BYPASS
+    LL_RCC_HSE_EnableBypass();
+    #endif
+    LL_RCC_HSE_Enable();
+    while (!LL_RCC_HSE_IsReady()) {
+    }
+    const uint32_t pll1_source = LL_RCC_PLL1SOURCE_HSE;
+    #endif
+
+    // Configure PLL1 for use as system clock.
+    LL_RCC_PLL1_ConfigDomain_SYS(pll1_source, MICROPY_HW_CLK_PLLM, MICROPY_HW_CLK_PLLN, MICROPY_HW_CLK_PLLP);
+    LL_RCC_PLL1_SetFRACN(MICROPY_HW_CLK_PLLFRAC);
+    LL_RCC_PLL1_SetVCOInputRange(MICROPY_HW_CLK_PLLVCI_LL);
+    LL_RCC_PLL1_SetVCOOutputRange(MICROPY_HW_CLK_PLLVCO_LL);
+    LL_RCC_PLL1P_Enable();
+
+    #if defined(MICROPY_HW_CLK_PLLQ)
+    LL_RCC_PLL1_SetQ(MICROPY_HW_CLK_PLLQ);
+    LL_RCC_PLL1Q_Enable();
+    #endif
+
+    #if defined(MICROPY_HW_CLK_PLLR)
+    LL_RCC_PLL1_SetR(MICROPY_HW_CLK_PLLR);
+    LL_RCC_PLL1R_Enable();
+    #endif
+
+    // Enable PLL1.
+    LL_RCC_PLL1_Enable();
+    while (!LL_RCC_PLL1_IsReady()) {
+    }
+
+    // Configure bus dividers.
+    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
+    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+    LL_RCC_SetAPB3Prescaler(LL_RCC_APB3_DIV_1);
+
+    // Configure the flash latency before switching the system clock source.
+    __HAL_FLASH_SET_LATENCY(MICROPY_HW_FLASH_LATENCY);
+    while (__HAL_FLASH_GET_LATENCY() != MICROPY_HW_FLASH_LATENCY) {
+    }
+
+    // Switch the system clock source to PLL1P.
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL1);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL1) {
+    }
+
+    // Reconfigure clock state and SysTick.
+    SystemCoreClockUpdate();
+    powerctrl_config_systick();
+
+    // USB clock configuration, either HSI48 or PLL3.
+    #if MICROPY_HW_ENABLE_USB && !MICROPY_HW_CLK_USE_PLL3_FOR_USB
+
+    // Enable HSI48.
+    LL_RCC_HSI48_Enable();
+    while (!LL_RCC_HSI48_IsReady()) {
+    }
+
+    // Select HSI48 for USB clock source
+    LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_HSI48);
+
+    // Synchronise HSI48 with 1kHz USB SoF
+    __HAL_RCC_CRS_CLK_ENABLE();
+    CRS->CFGR = 2 << CRS_CFGR_SYNCSRC_Pos | 0x22 << CRS_CFGR_FELIM_Pos
+        | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
+    CRS->CR = 0x20 << CRS_CR_TRIM_Pos | CRS_CR_AUTOTRIMEN | CRS_CR_CEN;
+
+    #elif MICROPY_HW_ENABLE_USB && MICROPY_HW_CLK_USE_PLL3_FOR_USB
+
+    // Configure PLL3 for use by USB at Q=48MHz.
+    LL_RCC_PLL3_SetSource(LL_RCC_PLL3SOURCE_HSE);
+    LL_RCC_PLL3_SetM(MICROPY_HW_CLK_PLL3M);
+    LL_RCC_PLL3_SetN(MICROPY_HW_CLK_PLL3N);
+    LL_RCC_PLL3_SetP(MICROPY_HW_CLK_PLL3P);
+    LL_RCC_PLL3_SetQ(MICROPY_HW_CLK_PLL3Q);
+    LL_RCC_PLL3_SetR(MICROPY_HW_CLK_PLL3R);
+    LL_RCC_PLL3_SetFRACN(MICROPY_HW_CLK_PLL3FRAC);
+    LL_RCC_PLL3_SetVCOInputRange(MICROPY_HW_CLK_PLL3VCI_LL);
+    LL_RCC_PLL3_SetVCOOutputRange(MICROPY_HW_CLK_PLL3VCO_LL);
+    LL_RCC_PLL3Q_Enable();
+
+    // Enable PLL3.
+    LL_RCC_PLL3_Enable();
+    while (!LL_RCC_PLL3_IsReady()) {
+    }
+
+    // Select PLL3-Q for USB clock source
+    LL_RCC_SetUSBClockSource(LL_RCC_USB_CLKSOURCE_PLL3Q);
+
+    #endif
+
+    #ifdef NDEBUG
+    DBGMCU->CR = 0;
     #endif
 }
 
@@ -272,22 +401,7 @@ void SystemClock_Config(void) {
     powerctrl_config_systick();
 
     #if MICROPY_HW_ENABLE_USB
-    // Enable the 48MHz internal oscillator
-    RCC->CRRCR |= RCC_CRRCR_HSI48ON;
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    SYSCFG->CFGR3 |= SYSCFG_CFGR3_ENREF_HSI48;
-    while (!(RCC->CRRCR & RCC_CRRCR_HSI48RDY)) {
-        // Wait for HSI48 to be ready
-    }
-
-    // Select RC48 as HSI48 for USB and RNG
-    RCC->CCIPR |= RCC_CCIPR_HSI48SEL;
-
-    // Synchronise HSI48 with 1kHz USB SoF
-    __HAL_RCC_CRS_CLK_ENABLE();
-    CRS->CR = 0x20 << CRS_CR_TRIM_Pos;
-    CRS->CFGR = 2 << CRS_CFGR_SYNCSRC_Pos | 0x22 << CRS_CFGR_FELIM_Pos
-        | __HAL_RCC_CRS_RELOADVALUE_CALCULATE(48000000, 1000) << CRS_CFGR_RELOAD_Pos;
     #endif
 
     // Disable the Debug Module in low-power mode due to prevent
@@ -298,21 +412,20 @@ void SystemClock_Config(void) {
 }
 #elif defined(STM32WB)
 
-#include "stm32wbxx_ll_hsem.h"
-
-// This semaphore protected access to the CLK48 configuration.
-// CPU1 should hold this semaphore while the USB peripheral is in use.
-// See AN5289 and https://github.com/micropython/micropython/issues/6316.
-#define CLK48_SEMID (5)
-
 void SystemClock_Config(void) {
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_RCC_SEMID)) {
+    }
+
     // Enable the 32MHz external oscillator
     RCC->CR |= RCC_CR_HSEON;
     while (!(RCC->CR & RCC_CR_HSERDY)) {
     }
 
     // Prevent CPU2 from disabling CLK48.
-    while (LL_HSEM_1StepLock(HSEM, CLK48_SEMID)) {
+    // This semaphore protected access to the CLK48 configuration.
+    // CPU1 should hold this semaphore while the USB peripheral is in use.
+    // See AN5289 and https://github.com/micropython/micropython/issues/6316.
+    while (LL_HSEM_1StepLock(HSEM, CFG_HW_CLK48_CONFIG_SEMID)) {
     }
 
     // Use HSE and the PLL to get a 64MHz SYSCLK
@@ -349,6 +462,9 @@ void SystemClock_Config(void) {
 
     SystemCoreClockUpdate();
     powerctrl_config_systick();
+
+    // Release RCC semaphore
+    LL_HSEM_ReleaseLock(HSEM, CFG_HW_RCC_SEMID, 0);
 }
 
 #elif defined(STM32WL)
@@ -356,12 +472,70 @@ void SystemClock_Config(void) {
 #include "stm32wlxx_ll_utils.h"
 
 void SystemClock_Config(void) {
-    // Set flash latency
+    // Set flash latency (2 wait states, sysclk > 36MHz)
     LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
     while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2) {
     }
 
     LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+
+    #if MICROPY_HW_CLK_USE_HSE
+    // Enable the 32MHz external oscillator and 48MHZ SYSCLK via PLL
+
+    #if MICROPY_HW_CLK_USE_BYPASS
+    // Use "bypass power" option, port PB0_VDDTCXO supplies TCXO
+    // (STM32WL5x has no other HSE bypass mode.)
+
+    // "PB0 must be configured in analog mode prior enabling the HSE"
+    //
+    // Note: PB0 analog mode muxes PB0_VDDTCXO pin to the VDDTCXO regulator, set
+    // to default voltage of 1.7V.  Changing this voltage requires initializing
+    // the SUBGHZ radio and sending a Set_Tcxo command to it.
+    //
+    // For the Nucelo-WL55 board, ST uses the NDK "NT2016SF-32M-END5875A" TCXO
+    // which has no publicly available datasheet. However, the ST code for this
+    // board always keeps the pin at the default 1.7V voltage level so changing
+    // the level would only be needed if a different TCXO is used.
+    //
+    // (Note also that setting pin PB0 as a push-pull GPIO output is technically
+    // possible too, but 3.3V will be too high for many TCXOs.)
+    mp_hal_pin_config(pin_B0, MP_HAL_PIN_MODE_ANALOG, MP_HAL_PIN_PULL_NONE, 0);
+
+    LL_RCC_HSE_EnableTcxo();
+
+    #endif // MICROPY_HW_CLK_USE_BYPASS
+
+    LL_RCC_HSE_Enable();
+    while (!LL_RCC_HSE_IsReady()) {
+        // Wait for HSE Ready signal
+    }
+
+    // Configure PLL for a 48MHz SYSCLK
+    #define PLLM (HSE_VALUE / 16000000) // VCO input 16MHz (recommended in ST docs)
+    #define PLLN (6) // 7*8MHz = 96MHz
+    #define PLLP (2) // f_P = 48MHz
+    #define PLLQ (2) // f_Q = 48MHz
+    #define PLLR (2) // f_R = 48MHz
+    RCC->PLLCFGR =
+        (PLLR - 1) << RCC_PLLCFGR_PLLR_Pos | RCC_PLLCFGR_PLLREN
+            | (PLLQ - 1) << RCC_PLLCFGR_PLLQ_Pos | RCC_PLLCFGR_PLLQEN
+            | (PLLP - 1) << RCC_PLLCFGR_PLLP_Pos | RCC_PLLCFGR_PLLPEN
+            | PLLN << RCC_PLLCFGR_PLLN_Pos
+            | (PLLM - 1) << RCC_PLLCFGR_PLLM_Pos
+            | LL_RCC_PLLSOURCE_HSE;
+
+    LL_RCC_PLL_Enable();
+    LL_RCC_PLL_EnableDomain_SYS();
+    while (!LL_RCC_PLL_IsReady()) {
+        // Wait for PLL to lock
+    }
+
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
+    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL) {
+        // Wait for system clock source to switch
+    }
+
+    #else // Use MSI as 48MHz source for SYSCLK
 
     // Enable MSI
     LL_RCC_MSI_Enable();
@@ -377,6 +551,8 @@ void SystemClock_Config(void) {
     LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_MSI);
     while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_MSI) {
     }
+
+    #endif // MICROPY_HW_CLK_USE_HSE
 
     // Set bus dividers
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);

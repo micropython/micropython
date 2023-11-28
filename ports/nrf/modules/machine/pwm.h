@@ -25,5 +25,4 @@
  */
 
 void pwm_init0(void);
-
-extern const mp_obj_type_t machine_pwm_type;
+void pwm_deinit_all(void);

@@ -22,6 +22,10 @@ __attribute__((section(".boot_hdr.conf")))
 #pragma location = ".boot_hdr.conf"
 #endif
 
+#ifndef MICROPY_HW_FLASH_CLK
+#define MICROPY_HW_FLASH_CLK kFlexSpiSerialClk_133MHz
+#endif
+
 const flexspi_nor_config_t qspiflash_config = {
     .memConfig =
     {
@@ -36,7 +40,7 @@ const flexspi_nor_config_t qspiflash_config = {
             (1u << kFlexSpiMiscOffset_DdrModeEnable) | (1u << kFlexSpiMiscOffset_WordAddressableEnable) |
             (1u << kFlexSpiMiscOffset_SafeConfigFreqEnable) | (1u << kFlexSpiMiscOffset_DiffClkEnable),
         .sflashPadType = kSerialFlash_8Pads,
-        .serialClkFreq = kFlexSpiSerialClk_133MHz,
+        .serialClkFreq = MICROPY_HW_FLASH_CLK,
         .sflashA1Size = MICROPY_HW_FLASH_SIZE,
         .dataValidTime = {16u, 16u},
         .lookupTable =

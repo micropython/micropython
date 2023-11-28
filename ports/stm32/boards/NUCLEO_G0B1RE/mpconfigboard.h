@@ -6,6 +6,7 @@
 #define MICROPY_HW_ENABLE_RNG       (0)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (0)
+#define MICROPY_HW_ENABLE_USB       (0) // can be enabled if USB cable connected to PA11/PA12
 #define MICROPY_PY_PYB_LEGACY       (0)
 
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (1)
@@ -87,3 +88,9 @@
 #define MICROPY_HW_LED1             (pin_A5) // Green LD2 LED on Nucleo
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_high(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_low(pin))
+
+// USB config
+#define MICROPY_HW_USB_FS           (1)
+#define MICROPY_HW_USB_MAIN_DEV     (USB_PHY_FS_ID)
+#define MICROPY_HW_USB_MSC          (0)
+#define MICROPY_HW_USB_HID          (0)

@@ -143,7 +143,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
 }
 
 mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *fields) {
-    mp_obj_namedtuple_type_t *o = m_new_obj_var0(mp_obj_namedtuple_type_t, qstr, n_fields);
+    mp_obj_namedtuple_type_t *o = m_new_obj_var0(mp_obj_namedtuple_type_t, fields, qstr, n_fields);
     o->n_fields = n_fields;
     for (size_t i = 0; i < n_fields; i++) {
         o->fields[i] = mp_obj_str_get_qstr(fields[i]);

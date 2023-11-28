@@ -1,5 +1,10 @@
 # This example demonstrates a peripheral implementing the Nordic UART Service (NUS).
 
+# This example demonstrates the low-level bluetooth module. For most
+# applications, we recommend using the higher-level aioble library which takes
+# care of all IRQ handling and connection management. See
+# https://github.com/micropython/micropython-lib/tree/master/micropython/bluetooth/aioble
+
 import bluetooth
 from ble_advertising import advertising_payload
 

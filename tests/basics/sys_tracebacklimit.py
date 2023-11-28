@@ -1,12 +1,8 @@
 # test sys.tracebacklimit
 
 try:
-    try:
-        import usys as sys
-        import uio as io
-    except ImportError:
-        import sys
-        import io
+    import sys
+    import io
 except ImportError:
     print("SKIP")
     raise SystemExit

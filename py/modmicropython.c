@@ -81,10 +81,10 @@ mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args) {
     mp_printf(&mp_plat_print, "stack: " UINT_FMT "\n", mp_stack_usage());
     #endif
     #if MICROPY_ENABLE_GC
-    gc_dump_info();
+    gc_dump_info(&mp_plat_print);
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(&mp_plat_print);
     }
     #else
     (void)n_args;

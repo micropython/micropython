@@ -1,11 +1,11 @@
 try:
-    import uos
+    import os
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 try:
-    uos.VfsFat
+    os.VfsFat
 except AttributeError:
     print("SKIP")
     raise SystemExit
@@ -44,76 +44,76 @@ except MemoryError:
 
 # first we umount any existing mount points the target may have
 try:
-    uos.umount("/")
+    os.umount("/")
 except OSError:
     pass
-for path in uos.listdir("/"):
-    uos.umount("/" + path)
+for path in os.listdir("/"):
+    os.umount("/" + path)
 
-uos.VfsFat.mkfs(bdev)
-uos.mount(bdev, "/")
+os.VfsFat.mkfs(bdev)
+os.mount(bdev, "/")
 
-print(uos.getcwd())
+print(os.getcwd())
 
 f = open("test.txt", "w")
 f.write("hello")
 f.close()
 
-print(uos.listdir())
-print(uos.listdir("/"))
-print(uos.stat("")[:-3])
-print(uos.stat("/")[:-3])
-print(uos.stat("test.txt")[:-3])
-print(uos.stat("/test.txt")[:-3])
+print(os.listdir())
+print(os.listdir("/"))
+print(os.stat("")[:-3])
+print(os.stat("/")[:-3])
+print(os.stat("test.txt")[:-3])
+print(os.stat("/test.txt")[:-3])
 
 f = open("/test.txt")
 print(f.read())
 f.close()
 
-uos.rename("test.txt", "test2.txt")
-print(uos.listdir())
-uos.rename("test2.txt", "/test3.txt")
-print(uos.listdir())
-uos.rename("/test3.txt", "test4.txt")
-print(uos.listdir())
-uos.rename("/test4.txt", "/test5.txt")
-print(uos.listdir())
+os.rename("test.txt", "test2.txt")
+print(os.listdir())
+os.rename("test2.txt", "/test3.txt")
+print(os.listdir())
+os.rename("/test3.txt", "test4.txt")
+print(os.listdir())
+os.rename("/test4.txt", "/test5.txt")
+print(os.listdir())
 
-uos.mkdir("dir")
-print(uos.listdir())
-uos.mkdir("/dir2")
-print(uos.listdir())
-uos.mkdir("dir/subdir")
-print(uos.listdir("dir"))
+os.mkdir("dir")
+print(os.listdir())
+os.mkdir("/dir2")
+print(os.listdir())
+os.mkdir("dir/subdir")
+print(os.listdir("dir"))
 for exist in ("", "/", "dir", "/dir", "dir/subdir"):
     try:
-        uos.mkdir(exist)
+        os.mkdir(exist)
     except OSError as er:
         print("mkdir OSError", er.errno == 17)  # EEXIST
 
-uos.chdir("/")
-print(uos.stat("test5.txt")[:-3])
+os.chdir("/")
+print(os.stat("test5.txt")[:-3])
 
-uos.VfsFat.mkfs(bdev2)
-uos.mount(bdev2, "/sys")
-print(uos.listdir())
-print(uos.listdir("sys"))
-print(uos.listdir("/sys"))
+os.VfsFat.mkfs(bdev2)
+os.mount(bdev2, "/sys")
+print(os.listdir())
+print(os.listdir("sys"))
+print(os.listdir("/sys"))
 
-uos.rmdir("dir2")
-uos.remove("test5.txt")
-print(uos.listdir())
+os.rmdir("dir2")
+os.remove("test5.txt")
+print(os.listdir())
 
-uos.umount("/")
-print(uos.getcwd())
-print(uos.listdir())
-print(uos.listdir("sys"))
+os.umount("/")
+print(os.getcwd())
+print(os.listdir())
+print(os.listdir("sys"))
 
 # test importing a file from a mounted FS
-import usys
+import sys
 
-usys.path.clear()
-usys.path.append("/sys")
+sys.path.clear()
+sys.path.append("/sys")
 with open("sys/test_module.py", "w") as f:
     f.write('print("test_module!")')
 import test_module

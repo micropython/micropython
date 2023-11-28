@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "extmod/vfs_fat.h"
@@ -144,7 +141,6 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
 }
 
 bool storage_read_block(uint8_t *dest, uint32_t block) {
-    // printf("RD %u\n", block);
     if (block == 0) {
         // fake the MBR so we can decide on our own partition table
 
@@ -176,7 +172,6 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 }
 
 bool storage_write_block(const uint8_t *src, uint32_t block) {
-    // printf("WR %u\n", block);
     if (block == 0) {
         // can't write MBR, but pretend we did
         return true;

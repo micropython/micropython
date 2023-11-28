@@ -1,12 +1,7 @@
 # test that socket.connect() on a non-blocking socket raises EINPROGRESS
 # and that an immediate write/send/read/recv does the right thing
 
-import sys
-
-try:
-    import uerrno as errno, usocket as socket, ussl as ssl
-except:
-    import errno, socket, ssl
+import sys, errno, socket, ssl
 
 
 def test(addr, hostname, block=True):

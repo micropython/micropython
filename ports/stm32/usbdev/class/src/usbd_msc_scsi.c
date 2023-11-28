@@ -123,12 +123,6 @@ int8_t SCSI_ProcessCmd(USBD_HandleTypeDef  *pdev,
                            uint8_t lun,
                            uint8_t *params)
 {
-    /*
-    if (params[0] != SCSI_READ10 && params[0] != SCSI_WRITE10) {
-        printf("SCSI_ProcessCmd(lun=%d, params=%x, %x)\n", lun, params[0], params[1]);
-    }
-    */
-
   switch (params[0])
   {
   case SCSI_TEST_UNIT_READY:

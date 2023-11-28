@@ -4,7 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2014-2017 Paul Sokolovsky
- * Copyright (c) 2014-2017 Damien P. George
+ * Copyright (c) 2014-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_UTIME
-
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -35,10 +32,8 @@
 #include <sys/time.h>
 #include <math.h>
 
-#include "py/runtime.h"
-#include "py/smallint.h"
 #include "py/mphal.h"
-#include "extmod/utime_mphal.h"
+#include "py/runtime.h"
 
 #ifdef _WIN32
 static inline int msec_sleep_tv(struct timeval *tv) {
@@ -66,7 +61,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #error Unsupported clock() implementation
 #endif
 
-STATIC mp_obj_t mod_time_time(void) {
+STATIC mp_obj_t mp_time_time_get(void) {
     #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -76,7 +71,6 @@ STATIC mp_obj_t mod_time_time(void) {
     return mp_obj_new_int((mp_int_t)time(NULL));
     #endif
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_time_obj, mod_time_time);
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
 STATIC mp_obj_t mod_time_clock(void) {
@@ -91,7 +85,7 @@ STATIC mp_obj_t mod_time_clock(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
-STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
+STATIC mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
@@ -130,7 +124,6 @@ STATIC mp_obj_t mod_time_sleep(mp_obj_t arg) {
     #endif
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_time_sleep_obj, mod_time_sleep);
 
 STATIC mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, struct tm *(*time_func)(const time_t *timep)) {
     time_t t;
@@ -207,31 +200,8 @@ STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mod_time_mktime_obj, mod_time_mktime);
 
-STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_utime) },
-    { MP_ROM_QSTR(MP_QSTR_clock), MP_ROM_PTR(&mod_time_clock_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep), MP_ROM_PTR(&mod_time_sleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_ms), MP_ROM_PTR(&mp_utime_sleep_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_sleep_us), MP_ROM_PTR(&mp_utime_sleep_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time), MP_ROM_PTR(&mod_time_time_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_ms), MP_ROM_PTR(&mp_utime_ticks_ms_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_us), MP_ROM_PTR(&mp_utime_ticks_us_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_cpu), MP_ROM_PTR(&mp_utime_ticks_cpu_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_add), MP_ROM_PTR(&mp_utime_ticks_add_obj) },
-    { MP_ROM_QSTR(MP_QSTR_ticks_diff), MP_ROM_PTR(&mp_utime_ticks_diff_obj) },
-    { MP_ROM_QSTR(MP_QSTR_time_ns), MP_ROM_PTR(&mp_utime_time_ns_obj) },
-    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mod_time_gmtime_obj) },
-    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) },
+#define MICROPY_PY_TIME_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_clock), MP_ROM_PTR(&mod_time_clock_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_gmtime), MP_ROM_PTR(&mod_time_gmtime_obj) }, \
+    { MP_ROM_QSTR(MP_QSTR_localtime), MP_ROM_PTR(&mod_time_localtime_obj) }, \
     { MP_ROM_QSTR(MP_QSTR_mktime), MP_ROM_PTR(&mod_time_mktime_obj) },
-};
-
-STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
-
-const mp_obj_module_t mp_module_time = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_time_globals,
-};
-
-MP_REGISTER_MODULE(MP_QSTR_utime, mp_module_time);
-
-#endif // MICROPY_PY_UTIME

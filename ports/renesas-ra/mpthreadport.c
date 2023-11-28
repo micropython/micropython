@@ -54,7 +54,11 @@ void mp_thread_gc_others(void) {
     mp_thread_mutex_unlock(&thread_mutex);
 }
 
-void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
+mp_uint_t mp_thread_get_id(void) {
+    return (uint32_t)pyb_thread_cur;
+}
+
+mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
     if (*stack_size == 0) {
         *stack_size = 4096; // default stack size
     } else if (*stack_size < 2048) {
@@ -82,6 +86,8 @@ void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
 
     // adjust stack_size to provide room to recover from hitting the limit
     *stack_size -= 1024;
+
+    return id;
 }
 
 void mp_thread_start(void) {

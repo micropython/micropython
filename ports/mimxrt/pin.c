@@ -25,6 +25,7 @@
  */
 
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "pin.h"
 
 
@@ -149,14 +150,6 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
     if (mp_obj_is_type(user_obj, &machine_pin_type)) {
         pin_obj = user_obj;
         return pin_obj;
-    }
-
-    // If pin is SMALL_INT
-    if (mp_obj_is_small_int(user_obj)) {
-        uint8_t value = MP_OBJ_SMALL_INT_VALUE(user_obj);
-        if (value < num_board_pins) {
-            return machine_pin_board_pins[value];
-        }
     }
 
     // See if the pin name matches a board pin

@@ -1,10 +1,10 @@
 import gc
-import uos
+import os
 from flashbdev import bdev
 
 try:
     if bdev:
-        uos.mount(bdev, "/")
+        os.mount(bdev, "/")
 except OSError:
     import inisetup
 

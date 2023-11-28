@@ -225,7 +225,7 @@ In detail for PYBv1.0 (for PYBv1.1 use PYBV11 instead of PYBV10):
 
     $ make BOARD=PYBV10 USE_MBOOT=1 clean all deploy
 
-   MicroPython will now be on the device and should boot straightaway.
+   MicroPython will now be on the device and should boot straight away.
 
 On PYBv1.x without mboot the flash layout is as follows:
 

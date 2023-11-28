@@ -1,19 +1,21 @@
 import gc
-import uos
+import os
 import samd
+import sys
 
-samd.Flash.flash_init()
 bdev = samd.Flash()
 
 # Try to mount the filesystem, and format the flash if it doesn't exist.
-fs_type = uos.VfsLfs2 if hasattr(uos, "VfsLfs2") else uos.VfsLfs1
+fs_type = os.VfsLfs2 if hasattr(os, "VfsLfs2") else os.VfsLfs1
 
 try:
-    vfs = fs_type(bdev)
+    vfs = fs_type(bdev, progsize=256)
 except:
-    fs_type.mkfs(bdev)
-    vfs = fs_type(bdev)
-uos.mount(vfs, "/")
+    fs_type.mkfs(bdev, progsize=256)
+    vfs = fs_type(bdev, progsize=256)
+os.mount(vfs, "/")
+sys.path.append("/lib")
 
+del vfs, fs_type, bdev, os, samd, sys
 gc.collect()
-del uos, vfs, gc
+del gc

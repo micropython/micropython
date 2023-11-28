@@ -1,11 +1,8 @@
 # test that socket.connect() on a non-blocking socket raises EINPROGRESS
 # and that an immediate write/send/read/recv does the right thing
 
-try:
-    import sys, time
-    import uerrno as errno, usocket as socket, ussl as ssl
-except:
-    import socket, errno, ssl
+import sys, time, socket, errno, ssl
+
 isMP = sys.implementation.name == "micropython"
 
 

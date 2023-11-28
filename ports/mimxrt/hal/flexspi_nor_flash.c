@@ -165,6 +165,37 @@ status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) {
     return status;
 }
 
+status_t flexspi_nor_flash_erase_block(FLEXSPI_Type *base, uint32_t address) __attribute__((section(".ram_functions")));
+status_t flexspi_nor_flash_erase_block(FLEXSPI_Type *base, uint32_t address) {
+    status_t status;
+    flexspi_transfer_t flashXfer;
+
+    /* Write enable */
+    status = flexspi_nor_write_enable(base, address);
+
+    if (status != kStatus_Success) {
+        return status;
+    }
+
+    /* Erase sector */
+    flashXfer.deviceAddress = address;
+    flashXfer.port = kFLEXSPI_PortA1;
+    flashXfer.cmdType = kFLEXSPI_Command;
+    flashXfer.SeqNumber = 1;
+    flashXfer.seqIndex = NOR_CMD_LUT_SEQ_IDX_ERASEBLOCK;
+    status = FLEXSPI_TransferBlocking(base, &flashXfer);
+
+    if (status != kStatus_Success) {
+        return status;
+    }
+
+    status = flexspi_nor_wait_bus_busy(base);
+
+    flexspi_nor_reset(base);
+
+    return status;
+}
+
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint32_t size) __attribute__((section(".ram_functions")));
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t dstAddr, const uint32_t *src, uint32_t size) {
     status_t status;

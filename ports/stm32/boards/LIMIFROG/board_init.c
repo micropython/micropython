@@ -59,7 +59,7 @@ static inline int  IS_GPIO_RESET(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
 
  - The STM32 embeds in ROM a bootloader that allows to
    obtain code and boot from a number of different interfaces,
-   including USB in a mode called "DFU" (Device Frimware Update)
+   including USB in a mode called "DFU" (Device Firmware Update)
    [see AN3606 from ST for full details]
    This bootloader code is executed instead of the regular
    application code when pin BOOT0 is pulled-up (which on
@@ -79,7 +79,7 @@ static inline int  IS_GPIO_RESET(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin) {
   other applicative code, of whether USB bootload is required (as
   flagged by a GPIO pulled low at reset, in the same way as BOOT0).
   The hadware reset pin of BLE is asserted (so that now it won't
-  generate any acitivity on UART3), and if USB bootload is required :
+  generate any activity on UART3), and if USB bootload is required :
   bootload ROM is remapped at address 0x0, stack pointer is
   updated and the code is branched to the start of the bootloader.
   - This code is run prior to any applicative configuration of clocks,

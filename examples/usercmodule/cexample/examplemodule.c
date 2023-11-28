@@ -43,8 +43,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(example_Timer_time_obj, example_Timer_time);
 // the user instantiates a Timer object.
 STATIC mp_obj_t example_Timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // Allocates the new object and sets the type.
-    example_Timer_obj_t *self = m_new_obj(example_Timer_obj_t);
-    self->base.type = (mp_obj_type_t *)type;
+    example_Timer_obj_t *self = mp_obj_malloc(example_Timer_obj_t, type);
 
     // Initializes the time for this Timer instance.
     self->start_time = mp_hal_ticks_ms();
@@ -69,7 +68,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &example_Timer_locals_dict
     );
 
-// Define all properties of the module.
+// Define all attributes of the module.
 // Table entries are key/value pairs of the attribute name (a string)
 // and the MicroPython object reference.
 // All identifiers and strings are written as MP_QSTR_xxx and will be

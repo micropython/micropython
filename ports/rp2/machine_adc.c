@@ -24,9 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_adc.c via MICROPY_PY_MACHINE_ADC_INCLUDEFILE.
+
 #include "py/mphal.h"
 #include "hardware/adc.h"
+#include "machine_pin.h"
 
 #define ADC_IS_VALID_GPIO(gpio) ((gpio) >= 26 && (gpio) <= 29)
 #define ADC_CHANNEL_FROM_GPIO(gpio) ((gpio) - 26)
@@ -43,50 +46,76 @@ STATIC uint16_t adc_config_and_read_u16(uint32_t channel) {
 /******************************************************************************/
 // MicroPython bindings for machine.ADC
 
-const mp_obj_type_t machine_adc_type;
+#define MICROPY_PY_MACHINE_ADC_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) }, \
 
 typedef struct _machine_adc_obj_t {
     mp_obj_base_t base;
     uint32_t channel;
+    #if MICROPY_HW_ADC_EXT_COUNT
+    uint32_t is_ext : 1;
+    #endif
 } machine_adc_obj_t;
 
-STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<ADC channel=%u>", self->channel);
 }
 
 // ADC(id)
-STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     mp_obj_t source = all_args[0];
 
-    uint32_t channel;
+    uint32_t channel = -1;
+    bool is_ext = false;
+    const machine_pin_obj_t *pin = NULL;
+
     if (mp_obj_is_int(source)) {
         // Get and validate channel number.
         channel = mp_obj_get_int(source);
-        if (!((channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR) || ADC_IS_VALID_GPIO(channel))) {
+        if (ADC_IS_VALID_GPIO(channel)) {
+            channel = ADC_CHANNEL_FROM_GPIO(channel);
+        } else if (!(channel >= 0 && channel <= ADC_CHANNEL_TEMPSENSOR)) {
             mp_raise_ValueError(MP_ERROR_TEXT("invalid channel"));
         }
-
     } else {
         // Get GPIO and check it has ADC capabilities.
-        channel = mp_hal_get_pin_obj(source);
-        if (!ADC_IS_VALID_GPIO(channel)) {
+        pin = machine_pin_find(source);
+        bool valid_adc_pin = false;
+        #if MICROPY_HW_ADC_EXT_COUNT
+        is_ext = pin->is_ext;
+        if (is_ext) {
+            valid_adc_pin = machine_pin_ext_is_adc_channel(pin);
+        } else
+        #endif
+        {
+            valid_adc_pin = ADC_IS_VALID_GPIO(pin->id);
+        }
+        if (!valid_adc_pin) {
             mp_raise_ValueError(MP_ERROR_TEXT("Pin doesn't have ADC capabilities"));
         }
     }
 
     // Initialise the ADC peripheral if it's not already running.
-    if (!(adc_hw->cs & ADC_CS_EN_BITS)) {
+    if (!is_ext && !(adc_hw->cs & ADC_CS_EN_BITS)) {
         adc_init();
     }
 
-    if (ADC_IS_VALID_GPIO(channel)) {
-        // Configure the GPIO pin in ADC mode.
-        adc_gpio_init(channel);
-        channel = ADC_CHANNEL_FROM_GPIO(channel);
+    if (pin) {
+        if (is_ext) {
+            #if MICROPY_HW_ADC_EXT_COUNT
+            // Note external pins are mutable.
+            machine_pin_ext_config((machine_pin_obj_t *)pin, MACHINE_PIN_MODE_ANALOG, 0);
+            channel = machine_pin_ext_to_adc_channel(pin);
+            #endif
+        } else {
+            // Configure the GPIO pin in ADC mode.
+            adc_gpio_init(pin->id);
+            channel = ADC_CHANNEL_FROM_GPIO(pin->id);
+        }
     } else if (channel == ADC_CHANNEL_TEMPSENSOR) {
         // Enable temperature sensor.
         adc_set_temp_sensor_enabled(1);
@@ -95,29 +124,19 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
     // Create ADC object.
     machine_adc_obj_t *o = mp_obj_malloc(machine_adc_obj_t, &machine_adc_type);
     o->channel = channel;
+    #if MICROPY_HW_ADC_EXT_COUNT
+    o->is_ext = is_ext;
+    #endif
 
     return MP_OBJ_FROM_PTR(o);
 }
 
 // read_u16()
-STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
-    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(adc_config_and_read_u16(self->channel));
+STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+    #if MICROPY_HW_ADC_EXT_COUNT
+    if (self->is_ext) {
+        return machine_pin_ext_read_u16(self->channel);
+    }
+    #endif
+    return adc_config_and_read_u16(self->channel);
 }
-MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
-
-STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) },
-};
-STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_adc_type,
-    MP_QSTR_ADC,
-    MP_TYPE_FLAG_NONE,
-    make_new, machine_adc_make_new,
-    print, machine_adc_print,
-    locals_dict, &machine_adc_locals_dict
-    );

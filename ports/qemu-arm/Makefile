@@ -133,12 +133,6 @@ OBJ = $(OBJ_COMMON) $(OBJ_RUN) $(OBJ_TEST)
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_COMMON_C) $(SRC_RUN_C) $(LIB_SRC_C)
 
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-endif
-
 all: run
 
 run: $(BUILD)/firmware.elf

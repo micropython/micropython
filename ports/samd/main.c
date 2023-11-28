@@ -52,7 +52,7 @@ void samd_main(void) {
         readline_init0();
 
         // Execute _boot.py to set up the filesystem.
-        pyexec_frozen_module("_boot.py");
+        pyexec_frozen_module("_boot.py", false);
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
@@ -81,12 +81,18 @@ void samd_main(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        #if MICROPY_PY_MACHINE_ADC
         adc_deinit_all();
+        #endif
         pin_irq_deinit_all();
+        #if MICROPY_PY_MACHINE_PWM
         pwm_deinit_all();
-        sercom_deinit_all();
+        #endif
         soft_timer_deinit();
         gc_sweep_all();
+        #if MICROPY_PY_MACHINE_I2C || MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_UART
+        sercom_deinit_all();
+        #endif
         mp_deinit();
     }
 }

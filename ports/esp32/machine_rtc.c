@@ -36,8 +36,8 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/timeutils/timeutils.h"
-#include "modmachine.h"
 #include "machine_rtc.h"
 
 typedef struct _machine_rtc_obj_t {

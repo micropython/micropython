@@ -134,7 +134,7 @@ def instance1():
         ble.l2cap_disconnect(conn_handle, cid)
         wait_for_event(_IRQ_L2CAP_DISCONNECT, TIMEOUT_MS)
 
-        print(
+        multitest.output_metric(
             "Received {}/{} bytes in {} ms. {} B/s".format(
                 recv_bytes, recv_correct, total_ticks, recv_bytes * 1000 // total_ticks
             )

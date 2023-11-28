@@ -27,10 +27,9 @@
 #include "py/mpconfig.h"
 #if MICROPY_PY_MACHINE
 
-#include "py/obj.h"
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "extmod/virtpin.h"
-#include "extmod/machine_pinbase.h"
 
 // PinBase class
 

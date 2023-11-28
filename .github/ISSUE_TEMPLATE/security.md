@@ -1,6 +1,6 @@
 ---
 name: Security report
-about: Report a security issue or vunerability in MicroPython
+about: Report a security issue or vulnerability in MicroPython
 title: ''
 labels: security
 assignees: ''

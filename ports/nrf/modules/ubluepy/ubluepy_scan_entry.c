@@ -71,7 +71,7 @@ STATIC mp_obj_t scan_entry_get_rssi(mp_obj_t self_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(bluepy_scan_entry_get_rssi_obj, scan_entry_get_rssi);
 
 /// \method getScanData()
-/// Return list of the scan data tupples (ad_type, description, value)
+/// Return list of the scan data tuples (ad_type, description, value)
 ///
 STATIC mp_obj_t scan_entry_get_scan_data(mp_obj_t self_in) {
     ubluepy_scan_entry_obj_t * self = MP_OBJ_TO_PTR(self_in);

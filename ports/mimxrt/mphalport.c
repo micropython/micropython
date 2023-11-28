@@ -86,8 +86,11 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     if ((poll_flags & MP_STREAM_POLL_RD) && ringbuf_peek(&stdin_ringbuf) != -1) {
         ret |= MP_STREAM_POLL_RD;
     }
+    if ((poll_flags & MP_STREAM_POLL_WR) && tud_cdc_connected() && tud_cdc_write_available() > 0) {
+        ret |= MP_STREAM_POLL_WR;
+    }
     #if MICROPY_PY_OS_DUPTERM
-    ret |= mp_uos_dupterm_poll(poll_flags);
+    ret |= mp_os_dupterm_poll(poll_flags);
     #endif
     return ret;
 }
@@ -100,7 +103,7 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
         #if MICROPY_PY_OS_DUPTERM
-        int dupterm_c = mp_uos_dupterm_rx_chr();
+        int dupterm_c = mp_os_dupterm_rx_chr();
         if (dupterm_c >= 0) {
             return dupterm_c;
         }
@@ -131,7 +134,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         }
     }
     #if MICROPY_PY_OS_DUPTERM
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
     #endif
 }
 

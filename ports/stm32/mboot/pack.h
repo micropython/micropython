@@ -53,7 +53,7 @@ enum mboot_pack_chunk_format {
     MBOOT_PACK_CHUNK_FW_GZIP = 3,
 };
 
-// Each DFU chunk transfered has this header to validate it.
+// Each DFU chunk transferred has this header to validate it.
 
 typedef struct _mboot_pack_chunk_buf_t {
     struct {

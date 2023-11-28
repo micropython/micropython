@@ -123,6 +123,12 @@ static const flash_layout_t flash_layout[] = {
     { (uint32_t)FLASH_BASE, 0x200, 1024 },
 };
 
+#elif defined(STM32H5)
+
+static const flash_layout_t flash_layout[] = {
+    { 0x08000000, 8192, 256 },
+};
+
 #elif defined(STM32H7)
 
 static const flash_layout_t flash_layout[] = {
@@ -133,11 +139,18 @@ static const flash_layout_t flash_layout[] = {
 #error Unsupported processor
 #endif
 
-#if (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32H7)
+#if defined(STM32H723xx) || defined(STM32H750xx)
 
 // get the bank of a given flash address
 static uint32_t get_bank(uint32_t addr) {
-    #if defined(STM32H7)
+    return FLASH_BANK_1;
+}
+
+#elif (defined(STM32L4) && defined(SYSCFG_MEMRMP_FB_MODE)) || defined(STM32H5) || defined(STM32H7)
+
+// get the bank of a given flash address
+static uint32_t get_bank(uint32_t addr) {
+    #if defined(STM32H5) || defined(STM32H7)
     if (READ_BIT(FLASH->OPTCR, FLASH_OPTCR_SWAP_BANK) == 0) {
     #else
     if (READ_BIT(SYSCFG->MEMRMP, SYSCFG_MEMRMP_FB_MODE) == 0) {
@@ -290,7 +303,9 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     EraseInitStruct.NbPages = get_page(flash_dest + 4 * num_word32 - 1) - EraseInitStruct.Page + 1;
     #else
 
-    #if defined(STM32H7)
+    #if defined(STM32H5)
+    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS);
+    #elif defined(STM32H7)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_ALL_ERRORS_BANK1 | FLASH_FLAG_ALL_ERRORS_BANK2);
     #elif defined(STM32L1)
     __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR);
@@ -302,14 +317,17 @@ int flash_erase(uint32_t flash_dest, uint32_t num_word32) {
     EraseInitStruct.TypeErase = TYPEERASE_SECTORS;
     #if defined(FLASH_CR_PSIZE)
     EraseInitStruct.VoltageRange = VOLTAGE_RANGE_3; // voltage range needs to be 2.7V to 3.6V
-    #else
+    #elif !defined(STM32H5)
     EraseInitStruct.VoltageRange = 0; // unused parameter on STM32H7A3/B3
     #endif
-    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H7)
+    #if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32H7)
     EraseInitStruct.Banks = get_bank(flash_dest);
     #endif
     EraseInitStruct.Sector = flash_get_sector_info(flash_dest, NULL, NULL);
     EraseInitStruct.NbSectors = flash_get_sector_info(flash_dest + 4 * num_word32 - 1, NULL, NULL) - EraseInitStruct.Sector + 1;
+    #if defined(STM32H5)
+    EraseInitStruct.Sector &= 0x7f; // second bank should start counting at 0
+    #endif
 
     #endif
 
@@ -430,6 +448,18 @@ int flash_write(uint32_t flash_dest, const uint32_t *src, uint32_t num_word32) {
         while (__HAL_FLASH_GET_FLAG(FLASH_FLAG_CFGBSY)) {
         }
         #endif
+    }
+
+    #elif defined(STM32H5)
+
+    // program the flash 128 bits (4 words) at a time
+    for (int i = 0; i < num_word32 / 4; i++) {
+        status = HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD, flash_dest, (uint64_t)(uint32_t)src);
+        if (status != HAL_OK) {
+            break;
+        }
+        flash_dest += 16;
+        src += 4;
     }
 
     #elif defined(STM32H7)

@@ -29,7 +29,8 @@
 const char esp_help_text[] =
     "Welcome to MicroPython!\n"
     "\n"
-    "For online docs please visit http://docs.micropython.org/en/latest/esp8266/ .\n"
+    "For online docs please visit http://docs.micropython.org/\n"
+    "\n"
     "For diagnostic information to include in bug reports execute 'import port_diag'.\n"
     "\n"
     "Basic WiFi configuration:\n"

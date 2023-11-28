@@ -56,3 +56,6 @@
 [submodule "lib/micropython-lib"]
 	path = lib/micropython-lib
 	url = https://github.com/micropython/micropython-lib.git
+[submodule "lib/protobuf-c"]
+	path = lib/protobuf-c
+	url = https://github.com/protobuf-c/protobuf-c.git

@@ -38,14 +38,15 @@
 typedef struct _gz_stream_t {
     void *stream_data;
     stream_read_t stream_read;
-    struct uzlib_uncomp tinf;
+    uzlib_uncomp_t decomp;
     uint8_t buf[512];
     uint8_t dict[DICT_SIZE];
 } gz_stream_t;
 
 static gz_stream_t gz_stream SECTION_NOZERO_BSS;
 
-static int gz_stream_read_src(TINF_DATA *tinf) {
+static int gz_stream_read_src(void *data) {
+    uzlib_uncomp_t *decomp = data;
     int n = gz_stream.stream_read(gz_stream.stream_data, gz_stream.buf, sizeof(gz_stream.buf));
     if (n < 0) {
         // Stream error
@@ -56,17 +57,17 @@ static int gz_stream_read_src(TINF_DATA *tinf) {
         return -1;
     }
 
-    tinf->source = gz_stream.buf + 1;
-    tinf->source_limit = gz_stream.buf + n;
+    decomp->source = gz_stream.buf + 1;
+    decomp->source_limit = gz_stream.buf + n;
     return gz_stream.buf[0];
 }
 
 int gz_stream_init_from_raw_data(const uint8_t *data, size_t len) {
-    memset(&gz_stream.tinf, 0, sizeof(gz_stream.tinf));
-    gz_stream.tinf.source = data;
-    gz_stream.tinf.source_limit = data + len;
+    memset(&gz_stream.decomp, 0, sizeof(gz_stream.decomp));
+    gz_stream.decomp.source = data;
+    gz_stream.decomp.source_limit = data + len;
 
-    uzlib_uncompress_init(&gz_stream.tinf, gz_stream.dict, DICT_SIZE);
+    uzlib_uncompress_init(&gz_stream.decomp, gz_stream.dict, DICT_SIZE);
 
     return 0;
 }
@@ -75,36 +76,38 @@ int gz_stream_init_from_stream(void *stream_data, stream_read_t stream_read) {
     gz_stream.stream_data = stream_data;
     gz_stream.stream_read = stream_read;
 
-    memset(&gz_stream.tinf, 0, sizeof(gz_stream.tinf));
-    gz_stream.tinf.source_read_cb = gz_stream_read_src;
+    memset(&gz_stream.decomp, 0, sizeof(gz_stream.decomp));
+    gz_stream.decomp.source_read_data = &gz_stream.decomp;
+    gz_stream.decomp.source_read_cb = gz_stream_read_src;
 
-    int st = uzlib_gzip_parse_header(&gz_stream.tinf);
-    if (st != TINF_OK) {
+    int header_wbits;
+    int st = uzlib_parse_zlib_gzip_header(&gz_stream.decomp, &header_wbits);
+    if (st != UZLIB_HEADER_GZIP) {
         return -MBOOT_ERRNO_GUNZIP_FAILED;
     }
 
-    uzlib_uncompress_init(&gz_stream.tinf, gz_stream.dict, DICT_SIZE);
+    uzlib_uncompress_init(&gz_stream.decomp, gz_stream.dict, DICT_SIZE);
 
     return 0;
 }
 
 int gz_stream_read(size_t len, uint8_t *buf) {
-    if (gz_stream.tinf.source == NULL && gz_stream.tinf.source_read_cb == NULL) {
+    if (gz_stream.decomp.source == NULL && gz_stream.decomp.source_read_cb == NULL) {
         // End of stream.
         return 0;
     }
-    gz_stream.tinf.dest = buf;
-    gz_stream.tinf.dest_limit = buf + len;
-    int st = uzlib_uncompress_chksum(&gz_stream.tinf);
+    gz_stream.decomp.dest = buf;
+    gz_stream.decomp.dest_limit = buf + len;
+    int st = uzlib_uncompress_chksum(&gz_stream.decomp);
     if (st < 0) {
         return st;
     }
-    if (st == TINF_DONE) {
+    if (st == UZLIB_DONE) {
         // Indicate end-of-stream for subsequent calls.
-        gz_stream.tinf.source = NULL;
-        gz_stream.tinf.source_read_cb = NULL;
+        gz_stream.decomp.source = NULL;
+        gz_stream.decomp.source_read_cb = NULL;
     }
-    return gz_stream.tinf.dest - buf;
+    return gz_stream.decomp.dest - buf;
 }
 
 #endif // MBOOT_FSLOAD || MBOOT_ENABLE_PACKING

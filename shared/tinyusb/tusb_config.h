@@ -27,8 +27,7 @@
 #ifndef MICROPY_INCLUDED_SHARED_TINYUSB_TUSB_CONFIG_H
 #define MICROPY_INCLUDED_SHARED_TINYUSB_TUSB_CONFIG_H
 
-#include <py/mpconfig.h>
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 
 #if MICROPY_HW_ENABLE_USBDEV
 
@@ -44,7 +43,21 @@
 #define MICROPY_HW_USB_CDC_INTERFACE_STRING "Board CDC"
 #endif
 
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_VENDOR_STRING "MicroPy"
+#endif
+
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_PRODUCT_STRING "Mass Storage"
+#endif
+
+#ifndef MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING
+#define MICROPY_HW_USB_MSC_INQUIRY_REVISION_STRING "1.00"
+#endif
+
+#ifndef CFG_TUSB_RHPORT0_MODE
 #define CFG_TUSB_RHPORT0_MODE   (OPT_MODE_DEVICE)
+#endif
 
 #if MICROPY_HW_USB_CDC
 #define CFG_TUD_CDC             (1)
@@ -60,9 +73,8 @@
 
 // CDC Configuration
 #if CFG_TUD_CDC
-#define CFG_TUD_CDC_EP_BUFSIZE  (256)
-#define CFG_TUD_CDC_RX_BUFSIZE  (256)
-#define CFG_TUD_CDC_TX_BUFSIZE  (256)
+#define CFG_TUD_CDC_RX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
+#define CFG_TUD_CDC_TX_BUFSIZE  ((CFG_TUD_MAX_SPEED == OPT_MODE_HIGH_SPEED) ? 512 : 256)
 #endif
 
 // MSC Configuration
@@ -90,7 +102,9 @@
 
 #define USBD_MAX_POWER_MA (250)
 
-#define USBD_DESC_STR_MAX (20)
+#ifndef MICROPY_HW_USB_DESC_STR_MAX
+#define MICROPY_HW_USB_DESC_STR_MAX (20)
+#endif
 
 #if CFG_TUD_CDC
 #define USBD_ITF_CDC (0) // needs 2 interfaces

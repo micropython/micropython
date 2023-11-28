@@ -71,7 +71,7 @@ STATIC mp_obj_t pyb_sd_deinit (mp_obj_t self_in);
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
-/// Initalizes the sd card hardware driver
+/// Initializes the sd card hardware driver
 STATIC void pyb_sd_hw_init (pybsd_obj_t *self) {
     if (self->pin_clk) {
         // Configure the clock pin as output only

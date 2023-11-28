@@ -1,4 +1,4 @@
-[![CI badge](https://github.com/micropython/micropython/workflows/unix%20port/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
+[![Unix CI badge](https://github.com/micropython/micropython/actions/workflows/ports_unix.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![STM32 CI badge](https://github.com/micropython/micropython/actions/workflows/ports_stm32.yml/badge.svg)](https://github.com/micropython/micropython/actions?query=branch%3Amaster+event%3Apush) [![Docs CI badge](https://github.com/micropython/micropython/actions/workflows/docs.yml/badge.svg)](https://docs.micropython.org/) [![codecov](https://codecov.io/gh/micropython/micropython/branch/master/graph/badge.svg?token=I92PfD05sD)](https://codecov.io/gh/micropython/micropython)
 
 The MicroPython project
 =======================
@@ -119,7 +119,6 @@ In addition, the following ports are provided in this repository:
  - [rp2](ports/rp2) -- Raspberry Pi RP2040 (including Pico and Pico W).
  - [samd](ports/samd) -- Microchip (formerly Atmel) SAMD21 and SAMD51.
  - [stm32](ports/stm32) -- STMicroelectronics STM32 family (including F0, F4, F7, G0, G4, H7, L0, L4, WB)
- - [teensy](ports/teensy) -- Teensy 3.x.
  - [webassembly](ports/webassembly) -- Emscripten port targeting browsers and NodeJS.
  - [zephyr](ports/zephyr) -- Zephyr RTOS.
 

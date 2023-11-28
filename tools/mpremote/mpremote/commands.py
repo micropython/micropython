@@ -4,7 +4,8 @@ import tempfile
 
 import serial.tools.list_ports
 
-from . import pyboardextended as pyboard
+from .transport import TransportError
+from .transport_serial import SerialTransport, stdout_write_bytes
 
 
 class CommandError(Exception):
@@ -36,28 +37,28 @@ def do_connect(state, args=None):
             for p in sorted(serial.tools.list_ports.comports()):
                 if p.vid is not None and p.pid is not None:
                     try:
-                        state.pyb = pyboard.PyboardExtended(p.device, baudrate=115200)
+                        state.transport = SerialTransport(p.device, baudrate=115200)
                         return
-                    except pyboard.PyboardError as er:
+                    except TransportError as er:
                         if not er.args[0].startswith("failed to access"):
                             raise er
-            raise pyboard.PyboardError("no device found")
+            raise TransportError("no device found")
         elif dev.startswith("id:"):
             # Search for a device with the given serial number.
             serial_number = dev[len("id:") :]
             dev = None
             for p in serial.tools.list_ports.comports():
                 if p.serial_number == serial_number:
-                    state.pyb = pyboard.PyboardExtended(p.device, baudrate=115200)
+                    state.transport = SerialTransport(p.device, baudrate=115200)
                     return
-            raise pyboard.PyboardError("no device with serial number {}".format(serial_number))
+            raise TransportError("no device with serial number {}".format(serial_number))
         else:
             # Connect to the given device.
             if dev.startswith("port:"):
                 dev = dev[len("port:") :]
-            state.pyb = pyboard.PyboardExtended(dev, baudrate=115200)
+            state.transport = SerialTransport(dev, baudrate=115200)
             return
-    except pyboard.PyboardError as er:
+    except TransportError as er:
         msg = er.args[0]
         if msg.startswith("failed to access"):
             msg += " (it may be in use by another program)"
@@ -66,23 +67,23 @@ def do_connect(state, args=None):
 
 
 def do_disconnect(state, _args=None):
-    if not state.pyb:
+    if not state.transport:
         return
 
     try:
-        if state.pyb.mounted:
-            if not state.pyb.in_raw_repl:
-                state.pyb.enter_raw_repl(soft_reset=False)
-            state.pyb.umount_local()
-        if state.pyb.in_raw_repl:
-            state.pyb.exit_raw_repl()
+        if state.transport.mounted:
+            if not state.transport.in_raw_repl:
+                state.transport.enter_raw_repl(soft_reset=False)
+            state.transport.umount_local()
+        if state.transport.in_raw_repl:
+            state.transport.exit_raw_repl()
     except OSError:
         # Ignore any OSError exceptions when shutting down, eg:
-        # - pyboard.filesystem_command will close the connecton if it had an error
+        # - filesystem_command will close the connection if it had an error
         # - umounting will fail if serial port disappeared
         pass
-    state.pyb.close()
-    state.pyb = None
+    state.transport.close()
+    state.transport = None
     state._auto_soft_reset = True
 
 
@@ -122,9 +123,9 @@ def do_filesystem(state, args):
     if command == "cat":
         # Don't be verbose by default when using cat, so output can be
         # redirected to something.
-        verbose = args.verbose == True
+        verbose = args.verbose is True
     else:
-        verbose = args.verbose != False
+        verbose = args.verbose is not False
 
     if command == "cp" and args.recursive:
         if paths[-1] != ":":
@@ -136,16 +137,17 @@ def do_filesystem(state, args):
                 raise CommandError("'cp -r' source files must be local")
             _list_recursive(src_files, path)
         known_dirs = {""}
-        state.pyb.exec_("import uos")
+        state.transport.exec("import os")
         for dir, file in src_files:
             dir_parts = dir.split("/")
             for i in range(len(dir_parts)):
                 d = "/".join(dir_parts[: i + 1])
                 if d not in known_dirs:
-                    state.pyb.exec_("try:\n uos.mkdir('%s')\nexcept OSError as e:\n print(e)" % d)
+                    state.transport.exec(
+                        "try:\n os.mkdir('%s')\nexcept OSError as e:\n print(e)" % d
+                    )
                     known_dirs.add(d)
-            pyboard.filesystem_command(
-                state.pyb,
+            state.transport.filesystem_command(
                 ["cp", "/".join((dir, file)), ":" + dir + "/"],
                 progress_callback=show_progress_bar,
                 verbose=verbose,
@@ -154,8 +156,8 @@ def do_filesystem(state, args):
         if args.recursive:
             raise CommandError("'-r' only supported for 'cp'")
         try:
-            pyboard.filesystem_command(
-                state.pyb, [command] + paths, progress_callback=show_progress_bar, verbose=verbose
+            state.transport.filesystem_command(
+                [command] + paths, progress_callback=show_progress_bar, verbose=verbose
             )
         except OSError as er:
             raise CommandError(er)
@@ -166,17 +168,17 @@ def do_edit(state, args):
     state.did_action()
 
     if not os.getenv("EDITOR"):
-        raise pyboard.PyboardError("edit: $EDITOR not set")
+        raise TransportError("edit: $EDITOR not set")
     for src in args.files:
         src = src.lstrip(":")
         dest_fd, dest = tempfile.mkstemp(suffix=os.path.basename(src))
         try:
             print("edit :%s" % (src,))
             os.close(dest_fd)
-            state.pyb.fs_touch(src)
-            state.pyb.fs_get(src, dest, progress_callback=show_progress_bar)
+            state.transport.fs_touch(src)
+            state.transport.fs_get(src, dest, progress_callback=show_progress_bar)
             if os.system('%s "%s"' % (os.getenv("EDITOR"), dest)) == 0:
-                state.pyb.fs_put(dest, src, progress_callback=show_progress_bar)
+                state.transport.fs_put(dest, src, progress_callback=show_progress_bar)
         finally:
             os.unlink(dest)
 
@@ -186,13 +188,13 @@ def _do_execbuffer(state, buf, follow):
     state.did_action()
 
     try:
-        state.pyb.exec_raw_no_follow(buf)
+        state.transport.exec_raw_no_follow(buf)
         if follow:
-            ret, ret_err = state.pyb.follow(timeout=None, data_consumer=pyboard.stdout_write_bytes)
+            ret, ret_err = state.transport.follow(timeout=None, data_consumer=stdout_write_bytes)
             if ret_err:
-                pyboard.stdout_write_bytes(ret_err)
+                stdout_write_bytes(ret_err)
                 sys.exit(1)
-    except pyboard.PyboardError as er:
+    except TransportError as er:
         print(er)
         sys.exit(1)
     except KeyboardInterrupt:
@@ -221,13 +223,13 @@ def do_run(state, args):
 def do_mount(state, args):
     state.ensure_raw_repl()
     path = args.path[0]
-    state.pyb.mount_local(path, unsafe_links=args.unsafe_links)
+    state.transport.mount_local(path, unsafe_links=args.unsafe_links)
     print(f"Local directory {path} is mounted at /remote")
 
 
 def do_umount(state, path):
     state.ensure_raw_repl()
-    state.pyb.umount_local()
+    state.transport.umount_local()
 
 
 def do_resume(state, _args=None):
@@ -236,3 +238,24 @@ def do_resume(state, _args=None):
 
 def do_soft_reset(state, _args=None):
     state.ensure_raw_repl(soft_reset=True)
+    state.did_action()
+
+
+def do_rtc(state, args):
+    if args.set:
+        import datetime
+
+        now = datetime.datetime.now()
+        timetuple = "({}, {}, {}, {}, {}, {}, {}, {})".format(
+            now.year,
+            now.month,
+            now.day,
+            now.weekday(),
+            now.hour,
+            now.minute,
+            now.second,
+            now.microsecond,
+        )
+        _do_execbuffer(state, "import machine; machine.RTC().datetime({})".format(timetuple), True)
+    else:
+        _do_execbuffer(state, "import machine; print(machine.RTC().datetime())", True)

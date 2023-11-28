@@ -67,8 +67,7 @@ Reset_Handler:
     cmp  r1, r2
     bcc  .bss_zero_loop
 
-    /* Initialise the system and jump to the main code */
-    bl   SystemInit
+    /* Jump to the main code */
     mov  r0, r4
     bl   stm32_main
 

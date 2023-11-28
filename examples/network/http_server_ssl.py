@@ -1,10 +1,6 @@
-import ubinascii as binascii
-
-try:
-    import usocket as socket
-except:
-    import socket
-import ussl as ssl
+import binascii
+import socket
+import ssl
 
 
 # This self-signed key/cert pair is randomly generated and to be used for

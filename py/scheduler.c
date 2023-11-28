@@ -51,6 +51,12 @@ void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void)
 }
 #endif
 
+#if MICROPY_ENABLE_VM_ABORT
+void MICROPY_WRAP_MP_SCHED_VM_ABORT(mp_sched_vm_abort)(void) {
+    MP_STATE_VM(vm_abort) = true;
+}
+#endif
+
 #if MICROPY_ENABLE_SCHEDULER
 
 #define IDX_MASK(i) ((i) & (MICROPY_SCHEDULER_DEPTH - 1))
@@ -203,6 +209,17 @@ MP_REGISTER_ROOT_POINTER(mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH]);
 // Called periodically from the VM or from "waiting" code (e.g. sleep) to
 // process background tasks and pending exceptions (e.g. KeyboardInterrupt).
 void mp_handle_pending(bool raise_exc) {
+    // Handle pending VM abort.
+    #if MICROPY_ENABLE_VM_ABORT
+    if (MP_STATE_VM(vm_abort) && mp_thread_is_main_thread()) {
+        MP_STATE_VM(vm_abort) = false;
+        if (raise_exc && nlr_get_abort() != NULL) {
+            nlr_jump_abort();
+        }
+    }
+    #endif
+
+    // Handle any pending exception.
     if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
         mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
@@ -215,6 +232,8 @@ void mp_handle_pending(bool raise_exc) {
         }
         MICROPY_END_ATOMIC_SECTION(atomic_state);
     }
+
+    // Handle any pending callbacks.
     #if MICROPY_ENABLE_SCHEDULER
     if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
         mp_sched_run_pending();

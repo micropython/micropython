@@ -7,7 +7,7 @@
     FLASH_APP   .text
     FLASH_APP   .data
 
-    FLASH_EXT   .big_const
+    FLASH_EXT   .text_ext
 
     RAM         .data
     RAM         .bss
@@ -40,10 +40,6 @@ _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
-ENTRY(Reset_Handler)
-
-REGION_ALIAS("FLASH_COMMON", FLASH_APP);
-
 /* Define output sections */
 SECTIONS
 {
@@ -53,13 +49,10 @@ SECTIONS
         *lib/btstack/*(.text* .rodata*)
         *lib/mbedtls/*(.text* .rodata*)
         *lib/mynewt-nimble/*(.text* .rodata*)
-        . = ALIGN(512);
-        *(.big_const*)
+        *lib/cyw43-driver/*(.rodata.w4343*_combined)
+        *drivers/cyw43/*(.rodata.cyw43_btfw_*)
         . = ALIGN(4);
     } >FLASH_EXT
-
-    INCLUDE common_isr.ld
-    INCLUDE common_text.ld
-    INCLUDE common_extratext_data_in_flash.ld
-    INCLUDE common_bss_heap_stack.ld
 }
+
+INCLUDE common_bl.ld

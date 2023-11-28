@@ -2,7 +2,7 @@
 # while dealing with concurrent access from multiple threads.
 
 import _thread
-import utime
+import time
 import micropython
 import gc
 
@@ -32,15 +32,15 @@ def thread():
             micropython.schedule(task, None)
         except RuntimeError:
             # Queue full, back off.
-            utime.sleep_ms(10)
+            time.sleep_ms(10)
 
 
 for i in range(8):
     _thread.start_new_thread(thread, ())
 
 # Wait up to 10 seconds for 10000 tasks to be scheduled.
-t = utime.ticks_ms()
-while n < _NUM_TASKS and utime.ticks_diff(utime.ticks_ms(), t) < _TIMEOUT_MS:
+t = time.ticks_ms()
+while n < _NUM_TASKS and time.ticks_diff(time.ticks_ms(), t) < _TIMEOUT_MS:
     pass
 
 if n < _NUM_TASKS:

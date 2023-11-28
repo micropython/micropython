@@ -52,7 +52,8 @@ codepoint2name[ord("^")] = "caret"
 codepoint2name[ord("|")] = "pipe"
 codepoint2name[ord("~")] = "tilde"
 
-# static qstrs, should be sorted
+# static qstrs, these must maintain a specific order for .mpy compatibility
+# See QSTR_LAST_STATIC at the top of py/persistentcode.c
 
 static_qstr_list = [
     "",
@@ -222,6 +223,71 @@ static_qstr_list = [
     "zip",
 ]
 
+# Additional QSTRs that must have index <255 because they are stored in
+# `mp_binary_op_method_name` and `mp_unary_op_method_name` (see py/objtype.c).
+# These are not part of the .mpy compatibility list, but we place them in the
+# fixed unsorted pool (i.e. QDEF0) to ensure their indices are small.
+operator_qstr_list = {
+    "__bool__",
+    "__pos__",
+    "__neg__",
+    "__invert__",
+    "__abs__",
+    "__float__",
+    "__complex__",
+    "__sizeof__",
+    "__lt__",
+    "__gt__",
+    "__eq__",
+    "__le__",
+    "__ge__",
+    "__ne__",
+    "__contains__",
+    "__iadd__",
+    "__isub__",
+    "__imul__",
+    "__imatmul__",
+    "__ifloordiv__",
+    "__itruediv__",
+    "__imod__",
+    "__ipow__",
+    "__ior__",
+    "__ixor__",
+    "__iand__",
+    "__ilshift__",
+    "__irshift__",
+    "__add__",
+    "__sub__",
+    "__mul__",
+    "__matmul__",
+    "__floordiv__",
+    "__truediv__",
+    "__mod__",
+    "__divmod__",
+    "__pow__",
+    "__or__",
+    "__xor__",
+    "__and__",
+    "__lshift__",
+    "__rshift__",
+    "__radd__",
+    "__rsub__",
+    "__rmul__",
+    "__rmatmul__",
+    "__rfloordiv__",
+    "__rtruediv__",
+    "__rmod__",
+    "__rpow__",
+    "__ror__",
+    "__rxor__",
+    "__rand__",
+    "__rlshift__",
+    "__rrshift__",
+    "__get__",
+    "__set__",
+    "__delete__",
+}
+
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
@@ -244,21 +310,12 @@ def qstr_escape(qst):
     return re.sub(r"[^A-Za-z0-9_]", esc_char, qst)
 
 
+static_qstr_list_ident = list(map(qstr_escape, static_qstr_list))
+
+
 def parse_input_headers(infiles):
     qcfgs = {}
     qstrs = {}
-
-    # add static qstrs
-    for qstr in static_qstr_list:
-        # work out the corresponding qstr name
-        ident = qstr_escape(qstr)
-
-        # don't add duplicates
-        assert ident not in qstrs
-
-        # add the qstr to the list, with order number to retain original order in file
-        order = len(qstrs) - 300000
-        qstrs[ident] = (order, ident, qstr)
 
     # read the qstrs in from the input files
     for infile in infiles:
@@ -294,22 +351,12 @@ def parse_input_headers(infiles):
                 ident = qstr_escape(qstr)
 
                 # don't add duplicates
+                if ident in static_qstr_list_ident:
+                    continue
                 if ident in qstrs:
                     continue
 
-                # add the qstr to the list, with order number to retain original order in file
-                order = len(qstrs)
-                # but put special method names like __add__ at the top of list, so
-                # that their id's fit into a byte
-                if ident == "":
-                    # Sort empty qstr above all still
-                    order = -200000
-                elif ident == "__dir__":
-                    # Put __dir__ after empty qstr for builtin dir() to work
-                    order = -190000
-                elif ident.startswith("__"):
-                    order -= 100000
-                qstrs[ident] = (order, ident, qstr)
+                qstrs[ident] = (ident, qstr)
 
     if not qcfgs:
         sys.stderr.write("ERROR: Empty preprocessor output - check for errors above\n")
@@ -348,12 +395,19 @@ def print_qstr_data(qcfgs, qstrs):
     print("")
 
     # add NULL qstr with no hash or data
-    print('QDEF(MP_QSTRnull, 0, 0, "")')
+    print('QDEF0(MP_QSTRnull, 0, 0, "")')
 
-    # go through each qstr and print it out
-    for order, ident, qstr in sorted(qstrs.values(), key=lambda x: x[0]):
+    # add static qstrs to the first unsorted pool
+    for qstr in static_qstr_list:
         qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
-        print("QDEF(MP_QSTR_%s, %s)" % (ident, qbytes))
+        print("QDEF0(MP_QSTR_%s, %s)" % (qstr_escape(qstr), qbytes))
+
+    # add remaining qstrs to the sorted (by value) pool (unless they're in
+    # operator_qstr_list, in which case add them to the unsorted pool)
+    for ident, qstr in sorted(qstrs.values(), key=lambda x: x[1]):
+        qbytes = make_bytes(cfg_bytes_len, cfg_bytes_hash, qstr)
+        pool = 0 if qstr in operator_qstr_list else 1
+        print("QDEF%d(MP_QSTR_%s, %s)" % (pool, ident, qbytes))
 
 
 def do_work(infiles):

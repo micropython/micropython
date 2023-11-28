@@ -55,7 +55,7 @@
 #include "mperror.h"
 #include "simplelink.h"
 #include "modnetwork.h"
-#include "modusocket.h"
+#include "modsocket.h"
 #include "modwlan.h"
 #include "serverstask.h"
 #include "telnet.h"
@@ -70,7 +70,7 @@
 #include "cryptohash.h"
 #include "mpirq.h"
 #include "updater.h"
-#include "moduos.h"
+#include "modos.h"
 #include "antenna.h"
 #include "task.h"
 
@@ -158,7 +158,7 @@ soft_reset:
             // to enable simplelink and leave it as is
             wlan_first_start();
         } else {
-            // only if not comming out of hibernate or a soft reset
+            // only if not coming out of hibernate or a soft reset
             mptask_enter_ap_mode();
         }
 
@@ -315,7 +315,7 @@ STATIC void mptask_init_sflash_filesystem(void) {
         // create empty main.py
         mptask_create_main_py();
     } else if (res == FR_OK) {
-        // mount sucessful
+        // mount successful
         if (FR_OK != f_stat(&vfs_fat->fatfs, "/main.py", &fno)) {
             // create empty main.py
             mptask_create_main_py();

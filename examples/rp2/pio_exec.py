@@ -5,6 +5,8 @@
 #   - using set_init and set_base
 #   - using StateMachine.exec
 
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
+
 import time
 from machine import Pin
 import rp2

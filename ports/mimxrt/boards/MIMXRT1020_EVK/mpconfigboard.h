@@ -1,6 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "i.MX RT1020 EVK"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1021DAG5A"
 
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-1020evk"
+
 // i.MX RT1020 EVK has 1 board LED
 // Todo: think about replacing the define with searching in the generated pins?
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_B0_05)
@@ -31,6 +33,16 @@
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_SD_B1_02_LPUART8_TX }, { IOMUXC_GPIO_SD_B1_03_LPUART8_RX },
+
+#define IOMUX_TABLE_UART_CTS_RTS \
+    { IOMUXC_GPIO_AD_B0_08_LPUART1_CTS_B }, { IOMUXC_GPIO_AD_B0_09_LPUART1_RTS_B }, \
+    { IOMUXC_GPIO_AD_B1_06_LPUART2_CTS_B }, { IOMUXC_GPIO_AD_B1_07_LPUART2_RTS_B }, \
+    { IOMUXC_GPIO_AD_B0_12_LPUART3_CTS_B }, { IOMUXC_GPIO_AD_B0_13_LPUART3_RTS_B }, \
+    { IOMUXC_GPIO_EMC_00_LPUART4_CTS_B }, { IOMUXC_GPIO_EMC_01_LPUART4_RTS_B }, \
+    { IOMUXC_GPIO_EMC_36_LPUART5_CTS_B }, { IOMUXC_GPIO_EMC_37_LPUART5_RTS_B }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_EMC_24_LPUART8_CTS_B }, { IOMUXC_GPIO_EMC_25_LPUART8_RTS_B },
 
 #define MICROPY_HW_SPI_INDEX { 1, 3 }
 
@@ -157,10 +169,6 @@
 // Transceiver Phy Address
 #define ENET_PHY_ADDRESS    (2)
 #define ENET_PHY_OPS        phyksz8081_ops
-
-// Etherner PIN definitions
-#define ENET_RESET_PIN      &pin_GPIO_AD_B0_04
-#define ENET_INT_PIN        &pin_GPIO_AD_B1_06
 
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_AD_B0_08_ENET_REF_CLK1, 1, 0xB0E9u }, \

@@ -1,5 +1,5 @@
 try:
-    import uio
+    import io
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -7,7 +7,7 @@ except ImportError:
 import micropython
 
 data = b"1234" * 16
-buf = uio.BytesIO(64)
+buf = io.BytesIO(64)
 
 micropython.heap_lock()
 

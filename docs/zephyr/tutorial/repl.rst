@@ -10,7 +10,7 @@ REPL over the serial port
 
 The REPL is available on a UART serial peripheral specified for the board by
 the ``zephyr,console`` devicetree node. The baudrate of the REPL is 115200.
-If your board has a USB-serial convertor on it then you should be able to access
+If your board has a USB-serial converter on it then you should be able to access
 the REPL directly from your PC.
 
 To access the prompt over USB-serial you will need to use a terminal emulator

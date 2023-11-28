@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "rtc.h"
 #include "rng.h"
 
@@ -66,7 +67,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
 // For MCUs that don't have an RNG we still need to provide a rng_get() function,
 // eg for lwIP and random.seed().  A pseudo-RNG is not really ideal but we go with
 // it for now, seeding with numbers which will be somewhat different each time.  We
-// don't want to use urandom's pRNG because then the user won't see a reproducible
+// don't want to use random's pRNG because then the user won't see a reproducible
 // random stream.
 
 // Yasmarang random number generator by Ilya Levin

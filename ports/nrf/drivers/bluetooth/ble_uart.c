@@ -164,6 +164,9 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
         && !isBufferEmpty(mp_rx_ring_buffer)) {
         ret |= MP_STREAM_POLL_RD;
     }
+    if ((poll_flags & MP_STREAM_POLL_WR) && ble_uart_enabled()) {
+        ret |= MP_STREAM_POLL_WR;
+    }
     return ret;
 }
 #endif

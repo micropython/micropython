@@ -5,7 +5,6 @@
 
     FLASH_APP   .isr_vector
     FLASH_APP   .text
-    FLASH_APP   .big_const
     FLASH_APP   .data
 
     RAM         .data
@@ -39,26 +38,4 @@ _ram_end = ORIGIN(RAM) + LENGTH(RAM);
 _heap_start = _ebss; /* heap starts just after statically allocated memory */
 _heap_end = _sstack;
 
-ENTRY(Reset_Handler)
-
-REGION_ALIAS("FLASH_COMMON", FLASH_APP);
-
-/* Define output sections */
-SECTIONS
-{
-    INCLUDE common_isr.ld
-
-    .text :
-    {
-        . = ALIGN(4);
-        *(.text*)
-        *(.rodata*)
-        . = ALIGN(512);
-        *(.big_const*)
-        . = ALIGN(4);
-        _etext = .;
-    } >FLASH_APP
-
-    INCLUDE common_extratext_data_in_flash.ld
-    INCLUDE common_bss_heap_stack.ld
-}
+INCLUDE common_bl.ld

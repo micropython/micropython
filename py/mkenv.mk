@@ -42,6 +42,7 @@ SED = sed
 CAT = cat
 TOUCH = touch
 PYTHON = python3
+ZIP = zip
 
 AS = $(CROSS_COMPILE)as
 CC = $(CROSS_COMPILE)gcc
@@ -53,6 +54,7 @@ OBJCOPY = $(CROSS_COMPILE)objcopy
 SIZE = $(CROSS_COMPILE)size
 STRIP = $(CROSS_COMPILE)strip
 AR = $(CROSS_COMPILE)ar
+WINDRES = $(CROSS_COMPILE)windres
 
 MAKE_MANIFEST = $(PYTHON) $(TOP)/tools/makemanifest.py
 MAKE_FROZEN = $(PYTHON) $(TOP)/tools/make-frozen.py

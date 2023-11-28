@@ -59,7 +59,7 @@
 #endif
 
 // Maximum number of endpoints (excluding EP0)
-#if defined(STM32L0) || defined(STM32WB)
+#if defined(STM32G0) || defined(STM32G4) || defined(STM32H5) || defined(STM32L0) || defined(STM32L1) || defined(STM32WB)
 #define MAX_ENDPOINT(dev_id) (7)
 #elif defined(STM32L4)
 #define MAX_ENDPOINT(dev_id) (5)
@@ -858,11 +858,6 @@ STATIC mp_obj_t pyb_usb_vcp_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_usb_vcp_irq_obj, 1, pyb_usb_vcp_irq);
 
-mp_obj_t pyb_usb_vcp___exit__(size_t n_args, const mp_obj_t *args) {
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_usb_vcp___exit___obj, 4, 4, pyb_usb_vcp___exit__);
-
 STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&pyb_usb_vcp_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_setinterrupt), MP_ROM_PTR(&pyb_usb_vcp_setinterrupt_obj) },
@@ -879,7 +874,7 @@ STATIC const mp_rom_map_elem_t pyb_usb_vcp_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_usb_vcp_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pyb_usb_vcp___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(USBD_CDC_FLOWCONTROL_RTS) },
@@ -923,6 +918,8 @@ STATIC mp_uint_t pyb_usb_vcp_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
         if ((flags & MP_STREAM_POLL_WR) && usbd_cdc_tx_half_empty(self->cdc_itf)) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_CLOSE) {
+        ret = 0;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;

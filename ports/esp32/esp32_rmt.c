@@ -48,11 +48,7 @@
 // and carrier output.
 
 // Last available RMT channel that can transmit.
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 4, 0)
-#define RMT_LAST_TX_CHANNEL (RMT_CHANNEL_MAX - 1)
-#else
 #define RMT_LAST_TX_CHANNEL (SOC_RMT_TX_CANDIDATES_PER_GROUP - 1)
-#endif
 
 // Forward declaration
 extern const mp_obj_type_t esp32_rmt_type;
@@ -210,10 +206,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_deinit_obj, esp32_rmt_deinit);
 // Return the source frequency.
 // Currently only the APB clock (80MHz) can be used but it is possible other
 // clock sources will added in the future.
-STATIC mp_obj_t esp32_rmt_source_freq(mp_obj_t self_in) {
+STATIC mp_obj_t esp32_rmt_source_freq() {
     return mp_obj_new_int(APB_CLK_FREQ);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_rmt_source_freq_obj, esp32_rmt_source_freq);
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_rmt_source_freq_obj, esp32_rmt_source_freq);
+STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(esp32_rmt_source_obj, MP_ROM_PTR(&esp32_rmt_source_freq_obj));
 
 // Return the clock divider.
 STATIC mp_obj_t esp32_rmt_clock_div(mp_obj_t self_in) {
@@ -326,12 +323,18 @@ STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *args) {
         check_esp_err(rmt_wait_tx_done(self->channel_id, portMAX_DELAY));
     }
 
+    #if !CONFIG_IDF_TARGET_ESP32S3
     check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false));
+    #endif
 
     if (self->loop_en) {
         check_esp_err(rmt_set_tx_intr_en(self->channel_id, false));
         check_esp_err(rmt_set_tx_loop_mode(self->channel_id, true));
     }
+
+    #if CONFIG_IDF_TARGET_ESP32S3
+    check_esp_err(rmt_write_items(self->channel_id, self->items, num_items, false));
+    #endif
 
     return mp_const_none;
 }
@@ -361,7 +364,6 @@ STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(esp32_rmt_bitstream_channel_obj, MP_ROM_
 STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&esp32_rmt_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_source_freq), MP_ROM_PTR(&esp32_rmt_source_freq_obj) },
     { MP_ROM_QSTR(MP_QSTR_clock_div), MP_ROM_PTR(&esp32_rmt_clock_div_obj) },
     { MP_ROM_QSTR(MP_QSTR_wait_done), MP_ROM_PTR(&esp32_rmt_wait_done_obj) },
     { MP_ROM_QSTR(MP_QSTR_loop), MP_ROM_PTR(&esp32_rmt_loop_obj) },
@@ -369,6 +371,12 @@ STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {
 
     // Static methods
     { MP_ROM_QSTR(MP_QSTR_bitstream_channel), MP_ROM_PTR(&esp32_rmt_bitstream_channel_obj) },
+
+    // Class methods
+    { MP_ROM_QSTR(MP_QSTR_source_freq), MP_ROM_PTR(&esp32_rmt_source_obj) },
+
+    // Constants
+    { MP_ROM_QSTR(MP_QSTR_PULSE_MAX), MP_ROM_INT(32767) },
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_rmt_locals_dict, esp32_rmt_locals_dict_table);
 

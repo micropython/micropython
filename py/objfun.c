@@ -58,8 +58,7 @@ STATIC mp_obj_t fun_builtin_0_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_builtin_0, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
-    call, fun_builtin_0_call,
-    unary_op, mp_generic_unary_op
+    call, fun_builtin_0_call
     );
 
 STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -71,8 +70,7 @@ STATIC mp_obj_t fun_builtin_1_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_builtin_1, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
-    call, fun_builtin_1_call,
-    unary_op, mp_generic_unary_op
+    call, fun_builtin_1_call
     );
 
 STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -84,8 +82,7 @@ STATIC mp_obj_t fun_builtin_2_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_builtin_2, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
-    call, fun_builtin_2_call,
-    unary_op, mp_generic_unary_op
+    call, fun_builtin_2_call
     );
 
 STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -97,8 +94,7 @@ STATIC mp_obj_t fun_builtin_3_call(mp_obj_t self_in, size_t n_args, size_t n_kw,
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_builtin_3, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
-    call, fun_builtin_3_call,
-    unary_op, mp_generic_unary_op
+    call, fun_builtin_3_call
     );
 
 STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -126,8 +122,7 @@ STATIC mp_obj_t fun_builtin_var_call(mp_obj_t self_in, size_t n_args, size_t n_k
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_builtin_var, MP_QSTR_function, MP_TYPE_FLAG_BINDS_SELF | MP_TYPE_FLAG_BUILTIN_FUN,
-    call, fun_builtin_var_call,
-    unary_op, mp_generic_unary_op
+    call, fun_builtin_var_call
     );
 
 /******************************************************************************/
@@ -220,7 +215,7 @@ mp_code_state_t *mp_obj_fun_bc_prepare_codestate(mp_obj_t self_in, size_t n_args
     // RuntimeError should be raised instead. So, we use m_new_obj_var_maybe(),
     // return NULL, then vm.c takes the needed action (either raise
     // RuntimeError or fallback to stack allocation).
-    code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
+    code_state = m_new_obj_var_maybe(mp_code_state_t, state, byte, state_size);
     if (!code_state) {
         return NULL;
     }
@@ -252,10 +247,10 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     // allocate state for locals and stack
     mp_code_state_t *code_state = NULL;
     #if MICROPY_ENABLE_PYSTACK
-    code_state = mp_pystack_alloc(sizeof(mp_code_state_t) + state_size);
+    code_state = mp_pystack_alloc(offsetof(mp_code_state_t, state) + state_size);
     #else
     if (state_size > VM_MAX_STATE_ON_STACK) {
-        code_state = m_new_obj_var_maybe(mp_code_state_t, byte, state_size);
+        code_state = m_new_obj_var_maybe(mp_code_state_t, state, byte, state_size);
         #if MICROPY_DEBUG_VM_STACK_OVERFLOW
         if (code_state != NULL) {
             memset(code_state->state, 0, state_size);
@@ -263,7 +258,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
         #endif
     }
     if (code_state == NULL) {
-        code_state = alloca(sizeof(mp_code_state_t) + state_size);
+        code_state = alloca(offsetof(mp_code_state_t, state) + state_size);
         #if MICROPY_DEBUG_VM_STACK_OVERFLOW
         memset(code_state->state, 0, state_size);
         #endif
@@ -325,7 +320,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     #else
     // free the state if it was allocated on the heap
     if (state_size != 0) {
-        m_del_var(mp_code_state_t, byte, state_size, code_state);
+        m_del_var(mp_code_state_t, state, byte, state_size, code_state);
     }
     #endif
 
@@ -370,8 +365,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_BINDS_SELF,
     FUN_BC_TYPE_PRINT
     FUN_BC_TYPE_ATTR
-    call, fun_bc_call,
-    unary_op, mp_generic_unary_op
+    call, fun_bc_call
     );
 
 mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_module_context_t *context, struct _mp_raw_code_t *const *child_table) {
@@ -432,8 +426,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_BINDS_SELF,
     FUN_BC_TYPE_PRINT
     FUN_BC_TYPE_ATTR
-    call, fun_native_call,
-    unary_op, mp_generic_unary_op
+    call, fun_native_call
     );
 
 mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
@@ -540,8 +533,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_asm,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
-    call, fun_asm_call,
-    unary_op, mp_generic_unary_op
+    call, fun_asm_call
     );
 
 mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {

@@ -74,10 +74,16 @@
 #endif
 #endif
 
-#if defined(NRF51) || defined(NRF52_SERIES)
+#if defined(NRF51)
   #define NRFX_UART_ENABLED 1
   #define NRFX_UART0_ENABLED 1
   #define NRFX_UART1_ENABLED 1
+#elif defined(NRF52_SERIES)
+  #define NRFX_UARTE_ENABLED 1
+  #define NRFX_UARTE0_ENABLED 1
+  #if NRF52840 || NRF52840_XXAA
+  #define NRFX_UARTE1_ENABLED 1
+  #endif
 #else
   #define NRFX_UARTE_ENABLED 1
   #define NRFX_UARTE0_ENABLED 1

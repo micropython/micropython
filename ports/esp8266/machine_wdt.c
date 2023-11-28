@@ -24,27 +24,22 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_wdt.c via MICROPY_PY_MACHINE_WDT_INCLUDEFILE.
 
-#include "py/runtime.h"
 #include "user_interface.h"
-#include "etshal.h"
 #include "ets_alt_task.h"
-
-const mp_obj_type_t esp_wdt_type;
 
 typedef struct _machine_wdt_obj_t {
     mp_obj_base_t base;
 } machine_wdt_obj_t;
 
-STATIC machine_wdt_obj_t wdt_default = {{&esp_wdt_type}};
+STATIC machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};
 
-STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 1, false);
-
-    mp_int_t id = 0;
-    if (n_args > 0) {
-        id = mp_obj_get_int(args[0]);
+STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+    // The timeout on ESP8266 is fixed, so raise an exception if the argument is not the default.
+    if (timeout_ms != 5000) {
+        mp_raise_ValueError(NULL);
     }
 
     switch (id) {
@@ -57,22 +52,7 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args
     }
 }
 
-STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
-    (void)self_in;
+STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
+    (void)self;
     system_soft_wdt_feed();
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);
-
-STATIC const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&machine_wdt_feed_obj) },
-};
-STATIC MP_DEFINE_CONST_DICT(machine_wdt_locals_dict, machine_wdt_locals_dict_table);
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    esp_wdt_type,
-    MP_QSTR_WDT,
-    MP_TYPE_FLAG_NONE,
-    make_new, machine_wdt_make_new,
-    locals_dict, &machine_wdt_locals_dict
-    );

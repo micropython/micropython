@@ -36,6 +36,7 @@
 #include "extmod/mpbthci.h"
 #include "extmod/btstack/btstack_hci_uart.h"
 
+#include "mpbthciport.h"
 #include "mpbtstackport.h"
 
 #define HCI_TRACE (0)
@@ -129,6 +130,10 @@ STATIC void btstack_uart_send_block(const uint8_t *buf, uint16_t len) {
 
     mp_bluetooth_hci_uart_write(buf, len);
     send_done = true;
+
+    // Data has been written out synchronously on the UART, so trigger a poll which will
+    // then notify btstack (don't call send_handler here or it may call us recursively).
+    mp_bluetooth_hci_poll_now();
 }
 
 STATIC int btstack_uart_get_supported_sleep_modes(void) {

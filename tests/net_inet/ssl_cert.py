@@ -1,6 +1,6 @@
-import ubinascii as binascii
-import usocket as socket
-import ussl as ssl
+import binascii
+import socket
+import ssl
 
 
 # This certificate was obtained from micropython.org using openssl:

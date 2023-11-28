@@ -27,8 +27,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 
 #include "hardware/spi.h"
 #include "hardware/dma.h"

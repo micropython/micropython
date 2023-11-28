@@ -27,9 +27,7 @@
 #ifndef I2C_H__
 #define I2C_H__
 
-#include "extmod/machine_i2c.h"
-
-extern const mp_obj_type_t machine_i2c_type;
+#include "extmod/modmachine.h"
 
 void i2c_init0(void);
 

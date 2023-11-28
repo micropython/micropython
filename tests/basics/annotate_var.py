@@ -1,4 +1,4 @@
-# test PEP 526, varible annotations
+# test PEP 526, variable annotations
 
 x: int
 print("x" in globals())

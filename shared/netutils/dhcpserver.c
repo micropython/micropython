@@ -118,7 +118,7 @@ static int dhcp_socket_bind(struct udp_pcb **udp, uint32_t ip, uint16_t port) {
     return udp_bind(*udp, &addr, port);
 }
 
-static int dhcp_socket_sendto(struct udp_pcb **udp, const void *buf, size_t len, uint32_t ip, uint16_t port) {
+static int dhcp_socket_sendto(struct udp_pcb **udp, struct netif *netif, const void *buf, size_t len, uint32_t ip, uint16_t port) {
     if (len > 0xffff) {
         len = 0xffff;
     }
@@ -132,7 +132,12 @@ static int dhcp_socket_sendto(struct udp_pcb **udp, const void *buf, size_t len,
 
     ip_addr_t dest;
     IP4_ADDR(&dest, ip >> 24 & 0xff, ip >> 16 & 0xff, ip >> 8 & 0xff, ip & 0xff);
-    err_t err = udp_sendto(*udp, p, &dest, port);
+    err_t err;
+    if (netif != NULL) {
+        err = udp_sendto_if(*udp, p, &dest, port, netif);
+    } else {
+        err = udp_sendto(*udp, p, &dest, port);
+    }
 
     pbuf_free(p);
 
@@ -153,7 +158,7 @@ static uint8_t *opt_find(uint8_t *opt, uint8_t cmd) {
     return NULL;
 }
 
-static void opt_write_n(uint8_t **opt, uint8_t cmd, size_t n, void *data) {
+static void opt_write_n(uint8_t **opt, uint8_t cmd, size_t n, const void *data) {
     uint8_t *o = *opt;
     *o++ = cmd;
     *o++ = n;
@@ -277,11 +282,12 @@ static void dhcp_server_process(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 
     opt_write_n(&opt, DHCP_OPT_SERVER_ID, 4, &d->ip.addr);
     opt_write_n(&opt, DHCP_OPT_SUBNET_MASK, 4, &d->nm.addr);
-    opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &d->ip.addr); // aka gateway; can have mulitple addresses
-    opt_write_u32(&opt, DHCP_OPT_DNS, DEFAULT_DNS); // can have mulitple addresses
+    opt_write_n(&opt, DHCP_OPT_ROUTER, 4, &d->ip.addr); // aka gateway; can have multiple addresses
+    opt_write_u32(&opt, DHCP_OPT_DNS, DEFAULT_DNS); // can have multiple addresses
     opt_write_u32(&opt, DHCP_OPT_IP_LEASE_TIME, DEFAULT_LEASE_TIME_S);
     *opt++ = DHCP_OPT_END;
-    dhcp_socket_sendto(&d->udp, &dhcp_msg, opt - (uint8_t *)&dhcp_msg, 0xffffffff, PORT_DHCP_CLIENT);
+    struct netif *netif = ip_current_input_netif();
+    dhcp_socket_sendto(&d->udp, netif, &dhcp_msg, opt - (uint8_t *)&dhcp_msg, 0xffffffff, PORT_DHCP_CLIENT);
 
 ignore_request:
     pbuf_free(p);

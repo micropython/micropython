@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+
+#if MICROPY_HW_ENABLE_USBDEV
+
 #include "mp_usbd.h"
 #include "string.h"
 #include "tusb.h"
@@ -32,13 +36,8 @@
 void mp_usbd_port_get_serial_number(char *serial_buf) {
     pico_unique_board_id_t id;
     pico_get_unique_board_id(&id);
-    // convert to hex
-    int hexlen = sizeof(id.id) * 2;
-    MP_STATIC_ASSERT(hexlen <= USBD_DESC_STR_MAX);
-    for (int i = 0; i < hexlen; i += 2) {
-        static const char *hexdig = "0123456789abcdef";
-        serial_buf[i] = hexdig[id.id[i / 2] >> 4];
-        serial_buf[i + 1] = hexdig[id.id[i / 2] & 0x0f];
-    }
-    serial_buf[hexlen] = 0;
+    MP_STATIC_ASSERT(sizeof(id.id) * 2 <= MICROPY_HW_USB_DESC_STR_MAX);
+    mp_usbd_hex_str(serial_buf, id.id, sizeof(id.id));
 }
+
+#endif

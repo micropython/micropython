@@ -8,6 +8,8 @@ require("lsm6dsox")
 require("espflash")
 
 # Utils
+require("time")
+require("senml")
 require("logging")
 
 # Bluetooth

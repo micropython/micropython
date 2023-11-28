@@ -19,7 +19,7 @@ See the corresponding section of the tutorial: :ref:`intro`.
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 

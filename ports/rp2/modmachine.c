@@ -28,13 +28,7 @@
 #include "py/mphal.h"
 #include "drivers/dht/dht.h"
 #include "shared/runtime/pyexec.h"
-#include "extmod/machine_bitstream.h"
-#include "extmod/machine_i2c.h"
-#include "extmod/machine_mem.h"
-#include "extmod/machine_pulse.h"
-#include "extmod/machine_pwm.h"
-#include "extmod/machine_signal.h"
-#include "extmod/machine_spi.h"
+#include "extmod/modmachine.h"
 
 #include "modmachine.h"
 #include "uart.h"
@@ -117,7 +111,7 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
 STATIC mp_obj_t machine_idle(void) {
-    best_effort_wfe_or_timeout(make_timeout_time_ms(1));
+    __wfe();
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
@@ -146,7 +140,7 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     uint32_t my_interrupts = save_and_disable_interrupts();
     #if MICROPY_PY_NETWORK_CYW43
-    if (cyw43_has_pending) {
+    if (cyw43_has_pending && cyw43_poll != NULL) {
         restore_interrupts(my_interrupts);
         return mp_const_none;
     }
@@ -229,7 +223,7 @@ STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 
 STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
+    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
     { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
@@ -254,7 +248,9 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
 
+    #if MICROPY_PY_MACHINE_ADC
     { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) },
@@ -265,8 +261,12 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
+    #if MICROPY_PY_MACHINE_UART
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
+    #endif
+    #if MICROPY_PY_MACHINE_WDT
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
+    #endif
 
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(RP2_RESET_PWRON) },
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(RP2_RESET_WDT) },
@@ -278,6 +278,6 @@ const mp_obj_module_t mp_module_machine = {
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
 
 #endif // MICROPY_PY_MACHINE

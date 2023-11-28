@@ -3,7 +3,7 @@
  *
  * FileName: uart.c
  *
- * Description: Two UART mode configration and interrupt handler.
+ * Description: Two UART mode configuration and interrupt handler.
  *              Check your hardware connection while use this mode.
  *
  * Modification history:
@@ -164,7 +164,7 @@ uart_os_config(int uart) {
 *******************************************************************************/
 
 static void uart0_rx_intr_handler(void *para) {
-    /* uart0 and uart1 intr combine togther, when interrupt occur, see reg 0x3ff20020, bit2, bit0 represents
+    /* uart0 and uart1 intr combine together, when interrupt occur, see reg 0x3ff20020, bit2, bit0 represents
       * uart1 and uart0 respectively
       */
 

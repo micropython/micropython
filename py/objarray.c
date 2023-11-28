@@ -292,6 +292,12 @@ STATIC mp_obj_t array_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs
     mp_obj_array_t *lhs = MP_OBJ_TO_PTR(lhs_in);
     switch (op) {
         case MP_BINARY_OP_ADD: {
+            #if MICROPY_PY_BUILTINS_MEMORYVIEW
+            if (lhs->base.type == &mp_type_memoryview) {
+                return MP_OBJ_NULL; // op not supported
+            }
+            #endif
+
             // allow to add anything that has the buffer protocol (extension to CPython)
             mp_buffer_info_t lhs_bufinfo;
             mp_buffer_info_t rhs_bufinfo;

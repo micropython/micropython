@@ -132,7 +132,7 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
     print(p2.value())       # get value, 0 or 1
 
     p4 = Pin('D4', Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
-    p7 = Pin("PA07", Pin.OUT, value=1) # set pin high on creation
+    p7 = Pin('PA07', Pin.OUT, value=1) # set pin high on creation
 
 Pins can be denoted by a string or a number. The string is either the
 pin label of the respective board, like "D0" or "SDA", or in the form
@@ -157,7 +157,7 @@ See :ref:`machine.UART <machine.UART>`. ::
     # Use UART 3 on a ItsyBitsy M4 board
     from machine import UART
 
-    uart3 = UART(3, tx=Pin(1), rx=Pin(0), baudrate=115200)
+    uart3 = UART(3, tx=Pin('D1'), rx=Pin('D0'), baudrate=115200)
     uart3.write('hello')  # write 5 bytes
     uart3.read(5)         # read up to 5 bytes
 
@@ -178,11 +178,12 @@ It supports all basic methods listed for that class. ::
 
     from machine import Pin, PWM
 
-    pwm = PWM(Pin(7))      # create PWM object from a pin
-    pwm.freq()             # get current frequency
-    pwm.freq(1000)         # set frequency
-    pwm.duty_u16()         # get current duty cycle, range 0-65535
-    pwm.duty_u16(200)      # set duty cycle, range 0-65535
+    # create PWM object from a pin and set the frequency and duty cycle
+    pwm = PWM(Pin('D7'), freq=2000, duty_u16=32768)
+    pwm.freq()             # get the current frequency
+    pwm.freq(1000)         # set/change the frequency
+    pwm.duty_u16()         # get the current duty cycle, range 0-65535
+    pwm.duty_u16(200)      # set the duty cycle, range 0-65535
     pwm.deinit()           # turn off PWM on the pin
 
     pwm                    # show the PWM objects properties
@@ -191,7 +192,7 @@ It supports all basic methods listed for that class. ::
 PWM Constructor
 ```````````````
 
-.. class:: PWM(dest, freq, duty_u16, duty_ns, *, invert, device)
+.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert, device)
   :noindex:
 
     Construct and return a new PWM object using the following parameters:
@@ -213,9 +214,6 @@ PWM Constructor
       - *freq* should be an integer which sets the frequency in Hz for the
         PWM cycle. The valid frequency range is 1 Hz to 24 MHz.
       - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65536``.
-        The duty cycle of a X channel can only be changed, if the A and B channel
-        of the respective submodule is not used. Otherwise the duty_16 value of the
-        X channel is 32768 (50%).
       - *duty_ns* sets the pulse width in nanoseconds. The limitation for X channels
         apply as well.
       - *invert*\=True|False. Setting a bit inverts the respective output.
@@ -245,9 +243,9 @@ Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
-    adc0 = ADC(Pin("A0"))            # create ADC object on ADC pin, average=16
+    adc0 = ADC(Pin('A0'))            # create ADC object on ADC pin, average=16
     adc0.read_u16()                  # read value, 0-65536 across voltage range 0.0v - 3.3v
-    adc1 = ADC(Pin("A1"), average=1) # create ADC object on ADC pin, average=1
+    adc1 = ADC(Pin('A1'), average=1) # create ADC object on ADC pin, average=1
 
 The resolution of the ADC is 12 bit with 12 bit accuracy, irrespective of the
 value returned by read_u16(). If you need a higher resolution or better accuracy, use
@@ -341,7 +339,7 @@ Software SPI (using bit-banging) works on all pins, and is accessed via the
     # construct a SoftSPI bus on the given pins
     # polarity is the idle state of SCK
     # phase=0 means sample on the first edge of SCK, phase=1 means the second
-    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin(7), mosi=Pin(9), miso=Pin(10))
+    spi = SoftSPI(baudrate=100000, polarity=1, phase=0, sck=Pin('D7'), mosi=Pin('D9'), miso=Pin('D10'))
 
     spi.init(baudrate=200000) # set the baud rate
 
@@ -388,7 +386,7 @@ accessed via the :ref:`machine.SoftI2C <machine.SoftI2C>` class::
 
     from machine import Pin, SoftI2C
 
-    i2c = SoftI2C(scl=Pin(10), sda=Pin(11), freq=100000)
+    i2c = SoftI2C(scl=Pin('D10'), sda=Pin('D11'), freq=100000)
 
     i2c.scan()              # scan for devices
 
@@ -424,7 +422,7 @@ The OneWire driver is implemented in software and works on all pins::
     from machine import Pin
     import onewire
 
-    ow = onewire.OneWire(Pin(12)) # create a OneWire bus on GPIO12
+    ow = onewire.OneWire(Pin('D12')) # create a OneWire bus on GPIO12
     ow.scan()                     # return a list of devices on the bus
     ow.reset()                    # reset the bus
     ow.readbyte()                 # read a byte
@@ -454,12 +452,12 @@ The DHT driver is implemented in software and works on all pins::
     import dht
     import machine
 
-    d = dht.DHT11(machine.Pin(4))
+    d = dht.DHT11(machine.Pin('D4'))
     d.measure()
     d.temperature() # eg. 23 (°C)
     d.humidity()    # eg. 41 (% RH)
 
-    d = dht.DHT22(machine.Pin(4))
+    d = dht.DHT22(machine.Pin('D4'))
     d.measure()
     d.temperature() # eg. 23.6 (°C)
     d.humidity()    # eg. 41.3 (% RH)
@@ -474,7 +472,7 @@ The APA102 on some Adafruit boards can be controlled using SoftSPI::
 
     from machine import SoftSPI, Pin
     # create the SPI object. miso can be any unused pin.
-    spi=SoftSPI(sck=Pin(25), mosi=Pin(26), miso=Pin(14))
+    spi=SoftSPI(sck=Pin('D25'), mosi=Pin('D26'), miso=Pin('D14'))
 
     # define a little function that writes the data with
     # preamble and postfix
@@ -499,7 +497,7 @@ with the Neopixel driver from the MicroPython driver library::
     import machine
 
     # 1 LED connected to Pin D8 on Adafruit Feather boards
-    p = machine.Pin(8, machine.Pin.OUT)
+    p = machine.Pin('D8', machine.Pin.OUT)
     n = neopixel.NeoPixel(p, 1)
 
     # set the led to red.

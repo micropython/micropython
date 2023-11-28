@@ -34,7 +34,8 @@ enum {
     MACHINE_PIN_MODE_IN = 0,
     MACHINE_PIN_MODE_OUT = 1,
     MACHINE_PIN_MODE_OPEN_DRAIN = 2,
-    MACHINE_PIN_MODE_ALT = 3
+    MACHINE_PIN_MODE_ALT = 3,
+    MACHINE_PIN_MODE_ANALOG = 4
 };
 
 typedef struct _machine_pin_af_obj_t {
@@ -58,23 +59,26 @@ typedef struct _machine_pin_obj_t {
     const machine_pin_af_obj_t *af;
 } machine_pin_obj_t;
 
-extern const mp_obj_type_t machine_pin_type;
 extern const mp_obj_type_t machine_pin_af_type;
 
 // Include all of the individual pin objects
 #include "genhdr/pins.h"
 
 extern const mp_obj_type_t pin_cpu_pins_obj_type;
-extern const mp_obj_dict_t pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
 
 extern const mp_obj_type_t pin_board_pins_obj_type;
-extern const mp_obj_dict_t pin_board_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
 void machine_pin_ext_init(void);
+bool machine_pin_ext_is_adc_channel(const machine_pin_obj_t *self);
+uint32_t machine_pin_ext_to_adc_channel(const machine_pin_obj_t *self);
 void machine_pin_ext_set(machine_pin_obj_t *self, bool value);
 bool machine_pin_ext_get(machine_pin_obj_t *self);
+uint16_t machine_pin_ext_read_u16(uint32_t channel);
 void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value);
 
+const machine_pin_obj_t *machine_pin_find(mp_obj_t pin);
 const machine_pin_obj_t *machine_pin_find_named(const mp_obj_dict_t *named_pins, mp_obj_t name);
 const machine_pin_af_obj_t *machine_pin_find_alt(const machine_pin_obj_t *pin, uint8_t fn);
 const machine_pin_af_obj_t *machine_pin_find_alt_by_index(const machine_pin_obj_t *pin, mp_uint_t af_idx);
