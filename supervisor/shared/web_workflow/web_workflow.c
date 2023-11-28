@@ -374,9 +374,16 @@ bool supervisor_start_web_workflow(bool reload) {
     return false;
 }
 
-void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
+void web_workflow_send_raw(socketpool_socket_obj_t *socket, bool flush, const uint8_t *buf, int len) {
     int total_sent = 0;
     int sent = -MP_EAGAIN;
+    int nodelay_ok = -1;
+    // When flushing, disable Nagle's combining algorithm so that buf is sent immediately.
+    if (flush) {
+        int nodelay = 1;
+        nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
+    }
+
     while ((sent == -MP_EAGAIN || (sent > 0 && total_sent < len)) &&
            common_hal_socketpool_socket_get_connected(socket)) {
         sent = socketpool_socket_send(socket, buf + total_sent, len - total_sent);
@@ -388,14 +395,28 @@ void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, 
             }
         }
     }
+
+    // Re-enable Nagle's algorithm when done sending.
+    if (nodelay_ok == 0) {
+        int nodelay = 0;
+        nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
+    }
 }
 
 STATIC void _print_raw(void *env, const char *str, size_t len) {
-    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, (size_t)len);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, (size_t)len);
 }
 
 static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
-    web_workflow_send_raw(socket, (const uint8_t *)str, strlen(str));
+    web_workflow_send_raw(socket, false, (const uint8_t *)str, strlen(str));
+}
+
+static void _send_str_maybe_flush(socketpool_socket_obj_t *socket, bool flush, const char *str) {
+    web_workflow_send_raw(socket, flush, (const uint8_t *)str, strlen(str));
+}
+
+static void _send_final_str(socketpool_socket_obj_t *socket, const char *str) {
+    web_workflow_send_raw(socket, true, (const uint8_t *)str, strlen(str));
 }
 
 // The last argument must be NULL! Otherwise, it won't stop.
@@ -404,9 +425,13 @@ static __attribute__((sentinel)) void _send_strs(socketpool_socket_obj_t *socket
     va_start(ap, socket);
 
     const char *str = va_arg(ap, const char *);
-    while (str != NULL) {
-        _send_str(socket, str);
-        str = va_arg(ap, const char *);
+    const char *next_str = va_arg(ap, const char *);
+    assert(str != NULL);
+    _send_str(socket, str);
+    while (next_str != NULL) {
+        str = next_str;
+        next_str = va_arg(ap, const char *);
+        _send_str_maybe_flush(socket, next_str == NULL, str);
     }
     va_end(ap);
 }
@@ -414,15 +439,15 @@ static __attribute__((sentinel)) void _send_strs(socketpool_socket_obj_t *socket
 static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
     mp_print_t _socket_print = {socket, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", strlen(chunk));
-    web_workflow_send_raw(socket, (const uint8_t *)chunk, strlen(chunk));
-    web_workflow_send_raw(socket, (const uint8_t *)"\r\n", 2);
+    web_workflow_send_raw(socket, false, (const uint8_t *)chunk, strlen(chunk));
+    web_workflow_send_raw(socket, strlen(chunk) == 0, (const uint8_t *)"\r\n", 2);
 }
 
 STATIC void _print_chunk(void *env, const char *str, size_t len) {
     mp_print_t _socket_print = {env, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", len);
-    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, len);
-    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)"\r\n", 2);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, len);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, true, (const uint8_t *)"\r\n", 2);
 }
 
 // A bit of a misnomer because it sends all arguments as one chunk.
@@ -524,7 +549,7 @@ static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
 static void _reply_continue(socketpool_socket_obj_t *socket, _request *request) {
     _send_str(socket, "HTTP/1.1 100 Continue\r\n");
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_created(socketpool_socket_obj_t *socket, _request *request) {
@@ -532,7 +557,7 @@ static void _reply_created(socketpool_socket_obj_t *socket, _request *request) {
         "HTTP/1.1 201 Created\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_no_content(socketpool_socket_obj_t *socket, _request *request) {
@@ -540,7 +565,7 @@ static void _reply_no_content(socketpool_socket_obj_t *socket, _request *request
         "HTTP/1.1 204 No Content\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_access_control(socketpool_socket_obj_t *socket, _request *request) {
@@ -558,7 +583,7 @@ static void _reply_access_control(socketpool_socket_obj_t *socket, _request *req
     }
     _send_str(socket, "\r\n");
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_missing(socketpool_socket_obj_t *socket, _request *request) {
@@ -566,7 +591,7 @@ static void _reply_missing(socketpool_socket_obj_t *socket, _request *request) {
         "HTTP/1.1 404 Not Found\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_method_not_allowed(socketpool_socket_obj_t *socket, _request *request) {
@@ -574,7 +599,7 @@ static void _reply_method_not_allowed(socketpool_socket_obj_t *socket, _request 
         "HTTP/1.1 405 Method Not Allowed\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_forbidden(socketpool_socket_obj_t *socket, _request *request) {
@@ -582,7 +607,7 @@ static void _reply_forbidden(socketpool_socket_obj_t *socket, _request *request)
         "HTTP/1.1 403 Forbidden\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_conflict(socketpool_socket_obj_t *socket, _request *request) {
@@ -590,7 +615,7 @@ static void _reply_conflict(socketpool_socket_obj_t *socket, _request *request) 
         "HTTP/1.1 409 Conflict\r\n",
         "Content-Length: 19\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\nUSB storage active.");
+    _send_final_str(socket, "\r\nUSB storage active.");
 }
 
 
@@ -599,7 +624,7 @@ static void _reply_precondition_failed(socketpool_socket_obj_t *socket, _request
         "HTTP/1.1 412 Precondition Failed\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_payload_too_large(socketpool_socket_obj_t *socket, _request *request) {
@@ -607,7 +632,7 @@ static void _reply_payload_too_large(socketpool_socket_obj_t *socket, _request *
         "HTTP/1.1 413 Payload Too Large\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_expectation_failed(socketpool_socket_obj_t *socket, _request *request) {
@@ -615,7 +640,7 @@ static void _reply_expectation_failed(socketpool_socket_obj_t *socket, _request 
         "HTTP/1.1 417 Expectation Failed\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_unauthorized(socketpool_socket_obj_t *socket, _request *request) {
@@ -624,7 +649,7 @@ static void _reply_unauthorized(socketpool_socket_obj_t *socket, _request *reque
         "Content-Length: 0\r\n",
         "WWW-Authenticate: Basic realm=\"CircuitPython\"\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_server_error(socketpool_socket_obj_t *socket, _request *request) {
@@ -632,7 +657,7 @@ static void _reply_server_error(socketpool_socket_obj_t *socket, _request *reque
         "HTTP/1.1 500 Internal Server Error\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 #if CIRCUITPY_MDNS
@@ -658,7 +683,7 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
     }
     _send_strs(socket, path, "\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 #endif
 
@@ -734,11 +759,19 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     _send_str(socket, "\r\n");
 
     uint32_t total_read = 0;
+    int nodelay_ok = -1;
     while (total_read < total_length) {
         uint8_t data_buffer[64];
         size_t quantity_read;
         f_read(active_file, data_buffer, 64, &quantity_read);
         total_read += quantity_read;
+        // When getting near the end of the file, disable Nagle's combining algorithm so that
+        // data is sent immediately.
+        if (total_length - total_read < 64) {
+            int nodelay = 1;
+            // Returns 0 when it works.
+            nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
+        }
         uint32_t send_offset = 0;
         while (send_offset < quantity_read) {
             int sent = socketpool_socket_send(socket, data_buffer + send_offset, quantity_read - send_offset);
@@ -754,6 +787,12 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     }
     if (total_read < total_length) {
         socketpool_socket_close(socket);
+    }
+
+    // Re-enable Nagle's algorithm when done sending.
+    if (nodelay_ok == 0) {
+        int nodelay = 0;
+        nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
     }
 }
 
@@ -812,7 +851,7 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
     mp_printf(&_socket_print,
-        "{\"web_api_version\": 2, "
+        "{\"web_api_version\": 3, "
         "\"version\": \"" MICROPY_GIT_TAG "\", "
         "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
         "\"board_name\": \"%s\", "
@@ -852,10 +891,16 @@ static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request 
 
     uint16_t total_size = fs->n_fatent - 2;
 
+    const char *writable = "false";
+    if (!_usb_active()) {
+        writable = "true";
+    }
     mp_printf(&_socket_print,
-        "{\"free\": %d, "
+        "[{\"root\": \"/\", "
+        "\"free\": %d, "
         "\"block_size\": %d, "
-        "\"total\": %d}", free_clusters * block_size, block_size, total_size * block_size);
+        "\"writable\": %s, "
+        "\"total\": %d}]", free_clusters * block_size, block_size, writable, total_size * block_size);
 
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
@@ -883,9 +928,12 @@ STATIC void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
         size_t read_len = MIN(sizeof(bytes), amount - discarded);
         int len = socketpool_socket_recv_into(socket, bytes, read_len);
         if (len < 0) {
+            if (len == -MP_EAGAIN) {
+                continue;
+            }
             break;
         }
-        discarded += read_len;
+        discarded += len;
     }
 }
 
@@ -905,9 +953,12 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
 
     FRESULT result = f_open(fs, &active_file, path, FA_WRITE);
     bool new_file = false;
+    size_t old_length = 0;
     if (result == FR_NO_FILE) {
         new_file = true;
         result = f_open(fs, &active_file, path, FA_WRITE | FA_OPEN_ALWAYS);
+    } else {
+        old_length = f_size(&active_file);
     }
 
     if (result == FR_NO_PATH) {
@@ -927,27 +978,35 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         _discard_incoming(socket, request->content_length);
         _reply_server_error(socket, request);
         return;
-    } else if (request->expect) {
-        _reply_continue(socket, request);
     }
 
     // Change the file size to start.
     f_lseek(&active_file, request->content_length);
     if (f_tell(&active_file) < request->content_length) {
+        if (!new_file) {
+            // Truncate the file back to the old length.
+            f_lseek(&active_file, old_length);
+            f_truncate(&active_file);
+        }
         f_close(&active_file);
+
+        if (new_file) {
+            f_unlink(fs, path);
+        }
         override_fattime(0);
         #if CIRCUITPY_USB_MSC
         usb_msc_unlock();
         #endif
-        _discard_incoming(socket, request->content_length);
         // Too large.
         if (request->expect) {
             _reply_expectation_failed(socket, request);
         } else {
+            _discard_incoming(socket, request->content_length);
             _reply_payload_too_large(socket, request);
         }
-
         return;
+    } else if (request->expect) {
+        _reply_continue(socket, request);
     }
     f_truncate(&active_file);
     f_rewind(&active_file);
@@ -1015,7 +1074,7 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
         "Content-Length: ", encoded_len, "\r\n",
         "Content-Type: ", content_type, "\r\n",
         "\r\n", NULL);
-    web_workflow_send_raw(socket, response, response_len);
+    web_workflow_send_raw(socket, true, response, response_len);
 }
 
 #define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
@@ -1462,6 +1521,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
         int nodelay = 1;
         common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
         socketpool_socket_send(socket, (const uint8_t *)error_response, strlen(error_response));
+        request->done = true;
     }
     if (!request->done) {
         return;

@@ -43,4 +43,4 @@ void supervisor_stop_web_workflow(void);
 mdns_server_obj_t *supervisor_web_workflow_mdns(mp_obj_t network_interface);
 
 // To share with websocket.
-void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len);
+void web_workflow_send_raw(socketpool_socket_obj_t *socket, bool flush, const uint8_t *buf, int len);
