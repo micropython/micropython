@@ -58,6 +58,10 @@ BASE_CFLAGS = \
 #        -ftime-report
 #        -H
 
+# Micropython's implementation of <string.h> routines is incompatible with
+# "fortify source", enabled by default on gentoo's crossdev arm-none-eabi-gcc
+# gcc version 12.3.1 20230526 (Gentoo 12.3.1_p20230526 p2). Unconditionally disable it.
+BASE_CFLAGS += -U_FORTIFY_SOURCE
 
 # Set a global CIRCUITPY_DEBUG flag.
 # Don't just call it "DEBUG": too many libraries use plain DEBUG.
