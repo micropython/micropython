@@ -109,6 +109,7 @@ static int get_nbits(bitstream_state_t *st, int n) {
     return r;
 }
 
+// note: the vstr must be a fixed-buffer vstr that matches the decompressed length of the string
 static void decompress_vstr(mp_rom_error_text_t compressed, vstr_t *decompressed) {
     bitstream_state_t b = {
         .ptr = &(compressed->data) + (compress_max_length_bits >> 3),
