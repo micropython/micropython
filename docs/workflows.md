@@ -372,7 +372,7 @@ curl -v -L http://circuitpython.local/cp/devices.json
 
 Returns information about the attached disk(s). A list of objects, one per disk.
 
-* `root`: File sysstem path to the root of the disk.
+* `root`: Filesystem path to the root of the disk.
 * `free`: Count of free bytes on the disk.
 * `block_size`: Size of a block in bytes.
 * `writable`: True when CircuitPython and the web workflow can write to the disk. USB may claim a disk instead.
