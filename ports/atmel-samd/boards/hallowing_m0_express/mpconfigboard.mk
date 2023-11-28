@@ -12,7 +12,8 @@ LONGINT_IMPL = NONE
 
 # To keep the build small
 CIRCUITPY_AUDIOBUSIO = 0
-CIRCUITPY_BUSDEVICE = 1  # lis3dh needs it
+# lis3dh needs adafruit_bus_device
+CIRCUITPY_BUSDEVICE = 1
 CIRCUITPY_KEYPAD = 0
 
 # Include these Python libraries in firmware.
