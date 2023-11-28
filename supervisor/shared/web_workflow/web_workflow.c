@@ -1515,9 +1515,11 @@ void supervisor_web_workflow_background(void *data) {
             }
             break;
         }
-        websocket_background();
-        break;
     }
+
+    // Let the websocket code run.
+    websocket_background();
+
     // Resume polling
     socketpool_socket_poll_resume();
 
