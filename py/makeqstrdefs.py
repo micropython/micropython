@@ -163,7 +163,7 @@ def cat_together():
         mode_full = "Module registrations"
     elif args.mode == _MODE_ROOT_POINTER:
         mode_full = "Root pointer registrations"
-    if old_hash != new_hash:
+    if old_hash != new_hash or not os.path.exists(args.output_file):
         print(mode_full, "updated")
         try:
             # rename below might fail if file exists
