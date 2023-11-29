@@ -127,19 +127,24 @@ function ci_esp32_idf50_setup {
     ./esp-idf/install.sh
 }
 
-function ci_esp32_build {
+function ci_esp32_build {  # arg: board name or ""
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
-    make ${MAKEOPTS} -C ports/esp32 \
-        USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
-        FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
+    if [ -z "$1" ]; then
+        echo "Building test configuration..."
+        make ${MAKEOPTS} -C ports/esp32 \
+             USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
+             FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
 
-    # Test building native .mpy with xtensawin architecture.
-    ci_native_mpy_modules_build xtensawin
+        # Test building native .mpy with xtensawin architecture.
+        echo "Testing native .mpy with xtensawin..."
+        ci_native_mpy_modules_build xtensawin
+    else
+        export BOARD="$1"
+        echo "Building for board ${BOARD}..."
+        make ${MAKEOPTS} -C ports/esp32
+    fi
 }
 
 ########################################################################################

@@ -22,7 +22,15 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_idf50:
+  build_idf:
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          - ""  # builds CI-only test configuration
+          - ESP32_GENERIC_C3
+          - ESP32_GENERIC_S2
+          - ESP32_GENERIC_S3
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v4
@@ -43,4 +51,4 @@ jobs:
       run: source tools/ci.sh && ci_esp32_idf50_setup
 
     - name: Build
-      run: source tools/ci.sh && ci_esp32_build
+      run: source tools/ci.sh && ci_esp32_build "${{ matrix.board }}"
