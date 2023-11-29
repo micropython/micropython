@@ -76,6 +76,10 @@
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN      (CORE_FEAT)
 #endif
 
+#ifndef MICROPY_PY_SYS_PLATFORM
+#define MICROPY_PY_SYS_PLATFORM            "nrf"
+#endif
+
 #ifndef MICROPY_PY_SYS_STDFILES
 #define MICROPY_PY_SYS_STDFILES            (CORE_FEAT)
 #endif
@@ -90,6 +94,10 @@
 
 #ifndef MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 #define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE (CORE_FEAT)
+#endif
+
+#ifndef MICROPY_HW_ENABLE_RNG
+#define MICROPY_HW_ENABLE_RNG       (0)
 #endif
 
 #ifndef MICROPY_EMIT_THUMB
@@ -133,9 +141,14 @@
     #define MICROPY_FATFS_MAX_SS       (4096)
 #endif
 
-// Use port specific os module rather than extmod variant.
-#define MICROPY_PY_OS               (0)
+#define MICROPY_PY_OS               (1)
+#define MICROPY_PY_OS_INCLUDEFILE   "ports/nrf/modules/os/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (1)
+#define MICROPY_PY_OS_DUPTERM_STREAM_DETACHED_ATTACHED (1)
+#define MICROPY_PY_OS_SEP           (1)
+#define MICROPY_PY_OS_SYNC          (MICROPY_VFS)
+#define MICROPY_PY_OS_UNAME         (1)
+#define MICROPY_PY_OS_URANDOM       (MICROPY_HW_ENABLE_RNG)
 
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)

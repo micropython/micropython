@@ -324,7 +324,6 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	machine/timer.c \
 	machine/rtcounter.c \
 	machine/temp.c \
-	os/modos.c \
 	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \
