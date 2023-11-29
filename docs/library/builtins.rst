@@ -82,6 +82,10 @@ Functions and types
       In MicroPython, `byteorder` parameter must be positional (this is
       compatible with CPython).
 
+      .. note:: The optional ``signed`` kwarg from CPython is not supported.
+                MicroPython currently converts negative integers as signed,
+                and positive as unsigned. (:ref:`Details <cpydiff_types_int_to_bytes>`.)
+
 .. function:: isinstance()
 
 .. function:: issubclass()
