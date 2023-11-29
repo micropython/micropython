@@ -70,7 +70,6 @@
 #include "cryptohash.h"
 #include "mpirq.h"
 #include "updater.h"
-#include "modos.h"
 #include "antenna.h"
 #include "task.h"
 
@@ -246,9 +245,6 @@ soft_reset_exit:
 
     // clean-up the user socket space
     modusocket_close_all_user_sockets();
-
-    // unmount all user file systems
-    osmount_unmount_all();
 
     // wait for pending transactions to complete
     mp_hal_delay_ms(20);
