@@ -118,10 +118,15 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-function ci_esp32_idf50_setup {
+# GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
+IDF_VER=v5.0.2
+
+function ci_esp32_idf_setup {
     pip3 install pyelftools
-    git clone https://github.com/espressif/esp-idf.git
-    git -C esp-idf checkout v5.0.2
+    git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
+    # doing a treeless clone isn't quite as good as --shallow-submodules, but it
+    # is smaller than full clones and works when the submodule commit isn't a head.
+    git -C esp-idf submodule update --init --recursive --filter=tree:0
     ./esp-idf/install.sh
 }
 
