@@ -368,6 +368,31 @@ curl -v -L http://circuitpython.local/cp/devices.json
 }
 ```
 
+#### `/cp/diskinfo.json`
+
+Returns information about the attached disk(s). A list of objects, one per disk.
+
+* `root`: Filesystem path to the root of the disk.
+* `free`: Count of free bytes on the disk.
+* `block_size`: Size of a block in bytes.
+* `writable`: True when CircuitPython and the web workflow can write to the disk. USB may claim a disk instead.
+* `total`: Total bytes that make up the disk.
+
+Example:
+```sh
+curl -v -L http://circuitpython.local/cp/diskinfo.json
+```
+
+```json
+[{
+	"root": "/",
+	"free": 2964992,
+	"block_size": 512,
+	"writable": true,
+	"total": 2967552
+}]
+```
+
 #### `/cp/serial/`
 
 
@@ -380,7 +405,7 @@ This is an authenticated endpoint in both modes.
 
 Returns information about the device.
 
-* `web_api_version`: Always `1`. This versions the rest of the API and new versions may not be backwards compatible.
+* `web_api_version`: Between `1` and `3`. This versions the rest of the API and new versions may not be backwards compatible. See below for more info.
 * `version`: CircuitPython build version.
 * `build_date`: CircuitPython build date.
 * `board_name`: Human readable name of the board.
@@ -436,3 +461,9 @@ CircuitPython is expected to be masked UTF-8, as the spec requires. Data from Ci
 client is unmasked. It is also unbuffered so the client will get a variety of frame sizes.
 
 Only one WebSocket at a time is supported.
+
+### Versions
+
+* `1` - Initial version.
+* `2` - Added `/cp/diskinfo.json`.
+* `3` - Changed `/cp/diskinfo.json` to return a list in preparation for multi-disk support.
