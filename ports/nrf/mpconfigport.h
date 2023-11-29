@@ -135,6 +135,7 @@
 
 // Use port specific os module rather than extmod variant.
 #define MICROPY_PY_OS               (0)
+#define MICROPY_PY_OS_DUPTERM       (1)
 
 #define MICROPY_STREAMS_NON_BLOCK   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)

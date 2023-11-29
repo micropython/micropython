@@ -118,16 +118,16 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 // TODO should accept any object with read/write methods.
 STATIC mp_obj_t os_dupterm(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
-        if (MP_STATE_PORT(board_stdio_uart) == NULL) {
+        if (MP_STATE_VM(dupterm_objs[0]) == MP_OBJ_NULL) {
             return mp_const_none;
         } else {
-            return MP_STATE_PORT(board_stdio_uart);
+            return MP_STATE_VM(dupterm_objs[0]);
         }
     } else {
         if (args[0] == mp_const_none) {
-            MP_STATE_PORT(board_stdio_uart) = NULL;
+            MP_STATE_VM(dupterm_objs[0]) = MP_OBJ_NULL;
         } else if (mp_obj_get_type(args[0]) == &machine_uart_type) {
-            MP_STATE_PORT(board_stdio_uart) = args[0];
+            MP_STATE_VM(dupterm_objs[0]) = args[0];
         } else {
             mp_raise_ValueError(MP_ERROR_TEXT("need a UART object"));
         }
