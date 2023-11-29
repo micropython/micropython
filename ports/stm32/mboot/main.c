@@ -449,14 +449,6 @@ static bool flash_is_modifiable_addr_range(uint32_t addr, uint32_t len) {
            || addr >= (uint32_t)&_mboot_protected_flash_end_exclusive;
 }
 
-static int mboot_flash_mass_erase(void) {
-    // Erase all flash pages after mboot.
-    uint32_t start_addr = (uint32_t)&_mboot_protected_flash_end_exclusive;
-    uint32_t num_words = (FLASH_END + 1 - start_addr) / sizeof(uint32_t);
-    int ret = flash_erase(start_addr, num_words);
-    return ret;
-}
-
 static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     // Compute start and end address of the sector being erased.
     uint32_t sector_size = 0;
@@ -484,6 +476,23 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
             return -MBOOT_ERRNO_FLASH_ERASE_FAILED;
         }
     }
+
+    return 0;
+}
+
+static int mboot_flash_mass_erase(void) {
+    // Erase all flash pages except those disallowed because they overlap with mboot.
+    uint32_t addr = FLASH_START;
+    while (addr <= FLASH_END) {
+        int ret = mboot_flash_page_erase(addr, &addr);
+        if (ret != 0 && ret != -MBOOT_ERRNO_FLASH_ERASE_DISALLOWED) {
+            return ret;
+        }
+    }
+
+    // Reset any errors from disallowed page erases.
+    dfu_context.status = DFU_STATUS_OK;
+    dfu_context.error = 0;
 
     return 0;
 }
