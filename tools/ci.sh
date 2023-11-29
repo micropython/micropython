@@ -121,6 +121,8 @@ function ci_cc3200_build {
 # GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
 IDF_VER=v5.0.2
 
+export IDF_CCACHE_ENABLE=1
+
 function ci_esp32_idf_setup {
     pip3 install pyelftools
     git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
