@@ -1,5 +1,9 @@
 name: esp32 port
 
+env:
+  # GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
+  IDF_VER: v5.0.2
+
 on:
   push:
   pull_request:
@@ -22,7 +26,21 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v4
-    - name: Install packages
+
+    - name: Cached ESP-IDF install
+      id: cache-esp-idf
+      uses: actions/cache@v3
+      with:
+        path: |
+          ./esp-idf/
+          ~/.espressif/
+          !~/.espressif/dist/
+          ~/.cache/pip/
+        key: esp-idf-${{ env.IDF_VER }}
+
+    - name: Install ESP-IDF packages
+      if: steps.cache-esp-idf.outputs.cache-hit != 'true'
       run: source tools/ci.sh && ci_esp32_idf50_setup
+
     - name: Build
       run: source tools/ci.sh && ci_esp32_build
