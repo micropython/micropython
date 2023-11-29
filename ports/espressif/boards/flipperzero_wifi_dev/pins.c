@@ -40,9 +40,9 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO2) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO1) },
 
+    { MP_ROM_QSTR(MP_QSTR_RED_LED),   MP_ROM_PTR(&pin_GPIO6)}, // The values are reversed
     { MP_ROM_QSTR(MP_QSTR_GREEN_LED), MP_ROM_PTR(&pin_GPIO5)}, // The values are reversed
     { MP_ROM_QSTR(MP_QSTR_BLUE_LED),  MP_ROM_PTR(&pin_GPIO4)}, // The values are reversed
-    { MP_ROM_QSTR(MP_QSTR_RED_LED),   MP_ROM_PTR(&pin_GPIO6)}, // The values are reversed
 
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_GPIO11) },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_GPIO13) },

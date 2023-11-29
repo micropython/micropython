@@ -29,6 +29,10 @@
 #define MICROPY_HW_BOARD_NAME       "Flipper Zero Wi-Fi Dev"
 #define MICROPY_HW_MCU_NAME         "ESP32S2"
 
+#define CIRCUITPY_RGB_STATUS_INVERTED_PWM
+#define CIRCUITPY_RGB_STATUS_R (&pin_GPIO6)
+#define CIRCUITPY_RGB_STATUS_G (&pin_GPIO5)
+#define CIRCUITPY_RGB_STATUS_B (&pin_GPIO4)
 
 #define MICROPY_HW_LED_STATUS   (&pin_GPIO5) // Green LED
 
