@@ -334,4 +334,45 @@ typedef const char *mp_rom_error_text_t;
 // For now, forward directly to MP_COMPRESSED_ROM_TEXT.
 #define MP_ERROR_TEXT(x) (mp_rom_error_text_t)MP_COMPRESSED_ROM_TEXT(x)
 
+// Macro and inline function to measure the length (in bytes) needed to hold an
+// unambiguous representation of a small (C representable) integer.
+//
+// Implemented inline as there's a lot the compiler can optimise based on the size of INT.
+#define MP_INT_REPR_LEN(INT, IS_SIGNED) mp_int_repr_len_helper(&(INT), sizeof(INT), IS_SIGNED)
+
+static inline int mp_int_repr_len_helper(void *pint, int size, bool is_signed) {
+    int i;
+    byte *b = (byte *)pint;
+    byte ext_byte = 0x00;
+    int result = size;
+    int msb_idx, step;
+
+    #if MP_ENDIANNESS_LITTLE
+    msb_idx = size - 1;
+    step = -1;
+    #else
+    msb_idx = 0;
+    step = 1;
+    #endif
+
+    if (is_signed && (b[msb_idx] & 0x80)) {
+        ext_byte = 0xFF; // Negative number
+    }
+
+    // Count down the number of most significant bytes that don't contain
+    // any significant values (i.e. equal to the extension byte).
+    for (i = msb_idx; i >= 0 && i <= size - 1; i += step) {
+        if (b[i] != ext_byte) {
+            if (is_signed && (b[i] & 0x80) != (ext_byte & 0x80)) {
+                // Add one additional byte to hold the sign bit
+                result++;
+            }
+            break;
+        }
+        result--;
+    }
+
+    return result;
+}
+
 #endif // MICROPY_INCLUDED_PY_MISC_H

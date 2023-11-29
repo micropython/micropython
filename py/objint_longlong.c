@@ -57,10 +57,12 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
     return mp_obj_new_int_from_ll(value);
 }
 
-void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
+bool mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
     assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     long long val = self->val;
+    size_t slen = MP_INT_REPR_LEN(val, val < 0);
+    bool ok = slen <= len;
     if (big_endian) {
         byte *b = buf + len;
         while (b > buf) {
@@ -73,6 +75,7 @@ void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byt
             val >>= 8;
         }
     }
+    return ok;
 }
 
 int mp_obj_int_sign(mp_obj_t self_in) {
