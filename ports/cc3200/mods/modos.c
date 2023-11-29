@@ -35,8 +35,8 @@
 #include "lib/oofatfs/ff.h"
 #include "lib/oofatfs/diskio.h"
 #include "genhdr/mpversion.h"
-#include "modos.h"
 #include "sflash_diskio.h"
+#include "extmod/misc.h"
 #include "extmod/vfs.h"
 #include "extmod/vfs_fat.h"
 #include "random.h"
@@ -54,25 +54,6 @@
 ///     /flash      -- the serial flash filesystem
 ///
 /// On boot up, the current directory is `/flash`.
-
-/******************************************************************************
- DECLARE PRIVATE DATA
- ******************************************************************************/
-STATIC os_term_dup_obj_t os_term_dup_obj;
-
-/******************************************************************************
- DEFINE PUBLIC FUNCTIONS
- ******************************************************************************/
-
-void osmount_unmount_all (void) {
-    //TODO
-    /*
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mount_obj_list).len; i++) {
-        os_fs_mount_t *mount_obj = ((os_fs_mount_t *)(MP_STATE_PORT(mount_obj_list).items[i]));
-        unmount(mount_obj);
-    }
-    */
-}
 
 /******************************************************************************/
 // MicroPython bindings
@@ -120,31 +101,6 @@ STATIC mp_obj_t os_urandom(mp_obj_t num) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_urandom_obj, os_urandom);
 
-STATIC mp_obj_t os_dupterm(uint n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        if (MP_STATE_PORT(os_term_dup_obj) == MP_OBJ_NULL) {
-            return mp_const_none;
-        } else {
-            return MP_STATE_PORT(os_term_dup_obj)->stream_o;
-        }
-    } else {
-        mp_obj_t stream_o = args[0];
-        if (stream_o == mp_const_none) {
-            MP_STATE_PORT(os_term_dup_obj) = MP_OBJ_NULL;
-        } else {
-            if (!mp_obj_is_type(stream_o, &pyb_uart_type)) {
-                // must be a stream-like object providing at least read and write methods
-                mp_load_method(stream_o, MP_QSTR_read, os_term_dup_obj.read);
-                mp_load_method(stream_o, MP_QSTR_write, os_term_dup_obj.write);
-            }
-            os_term_dup_obj.stream_o = stream_o;
-            MP_STATE_PORT(os_term_dup_obj) = &os_term_dup_obj;
-        }
-        return mp_const_none;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(os_dupterm_obj, 0, 1, os_dupterm);
-
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_os) },
 
@@ -170,7 +126,7 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_mount),           MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount),          MP_ROM_PTR(&mp_vfs_umount_obj) },
     { MP_ROM_QSTR(MP_QSTR_VfsFat),          MP_ROM_PTR(&mp_fat_vfs_type) },
-    { MP_ROM_QSTR(MP_QSTR_dupterm),         MP_ROM_PTR(&os_dupterm_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dupterm),         MP_ROM_PTR(&mp_os_dupterm_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

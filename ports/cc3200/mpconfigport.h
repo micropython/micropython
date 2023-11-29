@@ -115,6 +115,7 @@
 #define MICROPY_PY_RE                               (1)
 #define MICROPY_PY_HEAPQ                            (0)
 #define MICROPY_PY_HASHLIB                          (0)
+#define MICROPY_PY_OS_DUPTERM                       (1)
 #define MICROPY_PY_SELECT                           (1)
 #define MICROPY_PY_TIME                             (1)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME     (1)

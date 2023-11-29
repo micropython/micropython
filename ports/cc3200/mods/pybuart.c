@@ -50,7 +50,6 @@
 #include "pin.h"
 #include "pybpin.h"
 #include "pins.h"
-#include "modos.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -249,7 +248,7 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
         MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
         while (UARTCharsAvail(self->reg)) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
-            if (MP_STATE_PORT(os_term_dup_obj) && MP_STATE_PORT(os_term_dup_obj)->stream_o == self && data == mp_interrupt_char) {
+            if (MP_STATE_VM(dupterm_objs[0]) == MP_OBJ_FROM_PTR(self) && data == mp_interrupt_char) {
                 // raise an exception when interrupts are finished
                 mp_sched_keyboard_interrupt();
             } else { // there's always a read buffer available
