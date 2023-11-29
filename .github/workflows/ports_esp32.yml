@@ -18,7 +18,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_idf50:
+  build_idf:
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_func:  # names are functions in ci.sh
+          - esp32_build_cmod_s2
+          - esp32_build_s3_c3
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v4
@@ -42,5 +48,5 @@ jobs:
       if: steps.cache_esp_idf.outputs.cache-hit != 'true'
       run: source tools/ci.sh && ci_esp32_idf_setup
 
-    - name: Build
-      run: source tools/ci.sh && ci_esp32_build
+    - name: Build ci_${{matrix.ci_func }}
+      run: source tools/ci.sh && ci_${{ matrix.ci_func }}

@@ -130,19 +130,30 @@ function ci_esp32_idf_setup {
     ./esp-idf/install.sh
 }
 
-function ci_esp32_build {
+function ci_esp32_build_common {
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
+}
+
+function ci_esp32_build_cmod_s2 {
+    ci_esp32_build_common
+
     make ${MAKEOPTS} -C ports/esp32 \
         USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
         FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
 
     # Test building native .mpy with xtensawin architecture.
     ci_native_mpy_modules_build xtensawin
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
+}
+
+function ci_esp32_build_s3_c3 {
+    ci_esp32_build_common
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
 }
 
 ########################################################################################
