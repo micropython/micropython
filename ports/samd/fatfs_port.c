@@ -33,13 +33,5 @@
 extern uint32_t time_offset;
 
 MP_WEAK DWORD get_fattime(void) {
-    #if MICROPY_PY_MACHINE_RTC
     return (RTC->MODE2.CLOCK.reg >> 1) + (20 << 25);
-    #else
-    extern void rtc_gettime(timeutils_struct_time_t *tm);
-    timeutils_struct_time_t tm;
-    timeutils_seconds_since_epoch_to_struct_time(mp_hal_ticks_ms_64() / 1000 + time_offset, &tm);
-    return ((tm.tm_year - 1980) << 25) | ((tm.tm_mon) << 21) | ((tm.tm_mday) << 16) |
-           ((tm.tm_hour) << 11) | ((tm.tm_min) << 5) | (tm.tm_sec / 2);
-    #endif
 }
