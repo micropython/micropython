@@ -391,9 +391,7 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
             if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
                 goto cleanup;
             }
-            #ifdef MICROPY_EVENT_POLL_HOOK
-            MICROPY_EVENT_POLL_HOOK
-            #endif
+            mp_event_wait_ms(1);
         }
     }
 

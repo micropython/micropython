@@ -306,6 +306,7 @@ STATIC mp_uint_t poll_set_poll_once(poll_set_t *poll_set, size_t *rwx_num) {
 
 STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size_t *rwx_num, mp_uint_t timeout) {
     mp_uint_t start_ticks = mp_hal_ticks_ms();
+    bool has_timeout = timeout != (mp_uint_t)-1;
 
     #if MICROPY_PY_SELECT_POSIX_OPTIMISATIONS
 
@@ -350,12 +351,12 @@ STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
         }
 
         // Return if an object is ready, or if the timeout expired.
-        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_ticks >= timeout)) {
+        if (n_ready > 0 || (has_timeout && mp_hal_ticks_ms() - start_ticks >= timeout)) {
             return n_ready;
         }
 
-        // This would be MICROPY_EVENT_POLL_HOOK but the call to poll() above already includes a delay.
-        mp_handle_pending(true);
+        // This would be mp_event_wait_ms() but the call to poll() above already includes a delay.
+        mp_event_handle_nowait();
     }
 
     #else
@@ -363,10 +364,15 @@ STATIC mp_uint_t poll_set_poll_until_ready_or_timeout(poll_set_t *poll_set, size
     for (;;) {
         // poll the objects
         mp_uint_t n_ready = poll_set_poll_once(poll_set, rwx_num);
-        if (n_ready > 0 || (timeout != (mp_uint_t)-1 && mp_hal_ticks_ms() - start_ticks >= timeout)) {
+        uint32_t elapsed = mp_hal_ticks_ms() - start_ticks;
+        if (n_ready > 0 || (has_timeout && elapsed >= timeout)) {
             return n_ready;
         }
-        MICROPY_EVENT_POLL_HOOK
+        if (has_timeout) {
+            mp_event_wait_ms(timeout - elapsed);
+        } else {
+            mp_event_wait_indefinite();
+        }
     }
 
     #endif
