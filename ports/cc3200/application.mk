@@ -77,7 +77,6 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 
 APP_MODS_SRC_C = $(addprefix mods/,\
 	modnetwork.c \
-	modos.c \
 	modsocket.c \
 	modssl.c \
 	modwipy.c \
