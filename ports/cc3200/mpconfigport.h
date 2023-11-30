@@ -115,7 +115,11 @@
 #define MICROPY_PY_RE                               (1)
 #define MICROPY_PY_HEAPQ                            (0)
 #define MICROPY_PY_HASHLIB                          (0)
+#define MICROPY_PY_OS                               (1)
+#define MICROPY_PY_OS_INCLUDEFILE                   "ports/cc3200/mods/modos.c"
 #define MICROPY_PY_OS_DUPTERM                       (1)
+#define MICROPY_PY_OS_SYNC                          (1)
+#define MICROPY_PY_OS_URANDOM                       (1)
 #define MICROPY_PY_SELECT                           (1)
 #define MICROPY_PY_TIME                             (1)
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME     (1)
