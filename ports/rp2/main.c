@@ -73,6 +73,9 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
     BI_NAMED_GROUP_SEPARATE_COMMAS | BI_NAMED_GROUP_SORT_ALPHA));
 
 int main(int argc, char **argv) {
+    // This is a tickless port, interrupts should always trigger SEV.
+    SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
+
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
