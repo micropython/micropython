@@ -221,9 +221,56 @@ bool filesystem_present(void) {
     return _mp_vfs.len > 0;
 }
 
-FATFS *filesystem_circuitpy(void) {
+fs_user_mount_t *filesystem_circuitpy(void) {
     if (!filesystem_present()) {
         return NULL;
     }
-    return &_internal_vfs.fatfs;
+    return &_internal_vfs;
+}
+
+fs_user_mount_t *filesystem_for_path(const char *path_in, const char **path_under_mount) {
+    mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path_in, path_under_mount);
+    if (vfs == MP_VFS_NONE) {
+        return NULL;
+    }
+    fs_user_mount_t *fs_mount;
+    *path_under_mount = path_in;
+    if (vfs == MP_VFS_ROOT) {
+        fs_mount = filesystem_circuitpy();
+    } else {
+        fs_mount = MP_OBJ_TO_PTR(vfs->obj);
+        *path_under_mount += strlen(vfs->str);
+    }
+    return fs_mount;
+}
+
+bool filesystem_native_fatfs(fs_user_mount_t *fs_mount) {
+    return fs_mount->base.type == &mp_fat_vfs_type && (fs_mount->blockdev.flags & MP_BLOCKDEV_FLAG_NATIVE) != 0;
+}
+
+bool filesystem_lock(fs_user_mount_t *fs_mount) {
+    if (fs_mount->lock_count == 0 && !blockdev_lock(fs_mount)) {
+        return false;
+    }
+    fs_mount->lock_count += 1;
+    return true;
+}
+
+void filesystem_unlock(fs_user_mount_t *fs_mount) {
+    fs_mount->lock_count -= 1;
+    if (fs_mount->lock_count == 0) {
+        blockdev_unlock(fs_mount);
+    }
+}
+
+bool blockdev_lock(fs_user_mount_t *fs_mount) {
+    if ((fs_mount->blockdev.flags & MP_BLOCKDEV_FLAG_LOCKED) != 0) {
+        return false;
+    }
+    fs_mount->blockdev.flags |= MP_BLOCKDEV_FLAG_LOCKED;
+    return true;
+}
+
+void blockdev_unlock(fs_user_mount_t *fs_mount) {
+    fs_mount->blockdev.flags &= ~MP_BLOCKDEV_FLAG_LOCKED;
 }

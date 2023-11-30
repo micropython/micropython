@@ -34,6 +34,7 @@ typedef struct _fs_user_mount_t {
     mp_obj_base_t base;
     mp_vfs_blockdev_t blockdev;
     FATFS fatfs;
+    int8_t lock_count;
 } fs_user_mount_t;
 
 extern const byte fresult_to_errno_table[20];

@@ -165,6 +165,13 @@ Returns a JSON representation of the directory.
 * `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
 * `404 Not Found` - Missing directory
 
+Returns directory information:
+* `free`: Count of free blocks on the disk holding this directory.
+* `total`: Total blocks that make up the disk holding this directory.
+* `block_size`: Size of a block in bytes.
+* `writable`: True when CircuitPython and the web workflow can write to the disk. USB may claim a disk instead.
+* `files`: Array of objects. One for each file.
+
 Returns information about each file in the directory:
 
 * `name` - File name. No trailing `/` on directory names
@@ -179,14 +186,20 @@ curl -v -u :passw0rd -H "Accept: application/json" -L --location-trusted http://
 ```
 
 ```json
-[
-	{
-		"name": "world.txt",
-		"directory": false,
-		"modified_ns": 946934328000000000,
-		"file_size": 12
-	}
-]
+{
+	"free": 451623,
+	"total": 973344,
+	"block_size": 32768,
+	"writable": true,
+	"files": [
+		{
+			"name": "world.txt",
+			"directory": false,
+			"modified_ns": 946934328000000000,
+			"file_size": 12
+		}
+	]
+}
 ```
 
 ##### PUT
@@ -373,10 +386,10 @@ curl -v -L http://circuitpython.local/cp/devices.json
 Returns information about the attached disk(s). A list of objects, one per disk.
 
 * `root`: Filesystem path to the root of the disk.
-* `free`: Count of free bytes on the disk.
+* `free`: Count of free blocks on the disk.
+* `total`: Total blocks that make up the disk.
 * `block_size`: Size of a block in bytes.
 * `writable`: True when CircuitPython and the web workflow can write to the disk. USB may claim a disk instead.
-* `total`: Total bytes that make up the disk.
 
 Example:
 ```sh
@@ -405,7 +418,7 @@ This is an authenticated endpoint in both modes.
 
 Returns information about the device.
 
-* `web_api_version`: Between `1` and `3`. This versions the rest of the API and new versions may not be backwards compatible. See below for more info.
+* `web_api_version`: Between `1` and `4`. This versions the rest of the API and new versions may not be backwards compatible. See below for more info.
 * `version`: CircuitPython build version.
 * `build_date`: CircuitPython build date.
 * `board_name`: Human readable name of the board.
@@ -467,3 +480,5 @@ Only one WebSocket at a time is supported.
 * `1` - Initial version.
 * `2` - Added `/cp/diskinfo.json`.
 * `3` - Changed `/cp/diskinfo.json` to return a list in preparation for multi-disk support.
+* `4` - Changed directory json to an object with additional data. File list is under `files` and is
+  the same as the old format.

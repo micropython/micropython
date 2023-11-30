@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
-#define MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
+#pragma once
 
 #include <stdbool.h>
 
@@ -45,6 +44,16 @@ void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concu
 bool filesystem_is_writable_by_python(fs_user_mount_t *vfs);
 bool filesystem_is_writable_by_usb(fs_user_mount_t *vfs);
 
-FATFS *filesystem_circuitpy(void);
+fs_user_mount_t *filesystem_circuitpy(void);
+fs_user_mount_t *filesystem_for_path(const char *path_in, const char **path_under_mount);
+bool filesystem_native_fatfs(fs_user_mount_t *fs_mount);
 
-#endif  // MICROPY_INCLUDED_SUPERVISOR_FILESYSTEM_H
+// We have two levels of locking. filesystem_* calls grab a shared blockdev lock to allow
+// CircuitPython's fatfs code edit the blocks. blockdev_* class grab a lock to mutate blocks
+// directly, excluding any filesystem_* locks.
+
+bool filesystem_lock(fs_user_mount_t *fs_mount);
+void filesystem_unlock(fs_user_mount_t *fs_mount);
+
+bool blockdev_lock(fs_user_mount_t *fs_mount);
+void blockdev_unlock(fs_user_mount_t *fs_mount);

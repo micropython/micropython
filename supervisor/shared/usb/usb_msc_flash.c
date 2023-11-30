@@ -41,58 +41,7 @@
 #define MSC_FLASH_BLOCK_SIZE    512
 
 static bool ejected[1] = {true};
-
-// Lock to track if something else is using the filesystem when USB is plugged in. If so, the drive
-// will be made available once the lock is released.
-static bool _usb_msc_lock = false;
-static bool _usb_connected_while_locked = false;
-
-STATIC void _usb_msc_uneject(void) {
-    for (uint8_t i = 0; i < sizeof(ejected); i++) {
-        ejected[i] = false;
-    }
-}
-
-void usb_msc_mount(void) {
-    // Reset the ejection tracking every time we're plugged into USB. This allows for us to battery
-    // power the device, eject, unplug and plug it back in to get the drive.
-    if (_usb_msc_lock) {
-        _usb_connected_while_locked = true;
-        return;
-    }
-    _usb_msc_uneject();
-    _usb_connected_while_locked = false;
-}
-
-void usb_msc_umount(void) {
-}
-
-bool usb_msc_ejected(void) {
-    bool all_ejected = true;
-    for (uint8_t i = 0; i < sizeof(ejected); i++) {
-        all_ejected &= ejected[i];
-    }
-    return all_ejected;
-}
-
-bool usb_msc_lock(void) {
-    if ((storage_usb_enabled() && !usb_msc_ejected()) || _usb_msc_lock) {
-        return false;
-    }
-    _usb_msc_lock = true;
-    return true;
-}
-
-void usb_msc_unlock(void) {
-    if (!_usb_msc_lock) {
-        // Mismatched unlock.
-        return;
-    }
-    if (_usb_connected_while_locked) {
-        _usb_msc_uneject();
-    }
-    _usb_msc_lock = false;
-}
+static bool locked[1] = {false};
 
 // The root FS is always at the end of the list.
 static fs_user_mount_t *get_vfs(int lun) {
@@ -109,6 +58,36 @@ static fs_user_mount_t *get_vfs(int lun) {
         current_mount = current_mount->next;
     }
     return current_mount->obj;
+}
+
+STATIC void _usb_msc_uneject(void) {
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        ejected[i] = false;
+        locked[i] = false;
+    }
+}
+
+void usb_msc_mount(void) {
+    _usb_msc_uneject();
+}
+
+void usb_msc_umount(void) {
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        fs_user_mount_t *vfs = get_vfs(i + 1);
+        if (vfs == NULL) {
+            continue;
+        }
+        blockdev_unlock(vfs);
+        locked[i] = false;
+    }
+}
+
+bool usb_msc_ejected(void) {
+    bool all_ejected = true;
+    for (uint8_t i = 0; i < sizeof(ejected); i++) {
+        all_ejected &= ejected[i];
+    }
+    return all_ejected;
 }
 
 // Callback invoked when received an SCSI command not in built-in list below
@@ -164,6 +143,11 @@ bool tud_msc_is_writable_cb(uint8_t lun) {
     if (vfs->blockdev.writeblocks[0] == MP_OBJ_NULL || !filesystem_is_writable_by_usb(vfs)) {
         return false;
     }
+    // Lock the blockdev once we say we're writable.
+    if (!locked[lun] && !blockdev_lock(vfs)) {
+        return false;
+    }
+    locked[lun] = true;
     return true;
 }
 
@@ -267,7 +251,9 @@ bool tud_msc_start_stop_cb(uint8_t lun, uint8_t power_condition, bool start, boo
             if (disk_ioctl(current_mount, CTRL_SYNC, NULL) != RES_OK) {
                 return false;
             } else {
+                blockdev_unlock(current_mount);
                 ejected[lun] = true;
+                locked[lun] = false;
             }
         } else {
             // We can only load if it hasn't been ejected.

@@ -30,12 +30,41 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
+#if CIRCUITPY_SDCARDIO
+#include "shared-bindings/sdcardio/SDCard.h"
+#endif
+#if CIRCUITPY_SDIOIO
+#include "shared-bindings/sdioio/SDCard.h"
+#endif
+
+
 #if MICROPY_VFS
 
 void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
     mp_load_method(bdev, MP_QSTR_readblocks, self->readblocks);
     mp_load_method_maybe(bdev, MP_QSTR_writeblocks, self->writeblocks);
     mp_load_method_maybe(bdev, MP_QSTR_ioctl, self->u.ioctl);
+
+    // CIRCUITPY-CHANGE: Support native SD cards.
+    #if CIRCUITPY_SDCARDIO
+    if (mp_obj_get_type(bdev) == &sdcardio_SDCard_type) {
+        self->flags |= MP_BLOCKDEV_FLAG_NATIVE | MP_BLOCKDEV_FLAG_HAVE_IOCTL;
+        self->readblocks[0] = mp_const_none;
+        self->readblocks[1] = bdev;
+        self->readblocks[2] = (mp_obj_t)sdcardio_sdcard_readblocks; // native version
+        self->writeblocks[0] = mp_const_none;
+        self->writeblocks[1] = bdev;
+        self->writeblocks[2] = (mp_obj_t)sdcardio_sdcard_writeblocks; // native version
+        self->u.ioctl[0] = mp_const_none;
+        self->u.ioctl[1] = bdev;
+        self->u.ioctl[2] = (mp_obj_t)sdcardio_sdcard_ioctl; // native version
+    }
+    #endif
+    #if CIRCUITPY_SDIOIO
+    if (mp_obj_get_type(bdev) == &sdioio_SDCard_type) {
+        // TODO: Enable native blockdev for SDIO too.
+    }
+    #endif
     if (self->u.ioctl[0] != MP_OBJ_NULL) {
         // Device supports new block protocol, so indicate it
         self->flags |= MP_BLOCKDEV_FLAG_HAVE_IOCTL;
@@ -48,8 +77,8 @@ void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
 
 int mp_vfs_blockdev_read(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, uint8_t *buf) {
     if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
-        mp_uint_t (*f)(uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->readblocks[2];
-        return f(buf, block_num, num_blocks);
+        mp_uint_t (*f)(mp_obj_t self, uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->readblocks[2];
+        return f(self->readblocks[1], buf, block_num, num_blocks);
     } else {
         mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, num_blocks *self->block_size, buf};
         self->readblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
@@ -80,8 +109,8 @@ int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_
     }
 
     if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
-        mp_uint_t (*f)(const uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->writeblocks[2];
-        return f(buf, block_num, num_blocks);
+        mp_uint_t (*f)(mp_obj_t self, const uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->writeblocks[2];
+        return f(self->writeblocks[1], buf, block_num, num_blocks);
     } else {
         mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, num_blocks *self->block_size, (void *)buf};
         self->writeblocks[2] = MP_OBJ_NEW_SMALL_INT(block_num);
@@ -112,6 +141,15 @@ int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t 
 
 mp_obj_t mp_vfs_blockdev_ioctl(mp_vfs_blockdev_t *self, uintptr_t cmd, uintptr_t arg) {
     if (self->flags & MP_BLOCKDEV_FLAG_HAVE_IOCTL) {
+        if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
+            size_t out_value;
+            bool (*f)(mp_obj_t self, uint32_t, uint32_t, size_t *) = (void *)(uintptr_t)self->u.ioctl[2];
+            bool b = f(self->u.ioctl[1], cmd, arg, &out_value);
+            if (!b) {
+                return mp_const_none;
+            }
+            return MP_OBJ_NEW_SMALL_INT(out_value);
+        }
         // New protocol with ioctl
         self->u.ioctl[2] = MP_OBJ_NEW_SMALL_INT(cmd);
         self->u.ioctl[3] = MP_OBJ_NEW_SMALL_INT(arg);
