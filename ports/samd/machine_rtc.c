@@ -31,8 +31,6 @@
 #include "extmod/modmachine.h"
 #include "sam.h"
 
-#if MICROPY_PY_MACHINE_RTC
-
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
     mp_obj_t callback;
@@ -177,5 +175,3 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, machine_rtc_make_new,
     locals_dict, &machine_rtc_locals_dict
     );
-
-#endif // MICROPY_PY_MACHINE_RTC
