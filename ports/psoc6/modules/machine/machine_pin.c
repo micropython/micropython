@@ -1,6 +1,7 @@
 // micropython includes
 #include "py/mphal.h"
 #include "py/runtime.h"
+#include "shared/runtime/mpirq.h"
 
 // port-specific includes
 #include "modmachine.h"
@@ -13,12 +14,17 @@ enum {GPIO_MODE_NONE = 0, GPIO_MODE_IN, GPIO_MODE_OUT, GPIO_MODE_OPEN_DRAIN};
 
 enum {GPIO_PULL_NONE = 0, GPIO_PULL_UP, GPIO_PULL_DOWN};
 
+enum {GPIO_IRQ_LEVEL_NONE=0, GPIO_IRQ_FALLING, GPIO_IRQ_RISING, GPIO_IRQ_BOTH};
+
+cyhal_gpio_callback_data_t gpio_callback_data;
+
 typedef struct _machine_pin_io_obj_t {
     mp_obj_base_t base;
     machine_pin_phy_obj_t *pin_phy;
     uint8_t mode;
     uint8_t drive;
     uint8_t pull;
+    mp_obj_t callback;
 } machine_pin_io_obj_t;
 
 
@@ -163,6 +169,29 @@ static cyhal_gpio_drive_mode_t mp_to_cy_get_gpio_drive(uint8_t mode, uint8_t pul
     }
 
     return cy_drive;
+}
+
+static cyhal_gpio_event_t mp_to_cy_get_interrupt_mode(uint8_t mode){
+    cyhal_gpio_event_t event;
+    switch(mode){
+        case GPIO_IRQ_FALLING:
+            event =  CYHAL_GPIO_IRQ_FALL;
+            break;
+        case GPIO_IRQ_RISING:
+            event =  CYHAL_GPIO_IRQ_RISE;
+            break;
+        
+        case GPIO_IRQ_RISING|GPIO_IRQ_FALLING:
+            event = CYHAL_GPIO_IRQ_BOTH;
+            break;
+    }
+    return event;
+}
+
+static void gpio_interrupt_handler(void *handler_arg,  cyhal_gpio_event_t event )
+{
+    machine_pin_io_obj_t *self = handler_arg;
+    mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
 }
 
 static bool machine_pin_is_inited(machine_pin_io_obj_t *self) {
@@ -321,6 +350,33 @@ STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
+// pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
+STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_handler, ARG_trigger};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_IRQ_RISING|GPIO_IRQ_FALLING }},
+    };
+    
+    machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    if (n_args > 1 || kw_args->used != 0) {
+        // Update IRQ data.
+        self->callback = args[ARG_handler].u_obj;
+        mp_uint_t trigger = args[ARG_trigger].u_int;
+
+        cyhal_gpio_event_t event = mp_to_cy_get_interrupt_mode(trigger);
+        gpio_callback_data.callback = gpio_interrupt_handler;
+        gpio_callback_data.callback_arg = self;
+        cyhal_gpio_register_callback(self->pin_phy->addr,&gpio_callback_data);
+        cyhal_gpio_enable_event(self->pin_phy->addr,event , 3, true);
+   
+    }
+    return MP_OBJ_FROM_PTR(&gpio_callback_data);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
+
 STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // Instance methods
     { MP_ROM_QSTR(MP_QSTR___name__),                MP_ROM_QSTR(MP_QSTR_machine) },
@@ -332,6 +388,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_high),                    MP_ROM_PTR(&machine_pin_high_obj) },
     { MP_ROM_QSTR(MP_QSTR_off),                     MP_ROM_PTR(&machine_pin_low_obj) },
     { MP_ROM_QSTR(MP_QSTR_on),                      MP_ROM_PTR(&machine_pin_high_obj) },
+    { MP_ROM_QSTR(MP_QSTR_irq),                     MP_ROM_PTR(&machine_pin_irq_obj) },
 
     // Const
     { MP_ROM_QSTR(MP_QSTR_IN),                      MP_ROM_INT(GPIO_MODE_IN) },
@@ -339,7 +396,10 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN),              MP_ROM_INT(GPIO_MODE_OPEN_DRAIN) },
 
     { MP_ROM_QSTR(MP_QSTR_PULL_UP),                 MP_ROM_INT(GPIO_PULL_UP) },
-    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),               MP_ROM_INT(GPIO_PULL_DOWN) }
+    { MP_ROM_QSTR(MP_QSTR_PULL_DOWN),               MP_ROM_INT(GPIO_PULL_DOWN) },
+
+    { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),             MP_ROM_INT(GPIO_IRQ_FALLING)},
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),              MP_ROM_INT(GPIO_IRQ_RISING)},
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
@@ -380,3 +440,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &pin_pin_p,
     locals_dict, &machine_pin_locals_dict
     );
+
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[5]);
