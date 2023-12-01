@@ -244,12 +244,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_BOOTSEL_DELAY_US 8
 #endif
 
-// Entering a critical section.
-extern uint32_t mp_thread_begin_atomic_section(void);
-extern void mp_thread_end_atomic_section(uint32_t);
-#define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
-#define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
-
 // Prevent the "lwIP task" from running when unsafe to do so.
 #define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
 #define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();

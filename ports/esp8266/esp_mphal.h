@@ -29,6 +29,9 @@
 #include "shared/runtime/interrupt_char.h"
 #include "xtirq.h"
 
+#define MICROPY_BEGIN_ATOMIC_SECTION() esp_disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state) esp_enable_irq(state)
+
 void mp_sched_keyboard_interrupt(void);
 
 struct _mp_print_t;
@@ -65,6 +68,9 @@ uint32_t mp_hal_get_cpu_freq(void);
 #define DUPTERM_TASK_ID 1
 void uart_task_init();
 void dupterm_task_init();
+
+uint32_t esp_disable_irq(void);
+void esp_enable_irq(uint32_t state);
 
 void ets_event_poll(void);
 #define ETS_POLL_WHILE(cond) { while (cond) ets_event_poll(); }
