@@ -30,6 +30,12 @@
 #define CHAR_CTRL_C (3)
 #endif
 
+// If threading is enabled, configure the atomic section.
+#if MICROPY_PY_THREAD
+#define MICROPY_BEGIN_ATOMIC_SECTION() (mp_thread_unix_begin_atomic_section(), 0xffffffff)
+#define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
+#endif
+
 void mp_hal_set_interrupt_char(char c);
 
 #define mp_hal_stdio_poll unused // this is not implemented, nor needed

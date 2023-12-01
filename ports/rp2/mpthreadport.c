@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mphal.h"
 #include "py/mpthread.h"
 #include "pico/stdlib.h"
 #include "pico/multicore.h"

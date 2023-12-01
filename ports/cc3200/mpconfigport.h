@@ -161,13 +161,7 @@ typedef int32_t mp_int_t;                           // must be pointer size
 typedef unsigned int mp_uint_t;                     // must be pointer size
 typedef long mp_off_t;
 
-#define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)           enable_irq(state)
 #define MICROPY_EVENT_POLL_HOOK                     __WFI();
-
-// assembly functions to handle critical sections, interrupt
-// disabling/enabling and sleep mode enter/exit
-#include "cc3200_asm.h"
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

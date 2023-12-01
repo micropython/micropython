@@ -40,9 +40,20 @@ static inline int mp_hal_status_to_neg_errno(HAL_StatusTypeDef status) {
 NORETURN void mp_hal_raise(HAL_StatusTypeDef status);
 void mp_hal_set_interrupt_char(int c); // -1 to disable
 
-// timing functions
+// Atomic section helpers.
 
 #include "irq.h"
+
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
+
+// For regular code that wants to prevent "background tasks" from running.
+// These background tasks (LWIP, Bluetooth) run in PENDSV context.
+#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
+#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
+
+// Timing functions.
 
 #if __CORTEX_M == 0
 // Don't have raise_irq_pri on Cortex-M0 so keep IRQs enabled to have SysTick timing
