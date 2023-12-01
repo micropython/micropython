@@ -31,6 +31,8 @@
 // #define MBEDTLS_DEBUG_C
 
 // Set mbedtls configuration.
+#define MBEDTLS_HAVE_TIME
+#define MBEDTLS_HAVE_TIME_DATE
 #define MBEDTLS_DEPRECATED_REMOVED
 #define MBEDTLS_AES_ROM_TABLES
 #define MBEDTLS_CIPHER_MODE_CBC
