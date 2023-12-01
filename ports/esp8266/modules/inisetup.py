@@ -47,7 +47,7 @@ reprogram MicroPython.
 def setup():
     check_bootsec()
     print("Performing initial setup")
-    wifi()
+    # wifi()
     os.VfsLfs2.mkfs(bdev)
     vfs = os.VfsLfs2(bdev)
     os.mount(vfs, "/")
