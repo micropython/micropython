@@ -26,10 +26,6 @@
 #ifndef MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
-// Enable mbedtls modules.
-#define MBEDTLS_HAVE_TIME
-#define MBEDTLS_HAVE_TIME_DATE
-
 // Time hook.
 #include <time.h>
 extern time_t stm32_rtctime_seconds(time_t *timer);

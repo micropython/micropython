@@ -32,8 +32,6 @@
 
 // Enable mbedtls modules
 #define MBEDTLS_GCM_C
-#define MBEDTLS_HAVE_TIME
-#define MBEDTLS_HAVE_TIME_DATE
 
 // Time hook
 #include <time.h>
