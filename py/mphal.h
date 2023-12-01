@@ -35,6 +35,14 @@
 #include <mphalport.h>
 #endif
 
+// On embedded platforms, these will typically enable/disable irqs.
+#ifndef MICROPY_BEGIN_ATOMIC_SECTION
+#define MICROPY_BEGIN_ATOMIC_SECTION() (0)
+#endif
+#ifndef MICROPY_END_ATOMIC_SECTION
+#define MICROPY_END_ATOMIC_SECTION(state) (void)(state)
+#endif
+
 #ifndef mp_hal_stdio_poll
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 #endif

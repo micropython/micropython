@@ -1850,14 +1850,6 @@ typedef double mp_float_t;
 #endif
 #endif
 
-// On embedded platforms, these will typically enable/disable irqs.
-#ifndef MICROPY_BEGIN_ATOMIC_SECTION
-#define MICROPY_BEGIN_ATOMIC_SECTION() (0)
-#endif
-#ifndef MICROPY_END_ATOMIC_SECTION
-#define MICROPY_END_ATOMIC_SECTION(state) (void)(state)
-#endif
-
 // Allow to override static modifier for global objects, e.g. to use with
 // object code analysis tools which don't support static symbols.
 #ifndef STATIC
