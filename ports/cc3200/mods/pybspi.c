@@ -30,7 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "bufhelper.h"
+#include "ports/stm32/bufhelper.h"
 #include "inc/hw_types.h"
 #include "inc/hw_mcspi.h"
 #include "inc/hw_ints.h"

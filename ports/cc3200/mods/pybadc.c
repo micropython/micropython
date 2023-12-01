@@ -32,7 +32,7 @@
 #include "py/binary.h"
 #include "py/gc.h"
 #include "py/mperrno.h"
-#include "bufhelper.h"
+#include "ports/stm32/bufhelper.h"
 #include "inc/hw_types.h"
 #include "inc/hw_adc.h"
 #include "inc/hw_ints.h"
