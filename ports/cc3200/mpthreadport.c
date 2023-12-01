@@ -32,7 +32,6 @@
 #include "py/mphal.h"
 #include "mptask.h"
 #include "task.h"
-#include "irq.h"
 
 #if MICROPY_PY_THREAD
 
