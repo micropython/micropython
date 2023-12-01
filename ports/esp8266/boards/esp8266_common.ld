@@ -170,6 +170,7 @@ SECTIONS
         *modonewire.o(.literal* .text*)
         *network_wlan.o(.literal* .text*)
         *esp_mphal.o(.literal* .text*)
+        *st7789/*.o(.literal* .text*)
 
         /* we put as much rodata as possible in this section */
         /* note that only rodata accessed as a machine word is allowed here */
@@ -182,7 +183,6 @@ SECTIONS
 
         /* for -mforce-l32 */
         */*.o(.rodata*)
-        *st7789/*.o(.literal* .text*)
 
         _irom0_text_end = ABSOLUTE(.);
     } >irom0_0_seg :irom0_0_phdr
