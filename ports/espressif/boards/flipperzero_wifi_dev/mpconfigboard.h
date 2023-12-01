@@ -36,9 +36,6 @@
 
 #define MICROPY_HW_LED_STATUS   (&pin_GPIO5) // Green LED
 
-#define IGNORE_PIN_IO19     1 // USB D-
-#define IGNORE_PIN_IO20     1 // USB D+
-
 #define DEFAULT_I2C_BUS_SCL  (&pin_GPIO1)
 #define DEFAULT_I2C_BUS_SDA  (&pin_GPIO2)
 
