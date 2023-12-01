@@ -26,6 +26,7 @@
 
 #include <stdio.h>
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 
 // Schedules an exception on the main thread (for exceptions "thrown" by async
