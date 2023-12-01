@@ -49,7 +49,6 @@
 #include "telnet.h"
 #include "pybuart.h"
 #include "utils.h"
-#include "irq.h"
 
 #ifdef USE_FREERTOS
 #include "FreeRTOS.h"
