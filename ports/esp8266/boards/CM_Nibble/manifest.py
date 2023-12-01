@@ -3,8 +3,11 @@ include("$(PORT_DIR)/boards/manifest.py")
 
 package("Nibble", base_path="$(PORT_DIR)/libraries")
 
-# uasyncio
-include("$(MPY_DIR)/extmod/uasyncio")
+# asyncio
+include("$(MPY_DIR)/extmod/asyncio")
+
+# drivers
+require("ssd1306")
 
 # micropython-lib: file utilities
 require("upysh")
