@@ -110,14 +110,18 @@
 #define MICROPY_PY_LWIP_SOCK_RAW    (MICROPY_PY_LWIP)
 #ifndef MICROPY_PY_MACHINE
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/stm32/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE "ports/stm32/machine_adc.c"
 #ifndef MICROPY_PY_MACHINE_BITSTREAM
 #define MICROPY_PY_MACHINE_BITSTREAM (1)
 #endif
+#define MICROPY_PY_MACHINE_DHT_READINTO (1)
 #define MICROPY_PY_MACHINE_PULSE    (1)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW mp_pin_make_new
-#define MICROPY_PY_MACHINE_I2C      (1)
+#define MICROPY_PY_MACHINE_I2C      (MICROPY_HW_ENABLE_HW_I2C)
 #define MICROPY_PY_MACHINE_SOFTI2C  (1)
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE "ports/stm32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_CONSTANT_RX (I2S_MODE_MASTER_RX)
@@ -235,27 +239,6 @@ typedef unsigned int mp_uint_t; // must be pointer size
 
 typedef long mp_off_t;
 
-// We have inlined IRQ functions for efficiency (they are generally
-// 1 machine instruction).
-//
-// Note on IRQ state: you should not need to know the specific
-// value of the state variable, but rather just pass the return
-// value from disable_irq back to enable_irq.  If you really need
-// to know the machine-specific values, see irq.h.
-
-static inline void enable_irq(mp_uint_t state) {
-    __set_PRIMASK(state);
-}
-
-static inline mp_uint_t disable_irq(void) {
-    mp_uint_t state = __get_PRIMASK();
-    __disable_irq();
-    return state;
-}
-
-#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
-
 #if MICROPY_PY_THREAD
 #define MICROPY_EVENT_POLL_HOOK \
     do { \
@@ -284,12 +267,6 @@ static inline mp_uint_t disable_irq(void) {
 
 // Configuration for shared/runtime/softtimer.c.
 #define MICROPY_SOFT_TIMER_TICKS_MS uwTick
-
-// For regular code that wants to prevent "background tasks" from running.
-// These background tasks (LWIP, Bluetooth) run in PENDSV context.
-#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
 // Prevent the "LWIP task" from running.
 #define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER

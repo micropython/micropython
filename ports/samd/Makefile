@@ -108,7 +108,6 @@ SRC_C += \
 	machine_rtc.c \
 	machine_spi.c \
 	main.c \
-	modmachine.c \
 	modsamd.c \
 	mphalport.c \
 	pendsv.c \

@@ -154,7 +154,9 @@
 #define MICROPY_PY_BINASCII_CRC32   (1)
 #define MICROPY_PY_RANDOM           (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"
 #define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 

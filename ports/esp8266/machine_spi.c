@@ -41,14 +41,14 @@
 
 #if MICROPY_PY_MACHINE_SPI
 
-typedef struct _machine_hspi_obj_t {
+typedef struct _machine_spi_obj_t {
     mp_obj_base_t base;
     uint32_t baudrate;
     uint8_t polarity;
     uint8_t phase;
-} machine_hspi_obj_t;
+} machine_spi_obj_t;
 
-STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     (void)self_in;
 
     if (dest == NULL) {
@@ -94,14 +94,14 @@ STATIC void machine_hspi_transfer(mp_obj_base_t *self_in, size_t len, const uint
 /******************************************************************************/
 // MicroPython bindings for HSPI
 
-STATIC void machine_hspi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
-    machine_hspi_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "HSPI(id=1, baudrate=%u, polarity=%u, phase=%u)",
         self->baudrate, self->polarity, self->phase);
 }
 
-STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    machine_hspi_obj_t *self = (machine_hspi_obj_t *)self_in;
+STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
 
     enum { ARG_baudrate, ARG_polarity, ARG_phase };
     static const mp_arg_t allowed_args[] = {
@@ -150,7 +150,7 @@ STATIC void machine_hspi_init(mp_obj_base_t *self_in, size_t n_args, const mp_ob
     spi_mode(HSPI, self->phase, self->polarity);
 }
 
-mp_obj_t machine_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_MACHINE_SPI_CHECK_FOR_LEGACY_SOFTSPI_CONSTRUCTION(n_args, n_kw, args);
 
     // args[0] holds the id of the peripheral
@@ -159,29 +159,29 @@ mp_obj_t machine_hspi_make_new(const mp_obj_type_t *type, size_t n_args, size_t 
         mp_raise_ValueError(NULL);
     }
 
-    machine_hspi_obj_t *self = mp_obj_malloc(machine_hspi_obj_t, &machine_hspi_type);
+    machine_spi_obj_t *self = mp_obj_malloc(machine_spi_obj_t, &machine_spi_type);
     // set defaults
     self->baudrate = 80000000L;
     self->polarity = 0;
     self->phase = 0;
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-    machine_hspi_init((mp_obj_base_t *)self, n_args - 1, args + 1, &kw_args);
+    machine_spi_init((mp_obj_base_t *)self, n_args - 1, args + 1, &kw_args);
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC const mp_machine_spi_p_t machine_hspi_p = {
-    .init = machine_hspi_init,
-    .transfer = machine_hspi_transfer,
+STATIC const mp_machine_spi_p_t machine_spi_p = {
+    .init = machine_spi_init,
+    .transfer = machine_spi_transfer,
 };
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    machine_hspi_type,
+    machine_spi_type,
     MP_QSTR_HSPI,
     MP_TYPE_FLAG_NONE,
-    make_new, machine_hspi_make_new,
-    print, machine_hspi_print,
-    protocol, &machine_hspi_p,
+    make_new, machine_spi_make_new,
+    print, machine_spi_print,
+    protocol, &machine_spi_p,
     locals_dict, &mp_machine_spi_locals_dict
     );
 

@@ -81,6 +81,8 @@ void mp_init_emergency_exception_buf(void) {
 #else
 #define mp_emergency_exception_buf_size MP_STATE_VM(mp_emergency_exception_buf_size)
 
+#include "py/mphal.h" // for MICROPY_BEGIN_ATOMIC_SECTION/MICROPY_END_ATOMIC_SECTION
+
 void mp_init_emergency_exception_buf(void) {
     mp_emergency_exception_buf_size = 0;
     MP_STATE_VM(mp_emergency_exception_buf) = NULL;

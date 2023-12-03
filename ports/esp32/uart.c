@@ -34,11 +34,8 @@
 #if MICROPY_HW_ENABLE_UART_REPL
 
 #include <stdio.h>
+#include "driver/uart.h" // For uart_get_sclk_freq()
 #include "hal/uart_hal.h"
-
-// Backwards compatibility for when MICROPY_HW_UART_REPL was a ESP-IDF UART
-// driver enum. Only UART_NUM_0 was supported with that version of the driver.
-#define UART_NUM_0 0
 
 STATIC void uart_irq_handler(void *arg);
 
@@ -53,16 +50,18 @@ STATIC void uart_irq_handler(void *arg);
 
 void uart_stdout_init(void) {
     uart_hal_context_t repl_hal = REPL_HAL_DEFN();
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
+    uart_sclk_t sclk;
+    #else
+    soc_module_clk_t sclk;
+    #endif
     uint32_t sclk_freq;
 
-    #if UART_SCLK_DEFAULT == SOC_MOD_CLK_APB
-    sclk_freq = APB_CLK_FREQ; // Assumes no frequency scaling
-    #else
-    // ESP32-H2 and ESP32-C2, I think
-    #error "This SoC uses a different default UART SCLK source, code needs updating."
-    #endif
+    uart_hal_get_sclk(&repl_hal, &sclk); // To restore SCLK after uart_hal_init() resets it
+    ESP_ERROR_CHECK(uart_get_sclk_freq(sclk, &sclk_freq));
 
     uart_hal_init(&repl_hal, MICROPY_HW_UART_REPL); // Sets defaults: 8n1, no flow control
+    uart_hal_set_sclk(&repl_hal, sclk);
     uart_hal_set_baudrate(&repl_hal, MICROPY_HW_UART_REPL_BAUD, sclk_freq);
     uart_hal_rxfifo_rst(&repl_hal);
     uart_hal_txfifo_rst(&repl_hal);

@@ -36,9 +36,6 @@
 #include "py/mphal.h"
 #include "py/gc.h"
 
-// This needs to be defined before any ESP SDK headers are included
-#define USE_US_TIMER 1
-
 #include "extmod/misc.h"
 #include "extmod/modmachine.h"
 #include "shared/readline/readline.h"

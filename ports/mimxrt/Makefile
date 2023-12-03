@@ -204,7 +204,6 @@ SRC_C += \
 	mbedtls/mbedtls_port.c \
 	mimxrt_flash.c \
 	mimxrt_sdram.c \
-	modmachine.c \
 	modmimxrt.c \
 	mphalport.c \
 	mpnetworkport.c \

@@ -993,7 +993,7 @@ void powerctrl_enter_stop_mode(void) {
     enable_irq(irq_state);
 }
 
-void powerctrl_enter_standby_mode(void) {
+NORETURN void powerctrl_enter_standby_mode(void) {
     rtc_init_finalise();
 
     #if defined(MICROPY_BOARD_ENTER_STANDBY)
@@ -1114,5 +1114,7 @@ void powerctrl_enter_standby_mode(void) {
 
     // enter standby mode
     HAL_PWR_EnterSTANDBYMode();
-    // we never return; MCU is reset on exit from standby
+
+    // MCU is reset on exit from standby, but just in case it's not, do an explicit reset.
+    powerctrl_mcu_reset();
 }

@@ -18,7 +18,6 @@ APP_INC += -Iutil
 APP_INC += -Ibootmgr
 APP_INC += -I$(BUILD)
 APP_INC += -I$(BUILD)/genhdr
-APP_INC += -I$(TOP)/ports/stm32
 
 APP_CPPDEFINES = -Dgcc -DTARGET_IS_CC3200 -DSL_FULL -DUSE_FREERTOS
 
@@ -76,9 +75,7 @@ APP_MISC_SRC_C = $(addprefix misc/,\
 	)
 
 APP_MODS_SRC_C = $(addprefix mods/,\
-	modmachine.c \
 	modnetwork.c \
-	modos.c \
 	modsocket.c \
 	modssl.c \
 	modwipy.c \
@@ -154,7 +151,6 @@ APP_SHARED_SRC_C = $(addprefix shared/,\
 
 APP_STM_SRC_C = $(addprefix ports/stm32/,\
 	bufhelper.c \
-	irq.c \
 	)
 
 OBJ = $(PY_O) $(addprefix $(BUILD)/, $(APP_FATFS_SRC_C:.c=.o) $(APP_RTOS_SRC_C:.c=.o) $(APP_FTP_SRC_C:.c=.o) $(APP_HAL_SRC_C:.c=.o) $(APP_MISC_SRC_C:.c=.o))

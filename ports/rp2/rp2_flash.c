@@ -26,6 +26,7 @@
 
 #include <string.h>
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "modrp2.h"

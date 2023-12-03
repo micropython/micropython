@@ -63,6 +63,13 @@ void check_esp_err_(esp_err_t code);
 void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file);
 #endif
 
+// Note: these "critical nested" macros do not ensure cross-CPU exclusion,
+// the only disable interrupts on the current CPU.  To full manage exclusion
+// one should use portENTER_CRITICAL/portEXIT_CRITICAL instead.
+#include "freertos/FreeRTOS.h"
+#define MICROPY_BEGIN_ATOMIC_SECTION() portSET_INTERRUPT_MASK_FROM_ISR()
+#define MICROPY_END_ATOMIC_SECTION(state) portCLEAR_INTERRUPT_MASK_FROM_ISR(state)
+
 uint32_t mp_hal_ticks_us(void);
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     uint32_t ccount;

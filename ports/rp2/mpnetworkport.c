@@ -30,13 +30,14 @@
 
 #if MICROPY_PY_LWIP
 
+#include "shared/runtime/softtimer.h"
 #include "lwip/timeouts.h"
-#include "pico/time.h"
 
 // Poll lwIP every 64ms by default
 #define LWIP_TICK_RATE_MS 64
 
-static alarm_id_t lwip_alarm_id = -1;
+// Soft timer for running lwIP in the background.
+static soft_timer_entry_t mp_network_soft_timer;
 
 #if MICROPY_PY_NETWORK_CYW43
 #include "lib/cyw43-driver/src/cyw43.h"
@@ -56,6 +57,7 @@ static void gpio_irq_handler(void) {
         // CYW43_POST_POLL_HOOK which is called at the end of cyw43_poll_func.
         gpio_set_irq_enabled(CYW43_PIN_WL_HOST_WAKE, CYW43_IRQ_LEVEL, false);
         cyw43_has_pending = 1;
+        __SEV();
         pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
         CYW43_STAT_INC(IRQ_COUNT);
     }
@@ -88,11 +90,6 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-STATIC void lwip_poll(void) {
-    // Run the lwIP internal updates
-    sys_check_timeouts();
-}
-
 void lwip_lock_acquire(void) {
     // Prevent PendSV from running.
     pendsv_suspend();
@@ -103,22 +100,25 @@ void lwip_lock_release(void) {
     pendsv_resume();
 }
 
-STATIC int64_t alarm_callback(alarm_id_t id, void *user_data) {
-    pendsv_schedule_dispatch(PENDSV_DISPATCH_LWIP, lwip_poll);
+// This is called by soft_timer and executes at PendSV level.
+static void mp_network_soft_timer_callback(soft_timer_entry_t *self) {
+    // Run the lwIP internal updates.
+    sys_check_timeouts();
+
     #if MICROPY_PY_NETWORK_WIZNET5K
-    pendsv_schedule_dispatch(PENDSV_DISPATCH_WIZNET, wiznet5k_poll);
+    wiznet5k_poll();
     #endif
-    return LWIP_TICK_RATE_MS * 1000;
 }
 
 void mod_network_lwip_init(void) {
-    #if MICROPY_PY_NETWORK_WIZNET5K
-    wiznet5k_deinit();
-    #endif
-    if (lwip_alarm_id != -1) {
-        cancel_alarm(lwip_alarm_id);
-    }
-    lwip_alarm_id = add_alarm_in_us(LWIP_TICK_RATE_MS * 1000, alarm_callback, mp_const_true, true);
+    soft_timer_static_init(
+        &mp_network_soft_timer,
+        SOFT_TIMER_MODE_PERIODIC,
+        LWIP_TICK_RATE_MS,
+        mp_network_soft_timer_callback
+        );
+
+    soft_timer_reinsert(&mp_network_soft_timer, LWIP_TICK_RATE_MS);
 }
 
 #endif // MICROPY_PY_LWIP

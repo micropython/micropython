@@ -48,6 +48,13 @@
 #include "extmod/vfs_posix.h"
 #endif
 
+#if MICROPY_MBFS
+#if MICROPY_VFS
+#error "MICROPY_MBFS requires MICROPY_VFS to be disabled"
+#endif
+#include "ports/nrf/modules/os/microbitfs.h"
+#endif
+
 #if MICROPY_PY_OS_UNAME
 #include "genhdr/mpversion.h"
 #endif
@@ -186,6 +193,14 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     #if MICROPY_VFS_POSIX
     { MP_ROM_QSTR(MP_QSTR_VfsPosix), MP_ROM_PTR(&mp_type_vfs_posix) },
     #endif
+    #endif
+
+    #if MICROPY_MBFS
+    // For special micro:bit filesystem only.
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&os_mbfs_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&os_mbfs_ilistdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&os_mbfs_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&os_mbfs_remove_obj) },
     #endif
 };
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);

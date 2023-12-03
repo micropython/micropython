@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_STM32_MPU_H
 #define MICROPY_INCLUDED_STM32_MPU_H
 
+#include "irq.h"
+
 #if (defined(STM32F4) && defined(MICROPY_HW_ETH_MDC)) || defined(STM32F7) || defined(STM32H7) || defined(STM32WB)
 
 #define MPU_REGION_ETH      (MPU_REGION_NUMBER0)

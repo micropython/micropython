@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_HW_USB_CDC_1200BPS_TOUCH && MICROPY_HW_ENABLE_USBDEV
 

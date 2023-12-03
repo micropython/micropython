@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "drivers/dht/dht.h"
 #include "modrp2.h"

@@ -1,6 +1,9 @@
 #include <zephyr/zephyr.h>
 #include "shared/runtime/interrupt_char.h"
 
+#define MICROPY_BEGIN_ATOMIC_SECTION irq_lock
+#define MICROPY_END_ATOMIC_SECTION irq_unlock
+
 void mp_hal_init(void);
 void mp_hal_wait_sem(struct k_sem *sem, uint32_t timeout_ms);
 

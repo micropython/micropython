@@ -318,14 +318,12 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
-	machine/modmachine.c \
 	machine/spi.c \
 	machine/i2c.c \
 	machine/pin.c \
 	machine/timer.c \
 	machine/rtcounter.c \
 	machine/temp.c \
-	os/modos.c \
 	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \

@@ -48,7 +48,6 @@
 #include "fifo.h"
 #include "socketfifo.h"
 #include "updater.h"
-#include "modos.h"
 
 /******************************************************************************
  DEFINE PRIVATE CONSTANTS

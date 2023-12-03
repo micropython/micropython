@@ -41,6 +41,7 @@
 
 #include "esp_wifi.h"
 #include "esp_log.h"
+#include "esp_psram.h"
 
 #ifndef NO_QSTR
 #include "mdns.h"
@@ -106,21 +107,21 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
             switch (disconn->reason) {
                 case WIFI_REASON_BEACON_TIMEOUT:
                     // AP has dropped out; try to reconnect.
-                    message = "\nbeacon timeout";
+                    message = "beacon timeout";
                     break;
                 case WIFI_REASON_NO_AP_FOUND:
                     // AP may not exist, or it may have momentarily dropped out; try to reconnect.
-                    message = "\nno AP found";
+                    message = "no AP found";
                     break;
                 case WIFI_REASON_AUTH_FAIL:
                     // Password may be wrong, or it just failed to connect; try to reconnect.
-                    message = "\nauthentication failed";
+                    message = "authentication failed";
                     break;
                 default:
                     // Let other errors through and try to reconnect.
                     break;
             }
-            ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d%s", disconn->reason, message);
+            ESP_LOGI("wifi", "STA_DISCONNECTED, reason:%d:%s", disconn->reason, message);
 
             wifi_sta_connected = false;
             if (wifi_sta_connect_requested) {
@@ -206,6 +207,23 @@ void esp_initialise_wifi(void) {
         wlan_ap_obj.active = false;
 
         wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+        #if CONFIG_SPIRAM_IGNORE_NOTFOUND
+        if (!esp_psram_is_initialized()) {
+            // If PSRAM failed to initialize, disable "Wi-Fi Cache TX Buffers"
+            // (default SPIRAM config ESP32_WIFI_CACHE_TX_BUFFER_NUM==32, this is 54,400 bytes of heap)
+            cfg.cache_tx_buf_num = 0;
+            cfg.feature_caps &= ~CONFIG_FEATURE_CACHE_TX_BUF_BIT;
+
+            // Set some other options back to the non-SPIRAM default values
+            // to save more RAM.
+            //
+            // These can be determined from ESP-IDF components/esp_wifi/Kconfig and the
+            // WIFI_INIT_CONFIG_DEFAULT macro
+            cfg.tx_buf_type = 1; // Dynamic, this "magic number" is defined in IDF KConfig
+            cfg.static_tx_buf_num = 0; // Probably don't need, due to tx_buf_type
+            cfg.dynamic_tx_buf_num = 32; // ESP-IDF default value (maximum)
+        }
+        #endif
         ESP_LOGD("modnetwork", "Initializing WiFi");
         esp_exceptions(esp_wifi_init(&cfg));
         esp_exceptions(esp_wifi_set_storage(WIFI_STORAGE_RAM));
@@ -333,6 +351,14 @@ STATIC mp_obj_t network_wlan_status(size_t n_args, const mp_obj_t *args) {
             if (wifi_sta_connected) {
                 // Happy path, connected with IP
                 return MP_OBJ_NEW_SMALL_INT(STAT_GOT_IP);
+            } else if (wifi_sta_disconn_reason == WIFI_REASON_NO_AP_FOUND) {
+                return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_NO_AP_FOUND);
+            } else if ((wifi_sta_disconn_reason == WIFI_REASON_AUTH_FAIL) || (wifi_sta_disconn_reason == WIFI_REASON_CONNECTION_FAIL)) {
+                // wrong password
+                return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_AUTH_FAIL);
+            } else if (wifi_sta_disconn_reason == WIFI_REASON_ASSOC_LEAVE) {
+                // After wlan.disconnect()
+                return MP_OBJ_NEW_SMALL_INT(STAT_IDLE);
             } else if (wifi_sta_connect_requested
                        && (conf_wifi_sta_reconnects == 0
                            || wifi_sta_reconnects < conf_wifi_sta_reconnects)) {

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "extmod/modmachine.h"
-#include "drivers/dht/dht.h"
-#include "shared/runtime/pyexec.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
+
 #include "modmachine.h"
 #include "samd_soc.h"
 
@@ -37,7 +36,6 @@
 #include "hpl_gclk_base.h"
 #include "hpl_pm_base.h"
 
-#if MICROPY_PY_MACHINE
 #if defined(MCU_SAMD21)
 #define DBL_TAP_ADDR    ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
 #elif defined(MCU_SAMD51)
@@ -50,85 +48,77 @@
 
 #define LIGHTSLEEP_CPU_FREQ 200000
 
+#if MICROPY_PY_MACHINE_RTC
+#define MICROPY_PY_MACHINE_RTC_ENTRY { MP_ROM_QSTR(MP_QSTR_RTC), MP_ROM_PTR(&machine_rtc_type) },
+#else
+#define MICROPY_PY_MACHINE_RTC_ENTRY
+#endif
+
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
+    MICROPY_PY_MACHINE_RTC_ENTRY \
+    \
+    /* Class constants. */ \
+    /* Use numerical constants instead of the symbolic names, */ \
+    /* since the names differ between SAMD21 and SAMD51. */ \
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(0x01) }, \
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(0x10) }, \
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(0x20) }, \
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(0x40) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(0x80) }, \
+
 extern bool EIC_occured;
 extern uint32_t _dbl_tap_addr;
 
-STATIC mp_obj_t machine_soft_reset(void) {
-    pyexec_system_exit = PYEXEC_FORCED_EXIT;
-    mp_raise_type(&mp_type_SystemExit);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_soft_reset_obj, machine_soft_reset);
-
-STATIC mp_obj_t machine_reset(void) {
+NORETURN STATIC void mp_machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
     #ifdef DBL_TAP_ADDR_ALT
     *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_RESET;
     #endif
     NVIC_SystemReset();
-    return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
 
-NORETURN mp_obj_t machine_bootloader(size_t n_args, const mp_obj_t *args) {
+NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_LOADER;
     #ifdef DBL_TAP_ADDR_ALT
     *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_LOADER;
     #endif
     NVIC_SystemReset();
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj, 0, 1, machine_bootloader);
 
-STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
-    if (n_args == 0) {
-        return MP_OBJ_NEW_SMALL_INT(get_cpu_freq());
-    } else {
-        uint32_t freq = mp_obj_get_int(args[0]);
-        if (freq >= 1000000 && freq <= MAX_CPU_FREQ) {
-            set_cpu_freq(freq);
-        }
-        return mp_const_none;
+STATIC mp_obj_t mp_machine_get_freq(void) {
+    return MP_OBJ_NEW_SMALL_INT(get_cpu_freq());
+}
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    uint32_t freq = mp_obj_get_int(args[0]);
+    if (freq >= 1000000 && freq <= MAX_CPU_FREQ) {
+        set_cpu_freq(freq);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
-STATIC mp_obj_t machine_unique_id(void) {
+STATIC mp_obj_t mp_machine_unique_id(void) {
     samd_unique_id_t id;
     samd_get_unique_id(&id);
     return mp_obj_new_bytes((byte *)&id.bytes, sizeof(id.bytes));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
-STATIC mp_obj_t machine_idle(void) {
+STATIC void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
-STATIC mp_obj_t machine_disable_irq(void) {
-    uint32_t state = MICROPY_BEGIN_ATOMIC_SECTION();
-    return mp_obj_new_int(state);
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
-
-STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
-    uint32_t state = mp_obj_get_int(state_in);
-    MICROPY_END_ATOMIC_SECTION(state);
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
-
-STATIC mp_obj_t machine_reset_cause(void) {
+STATIC mp_int_t mp_machine_reset_cause(void) {
     #if defined(MCU_SAMD21)
-    return MP_OBJ_NEW_SMALL_INT(PM->RCAUSE.reg);
+    return PM->RCAUSE.reg;
     #elif defined(MCU_SAMD51)
-    return MP_OBJ_NEW_SMALL_INT(RSTC->RCAUSE.reg);
+    return RSTC->RCAUSE.reg;
     #else
-    return MP_OBJ_NEW_SMALL_INT(0);
+    return 0;
     #endif
 }
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
 
-STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     int32_t duration = -1;
     uint32_t freq = get_cpu_freq();
     if (n_args > 0) {
@@ -178,86 +168,9 @@ STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     #endif
     // Speed up again
     set_cpu_freq(freq);
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj, 0, 1, machine_lightsleep);
 
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_machine) },
-    { MP_ROM_QSTR(MP_QSTR_soft_reset),          MP_ROM_PTR(&machine_soft_reset_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
-    { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
-
-    #if MICROPY_PY_MACHINE_ADC
-    { MP_ROM_QSTR(MP_QSTR_ADC),                 MP_ROM_PTR(&machine_adc_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_DAC
-    { MP_ROM_QSTR(MP_QSTR_DAC),                 MP_ROM_PTR(&machine_dac_type) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
-    { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
-    #if MICROPY_PY_MACHINE_PWM
-    { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_SOFTI2C
-    { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_I2C
-    { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_SOFTSPI
-    { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_SPI
-    { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) },
-    #if MICROPY_PY_MACHINE_UART
-    { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_WDT
-    { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
-    #endif
-    #if MICROPY_PY_MACHINE_RTC
-    { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) },
-    #endif
-
-    { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
-    { MP_ROM_QSTR(MP_QSTR_disable_irq),         MP_ROM_PTR(&machine_disable_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_enable_irq),          MP_ROM_PTR(&machine_enable_irq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
-    #if MICROPY_PY_MACHINE_PULSE
-    { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
-    #endif
-    { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deepsleep),           MP_ROM_PTR(&machine_lightsleep_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
-    #if MICROPY_PY_MACHINE_DHT_READINTO
-    { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },
-    #endif
-
-    // Class constants.
-    // Use numerical constants instead of the symbolic names,
-    // since the names differ between SAMD21 and SAMD51.
-    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(0x01) },
-    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(0x10) },
-    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(0x20) },
-    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(0x40) },
-    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(0x80) },
-};
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&machine_module_globals,
-};
-
-MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_machine, mp_module_machine);
-
-#endif // MICROPY_PY_MACHINE
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_machine_lightsleep(n_args, args);
+    mp_machine_reset();
+}

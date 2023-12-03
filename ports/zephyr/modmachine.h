@@ -3,8 +3,6 @@
 
 #include "py/obj.h"
 
-MP_DECLARE_CONST_FUN_OBJ_0(machine_info_obj);
-
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;
     const struct device *port;

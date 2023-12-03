@@ -29,8 +29,10 @@
 #include "py/mphal.h"
 #include "extmod/misc.h"
 #include "shared/runtime/interrupt_char.h"
+#include "shared/runtime/softtimer.h"
 #include "shared/timeutils/timeutils.h"
 #include "shared/tinyusb/mp_usbd.h"
+#include "pendsv.h"
 #include "tusb.h"
 #include "uart.h"
 #include "hardware/rtc.h"
@@ -43,6 +45,8 @@
 // This needs to be added to the result of time_us_64() to get the number of
 // microseconds since the Epoch.
 STATIC uint64_t time_us_64_offset_from_epoch;
+
+static alarm_id_t soft_timer_alarm_id = 0;
 
 #if MICROPY_HW_ENABLE_UART_REPL || MICROPY_HW_USB_CDC
 
@@ -188,10 +192,9 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     absolute_time_t t = make_timeout_time_ms(ms);
-    while (!time_reached(t)) {
+    do {
         MICROPY_EVENT_POLL_HOOK_FAST;
-        best_effort_wfe_or_timeout(t);
-    }
+    } while (!best_effort_wfe_or_timeout(t));
 }
 
 void mp_hal_time_ns_set_from_rtc(void) {
@@ -259,4 +262,23 @@ void mp_hal_get_mac_ascii(int idx, size_t chr_off, size_t chr_len, char *dest) {
 // Shouldn't be used, needed by cyw43-driver in debug build.
 uint32_t storage_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     panic_unsupported();
+}
+
+static int64_t soft_timer_callback(alarm_id_t id, void *user_data) {
+    soft_timer_alarm_id = 0;
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
+    return 0; // don't reschedule this alarm
+}
+
+uint32_t soft_timer_get_ms(void) {
+    return mp_hal_ticks_ms();
+}
+
+void soft_timer_schedule_at_ms(uint32_t ticks_ms) {
+    if (soft_timer_alarm_id != 0) {
+        cancel_alarm(soft_timer_alarm_id);
+    }
+    int32_t ms = soft_timer_ticks_diff(ticks_ms, mp_hal_ticks_ms());
+    ms = MAX(0, ms);
+    soft_timer_alarm_id = add_alarm_in_ms(ms, soft_timer_callback, NULL, true);
 }

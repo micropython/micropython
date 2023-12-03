@@ -78,10 +78,15 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC    (trng_random_u32())
 #define MICROPY_PY_MACHINE                  (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/mimxrt/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_ADC              (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/mimxrt/machine_adc.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/mimxrt/machine_pwm.c"
@@ -146,29 +151,7 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
 #endif
 
-// For regular code that wants to prevent "background tasks" from running.
-// These background tasks (LWIP, Bluetooth) run in PENDSV context.
-// TODO: Check for the settings of the STM32 port in irq.h
-#define NVIC_PRIORITYGROUP_4    ((uint32_t)0x00000003)
-#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_4, 15, 0)
-#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
-#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
-
 // Hooks to add builtins
-
-__attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
-    __set_PRIMASK(state);
-}
-
-__attribute__((always_inline)) static inline uint32_t disable_irq(void) {
-    uint32_t state = __get_PRIMASK();
-    __disable_irq();
-    return state;
-}
-
-#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #if defined(IOMUX_TABLE_ENET)
 extern const struct _mp_obj_type_t network_lan_type;

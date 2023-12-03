@@ -93,6 +93,10 @@
 #define MICROPY_PY_TIME_TIME_TIME_NS        (1)
 #define MICROPY_PY_TIME_INCLUDEFILE         "ports/samd/modtime.c"
 #define MICROPY_PY_MACHINE                  (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/samd/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_OS                       (1)
 #define MICROPY_PY_OS_INCLUDEFILE           "ports/samd/modos.c"
 #define MICROPY_READER_VFS                  (1)
@@ -173,18 +177,6 @@
 #endif  // !defined(MICROPY_HW_MCUFLASH) ....
 
 // Miscellaneous settings
-__attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
-    __set_PRIMASK(state);
-}
-
-__attribute__((always_inline)) static inline uint32_t disable_irq(void) {
-    uint32_t state = __get_PRIMASK();
-    __disable_irq();
-    return state;
-}
-
-#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
 
 #define MICROPY_EVENT_POLL_HOOK \
     do { \

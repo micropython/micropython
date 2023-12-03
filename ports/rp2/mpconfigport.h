@@ -111,10 +111,15 @@
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/rp2/modtime.c"
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (rosc_random_u32())
 #define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/rp2/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER           (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_ADC                  (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE      "ports/rp2/machine_adc.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM            (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO         (1)
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/rp2/machine_pwm.c"
@@ -238,12 +243,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #ifndef MICROPY_HW_BOOTSEL_DELAY_US
 #define MICROPY_HW_BOOTSEL_DELAY_US 8
 #endif
-
-// Entering a critical section.
-extern uint32_t mp_thread_begin_atomic_section(void);
-extern void mp_thread_end_atomic_section(uint32_t);
-#define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
-#define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
 
 // Prevent the "lwIP task" from running when unsafe to do so.
 #define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
