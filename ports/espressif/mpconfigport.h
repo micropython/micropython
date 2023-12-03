@@ -40,6 +40,10 @@
 
 #include "py/circuitpy_mpconfig.h"
 
+// Enable compiler functionality
+#define MICROPY_ENABLE_COMPILER (1)
+#define MICROPY_PY_BUILTINS_COMPILE (1)
+
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 
