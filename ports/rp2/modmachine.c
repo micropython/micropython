@@ -46,6 +46,7 @@
 
 #define RP2_RESET_PWRON (1)
 #define RP2_RESET_WDT (3)
+#define RP2_LIGHTSLEEP_MIN (1)
 
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
@@ -111,9 +112,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 
     if (n_args == 1) {
         delay_ms = mp_obj_get_int(args[0]);
-        if (delay_ms <= 1) {
-            // Sleep is too small, just use standard delay.
-            mp_hal_delay_ms(delay_ms);
+        if (delay_ms <= RP2_LIGHTSLEEP_MIN) {
+            // Sleep time is too small, just use standard delay.
+            mp_hal_delay_ms(RP2_LIGHTSLEEP_MIN);
             return;
         }
         use_timer_alarm = delay_ms < (1ULL << 32) / 1000;

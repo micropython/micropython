@@ -44,6 +44,8 @@
 
 #include CPU_HEADER_H
 
+#define MIMXRT_DEEPSLEEP_MIN (1)
+
 #if defined(MICROPY_HW_LED1_PIN)
 #define MICROPY_PY_MACHINE_LED_ENTRY { MP_ROM_QSTR(MP_QSTR_LED), MP_ROM_PTR(&machine_led_type) },
 #else
@@ -129,14 +131,15 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
 NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_int_t seconds = mp_obj_get_int(args[0]) / 1000;
-        if (seconds > 0) {
-            machine_rtc_alarm_helper(seconds, false);
-            #ifdef MIMXRT117x_SERIES
-            GPC_CM_EnableIrqWakeup(GPC_CPU_MODE_CTRL_0, SNVS_HP_NON_TZ_IRQn, true);
-            #else
-            GPC_EnableIRQ(GPC, SNVS_HP_WRAPPER_IRQn);
-            #endif
+        if (seconds < MIMXRT_DEEPSLEEP_MIN) {
+            seconds = MIMXRT_DEEPSLEEP_MIN;
         }
+        machine_rtc_alarm_helper(seconds, false);
+        #ifdef MIMXRT117x_SERIES
+        GPC_CM_EnableIrqWakeup(GPC_CPU_MODE_CTRL_0, SNVS_HP_NON_TZ_IRQn, true);
+        #else
+        GPC_EnableIRQ(GPC, SNVS_HP_WRAPPER_IRQn);
+        #endif
     }
 
     #if defined(MIMXRT117x_SERIES)

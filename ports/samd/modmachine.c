@@ -117,6 +117,9 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     uint32_t freq = get_cpu_freq();
     if (n_args > 0) {
         duration = mp_obj_get_int(args[0]);
+        if (duration <= 0) {
+            return;
+        }
     }
     EIC_occured = false;
     // Slow down
@@ -130,7 +133,7 @@ static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK3 | EIC_GCLK_ID;
     if (duration > 0) {
         uint32_t t0 = systick_ms;
-        while ((systick_ms - t0 < duration) && (EIC_occured == false)) {
+        while (((systick_ms - t0) < duration) && (EIC_occured == false)) {
             __WFI();
         }
     } else {
