@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <math.h>
+#include "py/mpmath.h"
 #include "py/formatfloat.h"
 
 /***********************************************************************

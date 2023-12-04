@@ -29,6 +29,7 @@
 
 #include "py/runtime.h"
 #include "py/gc.h"
+#include "py/mpmath.h"
 #include "timer.h"
 #include "servo.h"
 #include "pin.h"

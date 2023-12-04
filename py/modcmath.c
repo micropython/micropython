@@ -28,7 +28,7 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_BUILTINS_COMPLEX && MICROPY_PY_CMATH
 
-#include <math.h>
+#include "py/mpmath.h"
 
 // phase(z): returns the phase of the number z in the range (-pi, +pi]
 STATIC mp_obj_t mp_cmath_phase(mp_obj_t z_obj) {

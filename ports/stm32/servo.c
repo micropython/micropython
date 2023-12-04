@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/mpmath.h"
 #include "pin.h"
 #include "timer.h"
 #include "servo.h"

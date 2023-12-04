@@ -26,6 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/mpmath.h"
 
 #if MICROPY_PY_MACHINE_TIMER
 

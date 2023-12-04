@@ -31,10 +31,7 @@
 #include "py/parsenumbase.h"
 #include "py/parsenum.h"
 #include "py/smallint.h"
-
-#if MICROPY_PY_BUILTINS_FLOAT
-#include <math.h>
-#endif
+#include "py/mpmath.h"
 
 STATIC NORETURN void raise_exc(mp_obj_t exc, mp_lexer_t *lex) {
     // if lex!=NULL then the parser called us and we need to convert the

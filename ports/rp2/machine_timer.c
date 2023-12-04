@@ -27,6 +27,7 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/mpmath.h"
 #include "pico/time.h"
 
 #define ALARM_ID_INVALID (-1)

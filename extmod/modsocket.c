@@ -32,6 +32,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
+#include "py/mpmath.h"
 
 #if MICROPY_PY_NETWORK && MICROPY_PY_SOCKET && !MICROPY_PY_LWIP
 

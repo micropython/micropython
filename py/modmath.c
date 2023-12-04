@@ -29,7 +29,7 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
-#include <math.h>
+#include "py/mpmath.h"
 
 // M_PI is not part of the math.h standard and may not be defined
 // And by defining our own we can ensure it uses the correct const format.

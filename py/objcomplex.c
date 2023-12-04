@@ -33,7 +33,7 @@
 
 #if MICROPY_PY_BUILTINS_COMPLEX
 
-#include <math.h>
+#include "py/mpmath.h"
 #include "py/formatfloat.h"
 
 typedef struct _mp_obj_complex_t {

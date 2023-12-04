@@ -34,7 +34,7 @@
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
-#include <math.h>
+#include "py/mpmath.h"
 #include "py/formatfloat.h"
 
 #if MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_C && MICROPY_OBJ_REPR != MICROPY_OBJ_REPR_D

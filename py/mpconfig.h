@@ -812,13 +812,9 @@ typedef long long mp_longint_impl_t;
 
 #if MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_FLOAT
 #define MICROPY_PY_BUILTINS_FLOAT (1)
-#define MICROPY_FLOAT_CONST(x) x##F
-#define MICROPY_FLOAT_C_FUN(fun) fun##f
 typedef float mp_float_t;
 #elif MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
 #define MICROPY_PY_BUILTINS_FLOAT (1)
-#define MICROPY_FLOAT_CONST(x) x
-#define MICROPY_FLOAT_C_FUN(fun) fun
 typedef double mp_float_t;
 #else
 #define MICROPY_PY_BUILTINS_FLOAT (0)
@@ -937,6 +933,11 @@ typedef double mp_float_t;
 // Whether to use internally defined *printf() functions (otherwise external ones)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
 #define MICROPY_USE_INTERNAL_PRINTF (1)
+#endif
+
+// Whether to use internal math library functions (otherwise external ones)
+#ifndef MICROPY_USE_INTERNAL_LIBM
+#define MICROPY_USE_INTERNAL_LIBM (0)
 #endif
 
 // The mp_print_t printer used for printf output when MICROPY_USE_INTERNAL_PRINTF is enabled
