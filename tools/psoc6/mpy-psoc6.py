@@ -45,10 +45,10 @@ def mpy_get_fw_hex_file_name(file_name, board):
 
 
 def mpy_firmware_deploy(file_name, board, serial_adapter_sn=None):
-    print("Deploying firmware...")
+    print(f"Deploying firmware {file_name} ...")
     hex_file = mpy_get_fw_hex_file_name(file_name, board)
     openocd_program(board, hex_file, serial_adapter_sn)
-    print(colour_str_success("Firmware deployed successfully"))
+    print(colour_str_success(f"Firmware {file_name} deployed successfully"))
 
 
 def mpy_firmware_download(file_name, board, version):
@@ -84,7 +84,12 @@ def fwloader_download_install():
     fwloader_compressed = "fwloader" + file_extension
 
     def is_fwloader_already_installed():
-        if os.path.exists(os.path.join("fw-loader", "bin", "fw-loader")):
+        if opsys == "linux":
+            fwloader = "fw-loader"
+        elif opsys == "win":
+            fwloader = "fw-loader.exe"
+
+        if os.path.exists(os.path.join("fw-loader", "bin", fwloader)):
             return True
 
         return False
@@ -119,7 +124,7 @@ def fwloader_download_install():
     def download_fwloader(file_url, file_name):
         res = requests.get(file_url)
         open(file_name, "wb").write(res.content)
-        os.rename(file_name, fwloader_compressed)
+        os.replace(file_name, fwloader_compressed)
 
     def extract_fwloader():
         compress_file = zipfile.ZipFile(fwloader_compressed)
@@ -167,7 +172,7 @@ def fwloader_update_kitprog():
 
     fwl_proc = subprocess.Popen(fwloader_args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
-        out, err = fwl_proc.communicate(timeout=90)
+        out, err = fwl_proc.communicate(timeout=20)
     except:
         fwl_proc.kill()
         sys.exit(colour_str_error("fwloader error"))
@@ -225,7 +230,7 @@ def openocd_download_install():
     def download_openocd(file_url, file_name):
         res = requests.get(file_url)
         open(file_name, "wb").write(res.content)
-        os.rename(file_name, openocd_compressed)
+        os.replace(file_name, openocd_compressed)
 
     def extract_openocd():
         if opsys == "linux":
@@ -286,7 +291,7 @@ def openocd_board_conf_download(board):
         open(file_name, "wb").write(res.content)
 
         # Rename config file
-        os.rename(file_name, "qspi_config.cfg")
+        os.replace(file_name, "qspi_config.cfg")
 
     # Move to parent dir
     os.chdir(parent_dir)
@@ -402,7 +407,7 @@ def wait_user_termination():
     input(colour_str_highlight("Press ENTER to continue...\n"))
 
 
-def device_setup(board, version, update_dbg_fw=False, quiet=False):
+def device_setup(board, version, skip_update_dbg_fw=True, quiet=False):
     if board is None:
         board = select_board()
     else:
@@ -418,7 +423,7 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
     if not quiet:
         wait_and_request_board_connect()
 
-    if update_dbg_fw:
+    if not skip_update_dbg_fw:
         fwloader_download_install()
         fwloader_update_kitprog()
         time.sleep(10)  # Wait for the device to restart
@@ -459,6 +464,17 @@ def device_erase(board, quiet=False):
 
 
 def arduino_lab_download_and_launch():
+    def is_arduino_lab_already_installed():
+        if opsys == "linux":
+            inolab = "arduino-lab-micropython-ide"
+        elif opsys == "win":
+            inolab = "Arduino Lab for Micropython.exe"
+
+        if os.path.exists(os.path.join("arduino-lab-mpy", inolab)):
+            return True
+
+        return False
+
     def download_arduino_lab():
         print("Downloading Arduino Lab for Micropython...")
 
@@ -478,7 +494,7 @@ def arduino_lab_download_and_launch():
         res = requests.get(file_url)
         open(file_name, "wb").write(res.content)
 
-        os.rename(file_name, "arduino-for-micropython.zip")
+        os.replace(file_name, "arduino-for-micropython.zip")
 
     def extract_arduino_lab():
         print("Extracting Arduino Lab for Micropython...")
@@ -512,8 +528,12 @@ def arduino_lab_download_and_launch():
 
         os.chdir(parent_dir)
 
-    download_arduino_lab()
-    extract_arduino_lab()
+    if not is_arduino_lab_already_installed():
+        download_arduino_lab()
+        extract_arduino_lab()
+    else:
+        print("Arduino Lab already available. Installation skipped")
+
     launch_arduino_lab()
 
 
@@ -543,7 +563,7 @@ def quick_start(board, version):
         print(colour_str_success("################################################"))
 
     print_retro_banner()
-    device_setup(board, version, True)
+    device_setup(board, version, False)
     arduino_lab_download_and_launch()
     arduino_lab_install_package_remove()
     print_exit_banner()
@@ -564,7 +584,7 @@ def parser():
         quick_start(args.board, args.version)
 
     def parser_device_setup(args):
-        device_setup(args.board, args.version, args.u, args.q)
+        device_setup(args.board, args.version, args.skip_fw_update, args.q)
 
     def parser_firmware_deploy(args):
         openocd_program(args.board, args.hexfile)
@@ -635,7 +655,10 @@ def parser():
         "-q", action="store_true", help="Quiet. Do not prompt any user confirmation request"
     )
     parser_ds.add_argument(
-        "-u", action="store_true", help="Update board Kitprog3 debugger firmware"
+        "-s",
+        "--skip-fw-update",
+        action="store_true",
+        help="Skip board Kitprog3 debugger firmware update",
     )
     parser_ds.set_defaults(func=parser_device_setup)
 
