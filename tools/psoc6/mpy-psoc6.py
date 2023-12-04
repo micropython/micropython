@@ -36,7 +36,7 @@ def set_environment():
         os.system("color")  # Enable colouring in cmd and powershell
     elif sys.platform == "darwin":
         opsys = "mac"
-        raise Exception(colour_str_error("OS unsupported"))
+        sys.exit(colour_str_error("OS unsupported"))
 
 
 def mpy_get_fw_hex_file_name(file_name, board):
@@ -52,6 +52,11 @@ def mpy_firmware_deploy(file_name, board, serial_adapter_sn=None):
 
 
 def mpy_firmware_download(file_name, board, version):
+    def mpy_firmware_clean(file_name, board):
+        file_name_for_board = mpy_get_fw_hex_file_name(file_name, board)
+        if os.path.exists(file_name_for_board):
+            os.remove(file_name_for_board)
+
     print(
         "Downloading " + str(file_name) + " " + str(version) + " for " + str(board) + " board..."
     )
@@ -66,17 +71,23 @@ def mpy_firmware_download(file_name, board, version):
         "https://github.com/infineon/micropython/releases/" + sub_url + "/" + file_name_for_board
     )
 
+    # Clean if existing from previous run
+    # It is not sure if it is the same version
+    mpy_firmware_clean(file_name, board)
+
     res = requests.get(file_url)
     open(file_name_for_board, "wb").write(res.content)
-
-
-def mpy_firmware_remove(file_name, board):
-    os.remove(mpy_get_fw_hex_file_name(file_name, board))
 
 
 def fwloader_download_install():
     file_extension = ".zip"
     fwloader_compressed = "fwloader" + file_extension
+
+    def is_fwloader_already_installed():
+        if os.path.exists(os.path.join("fw-loader", "bin", "fw-loader")):
+            return True
+
+        return False
 
     def get_fwloader_file_url_name():
         if opsys == "linux":
@@ -101,6 +112,10 @@ def fwloader_download_install():
 
         return file_url, file_name
 
+    def clean_fwloader(file_name):
+        if os.path.exists(file_name):
+            os.remove(file_name)
+
     def download_fwloader(file_url, file_name):
         res = requests.get(file_url)
         open(file_name, "wb").write(res.content)
@@ -122,15 +137,20 @@ def fwloader_download_install():
                 sh_proc = subprocess.Popen(sh_args)
                 sh_proc.wait()
             except:
-                raise Exception(colour_str_error("bash error"))
+                sys.exit(colour_str_error("bash error"))
 
             os.chmod(os.path.join("fw-loader", "bin", "fw-loader"), 0o755)
 
-    print("Downloading fw-loader...")
-    file_url, file_name = get_fwloader_file_url_name()
-    download_fwloader(file_url, file_name)
-    print("Extracting fw-loader...")
-    extract_fwloader()
+    if not is_fwloader_already_installed():
+        print("Downloading fw-loader...")
+        file_url, file_name = get_fwloader_file_url_name()
+        clean_fwloader(file_name)
+        download_fwloader(file_url, file_name)
+        print("Extracting fw-loader...")
+        extract_fwloader()
+    else:
+        print("fw-loader installation skipped. Already installed")
+
     fwloader_setup()
 
 
@@ -139,7 +159,7 @@ def fwloader_update_kitprog():
         fwloader_out_lines = fwloader_stdout.decode().split("\n")
         for line in fwloader_out_lines:
             if "Error" in line:
-                raise Exception(colour_str_error(line))
+                sys.exit(colour_str_error(line))
 
     print("Updating kitprog3 firmware...")
     fwloader_cmd = "fw-loader --update-kp3 all"
@@ -150,10 +170,10 @@ def fwloader_update_kitprog():
         out, err = fwl_proc.communicate(timeout=90)
     except:
         fwl_proc.kill()
-        raise Exception(colour_str_error("fwloader error"))
+        sys.exit(colour_str_error("fwloader error"))
 
     if err:
-        raise Exception(colour_str_error(err.decode()))
+        sys.exit(colour_str_error(err.decode()))
 
     parse_output_for_error(out)
 
@@ -163,20 +183,31 @@ def fwloader_update_kitprog():
 def fwloader_remove():
     file_extension = ".zip"
     fwloader_compressed = "fwloader" + file_extension
-    os.remove(fwloader_compressed)
-    shutil.rmtree("fw-loader")
-    shutil.rmtree("kp-firmware")
+    if os.path.exists(fwloader_compressed):
+        os.remove(fwloader_compressed)
+    if os.path.exists("fw-loader"):
+        shutil.rmtree("fw-loader")
+    if os.path.exists("kp-firmware"):
+        shutil.rmtree("kp-firmware")
 
 
 def openocd_download_install():
     if opsys == "linux":
         file_os_suffix = "linux"
         file_extension = ".tar.gz"
+        openocd_exe = "openocd"
     elif opsys == "win":
         file_os_suffix = "windows"
         file_extension = ".zip"
+        openocd_exe = "openocd.exe"
 
     openocd_compressed = "openocd" + file_extension
+
+    def is_openocd_already_installed():
+        if os.path.exists(os.path.join("openocd", "bin", openocd_exe)):
+            return True
+
+        return False
 
     def get_openocd_file_url_name():
         filename_base = "openocd-4.4.0.2134-"
@@ -186,6 +217,10 @@ def openocd_download_install():
         file_url = url_base + file_name
 
         return file_url, file_name
+
+    def clean_openocd(file_name):
+        if os.path.exists(file_name):
+            os.remove(file_name)
 
     def download_openocd(file_url, file_name):
         res = requests.get(file_url)
@@ -213,13 +248,18 @@ def openocd_download_install():
                 sh_proc = subprocess.Popen(sh_args)
                 sh_proc.wait()
             except:
-                raise Exception(colour_str_error("bash error"))
+                sys.exit(colour_str_error("bash error"))
 
-    print("Downloading openocd...")
-    file_url, file_name = get_openocd_file_url_name()
-    download_openocd(file_url, file_name)
-    print("Extracting openocd...")
-    extract_openocd()
+    if not is_openocd_already_installed():
+        print("Downloading openocd...")
+        file_url, file_name = get_openocd_file_url_name()
+        clean_openocd(file_name)
+        download_openocd(file_url, file_name)
+        print("Extracting openocd...")
+        extract_openocd()
+    else:
+        print("openocd already available. Installation skipped")
+
     openocd_setup()
 
 
@@ -237,6 +277,11 @@ def openocd_board_conf_download(board):
     if board == "CY8CPROTO-062-4343W":
         file_name = "qspi_config_" + str(board) + ".cfg"
         file_url = "https://github.com/infineon/micropython/releases/download/v0.3.0/" + file_name
+
+        # Clean file if exists from previous run
+        if os.path.exists(file_name):
+            os.remove(file_name)
+
         res = requests.get(file_url)
         open(file_name, "wb").write(res.content)
 
@@ -278,10 +323,10 @@ def openocd_program(board, hex_file, serial_adapter_sn=None):
         out, err = ocd_proc.communicate(timeout=20)
     except:
         ocd_proc.kill()
-        raise Exception(colour_str_error("openocd error"))
+        sys.exit(colour_str_error("openocd error"))
 
     if err:
-        raise Exception(colour_str_error(err.decode()))
+        sys.exit(colour_str_error(err.decode() + "Are you sure the board is connected?"))
 
 
 def openocd_remove():
@@ -291,9 +336,11 @@ def openocd_remove():
         file_extension = ".zip"
 
     openocd_compressed = "openocd" + file_extension
+    if os.path.exists(openocd_compressed):
+        os.remove(openocd_compressed)
 
-    os.remove(openocd_compressed)
-    shutil.rmtree("openocd")
+    if os.path.exists("openocd"):
+        shutil.rmtree("openocd")
 
 
 def validate_board_name(board_name):
@@ -304,14 +351,24 @@ def validate_board_name(board_name):
             break
 
     if not board_supported:
-        raise Exception(colour_str_error("error: board is not supported"))
+        sys.exit(colour_str_error("error: board is not supported"))
 
 
 def select_board():
-    def validate_board_index(board_index):
+    def validate_user_input(user_input):
+        def invalid_exit():
+            sys.exit(colour_str_error("error: board ID is not valid"))
+
+        try:
+            board_index = int(user_input)
+        except:
+            invalid_exit()
+
         max_board_index = len(boards)
         if board_index < 0 or board_index > max_board_index:
-            raise Exception(colour_str_error("error: board ID not valid"))
+            invalid_exit()
+
+        return board_index
 
     print("")
     print("      Supported MicroPython PSoC6 boards       ")
@@ -325,8 +382,9 @@ def select_board():
     print("")
     print("")
 
-    board_index = int(input(colour_str_highlight("Please type the desired board ID: ")))
-    validate_board_index(board_index)
+    board_index = validate_user_input(
+        input(colour_str_highlight("Please type the desired board ID: "))
+    )
     board = boards[board_index]["name"]
 
     return board
@@ -362,24 +420,17 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
     if update_dbg_fw:
         fwloader_download_install()
-        try:
-            fwloader_update_kitprog()
-        finally:
-            fwloader_remove()
+        fwloader_update_kitprog()
         time.sleep(10)  # Wait for the device to restart
 
     openocd_download_install()
     openocd_board_conf_download(board)
+
     mpy_firmware_download("hello-world", board, "v0.3.0")
     mpy_firmware_download("mpy-psoc6", board, version)
 
-    try:
-        mpy_firmware_deploy("hello-world", board)
-        mpy_firmware_deploy("mpy-psoc6", board)
-    finally:
-        openocd_remove()
-        mpy_firmware_remove("hello-world", board)
-        mpy_firmware_remove("mpy-psoc6", board)
+    mpy_firmware_deploy("hello-world", board)
+    mpy_firmware_deploy("mpy-psoc6", board)
 
     print(colour_str_success("Device setup completed :)"))
 
@@ -389,20 +440,17 @@ def device_setup(board, version, update_dbg_fw=False, quiet=False):
 
 def device_erase(board, quiet=False):
     if board != "CY8CPROTO-062-4343W":
-        raise Exception(colour_str_error("error: board is not supported"))
+        sys.exit(colour_str_error("error: board is not supported"))
 
     if not quiet:
         wait_and_request_board_connect()
 
     openocd_download_install()
     openocd_board_conf_download(board)
+
     mpy_firmware_download("device-erase", board, "v0.3.0")
 
-    try:
-        mpy_firmware_deploy("device-erase", board)
-    finally:
-        openocd_remove()
-        mpy_firmware_remove("device-erase", board)
+    mpy_firmware_deploy("device-erase", board)
 
     print(colour_str_success("Device erase completed :)"))
 
@@ -423,6 +471,9 @@ def arduino_lab_download_and_launch():
         file_name_extension = ".zip"
         file_name = "Arduino.Lab.for.Micropython-" + file_os_suffix + file_name_extension
         file_url = url_base + file_name
+
+        if os.path.exists(file_name):
+            os.remove(file_name)
 
         res = requests.get(file_url)
         open(file_name, "wb").write(res.content)
@@ -457,7 +508,7 @@ def arduino_lab_download_and_launch():
             ide_proc = subprocess.Popen(mpy_ide)
             ide_proc.wait()
         except:
-            raise Exception(colour_str_error("error: Could not launch Arduino Lab IDE"))
+            sys.exit(colour_str_error("error: Could not launch Arduino Lab IDE"))
 
         os.chdir(parent_dir)
 
@@ -467,8 +518,8 @@ def arduino_lab_download_and_launch():
 
 
 def arduino_lab_install_package_remove():
-    print("Cleaning up Arduino Lab for Micropython installation package...")
-    os.remove("arduino-for-micropython.zip")
+    if os.path.exists("arduino-for-micropython.zip"):
+        os.remove("arduino-for-micropython.zip")
 
 
 def quick_start(board, version):
@@ -497,6 +548,12 @@ def quick_start(board, version):
     arduino_lab_install_package_remove()
     print_exit_banner()
     wait_user_termination()
+
+
+def clean_tool_downloads():
+    fwloader_remove()
+    openocd_remove()
+    arduino_lab_install_package_remove()
 
 
 def parser():
@@ -621,5 +678,9 @@ def parser():
 
 
 if __name__ == "__main__":
-    set_environment()
-    parser()
+    try:
+        set_environment()
+        parser()
+    except KeyboardInterrupt:
+        print(colour_str_error("error: keyboard interrupt"))
+        clean_tool_downloads()
