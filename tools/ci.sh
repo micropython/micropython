@@ -138,7 +138,7 @@ function ci_esp32_build_common {
     make ${MAKEOPTS} -C ports/esp32 submodules
 }
 
-function ci_esp32_build_cmod_s2 {
+function ci_esp32_build_cmod_spiram_s2 {
     ci_esp32_build_common
 
     make ${MAKEOPTS} -C ports/esp32 \
@@ -148,6 +148,7 @@ function ci_esp32_build_cmod_s2 {
     # Test building native .mpy with xtensawin architecture.
     ci_native_mpy_modules_build xtensawin
 
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM
     make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
 }
 
