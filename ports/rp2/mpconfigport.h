@@ -85,6 +85,7 @@
 #ifndef MICROPY_USE_INTERNAL_ERRNO
 #define MICROPY_USE_INTERNAL_ERRNO              (1)
 #endif
+#define MICROPY_USE_INTERNAL_LIBM               (1)
 
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_BUILTINS_HELP_TEXT           rp2_help_text
@@ -267,6 +268,9 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef intptr_t mp_off_t;
+
+// We need an implementation of the log2 function which is not a macro.
+#define MP_NEED_LOG2 (1)
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
