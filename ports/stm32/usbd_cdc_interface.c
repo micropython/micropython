@@ -44,9 +44,9 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "extmod/modmachine.h"
 #include "shared/runtime/interrupt_char.h"
 #include "irq.h"
-#include "modmachine.h"
 
 #if MICROPY_HW_ENABLE_USB
 
