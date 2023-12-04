@@ -240,6 +240,9 @@ endif
 ifeq ($(CIRCUITPY_IS31FL3741),1)
 SRC_PATTERNS += is31fl3741/%
 endif
+ifeq ($(CIRCUITPY_JPEGIO),1)
+SRC_PATTERNS += jpegio/%
+endif
 ifeq ($(CIRCUITPY_KEYPAD),1)
 SRC_PATTERNS += keypad/%
 endif
@@ -644,6 +647,8 @@ SRC_SHARED_MODULE_ALL = \
 	is31fl3741/IS31FL3741.c \
 	is31fl3741/FrameBuffer.c \
 	is31fl3741/__init__.c \
+	jpegio/__init__.c \
+	jpegio/JpegDecoder.c \
 	keypad/__init__.c \
 	keypad/Event.c \
 	keypad/EventQueue.c \
@@ -749,6 +754,11 @@ SRC_MOD += $(addprefix lib/AnimatedGIF/, \
 	gif.c \
 )
 $(BUILD)/lib/AnimatedGIF/gif.o: CFLAGS += -DCIRCUITPY
+endif
+
+ifeq ($(CIRCUITPY_JPEGIO),1)
+SRC_MOD += lib/tjpgd/src/tjpgd.c
+$(BUILD)/lib/tjpgd/src/tjpgd.o: CFLAGS += -Wno-shadow -Wno-cast-align
 endif
 
 ifeq ($(CIRCUITPY_RGBMATRIX),1)

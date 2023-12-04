@@ -19,6 +19,9 @@ SRC_C += $(SRC_QRIO)
 CFLAGS += -DCIRCUITPY_QRIO=1
 $(BUILD)/lib/quirc/lib/%.o: CFLAGS += -Wno-shadow -Wno-sign-compare -include shared-module/qrio/quirc_alloc.h
 
+SRC_C += lib/tjpgd/src/tjpgd.c
+$(BUILD)/lib/tjpgd/src/tjpgd.o: CFLAGS += -Wno-shadow -Wno-cast-align
+
 SRC_BITMAP := \
 	shared/runtime/context_manager_helpers.c \
 	displayio_min.c \
@@ -33,6 +36,8 @@ SRC_BITMAP := \
 	shared-bindings/audiomixer/MixerVoice.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
+	shared-bindings/jpegio/__init__.c \
+	shared-bindings/jpegio/JpegDecoder.c \
 	shared-bindings/locale/__init__.c \
 	shared-bindings/rainbowio/__init__.c \
 	shared-bindings/struct/__init__.c \
@@ -59,6 +64,8 @@ SRC_BITMAP := \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
 	shared-module/displayio/ColorConverter.c \
+	shared-module/jpegio/__init__.c \
+	shared-module/jpegio/JpegDecoder.c \
 	shared-module/os/getenv.c \
 	shared-module/rainbowio/__init__.c \
 	shared-module/struct/__init__.c \
@@ -83,6 +90,7 @@ CFLAGS += \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
 	-DCIRCUITPY_FUTURE=1 \
 	-DCIRCUITPY_GIFIO=1 \
+	-DCIRCUITPY_JPEGIO=1 \
 	-DCIRCUITPY_LOCALE=1 \
 	-DCIRCUITPY_OS_GETENV=1 \
 	-DCIRCUITPY_RAINBOWIO=1 \
