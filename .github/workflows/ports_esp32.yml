@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         ci_func:  # names are functions in ci.sh
-          - esp32_build_cmod_s2
+          - esp32_build_cmod_spiram_s2
           - esp32_build_s3_c3
     runs-on: ubuntu-20.04
     steps:
