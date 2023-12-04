@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
+"PO-Revision-Date: 2023-12-04 01:08+0000\n"
 "Last-Translator: Bill Sideris <bill88t@feline.gr>\n"
 "Language-Team: none\n"
 "Language: el\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 #: main.c
 msgid ""
@@ -41,6 +41,9 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"Παρακαλώ δημιουργήστε ένα πρόβλημα με το πρόγραμμά σας στο github.com/"
+"adafruit/circuitpython/issues."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -159,7 +162,7 @@ msgstr "%q μήκος πρέπει να είναι >= %d"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q moved from %q to %q"
-msgstr ""
+msgstr "%q μετακινήθηκε από το %q στο %q"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -184,7 +187,7 @@ msgstr "%q πρέπει να είναι <= %d"
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "%q must be <= %u"
-msgstr ""
+msgstr "%q πρέπει να είναι <= %u"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -200,7 +203,7 @@ msgstr "%q πρέπει να είναι bytearray ή array τύπου 'h', 'H', 
 
 #: shared-bindings/warnings/__init__.c
 msgid "%q must be a subclass of %q"
-msgstr ""
+msgstr "%q πρέπει να είναι υποκλάση του %q"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
@@ -218,7 +221,7 @@ msgstr "%q πρέπει να είναι τύπου %q ή %q, όχι %q"
 
 #: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
-msgstr ""
+msgstr "%q πρέπει να είναι τύπου %q, όχι %q"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
@@ -239,11 +242,11 @@ msgstr "%q εκτός εμβέλειας"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q renamed %q"
-msgstr ""
+msgstr "%q μεταονομάστηκε σε %q"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
-msgstr ""
+msgstr "%q βήμα δεν μπορεί να είναι μηδέν"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -259,15 +262,15 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
+msgstr "%q[%u] μετατοπίζει σε περισσότερα bits από αριθμό pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u] μετατοπίζει από περισσότερα bits από αριθμό pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
-msgstr ""
+msgstr "%q[%u] χρησιμοποιεί παραπάνω pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
@@ -385,7 +388,7 @@ msgstr "'await' εκτός συνάρτησης"
 
 #: py/compile.c
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "'break'/'continue' εκτός επανάληψης"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -413,7 +416,7 @@ msgstr "'yield' εκτός συνάρτησης"
 
 #: py/compile.c
 msgid "* arg after **"
-msgstr ""
+msgstr "* όρισμα μετά **"
 
 #: py/compile.c
 msgid "*x must be assignment target"
@@ -427,7 +430,7 @@ msgstr ", στο %q\n"
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid ".show(x) removed. Use .root_group = x"
-msgstr ""
+msgstr ".show(x) αφαιρέθηκε. Χρησιμοποιήστε το .root_group = x"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -445,7 +448,7 @@ msgstr "Ένα κανάλι interrupt υλικού είναι ήδη σε χρή
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
-msgstr ""
+msgstr "AP δεν μπόρεσε να εκκινηθεί"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -456,7 +459,7 @@ msgstr "Η διεύθυνση πρέπει να είναι %d bytes μεγάλη
 #: ports/nrf/common-hal/memorymap/AddressRange.c
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
-msgstr ""
+msgstr "Εμβέλεια διευθύνσεων δεν επιτρέπεται"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
@@ -501,7 +504,7 @@ msgstr "Όλα τα κανάλια είναι σε χρήση"
 
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All dma channels in use"
-msgstr ""
+msgstr "Όλα τα κανάλια dma είναι σε χρήση"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -563,7 +566,7 @@ msgstr "Ήδη γίνεται σάρωση για δίκτυα wifi"
 #: shared-module/os/getenv.c
 #, c-format
 msgid "An error occurred while retrieving '%s':\n"
-msgstr ""
+msgstr "Παρουσιάστηκε σφάλμα κατά την ανάκτηση '%s':\n"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 msgid "Another PWMAudioOut is already active"
@@ -623,7 +626,7 @@ msgstr "Χαμηλότερο από το ελάχιστο frame rate"
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential GPIO pins"
-msgstr ""
+msgstr "Ρολόι bit και ορισμού λέξης πρέπει να είναι διαδοχικά GPIO pins"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -639,7 +642,7 @@ msgstr "Το μέγεθος του bitmap και τα bits ανα τιμή πρ�
 
 #: supervisor/shared/safe_mode.c
 msgid "Boot device must be first (interface #0)."
-msgstr ""
+msgstr "Η συσκευή εκκίνησης πρέπει να επιλεχθεί πρώτα (διεπαφή #0)."
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
@@ -691,7 +694,7 @@ msgstr "Buffer πολύ μικρό κατα %d bytes"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "Buffer πολύ μικρός"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -921,61 +924,64 @@ msgstr "Τα pins βαθύ ύπνου πρέπει να χρησιμοποιού
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr ""
+"Το μέγεθος προορισμού πρέπει να είναι μικρότερο από το destination_length."
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
-msgstr ""
+msgstr "Συσκευή σε χρήση"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#, fuzzy
 msgid "Display must have a 16 bit colorspace."
-msgstr ""
+msgstr "Η οθόνη πρέπει να έχει 16 bit χρωματική ευκρίνεια."
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Display rotation must be in 90 degree increments"
-msgstr ""
+msgstr "Η περιστροφή της οθόνη πρέπει να γίνεται σε βήματα 90 μοιρών"
 
 #: main.c
 msgid "Done"
-msgstr ""
+msgstr "Ολοκληρώθηκε"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Drive mode not used when direction is input."
-msgstr ""
+msgstr "Ο τρόπος οδήγησης δεν χρησιμοποιείται όταν η κατεύθυνση είναι είσοδος."
 
 #: py/obj.c
 msgid "During handling of the above exception, another exception occurred:"
 msgstr ""
+"Κατά την αντιμετώπιση της παραπάνω εξαίρεσης, ακόμα μία εξαίρεση συνέβη:"
 
 #: shared-bindings/aesio/aes.c
 msgid "ECB only operates on 16 bytes at a time"
-msgstr ""
+msgstr "ECB δουλεύει μόνο σε 16 bytes κάθε φορά"
 
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
+msgstr "ESP-IDF δέσμευση μνήμης απέτυχε"
 
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
-msgstr ""
+msgstr "EXTINT κανάλι ήδη σε χρήση"
 
 #: extmod/modre.c
 msgid "Error in regex"
-msgstr ""
+msgstr "Σφάλμα σε regex"
 
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
-msgstr ""
+msgstr "Σφάλμα στο safemode.py."
 
 #: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
-msgstr ""
+msgstr "Σφάλμα: Αποτυχία δέσμευσης"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
