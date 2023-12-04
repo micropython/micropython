@@ -147,6 +147,10 @@ STATIC const MP_DEFINE_STR_OBJ(mp_sys_platform_obj, MICROPY_PY_SYS_PLATFORM);
 MP_DEFINE_STR_OBJ(mp_sys_executable_obj, "");
 #endif
 
+#if MICROPY_PY_SYS_INTERN
+MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_intern_obj, mp_obj_str_intern_checked);
+#endif
+
 // exit([retval]): raise SystemExit, with optional argument given to the exception
 STATIC mp_obj_t mp_sys_exit(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -291,6 +295,10 @@ STATIC const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
     #else
     { MP_ROM_QSTR(MP_QSTR_maxsize), MP_ROM_PTR(&mp_sys_maxsize_obj) },
     #endif
+    #endif
+
+    #if MICROPY_PY_SYS_INTERN
+    { MP_ROM_QSTR(MP_QSTR_intern), MP_ROM_PTR(&mp_sys_intern_obj) },
     #endif
 
     #if MICROPY_PY_SYS_EXIT
