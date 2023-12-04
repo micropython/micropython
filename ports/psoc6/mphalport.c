@@ -9,6 +9,8 @@
 
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
+#include "py/stream.h"
+#include "py/ringbuf.h"
 
 // MTB includes
 #include "cyhal.h"
@@ -20,6 +22,9 @@
 
 extern cyhal_rtc_t psoc6_rtc;
 extern cyhal_timer_t psoc6_timer;
+
+STATIC uint8_t stdin_ringbuf_array[260];
+ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     #if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)
@@ -89,12 +94,16 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
 
 
 int mp_hal_stdin_rx_chr(void) {
-    uint8_t c = 0;
-
-    cyhal_uart_getc(&cy_retarget_io_uart_obj, &c, 0);
-    return c;
+    for (;;) {
+        uint8_t c = 0;
+        cy_rslt_t result;
+        result = cyhal_uart_getc(&cy_retarget_io_uart_obj, &c, 1);
+        if (result == CY_RSLT_SUCCESS) {
+            return c;
+        }
+        MICROPY_EVENT_POLL_HOOK
+    }
 }
-
 
 void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {
     cyhal_gpio_write(pin, false);

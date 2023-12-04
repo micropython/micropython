@@ -31,7 +31,6 @@
 #include "shared/runtime/interrupt_char.h"
 #include "mpconfigboard.h"
 
-
 // Control over Python builtins
 #define MICROPY_PY_IO_BUFFEREDWRITER            (1)
 #define MICROPY_PY_SELECT                       (1)
@@ -84,6 +83,7 @@
 
 #define MICROPY_SCHEDULER_DEPTH                 (8)
 #define MICROPY_SCHEDULER_STATIC_NODES          (1)
+// #define MICROPY_ENABLE_SCHEDULER                (1)
 
 // Fine control over Python builtins, classes, modules, etc
 #define MICROPY_PY_SYS_PLATFORM                 "psoc6"
@@ -172,17 +172,17 @@ typedef intptr_t mp_off_t;
 #define MICROPY_USE_INTERNAL_PRINTF             (0)
 #define MICROPY_REPL_INFO                       (1)
 
-
 // TODO: helpful to abstract main.c ?
 // #define MICROPY_PORT_INIT_FUNC ??
 // #define MICROPY_PORT_DEINIT_FUNC ??
+
 
 
 #define MICROPY_EVENT_POLL_HOOK_FAST \
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-    } while (0)
+    } while (0);
 
 
 #define MICROPY_EVENT_POLL_HOOK \

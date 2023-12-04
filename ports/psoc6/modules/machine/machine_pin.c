@@ -171,25 +171,24 @@ static cyhal_gpio_drive_mode_t mp_to_cy_get_gpio_drive(uint8_t mode, uint8_t pul
     return cy_drive;
 }
 
-static cyhal_gpio_event_t mp_to_cy_get_interrupt_mode(uint8_t mode){
+static cyhal_gpio_event_t mp_to_cy_get_interrupt_mode(uint8_t mode) {
     cyhal_gpio_event_t event;
-    switch(mode){
+    switch (mode) {
         case GPIO_IRQ_FALLING:
-            event =  CYHAL_GPIO_IRQ_FALL;
+            event = CYHAL_GPIO_IRQ_FALL;
             break;
         case GPIO_IRQ_RISING:
-            event =  CYHAL_GPIO_IRQ_RISE;
+            event = CYHAL_GPIO_IRQ_RISE;
             break;
-        
-        case GPIO_IRQ_RISING|GPIO_IRQ_FALLING:
+
+        case GPIO_IRQ_RISING | GPIO_IRQ_FALLING:
             event = CYHAL_GPIO_IRQ_BOTH;
             break;
     }
     return event;
 }
 
-static void gpio_interrupt_handler(void *handler_arg,  cyhal_gpio_event_t event )
-{
+static void gpio_interrupt_handler(void *handler_arg,  cyhal_gpio_event_t event) {
     machine_pin_io_obj_t *self = handler_arg;
     mp_sched_schedule(self->callback, MP_OBJ_FROM_PTR(self));
 }
@@ -350,14 +349,14 @@ STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
-// pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING, hard=False)
+// pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING)
 STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_IRQ_RISING|GPIO_IRQ_FALLING }},
+        { MP_QSTR_trigger, MP_ARG_INT, {.u_int = GPIO_IRQ_RISING | GPIO_IRQ_FALLING }},
     };
-    
+
     machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -369,9 +368,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         cyhal_gpio_event_t event = mp_to_cy_get_interrupt_mode(trigger);
         gpio_callback_data.callback = gpio_interrupt_handler;
         gpio_callback_data.callback_arg = self;
-        cyhal_gpio_register_callback(self->pin_phy->addr,&gpio_callback_data);
-        cyhal_gpio_enable_event(self->pin_phy->addr,event , 3, true);
-   
+        cyhal_gpio_register_callback(self->pin_phy->addr, &gpio_callback_data);
+        cyhal_gpio_enable_event(self->pin_phy->addr, event, 3, true);
+
     }
     return MP_OBJ_FROM_PTR(&gpio_callback_data);
 }
@@ -441,4 +440,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[5]);
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[113]); // Number of GPIO pins
