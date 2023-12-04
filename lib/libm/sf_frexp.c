@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define frexpf LIBM_FUNC_WRAP(frexpf)
+
 #ifdef __STDC__
 static const float
 #else

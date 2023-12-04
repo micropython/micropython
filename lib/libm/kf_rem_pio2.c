@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define floorf LIBM_FUNC_WRAP(floorf)
+
 /* In the float version, the input parameter x contains 8 bit
    integers, not 24 bit integers.  113 bit precision is not supported.  */
 

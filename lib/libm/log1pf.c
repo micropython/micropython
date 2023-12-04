@@ -18,6 +18,8 @@
 
 #include "libm.h"
 
+#define log1pf LIBM_FUNC_WRAP(log1pf)
+
 static const float
 ln2_hi = 6.9313812256e-01f, /* 0x3f317180 */
 ln2_lo = 9.0580006145e-06f, /* 0x3717f7d1 */

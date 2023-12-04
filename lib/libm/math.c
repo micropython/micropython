@@ -26,6 +26,21 @@
 
 #include "libm.h"
 
+#define ceilf LIBM_FUNC_WRAP(ceilf)
+#define copysignf LIBM_FUNC_WRAP(copysignf)
+#define coshf LIBM_FUNC_WRAP(coshf)
+#define expf LIBM_FUNC_WRAP(expf)
+#define expm1f LIBM_FUNC_WRAP(expm1f)
+#define floorf LIBM_FUNC_WRAP(floorf)
+#define log10f LIBM_FUNC_WRAP(log10f)
+#define logf LIBM_FUNC_WRAP(logf)
+#define logf LIBM_FUNC_WRAP(logf)
+#define powf LIBM_FUNC_WRAP(powf)
+#define sinhf LIBM_FUNC_WRAP(sinhf)
+#define sqrtf LIBM_FUNC_WRAP(sqrtf)
+#define tanhf LIBM_FUNC_WRAP(tanhf)
+#define truncf LIBM_FUNC_WRAP(truncf)
+
 typedef float float_t;
 typedef union {
     float f;

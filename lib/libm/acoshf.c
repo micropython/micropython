@@ -14,6 +14,11 @@
 #define sqrtf sqrt
 #endif
 
+#define acoshf LIBM_FUNC_WRAP(acoshf)
+#define logf LIBM_FUNC_WRAP(logf)
+#define log1pf LIBM_FUNC_WRAP(log1pf)
+#define sqrtf LIBM_FUNC_WRAP(sqrtf)
+
 /* acosh(x) = log(x + sqrt(x*x-1)) */
 float acoshf(float x)
 {

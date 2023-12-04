@@ -22,6 +22,8 @@
 
 #include "libm.h"
 
+#define atanf LIBM_FUNC_WRAP(atanf)
+
 static const float atanhi[] = {
   4.6364760399e-01f, /* atan(0.5)hi 0x3eed6338 */
   7.8539812565e-01f, /* atan(1.0)hi 0x3f490fda */

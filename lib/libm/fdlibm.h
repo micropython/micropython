@@ -22,6 +22,13 @@
 
 #include <math.h>
 
+// Include libm.h to get definition of LIBM_FUNC_WRAP.
+#include "libm.h"
+#undef FLT_EVAL_METHOD
+#undef FORCE_EVAL
+#undef GET_FLOAT_WORD
+#undef SET_FLOAT_WORD
+
 /* Default to XOPEN_MODE.  */
 #define _XOPEN_MODE
 

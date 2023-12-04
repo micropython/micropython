@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <math.h>
 
+#define LIBM_FUNC_WRAP(fun) mp_libm_##fun
+
 #define FLT_EVAL_METHOD 0
 
 #define FORCE_EVAL(x) do {                        \
@@ -52,3 +54,54 @@ do {                                              \
       __u.i = (w);                                \
       (d) = __u.f;                                \
 } while (0)
+
+float LIBM_FUNC_WRAP(acosf)(float x);
+float LIBM_FUNC_WRAP(acoshf)(float x);
+float LIBM_FUNC_WRAP(asinf)(float x);
+float LIBM_FUNC_WRAP(asinhf)(float x);
+float LIBM_FUNC_WRAP(atan2f)(float y, float x);
+float LIBM_FUNC_WRAP(atanf)(float x);
+float LIBM_FUNC_WRAP(atanhf)(float x);
+float LIBM_FUNC_WRAP(ceilf)(float x);
+float LIBM_FUNC_WRAP(cosf)(float x);
+float LIBM_FUNC_WRAP(coshf)(float x);
+float LIBM_FUNC_WRAP(erfcf)(float x);
+float LIBM_FUNC_WRAP(erff)(float x);
+float LIBM_FUNC_WRAP(expf)(float x);
+float LIBM_FUNC_WRAP(expm1f)(float x);
+float LIBM_FUNC_WRAP(floorf)(float x);
+float LIBM_FUNC_WRAP(fmodf)(float x, float y);
+float LIBM_FUNC_WRAP(frexpf)(float x, int *exp);
+float LIBM_FUNC_WRAP(ldexpf)(float x, int exp);
+float LIBM_FUNC_WRAP(lgammaf)(float x);
+float LIBM_FUNC_WRAP(lgammaf)(float x);
+float LIBM_FUNC_WRAP(log10f)(float x);
+float LIBM_FUNC_WRAP(log1pf)(float x);
+float LIBM_FUNC_WRAP(log2f)(float x);
+float LIBM_FUNC_WRAP(logf)(float x);
+float LIBM_FUNC_WRAP(modff)(float x, float *iptr);
+float LIBM_FUNC_WRAP(nearbyintf)(float x);
+float LIBM_FUNC_WRAP(powf)(float x, float y);
+float LIBM_FUNC_WRAP(sinf)(float x);
+float LIBM_FUNC_WRAP(sinhf)(float x);
+float LIBM_FUNC_WRAP(sqrtf)(float x);
+float LIBM_FUNC_WRAP(tanf)(float x);
+float LIBM_FUNC_WRAP(tanhf)(float x);
+float LIBM_FUNC_WRAP(tgammaf)(float x);
+float LIBM_FUNC_WRAP(truncf)(float x);
+
+#ifndef NDEBUG
+float LIBM_FUNC_WRAP(copysignf)(float x, float y);
+#else
+static inline float LIBM_FUNC_WRAP(copysignf)(float x, float y) {
+    return copysignf(x, y);
+}
+#endif
+
+static inline float LIBM_FUNC_WRAP(fabsf)(float x) {
+    return fabsf(x);
+}
+
+static inline float LIBM_FUNC_WRAP(nanf)(const char *tagp) {
+    return nanf(tagp);
+}

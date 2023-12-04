@@ -25,7 +25,8 @@
 
 #include "fdlibm.h"
 
-#define __ieee754_logf logf
+#define __ieee754_logf LIBM_FUNC_WRAP(logf)
+#define floorf LIBM_FUNC_WRAP(floorf)
 
 #ifdef __STDC__
 static const float 

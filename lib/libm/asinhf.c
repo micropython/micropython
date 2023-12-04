@@ -6,6 +6,11 @@
 
 #include "libm.h"
 
+#define logf LIBM_FUNC_WRAP(logf)
+#define sqrtf LIBM_FUNC_WRAP(sqrtf)
+#define asinhf LIBM_FUNC_WRAP(asinhf)
+#define log1pf LIBM_FUNC_WRAP(log1pf)
+
 /* asinh(x) = sign(x)*log(|x|+sqrt(x*x+1)) ~= x - x^3/6 + o(x^5) */
 float asinhf(float x)
 {

@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define cosf LIBM_FUNC_WRAP(cosf)
+
 #ifdef __STDC__
 	float cosf(float x)
 #else

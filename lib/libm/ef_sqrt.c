@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define sqrtf LIBM_FUNC_WRAP(sqrtf)
+
 #ifdef __STDC__
 static	const float	one	= 1.0f, tiny=1.0e-30f;
 #else

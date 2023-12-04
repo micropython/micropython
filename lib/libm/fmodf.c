@@ -6,6 +6,8 @@
 
 #include "libm.h"
 
+#define fmodf LIBM_FUNC_WRAP(fmodf)
+
 float fmodf(float x, float y)
 {
 	union {float f; uint32_t i;} ux = {x}, uy = {y};

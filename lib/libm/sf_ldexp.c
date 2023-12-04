@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define ldexpf LIBM_FUNC_WRAP(ldexpf)
+
 #ifdef __STDC__
 	float ldexpf(float value, int exp)
 #else

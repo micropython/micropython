@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define sinf LIBM_FUNC_WRAP(sinf)
+
 #ifdef __STDC__
 	float sinf(float x)
 #else

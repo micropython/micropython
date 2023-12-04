@@ -24,7 +24,9 @@
 
 #include "fdlibm.h"
 
-#define __ieee754_expf expf
+#define __ieee754_expf LIBM_FUNC_WRAP(expf)
+#define erfcf LIBM_FUNC_WRAP(erfcf)
+#define erff LIBM_FUNC_WRAP(erff)
 
 #ifdef __v810__
 #define const

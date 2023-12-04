@@ -6,6 +6,8 @@
 
 #include "libm.h"
 
+#define roundf LIBM_FUNC_WRAP(roundf)
+
 float roundf(float x)
 {
 	union {float f; uint32_t i;} u = {x};

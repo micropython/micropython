@@ -1,6 +1,8 @@
 // an implementation of sqrtf for Thumb using hardware VFP instructions
 
-#include <math.h>
+#include "libm.h"
+
+#define sqrtf LIBM_FUNC_WRAP(sqrtf)
 
 float sqrtf(float x) {
     __asm__ volatile (

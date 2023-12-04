@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define tanf LIBM_FUNC_WRAP(tanf)
+
 #ifdef __STDC__
 	float tanf(float x)
 #else

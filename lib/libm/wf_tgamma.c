@@ -24,6 +24,10 @@
 
 #include "math.h"
 #include "fdlibm.h"
+
+#define expf LIBM_FUNC_WRAP(expf)
+#define tgammaf LIBM_FUNC_WRAP(tgammaf)
+
 #define _IEEE_LIBM 1
 
 #ifdef __STDC__

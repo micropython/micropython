@@ -2,6 +2,8 @@
 
 #include "libm.h"
 
+#define nearbyintf LIBM_FUNC_WRAP(nearbyintf)
+
 float nearbyintf(float x)
 {
 	union {float f; uint32_t i;} u = {x};

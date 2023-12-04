@@ -21,6 +21,10 @@
 
 #include "libm.h"
 
+#define acosf LIBM_FUNC_WRAP(acosf)
+#define asinf LIBM_FUNC_WRAP(asinf)
+#define sqrtf LIBM_FUNC_WRAP(sqrtf)
+
 // dpgeorge: pio2 was double in original implementation of asinf
 static const float
 pio2_hi = 1.5707962513e+00f, /* 0x3fc90fda */

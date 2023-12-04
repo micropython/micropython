@@ -24,6 +24,9 @@
  */
 
 #include "fdlibm.h"
+
+#define lgammaf LIBM_FUNC_WRAP(lgammaf)
+
 #define _IEEE_LIBM 1
 
 #ifdef __STDC__

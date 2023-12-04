@@ -21,6 +21,10 @@
 
 #include "libm.h"
 
+#define atan2f LIBM_FUNC_WRAP(atan2f)
+#define atanf LIBM_FUNC_WRAP(atanf)
+#define fabsf LIBM_FUNC_WRAP(fabsf)
+
 static const float
 pi     = 3.1415927410e+00f, /* 0x40490fdb */
 pi_lo  = -8.7422776573e-08f; /* 0xb3bbbd2e */

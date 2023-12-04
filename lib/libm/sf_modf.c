@@ -24,6 +24,8 @@
 
 #include "fdlibm.h"
 
+#define modff LIBM_FUNC_WRAP(modff)
+
 #ifdef __STDC__
 static const float one = 1.0f;
 #else
