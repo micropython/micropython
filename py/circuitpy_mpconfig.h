@@ -603,4 +603,8 @@ void background_callback_run_all(void);
 
 #define MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE (CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE)
 
+// Enable compiler functionality.
+#define MICROPY_ENABLE_COMPILER (1)
+#define MICROPY_PY_BUILTINS_COMPILE (1)
+
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H
