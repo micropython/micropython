@@ -945,7 +945,7 @@ static JRESULT mcu_output (
 			w = (*s++ & 0xF8) << 8;		/* RRRRR----------- */
 			w |= (*s++ & 0xFC) << 3;	/* -----GGGGGG----- */
 			w |= *s++ >> 3;				/* -----------BBBBB */
-			*d++ = w;
+			*d++ = __builtin_bswap16(w);
 		} while (--n);
 	}
 
