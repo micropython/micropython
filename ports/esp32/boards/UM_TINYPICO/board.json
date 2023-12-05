@@ -16,7 +16,7 @@
         "TinyPICO Compatible"
     ],
     "images": [
-        "unexpectedmaker_tinypico.jpg"
+        "tinypico-v2-both.jpg"
     ],
     "mcu": "esp32",
     "product": "TinyPICO",

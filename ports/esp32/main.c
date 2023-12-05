@@ -29,8 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-#include <sys/time.h>
-#include <time.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -51,9 +49,6 @@
 #include "py/mphal.h"
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
-#include "shared/timeutils/timeutils.h"
-#include "mbedtls/platform_time.h"
-
 #include "uart.h"
 #include "usb.h"
 #include "usb_serial_jtag.h"
@@ -65,7 +60,7 @@
 #include "extmod/modbluetooth.h"
 #endif
 
-#if MICROPY_PY_ESPNOW
+#if MICROPY_ESPNOW
 #include "modespnow.h"
 #endif
 
@@ -88,15 +83,6 @@ int vprintf_null(const char *format, va_list ap) {
     return 0;
 }
 
-time_t platform_mbedtls_time(time_t *timer) {
-    // mbedtls_time requires time in seconds from EPOCH 1970
-
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-
-    return tv.tv_sec + TIMEUTILS_SECONDS_1970_TO_2000;
-}
-
 void mp_task(void *pvParameter) {
     volatile uint32_t sp = (uint32_t)esp_cpu_get_sp();
     #if MICROPY_PY_THREAD
@@ -111,9 +97,6 @@ void mp_task(void *pvParameter) {
     uart_stdout_init();
     #endif
     machine_init();
-
-    // Configure time function, for mbedtls certificate time validation.
-    mbedtls_platform_set_time(platform_mbedtls_time);
 
     esp_err_t err = esp_event_loop_create_default();
     if (err != ESP_OK) {
@@ -141,11 +124,8 @@ soft_reset:
 
     // run boot-up scripts
     pyexec_frozen_module("_boot.py", false);
-    int ret = pyexec_file_if_exists("boot.py");
-    if (ret & PYEXEC_FORCED_EXIT) {
-        goto soft_reset_exit;
-    }
-    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+    pyexec_file_if_exists("boot.py");
+    if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
         int ret = pyexec_file_if_exists("main.py");
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
@@ -172,7 +152,7 @@ soft_reset_exit:
     mp_bluetooth_deinit();
     #endif
 
-    #if MICROPY_PY_ESPNOW
+    #if MICROPY_ESPNOW
     espnow_deinit(mp_const_none);
     MP_STATE_PORT(espnow_singleton) = NULL;
     #endif

@@ -7,7 +7,7 @@ CONFIG_SPIRAM_USE_MALLOC=y
 
 # This is the threshold for preferring small allocations from internal memory
 # first, before failing over to PSRAM.
-CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=8192
+CONFIG_SPIRAM_MALLOC_ALWAYSINTERNAL=4096
 
 # SPIRAM increases the size of the firmware and overflows iram0_0_seg, due
 # to PSRAM bug workarounds.  Apply some options to reduce the firmware size.

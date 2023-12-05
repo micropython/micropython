@@ -4,7 +4,8 @@ set(SDKCONFIG_DEFAULTS
     boards/sdkconfig.base
     boards/sdkconfig.usb
     boards/sdkconfig.ble
-    boards/sdkconfig.spiram_sx
+    boards/sdkconfig.spiram_oct
+    boards/sdkconfig.240mhz
     boards/ESP32_GENERIC_S3/sdkconfig.board
 )
 

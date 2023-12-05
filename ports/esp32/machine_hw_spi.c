@@ -31,7 +31,8 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
-#include "extmod/modmachine.h"
+#include "extmod/machine_spi.h"
+#include "modmachine.h"
 
 #include "driver/spi_master.h"
 #include "soc/gpio_sig_map.h"

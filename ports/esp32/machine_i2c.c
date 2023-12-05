@@ -27,7 +27,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/modmachine.h"
+#include "extmod/machine_i2c.h"
+#include "modmachine.h"
 
 #include "driver/i2c.h"
 #include "hal/i2c_ll.h"

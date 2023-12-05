@@ -37,12 +37,12 @@
 #include "py/mphal.h"
 
 STATIC mp_obj_t esp_osdebug(size_t n_args, const mp_obj_t *args) {
-    esp_log_level_t level = LOG_LOCAL_LEVEL; // Maximum available level
+    esp_log_level_t level = LOG_LOCAL_LEVEL;
     if (n_args == 2) {
         level = mp_obj_get_int(args[1]);
     }
     if (args[0] == mp_const_none) {
-        // Set logging back to boot default of ESP_LOG_ERROR
+        // Disable logging
         esp_log_level_set("*", ESP_LOG_ERROR);
     } else {
         // Enable logging at the given level

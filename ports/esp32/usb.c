@@ -40,10 +40,8 @@
 
 static uint8_t usb_rx_buf[CONFIG_TINYUSB_CDC_RX_BUFSIZE];
 
-// This is called from FreeRTOS task "tusb_tsk" in espressif__esp_tinyusb (not an ISR).
 static void usb_callback_rx(int itf, cdcacm_event_t *event) {
-    // espressif__esp_tinyusb places tinyusb rx data onto freertos ringbuffer which
-    // this function forwards onto our stdin_ringbuf.
+    // TODO: what happens if more chars come in during this function, are they lost?
     for (;;) {
         size_t len = 0;
         esp_err_t ret = tinyusb_cdcacm_read(itf, usb_rx_buf, sizeof(usb_rx_buf), &len);
@@ -60,7 +58,6 @@ static void usb_callback_rx(int itf, cdcacm_event_t *event) {
                 ringbuf_put(&stdin_ringbuf, usb_rx_buf[i]);
             }
         }
-        mp_hal_wake_main_task();
     }
 }
 

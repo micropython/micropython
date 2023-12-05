@@ -36,7 +36,7 @@
 #include "freertos/task.h"
 
 #include "driver/spi_master.h"
-
+#include "driver/twai.h"
 #define MICROPY_PLATFORM_VERSION "IDF" IDF_VER
 
 // The core that the MicroPython task(s) are pinned to.
@@ -63,13 +63,6 @@ void check_esp_err_(esp_err_t code);
 void check_esp_err_(esp_err_t code, const char *func, const int line, const char *file);
 #endif
 
-// Note: these "critical nested" macros do not ensure cross-CPU exclusion,
-// the only disable interrupts on the current CPU.  To full manage exclusion
-// one should use portENTER_CRITICAL/portEXIT_CRITICAL instead.
-#include "freertos/FreeRTOS.h"
-#define MICROPY_BEGIN_ATOMIC_SECTION() portSET_INTERRUPT_MASK_FROM_ISR()
-#define MICROPY_END_ATOMIC_SECTION(state) portCLEAR_INTERRUPT_MASK_FROM_ISR(state)
-
 uint32_t mp_hal_ticks_us(void);
 __attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {
     uint32_t ccount;
@@ -90,7 +83,6 @@ uint32_t mp_hal_get_cpu_freq(void);
 #define mp_hal_quiet_timing_exit(irq_state) MICROPY_END_ATOMIC_SECTION(irq_state)
 
 // Wake up the main task if it is sleeping
-void mp_hal_wake_main_task(void);
 void mp_hal_wake_main_task_from_isr(void);
 
 // C-level pin HAL

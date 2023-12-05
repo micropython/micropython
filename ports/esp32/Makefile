@@ -28,6 +28,8 @@ else
 BUILD ?= build-$(BOARD)
 endif
 
+USER_C_MODULES = /home/jean_ferreira/ulab/code/micropython.cmake
+
 # Device serial settings.
 PORT ?= /dev/ttyUSB0
 BAUD ?= 460800
@@ -50,10 +52,6 @@ endif
 
 ifdef BOARD_VARIANT
 	IDFPY_FLAGS += -D MICROPY_BOARD_VARIANT=$(BOARD_VARIANT)
-endif
-
-ifdef MICROPY_PREVIEW_VERSION_2
-	IDFPY_FLAGS += -D MICROPY_PREVIEW_VERSION_2=1
 endif
 
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"

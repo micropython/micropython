@@ -49,13 +49,13 @@
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_NORMAL)
 #define MICROPY_WARNINGS                    (1)
-#define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
+#define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_STREAMS_POSIX_API           (1)
 #define MICROPY_USE_INTERNAL_ERRNO          (0) // errno.h from xtensa-esp32-elf/sys-include/sys
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
 #define MICROPY_SCHEDULER_DEPTH             (8)
 #define MICROPY_VFS                         (1)
-
+#define MICROPY_HW_ENABLE_CAN  		    (1)
 // control over Python builtins
 #define MICROPY_PY_STR_BYTES_CMP_WARN       (1)
 #define MICROPY_PY_ALL_INPLACE_SPECIAL_METHODS (1)
@@ -72,8 +72,8 @@
 #define MICROPY_GC_SPLIT_HEAP_AUTO          (1)
 
 // extended modules
-#ifndef MICROPY_PY_ESPNOW
-#define MICROPY_PY_ESPNOW                   (1)
+#ifndef MICROPY_ESPNOW
+#define MICROPY_ESPNOW                      (1)
 #endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
@@ -96,21 +96,8 @@
 #define MICROPY_PY_OS_UNAME                 (1)
 #define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_PY_MACHINE                  (1)
-#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/esp32/modmachine.c"
-#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
-#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
-#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
-#define MICROPY_PY_MACHINE_ADC              (1)
-#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
-#define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
-#define MICROPY_PY_MACHINE_ADC_INIT         (1)
-#define MICROPY_PY_MACHINE_ADC_READ         (1)
-#define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
-#define MICROPY_PY_MACHINE_ADC_BLOCK        (1)
-#define MICROPY_PY_MACHINE_ADC_BLOCK_INCLUDEFILE "ports/esp32/machine_adc_block.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
-#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY         (1)
@@ -128,15 +115,6 @@
 #ifndef MICROPY_PY_MACHINE_I2S
 #define MICROPY_PY_MACHINE_I2S              (1)
 #endif
-#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/esp32/machine_i2s.c"
-#define MICROPY_PY_MACHINE_I2S_FINALISER    (1)
-#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (I2S_MODE_MASTER | I2S_MODE_RX)
-#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (I2S_MODE_MASTER | I2S_MODE_TX)
-#define MICROPY_PY_MACHINE_UART             (1)
-#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
-#define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
-#define MICROPY_PY_MACHINE_WDT              (1)
-#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
 #define MICROPY_PY_NETWORK (1)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #if CONFIG_IDF_TARGET_ESP32
@@ -166,6 +144,7 @@
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
+#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
@@ -186,6 +165,13 @@
 void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
 #define MP_SSIZE_MAX (0x7fffffff)
+
+// Note: these "critical nested" macros do not ensure cross-CPU exclusion,
+// the only disable interrupts on the current CPU.  To full manage exclusion
+// one should use portENTER_CRITICAL/portEXIT_CRITICAL instead.
+#include "freertos/FreeRTOS.h"
+#define MICROPY_BEGIN_ATOMIC_SECTION() portSET_INTERRUPT_MASK_FROM_ISR()
+#define MICROPY_END_ATOMIC_SECTION(state) portCLEAR_INTERRUPT_MASK_FROM_ISR(state)
 
 #if MICROPY_PY_SOCKET_EVENTS
 #define MICROPY_PY_SOCKET_EVENTS_HANDLER extern void socket_events_handler(void); socket_events_handler();
