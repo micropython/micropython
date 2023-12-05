@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------/
-/ TJpgDec - Tiny JPEG Decompressor R0.03                      (C)ChaN, 2021
+/ TJpgDec - Tiny JPEG Decompressor R0.03 w/patch1             (C)ChaN, 2021
 /-----------------------------------------------------------------------------/
 / The TJpgDec is a generic JPEG decompressor module for tiny embedded systems.
 / This is a free software that opened for education, research and commercial
@@ -850,7 +850,11 @@ static JRESULT mcu_output (
 					if (mx == 16) {					/* Double block width? */
 						if (ix == 8) py += 64 - 8;	/* Jump to next block if double block height */
 					}
-					*pix++ = (uint8_t)*py++;			/* Get and store a Y value as grayscale */
+					if (JD_FASTDECODE >= 1) {
+						*pix++ = BYTECLIP(*py++);	/* Get and store a Y value as grayscale */
+					} else {
+						*pix++ = *py++;				/* Get and store a Y value as grayscale */
+					}
 				}
 			}
 		}
