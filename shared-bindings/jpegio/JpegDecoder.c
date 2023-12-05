@@ -56,6 +56,7 @@ STATIC mp_obj_t jpegio_jpegdecoder_make_new(const mp_obj_type_t *type, size_t n_
 //|
 //|         If ``bitmap`` is None, only the header is decoded.
 //|         Otherwise, the bitmap must be large enough to contain the decoded image.
+//|         The pixel data is stored in the `displayio.Colorspace.RGB565_SWAPPED` colorspace.
 //|
 //|         The image is optionally downscaled by a factor of ``2**scale``.
 //|         Scaling by a factor of 8 (scale=3) is particularly efficient in terms of decoding time.
