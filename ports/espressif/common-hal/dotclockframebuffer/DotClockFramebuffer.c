@@ -114,7 +114,7 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
 
     esp_lcd_rgb_panel_config_t *cfg = &self->panel_config;
     cfg->timings.pclk_hz = frequency;
-    cfg->timings.h_res = width + overscan_left;
+    cfg->timings.h_res = (width + overscan_left + 15) / 16 * 16; // round up to multiple of 16
     cfg->timings.v_res = height;
     cfg->timings.hsync_pulse_width = hsync_pulse_width;
     cfg->timings.hsync_back_porch = hsync_back_porch;
@@ -174,9 +174,10 @@ void common_hal_dotclockframebuffer_framebuffer_construct(dotclockframebuffer_fr
     cp_check_esp_error(esp_lcd_rgb_panel_get_frame_buffer(self->panel_handle, 1, &fb));
 
     self->frequency = frequency;
-    self->row_stride = 2 * (width + overscan_left);
+    self->width = width;
+    self->row_stride = 2 * (cfg->timings.h_res);
     self->first_pixel_offset = 2 * overscan_left;
-    self->refresh_rate = frequency / (width + hsync_front_porch + hsync_back_porch) / (height + vsync_front_porch + vsync_back_porch);
+    self->refresh_rate = frequency / (cfg->timings.h_res + hsync_front_porch + hsync_back_porch) / (height + vsync_front_porch + vsync_back_porch);
     self->bufinfo.buf = (uint8_t *)fb;
     self->bufinfo.len = 2 * (cfg->timings.h_res * cfg->timings.v_res);
     self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
@@ -203,7 +204,7 @@ bool common_hal_dotclockframebuffer_framebuffer_deinitialized(dotclockframebuffe
 
 
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_width(dotclockframebuffer_framebuffer_obj_t *self) {
-    return self->panel_config.timings.h_res - self->first_pixel_offset / 2;
+    return self->width;
 }
 
 mp_int_t common_hal_dotclockframebuffer_framebuffer_get_height(dotclockframebuffer_framebuffer_obj_t *self) {
