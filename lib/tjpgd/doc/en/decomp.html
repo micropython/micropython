@@ -1,0 +1,64 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="TJpgDec" href="../00index.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>TJpgDec - jd_decomp</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>jd_decomp</h2>
+<p>The jd_decomp function decompress the JPEG image and output it as pixel data.</p>
+<pre>
+JRESULT jd_decomp (
+  JDEC* <em>jdec</em>,             <span class="c">/* Pointer to valid decompression object */</span>
+  int(*<em>outfunc</em>)(JDEC*,void*,JRECT*), <span class="c">/* Pointer to output function */</span>
+  uint8_t <em>scale</em>           <span class="c">/* Scaling factor */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>jdec</dt>
+<dd>Specifies the valid decompressor object.</dd>
+<dt>outfunc</dt>
+<dd>Specifies the user defined <a href="output.html">data output function</a>. The <tt>jd_decomp</tt> function calls this function to output the decompressed JPEG image in pre-defined pixel format.</dd>
+<dt>scale</dt>
+<dd>Specifies scaling factor N for output. The output image is descaled to 1/2<sup>N</sup> (N = 0 to 3). When scaling feature is disabled (<tt>JD_USE_SCALE == 0</tt>), it must be 0.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>JDR_OK</dt>
+<dd>Function succeeded.</dd>
+<dt>JDR_INTR</dt>
+<dd>The decompression process was interrupted by output function.</dd>
+<dt>JDR_INP</dt>
+<dd>An error occured in input function due to hard error or wrong stream termination.</dd>
+<dt>JDR_PAR</dt>
+<dd>Parameter error. Given scale factor is invalid.</dd>
+<dt>JDR_FMT1</dt>
+<dd>Data format error. The input JPEG data can be collapted.</dd>
+</dl>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The <tt>jd_decomp</tt> function is the second stage of a JPEG decompression session. It decompresses the input JPEG stream and outputs it via user defined output function. After this function, the decompressor object is no longer valid.</p>
+<p>The scaling factor can be specified on decompresson. It descales the size of the output image by 1/2, 1/4 or 1/8. For example, when decompress a JPEG image of 1024x768 in 1/4 scaling, the decmopressed image will be output in 256x192. The scaling ratio of 1/2 and 1/4 will slightly decrease the decompression speed compared to 1/1 due to averaging process. However scaling ratio of 1/8 will 2-3 times faster than 1/1, because IDCT and averaging process for each block can be skipped. This characteristic is sutable to create thumbnails.</p>
+</div>
+
+
+<p class="foot"><a href="../00index.html">Return</a></p>
+</body>
+</html>
