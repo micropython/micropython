@@ -126,6 +126,7 @@ Similar to CPython, the parameters can be passed in any order if keywords are us
 
 Note that the parameters such as ``value`` can only be passed as keyword arguments.  
 
+
 .. note::
 
     The following constructor arguments are NOT supported in this port:
@@ -134,10 +135,24 @@ Note that the parameters such as ``value`` can only be passed as keyword argumen
 
 Methods
 ^^^^^^^
+.. method:: Pin.irq(handler=None, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
+
+Here two arguments should be passed mandatorily. 
+Trigger can be ``Pin.IRQ_FALLING`` or ``Pin.IRQ_RISING`` or ``PIN.IRQ_FALLING||PIN.IRQ_RISING``.
+
+::
+    
+    from machine import Pin
+
+    p0 = Pin('P0_4', value=1, pull=Pin.PULL_UP, mode=Pin.IN)          
+    p1 = Pin('P13_7', value=0, pull=Pin.PULL_DOWN, mode=Pin.OUT)      
+
+    p0.irq(handler=lambda t:p1.high(),trigger=Pin.IRQ_RISING) #configure an IRQ callback function P1.high() when there is a rising edge on pin object p0.
+    
 
 .. method:: Pin.toggle()
 
-   Set pin value to its complement.
+Set pin value to its complement.
 
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
@@ -467,12 +482,10 @@ Use the :mod:`machine.Timer` class::
     from machine import Timer
     import time
     tim = Timer(0) #Default assignment: period=9999, frequency=10000
-    tim.init(period=2000, mode=Timer.ONE_SHOT, callback=lambda t:print(2))
-    time.sleep_ms(100)
+    tim.init(period=2000, mode=Timer.ONE_SHOT, callback=lambda t:print(2)) #mode=Timer.PERIODIC in case of periodic timer
+
 
 Here id=0 should be passed mandatorily.
-
-.. note:: Here mode=Timer.PERIODIC is not currently supported 
 
 ADC (analog to digital conversion)
 ----------------------------------

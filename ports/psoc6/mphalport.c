@@ -9,8 +9,6 @@
 
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
-#include "py/stream.h"
-#include "py/ringbuf.h"
 
 // MTB includes
 #include "cyhal.h"
@@ -22,9 +20,6 @@
 
 extern cyhal_rtc_t psoc6_rtc;
 extern cyhal_timer_t psoc6_timer;
-
-STATIC uint8_t stdin_ringbuf_array[260];
-ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     #if defined(CY_RTOS_AWARE) || defined(COMPONENT_RTOS_AWARE)

@@ -105,10 +105,10 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 |                 | Submodules/classes not yet implemented: *ADC*, *bitstream*, *mem*, *Signal*, *SD*, *SDCard*, *SoftSPI*, *SPI*,       |
 |                 | *Timer*, *UART*, *WDT*.                                                                                              |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| machine.Pin     | Functions not yet implemented: *drive()*, *irq()*, *mode()*, *pull()*.                                               |
+| machine.Pin     | Functions not yet implemented: *drive()*, *mode()*, *pull()*.                                                        |
 |                 |                                                                                                                      |
 |                 | Constants not yet implemented: *ALT*, *ALT_OPEN_DRAIN*, *PULL_UP*, *PULL_DOWN*, *PULL_HOLD*, *LOW_POWER*,            |
-|                 | *MED_POWER*, *HIGH_POWER*, *IRQ_FALLING*, *IRQ_RISING*, *IRQ_LOW_LEVEL*, *IRQ_HIGH_LEVEL*.                           |
+|                 | *MED_POWER*, *HIGH_POWER*, *IRQ_LOW_LEVEL*, *IRQ_HIGH_LEVEL*.                                                        |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.I2C     | Option ``MICROPY_PY_MACHINE_I2C`` enabled.                                                                           |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
@@ -128,7 +128,7 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 +-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
 | machine.ADCBlock| All functions implemented.                                                                                           |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
-| machine.Timer   | mode = Timer.PERIODIC is not supported                                                                               |
+| machine.Timer   | All functions implemented.                                                                                           |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
 | machine.SPI     | Option ``MICROPY_PY_MACHINE_SPI``, ``MICROPY_PY_MACHINE_SPI_MSB`` , ``MICROPY_PY_MACHINE_SPI_MSB`` enabled.          |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+                                                                                                                                             
