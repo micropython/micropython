@@ -50,7 +50,7 @@ STATIC mp_obj_t jpegio_jpegdecoder_make_new(const mp_obj_type_t *type, size_t n_
 }
 
 //|     def decode(
-//|         self, data: ReadableBuffer, bitmap: displaycore.Bitmap | None = None, scale=0
+//|         self, data: ReadableBuffer, bitmap: displayio.Bitmap | None = None, scale=0
 //|     ) -> tuple[int, int]:
 //|         """Decode JPEG data
 //|
