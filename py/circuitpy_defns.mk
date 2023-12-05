@@ -743,18 +743,19 @@ SRC_MOD += $(addprefix lib/mp3/src/, \
 )
 $(BUILD)/lib/mp3/src/buffers.o: CFLAGS += -include "py/misc.h" -D'MPDEC_ALLOCATOR(x)=m_malloc(x)' -D'MPDEC_FREE(x)=m_free(x)'
 endif
-ifeq ($(CIRCUITPY_RGBMATRIX),1)
-SRC_MOD += $(addprefix lib/protomatter/src/, \
-	core.c \
-)
-$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
-endif
 
 ifeq ($(CIRCUITPY_GIFIO),1)
 SRC_MOD += $(addprefix lib/AnimatedGIF/, \
 	gif.c \
 )
 $(BUILD)/lib/AnimatedGIF/gif.o: CFLAGS += -DCIRCUITPY
+endif
+
+ifeq ($(CIRCUITPY_RGBMATRIX),1)
+SRC_MOD += $(addprefix lib/protomatter/src/, \
+	core.c \
+)
+$(BUILD)/lib/protomatter/src/core.o: CFLAGS += -include "shared-module/rgbmatrix/allocator.h" -DCIRCUITPY -Wno-missing-braces -Wno-missing-prototypes
 endif
 
 ifeq ($(CIRCUITPY_ZLIB),1)
