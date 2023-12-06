@@ -7,6 +7,7 @@
 // Board-specific definitions
 #include "mpconfigboard.h"
 
+#include <stdbool.h>
 #include <stdint.h>
 
 // Set the rom feature level.
@@ -116,13 +117,26 @@
 #define MICROPY_FATFS_LFN_CODE_PAGE    437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
 #define MICROPY_ESP8266_APA102         (1)
 
-#define MICROPY_EVENT_POLL_HOOK {ets_event_poll();}
+// No blocking wait-for-event on ESP8266, only non-blocking pump of the "OS" event
+// loop
+//
+// TODO: When TIMEOUT_MS==-1, it may be possible to have MICROPY_INTERNAL_WFE() call the "waiti" instruction.
+// See mp_machine_idle() and mp_machine_lightsleep() in esp8266/modmachine.c
+//
+// Note: We have to scope the declaration of ets_loop_iter() here as there are multiple incompatible
+// definitions at compile time between the SDK and axTLS!
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS)
+#define MICROPY_INTERNAL_EVENT_HOOK \
+    do { \
+        extern bool ets_loop_iter(void); \
+        ets_loop_iter(); \
+    } while (0)
+
 #define MICROPY_VM_HOOK_COUNT (10)
 #define MICROPY_VM_HOOK_INIT static uint vm_hook_divisor = MICROPY_VM_HOOK_COUNT;
 #define MICROPY_VM_HOOK_POLL if (--vm_hook_divisor == 0) { \
         vm_hook_divisor = MICROPY_VM_HOOK_COUNT; \
-        extern void ets_loop_iter(void); \
-        ets_loop_iter(); \
+        MICROPY_INTERNAL_EVENT_HOOK; \
 }
 #define MICROPY_VM_HOOK_LOOP MICROPY_VM_HOOK_POLL
 #define MICROPY_VM_HOOK_RETURN MICROPY_VM_HOOK_POLL

@@ -53,7 +53,7 @@ void mp_hal_init(void) {
 void MP_FASTCODE(mp_hal_delay_us)(uint32_t us) {
     uint32_t start = system_get_time();
     while (system_get_time() - start < us) {
-        ets_event_poll();
+        mp_event_handle_nowait();
     }
 }
 
@@ -120,11 +120,6 @@ void MP_FASTCODE(mp_hal_delay_ms)(uint32_t delay) {
 
 uint64_t mp_hal_time_ns(void) {
     return pyb_rtc_get_us_since_epoch() * 1000ULL;
-}
-
-void ets_event_poll(void) {
-    ets_loop_iter();
-    mp_handle_pending(true);
 }
 
 void __assert_func(const char *file, int line, const char *func, const char *expr) {

@@ -285,7 +285,7 @@ static int ringbuf_get_bytes_wait(ringbuf_t *r, uint8_t *data, size_t len, mp_in
     int status = 0;
     while (((status = ringbuf_get_bytes(r, data, len)) == -1)
            && (timeout_ms < 0 || (mp_uint_t)(mp_hal_ticks_ms() - start) < (mp_uint_t)timeout_ms)) {
-        MICROPY_EVENT_POLL_HOOK;
+        mp_event_wait_ms(1);
     }
     return status;
 }

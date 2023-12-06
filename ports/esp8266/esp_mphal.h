@@ -72,9 +72,6 @@ void dupterm_task_init();
 uint32_t esp_disable_irq(void);
 void esp_enable_irq(uint32_t state);
 
-void ets_event_poll(void);
-#define ETS_POLL_WHILE(cond) { while (cond) ets_event_poll(); }
-
 // needed for machine.I2C
 #include "osapi.h"
 #define mp_hal_delay_us_fast(us) os_delay_us(us)
