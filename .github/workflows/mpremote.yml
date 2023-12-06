@@ -16,7 +16,7 @@ jobs:
         # Setting this to zero means fetch all history and tags,
         # which hatch-vcs can use to discover the version tag.
         fetch-depth: 0
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
     - name: Install build tools
       run: pip install build
     - name: Build mpremote wheel
