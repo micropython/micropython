@@ -348,6 +348,8 @@ bool rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     } else if (!tx_fifo) {
         join = PIO_FIFO_JOIN_RX;
     }
+    self->fifo_depth = (join == PIO_FIFO_JOIN_NONE) ? 4 : 8;
+
     if (rx_fifo) {
         self->rx_dreq = pio_get_dreq(self->pio, self->state_machine, false);
     }
@@ -688,8 +690,9 @@ static bool _transfer(rp2pio_statemachine_obj_t *self,
     // This implementation is based on SPI but varies because the tx and rx buffers
     // may be different lengths and occur at different times or speeds.
 
-    // Use DMA for large transfers if channels are available
-    const size_t dma_min_size_threshold = 32;
+    // Use DMA for large transfers if channels are available.
+    // Don't exceed FIFO size.
+    const size_t dma_min_size_threshold = self->fifo_depth;
     int chan_tx = -1;
     int chan_rx = -1;
     size_t len = MAX(out_len, in_len);
