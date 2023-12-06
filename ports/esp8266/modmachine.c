@@ -91,7 +91,7 @@ STATIC mp_obj_t mp_machine_unique_id(void) {
 
 STATIC void mp_machine_idle(void) {
     asm ("waiti 0");
-    ets_event_poll(); // handle any events after possibly a long wait (eg feed WDT)
+    mp_event_handle_nowait(); // handle any events after possibly a long wait (eg feed WDT)
 }
 
 STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
@@ -106,7 +106,7 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     uint32_t wifi_mode = wifi_get_opmode();
     uint32_t start = system_get_time();
     while (system_get_time() - start <= max_us) {
-        ets_event_poll();
+        mp_event_handle_nowait();
         if (wifi_mode == NULL_MODE) {
             // Can only idle if the wifi is off
             asm ("waiti 0");
