@@ -42,5 +42,7 @@ print("pin out value on: ", pin_in.value() == 1)
 pin_out.off()
 print("pin out value off: ", pin_in.value() == 0)
 
-pin_in.irq(handler=lambda t:print("Interrupt triggered"),trigger=Pin.IRQ_RISING|Pin.IRQ_FALLING)
+pin_in.irq(
+    handler=lambda t: print("Interrupt triggered"), trigger=Pin.IRQ_RISING | Pin.IRQ_FALLING
+)
 pin_out.high()

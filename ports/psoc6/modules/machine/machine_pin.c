@@ -440,4 +440,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &machine_pin_locals_dict
     );
 
-MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[113]); // Number of GPIO pins
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_obj[MAX_IO_PINS]);
