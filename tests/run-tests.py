@@ -465,6 +465,21 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         if output != b"a=1\n":
             skip_fstring = True
 
+        # Check if @micropython.asm_thumb supports Thumb2 instructions, and skip such tests if it doesn't
+        output = run_feature_check(pyb, args, base_path, "inlineasm_thumb2.py")
+        if output != b"thumb2\n":
+            skip_tests.add("inlineasm/asmbcc.py")
+            skip_tests.add("inlineasm/asmbitops.py")
+            skip_tests.add("inlineasm/asmconst.py")
+            skip_tests.add("inlineasm/asmdiv.py")
+            skip_tests.add("inlineasm/asmfpaddsub.py")
+            skip_tests.add("inlineasm/asmfpcmp.py")
+            skip_tests.add("inlineasm/asmfpldrstr.py")
+            skip_tests.add("inlineasm/asmfpmuldiv.py")
+            skip_tests.add("inlineasm/asmfpsqrt.py")
+            skip_tests.add("inlineasm/asmit.py")
+            skip_tests.add("inlineasm/asmspecialregs.py")
+
         # Check if emacs repl is supported, and skip such tests if it's not
         t = run_feature_check(pyb, args, base_path, "repl_emacs_check.py")
         if "True" not in str(t, "ascii"):
