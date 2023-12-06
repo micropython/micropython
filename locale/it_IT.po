@@ -7,15 +7,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
+"PO-Revision-Date: 2023-12-06 22:06+0000\n"
+"Last-Translator: deepserket <deepserket@gmail.com>\n"
 "Language-Team: \n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 #: main.c
 msgid ""
@@ -1782,7 +1782,7 @@ msgstr ""
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
-msgstr ""
+msgstr "Premi un tasto per entrare la REPL. Usa CTRL-D per ricaricare.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
