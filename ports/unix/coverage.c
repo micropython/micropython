@@ -578,9 +578,10 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
         mp_printf(&mp_plat_print, "unlocked\n");
 
-        // drain pending callbacks
+        // drain pending callbacks, and test mp_event_wait_indefinite(), mp_event_wait_ms()
+        mp_event_wait_indefinite(); // the unix port only waits 500us in this call
         while (mp_sched_num_pending()) {
-            mp_handle_pending(true);
+            mp_event_wait_ms(1);
         }
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
