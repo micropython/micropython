@@ -33,7 +33,11 @@
 #include "shared-module/displayio/Bitmap.h"
 
 //| class JpegDecoder:
-//|     """A JPEG decoder"""
+//|     """A JPEG decoder
+//|
+//|     A JPEG decoder allocates a few thousand bytes of memory. To reduce memory fragmentation,
+//|     create a single JpegDecoder object and use it anytime a JPEG image needs to be decoded.
+//|     """
 //|
 //|     def __init__(self) -> None: ...
 //|
@@ -45,6 +49,7 @@ STATIC mp_obj_t jpegio_jpegdecoder_make_new(const mp_obj_type_t *type, size_t n_
 
     jpegio_jpegdecoder_obj_t *self = mp_obj_malloc(jpegio_jpegdecoder_obj_t, &jpegio_jpegdecoder_type);
     self->base.type = &jpegio_jpegdecoder_type;
+    common_hal_jpegio_jpegdecoder_construct(self);
 
     return MP_OBJ_FROM_PTR(self);
 }

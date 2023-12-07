@@ -30,6 +30,11 @@
 #include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-module/jpegio/JpegDecoder.h"
 
+// Given a pointer `ptr` to the field `field_name` inside a structure of type `type`,
+// retrieve a pointer to the containing object.
+// This is used to retrieve the jpegio_jpegdecoder_obj_t object given the JDEC.
+// Similar macros of this type are frequently employed in low-level code, but this is
+// not standardized.
 #define CONTAINER_OF(ptr, type, field_name) ((type *)(void *)(((uint8_t *)ptr) - offsetof(type, field_name)))
 
 static void check_jresult(JRESULT j) {
