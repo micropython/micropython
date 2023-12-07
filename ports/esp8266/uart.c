@@ -17,7 +17,7 @@
 #include "etshal.h"
 #include "c_types.h"
 #include "user_interface.h"
-#include "esp_mphal.h"
+#include "py/mphal.h"
 
 // seems that this is missing in the Espressif SDK
 #define FUNC_U0RXD 0
