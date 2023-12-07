@@ -61,6 +61,7 @@ typedef struct {
     bool in_shift_right;
     bool user_interruptible;
     uint8_t offset;
+    uint8_t fifo_depth;  // Either 4 if FIFOs are not joined, or 8 if they are.
 
     // dma-related items
     volatile int pending_buffers;
