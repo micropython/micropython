@@ -592,17 +592,6 @@ int mp_bluetooth_init(void) {
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_STARTING;
 
-    ble_hs_cfg.reset_cb = reset_cb;
-    ble_hs_cfg.sync_cb = sync_cb;
-    ble_hs_cfg.gatts_register_cb = gatts_register_cb;
-    ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
-
-    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-    ble_hs_cfg.store_read_cb = ble_secret_store_read;
-    ble_hs_cfg.store_write_cb = ble_secret_store_write;
-    ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
-    #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
-
     MP_STATE_PORT(bluetooth_nimble_root_pointers) = m_new0(mp_bluetooth_nimble_root_pointers_t, 1);
     mp_bluetooth_gatts_db_create(&MP_STATE_PORT(bluetooth_nimble_root_pointers)->gatts_db);
 
@@ -621,6 +610,17 @@ int mp_bluetooth_init(void) {
     // Initialise NimBLE memory and data structures.
     DEBUG_printf("mp_bluetooth_init: nimble_port_init\n");
     nimble_port_init();
+
+    ble_hs_cfg.reset_cb = reset_cb;
+    ble_hs_cfg.sync_cb = sync_cb;
+    ble_hs_cfg.gatts_register_cb = gatts_register_cb;
+    ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
+
+    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    ble_hs_cfg.store_read_cb = ble_secret_store_read;
+    ble_hs_cfg.store_write_cb = ble_secret_store_write;
+    ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
+    #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
 
     // Make sure that the HCI UART and event handling task is running.
     mp_bluetooth_nimble_port_start();
