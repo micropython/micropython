@@ -12,6 +12,7 @@ LONGINT_IMPL = MPZ
 
 CIRCUITPY__EVE = 1
 CIRCUITPY_FLOPPYIO = 0
+CIRCUITPY_JPEGIO = 0
 CIRCUITPY_SYNTHIO = 0
 
 # We don't have room for the fonts for terminalio for certain languages,
