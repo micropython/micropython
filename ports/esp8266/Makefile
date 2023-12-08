@@ -127,35 +127,8 @@ SRC_C += \
 	modespnow.c
 endif
 
-LIB_SRC_C = $(addprefix lib/,\
-	libm/math.c \
-	libm/fmodf.c \
-	libm/nearbyintf.c \
-	libm/ef_sqrt.c \
-	libm/erf_lgamma.c \
-	libm/kf_rem_pio2.c \
-	libm/kf_sin.c \
-	libm/kf_cos.c \
-	libm/kf_tan.c \
-	libm/ef_rem_pio2.c \
-	libm/sf_erf.c \
-	libm/sf_sin.c \
-	libm/sf_cos.c \
-	libm/sf_tan.c \
-	libm/sf_frexp.c \
-	libm/sf_modf.c \
-	libm/sf_ldexp.c \
-	libm/acoshf.c \
-	libm/asinfacosf.c \
-	libm/asinhf.c \
-	libm/atanf.c \
-	libm/atanhf.c \
-	libm/atan2f.c \
-	libm/log1pf.c \
-	libm/roundf.c \
-	libm/wf_lgamma.c \
-	libm/wf_tgamma.c \
-	)
+LIB_SRC_C += $(SRC_LIB_LIBM_C)
+LIB_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 SHARED_SRC_C = $(addprefix shared/,\
 	libc/__errno.c \

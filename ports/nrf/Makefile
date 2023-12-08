@@ -167,69 +167,15 @@ LIBS = \
 
 ifeq ($(MCU_VARIANT), nrf52)
 
-SRC_LIB_C += $(addprefix lib/,\
-        libm/math.c \
-        libm/fmodf.c \
-        libm/nearbyintf.c \
-        libm/ef_sqrt.c \
-        libm/kf_rem_pio2.c \
-        libm/kf_sin.c \
-        libm/kf_cos.c \
-        libm/kf_tan.c \
-        libm/ef_rem_pio2.c \
-        libm/sf_sin.c \
-        libm/sf_cos.c \
-        libm/sf_tan.c \
-        libm/sf_frexp.c \
-        libm/sf_modf.c \
-        libm/sf_ldexp.c \
-        libm/asinfacosf.c \
-        libm/acoshf.c \
-        libm/asinhf.c \
-        libm/atanf.c \
-        libm/atan2f.c \
-        libm/atanhf.c \
-        libm/log1pf.c \
-        libm/sf_erf.c \
-        libm/erf_lgamma.c \
-        libm/wf_lgamma.c \
-        libm/wf_tgamma.c \
-        libm/roundf.c \
-	)
+SRC_LIB_C += $(SRC_LIB_LIBM_C)
+SRC_LIB_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 endif
 
 ifeq ($(MCU_VARIANT), nrf91)
 
-SRC_LIB_C += $(addprefix lib/,\
-        libm/math.c \
-        libm/fmodf.c \
-        libm/nearbyintf.c \
-        libm/ef_sqrt.c \
-        libm/kf_rem_pio2.c \
-        libm/kf_sin.c \
-        libm/kf_cos.c \
-        libm/kf_tan.c \
-        libm/ef_rem_pio2.c \
-        libm/sf_sin.c \
-        libm/sf_cos.c \
-        libm/sf_tan.c \
-        libm/sf_frexp.c \
-        libm/sf_modf.c \
-        libm/sf_ldexp.c \
-        libm/asinfacosf.c \
-        libm/acoshf.c \
-        libm/asinhf.c \
-        libm/atanf.c \
-        libm/atan2f.c \
-        libm/atanhf.c \
-        libm/log1pf.c \
-        libm/sf_erf.c \
-        libm/erf_lgamma.c \
-        libm/wf_lgamma.c \
-        libm/wf_tgamma.c \
-        libm/roundf.c \
-        )
+SRC_LIB_C += $(SRC_LIB_LIBM_C)
+SRC_LIB_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 include drivers/secureboot/secureboot.mk
 

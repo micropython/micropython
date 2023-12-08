@@ -209,33 +209,8 @@ target_sources(pico_float_micropython INTERFACE
     ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_aeabi.S
     ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_init_rom.c
     ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_v1_rom_shim.S
-    ${MICROPY_DIR}/lib/libm/math.c
-    ${MICROPY_DIR}/lib/libm/acoshf.c
-    ${MICROPY_DIR}/lib/libm/asinfacosf.c
-    ${MICROPY_DIR}/lib/libm/asinhf.c
-    ${MICROPY_DIR}/lib/libm/atan2f.c
-    ${MICROPY_DIR}/lib/libm/atanf.c
-    ${MICROPY_DIR}/lib/libm/atanhf.c
-    ${MICROPY_DIR}/lib/libm/ef_rem_pio2.c
-    ${MICROPY_DIR}/lib/libm/ef_sqrt.c
-    ${MICROPY_DIR}/lib/libm/erf_lgamma.c
-    ${MICROPY_DIR}/lib/libm/fmodf.c
-    ${MICROPY_DIR}/lib/libm/kf_cos.c
-    ${MICROPY_DIR}/lib/libm/kf_rem_pio2.c
-    ${MICROPY_DIR}/lib/libm/kf_sin.c
-    ${MICROPY_DIR}/lib/libm/kf_tan.c
-    ${MICROPY_DIR}/lib/libm/log1pf.c
-    ${MICROPY_DIR}/lib/libm/nearbyintf.c
-    ${MICROPY_DIR}/lib/libm/roundf.c
-    ${MICROPY_DIR}/lib/libm/sf_cos.c
-    ${MICROPY_DIR}/lib/libm/sf_erf.c
-    ${MICROPY_DIR}/lib/libm/sf_frexp.c
-    ${MICROPY_DIR}/lib/libm/sf_ldexp.c
-    ${MICROPY_DIR}/lib/libm/sf_modf.c
-    ${MICROPY_DIR}/lib/libm/sf_sin.c
-    ${MICROPY_DIR}/lib/libm/sf_tan.c
-    ${MICROPY_DIR}/lib/libm/wf_lgamma.c
-    ${MICROPY_DIR}/lib/libm/wf_tgamma.c
+    ${MICROPY_SOURCE_LIB_LIBM}
+    ${MICROPY_SOURCE_LIB_LIBM_SQRT_SW}
     ${MICROPY_PORT_DIR}/libm_extra.c
 )
 
