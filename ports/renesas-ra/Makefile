@@ -198,96 +198,19 @@ TINYUSB_SRC_C += $(addprefix lib/tinyusb/,\
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
-LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
-	__cos.c \
-	__expo2.c \
-	__fpclassify.c \
-	__rem_pio2.c \
-	__rem_pio2_large.c \
-	__signbit.c \
-	__sin.c \
-	__tan.c \
-	acos.c \
-	acosh.c \
-	asin.c \
-	asinh.c \
-	atan.c \
-	atan2.c \
-	atanh.c \
-	ceil.c \
-	cos.c \
-	cosh.c \
-	copysign.c \
-	erf.c \
-	exp.c \
-	expm1.c \
-	floor.c \
-	fmod.c \
-	frexp.c \
-	ldexp.c \
-	lgamma.c \
-	log.c \
-	log10.c \
-	log1p.c \
-	modf.c \
-	nearbyint.c \
-	pow.c \
-	rint.c \
-	round.c \
-	scalbn.c \
-	sin.c \
-	sinh.c \
-	tan.c \
-	tanh.c \
-	tgamma.c \
-	trunc.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
-LIBM_SRC_C += lib/libm_dbl/thumb_vfp_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm_dbl/sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_SW_C)
 endif
 else
-LIBM_SRC_C += $(addprefix lib/libm/,\
-	math.c \
-	acoshf.c \
-	asinfacosf.c \
-	asinhf.c \
-	atan2f.c \
-	atanf.c \
-	atanhf.c \
-	ef_rem_pio2.c \
-	erf_lgamma.c \
-	fmodf.c \
-	kf_cos.c \
-	kf_rem_pio2.c \
-	kf_sin.c \
-	kf_tan.c \
-	log1pf.c \
-	nearbyintf.c \
-	roundf.c \
-	sf_cos.c \
-	sf_erf.c \
-	sf_frexp.c \
-	sf_ldexp.c \
-	sf_modf.c \
-	sf_sin.c \
-	sf_tan.c \
-	wf_lgamma.c \
-	wf_tgamma.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
-LIBM_SRC_C += lib/libm/thumb_vfp_sqrtf.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm/ef_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 endif
-endif
-
-LIBM_O = $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
-
-# Too many warnings in libm_dbl, disable for now.
-ifeq ($(MICROPY_FLOAT_IMPL),double)
-$(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
 endif
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
@@ -470,7 +393,7 @@ endif
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(LIBM_O)
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
