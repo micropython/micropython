@@ -128,6 +128,7 @@ endif
 # Modules dependent on other modules
 CIRCUITPY_ESPNOW ?= $(CIRCUITPY_WIFI)
 CIRCUITPY_GIFIO ?= $(CIRCUITPY_ESPCAMERA)
+CIRCUITPY_JPEGIO ?= $(CIRCUITPY_ESPCAMERA)
 CIRCUITPY_QRIO ?= $(CIRCUITPY_ESPCAMERA)
 
 # Features dependent on other features

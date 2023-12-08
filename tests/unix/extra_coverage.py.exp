@@ -55,12 +55,12 @@ _thread         aesio           array           audiocore
 audiomixer      binascii        bitmaptools     cexample
 cmath           collections     cppexample      displayio
 errno           example_package                 gc
-hashlib         heapq           io              json
-locale          math            os              platform
-qrio            rainbowio       random          re
-select          struct          synthio         sys
-time            traceback       uctypes         ulab
-zlib
+hashlib         heapq           io              jpegio
+json            locale          math            os
+platform        qrio            rainbowio       random
+re              select          struct          synthio
+sys             time            traceback       uctypes
+ulab            zlib
 me
 
 rainbowio       random
