@@ -888,6 +888,10 @@ msgstr "graphic ay dapat 2048 bytes ang haba"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Dapat sunurin ng Data chunk ang fmt chunk"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Data format error (may be broken data)"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
@@ -903,10 +907,18 @@ msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Destination bitmap too small to contain image"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr ""
 "Ang kapasidad ng destinasyon ay mas maliit kaysa sa destination_length."
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Device error or wrong termination of input stream"
+msgstr ""
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -1187,6 +1199,14 @@ msgstr ""
 msgid "Insufficient encryption"
 msgstr ""
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient memory pool for the image"
+msgstr ""
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient stream input buffer"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
 msgstr ""
@@ -1215,6 +1235,10 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Interrupt error."
+msgstr ""
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Interrupted by output function"
 msgstr ""
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
@@ -1557,6 +1581,10 @@ msgstr "Hindi maka connect sa AP"
 msgid "Not playing"
 msgstr "Hindi playing"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Not supported JPEG standard"
+msgstr ""
+
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
@@ -1699,6 +1727,10 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
+msgstr ""
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Parameter error"
 msgstr ""
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
@@ -1870,6 +1902,10 @@ msgstr ""
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Hindi supportado ang kanang channel"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Right format but not supported"
+msgstr ""
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"

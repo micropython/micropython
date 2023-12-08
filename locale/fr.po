@@ -915,6 +915,10 @@ msgstr "La broche 'Data 0' doit être aligné sur l'octet"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Un bloc de données doit suivre un bloc fmt"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Data format error (may be broken data)"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
@@ -930,9 +934,17 @@ msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 "Les broches de sommeil profond doivent utiliser un montant avec un pulldown"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Destination bitmap too small to contain image"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "La capacité de destination est plus petite que 'destination_length'."
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Device error or wrong termination of input stream"
+msgstr ""
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -1228,6 +1240,14 @@ msgstr "Authentification insuffisante"
 msgid "Insufficient encryption"
 msgstr "Chiffrement insuffisant"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient memory pool for the image"
+msgstr ""
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient stream input buffer"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
 msgstr "L'interface doit être lancée"
@@ -1257,6 +1277,10 @@ msgstr "Le minuteur du watchdog interne a expiré."
 #: supervisor/shared/safe_mode.c
 msgid "Interrupt error."
 msgstr "Erreur d'interruption."
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Interrupted by output function"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
@@ -1606,6 +1630,10 @@ msgstr "Non connecté"
 msgid "Not playing"
 msgstr "Ne joue pas"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Not supported JPEG standard"
+msgstr ""
+
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
@@ -1754,6 +1782,10 @@ msgstr "PWM slice déja utilisée"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
 msgstr "Canal A de PWM slice est utilisé"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Parameter error"
+msgstr ""
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -1931,6 +1963,10 @@ msgstr "Resource demandée non trouvée"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Canal droit non supporté"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Right format but not supported"
+msgstr ""
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"

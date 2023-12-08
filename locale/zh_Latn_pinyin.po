@@ -900,6 +900,10 @@ msgstr "shù jù 0 yǐn jiǎo bì xū shì zì jié duì qí de"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Data format error (may be broken data)"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
@@ -915,9 +919,17 @@ msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 "shēn dù shuì mián bié zhēn bì xū shǐ yòng xià lā shàng shēng de biān yuán"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Destination bitmap too small to contain image"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Device error or wrong termination of input stream"
+msgstr ""
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -1210,6 +1222,14 @@ msgstr "Rènzhèng bùzú"
 msgid "Insufficient encryption"
 msgstr "Jiāmì bùzú"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient memory pool for the image"
+msgstr ""
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient stream input buffer"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
 msgstr "jiē kǒu bì xū qǐ dòng"
@@ -1239,6 +1259,10 @@ msgstr "Nèibù kān mén gǒu dìngshí qì chāoshí."
 #: supervisor/shared/safe_mode.c
 msgid "Interrupt error."
 msgstr "zhōng duàn cuò wù."
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Interrupted by output function"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
@@ -1579,6 +1603,10 @@ msgstr "Wèi liánjiē"
 msgid "Not playing"
 msgstr "Wèi bòfàng"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Not supported JPEG standard"
+msgstr ""
+
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
@@ -1724,6 +1752,10 @@ msgstr "yǐ jīng zài shǐ yòng de PWM qiē piàn"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
 msgstr "PWM qiē piàn tōng dào A yǐ zài shǐ yòng zhōng"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Parameter error"
+msgstr ""
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -1899,6 +1931,10 @@ msgstr "wèi zhǎo dào qǐng qiú de zī yuán"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Bù zhīchí yòu tōngdào"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Right format but not supported"
+msgstr ""
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"

@@ -912,6 +912,10 @@ msgstr "Пин data 0 должен быть байтово выровнен"
 msgid "Data chunk must follow fmt chunk"
 msgstr "Блок данных должен следовать за блоком fmt"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Data format error (may be broken data)"
+msgstr ""
+
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
@@ -928,9 +932,17 @@ msgstr ""
 "Выводы глубокого сна должны использовать сигнал по возрастанию с подтяжкой к "
 "земле"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Destination bitmap too small to contain image"
+msgstr ""
+
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Емкость места назначения меньше длины места назначения."
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Device error or wrong termination of input stream"
+msgstr ""
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -1229,6 +1241,14 @@ msgstr "Неполная аутентификация"
 msgid "Insufficient encryption"
 msgstr "Недостаточное шифрование"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient memory pool for the image"
+msgstr ""
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Insufficient stream input buffer"
+msgstr ""
+
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
 msgstr "Интерфейс должен быть запущен"
@@ -1258,6 +1278,10 @@ msgstr "Внутренний сторожевой таймер истек."
 #: supervisor/shared/safe_mode.c
 msgid "Interrupt error."
 msgstr "Прерванная ошибка."
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Interrupted by output function"
+msgstr ""
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
@@ -1600,6 +1624,10 @@ msgstr "Не подключено"
 msgid "Not playing"
 msgstr "Не воспроизводится (Not playing)"
 
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Not supported JPEG standard"
+msgstr ""
+
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Number of data_pins must be 8 or 16, not %d"
@@ -1626,7 +1654,7 @@ msgstr "Да"
 
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Only 8 or 16 bit mono with %dx oversampling supported."
 msgstr "Только 8 или 16 бит моно с поддержкой %d."
 
@@ -1748,6 +1776,10 @@ msgstr "PWM уже используется"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "PWM slice channel A already in use"
 msgstr "PWM канал среза A уже используется"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Parameter error"
+msgstr ""
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -1924,6 +1956,10 @@ msgstr "Запрошенный ресурс не найден"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "Right channel unsupported"
 msgstr "Правый канал не поддерживается"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "Right format but not supported"
+msgstr ""
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
@@ -2463,7 +2499,7 @@ msgid "__init__() should return None"
 msgstr "__init__() должен возвращать значение None"
 
 #: py/objtype.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "__init__() should return None, not '%s'"
 msgstr "__init__() should return None, not '%s'"
 
@@ -2708,7 +2744,7 @@ msgid "can't convert %s to float"
 msgstr "не могу преобразовать %s в число с плавающей запятой"
 
 #: py/runtime.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "can't convert %s to int"
 msgstr "не может конвертировать %s в int"
 
@@ -4181,7 +4217,7 @@ msgid "string index out of range"
 msgstr "строковый индекс вне диапазона"
 
 #: py/objstrunicode.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "string indices must be integers, not %s"
 msgstr "струнные индексы должны быть целых чисел, а не %s"
 
