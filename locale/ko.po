@@ -7,46 +7,57 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Michal Čihař <michal@weblate.org>\n"
+"PO-Revision-Date: 2023-12-10 10:05+0000\n"
+"Last-Translator: ChaeYeon Han <codu610@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.3-dev\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code done running.\n"
 msgstr ""
+"\n"
+"코드 실행 완료.\n"
 
 #: main.c
 msgid ""
 "\n"
 "Code stopped by auto-reload. Reloading soon.\n"
 msgstr ""
+"\n"
+"자동 업로드에 의해 코드가 중지되었습니다. 곧 다시 로드됩니다.\n"
 
 #: supervisor/shared/safe_mode.c
+#, fuzzy
 msgid ""
 "\n"
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"github.com/adafruit/circuitpython/issues 에 프로그램 오류를 제출하세요."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "Press reset to exit safe mode.\n"
 msgstr ""
+"\n"
+"재설정을 눌러 안전 모드를 종료합니다.\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "You are in safe mode because:\n"
 msgstr ""
+"\n"
+"안전 모드에 있는 이유는 다음과 같습니다:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -57,12 +68,13 @@ msgid "  File \"%q\", line %d"
 msgstr "  파일 \"%q\", 라인 %d"
 
 #: py/builtinhelp.c
+#, fuzzy
 msgid " is of type %q\n"
-msgstr ""
+msgstr " %q 유형입니다\n"
 
 #: main.c
 msgid " not found.\n"
-msgstr ""
+msgstr " 찾을 수 없습니다.\n"
 
 #: main.c
 msgid " output:\n"
@@ -81,23 +93,23 @@ msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
-msgstr ""
+msgstr "%q 및 %q에 중복된 핀이 포함"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
-msgstr ""
+msgstr "%q와 %q는 달라야 합니다"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
-msgstr ""
+msgstr "%q에 중복된 핀이 포함"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
-msgstr ""
+msgstr "%q 실패: %d"
 
 #: py/argcheck.c
 msgid "%q in %q must be of type %q, not %q"
-msgstr ""
+msgstr "%q의 %q는 %q가 아니라 %q 유형이어야 합니다"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
@@ -119,40 +131,42 @@ msgid "%q indices must be integers, not %s"
 msgstr "%q 인덱스는 %s 가 아닌 정수 여야합니다"
 
 #: shared-module/bitbangio/SPI.c
+#, fuzzy
 msgid "%q init failed"
-msgstr ""
+msgstr "%q init 실패"
 
 #: ports/espressif/bindings/espnow/Peer.c shared-bindings/dualbank/__init__.c
 msgid "%q is %q"
-msgstr ""
+msgstr "%q는 %q입니다"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "%q is read-only for this board"
-msgstr ""
+msgstr "%q는 이 보드에 대한 읽기 전용입니다"
 
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
-msgstr ""
+msgstr "%q 길이는 %d이어야 합니다"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr ""
+msgstr "%q 길이는 %d - %d이어야 합니다"
 
 #: py/argcheck.c
 msgid "%q length must be <= %d"
-msgstr ""
+msgstr "%q 길이는 <= %d>여야 합니다"
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
+msgstr "%q 길이는 >= %d이어야 합니다"
 
 #: py/objmodule.c py/runtime.c
+#, fuzzy
 msgid "%q moved from %q to %q"
-msgstr ""
+msgstr "%q가 %q에서 %q로 이동했습니다"
 
 #: py/argcheck.c
 msgid "%q must be %d"
-msgstr ""
+msgstr "%q는 %d이어야 합니다"
 
 #: py/argcheck.c shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/displayio/Bitmap.c
@@ -160,11 +174,11 @@ msgstr ""
 #: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "%q는 %d-%d이어야 합니다"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 msgid "%q must be 1 when %q is True"
-msgstr ""
+msgstr "%q가 참일 때 %q는 1이어야 합니다"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 #: shared-module/gifio/OnDiskGif.c
@@ -180,42 +194,47 @@ msgid "%q must be >= %d"
 msgstr ""
 
 #: shared-bindings/analogbufio/BufferedIn.c
+#, fuzzy
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr ""
+msgstr "%q는 'H' 또는 'B' 타입의 바이트 배열 또는 배열이어야 합니다."
 
 #: shared-bindings/audiocore/RawSample.c
+#, fuzzy
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
-msgstr ""
+msgstr "%q는 h, H, b 또는 B 유형의 바이트 배열 또는 배열이어야 합니다."
 
 #: shared-bindings/warnings/__init__.c
 msgid "%q must be a subclass of %q"
-msgstr ""
+msgstr "%q는 %q의 하위 클래스여야 합니다"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
+#, fuzzy
 msgid "%q must be array of type 'H'"
-msgstr ""
+msgstr "%q는 'H' 유형의 배열이어야 합니다"
 
 #: shared-module/synthio/__init__.c
+#, fuzzy
 msgid "%q must be array of type 'h'"
-msgstr ""
+msgstr "%q는 'h' 유형의 배열이어야 합니다"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
-msgstr ""
+msgstr "%q는 %q가 아닌 %q 또는 %q 유형이어야 합니다"
 
 #: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
-msgstr ""
+msgstr "%q는 %q가 아니라 %q 유형이어야 합니다"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
-msgstr ""
+msgstr "%q는 2의 거듭제곱이어야 합니다"
 
 #: shared-bindings/wifi/Monitor.c
+#, fuzzy
 msgid "%q out of bounds"
-msgstr ""
+msgstr "%q가 경계를 벗어남"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -223,44 +242,48 @@ msgstr ""
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
 #: shared-bindings/canio/Match.c
+#, fuzzy
 msgid "%q out of range"
-msgstr ""
+msgstr "%q가 범위를 벗어남"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q renamed %q"
-msgstr ""
+msgstr "%q가 %q로 이름이 변경되었습니다"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
+#, fuzzy
 msgid "%q() takes %d positional arguments but %d were given"
-msgstr ""
+msgstr "%q()는 %d 위치 인수를 사용하지만 %d이(가) 주어졌습니다"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
-msgstr ""
+msgstr "%q, %q 및 %q의 길이는 모두 같아야 합니다"
 
 #: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
-msgstr ""
+msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, fuzzy
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
+msgstr "%q[%u]가 핀 수보다 더 많은 비트로 이동했습니다"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
+#, fuzzy
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u]이(가) 핀 수보다 많은 비트를 전송합니다"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
-msgstr ""
+msgstr "%q[%u]에서 추가 핀 사용"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
+msgstr "%q[%u]이(가) 카운트 외부의 입력을 대기합니다"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -269,23 +292,23 @@ msgstr ""
 
 #: py/argcheck.c
 msgid "'%q' argument required"
-msgstr ""
+msgstr "'%q' 인수가 필요합니다"
 
 #: py/proto.c
 msgid "'%q' object does not support '%q'"
-msgstr ""
+msgstr "'%q' 개체가 '%q'를 지원하지 않습니다"
 
 #: py/runtime.c
 msgid "'%q' object is not an iterator"
-msgstr ""
+msgstr "'%q' 개체가 iterator가 아닙니다"
 
 #: py/objtype.c py/runtime.c shared-module/atexit/__init__.c
 msgid "'%q' object is not callable"
-msgstr ""
+msgstr "'%q' 개체를 호출할 수 없습니다"
 
 #: py/runtime.c
 msgid "'%q' object is not iterable"
-msgstr ""
+msgstr "'%q' 개체를 사용할 수 없습니다"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -328,9 +351,9 @@ msgid "'%s' expects {r0, r1, ...}"
 msgstr "'%s' {r0, r1, ...}은 을 기대합니다"
 
 #: py/emitinlinextensa.c
-#, c-format
+#, c-format, fuzzy
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' 정수 %d가 %d..%d 범위 내에 있지 않습니다"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -343,26 +366,28 @@ msgid "'%s' object doesn't support item assignment"
 msgstr ""
 
 #: py/obj.c
-#, c-format
+#, c-format, fuzzy
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "'%s' 개체가 항목 삭제를 지원하지 않습니다"
 
 #: py/runtime.c
+#, fuzzy
 msgid "'%s' object has no attribute '%q'"
-msgstr ""
+msgstr "'%s' 개체에 '%q' 특성이 없습니다"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "'%s' 개체를 subscriptable 할 수 없습니다"
 
 #: py/objstr.c
+#, fuzzy
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "'=' 문자열 형식 지정자에서 정렬이 허용되지 않습니다"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
-msgstr ""
+msgstr "'S' 및 'O'는 지원되지 않는 형식 유형입니다"
 
 #: py/compile.c
 msgid "'align' requires 1 argument"
@@ -374,7 +399,7 @@ msgstr "'await' 는 펑크션 외부에 있습니다"
 
 #: py/compile.c
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "'break'/'continue' 외부 루프"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -405,8 +430,9 @@ msgid "* arg after **"
 msgstr ""
 
 #: py/compile.c
+#, fuzzy
 msgid "*x must be assignment target"
-msgstr ""
+msgstr "*x는 할당 대상이어야 합니다"
 
 #: py/obj.c
 msgid ", in %q\n"
@@ -415,8 +441,9 @@ msgstr ", 에서 %q\n"
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
+#, fuzzy
 msgid ".show(x) removed. Use .root_group = x"
-msgstr ""
+msgstr ".show(x)가 제거되었습니다. .root_group = x를 사용합니다"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -430,22 +457,22 @@ msgstr ""
 #: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "A hardware interrupt channel is already in use"
-msgstr ""
+msgstr "하드웨어 인터럽트 채널이 이미 사용 중입니다"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
-msgstr ""
+msgstr "AP를 시작할 수 없습니다"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
 msgid "Address must be %d bytes long"
-msgstr ""
+msgstr "주소 길이는 % d 바이트 여야합니다"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
 #: ports/nrf/common-hal/memorymap/AddressRange.c
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
-msgstr ""
+msgstr "주소 범위가 허용되지 않습니다"
 
 #: shared-bindings/memorymap/AddressRange.c
 msgid "Address range wraps around"
@@ -486,11 +513,11 @@ msgstr "사용중인 모든 UART주변 기기"
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
 #: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
-msgstr ""
+msgstr "모든 채널이 사용중입니다"
 
 #: ports/raspberrypi/common-hal/usb_host/Port.c
 msgid "All dma channels in use"
-msgstr ""
+msgstr "모든 dma채널이 사용 중입니다"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "All event channels in use"
@@ -542,7 +569,7 @@ msgstr ""
 #: shared-module/memorymonitor/AllocationAlarm.c
 #: shared-module/memorymonitor/AllocationSize.c
 msgid "Already running"
-msgstr ""
+msgstr "이미 실행 중입니다"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 #: ports/raspberrypi/common-hal/wifi/Radio.c
@@ -552,16 +579,17 @@ msgstr ""
 #: shared-module/os/getenv.c
 #, c-format
 msgid "An error occurred while retrieving '%s':\n"
-msgstr ""
+msgstr "%s'을(를) 검색하는 동안 오류가 발생했습니다:\n"
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
+#, fuzzy
 msgid "Another PWMAudioOut is already active"
-msgstr ""
+msgstr "다른 PWMaudioOut이 이미 활성화되어 있습니다"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
 msgid "Another send is already active"
-msgstr ""
+msgstr "다른 전송이 이미 활성화되었습니다"
 
 #: shared-bindings/pulseio/PulseOut.c
 msgid "Array must contain halfwords (type 'H')"
@@ -569,25 +597,26 @@ msgstr ""
 
 #: shared-bindings/alarm/SleepMemory.c shared-bindings/memorymap/AddressRange.c
 #: shared-bindings/nvm/ByteArray.c
+#, fuzzy
 msgid "Array values should be single bytes."
-msgstr ""
+msgstr "배열 값은 1바이트 여야합니다."
 
 #: shared-module/memorymonitor/AllocationAlarm.c
 #, c-format
 msgid "Attempt to allocate %d blocks"
-msgstr ""
+msgstr "%d 블록 할당 시도"
 
 #: ports/raspberrypi/audio_dma.c
 msgid "Audio conversion not implemented"
-msgstr ""
+msgstr "오디오 변환이 구현되지 않음"
 
 #: shared-bindings/wifi/Radio.c
 msgid "AuthMode.OPEN is not used with password"
-msgstr ""
+msgstr "AuthMode.OPEN은 암호와 함께 사용되지 않습니다"
 
 #: shared-bindings/wifi/Radio.c supervisor/shared/web_workflow/web_workflow.c
 msgid "Authentication failure"
-msgstr ""
+msgstr "인증 실패"
 
 #: main.c
 msgid "Auto-reload is off.\n"
@@ -612,7 +641,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must be sequential GPIO pins"
-msgstr ""
+msgstr "비트 클럭 및 워드 선택은 순차적 GPIO 핀이어야 합니다"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
@@ -632,7 +661,7 @@ msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
+msgstr "플로우 제어에 RX와 TX가 모두 필요합니다"
 
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Both pins must support hardware interrupts"
@@ -650,11 +679,11 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Buffer elements must be 4 bytes long or less"
-msgstr ""
+msgstr "버퍼 요소는 4바이트 이하여야 합니다"
 
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid "Buffer is not a bytearray."
-msgstr ""
+msgstr "버퍼는 바이트 배열이 아닙니다."
 
 #: ports/stm/common-hal/audiopwmio/PWMAudioOut.c
 #, c-format
@@ -664,7 +693,7 @@ msgstr ""
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 #: ports/cxd56/common-hal/sdioio/SDCard.c shared-module/sdcardio/SDCard.c
 msgid "Buffer length must be a multiple of 512"
-msgstr ""
+msgstr "버퍼 길이는 512의 배수여야 합니다"
 
 #: ports/stm/common-hal/sdioio/SDCard.c shared-bindings/floppyio/__init__.c
 msgid "Buffer must be a multiple of 512 bytes"
@@ -680,11 +709,11 @@ msgstr ""
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "버퍼가 너무 작습니다"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
-msgstr ""
+msgstr "버퍼의 크기는 같아야 합니다"
 
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
@@ -704,7 +733,7 @@ msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "CIRCUITPY drive could not be found or created."
-msgstr ""
+msgstr "CIRCUITPY 드라이브를 찾거나 만들 수 없습니다."
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "CRC or checksum was invalid"
@@ -733,12 +762,12 @@ msgstr ""
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/nrf/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
-msgstr ""
+msgstr "로컬 특성에 CCCD를 설정할 수 없습니다"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
 msgid "Cannot change USB devices now"
-msgstr ""
+msgstr "현재 USB 디바이스를 변경할 수 없습니다"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Cannot create a new Adapter; use _bleio.adapter;"
@@ -1797,7 +1826,7 @@ msgstr ""
 
 #: main.c
 msgid "Press any key to enter the REPL. Use CTRL-D to reload.\n"
-msgstr ""
+msgstr "아무 키나 눌러 REPL을 입력한다. 다시 로드할땐 CTRL-D를 사용한다.\n"
 
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
