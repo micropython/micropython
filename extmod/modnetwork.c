@@ -65,6 +65,15 @@ void mod_network_init(void) {
 }
 
 void mod_network_deinit(void) {
+    #if !MICROPY_PY_LWIP
+    for (mp_uint_t i = 0; i < MP_STATE_PORT(mod_network_nic_list).len; i++) {
+        mp_obj_t nic = MP_STATE_PORT(mod_network_nic_list).items[i];
+        const mod_network_nic_protocol_t *nic_protocol = MP_OBJ_TYPE_GET_SLOT(mp_obj_get_type(nic), protocol);
+        if (nic_protocol->deinit) {
+            nic_protocol->deinit();
+        }
+    }
+    #endif
 }
 
 void mod_network_register_nic(mp_obj_t nic) {

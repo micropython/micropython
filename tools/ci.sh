@@ -118,26 +118,45 @@ function ci_cc3200_build {
 ########################################################################################
 # ports/esp32
 
-function ci_esp32_idf50_setup {
+# GitHub tag of ESP-IDF to use for CI (note: must be a tag or a branch)
+IDF_VER=v5.0.2
+
+export IDF_CCACHE_ENABLE=1
+
+function ci_esp32_idf_setup {
     pip3 install pyelftools
-    git clone https://github.com/espressif/esp-idf.git
-    git -C esp-idf checkout v5.0.2
+    git clone --depth 1 --branch $IDF_VER https://github.com/espressif/esp-idf.git
+    # doing a treeless clone isn't quite as good as --shallow-submodules, but it
+    # is smaller than full clones and works when the submodule commit isn't a head.
+    git -C esp-idf submodule update --init --recursive --filter=tree:0
     ./esp-idf/install.sh
 }
 
-function ci_esp32_build {
+function ci_esp32_build_common {
     source esp-idf/export.sh
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/esp32 submodules
+}
+
+function ci_esp32_build_cmod_spiram_s2 {
+    ci_esp32_build_common
+
     make ${MAKEOPTS} -C ports/esp32 \
         USER_C_MODULES=../../../examples/usercmodule/micropython.cmake \
         FROZEN_MANIFEST=$(pwd)/ports/esp32/boards/manifest_test.py
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
-    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
 
     # Test building native .mpy with xtensawin architecture.
     ci_native_mpy_modules_build xtensawin
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC BOARD_VARIANT=SPIRAM
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S2
+}
+
+function ci_esp32_build_s3_c3 {
+    ci_esp32_build_common
+
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_S3
+    make ${MAKEOPTS} -C ports/esp32 BOARD=ESP32_GENERIC_C3
 }
 
 ########################################################################################

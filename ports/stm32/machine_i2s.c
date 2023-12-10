@@ -33,6 +33,7 @@
 #include "py/mphal.h"
 #include "pin.h"
 #include "dma.h"
+#include "genhdr/plli2stable.h"
 
 // Notes on this port's specific implementation of I2S:
 // - the DMA callbacks (1/2 complete and complete) are used to implement the asynchronous background operations
@@ -60,6 +61,13 @@ typedef enum {
     TOP_HALF,
     BOTTOM_HALF
 } ping_pong_t;
+
+typedef struct _plli2s_config_t {
+    uint32_t rate;
+    uint8_t bits;
+    uint8_t plli2sr;
+    uint16_t plli2sn;
+} plli2s_config_t;
 
 typedef struct _machine_i2s_obj_t {
     mp_obj_base_t base;
@@ -98,10 +106,24 @@ STATIC const int8_t i2s_frame_map[NUM_I2S_USER_FORMATS][I2S_RX_FRAME_SIZE_IN_BYT
     { 2,  3,  0,  1,  6,  7,  4,  5 },  // Stereo, 32-bits
 };
 
+STATIC const plli2s_config_t plli2s_config[] = PLLI2S_TABLE;
+
 void machine_i2s_init0() {
     for (uint8_t i = 0; i < MICROPY_HW_MAX_I2S; i++) {
         MP_STATE_PORT(machine_i2s_obj)[i] = NULL;
     }
+}
+
+STATIC bool lookup_plli2s_config(int8_t bits, int32_t rate, uint16_t *plli2sn, uint16_t *plli2sr) {
+    for (uint16_t i = 0; i < MP_ARRAY_SIZE(plli2s_config); i++) {
+        if ((plli2s_config[i].bits == bits) && (plli2s_config[i].rate == rate)) {
+            *plli2sn = plli2s_config[i].plli2sn;
+            *plli2sr = plli2s_config[i].plli2sr;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 //  For 32-bit audio samples, the STM32 HAL API expects each 32-bit sample to be encoded
@@ -294,6 +316,29 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
         HAL_GPIO_Init(self->sd->gpio, &GPIO_InitStructure);
     }
 
+    // configure I2S PLL
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2S;
+
+    // lookup optimal PLL multiplier (PLLI2SN) and divisor (PLLI2SR) for a given sample size and sampling frequency
+    uint16_t plli2sn;
+    uint16_t plli2sr;
+
+    if (lookup_plli2s_config(self->mode == I2S_MODE_MASTER_RX ? 32 : self->bits, self->rate, &plli2sn, &plli2sr)) {
+        // match found
+        PeriphClkInitStruct.PLLI2S.PLLI2SN = plli2sn;
+        PeriphClkInitStruct.PLLI2S.PLLI2SR = plli2sr;
+    } else {
+        // no match for sample size and rate
+        // configure PLL to use power-on default values when a non-standard sampling frequency is used
+        PeriphClkInitStruct.PLLI2S.PLLI2SN = 192;
+        PeriphClkInitStruct.PLLI2S.PLLI2SR = 2;
+    }
+
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
+        return false;
+    }
+
     if (HAL_I2S_Init(&self->hi2s) == HAL_OK) {
         // Reset and initialize Tx and Rx DMA channels
         if (self->mode == I2S_MODE_MASTER_RX) {
@@ -306,13 +351,10 @@ STATIC bool i2s_init(machine_i2s_obj_t *self) {
             self->hi2s.hdmatx = &self->hdma_tx;
         }
 
-        __HAL_RCC_PLLI2S_ENABLE();  // start I2S clock
-
         return true;
     } else {
         return false;
     }
-
 }
 
 void HAL_I2S_ErrorCallback(I2S_HandleTypeDef *hi2s) {

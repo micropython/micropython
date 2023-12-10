@@ -42,6 +42,7 @@
 #include "py/misc.h"
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
+#include "shared/runtime/softtimer.h"
 #include "extmod/modnetwork.h"
 #include "modmachine.h"
 
@@ -50,6 +51,7 @@
 typedef struct _nina_obj_t {
     mp_obj_base_t base;
     bool active;
+    bool poll_enable;
     uint32_t itf;
     mp_uint_t security;
     char ssid[NINA_MAX_SSID_LEN + 1];
@@ -71,6 +73,7 @@ typedef struct _nina_obj_t {
 #define SO_ERROR                (0x1007)
 #define SO_TYPE                 (0x1008)
 #define SO_NO_CHECK             (0x100a)
+#define NINAW10_POLL_INTERVAL   (100)
 
 #define is_nonblocking_error(errno) ((errno) == MP_EAGAIN || (errno) == MP_EWOULDBLOCK || (errno) == MP_EINPROGRESS)
 
@@ -78,23 +81,56 @@ typedef struct _nina_obj_t {
 
 static uint16_t bind_port = BIND_PORT_RANGE_MIN;
 const mp_obj_type_t mod_network_nic_type_nina;
-static nina_obj_t network_nina_wl_sta = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_STA_IF};
-static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, MOD_NETWORK_AP_IF};
-static mp_sched_node_t mp_wifi_sockpoll_node;
-static mp_sched_node_t mp_wifi_connpoll_node;
+static nina_obj_t network_nina_wl_sta = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, false, MOD_NETWORK_STA_IF};
+static nina_obj_t network_nina_wl_ap = {{(mp_obj_type_t *)&mod_network_nic_type_nina}, false, false, MOD_NETWORK_AP_IF};
+static mp_sched_node_t mp_wifi_poll_node;
+static soft_timer_entry_t mp_wifi_poll_timer;
+STATIC void network_ninaw10_deinit(void);
+
+STATIC bool network_ninaw10_poll_list_is_empty(void) {
+    return MP_STATE_PORT(mp_wifi_poll_list) == NULL ||
+           MP_STATE_PORT(mp_wifi_poll_list)->len == 0;
+}
+
+STATIC void network_ninaw10_poll_list_insert(mp_obj_t socket) {
+    if (MP_STATE_PORT(mp_wifi_poll_list) == NULL) {
+        MP_STATE_PORT(mp_wifi_poll_list) = mp_obj_new_list(0, NULL);
+    }
+    mp_obj_list_append(MP_STATE_PORT(mp_wifi_poll_list), socket);
+}
+
+STATIC void network_ninaw10_poll_list_remove(mp_obj_t socket) {
+    if (MP_STATE_PORT(mp_wifi_poll_list) == NULL) {
+        return;
+    }
+    mp_obj_list_remove(MP_STATE_PORT(mp_wifi_poll_list), socket);
+    if (MP_STATE_PORT(mp_wifi_poll_list)->len == 0) {
+        MP_STATE_PORT(mp_wifi_poll_list) = NULL;
+    }
+}
 
 STATIC void network_ninaw10_poll_sockets(mp_sched_node_t *node) {
     (void)node;
-    for (mp_uint_t i = 0; i < MP_STATE_PORT(mp_wifi_sockpoll_list)->len; i++) {
-        mod_network_socket_obj_t *socket = MP_STATE_PORT(mp_wifi_sockpoll_list)->items[i];
+    for (mp_uint_t i = 0; MP_STATE_PORT(mp_wifi_poll_list) && i < MP_STATE_PORT(mp_wifi_poll_list)->len;) {
+        mod_network_socket_obj_t *socket = MP_STATE_PORT(mp_wifi_poll_list)->items[i];
         uint8_t flags = 0;
         if (socket->callback == MP_OBJ_NULL || nina_socket_poll(socket->fileno, &flags) < 0) {
-            // remove from poll list on error.
+            // Remove socket from poll list on error.
             socket->callback = MP_OBJ_NULL;
-            mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
-        } else if (flags & SOCKET_POLL_RD) {
+            network_ninaw10_poll_list_remove(socket);
+            // Check the same index on the next iteration.
+            continue;
+        }
+        if (flags & SOCKET_POLL_RD) {
             mp_call_function_1(socket->callback, MP_OBJ_FROM_PTR(socket));
         }
+        i++;
+        debug_printf("poll_sockets(%d) -> flags %d\n", socket->fileno, flags);
+    }
+
+    if (!network_ninaw10_poll_list_is_empty()) {
+        // Reschedule the sockets polling code.
+        soft_timer_reinsert(&mp_wifi_poll_timer, NINAW10_POLL_INTERVAL);
     }
 }
 
@@ -104,10 +140,8 @@ STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
     int status = nina_connection_status();
     if (status == NINA_STATUS_CONNECTED) {
         // Connected to AP, nothing else to do.
-        return;
-    }
-
-    if (status != NINA_STATUS_NO_SSID_AVAIL) {
+        self->poll_enable = false;
+    } else if (status != NINA_STATUS_NO_SSID_AVAIL) {
         // If not connected, and no connection in progress, the connection attempt has failed.
         // Read the ESP failure reason, reconnect and reschedule the connection polling code.
         int reason = nina_connection_reason();
@@ -124,21 +158,23 @@ STATIC void network_ninaw10_poll_connect(mp_sched_node_t *node) {
             }
         } else {
             // Will not attempt to reconnect if there's another error code set.
-            return;
+            self->poll_enable = false;
         }
     }
 
-    // Reschedule the connection polling code.
-    mp_sched_schedule_node(&mp_wifi_connpoll_node, network_ninaw10_poll_connect);
+    // Reinsert the timer to schedule the polling code.
+    soft_timer_reinsert(&mp_wifi_poll_timer, NINAW10_POLL_INTERVAL);
 }
 
-STATIC mp_obj_t network_ninaw10_timer_callback(mp_obj_t none_in) {
-    if (MP_STATE_PORT(mp_wifi_sockpoll_list) != MP_OBJ_NULL && MP_STATE_PORT(mp_wifi_sockpoll_list)->len) {
-        mp_sched_schedule_node(&mp_wifi_sockpoll_node, network_ninaw10_poll_sockets);
+STATIC void network_ninaw10_timer_callback(soft_timer_entry_t *self) {
+    debug_printf("timer_callback() poll status STA: %d AP: %d SOCKETS: %d\n",
+        network_nina_wl_sta.poll_enable, network_nina_wl_ap.poll_enable, !network_ninaw10_poll_list_is_empty());
+    if (network_nina_wl_sta.poll_enable) {
+        mp_sched_schedule_node(&mp_wifi_poll_node, network_ninaw10_poll_connect);
+    } else if (!network_ninaw10_poll_list_is_empty()) {
+        mp_sched_schedule_node(&mp_wifi_poll_node, network_ninaw10_poll_sockets);
     }
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ninaw10_timer_callback_obj, network_ninaw10_timer_callback);
 
 STATIC mp_obj_t network_ninaw10_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
@@ -157,6 +193,7 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 2) {
         bool active = mp_obj_is_true(args[1]);
+        network_ninaw10_deinit();
         if (active) {
             int error = 0;
             if ((error = nina_init()) != 0) {
@@ -185,19 +222,9 @@ STATIC mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
                     NINA_FW_VER_MIN_MAJOR, NINA_FW_VER_MIN_MINOR, NINA_FW_VER_MIN_PATCH, semver[NINA_FW_VER_MAJOR_OFFS] - 48,
                     semver[NINA_FW_VER_MINOR_OFFS] - 48, semver[NINA_FW_VER_PATCH_OFFS] - 48);
             }
-            MP_STATE_PORT(mp_wifi_sockpoll_list) = mp_obj_new_list(0, NULL);
-            if (MP_STATE_PORT(mp_wifi_timer) == MP_OBJ_NULL) {
-                // Start sockets poll timer
-                mp_obj_t timer_args[] = {
-                    MP_OBJ_NEW_QSTR(MP_QSTR_freq), MP_OBJ_NEW_SMALL_INT(10),
-                    MP_OBJ_NEW_QSTR(MP_QSTR_callback), MP_OBJ_FROM_PTR(&network_ninaw10_timer_callback_obj),
-                };
-                MP_STATE_PORT(mp_wifi_timer) = MP_OBJ_TYPE_GET_SLOT(&machine_timer_type, make_new)((mp_obj_t)&machine_timer_type, 0, 2, timer_args);
-            }
+            soft_timer_static_init(&mp_wifi_poll_timer, SOFT_TIMER_MODE_ONE_SHOT, 0, network_ninaw10_timer_callback);
         } else {
             nina_deinit();
-            MP_STATE_PORT(mp_wifi_timer) = MP_OBJ_NULL;
-            MP_STATE_PORT(mp_wifi_sockpoll_list) = MP_OBJ_NULL;
         }
         self->active = active;
         return mp_const_none;
@@ -278,7 +305,8 @@ STATIC mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         self->security = security;
         strncpy(self->key, key, NINA_MAX_WPA_LEN);
         strncpy(self->ssid, ssid, NINA_MAX_SSID_LEN);
-        mp_sched_schedule_node(&mp_wifi_connpoll_node, network_ninaw10_poll_connect);
+        self->poll_enable = true;
+        soft_timer_reinsert(&mp_wifi_poll_timer, NINAW10_POLL_INTERVAL);
     } else {
         mp_uint_t channel = args[ARG_channel].u_int;
 
@@ -528,10 +556,8 @@ STATIC int network_ninaw10_socket_socket(mod_network_socket_obj_t *socket, int *
 STATIC void network_ninaw10_socket_close(mod_network_socket_obj_t *socket) {
     debug_printf("socket_close(%d)\n", socket->fileno);
     if (socket->callback != MP_OBJ_NULL) {
-        mp_sched_lock();
         socket->callback = MP_OBJ_NULL;
-        mp_obj_list_remove(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
-        mp_sched_unlock();
+        network_ninaw10_poll_list_remove(socket);
     }
     if (socket->fileno >= 0) {
         nina_socket_close(socket->fileno);
@@ -739,7 +765,8 @@ STATIC int network_ninaw10_socket_setsockopt(mod_network_socket_obj_t *socket, m
         mp_sched_lock();
         socket->callback = (void *)optval;
         if (socket->callback != MP_OBJ_NULL) {
-            mp_obj_list_append(MP_STATE_PORT(mp_wifi_sockpoll_list), socket);
+            network_ninaw10_poll_list_insert(socket);
+            soft_timer_reinsert(&mp_wifi_poll_timer, NINAW10_POLL_INTERVAL);
         }
         mp_sched_unlock();
         return 0;
@@ -803,6 +830,14 @@ STATIC int network_ninaw10_socket_ioctl(mod_network_socket_obj_t *socket, mp_uin
     return ret;
 }
 
+STATIC void network_ninaw10_deinit(void) {
+    // On soft-reboot, gc_sweep_all is called and all open sockets are closed
+    // and collected. Make sure that the driver is not keeping any references
+    // to collected sockets in the poll list.
+    soft_timer_remove(&mp_wifi_poll_timer);
+    MP_STATE_PORT(mp_wifi_poll_list) = NULL;
+}
+
 STATIC const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active),              MP_ROM_PTR(&network_ninaw10_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan),                MP_ROM_PTR(&network_ninaw10_scan_obj) },
@@ -826,6 +861,7 @@ STATIC MP_DEFINE_CONST_DICT(nina_locals_dict, nina_locals_dict_table);
 
 STATIC const mod_network_nic_protocol_t mod_network_nic_protocol_nina = {
     .gethostbyname = network_ninaw10_gethostbyname,
+    .deinit = network_ninaw10_deinit,
     .socket = network_ninaw10_socket_socket,
     .close = network_ninaw10_socket_close,
     .bind = network_ninaw10_socket_bind,
@@ -851,7 +887,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
     );
 
 MP_REGISTER_ROOT_POINTER(struct _machine_spi_obj_t *mp_wifi_spi);
-MP_REGISTER_ROOT_POINTER(struct _machine_timer_obj_t *mp_wifi_timer);
-MP_REGISTER_ROOT_POINTER(struct _mp_obj_list_t *mp_wifi_sockpoll_list);
+MP_REGISTER_ROOT_POINTER(struct _mp_obj_list_t *mp_wifi_poll_list);
 
 #endif // #if MICROPY_PY_BLUETOOTH && MICROPY_PY_NETWORK_NINAW10

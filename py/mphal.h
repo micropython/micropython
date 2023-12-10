@@ -98,4 +98,17 @@ uint64_t mp_hal_time_ns(void);
 #include "extmod/virtpin.h"
 #endif
 
+// Event handling and wait-for-event functions.
+
+#ifndef MICROPY_INTERNAL_WFE
+// Fallback definition for ports that don't need to suspend the CPU.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) (void)0
+#endif
+
+#ifndef MICROPY_INTERNAL_EVENT_HOOK
+// Fallback definition for ports that don't need any port-specific
+// non-blocking event processing.
+#define MICROPY_INTERNAL_EVENT_HOOK (void)0
+#endif
+
 #endif // MICROPY_INCLUDED_PY_MPHAL_H

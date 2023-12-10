@@ -570,7 +570,7 @@ void mp_bluetooth_nimble_port_shutdown(void) {
     ble_hs_stop(&ble_hs_shutdown_stop_listener, ble_hs_shutdown_stop_cb, NULL);
 
     while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_indefinite();
     }
 }
 
@@ -636,10 +636,11 @@ int mp_bluetooth_init(void) {
     // On non-ringbuffer builds (NimBLE on STM32/Unix) this will also poll the UART and run the event queue.
     mp_uint_t timeout_start_ticks_ms = mp_hal_ticks_ms();
     while (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {
-        if (mp_hal_ticks_ms() - timeout_start_ticks_ms > NIMBLE_STARTUP_TIMEOUT) {
+        uint32_t elapsed = mp_hal_ticks_ms() - timeout_start_ticks_ms;
+        if (elapsed > NIMBLE_STARTUP_TIMEOUT) {
             break;
         }
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(NIMBLE_STARTUP_TIMEOUT - elapsed);
     }
 
     if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE) {

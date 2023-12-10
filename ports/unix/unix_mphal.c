@@ -237,17 +237,10 @@ uint64_t mp_hal_time_ns(void) {
 
 #ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms) {
-    #ifdef MICROPY_EVENT_POLL_HOOK
     mp_uint_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
-        // MICROPY_EVENT_POLL_HOOK does usleep(500).
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
-    #else
-    // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
-    // "The useconds argument shall be less than one million."
-    usleep(ms * 1000);
-    #endif
 }
 #endif
 

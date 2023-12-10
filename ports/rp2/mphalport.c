@@ -60,23 +60,16 @@ ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array) };
 #endif
 
 #if MICROPY_HW_USB_CDC
-// Explicitly run the USB stack in case the scheduler is locked (eg we are in an
-// interrupt handler) and there is in/out data pending on the USB CDC interface.
-#define MICROPY_EVENT_POLL_HOOK_WITH_USB \
-    do { \
-        MICROPY_EVENT_POLL_HOOK; \
-        mp_usbd_task(); \
-    } while (0)
-
-#else
-#define MICROPY_EVENT_POLL_HOOK_WITH_USB MICROPY_EVENT_POLL_HOOK
-#endif
-
-#if MICROPY_HW_USB_CDC
 
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll
 
 void poll_cdc_interfaces(void) {
+    if (!cdc_itf_pending) {
+        // Explicitly run the USB stack as the scheduler may be locked (eg we are in
+        // an interrupt handler) while there is data pending.
+        mp_usbd_task();
+    }
+
     // any CDC interfaces left to poll?
     if (cdc_itf_pending && ringbuf_free(&stdin_ringbuf)) {
         for (uint8_t itf = 0; itf < 8; ++itf) {
@@ -153,7 +146,7 @@ int mp_hal_stdin_rx_chr(void) {
             return dupterm_c;
         }
         #endif
-        MICROPY_EVENT_POLL_HOOK_WITH_USB;
+        mp_event_wait_indefinite();
     }
 }
 
@@ -173,7 +166,11 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
             int timeout = 0;
             // Wait with a max of USC_CDC_TIMEOUT ms
             while (n > tud_cdc_write_available() && timeout++ < MICROPY_HW_USB_CDC_TX_TIMEOUT) {
-                MICROPY_EVENT_POLL_HOOK_WITH_USB;
+                mp_event_wait_ms(1);
+
+                // Explicitly run the USB stack as the scheduler may be locked (eg we
+                // are in an interrupt handler), while there is data pending.
+                mp_usbd_task();
             }
             if (timeout >= MICROPY_HW_USB_CDC_TX_TIMEOUT) {
                 break;
@@ -193,7 +190,7 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
 void mp_hal_delay_ms(mp_uint_t ms) {
     absolute_time_t t = make_timeout_time_ms(ms);
     do {
-        MICROPY_EVENT_POLL_HOOK_FAST;
+        mp_event_handle_nowait();
     } while (!best_effort_wfe_or_timeout(t));
 }
 

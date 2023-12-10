@@ -7,8 +7,6 @@
 #define MICROPY_HW_BOARD_NAME           "Arduino Nano 33 BLE Sense"
 #define MICROPY_HW_MCU_NAME             "NRF52840"
 
-#define MICROPY_MBFS                    (1)
-
 #define MICROPY_BOARD_EARLY_INIT        NANO33_board_early_init
 #define MICROPY_BOARD_DEINIT            NANO33_board_deinit
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) NANO33_board_enter_bootloader()

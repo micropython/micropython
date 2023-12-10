@@ -17,7 +17,8 @@
 #include "etshal.h"
 #include "c_types.h"
 #include "user_interface.h"
-#include "esp_mphal.h"
+#include "py/mphal.h"
+#include "py/runtime.h"
 
 // seems that this is missing in the Espressif SDK
 #define FUNC_U0RXD 0
@@ -218,7 +219,7 @@ bool ICACHE_FLASH_ATTR uart_rx_wait(uint32_t timeout_us) {
         if (system_get_time() - start >= timeout_us) {
             return false; // timeout
         }
-        ets_event_poll();
+        mp_event_handle_nowait();
     }
 }
 
