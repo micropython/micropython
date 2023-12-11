@@ -1,0 +1,199 @@
+################################################################################
+# Initial setup of Makefile environment
+
+BOARD ?= ALIF_ENSEMBLE
+BOARD_DIR ?= boards/$(BOARD)
+BUILD ?= build-$(BOARD)
+
+ifeq ($(wildcard $(BOARD_DIR)/.),)
+$(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
+include ../../py/mkenv.mk
+include mpconfigport.mk
+include $(BOARD_DIR)/mpconfigboard.mk
+
+# qstr definitions (must come before including py.mk)
+QSTR_DEFS += qstrdefsport.h
+
+# include py core make definitions
+include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
+
+################################################################################
+# Project specific settings and compiler/linker flags
+
+CROSS_COMPILE ?= arm-none-eabi-
+GIT_SUBMODULES += lib/tinyusb lib/alif_ensemble-cmsis-dfp
+
+ALIF_SDK ?= alif-sdk
+ALIF_DFP ?= $(abspath ../../lib/alif_ensemble-cmsis-dfp)
+CMSIS_DIR ?= $(TOP)/lib/cmsis/inc
+
+TARGET_CORE ?= M55_HP
+ALIF_CONFIG ?= mcu/$(TARGET_CORE)_cfg.json
+LD_FILE ?= mcu/ensemble.ld.S
+
+INC += -I.
+INC += -I$(TOP)
+INC += -I$(BUILD)
+INC += -I$(BOARD_DIR)
+INC += -I$(CMSIS_DIR)
+INC += -I$(ALIF_DFP)/drivers/include/
+INC += -I$(ALIF_DFP)/ospi_xip/source/ospi
+INC += -I$(ALIF_DFP)/Device/common/include/
+INC += -I$(ALIF_DFP)/Device/core/$(TARGET_CORE)/config/
+INC += -I$(ALIF_DFP)/Device/core/$(TARGET_CORE)/include/
+INC += -I$(ALIF_DFP)/Device/E7/AE722F80F55D5XX/
+INC += -I$(TOP)/lib/tinyusb/src
+INC += -Itinyusb_port
+
+CFLAGS_FPU += -mfloat-abi=hard -mfpu=fpv5-d16
+CFLAGS_CORTEX_M55 += -mthumb -mcpu=cortex-m55 -mtune=cortex-m55 $(CFLAGS_FPU)
+
+CFLAGS += $(INC) -Wall -Werror -std=c99 $(CFLAGS_CORTEX_M55) -nostdlib
+CFLAGS += -Wdouble-promotion -Wfloat-conversion
+CFLAGS += -fdata-sections -ffunction-sections
+CFLAGS += -D$(TARGET_CORE) -DCORE_$(TARGET_CORE) -DALIF_CMSIS_H="\"$(TARGET_CORE).h\""
+
+ifeq ($(MICROPY_FLOAT_IMPL),single)
+CFLAGS += -fsingle-precision-constant
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_SINGLE
+else
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
+endif
+
+AFLAGS = -mthumb -march=armv8.1-m.main $(CFLAGS_FPU)
+
+LDFLAGS += -nostdlib
+LDFLAGS += -T$(BUILD)/ensemble.ld -Map=$@.map --cref --gc-sections
+LDFLAGS += --wrap=dcd_event_handler
+
+# Tune for Debugging or Optimization
+ifeq ($(DEBUG), 1)
+CFLAGS += -Og -ggdb3
+# Disable text compression in debug builds
+MICROPY_ROM_TEXT_COMPRESSION = 0
+else
+CFLAGS += -O2 -DNDEBUG
+endif
+
+LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
+
+################################################################################
+# Source files and libraries
+
+SRC_O += \
+	shared/runtime/gchelper_thumb2.o
+
+SRC_C = \
+	alif_flash.c \
+	machine_pin.c \
+	main.c \
+	modalif.c \
+	mphalport.c \
+	mpuart.c \
+	ospi_flash.c \
+	usbd.c \
+
+ifeq ($(MICROPY_FLOAT_IMPL),single)
+LIBM_SRC_C += $(SRC_LIB_LIBM_C)
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
+$(BUILD)/lib/libm/%.o: CFLAGS += -Wno-maybe-uninitialized
+else
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_HW_C)
+$(BUILD)/lib/libm_dbl/%.o: CFLAGS += -Wno-maybe-uninitialized
+endif
+
+SHARED_SRC_C += $(addprefix shared/,\
+	libc/string0.c \
+	netutils/dhcpserver.c \
+	netutils/netutils.c \
+	netutils/trace.c \
+	readline/readline.c \
+	runtime/gchelper_native.c \
+	runtime/interrupt_char.c \
+	runtime/mpirq.c \
+	runtime/pyexec.c \
+	runtime/softtimer.c  \
+	runtime/stdout_helpers.c \
+	runtime/sys_stdio_mphal.c \
+	timeutils/timeutils.c \
+	tinyusb/mp_usbd.c \
+	tinyusb/mp_usbd_descriptor.c \
+	)
+
+DRIVERS_SRC_C += $(addprefix drivers/,\
+	bus/softspi.c \
+	bus/softqspi.c \
+	memory/spiflash.c \
+	dht/dht.c \
+	)
+
+TINYUSB_SRC_C += \
+	lib/tinyusb/src/tusb.c \
+	lib/tinyusb/src/class/cdc/cdc_device.c \
+	lib/tinyusb/src/common/tusb_fifo.c \
+	lib/tinyusb/src/device/usbd.c \
+	lib/tinyusb/src/device/usbd_control.c \
+	tinyusb_port/tusb_alif_dcd.c \
+
+ALIF_SRC_C += $(addprefix $(ALIF_DFP)/,\
+	Device/common/source/mpu_M55.c \
+	Device/common/source/system_M55.c \
+	Device/common/source/system_utils.c \
+	Device/core/$(TARGET_CORE)/source/startup_$(TARGET_CORE).c \
+	drivers/source/pinconf.c \
+	drivers/source/uart.c \
+	ospi_xip/source/ospi/ospi_drv.c \
+	)
+
+# List of sources for qstr extraction
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C)
+
+OBJ += $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_O))
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(ALIF_SRC_C:.c=.o))
+
+################################################################################
+# Main targets
+
+.PHONY: all erase deploy gdb objdump release
+
+.DELETE_ON_ERROR:
+
+all: $(BUILD)/firmware.toc
+
+$(BUILD)/ensemble.ld: $(LD_FILE)
+	$(ECHO) "Preprocess linker script $@"
+	$(Q)$(CPP) -P -E $(CFLAGS) $^ > $@
+
+$(BUILD)/firmware.elf: $(OBJ) $(BUILD)/ensemble.ld
+	$(ECHO) "Link $@"
+	$(Q)$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+	$(Q)$(SIZE) $@
+
+$(BUILD)/firmware.bin: $(BUILD)/firmware.elf
+	$(Q)$(OBJCOPY) -Obinary $^ $(BUILD)/firmware.bin
+
+$(BUILD)/firmware.toc: $(BUILD)/firmware.bin
+	$(Q)$(MKDIR) -p $(ALIF_SDK)/tools/build/images/
+	$(Q)$(MKDIR) -p $(ALIF_SDK)/tools/build/logs/
+	$(Q)cp $(BUILD)/firmware.bin $(ALIF_SDK)/tools/build/images/
+	$(Q)cd $(ALIF_SDK)/tools && python app-gen-toc.py -f $(abspath $(ALIF_CONFIG))
+	$(Q)cp $(ALIF_SDK)/tools/build/AppTocPackage.bin $(BUILD)/firmware.toc
+
+deploy: $(BUILD)/firmware.toc
+	$(ECHO) "Writing $< to the board"
+	$(Q)cd $(ALIF_SDK)/tools && python app-write-mram.py -p
+
+################################################################################
+# Remaining make rules
+
+include $(TOP)/py/mkrules.mk

@@ -1,0 +1,14 @@
+{
+  "USER_APP": {
+    "binary": "firmware.bin",
+    "mramAddress": "0x80000000",
+    "version": "1.0.0",
+    "cpu_id": "M55_HP",
+    "flags": ["boot"],
+    "signed": false
+  },
+  "DEVICE": {
+    "binary": "app-device-config.json",
+    "version" : "0.5.00"
+  }
+}
