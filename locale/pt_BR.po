@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-28 06:04+0000\n"
+"PO-Revision-Date: 2023-12-11 17:05+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -908,7 +908,7 @@ msgstr "Pedaço de dados deve seguir o pedaço de cortes"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Data format error (may be broken data)"
-msgstr ""
+msgstr "Erro no formato dos dados (os dados podem estar truncados)"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -926,7 +926,7 @@ msgstr "Os pinos deep sleep devem usar uma borda ascendente com pulldown"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Destination bitmap too small to contain image"
-msgstr ""
+msgstr "Bitmap de destino muito pequeno para conter a imagem"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -935,6 +935,7 @@ msgstr "A capacidade do destino é menor que destination_length."
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Device error or wrong termination of input stream"
 msgstr ""
+"Erro no dispositivo ou houve um encerramento incorreto do fluxo de entrada"
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -1231,11 +1232,11 @@ msgstr "Criptografia insuficiente"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient memory pool for the image"
-msgstr ""
+msgstr "Pool de memória insuficiente para a imagem"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient stream input buffer"
-msgstr ""
+msgstr "O buffer do fluxo de entrada é insuficiente"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
@@ -1269,7 +1270,7 @@ msgstr "Erro de interrupção."
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Interrupted by output function"
-msgstr ""
+msgstr "Interrompido pela função de saída"
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
@@ -1614,7 +1615,7 @@ msgstr "Não está jogando"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Not supported JPEG standard"
-msgstr ""
+msgstr "Não é compatível com o padrão JPEG"
 
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
@@ -1767,7 +1768,7 @@ msgstr "O canal A da fatia do PWM já está em uso"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Parameter error"
-msgstr ""
+msgstr "Erro de parâmetro"
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -1950,7 +1951,7 @@ msgstr "Canal direito não suportado"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Right format but not supported"
-msgstr ""
+msgstr "Formato correto, mas, não suportado"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
