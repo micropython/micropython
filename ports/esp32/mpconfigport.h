@@ -214,7 +214,11 @@ void *esp_native_code_commit(void *, size_t, void *);
 #endif
 
 // Functions that should go in IRAM
+// For ESP32 with SPIRAM workaround, firmware is larger and uses more static IRAM,
+// so in that configuration don't put too many functions in IRAM.
+#if !(CONFIG_IDF_TARGET_ESP32 && CONFIG_SPIRAM && CONFIG_SPIRAM_CACHE_WORKAROUND)
 #define MICROPY_WRAP_MP_BINARY_OP(f) IRAM_ATTR f
+#endif
 #define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_LOAD_GLOBAL(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_LOAD_NAME(f) IRAM_ATTR f
