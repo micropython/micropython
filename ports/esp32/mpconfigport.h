@@ -40,7 +40,9 @@
 #define MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND (1)
 
 // optimisations
+#ifndef MICROPY_OPT_COMPUTED_GOTO
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+#endif
 
 // Python internal features
 #define MICROPY_READER_VFS                  (1)
