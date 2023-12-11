@@ -14,6 +14,7 @@
 #include "hardware/regs/addressmap.h"
 
 // RP2 address map ranges, must be arranged in order by ascending start address
+#ifdef PICO_RP2040
 addressmap_rp2_range_t rp2_ranges[] = {
     {(uint8_t *)ROM_BASE,           0x00004000, ROM},        // boot ROM
     {(uint8_t *)XIP_BASE,           0x00100000, XIP},        // XIP normal cache operation
@@ -34,6 +35,28 @@ addressmap_rp2_range_t rp2_ranges[] = {
     {(uint8_t *)SIO_BASE,           0x00001000, IO},         // SIO registers, no aliases
     {(uint8_t *)PPB_BASE,           0x00004000, IO}          // PPB registers
 };
+#endif
+#ifdef PICO_RP2350
+addressmap_rp2_range_t rp2_ranges[] = {
+    {(uint8_t *)ROM_BASE,           0x00004000, ROM},        // boot ROM
+    {(uint8_t *)XIP_BASE,           0x00100000, XIP},        // XIP normal cache operation
+    {(uint8_t *)XIP_NOCACHE_NOALLOC_BASE, 0x00100000, XIP},  // XIP bypass cache completely
+    {(uint8_t *)XIP_MAINTENANCE_BASE,     0x00100000, XIP},  // XIP cache maintenance based on lower 3 address bits. Data is ignored
+    {(uint8_t *)XIP_NOCACHE_NOALLOC_NOTRANSLATE_BASE, 0x00100000, XIP},  // XIP skip cache and address translation
+    {(uint8_t *)SRAM_BASE,          SRAM_END - SRAM_BASE, SRAM},       // SRAM 256KB striped plus 16KB contiguous
+    {(uint8_t *)SYSINFO_BASE,       0x00070000, IO},         // APB peripherals
+    {(uint8_t *)XIP_CTRL_BASE,      0x00004000, IO},         // XIP control registers
+    {(uint8_t *)XIP_QMI_BASE,       0x00004000, IO},         // XIP QMI registers
+    {(uint8_t *)DMA_BASE,           0x00004000, IO},         // DMA registers
+    {(uint8_t *)USBCTRL_DPRAM_BASE, 0x00001000, SRAM},       // USB DPSRAM 4KB
+    {(uint8_t *)USBCTRL_REGS_BASE,  0x00004000, IO},         // USB registers
+    {(uint8_t *)PIO0_BASE,          0x00004000, IO},         // PIO0 registers
+    {(uint8_t *)PIO1_BASE,          0x00004000, IO},         // PIO1 registers
+    {(uint8_t *)PIO2_BASE,          0x00004000, IO},         // PIO2 registers
+    {(uint8_t *)SIO_BASE,           0x00001000, IO},         // SIO registers, no aliases
+    {(uint8_t *)PPB_BASE,           0x00004000, IO}          // PPB registers
+};
+#endif
 
 void common_hal_memorymap_addressrange_construct(memorymap_addressrange_obj_t *self,
     uint8_t *start_address, size_t length) {

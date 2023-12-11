@@ -13,9 +13,10 @@
 #include "common-hal/rp2pio/StateMachine.h"
 #include "supervisor/port.h"
 
-#include "src/common/pico_stdlib/include/pico/stdlib.h"
+#include "src/common/pico_stdlib_headers/include/pico/stdlib.h"
 #include "src/rp2040/hardware_structs/include/hardware/structs/mpu.h"
-#include "src/rp2_common/cmsis/stub/CMSIS/Device/RaspberryPi/RP2040/Include/RP2040.h"
+#include "src/rp2_common/cmsis/stub/CMSIS/Device/RP2040/Include/RP2040.h"
+#include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
 #include "src/rp2_common/hardware_vreg/include/hardware/vreg.h"
 #include "src/rp2_common/pico_multicore/include/pico/multicore.h"
@@ -142,7 +143,7 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
 
     // If the width is > 400, then it must not be color frame buffer and vice
     // versa.
-    if ((width > 400) == color_framebuffer) {
+    if ((width > 400) == color_framebuffer || color_depth == 4) {
         mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_color_depth);
     }
 
@@ -384,6 +385,10 @@ int common_hal_picodvi_framebuffer_get_height(picodvi_framebuffer_obj_t *self) {
 
 int common_hal_picodvi_framebuffer_get_color_depth(picodvi_framebuffer_obj_t *self) {
     return self->color_depth;
+}
+
+bool common_hal_picodvi_framebuffer_get_grayscale(picodvi_framebuffer_obj_t *self) {
+    return self->color_depth < 8;
 }
 
 mp_int_t common_hal_picodvi_framebuffer_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {

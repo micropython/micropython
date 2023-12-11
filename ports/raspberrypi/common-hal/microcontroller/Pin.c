@@ -74,10 +74,10 @@ void reset_pin_number(uint8_t pin_number) {
     // We are very aggressive in shutting down the pad fully. Both pulls are
     // disabled and both buffers are as well.
     gpio_init(pin_number);
-    hw_clear_bits(&padsbank0_hw->io[pin_number], PADS_BANK0_GPIO0_IE_BITS |
+    hw_clear_bits(&pads_bank0_hw->io[pin_number], PADS_BANK0_GPIO0_IE_BITS |
         PADS_BANK0_GPIO0_PUE_BITS |
         PADS_BANK0_GPIO0_PDE_BITS);
-    hw_set_bits(&padsbank0_hw->io[pin_number], PADS_BANK0_GPIO0_OD_BITS);
+    hw_set_bits(&pads_bank0_hw->io[pin_number], PADS_BANK0_GPIO0_OD_BITS);
 }
 
 void common_hal_never_reset_pin(const mcu_pin_obj_t *pin) {

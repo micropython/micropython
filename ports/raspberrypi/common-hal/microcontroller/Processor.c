@@ -20,9 +20,20 @@
 #include "src/rp2_common/hardware_vreg/include/hardware/vreg.h"
 #include "src/rp2_common/hardware_watchdog/include/hardware/watchdog.h"
 
+#ifdef PICO_RP2040
 #include "src/rp2040/hardware_regs/include/hardware/regs/vreg_and_chip_reset.h"
+#endif
+#ifdef PICO_RP2350
+#include "src/rp2350/hardware_regs/include/hardware/regs/powman.h"
+#endif
 #include "src/rp2040/hardware_regs/include/hardware/regs/watchdog.h"
+
+#ifdef PICO_RP2040
 #include "src/rp2040/hardware_structs/include/hardware/structs/vreg_and_chip_reset.h"
+#endif
+#ifdef PICO_RP2350
+#include "src/rp2350/hardware_structs/include/hardware/structs/powman.h"
+#endif
 #include "src/rp2040/hardware_structs/include/hardware/structs/watchdog.h"
 
 float common_hal_mcu_processor_get_temperature(void) {
@@ -74,6 +85,7 @@ void common_hal_mcu_processor_get_uid(uint8_t raw_id[]) {
 mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
     mcu_reset_reason_t reason = RESET_REASON_UNKNOWN;
 
+    #ifdef PICO_RP2040
     uint32_t chip_reset_reg = vreg_and_chip_reset_hw->chip_reset;
 
     if (chip_reset_reg & VREG_AND_CHIP_RESET_CHIP_RESET_HAD_PSM_RESTART_BITS) {
@@ -88,6 +100,26 @@ mcu_reset_reason_t common_hal_mcu_processor_get_reset_reason(void) {
         // NOTE: This register is also used for brownout, but there is no way to differentiate between power on and brown out
         reason = RESET_REASON_POWER_ON;
     }
+    #endif
+    #ifdef PICO_RP2350
+    uint32_t chip_reset_reg = powman_hw->chip_reset;
+
+    if (chip_reset_reg & POWMAN_CHIP_RESET_HAD_RESCUE_BITS) {
+        reason = RESET_REASON_RESCUE_DEBUG;
+    }
+
+    if (chip_reset_reg & POWMAN_CHIP_RESET_HAD_RUN_LOW_BITS) {
+        reason = RESET_REASON_RESET_PIN;
+    }
+
+    if (chip_reset_reg & POWMAN_CHIP_RESET_HAD_BOR_BITS) {
+        reason = RESET_REASON_BROWNOUT;
+    }
+
+    if (chip_reset_reg & POWMAN_CHIP_RESET_HAD_POR_BITS) {
+        reason = RESET_REASON_POWER_ON;
+    }
+    #endif
 
     // Check watchdog after chip reset since watchdog doesn't clear chip_reset, while chip_reset clears the watchdog
 

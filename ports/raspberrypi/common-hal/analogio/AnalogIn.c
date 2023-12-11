@@ -62,15 +62,15 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
     uint16_t value;
     if (SPECIAL_PIN(self->pin)) {
         common_hal_mcu_disable_interrupts();
-        uint32_t old_pad = padsbank0_hw->io[self->pin->number];
-        uint32_t old_ctrl = iobank0_hw->io[self->pin->number].ctrl;
+        uint32_t old_pad = pads_bank0_hw->io[self->pin->number];
+        uint32_t old_ctrl = io_bank0_hw->io[self->pin->number].ctrl;
         adc_gpio_init(self->pin->number);
         adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);
         common_hal_mcu_delay_us(100);
         value = adc_read();
         gpio_init(self->pin->number);
-        padsbank0_hw->io[self->pin->number] = old_pad;
-        iobank0_hw->io[self->pin->number].ctrl = old_ctrl;
+        pads_bank0_hw->io[self->pin->number] = old_pad;
+        io_bank0_hw->io[self->pin->number].ctrl = old_ctrl;
         common_hal_mcu_enable_interrupts();
     } else {
         adc_select_input(self->pin->number - ADC_FIRST_PIN_NUMBER);

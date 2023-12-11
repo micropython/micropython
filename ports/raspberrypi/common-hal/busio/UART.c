@@ -122,7 +122,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         gpio_disable_pulls(pin);
 
         // Turn on "strong" pin driving (more current available).
-        hw_write_masked(&padsbank0_hw->io[pin],
+        hw_write_masked(&pads_bank0_hw->io[pin],
             PADS_BANK0_GPIO0_DRIVE_VALUE_12MA << PADS_BANK0_GPIO0_DRIVE_LSB,
                 PADS_BANK0_GPIO0_DRIVE_BITS);
 

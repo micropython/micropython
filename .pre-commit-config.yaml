@@ -8,9 +8,9 @@ repos:
     hooks:
     -   id: check-yaml
     -   id: end-of-file-fixer
-        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|ports/raspberrypi/sdk|lib/tinyusb)'
     -   id: trailing-whitespace
-        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|lib/mbedtls_errors/generate_errors.diff)'
+        exclude: '^(tests/.*\.exp|tests/cmdline/.*|tests/.*/data/.*|lib/mbedtls_errors/generate_errors.diff|ports/raspberrypi/sdk|lib/tinyusb)'
 -   repo: https://github.com/codespell-project/codespell
     rev: v2.2.4
     hooks:
@@ -22,7 +22,8 @@ repos:
             lib/|
             tests/unicode/data/utf-8_invalid.txt|
             tests/extmod/data/qr.pgm|
-            tests/basics/bytearray_byte_operations.py
+            tests/basics/bytearray_byte_operations.py|
+            ports/raspberrypi/sdk
           )
 -   repo: local
     hooks:
@@ -37,3 +38,8 @@ repos:
         entry: python3 tools/codeformat.py
         types_or: [c, python]
         language: system
+        exclude: |
+          (?x)^(
+            lib/tinyusb|
+            ports/raspberrypi/sdk
+          )
