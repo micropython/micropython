@@ -8,6 +8,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_SDA), MP_ROM_PTR(&pin_GPIO39) },
     { MP_ROM_QSTR(MP_QSTR_SCL), MP_ROM_PTR(&pin_GPIO40) },
+    { MP_ROM_QSTR(MP_QSTR_SDA1), MP_ROM_PTR(&pin_GPIO45) },
+    { MP_ROM_QSTR(MP_QSTR_SCL1), MP_ROM_PTR(&pin_GPIO42) },
 
     { MP_ROM_QSTR(MP_QSTR_D0), MP_ROM_PTR(&pin_GPIO0) },
     { MP_ROM_QSTR(MP_QSTR_D1), MP_ROM_PTR(&pin_GPIO1) },
@@ -26,6 +28,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_A7), MP_ROM_PTR(&pin_GPIO7) },
 
     { MP_ROM_QSTR(MP_QSTR_IO_POWER), MP_ROM_PTR(&pin_GPIO8) },
+    { MP_ROM_QSTR(MP_QSTR_SD_POWER), MP_ROM_PTR(&pin_GPIO9) },
     { MP_ROM_QSTR(MP_QSTR_PD_POWER), MP_ROM_PTR(&pin_GPIO21) },
     { MP_ROM_QSTR(MP_QSTR_UART_POWER), MP_ROM_PTR(&pin_GPIO26) },
     { MP_ROM_QSTR(MP_QSTR_XBEE_POWER), MP_ROM_PTR(&pin_GPIO41) },
@@ -42,9 +45,11 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D37), MP_ROM_PTR(&pin_GPIO37) },
 
     { MP_ROM_QSTR(MP_QSTR_RX), MP_ROM_PTR(&pin_GPIO44) },
+    { MP_ROM_QSTR(MP_QSTR_RX1), MP_ROM_PTR(&pin_GPIO17) },
     { MP_ROM_QSTR(MP_QSTR_D38), MP_ROM_PTR(&pin_GPIO38) },
 
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_GPIO43) },
+    { MP_ROM_QSTR(MP_QSTR_TX1), MP_ROM_PTR(&pin_GPIO18) },
     { MP_ROM_QSTR(MP_QSTR_D39), MP_ROM_PTR(&pin_GPIO39) },
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
