@@ -554,6 +554,7 @@ cleanup:
     mbedtls_raise_error(ret);
 }
 
+#if defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
 STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
     if (!mp_obj_is_true(binary_form)) {
@@ -566,6 +567,7 @@ STATIC mp_obj_t mod_ssl_getpeercert(mp_obj_t o_in, mp_obj_t binary_form) {
     return mp_obj_new_bytes(peer_cert->raw.p, peer_cert->raw.len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_getpeercert_obj, mod_ssl_getpeercert);
+#endif
 
 STATIC mp_obj_t mod_ssl_cipher(mp_obj_t o_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
@@ -726,7 +728,9 @@ STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     #if MICROPY_UNIX_COVERAGE
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
     #endif
+    #if defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
     { MP_ROM_QSTR(MP_QSTR_getpeercert), MP_ROM_PTR(&mod_ssl_getpeercert_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_cipher), MP_ROM_PTR(&mod_ssl_cipher_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
