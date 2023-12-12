@@ -277,17 +277,17 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
 
     // set timeout_char
-    // make sure it is at least as long as a whole character (12 bits here)
     if (args[ARG_timeout_char].u_int != -1) {
         self->timeout_char = args[ARG_timeout_char].u_int;
-        uint32_t char_time_ms = 12000 / baudrate + 1;
-        uint32_t rx_timeout = self->timeout_char / char_time_ms;
-        if (rx_timeout < 1) {
-            check_esp_err(uart_set_rx_full_threshold(self->uart_num, 1));
-            check_esp_err(uart_set_rx_timeout(self->uart_num, 1));
-        } else {
-            check_esp_err(uart_set_rx_timeout(self->uart_num, rx_timeout));
-        }
+    }
+    // make sure it is at least as long as a whole character (12 bits here)
+    uint32_t char_time_ms = 12000 / baudrate + 1;
+    uint32_t rx_timeout = self->timeout_char / char_time_ms;
+    if (rx_timeout < 1) {
+        check_esp_err(uart_set_rx_full_threshold(self->uart_num, 1));
+        check_esp_err(uart_set_rx_timeout(self->uart_num, 1));
+    } else {
+        check_esp_err(uart_set_rx_timeout(self->uart_num, rx_timeout));
     }
 
     // set line inversion
