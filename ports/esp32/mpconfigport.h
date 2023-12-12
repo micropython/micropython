@@ -40,7 +40,9 @@
 #define MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND (1)
 
 // optimisations
+#ifndef MICROPY_OPT_COMPUTED_GOTO
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+#endif
 
 // Python internal features
 #define MICROPY_READER_VFS                  (1)
@@ -123,10 +125,10 @@
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #ifndef MICROPY_PY_MACHINE_DAC
-#define MICROPY_PY_MACHINE_DAC              (1)
+#define MICROPY_PY_MACHINE_DAC              (SOC_DAC_SUPPORTED)
 #endif
 #ifndef MICROPY_PY_MACHINE_I2S
-#define MICROPY_PY_MACHINE_I2S              (1)
+#define MICROPY_PY_MACHINE_I2S              (SOC_I2S_SUPPORTED)
 #endif
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/esp32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_FINALISER    (1)
@@ -214,7 +216,11 @@ void *esp_native_code_commit(void *, size_t, void *);
 #endif
 
 // Functions that should go in IRAM
+// For ESP32 with SPIRAM workaround, firmware is larger and uses more static IRAM,
+// so in that configuration don't put too many functions in IRAM.
+#if !(CONFIG_IDF_TARGET_ESP32 && CONFIG_SPIRAM && CONFIG_SPIRAM_CACHE_WORKAROUND)
 #define MICROPY_WRAP_MP_BINARY_OP(f) IRAM_ATTR f
+#endif
 #define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_LOAD_GLOBAL(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_LOAD_NAME(f) IRAM_ATTR f

@@ -1,8 +1,9 @@
-# Simple test creating an SSL connection and transferring some data
-# This test won't run under CPython because CPython doesn't have key/cert
+# Test creating an SSL connection and getting the peer certificate.
 
 try:
-    import binascii, os, socket, ssl
+    import os
+    import socket
+    import ssl
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -10,21 +11,15 @@ except ImportError:
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
-certfile = "multi_net/rsa_cert.der"
-keyfile = "multi_net/rsa_key.der"
+cert = cafile = "multi_net/rsa_cert.der"
+key = "multi_net/rsa_key.der"
 
 try:
-    os.stat(certfile)
-    os.stat(keyfile)
+    os.stat(cafile)
+    os.stat(key)
 except OSError:
     print("SKIP")
     raise SystemExit
-
-with open(certfile, "rb") as cf:
-    cert = cadata = cf.read()
-
-with open(keyfile, "rb") as kf:
-    key = kf.read()
 
 
 # Server
@@ -36,7 +31,9 @@ def instance0():
     s.listen(1)
     multitest.next()
     s2, _ = s.accept()
-    s2 = ssl.wrap_socket(s2, server_side=True, key=key, cert=cert)
+    server_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    server_ctx.load_cert_chain(cert, key)
+    s2 = server_ctx.wrap_socket(s2, server_side=True)
     print(s2.read(16))
     s2.write(b"server to client")
     s2.close()
@@ -48,9 +45,11 @@ def instance1():
     multitest.next()
     s = socket.socket()
     s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
-    s = ssl.wrap_socket(
-        s, cert_reqs=ssl.CERT_REQUIRED, server_hostname="micropython.local", cadata=cadata
-    )
+    client_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    client_ctx.verify_mode = ssl.CERT_REQUIRED
+    client_ctx.load_verify_locations(cafile=cafile)
+    s = client_ctx.wrap_socket(s, server_hostname="micropython.local")
+    print(s.getpeercert(True))
     s.write(b"client to server")
     print(s.read(16))
     s.close()

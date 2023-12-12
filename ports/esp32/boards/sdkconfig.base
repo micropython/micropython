@@ -66,6 +66,16 @@ CONFIG_MBEDTLS_HAVE_TIME=y
 # Disable ALPN support as it's not implemented in MicroPython
 CONFIG_MBEDTLS_SSL_ALPN=n
 
+# Disable slow or unused EC curves
+CONFIG_MBEDTLS_ECP_DP_BP256R1_ENABLED=n
+CONFIG_MBEDTLS_ECP_DP_BP384R1_ENABLED=n
+CONFIG_MBEDTLS_ECP_DP_BP512R1_ENABLED=n
+CONFIG_MBEDTLS_ECP_DP_CURVE25519_ENABLED=n
+
+# Disable certificate bundle as it's not implemented in MicroPython
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=n
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=n
+
 # Allow mbedTLS to allocate from PSRAM or internal memory
 #
 # (The ESP-IDF default is internal-only, partly for physical security to prevent
