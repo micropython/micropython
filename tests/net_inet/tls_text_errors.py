@@ -1,13 +1,17 @@
 # test that modtls produces a text error message
 
-import socket, ssl, sys
+import socket, ssl
 
 
 def test(addr):
     s = socket.socket()
     s.connect(addr)
     try:
-        s = ssl.wrap_socket(s)
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        if hasattr(ssl_context, "check_hostname"):
+            # Disable hostname check on CPython.
+            ssl_context.check_hostname = False
+        s = ssl_context.wrap_socket(s)
         print("wrap: no exception")
     except OSError as e:
         # mbedtls produces "mbedtls -0x7200: SSL - An invalid SSL record was received"
