@@ -617,6 +617,8 @@ int mp_bluetooth_init(void) {
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
 
     #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
+    ble_hs_cfg.sm_our_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID | BLE_SM_PAIR_KEY_DIST_SIGN;
+    ble_hs_cfg.sm_their_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID | BLE_SM_PAIR_KEY_DIST_SIGN;
     ble_hs_cfg.store_read_cb = ble_secret_store_read;
     ble_hs_cfg.store_write_cb = ble_secret_store_write;
     ble_hs_cfg.store_delete_cb = ble_secret_store_delete;
