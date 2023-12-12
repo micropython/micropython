@@ -159,7 +159,6 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 MOD_SRC_C += $(addprefix modules/,\
 	gc/modgc.c \
 	\
-	machine/modmachine.c \
 	machine/machine_i2c.c \
 	machine/machine_pin_phy.c \
 	machine/machine_pin.c \

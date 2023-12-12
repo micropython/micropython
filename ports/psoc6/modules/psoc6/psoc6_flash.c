@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "modpsoc6.h"
+#include "mphalport.h"
 
 
 // MTB includes

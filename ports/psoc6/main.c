@@ -26,6 +26,7 @@
 #include "shared/runtime/pyexec.h"
 #include "extmod/modnetwork.h"
 
+#include "modules/machine/modmachine.h"
 #include "modules/machine/machine_pin_phy.h"
 
 #if MICROPY_PY_NETWORK
@@ -52,8 +53,6 @@ __attribute__((section(".bss"))) static char gc_heap[MICROPY_GC_HEAP_SIZE];
 extern void rtc_init(void);
 extern void time_init(void);
 extern void os_init(void);
-extern void machine_init(void);
-extern void machine_deinit(void);
 extern void network_init(void);
 extern void network_deinit(void);
 extern void mod_pin_deinit(void);

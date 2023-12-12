@@ -42,6 +42,7 @@
 #include "cybsp.h"
 #include "cy_serial_flash_qspi.h"
 #include "cycfg_qspi_memslot.h"
+#include "mphalport.h"
 
 #define FLASH_BASE        (0x00)  // absolute address of xip/qspi flash. Does not depend on ld file values since xip isn't used
 #define FLASH_SIZE        (0x4000000)  // qspi flash is 512 Mb / 64 MB in size

@@ -14,7 +14,8 @@
 
 // port-specific includes
 
-
+#define MICROPY_BEGIN_ATOMIC_SECTION()      (0)
+#define MICROPY_END_ATOMIC_SECTION(state)   {(void)state;}
 
 #define MP_HAL_PIN_FMT   "%u"
 #define mp_hal_pin_obj_t uint

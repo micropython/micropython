@@ -111,6 +111,10 @@
 #define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc6/modules/time/modtime.c"
 
 #define MICROPY_PY_MACHINE                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc6/modules/machine/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER           (0)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (0)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc6/modules/machine/machine_pwm.c"
