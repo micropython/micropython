@@ -49,6 +49,8 @@
 #define MICROPY_FLOAT_IMPL          (MICROPY_FLOAT_IMPL_DOUBLE)
 #define MICROPY_USE_INTERNAL_ERRNO  (1)
 #define MICROPY_USE_INTERNAL_PRINTF (0)
+
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC (mp_js_random_u32())
 #ifndef MICROPY_VFS
 #define MICROPY_VFS                 (1)
 #endif
@@ -95,3 +97,5 @@ typedef long mp_off_t;
 // _GNU_SOURCE must be defined to get definitions of DT_xxx symbols from dirent.h.
 #define _GNU_SOURCE
 #endif
+
+uint32_t mp_js_random_u32(void);
