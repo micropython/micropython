@@ -35,6 +35,7 @@ void mp_hal_delay_us(mp_uint_t us);
 mp_uint_t mp_hal_ticks_ms(void);
 mp_uint_t mp_hal_ticks_us(void);
 mp_uint_t mp_hal_ticks_cpu(void);
+uint64_t mp_hal_time_ms(void);
 
 int mp_hal_get_interrupt_char(void);
 

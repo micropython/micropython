@@ -64,6 +64,8 @@ mergeInto(LibraryManager.library, {
         }
     },
 
+    mp_js_time_ms: () => Date.now(),
+
     // Node prior to v19 did not expose "crypto" as a global, so make sure it exists.
     mp_js_random_u32__postset:
         "if (globalThis.crypto === undefined) { globalThis.crypto = require('crypto'); }",

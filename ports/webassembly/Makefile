@@ -23,6 +23,7 @@ SRC_SHARED = $(addprefix shared/,\
 	runtime/stdout_helpers.c \
 	runtime/pyexec.c \
 	readline/readline.c \
+	timeutils/timeutils.c \
 	)
 
 SRC_C = \
