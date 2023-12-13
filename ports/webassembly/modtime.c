@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2017, 2018 Rami Ali
+ * Copyright (c) 2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,27 @@
  */
 
 #include "py/obj.h"
+#include "shared/timeutils/timeutils.h"
+#include "library.h"
 
-extern void mp_js_write(const char *str, mp_uint_t len);
-extern int mp_js_ticks_ms(void);
-extern void mp_js_hook(void);
-extern double mp_js_time_ms(void);
-extern uint32_t mp_js_random_u32(void);
+// Return the localtime as an 8-tuple.
+static mp_obj_t mp_time_localtime_get(void) {
+    timeutils_struct_time_t tm;
+    timeutils_seconds_since_epoch_to_struct_time(mp_hal_time_ms() / 1000, &tm);
+    mp_obj_t tuple[8] = {
+        mp_obj_new_int(tm.tm_year),
+        mp_obj_new_int(tm.tm_mon),
+        mp_obj_new_int(tm.tm_mday),
+        mp_obj_new_int(tm.tm_hour),
+        mp_obj_new_int(tm.tm_min),
+        mp_obj_new_int(tm.tm_sec),
+        mp_obj_new_int(tm.tm_wday),
+        mp_obj_new_int(tm.tm_yday),
+    };
+    return mp_obj_new_tuple(8, tuple);
+}
+
+// Returns the number of seconds, as a float, since the Epoch.
+static mp_obj_t mp_time_time_get(void) {
+    return mp_obj_new_float((mp_float_t)mp_hal_time_ms() / 1000);
+}

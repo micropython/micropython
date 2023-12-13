@@ -56,6 +56,15 @@ mp_uint_t mp_hal_ticks_cpu(void) {
     return 0;
 }
 
+uint64_t mp_hal_time_ms(void) {
+    double mm = mp_js_time_ms();
+    return (uint64_t)mm;
+}
+
+uint64_t mp_hal_time_ns(void) {
+    return mp_hal_time_ms() * 1000000ULL;
+}
+
 extern int mp_interrupt_char;
 
 int mp_hal_get_interrupt_char(void) {
