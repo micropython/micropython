@@ -1,0 +1,38 @@
+# uPesy EDU ESP32 MicroPython Helper Library
+# 2023 uPesy Electronics
+
+from micropython import const
+
+
+SCL = const(22)
+SDA = const(21)
+SS = const(5)
+CS = const(5)
+MOSI = const(23)
+SCK = const(18)
+MISO = const(19)
+TX = const(1)
+RX = const(3)
+LED_BUILTIN = const(2)
+D19 = const(22)
+D18 = const(21)
+D13 = const(18)
+D12 = const(19)
+D11 = const(23)
+D10 = const(5)
+D9 = const(13)
+D8 = const(12)
+D7 = const(14)
+D6 = const(27)
+D5 = const(16)
+D4 = const(17)
+D3 = const(25)
+D2 = const(26)
+D1 = const(1)
+D0 = const(3)
+A0 = const(33)
+A1 = const(32)
+A2 = const(35)
+A3 = const(34)
+A4 = const(36)
+A5 = const(39)
