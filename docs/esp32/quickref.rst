@@ -18,7 +18,7 @@ working with this board it may be useful to get an overview of the microcontroll
    general.rst
    tutorial/index.rst
 
-Note that there are several varieties of ESP32- ESP32, ESP32C3, ESP32S2, ESP32S3 supoorted by MicroPython, 
+Note that there are several varieties of ESP32- ESP32, ESP32C3, ESP32S2, ESP32S3 supported by MicroPython, 
 with some differences in functionality between them.
 
 Installing MicroPython
