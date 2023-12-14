@@ -134,33 +134,6 @@ void MP_FASTCODE(mp_hal_signal_input)(void) {
     #endif
 }
 
-STATIC void dupterm_task_handler(os_event_t *evt) {
-    static byte lock;
-    if (lock) {
-        return;
-    }
-    lock = 1;
-    while (1) {
-        int c = mp_os_dupterm_rx_chr();
-        if (c < 0) {
-            break;
-        }
-        ringbuf_put(&stdin_ringbuf, c);
-    }
-    mp_hal_signal_input();
-    lock = 0;
-}
-
-STATIC os_event_t dupterm_evt_queue[4];
-
-void dupterm_task_init() {
-    system_os_task(dupterm_task_handler, DUPTERM_TASK_ID, dupterm_evt_queue, MP_ARRAY_SIZE(dupterm_evt_queue));
-}
-
-void mp_hal_signal_dupterm_input(void) {
-    system_os_post(DUPTERM_TASK_ID, 0, 0);
-}
-
 // this bit is unused in the Xtensa PS register
 #define ETS_LOOP_ITER_BIT (12)
 
