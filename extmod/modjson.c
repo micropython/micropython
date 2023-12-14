@@ -188,7 +188,7 @@ STATIC mp_uint_t json_python_readinto(mp_obj_t obj, void *buf, mp_uint_t size, i
 }
 
 STATIC mp_obj_t _mod_json_load(mp_obj_t stream_obj, bool return_first_json) {
-    const mp_stream_p_t *stream_p = mp_proto_get(MP_QSTR_protocol_stream, stream_obj);
+    const mp_stream_p_t *stream_p = mp_proto_get(0, stream_obj);
     json_stream_t s;
     uint8_t character_buffer[CIRCUITPY_JSON_READ_CHUNK_SIZE];
     if (stream_p == NULL) {
