@@ -49,15 +49,12 @@ STATIC mp_obj_t compile_command(mp_uint_t n_args, const mp_obj_t *pos_args, mp_m
     enum { ARG_source, ARG_filename, ARG_symbol };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_source, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = mp_const_none } },
-        { MP_QSTR_filename, MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_filename, MP_ARG_OBJ, { .u_obj = MP_ROM_QSTR(MP_QSTR__lt_input_gt_) } },
         { MP_QSTR_symbol, MP_ARG_OBJ, { .u_obj = MP_ROM_QSTR(MP_QSTR_single) } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (args[ARG_filename].u_obj == MP_OBJ_NULL) {
-        args[ARG_filename].u_obj = mp_obj_new_str_via_qstr("<input>", 7);
-    }
     const char *source = get_arg_str(args[ARG_source].u_obj, MP_QSTR_source);
     if (mp_repl_continue_with_input(source)) {
         return mp_const_none;
