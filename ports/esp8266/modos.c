@@ -25,16 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+// This file is never compiled standalone, it's included directly from
+// extmod/modos.c via MICROPY_PY_OS_INCLUDEFILE.
 
-#include "py/objtuple.h"
-#include "py/objstr.h"
-#include "extmod/misc.h"
 #include "extmod/modmachine.h"
-#include "extmod/vfs.h"
-#include "extmod/vfs_fat.h"
-#include "extmod/vfs_lfs.h"
-#include "genhdr/mpversion.h"
 #include "user_interface.h"
 
 STATIC const char *mp_os_uname_release(void) {
@@ -60,10 +54,3 @@ void mp_os_dupterm_stream_detached_attached(mp_obj_t stream_detached, mp_obj_t s
         --uart_attached_to_dupterm;
     }
 }
-
-STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
-    (void)obj_in;
-    mp_hal_signal_dupterm_input();
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);

@@ -41,8 +41,6 @@ extern const struct _mp_print_t mp_debug_print;
 extern ringbuf_t stdin_ringbuf;
 // Call this after putting data to stdin_ringbuf
 void mp_hal_signal_input(void);
-// Call this when data is available in dupterm object
-void mp_hal_signal_dupterm_input(void);
 
 // This variable counts how many times the UART is attached to dupterm
 extern int uart_attached_to_dupterm;
@@ -65,9 +63,7 @@ void mp_hal_set_interrupt_char(int c);
 uint32_t mp_hal_get_cpu_freq(void);
 
 #define UART_TASK_ID 0
-#define DUPTERM_TASK_ID 1
 void uart_task_init();
-void dupterm_task_init();
 
 uint32_t esp_disable_irq(void);
 void esp_enable_irq(uint32_t state);
