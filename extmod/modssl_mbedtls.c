@@ -294,17 +294,15 @@ STATIC mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
 
     // Parse list of ciphers.
     ssl_context->ciphersuites = m_new(int, len + 1);
-    for (int i = 0, n = len; i < n; i++) {
-        if (ciphers[i] != mp_const_none) {
-            const char *ciphername = mp_obj_str_get_str(ciphers[i]);
-            const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
-            ssl_context->ciphersuites[i] = id;
-            if (id == 0) {
-                mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
-            }
+    for (size_t i = 0; i < len; ++i) {
+        const char *ciphername = mp_obj_str_get_str(ciphers[i]);
+        const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+        if (id == 0) {
+            mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
         }
+        ssl_context->ciphersuites[i] = id;
     }
-    ssl_context->ciphersuites[len + 1] = 0;
+    ssl_context->ciphersuites[len] = 0;
 
     // Configure ciphersuite.
     mbedtls_ssl_conf_ciphersuites(&ssl_context->conf, (const int *)ssl_context->ciphersuites);
