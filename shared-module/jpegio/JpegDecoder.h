@@ -34,6 +34,8 @@ typedef struct jpegio_jpegdecoder_obj {
     mp_obj_base_t base;
     JDEC decoder;
     byte workspace[TJPGD_WORKSPACE_SIZE];
-    mp_buffer_info_t src;
+    mp_obj_t data_obj;
+    mp_buffer_info_t bufinfo;
     displayio_bitmap_t *dest;
+    int scale;
 } jpegio_jpegdecoder_obj_t;

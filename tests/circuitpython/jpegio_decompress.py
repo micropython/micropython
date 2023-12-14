@@ -1,3 +1,5 @@
+import io
+
 from displayio import Bitmap
 import binascii
 import jpegio
@@ -53,12 +55,14 @@ decoder = jpegio.JpegDecoder()
 
 
 def test(jpeg_input, scale):
-    w, h = decoder.decode(jpeg_input, scale=scale)
+    w, h = decoder.open(jpeg_input)
+    w >>= scale
+    h >>= scale
     print(f"{w}x{h}")
 
     b = Bitmap(w, h, 65535)
 
-    decoder.decode(jpeg_input, b, scale=scale)
+    decoder.decode(b, scale=scale)
 
     for y in range(min(30, h)):
         for x in range(min(72, w)):
@@ -67,7 +71,16 @@ def test(jpeg_input, scale):
     print("...\n" if h > 24 else "")
 
 
+print("bytes")
 test(content, scale=0)
 test(content, scale=1)
 test(content, scale=2)
 test(content, scale=3)
+
+bytesio = io.BytesIO(content)
+
+print("BytesIO")
+test(io.BytesIO(content), scale=0)
+test(io.BytesIO(content), scale=1)
+test(io.BytesIO(content), scale=2)
+test(io.BytesIO(content), scale=3)

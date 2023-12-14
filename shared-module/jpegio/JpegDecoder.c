@@ -30,6 +30,8 @@
 #include "shared-bindings/bitmaptools/__init__.h"
 #include "shared-module/jpegio/JpegDecoder.h"
 
+typedef size_t (*input_func)(JDEC *jd, uint8_t *dest, size_t len);
+
 // Given a pointer `ptr` to the field `field_name` inside a structure of type `type`,
 // retrieve a pointer to the containing object.
 // This is used to retrieve the jpegio_jpegdecoder_obj_t object given the JDEC.
@@ -71,12 +73,61 @@ static void check_jresult(JRESULT j) {
 }
 
 void common_hal_jpegio_jpegdecoder_construct(jpegio_jpegdecoder_obj_t *self) {
-    // Nothing(!)
+    self->data_obj = MP_OBJ_NULL;
+}
+
+void common_hal_jpegio_jpegdecoder_close(jpegio_jpegdecoder_obj_t *self) {
+    self->data_obj = MP_OBJ_NULL;
+    memset(&self->bufinfo, 0, sizeof(self->bufinfo));
+}
+
+static mp_obj_t common_hal_jpegio_jpegdecoder_decode_common(jpegio_jpegdecoder_obj_t *self, input_func fun) {
+    JRESULT result = jd_prepare(&self->decoder, fun, &self->workspace, sizeof(self->workspace), NULL);
+    if (result != JDR_OK) {
+        common_hal_jpegio_jpegdecoder_close(self);
+    }
+    check_jresult(result);
+    mp_obj_t elems[] = {
+        MP_OBJ_NEW_SMALL_INT(self->decoder.height),
+        MP_OBJ_NEW_SMALL_INT(self->decoder.width)
+    };
+    return mp_obj_new_tuple(MP_ARRAY_SIZE(elems), elems);
+}
+
+static size_t file_input(JDEC *jd, uint8_t *dest, size_t len) {
+    jpegio_jpegdecoder_obj_t *self = CONTAINER_OF(jd, jpegio_jpegdecoder_obj_t, decoder);
+
+    if (!dest) {
+        // caller passes NULL to skip data; we need to read over the data.
+        // Don't assume a seekable stream, because we want to decode jpegs
+        // right from a native socket object
+        uint8_t buf[512];
+        size_t total = 0;
+        size_t read;
+        do {
+            size_t to_discard = MIN(len - total, sizeof(buf));
+            read = file_input(jd, buf, to_discard);
+            total += read;
+        } while (read != 0 && total != len);
+        return len;
+    }
+
+    int errcode = 0;
+    size_t result = mp_stream_rw(self->data_obj, dest, len, &errcode, MP_STREAM_RW_READ);
+    if (errcode != 0) { // raise our own error in case of I/O failure, it's better than the decoder's error
+        mp_raise_OSError(errcode);
+    }
+    return result;
+}
+
+mp_obj_t common_hal_jpegio_jpegdecoder_set_source_file(jpegio_jpegdecoder_obj_t *self, mp_obj_t file_obj) {
+    self->data_obj = file_obj;
+    return common_hal_jpegio_jpegdecoder_decode_common(self, file_input);
 }
 
 static size_t buffer_input(JDEC *jd, uint8_t *dest, size_t len) {
     jpegio_jpegdecoder_obj_t *self = CONTAINER_OF(jd, jpegio_jpegdecoder_obj_t, decoder);
-    mp_buffer_info_t *src = &self->src;
+    mp_buffer_info_t *src = &self->bufinfo;
     size_t to_copy = MIN(len, src->len);
     if (dest) { // passes NULL to skip data
         memcpy(dest, src->buf, to_copy);
@@ -86,24 +137,29 @@ static size_t buffer_input(JDEC *jd, uint8_t *dest, size_t len) {
     return to_copy;
 }
 
+mp_obj_t common_hal_jpegio_jpegdecoder_set_source_buffer(jpegio_jpegdecoder_obj_t *self, mp_obj_t buffer_obj) {
+    self->data_obj = buffer_obj;
+    mp_get_buffer_raise(buffer_obj, &self->bufinfo, MP_BUFFER_READ);
+    return common_hal_jpegio_jpegdecoder_decode_common(self, buffer_input);
+}
+
 static int bitmap_output(JDEC *jd, void *data, JRECT *rect) {
     jpegio_jpegdecoder_obj_t *self = CONTAINER_OF(jd, jpegio_jpegdecoder_obj_t, decoder);
     common_hal_bitmaptools_arrayblit(self->dest, data, 2, rect->left, rect->top, rect->right + 1, rect->bottom + 1, false, 0);
     return 1;
 }
 
-mp_obj_t common_hal_jpegio_jpegdecoder_decode(jpegio_jpegdecoder_obj_t *self, displayio_bitmap_t *bitmap, mp_buffer_info_t *jpeg_data, int scale) {
-    self->src = *jpeg_data;
-    check_jresult(jd_prepare(&self->decoder, buffer_input, &self->workspace, sizeof(self->workspace), NULL));
+void common_hal_jpegio_jpegdecoder_decode_into(jpegio_jpegdecoder_obj_t *self, displayio_bitmap_t *bitmap, int scale) {
+    if (self->data_obj == MP_OBJ_NULL) {
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q() without %q()"), MP_QSTR_decode, MP_QSTR_open);
+    }
     int dst_height = self->decoder.height >> scale;
     int dst_width = self->decoder.width >> scale;
-    if (bitmap) {
-        if (dst_width > bitmap->width || dst_height > bitmap->height) {
-            mp_raise_ValueError(MP_ERROR_TEXT("Destination bitmap too small to contain image"));
-        }
-        self->dest = bitmap;
-        check_jresult(jd_decomp(&self->decoder, bitmap_output, scale));
+    if (dst_width > bitmap->width || dst_height > bitmap->height) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Destination bitmap too small to contain image"));
     }
-    mp_obj_t elems[] = { MP_OBJ_NEW_SMALL_INT(dst_width), MP_OBJ_NEW_SMALL_INT(dst_height) };
-    return mp_obj_new_tuple(MP_ARRAY_SIZE(elems), elems);
+    self->dest = bitmap;
+    JRESULT result = jd_decomp(&self->decoder, bitmap_output, scale);
+    common_hal_jpegio_jpegdecoder_close(self);
+    check_jresult(result);
 }
