@@ -22,7 +22,7 @@ jobs:
     - name: Build mpremote wheel
       run: cd tools/mpremote && python -m build --wheel
     - name: Archive mpremote wheel
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mpremote
         path: |
