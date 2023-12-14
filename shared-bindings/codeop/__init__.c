@@ -35,6 +35,7 @@ STATIC const char *get_arg_str(mp_obj_t arg, qstr name) {
 }
 
 //| """Utilities to compile possibly incomplete Python source code."""
+//|
 
 //| def compile_command(source: str, filename: str = "<input>", symbol: str = "single"):
 //|     """Compile a command and determine whether it is incomplete
