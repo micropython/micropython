@@ -146,6 +146,7 @@ MicropPython firmware version:
 You can run any command any time you want to upgrade to the latest MicroPython firmware version.
 This command will take care of the following steps:
 
+* Download and install fw-loader, which will be used to update the board flasher firmware.
 * Download and install openocd, which is the software required to deploy a firmware file on PSoC6™ controllers
 * Download the latest ``.hex`` file for your select board
 * Deploy the latest version of MicroPython firmware on your board
@@ -190,7 +191,8 @@ Updating the flasher firmware
 The evaluation PSoC6™ boards include an integrated hardware programmer tool using `KitProg <https://www.infineon.com/cms/en/design-support/tools/programming-testing/psoc-programming-solutions/#collapse-703c72c0-50f2-11ec-9758-005056945905-3>`_ firmware. 
 Some older boards will come preflashed with KitProg version 2. In MicroPython PSoC6™ port it is required to use KitProg version 3, and the setup process will fail for version 2.
 
-If you need to update the KitProg firmware, you can use the flag ``-u`` for updating the firmware version in the MicropPython device setup process. 
+By default, the device setup automatically updates the flasher firmware, ensuring compatibility with the rest of the flashing tools.
+If you want to skip the KitProg firmware update step, you can use the flag ``-s`` or ``--skip-fw-update`` during the ``device-setup`` process. 
 
 .. tabs::
 
@@ -198,7 +200,7 @@ If you need to update the KitProg firmware, you can use the flag ``-u`` for upda
 
             .. code-block:: bash
                 
-                python mpy-psoc6.py device-setup -u
+                python mpy-psoc6.py device-setup -s
 
         
 .. warning::
@@ -302,8 +304,5 @@ The log section will show the progress and inform when the firmware deployment o
 For a detailed description on how to use the Cypress Programmer tool, please consult the `Cypress
 Programmer User Guide
 <https://www.infineon.com/dgdl/Infineon-Infineon_Programmer_4.0_GUI_User_Guide-Software-v01_00-EN.pdf?fileId=8ac78c8c7e7124d1017ed9abca6e365c>`_.
-
-
-
 
 
