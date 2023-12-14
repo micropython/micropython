@@ -250,6 +250,73 @@ static_qstr_list = [
     "zip",
 ]
 
+# These qstrs have to be sorted early (preferably right after static_qstr_list) because they are required to fit in 8-bit values
+# however they should never be *forced* to appear
+# repeats len, hash, int from the static qstr list, but this doesn't hurt anything.
+eightbit_qstr_list = [
+    "__abs__",
+    "__add__",
+    "__and__",
+    "__bool__",
+    "__complex__",
+    "__contains__",
+    "__delete__",
+    "__divmod__",
+    "__eq__",
+    "__float__",
+    "__floordiv__",
+    "__ge__",
+    "__get__",
+    "__gt__",
+    "__hash__",
+    "__iadd__",
+    "__iand__",
+    "__ifloordiv__",
+    "__ilshift__",
+    "__imatmul__",
+    "__imod__",
+    "__imul__",
+    "__int__",
+    "__invert__",
+    "__ior__",
+    "__ipow__",
+    "__irshift__",
+    "__isub__",
+    "__itruediv__",
+    "__ixor__",
+    "__le__",
+    "__len__",
+    "__lshift__",
+    "__lt__",
+    "__matmul__",
+    "__mod__",
+    "__mul__",
+    "__ne__",
+    "__neg__",
+    "__or__",
+    "__pos__",
+    "__pow__",
+    "__radd__",
+    "__rand__",
+    "__rfloordiv__",
+    "__rlshift__",
+    "__rmatmul__",
+    "__rmod__",
+    "__rmul__",
+    "__ror__",
+    "__rpow__",
+    "__rrshift__",
+    "__rshift__",
+    "__rsub__",
+    "__rtruediv__",
+    "__rxor__",
+    "__set__",
+    "__sizeof__",
+    "__sub__",
+    "__truediv__",
+    "__xor__",
+]
+
 
 # this must match the equivalent function in qstr.c
 def compute_hash(qstr, bytes_hash):
@@ -337,18 +404,7 @@ def parse_input_headers_with_translations(infiles):
                 order = len(qstrs)
                 # but put special method names like __add__ at the top of list, so
                 # that their id's fit into a byte
-                if ident == "":
-                    # Sort empty qstr above all still
-                    order = -200000
-                elif ident == "__dir__":
-                    # Put __dir__ after empty qstr for builtin dir() to work
-                    order = -190000
-                elif ident.startswith("__"):
-                    order -= 100000
-                # CIRCUITPY-CHANGE
-                elif ident.startswith("_lt"):
-                    order -= 100000
-                elif ident.startswith("_gt"):
+                if ident in eightbit_qstr_list:
                     order -= 100000
                 qstrs[ident] = (order, ident, qstr)
 
