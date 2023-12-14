@@ -250,6 +250,8 @@ static_qstr_list = [
     "zip",
 ]
 
+# CIRCUITPY-CHANGE
+# When taking the next merge from Micropython, prefer upstream's way of ensuring these appear in the "QSTR0" pool.
 # These qstrs have to be sorted early (preferably right after static_qstr_list) because they are required to fit in 8-bit values
 # however they should never be *forced* to appear
 # repeats len, hash, int from the static qstr list, but this doesn't hurt anything.
