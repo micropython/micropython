@@ -166,6 +166,46 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
     #endif
 }
 
+STATIC void ssl_check_async_handshake_failure(mp_obj_ssl_socket_t *sslsock, int *errcode) {
+    if (
+        #if MBEDTLS_VERSION_NUMBER >= 0x03000000
+        (*errcode < 0) && (mbedtls_ssl_is_handshake_over(&sslsock->ssl) == 0) && (*errcode != MBEDTLS_ERR_SSL_CONN_EOF)
+        #else
+        (*errcode < 0) && (*errcode != MBEDTLS_ERR_SSL_CONN_EOF)
+        #endif
+        ) {
+        // Asynchronous handshake is done by mbdetls_ssl_read/write.  If the return code is
+        // MBEDTLS_ERR_XX (i.e < 0) and the handshake is not done due to a handshake failure,
+        // then notify peer with proper error code and raise local error with mbedtls_raise_error.
+
+        if (*errcode == MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE) {
+            // Check if TLSv1.3 and use proper alert for this case (to be implemented)
+            // uint8_t alert = MBEDTLS_SSL_ALERT_MSG_CERT_REQUIRED; tlsv1.3
+            // uint8_t alert = MBEDTLS_SSL_ALERT_MSG_HANDSHAKE_FAILURE; tlsv1.2
+            mbedtls_ssl_send_alert_message(&sslsock->ssl, MBEDTLS_SSL_ALERT_LEVEL_FATAL,
+                MBEDTLS_SSL_ALERT_MSG_HANDSHAKE_FAILURE);
+        }
+
+        if (*errcode == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
+            // The certificate may have been rejected for several reasons.
+            char xcbuf[256];
+            uint32_t flags = mbedtls_ssl_get_verify_result(&sslsock->ssl);
+            int ret = mbedtls_x509_crt_verify_info(xcbuf, sizeof(xcbuf), "\n", flags);
+            // The length of the string written (not including the terminated nul byte),
+            // or a negative err code.
+            if (ret > 0) {
+                sslsock->sock = MP_OBJ_NULL;
+                mbedtls_ssl_free(&sslsock->ssl);
+                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("%s"), xcbuf);
+            }
+        }
+
+        sslsock->sock = MP_OBJ_NULL;
+        mbedtls_ssl_free(&sslsock->ssl);
+        mbedtls_raise_error(*errcode);
+    }
+}
+
 /******************************************************************************/
 // SSLContext type.
 
@@ -294,17 +334,15 @@ STATIC mp_obj_t ssl_context_set_ciphers(mp_obj_t self_in, mp_obj_t ciphersuite) 
 
     // Parse list of ciphers.
     ssl_context->ciphersuites = m_new(int, len + 1);
-    for (int i = 0, n = len; i < n; i++) {
-        if (ciphers[i] != mp_const_none) {
-            const char *ciphername = mp_obj_str_get_str(ciphers[i]);
-            const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
-            ssl_context->ciphersuites[i] = id;
-            if (id == 0) {
-                mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
-            }
+    for (size_t i = 0; i < len; ++i) {
+        const char *ciphername = mp_obj_str_get_str(ciphers[i]);
+        const int id = mbedtls_ssl_get_ciphersuite_id(ciphername);
+        if (id == 0) {
+            mbedtls_raise_error(MBEDTLS_ERR_SSL_BAD_CONFIG);
         }
+        ssl_context->ciphersuites[i] = id;
     }
-    ssl_context->ciphersuites[len + 1] = 0;
+    ssl_context->ciphersuites[len] = 0;
 
     // Configure ciphersuite.
     mbedtls_ssl_conf_ciphersuites(&ssl_context->conf, (const int *)ssl_context->ciphersuites);
@@ -616,6 +654,7 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     } else {
         o->last_error = ret;
     }
+    ssl_check_async_handshake_failure(o, &ret);
     *errcode = ret;
     return MP_STREAM_ERROR;
 }
@@ -644,6 +683,7 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     } else {
         o->last_error = ret;
     }
+    ssl_check_async_handshake_failure(o, &ret);
     *errcode = ret;
     return MP_STREAM_ERROR;
 }
