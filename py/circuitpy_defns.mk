@@ -168,6 +168,9 @@ endif
 ifeq ($(CIRCUITPY_CANIO),1)
 SRC_PATTERNS += canio/%
 endif
+ifeq ($(CIRCUITPY_CODEOP),1)
+SRC_PATTERNS += codeop/%
+endif
 ifeq ($(CIRCUITPY_COUNTIO),1)
 SRC_PATTERNS += countio/%
 endif
@@ -547,6 +550,7 @@ $(filter $(SRC_PATTERNS), \
 	__future__/__init__.c \
 	camera/ImageFormat.c \
 	canio/Match.c \
+	codeop/__init__.c \
 	countio/Edge.c \
 	digitalio/Direction.c \
 	digitalio/DriveMode.c \

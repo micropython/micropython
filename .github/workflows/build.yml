@@ -249,9 +249,9 @@ jobs:
         python3 -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
     - name: Install dependencies
       run: |
-        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
+        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-arm-none-eabi.zip
         unzip -q -d /tmp gcc-arm.zip
-        tar -C /tmp/gcc-arm-none-* -cf - . | tar -C /usr/local -xf -
+        tar -C /tmp/arm-gnu-toolchain* -cf - . | tar -C /usr/local -xf -
         pip install wheel
         # requirements_dev.txt doesn't install on windows. (with msys2 python)
         # instead, pick a subset for what we want to do
