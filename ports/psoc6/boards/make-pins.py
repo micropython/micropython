@@ -8,7 +8,7 @@ import os
 prefix_content = '#include <stdio.h> \n \
 #include "py/obj.h" \n \
 #include "py/mphal.h" \n \
-#include "modules/machine/machine_pin_phy.h"\n '
+#include "machine_pin_phy.h"\n '
 
 
 class NamedPin(object):

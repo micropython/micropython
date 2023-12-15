@@ -26,8 +26,8 @@
 #include "shared/runtime/pyexec.h"
 #include "extmod/modnetwork.h"
 
-#include "modules/machine/modmachine.h"
-#include "modules/machine/machine_pin_phy.h"
+#include "modmachine.h"
+#include "machine_pin_phy.h"
 
 #if MICROPY_PY_NETWORK
 #include "cybsp_wifi.h"

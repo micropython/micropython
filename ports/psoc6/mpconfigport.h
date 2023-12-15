@@ -95,7 +95,7 @@
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
 
-#define MICROPY_PY_OS_INCLUDEFILE               "ports/psoc6/modules/os/modos.c"
+#define MICROPY_PY_OS_INCLUDEFILE               "ports/psoc6/modos.c"
 #define MICROPY_PY_OS_UNAME                     (1)
 #define MICROPY_PY_OS_URANDOM                   (0)
 #define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV    (1)
@@ -108,16 +108,16 @@
 
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS            (1)
-#define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc6/modules/time/modtime.c"
+#define MICROPY_PY_TIME_INCLUDEFILE             "ports/psoc6/modtime.c"
 
 #define MICROPY_PY_MACHINE                      (1)
-#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc6/modules/machine/modmachine.c"
+#define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/psoc6/modmachine.c"
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER           (0)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (0)
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW         mp_pin_make_new
 #define MICROPY_PY_MACHINE_PWM                  (1)
-#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc6/modules/machine/machine_pwm.c"
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc6/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 
@@ -127,7 +127,7 @@
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
 
 #define MICROPY_PY_MACHINE_PSOC6_I2S            (1)
-#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/psoc6/modules/machine/machine_i2s.c"
+#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE      "ports/psoc6/machine_i2s.c"
 
 // VFS
 #define MICROPY_VFS                             (1)

@@ -156,37 +156,31 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
 	)
 
-MOD_SRC_C += $(addprefix modules/,\
-	gc/modgc.c \
+MOD_SRC_C += \
+	modgc.c \
 	\
-	machine/machine_i2c.c \
-	machine/machine_pin_phy.c \
-	machine/machine_pin.c \
-	machine/machine_rtc.c \
-	machine/machine_spi.c \
-	machine/machine_timer.c \
-	machine/machine_adc.c \
-	machine/machine_adcblock.c \
-	machine/machine_i2s.c\
+	machine_i2c.c \
+	machine_pin_phy.c \
+	machine_pin.c \
+	machine_rtc.c \
+	machine_spi.c \
+	machine_timer.c \
+	machine_adc.c \
+	machine_adcblock.c \
+	machine_i2s.c\
 	\
-	psoc6/modpsoc6.c \
-	psoc6/psoc6_fatfs.c \
-	psoc6/psoc6_flash.c \
-	)
+	modpsoc6.c \
+	psoc6_fatfs.c \
+	psoc6_flash.c 
 
 ifeq ($(MICROPY_PY_EXT_FLASH),1)
 	CFLAGS += -DMICROPY_ENABLE_EXT_QSPI_FLASH=1
-	MOD_SRC_C += $(addprefix modules/psoc6/,\
-		psoc6_qspi_flash.c \
-		)
+	MOD_SRC_C += psoc6_qspi_flash.c 
 endif
 
 ifeq ($(MICROPY_PY_NETWORK_IFX_WCM),1)
 CFLAGS += -DMICROPY_PY_NETWORK=1 -DMICROPY_PY_NETWORK_IFX_WCM=1 -Wno-stringop-truncation
-	MOD_SRC_C += $(addprefix modules/network/,\
-		network_ifx_wcm.c \
-		)
-	INC += -Imodules/network
+	MOD_SRC_C += network_ifx_wcm.c 
 endif
 
 SRC_C = help.c \
