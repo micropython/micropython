@@ -6,6 +6,7 @@ import sys
 import platform
 import argparse
 import inspect
+import json
 import re
 from glob import glob
 import multiprocessing
@@ -47,6 +48,8 @@ else:
 # (not site packages which may clash with u-module names), and improve start up time.
 CPYTHON3_CMD = [CPYTHON3, "-BS"]
 
+# File with the test results.
+RESULTS_FILE = "_results.json"
 
 # For diff'ing test output
 DIFF = os.getenv("MICROPY_DIFF", "diff -u")
@@ -770,7 +773,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             with open(filename_mupy, "wb") as f:
                 f.write(output_mupy)
             print("FAIL ", test_file)
-            failed_tests.append(test_name)
+            failed_tests.append((test_name, test_file))
 
         test_count.increment()
 
@@ -784,6 +787,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         for test in tests:
             run_one_test(test)
 
+    # Leave RESULTS_FILE untouched here for future runs.
     if args.list_tests:
         return True
 
@@ -798,8 +802,26 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if len(skipped_tests) > 0:
         print("{} tests skipped: {}".format(len(skipped_tests), " ".join(skipped_tests)))
     failed_tests = sorted(failed_tests.value)
+
+    # Serialize regex added by append_filter.
+    def to_json(obj):
+        if isinstance(obj, re.Pattern):
+            return obj.pattern
+        return obj
+
+    with open(os.path.join(result_dir, RESULTS_FILE), "w") as f:
+        json.dump(
+            {"args": vars(args), "failed_tests": [test[1] for test in failed_tests]},
+            f,
+            default=to_json,
+        )
+
     if len(failed_tests) > 0:
-        print("{} tests failed: {}".format(len(failed_tests), " ".join(failed_tests)))
+        print(
+            "{} tests failed: {}".format(
+                len(failed_tests), " ".join(test[0] for test in failed_tests)
+            )
+        )
         return False
 
     # all tests succeeded
@@ -915,6 +937,11 @@ the last matching regex is used:
         action="store_true",
         help="delete the .exp and .out files from failed tests and exit",
     )
+    cmd_parser.add_argument(
+        "--run-failures",
+        action="store_true",
+        help="re-run only the failed tests",
+    )
     args = cmd_parser.parse_args()
 
     if args.print_failures:
@@ -931,6 +958,7 @@ the last matching regex is used:
             os.path.join(args.result_dir, "*.out")
         ):
             os.remove(f)
+        rm_f(os.path.join(args.result_dir, RESULTS_FILE))
 
         sys.exit(0)
 
@@ -979,7 +1007,19 @@ the last matching regex is used:
     else:
         raise ValueError("target must be one of %s" % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
 
-    if len(args.files) == 0:
+    if args.run_failures and (any(args.files) or args.test_dirs is not None):
+        raise ValueError(
+            "--run-failures cannot be used together with files or --test-dirs arguments"
+        )
+
+    if args.run_failures:
+        results_file = os.path.join(args.result_dir, RESULTS_FILE)
+        if os.path.exists(results_file):
+            with open(results_file, "r") as f:
+                tests = json.load(f)["failed_tests"]
+        else:
+            tests = []
+    elif len(args.files) == 0:
         if args.test_dirs is None:
             test_dirs = (
                 "basics",
