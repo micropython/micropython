@@ -26,6 +26,20 @@
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
+// Initial Python heap size.  This starts small but adds new heap areas on demand due to
+// the settings MICROPY_GC_SPLIT_HEAP and MICROPY_GC_SPLIT_HEAP_AUTO.  The value is
+// different for different MCUs and is chosen so they can grow the heap once (double it)
+// and still have enough internal RAM to start WiFi and make a HTTPS request.
+#ifndef MICROPY_GC_INITIAL_HEAP_SIZE
+#if CONFIG_IDF_TARGET_ESP32
+#define MICROPY_GC_INITIAL_HEAP_SIZE        (56 * 1024)
+#elif CONFIG_IDF_TARGET_ESP32S2 && !CONFIG_SPIRAM
+#define MICROPY_GC_INITIAL_HEAP_SIZE        (36 * 1024)
+#else
+#define MICROPY_GC_INITIAL_HEAP_SIZE        (64 * 1024)
+#endif
+#endif
+
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
 #if !CONFIG_IDF_TARGET_ESP32C3
