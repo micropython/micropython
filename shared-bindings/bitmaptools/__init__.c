@@ -450,14 +450,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_alphablend_obj, 0, bitmaptools_alphablend
 //|     ...
 //|
 STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {ARG_dest_bitmap, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_value};
+    enum {ARG_dest_bitmap, ARGS_X1_Y1_X2_Y2, ARG_value};
 
     static const mp_arg_t allowed_args[] = {
         {MP_QSTR_dest_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        {MP_QSTR_x1, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
-        {MP_QSTR_y1, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
-        {MP_QSTR_x2, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
-        {MP_QSTR_y2, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
+        ALLOWED_ARGS_X1_Y1_X2_Y2(MP_ARG_REQUIRED, MP_ARG_REQUIRED),
         {MP_QSTR_value, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL}},
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -472,12 +469,9 @@ STATIC mp_obj_t bitmaptools_obj_fill_region(size_t n_args, const mp_obj_t *pos_a
         mp_raise_ValueError(MP_ERROR_TEXT("out of range of target"));
     }
 
-    int16_t x1 = args[ARG_x1].u_int;
-    int16_t y1 = args[ARG_y1].u_int;
-    int16_t x2 = args[ARG_x2].u_int;
-    int16_t y2 = args[ARG_y2].u_int;
+    bitmaptools_rect_t lim = bitmaptools_validate_coord_range_pair(&args[ARG_x1], destination->width, destination->height);
 
-    common_hal_bitmaptools_fill_region(destination, x1, y1, x2, y2, value);
+    common_hal_bitmaptools_fill_region(destination, lim.x1, lim.y1, lim.x2, lim.y2, value);
 
     return mp_const_none;
 }
@@ -732,14 +726,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_polygon_obj, 0, bitmaptools_obj_draw
 //|     ...
 //|
 STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_bitmap, ARG_data, ARG_x1, ARG_y1, ARG_x2, ARG_y2, ARG_skip_index };
+    enum { ARG_bitmap, ARG_data, ARGS_X1_Y1_X2_Y2, ARG_skip_index };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_data, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
-        { MP_QSTR_x1, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_y1, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_x2, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_y2, MP_ARG_INT, {.u_int = -1} },
+        ALLOWED_ARGS_X1_Y1_X2_Y2(0, MP_ARG_REQUIRED),
         { MP_QSTR_skip_index, MP_ARG_OBJ, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -750,16 +741,9 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_data].u_obj, &bufinfo, MP_BUFFER_READ);
 
-    int x1 = args[ARG_x1].u_int;
-    int y1 = args[ARG_y1].u_int;
-    int x2 = args[ARG_x2].u_int == -1 ? bitmap->width : args[ARG_x2].u_int;
-    int y2 = args[ARG_y2].u_int == -1 ? bitmap->height : args[ARG_y2].u_int;
+    bitmaptools_rect_t lim = bitmaptools_validate_coord_range_pair(&args[ARG_x1], bitmap->width, bitmap->height);
 
-    if ((x1 < 0) || (y1 < 0) || (x1 > x2) || (y1 > y2) || (x2 > bitmap->width) || (y2 > bitmap->height)) {
-        mp_raise_IndexError(MP_ERROR_TEXT("pixel coordinates out of bounds"));
-    }
-
-    size_t output_element_count = (x2 - x1) * (y2 - y1);
+    size_t output_element_count = (lim.x2 - lim.x1) * (lim.y2 - lim.y1);
     size_t element_size = mp_binary_get_size('@', bufinfo.typecode, NULL);
     size_t input_element_count = bufinfo.len / element_size;
 
@@ -769,7 +753,7 @@ STATIC mp_obj_t bitmaptools_arrayblit(size_t n_args, const mp_obj_t *pos_args, m
         mp_raise_IndexError(MP_ERROR_TEXT("index out of range"));
     }
 
-    common_hal_bitmaptools_arrayblit(bitmap, bufinfo.buf, element_size, x1, y1, x2, y2, skip_specified, skip_index);
+    common_hal_bitmaptools_arrayblit(bitmap, bufinfo.buf, element_size, lim.x1, lim.y1, lim.x2, lim.y2, skip_specified, skip_index);
 
     return mp_const_none;
 }
@@ -1031,12 +1015,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_
 //|     x: int,
 //|     y: int,
 //|     *,
-//|     x1: int,
-//|     y1: int,
-//|     x2: int,
-//|     y2: int,
-//|     skip_source_index: int,
-//|     skip_dest_index: int
+//|     x1: int = 0,
+//|     y1: int = 0,
+//|     x2: int | None = None,
+//|     y2: int | None = None,
+//|     skip_source_index: int | None = None,
+//|     skip_dest_index: int | None = None
 //| ) -> None:
 //|     """Inserts the source_bitmap region defined by rectangular boundaries
 //|     (x1,y1) and (x2,y2) into the bitmap at the specified (x,y) location.
@@ -1049,8 +1033,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmaptools_draw_circle_obj, 0, bitmaptools_obj_draw_
 //|                   corner will be placed
 //|     :param int x1: Minimum x-value for rectangular bounding box to be copied from the source bitmap
 //|     :param int y1: Minimum y-value for rectangular bounding box to be copied from the source bitmap
-//|     :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap
-//|     :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap
+//|     :param int x2: Maximum x-value (exclusive) for rectangular bounding box to be copied from the source bitmap. If unspecified or `None`, the source bitmap width is used.
+//|     :param int y2: Maximum y-value (exclusive) for rectangular bounding box to be copied from the source bitmap. If unspecified or `None`, the source bitmap height is used.
 //|     :param int skip_source_index: bitmap palette index in the source that will not be copied,
 //|                            set to None to copy all pixels
 //|     :param int skip_dest_index: bitmap palette index in the destination bitmap that will not get overwritten
@@ -1064,10 +1048,7 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
         {MP_QSTR_source_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         {MP_QSTR_x, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
         {MP_QSTR_y, MP_ARG_REQUIRED | MP_ARG_INT, {.u_obj = MP_OBJ_NULL} },
-        {MP_QSTR_x1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        {MP_QSTR_y1, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
-        {MP_QSTR_x2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->width
-        {MP_QSTR_y2, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} }, // None convert to source->height
+        ALLOWED_ARGS_X1_Y1_X2_Y2(0, 0),
         {MP_QSTR_skip_source_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         {MP_QSTR_skip_dest_index, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
@@ -1079,10 +1060,10 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
     displayio_bitmap_t *destination = mp_arg_validate_type(args[ARG_destination].u_obj, &displayio_bitmap_type, MP_QSTR_dest_bitmap);
     // check_for_deinit(destination);
 
-    // Check x,y are within self (target) bitmap boundary
-    int16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, MAX(0, destination->width - 1), MP_QSTR_x);
-    int16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, MAX(0, destination->height - 1), MP_QSTR_y);
+    uint16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, destination->width, MP_QSTR_x);
+    uint16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, destination->height, MP_QSTR_y);
 
+    bitmaptools_rect_t lim = bitmaptools_validate_coord_range_pair(&args[ARG_x1], destination->width, destination->height);
 
     displayio_bitmap_t *source = mp_arg_validate_type(args[ARG_source].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
 
@@ -1090,35 +1071,6 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
     // ensure that the target bitmap (self) has at least as many `bits_per_value` as the source
     if (destination->bits_per_value < source->bits_per_value) {
         mp_raise_ValueError(MP_ERROR_TEXT("source palette too large"));
-    }
-
-    // Check x1,y1,x2,y2 are within source bitmap boundary
-    int16_t x1 = mp_arg_validate_int_range(args[ARG_x1].u_int, 0, MAX(0, source->width - 1), MP_QSTR_x1);
-    int16_t y1 = mp_arg_validate_int_range(args[ARG_y1].u_int, 0, MAX(0, source->height - 1), MP_QSTR_y1);
-    int16_t x2, y2;
-    // if x2 or y2 is None, then set as the maximum size of the source bitmap
-    if (args[ARG_x2].u_obj == mp_const_none) {
-        x2 = source->width;
-    } else {
-        x2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_x2].u_obj), 0, source->width, MP_QSTR_x2);
-    }
-    // int16_t y2;
-    if (args[ARG_y2].u_obj == mp_const_none) {
-        y2 = source->height;
-    } else {
-        y2 = mp_arg_validate_int_range(mp_obj_get_int(args[ARG_y2].u_obj), 0, source->height, MP_QSTR_y2);
-    }
-
-    // Ensure x1 < x2 and y1 < y2
-    if (x1 > x2) {
-        int16_t temp = x2;
-        x2 = x1;
-        x1 = temp;
-    }
-    if (y1 > y2) {
-        int16_t temp = y2;
-        y2 = y1;
-        y1 = temp;
     }
 
     uint32_t skip_source_index;
@@ -1143,7 +1095,7 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
         skip_dest_index_none = false;
     }
 
-    common_hal_bitmaptools_blit(destination, source, x, y, x1, y1, x2, y2, skip_source_index, skip_source_index_none, skip_dest_index,
+    common_hal_bitmaptools_blit(destination, source, x, y, lim.x1, lim.y1, lim.x2, lim.y2, skip_source_index, skip_source_index_none, skip_dest_index,
         skip_dest_index_none);
 
     return mp_const_none;
