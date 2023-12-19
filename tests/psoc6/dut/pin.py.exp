@@ -1,3 +1,5 @@
+pin out initial value 1:  True
+pin out initial value 0:  True
 pin out value 1:  True
 pin out value 0:  True
 pin out value True:  True
@@ -6,4 +8,10 @@ pin out value high:  True
 pin out value low:  True
 pin out value on:  True
 pin out value off:  True
-Interrupt triggered
+pin out callable 1:  True
+pin out callable 0:  True
+pin out with pull none initially 0 or 1:  True
+pin out with pull down initially down:  True
+pin out with pull up initially high:  True
+interrupt triggered rising
+interrupt triggered falling
