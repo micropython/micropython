@@ -143,23 +143,90 @@ mp_obj_t common_hal_jpegio_jpegdecoder_set_source_buffer(jpegio_jpegdecoder_obj_
     return common_hal_jpegio_jpegdecoder_decode_common(self, buffer_input);
 }
 
+#define DECODER_CONTINUE (1)
+#define DECODER_INTERRUPT (0)
 static int bitmap_output(JDEC *jd, void *data, JRECT *rect) {
     jpegio_jpegdecoder_obj_t *self = CONTAINER_OF(jd, jpegio_jpegdecoder_obj_t, decoder);
-    common_hal_bitmaptools_arrayblit(self->dest, data, 2, rect->left, rect->top, rect->right + 1, rect->bottom + 1, false, 0);
+    int src_width = rect->right - rect->left + 1, src_pixel_stride = src_width /* in units of pixels! */, src_height = rect->bottom - rect->top + 1;
+
+    displayio_bitmap_t src = {
+        .width = src_width,
+        .height = src_height,
+        .data = data,
+        .stride = src_pixel_stride / 2, /* in units of uint32_t */
+        .bits_per_value = 16,
+        .x_shift = 1,
+        .x_mask = 1,
+        .bitmask = 0xffff,
+    };
+
+    int x = self->x;
+    int y = self->y;
+    int x1 = self->lim.x1 - rect->left;
+    int x2 = self->lim.x2 - rect->left;
+    int y1 = self->lim.y1 - rect->top;
+    int y2 = self->lim.y2 - rect->top;
+
+    if (y2 < y1) {
+        // The last row in the source image to copy FROM is above of this, so
+        // no more pixels on any rows
+        return DECODER_INTERRUPT;
+    }
+
+    y2 = MIN(y2, src_height);
+    if (x2 < x1) {
+        // The last column in the source image to copy FROM is left of this, so
+        // no more pixels on this row but could be on subsequent rows
+        return DECODER_CONTINUE;
+    }
+    x2 = MIN(x2, src_width);
+
+    // The first column in the source image to copy FROM is left of this, so copy starting with
+    // *local source* x1 equal to 0, and *target* x adjusted right by the same amount
+    if (x1 < 0) {
+        x += -x1;
+        x1 = 0;
+    }
+
+    // the same, but for Y coordinates
+    if (y1 < 0) {
+        y += -y1;
+        y1 = 0;
+    }
+
+    // blit takes care of x, y out of range
+    assert(x1 >= 0);
+    assert(y1 >= 0);
+    // blit takes care of x1 >= x2 and y1 >= y2 cases
+    assert(x2 <= src_width);
+    assert(y2 <= src_height);
+
+    common_hal_bitmaptools_blit(self->dest, &src, x, y, x1, y1, x2, y2, self->skip_source_index, self->skip_source_index_none, self->skip_dest_index, self->skip_dest_index_none);
     return 1;
 }
 
-void common_hal_jpegio_jpegdecoder_decode_into(jpegio_jpegdecoder_obj_t *self, displayio_bitmap_t *bitmap, int scale) {
+void common_hal_jpegio_jpegdecoder_decode_into(
+    jpegio_jpegdecoder_obj_t *self,
+    displayio_bitmap_t *bitmap, int scale, int16_t x, int16_t y,
+    bitmaptools_rect_t *lim,
+    uint32_t skip_source_index, bool skip_source_index_none,
+    uint32_t skip_dest_index, bool skip_dest_index_none) {
     if (self->data_obj == MP_OBJ_NULL) {
         mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q() without %q()"), MP_QSTR_decode, MP_QSTR_open);
     }
-    int dst_height = self->decoder.height >> scale;
-    int dst_width = self->decoder.width >> scale;
-    if (dst_width > bitmap->width || dst_height > bitmap->height) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Destination bitmap too small to contain image"));
-    }
+
+    self->x = x;
+    self->y = y;
+    self->lim = *lim;
+    self->skip_source_index = skip_source_index;
+    self->skip_source_index_none = skip_source_index_none;
+    self->skip_dest_index = skip_dest_index;
+    self->skip_dest_index_none = skip_dest_index_none;
+
     self->dest = bitmap;
     JRESULT result = jd_decomp(&self->decoder, bitmap_output, scale);
     common_hal_jpegio_jpegdecoder_close(self);
-    check_jresult(result);
+    if (result != JDR_INTR) {
+        check_jresult(result);
+    }
 }
