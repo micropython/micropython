@@ -16,8 +16,6 @@ enum {GPIO_PULL_NONE = 0, GPIO_PULL_UP, GPIO_PULL_DOWN};
 
 enum {GPIO_IRQ_LEVEL_NONE=0, GPIO_IRQ_FALLING, GPIO_IRQ_RISING, GPIO_IRQ_BOTH};
 
-cyhal_gpio_callback_data_t gpio_callback_data;
-
 typedef struct _machine_pin_io_obj_t {
     mp_obj_base_t base;
     machine_pin_phy_obj_t *pin_phy;
@@ -25,6 +23,7 @@ typedef struct _machine_pin_io_obj_t {
     uint8_t drive;
     uint8_t pull;
     mp_obj_t callback;
+    cyhal_gpio_callback_data_t callback_data;
 } machine_pin_io_obj_t;
 
 
@@ -366,13 +365,12 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         mp_uint_t trigger = args[ARG_trigger].u_int;
 
         cyhal_gpio_event_t event = mp_to_cy_get_interrupt_mode(trigger);
-        gpio_callback_data.callback = gpio_interrupt_handler;
-        gpio_callback_data.callback_arg = self;
-        cyhal_gpio_register_callback(self->pin_phy->addr, &gpio_callback_data);
+        self->callback_data.callback = gpio_interrupt_handler;
+        self->callback_data.callback_arg = self;
+        cyhal_gpio_register_callback(self->pin_phy->addr, &(self->callback_data));
         cyhal_gpio_enable_event(self->pin_phy->addr, event, 3, true);
-
     }
-    return MP_OBJ_FROM_PTR(&gpio_callback_data);
+    return MP_OBJ_FROM_PTR(&(self->callback_data));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
