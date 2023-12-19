@@ -101,6 +101,7 @@
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
 #endif
+#define MICROPY_PY_HASHLIB_MD5              (1)
 #define MICROPY_PY_HASHLIB_SHA1             (1)
 #define MICROPY_PY_HASHLIB_SHA256           (1)
 #define MICROPY_PY_CRYPTOLIB                (1)
