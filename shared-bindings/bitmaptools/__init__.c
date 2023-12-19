@@ -43,6 +43,27 @@
 #include "extmod/vfs_posix.h"
 #endif
 
+// This assigns to [0] and [2] because the order is x1, y1, x2, y2
+STATIC void bitmaptools_validate_coord_range(int16_t out[3], const mp_arg_val_t in[3], int lim, const qstr what[2]) {
+    out[0] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[0].u_obj, what[0]), 0, lim - 1, what[0]);
+    if (in[2].u_obj == mp_const_none) {
+        out[2] = lim;
+    } else {
+        out[2] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[2].u_obj, what[1]), out[0] + 1, lim, what[1]);
+    }
+}
+
+bitmaptools_rect_t bitmaptools_validate_coord_range_pair(const mp_arg_val_t in[4], int width, int height) {
+    static const qstr x_names[] = {MP_QSTR_x1, MP_QSTR_x2};
+    static const qstr y_names[] = {MP_QSTR_y1, MP_QSTR_y2};
+
+    bitmaptools_rect_t rect;
+    bitmaptools_validate_coord_range(&rect.arr[0], in, width, x_names);
+    bitmaptools_validate_coord_range(&rect.arr[1], in + 1, height, y_names);
+    return rect;
+}
+
+
 //| """Collection of bitmap manipulation tools
 //|
 //| .. note:: If you're looking for information about displaying bitmaps on
