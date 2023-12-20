@@ -206,6 +206,10 @@ msgstr ""
 msgid "%q must be array of type 'h'"
 msgstr ""
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr ""
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
@@ -593,10 +597,6 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Bit clock and word select must share a clock unit"
-msgstr ""
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -1339,10 +1339,6 @@ msgstr ""
 msgid "Mapping must be a tuple"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr ""
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
@@ -1703,10 +1699,6 @@ msgstr ""
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 msgid "Out-buffer elements must be <= 4 bytes long"
-msgstr ""
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
 msgstr ""
 
 #: shared-bindings/pwmio/PWMOut.c
