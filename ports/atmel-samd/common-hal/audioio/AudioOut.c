@@ -133,7 +133,7 @@ void common_hal_audioio_audioout_construct(audioio_audioout_obj_t *self,
     }
     #ifdef SAMD21
     if (right_channel != NULL) {
-        mp_raise_ValueError(translate("Right channel unsupported"));
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_right_channel);
     }
     if (left_channel != &pin_PA02) {
         raise_ValueError_invalid_pin();

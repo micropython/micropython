@@ -18,7 +18,7 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
 
     if (eic_get_enable()) {
         if (!eic_channel_free(pin->extint_channel)) {
-            mp_raise_RuntimeError(translate("A hardware interrupt channel is already in use"));
+            mp_raise_RuntimeError(translate("EXTINT channel already in use"));
         }
     } else {
         turn_on_external_interrupt_controller();

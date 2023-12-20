@@ -195,7 +195,7 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
     // Find a free GCLK to generate the MCLK signal.
     uint8_t gclk = find_free_gclk(clock_divisor);
     if (gclk > GCLK_GEN_NUM) {
-        mp_raise_RuntimeError(translate("Unable to find free GCLK"));
+        mp_raise_RuntimeError(translate("No free GCLKs"));
     }
     self->gclk = gclk;
 

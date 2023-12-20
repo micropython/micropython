@@ -40,7 +40,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self, const mcu_pin_obj_t *
     int port = -1;
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_half_duplex);
     }
 
     if (clock->number == PIN_SPI4_SCK &&

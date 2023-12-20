@@ -89,13 +89,19 @@ msgid ""
 msgstr ""
 
 #: ports/atmel-samd/common-hal/alarm/__init__.c
-#: ports/cxd56/common-hal/analogio/AnalogOut.c ports/cxd56/common-hal/rtc/RTC.c
-#: ports/espressif/common-hal/rtc/RTC.c
+#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
+#: ports/atmel-samd/common-hal/audioio/AudioOut.c
+#: ports/atmel-samd/common-hal/busio/SPI.c
+#: ports/cxd56/common-hal/analogio/AnalogOut.c
+#: ports/cxd56/common-hal/busio/SPI.c ports/cxd56/common-hal/rtc/RTC.c
+#: ports/espressif/common-hal/busio/SPI.c ports/espressif/common-hal/rtc/RTC.c
 #: ports/mimxrt10xx/common-hal/analogio/AnalogOut.c
+#: ports/mimxrt10xx/common-hal/busio/SPI.c
 #: ports/mimxrt10xx/common-hal/rtc/RTC.c ports/nrf/common-hal/alarm/__init__.c
-#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/rtc/RTC.c
-#: ports/raspberrypi/common-hal/alarm/__init__.c
+#: ports/nrf/common-hal/analogio/AnalogOut.c ports/nrf/common-hal/busio/SPI.c
+#: ports/nrf/common-hal/rtc/RTC.c ports/raspberrypi/common-hal/alarm/__init__.c
 #: ports/raspberrypi/common-hal/analogio/AnalogOut.c
+#: ports/raspberrypi/common-hal/busio/SPI.c
 #: ports/raspberrypi/common-hal/rtc/RTC.c ports/stm/common-hal/alarm/__init__.c
 #: ports/stm/common-hal/canio/Listener.c ports/stm/common-hal/rtc/RTC.c
 #: shared-bindings/audiobusio/I2SOut.c shared-bindings/audiobusio/PDMIn.c
@@ -110,6 +116,10 @@ msgstr ""
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
 msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
@@ -239,6 +249,10 @@ msgstr ""
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
+msgstr ""
+
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
 msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
@@ -419,12 +433,6 @@ msgstr ""
 msgid "3-arg pow() not supported"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr ""
-
 #: ports/espressif/common-hal/analogio/AnalogIn.c
 msgid "ADC2 is being used by WiFi"
 msgstr ""
@@ -595,10 +603,6 @@ msgstr ""
 msgid "Bit clock and word select must be sequential pins"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr ""
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr ""
@@ -609,10 +613,6 @@ msgstr ""
 
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
 msgstr ""
 
 #: shared-bindings/displayio/Display.c
@@ -800,10 +800,6 @@ msgstr ""
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr ""
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr ""
@@ -921,9 +917,12 @@ msgstr ""
 msgid "ESP-IDF memory allocation failed"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr ""
@@ -1074,13 +1073,6 @@ msgstr ""
 #: shared-module/displayio/Display.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -1508,8 +1500,13 @@ msgstr ""
 msgid "No default %q bus"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
 msgstr ""
 
 #: shared-bindings/os/__init__.c
@@ -1748,6 +1745,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr ""
 
@@ -1886,10 +1884,6 @@ msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Requested resource not found"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/audioio/AudioOut.c
-msgid "Right channel unsupported"
 msgstr ""
 
 #: main.c
@@ -2086,7 +2080,6 @@ msgstr ""
 msgid "Total data to write is larger than %q"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2176,11 +2169,6 @@ msgstr ""
 #: shared-module/displayio/I2CDisplay.c shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
 msgstr ""
 
 #: py/parse.c
@@ -2655,11 +2643,6 @@ msgstr ""
 msgid "can't convert %q to %q"
 msgstr ""
 
-#: py/obj.c
-#, c-format
-msgid "can't convert %s to complex"
-msgstr ""
-
 #: py/objstr.c
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
@@ -2668,16 +2651,8 @@ msgstr ""
 msgid "can't convert complex to float"
 msgstr ""
 
-#: py/obj.c
+#: py/obj.c py/runtime.c
 msgid "can't convert to %q"
-msgstr ""
-
-#: py/obj.c
-msgid "can't convert to complex"
-msgstr ""
-
-#: py/runtime.c
-msgid "can't convert to int"
 msgstr ""
 
 #: py/objstr.c
