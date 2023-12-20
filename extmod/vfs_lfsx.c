@@ -99,7 +99,7 @@ STATIC void MP_VFS_LFSx(init_config)(MP_OBJ_VFS_LFSx * self, mp_obj_t bdev, size
     config->lookahead_buffer = m_new(uint8_t, config->lookahead / 8);
     #else
     config->block_cycles = 100;
-    config->cache_size = 4 * MAX(read_size, prog_size);
+    config->cache_size = MIN(config->block_size, (4 * MAX(read_size, prog_size)));
     config->lookahead_size = lookahead;
     config->read_buffer = m_new(uint8_t, config->cache_size);
     config->prog_buffer = m_new(uint8_t, config->cache_size);
