@@ -61,6 +61,11 @@ void common_hal_displayio_ondiskbitmap_construct(displayio_ondiskbitmap_t *self,
     uint32_t compression = read_word(bmp_header, 15);
     uint32_t number_of_colors = read_word(bmp_header, 23);
 
+    // 0 is uncompressed; 3 is bitfield compressed. 1 and 2 are RLE compression.
+    if (compression != 0 && compression != 3) {
+        mp_raise_ValueError(MP_ERROR_TEXT("RLE-compressed BMP not supported"));
+    }
+
     bool indexed = bits_per_pixel <= 8;
     self->bitfield_compressed = (compression == 3);
     self->bits_per_pixel = bits_per_pixel;
