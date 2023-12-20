@@ -63,7 +63,6 @@ STATIC void mp_reset(void) {
     #endif
     pin_init0();
     readline_init0();
-    dupterm_task_init();
 
     // Activate UART(0) on dupterm slot 1 for the REPL
     {

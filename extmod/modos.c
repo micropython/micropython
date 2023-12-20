@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 
@@ -126,6 +127,21 @@ STATIC mp_obj_t mp_os_uname(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_os_uname_obj, mp_os_uname);
 
+#endif
+
+#if MICROPY_PY_OS_DUPTERM_NOTIFY
+STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
+    (void)obj_in;
+    for (;;) {
+        int c = mp_os_dupterm_rx_chr();
+        if (c < 0) {
+            break;
+        }
+        ringbuf_put(&stdin_ringbuf, c);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
 #endif
 
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {

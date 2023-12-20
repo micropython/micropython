@@ -79,10 +79,6 @@
 #define MP_TASK_STACK_LIMIT_MARGIN (1024)
 #endif
 
-// Initial Python heap size. This starts small but adds new heap areas on
-// demand due to settings MICROPY_GC_SPLIT_HEAP & MICROPY_GC_SPLIT_HEAP_AUTO
-#define MP_TASK_HEAP_SIZE (64 * 1024)
-
 int vprintf_null(const char *format, va_list ap) {
     // do nothing: this is used as a log target during raw repl mode
     return 0;
@@ -120,13 +116,13 @@ void mp_task(void *pvParameter) {
         ESP_LOGE("esp_init", "can't create event loop: 0x%x\n", err);
     }
 
-    void *mp_task_heap = MP_PLAT_ALLOC_HEAP(MP_TASK_HEAP_SIZE);
+    void *mp_task_heap = MP_PLAT_ALLOC_HEAP(MICROPY_GC_INITIAL_HEAP_SIZE);
 
 soft_reset:
     // initialise the stack pointer for the main thread
     mp_stack_set_top((void *)sp);
     mp_stack_set_limit(MICROPY_TASK_STACK_SIZE - MP_TASK_STACK_LIMIT_MARGIN);
-    gc_init(mp_task_heap, mp_task_heap + MP_TASK_HEAP_SIZE);
+    gc_init(mp_task_heap, mp_task_heap + MICROPY_GC_INITIAL_HEAP_SIZE);
     mp_init();
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     readline_init0();

@@ -1,6 +1,7 @@
 # Test creating an SSL connection and getting the peer certificate.
 
 try:
+    import io
     import os
     import socket
     import ssl
@@ -42,6 +43,12 @@ def instance0():
 
 # Client
 def instance1():
+    s_test = ssl.wrap_socket(io.BytesIO(), server_side=True, do_handshake=False)
+    s_test.close()
+    if not hasattr(s_test, "getpeercert"):
+        print("SKIP")
+        raise SystemExit
+
     multitest.next()
     s = socket.socket()
     s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
@@ -49,7 +56,7 @@ def instance1():
     client_ctx.verify_mode = ssl.CERT_REQUIRED
     client_ctx.load_verify_locations(cafile=cafile)
     s = client_ctx.wrap_socket(s, server_hostname="micropython.local")
-    print(s.getpeercert(True))
+    print(s.getpeercert(True).hex())
     s.write(b"client to server")
     print(s.read(16))
     s.close()

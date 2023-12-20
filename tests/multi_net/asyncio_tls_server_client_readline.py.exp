@@ -1,0 +1,10 @@
+--- instance0 ---
+server running
+echo: b'client data\n'
+echo: b'client data2\n'
+close
+done
+--- instance1 ---
+write: b'client data\nclient data2\n'
+read: b'client data\n'
+read: b'client data2\n'

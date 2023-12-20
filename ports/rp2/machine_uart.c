@@ -40,6 +40,14 @@
 #define DEFAULT_UART_BITS (8)
 #define DEFAULT_UART_STOP (1)
 
+#ifdef MICROPY_HW_UART_NO_DEFAULT_PINS
+// With no default I2C, need to require the pin args.
+#define MICROPY_UART_PINS_ARG_OPTS MP_ARG_REQUIRED
+#else
+// Most boards do not require pin args.
+#define MICROPY_UART_PINS_ARG_OPTS 0
+#endif
+
 // UART 0 default pins
 #if !defined(MICROPY_HW_UART0_TX)
 #define MICROPY_HW_UART0_TX (0)
@@ -225,8 +233,8 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         { MP_QSTR_bits, MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_parity, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_INT(-1)} },
         { MP_QSTR_stop, MP_ARG_INT, {.u_int = -1} },
-        { MP_QSTR_tx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_rx, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_tx, MICROPY_UART_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_rx, MICROPY_UART_PINS_ARG_OPTS | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_cts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_rts, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },

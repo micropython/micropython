@@ -29,6 +29,9 @@
  * THE SOFTWARE.
  */
 
+// This file is never compiled standalone, it's included directly from
+// extmod/modos.c via MICROPY_PY_OS_INCLUDEFILE.
+
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "modmachine.h"
@@ -95,19 +98,4 @@ bool mp_os_dupterm_is_builtin_stream(mp_const_obj_t stream) {
     const mp_obj_type_t *type = mp_obj_get_type(stream);
     return type == &machine_uart_type;
 }
-#endif
-
-#if MICROPY_PY_OS_DUPTERM_NOTIFY
-STATIC mp_obj_t mp_os_dupterm_notify(mp_obj_t obj_in) {
-    (void)obj_in;
-    for (;;) {
-        int c = mp_os_dupterm_rx_chr();
-        if (c < 0) {
-            break;
-        }
-        ringbuf_put(&stdin_ringbuf, c);
-    }
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_os_dupterm_notify_obj, mp_os_dupterm_notify);
 #endif

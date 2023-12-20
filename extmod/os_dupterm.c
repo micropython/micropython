@@ -94,6 +94,22 @@ uintptr_t mp_os_dupterm_poll(uintptr_t poll_flags) {
 }
 
 int mp_os_dupterm_rx_chr(void) {
+    #if MICROPY_PY_OS_DUPTERM_NOTIFY
+    // When os.dupterm_notify() is enabled it is usually called from a scheduled
+    // function, via mp_os_dupterm_notify().  That can lead to recursive calls of
+    // this function when this function is called from mp_hal_stdin_rx_chr():
+    // - mp_hal_stdin_rx_chr()
+    //  - mp_os_dupterm_rx_chr()
+    //   - <Python code>
+    //    - os.dupterm_notify() is scheduled via interrupt/event
+    //     - <Python code> runs scheduled code (eg WebREPL -> rp2.Flash().writeblocks())
+    //      - mp_os_dupterm_notify()
+    //       - mp_os_dupterm_rx_chr()
+    // Break that cycle by locking the scheduler during this function's duration.
+    mp_sched_lock();
+    #endif
+
+    int ret = -1; // no chars available
     for (size_t idx = 0; idx < MICROPY_PY_OS_DUPTERM; ++idx) {
         if (MP_STATE_VM(dupterm_objs[idx]) == MP_OBJ_NULL) {
             continue;
@@ -106,7 +122,8 @@ int mp_os_dupterm_rx_chr(void) {
             const mp_stream_p_t *stream_p = mp_get_stream(MP_STATE_VM(dupterm_objs[idx]));
             mp_uint_t out_sz = stream_p->read(MP_STATE_VM(dupterm_objs[idx]), buf, 1, &errcode);
             if (errcode == 0 && out_sz != 0) {
-                return buf[0];
+                ret = buf[0];
+                break;
             } else {
                 continue;
             }
@@ -132,20 +149,24 @@ int mp_os_dupterm_rx_chr(void) {
             } else {
                 // read 1 byte
                 nlr_pop();
-                if (buf[0] == mp_interrupt_char) {
+                ret = buf[0];
+                if (ret == mp_interrupt_char) {
                     // Signal keyboard interrupt to be raised as soon as the VM resumes
                     mp_sched_keyboard_interrupt();
-                    return -2;
+                    ret = -2;
                 }
-                return buf[0];
+                break;
             }
         } else {
             mp_os_deactivate(idx, "dupterm: Exception in read() method, deactivating: ", MP_OBJ_FROM_PTR(nlr.ret_val));
         }
     }
 
-    // No chars available
-    return -1;
+    #if MICROPY_PY_OS_DUPTERM_NOTIFY
+    mp_sched_unlock();
+    #endif
+
+    return ret;
 }
 
 void mp_os_dupterm_tx_strn(const char *str, size_t len) {

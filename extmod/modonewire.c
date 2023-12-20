@@ -38,11 +38,11 @@
 #define TIMING_RESET1 (480)
 #define TIMING_RESET2 (70)
 #define TIMING_RESET3 (410)
-#define TIMING_READ1 (5)
-#define TIMING_READ2 (5)
-#define TIMING_READ3 (40)
-#define TIMING_WRITE1 (10)
-#define TIMING_WRITE2 (50)
+#define TIMING_READ1  (6)
+#define TIMING_READ2  (9)
+#define TIMING_READ3  (55)
+#define TIMING_WRITE1 (6)
+#define TIMING_WRITE2 (54)
 #define TIMING_WRITE3 (10)
 
 STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
