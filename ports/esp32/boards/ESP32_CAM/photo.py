@@ -1,6 +1,6 @@
 # photo.py
 
-__version__ = '1.0.0' # Major.Minor.Patch
+__version__ = '1.0.1' # Major.Minor.Patch
 
 # Ways to run this program:-
 
@@ -160,7 +160,7 @@ def capture(args):
 
 try:
 	# if 'ARGV' in locals():
-	capture(ARGV)
+	eval('capture(ARGV)') # ARGV is supplied by caller thusly: ARGV=["pic.jpg","5","10"];exec(open("bin/photo.py").read())
 except Exception as e:
 	# print(e) # name 'ARGV' isn't defined
 	capture([])
