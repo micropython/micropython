@@ -191,6 +191,9 @@ soft_reset:
 
     if (ret != 0) {
         printf("MPY: can't mount flash\n");
+    } else {
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash));
+        mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_flash_slash_lib));
     }
     #endif
 
