@@ -161,6 +161,6 @@ def capture(args):
 try:
 	# if 'ARGV' in locals():
 	eval('capture(ARGV)') # ARGV is supplied by caller thusly: ARGV=["pic.jpg","5","10"];exec(open("bin/photo.py").read())
-except Exception as e:
+except: # Exception as e:
 	# print(e) # name 'ARGV' isn't defined
 	capture([])
