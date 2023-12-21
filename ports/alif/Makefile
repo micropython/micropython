@@ -48,6 +48,12 @@ INC += -I$(ALIF_DFP)/Device/E7/AE722F80F55D5XX/
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -Itinyusb_port
 
+GEN_PIN_MKPINS = mcu/make-pins.py
+GEN_PIN_PREFIX = mcu/pins_prefix.c
+GEN_PINS_BOARD_CSV = $(BOARD_DIR)/pins.csv
+GEN_PINS_SRC = $(BUILD)/pins_board.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins_board.h
+
 CFLAGS_FPU += -mfloat-abi=hard -mfpu=fpv5-d16
 CFLAGS_CORTEX_M55 += -mthumb -mcpu=cortex-m55 -mtune=cortex-m55 $(CFLAGS_FPU)
 
@@ -95,6 +101,7 @@ SRC_C = \
 	mpuart.c \
 	ospi_flash.c \
 	usbd.c \
+	$(GEN_PINS_SRC) \
 
 ifeq ($(MICROPY_FLOAT_IMPL),single)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
@@ -195,5 +202,15 @@ deploy: $(BUILD)/firmware.toc
 
 ################################################################################
 # Remaining make rules
+
+# Use a pattern rule here so that make will only call make-pins.py once to make
+# both pins_board.c and pins_board.h
+$(BUILD)/%_board.c $(HEADER_BUILD)/%_board.h: $(BOARD_DIR)/%.csv $(GEN_PIN_MKPINS) $(GEN_PIN_PREFIX) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(GEN_PIN_MKPINS) \
+	    --board-csv $(GEN_PINS_BOARD_CSV) \
+	    --prefix $(GEN_PIN_PREFIX) \
+	    --output-source $(GEN_PINS_SRC) \
+	    --output-header $(GEN_PINS_HDR)
 
 include $(TOP)/py/mkrules.mk

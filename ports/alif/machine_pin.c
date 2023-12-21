@@ -29,153 +29,18 @@
 #include "extmod/modmachine.h"
 #include "extmod/virtpin.h"
 #include "shared/runtime/mpirq.h"
-#include "pinconf.h"
 
-const machine_pin_obj_t machine_pin_obj_table[16 * 8] = {
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_0, MP_QSTR_GPIO0_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_1, MP_QSTR_GPIO0_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_2, MP_QSTR_GPIO0_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_3, MP_QSTR_GPIO0_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_4, MP_QSTR_GPIO0_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_5, MP_QSTR_GPIO0_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_6, MP_QSTR_GPIO0_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO0_BASE, PORT_0, PIN_7, MP_QSTR_GPIO0_7},
+extern const mp_obj_dict_t machine_pin_cpu_pins_locals_dict;
+extern const mp_obj_dict_t machine_pin_board_pins_locals_dict;
 
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_0, MP_QSTR_GPIO1_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_1, MP_QSTR_GPIO1_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_2, MP_QSTR_GPIO1_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_3, MP_QSTR_GPIO1_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_4, MP_QSTR_GPIO1_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_5, MP_QSTR_GPIO1_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_6, MP_QSTR_GPIO1_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO1_BASE, PORT_1, PIN_7, MP_QSTR_GPIO1_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_0, MP_QSTR_GPIO2_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_1, MP_QSTR_GPIO2_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_2, MP_QSTR_GPIO2_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_3, MP_QSTR_GPIO2_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_4, MP_QSTR_GPIO2_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_5, MP_QSTR_GPIO2_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_6, MP_QSTR_GPIO2_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO2_BASE, PORT_2, PIN_7, MP_QSTR_GPIO2_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_0, MP_QSTR_GPIO3_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_1, MP_QSTR_GPIO3_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_2, MP_QSTR_GPIO3_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_3, MP_QSTR_GPIO3_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_4, MP_QSTR_GPIO3_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_5, MP_QSTR_GPIO3_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_6, MP_QSTR_GPIO3_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO3_BASE, PORT_3, PIN_7, MP_QSTR_GPIO3_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_0, MP_QSTR_GPIO4_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_1, MP_QSTR_GPIO4_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_2, MP_QSTR_GPIO4_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_3, MP_QSTR_GPIO4_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_4, MP_QSTR_GPIO4_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_5, MP_QSTR_GPIO4_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_6, MP_QSTR_GPIO4_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO4_BASE, PORT_4, PIN_7, MP_QSTR_GPIO4_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_0, MP_QSTR_GPIO5_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_1, MP_QSTR_GPIO5_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_2, MP_QSTR_GPIO5_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_3, MP_QSTR_GPIO5_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_4, MP_QSTR_GPIO5_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_5, MP_QSTR_GPIO5_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_6, MP_QSTR_GPIO5_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO5_BASE, PORT_5, PIN_7, MP_QSTR_GPIO5_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_0, MP_QSTR_GPIO6_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_1, MP_QSTR_GPIO6_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_2, MP_QSTR_GPIO6_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_3, MP_QSTR_GPIO6_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_4, MP_QSTR_GPIO6_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_5, MP_QSTR_GPIO6_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_6, MP_QSTR_GPIO6_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO6_BASE, PORT_6, PIN_7, MP_QSTR_GPIO6_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_0, MP_QSTR_GPIO7_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_1, MP_QSTR_GPIO7_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_2, MP_QSTR_GPIO7_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_3, MP_QSTR_GPIO7_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_4, MP_QSTR_GPIO7_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_5, MP_QSTR_GPIO7_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_6, MP_QSTR_GPIO7_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO7_BASE, PORT_7, PIN_7, MP_QSTR_GPIO7_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_0, MP_QSTR_GPIO8_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_1, MP_QSTR_GPIO8_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_2, MP_QSTR_GPIO8_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_3, MP_QSTR_GPIO8_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_4, MP_QSTR_GPIO8_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_5, MP_QSTR_GPIO8_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_6, MP_QSTR_GPIO8_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO8_BASE, PORT_8, PIN_7, MP_QSTR_GPIO8_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_0, MP_QSTR_GPIO9_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_1, MP_QSTR_GPIO9_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_2, MP_QSTR_GPIO9_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_3, MP_QSTR_GPIO9_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_4, MP_QSTR_GPIO9_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_5, MP_QSTR_GPIO9_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_6, MP_QSTR_GPIO9_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO9_BASE, PORT_9, PIN_7, MP_QSTR_GPIO9_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_0, MP_QSTR_GPIO10_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_1, MP_QSTR_GPIO10_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_2, MP_QSTR_GPIO10_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_3, MP_QSTR_GPIO10_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_4, MP_QSTR_GPIO10_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_5, MP_QSTR_GPIO10_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_6, MP_QSTR_GPIO10_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO10_BASE, PORT_10, PIN_7, MP_QSTR_GPIO10_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_0, MP_QSTR_GPIO11_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_1, MP_QSTR_GPIO11_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_2, MP_QSTR_GPIO11_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_3, MP_QSTR_GPIO11_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_4, MP_QSTR_GPIO11_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_5, MP_QSTR_GPIO11_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_6, MP_QSTR_GPIO11_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO11_BASE, PORT_11, PIN_7, MP_QSTR_GPIO11_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_0, MP_QSTR_GPIO12_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_1, MP_QSTR_GPIO12_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_2, MP_QSTR_GPIO12_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_3, MP_QSTR_GPIO12_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_4, MP_QSTR_GPIO12_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_5, MP_QSTR_GPIO12_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_6, MP_QSTR_GPIO12_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO12_BASE, PORT_12, PIN_7, MP_QSTR_GPIO12_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_0, MP_QSTR_GPIO13_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_1, MP_QSTR_GPIO13_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_2, MP_QSTR_GPIO13_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_3, MP_QSTR_GPIO13_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_4, MP_QSTR_GPIO13_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_5, MP_QSTR_GPIO13_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_6, MP_QSTR_GPIO13_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO13_BASE, PORT_13, PIN_7, MP_QSTR_GPIO13_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_0, MP_QSTR_GPIO14_0},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_1, MP_QSTR_GPIO14_1},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_2, MP_QSTR_GPIO14_2},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_3, MP_QSTR_GPIO14_3},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_4, MP_QSTR_GPIO14_4},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_5, MP_QSTR_GPIO14_5},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_6, MP_QSTR_GPIO14_6},
-    {{&machine_pin_type}, (GPIO_Type *)GPIO14_BASE, PORT_14, PIN_7, MP_QSTR_GPIO14_7},
-
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_0, MP_QSTR_GPIO15_0},
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_1, MP_QSTR_GPIO15_1},
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_2, MP_QSTR_GPIO15_2},
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_3, MP_QSTR_GPIO15_3},
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_4, MP_QSTR_GPIO15_4},
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_5, MP_QSTR_GPIO15_5},
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_6, MP_QSTR_GPIO15_6},
-    {{&machine_pin_type}, (GPIO_Type *)LPGPIO_BASE, PORT_15, PIN_7, MP_QSTR_GPIO15_7},
-};
+static const machine_pin_obj_t *machine_pin_find_named(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+    const mp_map_t *named_map = &named_pins->map;
+    mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t *)named_map, name, MP_MAP_LOOKUP);
+    if (named_elem != NULL && named_elem->value != NULL) {
+        return MP_OBJ_TO_PTR(named_elem->value);
+    }
+    return NULL;
+}
 
 const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
     // Is already a object of the proper type
@@ -183,19 +48,20 @@ const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
         return MP_OBJ_TO_PTR(pin);
     }
     if (mp_obj_is_str(pin)) {
-        qstr name = mp_obj_str_get_qstr(pin);
-        for (size_t i = 0; i < MP_ARRAY_SIZE(machine_pin_obj_table); ++i) {
-            if (name == machine_pin_obj_table[i].name) {
-                return &machine_pin_obj_table[i];
-            }
+        // Try to find the pin in the board pins first.
+        const machine_pin_obj_t *self = machine_pin_find_named(&machine_pin_board_pins_locals_dict, pin);
+        if (self != NULL) {
+            return self;
         }
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unknown named pin \"%s\""), name);
-    } else if (mp_obj_is_int(pin)) {
-        // get the wanted pin object
-        int wanted_pin = mp_obj_get_int(pin);
-        if (0 <= wanted_pin && wanted_pin < MP_ARRAY_SIZE(machine_pin_obj_table)) {
-            return &machine_pin_obj_table[wanted_pin];
+
+        // If not found, try to find the pin in the cpu pins.
+        self = machine_pin_find_named(&machine_pin_cpu_pins_locals_dict, pin);
+        if (self != NULL) {
+            return self;
         }
+
+        // Pin name not found.
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("unknown named pin \"%s\""), mp_obj_str_get_str(pin));
     }
     mp_raise_ValueError(MP_ERROR_TEXT("invalid pin"));
 }
@@ -349,6 +215,20 @@ static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
+static MP_DEFINE_CONST_OBJ_TYPE(
+    pin_cpu_pins_obj_type,
+    MP_QSTR_cpu,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_cpu_pins_locals_dict
+    );
+
+static MP_DEFINE_CONST_OBJ_TYPE(
+    pin_board_pins_obj_type,
+    MP_QSTR_board,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_board_pins_locals_dict
+    );
+
 static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_pin_init_obj) },
@@ -358,6 +238,10 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&machine_pin_low_obj) },
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&machine_pin_high_obj) },
     { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&machine_pin_toggle_obj) },
+
+    // class attributes
+    { MP_ROM_QSTR(MP_QSTR_board), MP_ROM_PTR(&pin_board_pins_obj_type) },
+    { MP_ROM_QSTR(MP_QSTR_cpu), MP_ROM_PTR(&pin_cpu_pins_obj_type) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(MP_HAL_PIN_MODE_INPUT) },

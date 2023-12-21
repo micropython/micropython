@@ -69,6 +69,7 @@ extern ringbuf_t stdin_ringbuf;
 
 #include "py/obj.h"
 #include "gpio.h"
+#include "pinconf.h"
 
 #define MP_HAL_PIN_FMT                          "%q"
 #define MP_HAL_PIN_MODE_INPUT                   (0)
@@ -86,8 +87,6 @@ typedef struct _machine_pin_obj_t {
     uint8_t pin;
     qstr name;
 } machine_pin_obj_t;
-
-extern const machine_pin_obj_t machine_pin_obj_table[];
 
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t pin_in);
 
@@ -142,3 +141,6 @@ static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {
 static inline void mp_hal_wake_main_task_from_isr(void) {
     // Defined for tinyusb support, nothing needs to be done here.
 }
+
+// Include all the pin definitions.
+#include "genhdr/pins_board.h"

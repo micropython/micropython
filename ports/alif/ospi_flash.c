@@ -51,7 +51,7 @@
 #define ISSI_MODE_OCTAL_DDR_DQS (0xe7)
 
 // GPIO15_7
-#define OSPI_RESET (&machine_pin_obj_table[15 * 8 + 7])
+#define OSPI_RESET (pin_GPIO15_7)
 
 #define OSPI1_D0_PORT                            PORT_9
 #define OSPI1_D0_PIN                             PIN_5
