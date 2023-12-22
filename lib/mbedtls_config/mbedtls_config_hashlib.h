@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2018-2019 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_MBEDTLS_CONFIG_H
+#define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H
+// If you want to debug MBEDTLS uncomment the following and
+// Pass 3 to mbedtls_debug_set_threshold in socket_new
+// #define MBEDTLS_DEBUG_C
 
-#include "py/obj.h"
+// Set mbedtls configuration
+#define MBEDTLS_PLATFORM_C
+#define MBEDTLS_PLATFORM_MEMORY
+#define MBEDTLS_PLATFORM_NO_STD_FUNCTIONS
+#define MBEDTLS_DEPRECATED_REMOVED
+#define MBEDTLS_ENTROPY_HARDWARE_ALT
 
-#if CIRCUITPY_HASHLIB_MBEDTLS
-#include "shared-module/hashlib/Hash.h"
-#else
-#include "common-hal/hashlib/Hash.h"
-#endif
+// Enable mbedtls modules
+#define MBEDTLS_MD_C
+#define MBEDTLS_MD5_C
+#define MBEDTLS_SHA1_C
+#define MBEDTLS_SHA256_C
+#define MBEDTLS_SHA512_C
+#undef MBEDTLS_HAVE_TIME_DATE
 
-extern const mp_obj_type_t hashlib_hash_type;
+// Memory allocation hooks
+#include <stdlib.h>
+#include <stdio.h>
+void *m_tracked_calloc(size_t nmemb, size_t size);
+void m_tracked_free(void *ptr);
+#define MBEDTLS_PLATFORM_STD_CALLOC m_tracked_calloc
+#define MBEDTLS_PLATFORM_STD_FREE m_tracked_free
+#define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
 
-// So that new can call it when given data.
-mp_obj_t hashlib_hash_update(mp_obj_t self_in, mp_obj_t buf_in);
+#include "mbedtls/check_config.h"
 
-void common_hal_hashlib_hash_update(hashlib_hash_obj_t *self, const uint8_t *data, size_t datalen);
-void common_hal_hashlib_hash_digest(hashlib_hash_obj_t *self, uint8_t *data, size_t datalen);
-size_t common_hal_hashlib_hash_get_digest_size(hashlib_hash_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_HASHLIB_HASH_H
+#endif /* MICROPY_INCLUDED_MBEDTLS_CONFIG_H */

@@ -19,8 +19,8 @@
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
-#include "mbedtls/x509_crt.h"
-#include "mbedtls/crt_bundle.h"
+#include "lib/mbedtls/include/mbedtls/x509_crt.h"
+#include "lib/mbedtls_config/crt_bundle.h"
 
 #define BUNDLE_HEADER_OFFSET 2
 #define CRT_HEADER_OFFSET 4
