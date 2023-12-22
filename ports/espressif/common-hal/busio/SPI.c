@@ -88,7 +88,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     };
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(MP_ERROR_TEXT("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_half_duplex);
     }
 
     for (spi_host_device_t host_id = SPI2_HOST; host_id < SOC_SPI_PERIPH_NUM; host_id++) {
