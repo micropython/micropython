@@ -91,6 +91,20 @@ def test(jpeg_input, scale, fill=0xFFFF, **position_and_crop):
         print(f"{memoryview(refb) == memoryview(b)=}")
 
 
+class IOAdapter(io.IOBase):
+    def __init__(self, content):
+        self._content = memoryview(content).cast("b")
+        self._pos = 0
+
+    def readinto(self, buf):
+        pos = self._pos
+        data = self._content[pos : pos + len(buf)]
+        len_data = len(data)
+        buf[:len_data] = data
+        self._pos = pos + len_data
+        return len_data
+
+
 print("bytes")
 test(content, scale=0)
 test(content, scale=1)
@@ -100,9 +114,10 @@ test(content, scale=3)
 bytesio = io.BytesIO(content)
 
 print("BytesIO")
-test(io.BytesIO(content), scale=0)
-test(io.BytesIO(content), scale=1)
-test(io.BytesIO(content), scale=2)
+test(io.BytesIO(content), scale=3)
+
+ioadapter = IOAdapter(content)
+print("IOAdapter")
 test(io.BytesIO(content), scale=3)
 
 print("crop & move")
