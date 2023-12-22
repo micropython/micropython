@@ -142,6 +142,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
 #define MICROPY_PY_IO                    (CIRCUITPY_IO)
+#define MICROPY_PY_IO_IOBASE             (CIRCUITPY_IO_IOBASE)
 // In extmod
 #define MICROPY_PY_JSON                 (CIRCUITPY_JSON)
 #define MICROPY_PY_MATH                  (0)
