@@ -482,10 +482,10 @@ bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) 
 void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
     if (!mp_obj_get_complex_maybe(arg, real, imag)) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to complex"));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert to %q"), MP_QSTR_complex);
         #else
         mp_raise_TypeError_varg(
-            MP_ERROR_TEXT("can't convert %s to complex"), mp_obj_get_type_str(arg));
+            MP_ERROR_TEXT("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_complex);
         #endif
     }
 }

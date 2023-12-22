@@ -56,7 +56,7 @@ STATIC void scl_release(bitbangio_i2c_obj_t *self) {
     common_hal_digitalio_digitalinout_switch_to_output(&self->scl, true, DRIVE_MODE_OPEN_DRAIN);
     // raise exception on timeout
     if (count == 0) {
-        mp_raise_msg(&mp_type_TimeoutError, translate("Clock stretch too long"));
+        mp_raise_msg_varg(&mp_type_TimeoutError, translate("%q too long"), MP_QSTR_timeout);
     }
 }
 

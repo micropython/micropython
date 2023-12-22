@@ -300,7 +300,7 @@ mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg) {
         // In this case provide a more focused error message to not confuse, e.g. chr(1.0)
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         if (op == MP_UNARY_OP_INT) {
-            mp_raise_TypeError(MP_ERROR_TEXT("can't convert to int"));
+            mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert to %q"), MP_QSTR_int);
         } else {
             mp_raise_TypeError(MP_ERROR_TEXT("unsupported type for operator"));
         }

@@ -58,7 +58,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     size_t instance_index = NO_INSTANCE;
 
     if (half_duplex) {
-        mp_raise_NotImplementedError(translate("Half duplex SPI is not implemented"));
+        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_half_duplex);
     }
 
     if (clock->number % 4 == 2) {

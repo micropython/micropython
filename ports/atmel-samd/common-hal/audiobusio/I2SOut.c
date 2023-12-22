@@ -157,7 +157,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         raise_ValueError_invalid_pin_name(MP_QSTR_word_select);
     }
     if (bc_clock_unit != ws_clock_unit) {
-        mp_raise_ValueError(translate("Bit clock and word select must share a clock unit"));
+        mp_raise_ValueError_varg(translate("%q and %q must share a clock unit"), MP_QSTR_bit_clock, MP_QSTR_word_select);
     }
     if (serializer == 0xff) {
         raise_ValueError_invalid_pin_name(MP_QSTR_data);
@@ -241,7 +241,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     // Find a free GCLK to generate the MCLK signal.
     uint8_t gclk = find_free_gclk(divisor);
     if (gclk > GCLK_GEN_NUM) {
-        mp_raise_RuntimeError(translate("Unable to find free GCLK"));
+        mp_raise_RuntimeError(translate("No free GLCKs"));
     }
     self->gclk = gclk;
 
