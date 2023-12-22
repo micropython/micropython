@@ -97,6 +97,7 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     reset_pin_number(self->pin_a);
     reset_pin_number(self->pin_b);
     peripherals_pcnt_deinit(&self->unit);
+    self->unit = PCNT_UNIT_MAX;
 }
 
 mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self) {
