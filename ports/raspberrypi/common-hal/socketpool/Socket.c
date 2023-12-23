@@ -728,7 +728,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, int proto, socketpool_socketpool_sock_t type) {
     if (family != SOCKETPOOL_AF_INET) {
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
@@ -737,7 +737,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     socketpool_socket_obj_t *socket = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
     socket->base.type = &socketpool_socket_type;
 
-    if (!socketpool_socket(self, family, type, socket)) {
+    if (!socketpool_socket(self, family, type, proto socket)) {
         mp_raise_RuntimeError(translate("Out of sockets"));
     }
     mark_user_socket(socket);
