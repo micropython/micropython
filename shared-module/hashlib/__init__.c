@@ -25,6 +25,7 @@
  */
 
 #include "shared-bindings/hashlib/__init__.h"
+#include "shared-module/hashlib/__init__.h"
 
 #include "mbedtls/ssl.h"
 
