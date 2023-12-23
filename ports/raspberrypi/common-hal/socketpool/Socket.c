@@ -738,11 +738,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     socketpool_socket_obj_t *socket = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
     socket->base.type = &socketpool_socket_type;
 
-<<<<<<< HEAD
     if (!socketpool_socket(self, family, type, proto, socket)) {
-=======
-    if (!socketpool_socket(self, family, type, proto socket)) {
->>>>>>> 5d78150741 (Add proto support for raspberrypi port)
         mp_raise_RuntimeError(translate("Out of sockets"));
     }
     mark_user_socket(socket);
