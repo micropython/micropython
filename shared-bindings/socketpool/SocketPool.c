@@ -86,7 +86,9 @@ MP_DEFINE_EXCEPTION(gaierror, OSError)
 //|
 //|     IP_MULTICAST_TTL: int
 //|
-//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = 0) -> socketpool.Socket:
+//|     def socket(
+//|         self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = 0
+//|     ) -> socketpool.Socket:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
