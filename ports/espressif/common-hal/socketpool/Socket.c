@@ -182,6 +182,7 @@ STATIC void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
 
 STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    int proto,
     socketpool_socket_obj_t *sock) {
     int addr_family;
     int ipproto;
@@ -194,6 +195,8 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
         ipproto = IPPROTO_IPV6;
     #endif
     }
+
+    ipproto=proto;
 
     int socket_type;
     if (type == SOCKETPOOL_SOCK_STREAM) {
@@ -226,9 +229,9 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
 // special entry for workflow listener (register system socket)
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
-    socketpool_socket_obj_t *sock) {
+    int proto, socketpool_socket_obj_t *sock) {
 
-    if (!_socketpool_socket(self, family, type, sock)) {
+    if (!_socketpool_socket(self, family, type, proto, sock)) {
         return false;
     }
 
@@ -241,7 +244,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, int proto, socketpool_socketpool_sock_t type) {
     if (family != SOCKETPOOL_AF_INET) {
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
@@ -249,7 +252,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
 
-    if (!_socketpool_socket(self, family, type, sock)) {
+    if (!_socketpool_socket(self, family, type, proto, sock)) {
         mp_raise_RuntimeError(translate("Out of sockets"));
     }
     mark_user_socket(sock->num, sock);

@@ -64,7 +64,7 @@ typedef enum {
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio);
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type);
+    socketpool_socketpool_addressfamily_t family, int proto, socketpool_socketpool_sock_t type);
 
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
     const char *host);
@@ -76,7 +76,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketp
 // closed automatically.
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
-    socketpool_socket_obj_t *sock);
+    int proto, socketpool_socket_obj_t *sock);
 
 NORETURN void common_hal_socketpool_socketpool_raise_gaierror_noname(void);
 
