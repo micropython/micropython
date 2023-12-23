@@ -186,6 +186,7 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socket_obj_t *sock) {
     int addr_family;
     int ipproto;
+
     if (family == SOCKETPOOL_AF_INET) {
         addr_family = AF_INET;
         ipproto = IPPROTO_IP;
@@ -195,6 +196,8 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
         ipproto = IPPROTO_IPV6;
     #endif
     }
+
+    ipproto = proto;
 
     int socket_type;
     if (type == SOCKETPOOL_SOCK_STREAM) {
