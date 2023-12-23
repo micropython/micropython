@@ -88,7 +88,8 @@ msgstr "%%c 전수(int)또는 캐릭터(char)필요합니다"
 #, c-format
 msgid ""
 "%d address pins, %d rgb pins and %d tiles indicate a height of %d, not %d"
-msgstr "%d 주소 핀들, %d rgb 핀들과 %d 타일 들은 높이가 %d임을 나타낸다, %d가 아니라"
+msgstr ""
+"%d 주소 핀들, %d rgb 핀들과 %d 타일 들은 높이가 %d임을 나타낸다, %d가 아니라"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
@@ -97,6 +98,10 @@ msgstr "%q 및 %q에 중복된 핀이 포함"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
 msgstr "%q와 %q는 달라야 합니다"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
+msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -216,6 +221,10 @@ msgstr "%q는 'H' 유형의 배열이어야 합니다"
 msgid "%q must be array of type 'h'"
 msgstr "%q는 'h' 유형의 배열이어야 합니다"
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr ""
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
@@ -254,6 +263,10 @@ msgstr "%q가 %q로 이름이 변경되었습니다"
 msgid "%q step cannot be zero"
 msgstr "%q 단계는 0일 수 없습니다"
 
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 #, fuzzy
 msgid "%q() takes %d positional arguments but %d were given"
@@ -286,7 +299,7 @@ msgid "%q[%u] waits on input outside of count"
 msgstr "%q[%u]이(가) 카운트 외부의 입력을 대기합니다"
 
 #: ports/espressif/common-hal/espidf/__init__.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "%s error 0x%x"
 msgstr "%s 오류 0x%x"
 
@@ -331,7 +344,7 @@ msgid "'%s' expects an FPU register"
 msgstr "'%s' 에는 FPU레지스터가 필요합니다"
 
 #: py/emitinlinethumb.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' expects an address of the form [a, b]"
 msgstr "'%s' 에는 [a, b] 형식의 주소가 필요합니다"
 
@@ -341,7 +354,7 @@ msgid "'%s' expects an integer"
 msgstr "'%s' 는 정수 여야합니다"
 
 #: py/emitinlinethumb.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' expects at most r%d"
 msgstr "'%s'는 최대 r%d를 필요로 합니다"
 
@@ -351,22 +364,22 @@ msgid "'%s' expects {r0, r1, ...}"
 msgstr "'%s' {r0, r1, ...}은 을 기대합니다"
 
 #: py/emitinlinextensa.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
 msgstr "'%s' 정수 %d가 %d..%d 범위 내에 있지 않습니다"
 
 #: py/emitinlinethumb.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
 msgstr "'%s' 정수 0x%x 이 마스크 0x%x에 맞지 않습니다"
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' object doesn't support item assignment"
 msgstr "'%s' 개체가 항목 할당을 지원하지 않습니다"
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "'%s' object doesn't support item deletion"
 msgstr "'%s' 개체가 항목 삭제를 지원하지 않습니다"
 
@@ -455,12 +468,6 @@ msgstr ""
 #: py/modbuiltins.c
 msgid "3-arg pow() not supported"
 msgstr "pow() 는 3개의 인수를 지원하지 않습니다"
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr "하드웨어 인터럽트 채널이 이미 사용 중입니다"
 
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
@@ -655,14 +662,6 @@ msgstr "최소 프레임 속도 미만"
 msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr "비트 클럭 및 워드 선택은 순차적 GPIO 핀이어야 합니다"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr "비트 클럭과 워드 선택은 클럭 단위를 공유해야 합니다"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr "비트 깊이는 8의 배수여야 합니다."
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr "비트맵 크기와 값 당 비트가 일치해야 합니다"
@@ -674,10 +673,6 @@ msgstr "부팅 장치는 첫 번째(인터페이스 #0)여야 합니다."
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "플로우 제어에 RX와 TX가 모두 필요합니다"
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
-msgstr "두 핀 모두 하드웨어 인터럽트를 지원해야 합니다"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -864,10 +859,6 @@ msgstr "CharacteristicBuffer 쓰기는 제공되지 않습니다"
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "CircuitPython 핵심 코드가 심하게 충돌했습니다. 앗!\n"
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr "시간이 너무 깁니다"
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "시계 장치가 사용 중입니다"
@@ -994,9 +985,12 @@ msgstr "ECB는 한 번에 16 바이트에서만 작동합니다"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF 메모리 할당에 실패하였습니다"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT 채널은 이미 사용 중입니다"
@@ -1051,8 +1045,9 @@ msgstr "서비스 TXT 레코드를 추가하는 것에 실패했습니다"
 #: shared-bindings/mdns/Server.c
 msgid ""
 "Failed to add service TXT record; non-string or bytes found in txt_records"
-msgstr "서비스 TXT 레코드를 추가하는 것에 실패했습니다; txt_records에서 비문자열 "
-"또는 바이트가 발견되었습니다"
+msgstr ""
+"서비스 TXT 레코드를 추가하는 것에 실패했습니다; txt_records에서 비문자열 또"
+"는 바이트가 발견되었습니다"
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 msgid "Failed to allocate %q buffer"
@@ -1134,7 +1129,8 @@ msgstr "지원되지 않는 형식입니다"
 #: ports/mimxrt10xx/common-hal/microcontroller/Processor.c
 msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
-msgstr "주파수는 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 또는 1008 Mhz 여야 "
+msgstr ""
+"주파수는 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 또는 1008 Mhz 여야 "
 "합니다"
 
 #: shared-bindings/pwmio/PWMOut.c
@@ -1159,13 +1155,6 @@ msgstr "일반 오류"
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "이미 사용된 그룹"
-
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
-msgstr "반이중 SPI는 구현되지 않았습니다"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
@@ -1221,7 +1210,7 @@ msgid "Initial set pin state conflicts with initial out pin state"
 msgstr "초기 설정한 핀의 상태가 초기 바깥쪽 핀의 상태와 충돌합니다"
 
 #: shared-bindings/bitops/__init__.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "Input buffer length (%d) must be a multiple of the strand count (%d)"
 msgstr "입력 버퍼 길이 (%d) 는 스트랜드 수 (%d)의 배수여야 한다"
 
@@ -1399,10 +1388,6 @@ msgstr "MAC 주소는 잘못되었습니다"
 msgid "Mapping must be a tuple"
 msgstr "매핑은 투플이어야 합니다"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr "마이크 시작 지연은 0.0 ~ 1.0 범위에 있어야 합니다"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
@@ -1549,9 +1534,14 @@ msgstr "연결이 없습니다: 길이를 결정할 수 없습니다"
 msgid "No default %q bus"
 msgstr "기본 버스 %q가 없습니다"
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "무료 GCLKs가 없습니다"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
+msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1642,7 +1632,8 @@ msgstr "data_pins은 %d이 아닌, 8 또는 16개 여야 합니다"
 #: shared-bindings/util.c
 msgid ""
 "Object has been deinitialized and can no longer be used. Create a new object."
-msgstr "개체가 초기화 해제되어 더 이사 사용될 수 없습니다. 새로운 개체를 만드십시오."
+msgstr ""
+"개체가 초기화 해제되어 더 이사 사용될 수 없습니다. 새로운 개체를 만드십시오."
 
 #: ports/nrf/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
@@ -1692,11 +1683,12 @@ msgid "Only int or string supported for ip"
 msgstr "ip에는 정수 또는 문자열만 지원됩니다"
 
 #: shared-module/displayio/OnDiskBitmap.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid ""
 "Only monochrome, indexed 4bpp or 8bpp, and 16bpp or greater BMPs supported: "
 "%d bpp given"
-msgstr "흑백, 인덱싱된 4bpp 또는 8bpp, 그리고 16bpp 또는 그 이상의 BMP만 지원됩니다: "
+msgstr ""
+"흑백, 인덱싱된 4bpp 또는 8bpp, 그리고 16bpp 또는 그 이상의 BMP만 지원됩니다: "
 "%d bpp가 지정되었습니다"
 
 #: ports/espressif/common-hal/alarm/touch/TouchAlarm.c
@@ -1761,11 +1753,6 @@ msgstr "소켓 부족"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "출력 버퍼 요소의 길이는 <= 4 바이트 여야 합니다"
 
-#: shared-bindings/audiobusio/PDMIn.c
-#, fuzzy
-msgid "Oversample must be multiple of 8."
-msgstr "오버샘플은 8의 배수여야 합니다."
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1823,6 +1810,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr "핀은 PWM 채널 B에 있어야 합니다"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr "핀은 하드웨어 인터럽트를 지원해야 합니다"
 
@@ -1899,6 +1887,10 @@ msgstr "방향이 출력 될 때 풀은 사용되지 않습니다"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "이 칩에서는 RISE_AND_FALL을 사용할 수 없습니다"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "RLE-compressed BMP not supported"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2159,7 +2151,6 @@ msgstr ""
 msgid "Total data to write is larger than %q"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2250,11 +2241,6 @@ msgstr ""
 #: shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
 msgstr ""
 
 #: py/parse.c
@@ -2720,7 +2706,7 @@ msgid "can't convert %q to %q"
 msgstr ""
 
 #: py/obj.c
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "can't convert %s to complex"
 msgstr "%s 를 복합어로 변환할 수 없습니다"
 
@@ -4480,6 +4466,31 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "A hardware interrupt channel is already in use"
+#~ msgstr "하드웨어 인터럽트 채널이 이미 사용 중입니다"
+
+#~ msgid "Bit clock and word select must share a clock unit"
+#~ msgstr "비트 클럭과 워드 선택은 클럭 단위를 공유해야 합니다"
+
+#~ msgid "Bit depth must be multiple of 8."
+#~ msgstr "비트 깊이는 8의 배수여야 합니다."
+
+#~ msgid "Both pins must support hardware interrupts"
+#~ msgstr "두 핀 모두 하드웨어 인터럽트를 지원해야 합니다"
+
+#~ msgid "Clock stretch too long"
+#~ msgstr "시간이 너무 깁니다"
+
+#~ msgid "Half duplex SPI is not implemented"
+#~ msgstr "반이중 SPI는 구현되지 않았습니다"
+
+#~ msgid "Microphone startup delay must be in range 0.0 to 1.0"
+#~ msgstr "마이크 시작 지연은 0.0 ~ 1.0 범위에 있어야 합니다"
+
+#, fuzzy
+#~ msgid "Oversample must be multiple of 8."
+#~ msgstr "오버샘플은 8의 배수여야 합니다."
 
 #~ msgid ""
 #~ "\n"

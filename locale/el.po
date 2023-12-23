@@ -101,6 +101,10 @@ msgstr "%q και %q περιέχουν διπλότυπα pins"
 msgid "%q and %q must be different"
 msgstr "%q και %q πρεπει να είναι διαφορετικά"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q περιέχει διπλότυπα pins"
@@ -213,6 +217,10 @@ msgstr "%q πρέπει να είναι πίνακας τύπου 'H'"
 msgid "%q must be array of type 'h'"
 msgstr "%q πρέπει να είναι λίστα τύπου 'h'"
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr ""
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
@@ -247,6 +255,10 @@ msgstr "%q μεταονομάστηκε σε %q"
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "%q βήμα δεν μπορεί να είναι μηδέν"
+
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -440,12 +452,6 @@ msgstr "0.0 σε μία σύνθετη δύναμη"
 msgid "3-arg pow() not supported"
 msgstr "pow() με 3 παραμέτρους δεν υποστηρίζεται"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr "Ένα κανάλι interrupt υλικού είναι ήδη σε χρήση"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "AP δεν μπόρεσε να εκκινηθεί"
@@ -628,14 +634,6 @@ msgstr "Χαμηλότερο από το ελάχιστο frame rate"
 msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr "Ρολόι bit και ορισμού λέξης πρέπει να είναι διαδοχικά GPIO pins"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr "Ρολόι bit και word select πρέπει να μοιράζονται μια μονάδα ρολογιού"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr "Βάθος bit πρέπει να είναι πολλαπλάσιο του 8."
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr "Το μέγεθος του bitmap και τα bits ανα τιμή πρέπει να ταιριάζουν"
@@ -647,10 +645,6 @@ msgstr "Η συσκευή εκκίνησης πρέπει να επιλεχθε�
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "Και RX και TX απαιτούνται για έλεγχο flow"
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
-msgstr "Και τα δύο pin πρέπει να υποστηρίζουν interrupts υλικού"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -842,10 +836,6 @@ msgstr "Δεν υποστηρίζονται εγγραφές στο Characterist
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "Ο πυρήνας της CircuitPython κατέρευσε. Οουπς!\n"
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr "Stretch ρολογιού πολύ μεγάλο"
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Μονάδα ρολογιού ήδη σε χρήση"
@@ -976,9 +966,12 @@ msgstr "ECB δουλεύει μόνο σε 16 bytes κάθε φορά"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF δέσμευση μνήμης απέτυχε"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT κανάλι ήδη σε χρήση"
@@ -1136,13 +1129,6 @@ msgstr ""
 #: shared-module/busdisplay/BusDisplay.c
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -1377,10 +1363,6 @@ msgstr ""
 msgid "Mapping must be a tuple"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr ""
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
@@ -1522,8 +1504,13 @@ msgstr ""
 msgid "No default %q bus"
 msgstr ""
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
 msgstr ""
 
 #: shared-bindings/os/__init__.c
@@ -1724,10 +1711,6 @@ msgstr ""
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
-msgstr ""
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1779,6 +1762,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr ""
 
@@ -1854,6 +1838,10 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
+msgstr ""
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "RLE-compressed BMP not supported"
 msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
@@ -2115,7 +2103,6 @@ msgstr ""
 msgid "Total data to write is larger than %q"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2205,11 +2192,6 @@ msgstr ""
 #: shared-module/is31fl3741/IS31FL3741.c
 #, c-format
 msgid "Unable to find I2C Display at %x"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
 msgstr ""
 
 #: py/parse.c
@@ -4435,6 +4417,21 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "A hardware interrupt channel is already in use"
+#~ msgstr "Ένα κανάλι interrupt υλικού είναι ήδη σε χρήση"
+
+#~ msgid "Bit clock and word select must share a clock unit"
+#~ msgstr "Ρολόι bit και word select πρέπει να μοιράζονται μια μονάδα ρολογιού"
+
+#~ msgid "Bit depth must be multiple of 8."
+#~ msgstr "Βάθος bit πρέπει να είναι πολλαπλάσιο του 8."
+
+#~ msgid "Both pins must support hardware interrupts"
+#~ msgstr "Και τα δύο pin πρέπει να υποστηρίζουν interrupts υλικού"
+
+#~ msgid "Clock stretch too long"
+#~ msgstr "Stretch ρολογιού πολύ μεγάλο"
 
 #~ msgid ""
 #~ "\n"
