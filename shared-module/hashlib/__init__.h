@@ -27,6 +27,8 @@
 
 #pragma once
 
+#include "mbedtls/version.h"
+
 #if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
 #define mbedtls_sha1_starts_ret mbedtls_sha1_starts
 #define mbedtls_sha1_update_ret mbedtls_sha1_update
