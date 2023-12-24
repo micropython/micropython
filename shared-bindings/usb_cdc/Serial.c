@@ -267,7 +267,6 @@ STATIC const mp_rom_map_elem_t usb_cdc_serial_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(usb_cdc_serial_locals_dict, usb_cdc_serial_locals_dict_table);
 
 STATIC const mp_stream_p_t usb_cdc_serial_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = usb_cdc_serial_read_stream,
     .write = usb_cdc_serial_write_stream,
     .ioctl = usb_cdc_serial_ioctl_stream,
