@@ -197,8 +197,6 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     #endif
     }
 
-    ipproto = proto;
-
     int socket_type;
     if (type == SOCKETPOOL_SOCK_STREAM) {
         socket_type = SOCK_STREAM;
