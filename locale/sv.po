@@ -98,6 +98,10 @@ msgstr "%q och %q innehåller duplicerade pinnar"
 msgid "%q and %q must be different"
 msgstr "%q och %q måste vara olika"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q innehåller dubblettstift"
@@ -212,6 +216,10 @@ msgstr "%q måste vara en array av typen 'H'"
 msgid "%q must be array of type 'h'"
 msgstr "%q måste vara en matris av typen 'h'"
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr ""
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
@@ -246,6 +254,10 @@ msgstr ""
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "%q steg kan inte vara noll"
+
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -439,12 +451,6 @@ msgstr "0,0 till ett komplext nummer"
 msgid "3-arg pow() not supported"
 msgstr "3-arguments pow() stöds inte"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr "En kanal för hårdvaruavbrott används redan"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "Kunde inte starta AP"
@@ -627,14 +633,6 @@ msgstr "Under minsta bildfrekvens"
 msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr "Bitklocka och ordval måste dela en klockenhet"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr "Bitdjup måste vara multipel av 8."
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr "Bitmappstorlek och bitar per värde måste överensstämma"
@@ -646,10 +644,6 @@ msgstr "Boot-enhet måste vara först (gränssnitt #0)."
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "Både RX och TX krävs för handskakning"
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
-msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -835,10 +829,6 @@ msgstr "Skrivning för CharacteristicBuffer är inte tillhandahållen"
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "CircuitPython kärnkod kraschade hårt. Hoppsan!\n"
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr "Klockförlängning för lång"
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Klockenhet används"
@@ -967,9 +957,12 @@ msgstr "ECB arbetar endast på 16 byte åt gången"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF-minnetilldelning misslyckades"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT-kanalen används redan"
@@ -1130,13 +1123,6 @@ msgstr "Allmänt fel"
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Grupp används redan"
-
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
-msgstr "Halvduplex SPI är inte implementerat"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
@@ -1372,11 +1358,6 @@ msgstr "MAC-adressen var ogiltig"
 msgid "Mapping must be a tuple"
 msgstr "Mappning måste vara en tuple"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr ""
-"Startfördröjningen för mikrofonen måste vara i intervallet 0,0 till 1,0"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
@@ -1518,9 +1499,14 @@ msgstr "Ingen anslutning: längden kan inte bestämmas"
 msgid "No default %q bus"
 msgstr "Ingen standard %q-buss"
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Inga fria GCLK: er"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
+msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1725,10 +1711,6 @@ msgstr "Slut på sockets"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "Element i utbuffer måste vara <= 4 byte långa"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
-msgstr "Översampling måste vara multipel av 8."
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1782,6 +1764,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr "Pinne måste vara på PWM-kanal B"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr "Pinnen måste stödja hårdvaruavbrott"
 
@@ -1861,6 +1844,10 @@ msgstr "Pull används inte när riktningen är output."
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "RISE_AND_FALL är inte tillgängligt på detta chip"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "RLE-compressed BMP not supported"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2123,7 +2110,6 @@ msgstr "För många displayer"
 msgid "Total data to write is larger than %q"
 msgstr "Totala data att skriva är större än %q"
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2214,11 +2200,6 @@ msgstr "Kan inte skapa lås"
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Det gick inte att hitta I2C-display på %x"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
-msgstr "Det gick inte att hitta ledig GCLK"
 
 #: py/parse.c
 msgid "Unable to init parser"
@@ -4457,6 +4438,34 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "A hardware interrupt channel is already in use"
+#~ msgstr "En kanal för hårdvaruavbrott används redan"
+
+#~ msgid "Bit clock and word select must share a clock unit"
+#~ msgstr "Bitklocka och ordval måste dela en klockenhet"
+
+#~ msgid "Bit depth must be multiple of 8."
+#~ msgstr "Bitdjup måste vara multipel av 8."
+
+#~ msgid "Both pins must support hardware interrupts"
+#~ msgstr "Båda pinnarna måste stödja maskinvaruavbrott"
+
+#~ msgid "Clock stretch too long"
+#~ msgstr "Klockförlängning för lång"
+
+#~ msgid "Half duplex SPI is not implemented"
+#~ msgstr "Halvduplex SPI är inte implementerat"
+
+#~ msgid "Microphone startup delay must be in range 0.0 to 1.0"
+#~ msgstr ""
+#~ "Startfördröjningen för mikrofonen måste vara i intervallet 0,0 till 1,0"
+
+#~ msgid "Oversample must be multiple of 8."
+#~ msgstr "Översampling måste vara multipel av 8."
+
+#~ msgid "Unable to find free GCLK"
+#~ msgstr "Det gick inte att hitta ledig GCLK"
 
 #~ msgid ""
 #~ "\n"

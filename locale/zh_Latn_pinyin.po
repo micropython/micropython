@@ -100,6 +100,10 @@ msgstr "%q hé %q bāo hán chóng fù yǐn jiǎo"
 msgid "%q and %q must be different"
 msgstr "%q hé %q bìxū bùtóng"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q bāo hán chóng fù de yǐn jiǎo"
@@ -213,6 +217,10 @@ msgstr "%q bì xū shì lèi xíng wéi 'H' de shù zǔ"
 msgid "%q must be array of type 'h'"
 msgstr "%q bìxū shì lèixíng wéi 'h' de shùzǔ"
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr ""
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
@@ -247,6 +255,10 @@ msgstr "%q zhòngmìngmíngwéi %q"
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "%q bù cháng bù néng wéi líng"
+
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
+msgstr ""
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -440,12 +452,6 @@ msgstr "0.0 de fùshù cì mì"
 msgid "3-arg pow() not supported"
 msgstr "bù zhī chí 3-arg pow()"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "wúfǎ qǐdòng AP"
@@ -628,14 +634,6 @@ msgstr "dīyú zuìdī zhēnlǜ"
 msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr "wèi shízhōng hézì xuǎnzé bìxū shì shùnxù GPIO yǐnjiǎo"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr "wèi shízhōng hé zì xuǎnzé bìxū gòngxiǎng yīgè shízhōng dānyuán"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr "wèi shēndù bìxū shì 8 de zhěngshùbèi."
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr "wèi tú dàxiǎo hé měi gè zhí de wèi shù bìxū pǐpèi"
@@ -647,10 +645,6 @@ msgstr "yǐn dǎo shè bèi bì xū shì dì yī gè (jiē kǒu #0)."
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "RX hé TX dōu xū yào liúliàng kòngzhì"
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
-msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -837,10 +831,6 @@ msgstr "Wèi tígōng zìfú huǎncún xiěrù"
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "CircuitPython de héxīn chūxiàn gùzhàng. Āiyā!\n"
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr "shízhōng yánzhǎn guòcháng"
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "shízhōng dānyuán zhèngzài shǐyòng zhōng"
@@ -968,9 +958,12 @@ msgstr "ECB yí cì zhǐ shǐ yòng 16 gè zì jié"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF nèicún fēnpèi shībài"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
@@ -1135,13 +1128,6 @@ msgstr "tōng yòng gù zhàng"
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Jítuán yǐjīng shǐyòngguò"
-
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
-msgstr "wèi shí xiàn bàn shuāng gōng SPI"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
@@ -1380,10 +1366,6 @@ msgstr "MAC dì zhǐ wú xiào"
 msgid "Mapping must be a tuple"
 msgstr "yìng shè bì xū shì yuán zǔ"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
@@ -1525,9 +1507,14 @@ msgstr "Wú liánjiē: Wúfǎ quèdìng chángdù"
 msgid "No default %q bus"
 msgstr "wú mòrèn %q zǒngxiàn"
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Méiyǒu miǎnfèi de GCLKs"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
+msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1732,10 +1719,6 @@ msgstr "tào jiē zì wài"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "huǎn chōng wài yuán sù bì xū <= 4 zì jié cháng"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
-msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1787,6 +1770,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr "yǐn jiǎo bì xū zài Pwm pín dào B shàng"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr "Yǐn jiǎo bìxū zhīchí yìngjiàn zhōngduàn"
 
@@ -1866,6 +1850,10 @@ msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "RISE_AND_FALL zài cǐ xīn piàn shàng bù kě yòng"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "RLE-compressed BMP not supported"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2128,7 +2116,6 @@ msgstr "Xiǎnshì tài duō"
 msgid "Total data to write is larger than %q"
 msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2219,11 +2206,6 @@ msgstr "Wúfǎ chuàngjiàn suǒ"
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Wúfǎ zài%x zhǎodào I2C xiǎnshìqì"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
-msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 
 #: py/parse.c
 msgid "Unable to init parser"
@@ -4465,6 +4447,33 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "A hardware interrupt channel is already in use"
+#~ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
+
+#~ msgid "Bit clock and word select must share a clock unit"
+#~ msgstr "wèi shízhōng hé zì xuǎnzé bìxū gòngxiǎng yīgè shízhōng dānyuán"
+
+#~ msgid "Bit depth must be multiple of 8."
+#~ msgstr "wèi shēndù bìxū shì 8 de zhěngshùbèi."
+
+#~ msgid "Both pins must support hardware interrupts"
+#~ msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
+
+#~ msgid "Clock stretch too long"
+#~ msgstr "shízhōng yánzhǎn guòcháng"
+
+#~ msgid "Half duplex SPI is not implemented"
+#~ msgstr "wèi shí xiàn bàn shuāng gōng SPI"
+
+#~ msgid "Microphone startup delay must be in range 0.0 to 1.0"
+#~ msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
+
+#~ msgid "Oversample must be multiple of 8."
+#~ msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
+
+#~ msgid "Unable to find free GCLK"
+#~ msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 
 #~ msgid ""
 #~ "\n"
