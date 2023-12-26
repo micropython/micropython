@@ -67,6 +67,12 @@ Note that the temperature sensor in the ESP32 will typically read higher than
 ambient due to the IC getting warm while it runs.  This effect can be minimised
 by reading the temperature sensor immediately after waking up from sleep.
 
+ESP32C3, ESP32S2, and ESP32S3 also have an internal temperature sensor available.
+It is implemented a bit differently to the ESP32 and returns the temperature in
+Celsius::
+
+    esp32.mcu_temperature() # read the internal temperature of the MCU, in Celsius
+
 Networking
 ----------
 
