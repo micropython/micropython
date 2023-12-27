@@ -49,7 +49,7 @@ static void usb_init(void) {
     PM->AHBMASK.bit.USB_ = 1;
     PM->APBBMASK.bit.USB_ = 1;
     uint8_t alt = 6; // alt G, USB
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     GCLK->PCHCTRL[USB_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK5;
     while (GCLK->PCHCTRL[USB_GCLK_ID].bit.CHEN == 0) {
     }
@@ -93,7 +93,7 @@ void init_us_counter(void) {
     TC4->COUNT32.INTENSET.reg = TC_INTENSET_OVF;
     NVIC_EnableIRQ(TC4_IRQn);
 
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 
     MCLK->APBAMASK.bit.TC0_ = 1; // Enable TC0 clock
     MCLK->APBAMASK.bit.TC1_ = 1; // Enable TC1 clock
@@ -121,7 +121,7 @@ void samd_init(void) {
     init_us_counter();
     usb_init();
     check_usb_recovery_mode();
-    #if defined(MCU_SAMD51)
+    #if defined(MCU_SAMD51) || defined(MCU_SAME54)
     mp_hal_ticks_cpu_enable();
     #endif
     #if MICROPY_PY_MACHINE_RTC
@@ -177,7 +177,7 @@ void samd_get_unique_id(samd_unique_id_t *id) {
     #if defined(MCU_SAMD21)
     uint32_t *id_addresses[4] = {(uint32_t *)0x0080A00C, (uint32_t *)0x0080A040,
                                  (uint32_t *)0x0080A044, (uint32_t *)0x0080A048};
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     uint32_t *id_addresses[4] = {(uint32_t *)0x008061FC, (uint32_t *)0x00806010,
                                  (uint32_t *)0x00806014, (uint32_t *)0x00806018};
     #endif

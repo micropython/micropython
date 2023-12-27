@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "External Flash",
+        "RGB LED",
+        "USB"
+    ],
+    "images": [
+        "same54_xplained_pro.jpg"
+    ],
+    "mcu": "same54",
+    "product": "SAME54 XPLAINED PRO",
+    "thumbnail": "",
+    "url": "https://www.microchip.com/en-us/development-tool/dm320019-bndl",
+    "vendor": "Microchip"
+}

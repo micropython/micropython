@@ -172,13 +172,13 @@ STATIC void machine_sercom_configure(machine_uart_obj_t *self) {
     uart->USART.INTENSET.reg = SERCOM_USART_INTENSET_RXC;
     #if defined(MCU_SAMD21)
     NVIC_EnableIRQ(SERCOM0_IRQn + self->id);
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 2);
     #endif
     #if MICROPY_HW_UART_TXBUF
     // Enable DRE interrupt
     // SAMD21 has just 1 IRQ for all USART events, so no need for an additional NVIC enable
-    #if defined(MCU_SAMD51)
+    #if defined(MCU_SAMD51) || defined(MCU_SAME54)
     NVIC_EnableIRQ(SERCOM0_0_IRQn + 4 * self->id + 0);
     #endif
     #endif

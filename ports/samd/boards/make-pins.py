@@ -15,6 +15,7 @@ import boardgen
 AFS = {
     "SAMD21": ["eic", "adc0", "sercom1", "sercom2", "tcc1", "tcc2"],
     "SAMD51": ["eic", "adc0", "adc1", "sercom1", "sercom2", "tc", "tcc1", "tcc2"],
+    "SAME54": ["eic", "adc0", "adc1", "sercom1", "sercom2", "tc", "tcc1", "tcc2"],
 }
 
 

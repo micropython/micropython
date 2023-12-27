@@ -58,7 +58,7 @@ STATIC mp_obj_t samd_pininfo(mp_obj_t pin_obj) {
         tuple[6] = mp_obj_new_int(pin_af->tcc2),
     };
     return mp_obj_new_tuple(7, tuple);
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     mp_obj_t tuple[9] = {
         tuple[0] = MP_OBJ_NEW_QSTR(pin_af->name),
         tuple[1] = mp_obj_new_int(pin_af->eic),

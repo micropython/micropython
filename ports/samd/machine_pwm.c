@@ -73,7 +73,7 @@ static uint32_t pwm_duty_values[8];
 #define PERBUF      PERB
 #define CCBUF       CCB
 
-#elif defined(MCU_SAMD51)
+#elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 
 static const int tcc_gclk_id[] = {
     TCC0_GCLK_ID, TCC1_GCLK_ID, TCC2_GCLK_ID,
@@ -92,7 +92,7 @@ const static uint8_t tcc_channel_offset[] = {0, 6, 10};
 static uint32_t pwm_duty_values[13];
 #endif // TCC_INST_NUM > 3
 
-#endif // defined(MCU_SAMD51)
+#endif // defined(MCU_SAMD51) || defined(MCU_SAME54)
 
 #define put_duty_value(device, channel, duty) \
     pwm_duty_values[tcc_channel_offset[device] + channel] = duty;
@@ -161,7 +161,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         // Wait while it updates synchronously.
         while (GCLK->STATUS.bit.SYNCBUSY) {
         }
-        #elif defined(MCU_SAMD51)
+        #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
         // GenClk2 to the tcc
         GCLK->PCHCTRL[tcc_gclk_id[device]].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN(2);
         while (GCLK->SYNCBUSY.reg & GCLK_SYNCBUSY_GENCTRL_GCLK2) {

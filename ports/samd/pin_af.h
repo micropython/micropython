@@ -46,7 +46,7 @@ typedef struct _machine_pin_obj_t {
 #define ALT_FCT_TCC1      4
 #define ALT_FCT_TCC2      5
 
-#elif defined(MCU_SAMD51)
+#elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 
 typedef struct _machine_pin_obj_t {
     mp_obj_base_t base;

@@ -39,7 +39,7 @@
 
 #if defined(MCU_SAMD21)
 #include "lib/asf4/samd21/hpl/pm/hpl_pm_base.h"
-#elif defined(MCU_SAMD51)
+#elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 #include "lib/asf4/samd51/hpl/pm/hpl_pm_base.h"
 #include "lib/asf4/samd51/hri/hri_mclk_d51.h"
 #endif

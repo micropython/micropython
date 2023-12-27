@@ -38,7 +38,7 @@
 
 #if defined(MCU_SAMD21)
 #define DBL_TAP_ADDR    ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
-#elif defined(MCU_SAMD51)
+#elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 #define DBL_TAP_ADDR    ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
 #endif
 // A board may define a DPL_TAP_ADDR_ALT, which will be set as well
@@ -111,7 +111,7 @@ STATIC void mp_machine_idle(void) {
 STATIC mp_int_t mp_machine_reset_cause(void) {
     #if defined(MCU_SAMD21)
     return PM->RCAUSE.reg;
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     return RSTC->RCAUSE.reg;
     #else
     return 0;
@@ -146,7 +146,7 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     }
     GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | EIC_GCLK_ID;
 
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     // Switch the peripheral clock off
     GCLK->GENCTRL[2].reg = 0;
     while (GCLK->SYNCBUSY.bit.GENCTRL2) {

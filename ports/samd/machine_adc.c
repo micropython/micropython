@@ -57,7 +57,7 @@ static uint8_t adc_vref_table[] = {
 
 #define ADC_EVSYS_CHANNEL    0
 
-#elif defined(MCU_SAMD51)
+#elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 
 static uint8_t adc_vref_table[] = {
     ADC_REFCTRL_REFSEL_INTREF_Val, ADC_REFCTRL_REFSEL_INTVCC1_Val,
@@ -201,7 +201,7 @@ static void adc_init(machine_adc_obj_t *self) {
         while (adc->STATUS.bit.SYNCBUSY) {
         }
 
-        #elif defined(MCU_SAMD51)
+        #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
         // Configuration SAMD51
         // Enable APBD clocks and PCHCTRL clocks; GCLK2 at 48 MHz
         if (self->adc_config.device == 0) {

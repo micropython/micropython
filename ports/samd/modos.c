@@ -37,7 +37,7 @@
 #include "modmachine.h"
 #include "sam.h"
 
-#if defined(MCU_SAMD51)
+#if defined(MCU_SAMD51) || defined(MCU_SAME54)
 static bool initialized = false;
 
 STATIC void trng_start(void) {
@@ -56,7 +56,7 @@ uint32_t trng_random_u32(void) {
 }
 
 #define TRNG_RANDOM_U32 trng_random_u32()
-#endif // defined(MCU_SAMD51)
+#endif // defined(MCU_SAMD51) || defined(MCU_SAME54)
 
 #if defined(MCU_SAMD21)
 extern volatile uint32_t rng_state;

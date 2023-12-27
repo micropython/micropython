@@ -47,7 +47,7 @@ typedef struct _dac_obj_t {
 STATIC dac_obj_t dac_obj[] = {
     #if defined(MCU_SAMD21)
     {{&machine_dac_type}, 0, PIN_PA02},
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     {{&machine_dac_type}, 0, PIN_PA02},
     {{&machine_dac_type}, 1, PIN_PA05},
     #endif
@@ -60,7 +60,7 @@ Dac *const dac_bases[] = DAC_INSTS;
 #define DEFAULT_DAC_VREF    (1)
 #define MAX_DAC_VREF        (2)
 
-#elif defined(MCU_SAMD51)
+#elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 
 // According to Errata 2.9.2, VDDANA as ref value is not available. However it worked
 // in tests. So I keep the selection here but set the default to Aref, which is usually
@@ -123,7 +123,7 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     while (dac->STATUS.bit.SYNCBUSY) {
     }
 
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
 
     // Configuration SAMD51
     // Enable APBD clocks and PCHCTRL clocks; GCLK3 at 8 MHz
@@ -163,7 +163,7 @@ STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
     }
     #if defined(MCU_SAMD21)
     dac->DATA.reg = value;
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     dac_obj_t *self = self_in;
     dac->DATA[self->id].reg = value;
     #endif

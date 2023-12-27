@@ -114,7 +114,7 @@ void us_timer_IRQ(void) {
         ticks_us64_upper++;
     }
     TC4->COUNT32.INTFLAG.reg = TC_INTFLAG_OVF;
-    #elif defined(MCU_SAMD51)
+    #elif defined(MCU_SAMD51) || defined(MCU_SAME54)
     if (TC0->COUNT32.INTFLAG.reg & TC_INTFLAG_OVF) {
         ticks_us64_upper++;
     }
@@ -155,7 +155,7 @@ void Sercom4_Handler(void) {
 void Sercom5_Handler(void) {
     common_sercom_irq_handler(5);
 }
-#if defined(MCU_SAMD51)
+#if defined(MCU_SAMD51) || defined(MCU_SAME54)
 void Sercom6_Handler(void) {
     common_sercom_irq_handler(6);
 }
