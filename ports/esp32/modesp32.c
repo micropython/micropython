@@ -137,6 +137,7 @@ static mp_obj_t esp32_wake_on_ulp(const mp_obj_t wake) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_wake_on_ulp_obj, esp32_wake_on_ulp);
 
+#if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
 static mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     if (mp_obj_is_true(enable)) {
         gpio_deep_sleep_hold_en();
@@ -146,6 +147,7 @@ static mp_obj_t esp32_gpio_deep_sleep_hold(const mp_obj_t enable) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(esp32_gpio_deep_sleep_hold_obj, esp32_gpio_deep_sleep_hold);
+#endif
 
 #if CONFIG_IDF_TARGET_ESP32
 
@@ -218,7 +220,9 @@ static const mp_rom_map_elem_t esp32_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext0), MP_ROM_PTR(&esp32_wake_on_ext0_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ext1), MP_ROM_PTR(&esp32_wake_on_ext1_obj) },
     { MP_ROM_QSTR(MP_QSTR_wake_on_ulp), MP_ROM_PTR(&esp32_wake_on_ulp_obj) },
+    #if !SOC_GPIO_SUPPORT_HOLD_SINGLE_IO_IN_DSLP
     { MP_ROM_QSTR(MP_QSTR_gpio_deep_sleep_hold), MP_ROM_PTR(&esp32_gpio_deep_sleep_hold_obj) },
+    #endif
     #if CONFIG_IDF_TARGET_ESP32
     { MP_ROM_QSTR(MP_QSTR_raw_temperature), MP_ROM_PTR(&esp32_raw_temperature_obj) },
     #else
