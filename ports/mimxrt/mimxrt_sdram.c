@@ -35,10 +35,10 @@
 extern uint8_t __sdram_start;
 
 #if defined(MIMXRT117x_SERIES)
-// Pull Up, High drive strength
-#define SDRAM_PIN_CONFIG  (0x07UL)
+// No pull, normal drive strength
+#define SDRAM_PIN_CONFIG  (0x0EUL)
 #else
-// Pull up 22K, high slew rate
+// No pull, maximum speed, Drive Strength 4, fast slew rate
 #define SDRAM_PIN_CONFIG  (0xE1UL)
 #endif
 
