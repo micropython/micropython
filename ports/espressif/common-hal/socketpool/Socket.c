@@ -196,8 +196,6 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     #endif
     }
 
-    ipproto=proto;
-
     int socket_type;
     if (type == SOCKETPOOL_SOCK_STREAM) {
         socket_type = SOCK_STREAM;
@@ -205,6 +203,7 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
         socket_type = SOCK_DGRAM;
     } else { // SOCKETPOOL_SOCK_RAW
         socket_type = SOCK_RAW;
+        ipproto = proto;
     }
     sock->type = socket_type;
     sock->family = addr_family;
@@ -244,7 +243,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, int proto, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
     if (family != SOCKETPOOL_AF_INET) {
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }

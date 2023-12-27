@@ -86,12 +86,14 @@ MP_DEFINE_EXCEPTION(gaierror, OSError)
 //|
 //|     IP_MULTICAST_TTL: int
 //|
-//|     def socket(self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = 0) -> socketpool.Socket:
+//|     def socket(
+//|         self, family: int = AF_INET, type: int = SOCK_STREAM, proto: int = 0
+//|     ) -> socketpool.Socket:
 //|         """Create a new socket
 //|
 //|         :param ~int family: AF_INET or AF_INET6
 //|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
-//|         :param ~int proto: Int
+//|         :param ~int proto: IPPROTO_TCP or IPPROTO_IP. Only works with SOCK_RAW 
 //|
 //|         The ``fileno`` argument available in ``socket.socket()``
 //|         in CPython is not supported.
@@ -112,6 +114,8 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
     socketpool_socketpool_addressfamily_t family = args[ARG_family].u_int;
     socketpool_socketpool_sock_t type = args[ARG_type].u_int;
     int proto = args[ARG_proto].u_int;
+    
+    if (proto < 0) {proto = 0;}
 
     return common_hal_socketpool_socket(self, family, type, proto);
 }
