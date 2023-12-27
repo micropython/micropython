@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-12-11 17:05+0000\n"
+"PO-Revision-Date: 2023-12-27 22:19+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 #: main.c
 msgid ""
@@ -101,7 +101,7 @@ msgstr "%q e %q devem ser diferentes"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "%q and %q must share a clock unit"
-msgstr ""
+msgstr "%q e %q devem compartilhar uma unidade de clock"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -217,7 +217,7 @@ msgstr "%q deve ser uma matriz do tipo 'h'"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "%q must be multiple of 8."
-msgstr ""
+msgstr "%q deve ser um múltiplo de 8."
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
@@ -227,7 +227,7 @@ msgstr "%q deve ser do tipo %q ou %q e não %q"
 
 #: shared-bindings/jpegio/JpegDecoder.c
 msgid "%q must be of type %q, %q, or %q, not %q"
-msgstr ""
+msgstr "%q deve ser do tipo %q, %q ou %q e não %q"
 
 #: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
@@ -260,7 +260,7 @@ msgstr "A etapa %q não pode ser zero"
 
 #: shared-module/bitbangio/I2C.c
 msgid "%q too long"
-msgstr ""
+msgstr "%q é longo demais"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -268,7 +268,7 @@ msgstr "%q() recebe %d argumentos posicionais, porém %d foram informados"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "%q() without %q()"
-msgstr ""
+msgstr "%q() sem %q()"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -1528,7 +1528,7 @@ msgstr "Não há GCLKs livre"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "No free GLCKs"
-msgstr ""
+msgstr "Nenhum GLCK livre"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1876,7 +1876,7 @@ msgstr "RISE_AND_FALL não está disponível neste chip"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "RLE-compressed BMP not supported"
-msgstr ""
+msgstr "Não há suporte para BMP compactado com RLE"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
