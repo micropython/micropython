@@ -65,6 +65,7 @@ jobs:
       if: steps.set-up-submodules.outputs.frozen == 'True'
       uses: ./.github/actions/mpy_cross
       with:
+        cp-version: ${{ steps.set-up-submodules.outputs.version }}
         download: false
     - name: Versions
       run: |

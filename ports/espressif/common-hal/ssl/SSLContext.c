@@ -32,6 +32,7 @@
 #include "components/mbedtls/esp_crt_bundle/include/esp_crt_bundle.h"
 
 #include "py/runtime.h"
+#include "lwip/sockets.h"
 
 void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t *self) {
 
@@ -41,7 +42,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     socketpool_socket_obj_t *socket, bool server_side, const char *server_hostname) {
 
     if (socket->type != SOCK_STREAM) {
-        mp_raise_RuntimeError(translate("Invalid socket for TLS"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid socket for TLS"));
     }
 
     ssl_sslsocket_obj_t *sock = m_new_obj_with_finaliser(ssl_sslsocket_obj_t);

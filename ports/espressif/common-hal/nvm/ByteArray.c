@@ -51,7 +51,7 @@ static void get_nvs_handle(nvs_handle_t *nvs_handle) {
 
     // Open NVS handle
     if (nvs_open("CPY", NVS_READWRITE, nvs_handle) != ESP_OK) {
-        mp_raise_RuntimeError(translate("NVS Error"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("NVS Error"));
     }
 }
 
@@ -66,7 +66,7 @@ static esp_err_t get_bytes(nvs_handle_t handle, uint8_t **buf_out) {
         *buf_out = NULL;
         return result;
     }
-    buf = gc_alloc(size, 0, false); // this SHOULD be the same as
+    buf = m_malloc(size); // this SHOULD be the same as
     if (result == ESP_OK) {
         result = nvs_get_blob(handle, "data", buf, &size);
     } else {

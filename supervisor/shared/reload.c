@@ -32,7 +32,6 @@
 #include "supervisor/shared/reload.h"
 #include "supervisor/shared/tick.h"
 
-supervisor_allocation *next_code_allocation;
 #include "shared-bindings/supervisor/Runtime.h"
 
 // True if user has disabled autoreload.
@@ -82,15 +81,19 @@ inline bool autoreload_is_enabled() {
 }
 
 void autoreload_trigger() {
-    if (autoreload_enabled & !autoreload_suspended) {
-        last_autoreload_trigger = supervisor_ticks_ms32();
-        // Guard against the rare time that ticks is 0;
-        if (last_autoreload_trigger == 0) {
-            last_autoreload_trigger += 1;
-        }
-        // Initiate a reload of the VM immediately. Later code will pause to
-        // wait for the autoreload to become ready. Doing the VM exit
-        // immediately is clearer for the user.
+    if (!autoreload_enabled || autoreload_suspended != 0) {
+        return;
+    }
+    bool reload_initiated = autoreload_pending();
+    last_autoreload_trigger = supervisor_ticks_ms32();
+    // Guard against the rare time that ticks is 0;
+    if (last_autoreload_trigger == 0) {
+        last_autoreload_trigger += 1;
+    }
+    // Initiate a reload of the VM immediately. Later code will pause to
+    // wait for the autoreload to become ready. Doing the VM exit
+    // immediately is clearer for the user.
+    if (!reload_initiated) {
         reload_initiate(RUN_REASON_AUTO_RELOAD);
     }
 }
@@ -111,5 +114,5 @@ bool autoreload_ready() {
 }
 
 bool autoreload_pending(void) {
-    return last_autoreload_trigger != 0;
+    return last_autoreload_trigger > 0;
 }

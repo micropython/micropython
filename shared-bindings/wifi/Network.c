@@ -119,8 +119,9 @@ STATIC const mp_rom_map_elem_t wifi_network_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(wifi_network_locals_dict, wifi_network_locals_dict_table);
 
-const mp_obj_type_t wifi_network_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Network,
-    .locals_dict = (mp_obj_t)&wifi_network_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    wifi_network_type,
+    MP_QSTR_Network,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &wifi_network_locals_dict
+    );

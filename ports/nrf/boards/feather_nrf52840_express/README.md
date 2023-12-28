@@ -104,7 +104,7 @@ Parsing hex file.
 Erasing user available code and UICR flash areas.
 Applying system reset.
 Checking that the area to write is not protected.
-Programing device.
+Programming device.
 Applying system reset.
 Run.
 ```

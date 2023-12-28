@@ -33,9 +33,8 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
-#include "fsl_pwm.h"
+#include "sdk/drivers/pwm/fsl_pwm.h"
 
-#include "supervisor/shared/translate/translate.h"
 #include "periph.h"
 
 static PWM_Type *const _flexpwms[] = PWM_BASE_PTRS;
@@ -240,7 +239,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 
         // Disable all fault inputs
         flexpwm->SM[submodule].DISMAP[0] = 0;
-        flexpwm->SM[submodule].DISMAP[1] = 0;
 
         PWM_SetPwmLdok(flexpwm, sm_mask, false);
         flexpwm->SM[submodule].CTRL = PWM_CTRL_FULL_MASK | PWM_CTRL_PRSC(self->prescaler);
@@ -326,7 +324,7 @@ void common_hal_pwmio_pwmout_set_duty_cycle(pwmio_pwmout_obj_t *self, uint16_t d
     if (duty == 65535) {
         // X channels can't do a full 100% duty cycle.
         if (self->pwm->channel == kPWM_PwmX) {
-            mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_duty_cycle);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_duty_cycle);
         }
         duty_scaled = self->pulse_count + 1;
     } else {

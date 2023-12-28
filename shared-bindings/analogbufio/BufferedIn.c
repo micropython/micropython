@@ -31,7 +31,6 @@
 #include "py/binary.h"
 #include "py/mphal.h"
 #include "py/nlr.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/analogbufio/BufferedIn.h"
@@ -145,7 +144,7 @@ STATIC mp_obj_t analogbufio_bufferedin_obj_readinto(mp_obj_t self_in, mp_obj_t b
     if (bufinfo.typecode == 'H') {
         bytes_per_sample = 2;
     } else if (bufinfo.typecode != 'B' && bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError_varg(translate("%q must be a bytearray or array of type 'H' or 'B'"), MP_QSTR_buffer);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be a bytearray or array of type 'H' or 'B'"), MP_QSTR_buffer);
     }
 
     mp_uint_t captured = common_hal_analogbufio_bufferedin_readinto(self, bufinfo.buf, bufinfo.len, bytes_per_sample);
@@ -164,9 +163,10 @@ STATIC const mp_rom_map_elem_t analogbufio_bufferedin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(analogbufio_bufferedin_locals_dict, analogbufio_bufferedin_locals_dict_table);
 
-const mp_obj_type_t analogbufio_bufferedin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_BufferedIn,
-    .make_new = analogbufio_bufferedin_make_new,
-    .locals_dict = (mp_obj_t)&analogbufio_bufferedin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    analogbufio_bufferedin_type,
+    MP_QSTR_BufferedIn,
+    MP_TYPE_FLAG_NONE,
+    make_new, analogbufio_bufferedin_make_new,
+    locals_dict, &analogbufio_bufferedin_locals_dict
+    );

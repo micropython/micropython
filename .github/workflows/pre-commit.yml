@@ -30,7 +30,9 @@ jobs:
     - name: Set up external
       uses: ./.github/actions/deps/external
     - name: Install dependencies
-      run: sudo apt-get install -y gettext uncrustify
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gettext uncrustify
     - name: Run pre-commit
       uses: pre-commit/action@v3.0.0
     - name: Make patch

@@ -54,7 +54,7 @@ uint8_t display_init_sequence[] = {
     0xc5, 1, 0x0e,     // _VMCTR1 VCOMH = 4V, VOML = -1.1V
     0x20, 0,     // _INVOFF //MISMATCh 0x2a vs 0x20
     0x36, 1, 0x60,     // _MADCTL bottom to top refresh
-    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 sycle osc equalie,
+    // 1 clk cycle nonoverlap, 2 cycle gate rise, 3 cycle osc equalie,
     // fix on VTL
     0x3a, 1, 0x05,     // COLMOD - 16bit color
     0xe0, 0x10, 0x02, 0x1c, 0x07, 0x12,
@@ -70,10 +70,10 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    displayio_fourwire_obj_t *bus = &displays[0].fourwire_bus;
-    bus->base.type = &displayio_fourwire_type;
+    fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
+    bus->base.type = &fourwire_fourwire_type;
     busio_spi_obj_t *internal_spi = &supervisor_flash_spi_bus;
-    common_hal_displayio_fourwire_construct(bus,
+    common_hal_fourwire_fourwire_construct(bus,
         internal_spi,
         &pin_PA08, // Command or data
         &pin_PB12, // Chip select
@@ -82,9 +82,9 @@ void board_init(void) {
         0, // Polarity
         0); // Phase
 
-    displayio_display_obj_t *display = &displays[0].display;
-    display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(display,
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
+    common_hal_busdisplay_busdisplay_construct(display,
         bus,
         160, // Width
         128, // Height

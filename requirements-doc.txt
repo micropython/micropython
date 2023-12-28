@@ -3,6 +3,7 @@ mypy
 black
 isort
 twine
+build
 wheel
 astroid
 setuptools>=45
@@ -13,6 +14,7 @@ sphinx!=5.2.0.post0
 sphinx-autoapi
 sphinx-rtd-theme
 sphinxcontrib-svg2pdfconverter
+sphinxcontrib-jquery
 readthedocs-sphinx-search
 myst-parser
 

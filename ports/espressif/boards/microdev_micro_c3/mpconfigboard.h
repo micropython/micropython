@@ -45,8 +45,5 @@
 #define DEFAULT_UART_BUS_RX             (&pin_GPIO20)
 #define DEFAULT_UART_BUS_TX             (&pin_GPIO21)
 
-// For REPL over built-in USB Serial
-#define CIRCUITPY_ESP_USB_SERIAL_JTAG   (1)
-
 // For entering safe mode
 #define CIRCUITPY_BOOT_BUTTON           (&pin_GPIO9)

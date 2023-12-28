@@ -36,7 +36,6 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/msgpack/ExtType.h"
 #include "shared-bindings/msgpack/__init__.h"
 #include "shared-module/msgpack/__init__.h"
@@ -72,7 +71,7 @@ STATIC void read(msgpack_stream_t *s, void *buf, mp_uint_t size) {
         mp_raise_msg(&mp_type_EOFError, NULL);
     }
     if (ret < size) {
-        mp_raise_ValueError(translate("short read"));
+        mp_raise_ValueError(MP_ERROR_TEXT("short read"));
     }
 }
 
@@ -98,6 +97,16 @@ STATIC uint32_t read4(msgpack_stream_t *s) {
     int n = 1;
     if (*(char *)&n == 1) {
         res = __builtin_bswap32(res);
+    }
+    return res;
+}
+
+STATIC uint64_t read8(msgpack_stream_t *s) {
+    uint64_t res = 0;
+    read(s, &res, 8);
+    int n = 1;
+    if (*(char *)&n == 1) {
+        res = __builtin_bswap64(res);
     }
     return res;
 }
@@ -207,7 +216,7 @@ STATIC void pack_bin(msgpack_stream_t *s, const uint8_t *data, size_t len) {
     }
 }
 
-STATIC void  pack_ext(msgpack_stream_t *s, int8_t code, const uint8_t *data, size_t len) {
+STATIC void pack_ext(msgpack_stream_t *s, int8_t code, const uint8_t *data, size_t len) {
     if (len == 1) {
         write1(s, 0xd4);
     } else if (len == 2) {
@@ -327,7 +336,7 @@ STATIC void pack(mp_obj_t obj, msgpack_stream_t *s, mp_obj_t default_handler) {
             // this also precludes some valid outputs
             pack(mp_call_function_1(default_handler, obj), s, mp_const_none);
         } else {
-            mp_raise_ValueError(translate("no default packer"));
+            mp_raise_ValueError(MP_ERROR_TEXT("no default packer"));
         }
     }
 }
@@ -366,7 +375,7 @@ STATIC mp_obj_t unpack_bytes(msgpack_stream_t *s, size_t size) {
         size -= n;
         p += n;
     }
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 
 STATIC mp_obj_t unpack_ext(msgpack_stream_t *s, size_t size, mp_obj_t ext_hook) {
@@ -375,8 +384,7 @@ STATIC mp_obj_t unpack_ext(msgpack_stream_t *s, size_t size, mp_obj_t ext_hook) 
     if (ext_hook != mp_const_none) {
         return mp_call_function_2(ext_hook, MP_OBJ_NEW_SMALL_INT(code), data);
     } else {
-        mod_msgpack_extype_obj_t *o = m_new_obj(mod_msgpack_extype_obj_t);
-        o->base.type = &mod_msgpack_exttype_type;
+        mod_msgpack_extype_obj_t *o = mp_obj_malloc(mod_msgpack_extype_obj_t, &mod_msgpack_exttype_type);
         o->code = code;
         o->data = data;
         return MP_OBJ_FROM_PTR(o);
@@ -424,21 +432,38 @@ STATIC mp_obj_t unpack(msgpack_stream_t *s, mp_obj_t ext_hook, bool use_list) {
             return unpack_bytes(s, read_size(s, code - 0xc4));
         }
         case 0xcc: // uint8
+            return MP_OBJ_NEW_SMALL_INT((uint8_t)read1(s));
         case 0xd0: // int8
             return MP_OBJ_NEW_SMALL_INT((int8_t)read1(s));
         case 0xcd: // uint16
+            return MP_OBJ_NEW_SMALL_INT((uint16_t)read2(s));
         case 0xd1: // int16
             return MP_OBJ_NEW_SMALL_INT((int16_t)read2(s));
         case 0xce: // uint32
+            return mp_obj_new_int_from_uint((uint32_t)read4(s));
         case 0xd2: // int32
-            return MP_OBJ_NEW_SMALL_INT((int32_t)read4(s));
-        case 0xca: {
-            union Float { mp_float_t f;
-                          uint32_t u;
+            return mp_obj_new_int((int32_t)read4(s));
+        case 0xcf: // uint 64
+            return mp_obj_new_int_from_ull((uint64_t)read8(s));
+        case 0xd3: // int 64
+            return mp_obj_new_int_from_ll((int64_t)read8(s));
+        case 0xca: { // float
+            union Float {
+                mp_float_t f;
+                uint32_t u;
             };
             union Float data;
             data.u = read4(s);
             return mp_obj_new_float(data.f);
+        }
+        case 0xcb: { // double
+            union Double {
+                uint64_t u;
+                double d;
+            };
+            union Double data;
+            data.u = read8(s);
+            return mp_obj_new_float_from_d(data.d);
         }
         case 0xd9:
         case 0xda:
@@ -449,7 +474,7 @@ STATIC mp_obj_t unpack(msgpack_stream_t *s, mp_obj_t ext_hook, bool use_list) {
             vstr_init_len(&vstr, size);
             byte *p = (byte *)vstr.buf;
             read(s, p, size);
-            return mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+            return mp_obj_new_str_from_vstr(&vstr);
         }
         case 0xde:
         case 0xdf: {
@@ -483,11 +508,8 @@ STATIC mp_obj_t unpack(msgpack_stream_t *s, mp_obj_t ext_hook, bool use_list) {
             // ext 8, 16, 32
             return unpack_ext(s, read_size(s, code - 0xc7), ext_hook);
         case 0xc1:      // never used
-        case 0xcb:      // float 64
-        case 0xcf:      // uint 64
-        case 0xd3:      // int 64
         default:
-            mp_raise_NotImplementedError(translate("64 bit types"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid format"));
     }
 }
 

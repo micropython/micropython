@@ -7,11 +7,22 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "fsl_flexspi.h"
+#include "sdk/drivers/flexspi/fsl_flexspi.h"
 #include "internal_flash.h"
 #include "boards/flash_config.h"
 #include "supervisor/internal_flash.h"
 #include "supervisor/linker.h"
+
+STATIC uint8_t _busy_bit_shift;
+STATIC bool _busy_bit_polarity;
+STATIC bool _inited = false;
+
+void flexspi_nor_init(void) {
+    // Copy busy bit info into RAM so we can use if when flash isn't available.
+    _busy_bit_shift = qspiflash_config.memConfig.busyOffset;
+    _busy_bit_polarity = qspiflash_config.memConfig.busyBitPolarity;
+    _inited = true;
+}
 
 STATIC status_t PLACE_IN_ITCM(flexspi_nor_write_enable)(FLEXSPI_Type * base, uint32_t baseAddr)
 {
@@ -53,9 +64,8 @@ STATIC status_t PLACE_IN_ITCM(flexspi_nor_wait_bus_busy)(FLEXSPI_Type * base)
         if (status != kStatus_Success) {
             return status;
         }
-        size_t busyBit = readValue & (1U << qspiflash_config.memConfig.busyOffset);
-        isBusy = (qspiflash_config.memConfig.busyBitPolarity == 0 && busyBit != 0) ||
-            (qspiflash_config.memConfig.busyBitPolarity == 1 && busyBit == 0);
+        bool busyBit = (readValue >> _busy_bit_shift) & 0x1;
+        isBusy = busyBit != _busy_bit_polarity;
     } while (isBusy);
 
     return status;
@@ -127,7 +137,7 @@ status_t PLACE_IN_ITCM(flexspi_nor_flash_page_program)(FLEXSPI_Type * base, uint
     status = flexspi_nor_wait_bus_busy(base);
 
     /* Do software reset. */
-    #if defined(FSL_FEATURE_SOC_OTFAD_COUNT)
+    #if defined(FSL_FEATURE_SOC_OTFAD_COUNT) && FSL_FEATURE_SOC_OTFAD_COUNT == 1
     base->AHBCR |= FLEXSPI_AHBCR_CLRAHBRXBUF_MASK | FLEXSPI_AHBCR_CLRAHBTXBUF_MASK;
     base->AHBCR &= ~(FLEXSPI_AHBCR_CLRAHBRXBUF_MASK | FLEXSPI_AHBCR_CLRAHBTXBUF_MASK);
     #else

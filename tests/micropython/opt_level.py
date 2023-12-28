@@ -1,4 +1,4 @@
-import micropython as micropython
+import micropython
 
 # check we can get and set the level
 micropython.opt_level(0)

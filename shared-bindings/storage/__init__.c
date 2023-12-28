@@ -33,7 +33,6 @@
 #include "py/objnamedtuple.h"
 #include "py/runtime.h"
 #include "shared-bindings/storage/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/flash.h"
 
 //| """Storage management
@@ -80,7 +79,7 @@ STATIC mp_obj_t storage_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     mp_obj_t dest[2];
     mp_load_method_maybe(vfs_obj, MP_QSTR_mount, dest);
     if (dest[0] == MP_OBJ_NULL) {
-        mp_raise_ValueError(translate("filesystem must provide mount method"));
+        mp_raise_ValueError(MP_ERROR_TEXT("filesystem must provide mount method"));
     }
 
     common_hal_storage_mount(vfs_obj, mnt_str, args[ARG_readonly].u_bool);
@@ -188,7 +187,7 @@ STATIC mp_obj_t storage_erase_filesystem(size_t n_args, const mp_obj_t *pos_args
     common_hal_storage_erase_filesystem(extended);
     #else
     if (mp_obj_is_true(args[ARG_extended].u_obj)) {
-        mp_raise_NotImplementedError_varg(translate("%q=%q"), MP_QSTR_extended, MP_QSTR_True);
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q=%q"), MP_QSTR_extended, MP_QSTR_True);
     }
     common_hal_storage_erase_filesystem(false);
     #endif
@@ -209,7 +208,7 @@ STATIC mp_obj_t storage_disable_usb_drive(void) {
     #else
     if (true) {
         #endif
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -234,7 +233,7 @@ STATIC mp_obj_t storage_enable_usb_drive(void) {
     #else
     if (true) {
         #endif
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -252,7 +251,7 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_enable_usb_drive),  MP_ROM_PTR(&storage_enable_usb_drive_obj) },
 
 //| class VfsFat:
-//|     def __init__(self, block_device: str) -> None:
+//|     def __init__(self, block_device: BlockDevice) -> None:
 //|         """Create a new VfsFat filesystem around the given block device.
 //|
 //|         :param block_device: Block device the the filesystem lives on"""
@@ -266,8 +265,15 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|     This property cannot be changed, use `storage.remount` instead."""
 //|     ...
 //|
-//|     def mkfs(self) -> None:
-//|         """Format the block device, deleting any data that may have been there"""
+//|     @staticmethod
+//|     def mkfs(block_device: BlockDevice) -> None:
+//|         """Format the block device, deleting any data that may have been there.
+//|
+//|         **Limitations**: On SAMD21 builds, `mkfs()` will raise ``OSError(22)`` when
+//|         attempting to format filesystems larger than 4GB. The extra code to format larger
+//|         filesystems will not fit on these builds. You can still access
+//|         larger filesystems, but you will need to format the filesystem on another device.
+//|         """
 //|         ...
 //|     def open(self, path: str, mode: str) -> None:
 //|         """Like builtin ``open()``"""
@@ -307,4 +313,4 @@ const mp_obj_module_t storage_module = {
     .globals = (mp_obj_dict_t *)&storage_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_storage, storage_module, CIRCUITPY_STORAGE);
+MP_REGISTER_MODULE(MP_QSTR_storage, storage_module);

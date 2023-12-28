@@ -1,0 +1,7 @@
+#define MICROPY_HW_BOARD_NAME "BLOK"
+USB_PRODUCT = "BLOK"
+    uint32_t THI = (*(uint32_t *)FUSES_HOT_TEMP_VAL_INT_ADDR & FUSES_HOT_TEMP_VAL_INT_Msk) >> FUSES_HOT_TEMP_VAL_INT_Pos;
+    float TH = THI + convert_dec_to_frac(THD);
+print(binascii.b2a_base64(b"fo"))
+        # again, neither will "there" or "wither", since they have "the"
+i1Qb$TE"rl

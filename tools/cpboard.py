@@ -9,6 +9,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
+import pathlib
 import re
 import serial
 import sys
@@ -80,6 +81,7 @@ class REPL:
             else:
                 timeout_count += 1
                 if timeout is not None and timeout_count >= 100 * timeout:
+                    print("timeout")
                     raise TimeoutError(110, "timeout waiting for", ending)
                 time.sleep(0.01)
         return data
@@ -93,16 +95,18 @@ class REPL:
         for i in range(0, len(data), chunk_size):
             chunk = data[i : min(i + chunk_size, len(data))]
             self.session += chunk
-            self.serial.write(chunk)
+            c = self.serial.write(chunk)
+            if c < len(chunk):
+                raise RuntimeError()
             time.sleep(0.01)
 
     def reset(self):
         # Use read() since serial.reset_input_buffer() fails with termios.error now and then
         self.read()
         self.session = b""
-        self.write(b"\r" + REPL.CHAR_CTRL_C + REPL.CHAR_CTRL_C)  # interrupt any running program
+        self.write(REPL.CHAR_CTRL_C + REPL.CHAR_CTRL_C)  # interrupt any running program
         self.write(b"\r" + REPL.CHAR_CTRL_B)  # enter or reset friendly repl
-        data = self.read_until(b">>> ")
+        self.read_until(b">>> ", timeout=60)
 
     def execute(self, code, timeout=10, wait_for_response=True):
         self.read()  # Throw away
@@ -161,7 +165,10 @@ class Disk:
             self._path = mount[0][1]
         else:
             name = os.path.basename(dev)
-            sh.pmount("-tvfat", dev, name, _timeout=10)
+            try:
+                sh.pmount("-tvfat", dev, name, _timeout=10)
+            except sh.CommandNotFound:
+                raise ValueError()
             self.mountpoint = "/media/" + name
             self._path = self.mountpoint
 
@@ -347,7 +354,7 @@ class CPboard:
         return cls(dev, baudrate=baudrate, wait=wait, timeout=timeout)
 
     def __init__(self, device, baudrate=115200, wait=0, timeout=10):
-        self.device = device
+        self.device = str(pathlib.Path(device).resolve())
         self.usb_dev = None
         try:
             # Is it a usb.core.Device?
@@ -357,7 +364,7 @@ class CPboard:
         else:
             serials = [serial for serial in os.listdir("/dev/serial/by-path") if portstr in serial]
             if len(serials) != 1:
-                raise RuntimeError("Can't find excatly one matching usb serial device")
+                raise RuntimeError("Can't find exactly one matching usb serial device")
             self.device = os.path.realpath("/dev/serial/by-path/" + serials[0])
             self.usb_dev = device
 
@@ -369,6 +376,10 @@ class CPboard:
         self.serial = None
         self.bootloader = False
         self.repl = REPL(self)
+
+        # Disable autoreload so that file copies won't mess us up.
+        with self:
+            self.exec("import supervisor;supervisor.runtime.autoreload = False")
 
     def __enter__(self):
         self.open()
@@ -507,9 +518,12 @@ class CPboard:
 
         part = [part for part in disks if "part1" in part]
         if not part:
-            raise RuntimeError("Disk not found for: " + self.device)
+            return None
 
-        return Disk(part[0])
+        try:
+            return Disk(part[0])
+        except ValueError:
+            return None
 
     @property
     def firmware(self):
@@ -548,17 +562,32 @@ PyboardError = CPboardError
 class Pyboard:
     def __init__(self, device, baudrate=115200, user="micro", password="python", wait=0):
         self.board = CPboard.from_try_all(device, baudrate=baudrate, wait=wait)
-        with self.board.disk as disk:
-            disk.copy("skip_if.py")
+        disk = self.board.disk
+        if disk:
+            with disk as open_disk:
+                open_disk.copy("skip_if.py")
 
     def close(self):
         self.board.close()
 
     def enter_raw_repl(self):
         self.board.open()
+        self.board.repl.reset()
+
+    def exit_raw_repl(self):
+        self.close()
 
     def execfile(self, filename):
         return self.board.execfile(filename)
+
+    def exec_(self, command, data_consumer=None):
+        try:
+            output, error = self.board.repl.execute(command, timeout=20000, wait_for_response=True)
+        except OSError as e:
+            raise CPboardError("timeout", e)
+        if error:
+            raise CPboardError("exception", output, error)
+        return output
 
 
 def eval_namedtuple(board, command):

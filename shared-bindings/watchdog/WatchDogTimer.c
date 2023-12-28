@@ -50,29 +50,31 @@
 //|
 
 //|     def __init__(self) -> None:
-//|         """Not currently dynamically supported. Access the sole instance through `microcontroller.watchdog`."""
+//|         """Access the sole instance through `microcontroller.watchdog`."""
 //|         ...
 
 //|     def feed(self) -> None:
 //|         """Feed the watchdog timer. This must be called regularly, otherwise
-//|         the timer will expire."""
+//|         the timer will expire. Silently does nothing if the watchdog isn't active."""
 //|         ...
 STATIC mp_obj_t watchdog_watchdogtimer_feed(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    watchdog_watchdogmode_t current_mode = common_hal_watchdog_get_mode(self);
-
-    if (current_mode == WATCHDOGMODE_NONE) {
-        mp_raise_ValueError(translate("WatchDogTimer is not currently running"));
+    if (common_hal_watchdog_get_mode(self) != WATCHDOGMODE_NONE) {
+        common_hal_watchdog_feed(self);
     }
-
-    common_hal_watchdog_feed(self);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_feed_obj, watchdog_watchdogtimer_feed);
 
 //|     def deinit(self) -> None:
-//|         """Stop the watchdog timer. This may raise an error if the watchdog
-//|         timer cannot be disabled on this platform."""
+//|         """Stop the watchdog timer.
+//|
+//|         :raises RuntimeError: if the watchdog timer cannot be disabled on this platform.
+//|
+//|         .. note:: This is deprecated in ``9.0.0`` and will be removed in ``10.0.0``.
+//|             Set watchdog `mode` to `None` instead.
+//|
+//|         """
 //|         ...
 STATIC mp_obj_t watchdog_watchdogtimer_deinit(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -83,7 +85,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_deinit_obj, watchdog_wat
 
 //|     timeout: float
 //|     """The maximum number of seconds that can elapse between calls
-//|     to feed()"""
+//|     to `feed()`"""
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_timeout(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_float(common_hal_watchdog_get_timeout(self));
@@ -94,7 +96,7 @@ STATIC mp_obj_t watchdog_watchdogtimer_obj_set_timeout(mp_obj_t self_in, mp_obj_
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_float_t timeout = mp_obj_get_float(timeout_obj);
 
-    mp_arg_validate_int_min((int)timeout, 0, MP_QSTR_timeout);
+    mp_arg_validate_int_min(timeout, 0, MP_QSTR_timeout);
 
     common_hal_watchdog_set_timeout(self, timeout);
     return mp_const_none;
@@ -105,44 +107,31 @@ MP_PROPERTY_GETSET(watchdog_watchdogtimer_timeout_obj,
     (mp_obj_t)&watchdog_watchdogtimer_get_timeout_obj,
     (mp_obj_t)&watchdog_watchdogtimer_set_timeout_obj);
 
-//|     mode: WatchDogMode
-//|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode`.
+//|     mode: Optional[WatchDogMode]
+//|     """The current operating mode of the WatchDogTimer `watchdog.WatchDogMode` or `None` when
+//|     the timer is disabled.
 //|
-//|     Setting a WatchDogMode activates the WatchDog::
+//|     Setting a `WatchDogMode` activates the WatchDog::
 //|
-//|       import microcontroller
-//|       import watchdog
+//|       from microcontroller import watchdog
+//|       from watchdog import WatchDogMode
 //|
-//|       w = microcontroller.watchdog
-//|       w.timeout = 5
-//|       w.mode = watchdog.WatchDogMode.RAISE
+//|       watchdog.timeout = 5
+//|       watchdog.mode = WatchDogMode.RESET
 //|
 //|
-//|     Once set, the WatchDogTimer will perform the specified action if the timer expires."""
+//|     Once set, the `WatchDogTimer` will perform the specified action if the timer expires."""
 //|
 STATIC mp_obj_t watchdog_watchdogtimer_obj_get_mode(mp_obj_t self_in) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return watchdog_watchdogmode_type_to_obj(common_hal_watchdog_get_mode(self));
+    return cp_enum_find(&watchdog_watchdogmode_type, common_hal_watchdog_get_mode(self));
 }
 MP_DEFINE_CONST_FUN_OBJ_1(watchdog_watchdogtimer_get_mode_obj, watchdog_watchdogtimer_obj_get_mode);
 
-STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t mode_obj) {
+STATIC mp_obj_t watchdog_watchdogtimer_obj_set_mode(mp_obj_t self_in, mp_obj_t obj) {
     watchdog_watchdogtimer_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    watchdog_watchdogmode_t current_mode = common_hal_watchdog_get_mode(self);
-    watchdog_watchdogmode_t new_mode = watchdog_watchdogmode_obj_to_type(mode_obj);
-    mp_float_t current_timeout = common_hal_watchdog_get_timeout(self);
-
-    // When setting the mode, the timeout value must be greater than zero
-    if (new_mode == WATCHDOGMODE_RESET || new_mode == WATCHDOGMODE_RAISE) {
-        mp_arg_validate_int_min((int)current_timeout, 0, MP_QSTR_timeout);
-    }
-
-    // Don't allow changing the mode once the watchdog timer has been started
-    if (current_mode == WATCHDOGMODE_RESET && new_mode != WATCHDOGMODE_RESET) {
-        mp_raise_TypeError(translate("WatchDogTimer.mode cannot be changed once set to WatchDogMode.RESET"));
-    }
-
-    common_hal_watchdog_set_mode(self, new_mode);
+    watchdog_watchdogmode_t mode = (obj == mp_const_none) ? WATCHDOGMODE_NONE : cp_enum_value(&watchdog_watchdogmode_type, obj, MP_QSTR_mode);
+    common_hal_watchdog_set_mode(self, mode);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(watchdog_watchdogtimer_set_mode_obj, watchdog_watchdogtimer_obj_set_mode);
@@ -159,9 +148,9 @@ STATIC const mp_rom_map_elem_t watchdog_watchdogtimer_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(watchdog_watchdogtimer_locals_dict, watchdog_watchdogtimer_locals_dict_table);
 
-const mp_obj_type_t watchdog_watchdogtimer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WatchDogTimer,
-    // .make_new = watchdog_watchdogtimer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&watchdog_watchdogtimer_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    watchdog_watchdogtimer_type,
+    MP_QSTR_WatchDogTimer,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &watchdog_watchdogtimer_locals_dict
+    );

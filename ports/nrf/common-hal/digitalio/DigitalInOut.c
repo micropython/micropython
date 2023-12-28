@@ -26,7 +26,6 @@
 
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_gpio.h"
 
@@ -148,7 +147,7 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     NRF_GPIO_Type *reg = nrf_gpio_pin_port_decode(&pin);
 
     if (nrf_gpio_pin_dir_get(self->pin->number) == NRF_GPIO_PIN_DIR_OUTPUT) {
-        mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot get pull while in output mode"));
     }
 
     switch ((reg->PIN_CNF[pin] & GPIO_PIN_CNF_PULL_Msk) >> GPIO_PIN_CNF_PULL_Pos) {

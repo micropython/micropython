@@ -68,6 +68,11 @@ try:
 except TypeError:
     print("TypeError")
 
+# Try single string
+T3 = namedtuple("TupComma", "foo bar")
+t = T3(1, 2)
+print(t.foo, t.bar)
+
 # Try tuple
 T4 = namedtuple("TupTuple", ("foo", "bar"))
 t = T4(1, 2)
@@ -77,3 +82,8 @@ print(t.foo, t.bar)
 # Not implemented so far
 #T2 = namedtuple("TupComma", "foo,bar")
 #t = T2(1, 2)
+
+# Creating an empty namedtuple should not segfault
+T5 = namedtuple("TupEmpty", [])
+t = T5()
+print(t)

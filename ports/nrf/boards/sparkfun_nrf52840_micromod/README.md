@@ -8,11 +8,11 @@ We've also routed two I<sup>2</sup>C buses, 2 SPI buses, eleven GPIO, dedicated 
 
 ## CircuitPython Pin Defs
 
-CircuitPython pin definitions, while simialr to other boards represent a slight departure from just the typical `A` and `D` pin definitions. The majority of general pins are labled as `G` (or alternatively, `BUS`,) as the MicroMod system they build on uses those names to specify pins that may not be specficially analog or digital.
+CircuitPython pin definitions, while similar to other boards represent a slight departure from just the typical `A` and `D` pin definitions. The majority of general pins are labeled as `G` (or alternatively, `BUS`,) as the MicroMod system they build on uses those names to specify pins that may not be specficially analog or digital.
 
 This can be somewhat confusing, especially around the analog pins. Here's a quick pin-map:
 
-MicroMod Pin # | ATP Pin Label | Pin Definition | Additional Definitons | Pin/Port Reference | Notes
+MicroMod Pin # | ATP Pin Label | Pin Definition | Additional Definitions | Pin/Port Reference | Notes
 :--------------|:--------------|:--------------|:-----------------------|:-------------------|:------
 8 | G11 | | | (Not Connected) |
 10 | D0 | D0 | | P0_27 |

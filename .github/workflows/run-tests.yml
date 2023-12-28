@@ -17,7 +17,7 @@ jobs:
     env:
       CP_VERSION: ${{ inputs.cp-version }}
       MICROPY_CPYTHON3: python3.8
-      MICROPY_MICROPYTHON: ../ports/unix/micropython-coverage
+      MICROPY_MICROPYTHON: ../ports/unix/build-coverage/micropython
       TEST_all:
       TEST_mpy: --via-mpy -d basics float micropython
       TEST_native: --emit native
@@ -41,6 +41,8 @@ jobs:
       uses: ./.github/actions/deps/external
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross
+      with:
+        cp-version: ${{ inputs.cp-version }}
     - name: Build unix port
       run: make -C ports/unix VARIANT=coverage -j2
     - name: Run tests
@@ -55,13 +57,10 @@ jobs:
       run: |
         make -C examples/natmod/features1
         make -C examples/natmod/features2
-        make -C examples/natmod/btree
-        make -C examples/natmod/framebuf
-        make -C examples/natmod/uheapq
-        make -C examples/natmod/urandom
-        make -C examples/natmod/ure
-        make -C examples/natmod/uzlib
+        make -C examples/natmod/heapq
+        make -C examples/natmod/random
+        make -C examples/natmod/re
     - name: Test native modules
       if: matrix.test == 'all'
-      run: ./run-natmodtests.py extmod/{btree*,framebuf*,uheapq*,ure*,uzlib*}.py
+      run: ./run-natmodtests.py extmod/{heapq*,re*,zlib*}.py
       working-directory: tests

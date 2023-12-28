@@ -39,7 +39,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
 
     rmt_channel_t channel = peripherals_find_and_reserve_rmt(TRANSMIT_MODE);
     if (channel == RMT_CHANNEL_MAX) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     // Configure Channel

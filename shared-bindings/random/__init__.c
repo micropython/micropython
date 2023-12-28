@@ -31,7 +31,6 @@
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "shared-bindings/random/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """pseudo-random numbers and choices
 //|
@@ -90,7 +89,7 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // range(stop)
         if (stop <= 0) {
-            mp_raise_ValueError(translate("stop not reachable from start"));
+            mp_raise_ValueError(MP_ERROR_TEXT("stop not reachable from start"));
         }
     } else {
         start = stop;
@@ -98,7 +97,7 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
         if (n_args == 2) {
             // range(start, stop)
             if (start >= stop) {
-                mp_raise_ValueError(translate("stop not reachable from start"));
+                mp_raise_ValueError(MP_ERROR_TEXT("stop not reachable from start"));
             }
         } else {
             // range(start, stop, step)
@@ -112,7 +111,7 @@ STATIC mp_obj_t random_randrange(size_t n_args, const mp_obj_t *args) {
                 mp_raise_ValueError_varg(MP_ERROR_TEXT("%q step cannot be zero"), MP_QSTR_randrange);
             }
             if (n <= 0) {
-                mp_raise_ValueError(translate("invalid step"));
+                mp_raise_ValueError(MP_ERROR_TEXT("invalid step"));
             }
         }
     }
@@ -144,7 +143,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(random_randint_obj, random_randint);
 STATIC mp_obj_t random_choice(mp_obj_t seq) {
     mp_int_t len = mp_obj_get_int(mp_obj_len(seq));
     if (len == 0) {
-        mp_raise_IndexError(translate("empty sequence"));
+        mp_raise_IndexError(MP_ERROR_TEXT("empty sequence"));
     }
     return mp_obj_subscr(seq, mp_obj_new_int(shared_modules_random_randrange(0, len, 1)), MP_OBJ_SENTINEL);
 }
@@ -189,4 +188,4 @@ const mp_obj_module_t random_module = {
     .globals = (mp_obj_dict_t *)&mp_module_random_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_random, random_module, CIRCUITPY_RANDOM);
+MP_REGISTER_MODULE(MP_QSTR_random, random_module);

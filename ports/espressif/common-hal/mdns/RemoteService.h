@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "components/mdns/include/mdns.h"
+#include "mdns.h"
 
 typedef struct {
     mp_obj_base_t base;

@@ -13,7 +13,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SCK),  MP_ROM_PTR(&pin_PB13)  },
     { MP_ROM_QSTR(MP_QSTR_MOSI), MP_ROM_PTR(&pin_PB12)  },
     { MP_ROM_QSTR(MP_QSTR_MISO), MP_ROM_PTR(&pin_PB14)  },
-    { MP_ROM_QSTR(MP_QSTR_xSDCS),MP_ROM_PTR(&pin_PA04)  },
+    { MP_ROM_QSTR(MP_QSTR_xSDCS), MP_ROM_PTR(&pin_PA04)  },
 
     { MP_ROM_QSTR(MP_QSTR_DAC0), MP_ROM_PTR(&pin_PA02)  },
     { MP_ROM_QSTR(MP_QSTR_DAC1), MP_ROM_PTR(&pin_PA05)  },
@@ -43,7 +43,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_TCK),   MP_ROM_PTR(&pin_PB01)  },
     { MP_ROM_QSTR(MP_QSTR_TDI),   MP_ROM_PTR(&pin_PB02)  },
     { MP_ROM_QSTR(MP_QSTR_TMS),   MP_ROM_PTR(&pin_PB03)  },
-    { MP_ROM_QSTR(MP_QSTR_ESP_CS),MP_ROM_PTR(&pin_PB15)  },
+    { MP_ROM_QSTR(MP_QSTR_ESP_CS), MP_ROM_PTR(&pin_PB15)  },
 
     { MP_ROM_QSTR(MP_QSTR_TX1),   MP_ROM_PTR(&pin_PA12)  },
     { MP_ROM_QSTR(MP_QSTR_RX1),   MP_ROM_PTR(&pin_PA13)  },

@@ -34,7 +34,6 @@
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/time/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """time and timing related functions
 //|
@@ -43,7 +42,8 @@
 //|
 //| def monotonic() -> float:
 //|     """Returns an always increasing value of time with an unknown reference
-//|     point. Only use it to compare against other values from `time.monotonic()`.
+//|     point. Only use it to compare against other values from `time.monotonic()`
+//|     during the same code run.
 //|
 //|     On most boards, `time.monotonic()` converts a 64-bit millisecond tick counter
 //|     to a float. Floats on most boards are encoded in 30 bits internally, with
@@ -84,7 +84,7 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     mp_int_t msecs = 1000 * seconds;
     #endif
     if (seconds < 0) {
-        mp_raise_ValueError(translate("sleep length must be non-negative"));
+        mp_raise_ValueError(MP_ERROR_TEXT("sleep length must be non-negative"));
     }
     common_hal_time_delay_ms(msecs);
     return mp_const_none;
@@ -119,23 +119,7 @@ STATIC mp_obj_t struct_time_make_new(const mp_obj_type_t *type, size_t n_args, s
 //|         ...
 //|
 const mp_obj_namedtuple_type_t struct_time_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_struct_time,
-        .print = namedtuple_print,
-        .parent = &mp_type_tuple,
-        .make_new = struct_time_make_new,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS_MAKE_NEW(MP_QSTR_struct_time, struct_time_make_new),
     .n_fields = 9,
     .fields = {
         MP_QSTR_tm_year,
@@ -177,13 +161,13 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
     mp_obj_t *elems;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
-        mp_raise_TypeError(translate("Tuple or struct_time argument required"));
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, (mp_obj_type_t *)&struct_time_type_obj.base)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("Tuple or struct_time argument required"));
     }
 
     mp_obj_tuple_get(t, &len, &elems);
     if (len != 9) {
-        mp_raise_TypeError(translate("function takes exactly 9 arguments"));
+        mp_raise_TypeError(MP_ERROR_TEXT("function takes exactly 9 arguments"));
     }
 
     tm->tm_year = mp_obj_get_int(elems[0]);
@@ -200,14 +184,14 @@ void struct_time_to_tm(mp_obj_t t, timeutils_struct_time_t *tm) {
 // Function to return a NotImplementedError on platforms that don't
 // support long integers
 STATIC mp_obj_t time_not_implemented(void) {
-    mp_raise_NotImplementedError(translate("No long integer support"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("No long integer support"));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_not_implemented_obj, time_not_implemented);
 #endif
 
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 mp_obj_t MP_WEAK rtc_get_time_source_time(void) {
-    mp_raise_RuntimeError(translate("RTC is not supported on this board"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("RTC is not supported on this board"));
 }
 
 //| def time() -> int:
@@ -229,6 +213,8 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_time_obj, time_time);
 //| def monotonic_ns() -> int:
 //|     """Return the time of the monotonic clock, which cannot go backward, in nanoseconds.
 //|     Not available on boards without long integer support.
+//|     Only use it to compare against other values from `time.monotonic()`
+//|     during a single code run.
 //|
 //|     :return: the current time
 //|     :rtype: int"""
@@ -267,7 +253,7 @@ STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     #else
     if (secs < 0) {
         #endif
-        mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("timestamp out of range for platform time_t"));
     }
 
     timeutils_struct_time_t tm;
@@ -291,17 +277,17 @@ STATIC mp_obj_t time_mktime(mp_obj_t t) {
     mp_obj_t *elem;
     size_t len;
 
-    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, &struct_time_type_obj.base)) {
-        mp_raise_TypeError(translate("Tuple or struct_time argument required"));
+    if (!mp_obj_is_type(t, &mp_type_tuple) && !mp_obj_is_type(t, (mp_obj_type_t *)&struct_time_type_obj.base)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("Tuple or struct_time argument required"));
     }
 
     mp_obj_tuple_get(t, &len, &elem);
     if (len != 9) {
-        mp_raise_TypeError_varg(translate("function takes %d positional arguments but %d were given"), 9, len);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("function takes %d positional arguments but %d were given"), 9, len);
     }
 
     if (mp_obj_get_int(elem[0]) < 2000) {
-        mp_raise_msg(&mp_type_OverflowError, translate("timestamp out of range for platform time_t"));
+        mp_raise_msg(&mp_type_OverflowError, MP_ERROR_TEXT("timestamp out of range for platform time_t"));
     }
 
     mp_uint_t secs = timeutils_mktime(mp_obj_get_int(elem[0]), mp_obj_get_int(elem[1]), mp_obj_get_int(elem[2]),
@@ -343,4 +329,4 @@ const mp_obj_module_t time_module = {
     .globals = (mp_obj_dict_t *)&time_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_time, time_module, CIRCUITPY_TIME);
+MP_REGISTER_MODULE(MP_QSTR_time, time_module);

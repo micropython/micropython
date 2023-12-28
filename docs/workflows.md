@@ -68,11 +68,14 @@ conflicts with user created NUS services.
 Read-only characteristic that returns the UTF-8 encoded version string.
 
 ## Web
+If the keys `CIRCUITPY_WIFI_SSID` and `CIRCUITPY_WIFI_PASSWORD` are set in `settings.toml`,
+CircuitPython will automatically connect to the given Wi-Fi network on boot and upon reload.
 
-The web workflow is depends on adding Wi-Fi credentials into the `settings.toml` file. The keys are
-`CIRCUITPY_WIFI_SSID` and `CIRCUITPY_WIFI_PASSWORD`. Once these are defined, CircuitPython will
-automatically connect to the network and start the webserver used for the workflow. The webserver
-is on port 80 unless overridden by `CIRCUITPY_WEB_API_PORT`. It also enables MDNS.
+If `CIRCUITPY_WEB_API_PASSWORD` is also set, the web workflow will also start.
+The web workflow will only be enabled if the Wi-Fi connection succeeds upon boot.
+
+The webserver is on port 80 unless overridden by `CIRCUITPY_WEB_API_PORT`. It also enables MDNS.
+The name of the board as advertised to the network can be overridden by `CIRCUITPY_WEB_INSTANCE_NAME`.
 
 Here is an example `/settings.toml`:
 
@@ -81,16 +84,21 @@ Here is an example `/settings.toml`:
 CIRCUITPY_WIFI_SSID="scottswifi"
 CIRCUITPY_WIFI_PASSWORD="secretpassword"
 
-# To enable modifying files from the web. Change this too!
+# To enable the the webserver. Change this too!
 # Leave the User field blank in the browser.
 CIRCUITPY_WEB_API_PASSWORD="passw0rd"
 
 CIRCUITPY_WEB_API_PORT=80
+CIRCUITPY_WEB_INSTANCE_NAME=""
 ```
 
 MDNS is used to resolve [`circuitpython.local`](http://circuitpython.local) to a device specific
 hostname of the form `cpy-XXXXXX.local`. The `XXXXXX` is based on network MAC address. The device
 also provides the MDNS service with service type `_circuitpython` and protocol `_tcp`.
+
+Since port 80 (or the port assigned to `CIRCUITPY_WEB_API_PORT`) is used for web workflow, the `mdns`
+[module](https://docs.circuitpython.org/en/latest/shared-bindings/mdns/index.html#mdns.Server.advertise_service)
+can't advertise an additional service on that port.
 
 ### HTTP
 The web server is HTTP 1.1 and may use chunked responses so that it doesn't need to precompute
@@ -360,6 +368,31 @@ curl -v -L http://circuitpython.local/cp/devices.json
 }
 ```
 
+#### `/cp/diskinfo.json`
+
+Returns information about the attached disk(s). A list of objects, one per disk.
+
+* `root`: Filesystem path to the root of the disk.
+* `free`: Count of free bytes on the disk.
+* `block_size`: Size of a block in bytes.
+* `writable`: True when CircuitPython and the web workflow can write to the disk. USB may claim a disk instead.
+* `total`: Total bytes that make up the disk.
+
+Example:
+```sh
+curl -v -L http://circuitpython.local/cp/diskinfo.json
+```
+
+```json
+[{
+	"root": "/",
+	"free": 2964992,
+	"block_size": 512,
+	"writable": true,
+	"total": 2967552
+}]
+```
+
 #### `/cp/serial/`
 
 
@@ -372,7 +405,7 @@ This is an authenticated endpoint in both modes.
 
 Returns information about the device.
 
-* `web_api_version`: Always `1`. This versions the rest of the API and new versions may not be backwards compatible.
+* `web_api_version`: Between `1` and `3`. This versions the rest of the API and new versions may not be backwards compatible. See below for more info.
 * `version`: CircuitPython build version.
 * `build_date`: CircuitPython build date.
 * `board_name`: Human readable name of the board.
@@ -428,3 +461,9 @@ CircuitPython is expected to be masked UTF-8, as the spec requires. Data from Ci
 client is unmasked. It is also unbuffered so the client will get a variety of frame sizes.
 
 Only one WebSocket at a time is supported.
+
+### Versions
+
+* `1` - Initial version.
+* `2` - Added `/cp/diskinfo.json`.
+* `3` - Changed `/cp/diskinfo.json` to return a list in preparation for multi-disk support.

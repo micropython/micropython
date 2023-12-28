@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,46 +38,51 @@
 // first entry in enum will be MP_QSTRnull=0, which indicates invalid/no qstr
 enum {
     #ifndef NO_QSTR
-#define QENUM(id) id,
-    #include "genhdr/qstrdefs.enum.h"
-#undef QENUM
+#define QDEF(id, hash, len, str) id,
+// CIRCUITPY-CHANGE
+#define TRANSLATION(english_id, number)
+    #include "genhdr/qstrdefs.generated.h"
+#undef QDEF
+#undef TRANSLATION
     #endif
     MP_QSTRnumber_of, // no underscore so it can't clash with any of the above
 };
 
 typedef size_t qstr;
+typedef uint16_t qstr_short_t;
 
-typedef struct _qstr_attr_t {
-    #if MICROPY_QSTR_BYTES_IN_HASH == 1
-    uint8_t hash;
-    #elif MICROPY_QSTR_BYTES_IN_HASH == 2
-    uint16_t hash;
-    #else
-    #error unimplemented qstr hash decoding
-    #endif
-    #if MICROPY_QSTR_BYTES_IN_LEN == 1
-    uint8_t len;
-    #elif MICROPY_QSTR_BYTES_IN_LEN == 2
-    uint16_t len;
-    #else
-    #error unimplemented qstr length decoding
-    #endif
-} qstr_attr_t;
+#if MICROPY_QSTR_BYTES_IN_HASH == 1
+typedef uint8_t qstr_hash_t;
+#elif MICROPY_QSTR_BYTES_IN_HASH == 2
+typedef uint16_t qstr_hash_t;
+#else
+#error unimplemented qstr hash decoding
+#endif
+
+#if MICROPY_QSTR_BYTES_IN_LEN == 1
+typedef uint8_t qstr_len_t;
+#elif MICROPY_QSTR_BYTES_IN_LEN == 2
+typedef uint16_t qstr_len_t;
+#else
+#error unimplemented qstr length decoding
+#endif
 
 typedef struct _qstr_pool_t {
     const struct _qstr_pool_t *prev;
     size_t total_prev_len;
     size_t alloc;
     size_t len;
-    qstr_attr_t *attrs;
+    qstr_hash_t *hashes;
+    qstr_len_t *lengths;
     const char *qstrs[];
 } qstr_pool_t;
 
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
 
+void qstr_reset(void);
 void qstr_init(void);
 
-mp_uint_t qstr_compute_hash(const byte *data, size_t len);
+size_t qstr_compute_hash(const byte *data, size_t len);
 qstr qstr_find_strn(const char *str, size_t str_len); // returns MP_QSTRnull if not found
 
 qstr qstr_from_str(const char *str);
@@ -90,5 +95,10 @@ const byte *qstr_data(qstr q, size_t *len);
 
 void qstr_pool_info(size_t *n_pool, size_t *n_qstr, size_t *n_str_data_bytes, size_t *n_total_bytes);
 void qstr_dump_data(void);
+
+#if MICROPY_ROM_TEXT_COMPRESSION
+void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src);
+#define MP_IS_COMPRESSED_ROM_STRING(s) (*(byte *)(s) == 0xff)
+#endif
 
 #endif // MICROPY_INCLUDED_PY_QSTR_H

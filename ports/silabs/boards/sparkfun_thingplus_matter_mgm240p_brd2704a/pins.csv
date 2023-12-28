@@ -1,0 +1,24 @@
+﻿mcu_name, board_name,port ,pin
+PA0,,0,0
+PA4,,0,4
+PA5,TX,0,5
+PA6,RX,0,6
+PA7,SD_CS,0,7
+PA8,LED,0,8
+PB0,,1,0
+PB1,,1,1
+PB2,,1,2
+PB3,SCL,1,3
+PB4,SDA,1,4
+PC0,,2,0
+PC1,,2,1
+PC2,SCK,2,2
+PC3,MOSI,2,3
+PC4,,2,4
+PC5,,2,5
+PC6,MISO,2,6
+PC7,,2,7
+PD0,,3,0
+PD1,,3,1
+PD2,,3,2
+PD3,,3,3

@@ -6,7 +6,7 @@ Boards can setup reserved flash with _ld_reserved_flash_size in board.ld. */
 
 ENTRY(Reset_Handler)
 
-code_size = 1M;
+code_size = _ld_flash_size >= 4M ? 2M : 1M;
 _ld_default_stack_size = 20K;
 
 /* Default reserved flash to nothing. */
@@ -19,13 +19,13 @@ MEMORY
     /* This is the first block and is read so that the bootrom knows the optimal way to interface with the flash chip. */
     FLASH_CONFIG (rx)     : ORIGIN = flash_config_location, LENGTH = 512
     /* This can't move because the bootrom looks at this address. */
-    FLASH_IVT (rx)        : ORIGIN = 0x60001000, LENGTH = 4K
+    FLASH_IVT (rx)        : ORIGIN = flash_base + 0x1000, LENGTH = 4K
     /* Place the ISRs 48k in to leave room for the bootloader when it is available. */
-    FLASH_FIRMWARE (rx)   : ORIGIN = 0x6000C000, LENGTH = code_size - 48K
-    FLASH_FATFS (r)       : ORIGIN = 0x60100000, LENGTH = _ld_flash_size - code_size - _ld_reserved_flash_size
+    FLASH_FIRMWARE (rx)   : ORIGIN = flash_base + 0xC000, LENGTH = code_size - 48K
+    FLASH_FATFS (r)       : ORIGIN = flash_base + code_size, LENGTH = _ld_flash_size - code_size - _ld_reserved_flash_size
     /* Teensy uses the last bit of flash for recovery. */
-    RESERVED_FLASH        : ORIGIN = 0x60100000 + _ld_flash_size - _ld_reserved_flash_size, LENGTH = _ld_reserved_flash_size
-    OCRAM (rwx)           : ORIGIN = 0x20200000, LENGTH = ram_size - 64K
+    RESERVED_FLASH        : ORIGIN = flash_base + code_size + _ld_flash_size - _ld_reserved_flash_size, LENGTH = _ld_reserved_flash_size
+    OCRAM (rwx)           : ORIGIN = ocram_base, LENGTH = ram_size - 64K
     DTCM (x)              : ORIGIN = 0x20000000, LENGTH = 32K
     ITCM (x)              : ORIGIN = 0x00000000, LENGTH = 32K
 }
@@ -52,24 +52,68 @@ SECTIONS
         . = ALIGN(4);
     } > FLASH_IVT
 
+    /* Align for 256 ISR entries and place first in flash. Otherwise the UF2
+       bootloader can't find it because it uses its own flash_config and ivt. */
+    .isr_vector : ALIGN(4 * 256)
+    {
+        . = ALIGN(4);
+        KEEP(*(.isr_vector))         /* Startup code */
+        . = ALIGN(4);
+    } > ITCM AT> FLASH_FIRMWARE
+    _ld_isr_destination = ADDR(.isr_vector);
+    _ld_isr_flash_copy = LOADADDR(.isr_vector);
+    _ld_isr_size = SIZEOF(.isr_vector);
+    /* Used by the bootloader to start user code. */
+    __VECTOR_TABLE = LOADADDR(.isr_vector);
+
     .text :
     {
         . = ALIGN(4);
-        __VECTOR_TABLE = .;
-        __VECTOR_RAM = .;
-        _ld_isr_table = .;
-
-        KEEP(*(.isr_vector))         /* Startup code */
     *(EXCLUDE_FILE(
         *fsl_flexspi.o
+        *cd_ci_hs.o
+        *ehci.o
+        *tusb_fifo.o
+        *usbd.o
+        *string0.o
+        *py/nlr*.o
+        *py/obj.o
+        *py/gc.o
+        *py/map.o
+        *py/runtime.o
+        *py/objboundmeth.o
+        *py/objtype.o
     ) .text*)                /* .text* sections (code) */
-        *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+
+        /* Keep USB processing functions out of RAM because we don't know which will be used.
+           We try to only keep USB interrupt related functions. */
+        *dcd_ci_hs.o(.text.process_*_request .text.dcd_edpt* .text.dcd_init .text.dcd_set_address)
+        /* Move hcd_dcache* routines to RAM so that we don't cross execution from
+           the cache during cache maintenance. Weird things happen when we do. */
+        *hcd_ci_hs.o(.text.hcd_i*)
+        *usbd.o(.text.process_*_request .text.process_[gs]et* .text.tud_* .text.usbd_* .text.configuration_reset .text.invoke_*)
+        *ehci.o(.text.hcd_edpt* .text.hcd_setup* .text.ehci_init* .text.hcd_port* .text.hcd_device* .text.qtd_init* .text.list_remove*)
+
+        /* Less critical portions of the runtime. */
+        *runtime.o(.text.mp_import* .text.mp_resume* .text.mp_make_raise*  .text.mp_init)
+        *gc.o(.text.gc_never_free .text.gc_make_long_lived)
+
+        /* Anything marked cold/unlikely should be in flash. */
+        *(.text.unlikely.*)
+
+    *(EXCLUDE_FILE(
+        *dcd_ci_hs.o
+        *py/objboundmeth.o
+        *py/objtype.o
+    ) .rodata*)        /* .rodata* sections (constants, strings, etc.) */
         . = ALIGN(4);
     } > FLASH_FIRMWARE
 
     .ARM.exidx :
     {
+        __exidx_start = .;
         *(.ARM.exidx*)
+        __exidx_end = .;
         *(.gnu.linkonce.armexidx.*)
         _etext = .;        /* define a global symbol at end of code */
         __etext = .;       /* define a global symbol at end of code */
@@ -81,7 +125,6 @@ SECTIONS
     {
         . = ALIGN(4);
         *(.data*)               /* .data* sections */
-        *fsl_flexspi.o(.text*)
         . = ALIGN(4);
     } > OCRAM AT> FLASH_FIRMWARE
     _ld_ocram_data_destination = ADDR(.data);
@@ -93,7 +136,7 @@ SECTIONS
     {
         . = ALIGN(4);
 
-        *(.bss*)
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.bss*)))
         *(COMMON)
 
         . = ALIGN(4);
@@ -101,13 +144,28 @@ SECTIONS
     _ld_ocram_bss_start = ADDR(.bss);
     _ld_ocram_bss_size = SIZEOF(.bss);
     _ld_heap_start = _ld_ocram_bss_start + _ld_ocram_bss_size;
-    _ld_heap_end = ORIGIN(OCRAM) + LENGTH(OCRAM);
+    _ld_ocram_start = ORIGIN(OCRAM);
+    _ld_ocram_end = ORIGIN(OCRAM) + LENGTH(OCRAM);
+    _ld_heap_end = _ld_ocram_end;
 
-    .itcm :
+
+    .itcm : ALIGN(4)
     {
         . = ALIGN(4);
         *(.itcm.*)
-
+        *fsl_flexspi.o(.text*)
+        *dcd_ci_hs.o(.text*)
+        *ehci.o(.text*)
+        *tusb_fifo.o(.text*)
+        *py/objboundmeth.o(.text*)
+        *py/objtype.o(.text*)
+        *py/obj.o(.text*)
+        *py/gc.o(.text*)
+        *py/map.o(.text*)
+        *py/nlr*.o(.text*)
+        *py/runtime.o(.text*)
+        *(.text.process_*_isr .text.dcd_event_* .text.osal_queue*)
+        *string0.o(.text*)
         . = ALIGN(4);
     } > ITCM AT> FLASH_FIRMWARE
     _ld_itcm_destination = ADDR(.itcm);
@@ -119,6 +177,9 @@ SECTIONS
         . = ALIGN(4);
 
         *(.dtcm_data.*)
+        *dcd_ci_hs.o(.rodata*)
+        *py/objboundmeth.o(.rodata*)
+        *py/objtype.o(.rodata*)
 
         . = ALIGN(4);
     } > DTCM AT> FLASH_FIRMWARE
@@ -139,13 +200,15 @@ SECTIONS
     _ld_dtcm_bss_start = ADDR(.dtcm_bss);
     _ld_dtcm_bss_size = SIZEOF(.dtcm_bss);
 
-    .stack :
+    .stack (NOLOAD) :
     {
         . = ALIGN(8);
         _ld_stack_bottom = .;
         . += _ld_default_stack_size;
     } > DTCM
     _ld_stack_top = ORIGIN(DTCM) + LENGTH(DTCM);
+    /* For the SDK's isr vector table */
+    __StackTop = ORIGIN(DTCM) + LENGTH(DTCM);
 
     .ARM.attributes 0 : { *(.ARM.attributes) }
 }

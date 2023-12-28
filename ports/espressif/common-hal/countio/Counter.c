@@ -29,7 +29,8 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
+
+#include "driver/gpio.h"
 
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
@@ -50,7 +51,7 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     // Initialize PCNT unit
     const int8_t unit = peripherals_pcnt_init(&pcnt_config);
     if (unit == -1) {
-        mp_raise_RuntimeError(translate("All PCNT units in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
     }
 
     self->pin = pin->number;

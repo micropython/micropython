@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
 STATIC mp_obj_list_t *list_new(size_t n);
 STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
@@ -41,16 +39,19 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
 
+// CIRCUITPY-CHANGE: native_list() and other changes here for broadcom port
+// https://github.com/adafruit/circuitpython/pull/5610
+
 /******************************************************************************/
 /* list                                                                       */
 
 STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_list_t *o = MP_OBJ_TO_PTR(o_in);
     const char *item_separator = ", ";
-    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
+    if (!(MICROPY_PY_JSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     } else {
-        #if MICROPY_PY_UJSON_SEPARATORS
+        #if MICROPY_PY_JSON_SEPARATORS
         item_separator = MP_PRINT_GET_EXT(print)->item_separator;
         #endif
     }
@@ -73,12 +74,7 @@ STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     return list;
 }
 
-mp_obj_t mp_obj_new_list_from_iter(mp_obj_t iterable) {
-    mp_obj_t list = mp_obj_new_list(0, NULL);
-    return list_extend_from_iter(list, iterable);
-}
-
-STATIC mp_obj_t list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+mp_obj_t mp_obj_list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
@@ -297,6 +293,7 @@ inline mp_obj_t mp_obj_list_pop(mp_obj_list_t *self, size_t index) {
     return ret;
 }
 
+// CIRCUITPY-CHANGE
 STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_list));
     mp_obj_list_t *self = native_list(args[0]);
@@ -468,20 +465,19 @@ STATIC const mp_rom_map_elem_t list_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(list_locals_dict, list_locals_dict_table);
 
-const mp_obj_type_t mp_type_list = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_list,
-    .print = list_print,
-    .make_new = list_make_new,
-    .locals_dict = (mp_obj_dict_t *)&list_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = list_unary_op,
-        .binary_op = list_binary_op,
-        .subscr = list_subscr,
-        .getiter = list_getiter,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_list,
+    MP_QSTR_list,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_list_make_new,
+    print, list_print,
+    unary_op, list_unary_op,
+    binary_op, list_binary_op,
+    subscr, list_subscr,
+    iter, list_getiter,
+    locals_dict, &list_locals_dict
+    );
+
 
 void mp_obj_list_init(mp_obj_list_t *o, size_t n) {
     o->base.type = &mp_type_list;

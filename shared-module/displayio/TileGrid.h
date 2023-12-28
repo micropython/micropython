@@ -66,6 +66,7 @@ typedef struct {
     bool transpose_xy  : 1;
     bool hidden : 1;
     bool hidden_by_parent : 1;
+    bool rendered_hidden : 1;
     uint8_t padding : 6;
 } displayio_tilegrid_t;
 
@@ -85,5 +86,7 @@ void displayio_tilegrid_update_transform(displayio_tilegrid_t *group, const disp
 // false if the tilegrid wasn't rendered in the last frame.
 bool displayio_tilegrid_get_previous_area(displayio_tilegrid_t *self, displayio_area_t *area);
 void displayio_tilegrid_finish_refresh(displayio_tilegrid_t *self);
+
+bool displayio_tilegrid_get_rendered_hidden(displayio_tilegrid_t *self);
 
 #endif // MICROPY_INCLUDED_SHARED_MODULE_DISPLAYIO_TILEGRID_H

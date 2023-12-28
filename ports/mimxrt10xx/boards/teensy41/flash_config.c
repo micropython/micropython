@@ -7,50 +7,21 @@
 
 #include "boards/flash_config.h"
 
-#include "fsl_flexspi_nor_boot.h"
-
-
-__attribute__((section(".boot_hdr.ivt")))
-/*************************************
- *  IVT Data
- *************************************/
-const ivt image_vector_table = {
-    0x432000D1,                       /* Teensy bootloader looks for this value*/
-    IMAGE_ENTRY_ADDRESS,              /* Image Entry Function */
-    IVT_RSVD,                         /* Reserved = 0 */
-    (uint32_t)DCD_ADDRESS,            /* Address where DCD information is stored */
-    (uint32_t)BOOT_DATA_ADDRESS,      /* Address where BOOT Data Structure is stored */
-    (uint32_t)&image_vector_table,    /* Pointer to IVT Self (absolute address */
-    (uint32_t)CSF_ADDRESS,            /* Address where CSF file is stored */
-    IVT_RSVD                          /* Reserved = 0 */
-};
-
-extern unsigned long _flashimagelen;
-
-__attribute__((section(".boot_hdr.boot_data")))
-/*************************************
- *  Boot Data
- *************************************/
-const BOOT_DATA_T boot_data = {
-    FLASH_BASE,               /* boot start location */
-    (uint32_t)&_flashimagelen, /* actual size of image */
-    PLUGIN_FLAG,              /* Plugin flag*/
-    0xFFFFFFFF                /* empty - extra data word */
-};
+#include "xip/fsl_flexspi_nor_boot.h"
 
 // Config for W25Q64JV with QSPI routed.
 __attribute__((section(".boot_hdr.conf")))
 const flexspi_nor_config_t qspiflash_config = {
     .pageSize = 256u,
     .sectorSize = 4u * 1024u,
-    .ipcmdSerialClkFreq = kFlexSpiSerialClk_30MHz,
+    .ipcmdSerialClkFreq = kFLEXSPISerialClk_30MHz,
     .blockSize = 0x00010000,
     .isUniformBlockSize = false,
     .memConfig =
     {
         .tag = FLEXSPI_CFG_BLK_TAG,
         .version = FLEXSPI_CFG_BLK_VERSION,
-        .readSampleClkSrc = kFlexSPIReadSampleClk_LoopbackFromDqsPad,
+        .readSampleClkSrc = kFLEXSPIReadSampleClk_LoopbackFromDqsPad,
         .csHoldTime = 3u,
         .csSetupTime = 3u,
 
@@ -64,13 +35,13 @@ const flexspi_nor_config_t qspiflash_config = {
             .seqNum = 1u,
         },
         .deviceModeArg = 0x02,
-        .deviceType = kFlexSpiDeviceType_SerialNOR,
+        .deviceType = kFLEXSPIDeviceType_SerialNOR,
         .sflashPadType = kSerialFlash_4Pads,
-        .serialClkFreq = kFlexSpiSerialClk_60MHz,
+        .serialClkFreq = kFLEXSPISerialClk_60MHz,
         .sflashA1Size = FLASH_SIZE,
         .lookupTable =
         {
-            // FLEXSPI_LUT_SEQ(cmd0, pad0, op0, cmd1, pad1, op1)
+            // FSL_ROM_FLEXSPI_LUT_SEQ(cmd0, pad0, op0, cmd1, pad1, op1)
             // The high 16 bits is command 1 and the low are command 0.
             // Within a command, the top 6 bits are the opcode, the next two are the number
             // of pads and then last byte is the operand. The operand's meaning changes
@@ -81,20 +52,20 @@ const flexspi_nor_config_t qspiflash_config = {
 
             // 0: ROM: Read LUTs
             // Quad version
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0xEB /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0xEB /* the command to send */,
                 RADDR_SDR, FLEXSPI_4PAD, 24 /* bits to transmit */),
-                FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_4PAD, 6 /* 6 dummy cycles, 2 for M7-0 and 4 dummy */,
+                FSL_ROM_FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_4PAD, 6 /* 6 dummy cycles, 2 for M7-0 and 4 dummy */,
                     READ_SDR,  FLEXSPI_4PAD, 0x04),
                 // Single fast read version, good for debugging.
-                // FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x0B /* the command to send */,
+                // FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x0B /* the command to send */,
                 //                 RADDR_SDR, FLEXSPI_1PAD, 24  /* bits to transmit */),
-                // FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_1PAD, 8 /* 8 dummy clocks */,
+                // FSL_ROM_FLEXSPI_LUT_SEQ(DUMMY_SDR, FLEXSPI_1PAD, 8 /* 8 dummy clocks */,
                 //                 READ_SDR,  FLEXSPI_1PAD, 0x04),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS),
 
             // 1: ROM: Read status
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR,  FLEXSPI_1PAD, 0x05 /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR,  FLEXSPI_1PAD, 0x05 /* the command to send */,
                 READ_SDR, FLEXSPI_1PAD, 0x01),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS,
@@ -104,21 +75,21 @@ const flexspi_nor_config_t qspiflash_config = {
             EMPTY_SEQUENCE,
 
             // 3: ROM: Write Enable
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x06 /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x06 /* the command to send */,
                 STOP,    FLEXSPI_1PAD, 0x00),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS),
 
             // 4: Config: Write Status
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x31 /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x31 /* the command to send */,
                 WRITE_SDR, FLEXSPI_1PAD, 0x01),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS),
 
             // 5: ROM: Erase Sector
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x20 /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x20 /* the command to send */,
                 RADDR_SDR, FLEXSPI_1PAD, 24 /* bits to transmit */),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS,
@@ -131,17 +102,17 @@ const flexspi_nor_config_t qspiflash_config = {
             EMPTY_SEQUENCE,
 
             // 8: Block Erase
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0xD8 /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0xD8 /* the command to send */,
                 RADDR_SDR, FLEXSPI_1PAD, 24 /* bits to transmit */),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS),
 
             // 9: ROM: Page program
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x02 /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR,   FLEXSPI_1PAD, 0x02 /* the command to send */,
                 RADDR_SDR, FLEXSPI_1PAD, 24 /* bits to transmit */),
 
-                FLEXSPI_LUT_SEQ(WRITE_SDR, FLEXSPI_1PAD, 0x04 /* data out */,
+                FSL_ROM_FLEXSPI_LUT_SEQ(WRITE_SDR, FLEXSPI_1PAD, 0x04 /* data out */,
                     STOP,      FLEXSPI_1PAD, 0),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS),
@@ -150,7 +121,7 @@ const flexspi_nor_config_t qspiflash_config = {
             EMPTY_SEQUENCE,
 
             // 11: ROM: Chip erase
-            SEQUENCE(FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x60 /* the command to send */,
+            SEQUENCE(FSL_ROM_FLEXSPI_LUT_SEQ(CMD_SDR, FLEXSPI_1PAD, 0x60 /* the command to send */,
                 STOP,    FLEXSPI_1PAD, 0),
                 TWO_EMPTY_STEPS,
                 TWO_EMPTY_STEPS,

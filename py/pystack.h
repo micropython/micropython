@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+ * Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 #ifndef MICROPY_INCLUDED_PY_PYSTACK_H
 #define MICROPY_INCLUDED_PY_PYSTACK_H
 
-#include "py/mpconfig.h"
 #include "py/mpstate.h"
 
 // Enable this debugging option to check that the amount of memory freed is

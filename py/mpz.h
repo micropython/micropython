@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,6 +142,7 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
 static inline size_t mpz_max_num_bits(const mpz_t *z) {
     return z->len * MPZ_DIG_SIZE;
 }
+// CIRCUITPY-CHANGE
 static inline size_t mpz_num_bits(const mpz_t *z) {
     if (mpz_is_zero(z)) {
         return 0;

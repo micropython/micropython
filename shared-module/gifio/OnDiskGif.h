@@ -34,6 +34,7 @@
 
 #include "lib/AnimatedGIF/AnimatedGIF_circuitpy.h"
 #include "shared-module/displayio/Bitmap.h"
+#include "shared-module/displayio/Palette.h"
 
 #include "extmod/vfs_fat.h"
 
@@ -42,6 +43,7 @@ typedef struct {
     GIFIMAGE gif;
     pyb_file_obj_t *file;
     displayio_bitmap_t *bitmap;
+    displayio_palette_t *palette;
     int32_t duration;
     int32_t frame_count;
     int32_t min_delay;

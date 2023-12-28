@@ -55,8 +55,7 @@ void common_hal_bleio_characteristic_buffer_construct(bleio_characteristic_buffe
     self->characteristic = characteristic;
     self->timeout_ms = timeout * 1000;
     // This is a macro.
-    // true means long-lived, so it won't be moved.
-    ringbuf_alloc(&self->ringbuf, buffer_size, true);
+    ringbuf_alloc(&self->ringbuf, buffer_size);
 
     bleio_characteristic_set_observer(characteristic, self);
 }

@@ -6,6 +6,7 @@
 
 import json
 import os
+import requests
 import subprocess
 import sys
 import sh
@@ -74,7 +75,20 @@ def get_version_info():
         sha = os.environ["GITHUB_SHA"]
 
     if not version:
-        version = "{}-{}".format(date.today().strftime("%Y%m%d"), sha[:7])
+        # Get branch we are PR'ing into, if any.
+        branch = os.environ.get("GITHUB_BASE_REF", "").strip().replace("/", "_")
+        if not branch:
+            branch = "no-branch"
+
+        # Get PR number, if any
+        pull_request_maybe = os.environ.get("PULL", "")
+        if pull_request_maybe:
+            pull_request_maybe = f"-PR{pull_request_maybe}"
+
+        date_stamp = date.today().strftime("%Y%m%d")
+        short_sha = sha[:7]
+        # Example: 20231121-8.2.x-PR9876-123abcd
+        version = f"{date_stamp}-{branch}{pull_request_maybe}-{short_sha}"
 
     return sha, version
 
@@ -96,7 +110,19 @@ def get_current_info():
     response = response.json()
 
     git_info = commit_sha, response["sha"]
-    current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+
+    if response["content"] != "":
+        # if the file is there
+        current_list = json.loads(base64.b64decode(response["content"]).decode("utf-8"))
+    else:
+        # if too big, the file is not included
+        download_url = response["download_url"]
+        response = requests.get(download_url)
+        if not response.ok:
+            print(response.text)
+            raise RuntimeError("cannot get previous files.json")
+        current_list = response.json()
+
     current_info = {}
     for info in current_list:
         current_info[info["id"]] = info
@@ -123,10 +149,10 @@ def create_pr(changes, updated, git_info, user):
     pr_title = "Automated website update for release {}".format(changes["new_release"])
     boards = ""
     if changes["new_boards"]:
-        boards = "New boards:\n* " + "\n* ".join(changes["new_boards"])
+        boards = "New boards:\n* " + "\n* ".join(sorted(changes["new_boards"]))
     languages = ""
     if changes["new_languages"]:
-        languages = "New languages:\n* " + "\n* ".join(changes["new_languages"])
+        languages = "New languages:\n* " + "\n* ".join(sorted(changes["new_languages"]))
     message = "Automated website update for release {} by Blinka.\n\n{}\n\n{}\n".format(
         changes["new_release"], boards, languages
     )

@@ -33,7 +33,9 @@
 
 #include "shared-bindings/os/__init__.h"
 
-#include "fsl_trng.h"
+#if CIRCUITPY_RANDOM
+#include "sdk/drivers/trng/fsl_trng.h"
+#endif
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
@@ -61,6 +63,7 @@ mp_obj_t common_hal_os_uname(void) {
 }
 
 bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length) {
+    #if CIRCUITPY_RANDOM
     trng_config_t trngConfig;
 
     TRNG_GetDefaultConfig(&trngConfig);
@@ -71,4 +74,7 @@ bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length) {
     TRNG_Deinit(TRNG);
 
     return true;
+    #else
+    return false;
+    #endif
 }

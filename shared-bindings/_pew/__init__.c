@@ -63,4 +63,4 @@ const mp_obj_module_t pew_module = {
     .globals = (mp_obj_dict_t *)&pew_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__pew, pew_module, CIRCUITPY_PEW);
+MP_REGISTER_ROOT_POINTER(mp_obj_t pew_singleton);

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
     int base, const char *prefix, char base_char, char comma);
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
     int base, const char *prefix, char base_char, char comma);
+// CIRCUITPY-CHANGE
 #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
 void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_signed);
 #endif
@@ -60,6 +61,7 @@ void mp_obj_int_buffer_overflow_check(mp_obj_t self_in, size_t nbytes, bool is_s
 void mp_small_int_buffer_overflow_check(mp_int_t val, size_t nbytes, bool is_signed);
 
 mp_int_t mp_obj_int_hash(mp_obj_t self_in);
+// CIRCUITPY-CHANGE
 mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in);
 mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf);
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf);

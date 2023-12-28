@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-
-# SPDX-FileCopyrightText: Copyright (c) 2013/2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
-# SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-#
-# SPDX-License-Identifier: MIT
+# This file is part of the OpenMV project.
+# Copyright (c) 2013/2014 Ibrahim Abdelkader <i.abdalkader@gmail.com>
+# This work is licensed under the MIT license, see the file LICENSE for
+# details.
 
 """This module implements enough functionality to program the STM32F4xx over
 DFU, without requiring dfu-util.
 
 See app note AN3156 for a description of the DFU protocol.
-See document UM0391 for a dscription of the DFuse file.
+See document UM0391 for a description of the DFuse file.
 """
 
 from __future__ import print_function
@@ -76,9 +75,11 @@ __verbose = None
 # USB DFU interface
 __DFU_INTERFACE = 0
 
-import inspect
+# Python 3 deprecated getargspec in favour of getfullargspec, but
+# Python 2 doesn't have the latter, so detect which one to use
+getargspec = getattr(inspect, "getfullargspec", getattr(inspect, "getargspec", None))
 
-if "length" in inspect.getfullargspec(usb.util.get_string).args:
+if "length" in getargspec(usb.util.get_string).args:
     # PyUSB 1.0.0.b1 has the length argument
     def get_string(dev, index):
         return usb.util.get_string(dev, 255, index)
@@ -483,7 +484,7 @@ def get_memory_layout(device):
 
 
 def list_dfu_devices(*args, **kwargs):
-    """Prints a lits of devices detected in DFU mode."""
+    """Prints a list of devices detected in DFU mode."""
     devices = get_dfu_devices(*args, **kwargs)
     if not devices:
         raise SystemExit("No DFU capable devices found")

@@ -137,7 +137,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     socketpool_socket_obj_t *socket, bool server_side, const char *server_hostname) {
 
     if (socket->type != SOCKETPOOL_SOCK_STREAM) {
-        mp_raise_RuntimeError(translate("Invalid socket for TLS"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid socket for TLS"));
     }
 
     ssl_sslsocket_obj_t *o = m_new_obj_with_finaliser(ssl_sslsocket_obj_t);
@@ -257,7 +257,7 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t 
     } else if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
         // If handshake is not finished, read attempt may end up in protocol
         // wanting to write next handshake message. The same may happen with
-        // renegotation.
+        // renegotiation.
         ret = MP_EWOULDBLOCK;
     }
     DEBUG("raising errno [error case] %d\n", ret);
@@ -276,7 +276,7 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
     } else if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
         // If handshake is not finished, write attempt may end up in protocol
         // wanting to read next handshake message. The same may happen with
-        // renegotation.
+        // renegotiation.
         ret = MP_EWOULDBLOCK;
     }
     DEBUG("raising errno [error case] %d\n", ret);

@@ -4,7 +4,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
     // S2 Mini Board bottom, right, top-bottom
-    // GPIO0-GPIO14: broken out as a bloc on ESP32-S2FN4R2 SoC
+    // GPIO0-GPIO14: broken out as a block on ESP32-S2FN4R2 SoC
     // mpconfigboard.h: GPIO0: CIRCUITPY_BOOT_BUTTON
     { MP_ROM_QSTR(MP_QSTR_BUTTON), MP_ROM_PTR(&pin_GPIO0) },
     { MP_ROM_QSTR(MP_QSTR_IO0), MP_ROM_PTR(&pin_GPIO0) },  // RTC_GPIO0,GPIO0
@@ -57,7 +57,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     // skip GPIO22-GPIO25: not broken out on ESP32-S2FN4R2 SoC
     // skip GPIO26-GPIO32: SPI Flash & RAM, not broken out on S2 Mini (internal to ESP32-S2FN4R2 SoC?)
 
-    // GPIO33-GPIO40: broken out as a bloc on ESP32-S2FN4R2 SoC, last 2 half of JTAG
+    // GPIO33-GPIO40: broken out as a block on ESP32-S2FN4R2 SoC, last 2 half of JTAG
     { MP_ROM_QSTR(MP_QSTR_IO33), MP_ROM_PTR(&pin_GPIO33) },// SPIIO4,GPIO33,FSPIHD
     { MP_ROM_QSTR(MP_QSTR_SDA),  MP_ROM_PTR(&pin_GPIO33) },// def from Wemos MP
     { MP_ROM_QSTR(MP_QSTR_D2),   MP_ROM_PTR(&pin_GPIO33) },// D1 mini pin D2 GPIO4

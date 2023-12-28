@@ -30,7 +30,7 @@
 
 #include "py/runtime.h"
 #include "py/objproperty.h"
-#include "supervisor/shared/translate/translate.h"
+
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 
 //| class OnDiskBitmap:
@@ -50,7 +50,7 @@
 //|
 //|       board.DISPLAY.brightness = 0
 //|       splash = displayio.Group()
-//|       board.DISPLAY.show(splash)
+//|       board.DISPLAY.root_group = splash
 //|
 //|       odb = displayio.OnDiskBitmap('/sample.bmp')
 //|       face = displayio.TileGrid(odb, pixel_shader=odb.pixel_shader)
@@ -86,11 +86,10 @@ STATIC mp_obj_t displayio_ondiskbitmap_make_new(const mp_obj_type_t *type, size_
         arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
     }
     if (!mp_obj_is_type(arg, &mp_type_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
 
-    displayio_ondiskbitmap_t *self = m_new_obj(displayio_ondiskbitmap_t);
-    self->base.type = &displayio_ondiskbitmap_type;
+    displayio_ondiskbitmap_t *self = mp_obj_malloc(displayio_ondiskbitmap_t, &displayio_ondiskbitmap_type);
     common_hal_displayio_ondiskbitmap_construct(self, MP_OBJ_TO_PTR(arg));
 
     return MP_OBJ_FROM_PTR(self);
@@ -149,9 +148,10 @@ STATIC const mp_rom_map_elem_t displayio_ondiskbitmap_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_ondiskbitmap_locals_dict, displayio_ondiskbitmap_locals_dict_table);
 
-const mp_obj_type_t displayio_ondiskbitmap_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_OnDiskBitmap,
-    .make_new = displayio_ondiskbitmap_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_ondiskbitmap_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_ondiskbitmap_type,
+    MP_QSTR_OnDiskBitmap,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, displayio_ondiskbitmap_make_new,
+    locals_dict, &displayio_ondiskbitmap_locals_dict
+    );

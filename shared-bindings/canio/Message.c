@@ -58,8 +58,7 @@ STATIC mp_obj_t canio_message_make_new(const mp_obj_type_t *type, size_t n_args,
 
     mp_arg_validate_length_range(data.len, 0, 8, MP_QSTR_data);
 
-    canio_message_obj_t *self = m_new_obj(canio_message_obj_t);
-    self->base.type = &canio_message_type;
+    canio_message_obj_t *self = mp_obj_malloc(canio_message_obj_t, &canio_message_type);
     common_hal_canio_message_construct(self, args[ARG_id].u_int, data.buf, data.len, args[ARG_extended].u_bool);
     return self;
 }
@@ -137,9 +136,10 @@ STATIC const mp_rom_map_elem_t canio_message_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(canio_message_locals_dict, canio_message_locals_dict_table);
 
-const mp_obj_type_t canio_message_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Message,
-    .make_new = canio_message_make_new,
-    .locals_dict = (mp_obj_t)&canio_message_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    canio_message_type,
+    MP_QSTR_Message,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, canio_message_make_new,
+    locals_dict, &canio_message_locals_dict
+    );

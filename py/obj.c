@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,14 @@
 #include "py/stackctrl.h"
 #include "py/stream.h" // for mp_obj_print
 
-#include "supervisor/linker.h"
 #include "supervisor/shared/stack.h"
-#include "supervisor/shared/translate/translate.h"
+
+// Allocates an object and also sets type, for mp_obj_malloc{,_var} macros.
+MP_NOINLINE void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type) {
+    mp_obj_base_t *base = (mp_obj_base_t *)m_malloc(num_bytes);
+    base->type = type;
+    return base;
+}
 
 const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
@@ -101,19 +106,15 @@ const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_
     #endif
 }
 
-const mp_obj_full_type_t *mp_obj_get_full_type(mp_const_obj_t o_in) {
-    const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    assert(type->flags & MP_TYPE_FLAG_EXTENDED);
-    return (mp_obj_full_type_t *)type;
-}
-
 const char *mp_obj_get_type_str(mp_const_obj_t o_in) {
+    // CIRCUITPY-CHANGE
     return qstr_str(mp_obj_get_type_qstr(o_in));
 }
 
 void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     // There can be data structures nested too deep, or just recursive
     MP_STACK_CHECK();
+    // CIRCUITPY-CHANGE
     #ifdef RUN_BACKGROUND_TASKS
     RUN_BACKGROUND_TASKS;
     #endif
@@ -131,8 +132,8 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     }
     #endif
     const mp_obj_type_t *type = mp_obj_get_type(o_in);
-    if (type->print != NULL) {
-        type->print((mp_print_t *)print, o_in, kind);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, print)) {
+        MP_OBJ_TYPE_GET_SLOT(type, print)((mp_print_t *)print, o_in, kind);
     } else {
         mp_printf(print, "<%q>", type->name);
     }
@@ -142,10 +143,11 @@ void mp_obj_print(mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_print_helper(MP_PYTHON_PRINTER, o_in, kind);
 }
 
+// CIRCUITPY-CHANGE
 static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_in, mp_int_t limit) {
     #if MICROPY_CPYTHON_EXCEPTION_CHAIN
     mp_obj_exception_t *self = mp_obj_exception_get_native(self_in);
-    const compressed_string_t *msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
+    mp_rom_error_text_t msg = MP_ERROR_TEXT("During handling of the above exception, another exception occurred:");
     mp_obj_exception_t *inner = NULL;
     if (self->cause) {
         msg = MP_ERROR_TEXT("The above exception was the direct cause of the following exception:");
@@ -164,6 +166,7 @@ static void mp_obj_print_inner_exception(const mp_print_t *print, mp_obj_t self_
     #endif
 }
 
+// CIRCUITPY-CHANGE
 // helper function to print an exception with traceback
 void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp_int_t limit) {
     if (mp_obj_is_exception_instance(exc) && stack_ok()) {
@@ -174,11 +177,11 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
         if (n > 0) {
             assert(n % 3 == 0);
             #if MICROPY_ENABLE_SOURCE_LINE
-            const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\", line %d");
+            mp_rom_error_text_t frame = MP_ERROR_TEXT("  File \"%q\", line %d");
             #else
-            const compressed_string_t *frame = MP_ERROR_TEXT("  File \"%q\"");
+            mp_rom_error_text_t frame = MP_ERROR_TEXT("  File \"%q\"");
             #endif
-            const compressed_string_t *block_fmt = MP_ERROR_TEXT(", in %q\n");
+            mp_rom_error_text_t block_fmt = MP_ERROR_TEXT(", in %q\n");
 
             // Set traceback formatting
             // Default: Print full traceback
@@ -224,6 +227,7 @@ void mp_obj_print_exception_with_limit(const mp_print_t *print, mp_obj_t exc, mp
     mp_print_str(print, "\n");
 }
 
+// CIRCUITPY-CHANGE
 void mp_obj_print_exception(const mp_print_t *print, mp_obj_t exc) {
     mp_obj_print_exception_with_limit(print, exc, 0);
 }
@@ -243,9 +247,8 @@ bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
         }
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(arg);
-        mp_unary_op_fun_t unary_op = mp_type_get_unary_op_slot(type);
-        if (unary_op) {
-            mp_obj_t result = unary_op(MP_UNARY_OP_BOOL, arg);
+        if (MP_OBJ_TYPE_HAS_SLOT(type, unary_op)) {
+            mp_obj_t result = MP_OBJ_TYPE_GET_SLOT(type, unary_op)(MP_UNARY_OP_BOOL, arg);
             if (result != MP_OBJ_NULL) {
                 return result == mp_const_true;
             }
@@ -263,7 +266,7 @@ bool PLACE_IN_ITCM(mp_obj_is_true)(mp_obj_t arg) {
 }
 
 bool mp_obj_is_callable(mp_obj_t o_in) {
-    const mp_call_fun_t call = mp_type_get_call_slot(mp_obj_get_type(o_in));
+    const mp_call_fun_t call = MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(o_in), call);
     if (call != mp_obj_instance_call) {
         return call != NULL;
     }
@@ -330,20 +333,19 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         const mp_obj_type_t *type = mp_obj_get_type(o1);
         // If a full equality test is not needed and the other object is a different
         // type then we don't need to bother trying the comparison.
-        mp_binary_op_fun_t binary_op = mp_type_get_binary_op_slot(type);
-        if (binary_op != NULL &&
+        if (MP_OBJ_TYPE_HAS_SLOT(type, binary_op) &&
             ((type->flags & MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE) || mp_obj_get_type(o2) == type)) {
             // CPython is asymmetric: it will try __eq__ if there's no __ne__ but not the
             // other way around.  If the class doesn't need a full test we can skip __ne__.
             if (op == MP_BINARY_OP_NOT_EQUAL && (type->flags & MP_TYPE_FLAG_EQ_HAS_NEQ_TEST)) {
-                mp_obj_t r = binary_op(MP_BINARY_OP_NOT_EQUAL, o1, o2);
+                mp_obj_t r = MP_OBJ_TYPE_GET_SLOT(type, binary_op)(MP_BINARY_OP_NOT_EQUAL, o1, o2);
                 if (r != MP_OBJ_NULL) {
                     return r;
                 }
             }
 
             // Try calling __eq__.
-            mp_obj_t r = binary_op(MP_BINARY_OP_EQUAL, o1, o2);
+            mp_obj_t r = MP_OBJ_TYPE_GET_SLOT(type, binary_op)(MP_BINARY_OP_EQUAL, o1, o2);
             if (r != MP_OBJ_NULL) {
                 if (op == MP_BINARY_OP_EQUAL) {
                     return r;
@@ -361,7 +363,7 @@ mp_obj_t mp_obj_equal_not_equal(mp_binary_op_t op, mp_obj_t o1, mp_obj_t o2) {
         o2 = temp;
     }
 
-    // equality not implemented, so fall back to pointer conparison
+    // equality not implemented, so fall back to pointer comparison
     return (o1 == o2) ? local_true : local_false;
 }
 
@@ -373,18 +375,11 @@ mp_int_t mp_obj_get_int(mp_const_obj_t arg) {
     // This function essentially performs implicit type conversion to int
     // Note that Python does NOT provide implicit type conversion from
     // float to int in the core expression language, try some_list[1.0].
-    if (arg == mp_const_false) {
-        return 0;
-    } else if (arg == mp_const_true) {
-        return 1;
-    } else if (mp_obj_is_small_int(arg)) {
-        return MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (mp_obj_is_type(arg, &mp_type_int)) {
-        return mp_obj_int_get_checked(arg);
-    } else {
-        mp_obj_t res = mp_unary_op(MP_UNARY_OP_INT, (mp_obj_t)arg);
-        return mp_obj_int_get_checked(res);
+    mp_int_t val;
+    if (!mp_obj_get_int_maybe(arg, &val)) {
+        mp_raise_TypeError_int_conversion(arg);
     }
+    return val;
 }
 
 mp_int_t mp_obj_get_int_truncated(mp_const_obj_t arg) {
@@ -405,10 +400,15 @@ bool mp_obj_get_int_maybe(mp_const_obj_t arg, mp_int_t *value) {
         *value = 1;
     } else if (mp_obj_is_small_int(arg)) {
         *value = MP_OBJ_SMALL_INT_VALUE(arg);
-    } else if (mp_obj_is_type(arg, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(arg, &mp_type_int)) {
         *value = mp_obj_int_get_checked(arg);
     } else {
-        return false;
+        arg = mp_unary_op(MP_UNARY_OP_INT_MAYBE, (mp_obj_t)arg);
+        if (arg != MP_OBJ_NULL) {
+            *value = mp_obj_int_get_checked(arg);
+        } else {
+            return false;
+        }
     }
     return true;
 }
@@ -424,15 +424,19 @@ bool mp_obj_get_float_maybe(mp_obj_t arg, mp_float_t *value) {
     } else if (mp_obj_is_small_int(arg)) {
         val = (mp_float_t)MP_OBJ_SMALL_INT_VALUE(arg);
     #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    } else if (mp_obj_is_type(arg, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(arg, &mp_type_int)) {
         val = mp_obj_int_as_float_impl(arg);
     #endif
     } else if (mp_obj_is_float(arg)) {
         val = mp_obj_float_get(arg);
     } else {
-        return false;
+        arg = mp_unary_op(MP_UNARY_OP_FLOAT_MAYBE, (mp_obj_t)arg);
+        if (arg != MP_OBJ_NULL && mp_obj_is_float(arg)) {
+            val = mp_obj_float_get(arg);
+        } else {
+            return false;
+        }
     }
-
     *value = val;
     return true;
 }
@@ -442,10 +446,10 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
     if (!mp_obj_get_float_maybe(arg, &val)) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
-        mp_raise_TypeError_varg(MP_ERROR_TEXT("can't convert to %q"), MP_QSTR_float);
+        mp_raise_TypeError(MP_ERROR_TEXT("can't convert to float"));
         #else
-        mp_raise_TypeError_varg(
-            MP_ERROR_TEXT("can't convert %q to %q"), mp_obj_get_type_qstr(arg), MP_QSTR_float);
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("can't convert %s to float"), mp_obj_get_type_str(arg));
         #endif
     }
 
@@ -454,27 +458,17 @@ mp_float_t mp_obj_get_float(mp_obj_t arg) {
 
 #if MICROPY_PY_BUILTINS_COMPLEX
 bool mp_obj_get_complex_maybe(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
-    if (arg == mp_const_false) {
-        *real = 0;
-        *imag = 0;
-    } else if (arg == mp_const_true) {
-        *real = 1;
-        *imag = 0;
-    } else if (mp_obj_is_small_int(arg)) {
-        *real = (mp_float_t)MP_OBJ_SMALL_INT_VALUE(arg);
-        *imag = 0;
-    #if MICROPY_LONGINT_IMPL != MICROPY_LONGINT_IMPL_NONE
-    } else if (mp_obj_is_type(arg, &mp_type_int)) {
-        *real = mp_obj_int_as_float_impl(arg);
-        *imag = 0;
-    #endif
-    } else if (mp_obj_is_float(arg)) {
-        *real = mp_obj_float_get(arg);
+    if (mp_obj_get_float_maybe(arg, real)) {
         *imag = 0;
     } else if (mp_obj_is_type(arg, &mp_type_complex)) {
         mp_obj_complex_get(arg, real, imag);
     } else {
-        return false;
+        arg = mp_unary_op(MP_UNARY_OP_COMPLEX_MAYBE, (mp_obj_t)arg);
+        if (arg != MP_OBJ_NULL && mp_obj_is_type(arg, &mp_type_complex)) {
+            mp_obj_complex_get(arg, real, imag);
+        } else {
+            return false;
+        }
     }
     return true;
 }
@@ -494,6 +488,7 @@ void mp_obj_get_complex(mp_obj_t arg, mp_float_t *real, mp_float_t *imag) {
 
 // note: returned value in *items may point to the interior of a GC block
 void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
+    // CIRCUITPY-CHANGE
     if (mp_obj_is_tuple_compatible(o)) {
         mp_obj_tuple_get(o, len, items);
     } else if (mp_obj_is_type(o, &mp_type_list)) {
@@ -512,7 +507,14 @@ void mp_obj_get_array(mp_obj_t o, size_t *len, mp_obj_t **items) {
 void mp_obj_get_array_fixed_n(mp_obj_t o, size_t len, mp_obj_t **items) {
     size_t seq_len;
     mp_obj_get_array(o, &seq_len, items);
-    mp_arg_validate_length(seq_len, len, mp_obj_get_type(o)->name);
+    if (seq_len != len) {
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_ValueError(MP_ERROR_TEXT("tuple/list has wrong length"));
+        #else
+        mp_raise_msg_varg(&mp_type_ValueError,
+            MP_ERROR_TEXT("requested length %d but object has length %d"), (int)len, (int)seq_len);
+        #endif
+    }
 }
 
 // is_slice determines whether the index is a slice index
@@ -521,7 +523,13 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
     if (mp_obj_is_small_int(index)) {
         i = MP_OBJ_SMALL_INT_VALUE(index);
     } else if (!mp_obj_get_int_maybe(index, &i)) {
-        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_index, MP_QSTR_int, mp_obj_get_type(index)->name);
+        #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
+        mp_raise_TypeError(MP_ERROR_TEXT("indices must be integers"));
+        #else
+        mp_raise_msg_varg(&mp_type_TypeError,
+            MP_ERROR_TEXT("%q indices must be integers, not %s"),
+            type->name, mp_obj_get_type_str(index));
+        #endif
     }
 
     if (i < 0) {
@@ -534,6 +542,7 @@ size_t mp_get_index(const mp_obj_type_t *type, size_t len, mp_obj_t index, bool 
             i = len;
         }
     } else {
+        // CIRCUITPY-CHANGE
         mp_arg_validate_index_range(i, 0, len - 1, MP_QSTR_index);
     }
 
@@ -586,9 +595,8 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
         return MP_OBJ_NEW_SMALL_INT(l);
     } else {
         const mp_obj_type_t *type = mp_obj_get_type(o_in);
-        mp_unary_op_fun_t unary_op = mp_type_get_unary_op_slot(type);
-        if (unary_op != NULL) {
-            return unary_op(MP_UNARY_OP_LEN, o_in);
+        if (MP_OBJ_TYPE_HAS_SLOT(type, unary_op)) {
+            return MP_OBJ_TYPE_GET_SLOT(type, unary_op)(MP_UNARY_OP_LEN, o_in);
         } else {
             return MP_OBJ_NULL;
         }
@@ -597,14 +605,14 @@ mp_obj_t mp_obj_len_maybe(mp_obj_t o_in) {
 
 mp_obj_t mp_obj_subscr(mp_obj_t base, mp_obj_t index, mp_obj_t value) {
     const mp_obj_type_t *type = mp_obj_get_type(base);
-    mp_subscr_fun_t subscr = mp_type_get_subscr_slot(type);
-    if (subscr != NULL) {
-        mp_obj_t ret = subscr(base, index, value);
+    if (MP_OBJ_TYPE_HAS_SLOT(type, subscr)) {
+        mp_obj_t ret = MP_OBJ_TYPE_GET_SLOT(type, subscr)(base, index, value);
         // May have called port specific C code. Make sure it didn't mess up the heap.
         assert_heap_ok();
         if (ret != MP_OBJ_NULL) {
             return ret;
         }
+        // TODO: call base classes here?
     }
     if (value == MP_OBJ_NULL) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
@@ -637,24 +645,22 @@ mp_obj_t mp_identity(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
-mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
-    (void)iter_buf;
-    return self;
-}
-
+// CIRCUITPY-CHANGE
+// generic subscript iterator, which iterates through anything with a 0-based subscript.
 typedef struct {
     mp_obj_base_t base;
     mp_fun_1_t iternext;
     mp_obj_t obj;
     mp_int_t cur;
-} mp_obj_generic_it_t;
+} mp_obj_generic_subscript_it_t;
 
-STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
-    mp_obj_generic_it_t *self = MP_OBJ_TO_PTR(self_in);
-    const mp_obj_full_type_t *type = mp_obj_get_full_type(self->obj);
-    mp_obj_t current_length = type->MP_TYPE_UNARY_OP(MP_UNARY_OP_LEN, self->obj);
+STATIC mp_obj_t generic_subscript_it_iternext(mp_obj_t self_in) {
+    mp_obj_generic_subscript_it_t *self = MP_OBJ_TO_PTR(self_in);
+    const mp_obj_type_t *type = mp_obj_get_type(self->obj);
+    mp_obj_t current_length = MP_OBJ_TYPE_GET_SLOT(type, unary_op)(MP_UNARY_OP_LEN, self->obj);
     if (self->cur < MP_OBJ_SMALL_INT_VALUE(current_length)) {
-        mp_obj_t o_out = type->ext[0].subscr(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
+        mp_obj_t o_out =
+            MP_OBJ_TYPE_GET_SLOT(type, subscr)(self->obj, MP_OBJ_NEW_SMALL_INT(self->cur), MP_OBJ_SENTINEL);
         self->cur += 1;
         return o_out;
     } else {
@@ -662,119 +668,29 @@ STATIC mp_obj_t generic_it_iternext(mp_obj_t self_in) {
     }
 }
 
-mp_obj_t mp_obj_new_generic_iterator(mp_obj_t obj, mp_obj_iter_buf_t *iter_buf) {
-    assert(sizeof(mp_obj_generic_it_t) <= sizeof(mp_obj_iter_buf_t));
-    mp_obj_generic_it_t *o = (mp_obj_generic_it_t *)iter_buf;
+mp_obj_t mp_obj_generic_subscript_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter_buf) {
+    assert(sizeof(mp_obj_generic_subscript_it_t) <= sizeof(mp_obj_iter_buf_t));
+    mp_obj_generic_subscript_it_t *o = (mp_obj_generic_subscript_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;
-    o->iternext = generic_it_iternext;
+    o->iternext = &generic_subscript_it_iternext;
     o->obj = obj;
     o->cur = 0;
     return MP_OBJ_FROM_PTR(o);
 }
 
+// mp_obj_t mp_identity_getiter(mp_obj_t self, mp_obj_iter_buf_t *iter_buf) {
+//     (void)iter_buf;
+//     return self;
+// }
+
 bool mp_get_buffer(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
     const mp_obj_type_t *type = mp_obj_get_type(obj);
-    const mp_getbuffer_fun_t get_buffer = mp_type_get_getbuffer_slot(type);
-    if (get_buffer == NULL) {
-        return false;
+    if (MP_OBJ_TYPE_HAS_SLOT(type, buffer)
+        && MP_OBJ_TYPE_GET_SLOT(type, buffer)(obj, bufinfo, flags & MP_BUFFER_RW) == 0) {
+        return true;
     }
-    int ret = get_buffer(obj, bufinfo, flags);
-    if (ret != 0) {
-        return false;
-    }
-    return true;
-}
-
-void mp_get_buffer_raise(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
-    if (!mp_get_buffer(obj, bufinfo, flags)) {
+    if (flags & MP_BUFFER_RAISE_IF_UNSUPPORTED) {
         mp_raise_TypeError(MP_ERROR_TEXT("object with buffer protocol required"));
     }
-}
-
-mp_obj_t mp_generic_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
-    switch (op) {
-        case MP_UNARY_OP_HASH:
-            return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
-        default:
-            return MP_OBJ_NULL;      // op not supported
-    }
-}
-
-mp_call_fun_t mp_type_get_call_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->ext[0].call;
-}
-
-mp_unary_op_fun_t mp_type_get_unary_op_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->ext[0].unary_op;
-}
-
-
-mp_binary_op_fun_t mp_type_get_binary_op_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->ext[0].binary_op;
-}
-
-
-mp_attr_fun_t mp_type_get_attr_slot(const mp_obj_type_t *type) {
-    return type->attr;
-}
-
-
-mp_subscr_fun_t mp_type_get_subscr_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->MP_TYPE_SUBSCR;
-}
-
-
-mp_getiter_fun_t mp_type_get_getiter_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->MP_TYPE_GETITER;
-}
-
-
-mp_fun_1_t mp_type_get_iternext_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->MP_TYPE_ITERNEXT;
-}
-
-
-mp_getbuffer_fun_t mp_type_get_getbuffer_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->MP_TYPE_GET_BUFFER;
-}
-
-
-const void *mp_type_get_protocol_slot(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return NULL;
-    }
-    return type->MP_TYPE_PROTOCOL;
-}
-
-
-const void *mp_type_get_parent_slot(const mp_obj_type_t *type) {
-    return type->parent;
-}
-
-size_t mp_type_size(const mp_obj_type_t *type) {
-    if (!(type->flags & MP_TYPE_FLAG_EXTENDED)) {
-        return sizeof(mp_obj_type_t);
-    }
-    return sizeof(mp_obj_full_type_t);
+    return false;
 }

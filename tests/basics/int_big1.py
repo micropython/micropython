@@ -1,4 +1,4 @@
-# to test arbitrariy precision integers
+# to test arbitrary precision integers
 
 x = 1000000000000000000000000000000
 xn = -1000000000000000000000000000000
@@ -9,6 +9,9 @@ print(x)
 print(y)
 print('%#X' % (x - x)) # print prefix
 print('{:#,}'.format(x)) # print with commas
+
+# construction
+print(int(x))
 
 # addition
 print(x + 1)

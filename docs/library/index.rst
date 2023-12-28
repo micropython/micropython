@@ -1,25 +1,23 @@
 .. _micropython_lib:
 
-MicroPython libraries
-=====================
+Standard Libraries
+==================
 
-Python standard libraries and micro-libraries
----------------------------------------------
+Python standard libraries
+-------------------------
 
-The libraries below are inherited from MicroPython.
-They are similar to the standard Python libraries with the same name.
-They implement a subset of or a variant of the corresponding
-standard Python library.
+The libraries below implement a subset of the corresponding
+standard Python (CPython) library. They are implemented in C, not Python.
 
 CircuitPython's long-term goal is that code written in CircuitPython
 using Python standard libraries will be runnable on CPython without changes.
 
 These libraries are not enabled on CircuitPython builds with
-limited flash memory, usually on non-Express builds:
+limited flash memory:
 ``binascii``, ``errno``, ``json``, ``re``.
 
 These libraries are not currently enabled in any CircuitPython build, but may be in the future:
-``ctypes``
+``ctypes``, ``platform``
 
 .. toctree::
    :maxdepth: 1
@@ -33,16 +31,17 @@ These libraries are not currently enabled in any CircuitPython build, but may be
    gc.rst
    io.rst
    json.rst
+   platform.rst
    re.rst
    sys.rst
    ctypes.rst
    select.rst
 
-Omitted functions in the ``string`` library
--------------------------------------------
+Omitted ``string`` functions
+----------------------------
 
 A few string operations are not enabled on small builds
-(usually non-Express), due to limited flash memory:
+due to limited flash memory:
 ``string.center()``, ``string.partition()``, ``string.splitlines()``,
 ``string.reversed()``.
 
@@ -50,13 +49,10 @@ A few string operations are not enabled on small builds
 CircuitPython/MicroPython-specific libraries
 --------------------------------------------
 
-Functionality specific to the CircuitPython/MicroPython implementation is available in
-the following libraries. These libraries may change significantly or be removed in future
-versions of CircuitPython.
+Functionality specific to the CircuitPython/MicroPython implementations is available in
+the following libraries.
 
 .. toctree::
    :maxdepth: 1
 
-   btree.rst
-   framebuf.rst
    micropython.rst

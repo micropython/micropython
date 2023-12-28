@@ -48,7 +48,7 @@ extern "C" {
 /** @brief Supervisor call declaration.
  *
  * A call to a function marked with @ref SVCALL, will trigger a Supervisor Call (SVC) Exception.
- * The SVCs with SVC numbers 0x00-0x0F are forwared to the application. All other SVCs are handled by the SoftDevice.
+ * The SVCs with SVC numbers 0x00-0x0F are forwarded to the application. All other SVCs are handled by the SoftDevice.
  *
  * @param[in] number      The SVC number to be used.
  * @param[in] return_type The return type of the SVC function.

@@ -40,4 +40,6 @@ typedef struct {
     digitalio_pull_t pull;
 } digitalio_digitalinout_obj_t;
 
+void pin_config(const mcu_pin_obj_t *pin, bool open_drain, digitalio_pull_t pull);
+
 #endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_DIGITALIO_DIGITALINOUT_H

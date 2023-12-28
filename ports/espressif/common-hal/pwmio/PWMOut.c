@@ -28,7 +28,8 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"
-#include "components/driver/include/driver/ledc.h"
+#include "driver/ledc.h"
+#include "soc/soc.h"
 
 #define INDEX_EMPTY 0xFF
 
@@ -40,7 +41,7 @@ STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
 
 STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
     uint32_t duty_bits = 0;
-    uint32_t interval = LEDC_APB_CLK_HZ / frequency;
+    uint32_t interval = APB_CLK_FREQ / frequency;
     for (size_t i = 0; i < 32; i++) {
         if (!(interval >> i)) {
             duty_bits = i - 1;
@@ -197,7 +198,7 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (!taken || self->variable_frequency) {
         ledc_timer_rst(LEDC_LOW_SPEED_MODE, self->tim_handle.timer_num);
         reserved_timer_freq[self->tim_handle.timer_num] = 0;
-        // if timer isn't varfreq this will be off aleady
+        // if timer isn't varfreq this will be off already
         varfreq_timers[self->tim_handle.timer_num] = false;
         never_reset_tim[self->tim_handle.timer_num] = false;
     }

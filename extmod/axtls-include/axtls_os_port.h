@@ -26,7 +26,11 @@
 #ifndef AXTLS_OS_PORT_H
 #define AXTLS_OS_PORT_H
 
+#ifndef __ets__
+#include <arpa/inet.h>
+#endif
 #include <errno.h>
+#include <sys/time.h>
 #include "py/stream.h"
 #include "lib/crypto-algorithms/sha256.h"
 

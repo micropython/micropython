@@ -6,7 +6,7 @@
 
 _start:
   j crt_init
-  # This sentinal ensures that this program is loaded
+  # This sentinel ensures that this program is loaded
   # to RAM when loaded using dfu-util.
   #.word 0x17ab0f23
   #.word 0x10001000

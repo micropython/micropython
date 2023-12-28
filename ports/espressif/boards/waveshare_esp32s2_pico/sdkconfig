@@ -1,20 +1,15 @@
 #
-# SPI RAM config
+# Espressif IoT Development Framework Configuration
 #
-CONFIG_ESP32S2_SPIRAM_SUPPORT=y
-CONFIG_DEFAULT_PSRAM_CLK_IO=30
-CONFIG_DEFAULT_PSRAM_CS_IO=26
-CONFIG_SPIRAM_TYPE_ESPPSRAM64=y
-CONFIG_SPIRAM_MODE_QUAD=y
-CONFIG_SPIRAM_SIZE=8388608
-CONFIG_SPIRAM_SPEED_120M=y
-CONFIG_SPIRAM=y
-CONFIG_SPIRAM_BOOT_INIT=y
-CONFIG_SPIRAM_USE_MEMMAP=y
-CONFIG_SPIRAM_MEMTEST=y
-
+#
+# Component config
+#
 #
 # LWIP
 #
 CONFIG_LWIP_LOCAL_HOSTNAME="waveshare"
 # end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

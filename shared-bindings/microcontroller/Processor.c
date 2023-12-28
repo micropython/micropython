@@ -38,7 +38,6 @@
 #include "py/objtype.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 //| class Processor:
@@ -67,8 +66,15 @@
 //|     frequency: int
 //|     """The CPU operating frequency in Hertz.
 //|
-//|     **Limitations:** Setting the ``frequency`` is possible only on some i.MX boards.
-//|     On most boards, ``frequency`` is read-only.
+//|     **Limitations:** On most boards, ``frequency`` is read-only. Setting
+//|     the ``frequency`` is possible on RP2040 boards and some i.MX boards.
+//|
+//|     .. warning:: Overclocking likely voids your warranties and may reduce
+//|       the lifetime of the chip.
+//|
+//|     .. warning:: Changing the frequency may cause issues with other
+//|       subsystems, such as USB, PWM, and PIO. To minimize issues, set the CPU
+//|       frequency before initializing other systems.
 //|     """
 
 #if CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY
@@ -164,8 +170,9 @@ STATIC const mp_rom_map_elem_t mcu_processor_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mcu_processor_locals_dict, mcu_processor_locals_dict_table);
 
-const mp_obj_type_t mcu_processor_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Processor,
-    .locals_dict = (mp_obj_dict_t *)&mcu_processor_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mcu_processor_type,
+    MP_QSTR_Processor,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &mcu_processor_locals_dict
+    );

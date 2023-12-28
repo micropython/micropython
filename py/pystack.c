@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+ * Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ void mp_pystack_init(void *start, void *end) {
     MP_STATE_THREAD(pystack_cur) = start;
 }
 
-void *mp_pystack_alloc(size_t n_bytes) {
+void *PLACE_IN_ITCM(mp_pystack_alloc)(size_t n_bytes) {
     n_bytes = (n_bytes + (MICROPY_PYSTACK_ALIGN - 1)) & ~(MICROPY_PYSTACK_ALIGN - 1);
     #if MP_PYSTACK_DEBUG
     n_bytes += MICROPY_PYSTACK_ALIGN;

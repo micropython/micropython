@@ -88,10 +88,10 @@ STATIC mp_obj_t ipaddress_ip_address(mp_obj_t ip_in) {
     } else if (mp_obj_is_str(ip_in)) {
         GET_STR_DATA_LEN(ip_in, str_data, str_len);
         if (!ipaddress_parse_ipv4address((const char *)str_data, str_len, &value)) {
-            mp_raise_ValueError(translate("Not a valid IP string"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Not a valid IP string"));
         }
     } else {
-        mp_raise_ValueError(translate("Only int or string supported for ip"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Only int or string supported for ip"));
     }
 
     return common_hal_ipaddress_new_ipv4address(value);
@@ -112,4 +112,4 @@ const mp_obj_module_t ipaddress_module = {
     .globals = (mp_obj_dict_t *)&ipaddress_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ipaddress, ipaddress_module, CIRCUITPY_IPADDRESS);
+MP_REGISTER_MODULE(MP_QSTR_ipaddress, ipaddress_module);

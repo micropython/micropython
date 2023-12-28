@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="TJpgDec" href="../00index.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>TJpgDec - jd_prepare</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>jd_prepare</h2>
+<p>The jd_prepare function analyzes the JPEG data and create a decompression object for subsequnet decompression process.</p>
+<pre>
+JRESULT jd_prepare (
+  JDEC* <em>jdec</em>,        <span class="c">/* Pointer to blank decompression object */</span>
+  size_t (*<em>infunc</em>)(JDEC*, uint8_t*, size_t), <span class="c">/* Pointer to input function */</span>
+  void* <em>work</em>,        <span class="c">/* Pointer to the work area */</span>
+  size_t <em>sz_work</em>,    <span class="c">/* Size of the work area */</span>
+  void* <em>device</em>       <span class="c">/* Session identifier for the session */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>jdec</dt>
+<dd>Specifies the <a href="jdec.html">decompression object</a> to be initialized. The decompression object is used by subsequent decompression process.</dd>
+<dt>input</dt>
+<dd>Pointer to the user defined <a href="input.html">data input function</a>. The <tt>jd_prepare</tt> and <tt>jd_decomp</tt> function call this function to read the JPEG data from the input stream.</dd>
+<dt>work</dt>
+<dd>Pointer to the work area for this session. It should be aligned to the word boundary, or it can result a hard fault on some processors.</dd>
+<dt>sz_work</dt>
+<dd>Size of the work area in unit of byte. TJpgDec requires upto 3092 bytes of work area depends on the built-in parameter tables of the JPEG image to deccompress.</dd>
+<dt>device</dt>
+<dd>Pointer to the user defined session identifier for this session. It is stored to the member <tt>device</tt> in the decompression object. It can be refered by I/O functions to identify the corresponding session. If this feature is not needed, set null and do not care about this.</dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<dl class="ret">
+<dt>JDR_OK</dt>
+<dd>Function succeeded and the decompression object is valid.</dd>
+<dt>JDR_INP</dt>
+<dd>An error occured in input function due to a hard error or wrong stream termination.</dd>
+<dt>JDR_MEM1</dt>
+<dd>Insufficient work area for this JPEG image.</dd>
+<dt>JDR_MEM2</dt>
+<dd>Insufficient input buffer for this JPEG image. JD_SZBUF may be too small.</dd>
+<dt>JDR_FMT1</dt>
+<dd>Data format error. The JPEG data can be collapted.</dd>
+<dt>JDR_FMT3</dt>
+<dd>Not supported JPEG standard. May be a progressive JPEG image.</dd>
+</dl>
+</div>
+
+<div class="para desc">
+<h4>Description</h4>
+<p>The jd_prepare function is the first stage of a JPEG decompression session. It analyzes the JPEG image and create parameter tables for decompression. After the function succeeded, the session gets ready to decompress the JPEG image by the jd_decomp fnction. The application program can refer the dimensions of the JPEG image stored in the decompression object. These information will be used to configure the output device and parameters for subsequent decompression stage.</p>
+</div>
+
+<p class="foot"><a href="../00index.html">Return</a></p>
+</body>
+</html>

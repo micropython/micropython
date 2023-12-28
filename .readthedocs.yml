@@ -14,7 +14,7 @@ build:
         python: "3"
     jobs:
         post_install:
-            - python tools/ci_fetch_deps.py build-doc
+            - python tools/ci_fetch_deps.py docs
 
 formats:
     - pdf

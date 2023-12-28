@@ -37,8 +37,9 @@
  * To schedule the work, use background_callback_add, with fun as the
  * function to call and data pointing to the object itself.
  *
- * Next time run_background_tasks_if_tick is called, the callback will
- * be run and removed from the linked list.
+ * Next time background_callback_run_all() is called, the callback will
+ * be run and removed from the linked list. Use `RUN_BACKGROUND_TASKS;` instead
+ * of calling background_callback_run_all() directly.
  *
  * Queueing a task that is already queued does nothing.  Unconditionally
  * re-queueing it from its own background task will cause it to run during the
@@ -46,6 +47,12 @@
  * don't do that.
  *
  * background_callback_add can be called from interrupt context.
+ *
+ * If your work isn't triggered by an event, then it may be better implemented
+ * using ticks, which runs tasks every millisecond or so. Ticks are enabled with
+ * supervisor_enable_tick() and disabled with supervisor_disable_tick(). When
+ * enabled, a timer will schedule a callback to supervisor_background_tick(),
+ * which includes port_background_tick(), every millisecond.
  */
 typedef void (*background_callback_fun)(void *data);
 typedef struct background_callback {

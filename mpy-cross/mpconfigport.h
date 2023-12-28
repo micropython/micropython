@@ -1,7 +1,28 @@
-// SPDX-FileCopyrightText: Copyright (c) 2013-2015 Damien P. George
-// SPDX-FileCopyrightText: 2014 MicroPython & CircuitPython contributors (https://github.com/adafruit/circuitpython/graphs/contributors)
-//
-// SPDX-License-Identifier: MIT
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013-2015 Damien P. George
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 // options to control how MicroPython is built
 
@@ -74,7 +95,7 @@
 
 // MINGW only handles these errno names.
 #ifdef __MINGW32__
-#define MICROPY_PY_UERRNO_LIST \
+#define MICROPY_PY_ERRNO_LIST \
     X(EPERM) \
     X(ENOENT) \
     X(ESRCH) \
@@ -145,7 +166,7 @@ typedef long mp_off_t;
 #define MP_PLAT_PRINT_STRN(str, len) (void)0
 
 // We need to provide a declaration/definition of alloca()
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__NetBSD__)
 #include <stdlib.h>
 #elif defined(_WIN32)
 #include <malloc.h>
@@ -161,9 +182,10 @@ typedef long mp_off_t;
 #define MP_ENDIANNESS_LITTLE        (1)
 #define NORETURN                    __declspec(noreturn)
 #define MP_NOINLINE                 __declspec(noinline)
+#define MP_ALWAYSINLINE             __forceinline
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 }
+#define MICROPY_PORT_CONSTANTS      { MP_ROM_QSTR(MP_QSTR_dummy), MP_ROM_PTR(NULL) }
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else

@@ -36,16 +36,16 @@
 #include "hal/gpio_ll.h"
 #include "esp_debug_helpers.h"
 
-#include "components/driver/include/driver/rtc_io.h"
-#include "components/freertos/include/freertos/FreeRTOS.h"
+#include "driver/rtc_io.h"
+#include "freertos/FreeRTOS.h"
 
 void common_hal_alarm_pin_pinalarm_construct(alarm_pin_pinalarm_obj_t *self, const mcu_pin_obj_t *pin, bool value, bool edge, bool pull) {
     if (edge) {
-        mp_raise_ValueError(translate("Cannot wake on pin edge. Only level."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Cannot wake on pin edge. Only level."));
     }
 
     if (pull && !GPIO_IS_VALID_OUTPUT_GPIO(pin->number)) {
-        mp_raise_ValueError(translate("Cannot pull on input-only pin."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Cannot pull on input-only pin."));
     }
     self->pin = pin;
     self->value = value;
@@ -205,16 +205,16 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         return;
     }
     if (deep_sleep && low_count > 2 && high_count == 0) {
-        mp_raise_ValueError(translate("Can only alarm on two low pins from deep sleep."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Can only alarm on two low pins from deep sleep."));
     }
     if (deep_sleep && low_count > 1 && high_count > 0) {
-        mp_raise_ValueError(translate("Can only alarm on one low pin while others alarm high from deep sleep."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Can only alarm on one low pin while others alarm high from deep sleep."));
     }
     // Only use ext0 and ext1 during deep sleep.
     if (deep_sleep) {
         if (high_count > 0) {
             if (esp_sleep_enable_ext1_wakeup(high_alarms, ESP_EXT1_WAKEUP_ANY_HIGH) != ESP_OK) {
-                mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
+                mp_raise_ValueError(MP_ERROR_TEXT("Can only alarm on RTC IO from deep sleep."));
             }
             esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         }
@@ -231,13 +231,13 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
         }
         if (low_count > 1) {
             if (esp_sleep_enable_ext1_wakeup(1ull << low_pins[1], ESP_EXT1_WAKEUP_ALL_LOW) != ESP_OK) {
-                mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
+                mp_raise_ValueError(MP_ERROR_TEXT("Can only alarm on RTC IO from deep sleep."));
             }
             esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
         }
         if (low_count > 0) {
             if (esp_sleep_enable_ext0_wakeup(low_pins[0], 0) != ESP_OK) {
-                mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
+                mp_raise_ValueError(MP_ERROR_TEXT("Can only alarm on RTC IO from deep sleep."));
             }
         }
     } else {
@@ -249,7 +249,7 @@ void alarm_pin_pinalarm_set_alarms(bool deep_sleep, size_t n_alarms, const mp_ob
     pin_31_0_status = 0;
     pin_63_32_status = 0;
     if (gpio_isr_register(gpio_interrupt, NULL, 0, &gpio_interrupt_handle) != ESP_OK) {
-        mp_raise_ValueError(translate("Can only alarm on RTC IO from deep sleep."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Can only alarm on RTC IO from deep sleep."));
     }
     for (size_t i = 0; i < 64; i++) {
         uint64_t mask = 1ull << i;

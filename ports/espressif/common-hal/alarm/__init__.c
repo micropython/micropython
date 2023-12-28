@@ -51,8 +51,8 @@
 #include "esp_sleep.h"
 
 #include "soc/rtc_cntl_reg.h"
-#include "components/driver/include/driver/gpio.h"
-#include "components/driver/include/driver/uart.h"
+#include "components/driver/gpio/include/driver/gpio.h"
+#include "components/driver/uart/include/driver/uart.h"
 
 // Singleton instance of SleepMemory.
 const alarm_sleep_memory_obj_t alarm_sleep_memory_obj = {
@@ -160,20 +160,20 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
             esp_sleep_wakeup_cause_t cause = _get_wakeup_cause(false);
             switch (cause) {
                 case ESP_SLEEP_WAKEUP_TIMER: {
-                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 case ESP_SLEEP_WAKEUP_GPIO: {
-                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 case ESP_SLEEP_WAKEUP_TOUCHPAD: {
-                    wake_alarm = alarm_touch_touchalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_touch_touchalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 #if CIRCUITPY_ESPULP
                 case ESP_SLEEP_WAKEUP_ULP: {
-                    wake_alarm = espulp_ulpalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = espulp_ulpalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 #endif
@@ -213,6 +213,8 @@ void NORETURN common_hal_alarm_enter_deep_sleep(void) {
     // The ESP-IDF caches the deep sleep settings and applies them before sleep.
     // We don't need to worry about resetting them in the interim.
     esp_deep_sleep_start();
+
+    reset_into_safe_mode(SAFE_MODE_HARD_FAULT);
 }
 
 void common_hal_alarm_gc_collect(void) {

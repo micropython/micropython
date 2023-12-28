@@ -1073,7 +1073,7 @@ static void sd_mmc_deselect_slot(void) {
  * \note
  * This function runs the initialization procedure and the identification
  * process, then it sets the SD/MMC card in transfer state.
- * At last, it will automaticly enable maximum bus width and transfer speed.
+ * At last, it will automatically enable maximum bus width and transfer speed.
  *
  * \return true if success, otherwise false
  */
@@ -1205,7 +1205,7 @@ static bool sd_mmc_mci_card_init(void) {
  * \note
  * This function runs the initialization procedure and the identification
  * process, then it sets the SD/MMC card in transfer state.
- * At last, it will automaticly enable maximum bus width and transfer speed.
+ * At last, it will automatically enable maximum bus width and transfer speed.
  *
  * \return true if success, otherwise false
  */
@@ -1270,7 +1270,7 @@ static bool sd_mmc_mci_install_mmc(void) {
     uint8_t retry = 10;
     while (retry--) {
         /* Retry is a WORKAROUND for no compliance card (Atmel Internal ref. MMC19):
-         * These cards seem not ready immediatly
+         * These cards seem not ready immediately
          * after the end of busy of mmc_cmd6_set_high_speed()*/
 
         /* Set default block size */
@@ -1427,7 +1427,7 @@ sd_mmc_err_t sd_mmc_wait_end_of_read_blocks(bool abort) {
         return SD_MMC_OK;
     }
 
-    /* All blocks are transfered then stop read operation */
+    /* All blocks are transferred then stop read operation */
     if (sd_mmc_nb_block_to_tranfer == 1) {
         /* Single block transfer, then nothing to do */
         sd_mmc_deselect_slot();
@@ -1506,7 +1506,7 @@ sd_mmc_err_t sd_mmc_wait_end_of_write_blocks(bool abort) {
         return SD_MMC_OK;
     }
 
-    /* All blocks are transfered then stop write operation */
+    /* All blocks are transferred then stop write operation */
     if (sd_mmc_nb_block_to_tranfer == 1) {
         /* Single block transfer, then nothing to do */
         sd_mmc_deselect_slot();

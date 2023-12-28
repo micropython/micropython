@@ -42,7 +42,7 @@
 #include "hri/hri_nvmctrl_d51.h"
 #endif
 
-__attribute__((naked,noinline,aligned(16)))
+__attribute__((naked, noinline, aligned(16)))
 static void neopixel_send_buffer_core(volatile uint32_t *clraddr, uint32_t pinMask,
     const uint8_t *ptr, int numBytes);
 

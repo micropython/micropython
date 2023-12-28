@@ -33,7 +33,6 @@
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/audioio/AudioOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_dac_sync.h"
@@ -52,7 +51,7 @@
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {
     #if !HAVE_ANALOGOUT
-    mp_raise_NotImplementedError(translate("No DAC on chip"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("No DAC on chip"));
     #else
 
     uint8_t channel;

@@ -104,10 +104,6 @@ void reset_to_bootloader(void) {
     }
 }
 
-bool port_has_fixed_stack(void) {
-    return true;
-}
-
 uint32_t *port_stack_get_limit(void) {
     struct tcb_s *rtcb = this_task();
 

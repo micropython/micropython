@@ -35,6 +35,15 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     claim_pin(pin_a);
     claim_pin(pin_b);
 
+    // This configuration counts on all edges of the quadrature signal: Channel 0
+    // counts on rising and falling edges of channel A, with the direction set by the
+    // polarity of channel B. Channel 1 does likewise, counting edges of channel B according
+    // to the polarity of channel A. A little pencil work suffices to show that this
+    // counts correctly on all 8 correct quadrature state transitions.
+    //
+    // These routines also implicitly configure the weak internal pull-ups, as expected
+    // in CircuitPython.
+
     // Prepare configuration for the PCNT unit
     pcnt_config_t pcnt_config_channel_0 = {
         // Set PCNT input signal and control GPIOs
@@ -42,8 +51,8 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         .ctrl_gpio_num = pin_b->number,
         .channel = PCNT_CHANNEL_0,
         // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_DEC,      // Count up on the positive edge
-        .neg_mode = PCNT_COUNT_INC,      // Keep the counter value on the negative edge
+        .pos_mode = PCNT_COUNT_DEC,      // Count down on the positive edge
+        .neg_mode = PCNT_COUNT_INC,      // Count up on negative edge
         // What to do when control input is low or high?
         .lctrl_mode = PCNT_MODE_REVERSE, // Reverse counting direction if low
         .hctrl_mode = PCNT_MODE_KEEP,    // Keep the primary counter mode if high
@@ -52,7 +61,7 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     // Allocate and initialize PCNT unit, CHANNEL_0.
     const int8_t unit = peripherals_pcnt_init(&pcnt_config_channel_0);
     if (unit == -1) {
-        mp_raise_RuntimeError(translate("All PCNT units in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
     }
 
     pcnt_config_t pcnt_config_channel_1 = {
@@ -61,15 +70,15 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
         .ctrl_gpio_num = pin_a->number,
         .channel = PCNT_CHANNEL_1,
         // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_DEC,      // Count up on the positive edge
-        .neg_mode = PCNT_COUNT_INC,      // Keep the counter value on the negative edge
+        .pos_mode = PCNT_COUNT_DEC,      // Count down on the positive edge
+        .neg_mode = PCNT_COUNT_INC,      // Count up on negative edge
         // What to do when control input is low or high?
         .lctrl_mode = PCNT_MODE_KEEP,        // Keep the primary counter mode if low
         .hctrl_mode = PCNT_MODE_REVERSE,     // Reverse counting direction if high
         .unit = unit,
     };
 
-    // Reinitalize same unit, CHANNEL_1 with different parameters.
+    // Reinitialize same unit, CHANNEL_1 with different parameters.
     peripherals_pcnt_reinit(&pcnt_config_channel_1);
 
     self->pin_a = pin_a->number;
@@ -88,6 +97,7 @@ void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_o
     reset_pin_number(self->pin_a);
     reset_pin_number(self->pin_b);
     peripherals_pcnt_deinit(&self->unit);
+    self->unit = PCNT_UNIT_MAX;
 }
 
 mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self) {

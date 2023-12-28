@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,8 +47,7 @@ STATIC mp_obj_t reversed_make_new(const mp_obj_type_t *type, size_t n_args, size
         return mp_call_method_n_kw(0, 0, dest);
     }
 
-    mp_obj_reversed_t *o = m_new_obj(mp_obj_reversed_t);
-    o->base.type = type;
+    mp_obj_reversed_t *o = mp_obj_malloc(mp_obj_reversed_t, type);
     o->seq = args[0];
     o->cur_index = mp_obj_get_int(mp_obj_len(args[0])); // start at the end of the sequence
 
@@ -69,15 +68,12 @@ STATIC mp_obj_t reversed_iternext(mp_obj_t self_in) {
     return mp_obj_subscr(self->seq, MP_OBJ_NEW_SMALL_INT(self->cur_index), MP_OBJ_SENTINEL);
 }
 
-const mp_obj_type_t mp_type_reversed = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_reversed,
-    .make_new = reversed_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = reversed_iternext,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_reversed,
+    MP_QSTR_reversed,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, reversed_make_new,
+    iter, reversed_iternext
+    );
 
 #endif // MICROPY_PY_BUILTINS_REVERSED

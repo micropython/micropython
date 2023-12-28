@@ -26,10 +26,11 @@
 
 #include "reset.h"
 #include "supervisor/filesystem.h"
+#include "supervisor/linker.h"
 
 #include "fsl_common.h"
 
-void reset(void) {
+void PLACE_IN_ITCM(reset)(void) {
     filesystem_flush();
     NVIC_SystemReset();
 }

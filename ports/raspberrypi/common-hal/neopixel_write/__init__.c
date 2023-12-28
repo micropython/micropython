@@ -79,7 +79,9 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         false, // claim pins
         false, // Not user-interruptible.
         false, // No sideset enable
-        0, -1); // wrap
+        0, -1, // wrap
+        PIO_ANY_OFFSET  // offset
+        );
     if (!ok) {
         // Do nothing. Maybe bitbang?
         return;

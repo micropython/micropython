@@ -63,7 +63,7 @@ STATIC mp_obj_t getpass_getpass(size_t n_args, const mp_obj_t *pos_args, mp_map_
         print.data = MP_OBJ_TO_PTR(args[ARG_stream].u_obj);
         print.print_strn = mp_stream_write_adaptor;
         #else
-        mp_raise_NotImplementedError(translate("stream operation not supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("stream operation not supported"));
         #endif
     }
 
@@ -84,4 +84,4 @@ const mp_obj_module_t getpass_module = {
     .globals = (mp_obj_dict_t *)&getpass_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_getpass, getpass_module, CIRCUITPY_GETPASS);
+MP_REGISTER_MODULE(MP_QSTR_getpass, getpass_module);

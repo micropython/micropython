@@ -37,7 +37,7 @@
 
 //| """Low-level bit primitives for Maxim (formerly Dallas Semi) one-wire protocol.
 //|
-//|    Protocol definition is here: https://www.maximintegrated.com/en/app-notes/index.mvp/id/126"""
+//|    Protocol definition is here: https://www.analog.com/en/technical-articles/1wire-communication-through-software.html"""
 
 STATIC const mp_rom_map_elem_t onewireio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_onewireio) },
@@ -51,4 +51,4 @@ const mp_obj_module_t onewireio_module = {
     .globals = (mp_obj_dict_t *)&onewireio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_onewireio, onewireio_module, CIRCUITPY_ONEWIREIO);
+MP_REGISTER_MODULE(MP_QSTR_onewireio, onewireio_module);

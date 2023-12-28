@@ -30,12 +30,17 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
+#ifdef SOC_DAC_SUPPORTED
+#include "esp-idf/components/driver/dac/include/driver/dac_oneshot.h"
+#endif
 #include "py/obj.h"
 
 typedef struct {
     mp_obj_base_t base;
-    const mcu_pin_obj_t *pin;
+    #ifdef SOC_DAC_SUPPORTED
+    dac_oneshot_handle_t handle;
     uint8_t channel;
+    #endif
 } analogio_analogout_obj_t;
 
 void analogout_reset(void);

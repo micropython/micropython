@@ -75,4 +75,7 @@ typedef struct _lwip_socket_obj_t {
     socketpool_socketpool_obj_t *pool;
 } socketpool_socket_obj_t;
 
+// Not required for RPi socket positive callbacks
+#define socketpool_socket_poll_resume(x)
+
 void socket_user_reset(void);

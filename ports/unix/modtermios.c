@@ -33,6 +33,8 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_TERMIOS
+
 STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
@@ -73,7 +75,7 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
         // We don't export TCSANOW and friends to save on code space. Then
         // common lazy sense says that passing 0 should be godo enough, and
         // it is e.g. for glibc. But for other libc's it's not, so set just
-        // treat 0 as defauling to TCSANOW.
+        // treat 0 as defaulting to TCSANOW.
         when = TCSANOW;
     }
 
@@ -148,3 +150,7 @@ const mp_obj_module_t mp_module_termios = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_termios_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_termios, mp_module_termios);
+
+#endif // MICROPY_PY_TERMIOS

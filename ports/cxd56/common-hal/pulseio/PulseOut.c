@@ -73,7 +73,7 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     }
 
     if (pulse_fd < 0) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     self->pwm_num = self->pwmout.number;
@@ -99,7 +99,7 @@ bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t len) {
     if (pulse_buffer != NULL) {
-        mp_raise_RuntimeError(translate("Another send is already active"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Another send is already active"));
     }
 
     struct timer_sethandler_s sethandler;

@@ -45,4 +45,4 @@ const mp_obj_module_t gifio_module = {
     .globals = (mp_obj_dict_t *)&gifio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_gifio, gifio_module, CIRCUITPY_GIFIO);
+MP_REGISTER_MODULE(MP_QSTR_gifio, gifio_module);

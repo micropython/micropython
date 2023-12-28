@@ -35,7 +35,6 @@
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/binary.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class I2C:
 //|     """Two wire serial protocol"""
@@ -68,8 +67,7 @@
 //|         """
 //|         ...
 STATIC mp_obj_t busio_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    busio_i2c_obj_t *self = m_new_obj(busio_i2c_obj_t);
-    self->base.type = &busio_i2c_type;
+    busio_i2c_obj_t *self = mp_obj_malloc(busio_i2c_obj_t, &busio_i2c_type);
     enum { ARG_scl, ARG_sda, ARG_frequency, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -122,7 +120,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(busio_i2c___exit___obj, 4, 4, busio_i
 static void check_lock(busio_i2c_obj_t *self) {
     asm ("");
     if (!common_hal_busio_i2c_has_lock(self)) {
-        mp_raise_RuntimeError(translate("Function requires lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 
@@ -390,9 +388,10 @@ STATIC const mp_rom_map_elem_t busio_i2c_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(busio_i2c_locals_dict, busio_i2c_locals_dict_table);
 
-const mp_obj_type_t busio_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .make_new = busio_i2c_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, busio_i2c_make_new,
+    locals_dict, &busio_i2c_locals_dict
+    );

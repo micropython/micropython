@@ -105,7 +105,7 @@ STATIC int next_filter(canio_can_obj_t *can) {
             return i;
         }
     }
-    mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q"), MP_QSTR_Listener);
+    mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q"), MP_QSTR_Listener);
 }
 
 // IDE = "extended ID" flag of packet header.  We always add this bit to the
@@ -232,11 +232,11 @@ void common_hal_canio_listener_construct(canio_listener_obj_t *self, canio_can_o
         self->rfr = &can->handle.Instance->RF1R;
         can->fifo1_in_use = true;
     } else {
-        mp_raise_ValueError(translate("All RX FIFOs in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All RX FIFOs in use"));
     }
 
     if (num_filters_needed(nmatch, matches) > num_filters_available(can)) {
-        mp_raise_ValueError(translate("Filters too complex"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Filters too complex"));
     }
 
     // Nothing can fail now so it's safe to assign self->can
@@ -285,8 +285,8 @@ mp_obj_t common_hal_canio_listener_receive(canio_listener_obj_t *self) {
     uint32_t rdtr = self->mailbox->RDTR;
 
     bool rtr = rir & CAN_RI0R_RTR;
-    canio_message_obj_t *message = m_new_obj(canio_message_obj_t);
-    message->base.type = rtr ? &canio_remote_transmission_request_type : &canio_message_type;
+    canio_message_obj_t *message =
+        mp_obj_malloc(canio_message_obj_t, rtr ? &canio_remote_transmission_request_type : &canio_message_type);
     message->extended = rir & CAN_RI0R_IDE;
     if (message->extended) {
         message->id = rir >> 3;

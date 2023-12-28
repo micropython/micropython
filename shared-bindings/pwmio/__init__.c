@@ -74,4 +74,4 @@ const mp_obj_module_t pwmio_module = {
     .globals = (mp_obj_dict_t *)&pwmio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_pwmio, pwmio_module, CIRCUITPY_PWMIO);
+MP_REGISTER_MODULE(MP_QSTR_pwmio, pwmio_module);

@@ -34,7 +34,6 @@
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PWMAudioOut:
 //|     """Output an analog audio signal by varying the PWM duty cycle."""
@@ -55,6 +54,10 @@
 //|         :param ~microcontroller.Pin right_channel: The pin to output the right channel to
 //|         :param int quiescent_value: The output value when no signal is present. Samples should start
 //|             and end with this value to prevent audible popping.
+//|
+//|         **Limitations:** On mimxrt10xx, low sample rates may have an audible
+//|         "carrier" frequency. The manufacturer datasheet states that the "MQS" peripheral
+//|         is intended for 44 kHz or 48kHz input signals.
 //|
 //|         Simple 8ksps 440 Hz sin wave::
 //|
@@ -114,7 +117,9 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
         validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj, MP_QSTR_right_channel);
 
     // create AudioOut object from the given pin
-    audiopwmio_pwmaudioout_obj_t *self = m_new_obj(audiopwmio_pwmaudioout_obj_t);
+    // The object is created with a finaliser as some ports use these (rather than 'reset' functions)
+    // to ensure resources are collected at interpreter shutdown.
+    audiopwmio_pwmaudioout_obj_t *self = m_new_obj_with_finaliser(audiopwmio_pwmaudioout_obj_t);
     self->base.type = &audiopwmio_pwmaudioout_type;
     common_hal_audiopwmio_pwmaudioout_construct(self, left_channel_pin, right_channel_pin, args[ARG_quiescent_value].u_int);
 
@@ -211,7 +216,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj_pause(mp_obj_t self_in) {
     check_for_deinit(self);
 
     if (!common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
-        mp_raise_RuntimeError(translate("Not playing"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Not playing"));
     }
     common_hal_audiopwmio_pwmaudioout_pause(self);
     return mp_const_none;
@@ -249,6 +254,7 @@ MP_PROPERTY_GETTER(audiopwmio_pwmaudioout_paused_obj,
 STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&audiopwmio_pwmaudioout_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&audiopwmio_pwmaudioout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&audiopwmio_pwmaudioout___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_play), MP_ROM_PTR(&audiopwmio_pwmaudioout_play_obj) },
@@ -262,9 +268,10 @@ STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiopwmio_pwmaudioout_locals_dict, audiopwmio_pwmaudioout_locals_dict_table);
 
-const mp_obj_type_t audiopwmio_pwmaudioout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PWMAudioOut,
-    .make_new = audiopwmio_pwmaudioout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiopwmio_pwmaudioout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiopwmio_pwmaudioout_type,
+    MP_QSTR_PWMAudioOut,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audiopwmio_pwmaudioout_make_new,
+    locals_dict, &audiopwmio_pwmaudioout_locals_dict
+    );

@@ -33,7 +33,7 @@
 #include "common-hal/digitalio/DigitalInOut.h"
 
 // Light sleep fully self-contained and does not exit user code. It will return
-// the same alarm object that was orignally passed in, unlike deep sleep, which
+// the same alarm object that was originally passed in, unlike deep sleep, which
 // must create an identical copy due to the VM reset
 extern mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj_t *alarms);
 

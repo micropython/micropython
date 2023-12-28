@@ -1,0 +1,1 @@
+// No memorymap module functions.

@@ -89,7 +89,7 @@ static void usb_serial_jtag_isr_handler(void *arg) {
 }
 
 void usb_serial_jtag_init(void) {
-    ringbuf_init(&ringbuf, buf, sizeof(buf) - 1);
+    ringbuf_init(&ringbuf, buf, sizeof(buf));
     usb_serial_jtag_ll_clr_intsts_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT | USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1);
     usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SOF | USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT | USB_SERIAL_JTAG_INTR_TOKEN_REC_IN_EP1);
     ESP_ERROR_CHECK(esp_intr_alloc(ETS_USB_SERIAL_JTAG_INTR_SOURCE, ESP_INTR_FLAG_LEVEL1,
@@ -101,21 +101,28 @@ bool usb_serial_jtag_connected(void) {
 }
 
 char usb_serial_jtag_read_char(void) {
-    if (ringbuf_num_filled(&ringbuf) == 0) {
+    if (ringbuf_num_filled(&ringbuf) == 0 && !usb_serial_jtag_ll_rxfifo_data_available()) {
         return -1;
     }
-    char c = ringbuf_get(&ringbuf);
+    char c = -1;
+    if (ringbuf_num_filled(&ringbuf) > 0) {
+        c = ringbuf_get(&ringbuf);
+    }
     // Maybe re-enable the recv interrupt if we've emptied the ringbuf.
     if (ringbuf_num_filled(&ringbuf) == 0) {
         usb_serial_jtag_ll_disable_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
         _copy_out_of_fifo();
         usb_serial_jtag_ll_ena_intr_mask(USB_SERIAL_JTAG_INTR_SERIAL_OUT_RECV_PKT);
+        // May have only been ctrl-c.
+        if (c == -1 && ringbuf_num_filled(&ringbuf) > 0) {
+            c = ringbuf_get(&ringbuf);
+        }
     }
     return c;
 }
 
 bool usb_serial_jtag_bytes_available(void) {
-    return ringbuf_num_filled(&ringbuf) > 0;
+    return ringbuf_num_filled(&ringbuf) > 0 || usb_serial_jtag_ll_rxfifo_data_available();
 }
 
 void usb_serial_jtag_write(const char *text, uint32_t length) {

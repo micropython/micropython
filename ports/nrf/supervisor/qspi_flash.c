@@ -59,7 +59,7 @@ static int sck_delay_saved = 0;
 void qspi_disable(void) {
     // If VBUS is detected, no need to disable QSPI
     if (NRF_QSPI->ENABLE && !(NRF_POWER->USBREGSTATUS & POWER_USBREGSTATUS_VBUSDETECT_Msk)) {
-        // Keep CS high when QSPI is diabled
+        // Keep CS high when QSPI is disabled
         nrf_gpio_cfg_output(MICROPY_QSPI_CS);
         nrf_gpio_pin_write(MICROPY_QSPI_CS, 1);
 

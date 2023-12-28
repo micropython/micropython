@@ -287,7 +287,7 @@ typedef struct
 /**@brief L2CAP event structure. */
 typedef struct
 {
-    uint16_t conn_handle;                                   /**< Connection Handle on which the event occured. */
+    uint16_t conn_handle;                                   /**< Connection Handle on which the event occurred. */
     uint16_t local_cid;                                     /**< Local Channel ID of the L2CAP channel, or
                                                                  @ref BLE_L2CAP_CID_INVALID if not present. */
     union

@@ -218,6 +218,10 @@ class Chaosgame(object):
 ###########################################################################
 # Benchmark interface
 
+if not hasattr(random, "randrange"):
+    print("SKIP")
+    raise SystemExit
+
 bm_params = {
     (100, 50): (0.25, 100, 50, 50, 50, 1234),
     (1000, 1000): (0.25, 200, 400, 400, 1000, 1234),

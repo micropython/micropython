@@ -65,7 +65,7 @@
 // This also includes mpconfigboard.h.
 #include "py/circuitpy_mpconfig.h"
 
-// Definitions that might be overriden by mpconfigboard.h
+// Definitions that might be overridden by mpconfigboard.h
 
 #ifndef CIRCUITPY_INTERNAL_NVM_SIZE
 #define CIRCUITPY_INTERNAL_NVM_SIZE (8 * 1024)
@@ -203,12 +203,5 @@
 #if SOFTDEVICE_RAM_SIZE + SPIM3_BUFFER_RAM_SIZE + APP_RAM_SIZE < RAM_SIZE
 #error RAM size regions do not use all of RAM
 #endif
-
-
-#define MICROPY_PORT_ROOT_POINTERS                              \
-    CIRCUITPY_COMMON_ROOT_POINTERS                              \
-    uint16_t *pixels_pattern_heap;                              \
-    ble_drv_evt_handler_entry_t *ble_drv_evt_handler_entries;   \
-
 
 #endif  // NRF5_MPCONFIGPORT_H__

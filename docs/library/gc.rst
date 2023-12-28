@@ -1,12 +1,10 @@
 :mod:`gc` -- control the garbage collector
 ==========================================
 
-.. include:: ../templates/unsupported_in_circuitpython.inc
-
 .. module:: gc
    :synopsis: control the garbage collector
 
-|see_cpython_module| :mod:`cpython:gc`.
+|see_cpython_module| :mod:`python:gc`.
 
 Functions
 ---------
@@ -26,7 +24,7 @@ Functions
 
 .. function:: mem_alloc()
 
-   Return the number of bytes of heap RAM that are allocated.
+   Return the number of bytes of heap RAM that are allocated by Python code.
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -35,8 +33,8 @@ Functions
 
 .. function:: mem_free()
 
-   Return the number of bytes of available heap RAM, or -1 if this amount
-   is not known.
+   Return the number of bytes of heap RAM that is available for Python
+   code to allocate, or -1 if this amount is not known.
 
    .. admonition:: Difference to CPython
       :class: attention
@@ -63,6 +61,6 @@ Functions
    .. admonition:: Difference to CPython
       :class: attention
 
-      This function is a a MicroPython extension. CPython has a similar
+      This function is a MicroPython extension. CPython has a similar
       function - ``set_threshold()``, but due to different GC
       implementations, its signature and semantics are different.

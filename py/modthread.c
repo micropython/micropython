@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+ * Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,6 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_THREAD
 
 #include "py/mpthread.h"
@@ -56,8 +54,7 @@ typedef struct _mp_obj_thread_lock_t {
 } mp_obj_thread_lock_t;
 
 STATIC mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
-    mp_obj_thread_lock_t *self = m_new_obj(mp_obj_thread_lock_t);
-    self->base.type = &mp_type_thread_lock;
+    mp_obj_thread_lock_t *self = mp_obj_malloc(mp_obj_thread_lock_t, &mp_type_thread_lock);
     mp_thread_mutex_init(&self->mutex);
     self->locked = false;
     return self;
@@ -119,11 +116,12 @@ STATIC const mp_rom_map_elem_t thread_lock_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(thread_lock_locals_dict, thread_lock_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_thread_lock = {
-    { &mp_type_type },
-    .name = MP_QSTR_lock,
-    .locals_dict = (mp_obj_dict_t *)&thread_lock_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_thread_lock,
+    MP_QSTR_lock,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &thread_lock_locals_dict
+    );
 
 /****************************************************************/
 // _thread module
@@ -131,6 +129,7 @@ STATIC const mp_obj_type_t mp_type_thread_lock = {
 STATIC size_t thread_stack_size = 0;
 
 STATIC mp_obj_t mod_thread_get_ident(void) {
+    // CIRCUITPY-CHANGE: uintptr_t cast to avoid warning
     return mp_obj_new_int_from_uint((uintptr_t)mp_thread_get_state());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_get_ident_obj, mod_thread_get_ident);
@@ -270,9 +269,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     th_args->fun = args[0];
 
     // spawn the thread!
-    mp_thread_create(thread_entry, th_args, &th_args->stack_size);
-
-    return mp_const_none;
+    return mp_obj_new_int_from_uint(mp_thread_create(thread_entry, th_args, &th_args->stack_size));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_start_new_thread_obj, 2, 3, mod_thread_start_new_thread);
 
@@ -302,5 +299,7 @@ const mp_obj_module_t mp_module_thread = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_thread_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR__thread, mp_module_thread);
 
 #endif // MICROPY_PY_THREAD

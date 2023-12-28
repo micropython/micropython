@@ -30,7 +30,6 @@
 #include "py/runtime.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_gpio.h"
 
@@ -94,7 +93,7 @@ STATIC void reset_single_pwmout(uint8_t i) {
 
     for (int ch = 0; ch < CHANNELS_PER_PWM; ch++) {
         pwm_seq[i][ch] = (1 << 15); // polarity = 0
-        pwm->PSEL.OUT[ch] = 0xFFFFFFFF; // disconnnect from I/O
+        pwm->PSEL.OUT[ch] = 0xFFFFFFFF; // disconnect from I/O
     }
 }
 

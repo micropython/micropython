@@ -28,6 +28,9 @@
 #ifndef MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
 #define MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H
 
+// Enable for debugging.
+// #define CIRCUITPY_VERBOSE_BLE               (1)
+
 #define MICROPY_NLR_THUMB                   (0)
 
 #define MICROPY_USE_INTERNAL_PRINTF         (0)
@@ -37,34 +40,15 @@
 
 #include "py/circuitpy_mpconfig.h"
 
-#if CIRCUITPY_BLEIO
-#define BLEIO_ROOT_POINTERS struct ble_event_handler_entry *ble_event_handler_entries;
-#else
-#define BLEIO_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_ESPNOW
-#define ESPNOW_ROOT_POINTERS struct _espnow_obj_t *espnow_singleton;
-#else
-#define ESPNOW_ROOT_POINTERS
-#endif
-
-#define MICROPY_PORT_ROOT_POINTERS  \
-    CIRCUITPY_COMMON_ROOT_POINTERS  \
-    BLEIO_ROOT_POINTERS             \
-    ESPNOW_ROOT_POINTERS
-
 #define MICROPY_NLR_SETJMP                  (1)
 #define CIRCUITPY_DEFAULT_STACK_SIZE        0x6000
 
 // Nearly all boards have this because it is used to enter the ROM bootloader.
 #ifndef CIRCUITPY_BOOT_BUTTON
-  #ifdef CONFIG_IDF_TARGET_ESP32C3
+  #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32H2)
     #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO9)
-  #else
-    #ifndef CONFIG_IDF_TARGET_ESP32
-      #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
-    #endif
+  #elif !defined(CONFIG_IDF_TARGET_ESP32)
+    #define CIRCUITPY_BOOT_BUTTON (&pin_GPIO0)
   #endif
 #endif
 
@@ -88,21 +72,6 @@
 // external pull up resistors.
 #ifndef CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP
 #define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (0)
-#endif
-
-// Define to (1) in mpconfigboard.h if the board uses the internal USB to
-// Serial/JTAG to connect do USB.
-#ifndef CIRCUITPY_ESP_USB_SERIAL_JTAG
-#define CIRCUITPY_ESP_USB_SERIAL_JTAG (0)
-#endif
-
-#ifndef DEFAULT_RESERVED_PSRAM
-#define DEFAULT_RESERVED_PSRAM (0)
-#endif
-
-#if defined(CONFIG_SPIRAM)
-#undef CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
-#define CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS (1)
 #endif
 
 #endif  // MICROPY_INCLUDED_ESPRESSIF_MPCONFIGPORT_H

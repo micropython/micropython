@@ -27,9 +27,11 @@
 #ifndef MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_RMT_H
 #define MICROPY_INCLUDED_ESPRESSIF_PERIPHERALS_RMT_H
 
-#include "py/mphal.h"
-#include "components/driver/include/driver/rmt.h"
 #include <stdint.h>
+
+#include "py/mphal.h"
+#include "driver/rmt.h"
+
 #define TRANSMIT_MODE true
 #define RECEIVE_MODE false
 

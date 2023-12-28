@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2015 Damien P. George
+ * Copyright (c) 2015 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,8 @@
 #define CHAR_CTRL_C (3)
 #endif
 
-void mp_hal_set_interrupt_char(char c);
+// CIRCUITPY-CHANGE: mp_hal_set_interrupt_char(int) instead of char
+void mp_hal_set_interrupt_char(int c);
 bool mp_hal_is_interrupted(void);
 
 #define mp_hal_stdio_poll unused // this is not implemented, nor needed
@@ -92,3 +93,13 @@ static inline void mp_hal_delay_us(mp_uint_t us) {
 #define RAISE_ERRNO(err_flag, error_val) \
     { if (err_flag == -1) \
       { mp_raise_OSError(error_val); } }
+
+void mp_hal_get_random(size_t n, void *buf);
+
+#if MICROPY_PY_BLUETOOTH
+enum {
+    MP_HAL_MAC_BDADDR,
+};
+
+void mp_hal_get_mac(int idx, uint8_t buf[6]);
+#endif

@@ -45,7 +45,7 @@ extern bleio_connection_internal_t bleio_connections[BLEIO_TOTAL_CONNECTION_COUN
 
 typedef struct {
     mp_obj_base_t base;
-    // Pointer to buffers we maintain so that the data is long lived.
+    // We create buffers and copy the advertising data so it will live for as long as we need.
     uint8_t *advertising_data;
     uint8_t *scan_response_data;
     // Pointer to current data.

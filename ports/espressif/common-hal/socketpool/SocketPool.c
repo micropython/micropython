@@ -36,7 +36,7 @@
 
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio) {
     if (radio != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
-        mp_raise_ValueError(translate("SocketPool can only be used with wifi.radio"));
+        mp_raise_ValueError(MP_ERROR_TEXT("SocketPool can only be used with wifi.radio"));
     }
 }
 
@@ -60,7 +60,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_ob
         .ai_socktype = SOCK_STREAM,
     };
     struct addrinfo *res;
-    int err = getaddrinfo(host, NULL, &hints, &res);
+    int err = lwip_getaddrinfo(host, NULL, &hints, &res);
     if (err != 0 || res == NULL) {
         return mp_const_none;
     }
@@ -72,7 +72,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_ob
     char ip_str[IP4ADDR_STRLEN_MAX];
     inet_ntoa_r(*addr, ip_str, IP4ADDR_STRLEN_MAX);
     mp_obj_t ip_obj = mp_obj_new_str(ip_str, strlen(ip_str));
-    freeaddrinfo(res);
+    lwip_freeaddrinfo(res);
 
     return ip_obj;
 }

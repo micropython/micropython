@@ -35,7 +35,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "peripherals/broadcom/cpu.h"
 #include "peripherals/broadcom/defines.h"
@@ -321,7 +320,7 @@ uint8_t common_hal_sdioio_sdcard_get_width(sdioio_sdcard_obj_t *self) {
 
 STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
-        mp_raise_ValueError(translate("Buffer length must be a multiple of 512"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
 }
 

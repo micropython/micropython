@@ -29,7 +29,7 @@
 #include "mpconfigboard.h"
 
 #include "shared-bindings/busio/SPI.h"
-#include "shared-bindings/displayio/FourWire.h"
+#include "shared-bindings/fourwire/FourWire.h"
 #include "shared-bindings/framebufferio/FramebufferDisplay.h"
 #include "shared-bindings/sharpdisplay/SharpMemoryFramebuffer.h"
 #include "shared-module/displayio/__init__.h"

@@ -80,7 +80,7 @@ void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *
     self->file = file;
     self->file_proto = mp_get_stream_raise(file, MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
     if (self->file_proto->is_text) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     self->width = width;
     self->height = height;
@@ -90,7 +90,7 @@ void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *
 
     size_t nblocks = (width * height + 125) / 126;
     self->size = nblocks * 128 + 4;
-    self->data = gc_alloc(self->size, 0, false);
+    self->data = m_malloc(self->size);
     self->cur = 0;
     self->error = 0;
 
@@ -108,7 +108,7 @@ void shared_module_gifio_gifwriter_construct(gifio_gifwriter_t *self, mp_obj_t *
             break;
 
         default:
-            mp_raise_TypeError(translate("unsupported colorspace for GifWriter"));
+            mp_raise_TypeError(MP_ERROR_TEXT("unsupported colorspace for GifWriter"));
     }
 
     bool color = (colorspace != DISPLAYIO_COLORSPACE_L8);

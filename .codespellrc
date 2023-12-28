@@ -1,0 +1,10 @@
+# See: https://github.com/codespell-project/codespell#using-a-config-file
+[codespell]
+# In the event of a false positive, add the problematic word, in all lowercase, to 'ignore-words.txt' (one word per line).
+# Or copy & paste the whole problematic line to 'exclude-file.txt'
+ignore-words = .codespell/ignore-words.txt
+exclude-file = .codespell/exclude-file.txt
+check-filenames =
+check-hidden =
+count =
+skip = .cproject,.git,./lib,./locale,ACKNOWLEDGEMENTS

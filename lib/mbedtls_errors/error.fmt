@@ -110,7 +110,7 @@ void mbedtls_strerror(int ret, char *buf, size_t buflen) {
     if (got_hl) {
         use_ret = ret & 0xFF80;
 
-        // special case
+        // special case, don't try to translate low level code
 #if defined(MBEDTLS_SSL_TLS_C)
         if (use_ret == -(MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE)) {
             strncpy(buf, "MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE", buflen);

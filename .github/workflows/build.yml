@@ -51,6 +51,7 @@ jobs:
     - name: Set up mpy-cross
       uses: ./.github/actions/mpy_cross
       with:
+        cp-version: ${{ steps.set-up-submodules.outputs.version }}
         download: false
     - name: Get last commit with checks
       id: get-last-commit-with-checks
@@ -67,11 +68,9 @@ jobs:
       run: echo "HEAD_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
     - name: Set base sha (pull)
       if: github.event_name == 'pull_request'
-      run: |
-        git fetch --no-tags --no-recurse-submodules --depth=$((DEPTH + 1)) origin $HEAD_SHA
-        echo "BASE_SHA=$(git rev-list $HEAD_SHA --skip=$DEPTH --max-count=1)" >> $GITHUB_ENV
+      run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
       env:
-        DEPTH: ${{ steps.get-last-commit-with-checks.outputs.commit_depth || github.event.pull_request.commits }}
+        SHA: ${{ steps.get-last-commit-with-checks.outputs.commit_sha || github.event.pull_request.base.sha }}
     - name: Set head sha (push)
       if: github.event_name == 'push'
       run: echo "HEAD_SHA=${{ github.event.after }}" >> $GITHUB_ENV
@@ -80,16 +79,11 @@ jobs:
       run: git cat-file -e $SHA && echo "BASE_SHA=$SHA" >> $GITHUB_ENV || true
       env:
         SHA: ${{ github.event.before }}
-    - name: Get changes
-      id: get-changes
-      if: env.BASE_SHA && env.HEAD_SHA
-      run: echo $(git diff $BASE_SHA...$HEAD_SHA --name-only) | echo "changed_files=[\"$(sed "s/ /\", \"/g")\"]" >> $GITHUB_OUTPUT
     - name: Set matrix
       id: set-matrix
       run: python3 -u ci_set_matrix.py
       working-directory: tools
       env:
-        CHANGED_FILES: ${{ steps.get-changes.outputs.changed_files }}
         LAST_FAILED_JOBS: ${{ steps.get-last-commit-with-checks.outputs.check_runs }}
 
   tests:
@@ -134,15 +128,15 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross-macos-11-x64
-        path: mpy-cross/mpy-cross
+        path: mpy-cross/build/mpy-cross
     - name: Build mpy-cross (arm64)
       run: make -C mpy-cross -j2 -f Makefile.m1 V=2
     - uses: actions/upload-artifact@v3
       with:
         name: mpy-cross-macos-11-arm64
-        path: mpy-cross/mpy-cross-arm64
+        path: mpy-cross/build-arm64/mpy-cross-arm64
     - name: Make universal binary
-      run: lipo -create -output mpy-cross-macos-universal mpy-cross/mpy-cross mpy-cross/mpy-cross-arm64
+      run: lipo -create -output mpy-cross-macos-universal mpy-cross/build/mpy-cross mpy-cross/build-arm64/mpy-cross-arm64
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
@@ -154,8 +148,8 @@ jobs:
           (github.event_name == 'release' && (github.event.action == 'published' || github.event.action == 'rerequested'))
       run: |
         [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross-macos-universal s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-universal --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
-        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/build-arm64/mpy-cross-arm64 s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-arm64 --no-progress --region us-east-1
+        [ -z "$AWS_ACCESS_KEY_ID" ] || aws s3 cp mpy-cross/build/mpy-cross s3://adafruit-circuit-python/bin/mpy-cross/macos-11/mpy-cross-macos-11-${{ env.CP_VERSION }}-x64 --no-progress --region us-east-1
       env:
         AWS_PAGER: ''
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -181,6 +175,7 @@ jobs:
       uses: ./.github/actions/deps/submodules
     - name: Install dependencies
       run: |
+        sudo apt-get update
         sudo apt-get install -y latexmk librsvg2-bin texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
         pip install -r requirements-doc.txt
     - name: Build and Validate Stubs
@@ -215,7 +210,7 @@ jobs:
         TWINE_USERNAME: ${{ secrets.pypi_username }}
         TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
-        # setup.py sdist was run by 'make stubs'
+        # python -m build was run by 'make stubs'
         [ -z "$TWINE_USERNAME" ] || echo "Uploading dev release to PyPi"
         [ -z "$TWINE_USERNAME" ] || twine upload circuitpython-stubs/dist/*
 
@@ -254,9 +249,9 @@ jobs:
         python3 -c "import sys, locale; print(sys.getdefaultencoding(), locale.getpreferredencoding(False))"
     - name: Install dependencies
       run: |
-        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu-rm/10-2020q4/gcc-arm-none-eabi-10-2020-q4-major-win32.zip
+        wget --no-verbose -O gcc-arm.zip https://developer.arm.com/-/media/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-mingw-w64-i686-arm-none-eabi.zip
         unzip -q -d /tmp gcc-arm.zip
-        tar -C /tmp/gcc-arm-none-* -cf - . | tar -C /usr/local -xf -
+        tar -C /tmp/arm-gnu-toolchain* -cf - . | tar -C /usr/local -xf -
         pip install wheel
         # requirements_dev.txt doesn't install on windows. (with msys2 python)
         # instead, pick a subset for what we want to do

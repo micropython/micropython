@@ -35,8 +35,6 @@
 #include "shared/runtime/buffer_helper.h"
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
-
 
 //| class SPIDevice:
 //|     """SPI Device Manager"""
@@ -44,7 +42,7 @@
 //|     def __init__(
 //|         self,
 //|         spi: busio.SPI,
-//|         chip_select: digitalio.DigitalInOut,
+//|         chip_select: Optional[digitalio.DigitalInOut] = None,
 //|         *,
 //|         baudrate: int = 100000,
 //|         polarity: int = 0,
@@ -55,7 +53,7 @@
 //|         Represents a single SPI device and manages locking the bus and the device address.
 //|
 //|         :param ~busio.SPI spi: The SPI bus the device is on
-//|         :param ~digitalio.DigitalInOut chip_select: The chip select pin object that implements the DigitalInOut API.
+//|         :param ~digitalio.DigitalInOut chip_select: The chip select pin object that implements the DigitalInOut API. ``None`` if a chip select pin is not being used.
 //|         :param bool cs_active_value: Set to true if your device requires CS to be active high. Defaults to false.
 //|         :param int extra_clocks: The minimum number of clock cycles to cycle the bus after CS is high. (Used for SD cards.)
 //|
@@ -79,12 +77,12 @@
 //|                     spi.write(bytes_read)"""
 //|     ...
 STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    adafruit_bus_device_spidevice_obj_t *self = m_new_obj(adafruit_bus_device_spidevice_obj_t);
-    self->base.type = &adafruit_bus_device_spidevice_type;
+    adafruit_bus_device_spidevice_obj_t *self =
+        mp_obj_malloc(adafruit_bus_device_spidevice_obj_t, &adafruit_bus_device_spidevice_type);
     enum { ARG_spi, ARG_chip_select, ARG_cs_active_value, ARG_baudrate, ARG_polarity, ARG_phase, ARG_extra_clocks };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_spi, MP_ARG_REQUIRED | MP_ARG_OBJ },
-        { MP_QSTR_chip_select, MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
+        { MP_QSTR_chip_select, MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_cs_active_value, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 100000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -96,17 +94,17 @@ STATIC mp_obj_t adafruit_bus_device_spidevice_make_new(const mp_obj_type_t *type
 
     busio_spi_obj_t *spi = args[ARG_spi].u_obj;
 
-    mp_arg_validate_type(args[ARG_chip_select].u_obj, &digitalio_digitalinout_type, MP_QSTR_chip_select);
+    mp_arg_validate_type_or_none(args[ARG_chip_select].u_obj, &digitalio_digitalinout_type, MP_QSTR_chip_select);
 
     common_hal_adafruit_bus_device_spidevice_construct(MP_OBJ_TO_PTR(self), spi, args[ARG_chip_select].u_obj, args[ARG_cs_active_value].u_bool, args[ARG_baudrate].u_int, args[ARG_polarity].u_int,
         args[ARG_phase].u_int, args[ARG_extra_clocks].u_int);
 
-    if (args[ARG_chip_select].u_obj != MP_OBJ_NULL) {
+    if (args[ARG_chip_select].u_obj != mp_const_none) {
         digitalinout_result_t result = common_hal_digitalio_digitalinout_switch_to_output(MP_OBJ_TO_PTR(args[ARG_chip_select].u_obj),
             true, DRIVE_MODE_PUSH_PULL);
         #if CIRCUITPY_DIGITALIO_HAVE_INPUT_ONLY
         if (result == DIGITALINOUT_INPUT_ONLY) {
-            mp_raise_NotImplementedError(translate("Pin is input only"));
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("Pin is input only"));
         }
         #else
         (void)result;
@@ -144,9 +142,10 @@ STATIC const mp_rom_map_elem_t adafruit_bus_device_spidevice_locals_dict_table[]
 
 STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_spidevice_locals_dict, adafruit_bus_device_spidevice_locals_dict_table);
 
-const mp_obj_type_t adafruit_bus_device_spidevice_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPIDevice,
-    .make_new = adafruit_bus_device_spidevice_make_new,
-    .locals_dict = (mp_obj_dict_t *)&adafruit_bus_device_spidevice_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    adafruit_bus_device_spidevice_type,
+    MP_QSTR_SPIDevice,
+    MP_TYPE_FLAG_NONE,
+    make_new, adafruit_bus_device_spidevice_make_new,
+    locals_dict, &adafruit_bus_device_spidevice_locals_dict
+    );

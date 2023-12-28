@@ -33,7 +33,7 @@
 
 #include "py/runtime.h"
 
-#include "fsl_adc.h"
+#include "sdk/drivers/adc_12b1msps_sar/fsl_adc.h"
 
 #define ADC_CHANNEL_GROUP 0
 

@@ -105,10 +105,10 @@ STATIC mp_obj_t samd_clock_set_calibration(mp_obj_t self_in, mp_obj_t calibratio
     samd_clock_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int ret = clock_set_calibration(self->type, self->index, mp_obj_get_int(calibration));
     if (ret == -2) {
-        mp_raise_AttributeError(translate("calibration is read only"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("calibration is read only"));
     }
     if (ret == -1) {
-        mp_raise_ValueError(translate("calibration is out of range"));
+        mp_raise_ValueError(MP_ERROR_TEXT("calibration is out of range"));
     }
     return mp_const_none;
 }
@@ -128,12 +128,13 @@ STATIC const mp_rom_map_elem_t samd_clock_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(samd_clock_locals_dict, samd_clock_locals_dict_table);
 
-const mp_obj_type_t samd_clock_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Clock,
-    .print = samd_clock_print,
-    .locals_dict = (mp_obj_t)&samd_clock_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    samd_clock_type,
+    MP_QSTR_Clock,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    print, samd_clock_print,
+    locals_dict, &samd_clock_locals_dict
+    );
 
 #ifdef SAMD21
 

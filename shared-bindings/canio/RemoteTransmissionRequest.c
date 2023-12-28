@@ -55,11 +55,11 @@ STATIC mp_obj_t canio_remote_transmission_request_make_new(const mp_obj_type_t *
 
     int length = args[ARG_length].u_int;
     if (length < 0 || length > 8) {
-        mp_raise_ValueError(translate("RemoteTransmissionRequests limited to 8 bytes"));
+        mp_raise_ValueError(MP_ERROR_TEXT("RemoteTransmissionRequests limited to 8 bytes"));
     }
 
-    canio_remote_transmission_request_obj_t *self = m_new_obj(canio_remote_transmission_request_obj_t);
-    self->base.type = &canio_remote_transmission_request_type;
+    canio_remote_transmission_request_obj_t *self =
+        mp_obj_malloc(canio_remote_transmission_request_obj_t, &canio_remote_transmission_request_type);
     common_hal_canio_remote_transmission_request_construct(self, args[ARG_id].u_int, length, args[ARG_extended].u_bool);
     return self;
 }
@@ -117,7 +117,7 @@ STATIC mp_obj_t canio_remote_transmission_request_length_set(const mp_obj_t self
     canio_remote_transmission_request_obj_t *self = self_in;
     int length = mp_obj_get_int(length_in);
     if (length < 0 || length > 8) {
-        mp_raise_ValueError(translate("RemoteTransmissionRequests limited to 8 bytes"));
+        mp_raise_ValueError(MP_ERROR_TEXT("RemoteTransmissionRequests limited to 8 bytes"));
     }
     common_hal_canio_remote_transmission_request_set_length(self, length);
     return mp_const_none;
@@ -136,9 +136,10 @@ STATIC const mp_rom_map_elem_t canio_remote_transmission_request_locals_dict_tab
 };
 STATIC MP_DEFINE_CONST_DICT(canio_remote_transmission_request_locals_dict, canio_remote_transmission_request_locals_dict_table);
 
-const mp_obj_type_t canio_remote_transmission_request_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RemoteTransmissionRequest,
-    .make_new = canio_remote_transmission_request_make_new,
-    .locals_dict = (mp_obj_t)&canio_remote_transmission_request_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    canio_remote_transmission_request_type,
+    MP_QSTR_RemoteTransmissionRequest,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, canio_remote_transmission_request_make_new,
+    locals_dict, &canio_remote_transmission_request_locals_dict
+    );

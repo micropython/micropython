@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2016 Damien P. George
+ * Copyright (c) 2013-2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,27 +30,22 @@
 #include "py/reader.h"
 #include "py/emitglue.h"
 
-// The current version of .mpy files
-#define MPY_VERSION 5
+// The current version of .mpy files. A bytecode-only .mpy file can be loaded
+// as long as MPY_VERSION matches, but a native .mpy (i.e. one with an arch
+// set) must also match MPY_SUB_VERSION. This allows 3 additional updates to
+// the native ABI per bytecode revision.
+#define MPY_VERSION 6
+#define MPY_SUB_VERSION 1
 
-// Macros to encode/decode flags to/from the feature byte
-#define MPY_FEATURE_ENCODE_FLAGS(flags) (flags)
-#define MPY_FEATURE_DECODE_FLAGS(feat) ((feat) & 3)
+// Macros to encode/decode sub-version to/from the feature byte. This replaces
+// the bits previously used to encode the flags (map caching and unicode)
+// which are no longer used starting at .mpy version 6.
+#define MPY_FEATURE_ENCODE_SUB_VERSION(version) (version)
+#define MPY_FEATURE_DECODE_SUB_VERSION(feat) ((feat) & 3)
 
 // Macros to encode/decode native architecture to/from the feature byte
 #define MPY_FEATURE_ENCODE_ARCH(arch) ((arch) << 2)
 #define MPY_FEATURE_DECODE_ARCH(feat) ((feat) >> 2)
-
-// The feature flag bits encode the compile-time config options that affect
-// the generate bytecode. Note: position 0 is now unused
-// (formerly MICROPY_OPT_CACHE_MAP_LOOKUP_IN_BYTECODE).
-#define MPY_FEATURE_FLAGS ( \
-    ((MICROPY_PY_BUILTINS_STR_UNICODE) << 1) \
-    )
-// This is a version of the flags that can be configured at runtime.
-#define MPY_FEATURE_FLAGS_DYNAMIC ( \
-    ((MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) << 1) \
-    )
 
 // Define the host architecture
 #if MICROPY_EMIT_X86
@@ -67,7 +62,7 @@
             #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7EM)
         #endif
     #else
-        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV7M)
+        #define MPY_FEATURE_ARCH (MP_NATIVE_ARCH_ARMV6M)
     #endif
     #define MPY_FEATURE_ARCH_TEST(x) (MP_NATIVE_ARCH_ARMV6M <= (x) && (x) <= MPY_FEATURE_ARCH)
 #elif MICROPY_EMIT_ARM
@@ -86,7 +81,7 @@
 
 // 16-bit little-endian integer with the second and third bytes of supported .mpy files
 #define MPY_FILE_HEADER_INT (MPY_VERSION \
-    | (MPY_FEATURE_ENCODE_FLAGS(MPY_FEATURE_FLAGS) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
+    | (MPY_FEATURE_ENCODE_SUB_VERSION(MPY_SUB_VERSION) | MPY_FEATURE_ENCODE_ARCH(MPY_FEATURE_ARCH)) << 8)
 
 enum {
     MP_NATIVE_ARCH_NONE = 0,
@@ -102,12 +97,26 @@ enum {
     MP_NATIVE_ARCH_XTENSAWIN,
 };
 
-mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader);
-mp_raw_code_t *mp_raw_code_load_mem(const byte *buf, size_t len);
-mp_raw_code_t *mp_raw_code_load_file(const char *filename);
+enum {
+    MP_PERSISTENT_OBJ_FUN_TABLE = 0,
+    MP_PERSISTENT_OBJ_NONE,
+    MP_PERSISTENT_OBJ_FALSE,
+    MP_PERSISTENT_OBJ_TRUE,
+    MP_PERSISTENT_OBJ_ELLIPSIS,
+    MP_PERSISTENT_OBJ_STR,
+    MP_PERSISTENT_OBJ_BYTES,
+    MP_PERSISTENT_OBJ_INT,
+    MP_PERSISTENT_OBJ_FLOAT,
+    MP_PERSISTENT_OBJ_COMPLEX,
+    MP_PERSISTENT_OBJ_TUPLE,
+};
 
-void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print);
-void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename);
+void mp_raw_code_load(mp_reader_t *reader, mp_compiled_module_t *ctx);
+void mp_raw_code_load_mem(const byte *buf, size_t len, mp_compiled_module_t *ctx);
+void mp_raw_code_load_file(const char *filename, mp_compiled_module_t *ctx);
+
+void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print);
+void mp_raw_code_save_file(mp_compiled_module_t *cm, const char *filename);
 
 void mp_native_relocate(void *reloc, uint8_t *text, uintptr_t reloc_text);
 

@@ -15,15 +15,19 @@ CIRCUITPY_FULL_BUILD = 0
 # Many I/O functions are not available or not used in a keyboard
 # CIRCUITPY_ANALOGIO = 1 # Needed for potentiometer input (mouse)
 CIRCUITPY_AUDIOCORE = 0
-CIRCUITPY_BUSIO = 0 # Needed for I2C, SPI and UART - removed that for keyboards...
+# Needed for I2C, SPI and UART - removed that for keyboards...
+CIRCUITPY_BUSIO = 0
 CIRCUITPY_PULSEIO = 0
-# CIRCUITPY_PWMIO = 1 # only needed for speaker or LED PWM functions. Takes 2314 bytes.
+# only needed for speaker or LED PWM functions. Takes 2314 bytes.
+# CIRCUITPY_PWMIO = 1
 CIRCUITPY_RTC = 0
 CIRCUITPY_MATH = 0
 #CIRCUITPY_RANDOM = 0
 CIRCUITPY_ONEWIREIO = 0
-CIRCUITPY_NEOPIXEL_WRITE = 1 # Needed for RGB LEDs
-CIRCUITPY_RAINBOWIO = 1  # Needed for RGB LEDs
+# Needed for RGB LEDs
+CIRCUITPY_NEOPIXEL_WRITE = 1
+# Needed for RGB LEDs
+CIRCUITPY_RAINBOWIO = 1
 # These are used in a keyboard or computer input device.
 CIRCUITPY_ROTARYIO = 1
 CIRCUITPY_KEYPAD = 1

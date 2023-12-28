@@ -67,7 +67,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     uint32_t p_mask = pin_mask(digitalinout->pin->number);
 
     __disable_irq();
-    // Enable DWT in debug core. Useable when interrupts disabled, as opposed to Systick->VAL
+    // Enable DWT in debug core. Usable when interrupts disabled, as opposed to Systick->VAL
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
     DWT->CYCCNT = 0;

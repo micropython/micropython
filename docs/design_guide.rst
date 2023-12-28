@@ -742,14 +742,7 @@ You could other examples if needed featuring different
 functionalities of the library.
 If you add additional examples, be sure to include them in the ``examples.rst``. Naming of the examples
 files should use the name of the library followed by a description, using underscore to separate them.
-When using print statements you should use the ``" ".format()`` format, as there are particular boards
-that are not capable to use f-strings.
 
-.. code-block:: python
-
-  text_to_display = "World!"
-
-  print("Hello {}".format(text_to_display))
 
 Sensor properties and units
 --------------------------------------------------------------------------------

@@ -30,6 +30,7 @@
 #define MICROPY_HW_MCU_NAME         "ESP32"
 
 #define MICROPY_HW_LED_STATUS       (&pin_GPIO10)
+#define MICROPY_HW_LED_STATUS_INVERTED (1)
 
 #define CIRCUITPY_BOARD_I2C         (2)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO22, .sda = &pin_GPIO21}, \
@@ -39,7 +40,7 @@
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO37)
 
 // Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("You pressed button A at start up.")
+#define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("You pressed button A at start up.")
 
 // UART pins attached to the USB-serial converter chip
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)

@@ -133,7 +133,7 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
     if (initial_value_bufinfo.len > max_length ||
         (fixed_length && initial_value_bufinfo.len != max_length)) {
-        mp_raise_ValueError(translate("initial_value length is wrong"));
+        mp_raise_ValueError(MP_ERROR_TEXT("initial_value length is wrong"));
     }
 
     const char *user_description = NULL;
@@ -141,8 +141,8 @@ STATIC mp_obj_t bleio_characteristic_add_to_service(size_t n_args, const mp_obj_
         user_description = mp_obj_str_get_str(args[ARG_user_description].u_obj);
     }
 
-    bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
-    characteristic->base.type = &bleio_characteristic_type;
+    bleio_characteristic_obj_t *characteristic =
+        mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
     // Range checking on max_length arg is done by the common_hal layer, because
     // it may vary depending on underlying BLE implementation.
@@ -325,9 +325,10 @@ STATIC void bleio_characteristic_print(const mp_print_t *print, mp_obj_t self_in
     }
 }
 
-const mp_obj_type_t bleio_characteristic_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Characteristic,
-    .print = bleio_characteristic_print,
-    .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_characteristic_type,
+    MP_QSTR_Characteristic,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    print, bleio_characteristic_print,
+    locals_dict, &bleio_characteristic_locals_dict
+    );

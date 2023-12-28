@@ -61,7 +61,7 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
 
     nrfx_err_t err = nrfx_gpiote_in_init(self->pin, &cfg, _intr_handler);
     if (err != NRFX_SUCCESS) {
-        mp_raise_RuntimeError(translate("All channels in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
     }
     nrfx_gpiote_in_event_enable(self->pin, true);
 

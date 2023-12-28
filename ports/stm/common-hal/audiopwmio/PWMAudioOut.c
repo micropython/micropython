@@ -261,7 +261,7 @@ void common_hal_audiopwmio_pwmaudioout_deinit(audiopwmio_pwmaudioout_obj_t *self
 void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, mp_obj_t sample, bool loop) {
     common_hal_audiopwmio_pwmaudioout_stop(self);
     if (active_audio) {
-        mp_raise_RuntimeError(translate("Another PWMAudioOut is already active")); // TODO
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Another PWMAudioOut is already active")); // TODO
     }
     self->sample = sample;
     self->loop = loop;
@@ -281,13 +281,13 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     free_buffers(self);
 
     if (max_buffer_length > UINT16_MAX) {
-        mp_raise_ValueError_varg(translate("Buffer length %d too big. It must be less than %d"), max_buffer_length, UINT16_MAX);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Buffer length %d too big. It must be less than %d"), max_buffer_length, UINT16_MAX);
     }
     uint16_t buffer_length = (uint16_t)max_buffer_length / self->bytes_per_sample;
-    self->buffer[0] = m_malloc(buffer_length * sizeof(uint16_t), false);
+    self->buffer[0] = m_malloc(buffer_length * sizeof(uint16_t));
     self->buffer_ptr[0] = self->buffer_length[0] = 0;
     if (self->pin[1]) {
-        self->buffer[1] = m_malloc(buffer_length * sizeof(uint16_t), false);
+        self->buffer[1] = m_malloc(buffer_length * sizeof(uint16_t));
         self->buffer_ptr[1] = self->buffer_length[1] = 0;
     }
 
@@ -298,7 +298,7 @@ void common_hal_audiopwmio_pwmaudioout_play(audiopwmio_pwmaudioout_obj_t *self, 
     self->stopping = false;
     self->paused = false;
     if (!fill_buffers(self)) {
-        mp_raise_RuntimeError(translate("Failed to buffer the sample"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Failed to buffer the sample"));
     }
 
     // Calculate period (TODO: supersample to 1 MHz?)
