@@ -28,7 +28,6 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -260,7 +259,7 @@ TIM_TypeDef *stm_peripherals_find_timer(void) {
             return mcu_tim_banks[i];
         }
     }
-    mp_raise_RuntimeError(translate("All timers in use"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     return NULL;
 }
 

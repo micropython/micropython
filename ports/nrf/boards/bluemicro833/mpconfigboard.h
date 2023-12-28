@@ -42,9 +42,6 @@
 
 #define BOARD_HAS_CRYSTAL 1
 
-// Take 1k RAM to save 1k flash.
-#define CIRCUITPY_PRECOMPUTE_QSTR_ATTR (0)
-
 // Reduce nRF SoftRadio memory usage
 #define BLEIO_VS_UUID_COUNT 10
 #define BLEIO_HVN_TX_QUEUE_SIZE 2

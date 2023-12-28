@@ -78,7 +78,7 @@ static void wifi_monitor_cb(void *recv_buf, wifi_promiscuous_pkt_type_t type) {
 }
 
 void common_hal_wifi_monitor_construct(wifi_monitor_obj_t *self, uint8_t channel, size_t queue) {
-    const compressed_string_t *monitor_mode_init_error = translate("monitor init failed");
+    mp_rom_error_text_t monitor_mode_init_error = MP_ERROR_TEXT("monitor init failed");
 
     self->queue = xQueueCreate(queue, sizeof(monitor_packet_t));
     if (!self->queue) {

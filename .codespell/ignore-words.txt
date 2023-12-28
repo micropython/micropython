@@ -20,3 +20,9 @@ deques
 extint
 shs
 pass-thru
+numer
+arithmetics
+ftbfs
+straightaway
+ftbs
+ftb

@@ -30,7 +30,6 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-// #include "shared-bindings/i2ctarget/__init__.h"
 #include "shared-bindings/i2ctarget/I2CTarget.h"
 
 #include "py/runtime.h"
@@ -95,8 +94,6 @@
 STATIC const mp_rom_map_elem_t i2ctarget_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_i2ctarget) },
     { MP_ROM_QSTR(MP_QSTR_I2CTarget), MP_ROM_PTR(&i2ctarget_i2c_target_type) },
-    // TODO: Remove for CircuitPython 9.0.0
-    { MP_ROM_QSTR(MP_QSTR_I2CPeripheral), MP_ROM_PTR(&i2ctarget_i2c_target_type) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(i2ctarget_module_globals, i2ctarget_module_globals_table);
@@ -106,7 +103,4 @@ const mp_obj_module_t i2ctarget_module = {
     .globals = (mp_obj_dict_t *)&i2ctarget_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_i2ctarget, i2ctarget_module, CIRCUITPY_I2CTARGET);
-
-// TODO: Remove for CircuitPython 9.0.0
-MP_REGISTER_MODULE(MP_QSTR_i2cperipheral, i2ctarget_module, CIRCUITPY_I2CTARGET);
+MP_REGISTER_MODULE(MP_QSTR_i2ctarget, i2ctarget_module);

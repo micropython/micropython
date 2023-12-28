@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,9 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 
+// CIRCUITPY-CHANGE: changes to reduce property proxy table size
+// when possible
+
 #if MICROPY_PY_BUILTINS_PROPERTY
 
 STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
@@ -44,8 +47,7 @@ STATIC mp_obj_t property_make_new(const mp_obj_type_t *type, size_t n_args, size
     mp_arg_val_t vals[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, args, MP_ARRAY_SIZE(allowed_args), allowed_args, vals);
 
-    mp_obj_property_t *o = m_new_obj(mp_obj_property_t);
-    o->base.type = type;
+    mp_obj_property_t *o = mp_obj_malloc(mp_obj_property_t, type);
     o->proxy[0] = vals[ARG_fget].u_obj;
     o->proxy[1] = vals[ARG_fset].u_obj;
     o->proxy[2] = vals[ARG_fdel].u_obj;
@@ -88,12 +90,13 @@ STATIC const mp_rom_map_elem_t property_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(property_locals_dict, property_locals_dict_table);
 
-const mp_obj_type_t mp_type_property = {
-    { &mp_type_type },
-    .name = MP_QSTR_property,
-    .make_new = property_make_new,
-    .locals_dict = (mp_obj_dict_t *)&property_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_property,
+    MP_QSTR_property,
+    MP_TYPE_FLAG_NONE,
+    make_new, property_make_new,
+    locals_dict, &property_locals_dict
+    );
 
 #if MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE
 extern const mp_obj_property_t __property_getter_start, __property_getter_end, __property_getset_start, __property_getset_end;

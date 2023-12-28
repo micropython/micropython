@@ -5,6 +5,7 @@
  *
  * Copyright (c) 2016 Paul Sokolovsky
  * Copyright (c) 2019 Jim Mussared
+ * Copyright (c) 2020 Dan Halbert for Adafruit Industries LLC
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +26,8 @@
  * THE SOFTWARE.
  */
 
+// CIRCUITPY-CHANGE: thoroughly reworked
+
 #include "ringbuf.h"
 
 bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t size) {
@@ -37,8 +40,8 @@ bool ringbuf_init(ringbuf_t *r, uint8_t *buf, size_t size) {
 }
 
 // Dynamic initialization. This should be accessible from a root pointer..
-bool ringbuf_alloc(ringbuf_t *r, size_t size, bool long_lived) {
-    bool result = ringbuf_init(r, gc_alloc(size, false, long_lived), size);
+bool ringbuf_alloc(ringbuf_t *r, size_t size) {
+    bool result = ringbuf_init(r, m_malloc(size), size);
     return result;
 }
 

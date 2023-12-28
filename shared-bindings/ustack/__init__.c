@@ -86,4 +86,4 @@ const mp_obj_module_t ustack_module = {
     .globals = (mp_obj_dict_t *)&ustack_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_ustack, ustack_module, CIRCUITPY_USTACK);
+MP_REGISTER_MODULE(MP_QSTR_ustack, ustack_module);

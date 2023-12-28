@@ -32,93 +32,18 @@
 #include "supervisor/port.h"
 #include "supervisor/shared/safe_mode.h"
 
-extern uint32_t _estack;
-
-// Requested size.
-static uint32_t next_stack_size = 0;
-static uint32_t current_stack_size = 0;
-// Actual location and size, may be larger than requested.
-static uint32_t *stack_limit = NULL;
-static size_t stack_length = 0;
-
-#define EXCEPTION_STACK_SIZE 1024
-
-static void allocate_stack(void) {
-
-    if (port_has_fixed_stack()) {
-        stack_limit = port_stack_get_limit();
-        stack_length = (port_stack_get_top() - stack_limit) * sizeof(uint32_t);
-        current_stack_size = stack_length;
-        next_stack_size = stack_length;
-    } else {
-        mp_uint_t regs[10];
-        mp_uint_t sp = cpu_get_regs_and_sp(regs);
-
-        mp_uint_t c_size = (mp_uint_t)port_stack_get_top() - sp;
-        if (next_stack_size == 0) {
-            next_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
-        }
-        supervisor_allocation *stack_alloc = allocate_memory(c_size + next_stack_size + EXCEPTION_STACK_SIZE, true, false);
-        if (stack_alloc == NULL) {
-            stack_alloc = allocate_memory(c_size + CIRCUITPY_DEFAULT_STACK_SIZE + EXCEPTION_STACK_SIZE, true, false);
-            current_stack_size = CIRCUITPY_DEFAULT_STACK_SIZE;
-        } else {
-            current_stack_size = next_stack_size;
-        }
-        stack_limit = stack_alloc->ptr;
-        stack_length = get_allocation_length(stack_alloc);
-    }
-
+void stack_init(void) {
+    uint32_t *stack_limit = port_stack_get_limit();
     *stack_limit = STACK_CANARY_VALUE;
 }
 
 inline bool stack_ok(void) {
-    return stack_limit == NULL || *stack_limit == STACK_CANARY_VALUE;
+    uint32_t *stack_limit = port_stack_get_limit();
+    return *stack_limit == STACK_CANARY_VALUE;
 }
 
 inline void assert_heap_ok(void) {
     if (!stack_ok()) {
         reset_into_safe_mode(SAFE_MODE_STACK_OVERFLOW);
     }
-}
-
-void stack_init(void) {
-    allocate_stack();
-}
-
-void stack_resize(void) {
-    if (stack_limit == NULL) {
-        return;
-    }
-    if (next_stack_size == current_stack_size) {
-        *stack_limit = STACK_CANARY_VALUE;
-        return;
-    }
-    free_memory(allocation_from_ptr(stack_limit));
-    stack_limit = NULL;
-    allocate_stack();
-}
-
-uint32_t *stack_get_bottom(void) {
-    return stack_limit;
-}
-
-size_t stack_get_length(void) {
-    return stack_length;
-}
-
-bool set_next_stack_size(uint32_t size) {
-    if (port_has_fixed_stack()) {
-        return false;
-    }
-    next_stack_size = size;
-    return true;
-}
-
-uint32_t get_next_stack_size(void) {
-    return next_stack_size;
-}
-
-uint32_t get_current_stack_size(void) {
-    return current_stack_size;
 }

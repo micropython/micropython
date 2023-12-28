@@ -47,8 +47,7 @@
 
 STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
     size_t n_kw, const mp_obj_t *all_args) {
-    aesio_aes_obj_t *self = m_new_obj(aesio_aes_obj_t);
-    self->base.type = &aesio_aes_type;
+    aesio_aes_obj_t *self = mp_obj_malloc(aesio_aes_obj_t, &aesio_aes_type);
 
     enum { ARG_key, ARG_mode, ARG_IV, ARG_counter, ARG_segment_size };
     static const mp_arg_t allowed_args[] = {
@@ -69,7 +68,7 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
     uint32_t key_length = 0;
     mp_get_buffer_raise(args[ARG_key].u_obj, &bufinfo, MP_BUFFER_READ);
     if ((bufinfo.len != 16) && (bufinfo.len != 24) && (bufinfo.len != 32)) {
-        mp_raise_ValueError(translate("Key must be 16, 24, or 32 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Key must be 16, 24, or 32 bytes long"));
     }
     key = bufinfo.buf;
     key_length = bufinfo.len;
@@ -81,7 +80,7 @@ STATIC mp_obj_t aesio_aes_make_new(const mp_obj_type_t *type, size_t n_args,
         case AES_MODE_CTR:
             break;
         default:
-            mp_raise_NotImplementedError(translate("Requested AES mode is unsupported"));
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("Requested AES mode is unsupported"));
     }
 
     // IV is required for CBC mode and is ignored for other modes.
@@ -126,7 +125,7 @@ STATIC mp_obj_t aesio_aes_rekey(size_t n_args, const mp_obj_t *pos_args, mp_map_
     size_t key_length = bufinfo.len;
 
     if ((key_length != 16) && (key_length != 24) && (key_length != 32)) {
-        mp_raise_ValueError(translate("Key must be 16, 24, or 32 bytes long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Key must be 16, 24, or 32 bytes long"));
     }
 
     const uint8_t *iv = NULL;
@@ -146,18 +145,18 @@ STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
     size_t dest_length) {
     if (src_length != dest_length) {
         mp_raise_ValueError(
-            translate("Source and destination buffers must be the same length"));
+            MP_ERROR_TEXT("Source and destination buffers must be the same length"));
     }
 
     switch (self->mode) {
         case AES_MODE_ECB:
             if (src_length != 16) {
-                mp_raise_ValueError(translate("ECB only operates on 16 bytes at a time"));
+                mp_raise_ValueError(MP_ERROR_TEXT("ECB only operates on 16 bytes at a time"));
             }
             break;
         case AES_MODE_CBC:
             if ((src_length & 15) != 0) {
-                mp_raise_ValueError(translate("CBC blocks must be multiples of 16 bytes"));
+                mp_raise_ValueError(MP_ERROR_TEXT("CBC blocks must be multiples of 16 bytes"));
             }
             break;
         case AES_MODE_CTR:
@@ -170,7 +169,7 @@ STATIC void validate_length(aesio_aes_obj_t *self, size_t src_length,
 //|
 //|         For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
 //|         buffers must be a multiple of 16 bytes, and must be equal length.  For
-//|         CTX mode, there are no restrictions."""
+//|         CTR mode, there are no restrictions."""
 //|         ...
 STATIC mp_obj_t aesio_aes_encrypt_into(mp_obj_t self_in, mp_obj_t src, mp_obj_t dest) {
     aesio_aes_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -192,7 +191,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(aesio_aes_encrypt_into_obj, aesio_aes_encrypt_i
 //|         """Decrypt the buffer from ``src`` into ``dest``.
 //|         For ECB mode, the buffers must be 16 bytes long.  For CBC mode, the
 //|         buffers must be a multiple of 16 bytes, and must be equal length.  For
-//|         CTX mode, there are no restrictions."""
+//|         CTR mode, there are no restrictions."""
 //|         ...
 //|
 STATIC mp_obj_t aesio_aes_decrypt_into(mp_obj_t self_in, mp_obj_t src, mp_obj_t dest) {
@@ -228,7 +227,7 @@ STATIC mp_obj_t aesio_aes_set_mode(mp_obj_t self_in, mp_obj_t mode_obj) {
         case AES_MODE_CTR:
             break;
         default:
-            mp_raise_NotImplementedError(translate("Requested AES mode is unsupported"));
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("Requested AES mode is unsupported"));
     }
 
     common_hal_aesio_aes_set_mode(self, mode);
@@ -250,9 +249,10 @@ STATIC const mp_rom_map_elem_t aesio_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(aesio_locals_dict, aesio_locals_dict_table);
 
-const mp_obj_type_t aesio_aes_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_AES,
-    .make_new = aesio_aes_make_new,
-    .locals_dict = (mp_obj_dict_t *)&aesio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    aesio_aes_type,
+    MP_QSTR_AES,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, aesio_aes_make_new,
+    locals_dict, &aesio_locals_dict
+    );

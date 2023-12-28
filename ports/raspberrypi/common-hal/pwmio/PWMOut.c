@@ -32,8 +32,6 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #include "src/rp2040/hardware_regs/include/hardware/platform_defs.h"
 #include "src/rp2_common/hardware_clocks/include/hardware/clocks.h"
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"

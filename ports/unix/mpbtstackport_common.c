@@ -35,6 +35,7 @@
 #include "lib/btstack/platform/embedded/btstack_run_loop_embedded.h"
 #include "lib/btstack/platform/embedded/hal_cpu.h"
 #include "lib/btstack/platform/embedded/hal_time_ms.h"
+#include "lib/btstack/platform/embedded/hci_dump_embedded_stdout.h"
 
 #include "extmod/btstack/modbluetooth_btstack.h"
 
@@ -79,15 +80,9 @@ uint32_t hal_time_ms(void) {
 }
 
 void mp_bluetooth_btstack_port_init(void) {
-    static bool run_loop_init = false;
-    if (!run_loop_init) {
-        run_loop_init = true;
-        btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
-    } else {
-        btstack_run_loop_embedded_get_instance()->init();
-    }
+    btstack_run_loop_init(btstack_run_loop_embedded_get_instance());
 
-    // hci_dump_open(NULL, HCI_DUMP_STDOUT);
+    // hci_dump_init(hci_dump_embedded_stdout_get_instance());
 
     #if MICROPY_BLUETOOTH_BTSTACK_H4
     mp_bluetooth_btstack_port_init_h4();

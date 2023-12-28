@@ -70,4 +70,4 @@ const mp_obj_module_t wifi_module = {
     .globals = (mp_obj_dict_t *)&wifi_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_wifi, wifi_module, CIRCUITPY_WIFI);
+MP_REGISTER_MODULE(MP_QSTR_wifi, wifi_module);

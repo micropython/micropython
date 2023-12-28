@@ -58,4 +58,4 @@ const mp_obj_module_t audiobusio_module = {
     .globals = (mp_obj_dict_t *)&audiobusio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_audiobusio, audiobusio_module, CIRCUITPY_AUDIOBUSIO);
+MP_REGISTER_MODULE(MP_QSTR_audiobusio, audiobusio_module);

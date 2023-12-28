@@ -2,7 +2,7 @@
 This script processes the output from the C preprocessor and extracts all
 qstr. Each qstr is transformed into a qstr definition of the form 'Q(...)'.
 
-This script works with Python 2.6, 2.7, 3.3 and 3.4.
+This script works with Python 3.x (CIRCUITPY-CHANGE: not 2.x)
 """
 
 from __future__ import print_function
@@ -14,24 +14,8 @@ import subprocess
 import sys
 import multiprocessing, multiprocessing.dummy
 
-# Python 2/3 compatibility:
-#   - iterating through bytes is different
-#   - codepoint2name lives in a different module
-import platform
 
-if platform.python_version_tuple()[0] == "2":
-    bytes_cons = lambda val, enc=None: bytearray(val)
-    from htmlentitydefs import name2codepoint
-elif platform.python_version_tuple()[0] == "3":
-    bytes_cons = bytes
-    from html.entities import name2codepoint
-
-    unichr = chr
-# end compatibility code
-
-# Blocklist of qstrings that are specially handled in further
-# processing and should be ignored
-QSTRING_BLOCK_LIST = set(["NULL", "number_of"])
+from html.entities import name2codepoint
 
 # add some custom names to map characters that aren't in HTML
 name2codepoint["hyphen"] = ord("-")
@@ -67,6 +51,26 @@ del name2codepoint["and"]
 del name2codepoint["or"]
 del name2codepoint["not"]
 
+# Extract MP_QSTR_FOO macros.
+_MODE_QSTR = "qstr"
+
+# Extract MP_COMPRESSED_ROM_TEXT("") macros.  (Which come from MP_ERROR_TEXT)
+_MODE_COMPRESS = "compress"
+
+# Extract MP_REGISTER_(EXTENSIBLE_)MODULE(...) macros.
+_MODE_MODULE = "module"
+
+# Extract MP_REGISTER_ROOT_POINTER(...) macros.
+_MODE_ROOT_POINTER = "root_pointer"
+
+
+def is_c_source(fname):
+    return os.path.splitext(fname)[1] in [".c"]
+
+
+def is_cxx_source(fname):
+    return os.path.splitext(fname)[1] in [".cc", ".cp", ".cxx", ".cpp", ".CPP", ".c++", ".C"]
+
 
 def preprocess():
     if any(src in args.dependencies for src in args.changed_sources):
@@ -78,9 +82,9 @@ def preprocess():
     csources = []
     cxxsources = []
     for source in sources:
-        if source.endswith(".cpp"):
+        if is_cxx_source(source):
             cxxsources.append(source)
-        elif source.endswith(".c"):
+        elif is_c_source(source):
             csources.append(source)
     try:
         os.makedirs(os.path.dirname(args.output[0]))
@@ -89,7 +93,10 @@ def preprocess():
 
     def pp(flags):
         def run(files):
-            return subprocess.check_output(args.pp + flags + files)
+            completed = subprocess.run(args.pp + flags + files, stdout=subprocess.PIPE)
+            if completed.returncode != 0:
+                raise RuntimeError()
+            return completed.stdout
 
         return run
 
@@ -113,7 +120,7 @@ def write_out(fname, output):
     if output:
         for m, r in [("/", "__"), ("\\", "__"), (":", "@"), ("..", "@@")]:
             fname = fname.replace(m, r)
-        with open(args.output_dir + "/" + fname + ".qstr", "w") as f:
+        with open(args.output_dir + "/" + fname + "." + args.mode, "w") as f:
             f.write("\n".join(output) + "\n")
 
 
@@ -122,40 +129,49 @@ def qstr_unescape(qstr):
         if "__" + name + "__" in qstr:
             continue
         if "_" + name + "_" in qstr:
-            qstr = qstr.replace("_" + name + "_", str(unichr(name2codepoint[name])))
+            qstr = qstr.replace("_" + name + "_", str(chr(name2codepoint[name])))
     return qstr
 
 
 def process_file(f):
-    re_line = re.compile(r"#[line]*\s(\d+)\s\"([^\"]+)\"")
-    re_qstr = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
-    re_translate = re.compile(r"translate\(\"((?:(?=(\\?))\2.)*?)\"\)")
+    # match gcc-like output (# n "file") and msvc-like output (#line n "file")
+    re_line = re.compile(r"^#(?:line)?\s+\d+\s\"([^\"]+)\"")
+    if args.mode == _MODE_QSTR:
+        re_match = re.compile(r"MP_QSTR_[_a-zA-Z0-9]+")
+    elif args.mode == _MODE_COMPRESS:
+        re_match = re.compile(r'MP_COMPRESSED_ROM_TEXT\("([^"]*)"\)')
+    elif args.mode == _MODE_MODULE:
+        re_match = re.compile(
+            r"(?:MP_REGISTER_MODULE|MP_REGISTER_EXTENSIBLE_MODULE|MP_REGISTER_MODULE_DELEGATION)\(.*?,\s*.*?\);"
+        )
+    elif args.mode == _MODE_ROOT_POINTER:
+        re_match = re.compile(r"MP_REGISTER_ROOT_POINTER\(.*?\);")
+    re_translate = re.compile(r"MP_COMPRESSED_ROM_TEXT\(\"((?:(?=(\\?))\2.)*?)\"\)")
     output = []
     last_fname = None
-    lineno = 0
     for line in f:
         if line.isspace():
             continue
-        # match gcc-like output (# n "file") and msvc-like output (#line n "file")
-        if line.startswith(("# ", "#line")):
-            m = re_line.match(line)
-            assert m is not None
-            lineno = int(m.group(1))
-            fname = m.group(2)
-            if os.path.splitext(fname)[1] not in [".c", ".cpp"]:
+        m = re_line.match(line)
+        if m:
+            fname = m.group(1)
+            if not is_c_source(fname) and not is_cxx_source(fname):
                 continue
             if fname != last_fname:
                 write_out(last_fname, output)
                 output = []
                 last_fname = fname
             continue
-        for match in re_qstr.findall(line):
-            name = match.replace("MP_QSTR_", "")
-            if name not in QSTRING_BLOCK_LIST:
+        for match in re_match.findall(line):
+            if args.mode == _MODE_QSTR:
+                name = match.replace("MP_QSTR_", "")
+                # CIRCUITPY-CHANGE: undo character escapes in qstrs in C code
                 output.append("Q(" + qstr_unescape(name) + ")")
+            elif args.mode in (_MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
+                output.append(match)
+
         for match in re_translate.findall(line):
             output.append('TRANSLATE("' + match[0] + '")')
-        lineno += 1
 
     if last_fname:
         write_out(last_fname, output)
@@ -169,7 +185,7 @@ def cat_together():
     hasher = hashlib.md5()
     all_lines = []
     outf = open(args.output_dir + "/out", "wb")
-    for fname in glob.glob(args.output_dir + "/*.qstr"):
+    for fname in glob.glob(args.output_dir + "/*." + args.mode):
         with open(fname, "rb") as f:
             lines = f.readlines()
             all_lines += lines
@@ -186,8 +202,15 @@ def cat_together():
             old_hash = f.read()
     except IOError:
         pass
+    mode_full = "QSTR"
+    if args.mode == _MODE_COMPRESS:
+        mode_full = "Compressed data"
+    elif args.mode == _MODE_MODULE:
+        mode_full = "Module registrations"
+    elif args.mode == _MODE_ROOT_POINTER:
+        mode_full = "Root pointer registrations"
     if old_hash != new_hash:
-        print("QSTR updated")
+        print(mode_full, "updated")
         try:
             # rename below might fail if file exists
             os.remove(args.output_file)
@@ -197,12 +220,12 @@ def cat_together():
         with open(args.output_file + ".hash", "w") as f:
             f.write(new_hash)
     else:
-        print("QSTR not updated")
+        print(mode_full, "not updated")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("usage: %s command input_filename output_dir output_file" % sys.argv[0])
+    if len(sys.argv) < 6:
+        print("usage: %s command mode input_filename output_dir output_file" % sys.argv[0])
         sys.exit(2)
 
     class Args:
@@ -210,9 +233,45 @@ if __name__ == "__main__":
 
     args = Args()
     args.command = sys.argv[1]
-    args.input_filename = sys.argv[2]
-    args.output_dir = sys.argv[3]
-    args.output_file = sys.argv[4]
+
+    if args.command == "pp":
+        named_args = {
+            s: []
+            for s in [
+                "pp",
+                "output",
+                "cflags",
+                "cxxflags",
+                "sources",
+                "changed_sources",
+                "dependencies",
+            ]
+        }
+
+        for arg in sys.argv[1:]:
+            if arg in named_args:
+                current_tok = arg
+            else:
+                named_args[current_tok].append(arg)
+
+        if not named_args["pp"] or len(named_args["output"]) != 1:
+            print("usage: %s %s ..." % (sys.argv[0], " ... ".join(named_args)))
+            sys.exit(2)
+
+        for k, v in named_args.items():
+            setattr(args, k, v)
+
+        preprocess()
+        sys.exit(0)
+
+    args.mode = sys.argv[2]
+    args.input_filename = sys.argv[3]  # Unused for command=cat
+    args.output_dir = sys.argv[4]
+    args.output_file = None if len(sys.argv) == 5 else sys.argv[5]  # Unused for command=split
+
+    if args.mode not in (_MODE_QSTR, _MODE_COMPRESS, _MODE_MODULE, _MODE_ROOT_POINTER):
+        print("error: mode %s unrecognised" % sys.argv[2])
+        sys.exit(2)
 
     try:
         os.makedirs(args.output_dir)

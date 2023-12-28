@@ -33,7 +33,6 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 
@@ -210,7 +209,7 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     digitalio_digitalinout_obj_t *self) {
     uint32_t pin = self->pin->number;
     if (self->output) {
-        mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot get pull while in output mode"));
         return PULL_NONE;
     } else {
         if (gpio_is_pulled_up(pin)) {

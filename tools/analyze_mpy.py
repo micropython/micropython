@@ -316,8 +316,8 @@ class mpyFile:
     def __init__(self, encoded_mpy):
         # this matches mp-raw_code_save in py/persistentcode.c
         first_byte = encoded_mpy.read(1)
-        if first_byte != b"M":
-            raise ValueError("Not a valid first byte. Should be 'M' but is {}".format(first_byte))
+        if first_byte != b"C":
+            raise ValueError("Not a valid first byte. Should be 'C' but is {}".format(first_byte))
         self.version = encoded_mpy.read(1)[0]
         self.feature_flags = encoded_mpy.read(1)[0]
         self.small_int_bits = encoded_mpy.read(1)[0]

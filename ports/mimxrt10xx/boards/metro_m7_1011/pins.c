@@ -30,8 +30,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_D11), MP_ROM_PTR(&pin_GPIO_05) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_D12), MP_ROM_PTR(&pin_GPIO_04) },
 
-    { MP_OBJ_NEW_QSTR(MP_QSTR_LED),MP_ROM_PTR(&pin_GPIO_03) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_D13),MP_ROM_PTR(&pin_GPIO_03) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_LED), MP_ROM_PTR(&pin_GPIO_03) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_D13), MP_ROM_PTR(&pin_GPIO_03) },
 
     // ESP control
     { MP_OBJ_NEW_QSTR(MP_QSTR_ESP_CS), MP_ROM_PTR(&pin_GPIO_AD_14) },
@@ -58,8 +58,13 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SPI), MP_ROM_PTR(&board_spi_obj) },
     { MP_ROM_QSTR(MP_QSTR_UART), MP_ROM_PTR(&board_uart_obj) },
 
+    { MP_ROM_QSTR(MP_QSTR_I2S_WORD_SELECT), MP_ROM_PTR(&pin_GPIO_06) }, // D10
     { MP_ROM_QSTR(MP_QSTR_I2S_WSEL), MP_ROM_PTR(&pin_GPIO_06) }, // D10
+
+    { MP_ROM_QSTR(MP_QSTR_I2S_BIT_CLOCK), MP_ROM_PTR(&pin_GPIO_07) }, // D9
     { MP_ROM_QSTR(MP_QSTR_I2S_BCLK), MP_ROM_PTR(&pin_GPIO_07) }, // D9
+
+    { MP_ROM_QSTR(MP_QSTR_I2S_DATA), MP_ROM_PTR(&pin_GPIO_04) }, // D12
     { MP_ROM_QSTR(MP_QSTR_I2S_DOUT), MP_ROM_PTR(&pin_GPIO_04) }, // D12
 };
 MP_DEFINE_CONST_DICT(board_module_globals, board_module_globals_table);

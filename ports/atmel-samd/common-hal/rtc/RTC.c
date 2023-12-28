@@ -37,7 +37,6 @@
 #include "shared-bindings/rtc/__init__.h"
 #include "shared-bindings/rtc/RTC.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate/translate.h"
 
 // This is the time in seconds since 2000 that the RTC was started.
 // TODO: Change the offset to ticks so that it can be a subsecond adjustment.

@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
 #include "shared-bindings/rtc/RTC.h"
-#include "supervisor/shared/translate/translate.h"
 #include "peripherals/rtc.h"
 
 
@@ -46,5 +45,5 @@ int common_hal_rtc_get_calibration(void) {
 }
 
 void common_hal_rtc_set_calibration(int calibration) {
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_calibration);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_calibration);
 }

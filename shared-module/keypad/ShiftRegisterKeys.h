@@ -37,9 +37,11 @@
 typedef struct {
     KEYPAD_SCANNER_COMMON_FIELDS;
     digitalio_digitalinout_obj_t *clock;
-    digitalio_digitalinout_obj_t *data;
     digitalio_digitalinout_obj_t *latch;
-    size_t key_count;
+    mp_obj_tuple_t *data_pins;
+    mp_uint_t *key_counts;
+    mp_uint_t num_key_counts;
+    mp_uint_t max_key_count;
     bool value_when_pressed;
     bool value_to_latch;
 } keypad_shiftregisterkeys_obj_t;

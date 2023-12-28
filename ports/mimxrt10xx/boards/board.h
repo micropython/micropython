@@ -27,3 +27,4 @@
 #include "mpconfigboard.h"
 
 #define XIP_BOOT_HEADER_ENABLE (1)
+#define XIP_EXTERNAL_FLASH (1)

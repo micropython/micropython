@@ -115,7 +115,7 @@ void common_hal_imagecapture_parallelimagecapture_continuous_capture_start(image
     if (buffer2 != mp_const_none) {
         mp_get_buffer_raise(buffer2, &bufinfo2, MP_BUFFER_RW);
         if (bufinfo1.len != bufinfo2.len) {
-            mp_raise_ValueError(translate("Buffers must be same size"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Buffers must be same size"));
         }
     }
 
@@ -148,7 +148,7 @@ STATIC void common_hal_imagecapture_parallelimagecapture_continuous_capture_give
 
 mp_obj_t common_hal_imagecapture_parallelimagecapture_continuous_capture_get_frame(imagecapture_parallelimagecapture_obj_t *self) {
     if (self->buffer1 == NULL) {
-        mp_raise_RuntimeError(translate("No capture in progress"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No capture in progress"));
     }
     common_hal_imagecapture_parallelimagecapture_continuous_capture_give_frame(self);
 

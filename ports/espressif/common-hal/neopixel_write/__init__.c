@@ -44,7 +44,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/neopixel_write/__init__.h"
 #include "supervisor/port.h"
-#include "components/driver/include/driver/rmt.h"
 #include "peripherals/rmt.h"
 
 // Use closer to WS2812-style timings instead of WS2812B, to accommodate more varieties.
@@ -96,7 +95,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     uint8_t number = digitalinout->pin->number;
     rmt_channel_t channel = peripherals_find_and_reserve_rmt(TRANSMIT_MODE);
     if (channel == RMT_CHANNEL_MAX) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     // Configure Channel
@@ -108,7 +107,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     // Convert NS timings to ticks
     uint32_t counter_clk_hz = 0;
     if (rmt_get_counter_clock(config.channel, &counter_clk_hz) != ESP_OK) {
-        mp_raise_RuntimeError(translate("Could not retrieve clock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Could not retrieve clock"));
     }
     size_t ns_per_tick = 1e9 / counter_clk_hz;
     ws2812_t0h_ticks = WS2812_T0H_NS / ns_per_tick;
@@ -126,7 +125,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
 
     // Write and wait to finish
     if (rmt_write_sample(config.channel, pixels, (size_t)numBytes, true) != ESP_OK) {
-        mp_raise_RuntimeError(translate("Input/output error"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Input/output error"));
     }
     rmt_wait_tx_done(config.channel, pdMS_TO_TICKS(100));
 

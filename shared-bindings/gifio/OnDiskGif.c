@@ -32,7 +32,6 @@
 #include "py/objproperty.h"
 #include "shared/runtime/context_manager_helpers.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/gifio/OnDiskGif.h"
 
 //| class OnDiskGif:
@@ -114,23 +113,35 @@
 //|         `displayio` expects little-endian, so the example above uses `Colorspace.RGB565_SWAPPED`.
 //|
 //|         :param file file: The name of the GIF file.
+//|
+//|         If the image is too large it will be cropped at the bottom and right when displayed.
+//|
+//|         **Limitations**: The image width is limited to 320 pixels at present. `ValueError`
+//|         will be raised if the image is too wide. The height
+//|         is not limited but images that are too large will cause a memory exception.
 //|         """
 //|         ...
 STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    mp_arg_check_num(n_args, n_kw, 1, 1, false);
-    mp_obj_t arg = all_args[0];
+    enum { ARG_filename, ARG_use_palette, NUM_ARGS };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_filename, MP_ARG_REQUIRED | MP_ARG_OBJ },
+        { MP_QSTR_use_palette, MP_ARG_BOOL | MP_ARG_KW_ONLY, {.u_bool = false} },
+    };
+    MP_STATIC_ASSERT(MP_ARRAY_SIZE(allowed_args) == NUM_ARGS);
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    if (mp_obj_is_str(arg)) {
-        arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
+    mp_obj_t filename = all_args[0];
+    if (mp_obj_is_str(filename)) {
+        filename = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), filename, MP_ROM_QSTR(MP_QSTR_rb));
     }
 
-    if (!mp_obj_is_type(arg, &mp_type_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+    if (!mp_obj_is_type(filename, &mp_type_fileio)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
 
-    gifio_ondiskgif_t *self = m_new_obj(gifio_ondiskgif_t);
-    self->base.type = &gifio_ondiskgif_type;
-    common_hal_gifio_ondiskgif_construct(self, MP_OBJ_TO_PTR(arg));
+    gifio_ondiskgif_t *self = mp_obj_malloc(gifio_ondiskgif_t, &gifio_ondiskgif_type);
+    common_hal_gifio_ondiskgif_construct(self, MP_OBJ_TO_PTR(filename), args[ARG_use_palette].u_bool);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -198,6 +209,20 @@ MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_bitmap_obj, gifio_ondiskgif_obj_ge
 
 MP_PROPERTY_GETTER(gifio_ondiskgif_bitmap_obj,
     (mp_obj_t)&gifio_ondiskgif_get_bitmap_obj);
+
+//|     palette: Optional[displayio.Palette]
+//|     """The palette for the current frame if it exists."""
+STATIC mp_obj_t gifio_ondiskgif_obj_get_palette(mp_obj_t self_in) {
+    gifio_ondiskgif_t *self = MP_OBJ_TO_PTR(self_in);
+
+    check_for_deinit(self);
+    return common_hal_gifio_ondiskgif_get_palette(self);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(gifio_ondiskgif_get_palette_obj, gifio_ondiskgif_obj_get_palette);
+
+MP_PROPERTY_GETTER(gifio_ondiskgif_palette_obj,
+    (mp_obj_t)&gifio_ondiskgif_get_palette_obj);
 
 //|     def next_frame(self) -> float:
 //|         """Loads the next frame. Returns expected delay before the next frame in seconds."""
@@ -285,6 +310,7 @@ STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&gifio_ondiskgif___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&gifio_ondiskgif_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&gifio_ondiskgif_bitmap_obj) },
+    { MP_ROM_QSTR(MP_QSTR_palette), MP_ROM_PTR(&gifio_ondiskgif_palette_obj) },
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&gifio_ondiskgif_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_next_frame), MP_ROM_PTR(&gifio_ondiskgif_next_frame_obj) },
     { MP_ROM_QSTR(MP_QSTR_duration), MP_ROM_PTR(&gifio_ondiskgif_duration_obj) },
@@ -294,9 +320,10 @@ STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(gifio_ondiskgif_locals_dict, gifio_ondiskgif_locals_dict_table);
 
-const mp_obj_type_t gifio_ondiskgif_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_OnDiskGif,
-    .make_new = gifio_ondiskgif_make_new,
-    .locals_dict = (mp_obj_dict_t *)&gifio_ondiskgif_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    gifio_ondiskgif_type,
+    MP_QSTR_OnDiskGif,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, gifio_ondiskgif_make_new,
+    locals_dict, &gifio_ondiskgif_locals_dict
+    );

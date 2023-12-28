@@ -35,7 +35,6 @@
 #include "samd/sercom.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "common-hal/busio/__init__.h"
 
@@ -101,7 +100,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (!gpio_get_pin_level(sda->number) || !gpio_get_pin_level(scl->number)) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
-        mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No pull up found on SDA or SCL; check your wiring"));
     }
     #endif
 

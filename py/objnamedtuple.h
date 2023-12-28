@@ -1,10 +1,9 @@
 /*
- * This file is part of the Micro Python project, http://micropython.org/
+ * This file is part of the MicroPython project, http://micropython.org/
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
- * Copyright (c) 2014 Paul Sokolovsky
+ * Copyright (c) 2014-2017 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +23,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 #ifndef MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
 #define MICROPY_INCLUDED_PY_OBJNAMEDTUPLE_H
 
 #include <string.h>
 
-#include "py/nlr.h"
 #include "py/objtuple.h"
 #include "py/runtime.h"
 #include "py/objstr.h"
@@ -38,7 +35,9 @@
 #if MICROPY_PY_COLLECTIONS
 
 typedef struct _mp_obj_namedtuple_type_t {
-    mp_obj_full_type_t base;
+    // This is a mp_obj_type_t with eight slots.
+    mp_obj_empty_type_t base;
+    void *slots[8];
     size_t n_fields;
     qstr fields[];
 } mp_obj_namedtuple_type_t;
@@ -52,6 +51,35 @@ size_t mp_obj_namedtuple_find_field(const mp_obj_namedtuple_type_t *type, qstr n
 void namedtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 mp_obj_namedtuple_type_t *mp_obj_new_namedtuple_base(size_t n_fields, mp_obj_t *fields);
 mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
+
+// CIRCUITPY-CHANGE: yikes
+#define NAMEDTUPLE_TYPE_BASE_AND_SLOTS_MAKE_NEW(type_name, make_new_fun) \
+    .base = { \
+        .base = { .type = &mp_type_type }, \
+        .flags = MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE, \
+        .name = type_name, \
+        .slot_index_make_new = 1, \
+        .slot_index_print = 2, \
+        .slot_index_unary_op = 3, \
+        .slot_index_binary_op = 4, \
+        .slot_index_attr = 5, \
+        .slot_index_subscr = 6, \
+        .slot_index_iter = 7, \
+        .slot_index_parent = 8, \
+    }, \
+    .slots = { \
+        make_new_fun, \
+        namedtuple_print, \
+        mp_obj_tuple_unary_op, \
+        mp_obj_tuple_binary_op, \
+        namedtuple_attr, \
+        mp_obj_tuple_subscr, \
+        mp_obj_tuple_getiter, \
+        (void *)&mp_type_tuple, \
+    }
+
+#define NAMEDTUPLE_TYPE_BASE_AND_SLOTS(type_name) \
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS_MAKE_NEW(type_name, namedtuple_make_new)
 
 #endif // MICROPY_PY_COLLECTIONS
 

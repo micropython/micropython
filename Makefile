@@ -61,7 +61,6 @@ TRANSLATE_SOURCES_EXC = -path "ports/*/build-*" \
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  fetch-submodules	to fetch dependencies from submodules, run this right after you clone the repo"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
 	@echo "  singlehtml to make a single large HTML file"
@@ -84,6 +83,8 @@ help:
 	@echo "  pseudoxml  to make pseudoxml-XML files for display purposes"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  fetch-all-submodules	to fetch submodules for all ports"
+	@echo "  remove-all-submodules	remove all submodules, including files and .git/ data"
 
 clean:
 	rm -rf $(BUILDDIR)/*
@@ -225,8 +226,9 @@ pseudoxml:
 .PHONY: all-source
 all-source:
 
+TRANSLATE_COMMAND=find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -x locale/synthetic.pot -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d'
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d' > $@
+	$(TRANSLATE_COMMAND) > $@
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
 # However, this was a frequent source of merge conflicts.  Weblate can perform
@@ -251,7 +253,7 @@ merge-translate:
 
 .PHONY: check-translate
 check-translate:
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o circuitpython.pot.tmp -p locale
+	$(TRANSLATE_COMMAND) > locale/circuitpython.pot.tmp
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
 .PHONY: stubs
@@ -266,7 +268,7 @@ stubs:
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst
 	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
-	@(cd circuitpython-stubs && $(PYTHON) setup.py -q sdist)
+	@$(PYTHON) -m build circuitpython-stubs
 
 .PHONY: check-stubs
 check-stubs: stubs
@@ -324,24 +326,15 @@ clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
 
-# If available, do blobless partial clones of submodules to save time and space.
-# A blobless partial clone lazily fetches data as needed, but has all the metadata available (tags, etc.)
-# so it does not have the idiosyncrasies of a shallow clone.
-#
-# If not available, do a fetch that will fail, and then fix it up with a second fetch.
-# (Only works for git servers that allow sha fetches.)
-.PHONY: fetch-submodules
-fetch-submodules:
-	git submodule sync
-	#####################################################################################
-	# NOTE: Ideally, use git version 2.36.0 or later, to do partial clones of submodules.
-	# If an older git is used, submodules will be cloned with a shallow clone of depth 1.
-	# You will see a git usage message first if the git version is too old to do
-	# clones of submodules.
-	#####################################################################################
-	git submodule update --init --filter=blob:none || git submodule update --init -N --depth 1 || git submodule foreach 'git fetch --tags --depth 1 origin $$sha1 && git checkout -q $$sha1' || echo 'make fetch-submodules FAILED'
+.PHONY: fetch-all-submodules
+fetch-all-submodules:
+	$(PYTHON) tools/ci_fetch_deps.py all
 
-.PHONY: remove-submodules
-remove-submodules:
+.PHONY: remove-all-submodules
+remove-all-submodules:
 	git submodule deinit -f --all
 	rm -rf .git/modules/*
+
+.PHONY: fetch-tags
+fetch-tags:
+	git fetch --tags --recurse-submodules=no --shallow-since="2023-02-01" https://github.com/adafruit/circuitpython HEAD

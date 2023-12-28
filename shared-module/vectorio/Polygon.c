@@ -23,7 +23,7 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
     VECTORIO_POLYGON_DEBUG(" self.len: %d, len: %d, ", self->len, len);
 
     if (len < 3) {
-        mp_raise_TypeError(translate("Polygon needs at least 3 points"));
+        mp_raise_TypeError(MP_ERROR_TEXT("Polygon needs at least 3 points"));
     }
 
     int16_t *points_list = gc_realloc(self->points_list, 2 * len * sizeof(uint16_t), true);
@@ -36,6 +36,7 @@ static void _clobber_points_list(vectorio_polygon_t *self, mp_obj_t points_tuple
     for (uint16_t i = 0; i < len; ++i) {
         size_t tuple_len = 0;
         mp_obj_t *tuple_items;
+        mp_arg_validate_type(items[i], &mp_type_tuple, MP_QSTR_point);
         mp_obj_tuple_get(items[i], &tuple_len, &tuple_items);
 
         mp_arg_validate_length(tuple_len, 2, MP_QSTR_point);
@@ -96,7 +97,7 @@ void common_hal_vectorio_polygon_set_points(vectorio_polygon_t *self, mp_obj_t p
 
 void common_hal_vectorio_polygon_set_on_dirty(vectorio_polygon_t *self, vectorio_event_t notification) {
     if (self->on_dirty.obj != NULL) {
-        mp_raise_TypeError(translate("can only have one parent"));
+        mp_raise_TypeError(MP_ERROR_TEXT("can only have one parent"));
     }
     self->on_dirty = notification;
 }

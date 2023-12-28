@@ -58,7 +58,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
 
     for (int i = 0; i < data_count; i++) {
         if (data_pins[i] != PIN_PCC_D0 + i) {
-            mp_raise_ValueError_varg(translate("Invalid data_pins[%d]"), i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid data_pins[%d]"), i);
         }
     }
     // The peripheral supports 8, 10, 12, or 14 data bits, but the code only supports 8 at present
@@ -77,7 +77,7 @@ void common_hal_imagecapture_parallelimagecapture_construct(imagecapture_paralle
     // technically, 0 was validated as free already but check again
     for (int i = 0; i < data_count; i++) {
         if (!pin_number_is_free(data_pins[i])) {
-            mp_raise_ValueError_varg(translate("data pin #%d in use"), i);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("data pin #%d in use"), i);
         }
     }
 

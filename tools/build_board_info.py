@@ -75,7 +75,20 @@ def get_version_info():
         sha = os.environ["GITHUB_SHA"]
 
     if not version:
-        version = "{}-{}".format(date.today().strftime("%Y%m%d"), sha[:7])
+        # Get branch we are PR'ing into, if any.
+        branch = os.environ.get("GITHUB_BASE_REF", "").strip().replace("/", "_")
+        if not branch:
+            branch = "no-branch"
+
+        # Get PR number, if any
+        pull_request_maybe = os.environ.get("PULL", "")
+        if pull_request_maybe:
+            pull_request_maybe = f"-PR{pull_request_maybe}"
+
+        date_stamp = date.today().strftime("%Y%m%d")
+        short_sha = sha[:7]
+        # Example: 20231121-8.2.x-PR9876-123abcd
+        version = f"{date_stamp}-{branch}{pull_request_maybe}-{short_sha}"
 
     return sha, version
 

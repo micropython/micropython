@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<link rel="up" title="TJpgDec" href="../00index.html">
+<link rel="stylesheet" href="../css_e.css" type="text/css" media="screen" title="ELM Default">
+<title>TJpgDec - Output Function</title>
+</head>
+
+<body>
+
+<div class="para func">
+<h2>Output Function</h2>
+<p>User defined output function to write decompressed pixels to the output device.</p>
+<pre>
+int out_func (
+  JDEC* <em>jdec</em>,    <span class="c">/* Pointer to the decompression object */</span>
+  void* <em>bitmap</em>,  <span class="c">/* Bitmap to be output */</span>
+  JRECT* <em>rect</em>    <span class="c">/* Rectangle to output */</span>
+);
+</pre>
+</div>
+
+<div class="para arg">
+<h4>Parameters</h4>
+<dl class="par">
+<dt>jdec</dt>
+<dd>Decompression object of this session.</dd>
+<dt>bitmap</dt>
+<dd>Decompressed image to be output.</dd>
+<dt>rect</dt>
+<dd>Specifies output rectangle where in the image. Type is defined in <tt>tjpgd.h</tt></dd>
+</dl>
+</div>
+
+
+<div class="para ret">
+<h4>Return Values</h4>
+<p>Normally returns 1. It lets TJpgDec to continue the decompressing process. If a 0 is returned, <tt>jd_decomp</tt> function aborts with JDR_INTR. This is useful to interrupt the decompression process.</p>
+</div>
+
+
+<div class="para desc">
+<h4>Description</h4>
+<p>This function is the data output interface of the TJpgDec module. The corresponding decompression session can be identified by the session identifier <tt>jdec->device</tt> passed to the 5th argument of <tt>jd_prepare</tt> function.</p>
+<p>The bitmap is sent to the frame buffer or display device in this function. The first pixel in the bitmap is the left-top of the rectangular, the second one is next right and last pixel is the bottom-right of the rectangle. Because the JPEG image is compressed and streamed in unit of MCU (Minimum Coded Unit), TJpgDec outputs the image in MCU by MCU. The size of MCU depends on the sampling factor of JPEG compression, typically in 8x8, 16x8 or 16x16, but the rectangles on right end and bottom end of the image will be clipped.</p>
+<p>The output pixel format is defined by <tt>JD_FORMAT</tt> option in the <tt>tjpgdcnf.h</tt> as shown below.</p>
+<table class="lst">
+<tr><th><tt>JD_FORMAT</tt></th><th>Pixel Format</th></tr>
+<tr><td>0 (RGB888)</td><td><tt>uint8_t bitmap[] = {R1, G1, B1, R2, G2, B2, ....</tt></td></tr>
+<tr><td>1 (RGB565)</td><td><tt>uint16_t bitmap[] = {rrrrrggggggbbbbb, ....</tt></td></tr>
+<tr><td>2 (Grayscale)</td><td><tt>uint8_t bitmap[] = {Y1, Y2, Y3, ....</tt></td></tr>
+</table>
+</div>
+
+
+<p class="foot"><a href="../00index.html">Return</a></p>
+</body>
+</html>

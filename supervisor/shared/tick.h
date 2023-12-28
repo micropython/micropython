@@ -54,13 +54,6 @@ extern uint32_t supervisor_ticks_ms32(void);
  */
 extern uint64_t supervisor_ticks_ms64(void);
 
-/** @brief Run background ticks, but only about every millisecond.
- *
- * Normally, this is not called directly.  Instead use the RUN_BACKGROUND_TASKS
- * macro.
- */
-extern void supervisor_run_background_if_tick(void);
-
 extern void supervisor_enable_tick(void);
 extern void supervisor_disable_tick(void);
 
@@ -70,6 +63,6 @@ extern void supervisor_disable_tick(void);
  * Note that when ticks are not enabled, this function can return false; this is
  * intended.
  */
-extern bool supervisor_background_tasks_ok(void);
+extern bool supervisor_background_ticks_ok(void);
 
 #endif

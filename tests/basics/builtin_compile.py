@@ -42,4 +42,7 @@ def test():
         print("NameError")
     print(x) # check 'x' still exists as a global
 
+    # hashing a compiled function object
+    print(type(hash(compile("", "", "exec"))))
+
 test()

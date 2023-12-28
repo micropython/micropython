@@ -34,7 +34,6 @@
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 digitalinout_result_t common_hal_digitalio_digitalinout_construct(
     digitalio_digitalinout_obj_t *self, const mcu_pin_obj_t *pin) {
@@ -112,7 +111,7 @@ void common_hal_digitalio_digitalinout_set_value(
         }
     } else {
         hri_port_set_DIR_DIR_bf(PORT, port, pin_mask);
-        hri_port_clear_OUT_OUT_bf(PORT,port, pin_mask);
+        hri_port_clear_OUT_OUT_bf(PORT, port, pin_mask);
     }
 }
 
@@ -176,7 +175,7 @@ digitalio_pull_t common_hal_digitalio_digitalinout_get_pull(
     digitalio_digitalinout_obj_t *self) {
     uint32_t pin = self->pin->number;
     if (self->output) {
-        mp_raise_AttributeError(translate("Cannot get pull while in output mode"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot get pull while in output mode"));
         return PULL_NONE;
     } else {
         if (hri_port_get_PINCFG_PULLEN_bit(PORT, GPIO_PORT(pin), GPIO_PIN(pin)) == 0) {

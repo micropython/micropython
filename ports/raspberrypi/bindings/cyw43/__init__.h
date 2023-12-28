@@ -29,6 +29,7 @@
 
 #include "py/obj.h"
 #include "common-hal/microcontroller/Pin.h"
+#include "lib/cyw43-driver/src/cyw43_ll.h"
 
 extern const mp_obj_type_t cyw43_pin_type;
 const mcu_pin_obj_t *validate_obj_is_free_pin_including_cyw43(mp_obj_t obj, qstr arg_name);

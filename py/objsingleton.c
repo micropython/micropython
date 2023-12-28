@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,15 +43,10 @@ STATIC void singleton_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_printf(print, "%q", self->name);
 }
 
-const mp_obj_type_t mp_type_singleton = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_,
-    .print = singleton_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_singleton, MP_QSTR_, MP_TYPE_FLAG_NONE,
+    print, singleton_print
+    );
 
 const mp_obj_singleton_t mp_const_ellipsis_obj = {{&mp_type_singleton}, MP_QSTR_Ellipsis};
 #if MICROPY_PY_BUILTINS_NOTIMPLEMENTED

@@ -33,7 +33,6 @@
 #include "py/runtime.h"
 
 #include "shared-module/audiocore/WaveFile.h"
-#include "supervisor/shared/translate/translate.h"
 
 struct wave_format_chunk {
     uint16_t audio_format;
@@ -68,7 +67,7 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
     }
     if (bytes_read != 4 ||
         format_size > sizeof(struct wave_format_chunk)) {
-        mp_raise_ValueError(translate("Invalid format chunk size"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid format chunk size"));
     }
     struct wave_format_chunk format;
     if (f_read(&self->file->fp, &format, format_size, &bytes_read) != FR_OK) {
@@ -82,7 +81,7 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
         format.bits_per_sample > 16 ||
         (format_size == 18 &&
          format.extra_params != 0)) {
-        mp_raise_ValueError(translate("Unsupported format"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported format"));
     }
     // Get the sample_rate
     self->sample_rate = format.sample_rate;
@@ -97,7 +96,7 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
     }
     if (bytes_read != 4 ||
         memcmp((uint8_t *)data_tag, "data", 4) != 0) {
-        mp_raise_ValueError(translate("Data chunk must follow fmt chunk"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Data chunk must follow fmt chunk"));
     }
 
     uint32_t data_length;
@@ -118,13 +117,13 @@ void common_hal_audioio_wavefile_construct(audioio_wavefile_obj_t *self,
         self->second_buffer = buffer + self->len;
     } else {
         self->len = 256;
-        self->buffer = m_malloc(self->len, false);
+        self->buffer = m_malloc(self->len);
         if (self->buffer == NULL) {
             common_hal_audioio_wavefile_deinit(self);
             m_malloc_fail(self->len);
         }
 
-        self->second_buffer = m_malloc(self->len, false);
+        self->second_buffer = m_malloc(self->len);
         if (self->second_buffer == NULL) {
             common_hal_audioio_wavefile_deinit(self);
             m_malloc_fail(self->len);

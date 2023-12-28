@@ -73,8 +73,7 @@ static mp_obj_t gifio_gifwriter_make_new(const mp_obj_type_t *type, size_t n_arg
         own_file = true;
     }
 
-    gifio_gifwriter_t *self = m_new_obj(gifio_gifwriter_t);
-    self->base.type = &gifio_gifwriter_type;
+    gifio_gifwriter_t *self = mp_obj_malloc(gifio_gifwriter_t, &gifio_gifwriter_type);
     shared_module_gifio_gifwriter_construct(
         self,
         file,
@@ -138,7 +137,7 @@ static mp_obj_t gifio_gifwriter_add_frame(size_t n_args, const mp_obj_t *pos_arg
 
     mp_float_t delay = mp_arg_validate_obj_float_non_negative(args[ARG_delay].u_obj, MICROPY_FLOAT_CONST(0.1), MP_QSTR_delay);
     if (delay > MICROPY_FLOAT_CONST(655.)) {
-        mp_raise_ValueError_varg(translate("%q must be <= %d"), MP_QSTR_delay, 655);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be <= %d"), MP_QSTR_delay, 655);
     }
 
     int delay_centiseconds = (int)(delay * 100);
@@ -159,9 +158,10 @@ STATIC const mp_rom_map_elem_t gifio_gifwriter_locals_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(gifio_gifwriter_locals, gifio_gifwriter_locals_table);
 
-const mp_obj_type_t gifio_gifwriter_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_GifWriter,
-    .make_new = gifio_gifwriter_make_new,
-    .locals_dict = (mp_obj_dict_t *)&gifio_gifwriter_locals,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    gifio_gifwriter_type,
+    MP_QSTR_GifWriter,
+    MP_TYPE_FLAG_NONE,
+    make_new, gifio_gifwriter_make_new,
+    locals_dict, &gifio_gifwriter_locals
+    );

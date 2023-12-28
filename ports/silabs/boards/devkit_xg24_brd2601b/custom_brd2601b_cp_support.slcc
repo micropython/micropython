@@ -1,0 +1,26 @@
+id: custom_brd2601b_cp_support
+label: CircuitPython BRD2601B support
+description: >
+  CircuitPython Board support for BRD2601B.
+package: custom
+category: Custom
+quality: production
+root_path: ../boards/devkit_xg24_brd2601b
+include:
+  - path: ''
+    file_list:
+      - path: mpconfigboard.h
+source:
+  - path: board.c
+provides:
+  - name: custom_brd2601b_cp_support
+requires:
+  - name: efr32mg24b310f1536im48
+  - name: sensor_pressure
+  - name: sensor_hall
+  - name: sensor_imu
+  - name: sensor_rht
+  - name: sensor_lux
+recommends:
+  - id: sensor_rht
+  - id: sensor_lux

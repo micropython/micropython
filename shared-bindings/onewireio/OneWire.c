@@ -27,7 +27,6 @@
 #include <stdint.h>
 
 #include "shared/runtime/context_manager_helpers.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -62,8 +61,7 @@ STATIC mp_obj_t onewireio_onewire_make_new(const mp_obj_type_t *type, size_t n_a
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     const mcu_pin_obj_t *pin = validate_obj_is_free_pin(args[ARG_pin].u_obj, MP_QSTR_pin);
 
-    onewireio_onewire_obj_t *self = m_new_obj(onewireio_onewire_obj_t);
-    self->base.type = &onewireio_onewire_type;
+    onewireio_onewire_obj_t *self = mp_obj_malloc(onewireio_onewire_obj_t, &onewireio_onewire_type);
 
     common_hal_onewireio_onewire_construct(self, pin);
     return MP_OBJ_FROM_PTR(self);
@@ -153,9 +151,10 @@ STATIC const mp_rom_map_elem_t onewireio_onewire_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(onewireio_onewire_locals_dict, onewireio_onewire_locals_dict_table);
 
-const mp_obj_type_t onewireio_onewire_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_OneWire,
-    .make_new = onewireio_onewire_make_new,
-    .locals_dict = (mp_obj_dict_t *)&onewireio_onewire_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    onewireio_onewire_type,
+    MP_QSTR_OneWire,
+    MP_TYPE_FLAG_NONE,
+    make_new, onewireio_onewire_make_new,
+    locals_dict, &onewireio_onewire_locals_dict
+    );

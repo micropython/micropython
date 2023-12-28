@@ -66,9 +66,9 @@
 //|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(BluetoothError, Exception)
-NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *fmt, ...) {
+NORETURN void mp_raise_bleio_BluetoothError(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_BluetoothError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
@@ -81,7 +81,7 @@ NORETURN void mp_raise_bleio_BluetoothError(const compressed_string_t *fmt, ...)
 //|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(RoleError, bleio_BluetoothError)
-NORETURN void mp_raise_bleio_RoleError(const compressed_string_t *msg) {
+NORETURN void mp_raise_bleio_RoleError(mp_rom_error_text_t msg) {
     mp_raise_msg(&mp_type_bleio_RoleError, msg);
 }
 
@@ -91,9 +91,9 @@ NORETURN void mp_raise_bleio_RoleError(const compressed_string_t *msg) {
 //|     ...
 //|
 MP_DEFINE_BLEIO_EXCEPTION(SecurityError, bleio_BluetoothError)
-NORETURN void mp_raise_bleio_SecurityError(const compressed_string_t *fmt, ...) {
+NORETURN void mp_raise_bleio_SecurityError(mp_rom_error_text_t fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_obj_t exception = mp_obj_new_exception_msg_vlist(&mp_type_bleio_SecurityError, fmt, argptr);
     va_end(argptr);
     nlr_raise(exception);
@@ -131,7 +131,7 @@ mp_obj_t bleio_set_adapter(mp_obj_t adapter_obj) {
         elem->value = adapter_obj;
     }
     #else
-    mp_raise_NotImplementedError(translate("Read-only"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Read-only"));
     #endif
     return mp_const_none;
 }
@@ -203,4 +203,4 @@ const mp_obj_module_t bleio_module = {
     .globals = (mp_obj_dict_t *)&bleio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR__bleio, bleio_module, CIRCUITPY_BLEIO);
+MP_REGISTER_MODULE(MP_QSTR__bleio, bleio_module);

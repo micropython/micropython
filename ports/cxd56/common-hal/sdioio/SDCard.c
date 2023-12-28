@@ -59,7 +59,7 @@ void common_hal_sdioio_sdcard_construct(sdioio_sdcard_obj_t *self,
     }
 
     if (open_blockdriver("/dev/mmcsd0", 0, &self->inode) < 0) {
-        mp_raise_RuntimeError(translate("SDCard init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("SDCard init"));
     }
 
     self->inode->u.i_bops->geometry(self->inode, &geo);
@@ -111,7 +111,7 @@ uint32_t common_hal_sdioio_sdcard_get_count(sdioio_sdcard_obj_t *self) {
 
 STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
-        mp_raise_ValueError(translate("Buffer length must be a multiple of 512"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
 }
 

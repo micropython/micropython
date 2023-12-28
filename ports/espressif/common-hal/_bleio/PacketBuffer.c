@@ -225,11 +225,11 @@ void common_hal_bleio_packet_buffer_construct(
     uint32_t *outgoing1 = NULL;
     uint32_t *outgoing2 = NULL;
     if (outgoing) {
-        outgoing1 = m_malloc(max_packet_size, false);
+        outgoing1 = m_malloc(max_packet_size);
         // Only allocate the second buffer if we are doing writes with responses.
         // Without responses, we just write as quickly as we can.
         if (outgoing == CHAR_PROP_WRITE) {
-            outgoing2 = m_malloc(max_packet_size, false);
+            outgoing2 = m_malloc(max_packet_size);
         }
 
     }
@@ -267,7 +267,7 @@ mp_int_t common_hal_bleio_packet_buffer_readinto(bleio_packet_buffer_obj_t *self
 
 mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, const uint8_t *data, size_t len, uint8_t *header, size_t header_len) {
     if (self->outgoing[0] == NULL) {
-        mp_raise_bleio_BluetoothError(translate("Writes not supported on Characteristic"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Writes not supported on Characteristic"));
     }
     if (self->conn_handle == BLEIO_HANDLE_INVALID) {
         return -1;
@@ -280,11 +280,11 @@ mp_int_t common_hal_bleio_packet_buffer_write(bleio_packet_buffer_obj_t *self, c
     mp_int_t total_len = len + header_len;
     if (total_len > outgoing_packet_length) {
         // Supplied data will not fit in a single BLE packet.
-        mp_raise_ValueError_varg(translate("Total data to write is larger than %q"), MP_QSTR_outgoing_packet_length);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Total data to write is larger than %q"), MP_QSTR_outgoing_packet_length);
     }
     if (total_len > self->max_packet_size) {
         // Supplied data will not fit in a single BLE packet.
-        mp_raise_ValueError_varg(translate("Total data to write is larger than %q"), MP_QSTR_max_packet_size);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Total data to write is larger than %q"), MP_QSTR_max_packet_size);
     }
     outgoing_packet_length = MIN(outgoing_packet_length, self->max_packet_size);
 

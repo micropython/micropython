@@ -52,6 +52,11 @@ extern uint32_t __fatfs_flash_length[];
 uint8_t _flash_cache[SECTOR_SIZE] __attribute__((aligned(4)));
 uint32_t _flash_page_addr = NO_CACHE;
 
+#ifndef FLEXSPI
+#define FLEXSPI FLEXSPI1
+#define FlexSPI_AMBA_BASE FlexSPI1_AMBA_BASE
+#endif
+
 void PLACE_IN_ITCM(supervisor_flash_init)(void) {
     // Update the LUT to make sure all entries are available. Copy the values to
     // memory first so that we don't read from the flash as we update the LUT.
@@ -62,6 +67,41 @@ void PLACE_IN_ITCM(supervisor_flash_init)(void) {
     __DSB();
     __ISB();
     flexspi_nor_init();
+
+    #if IMXRT10XX
+    // Disable interrupts of priority 8+. They likely use code in flash
+    // itself. Higher priority interrupts (<8) should ensure all of their
+    // code is in RAM.
+    __set_BASEPRI(8 << (8 - __NVIC_PRIO_BITS));
+
+    // Increase clock speed to 120 MHz
+    // Wait for bus idle before change flash configuration.
+    while (!FLEXSPI_GetBusIdleStatus(FLEXSPI)) {
+    }
+    FLEXSPI_Enable(FLEXSPI, false);
+
+    // Disable FlexSPI clock
+    CCM->CCGR6 &= ~CCM_CCGR6_CG5_MASK;
+
+    // Changing the clock is OK now.
+
+    // The PFD is 480 * 18 / PFD0_FRAC. We do / 18 which outputs 480 MHz.
+    CCM_ANALOG->PFD_480 = (CCM_ANALOG->PFD_480 & ~CCM_ANALOG_PFD_480_TOG_PFD0_FRAC_MASK) | CCM_ANALOG_PFD_480_TOG_PFD0_FRAC(18);
+
+    // This divides down the 480 Mhz by PODF + 1. So 480 / (3 + 1) = 120 MHz.
+    CCM->CSCMR1 = (CCM->CSCMR1 & ~CCM_CSCMR1_FLEXSPI_PODF_MASK) | CCM_CSCMR1_FLEXSPI_PODF(3);
+
+    // Re-enable FlexSPI
+    CCM->CCGR6 |= CCM_CCGR6_CG5_MASK;
+
+    FLEXSPI_Enable(FLEXSPI, true);
+
+    FLEXSPI_SoftwareReset(FLEXSPI);
+
+    while (!FLEXSPI_GetBusIdleStatus(FLEXSPI)) {
+    }
+    __set_BASEPRI(0U);
+    #endif
 }
 
 static inline uint32_t lba2addr(uint32_t block) {

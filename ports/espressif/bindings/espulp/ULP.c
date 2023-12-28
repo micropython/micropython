@@ -52,8 +52,7 @@ STATIC mp_obj_t espulp_ulp_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     const espulp_architecture_t arch = cp_enum_value(&espulp_architecture_type, args[ARG_arch].u_obj, MP_QSTR_arch);
 
-    espulp_ulp_obj_t *self = m_new_obj(espulp_ulp_obj_t);
-    self->base.type = &espulp_ulp_type;
+    espulp_ulp_obj_t *self = mp_obj_malloc(espulp_ulp_obj_t, &espulp_ulp_type);
 
     common_hal_espulp_ulp_construct(self, arch);
 
@@ -173,9 +172,10 @@ STATIC const mp_rom_map_elem_t espulp_ulp_locals_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(espulp_ulp_locals_dict, espulp_ulp_locals_table);
 
-const mp_obj_type_t espulp_ulp_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ULP,
-    .make_new = espulp_ulp_make_new,
-    .locals_dict = (mp_obj_t)&espulp_ulp_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espulp_ulp_type,
+    MP_QSTR_ULP,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, espulp_ulp_make_new,
+    locals_dict, &espulp_ulp_locals_dict
+    );

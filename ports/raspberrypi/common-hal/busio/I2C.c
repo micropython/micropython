@@ -69,7 +69,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
         raise_ValueError_invalid_pins();
     }
     if ((i2c_get_hw(self->peripheral)->enable & I2C_IC_ENABLE_ENABLE_BITS) != 0) {
-        mp_raise_ValueError(translate("I2C peripheral in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("I2C peripheral in use"));
     }
 
     mp_arg_validate_int_max(frequency, 1000000, MP_QSTR_frequency);
@@ -96,7 +96,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (!gpio_get(sda->number) || !gpio_get(scl->number)) {
         reset_pin_number(sda->number);
         reset_pin_number(scl->number);
-        mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No pull up found on SDA or SCL; check your wiring"));
     }
     #endif
 

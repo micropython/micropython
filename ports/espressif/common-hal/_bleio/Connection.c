@@ -63,7 +63,7 @@ int bleio_connection_event_cb(struct ble_gap_event *event, void *connection_in) 
             connection->pair_status = PAIR_NOT_PAIRED;
 
             #if CIRCUITPY_VERBOSE_BLE
-            mp_printf(&mp_plat_print, "disconnected %02x\n", event->disconnect.reason);
+            mp_printf(&mp_plat_print, "event->disconnect.reason: 0x%x\n", event->disconnect.reason);
             #endif
             if (connection->connection_obj != mp_const_none) {
                 bleio_connection_obj_t *obj = connection->connection_obj;
@@ -128,6 +128,7 @@ bool common_hal_bleio_connection_get_connected(bleio_connection_obj_t *self) {
 }
 
 void common_hal_bleio_connection_disconnect(bleio_connection_internal_t *self) {
+    // Second argument is an HCI reason, not an HS error code.
     ble_gap_terminate(self->conn_handle, BLE_ERR_REM_USER_CONN_TERM);
 }
 
@@ -162,9 +163,9 @@ STATIC int _discovered_service_cb(uint16_t conn_handle,
     void *arg) {
     bleio_connection_internal_t *self = (bleio_connection_internal_t *)arg;
 
-    if (error->status != BLE_ERR_SUCCESS) {
+    if (error->status != 0) {
         // Keep the first error in case it's due to memory.
-        if (_last_discovery_status == BLE_ERR_SUCCESS) {
+        if (_last_discovery_status == 0) {
             _last_discovery_status = error->status;
             xTaskNotifyGive(discovery_task);
         }
@@ -173,15 +174,10 @@ STATIC int _discovered_service_cb(uint16_t conn_handle,
 
     // If any of these memory allocations fail, we set _last_discovery_status
     // and let the process continue.
-    if (_last_discovery_status != BLE_ERR_SUCCESS) {
+    if (_last_discovery_status != 0) {
         return 0;
     }
-    bleio_service_obj_t *service = m_new_obj(bleio_service_obj_t);
-    if (service == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    service->base.type = &bleio_service_type;
+    bleio_service_obj_t *service = mp_obj_malloc(bleio_service_obj_t, &bleio_service_type);
 
     // Initialize several fields at once.
     bleio_service_from_connection(service, bleio_connection_new_from_internal(self));
@@ -191,12 +187,8 @@ STATIC int _discovered_service_cb(uint16_t conn_handle,
     service->end_handle = svc->end_handle;
     service->handle = svc->start_handle;
 
-    bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-    if (uuid == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
+
     uuid->nimble_ble_uuid = svc->uuid;
     service->uuid = uuid;
 
@@ -211,33 +203,26 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
     void *arg) {
     bleio_service_obj_t *service = (bleio_service_obj_t *)arg;
 
-    if (error->status != BLE_ERR_SUCCESS) {
+    if (error->status != 0) {
         // Keep the first error in case it's due to memory.
-        if (_last_discovery_status == BLE_ERR_SUCCESS) {
+        if (_last_discovery_status == 0) {
             _last_discovery_status = error->status;
             xTaskNotifyGive(discovery_task);
         }
+        return 0;
     }
     // If any of these memory allocations fail, we set _last_discovery_status
     // and let the process continue.
-    if (_last_discovery_status != BLE_ERR_SUCCESS) {
+    if (_last_discovery_status != 0) {
         return 0;
     }
 
-    bleio_characteristic_obj_t *characteristic = m_new_obj(bleio_characteristic_obj_t);
-    if (characteristic == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    characteristic->base.type = &bleio_characteristic_type;
+    bleio_characteristic_obj_t *characteristic =
+        mp_obj_malloc(bleio_characteristic_obj_t, &bleio_characteristic_type);
 
     // Known characteristic UUID.
-    bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-    if (uuid == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
+
     uuid->nimble_ble_uuid = chr->uuid;
 
     bleio_characteristic_properties_t props =
@@ -249,11 +234,14 @@ STATIC int _discovered_characteristic_cb(uint16_t conn_handle,
         ((chr->properties & BLE_GATT_CHR_PROP_WRITE_NO_RSP) != 0 ? CHAR_PROP_WRITE_NO_RESPONSE : 0);
 
     // Call common_hal_bleio_characteristic_construct() to initialize some fields and set up evt handler.
+    mp_buffer_info_t mp_const_empty_bytes_bufinfo;
+    mp_get_buffer_raise(mp_const_empty_bytes, &mp_const_empty_bytes_bufinfo, MP_BUFFER_READ);
+
     common_hal_bleio_characteristic_construct(
         characteristic, service, chr->val_handle, uuid,
         props, SECURITY_MODE_OPEN, SECURITY_MODE_OPEN,
         0, false,   // max_length, fixed_length: values don't matter for gattc
-        mp_const_empty_bytes,
+        &mp_const_empty_bytes_bufinfo,
         NULL);
     // Set def_handle directly since it is only used in discovery.
     characteristic->def_handle = chr->def_handle;
@@ -270,16 +258,17 @@ STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
     void *arg) {
     bleio_characteristic_obj_t *characteristic = (bleio_characteristic_obj_t *)arg;
 
-    if (error->status != BLE_ERR_SUCCESS) {
+    if (error->status != 0) {
         // Keep the first error in case it's due to memory.
-        if (_last_discovery_status == BLE_ERR_SUCCESS) {
+        if (_last_discovery_status == 0) {
             _last_discovery_status = error->status;
         }
         xTaskNotifyGive(discovery_task);
+        return 0;
     }
     // If any of these memory allocations fail, we set _last_discovery_status
     // and let the process continue.
-    if (_last_discovery_status != BLE_ERR_SUCCESS) {
+    if (_last_discovery_status != 0) {
         return 0;
     }
 
@@ -301,19 +290,9 @@ STATIC int _discovered_descriptor_cb(uint16_t conn_handle,
             break;
     }
 
-    bleio_descriptor_obj_t *descriptor = m_new_obj(bleio_descriptor_obj_t);
-    if (descriptor == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    descriptor->base.type = &bleio_descriptor_type;
+    bleio_descriptor_obj_t *descriptor = mp_obj_malloc(bleio_descriptor_obj_t, &bleio_descriptor_type);
 
-    bleio_uuid_obj_t *uuid = m_new_obj(bleio_uuid_obj_t);
-    if (uuid == NULL) {
-        _last_discovery_status = BLE_ERR_MEM_CAPACITY;
-        return 0;
-    }
-    uuid->base.type = &bleio_uuid_type;
+    bleio_uuid_obj_t *uuid = mp_obj_malloc(bleio_uuid_obj_t, &bleio_uuid_type);
     uuid->nimble_ble_uuid = dsc->uuid;
 
     common_hal_bleio_descriptor_construct(
@@ -333,7 +312,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
 
     discovery_task = xTaskGetCurrentTaskHandle();
     if (service_uuids_whitelist == mp_const_none) {
-        _last_discovery_status = BLE_ERR_SUCCESS;
+        _last_discovery_status = 0;
         CHECK_NIMBLE_ERROR(ble_gattc_disc_all_svcs(self->conn_handle, _discovered_service_cb, self));
 
         // Wait for sync.
@@ -347,11 +326,11 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
         mp_obj_t uuid_obj;
         while ((uuid_obj = mp_iternext(iterable)) != MP_OBJ_STOP_ITERATION) {
             if (!mp_obj_is_type(uuid_obj, &bleio_uuid_type)) {
-                mp_raise_TypeError(translate("non-UUID found in service_uuids_whitelist"));
+                mp_raise_TypeError(MP_ERROR_TEXT("non-UUID found in service_uuids_whitelist"));
             }
             bleio_uuid_obj_t *uuid = MP_OBJ_TO_PTR(uuid_obj);
 
-            _last_discovery_status = BLE_ERR_SUCCESS;
+            _last_discovery_status = 0;
             // Make sure we start with a clean notification state
             ulTaskNotifyValueClear(discovery_task, 0xffffffff);
             CHECK_NIMBLE_ERROR(ble_gattc_disc_svc_by_uuid(self->conn_handle, &uuid->nimble_ble_uuid.u,
@@ -367,7 +346,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
     for (size_t i = 0; i < self->remote_service_list->len; i++) {
         bleio_service_obj_t *service = MP_OBJ_TO_PTR(self->remote_service_list->items[i]);
 
-        _last_discovery_status = BLE_ERR_SUCCESS;
+        _last_discovery_status = 0;
         CHECK_NIMBLE_ERROR(ble_gattc_disc_all_chrs(self->conn_handle,
             service->start_handle,
             service->end_handle,
@@ -402,7 +381,7 @@ STATIC void discover_remote_services(bleio_connection_internal_t *self, mp_obj_t
                 continue;
             }
 
-            _last_discovery_status = BLE_ERR_SUCCESS;
+            _last_discovery_status = 0;
             CHECK_NIMBLE_ERROR(ble_gattc_disc_all_dscs(self->conn_handle, characteristic->handle,
                 end_handle,
                 _discovered_descriptor_cb, characteristic));
@@ -438,8 +417,8 @@ mp_obj_t bleio_connection_new_from_internal(bleio_connection_internal_t *interna
     if (internal->connection_obj != mp_const_none) {
         return internal->connection_obj;
     }
-    bleio_connection_obj_t *connection = m_new_obj(bleio_connection_obj_t);
-    connection->base.type = &bleio_connection_type;
+    bleio_connection_obj_t *connection = mp_obj_malloc(bleio_connection_obj_t, &bleio_connection_type);
+
     connection->connection = internal;
     internal->connection_obj = connection;
 

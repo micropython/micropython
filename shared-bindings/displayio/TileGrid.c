@@ -37,8 +37,6 @@
 #include "shared-bindings/displayio/ColorConverter.h"
 #include "shared-bindings/displayio/OnDiskBitmap.h"
 #include "shared-bindings/displayio/Palette.h"
-#include "shared-bindings/displayio/Shape.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class TileGrid:
 //|     """A grid of tiles sourced out of one bitmap
@@ -50,7 +48,7 @@
 //|
 //|     def __init__(
 //|         self,
-//|         bitmap: Union[Bitmap, OnDiskBitmap, Shape],
+//|         bitmap: Union[Bitmap, OnDiskBitmap],
 //|         *,
 //|         pixel_shader: Union[ColorConverter, Palette],
 //|         width: int = 1,
@@ -69,7 +67,7 @@
 //|
 //|         tile_width and tile_height match the height of the bitmap by default.
 //|
-//|         :param Bitmap,OnDiskBitmap,Shape bitmap: The bitmap storing one or more tiles.
+//|         :param Bitmap,OnDiskBitmap bitmap: The bitmap storing one or more tiles.
 //|         :param ColorConverter,Palette pixel_shader: The pixel shader that produces colors from values
 //|         :param int width: Width of the grid in tiles.
 //|         :param int height: Height of the grid in tiles.
@@ -98,28 +96,21 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
 
     uint16_t bitmap_width;
     uint16_t bitmap_height;
-    mp_obj_t native = mp_obj_cast_to_native_base(bitmap, &displayio_shape_type);
-    if (native != MP_OBJ_NULL) {
-        displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
-        bitmap_width = bmp->width;
-        bitmap_height = bmp->height;
-    } else if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
+    if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
-        native = bitmap;
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
     } else if (mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
-        native = bitmap;
         bitmap_width = bmp->width;
         bitmap_height = bmp->height;
     } else {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_bitmap);
     }
     mp_obj_t pixel_shader = args[ARG_pixel_shader].u_obj;
     if (!mp_obj_is_type(pixel_shader, &displayio_colorconverter_type) &&
         !mp_obj_is_type(pixel_shader, &displayio_palette_type)) {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_pixel_shader);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_pixel_shader);
     }
     uint16_t tile_width = args[ARG_tile_width].u_int;
     if (tile_width == 0) {
@@ -130,18 +121,17 @@ STATIC mp_obj_t displayio_tilegrid_make_new(const mp_obj_type_t *type, size_t n_
         tile_height = bitmap_height;
     }
     if (bitmap_width % tile_width != 0) {
-        mp_raise_ValueError(translate("Tile width must exactly divide bitmap width"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Tile width must exactly divide bitmap width"));
     }
     if (bitmap_height % tile_height != 0) {
-        mp_raise_ValueError(translate("Tile height must exactly divide bitmap height"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Tile height must exactly divide bitmap height"));
     }
 
     int16_t x = args[ARG_x].u_int;
     int16_t y = args[ARG_y].u_int;
 
-    displayio_tilegrid_t *self = m_new_obj(displayio_tilegrid_t);
-    self->base.type = &displayio_tilegrid_type;
-    common_hal_displayio_tilegrid_construct(self, native,
+    displayio_tilegrid_t *self = mp_obj_malloc(displayio_tilegrid_t, &displayio_tilegrid_type);
+    common_hal_displayio_tilegrid_construct(self, bitmap,
         bitmap_width / tile_width, bitmap_height / tile_height,
         pixel_shader, args[ARG_width].u_int, args[ARG_height].u_int,
         tile_width, tile_height, x, y, args[ARG_default_tile].u_int);
@@ -351,7 +341,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(displayio_tilegrid_get_pixel_shader_obj, displayio_til
 STATIC mp_obj_t displayio_tilegrid_obj_set_pixel_shader(mp_obj_t self_in, mp_obj_t pixel_shader) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
     if (!mp_obj_is_type(pixel_shader, &displayio_palette_type) && !mp_obj_is_type(pixel_shader, &displayio_colorconverter_type)) {
-        mp_raise_TypeError(translate("pixel_shader must be displayio.Palette or displayio.ColorConverter"));
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_pixel_shader);
     }
 
     common_hal_displayio_tilegrid_set_pixel_shader(self, pixel_shader);
@@ -364,7 +354,7 @@ MP_PROPERTY_GETSET(displayio_tilegrid_pixel_shader_obj,
     (mp_obj_t)&displayio_tilegrid_get_pixel_shader_obj,
     (mp_obj_t)&displayio_tilegrid_set_pixel_shader_obj);
 
-//|     bitmap: Union[Bitmap, OnDiskBitmap, Shape]
+//|     bitmap: Union[Bitmap, OnDiskBitmap]
 //|     """The bitmap of the tilegrid."""
 STATIC mp_obj_t displayio_tilegrid_obj_get_bitmap(mp_obj_t self_in) {
     displayio_tilegrid_t *self = native_tilegrid(self_in);
@@ -377,42 +367,27 @@ STATIC mp_obj_t displayio_tilegrid_obj_set_bitmap(mp_obj_t self_in, mp_obj_t bit
 
     uint16_t new_bitmap_width;
     uint16_t new_bitmap_height;
-    mp_obj_t native = mp_obj_cast_to_native_base(bitmap, &displayio_shape_type);
-    if (native != MP_OBJ_NULL) {
-        displayio_shape_t *bmp = MP_OBJ_TO_PTR(native);
-        new_bitmap_width = bmp->width;
-        new_bitmap_height = bmp->height;
-    } else if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
+    if (mp_obj_is_type(bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
-        native = bitmap;
         new_bitmap_width = bmp->width;
         new_bitmap_height = bmp->height;
     } else if (mp_obj_is_type(bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t *bmp = MP_OBJ_TO_PTR(bitmap);
-        native = bitmap;
         new_bitmap_width = bmp->width;
         new_bitmap_height = bmp->height;
     } else {
-        mp_raise_TypeError_varg(translate("unsupported %q type"), MP_QSTR_bitmap);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("unsupported %q type"), MP_QSTR_bitmap);
     }
 
-    mp_obj_t old_native = mp_obj_cast_to_native_base(self->bitmap, &displayio_shape_type);
-    if (old_native != MP_OBJ_NULL) {
-        displayio_shape_t *old_bmp = MP_OBJ_TO_PTR(old_native);
-        if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
-            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
-        }
-    } else if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
+    if (mp_obj_is_type(self->bitmap, &displayio_bitmap_type)) {
         displayio_bitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
-        old_native = self->bitmap;
         if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
-            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+            mp_raise_ValueError(MP_ERROR_TEXT("New bitmap must be same size as old bitmap"));
         }
     } else if (mp_obj_is_type(self->bitmap, &displayio_ondiskbitmap_type)) {
         displayio_ondiskbitmap_t *old_bmp = MP_OBJ_TO_PTR(self->bitmap);
-        old_native = self->bitmap;
         if (old_bmp->width != new_bitmap_width || old_bmp->height != new_bitmap_height) {
-            mp_raise_ValueError(translate("New bitmap must be same size as old bitmap"));
+            mp_raise_ValueError(MP_ERROR_TEXT("New bitmap must be same size as old bitmap"));
         }
     }
 
@@ -452,7 +427,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
 
 
     if (mp_obj_is_type(index_obj, &mp_type_slice)) {
-        mp_raise_NotImplementedError(translate("Slices not supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
     } else {
         uint16_t x = 0;
         uint16_t y = 0;
@@ -469,7 +444,7 @@ STATIC mp_obj_t tilegrid_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t v
         }
         if (x >= common_hal_displayio_tilegrid_get_width(self) ||
             y >= common_hal_displayio_tilegrid_get_height(self)) {
-            mp_raise_IndexError(translate("Tile index out of bounds"));
+            mp_raise_IndexError(MP_ERROR_TEXT("Tile index out of bounds"));
         }
 
         if (value_obj == MP_OBJ_SENTINEL) {
@@ -505,13 +480,11 @@ STATIC const mp_rom_map_elem_t displayio_tilegrid_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(displayio_tilegrid_locals_dict, displayio_tilegrid_locals_dict_table);
 
-const mp_obj_type_t displayio_tilegrid_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_TileGrid,
-    .make_new = displayio_tilegrid_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_tilegrid_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = tilegrid_subscr,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_tilegrid_type,
+    MP_QSTR_TileGrid,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, displayio_tilegrid_make_new,
+    locals_dict, &displayio_tilegrid_locals_dict,
+    subscr, tilegrid_subscr
+    );

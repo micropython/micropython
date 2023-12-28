@@ -33,6 +33,7 @@
 #include "shared-bindings/os/__init__.h"
 
 #include "esp_system.h"
+#include "esp_random.h"
 
 STATIC const qstr os_uname_info_fields[] = {
     MP_QSTR_sysname, MP_QSTR_nodename,
@@ -60,7 +61,7 @@ mp_obj_t common_hal_os_uname(void) {
     return (mp_obj_t)&os_uname_info_obj;
 }
 
-bool common_hal_os_urandom(uint8_t *buffer, uint32_t length) {
+bool common_hal_os_urandom(uint8_t *buffer, mp_uint_t length) {
     uint32_t i = 0;
     while (i < length) {
         uint32_t new_random = esp_random();

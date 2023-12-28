@@ -333,3 +333,5 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     // Update the next start.
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 4;
 }
+
+MP_REGISTER_ROOT_POINTER(uint16_t * pixels_pattern_heap);

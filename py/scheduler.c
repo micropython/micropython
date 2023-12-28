@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2017 Damien P. George
+ * Copyright (c) 2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,11 @@
 // sources such as interrupts and UNIX signal handlers).
 void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
     MP_STATE_MAIN_THREAD(mp_pending_exception) = exc;
-    #if MICROPY_ENABLE_SCHEDULER
+
+    #if MICROPY_ENABLE_SCHEDULER && !MICROPY_PY_THREAD
+    // Optimisation for the case where we have scheduler but no threading.
+    // Allows the VM to do a single check to exclude both pending exception
+    // and queued tasks.
     if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
         MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
     }
@@ -42,8 +46,15 @@ void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
 #if MICROPY_KBD_EXCEPTION
 // This function may be called asynchronously at any time so only do the bare minimum.
 void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void) {
+    // CIRCUITPY-CHANGE
     MP_STATE_VM(mp_kbd_exception).traceback = (mp_obj_traceback_t *)&mp_const_empty_traceback_obj;
     mp_sched_exception(MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_kbd_exception)));
+}
+#endif
+
+#if MICROPY_ENABLE_VM_ABORT
+void MICROPY_WRAP_MP_SCHED_VM_ABORT(mp_sched_vm_abort)(void) {
+    MP_STATE_VM(vm_abort) = true;
 }
 #endif
 
@@ -62,34 +73,36 @@ static inline bool mp_sched_empty(void) {
     return mp_sched_num_pending() == 0;
 }
 
-// A variant of this is inlined in the VM at the pending exception check
-void mp_handle_pending(bool raise_exc) {
-    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-        // Re-check state is still pending now that we're in the atomic section.
-        if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
-            mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-            if (obj != MP_OBJ_NULL) {
-                MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-                if (!mp_sched_num_pending()) {
-                    MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
-                }
-                if (raise_exc) {
-                    MICROPY_END_ATOMIC_SECTION(atomic_state);
-                    nlr_raise(obj);
-                }
-            }
-            mp_handle_pending_tail(atomic_state);
-        } else {
-            MICROPY_END_ATOMIC_SECTION(atomic_state);
-        }
+static inline void mp_sched_run_pending(void) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    if (MP_STATE_VM(sched_state) != MP_SCHED_PENDING) {
+        // Something else (e.g. hard IRQ) locked the scheduler while we
+        // acquired the lock.
+        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        return;
     }
-}
 
-// This function should only be called by mp_handle_pending,
-// or by the VM's inlined version of that function.
-void mp_handle_pending_tail(mp_uint_t atomic_state) {
+    // Equivalent to mp_sched_lock(), but we're already in the atomic
+    // section and know that we're pending.
     MP_STATE_VM(sched_state) = MP_SCHED_LOCKED;
+
+    #if MICROPY_SCHEDULER_STATIC_NODES
+    // Run all pending C callbacks.
+    while (MP_STATE_VM(sched_head) != NULL) {
+        mp_sched_node_t *node = MP_STATE_VM(sched_head);
+        MP_STATE_VM(sched_head) = node->next;
+        if (MP_STATE_VM(sched_head) == NULL) {
+            MP_STATE_VM(sched_tail) = NULL;
+        }
+        mp_sched_callback_t callback = node->callback;
+        node->callback = NULL;
+        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        callback(node);
+        atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    }
+    #endif
+
+    // Run at most one pending Python callback.
     if (!mp_sched_empty()) {
         mp_sched_item_t item = MP_STATE_VM(sched_queue)[MP_STATE_VM(sched_idx)];
         MP_STATE_VM(sched_idx) = IDX_MASK(MP_STATE_VM(sched_idx) + 1);
@@ -99,14 +112,22 @@ void mp_handle_pending_tail(mp_uint_t atomic_state) {
     } else {
         MICROPY_END_ATOMIC_SECTION(atomic_state);
     }
+
+    // Restore MP_STATE_VM(sched_state) to idle (or pending if there are still
+    // tasks in the queue).
     mp_sched_unlock();
 }
 
+// Locking the scheduler prevents tasks from executing (does not prevent new
+// tasks from being added). We lock the scheduler while executing scheduled
+// tasks and also in hard interrupts or GC finalisers.
 void mp_sched_lock(void) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     if (MP_STATE_VM(sched_state) < 0) {
+        // Already locked, increment lock (recursive lock).
         --MP_STATE_VM(sched_state);
     } else {
+        // Pending or idle.
         MP_STATE_VM(sched_state) = MP_SCHED_LOCKED;
     }
     MICROPY_END_ATOMIC_SECTION(atomic_state);
@@ -116,8 +137,17 @@ void mp_sched_unlock(void) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     assert(MP_STATE_VM(sched_state) < 0);
     if (++MP_STATE_VM(sched_state) == 0) {
-        // vm became unlocked
-        if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL || mp_sched_num_pending()) {
+        // Scheduler became unlocked. Check if there are still tasks in the
+        // queue and set sched_state accordingly.
+        if (
+            #if !MICROPY_PY_THREAD
+            // See optimisation in mp_sched_exception.
+            MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL ||
+            #endif
+            #if MICROPY_SCHEDULER_STATIC_NODES
+            MP_STATE_VM(sched_head) != NULL ||
+            #endif
+            mp_sched_num_pending()) {
             MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
         } else {
             MP_STATE_VM(sched_state) = MP_SCHED_IDLE;
@@ -146,17 +176,68 @@ bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj
     return ret;
 }
 
-#else // MICROPY_ENABLE_SCHEDULER
-
-// A variant of this is inlined in the VM at the pending exception check
-void mp_handle_pending(bool raise_exc) {
-    if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
-        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
-        MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
-        if (raise_exc) {
-            nlr_raise(obj);
+#if MICROPY_SCHEDULER_STATIC_NODES
+bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback) {
+    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    bool ret;
+    if (node->callback == NULL) {
+        if (MP_STATE_VM(sched_state) == MP_SCHED_IDLE) {
+            MP_STATE_VM(sched_state) = MP_SCHED_PENDING;
         }
+        node->callback = callback;
+        node->next = NULL;
+        if (MP_STATE_VM(sched_tail) == NULL) {
+            MP_STATE_VM(sched_head) = node;
+        } else {
+            MP_STATE_VM(sched_tail)->next = node;
+        }
+        MP_STATE_VM(sched_tail) = node;
+        MICROPY_SCHED_HOOK_SCHEDULED;
+        ret = true;
+    } else {
+        // already scheduled
+        ret = false;
     }
+    MICROPY_END_ATOMIC_SECTION(atomic_state);
+    return ret;
 }
+#endif
+
+MP_REGISTER_ROOT_POINTER(mp_sched_item_t sched_queue[MICROPY_SCHEDULER_DEPTH]);
 
 #endif // MICROPY_ENABLE_SCHEDULER
+
+// Called periodically from the VM or from "waiting" code (e.g. sleep) to
+// process background tasks and pending exceptions (e.g. KeyboardInterrupt).
+void mp_handle_pending(bool raise_exc) {
+    // Handle pending VM abort.
+    #if MICROPY_ENABLE_VM_ABORT
+    if (MP_STATE_VM(vm_abort) && mp_thread_is_main_thread()) {
+        MP_STATE_VM(vm_abort) = false;
+        if (raise_exc && nlr_get_abort() != NULL) {
+            nlr_jump_abort();
+        }
+    }
+    #endif
+
+    // Handle any pending exception.
+    if (MP_STATE_THREAD(mp_pending_exception) != MP_OBJ_NULL) {
+        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+        mp_obj_t obj = MP_STATE_THREAD(mp_pending_exception);
+        if (obj != MP_OBJ_NULL) {
+            MP_STATE_THREAD(mp_pending_exception) = MP_OBJ_NULL;
+            if (raise_exc) {
+                MICROPY_END_ATOMIC_SECTION(atomic_state);
+                nlr_raise(obj);
+            }
+        }
+        MICROPY_END_ATOMIC_SECTION(atomic_state);
+    }
+
+    // Handle any pending callbacks.
+    #if MICROPY_ENABLE_SCHEDULER
+    if (MP_STATE_VM(sched_state) == MP_SCHED_PENDING) {
+        mp_sched_run_pending();
+    }
+    #endif
+}

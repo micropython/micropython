@@ -1,5 +1,6 @@
 SRC_SUPERVISOR = \
 	main.c \
+	lib/tlsf/tlsf.c \
 	supervisor/port.c \
 	supervisor/shared/background_callback.c \
 	supervisor/shared/board.c \
@@ -7,7 +8,6 @@ SRC_SUPERVISOR = \
 	supervisor/shared/fatfs.c \
 	supervisor/shared/flash.c \
 	supervisor/shared/lock.c \
-	supervisor/shared/memory.c \
 	supervisor/shared/micropython.c \
 	supervisor/shared/port.c \
 	supervisor/shared/reload.c \
@@ -20,6 +20,9 @@ SRC_SUPERVISOR = \
 	supervisor/shared/translate/translate.c \
 	supervisor/shared/workflow.c \
 	supervisor/stub/misc.c \
+
+# For tlsf
+CFLAGS += -D_DEBUG=0
 
 NO_USB ?= $(wildcard supervisor/usb.c)
 
@@ -85,6 +88,8 @@ else
     SRC_SUPERVISOR += supervisor/qspi_flash.c supervisor/shared/external_flash/qspi_flash.c
   endif
 
+OBJ_EXTRA_ORDER_DEPS += $(HEADER_BUILD)/devices.h
+SRC_QSTR += $(HEADER_BUILD)/devices.h
 $(HEADER_BUILD)/devices.h : ../../supervisor/shared/external_flash/devices.h.jinja ../../tools/gen_nvm_devices.py | $(HEADER_BUILD)
 	$(STEPECHO) "GEN $@"
 	$(Q)install -d $(BUILD)/genhdr
@@ -161,8 +166,10 @@ ifeq ($(CIRCUITPY_USB),1)
 
   ifeq ($(CIRCUITPY_USB_HOST), 1)
     SRC_SUPERVISOR += \
+      lib/tinyusb/src/class/hid/hid_host.c \
       lib/tinyusb/src/host/hub.c \
       lib/tinyusb/src/host/usbh.c \
+      supervisor/shared/usb/host_keyboard.c \
 
   endif
 endif
@@ -224,7 +231,7 @@ endif
 USB_HIGHSPEED ?= 0
 CFLAGS += -DUSB_HIGHSPEED=$(USB_HIGHSPEED)
 
-$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compression.generated.h
+$(BUILD)/supervisor/shared/translate/translate.o: $(HEADER_BUILD)/qstrdefs.generated.h $(HEADER_BUILD)/compressed_translations.generated.h
 
 CIRCUITPY_DISPLAY_FONT ?= "../../tools/fonts/ter-u12n.bdf"
 

@@ -34,7 +34,6 @@
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PWMAudioOut:
 //|     """Output an analog audio signal by varying the PWM duty cycle."""
@@ -118,12 +117,9 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_make_new(const mp_obj_type_t *type, size_
         validate_obj_is_free_pin_or_none(args[ARG_right_channel].u_obj, MP_QSTR_right_channel);
 
     // create AudioOut object from the given pin
-    // The object is made long-lived because many implementations keep
-    // a pointer to the object (e.g., for the interrupt handler), which
-    // will not work properly if the object is moved. It is created
-    // with a finaliser as some ports use these (rather than 'reset' functions)
+    // The object is created with a finaliser as some ports use these (rather than 'reset' functions)
     // to ensure resources are collected at interpreter shutdown.
-    audiopwmio_pwmaudioout_obj_t *self = m_new_ll_obj_with_finaliser(audiopwmio_pwmaudioout_obj_t);
+    audiopwmio_pwmaudioout_obj_t *self = m_new_obj_with_finaliser(audiopwmio_pwmaudioout_obj_t);
     self->base.type = &audiopwmio_pwmaudioout_type;
     common_hal_audiopwmio_pwmaudioout_construct(self, left_channel_pin, right_channel_pin, args[ARG_quiescent_value].u_int);
 
@@ -220,7 +216,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj_pause(mp_obj_t self_in) {
     check_for_deinit(self);
 
     if (!common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
-        mp_raise_RuntimeError(translate("Not playing"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Not playing"));
     }
     common_hal_audiopwmio_pwmaudioout_pause(self);
     return mp_const_none;
@@ -272,9 +268,10 @@ STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiopwmio_pwmaudioout_locals_dict, audiopwmio_pwmaudioout_locals_dict_table);
 
-const mp_obj_type_t audiopwmio_pwmaudioout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PWMAudioOut,
-    .make_new = audiopwmio_pwmaudioout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiopwmio_pwmaudioout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiopwmio_pwmaudioout_type,
+    MP_QSTR_PWMAudioOut,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audiopwmio_pwmaudioout_make_new,
+    locals_dict, &audiopwmio_pwmaudioout_locals_dict
+    );

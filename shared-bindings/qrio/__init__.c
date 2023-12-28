@@ -55,4 +55,4 @@ const mp_obj_module_t qrio_module = {
     .globals = (mp_obj_dict_t *)&qrio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_qrio, qrio_module, CIRCUITPY_QRIO);
+MP_REGISTER_MODULE(MP_QSTR_qrio, qrio_module);

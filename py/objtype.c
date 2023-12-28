@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2018 Damien P. George
- * SPDX-FileCopyrightText: Copyright (c) 2014-2018 Paul Sokolovsky
+ * Copyright (c) 2013-2018 Damien P. George
+ * Copyright (c) 2014-2018 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "py/gc_long_lived.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
-
-#include "supervisor/shared/stack.h"
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_DEBUG_VERBOSE // print debugging info
 #define DEBUG_PRINT (1)
@@ -48,7 +44,7 @@
 #define ENABLE_SPECIAL_ACCESSORS \
     (MICROPY_PY_DESCRIPTORS || MICROPY_PY_DELATTR_SETATTR || MICROPY_PY_BUILTINS_PROPERTY)
 
-STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args);
+STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
 /******************************************************************************/
 // instance object
@@ -59,20 +55,17 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
         if (type == &mp_type_object) {
             // Not a "real" type, end search here.
             return count;
-        }
-        if (mp_obj_is_native_type(type)) {
+        } else if (mp_obj_is_native_type(type)) {
             // Native types don't have parents (at least not from our perspective) so end.
             *last_native_base = type;
             return count + 1;
-        }
-        const void *parent = mp_type_get_parent_slot(type);
-        if (parent == NULL) {
+        } else if (!MP_OBJ_TYPE_HAS_SLOT(type, parent)) {
             // No parents so end search here.
             return count;
         #if MICROPY_MULTIPLE_INHERITANCE
-        } else if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
+        } else if (((mp_obj_base_t *)MP_OBJ_TYPE_GET_SLOT(type, parent))->type == &mp_type_tuple) {
             // Multiple parents, search through them all recursively.
-            const mp_obj_tuple_t *parent_tuple = parent;
+            const mp_obj_tuple_t *parent_tuple = MP_OBJ_TYPE_GET_SLOT(type, parent);
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len;
             for (; item < top; ++item) {
@@ -84,11 +77,12 @@ STATIC int instance_count_native_bases(const mp_obj_type_t *type, const mp_obj_t
         #endif
         } else {
             // A single parent, use iteration to continue the search.
-            type = parent;
+            type = MP_OBJ_TYPE_GET_SLOT(type, parent);
         }
     }
 }
 
+// CIRCUITPY-CHANGE: differences
 // This wrapper function is allows a subclass of a native type to call the
 // __init__() method (corresponding to type->make_new) of the native type.
 STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -109,7 +103,7 @@ STATIC mp_obj_t native_base_init_wrapper(size_t n_args, const mp_obj_t *pos_args
     if (n_kw) {
         memcpy(args2 + n_args, kw_args->table, 2 * n_kw * sizeof(mp_obj_t));
     }
-    self->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args2);
+    self->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args, n_kw, args2);
     m_del(mp_obj_t, args2, n_args + 2 * n_kw);
 
     return mp_const_none;
@@ -123,8 +117,7 @@ STATIC
 mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_type_t **native_base) {
     size_t num_native_bases = instance_count_native_bases(class, native_base);
     assert(num_native_bases < 2);
-    mp_obj_instance_t *o = m_new_obj_var(mp_obj_instance_t, mp_obj_t, num_native_bases);
-    o->base.type = class;
+    mp_obj_instance_t *o = mp_obj_malloc_var(mp_obj_instance_t, mp_obj_t, num_native_bases, class);
     mp_map_init(&o->members, 0);
     // Initialise the native base-class slot (should be 1 at most) with a valid
     // object.  It doesn't matter which object, so long as it can be uniquely
@@ -135,6 +128,7 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *class, const mp_obj_
     return o;
 }
 
+// CIRCUITPY-CHANGE
 // When instances are first created they have the base_init wrapper as their native parent's
 // instance because make_new combines __new__ and __init__. This object is invalid for the native
 // code so it must call this method to ensure that the given object has been __init__'d and is
@@ -153,7 +147,7 @@ void mp_obj_assert_native_inited(mp_obj_t native_object) {
 // will keep lookup->dest[0]'s value (should be MP_OBJ_NULL on invocation) if attribute
 // is not found
 // will set lookup->dest[0] to MP_OBJ_SENTINEL if special method was found in a native
-// type base via slot id (as specified by lookup->meth_offset). As there can be only one
+// type base via slot id (as specified by lookup->slot_offset). As there can be only one
 // native base, it's known that it applies to instance->subobj[0]. In most cases, we also
 // don't need to know which type it was - because instance->subobj[0] is of that type.
 // The only exception is when object is not yet constructed, then we need to know base
@@ -162,7 +156,7 @@ void mp_obj_assert_native_inited(mp_obj_t native_object) {
 struct class_lookup_data {
     mp_obj_instance_t *obj;
     qstr attr;
-    size_t meth_offset;
+    size_t slot_offset;
     mp_obj_t *dest;
     bool is_type;
 };
@@ -176,23 +170,22 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
         // This avoids extra method_name => slot lookup. On the other hand,
         // this should not be applied to class types, as will result in extra
         // lookup either.
-        if (lookup->meth_offset != 0 && mp_obj_is_native_type(type)) {
-            #pragma GCC diagnostic push
-            #pragma GCC diagnostic ignored "-Wcast-align"
-            size_t sz = mp_type_size(type);
-            if (lookup->meth_offset < sz && *(void **)((char *)type + lookup->meth_offset) != NULL) {
-                #pragma GCC diagnostic pop
+        if (lookup->slot_offset != 0 && mp_obj_is_native_type(type)) {
+            // Check if there is a non-zero value in the specified slot index,
+            // with a special case for getiter where the slot won't be set
+            // for MP_TYPE_FLAG_ITER_IS_STREAM.
+            if (MP_OBJ_TYPE_HAS_SLOT_BY_OFFSET(type, lookup->slot_offset) || (lookup->slot_offset == MP_OBJ_TYPE_OFFSETOF_SLOT(iter) && type->flags & MP_TYPE_FLAG_ITER_IS_STREAM)) {
                 DEBUG_printf("mp_obj_class_lookup: Matched special meth slot (off=%d) for %s\n",
-                    lookup->meth_offset, qstr_str(lookup->attr));
+                    lookup->slot_offset, qstr_str(lookup->attr));
                 lookup->dest[0] = MP_OBJ_SENTINEL;
                 return;
             }
         }
 
-        if (type->locals_dict != NULL) {
+        if (MP_OBJ_TYPE_HAS_SLOT(type, locals_dict)) {
             // search locals_dict (the set of methods/attributes)
-            assert(mp_obj_is_dict_or_ordereddict(MP_OBJ_FROM_PTR(type->locals_dict))); // MicroPython restriction, for now
-            mp_map_t *locals_map = &type->locals_dict->map;
+            assert(mp_obj_is_dict_or_ordereddict(MP_OBJ_FROM_PTR(MP_OBJ_TYPE_GET_SLOT(type, locals_dict)))); // MicroPython restriction, for now
+            mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(type, locals_dict)->map;
             mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(lookup->attr), MP_MAP_LOOKUP);
             if (elem != NULL) {
                 if (lookup->is_type) {
@@ -201,11 +194,14 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
                     const mp_obj_type_t *org_type = (const mp_obj_type_t *)lookup->obj;
                     mp_convert_member_lookup(MP_OBJ_NULL, org_type, elem->value, lookup->dest);
                 } else if (mp_obj_is_type(elem->value, &mp_type_property)) {
+                    // CIRCUITPY-CHANGE: CircuitPython uses properties on native classes, so we always return them.
                     lookup->dest[0] = elem->value;
                     return;
                 } else {
                     mp_obj_instance_t *obj = lookup->obj;
-                    mp_convert_member_lookup(MP_OBJ_FROM_PTR(obj), type, elem->value, lookup->dest);
+                    // CIRCUITPY-CHANGE: Pass object directly. MP passes the native object.
+                    // This allows native code to lookup and call functions on Python subclasses.
+                    mp_convert_member_lookup(obj, type, elem->value, lookup->dest);
                 }
                 #if DEBUG_PRINT
                 DEBUG_printf("mp_obj_class_lookup: Returning: ");
@@ -232,14 +228,12 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
 
         // attribute not found, keep searching base classes
 
-        const void *parent = mp_type_get_parent_slot(type);
-        if (parent == NULL) {
+        if (!MP_OBJ_TYPE_HAS_SLOT(type, parent)) {
             DEBUG_printf("mp_obj_class_lookup: No more parents\n");
             return;
-        }
         #if MICROPY_MULTIPLE_INHERITANCE
-        if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
-            const mp_obj_tuple_t *parent_tuple = parent;
+        } else if (((mp_obj_base_t *)MP_OBJ_TYPE_GET_SLOT(type, parent))->type == &mp_type_tuple) {
+            const mp_obj_tuple_t *parent_tuple = MP_OBJ_TYPE_GET_SLOT(type, parent);
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len - 1;
             for (; item < top; ++item) {
@@ -258,10 +252,10 @@ STATIC void mp_obj_class_lookup(struct class_lookup_data *lookup, const mp_obj_t
             // search last base (simple tail recursion elimination)
             assert(mp_obj_is_type(*item, &mp_type_type));
             type = (mp_obj_type_t *)MP_OBJ_TO_PTR(*item);
-            continue;
-        }
         #endif
-        type = parent;
+        } else {
+            type = MP_OBJ_TYPE_GET_SLOT(type, parent);
+        }
         if (type == &mp_type_object) {
             // Not a "real" type
             return;
@@ -276,7 +270,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = meth,
-        .meth_offset = offsetof(mp_obj_type_t, print),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(print),
         .dest = member,
         .is_type = false,
     };
@@ -284,7 +278,7 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     if (member[0] == MP_OBJ_NULL && kind == PRINT_STR) {
         // If there's no __str__, fall back to __repr__
         lookup.attr = MP_QSTR___repr__;
-        lookup.meth_offset = 0;
+        lookup.slot_offset = 0;
         mp_obj_class_lookup(&lookup, self->base.type);
     }
 
@@ -308,10 +302,11 @@ STATIC void instance_print(const mp_print_t *print, mp_obj_t self_in, mp_print_k
     }
 
     // TODO: CPython prints fully-qualified type name
+    // CIRCUITPY-CHANGE: use qstr
     mp_printf(print, "<%q object at %p>", mp_obj_get_type_qstr(self_in), self);
 }
 
-mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+STATIC mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     assert(mp_obj_is_instance_type(self));
 
     // look for __new__ function
@@ -319,7 +314,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     struct class_lookup_data lookup = {
         .obj = NULL,
         .attr = MP_QSTR___new__,
-        .meth_offset = offsetof(mp_obj_type_t, make_new),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(make_new),
         .dest = init_fn,
         .is_type = false,
     };
@@ -345,7 +340,6 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
             mp_obj_t args2[1] = {MP_OBJ_FROM_PTR(self)};
             new_ret = mp_call_function_n_kw(init_fn[0], 1, 0, args2);
         } else {
-            // TODO(tannewt): Could this be on the stack? It's deleted below.
             mp_obj_t *args2 = m_new(mp_obj_t, 1 + n_args + 2 * n_kw);
             args2[0] = MP_OBJ_FROM_PTR(self);
             memcpy(args2 + 1, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
@@ -370,18 +364,16 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     init_fn[0] = init_fn[1] = MP_OBJ_NULL;
     lookup.obj = o;
     lookup.attr = MP_QSTR___init__;
-    lookup.meth_offset = 0;
+    lookup.slot_offset = 0;
     mp_obj_class_lookup(&lookup, self);
     if (init_fn[0] != MP_OBJ_NULL) {
         mp_obj_t init_ret;
         if (n_args == 0 && n_kw == 0) {
             init_ret = mp_call_method_n_kw(0, 0, init_fn);
         } else {
-            // TODO(tannewt): Could this be on the stack? It's deleted below.
             mp_obj_t *args2 = m_new(mp_obj_t, 2 + n_args + 2 * n_kw);
             args2[0] = init_fn[0];
             args2[1] = init_fn[1];
-            // copy in kwargs
             memcpy(args2 + 2, args, (n_args + 2 * n_kw) * sizeof(mp_obj_t));
             init_ret = mp_call_method_n_kw(n_args, n_kw, args2);
             m_del(mp_obj_t, args2, 2 + n_args + 2 * n_kw);
@@ -390,8 +382,8 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(MP_ERROR_TEXT("__init__() should return None"));
             #else
-            mp_raise_TypeError_varg(MP_ERROR_TEXT("__init__() should return None, not '%q'"),
-                mp_obj_get_type_qstr(init_ret));
+            mp_raise_msg_varg(&mp_type_TypeError,
+                MP_ERROR_TEXT("__init__() should return None, not '%s'"), mp_obj_get_type_str(init_ret));
             #endif
         }
     }
@@ -399,7 +391,7 @@ mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *self, size_t n_args, size
     // If the type had a native base that was not explicitly initialised
     // (constructed) by the Python __init__() method then construct it now.
     if (native_base != NULL && o->subobj[0] == MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj)) {
-        o->subobj[0] = native_base->make_new(native_base, n_args, n_kw, args);
+        o->subobj[0] = MP_OBJ_TYPE_GET_SLOT(native_base, make_new)(native_base, n_args, n_kw, args);
     }
 
     return MP_OBJ_FROM_PTR(o);
@@ -411,12 +403,18 @@ const byte mp_unary_op_method_name[MP_UNARY_OP_NUM_RUNTIME] = {
     [MP_UNARY_OP_BOOL] = MP_QSTR___bool__,
     [MP_UNARY_OP_LEN] = MP_QSTR___len__,
     [MP_UNARY_OP_HASH] = MP_QSTR___hash__,
-    [MP_UNARY_OP_INT] = MP_QSTR___int__,
+    [MP_UNARY_OP_INT_MAYBE] = MP_QSTR___int__,
     #if MICROPY_PY_ALL_SPECIAL_METHODS
     [MP_UNARY_OP_POSITIVE] = MP_QSTR___pos__,
     [MP_UNARY_OP_NEGATIVE] = MP_QSTR___neg__,
     [MP_UNARY_OP_INVERT] = MP_QSTR___invert__,
     [MP_UNARY_OP_ABS] = MP_QSTR___abs__,
+    #endif
+    #if MICROPY_PY_BUILTINS_FLOAT
+    [MP_UNARY_OP_FLOAT_MAYBE] = MP_QSTR___float__,
+    #if MICROPY_PY_BUILTINS_COMPLEX
+    [MP_UNARY_OP_COMPLEX_MAYBE] = MP_QSTR___complex__,
+    #endif
     #endif
     #if MICROPY_PY_SYS_GETSIZEOF
     [MP_UNARY_OP_SIZEOF] = MP_QSTR___sizeof__,
@@ -448,7 +446,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = op_name,
-        .meth_offset = offsetof(mp_obj_type_t, ext[0].unary_op),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(unary_op),
         .dest = member,
         .is_type = false,
     };
@@ -463,7 +461,7 @@ STATIC mp_obj_t instance_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
                 // __hash__ must return a small int
                 val = MP_OBJ_NEW_SMALL_INT(mp_obj_get_int_truncated(val));
                 break;
-            case MP_UNARY_OP_INT:
+            case MP_UNARY_OP_INT_MAYBE:
                 // Must return int
                 if (!mp_obj_is_int(val)) {
                     mp_raise_TypeError(NULL);
@@ -565,7 +563,6 @@ STATIC mp_obj_t instance_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t 
     // Note: For ducktyping, CPython does not look in the instance members or use
     // __getattr__ or __getattribute__.  It only looks in the class dictionary.
     mp_obj_instance_t *lhs = MP_OBJ_TO_PTR(lhs_in);
-retry:;
     qstr op_name = mp_binary_op_method_name[op];
     /* Still try to lookup native slot
     if (op_name == 0) {
@@ -576,7 +573,7 @@ retry:;
     struct class_lookup_data lookup = {
         .obj = lhs,
         .attr = op_name,
-        .meth_offset = offsetof(mp_obj_type_t, ext[0].binary_op),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(binary_op),
         .dest = dest,
         .is_type = false,
     };
@@ -588,23 +585,14 @@ retry:;
     } else if (dest[0] != MP_OBJ_NULL) {
         dest[2] = rhs_in;
         res = mp_call_method_n_kw(1, 0, dest);
+        res = op == MP_BINARY_OP_CONTAINS ? mp_obj_new_bool(mp_obj_is_true(res)) : res;
     } else {
-        // If this was an inplace method, fallback to normal method
-        // https://docs.python.org/3/reference/datamodel.html#object.__iadd__ :
-        // "If a specific method is not defined, the augmented assignment
-        // falls back to the normal methods."
-        if (op >= MP_BINARY_OP_INPLACE_OR && op <= MP_BINARY_OP_INPLACE_POWER) {
-            op -= MP_BINARY_OP_INPLACE_OR - MP_BINARY_OP_OR;
-            goto retry;
-        }
         return MP_OBJ_NULL; // op not supported
     }
 
     #if MICROPY_PY_BUILTINS_NOTIMPLEMENTED
     // NotImplemented means "try other fallbacks (like calling __rop__
-    // instead of __op__) and if nothing works, raise TypeError". As
-    // MicroPython doesn't implement any fallbacks, signal to raise
-    // TypeError right away.
+    // instead of __op__) and if nothing works, raise TypeError".
     if (res == mp_const_notimplemented) {
         return MP_OBJ_NULL; // op not supported
     }
@@ -641,7 +629,7 @@ STATIC void mp_obj_instance_load_attr(mp_obj_t self_in, qstr attr, mp_obj_t *des
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = attr,
-        .meth_offset = 0,
+        .slot_offset = 0,
         .dest = dest,
         .is_type = false,
     };
@@ -727,7 +715,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = attr,
-        .meth_offset = 0,
+        .slot_offset = 0,
         .dest = member,
         .is_type = false,
     };
@@ -743,6 +731,7 @@ STATIC bool mp_obj_instance_store_attr(mp_obj_t self_in, qstr attr, mp_obj_t val
             // would be called by the descriptor code down below.  But that way
             // requires overhead for the nested mp_call's and overhead for
             // the code.
+            // CIRCUITPY-CHANGE: variable number of proxies
             size_t n_proxy;
             const mp_obj_t *proxy = mp_obj_property_get(member[0], &n_proxy);
             mp_obj_t dest[2] = {self_in, value};
@@ -850,7 +839,7 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     mp_obj_t member[4] = {MP_OBJ_NULL, MP_OBJ_NULL, index, value};
     struct class_lookup_data lookup = {
         .obj = self,
-        .meth_offset = offsetof(mp_obj_type_t, ext[0].subscr),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(subscr),
         .dest = member,
         .is_type = false,
     };
@@ -866,10 +855,10 @@ STATIC mp_obj_t instance_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value
     }
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
-        const mp_obj_type_t *subobj_type = mp_obj_get_type(self->subobj[0]);
-        mp_obj_t ret = subobj_type->ext[0].subscr(self_in, index, value);
-        // May have called port specific C code. Make sure it didn't mess up the heap.
-        assert_heap_ok();
+        // CIRCUITPY-CHANGE: We pass the native subscr a copy of the original
+        // object so it can access info about the subobject.
+        const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
+        mp_obj_t ret = MP_OBJ_TYPE_GET_SLOT(type, subscr)(self_in, index, value);
         return ret;
     } else if (member[0] != MP_OBJ_NULL) {
         size_t n_args = value == MP_OBJ_NULL || value == MP_OBJ_SENTINEL ? 1 : 2;
@@ -889,7 +878,7 @@ STATIC mp_obj_t mp_obj_instance_get_call(mp_obj_t self_in, mp_obj_t *member) {
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___call__,
-        .meth_offset = offsetof(mp_obj_type_t, ext[0].call),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(call),
         .dest = member,
         .is_type = false,
     };
@@ -928,7 +917,7 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR___iter__,
-        .meth_offset = offsetof(mp_obj_type_t, ext[0].getiter),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(iter),
         .dest = member,
         .is_type = false,
     };
@@ -937,10 +926,14 @@ mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf) 
         return MP_OBJ_NULL;
     } else if (member[0] == MP_OBJ_SENTINEL) {
         const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
-        if (iter_buf == NULL) {
-            iter_buf = m_new_obj(mp_obj_iter_buf_t);
+        if (type->flags & MP_TYPE_FLAG_ITER_IS_ITERNEXT) {
+            return self->subobj[0];
+        } else {
+            if (iter_buf == NULL) {
+                iter_buf = m_new_obj(mp_obj_iter_buf_t);
+            }
+            return ((mp_getiter_fun_t)MP_OBJ_TYPE_GET_SLOT(type, iter))(self->subobj[0], iter_buf);
         }
-        return type->ext[0].getiter(self->subobj[0], iter_buf);
     } else {
         return mp_call_method_n_kw(0, 0, member);
     }
@@ -952,14 +945,14 @@ STATIC mp_int_t instance_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo,
     struct class_lookup_data lookup = {
         .obj = self,
         .attr = MP_QSTR_, // don't actually look for a method
-        .meth_offset = offsetof(mp_obj_type_t, ext[0].buffer_p.get_buffer),
+        .slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(buffer),
         .dest = member,
         .is_type = false,
     };
     mp_obj_class_lookup(&lookup, self->base.type);
     if (member[0] == MP_OBJ_SENTINEL) {
         const mp_obj_type_t *type = mp_obj_get_type(self->subobj[0]);
-        return type->ext[0].buffer_p.get_buffer(self->subobj[0], bufinfo, flags);
+        return MP_OBJ_TYPE_GET_SLOT(type, buffer)(self->subobj[0], bufinfo, flags);
     } else {
         return 1; // object does not support buffer protocol
     }
@@ -997,21 +990,6 @@ STATIC bool check_for_special_accessors(mp_obj_t key, mp_obj_t value) {
     #endif
     return false;
 }
-
-STATIC bool map_has_special_accessors(const mp_map_t *map) {
-    if (map == NULL) {
-        return false;
-    }
-    for (size_t i = 0; i < map->alloc; i++) {
-        if (mp_map_slot_is_filled(map, i)) {
-            const mp_map_elem_t *elem = &map->table[i];
-            if (check_for_special_accessors(elem->key, elem->value)) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 #endif
 
 STATIC void type_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
@@ -1045,7 +1023,7 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
 
     mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
 
-    if (self->make_new == NULL) {
+    if (!MP_OBJ_TYPE_HAS_SLOT(self, make_new)) {
         #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
         mp_raise_TypeError(MP_ERROR_TEXT("cannot create instance"));
         #else
@@ -1053,7 +1031,8 @@ STATIC mp_obj_t type_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp
         #endif
     }
 
-    mp_obj_t o = self->make_new(self, n_args, n_kw, args);
+    // make new instance
+    mp_obj_t o = MP_OBJ_TYPE_GET_SLOT(self, make_new)(self, n_args, n_kw, args);
 
     // return new instance
     return o;
@@ -1074,7 +1053,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         if (attr == MP_QSTR___dict__) {
             // Returns a read-only dict of the class attributes.
             // If the internal locals is not fixed, a copy will be created.
-            const mp_obj_dict_t *dict = self->locals_dict;
+            const mp_obj_dict_t *dict = MP_OBJ_TYPE_GET_SLOT_OR_NULL(self, locals_dict);
             if (!dict) {
                 dict = &mp_const_empty_dict_obj;
             }
@@ -1093,8 +1072,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 dest[0] = mp_const_empty_tuple;
                 return;
             }
-            const void *parent = mp_type_get_parent_slot(self);
-            mp_obj_t parent_obj = parent ? MP_OBJ_FROM_PTR(parent) : MP_OBJ_FROM_PTR(&mp_type_object);
+            mp_obj_t parent_obj = MP_OBJ_TYPE_HAS_SLOT(self, parent) ? MP_OBJ_FROM_PTR(MP_OBJ_TYPE_GET_SLOT(self, parent)) : MP_OBJ_FROM_PTR(&mp_type_object);
             #if MICROPY_MULTIPLE_INHERITANCE
             if (mp_obj_is_type(parent_obj, &mp_type_tuple)) {
                 dest[0] = parent_obj;
@@ -1108,7 +1086,7 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         struct class_lookup_data lookup = {
             .obj = (mp_obj_instance_t *)self,
             .attr = attr,
-            .meth_offset = 0,
+            .slot_offset = 0,
             .dest = dest,
             .is_type = true,
         };
@@ -1116,9 +1094,9 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     } else {
         // delete/store attribute
 
-        if (self->locals_dict != NULL) {
-            assert(mp_obj_is_dict_or_ordereddict(MP_OBJ_FROM_PTR(self->locals_dict))); // MicroPython restriction, for now
-            mp_map_t *locals_map = &self->locals_dict->map;
+        if (MP_OBJ_TYPE_HAS_SLOT(self, locals_dict)) {
+            assert(mp_obj_is_dict_or_ordereddict(MP_OBJ_FROM_PTR(MP_OBJ_TYPE_GET_SLOT(self, locals_dict)))); // MicroPython restriction, for now
+            mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(self, locals_dict)->map;
             if (locals_map->is_fixed) {
                 // can't apply delete/store to a fixed map
                 return;
@@ -1152,18 +1130,15 @@ STATIC void type_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_type,
-    .print = type_print,
-    .make_new = type_make_new,
-    .attr = type_attr,
-    MP_TYPE_EXTENDED_FIELDS(
-        .call = type_call,
-        .unary_op = mp_generic_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_type,
+    MP_QSTR_type,
+    MP_TYPE_FLAG_NONE,
+    make_new, type_make_new,
+    print, type_print,
+    call, type_call,
+    attr, type_attr
+    );
 
 mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) {
     // Verify input objects have expected type
@@ -1178,15 +1153,20 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
 
     // Basic validation of base classes
     uint16_t base_flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE
-        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST | MP_TYPE_FLAG_EXTENDED;
+        | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE
+        | MP_TYPE_FLAG_EQ_HAS_NEQ_TEST
+        | MP_TYPE_FLAG_ITER_IS_GETITER
+        | MP_TYPE_FLAG_INSTANCE_TYPE;
     size_t bases_len;
     mp_obj_t *bases_items;
     mp_obj_tuple_get(bases_tuple, &bases_len, &bases_items);
     for (size_t i = 0; i < bases_len; i++) {
-        mp_arg_validate_type(bases_items[i], &mp_type_type, MP_QSTR___class__);
+        if (!mp_obj_is_type(bases_items[i], &mp_type_type)) {
+            mp_raise_TypeError(NULL);
+        }
         mp_obj_type_t *t = MP_OBJ_TO_PTR(bases_items[i]);
         // TODO: Verify with CPy, tested on function type
-        if (t->make_new == NULL) {
+        if (!MP_OBJ_TYPE_HAS_SLOT(t, make_new)) {
             #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
             mp_raise_TypeError(MP_ERROR_TEXT("type is not an acceptable base type"));
             #else
@@ -1195,54 +1175,66 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
             #endif
         }
         #if ENABLE_SPECIAL_ACCESSORS
+        // Inherit the special accessors flag.
+        base_flags |= t->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
         if (mp_obj_is_instance_type(t)) {
             t->flags |= MP_TYPE_FLAG_IS_SUBCLASSED;
-            base_flags |= t->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
         }
         #endif
     }
 
-    mp_obj_full_type_t *o = m_new0_ll(mp_obj_full_type_t, 1);
+    const void *base_protocol = NULL;
+    if (bases_len > 0) {
+        base_protocol = MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_type_t *)MP_OBJ_TO_PTR(bases_items[0])), protocol);
+    }
+
+    // Allocate a variable-sized mp_obj_type_t with as many slots as we need
+    // (currently 10, plus 1 for base, plus 1 for base-protocol).
+    // Note: mp_obj_type_t is (2 + 3 + #slots) words, so going from 11 to 12 slots
+    // moves from 4 to 5 gc blocks.
+    mp_obj_type_t *o = m_new_obj_var0(mp_obj_type_t, void *, 10 + (bases_len ? 1 : 0) + (base_protocol ? 1 : 0));
     o->base.type = &mp_type_type;
     o->flags = base_flags;
     o->name = name;
-    o->print = instance_print;
-    o->make_new = mp_obj_instance_make_new;
-    o->attr = mp_obj_instance_attr;
-    o->MP_TYPE_CALL = mp_obj_instance_call;
-    o->MP_TYPE_UNARY_OP = instance_unary_op;
-    o->MP_TYPE_BINARY_OP = instance_binary_op;
-    o->MP_TYPE_SUBSCR = instance_subscr;
-    o->MP_TYPE_GETITER = mp_obj_instance_getiter;
-    // o->iternext = ; not implemented
-    o->MP_TYPE_GET_BUFFER = instance_get_buffer;
+    MP_OBJ_TYPE_SET_SLOT(o, make_new, mp_obj_instance_make_new, 0);
+    MP_OBJ_TYPE_SET_SLOT(o, print, instance_print, 1);
+    MP_OBJ_TYPE_SET_SLOT(o, call, mp_obj_instance_call, 2);
+    MP_OBJ_TYPE_SET_SLOT(o, unary_op, instance_unary_op, 3);
+    MP_OBJ_TYPE_SET_SLOT(o, binary_op, instance_binary_op, 4);
+    MP_OBJ_TYPE_SET_SLOT(o, attr, mp_obj_instance_attr, 5);
+    MP_OBJ_TYPE_SET_SLOT(o, subscr, instance_subscr, 6);
+    MP_OBJ_TYPE_SET_SLOT(o, iter, mp_obj_instance_getiter, 7);
+    MP_OBJ_TYPE_SET_SLOT(o, buffer, instance_get_buffer, 8);
+
+    mp_obj_dict_t *locals_ptr = MP_OBJ_TO_PTR(locals_dict);
+    MP_OBJ_TYPE_SET_SLOT(o, locals_dict, locals_ptr, 9);
 
     if (bases_len > 0) {
-        // Inherit protocol from a base class. This allows to define an
-        // abstract base class which would translate C-level protocol to
-        // Python method calls, and any subclass inheriting from it will
-        // support this feature.
-        o->MP_TYPE_PROTOCOL = mp_type_get_protocol_slot((mp_obj_type_t *)MP_OBJ_TO_PTR(bases_items[0]));
-
         if (bases_len >= 2) {
             #if MICROPY_MULTIPLE_INHERITANCE
-            o->parent = MP_OBJ_TO_PTR(bases_tuple);
+            MP_OBJ_TYPE_SET_SLOT(o, parent, MP_OBJ_TO_PTR(bases_tuple), 10);
             #else
             mp_raise_NotImplementedError(MP_ERROR_TEXT("multiple inheritance not supported"));
             #endif
         } else {
-            o->parent = MP_OBJ_TO_PTR(bases_items[0]);
+            MP_OBJ_TYPE_SET_SLOT(o, parent, MP_OBJ_TO_PTR(bases_items[0]), 10);
+        }
+
+        // Inherit protocol from a base class. This allows to define an
+        // abstract base class which would translate C-level protocol to
+        // Python method calls, and any subclass inheriting from it will
+        // support this feature.
+        if (base_protocol) {
+            MP_OBJ_TYPE_SET_SLOT(o, protocol, base_protocol, 11);
         }
     }
-
-    o->locals_dict = make_dict_long_lived(MP_OBJ_TO_PTR(locals_dict), 10);
 
     #if ENABLE_SPECIAL_ACCESSORS
     // Check if the class has any special accessor methods
     if (!(o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS)) {
-        for (size_t i = 0; i < o->locals_dict->map.alloc; i++) {
-            if (mp_map_slot_is_filled(&o->locals_dict->map, i)) {
-                const mp_map_elem_t *elem = &o->locals_dict->map.table[i];
+        for (size_t i = 0; i < locals_ptr->map.alloc; i++) {
+            if (mp_map_slot_is_filled(&locals_ptr->map, i)) {
+                const mp_map_elem_t *elem = &locals_ptr->map.table[i];
                 if (check_for_special_accessors(elem->key, elem->value)) {
                     o->flags |= MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
                     break;
@@ -1253,23 +1245,12 @@ mp_obj_t mp_obj_new_type(qstr name, mp_obj_t bases_tuple, mp_obj_t locals_dict) 
     #endif
 
     const mp_obj_type_t *native_base;
-    size_t num_native_bases = instance_count_native_bases((mp_obj_type_t *)o, &native_base);
+    size_t num_native_bases = instance_count_native_bases(o, &native_base);
     if (num_native_bases > 1) {
         mp_raise_TypeError(MP_ERROR_TEXT("multiple bases have instance lay-out conflict"));
     }
 
-    mp_map_t *locals_map = &o->locals_dict->map;
-    #if ENABLE_SPECIAL_ACCESSORS
-    // Check if the class has any special accessor methods
-    if (!(o->flags & MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS) &&
-        (map_has_special_accessors(locals_map) ||
-         (num_native_bases == 1 &&
-          native_base->locals_dict != NULL &&
-          map_has_special_accessors(&native_base->locals_dict->map)))) {
-        o->flags |= MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS;
-    }
-    #endif
-
+    mp_map_t *locals_map = &MP_OBJ_TYPE_GET_SLOT(o, locals_dict)->map;
     mp_map_elem_t *elem = mp_map_lookup(locals_map, MP_OBJ_NEW_QSTR(MP_QSTR___new__), MP_MAP_LOOKUP);
     if (elem != NULL) {
         // __new__ slot exists; check if it is a function
@@ -1330,22 +1311,21 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     struct class_lookup_data lookup = {
         .obj = MP_OBJ_TO_PTR(self->obj),
         .attr = attr,
-        .meth_offset = 0,
+        .slot_offset = 0,
         .dest = dest,
         .is_type = false,
     };
 
-    // Allow a call super().__init__() to reach any native base classes
+    // Allow a call super().__init__() to reach any native base classes.
     if (attr == MP_QSTR___init__) {
-        lookup.meth_offset = offsetof(mp_obj_type_t, make_new);
+        lookup.slot_offset = MP_OBJ_TYPE_OFFSETOF_SLOT(make_new);
     }
 
-    const void *parent = mp_type_get_parent_slot(type);
-    if (parent == NULL) {
+    if (!MP_OBJ_TYPE_HAS_SLOT(type, parent)) {
         // no parents, do nothing
     #if MICROPY_MULTIPLE_INHERITANCE
-    } else if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
-        const mp_obj_tuple_t *parent_tuple = parent;
+    } else if (((mp_obj_base_t *)MP_OBJ_TYPE_GET_SLOT(type, parent))->type == &mp_type_tuple) {
+        const mp_obj_tuple_t *parent_tuple = MP_OBJ_TYPE_GET_SLOT(type, parent);
         size_t len = parent_tuple->len;
         const mp_obj_t *items = parent_tuple->items;
         for (size_t i = 0; i < len; i++) {
@@ -1355,14 +1335,15 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
                 // and we don't want to lookup native methods in object.
                 continue;
             }
+
             mp_obj_class_lookup(&lookup, (mp_obj_type_t *)MP_OBJ_TO_PTR(items[i]));
             if (dest[0] != MP_OBJ_NULL) {
                 break;
             }
         }
     #endif
-    } else if (parent != &mp_type_object) {
-        mp_obj_class_lookup(&lookup, parent);
+    } else if (MP_OBJ_TYPE_GET_SLOT(type, parent) != &mp_type_object) {
+        mp_obj_class_lookup(&lookup, MP_OBJ_TYPE_GET_SLOT(type, parent));
     }
 
     if (dest[0] != MP_OBJ_NULL) {
@@ -1370,6 +1351,7 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             // Looked up native __init__ so defer to it
             dest[0] = MP_OBJ_FROM_PTR(&native_base_init_wrapper_obj);
             dest[1] = self->obj;
+            // CIRCUITPY-CHANGE: better support for properties
         } else {
             mp_obj_t member = dest[0];
             // changes to mp_obj_instance_load_attr may require changes
@@ -1398,20 +1380,21 @@ STATIC void super_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         return;
     }
 
-    // Reset meth_offset so we don't look up any native methods in object,
+    // Reset slot_offset so we don't look up any native methods in object,
     // because object never takes up the native base-class slot.
-    lookup.meth_offset = 0;
+    lookup.slot_offset = 0;
 
     mp_obj_class_lookup(&lookup, &mp_type_object);
 }
 
-const mp_obj_type_t mp_type_super = {
-    { &mp_type_type },
-    .name = MP_QSTR_super,
-    .print = super_print,
-    .make_new = super_make_new,
-    .attr = super_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_super,
+    MP_QSTR_super,
+    MP_TYPE_FLAG_NONE,
+    make_new, super_make_new,
+    print, super_print,
+    attr, super_attr
+    );
 
 void mp_load_super_method(qstr attr, mp_obj_t *dest) {
     mp_obj_super_t super = {{&mp_type_super}, dest[1], dest[2]};
@@ -1437,15 +1420,14 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         }
 
         const mp_obj_type_t *self = MP_OBJ_TO_PTR(object);
-        const void *parent = mp_type_get_parent_slot(self);
 
-        if (parent == NULL) {
+        if (!MP_OBJ_TYPE_HAS_SLOT(self, parent)) {
             // type has no parents
             return false;
         #if MICROPY_MULTIPLE_INHERITANCE
-        } else if (((mp_obj_base_t *)parent)->type == &mp_type_tuple) {
+        } else if (((mp_obj_base_t *)MP_OBJ_TYPE_GET_SLOT(self, parent))->type == &mp_type_tuple) {
             // get the base objects (they should be type objects)
-            const mp_obj_tuple_t *parent_tuple = parent;
+            const mp_obj_tuple_t *parent_tuple = MP_OBJ_TYPE_GET_SLOT(self, parent);
             const mp_obj_t *item = parent_tuple->items;
             const mp_obj_t *top = item + parent_tuple->len - 1;
 
@@ -1461,7 +1443,7 @@ bool mp_obj_is_subclass_fast(mp_const_obj_t object, mp_const_obj_t classinfo) {
         #endif
         } else {
             // type has 1 parent
-            object = MP_OBJ_FROM_PTR(parent);
+            object = MP_OBJ_FROM_PTR(MP_OBJ_TYPE_GET_SLOT(self, parent));
         }
     }
 }
@@ -1528,14 +1510,16 @@ STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self, size_t n
     return MP_OBJ_FROM_PTR(o);
 }
 
-const mp_obj_type_t mp_type_staticmethod = {
-    { &mp_type_type },
-    .name = MP_QSTR_staticmethod,
-    .make_new = static_class_method_make_new,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_staticmethod,
+    MP_QSTR_staticmethod,
+    MP_TYPE_FLAG_NONE,
+    make_new, static_class_method_make_new
+    );
 
-const mp_obj_type_t mp_type_classmethod = {
-    { &mp_type_type },
-    .name = MP_QSTR_classmethod,
-    .make_new = static_class_method_make_new,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_classmethod,
+    MP_QSTR_classmethod,
+    MP_TYPE_FLAG_NONE,
+    make_new, static_class_method_make_new
+    );

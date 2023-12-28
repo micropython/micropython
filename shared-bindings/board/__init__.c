@@ -72,7 +72,7 @@ STATIC mp_obj_t board_i2c_0(void) {
 }
 #else
 STATIC mp_obj_t board_i2c_0(void) {
-    mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_I2C);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("No default %q bus"), MP_QSTR_I2C);
     return MP_ROM_NONE;
 }
 #endif
@@ -90,7 +90,7 @@ STATIC mp_obj_t board_spi_0(void) {
 }
 #else
 STATIC mp_obj_t board_spi_0(void) {
-    mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_SPI);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("No default %q bus"), MP_QSTR_SPI);
     return MP_ROM_NONE;
 }
 #endif
@@ -108,7 +108,7 @@ STATIC mp_obj_t board_uart_0(void) {
 }
 #else
 STATIC mp_obj_t board_uart_0(void) {
-    mp_raise_NotImplementedError_varg(translate("No default %q bus"), MP_QSTR_UART);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("No default %q bus"), MP_QSTR_UART);
     return MP_ROM_NONE;
 }
 #endif
@@ -119,4 +119,4 @@ const mp_obj_module_t board_module = {
     .globals = (mp_obj_dict_t *)&board_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_board, board_module, CIRCUITPY_BOARD);
+MP_REGISTER_MODULE(MP_QSTR_board, board_module);

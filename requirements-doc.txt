@@ -3,6 +3,7 @@ mypy
 black
 isort
 twine
+build
 wheel
 astroid
 setuptools>=45

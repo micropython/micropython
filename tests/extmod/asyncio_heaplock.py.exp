@@ -1,0 +1,12 @@
+start
+1 0
+2 0
+sleep
+1 1
+1 2
+2 1
+1 3
+finish
+TestStream.write b'12'
+TestStream.write b'34'
+TestStream.write bytearray(b'56')

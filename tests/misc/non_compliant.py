@@ -54,8 +54,8 @@ except NotImplementedError:
 # str(...) with keywords not implemented
 try:
     str(b"abc", encoding="utf8")
-except TypeError:
-    print("TypeError")
+except NotImplementedError:
+    print("NotImplementedError")
 
 # str.rsplit(None, n) not implemented
 try:
@@ -104,6 +104,13 @@ try:
     del [][2:3:4]
 except NotImplementedError:
     print("NotImplementedError")
+
+# CIRCUITPY-CHANGE: We do check these.
+# struct pack with too many args, not checked by uPy
+# print(struct.pack("bb", 1, 2, 3))
+
+# struct pack with too few args, not checked by uPy
+# print(struct.pack("bb", 1))
 
 # array slice assignment with unsupported RHS
 try:

@@ -36,6 +36,8 @@
 #include "fsl_clock.h"
 #include "fsl_iomuxc.h"
 
+#include "board.h"
+
 #include "clocks.h"
 
 // These values are pulled from the SDK's devices/MIMXRT1021/project_template/clock_config.* files.
@@ -244,7 +246,7 @@ void clocks_init(void) {
     CLOCK_DisableClock(kCLOCK_Lpuart7);
     CLOCK_DisableClock(kCLOCK_Lpuart8);
     /* Set UART_CLK_PODF. */
-    CLOCK_SetDiv(kCLOCK_UartDiv, 0);
+    CLOCK_SetDiv(kCLOCK_UartDiv, 1);
     /* Set Uart clock source. */
     CLOCK_SetMux(kCLOCK_UartMux, 0);
     /* Disable SPDIF clock gate. */

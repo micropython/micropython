@@ -1,5 +1,7 @@
 #include "shared-bindings/board/__init__.h"
 
+#include "shared-module/displayio/__init__.h"
+
 STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     CIRCUITPYTHON_BOARD_DICT_STANDARD_ITEMS
 
@@ -48,6 +50,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_D1P), MP_ROM_PTR(&pin_GPIO21) },
     { MP_ROM_QSTR(MP_QSTR_D2N), MP_ROM_PTR(&pin_GPIO22) },
     { MP_ROM_QSTR(MP_QSTR_D2P), MP_ROM_PTR(&pin_GPIO23) },
+
+    { MP_ROM_QSTR(MP_QSTR_DISPLAY), MP_ROM_PTR(&displays[0].framebuffer_display)},
 
     { MP_ROM_QSTR(MP_QSTR_I2C), MP_ROM_PTR(&board_i2c_obj) },
     { MP_ROM_QSTR(MP_QSTR_STEMMA_I2C), MP_ROM_PTR(&board_i2c_obj) },

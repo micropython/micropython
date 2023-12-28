@@ -95,13 +95,13 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_SDIN),  MP_ROM_PTR(&pin_PA22) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_I2S_BCLK),  MP_ROM_PTR(&pin_PB16) },
 
-    // RTL8720D
+    // RTL8720D - follows the schematic, but see comments
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_PWR),  MP_ROM_PTR(&pin_PA18) },       // CHIP_PU
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_RXD),  MP_ROM_PTR(&pin_PC22) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_TXD),  MP_ROM_PTR(&pin_PC23) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_MOSI),  MP_ROM_PTR(&pin_PB24) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_RXD),  MP_ROM_PTR(&pin_PC22) },       // *NOT* THE MAIN RX FOR THE RTL CHIP (may be a log UART?)
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_TXD),  MP_ROM_PTR(&pin_PC23) },       // *NOT* THE MAIN TX FOR THE RTL CHIP (may be a log UART?)
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_MOSI),  MP_ROM_PTR(&pin_PB24) },      // used as the UART TX for the RTL chip
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_CLK),  MP_ROM_PTR(&pin_PB25) },
-    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_MISO),  MP_ROM_PTR(&pin_PC24) },
+    { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_MISO),  MP_ROM_PTR(&pin_PC24) },      // used as the UART RX for the RTL chip
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_CS),  MP_ROM_PTR(&pin_PC25) },
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_READY),  MP_ROM_PTR(&pin_PC20) },     // IRQ0
     { MP_OBJ_NEW_QSTR(MP_QSTR_RTL_DIR),  MP_ROM_PTR(&pin_PA19) },       // SYNC

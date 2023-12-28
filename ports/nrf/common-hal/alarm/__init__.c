@@ -233,11 +233,11 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
             nrf_sleep_source_t cause = _get_wakeup_cause();
             switch (cause) {
                 case NRF_SLEEP_WAKEUP_TIMER: {
-                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_time_timealarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 case NRF_SLEEP_WAKEUP_GPIO: {
-                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms,alarms);
+                    wake_alarm = alarm_pin_pinalarm_find_triggered_alarm(n_alarms, alarms);
                     break;
                 }
                 default:
@@ -253,7 +253,7 @@ mp_obj_t common_hal_alarm_light_sleep_until_alarms(size_t n_alarms, const mp_obj
 
 void common_hal_alarm_set_deep_sleep_alarms(size_t n_alarms, const mp_obj_t *alarms, size_t n_dios, digitalio_digitalinout_obj_t **preserve_dios) {
     if (n_dios > 0) {
-        mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_preserve_dios);
+        mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_preserve_dios);
     }
     _setup_sleep_alarms(true, n_alarms, alarms);
 }

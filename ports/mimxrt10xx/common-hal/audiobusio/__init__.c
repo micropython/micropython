@@ -320,16 +320,16 @@ void port_i2s_initialize(i2s_t *self, int instance, sai_transceiver_t *config) {
 
     I2S_Type *peripheral = SAI_GetPeripheral(instance);
     if (!peripheral) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_I2SOut);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_I2SOut);
     }
     if (i2s_in_use & (1 << instance)) {
-        mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_I2SOut);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), MP_QSTR_I2SOut);
     }
     if (!i2s_clocking(peripheral)) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_I2SOut);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_I2SOut);
     }
     for (size_t i = 0; i < MP_ARRAY_SIZE(self->buffers); i++) {
-        self->buffers[i] = m_malloc(AUDIO_BUFFER_FRAME_COUNT * sizeof(uint32_t), false);
+        self->buffers[i] = m_malloc(AUDIO_BUFFER_FRAME_COUNT * sizeof(uint32_t));
     }
     self->peripheral = peripheral;
     SAI_Init(self->peripheral);

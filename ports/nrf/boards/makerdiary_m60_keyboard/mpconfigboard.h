@@ -49,3 +49,5 @@
 
 #define DEFAULT_I2C_BUS_SCL         (&pin_P1_06)
 #define DEFAULT_I2C_BUS_SDA         (&pin_P1_05)
+
+#define POWER_SWITCH_PIN            (&pin_P0_28)

@@ -43,10 +43,14 @@ jobs:
 
     - name: Install toolchain (aarch64)
       if: matrix.mpy-cross == 'static-aarch64'
-      run: sudo apt-get install -y gcc-aarch64-linux-gnu
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-aarch64-linux-gnu
     - name: Install toolchain (mingw)
       if: matrix.mpy-cross == 'static-mingw'
-      run: sudo apt-get install -y mingw-w64
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mingw-w64
 
     - name: Build mpy-cross.${{ matrix.mpy-cross }}
       run: make -C mpy-cross -j2 -f Makefile.${{ matrix.mpy-cross }}
@@ -60,11 +64,11 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: mpy-cross.${{ env.EX }}
-        path: mpy-cross/mpy-cross.${{ env.EX }}
+        path: mpy-cross/build-${{ matrix.mpy-cross }}/mpy-cross.${{ env.EX }}
     - name: Upload to S3
       uses: ./.github/actions/upload_aws
       with:
-        source: mpy-cross/mpy-cross.${{ env.EX }}
+        source: mpy-cross/build-${{ matrix.mpy-cross }}/mpy-cross.${{ env.EX }}
         destination: mpy-cross/${{ env.OS }}/mpy-cross-${{ env.OS }}-${{ env.CP_VERSION }}.${{ env.EX }}
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

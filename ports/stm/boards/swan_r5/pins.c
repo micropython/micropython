@@ -74,11 +74,12 @@ STATIC const mp_rom_map_elem_t board_module_carrier_table[] = {
 
 MP_DEFINE_CONST_DICT(board_module_carrier, board_module_carrier_table);
 
-const mp_obj_type_t carrier_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Ext,
-    .locals_dict = (mp_obj_dict_t *)&board_module_carrier,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    carrier_type,
+    MP_QSTR_Ext,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &board_module_carrier
+    );
 
 
 // Core Feather Pins

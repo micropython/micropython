@@ -33,14 +33,14 @@ extern const mp_obj_type_t memorymap_addressrange_type;
 
 void common_hal_memorymap_addressrange_construct(memorymap_addressrange_obj_t *self, uint8_t *start_address, size_t length);
 
-uint32_t common_hal_memorymap_addressrange_get_length(const memorymap_addressrange_obj_t *self);
+size_t common_hal_memorymap_addressrange_get_length(const memorymap_addressrange_obj_t *self);
 
-bool common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_obj_t *self,
-    uint32_t start_index, uint8_t *values, uint32_t len);
+void common_hal_memorymap_addressrange_set_bytes(const memorymap_addressrange_obj_t *self,
+    size_t start_index, uint8_t *values, size_t len);
 
 // len and values are intentionally swapped to signify values is an output and
 // also leverage the compiler to validate uses are expected.
 void common_hal_memorymap_addressrange_get_bytes(const memorymap_addressrange_obj_t *self,
-    uint32_t start_index, uint32_t len, uint8_t *values);
+    size_t start_index, size_t len, uint8_t *values);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_MEMORYMAP_ADDRESSRANGE_H

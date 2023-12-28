@@ -106,7 +106,7 @@ STATIC mp_obj_t bleio_adapter_make_new(const mp_obj_type_t *type, size_t n_args,
 
     return MP_OBJ_FROM_PTR(self);
     #else
-    mp_raise_NotImplementedError(translate("Cannot create a new Adapter; use _bleio.adapter;"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("Cannot create a new Adapter; use _bleio.adapter;"));
     return mp_const_none;
     #endif // CIRCUITPY_BLEIO_HCI
 }
@@ -141,7 +141,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(bleio_adapter_get_address_obj, bleio_adapter_get_addre
 
 STATIC mp_obj_t bleio_adapter_set_address(mp_obj_t self, mp_obj_t new_address) {
     if (!common_hal_bleio_adapter_set_address(self, new_address)) {
-        mp_raise_bleio_BluetoothError(translate("Could not set address"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Could not set address"));
     }
     return mp_const_none;
 }
@@ -234,7 +234,7 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
 
     const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < ADV_INTERVAL_MIN || interval > ADV_INTERVAL_MAX) {
-        mp_raise_ValueError_varg(translate("interval must be in range %s-%s"),
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("interval must be in range %s-%s"),
             ADV_INTERVAL_MIN_STRING, ADV_INTERVAL_MAX_STRING);
     }
 
@@ -242,13 +242,13 @@ STATIC mp_obj_t bleio_adapter_start_advertising(mp_uint_t n_args, const mp_obj_t
     bool anonymous = args[ARG_anonymous].u_bool;
     uint32_t timeout = args[ARG_timeout].u_int;
     if (data_bufinfo.len > 31 && connectable && scan_response_bufinfo.len > 0) {
-        mp_raise_bleio_BluetoothError(translate("Cannot have scan responses for extended, connectable advertisements."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Cannot have scan responses for extended, connectable advertisements."));
     }
 
     const bleio_address_obj_t *address = NULL;
     if (args[ARG_directed_to].u_obj != mp_const_none) {
         if (!connectable) {
-            mp_raise_bleio_BluetoothError(translate("Only connectable advertisements can be directed"));
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Only connectable advertisements can be directed"));
         }
         address = mp_arg_validate_type(args[ARG_directed_to].u_obj, &bleio_address_type, MP_QSTR_directed_to);
     }
@@ -334,27 +334,28 @@ STATIC mp_obj_t bleio_adapter_start_scan(size_t n_args, const mp_obj_t *pos_args
 
     const mp_float_t interval = mp_obj_get_float(args[ARG_interval].u_obj);
     if (interval < INTERVAL_MIN || interval > INTERVAL_MAX) {
-        mp_raise_ValueError_varg(translate("interval must be in range %s-%s"), INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("interval must be in range %s-%s"), INTERVAL_MIN_STRING, INTERVAL_MAX_STRING);
     }
 
     #pragma GCC diagnostic push
     #pragma GCC diagnostic ignored "-Wfloat-equal"
     if (timeout != 0.0f && timeout < interval) {
-        mp_raise_ValueError(translate("non-zero timeout must be >= interval"));
+        mp_raise_ValueError(MP_ERROR_TEXT("non-zero timeout must be >= interval"));
     }
     #pragma GCC diagnostic pop
 
     const mp_float_t window = mp_obj_get_float(args[ARG_window].u_obj);
     if (window > interval) {
-        mp_raise_ValueError(translate("window must be <= interval"));
+        mp_raise_ValueError(MP_ERROR_TEXT("window must be <= interval"));
     }
 
     mp_buffer_info_t prefix_bufinfo;
     prefix_bufinfo.len = 0;
     if (args[ARG_prefixes].u_obj != MP_OBJ_NULL) {
         mp_get_buffer_raise(args[ARG_prefixes].u_obj, &prefix_bufinfo, MP_BUFFER_READ);
-        if (gc_nbytes(prefix_bufinfo.buf) == 0) {
-            mp_raise_ValueError(translate("Prefix buffer must be on the heap"));
+        // An empty buffer may not be on the heap, but that doesn't matter.
+        if (prefix_bufinfo.len > 0 && gc_nbytes(prefix_bufinfo.buf) == 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("Prefix buffer must be on the heap"));
         }
     }
 
@@ -468,9 +469,10 @@ STATIC const mp_rom_map_elem_t bleio_adapter_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bleio_adapter_locals_dict, bleio_adapter_locals_dict_table);
 
-const mp_obj_type_t bleio_adapter_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Adapter,
-    .make_new = bleio_adapter_make_new,
-    .locals_dict = (mp_obj_t)&bleio_adapter_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_adapter_type,
+    MP_QSTR_Adapter,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, bleio_adapter_make_new,
+    locals_dict, &bleio_adapter_locals_dict
+    );

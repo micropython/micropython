@@ -42,7 +42,6 @@ typedef struct {
     uint8_t frame_len;
     uint8_t payload_len_size;
     bool masked;
-    bool closed;
     uint8_t mask[4];
     int frame_index;
     size_t payload_remaining;
@@ -59,17 +58,16 @@ static _websocket cp_serial;
 
 void websocket_init(void) {
     socketpool_socket_reset(&cp_serial.socket);
-    cp_serial.closed = true;
 
-    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf) - 1);
+    ringbuf_init(&_incoming_ringbuf, _buf, sizeof(_buf));
 }
 
 void websocket_handoff(socketpool_socket_obj_t *socket) {
-    if (!cp_serial.closed) {
+    if (!common_hal_socketpool_socket_get_closed(&cp_serial.socket)) {
         common_hal_socketpool_socket_close(&cp_serial.socket);
     }
+
     socketpool_socket_move(socket, &cp_serial.socket);
-    cp_serial.closed = false;
     cp_serial.opcode = 0;
     cp_serial.frame_index = 0;
     cp_serial.frame_len = 2;
@@ -81,12 +79,14 @@ void websocket_handoff(socketpool_socket_obj_t *socket) {
 }
 
 bool websocket_connected(void) {
-    return _incoming_ringbuf.size > 0 && !cp_serial.closed && common_hal_socketpool_socket_get_connected(&cp_serial.socket);
+    return _incoming_ringbuf.size > 0 &&
+           !common_hal_socketpool_socket_get_closed(&cp_serial.socket) &&
+           common_hal_socketpool_socket_get_connected(&cp_serial.socket);
 }
 
 static bool _read_byte(uint8_t *c) {
     int len = socketpool_socket_recv_into(&cp_serial.socket, c, 1);
-    if (len != 1) {
+    if (len < 1) {
         return false;
     }
     return true;
@@ -138,30 +138,23 @@ static void _read_next_frame_header(void) {
             uint8_t opcode = 0x8; // CLOSE
             if (cp_serial.opcode == 0x9) {
                 opcode = 0xA; // PONG
-            } else {
-                // Set the TCP socket to send immediately so that we send the payload back before
-                // closing the connection.
-                int nodelay = 1;
-                common_hal_socketpool_socket_setsockopt(&cp_serial.socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
             }
             uint8_t frame_header[2];
             frame_header[0] = 1 << 7 | opcode;
             frame_header[1] = cp_serial.payload_remaining;
-            web_workflow_send_raw(&cp_serial.socket, (const uint8_t *)frame_header, 2);
+            web_workflow_send_raw(&cp_serial.socket, cp_serial.opcode != 0x9, (const uint8_t *)frame_header, 2);
         }
 
         if (cp_serial.payload_remaining > 0 && _read_byte(&h)) {
             // Send the payload back to the client.
             cp_serial.frame_index++;
             cp_serial.payload_remaining--;
-            web_workflow_send_raw(&cp_serial.socket, &h, 1);
+            web_workflow_send_raw(&cp_serial.socket, false, &h, 1);
         }
 
         if (cp_serial.payload_remaining == 0) {
             cp_serial.frame_index = 0;
             if (cp_serial.opcode == 0x8) {
-                cp_serial.closed = true;
-
                 common_hal_socketpool_socket_close(&cp_serial.socket);
             }
         }
@@ -219,23 +212,23 @@ static void _websocket_send(_websocket *ws, const char *text, size_t len) {
         payload_len = 127;
     }
     frame_header[1] = payload_len;
-    web_workflow_send_raw(&ws->socket, (const uint8_t *)frame_header, 2);
+    web_workflow_send_raw(&ws->socket, false, (const uint8_t *)frame_header, 2);
     uint8_t extended_len[4];
     if (payload_len == 126) {
         extended_len[0] = (len >> 8) & 0xff;
         extended_len[1] = len & 0xff;
-        web_workflow_send_raw(&ws->socket, extended_len, 2);
+        web_workflow_send_raw(&ws->socket, false, extended_len, 2);
     } else if (payload_len == 127) {
         uint32_t zero = 0;
         // 64 bits where top four bytes are zero.
-        web_workflow_send_raw(&ws->socket, (const uint8_t *)&zero, 4);
+        web_workflow_send_raw(&ws->socket, false, (const uint8_t *)&zero, 4);
         extended_len[0] = (len >> 24) & 0xff;
         extended_len[1] = (len >> 16) & 0xff;
         extended_len[2] = (len >> 8) & 0xff;
         extended_len[3] = len & 0xff;
-        web_workflow_send_raw(&ws->socket, extended_len, 4);
+        web_workflow_send_raw(&ws->socket, false, extended_len, 4);
     }
-    web_workflow_send_raw(&ws->socket, (const uint8_t *)text, len);
+    web_workflow_send_raw(&ws->socket, false, (const uint8_t *)text, len);
 }
 
 void websocket_write(const char *text, size_t len) {

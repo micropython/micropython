@@ -31,7 +31,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/hashlib/__init__.h"
 #include "shared-bindings/hashlib/Hash.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """Hashing related functions
 //|
@@ -57,11 +56,10 @@ STATIC mp_obj_t hashlib_new(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     const char *algorithm = mp_obj_str_get_str(args[ARG_name].u_obj);
 
-    hashlib_hash_obj_t *self = m_new_obj(hashlib_hash_obj_t);
-    self->base.type = &hashlib_hash_type;
+    hashlib_hash_obj_t *self = mp_obj_malloc(hashlib_hash_obj_t, &hashlib_hash_type);
 
     if (!common_hal_hashlib_new(self, algorithm)) {
-        mp_raise_ValueError(translate("Unsupported hash algorithm"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Unsupported hash algorithm"));
     }
 
     if (args[ARG_data].u_obj != mp_const_none) {
@@ -87,4 +85,4 @@ const mp_obj_module_t hashlib_module = {
     .globals = (mp_obj_dict_t *)&hashlib_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_hashlib, hashlib_module, CIRCUITPY_HASHLIB);
+MP_REGISTER_MODULE(MP_QSTR_hashlib, hashlib_module);

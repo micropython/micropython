@@ -36,14 +36,12 @@
 extern const mp_obj_type_t framebufferio_framebufferdisplay_type;
 
 #define NO_BRIGHTNESS_COMMAND 0x100
+#define NO_FPS_LIMIT 0xffffffff
 
 void common_hal_framebufferio_framebufferdisplay_construct(framebufferio_framebufferdisplay_obj_t *self,
     mp_obj_t framebuffer,
     uint16_t rotation,
     bool auto_refresh);
-
-bool common_hal_framebufferio_framebufferdisplay_show(framebufferio_framebufferdisplay_obj_t *self,
-    displayio_group_t *root_group);
 
 bool common_hal_framebufferio_framebufferdisplay_refresh(framebufferio_framebufferdisplay_obj_t *self, uint32_t target_ms_per_frame, uint32_t maximum_ms_per_real_frame);
 

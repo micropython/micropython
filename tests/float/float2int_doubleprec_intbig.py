@@ -1,10 +1,6 @@
 # check cases converting float to int, requiring double precision float
 
-try:
-    import ustruct as struct
-except:
-    import struct
-
+import struct
 import sys
 
 maxsize_bits = 0

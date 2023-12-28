@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2014 Damien P. George
+ * Copyright (c) 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 
 #include "py/obj.h"
 #include "py/objtuple.h"
+// CIRCUITPY-CHANGE: changes here and below for traceback.
 #include "py/objtraceback.h"
 
 typedef struct _mp_obj_exception_t {
@@ -47,13 +48,11 @@ void mp_obj_exception_initialize0(mp_obj_exception_t *o_exc, const mp_obj_type_t
 mp_obj_exception_t *mp_obj_exception_get_native(mp_obj_t self_in);
 
 #define MP_DEFINE_EXCEPTION(exc_name, base_name) \
-    const mp_obj_type_t mp_type_##exc_name = { \
-        { &mp_type_type }, \
-        .name = MP_QSTR_##exc_name, \
-        .print = mp_obj_exception_print, \
-        .make_new = mp_obj_exception_make_new, \
-        .attr = mp_obj_exception_attr, \
-        .parent = &mp_type_##base_name, \
-    };
+    MP_DEFINE_CONST_OBJ_TYPE(mp_type_##exc_name, MP_QSTR_##exc_name, MP_TYPE_FLAG_NONE, \
+    make_new, mp_obj_exception_make_new, \
+    print, mp_obj_exception_print, \
+    attr, mp_obj_exception_attr, \
+    parent, &mp_type_##base_name \
+    );
 
 #endif // MICROPY_INCLUDED_PY_OBJEXCEPT_H

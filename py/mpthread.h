@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
+ * Copyright (c) 2016 Damien P. George on behalf of Pycom Ltd
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,8 @@ struct _mp_state_thread_t;
 
 struct _mp_state_thread_t *mp_thread_get_state(void);
 void mp_thread_set_state(struct _mp_state_thread_t *state);
-void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size);
+mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size);
+mp_uint_t mp_thread_get_id(void);
 void mp_thread_start(void);
 void mp_thread_finish(void);
 void mp_thread_mutex_init(mp_thread_mutex_t *mutex);

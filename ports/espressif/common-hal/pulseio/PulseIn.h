@@ -30,7 +30,6 @@
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/obj.h"
-#include "components/driver/include/driver/rmt.h"
 #include "peripherals/rmt.h"
 
 typedef struct {

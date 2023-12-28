@@ -35,9 +35,8 @@
 #include "shared-bindings/_bleio/ScanResults.h"
 
 bleio_scanresults_obj_t *shared_module_bleio_new_scanresults(size_t buffer_size, uint8_t *prefixes, size_t prefixes_len, mp_int_t minimum_rssi) {
-    bleio_scanresults_obj_t *self = m_new_obj(bleio_scanresults_obj_t);
-    self->base.type = &bleio_scanresults_type;
-    ringbuf_alloc(&self->buf, buffer_size, false);
+    bleio_scanresults_obj_t *self = mp_obj_malloc(bleio_scanresults_obj_t, &bleio_scanresults_type);
+    ringbuf_alloc(&self->buf, buffer_size);
     self->prefixes = prefixes;
     self->prefix_length = prefixes_len;
     self->minimum_rssi = minimum_rssi;
@@ -68,12 +67,10 @@ mp_obj_t common_hal_bleio_scanresults_next(bleio_scanresults_obj_t *self) {
     mp_obj_str_t *o = MP_OBJ_TO_PTR(mp_obj_new_bytes_of_zeros(len));
     ringbuf_get_n(&self->buf, (uint8_t *)o->data, len);
 
-    bleio_scanentry_obj_t *entry = m_new_obj(bleio_scanentry_obj_t);
-    entry->base.type = &bleio_scanentry_type;
+    bleio_scanentry_obj_t *entry = mp_obj_malloc(bleio_scanentry_obj_t, &bleio_scanentry_type);
     entry->rssi = rssi;
 
-    bleio_address_obj_t *address = m_new_obj(bleio_address_obj_t);
-    address->base.type = &bleio_address_type;
+    bleio_address_obj_t *address = mp_obj_malloc(bleio_address_obj_t, &bleio_address_type);
     common_hal_bleio_address_construct(MP_OBJ_TO_PTR(address), peer_addr, addr_type);
     entry->address = address;
 

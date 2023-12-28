@@ -27,7 +27,6 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Device:
 //|     """HID Device specification"""
@@ -91,8 +90,7 @@
 //|     Uses Report ID 3 for its IN report."""
 
 STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    usb_hid_device_obj_t *self = m_new_obj(usb_hid_device_obj_t);
-    self->base.type = &usb_hid_device_type;
+    usb_hid_device_obj_t *self = mp_obj_malloc(usb_hid_device_obj_t, &usb_hid_device_type);
     enum { ARG_report_descriptor, ARG_usage_page, ARG_usage, ARG_report_ids, ARG_in_report_lengths, ARG_out_report_lengths };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_report_descriptor, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -127,7 +125,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 
     if ((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(in_report_lengths)) != report_ids_count ||
         (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(out_report_lengths)) != report_ids_count) {
-        mp_raise_ValueError_varg(translate("%q, %q, and %q must all be the same length"),
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q, %q, and %q must all be the same length"),
             MP_QSTR_report_ids, MP_QSTR_in_report_lengths, MP_QSTR_out_report_lengths);
     }
 
@@ -155,7 +153,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     if (report_ids_array[0] == 0 && report_ids_count > 1) {
-        mp_raise_ValueError_varg(translate("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
     }
 
     common_hal_usb_hid_device_construct(
@@ -265,9 +263,10 @@ STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
 
-const mp_obj_type_t usb_hid_device_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Device,
-    .make_new = usb_hid_device_make_new,
-    .locals_dict = (mp_obj_t)&usb_hid_device_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_hid_device_type,
+    MP_QSTR_Device,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, usb_hid_device_make_new,
+    locals_dict, &usb_hid_device_locals_dict
+    );

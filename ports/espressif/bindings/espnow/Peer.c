@@ -55,18 +55,17 @@
 STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_mac, ARG_lmk, ARG_channel, ARG_interface, ARG_encrypted };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_mac,      MP_ARG_OBJ | MP_ARG_REQUIRED },
-        { MP_QSTR_lmk,      MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
-        { MP_QSTR_channel,  MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
-        { MP_QSTR_interface,MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
-        { MP_QSTR_encrypted,MP_ARG_BOOL | MP_ARG_KW_ONLY,{ .u_bool = false } },
+        { MP_QSTR_mac,       MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_lmk,       MP_ARG_OBJ | MP_ARG_KW_ONLY, { .u_obj = mp_const_none } },
+        { MP_QSTR_channel,   MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
+        { MP_QSTR_interface, MP_ARG_INT | MP_ARG_KW_ONLY, { .u_int = 0 } },
+        { MP_QSTR_encrypted, MP_ARG_BOOL | MP_ARG_KW_ONLY, { .u_bool = false } },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    espnow_peer_obj_t *self = m_new_obj(espnow_peer_obj_t);
-    self->base.type = &espnow_peer_type;
+    espnow_peer_obj_t *self = mp_obj_malloc(espnow_peer_obj_t, &espnow_peer_type);
     self->peer_info = (esp_now_peer_info_t) {
         .channel = 0,
         .ifidx = WIFI_IF_STA,
@@ -80,12 +79,14 @@ STATIC mp_obj_t espnow_peer_make_new(const mp_obj_type_t *type, size_t n_args, s
     self->peer_info.ifidx = (wifi_interface_t)mp_arg_validate_int_range(args[ARG_interface].u_int, 0, 1, MP_QSTR_interface);
 
     self->peer_info.encrypt = args[ARG_encrypted].u_bool;
+    self->lmk_set = false;
 
     const mp_obj_t lmk = args[ARG_lmk].u_obj;
     if (lmk != mp_const_none) {
+        self->lmk_set = true;
         memcpy(self->peer_info.lmk, common_hal_espnow_get_bytes_len(lmk, ESP_NOW_KEY_LEN), ESP_NOW_KEY_LEN);
-    } else if (self->peer_info.encrypt && !self->peer_info.lmk) {
-        mp_raise_ValueError_varg(translate("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
+    } else if (self->peer_info.encrypt) {
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
     }
 
     return self;
@@ -197,8 +198,8 @@ STATIC mp_obj_t espnow_peer_set_encrypted(const mp_obj_t self_in, const mp_obj_t
 
     self->peer_info.encrypt = mp_obj_is_true(value);
 
-    if (!self->peer_info.lmk) {
-        mp_raise_ValueError_varg(translate("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
+    if (!self->lmk_set) {
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q is %q"), MP_QSTR_lmk, MP_QSTR_None);
     }
 
     esp_now_mod_peer(&self->peer_info);
@@ -221,9 +222,10 @@ STATIC const mp_rom_map_elem_t espnow_peer_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(espnow_peer_locals_dict, espnow_peer_locals_dict_table);
 
-const mp_obj_type_t espnow_peer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Peer,
-    .make_new = espnow_peer_make_new,
-    .locals_dict = (mp_obj_t)&espnow_peer_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espnow_peer_type,
+    MP_QSTR_Peer,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, espnow_peer_make_new,
+    locals_dict, &espnow_peer_locals_dict
+    );

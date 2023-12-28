@@ -52,7 +52,7 @@
 
 #define CIRCUITPY_BOOT_BUTTON (&pin_P0_29)
 
-#define BOARD_USER_SAFE_MODE_ACTION translate("You pressed the left button at start up.")
+#define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("You pressed the left button at start up.")
 
 #define CIRCUITPY_INTERNAL_NVM_SIZE (4096)
 

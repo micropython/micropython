@@ -1,12 +1,12 @@
 try:
-    import uerrno
-    import uos
+    import errno
+    import os
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 try:
-    uos.VfsFat
+    os.VfsFat
 except AttributeError:
     print("SKIP")
     raise SystemExit
@@ -40,17 +40,16 @@ class RAMFS:
 
 try:
     bdev = RAMFS(50)
+    os.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
-uos.VfsFat.mkfs(bdev)
-
 print(b"FOO_FILETXT" not in bdev.data)
 print(b"hello!" not in bdev.data)
 
-vfs = uos.VfsFat(bdev)
-uos.mount(vfs, "/ramdisk")
+vfs = os.VfsFat(bdev)
+os.mount(vfs, "/ramdisk")
 
 vfs.label = "label test"
 print("label:", vfs.label)
@@ -60,7 +59,7 @@ print("getcwd:", vfs.getcwd())
 try:
     vfs.stat("no_file.txt")
 except OSError as e:
-    print(e.errno == uerrno.ENOENT)
+    print(e.errno == errno.ENOENT)
 
 with vfs.open("foo_file.txt", "w") as f:
     f.write("hello!")
@@ -83,18 +82,18 @@ with vfs.open("sub_file.txt", "w") as f:
 try:
     vfs.chdir("sub_file.txt")
 except OSError as e:
-    print(e.errno == uerrno.ENOENT)
+    print(e.errno == errno.ENOENT)
 
 vfs.chdir("..")
 print("getcwd:", vfs.getcwd())
 
-uos.umount(vfs)
+os.umount(vfs)
 
-vfs = uos.VfsFat(bdev)
+vfs = os.VfsFat(bdev)
 print(list(vfs.ilistdir(b"")))
 
 # list a non-existent directory
 try:
     vfs.ilistdir(b"no_exist")
 except OSError as e:
-    print("ENOENT:", e.errno == uerrno.ENOENT)
+    print("ENOENT:", e.errno == errno.ENOENT)

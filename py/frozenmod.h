@@ -3,8 +3,8 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2015 Paul Sokolovsky
- * SPDX-FileCopyrightText: Copyright (c) 2016 Damien P. George
+ * Copyright (c) 2015 Paul Sokolovsky
+ * Copyright (c) 2016 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #ifndef MICROPY_INCLUDED_PY_FROZENMOD_H
 #define MICROPY_INCLUDED_PY_FROZENMOD_H
 
-#include "py/lexer.h"
+#include "py/builtin.h"
 
 enum {
     MP_FROZEN_NONE,

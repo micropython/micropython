@@ -10,6 +10,9 @@ print(y)
 print('%#X' % (x - x)) # print prefix
 print('{:#,}'.format(x)) # print with commas
 
+# construction
+print(int(x))
+
 # addition
 print(x + 1)
 print(x + y)

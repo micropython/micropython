@@ -33,65 +33,72 @@
 
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
-#if defined(CONFIG_IDF_TARGET_ESP32) || defined(CONFIG_IDF_TARGET_ESP32S2)
-#include "components/driver/include/driver/dac_common.h"
-#define HAS_DAC 1
+#ifdef SOC_DAC_SUPPORTED
+#include "driver/dac_oneshot.h"
+
 #if defined(CONFIG_IDF_TARGET_ESP32)
-#define pin_CHANNEL_1 pin_GPIO25
-#define pin_CHANNEL_2 pin_GPIO26
+#define pin_CHANNEL_0 pin_GPIO25
+#define pin_CHANNEL_1 pin_GPIO26
 #elif defined(CONFIG_IDF_TARGET_ESP32S2)
-#define pin_CHANNEL_1 pin_GPIO17
-#define pin_CHANNEL_2 pin_GPIO18
+#define pin_CHANNEL_0 pin_GPIO17
+#define pin_CHANNEL_1 pin_GPIO18
 #endif
-#else
-#define HAS_DAC 0
+static dac_oneshot_handle_t _active_handles[SOC_DAC_CHAN_NUM];
 #endif
+
 
 void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     const mcu_pin_obj_t *pin) {
-    #if HAS_DAC
-    if (pin == &pin_CHANNEL_1) {
-        self->channel = DAC_CHANNEL_1;
-    } else if (pin == &pin_CHANNEL_2) {
-        self->channel = DAC_CHANNEL_2;
+    #ifdef SOC_DAC_SUPPORTED
+    if (pin == &pin_CHANNEL_0) {
+        self->channel = DAC_CHAN_0;
+    } else if (pin == &pin_CHANNEL_1) {
+        self->channel = DAC_CHAN_1;
     } else {
         raise_ValueError_invalid_pin();
     }
-    dac_output_enable(self->channel);
+    dac_oneshot_config_t config = {
+        .chan_id = self->channel
+    };
+    dac_oneshot_new_channel(&config, &self->handle);
+    _active_handles[self->channel] = self->handle;
     #else
     mp_raise_NotImplementedError(NULL);
     #endif
 }
 
 bool common_hal_analogio_analogout_deinited(analogio_analogout_obj_t *self) {
-    #if HAS_DAC
-    return self->channel == DAC_CHANNEL_MAX;
+    #ifdef SOC_DAC_SUPPORTED
+    return self->handle == NULL;
     #else
     return false;
     #endif
 }
 
 void common_hal_analogio_analogout_deinit(analogio_analogout_obj_t *self) {
-    #if HAS_DAC
-    dac_output_disable(self->channel);
-    self->channel = DAC_CHANNEL_MAX;
+    #ifdef SOC_DAC_SUPPORTED
+    dac_oneshot_del_channel(self->handle);
+    self->handle = NULL;
+    _active_handles[self->channel] = NULL;
     #endif
 }
 
 void common_hal_analogio_analogout_set_value(analogio_analogout_obj_t *self,
     uint16_t value) {
-    #if HAS_DAC
+    #ifdef SOC_DAC_SUPPORTED
     uint8_t dac_value = (value * 255) / 65535;
-    dac_output_enable(self->channel);
-    dac_output_voltage(self->channel, dac_value);
+    dac_oneshot_output_voltage(self->handle, dac_value);
     #endif
 }
 
 void analogout_reset(void) {
-    #if HAS_DAC
-    dac_output_disable(DAC_CHANNEL_1);
-    dac_output_disable(DAC_CHANNEL_2);
+    #ifdef SOC_DAC_SUPPORTED
+    for (uint8_t c = 0; c < SOC_DAC_CHAN_NUM; c++) {
+        if (_active_handles[c] != NULL) {
+            dac_oneshot_del_channel(_active_handles[c]);
+        }
+        _active_handles[c] = NULL;
+    }
     #endif
 }

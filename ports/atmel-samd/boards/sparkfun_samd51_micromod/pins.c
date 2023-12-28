@@ -77,8 +77,8 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
     // MicroMod UART1 pins
     { MP_ROM_QSTR(MP_QSTR_UART_TX1), MP_ROM_PTR(&pin_PB31) },     // MicroMod UART_TX1 | CircuitPython TX (PB31)
     { MP_ROM_QSTR(MP_QSTR_UART_RX1), MP_ROM_PTR(&pin_PB30) },     // MicroMod UART_RX1 | CircuitPython RX (PB30)
-    // { MP_ROM_QSTR(MP_QSTR_UART_RTS1), MP_ROM_PTR() },          // MicroMod RTS1 (not connected)
-    // { MP_ROM_QSTR(MP_QSTR_UART_CTS1), MP_ROM_PTR() },          // MicroMod CTS1 (not connected)
+    { MP_ROM_QSTR(MP_QSTR_UART_RTS1), MP_ROM_PTR(&pin_PB00) },          // MicroMod RTS1
+    { MP_ROM_QSTR(MP_QSTR_UART_CTS1), MP_ROM_PTR(&pin_PB01) },          // MicroMod CTS1
 
     // CircuitPython default UART pins
     { MP_ROM_QSTR(MP_QSTR_TX), MP_ROM_PTR(&pin_PB31) },           // CircuitPython TX | MicroMod UART_TX1 (PB31)

@@ -31,7 +31,6 @@
 #include "py/runtime0.h"
 #include "shared-bindings/memorymonitor/AllocationSize.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AllocationSize:
 //|     def __init__(self) -> None:
@@ -62,8 +61,8 @@
 //|         """
 //|         ...
 STATIC mp_obj_t memorymonitor_allocationsize_make_new(const mp_obj_type_t *type, size_t n_args, const mp_obj_t *all_args, mp_map_t *kw_args) {
-    memorymonitor_allocationsize_obj_t *self = m_new_obj(memorymonitor_allocationsize_obj_t);
-    self->base.type = &memorymonitor_allocationsize_type;
+    memorymonitor_allocationsize_obj_t *self =
+        m_new_obj(memorymonitor_allocationsize_obj_t, &memorymonitor_allocationsize_type);
 
     common_hal_memorymonitor_allocationsize_construct(self);
 
@@ -136,19 +135,19 @@ STATIC mp_obj_t memorymonitor_allocationsize_unary_op(mp_unary_op_t op, mp_obj_t
 STATIC mp_obj_t memorymonitor_allocationsize_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value) {
     if (value == mp_const_none) {
         // delete item
-        mp_raise_AttributeError(translate("Cannot delete values"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot delete values"));
     } else {
         memorymonitor_allocationsize_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
         if (mp_obj_is_type(index_obj, &mp_type_slice)) {
-            mp_raise_NotImplementedError(translate("Slices not supported"));
+            mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
         } else {
             size_t index = mp_get_index(&memorymonitor_allocationsize_type, common_hal_memorymonitor_allocationsize_get_len(self), index_obj, false);
             if (value == MP_OBJ_SENTINEL) {
                 // load
                 return MP_OBJ_NEW_SMALL_INT(common_hal_memorymonitor_allocationsize_get_item(self, index));
             } else {
-                mp_raise_AttributeError(translate("Read-only"));
+                mp_raise_AttributeError(MP_ERROR_TEXT("Read-only"));
             }
         }
     }
@@ -165,12 +164,13 @@ STATIC const mp_rom_map_elem_t memorymonitor_allocationsize_locals_dict_table[] 
 };
 STATIC MP_DEFINE_CONST_DICT(memorymonitor_allocationsize_locals_dict, memorymonitor_allocationsize_locals_dict_table);
 
-const mp_obj_type_t memorymonitor_allocationsize_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_AllocationSize,
-    .make_new = memorymonitor_allocationsize_make_new,
-    .subscr = memorymonitor_allocationsize_subscr,
-    .unary_op = memorymonitor_allocationsize_unary_op,
-    .getiter = mp_obj_new_generic_iterator,
-    .locals_dict = (mp_obj_dict_t *)&memorymonitor_allocationsize_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    memorymonitor_allocationsize_type,
+    MP_QSTR_AllocationSize,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, memorymonitor_allocationsize_make_new,
+    subscr, memorymonitor_allocationsize_subscr,
+    unary_op, memorymonitor_allocationsize_unary_op,
+    iter, mp_obj_generic_subscript_getiter,
+    locals_dict, &memorymonitor_allocationsize_locals_dict
+    );

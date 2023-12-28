@@ -42,7 +42,6 @@
 #include "py/parsenum.h"
 #include "py/runtime.h"
 #include "supervisor/filesystem.h"
-#include "supervisor/memory.h"
 
 #define GETENV_PATH "/settings.toml"
 
@@ -314,15 +313,15 @@ STATIC os_getenv_err_t os_getenv_buf_terminated(const char *key, char *value, si
     return result;
 }
 
-STATIC void print_dont_raise(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...) {
+STATIC void print_dont_raise(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...) {
     va_list argptr;
-    va_start(argptr,fmt);
+    va_start(argptr, fmt);
     mp_vcprintf(&mp_plat_print, fmt, argptr);
     mp_printf(&mp_plat_print, "\n");
     va_end(argptr);
 }
 
-STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_obj_type_t *exc_type, const compressed_string_t *fmt, ...)) {
+STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_obj_type_t *exc_type, mp_rom_error_text_t fmt, ...)) {
     if (error == GETENV_OK) {
         return;
     }
@@ -338,20 +337,20 @@ STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_o
         } else {
             mp_str_print_quoted(&print, (byte *)"EOF", 3, true);
         }
-        handle(&mp_type_ValueError, translate("Invalid byte %.*s"), vstr.len, vstr.buf);
+        handle(&mp_type_ValueError, MP_ERROR_TEXT("Invalid byte %.*s"), vstr.len, vstr.buf);
     } else {
         switch (error) {
             case GETENV_ERR_OPEN:
-                handle(&mp_type_ValueError, translate("%S"), translate("File not found"));
+                handle(&mp_type_ValueError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("File not found"));
                 break;
             case GETENV_ERR_UNICODE:
-                handle(&mp_type_ValueError, translate("%S"), translate("Invalid unicode escape"));
+                handle(&mp_type_ValueError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("Invalid unicode escape"));
                 break;
             case GETENV_ERR_NOT_FOUND:
-                handle(&mp_type_ValueError, translate("%S"), translate("Key not found"));
+                handle(&mp_type_ValueError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("Key not found"));
                 break;
             default:
-                handle(&mp_type_RuntimeError, translate("%S"), translate("Internal error"));
+                handle(&mp_type_RuntimeError, MP_ERROR_TEXT("%S"), MP_ERROR_TEXT("Internal error"));
                 break;
         }
     }
@@ -359,7 +358,7 @@ STATIC void handle_getenv_error(os_getenv_err_t error, void (*handle)(const mp_o
 
 STATIC void common_hal_os_getenv_showerr(const char *key, os_getenv_err_t result) {
     if (result != GETENV_OK && result != GETENV_ERR_OPEN && result != GETENV_ERR_NOT_FOUND) {
-        mp_cprintf(&mp_plat_print, translate("An error occurred while retrieving '%s':\n"), key);
+        mp_cprintf(&mp_plat_print, MP_ERROR_TEXT("An error occurred while retrieving '%s':\n"), key);
         handle_getenv_error(result, print_dont_raise);
     }
 }
@@ -392,7 +391,7 @@ mp_obj_t common_hal_os_getenv_path(const char *path, const char *key, mp_obj_t d
     handle_getenv_error(result, mp_raise_msg_varg);
 
     if (quoted) {
-        return mp_obj_new_str_from_vstr(&mp_type_str, &buf);
+        return mp_obj_new_str_from_vstr(&buf);
     } else {
         return mp_parse_num_integer(buf.buf, buf.len, 0, NULL);
     }

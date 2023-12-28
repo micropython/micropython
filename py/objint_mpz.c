@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,6 @@
 #include "py/smallint.h"
 #include "py/objint.h"
 #include "py/runtime.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -77,8 +75,7 @@ const mp_obj_int_t mp_sys_maxsize_obj = {
 #endif
 
 mp_obj_int_t *mp_obj_int_new_mpz(void) {
-    mp_obj_int_t *o = m_new_obj(mp_obj_int_t);
-    o->base.type = &mp_type_int;
+    mp_obj_int_t *o = mp_obj_malloc(mp_obj_int_t, &mp_type_int);
     mpz_init_zero(&o->mpz);
     return o;
 }
@@ -94,7 +91,7 @@ mp_obj_int_t *mp_obj_int_new_mpz(void) {
 // This particular routine should only be called for the mpz representation of the int.
 char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, mp_const_obj_t self_in,
     int base, const char *prefix, char base_char, char comma) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
 
     size_t needed_size = mp_int_format_size(mpz_max_num_bits(&self->mpz), base, prefix, comma);
@@ -109,8 +106,9 @@ char *mp_obj_int_formatted_impl(char **buf, size_t *buf_size, size_t *fmt_size, 
     return str;
 }
 
+// CIRCUITPY-CHANGE
 mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(mpz_num_bits(&self->mpz));
 }
@@ -122,7 +120,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 }
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     mpz_as_bytes(&self->mpz, big_endian, len, buf);
 }
@@ -174,6 +172,8 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
             mpz_abs_inpl(&self2->mpz, &self->mpz);
             return MP_OBJ_FROM_PTR(self2);
         }
+        case MP_UNARY_OP_INT_MAYBE:
+            return o_in;
         default:
             return MP_OBJ_NULL;      // op not supported
     }
@@ -190,7 +190,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(lhs_in));
         zlhs = &z_int;
     } else {
-        assert(mp_obj_is_type(lhs_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(lhs_in, &mp_type_int));
         zlhs = &((mp_obj_int_t *)MP_OBJ_TO_PTR(lhs_in))->mpz;
     }
 
@@ -198,7 +198,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     if (mp_obj_is_small_int(rhs_in)) {
         mpz_init_fixed_from_int(&z_int, z_int_dig, MPZ_NUM_DIG_FOR_INT, MP_OBJ_SMALL_INT_VALUE(rhs_in));
         zrhs = &z_int;
-    } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(rhs_in, &mp_type_int)) {
         zrhs = &((mp_obj_int_t *)MP_OBJ_TO_PTR(rhs_in))->mpz;
     #if MICROPY_PY_BUILTINS_FLOAT
     } else if (mp_obj_is_float(rhs_in)) {
@@ -305,8 +305,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 mpz_pow_inpl(&res->mpz, zlhs, zrhs);
                 break;
 
-            default: {
-                assert(op == MP_BINARY_OP_DIVMOD);
+            case MP_BINARY_OP_DIVMOD: {
                 if (mpz_is_zero(zrhs)) {
                     goto zero_division_error;
                 }
@@ -315,6 +314,9 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 mp_obj_t tuple[2] = {MP_OBJ_FROM_PTR(quo), MP_OBJ_FROM_PTR(res)};
                 return mp_obj_new_tuple(2, tuple);
             }
+
+            default:
+                return MP_OBJ_NULL; // op not supported
         }
 
         return MP_OBJ_FROM_PTR(res);
@@ -460,7 +462,7 @@ mp_uint_t mp_obj_int_get_uint_checked(mp_const_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
     return mpz_as_float(&self->mpz);
 }

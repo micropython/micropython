@@ -35,8 +35,10 @@
 
 extern const mp_obj_type_t usb_host_port_type;
 
-void common_hal_usb_host_port_construct(usb_host_port_obj_t *self, const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm);
-void common_hal_usb_host_port_deinit(usb_host_port_obj_t *self);
-bool common_hal_usb_host_port_deinited(usb_host_port_obj_t *self);
+// This is unique to common_hal constructs because it returns a globally stored
+// object instead of taking on in that may be on the heap. This allows the
+// method to check the internals of the global object against the given arguments
+// to determine whether to return the singleton or raise an exception.
+usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp, const mcu_pin_obj_t *dm);
 
 #endif  // MICROPY_INCLUDED_SHARED_BINDINGS_USB_HOST_PORT_H

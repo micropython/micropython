@@ -78,10 +78,18 @@ extern LPUART_Type *const mcu_uart_banks[];
 
 #ifdef MIMXRT1011_SERIES
 #include "MIMXRT1011/periph.h"
+#elif defined(MIMXRT1015_SERIES)
+#include "MIMXRT1015/periph.h"
 #elif defined(MIMXRT1021_SERIES)
 #include "MIMXRT1021/periph.h"
+#elif defined(MIMXRT1042_SERIES)
+#include "MIMXRT1042/periph.h"
+#elif defined(MIMXRT1052_SERIES)
+#include "MIMXRT1052/periph.h"
 #elif defined(MIMXRT1062_SERIES)
 #include "MIMXRT1062/periph.h"
+#elif defined(MIMXRT1176_cm7_SERIES)
+#include "MIMXRT1176/periph.h"
 #endif
 
 #endif // MICROPY_INCLUDED_MIMXRT10XX_PERIPHERALS_PERIPH_H

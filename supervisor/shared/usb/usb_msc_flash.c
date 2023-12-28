@@ -195,7 +195,7 @@ int32_t tud_msc_write10_cb(uint8_t lun, uint32_t lba, uint32_t offset, uint8_t *
     // MicroPython let's update the cached FatFs sector if it's the one
     // we just wrote.
     #if FF_MAX_SS != FF_MIN_SS
-    if (vfs->ssize == MSC_FLASH_BLOCK_SIZE) {
+    if (vfs->fatfs.ssize == MSC_FLASH_BLOCK_SIZE) {
     #else
     // The compiler can optimize this away.
     if (FF_MAX_SS == FILESYSTEM_BLOCK_SIZE) {

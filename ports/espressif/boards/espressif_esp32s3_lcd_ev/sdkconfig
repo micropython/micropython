@@ -1,0 +1,28 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# ESP System Settings
+#
+CONFIG_ESP_CONSOLE_UART_CUSTOM=y
+# CONFIG_ESP_CONSOLE_NONE is not set
+CONFIG_ESP_CONSOLE_UART=y
+CONFIG_ESP_CONSOLE_UART_CUSTOM_NUM_0=y
+CONFIG_ESP_CONSOLE_UART_NUM=0
+CONFIG_ESP_CONSOLE_UART_TX_GPIO=43
+CONFIG_ESP_CONSOLE_UART_RX_GPIO=44
+CONFIG_ESP_CONSOLE_UART_BAUDRATE=115200
+# end of ESP System Settings
+
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="circuitpy"
+# end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

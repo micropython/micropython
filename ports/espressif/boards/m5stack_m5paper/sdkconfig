@@ -1,0 +1,37 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Security features
+#
+CONFIG_SECURE_BOOT_V2_RSA_SUPPORTED=y
+CONFIG_SECURE_BOOT_V2_PREFERRED=y
+# end of Security features
+
+#
+# Component config
+#
+#
+# Hardware Settings
+#
+#
+# Chip revision
+#
+# CONFIG_ESP32_REV_MIN_0 is not set
+CONFIG_ESP32_REV_MIN_3=y
+CONFIG_ESP32_REV_MIN=3
+CONFIG_ESP32_REV_MIN_FULL=300
+CONFIG_ESP_REV_MIN_FULL=300
+# end of Chip revision
+
+# end of Hardware Settings
+
+#
+# LWIP
+#
+CONFIG_LWIP_LOCAL_HOSTNAME="M5Paper"
+# end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

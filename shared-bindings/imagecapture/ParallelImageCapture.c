@@ -25,7 +25,6 @@
  */
 
 #include "py/obj.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 
 #include "shared/runtime/context_manager_helpers.h"
@@ -76,8 +75,8 @@ STATIC mp_obj_t imagecapture_parallelimagecapture_make_new(const mp_obj_type_t *
     const mcu_pin_obj_t *vsync = validate_obj_is_free_pin_or_none(args[ARG_vsync].u_obj, MP_QSTR_vsync);
     const mcu_pin_obj_t *href = validate_obj_is_free_pin_or_none(args[ARG_href].u_obj, MP_QSTR_href);
 
-    imagecapture_parallelimagecapture_obj_t *self = m_new_obj(imagecapture_parallelimagecapture_obj_t);
-    self->base.type = &imagecapture_parallelimagecapture_type;
+    imagecapture_parallelimagecapture_obj_t *self =
+        mp_obj_malloc(imagecapture_parallelimagecapture_obj_t, &imagecapture_parallelimagecapture_type);
 
     common_hal_imagecapture_parallelimagecapture_construct(self, pins, pin_count, clock, vsync, href);
 
@@ -189,9 +188,10 @@ STATIC const mp_rom_map_elem_t imagecapture_parallelimagecapture_locals_dict_tab
 
 STATIC MP_DEFINE_CONST_DICT(imagecapture_parallelimagecapture_locals_dict, imagecapture_parallelimagecapture_locals_dict_table);
 
-const mp_obj_type_t imagecapture_parallelimagecapture_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ParallelImageCapture,
-    .make_new = imagecapture_parallelimagecapture_make_new,
-    .locals_dict = (mp_obj_dict_t *)&imagecapture_parallelimagecapture_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    imagecapture_parallelimagecapture_type,
+    MP_QSTR_ParallelImageCapture,
+    MP_TYPE_FLAG_NONE,
+    make_new, imagecapture_parallelimagecapture_make_new,
+    locals_dict, &imagecapture_parallelimagecapture_locals_dict
+    );

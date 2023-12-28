@@ -120,8 +120,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_make_new(const mp_obj_type_t *type, size_t n_a
     }
 
     // Validation complete, allocate and populate object.
-    pixelbuf_pixelbuf_obj_t *self = m_new_obj(pixelbuf_pixelbuf_obj_t);
-    self->base.type = &pixelbuf_pixelbuf_type;
+    pixelbuf_pixelbuf_obj_t *self = mp_obj_malloc(pixelbuf_pixelbuf_obj_t, &pixelbuf_pixelbuf_type);
     common_hal_adafruit_pixelbuf_pixelbuf_construct(self, args[ARG_size].u_int,
         &byteorder_details, brightness, args[ARG_auto_write].u_bool, header_bufinfo.buf,
         header_bufinfo.len, trailer_bufinfo.buf, trailer_bufinfo.len);
@@ -334,7 +333,7 @@ STATIC mp_obj_t pixelbuf_pixelbuf_subscr(mp_obj_t self_in, mp_obj_t index_in, mp
             size_t num_items = mp_obj_get_int(mp_obj_len(value));
 
             if (num_items != slice_len && num_items != (slice_len * common_hal_adafruit_pixelbuf_pixelbuf_get_bpp(self_in))) {
-                mp_raise_ValueError_varg(translate("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Unmatched number of items on RHS (expected %d, got %d)."), slice_len, num_items);
             }
             common_hal_adafruit_pixelbuf_pixelbuf_set_pixels(self_in, slice.start, slice.step, slice_len, value,
                 num_items != slice_len ? &flat_item_tuple : mp_const_none);
@@ -369,15 +368,13 @@ STATIC const mp_rom_map_elem_t pixelbuf_pixelbuf_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pixelbuf_pixelbuf_locals_dict, pixelbuf_pixelbuf_locals_dict_table);
 
 
-const mp_obj_type_t pixelbuf_pixelbuf_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PixelBuf,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .locals_dict = (mp_obj_t)&pixelbuf_pixelbuf_locals_dict,
-    .make_new = pixelbuf_pixelbuf_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = pixelbuf_pixelbuf_subscr,
-        .unary_op = pixelbuf_pixelbuf_unary_op,
-        .getiter = mp_obj_new_generic_iterator,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pixelbuf_pixelbuf_type,
+    MP_QSTR_PixelBuf,
+    MP_TYPE_FLAG_ITER_IS_GETITER | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &pixelbuf_pixelbuf_locals_dict,
+    make_new, pixelbuf_pixelbuf_make_new,
+    subscr, pixelbuf_pixelbuf_subscr,
+    unary_op, pixelbuf_pixelbuf_unary_op,
+    iter, mp_obj_generic_subscript_getiter
+    );

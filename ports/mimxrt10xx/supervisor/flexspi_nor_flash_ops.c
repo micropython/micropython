@@ -137,7 +137,7 @@ status_t PLACE_IN_ITCM(flexspi_nor_flash_page_program)(FLEXSPI_Type * base, uint
     status = flexspi_nor_wait_bus_busy(base);
 
     /* Do software reset. */
-    #if defined(FSL_FEATURE_SOC_OTFAD_COUNT)
+    #if defined(FSL_FEATURE_SOC_OTFAD_COUNT) && FSL_FEATURE_SOC_OTFAD_COUNT == 1
     base->AHBCR |= FLEXSPI_AHBCR_CLRAHBRXBUF_MASK | FLEXSPI_AHBCR_CLRAHBTXBUF_MASK;
     base->AHBCR &= ~(FLEXSPI_AHBCR_CLRAHBRXBUF_MASK | FLEXSPI_AHBCR_CLRAHBTXBUF_MASK);
     #else

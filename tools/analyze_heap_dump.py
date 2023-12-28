@@ -288,10 +288,6 @@ def do_all_the_things(
 
         dynamic_type = 0x40000000  # placeholder, doesn't match any memory
 
-        long_lived_start = load_pointer(
-            mp_state_ctx + 272
-        )  # (gdb) p &mp_state_ctx.mem.gc_lowest_long_lived_ptr
-
         type_colors = {
             dict_type: "red",
             property_type: "yellow",
@@ -368,10 +364,7 @@ def do_all_the_things(
             potential_type = None
             node = ownership_graph.get_node(address)
             node.attr["height"] = 0.25 * current_allocation
-            if address >= long_lived_start:
-                node.attr["fontcolor"] = "hotpink"
-            else:
-                node.attr["fontcolor"] = "black"
+            node.attr["fontcolor"] = "black"
             block_data[address] = data
             for k in range(len(data) // 4):
                 word = struct.unpack_from("<I", data, offset=(k * 4))[0]
@@ -666,10 +659,7 @@ def do_all_the_things(
                 block, 18 * (len(wrapped) - 1), "<br/>".join(wrapped)
             )
             node.attr["fontname"] = "FiraCode-Bold"
-            if block >= long_lived_start:
-                node.attr["fontcolor"] = "hotpink"
-            else:
-                node.attr["fontcolor"] = "black"
+            node.attr["fontcolor"] = "black"
             node.attr["fontpath"] = "/Users/tannewt/Library/Fonts/"
             node.attr["fontsize"] = 8
 

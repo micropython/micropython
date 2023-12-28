@@ -32,7 +32,6 @@
 #include "shared-bindings/usb_midi/__init__.h"
 #include "shared-bindings/usb_midi/PortIn.h"
 #include "shared-bindings/usb_midi/PortOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "py/runtime.h"
 
@@ -53,7 +52,7 @@
 //|
 STATIC mp_obj_t usb_midi_disable(void) {
     if (!common_hal_usb_midi_disable()) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -73,7 +72,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_midi_disable_obj, usb_midi_disable);
 //|
 STATIC mp_obj_t usb_midi_enable(void) {
     if (!common_hal_usb_midi_enable()) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -96,4 +95,4 @@ const mp_obj_module_t usb_midi_module = {
     .globals = (mp_obj_dict_t *)&usb_midi_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_usb_midi, usb_midi_module, CIRCUITPY_USB_MIDI);
+MP_REGISTER_MODULE(MP_QSTR_usb_midi, usb_midi_module);

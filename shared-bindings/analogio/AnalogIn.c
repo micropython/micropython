@@ -65,8 +65,7 @@ STATIC mp_obj_t analogio_analogin_make_new(const mp_obj_type_t *type,
 
     // 1st argument is the pin
     const mcu_pin_obj_t *pin = common_hal_analogio_analogin_validate_pin(args[0]);
-    analogio_analogin_obj_t *self = m_new_obj(analogio_analogin_obj_t);
-    self->base.type = &analogio_analogin_type;
+    analogio_analogin_obj_t *self = mp_obj_malloc(analogio_analogin_obj_t, &analogio_analogin_type);
     common_hal_analogio_analogin_construct(self, pin);
 
     return MP_OBJ_FROM_PTR(self);
@@ -150,9 +149,10 @@ STATIC const mp_rom_map_elem_t analogio_analogin_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(analogio_analogin_locals_dict, analogio_analogin_locals_dict_table);
 
-const mp_obj_type_t analogio_analogin_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_AnalogIn,
-    .make_new = analogio_analogin_make_new,
-    .locals_dict = (mp_obj_t)&analogio_analogin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    analogio_analogin_type,
+    MP_QSTR_AnalogIn,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, analogio_analogin_make_new,
+    locals_dict, &analogio_analogin_locals_dict
+    );

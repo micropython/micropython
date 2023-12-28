@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/objproperty.h"
 #include "py/runtime.h"
 
 #include "shared-bindings/camera/Camera.h"
@@ -61,8 +60,7 @@
 //|         """Initialize camera."""
 //|         ...
 STATIC mp_obj_t camera_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    camera_obj_t *self = m_new_obj(camera_obj_t);
-    self->base.type = &camera_type;
+    camera_obj_t *self = mp_obj_malloc(camera_obj_t, &camera_type);
     // No arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -122,9 +120,10 @@ STATIC const mp_rom_map_elem_t camera_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(camera_locals_dict, camera_locals_dict_table);
 
-const mp_obj_type_t camera_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Camera,
-    .make_new = camera_make_new,
-    .locals_dict = (mp_obj_dict_t *)&camera_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    camera_type,
+    MP_QSTR_Camera,
+    MP_TYPE_FLAG_NONE,
+    make_new, camera_make_new,
+    locals_dict, &camera_locals_dict
+    );

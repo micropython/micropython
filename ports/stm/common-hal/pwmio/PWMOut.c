@@ -29,7 +29,6 @@
 #include "py/runtime.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include STM32_HAL_H
 #include "shared-bindings/microcontroller/Pin.h"
@@ -285,16 +284,16 @@ void common_hal_pwmio_pwmout_set_frequency(pwmio_pwmout_obj_t *self, uint32_t fr
 
     // restart everything, adjusting for new speed
     if (HAL_TIM_PWM_Init(&self->handle) != HAL_OK) {
-        mp_raise_RuntimeError(translate("timer re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("timer re-init"));
     }
 
     self->chan_handle.Pulse = timer_get_internal_duty(self->duty_cycle, period);
 
     if (HAL_TIM_PWM_ConfigChannel(&self->handle, &self->chan_handle, self->channel) != HAL_OK) {
-        mp_raise_RuntimeError(translate("channel re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("channel re-init"));
     }
     if (HAL_TIM_PWM_Start(&self->handle, self->channel) != HAL_OK) {
-        mp_raise_RuntimeError(translate("PWM restart"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("PWM restart"));
     }
 
     tim_frequencies[self->tim->tim_index] = frequency;

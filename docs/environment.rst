@@ -60,11 +60,20 @@ CIRCUITPY_BLE_NAME
 ~~~~~~~~~~~~~~~~~~
 Default BLE name the board advertises as, including for the BLE workflow.
 
-CIRCUITPY_RESERVED_PSRAM
-~~~~~~~~~~~~~~~~~~~~~~~~
-On boards with Espressif microcontrollers with PSRAM (also called SPIRAM), permanently reserve a portion of PSRAM for use by esp-idf.
-This storage is removed from the CircuitPython "heap" and is available for allocation by esp-idf routines in the core instead.
-Generally, only set this to a non-zero value when it is required by a specific core module.
+CIRCUITPY_HEAP_START_SIZE
+~~~~~~~~~~~~~~~~~~~~~~~~~
+Sets the initial size of the python heap, allocated from the outer heap. Must be a multiple of 4.
+The default is currently 8192.
+The python heap will grow by doubling and redoubling this initial size until it cannot fit in the outer heap.
+Larger values will reserve more RAM for python use and prevent the supervisor and SDK
+from large allocations of their own.
+Smaller values will likely grow sooner than large start sizes.
+
+CIRCUITPY_PYSTACK_SIZE
+~~~~~~~~~~~~~~~~~~~~~~
+Sets the size of the python stack. Must be a multiple of 4. The default value is currently 1536.
+Increasing the stack reduces the size of the heap available to python code.
+Used to avoid "Pystack exhausted" errors when the code can't be reworked to avoid it.
 
 CIRCUITPY_WEB_API_PASSWORD
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -73,6 +82,10 @@ Password required to make modifications to the board from the Web Workflow.
 CIRCUITPY_WEB_API_PORT
 ~~~~~~~~~~~~~~~~~~~~~~
 TCP port number used for the web HTTP API. Defaults to 80 when omitted.
+
+CIRCUITPY_WEB_INSTANCE_NAME
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Name the board advertises as for the WEB workflow. Defaults to human readable board name if omitted.
 
 CIRCUITPY_WIFI_PASSWORD
 ~~~~~~~~~~~~~~~~~~~~~~~

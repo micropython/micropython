@@ -114,7 +114,7 @@ STATIC mp_obj_t mod_msgpack_pack(size_t n_args, const mp_obj_t *pos_args, mp_map
 
     mp_obj_t handler = args[ARG_default].u_obj;
     if (handler != mp_const_none && !mp_obj_is_fun(handler) && !MP_OBJ_IS_METH(handler)) {
-        mp_raise_ValueError(translate("default is not a function"));
+        mp_raise_ValueError(MP_ERROR_TEXT("default is not a function"));
     }
 
     common_hal_msgpack_pack(args[ARG_obj].u_obj, args[ARG_buffer].u_obj, handler);
@@ -152,7 +152,7 @@ STATIC mp_obj_t mod_msgpack_unpack(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_obj_t hook = args[ARG_ext_hook].u_obj;
     if (hook != mp_const_none && !mp_obj_is_fun(hook) && !MP_OBJ_IS_METH(hook)) {
-        mp_raise_ValueError(translate("ext_hook is not a function"));
+        mp_raise_ValueError(MP_ERROR_TEXT("ext_hook is not a function"));
     }
 
     return common_hal_msgpack_unpack(args[ARG_buffer].u_obj, hook, args[ARG_use_list].u_bool);
@@ -174,4 +174,4 @@ const mp_obj_module_t msgpack_module = {
     .globals = (mp_obj_dict_t *)&msgpack_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_msgpack, msgpack_module, CIRCUITPY_MSGPACK);
+MP_REGISTER_MODULE(MP_QSTR_msgpack, msgpack_module);

@@ -24,22 +24,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_STACK_H
-#define MICROPY_INCLUDED_SUPERVISOR_STACK_H
+#pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
-
-#include "supervisor/memory.h"
+#include <stdint.h>
 
 void stack_init(void);
-void stack_resize(void);
 // Actual stack location and size, may be larger than requested.
 uint32_t *stack_get_bottom(void);
 size_t stack_get_length(void);
-// Next/current requested stack size.
-bool set_next_stack_size(uint32_t size);
-uint32_t get_next_stack_size(void);
-uint32_t get_current_stack_size(void);
 bool stack_ok(void);
 
 // Use this after any calls into a library which may use a lot of stack. This will raise a Python
@@ -49,5 +43,3 @@ void assert_heap_ok(void);
 #ifndef STACK_CANARY_VALUE
 #define STACK_CANARY_VALUE 0x017829ef
 #endif
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_STACK_H

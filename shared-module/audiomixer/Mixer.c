@@ -33,7 +33,10 @@
 
 #include "py/runtime.h"
 #include "shared-module/audiocore/__init__.h"
-#include "shared-module/audiocore/RawSample.h"
+
+#if defined(__arm__) && __arm__
+#include "cmsis_compiler.h"
+#endif
 
 void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t *self,
     uint8_t voice_count,
@@ -44,13 +47,13 @@ void common_hal_audiomixer_mixer_construct(audiomixer_mixer_obj_t *self,
     uint32_t sample_rate) {
     self->len = buffer_size / 2 / sizeof(uint32_t) * sizeof(uint32_t);
 
-    self->first_buffer = m_malloc(self->len, false);
+    self->first_buffer = m_malloc(self->len);
     if (self->first_buffer == NULL) {
         common_hal_audiomixer_mixer_deinit(self);
         m_malloc_fail(self->len);
     }
 
-    self->second_buffer = m_malloc(self->len, false);
+    self->second_buffer = m_malloc(self->len);
     if (self->second_buffer == NULL) {
         common_hal_audiomixer_mixer_deinit(self);
         m_malloc_fail(self->len);
@@ -140,7 +143,7 @@ static inline uint32_t mult16signed(uint32_t val, int32_t mul) {
     float mod_mul = (float)mul / (float)((1 << 15) - 1);
     for (int8_t i = 0; i < 2; i++) {
         int16_t ai = (val >> (sizeof(uint16_t) * 8 * i));
-        int32_t intermediate = ai * mod_mul;
+        int32_t intermediate = (int32_t)(ai * mod_mul);
         if (intermediate > SHRT_MAX) {
             intermediate = SHRT_MAX;
         } else if (intermediate < SHRT_MIN) {

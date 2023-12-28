@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,49 @@
 
 #include "py/obj.h"
 
-mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args);
+typedef enum {
+    MP_IMPORT_STAT_NO_EXIST,
+    MP_IMPORT_STAT_DIR,
+    MP_IMPORT_STAT_FILE,
+} mp_import_stat_t;
+
+#if MICROPY_VFS
+
+// Delegate to the VFS for import stat and builtin open.
+
+#define mp_builtin_open_obj mp_vfs_open_obj
+
+mp_import_stat_t mp_vfs_import_stat(const char *path);
+mp_obj_t mp_vfs_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+
+MP_DECLARE_CONST_FUN_OBJ_KW(mp_vfs_open_obj);
+
+static inline mp_import_stat_t mp_import_stat(const char *path) {
+    return mp_vfs_import_stat(path);
+}
+
+static inline mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    return mp_vfs_open(n_args, args, kwargs);
+}
+
+#else
+
+// A port can provide implementations of these functions.
+mp_import_stat_t mp_import_stat(const char *path);
 mp_obj_t mp_builtin_open(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs);
+
+// A port can provide this object.
+MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
+
+#endif
+
+// A port can provide its own import handler by defining mp_builtin___import__.
+#ifndef mp_builtin___import__
+#define mp_builtin___import__ mp_builtin___import___default
+#endif
+mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args);
+mp_obj_t mp_builtin___import___default(size_t n_args, const mp_obj_t *args);
+
 mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args);
 
 MP_DECLARE_CONST_FUN_OBJ_VAR(mp_builtin___build_class___obj);
@@ -76,9 +117,7 @@ MP_DECLARE_CONST_FUN_OBJ_1(mp_builtin_repr_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_round_obj);
 MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_sorted_obj);
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_sum_obj);
-// Defined by a port, but declared here for simplicity
 MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin_input_obj);
-MP_DECLARE_CONST_FUN_OBJ_KW(mp_builtin_open_obj);
 
 MP_DECLARE_CONST_FUN_OBJ_2(mp_namedtuple_obj);
 
@@ -87,40 +126,16 @@ MP_DECLARE_CONST_FUN_OBJ_2(mp_op_getitem_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(mp_op_setitem_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_op_delitem_obj);
 
+// Modules needed by the runtime.
+extern const mp_obj_dict_t mp_module_builtins_globals;
 extern const mp_obj_module_t mp_module___main__;
 extern const mp_obj_module_t mp_module_builtins;
-extern const mp_obj_module_t mp_module_array;
-extern const mp_obj_module_t mp_module_collections;
-extern const mp_obj_module_t mp_module_io;
-extern const mp_obj_module_t mp_module_math;
-extern const mp_obj_module_t mp_module_cmath;
-extern const mp_obj_module_t mp_module_micropython;
-extern const mp_obj_module_t mp_module_ustruct;
 extern const mp_obj_module_t mp_module_sys;
-extern const mp_obj_module_t mp_module_gc;
-extern const mp_obj_module_t mp_module_thread;
 
-extern const mp_obj_dict_t mp_module_builtins_globals;
-
-// extmod modules
-extern const mp_obj_module_t mp_module_uasyncio;
-extern const mp_obj_module_t mp_module_uerrno;
+// Modules needed by the parser when MICROPY_COMP_MODULE_CONST is enabled.
+extern const mp_obj_module_t mp_module_errno;
 extern const mp_obj_module_t mp_module_uctypes;
-extern const mp_obj_module_t mp_module_uzlib;
-extern const mp_obj_module_t mp_module_ujson;
-extern const mp_obj_module_t mp_module_ure;
-extern const mp_obj_module_t mp_module_uheapq;
-extern const mp_obj_module_t mp_module_uhashlib;
-extern const mp_obj_module_t mp_module_ucryptolib;
-extern const mp_obj_module_t mp_module_ubinascii;
-extern const mp_obj_module_t mp_module_urandom;
-extern const mp_obj_module_t mp_module_uselect;
-extern const mp_obj_module_t mp_module_utimeq;
 extern const mp_obj_module_t mp_module_machine;
-extern const mp_obj_module_t mp_module_framebuf;
-extern const mp_obj_module_t mp_module_btree;
-extern const mp_obj_module_t mp_module_ubluetooth;
-extern const mp_obj_module_t mp_module_uplatform;
 
 extern const char MICROPY_PY_BUILTINS_HELP_TEXT[];
 

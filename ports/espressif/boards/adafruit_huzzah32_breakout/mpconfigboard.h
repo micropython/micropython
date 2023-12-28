@@ -35,7 +35,7 @@
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO0)
 
 // Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION translate("You pressed the GPIO0 button at start up.")
+#define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("You pressed the GPIO0 button at start up.")
 
 // UART pins
 #define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)

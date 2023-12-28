@@ -27,7 +27,6 @@
 #ifndef MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H
 #define MICROPY_INCLUDED_SUPERVISOR_AUTORELOAD_H
 
-#include "supervisor/memory.h"
 #include "py/obj.h"
 #include "shared-bindings/supervisor/RunReason.h"
 
@@ -46,13 +45,6 @@ enum {
     AUTORELOAD_SUSPEND_USB = 0x4,
     AUTORELOAD_SUSPEND_WEB = 0x8
 };
-
-typedef struct {
-    uint8_t options;
-    char filename[];
-} next_code_info_t;
-
-extern supervisor_allocation *next_code_allocation;
 
 // Helper for exiting the VM and reloading immediately.
 void reload_initiate(supervisor_run_reason_t run_reason);

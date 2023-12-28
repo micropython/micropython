@@ -26,7 +26,6 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/Pull.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Pull:
 //|     """Defines the pull of a digital input pin"""
@@ -67,12 +66,13 @@ STATIC void digitalio_pull_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     mp_printf(print, "%q.%q.%q", MP_QSTR_digitalio, MP_QSTR_Pull, pull);
 }
 
-const mp_obj_type_t digitalio_pull_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Pull,
-    .print = digitalio_pull_print,
-    .locals_dict = (mp_obj_dict_t *)&digitalio_pull_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    digitalio_pull_type,
+    MP_QSTR_Pull,
+    MP_TYPE_FLAG_NONE,
+    print, digitalio_pull_print,
+    locals_dict, &digitalio_pull_locals_dict
+    );
 
 digitalio_pull_t validate_pull(mp_rom_obj_t obj, qstr arg_name) {
     if (obj == MP_ROM_PTR(&digitalio_pull_up_obj)) {
@@ -83,5 +83,5 @@ digitalio_pull_t validate_pull(mp_rom_obj_t obj, qstr arg_name) {
     if (obj == MP_ROM_NONE) {
         return PULL_NONE;
     }
-    mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), arg_name, MP_QSTR_Pull, MP_QSTR_None, mp_obj_get_type(obj)->name);
+    mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), arg_name, MP_QSTR_Pull, MP_QSTR_None, mp_obj_get_type(obj)->name);
 }

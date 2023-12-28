@@ -30,6 +30,7 @@
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
 #include "shared-bindings/mdns/RemoteService.h"
+#include "shared-bindings/mdns/Server.h"
 #include "shared-bindings/wifi/__init__.h"
 #include "supervisor/shared/tick.h"
 
@@ -77,11 +78,11 @@ void mdns_server_construct(mdns_server_obj_t *self, bool workflow) {
 
 void common_hal_mdns_server_construct(mdns_server_obj_t *self, mp_obj_t network_interface) {
     if (network_interface != MP_OBJ_FROM_PTR(&common_hal_wifi_radio_obj)) {
-        mp_raise_ValueError(translate("mDNS only works with built-in WiFi"));
+        mp_raise_ValueError(MP_ERROR_TEXT("mDNS only works with built-in WiFi"));
         return;
     }
     if (object_inited) {
-        mp_raise_RuntimeError(translate("mDNS already initialized"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("mDNS already initialized"));
     }
     mdns_server_construct(self, false);
 }
@@ -230,7 +231,7 @@ STATIC void alloc_search_result_cb(struct mdns_answer *answer, const char *varpa
 
     if ((flags & MDNS_SEARCH_RESULT_FIRST) != 0) {
         // first
-        mdns_remoteservice_obj_t *service = gc_alloc(sizeof(mdns_remoteservice_obj_t), 0, false);
+        mdns_remoteservice_obj_t *service = m_malloc(sizeof(mdns_remoteservice_obj_t));
         if (service == NULL) {
             // alloc fails
             mdns_search_stop(state->request_id);
@@ -263,7 +264,7 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
         NETIF_STA, &alloc_search_result_cb, &state,
         &state.request_id);
     if (err != ERR_OK) {
-        mp_raise_RuntimeError(translate("Unable to start mDNS query"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Unable to start mDNS query"));
     }
 
     uint64_t start_ticks = supervisor_ticks_ms64();
@@ -295,7 +296,27 @@ mp_obj_t common_hal_mdns_server_find(mdns_server_obj_t *self, const char *servic
     return MP_OBJ_FROM_PTR(tuple);
 }
 
-void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_int_t port) {
+STATIC void srv_txt_cb(struct mdns_service *service, void *ptr) {
+    mdns_server_obj_t *self = ptr;
+    err_t res;
+    for (size_t i = 0; i < self->num_txt_records; i++) {
+        res = mdns_resp_add_service_txtitem(service, self->txt_records[i], strlen(self->txt_records[i]));
+        if (res != ERR_OK) {
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Failed to add service TXT record"));
+            return;
+        }
+    }
+}
+
+STATIC void assign_txt_records(mdns_server_obj_t *self, const char *txt_records[], size_t num_txt_records) {
+    size_t allowed_num_txt_records = MDNS_MAX_TXT_RECORDS < num_txt_records ? MDNS_MAX_TXT_RECORDS : num_txt_records;
+    self->num_txt_records = allowed_num_txt_records;
+    for (size_t i = 0; i < allowed_num_txt_records; i++) {
+        self->txt_records[i] = txt_records[i];
+    }
+}
+
+void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const char *service_type, const char *protocol, mp_int_t port, const char *txt_records[], size_t num_txt_records) {
     enum mdns_sd_proto proto = DNSSD_PROTO_UDP;
     if (strcmp(protocol, "_tcp") == 0) {
         proto = DNSSD_PROTO_TCP;
@@ -313,9 +334,11 @@ void common_hal_mdns_server_advertise_service(mdns_server_obj_t *self, const cha
     if (existing_slot < MDNS_MAX_SERVICES) {
         mdns_resp_del_service(NETIF_STA, existing_slot);
     }
-    int8_t slot = mdns_resp_add_service(NETIF_STA, self->instance_name, service_type, proto, port, NULL, NULL);
+
+    assign_txt_records(self, txt_records, num_txt_records);
+    int8_t slot = mdns_resp_add_service(NETIF_STA, self->instance_name, service_type, proto, port, srv_txt_cb, self);
     if (slot < 0) {
-        mp_raise_RuntimeError(translate("Out of MDNS service slots"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Out of MDNS service slots"));
         return;
     }
     self->service_type[slot] = service_type;

@@ -32,7 +32,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiomp3/MP3Decoder.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class MP3Decoder:
 //|     """Load a mp3 file for audio playback
@@ -95,10 +94,9 @@ STATIC mp_obj_t audiomp3_mp3file_make_new(const mp_obj_type_t *type, size_t n_ar
         arg = mp_call_function_2(MP_OBJ_FROM_PTR(&mp_builtin_open_obj), arg, MP_ROM_QSTR(MP_QSTR_rb));
     }
 
-    audiomp3_mp3file_obj_t *self = m_new_obj(audiomp3_mp3file_obj_t);
-    self->base.type = &audiomp3_mp3file_type;
+    audiomp3_mp3file_obj_t *self = mp_obj_malloc(audiomp3_mp3file_obj_t, &audiomp3_mp3file_type);
     if (!mp_obj_is_type(arg, &mp_type_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;
     size_t buffer_size = 0;
@@ -159,7 +157,7 @@ STATIC mp_obj_t audiomp3_mp3file_obj_set_file(mp_obj_t self_in, mp_obj_t file) {
     audiomp3_mp3file_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (!mp_obj_is_type(file, &mp_type_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     common_hal_audiomp3_mp3file_set_file(self, file);
     return mp_const_none;
@@ -285,13 +283,11 @@ STATIC const audiosample_p_t audiomp3_mp3file_proto = {
     .get_buffer_structure = (audiosample_get_buffer_structure_fun)audiomp3_mp3file_get_buffer_structure,
 };
 
-const mp_obj_type_t audiomp3_mp3file_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MP3Decoder,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audiomp3_mp3file_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiomp3_mp3file_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audiomp3_mp3file_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiomp3_mp3file_type,
+    MP_QSTR_MP3Decoder,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audiomp3_mp3file_make_new,
+    locals_dict, &audiomp3_mp3file_locals_dict,
+    protocol, &audiomp3_mp3file_proto
+    );

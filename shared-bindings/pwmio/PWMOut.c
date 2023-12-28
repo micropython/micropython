@@ -33,7 +33,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
@@ -47,23 +46,23 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
             mp_arg_error_invalid(MP_QSTR_frequency);
             break;
         case PWMOUT_INVALID_FREQUENCY_ON_PIN:
-            mp_raise_ValueError(translate("Frequency must match existing PWMOut using this timer"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Frequency must match existing PWMOut using this timer"));
             break;
         case PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE:
-            mp_raise_ValueError(translate("Cannot vary frequency on a timer that is already in use"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Cannot vary frequency on a timer that is already in use"));
             break;
         case PWMOUT_ALL_TIMERS_ON_PIN_IN_USE:
-            mp_raise_ValueError(translate("All timers for this pin are in use"));
+            mp_raise_ValueError(MP_ERROR_TEXT("All timers for this pin are in use"));
             break;
         case PWMOUT_ALL_TIMERS_IN_USE:
-            mp_raise_RuntimeError(translate("All timers in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
             break;
         case PWMOUT_ALL_CHANNELS_IN_USE:
-            mp_raise_RuntimeError(translate("All channels in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
             break;
         default:
         case PWMOUT_INITIALIZATION_ERROR:
-            mp_raise_RuntimeError(translate("Could not start PWM"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Could not start PWM"));
             break;
     }
 }
@@ -176,8 +175,7 @@ STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, 
     bool variable_frequency = parsed_args[ARG_variable_frequency].u_bool;
 
     // create PWM object from the given pin
-    pwmio_pwmout_obj_t *self = m_new_obj(pwmio_pwmout_obj_t);
-    self->base.type = &pwmio_pwmout_type;
+    pwmio_pwmout_obj_t *self = mp_obj_malloc(pwmio_pwmout_obj_t, &pwmio_pwmout_type);
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
     common_hal_pwmio_pwmout_raise_error(result);
 
@@ -270,7 +268,7 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (!common_hal_pwmio_pwmout_get_variable_frequency(self)) {
-        mp_raise_AttributeError(translate(
+        mp_raise_AttributeError(MP_ERROR_TEXT(
             "PWM frequency not writable when variable_frequency is False on construction."));
     }
     mp_int_t freq = mp_obj_get_int(frequency);
@@ -300,9 +298,10 @@ STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pwmio_pwmout_locals_dict, pwmio_pwmout_locals_dict_table);
 
-const mp_obj_type_t pwmio_pwmout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PWMOut,
-    .make_new = pwmio_pwmout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pwmio_pwmout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pwmio_pwmout_type,
+    MP_QSTR_PWMOut,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, pwmio_pwmout_make_new,
+    locals_dict, &pwmio_pwmout_locals_dict
+    );

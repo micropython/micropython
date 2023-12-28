@@ -34,11 +34,11 @@ INC += \
 	-I../../lib/tinyusb/src \
 	-I../../supervisor/shared/usb \
 	-I$(BUILD) \
-	-Iboards/ \
+	-Iboards \
 	-Iboards/$(BOARD) \
 	-Iperipherals/ \
 	-Iperipherals/mimxrt10xx/ \
-	-Isdk/CMSIS/Include \
+	-Isdk/CMSIS/Include/ \
 	-Isdk/devices/$(CHIP_FAMILY) \
 	-Isdk/devices/$(CHIP_FAMILY)/drivers \
 	-Isdk/drivers/common
@@ -49,8 +49,8 @@ CFLAGS += -ftree-vrp -DNDEBUG
 
 # TinyUSB defines
 CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512
-ifeq ($(CHIP_FAMILY), MIMXRT1011)
-CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=64 -DCFG_TUD_MIDI_TX_BUFSIZE=64 -DCFG_TUD_MSC_BUFSIZE=512
+ifeq ($(CHIP_FAMILY),$(filter $(CHIP_FAMILY),MIMXRT1011 MIMXRT1015))
+CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=64 -DCFG_TUD_MSC_BUFSIZE=512
 else
 CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=512 -DCFG_TUD_MSC_BUFSIZE=1024
 endif
@@ -76,7 +76,7 @@ CFLAGS += \
 	-mfloat-abi=hard \
 	-mfpu=fpv5-sp-d16 \
 	-DCPU_$(CHIP_VARIANT) \
-	-DIMXRT10XX \
+	-DIMXRT1XXX \
 	-g3 -Wno-unused-parameter \
 	-ffunction-sections -fdata-sections -fstack-usage
 
@@ -88,6 +88,8 @@ CFLAGS += $(OPTIMIZATION_FLAGS)
 ifeq ($(CIRCUITPY_SWO_TRACE), 1)
   CFLAGS += -finstrument-functions -finstrument-functions-exclude-file-list=tinyusb -finstrument-functions-exclude-function-list='USB_OTG1_IRQHandler,usb_irq_handler,nlr_push,CLOCK_EnableClock,CLOCK_SetDiv,CLOCK_SetMux,__DMB,__ISB,__DSB,SCB_EnableICache,SCB_EnableDCache,ARM_MPU_Disable,ARM_MPU_Enable,SCB_DisableDCache,SCB_DisableICache,__enable_irq,__disable_irq,__set_MSP,port_get_raw_ticks,supervisor_ticks_ms64'
 endif
+
+$(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 
@@ -101,14 +103,27 @@ ifndef INTERNAL_LIBM
 LIBS += -lm
 endif
 
-LDFLAGS += -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mthumb -mapcs
+ifndef CHIP_CORE
+CHIP_CORE = $(CHIP_FAMILY)
+endif
+
+# If not empty, then it is 10xx.
+ifneq ($(findstring MIMXRT10, $(CHIP_FAMILY)),)
+CFLAGS += -DIMXRT10XX=1 -DIMXRT11XX=0
+MIMXRT10xx = $(CHIP_FAMILY)
 BOOTLOADER_SIZE := 0x6000C000
+else
+CFLAGS += -DIMXRT11XX=1 -DIMXRT10XX=0
+MIMXRT11xx = $(CHIP_FAMILY)
+BOOTLOADER_SIZE := 0x3000C000
+endif
+
+LDFLAGS += -mcpu=cortex-m7 -mfloat-abi=hard -mfpu=fpv5-sp-d16 -mthumb -mapcs
 
 SRC_SDK := \
 	devices/$(CHIP_FAMILY)/drivers/fsl_clock.c \
-	devices/$(CHIP_FAMILY)/system_$(CHIP_FAMILY).c \
+	devices/$(CHIP_FAMILY)/system_$(CHIP_CORE).c \
 	devices/$(CHIP_FAMILY)/xip/fsl_flexspi_nor_boot.c \
-	drivers/adc_12b1msps_sar/fsl_adc.c \
 	drivers/cache/armv7-m7/fsl_cache.c \
 	drivers/common/fsl_common_arm.c \
 	drivers/common/fsl_common.c \
@@ -122,10 +137,22 @@ SRC_SDK := \
 	drivers/sai/fsl_sai.c \
 	drivers/snvs_hp/fsl_snvs_hp.c \
 	drivers/snvs_lp/fsl_snvs_lp.c \
-	drivers/tempmon/fsl_tempmon.c \
 	drivers/trng/fsl_trng.c \
 
+ifeq ($(CIRCUITPY_ANALOGIO), 1)
+SRC_SDK +=	drivers/adc_12b1msps_sar/fsl_adc.c \
+	drivers/tempmon/fsl_tempmon.c
+endif
+
+ifeq ($(CHIP_FAMILY), MIMXRT1176)
+SRC_SDK += devices/$(CHIP_FAMILY)/drivers/fsl_anatop_ai.c \
+	devices/$(CHIP_FAMILY)/drivers/fsl_dcdc.c \
+	devices/$(CHIP_FAMILY)/drivers/fsl_pmu.c
+endif
+
 SRC_SDK := $(addprefix sdk/, $(SRC_SDK))
+
+$(addprefix $(BUILD)/, $(SRC_SDK:.c=.o)): CFLAGS += -Wno-array-bounds
 
 SRC_C += \
 	background.c \
@@ -157,7 +184,7 @@ SRC_SHARED_MODULE_EXPANDED = $(addprefix shared-bindings/, $(SRC_SHARED_MODULE))
                              $(addprefix shared-module/, $(SRC_SHARED_MODULE_INTERNAL))
 
 SRC_S = \
-    sdk/devices/$(CHIP_FAMILY)/gcc/startup_$(CHIP_FAMILY).S \
+    sdk/devices/$(CHIP_FAMILY)/gcc/startup_$(CHIP_CORE).S \
     supervisor/cpu.S
 
 OBJ = $(PY_O) $(SUPERVISOR_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
@@ -171,13 +198,17 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.hex
 
+ifeq ($(VALID_BOARD),)
+$(BUILD)/firmware.elf: invalid-board
+else
 $(BUILD)/firmware.elf: $(OBJ) $(LD_FILES)
 	$(STEPECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $(filter-out %.ld, $^) -Wl,--print-memory-usage -Wl,--start-group $(LIBS) -Wl,--end-group
+endif
 
 # -R excludes sections from the output files.
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
@@ -195,17 +226,20 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 
 include $(TOP)/py/mkrules.mk
 
-# Print out the value of a make variable.
-# https://stackoverflow.com/questions/16467718/how-to-print-out-a-variable-in-makefile
-print-%:
-	@echo $* = $($*)
 
-ifeq ($(CHIP_FAMILY), MIMXRT1062)
-PYOCD_TARGET = mimxrt1060
-endif
+# Flash using jlink
+define jlink_script
+halt
+loadfile $^
+r
+go
+exit
+endef
+export jlink_script
 
-# Flash using pyocd
-PYOCD_OPTION ?=
-flash: $(BUILD)/firmware.hex
-	pyocd flash -t $(PYOCD_TARGET) $(PYOCD_OPTION) $<
-	pyocd reset -t $(PYOCD_TARGET)
+JLINKEXE = JLinkExe
+flash-jlink: $(BUILD)/firmware.elf
+	@echo "$$jlink_script" > $(BUILD)/firmware.jlink
+	$(JLINKEXE) -device $(CHIP_FAMILY)xxx5A -if swd -JTAGConf -1,-1 -speed auto -CommandFile $(BUILD)/firmware.jlink
+
+flash: flash-jlink

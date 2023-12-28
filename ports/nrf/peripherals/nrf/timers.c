@@ -112,7 +112,7 @@ nrfx_timer_t *nrf_peripherals_allocate_timer(void) {
 nrfx_timer_t *nrf_peripherals_allocate_timer_or_throw(void) {
     nrfx_timer_t *result = nrf_peripherals_allocate_timer();
     if (!result) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
     return result;
 }

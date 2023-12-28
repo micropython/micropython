@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include "py/reader.h"
 #include "py/lexer.h"
 #include "py/runtime.h"
-
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_ENABLE_COMPILER
 
@@ -358,15 +356,30 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     vstr_add_byte(&lex->vstr, '{');
                     next_char(lex);
                 } else {
+                    // wrap each argument in (), e.g.
+                    // f"{a,b,}, {c}" --> "{}".format((a,b), (c),)
+                    vstr_add_byte(&lex->fstring_args, '(');
                     // remember the start of this argument (if we need it for f'{a=}').
                     size_t i = lex->fstring_args.len;
-                    // extract characters inside the { until we reach the
-                    // format specifier or closing }.
-                    // (MicroPython limitation) note: this is completely unaware of
-                    // Python syntax and will not handle any expression containing '}' or ':'.
-                    // e.g. f'{"}"}' or f'{foo({})}'.
+                    // Extract characters inside the { until the bracket level
+                    // is zero and we reach the conversion specifier '!',
+                    // format specifier ':', or closing '}'. The conversion
+                    // and format specifiers are left unchanged in the format
+                    // string to be handled by str.format.
+                    // (MicroPython limitation) note: this is completely
+                    // unaware of Python syntax and will not handle any
+                    // expression containing '}' or ':'. e.g. f'{"}"}' or f'
+                    // {foo({})}'. However, detection of the '!' will
+                    // specifically ensure that it's followed by [rs] and
+                    // then either the format specifier or the closing
+                    // brace. This allows the use of e.g. != in expressions.
                     unsigned int nested_bracket_level = 0;
-                    while (!is_end(lex) && (nested_bracket_level != 0 || !is_char_or(lex, ':', '}'))) {
+                    while (!is_end(lex) && (nested_bracket_level != 0
+                                            || !(is_char_or(lex, ':', '}')
+                                                 || (is_char(lex, '!')
+                                                     && is_char_following_or(lex, 'r', 's')
+                                                     && is_char_following_following_or(lex, ':', '}'))))
+                           ) {
                         unichar c = CUR_CHAR(lex);
                         if (c == '[' || c == '{') {
                             nested_bracket_level += 1;
@@ -384,7 +397,9 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                         // remove the trailing '='
                         lex->fstring_args.len--;
                     }
-                    // comma-separate args
+                    // close the paren-wrapped arg to .format().
+                    vstr_add_byte(&lex->fstring_args, ')');
+                    // comma-separate args to .format().
                     vstr_add_byte(&lex->fstring_args, ',');
                 }
                 vstr_add_byte(&lex->vstr, '{');
@@ -394,7 +409,6 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
             if (is_char(lex, '\\')) {
                 next_char(lex);
                 unichar c = CUR_CHAR(lex);
-
                 if (is_raw) {
                     // raw strings allow escaping of quotes, but the backslash is also emitted
                     vstr_add_char(&lex->vstr, '\\');
@@ -476,25 +490,23 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     }
                 }
                 if (c != MP_LEXER_EOF) {
-                    if (MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) {
-                        if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
-                            vstr_add_char(&lex->vstr, c);
-                        } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
-                            vstr_add_byte(&lex->vstr, c);
-                        } else {
-                            // unicode character out of range
-                            // this raises a generic SyntaxError; could provide more info
-                            lex->tok_kind = MP_TOKEN_INVALID;
-                        }
-                    } else {
-                        // without unicode everything is just added as an 8-bit byte
-                        if (c < 0x100) {
-                            vstr_add_byte(&lex->vstr, c);
-                        } else {
-                            // 8-bit character out of range
-                            // this raises a generic SyntaxError; could provide more info
-                            lex->tok_kind = MP_TOKEN_INVALID;
-                        }
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
+                        // Valid unicode character in a str object.
+                        vstr_add_char(&lex->vstr, c);
+                    } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
+                        // Valid byte in a bytes object.
+                        vstr_add_byte(&lex->vstr, c);
+                    }
+                    #else
+                    if (c < 0x100) {
+                        // Without unicode everything is just added as an 8-bit byte.
+                        vstr_add_byte(&lex->vstr, c);
+                    }
+                    #endif
+                    else {
+                        // Character out of range; this raises a generic SyntaxError.
+                        lex->tok_kind = MP_TOKEN_INVALID;
                     }
                 }
             } else {
@@ -678,6 +690,7 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
             skip_whitespace(lex, true);
 
         } while (is_string_or_bytes(lex));
+
     } else if (is_head_of_identifier(lex)) {
         lex->tok_kind = MP_TOKEN_NAME;
 
@@ -833,6 +846,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     vstr_init(&lex->vstr, 32);
     #if MICROPY_PY_FSTRINGS
     vstr_init(&lex->fstring_args, 0);
+    lex->fstring_args_idx = 0;
     #endif
 
     // store sentinel for first indentation level

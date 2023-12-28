@@ -37,7 +37,7 @@ extern const mp_obj_type_t audiobusio_i2sout_type;
 
 void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     const mcu_pin_obj_t *bit_clock, const mcu_pin_obj_t *word_select, const mcu_pin_obj_t *data,
-    bool left_justified);
+    const mcu_pin_obj_t *main_clock, bool left_justified);
 
 void common_hal_audiobusio_i2sout_deinit(audiobusio_i2sout_obj_t *self);
 bool common_hal_audiobusio_i2sout_deinited(audiobusio_i2sout_obj_t *self);

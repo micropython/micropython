@@ -40,5 +40,3 @@
 
 #define CIRCUITPY_BOARD_UART        (1)
 #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO21, .rx = &pin_GPIO20}}
-
-#define CIRCUITPY_ESP_USB_SERIAL_JTAG (1)

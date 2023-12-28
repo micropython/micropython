@@ -45,8 +45,7 @@
 //|         ...
 STATIC mp_obj_t alarm_touch_touchalarm_make_new(const mp_obj_type_t *type,
     size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    alarm_touch_touchalarm_obj_t *self = m_new_obj(alarm_touch_touchalarm_obj_t);
-    self->base.type = &alarm_touch_touchalarm_type;
+    alarm_touch_touchalarm_obj_t *self = mp_obj_malloc(alarm_touch_touchalarm_obj_t, &alarm_touch_touchalarm_type);
 
     enum { ARG_pin };
     static const mp_arg_t allowed_args[] = {
@@ -80,9 +79,10 @@ STATIC const mp_rom_map_elem_t alarm_touch_touchalarm_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(alarm_touch_touchalarm_locals_dict, alarm_touch_touchalarm_locals_dict_table);
 
-const mp_obj_type_t alarm_touch_touchalarm_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_TouchAlarm,
-    .make_new = alarm_touch_touchalarm_make_new,
-    .locals_dict = (mp_obj_t)&alarm_touch_touchalarm_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    alarm_touch_touchalarm_type,
+    MP_QSTR_TouchAlarm,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, alarm_touch_touchalarm_make_new,
+    locals_dict, &alarm_touch_touchalarm_locals_dict
+    );

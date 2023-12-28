@@ -24,5 +24,8 @@
  * THE SOFTWARE.
  */
 
-#define MICROPY_PY_BUILTINS_HELP                (1)
-#define MICROPY_PY_BUILTINS_HELP_MODULES        (1)
+// Set base feature level.
+#define MICROPY_CONFIG_ROM_LEVEL (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+
+// Enable extra Unix features.
+#include "../mpconfigvariant_common.h"

@@ -104,7 +104,7 @@ STATIC mp_obj_t floppyio_mfm_readinto(size_t n_args, const mp_obj_t *pos_args, m
     digitalio_digitalinout_obj_t *index = assert_digitalinout(args[ARG_index].u_obj);
 
     if (bufinfo.len % 512 != 0) {
-        mp_raise_ValueError(translate("Buffer must be a multiple of 512 bytes"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer must be a multiple of 512 bytes"));
     }
     size_t n_sectors = bufinfo.len / 512;
     return MP_OBJ_NEW_SMALL_INT(common_hal_floppyio_mfm_readinto(bufinfo.buf, n_sectors, data, index));
@@ -127,4 +127,4 @@ const mp_obj_module_t floppyio_module = {
     .globals = (mp_obj_dict_t *)&floppyio_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_floppyio, floppyio_module, CIRCUITPY_FLOPPYIO);
+MP_REGISTER_MODULE(MP_QSTR_floppyio, floppyio_module);

@@ -21,7 +21,7 @@ const flexspi_nor_config_t qspiflash_config = {
     {
         .tag = FLEXSPI_CFG_BLK_TAG,
         .version = FLEXSPI_CFG_BLK_VERSION,
-        .readSampleClkSrc = kFLEXSPIReadSampleClk_LoopbackFromDqsPad,
+        .readSampleClkSrc = kFLEXSPIReadSampleClk_LoopbackFromSckPad,
         .csHoldTime = 3u,
         .csSetupTime = 3u,
 

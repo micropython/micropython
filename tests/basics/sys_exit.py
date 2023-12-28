@@ -1,7 +1,6 @@
 # test sys module's exit function
 
 import sys
-
 try:
     sys.exit
 except AttributeError:

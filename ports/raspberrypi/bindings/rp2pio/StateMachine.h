@@ -41,6 +41,7 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     const uint16_t *program, size_t program_len,
     size_t frequency,
     const uint16_t *init, size_t init_len,
+    const uint16_t *may_exec, size_t may_exec_len,
     const mcu_pin_obj_t *first_out_pin, uint8_t out_pin_count, uint32_t initial_out_pin_state, uint32_t initial_out_pin_direction,
     const mcu_pin_obj_t *first_in_pin, uint8_t in_pin_count, uint32_t pull_pin_up, uint32_t pull_pin_down,
     const mcu_pin_obj_t *first_set_pin, uint8_t set_pin_count, uint32_t initial_set_pin_state, uint32_t initial_set_pin_direction,
@@ -53,7 +54,8 @@ void common_hal_rp2pio_statemachine_construct(rp2pio_statemachine_obj_t *self,
     bool wait_for_txstall,
     bool auto_push, uint8_t push_threshold, bool in_shift_right,
     bool user_interruptible,
-    int wrap_taget, int wrap);
+    int wrap_taget, int wrap,
+    int offset);
 
 void common_hal_rp2pio_statemachine_deinit(rp2pio_statemachine_obj_t *self);
 bool common_hal_rp2pio_statemachine_deinited(rp2pio_statemachine_obj_t *self);

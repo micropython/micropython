@@ -37,8 +37,7 @@
 //|         :param system: satellite system to use"""
 //|         ...
 STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    gnss_obj_t *self = m_new_obj(gnss_obj_t);
-    self->base.type = &gnss_type;
+    gnss_obj_t *self = mp_obj_malloc(gnss_obj_t, &gnss_type);
     enum { ARG_system };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_system, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -55,12 +54,12 @@ STATIC mp_obj_t gnss_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         mp_obj_list_get(args[ARG_system].u_obj, &systems_size, &systems);
         for (size_t i = 0; i < systems_size; ++i) {
             if (!mp_obj_is_type(systems[i], &gnss_satellitesystem_type)) {
-                mp_raise_TypeError(translate("System entry must be gnss.SatelliteSystem"));
+                mp_raise_TypeError(MP_ERROR_TEXT("System entry must be gnss.SatelliteSystem"));
             }
             selection |= gnss_satellitesystem_obj_to_type(systems[i]);
         }
     } else {
-        mp_raise_TypeError(translate("System entry must be gnss.SatelliteSystem"));
+        mp_raise_TypeError(MP_ERROR_TEXT("System entry must be gnss.SatelliteSystem"));
     }
 
     common_hal_gnss_construct(self, selection);
@@ -170,9 +169,10 @@ STATIC const mp_rom_map_elem_t gnss_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(gnss_locals_dict, gnss_locals_dict_table);
 
-const mp_obj_type_t gnss_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_GNSS,
-    .make_new = gnss_make_new,
-    .locals_dict = (mp_obj_dict_t *)&gnss_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    gnss_type,
+    MP_QSTR_GNSS,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, gnss_make_new,
+    locals_dict, &gnss_locals_dict
+    );

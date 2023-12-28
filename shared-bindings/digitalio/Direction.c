@@ -75,9 +75,10 @@ STATIC void digitalio_direction_print(const mp_print_t *print, mp_obj_t self_in,
     mp_printf(print, "%q.%q.%q", MP_QSTR_digitalio, MP_QSTR_Direction, direction);
 }
 
-const mp_obj_type_t digitalio_direction_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Direction,
-    .print = digitalio_direction_print,
-    .locals_dict = (mp_obj_dict_t *)&digitalio_direction_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    digitalio_direction_type,
+    MP_QSTR_Direction,
+    MP_TYPE_FLAG_NONE,
+    print, digitalio_direction_print,
+    locals_dict, &digitalio_direction_locals_dict
+    );

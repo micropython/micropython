@@ -23,3 +23,16 @@ def f4(*vargs, **kwargs):
 f4(*(1, 2))
 f4(kw_arg=3)
 f4(*(1, 2), kw_arg=3)
+
+
+# test evaluation order of arguments
+def f5(*vargs, **kwargs):
+    print(vargs, kwargs)
+
+
+def print_ret(x):
+    print(x)
+    return x
+
+
+f5(*print_ret(["a", "b"]), kw_arg=print_ret(None))

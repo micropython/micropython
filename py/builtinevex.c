@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_BUILTINS_COMPILE
 
 typedef struct _mp_obj_code_t {
@@ -40,39 +38,40 @@ typedef struct _mp_obj_code_t {
     mp_obj_t module_fun;
 } mp_obj_code_t;
 
-STATIC const mp_obj_type_t mp_type_code = {
-    { &mp_type_type },
-    .name = MP_QSTR_code,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_code,
+    MP_QSTR_code,
+    MP_TYPE_FLAG_NONE
+    );
 
 STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj_dict_t *locals) {
-    // save context and set new context
-    mp_obj_dict_t *old_globals = mp_globals_get();
-    mp_obj_dict_t *old_locals = mp_locals_get();
+    // save context
+    nlr_jump_callback_node_globals_locals_t ctx;
+    ctx.globals = mp_globals_get();
+    ctx.locals = mp_locals_get();
+
+    // set new context
     mp_globals_set(globals);
     mp_locals_set(locals);
+
+    // set exception handler to restore context if an exception is raised
+    nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
     // a bit of a hack: fun_bc will re-set globals, so need to make sure it's
     // the correct one
     if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(self->module_fun);
-        fun_bc->globals = globals;
+        ((mp_module_context_t *)fun_bc->context)->module.globals = globals;
     }
 
     // execute code
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_obj_t ret = mp_call_function_0(self->module_fun);
-        nlr_pop();
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        return ret;
-    } else {
-        // exception; restore context and re-raise same exception
-        mp_globals_set(old_globals);
-        mp_locals_set(old_locals);
-        nlr_jump(nlr.ret_val);
-    }
+    mp_obj_t ret = mp_call_function_0(self->module_fun);
+
+    // deregister exception handler and restore context
+    nlr_pop_jump_callback(true);
+
+    // return value
+    return ret;
 }
 
 STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
@@ -105,8 +104,7 @@ STATIC mp_obj_t mp_builtin_compile(size_t n_args, const mp_obj_t *args) {
             mp_raise_ValueError(MP_ERROR_TEXT("bad compile mode"));
     }
 
-    mp_obj_code_t *code = m_new_obj(mp_obj_code_t);
-    code->base.type = &mp_type_code;
+    mp_obj_code_t *code = mp_obj_malloc(mp_obj_code_t, &mp_type_code);
     code->module_fun = mp_parse_compile_execute(lex, parse_input_kind, NULL, NULL);
     return MP_OBJ_FROM_PTR(code);
 }

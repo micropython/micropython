@@ -28,6 +28,10 @@
 
 #include "py/runtime.h"
 
+#include "driver/gpio.h"
+#include "driver/timer.h"
+#include "soc/timer_group_struct.h"
+
 static void IRAM_ATTR pcnt_overflow_handler(void *self_in) {
     frequencyio_frequencyin_obj_t *self = self_in;
     // reset counter
@@ -56,28 +60,20 @@ static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
     // reset interrupt
     timg_dev_t *device = self->timer.group ? &(TIMERG1) : &(TIMERG0);
 
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    if (self->timer.idx) {
-        device->int_clr_timers.t1 = 1;
-    } else {
-        device->int_clr_timers.t0 = 1;
-    }
-    #else
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP > 1
     if (self->timer.idx) {
         device->int_clr_timers.t1_int_clr = 1;
     } else {
-        device->int_clr_timers.t0_int_clr = 1;
-    }
+    #endif
+    device->int_clr_timers.t0_int_clr = 1;
+    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP > 1
+}
     #endif
 
-    #if defined(CONFIG_IDF_TARGET_ESP32)
-    device->hw_timer[self->timer.idx].config.alarm_en = 1;
-    #elif defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C2)
-    device->hw_timer[self->timer.idx].config.tx_alarm_en = 1;
-    #elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    #if defined(CONFIG_IDF_TARGET_ESP32S3)
     device->hw_timer[self->timer.idx].config.tn_alarm_en = 1;
     #else
-    #error No known CONFIG_IDF_TARGET_xxx found
+    device->hw_timer[self->timer.idx].config.tx_alarm_en = 1;
     #endif
 }
 
@@ -99,7 +95,7 @@ static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
     // initialize PCNT
     const int8_t unit = peripherals_pcnt_init(&pcnt_config);
     if (unit == -1) {
-        mp_raise_RuntimeError(translate("All PCNT units in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
     }
 
     // set the GPIO back to high-impedance, as pcnt_unit_config sets it as pull-up
@@ -127,7 +123,7 @@ static void init_timer(frequencyio_frequencyin_obj_t *self) {
     // initialize Timer
     peripherals_timer_init(&config, &self->timer);
     if (self->timer.idx == TIMER_MAX || self->timer.group == TIMER_GROUP_MAX) {
-        mp_raise_RuntimeError(translate("All timers in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     }
 
     timer_idx_t idx = self->timer.idx;
