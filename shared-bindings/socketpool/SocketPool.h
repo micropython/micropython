@@ -45,12 +45,12 @@ typedef enum {
 } socketpool_socketpool_addressfamily_t;
 
 typedef enum {
-    SOCKETPOOL_IPPROTO_IP = 0
-    SOCKETPOOL_IPPROTO_ICMP = 1
-    SOCKETPOOL_IPPROTO_TCP = 6
-    SOCKETPOOL_IPPROTO_UDP = 17
-    SOCKETPOOL_IPPROTO_IPV6 = 41
-    SOCKETPOOL_IPPROTO_RAW = 255
+    SOCKETPOOL_IPPROTO_IP = 0,
+    SOCKETPOOL_IPPROTO_ICMP = 1,
+    SOCKETPOOL_IPPROTO_TCP = 6,
+    SOCKETPOOL_IPPROTO_UDP = 17,
+    SOCKETPOOL_IPPROTO_IPV6 = 41,
+    SOCKETPOOL_IPPROTO_RAW = 255,
 } socketpool_socketpool_ipproto_t;
 
 typedef enum {
