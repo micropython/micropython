@@ -117,7 +117,7 @@ STATIC mp_obj_t socketpool_socketpool_socket(size_t n_args, const mp_obj_t *pos_
 
     socketpool_socketpool_addressfamily_t family = args[ARG_family].u_int;
     socketpool_socketpool_sock_t type = args[ARG_type].u_int;
-    socketpool_socketpool_ipproto_t = args[ARG_proto].u_int;
+    socketpool_socketpool_ipproto_t proto = args[ARG_proto].u_int;
 
     if (proto < 0) {
         proto = 0;
