@@ -45,8 +45,6 @@ typedef enum {
 } socketpool_socketpool_addressfamily_t;
 
 typedef enum {
-    // SOCKETPOOL_IPPROTO_IP = 0,
-    // SOCKETPOOL_IPPROTO_TCP = 6,
     SOCKETPOOL_IPPROTO_AH = 51,
     SOCKETPOOL_IPPROTO_DSTOPTS = 60,
     SOCKETPOOL_IPPROTO_EGP = 8,
