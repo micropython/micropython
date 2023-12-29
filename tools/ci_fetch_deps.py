@@ -159,6 +159,8 @@ def main(target):
         submodules = [".", "frozen"]  # explicitly list frozen to get tags
     elif target == "scheduler":
         submodules = ["extmod/ulab", "lib/", "tools/"]
+    elif target == "translate":
+        submodules = ["extmod/ulab"]
     elif target == "tests":
         submodules = [
             "extmod/ulab",
