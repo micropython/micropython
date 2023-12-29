@@ -226,8 +226,10 @@ pseudoxml:
 .PHONY: all-source
 all-source:
 
+TRANSLATE_CHECK_SUBMODULES=if ! [ -f extmod/ulab/README.md ]; then python tools/ci_fetch_deps.py translate; fi
 TRANSLATE_COMMAND=find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -x locale/synthetic.pot -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d'
 locale/circuitpython.pot: all-source
+	$(TRANSLATE_CHECK_SUBMODULES)
 	$(TRANSLATE_COMMAND) > $@
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
@@ -253,6 +255,7 @@ merge-translate:
 
 .PHONY: check-translate
 check-translate:
+	$(TRANSLATE_CHECK_SUBMODULES)
 	$(TRANSLATE_COMMAND) > locale/circuitpython.pot.tmp
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
@@ -325,6 +328,11 @@ clean-nrf:
 clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
+extmod/ulab/README.md: fetch-translate-submodules
+
+.PHONY: fetch-translate-submodules
+fetch-translate-submodules:
+	$(PYTHON) tools/ci_fetch_deps.py translate
 
 .PHONY: fetch-all-submodules
 fetch-all-submodules:
