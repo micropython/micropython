@@ -661,6 +661,7 @@ STATIC void mark_user_socket(socketpool_socket_obj_t *obj) {
 
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    int proto,
     socketpool_socket_obj_t *socket) {
 
     if (!register_open_socket(socket)) {
@@ -690,7 +691,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
             break;
         #if MICROPY_PY_LWIP_SOCK_RAW
         case SOCKETPOOL_SOCK_RAW: {
-            socket->pcb.raw = raw_new(0);
+            socket->pcb.raw = raw_new(proto);
             break;
         }
         #endif
@@ -728,7 +729,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
     if (family != SOCKETPOOL_AF_INET) {
         mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
     }
@@ -737,7 +738,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_
     socketpool_socket_obj_t *socket = m_new_ll_obj_with_finaliser(socketpool_socket_obj_t);
     socket->base.type = &socketpool_socket_type;
 
-    if (!socketpool_socket(self, family, type, socket)) {
+    if (!socketpool_socket(self, family, type, proto, socket)) {
         mp_raise_RuntimeError(translate("Out of sockets"));
     }
     mark_user_socket(socket);
