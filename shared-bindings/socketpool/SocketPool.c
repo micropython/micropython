@@ -81,32 +81,12 @@ MP_DEFINE_EXCEPTION(gaierror, OSError)
 //|
 //|     TCP_NODELAY: int
 //|
-//|     IPPROTO_TCP: int
 //|     IPPROTO_IP: int
-//|     IPPROTO_AH: int
-//|     IPPROTO_DSTOPTS: int
-//|     IPPROTO_EGP: int
-//|     IPPROTO_ESP: int
-//|     IPPROTO_FRAGMENT: int
-//|     IPPROTO_GRE: int
-//|     IPPROTO_HOPOPTS: int
 //|     IPPROTO_ICMP: int
-//|     IPPROTO_ICMPV6: int
-//|     IPPROTO_IDP: int
-//|     IPPROTO_IGMP: int
-//|     IPPROTO_IPIP: int
-//|     IPPROTO_IPV6: int
-//|     IPPROTO_MPTCP: int
-//|     IPPROTO_NONE: int
-//|     IPPROTO_PIM: int
-//|     IPPROTO_PUP: int
-//|     IPPROTO_RAW: int
-//|     IPPROTO_ROUTING: int
-//|     IPPROTO_RSVP: int
-//|     IPPROTO_SCTP: int
-//|     IPPROTO_TP: int
+//|     IPPROTO_TCP: int
 //|     IPPROTO_UDP: int
-//|     IPPROTO_UDPLITE: int
+//|     IPPROTO_IPV6: int
+//|     IPPROTO_RAW: int
 //|
 //|     IP_MULTICAST_TTL: int
 //|
@@ -117,7 +97,7 @@ MP_DEFINE_EXCEPTION(gaierror, OSError)
 //|
 //|         :param ~int family: AF_INET or AF_INET6
 //|         :param ~int type: SOCK_STREAM, SOCK_DGRAM or SOCK_RAW
-//|         :param ~int proto: IPPROTO_TCP, IPPROTO_IP or any other IPPROTO_ constant. Only works with SOCK_RAW
+//|         :param ~int proto: IPPROTO_IP, IPPROTO_ICMP, IPPROTO_TCP, IPPROTO_UDP, IPPROTO_IPV6or IPPROTO_RAW. Only works with SOCK_RAW
 //|
 //|         The ``fileno`` argument available in ``socket.socket()``
 //|         in CPython is not supported.
@@ -218,8 +198,12 @@ STATIC const mp_rom_map_elem_t socketpool_socketpool_locals_dict_table[] = {
 
     { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(SOCKETPOOL_TCP_NODELAY) },
 
-    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(SOCKETPOOL_IPPROTO_TCP) },
-    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(SOCKETPOOL_IPPROTO_IP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(MOD_NETWORK_IPPROTO_IP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_ICMP), MP_ROM_INT(MOD_NETWORK_IPPROTO_ICMP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(MOD_NETWORK_IPPROTO_TCP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_UDP), MP_ROM_INT(MOD_NETWORK_IPPROTO_UDP) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_IPV6), MP_ROM_INT(MOD_NETWORK_IPPROTO_IPV6) },
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_RAW), MP_ROM_INT(MOD_NETWORK_IPPROTO_RAW) },
     { MP_ROM_QSTR(MP_QSTR_IP_MULTICAST_TTL), MP_ROM_INT(SOCKETPOOL_IP_MULTICAST_TTL) },
 
     { MP_ROM_QSTR(MP_QSTR_EAI_NONAME), MP_ROM_INT(SOCKETPOOL_EAI_NONAME) },
