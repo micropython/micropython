@@ -29,6 +29,7 @@
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 #include "extmod/mpbthci.h"
 #include "shared/runtime/softtimer.h"
 #include "modmachine.h"
