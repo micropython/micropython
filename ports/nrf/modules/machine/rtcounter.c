@@ -27,6 +27,7 @@
 
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "mphalport.h"
 #include "rtcounter.h"
 #include "nrfx_rtc.h"
 #include "nrf_clock.h"
@@ -182,9 +183,7 @@ static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     // Start the low-frequency clock (if it hasn't been started already)
-    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
-        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
-    }
+    mp_nrf_start_lfclk();
 
     // Make sure it's uninitialized.
     nrfx_rtc_uninit(self->p_rtc);
