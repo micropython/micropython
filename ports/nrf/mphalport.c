@@ -55,10 +55,24 @@ void mp_nrf_start_lfclk(void) {
         // Check if the clock was recently stopped but is still running.
         #if USE_WORKAROUND_FOR_ANOMALY_132
         bool was_running = nrf_clock_lf_is_running(NRF_CLOCK);
-        // If so, wait for it to stop. This ensures that the delay for anomaly 132 workaround does
-        // not land us in the middle of the forbidden interval.
+        #endif
+        // If so, wait for it to stop, otherwise the source cannot be changed. This also ensures
+        // that the delay for anomaly 132 workaround does not land us in the middle of the forbidden
+        // interval.
         while (nrf_clock_lf_is_running(NRF_CLOCK)) {
         }
+        // Use the same LFCLK source as for bluetooth so that enabling the softdevice will not cause
+        // an interruption.
+        nrf_clock_lf_src_set(NRF_CLOCK,
+            #if BLUETOOTH_LFCLK_RC
+            NRF_CLOCK_LFCLK_RC
+            #elif BLUETOOTH_LFCLK_SYNTH
+            NRF_CLOCK_LFCLK_Synth
+            #else
+            NRF_CLOCK_LFCLK_Xtal
+            #endif
+            );
+        #if USE_WORKAROUND_FOR_ANOMALY_132
         // If the clock just stopped, we can start it again right away as we are certainly before
         // the forbidden 66-138us interval. Otherwise, apply a delay of 138us to make sure we are
         // after the interval.
