@@ -30,6 +30,7 @@
 #include "py/mpthread.h"
 #include "pico/stdlib.h"
 #include "pico/multicore.h"
+#include "mutex_extra.h"
 
 #if MICROPY_PY_THREAD
 
@@ -45,23 +46,23 @@ STATIC uint32_t *core1_stack = NULL;
 STATIC size_t core1_stack_num_words = 0;
 
 // Thread mutex.
-STATIC mp_thread_mutex_t atomic_mutex;
+STATIC mutex_t atomic_mutex;
 
 uint32_t mp_thread_begin_atomic_section(void) {
     if (core1_entry) {
         // When both cores are executing, we also need to provide
         // full mutual exclusion.
-        mp_thread_mutex_lock(&atomic_mutex, 1);
+        return mutex_enter_blocking_and_disable_interrupts(&atomic_mutex);
+    } else {
+        return save_and_disable_interrupts();
     }
-
-    return save_and_disable_interrupts();
 }
 
 void mp_thread_end_atomic_section(uint32_t state) {
-    restore_interrupts(state);
-
-    if (core1_entry) {
-        mp_thread_mutex_unlock(&atomic_mutex);
+    if (atomic_mutex.owner != LOCK_INVALID_OWNER_ID) {
+        mutex_exit_and_restore_interrupts(&atomic_mutex, state);
+    } else {
+        restore_interrupts(state);
     }
 }
 
@@ -69,7 +70,7 @@ void mp_thread_end_atomic_section(uint32_t state) {
 void mp_thread_init(void) {
     assert(get_core_num() == 0);
 
-    mp_thread_mutex_init(&atomic_mutex);
+    mutex_init(&atomic_mutex);
 
     // Allow MICROPY_BEGIN_ATOMIC_SECTION to be invoked from core1.
     multicore_lockout_victim_init();
