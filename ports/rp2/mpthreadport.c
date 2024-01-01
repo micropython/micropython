@@ -52,9 +52,6 @@ uint32_t mp_thread_begin_atomic_section(void) {
         // When both cores are executing, we also need to provide
         // full mutual exclusion.
         mp_thread_mutex_lock(&atomic_mutex, 1);
-        // In case this atomic section is for flash access, then
-        // suspend the other core.
-        multicore_lockout_start_blocking();
     }
 
     return save_and_disable_interrupts();
@@ -64,7 +61,6 @@ void mp_thread_end_atomic_section(uint32_t state) {
     restore_interrupts(state);
 
     if (core1_entry) {
-        multicore_lockout_end_blocking();
         mp_thread_mutex_unlock(&atomic_mutex);
     }
 }

@@ -70,6 +70,22 @@ bi_decl(bi_block_device(
     BINARY_INFO_BLOCK_DEV_FLAG_WRITE |
     BINARY_INFO_BLOCK_DEV_FLAG_PT_UNKNOWN));
 
+// Flash erase and write must run with interrupts disabled and the other core suspended,
+// because the XIP bit gets disabled.
+static uint32_t begin_critical_flash_section(void) {
+    if (multicore_lockout_victim_is_initialized(1 - get_core_num())) {
+        multicore_lockout_start_blocking();
+    }
+    return save_and_disable_interrupts();
+}
+
+static void end_critical_flash_section(uint32_t state) {
+    restore_interrupts(state);
+    if (multicore_lockout_victim_is_initialized(1 - get_core_num())) {
+        multicore_lockout_end_blocking();
+    }
+}
+
 STATIC mp_obj_t rp2_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Parse arguments
     enum { ARG_start, ARG_len };
@@ -135,19 +151,17 @@ STATIC mp_obj_t rp2_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     if (n_args == 3) {
-        // Flash erase/program must run in an atomic section because the XIP bit gets disabled.
-        mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+        mp_uint_t atomic_state = begin_critical_flash_section();
         flash_range_erase(self->flash_base + offset, bufinfo.len);
-        MICROPY_END_ATOMIC_SECTION(atomic_state);
+        end_critical_flash_section(atomic_state);
         mp_event_handle_nowait();
         // TODO check return value
     } else {
         offset += mp_obj_get_int(args[3]);
     }
-    // Flash erase/program must run in an atomic section because the XIP bit gets disabled.
-    mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+    mp_uint_t atomic_state = begin_critical_flash_section();
     flash_range_program(self->flash_base + offset, bufinfo.buf, bufinfo.len);
-    MICROPY_END_ATOMIC_SECTION(atomic_state);
+    end_critical_flash_section(atomic_state);
     mp_event_handle_nowait();
     // TODO check return value
     return mp_const_none;
@@ -170,10 +184,9 @@ STATIC mp_obj_t rp2_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_
             return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
             uint32_t offset = mp_obj_get_int(arg_in) * BLOCK_SIZE_BYTES;
-            // Flash erase/program must run in an atomic section because the XIP bit gets disabled.
-            mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
+            mp_uint_t atomic_state = begin_critical_flash_section();
             flash_range_erase(self->flash_base + offset, BLOCK_SIZE_BYTES);
-            MICROPY_END_ATOMIC_SECTION(atomic_state);
+            end_critical_flash_section(atomic_state);
             // TODO check return value
             return MP_OBJ_NEW_SMALL_INT(0);
         }
