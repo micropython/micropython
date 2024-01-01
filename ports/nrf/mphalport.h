@@ -75,6 +75,10 @@ mp_uint_t mp_hal_ticks_ms(void);
 #define mp_hal_ticks_us() (0)
 #endif
 
+#if MICROPY_PY_TIME_TIME_TIME_NS && MICROPY_PY_TIME_TICKS
+void mp_hal_set_time_ns(uint64_t ns_since_epoch);
+#endif
+
 // TODO: empty implementation for now. Used by machine_spi.c:69
 #define mp_hal_delay_us_fast(p)
 #define mp_hal_ticks_cpu() (0)

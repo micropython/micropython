@@ -200,9 +200,34 @@ mp_uint_t mp_hal_ticks_ms(void) {
 
 #endif
 
+#if MICROPY_PY_TIME_TIME_TIME_NS && MICROPY_PY_TIME_TICKS
+
+// nanoseconds between 2000-01-01 and tick counter zero, to adjust clock
+static uint64_t epoch_offset = 0;
+
+uint64_t mp_hal_time_ns(void) {
+    // Range of `overflows` is sufficient: nanoseconds overflow 64 bits before `overflows` overflows
+    // 32 bits.
+    // Same logic as in mp_hal_ticks_ms, no need to worry about intermediate result overflows if we
+    // do everything in 64-bit (this probably needn't be fast).
+    uint32_t overflows;
+    uint32_t counter;
+    // guard against overflow irq
+    RTC1_GET_TICKS_ATOMIC(rtc1, overflows, counter)
+    return (((uint64_t)overflows << 18) * 1953125) + (((uint64_t)counter * 1953125) >> 6) + epoch_offset;
+}
+
+void mp_hal_set_time_ns(uint64_t ns_since_epoch) {
+    epoch_offset += ns_since_epoch - mp_hal_time_ns();
+}
+
+#else
+
 uint64_t mp_hal_time_ns(void) {
     return 0;
 }
+
+#endif
 
 // this table converts from HAL_StatusTypeDef to POSIX errno
 const byte mp_hal_status_to_errno_table[4] = {
