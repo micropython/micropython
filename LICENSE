@@ -69,6 +69,8 @@ used during the build process and is not part of the compiled source code.
             /FreeRTOS (GPL-2.0 with FreeRTOS exception)
         /esp32
             /ppp_set_auth.* (Apache-2.0)
+        /rp2
+            /mutex_extra.c (BSD-3-clause)
         /stm32
             /usbd*.c (MCD-ST Liberty SW License Agreement V2)
             /stm32_it.* (MIT + BSD-3-clause)
