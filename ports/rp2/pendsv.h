@@ -42,6 +42,9 @@ enum {
 
 #define PENDSV_DISPATCH_NUM_SLOTS PENDSV_DISPATCH_MAX
 
+// PendSV IRQ priority, to run system-level tasks that preempt the main thread.
+#define IRQ_PRI_PENDSV PICO_LOWEST_IRQ_PRIORITY
+
 typedef void (*pendsv_dispatch_t)(void);
 
 void pendsv_suspend(void);
