@@ -89,7 +89,7 @@ void soft_timer_handler(void) {
         heap = (soft_timer_entry_t *)mp_pairheap_pop(soft_timer_lt, &heap->pairheap);
         if (entry->flags & SOFT_TIMER_FLAG_PY_CALLBACK) {
             mp_sched_schedule(entry->py_callback, MP_OBJ_FROM_PTR(entry));
-        } else {
+        } else if (entry->c_callback) {
             entry->c_callback(entry);
         }
         if (entry->mode == SOFT_TIMER_MODE_PERIODIC) {
