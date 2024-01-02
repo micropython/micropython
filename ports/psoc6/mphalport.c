@@ -87,6 +87,11 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {
     return ret;
 }
 
+// Send string of given length
+void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    int r = write(STDOUT_FILENO, str, len);
+    (void)r;
+}
 
 int mp_hal_stdin_rx_chr(void) {
     for (;;) {
