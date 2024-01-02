@@ -30,9 +30,9 @@
 // as well as a fallback to generate MICROPY_GIT_TAG if the git repo or tags
 // are unavailable.
 #define MICROPY_VERSION_MAJOR 1
-#define MICROPY_VERSION_MINOR 22
+#define MICROPY_VERSION_MINOR 23
 #define MICROPY_VERSION_MICRO 0
-#define MICROPY_VERSION_PRERELEASE 0
+#define MICROPY_VERSION_PRERELEASE 1
 
 // Combined version as a 32-bit number for convenience to allow version
 // comparison. Doesn't include prerelease state.
