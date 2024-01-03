@@ -11,8 +11,8 @@ except ImportError:
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
-cert = cafile = "multi_net/expired_cert.der"
-key = "multi_net/rsa_key.der"
+cert = cafile = "expired_cert.der"
+key = "rsa_key.der"
 
 try:
     os.stat(cafile)
