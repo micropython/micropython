@@ -360,7 +360,7 @@ bool supervisor_start_web_workflow(bool reload) {
         #endif
 
         if (common_hal_socketpool_socket_get_closed(&listening)) {
-            socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+            socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, 0, &listening);
             common_hal_socketpool_socket_settimeout(&listening, 0);
             // Bind to any ip. (Not checking for failures)
             common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
