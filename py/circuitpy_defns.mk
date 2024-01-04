@@ -477,8 +477,6 @@ SRC_COMMON_HAL_ALL = \
 	gnss/GNSS.c \
 	gnss/PositionFix.c \
 	gnss/SatelliteSystem.c \
-	hashlib/__init__.c \
-	hashlib/Hash.c \
 	i2ctarget/I2CTarget.c \
 	i2ctarget/__init__.c \
 	memorymap/__init__.c \
@@ -763,6 +761,29 @@ endif
 ifeq ($(CIRCUITPY_JPEGIO),1)
 SRC_MOD += lib/tjpgd/src/tjpgd.c
 $(BUILD)/lib/tjpgd/src/tjpgd.o: CFLAGS += -Wno-shadow -Wno-cast-align
+endif
+
+ifeq ($(CIRCUITPY_HASHLIB_MBEDTLS_ONLY),1)
+SRC_MOD += $(addprefix lib/mbedtls/library/, \
+        sha1.c \
+        sha256.c \
+        sha512.c \
+        platform_util.c \
+	)
+CFLAGS += \
+	  -isystem $(TOP)/lib/mbedtls/include \
+	  -DMBEDTLS_CONFIG_FILE='"$(TOP)/lib/mbedtls_config/mbedtls_config_hashlib.h"' \
+
+endif
+
+ifeq ($(CIRCUITPY_HASHLIB_MBEDTLS),1)
+SRC_SHARED_MODULE_ALL += \
+	hashlib/Hash.c \
+	hashlib/__init__.c
+else
+SRC_COMMON_HAL_ALL += \
+	hashlib/Hash.c \
+	hashlib/__init__.c
 endif
 
 ifeq ($(CIRCUITPY_RGBMATRIX),1)
