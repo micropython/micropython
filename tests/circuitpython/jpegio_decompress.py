@@ -77,8 +77,6 @@ def test(jpeg_input, scale, fill=0xFFFF, **position_and_crop):
 
     decoder.decode(b, scale=scale, **position_and_crop)
 
-    dump_bitmap(b)
-
     if position_and_crop:
         position_and_crop.setdefault("x", 0)
         position_and_crop.setdefault("y", 0)
@@ -89,6 +87,10 @@ def test(jpeg_input, scale, fill=0xFFFF, **position_and_crop):
         refb.fill(fill)
         bitmaptools.blit(refb, full, **position_and_crop)
         print(f"{memoryview(refb) == memoryview(b)=}")
+        if not memoryview(refb) == memoryview(b):
+            dump_bitmap(b)
+    else:
+        dump_bitmap(b)
 
 
 class IOAdapter(io.IOBase):
@@ -121,10 +123,10 @@ print("IOAdapter")
 test(io.BytesIO(content), scale=3)
 
 print("crop & move")
-test(content, scale=3, x=8, y=8)
-test(content, scale=3, x1=8, y1=8)
+test(content, scale=3, x=8, y=12)
+test(content, scale=3, x1=8, y1=12)
 test(content, scale=3, x2=16, y2=16)
-test(content, scale=3, x=12, y=12, x1=8, y1=12, x2=16, y2=16)
+test(content, scale=3, x=12, y=16, x1=8, y1=12, x2=16, y2=16)
 
 print("color key")
 test(content, scale=0, skip_source_index=0x4529, fill=0)
