@@ -573,7 +573,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if args.target != "unix":
         skip_tests.add("basics/exception_chain.py")  # warning is not printed
         skip_tests.add("micropython/meminfo.py")  # output is very different to PC output
-        skip_tests.add("extmod/machine_mem.py")  # raw memory access not supported
 
         if args.target == "wipy":
             skip_tests.add("misc/print_exception.py")  # requires error reporting full
