@@ -562,12 +562,18 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("cmdline/repl_sys_ps1_ps2.py")
         skip_tests.add("extmod/ssl_poll.py")
 
-    # Some tests shouldn't be run on a PC
-    if args.target == "unix":
-        # unix build does not have the GIL so can't run thread mutation tests
+    # Skip thread mutation tests on targets that don't have the GIL.
+    if args.target in ("rp2", "unix"):
         for t in tests:
             if t.startswith("thread/mutate_"):
                 skip_tests.add(t)
+
+    # Skip thread tests that require many threads on targets that don't support multiple threads.
+    if args.target == "rp2":
+        skip_tests.add("thread/stress_heap.py")
+        skip_tests.add("thread/thread_lock2.py")
+        skip_tests.add("thread/thread_lock3.py")
+        skip_tests.add("thread/thread_shared2.py")
 
     # Some tests shouldn't be run on pyboard
     if args.target != "unix":
@@ -987,7 +993,7 @@ the last matching regex is used:
             elif args.target in ("renesas-ra"):
                 test_dirs += ("float", "inlineasm", "renesas-ra")
             elif args.target == "rp2":
-                test_dirs += ("float", "stress", "inlineasm")
+                test_dirs += ("float", "stress", "inlineasm", "thread")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":
