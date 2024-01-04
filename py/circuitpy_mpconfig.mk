@@ -37,6 +37,12 @@
 enable-if-any=$(lastword $(sort $(1) 0))
 enable-if-all=$(firstword $(sort $(1) 1))
 
+# Implement the 'not' function; When first argument argument of $(if) is non-empty,
+# the result is the 2nd arg, else it's the third arg. So if the value of $(1)
+# is exactly 1, the result of $(filter) is empty, and the result is 0. Otherwise,
+# the result is 1. You use this by $(call)ing it.
+enable-if-not=$(if $(filter 1,$(1)),0,1)
+
 # To use any/all, you "$(call)" it, with the values to test after a comma.
 # Usually the values are other $(CIRCUITPY_foo) variables. The definition
 # of CIRCUITPY_AUDIOCORE and CIRCUITPY_AUDIOMP3 below are typical of how
@@ -291,6 +297,13 @@ CFLAGS += -DCIRCUITPY_GNSS=$(CIRCUITPY_GNSS)
 
 CIRCUITPY_HASHLIB ?= $(CIRCUITPY_WEB_WORKFLOW)
 CFLAGS += -DCIRCUITPY_HASHLIB=$(CIRCUITPY_HASHLIB)
+
+CIRCUITPY_HASHLIB_MBEDTLS ?= $(CIRCUITPY_HASHLIB)
+CFLAGS += -DCIRCUITPY_HASHLIB_MBEDTLS=$(CIRCUITPY_HASHLIB_MBEDTLS)
+
+# i.e., we need to include a subset of mbedtls only for hashlib's own needs
+CIRCUITPY_HASHLIB_MBEDTLS_ONLY ?= $(call enable-if-all,$(CIRCUITPY_HASHLIB_MBEDTLS) $(call enable-if-not,$(CIRCUITPY_SSL)))
+CFLAGS += -DCIRCUITPY_HASHLIB_MBEDTLS_ONLY=$(CIRCUITPY_HASHLIB_MBEDTLS_ONLY)
 
 CIRCUITPY_I2CTARGET ?= $(CIRCUITPY_FULL_BUILD)
 CFLAGS += -DCIRCUITPY_I2CTARGET=$(CIRCUITPY_I2CTARGET)

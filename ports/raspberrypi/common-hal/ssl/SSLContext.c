@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 
-#include "mbedtls/crt_bundle.h"
+#include "lib/mbedtls_config/crt_bundle.h"
 
 void common_hal_ssl_sslcontext_construct(ssl_sslcontext_obj_t *self) {
     common_hal_ssl_sslcontext_set_default_verify_paths(self);

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2022 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2014 Paul Sokolovsky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,34 +25,12 @@
  * THE SOFTWARE.
  */
 
-#include "shared-bindings/hashlib/Hash.h"
+#pragma once
 
-#include "mbedtls/ssl.h"
+#include "mbedtls/version.h"
 
-void common_hal_hashlib_hash_update(hashlib_hash_obj_t *self, const uint8_t *data, size_t datalen) {
-    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
-        mbedtls_sha1_update_ret(&self->sha1, data, datalen);
-        return;
-    }
-}
-
-void common_hal_hashlib_hash_digest(hashlib_hash_obj_t *self, uint8_t *data, size_t datalen) {
-    if (datalen < common_hal_hashlib_hash_get_digest_size(self)) {
-        return;
-    }
-    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
-        // We copy the sha1 state so we can continue to update if needed or get
-        // the digest a second time.
-        mbedtls_sha1_context copy;
-        mbedtls_sha1_clone(&copy, &self->sha1);
-        mbedtls_sha1_finish_ret(&self->sha1, data);
-        mbedtls_sha1_clone(&self->sha1, &copy);
-    }
-}
-
-size_t common_hal_hashlib_hash_get_digest_size(hashlib_hash_obj_t *self) {
-    if (self->hash_type == MBEDTLS_SSL_HASH_SHA1) {
-        return 20;
-    }
-    return 0;
-}
+#if MBEDTLS_VERSION_NUMBER < 0x02070000 || MBEDTLS_VERSION_NUMBER >= 0x03000000
+#define mbedtls_sha1_starts_ret mbedtls_sha1_starts
+#define mbedtls_sha1_update_ret mbedtls_sha1_update
+#define mbedtls_sha1_finish_ret mbedtls_sha1_finish
+#endif
