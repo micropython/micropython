@@ -1,0 +1,24 @@
+{
+    "deploy": [
+        "../deploy_s3.md"
+    ],
+    "docs": "",
+    "features": [
+        "BLE",
+        "WiFi",
+        "External Flash",
+        "External RAM",
+        "USB-C"
+    ],
+    "images": [
+        "generic_s3.jpg"
+    ],
+    "mcu": "esp32s3",
+    "product": "WPI_PICO_W",
+    "thumbnail": "",
+    "url": "https://www.espressif.com/en/products/modules",
+    "vendor": "Walnut Pi",
+    "variants": {
+        "SPIRAM_OCT": "Support for Octal-SPIRAM"
+    }
+}
