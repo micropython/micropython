@@ -176,7 +176,7 @@ STATIC mp_obj_t jpegio_jpegdecoder_decode(mp_uint_t n_args, const mp_obj_t *pos_
     mp_arg_validate_int_range(scale, 0, 3, MP_QSTR_scale);
 
     int x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, bitmap->width, MP_QSTR_x);
-    int y = mp_arg_validate_int_range(args[ARG_x].u_int, 0, bitmap->height, MP_QSTR_y);
+    int y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, bitmap->height, MP_QSTR_y);
     bitmaptools_rect_t lim = bitmaptools_validate_coord_range_pair(&args[ARG_x1], bitmap->width, bitmap->height);
 
     uint32_t skip_source_index;
