@@ -37,7 +37,7 @@ def test(testdir):
             break
         vfs.mkdir(dname)
 
-        # Also create a fully drained iterator and ensure trying to re-use it
+        # Also create a fully drained iterator and ensure trying to reuse it
         # throws the correct exception.
         idir_emptied = vfs.ilistdir("/")
         l = list(idir_emptied)

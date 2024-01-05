@@ -211,7 +211,7 @@ two loops:
         spi.readinto(buf)
         # process data in buf
 
-The first creates a buffer on each pass whereas the second re-uses a pre-allocated
+The first creates a buffer on each pass whereas the second reuses a pre-allocated
 buffer; this is both faster and more efficient in terms of memory fragmentation.
 
 **Bytes are smaller than ints**
