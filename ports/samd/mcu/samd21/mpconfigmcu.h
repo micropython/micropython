@@ -14,20 +14,32 @@
 #define MICROPY_EMIT_THUMB_ARMV7M       (0)
 #define MICROPY_MODULE_BUILTIN_INIT     (1)
 
-#define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
-
-#ifndef MICROPY_PY_MATH
-#define MICROPY_PY_MATH                 (1)
-#define MP_NEED_LOG2                    (1)
-#endif
-
-#ifndef MICROPY_PY_BUILTINS_COMPLEX
-#define MICROPY_PY_BUILTINS_COMPLEX     (0)
-#endif
-
-#ifndef MICROPY_PY_CMATH
-#define MICROPY_PY_CMATH                (0)
-#endif
+// Selected extensions beyond the basic features set.
+#define MICROPY_ENABLE_FINALISER        (1)
+#define MICROPY_KBD_EXCEPTION           (1)
+#define MICROPY_HELPER_REPL             (1)
+#define MICROPY_REPL_AUTO_INDENT        (1)
+#define MICROPY_ENABLE_SOURCE_LINE      (1)
+#define MICROPY_STREAMS_NON_BLOCK       (1)
+#define MICROPY_PY_BUILTINS_HELP        (1)
+#define MICROPY_PY_BUILTINS_HELP_MODULES (1)
+#define MICROPY_ENABLE_SCHEDULER        (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX   (1)
+#define MICROPY_PY_BUILTINS_MEMORYVIEW  (1)
+#define MICROPY_PY_BUILTINS_INPUT       (1)
+#define MICROPY_PY_MICROPYTHON_MEM_INFO (1)
+#define MICROPY_PY_ARRAY_SLICE_ASSIGN   (1)
+#define MICROPY_PY_SYS_STDFILES         (1)
+#define MICROPY_PY_SYS_MAXSIZE          (1)
+#define MICROPY_PY_IO_IOBASE            (1)
+#define MICROPY_PY_OS                   (1)
+#define MICROPY_PY_JSON                 (1)
+#define MICROPY_PY_RE                   (1)
+#define MICROPY_PY_BINASCII             (1)
+#define MICROPY_PY_UCTYPES              (1)
+#define MICROPY_PY_HEAPQ                (1)
+#define MICROPY_PY_RANDOM               (1)
+#define MICROPY_PY_PLATFORM             (1)
 
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32(300))
 unsigned long trng_random_u32(int delay);
