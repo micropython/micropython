@@ -160,6 +160,12 @@ Power related functions
      return `machine.DEEPSLEEP` and this can be used to distinguish a deepsleep wake
      from other resets.
 
+   *nrf port:*
+   
+   * The *time_ms* argument to `deepsleep` is ignored, the sleep is always indefinite.
+     nRF microcontrollers are incapable of waking on a timer as all clocks are off in
+     the deep sleep state.
+
 .. function:: wake_reason()
 
    Get the wake reason. See :ref:`constants <machine_constants>` for the possible return values.
