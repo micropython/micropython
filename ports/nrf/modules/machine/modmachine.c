@@ -116,16 +116,16 @@ void machine_init(void) {
         reset_cause = PYB_RESET_LOCKUP;
     } else if (state & POWER_RESETREAS_OFF_Msk) {
         reset_cause = PYB_RESET_POWER_ON;
-#if !defined(NRF9160_XXAA)
+    #if !defined(NRF9160_XXAA)
     } else if (state & POWER_RESETREAS_LPCOMP_Msk) {
         reset_cause = PYB_RESET_LPCOMP;
-#endif
+    #endif
     } else if (state & POWER_RESETREAS_DIF_Msk) {
         reset_cause = PYB_RESET_DIF;
-#if defined(NRF52_SERIES)
+    #if defined(NRF52_SERIES)
     } else if (state & POWER_RESETREAS_NFC_Msk) {
         reset_cause = PYB_RESET_NFC;
-#endif
+    #endif
     }
 
     // clear reset reason
@@ -216,22 +216,22 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 }
 
 static mp_obj_t machine_enable_irq(void) {
-#ifndef BLUETOOTH_SD
+    #ifndef BLUETOOTH_SD
     __enable_irq();
-#else
+    #else
 
-#endif
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_enable_irq_obj, machine_enable_irq);
 
 // Resets the board in a manner similar to pushing the external RESET button.
 static mp_obj_t machine_disable_irq(void) {
-#ifndef BLUETOOTH_SD
+    #ifndef BLUETOOTH_SD
     __disable_irq();
-#else
+    #else
 
-#endif
+    #endif
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);

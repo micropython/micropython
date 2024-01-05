@@ -234,9 +234,9 @@ static void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 
     mp_printf(print, "Pin(%d, mode=%s, pull=%s)",
-            self->pin,
-            (nrf_gpio_pin_dir_get(self->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? "OUT" : "IN",
-            pull);
+        self->pin,
+        (nrf_gpio_pin_dir_get(self->pin) == NRF_GPIO_PIN_DIR_OUTPUT) ? "OUT" : "IN",
+        pull);
 }
 
 static mp_obj_t pin_obj_init_helper(const pin_obj_t *pin, mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args);
@@ -375,11 +375,11 @@ static mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
 
     if (mode == NRF_GPIO_PIN_DIR_OUTPUT || mode == NRF_GPIO_PIN_DIR_INPUT) {
         nrf_gpio_cfg(self->pin,
-                     mode,
-                     input,
-                     pull,
-                     NRF_GPIO_PIN_S0S1,
-                     NRF_GPIO_PIN_NOSENSE);
+            mode,
+            input,
+            pull,
+            NRF_GPIO_PIN_S0S1,
+            NRF_GPIO_PIN_NOSENSE);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
@@ -496,7 +496,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(pin_af_obj, pin_af);
 static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action) {
     mp_obj_t pin_handler = MP_STATE_PORT(pin_irq_handlers)[pin];
     mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
-    const pin_obj_t *pin_obj  = pin_find(pin_number);
+    const pin_obj_t *pin_obj = pin_find(pin_number);
 
     mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
 }
@@ -591,7 +591,7 @@ static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
 */
-#include "genhdr/pins_af_const.h"
+    #include "genhdr/pins_af_const.h"
 };
 
 static MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
