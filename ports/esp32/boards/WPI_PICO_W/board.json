@@ -11,12 +11,12 @@
         "USB-C"
     ],
     "images": [
-        "generic_s3.jpg"
+        "walnutpi_pico_w.jpg"
     ],
     "mcu": "esp32s3",
-    "product": "WPI_PICO_W",
+    "product": "Pico W",
     "thumbnail": "",
-    "url": "https://www.espressif.com/en/products/modules",
+    "url": "https://www.walnutpi.com",
     "vendor": "Walnut Pi",
     "variants": {
         "SPIRAM_OCT": "Support for Octal-SPIRAM"
