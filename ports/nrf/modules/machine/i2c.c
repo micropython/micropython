@@ -68,7 +68,7 @@
 
 typedef struct _machine_hard_i2c_obj_t {
     mp_obj_base_t base;
-    nrfx_twi_t    p_twi;  // Driver instance
+    nrfx_twi_t p_twi;     // Driver instance
 } machine_hard_i2c_obj_t;
 
 static const machine_hard_i2c_obj_t machine_hard_i2c_obj[] = {
@@ -159,8 +159,7 @@ int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size
     if (err_code != NRFX_SUCCESS) {
         if (err_code == NRFX_ERROR_DRV_TWI_ERR_ANACK) {
             return -MP_ENODEV;
-        }
-        else if (err_code == NRFX_ERROR_DRV_TWI_ERR_DNACK) {
+        } else if (err_code == NRFX_ERROR_DRV_TWI_ERR_DNACK) {
             return -MP_EIO;
         }
         return -MP_ETIMEDOUT;

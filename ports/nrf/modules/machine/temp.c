@@ -91,13 +91,13 @@ int32_t temp_read(void) {
 /// Get temperature.
 static mp_obj_t machine_temp_read(mp_uint_t n_args, const mp_obj_t *args) {
 
-#if BLUETOOTH_SD
+    #if BLUETOOTH_SD
     if (BLUETOOTH_STACK_ENABLED() == 1) {
         int32_t temp;
         (void)sd_temp_get(&temp);
         return MP_OBJ_NEW_SMALL_INT(temp / 4); // resolution of 0.25 degree celsius
     }
-#endif // BLUETOOTH_SD
+    #endif // BLUETOOTH_SD
 
     return MP_OBJ_NEW_SMALL_INT(temp_read());
 }
