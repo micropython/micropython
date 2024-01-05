@@ -214,11 +214,9 @@ static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 
     config.hal_cfg.parity = NRF_UART_PARITY_EXCLUDED;
 
-    #if (BLUETOOTH_SD == 100)
-    config.interrupt_priority = 3;
-    #else
-    config.interrupt_priority = 6;
-    #endif
+    // Higher priority than pin interrupts, otherwise printing exceptions from
+    // interrupt handlers gets stuck.
+    config.interrupt_priority = NRFX_GPIOTE_DEFAULT_CONFIG_IRQ_PRIORITY - 1;
 
     // These baudrates are not supported, it seems.
     if (args[ARG_baudrate].u_int < 1200 || args[ARG_baudrate].u_int > 1000000) {

@@ -33,6 +33,7 @@
 #include "py/nlr.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "py/gc.h"
 #include "pin.h"
 #include "nrf_gpio.h"
 #include "nrfx_gpiote.h"
@@ -498,7 +499,29 @@ static void pin_common_irq_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t 
     mp_obj_t pin_number = MP_OBJ_NEW_SMALL_INT(pin);
     const pin_obj_t *pin_obj = pin_find(pin_number);
 
-    mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
+    if (pin_handler != mp_const_none) {
+        #if MICROPY_ENABLE_SCHEDULER
+        mp_sched_lock();
+        #endif
+        // When executing code within a handler we must lock the GC to prevent
+        // any memory allocations.  We must also catch any exceptions.
+        gc_lock();
+        nlr_buf_t nlr;
+        if (nlr_push(&nlr) == 0) {
+            mp_call_function_1(pin_handler, (mp_obj_t)pin_obj);
+            nlr_pop();
+        } else {
+            // Uncaught exception; disable the callback so it doesn't run again.
+            MP_STATE_PORT(pin_irq_handlers)[pin] = mp_const_none;
+            nrfx_gpiote_in_uninit(pin);
+            mp_printf(MICROPY_ERROR_PRINTER, "uncaught exception in interrupt handler for Pin('%q')\n", pin_obj->name);
+            mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        }
+        gc_unlock();
+        #if MICROPY_ENABLE_SCHEDULER
+        mp_sched_unlock();
+        #endif
+    }
 }
 
 static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
