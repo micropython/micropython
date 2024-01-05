@@ -43,6 +43,11 @@
 #define MICROPY_PY_PENDSV_ENTER   pendsv_suspend()
 #define MICROPY_PY_PENDSV_EXIT    pendsv_resume()
 
+// Prevent the "lwIP task" from running when unsafe to do so.
+#define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
+#define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
+#define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
+
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;
 

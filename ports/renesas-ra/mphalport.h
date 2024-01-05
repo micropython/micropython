@@ -35,6 +35,10 @@
 #define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV)
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state)
 
+#define MICROPY_PY_LWIP_ENTER
+#define MICROPY_PY_LWIP_REENTER
+#define MICROPY_PY_LWIP_EXIT
+
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 extern const unsigned char mp_hal_status_to_errno_table[4];

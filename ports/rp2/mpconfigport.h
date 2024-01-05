@@ -245,11 +245,6 @@ extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_BOOTSEL_DELAY_US 8
 #endif
 
-// Prevent the "lwIP task" from running when unsafe to do so.
-#define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
-#define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
-#define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
-
 // Port level Wait-for-Event macro
 //
 // Do not use this macro directly, include py/runtime.h and
