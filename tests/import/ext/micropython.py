@@ -1,2 +1,2 @@
-# micropython is always builtin and cannot be overriden by the filesystem.
+# micropython is always builtin and cannot be overridden by the filesystem.
 print("ERROR: micropython from filesystem")
