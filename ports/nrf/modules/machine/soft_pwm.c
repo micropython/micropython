@@ -102,7 +102,7 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         mp_raise_ValueError(MP_ERROR_TEXT("Pin number >31"));
     }
 
-    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);;
+    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
     self->defer_start = false;
     self->pwm_pin = pwm_pin;
     self->duty_mode = DUTY_NOT_SET;
@@ -197,7 +197,7 @@ static void machine_soft_pwm_start(machine_pwm_obj_t *self) {
             duty_width = self->duty * DUTY_FULL_SCALE / 100;
         } else if (self->duty_mode == DUTY_U16) {
             duty_width = self->duty * DUTY_FULL_SCALE / 65536;
-        }if (self->duty_mode == DUTY_NS) {
+        } else if (self->duty_mode == DUTY_NS) {
             duty_width = (uint64_t)self->duty * self->freq * DUTY_FULL_SCALE / 1000000000ULL;
         }
         pwm_set_duty_cycle(self->pwm_pin, duty_width);

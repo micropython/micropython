@@ -37,32 +37,32 @@ enum {
 };
 
 typedef struct _machine_timer_obj_t {
-    mp_obj_base_t  base;
-    nrfx_timer_t   p_instance;
+    mp_obj_base_t base;
+    nrfx_timer_t p_instance;
 } machine_timer_obj_t;
 
 static mp_obj_t machine_timer_callbacks[] = {
     NULL,
     NULL,
     NULL,
-#if defined(NRF52_SERIES)
+    #if defined(NRF52_SERIES)
     NULL,
     NULL,
-#endif
+    #endif
 };
 
 static const machine_timer_obj_t machine_timer_obj[] = {
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(0)},
-#if MICROPY_PY_MACHINE_SOFT_PWM
+    #if MICROPY_PY_MACHINE_SOFT_PWM
     { },
-#else
+    #else
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(1)},
-#endif
+    #endif
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(2)},
-#if defined(NRF52_SERIES)
+    #if defined(NRF52_SERIES)
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(3)},
     {{&machine_timer_type}, NRFX_TIMER_INSTANCE(4)},
-#endif
+    #endif
 };
 
 void timer_init0(void) {
@@ -112,19 +112,19 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     // get static peripheral object
     int timer_id = timer_find(args[ARG_id].u_obj);
 
-#if BLUETOOTH_SD
+    #if BLUETOOTH_SD
     if (timer_id == 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("Timer reserved by Bluetooth LE stack"));
     }
-#endif
+    #endif
 
-#if MICROPY_PY_MACHINE_SOFT_PWM
+    #if MICROPY_PY_MACHINE_SOFT_PWM
     if (timer_id == 1) {
         mp_raise_ValueError(MP_ERROR_TEXT("Timer reserved by ticker driver"));
     }
-#endif
+    #endif
 
-    machine_timer_obj_t *self = (machine_timer_obj_t*)&machine_timer_obj[timer_id];
+    machine_timer_obj_t *self = (machine_timer_obj_t *)&machine_timer_obj[timer_id];
 
     if (mp_obj_is_fun(args[ARG_callback].u_obj)) {
         machine_timer_callbacks[timer_id] = args[ARG_callback].u_obj;
@@ -163,11 +163,11 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
         ((args[ARG_mode].u_int == TIMER_MODE_ONESHOT) ? NRF_TIMER_SHORT_COMPARE0_STOP_MASK : 0);
     bool enable_interrupts = true;
     nrfx_timer_extended_compare(
-            &self->p_instance,
-            NRF_TIMER_CC_CHANNEL0,
-            args[ARG_period].u_int,
-            short_mask,
-            enable_interrupts);
+        &self->p_instance,
+        NRF_TIMER_CC_CHANNEL0,
+        args[ARG_period].u_int,
+        short_mask,
+        enable_interrupts);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -176,7 +176,7 @@ static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
 /// Return counter value, which is currently in us.
 ///
 static mp_obj_t machine_timer_period(mp_obj_t self_in) {
-    machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     uint32_t period = nrfx_timer_capture(&self->p_instance, NRF_TIMER_CC_CHANNEL1);
 
@@ -188,7 +188,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_period_obj, machine_timer_period)
 /// Start the timer.
 ///
 static mp_obj_t machine_timer_start(mp_obj_t self_in) {
-    machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     nrfx_timer_enable(&self->p_instance);
 
@@ -200,7 +200,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_start_obj, machine_timer_start);
 /// Stop the timer.
 ///
 static mp_obj_t machine_timer_stop(mp_obj_t self_in) {
-    machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     nrfx_timer_disable(&self->p_instance);
 
@@ -212,7 +212,7 @@ static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_stop_obj, machine_timer_stop);
 /// Free resources associated with the timer.
 ///
 static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
-    machine_timer_obj_t * self = MP_OBJ_TO_PTR(self_in);
+    machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     nrfx_timer_uninit(&self->p_instance);
 
