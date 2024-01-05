@@ -27,6 +27,7 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
 
+#include "soc/uart_periph.h"
 #include "driver/uart.h"
 #include "freertos/FreeRTOS.h"
 
@@ -306,7 +307,11 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         }
         self->flowcontrol = args[ARG_flow].u_int;
     }
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
     check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4));
+    #else
+    check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_HW_FIFO_LEN(self->uart_num) - UART_HW_FIFO_LEN(self->uart_num) / 4));
+    #endif
 }
 
 STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
