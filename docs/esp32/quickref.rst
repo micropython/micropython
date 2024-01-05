@@ -306,11 +306,11 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
     freq = pwm0.freq()         # get current frequency
     pwm0.freq(1000)            # set PWM frequency from 1Hz to 40MHz
 
-    duty = pwm0.duty()         # get current duty cycle, range 0-1023 (default 512, 50%)
-    pwm0.duty(256)             # set duty cycle from 0 to 1023 as a ratio duty/1023, (now 25%)
+    duty = pwm0.duty()         # get current duty cycle, range 0-1024 (default 512, 50%)
+    pwm0.duty(256)             # set duty cycle from 0 to 1024 as a ratio duty/1024, (now 25%)
 
-    duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65535
-    pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65535 as a ratio duty_u16/65535, (now 75%)
+    duty_u16 = pwm0.duty_u16() # get current duty cycle, range 0-65536
+    pwm0.duty_u16(2**16*3//4)  # set duty cycle from 0 to 65536 as a ratio duty_u16/65536, (now 75%)
 
     duty_ns = pwm0.duty_ns()   # get current pulse width in ns
     pwm0.duty_ns(250_000)      # set pulse width in nanoseconds from 0 to 1_000_000_000/freq, (now 25%)
@@ -319,19 +319,27 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     pwm2 = PWM(Pin(2), freq=20000, duty=512)  # create and configure in one go
     print(pwm2)                               # view PWM settings
+    pwm2.deinit()                             # turn off PWM on the pin
+
+    pwm0 = PWM(Pin(0), duty_u16=16384)            # The output is at a high level 25% of the time.
+    pwm2 = PWM(Pin(2), duty_u16=16384, invert=1)  # The output is at a low level 25% of the time.
 
 ESP chips have different hardware peripherals:
 
-=====================================================  ========  ========  ========
-Hardware specification                                    ESP32  ESP32-S2  ESP32-C3
------------------------------------------------------  --------  --------  --------
-Number of groups (speed modes)                                2         1         1
-Number of timers per group                                    4         4         4
-Number of channels per group                                  8         8         6
------------------------------------------------------  --------  --------  --------
-Different PWM frequencies (groups * timers)                   8         4         4
-Total PWM channels (Pins, duties) (groups * channels)        16         8         6
-=====================================================  ========  ========  ========
+=======================================================  ========  =========  ==========
+Hardware specification                                      ESP32  ESP32-S2,  ESP32-C2,
+                                                                   ESP32-S3,  ESP32-C3,
+                                                                   ESP32-P2   ESP32-C5,
+                                                                              ESP32-C6,
+                                                                              ESP32-H2
+-------------------------------------------------------  --------  ---------  ----------
+Number of groups (speed modes)                                  2          1         1
+Number of timers per group                                      4          4         4
+Number of channels per group                                    8          8         6
+-------------------------------------------------------  --------  ---------  ----------
+Different PWM frequencies = (groups * timers)                   8          4         4
+Total PWM channels (Pins, duties) = (groups * channels)        16          8         6
+=======================================================  ========  =========  ==========
 
 A maximum number of PWM channels (Pins) are available on the ESP32 - 16 channels,
 but only 8 different PWM frequencies are available, the remaining 8 channels must
