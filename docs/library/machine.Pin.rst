@@ -42,7 +42,7 @@ Usage Model::
 Constructors
 ------------
 
-.. class:: Pin(id, mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
+.. class:: Pin(id, mode=-1, pull=-1, *, value=None, drive=0, alt=-1, sense=-1)
 
    Access the pin peripheral (GPIO pin) associated with the given ``id``.  If
    additional arguments are given in the constructor then they are used to initialise
@@ -97,6 +97,15 @@ Constructors
        one pin alternate function is supported the this argument is not required.  Not all
        ports implement this argument.
 
+     - ``sense`` specifies whether and on what input value the pin contributes to the
+       *DETECT* signal, which wakes an nRF51/52 system from deep sleep. It can be one of:
+
+       - ``Pin.SENSE_DISABLED`` - Do not wake from this pin.
+       - ``Pin.SENSE_LOW`` - Wake when pin is low.
+       - ``Pin.SENSE_HIGH`` - Wake when pin is high.
+
+       Availability: nrf port.
+
    As specified above, the Pin class allows to set an alternate function for a particular
    pin, but it does not specify any further operations on such a pin.  Pins configured in
    alternate-function mode are usually not used as GPIO but are instead driven by other
@@ -108,7 +117,7 @@ Constructors
 Methods
 -------
 
-.. method:: Pin.init(mode=-1, pull=-1, *, value=None, drive=0, alt=-1)
+.. method:: Pin.init(mode=-1, pull=-1, *, value=None, drive=0, alt=-1, sense=-1)
 
    Re-initialise the pin using the given parameters.  Only those arguments that
    are specified will be set.  The rest of the pin peripheral state will remain
@@ -274,3 +283,13 @@ not all constants are available on all ports.
           Pin.IRQ_HIGH_LEVEL
 
    Selects the IRQ trigger type.
+
+.. data:: Pin.SENSE_DISABLED
+          Pin.SENSE_LOW
+          Pin.SENSE_HIGH
+
+   Selects the *SENSE* configuration of the pin, which determines
+   whether and on what input value it contributes to the *DETECT*
+   signal, which wakes the system from deep sleep.
+
+   Availability: nrf port.

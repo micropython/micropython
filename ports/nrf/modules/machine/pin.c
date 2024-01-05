@@ -349,6 +349,7 @@ static mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
         { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
         { MP_QSTR_alt, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
+        { MP_QSTR_sense, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
     };
 
     // parse args
@@ -374,13 +375,21 @@ static mp_obj_t pin_obj_init_helper(const pin_obj_t *self, mp_uint_t n_args, con
     nrf_gpio_pin_input_t input = (mode == NRF_GPIO_PIN_DIR_INPUT) ? NRF_GPIO_PIN_INPUT_CONNECT
                                                                   : NRF_GPIO_PIN_INPUT_DISCONNECT;
 
+    // sense mode (default unmodified)
+    nrf_gpio_pin_sense_t sense = (nrf_gpio_pin_sense_t)args[5].u_int;
+    if (sense == (nrf_gpio_pin_sense_t)-1) {
+        sense = nrf_gpio_pin_sense_get(self->pin);
+    } else if (sense != NRF_GPIO_PIN_NOSENSE && sense != NRF_GPIO_PIN_SENSE_LOW && sense != NRF_GPIO_PIN_SENSE_HIGH) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin sense: %d"), sense);
+    }
+
     if (mode == NRF_GPIO_PIN_DIR_OUTPUT || mode == NRF_GPIO_PIN_DIR_INPUT) {
         nrf_gpio_cfg(self->pin,
             mode,
             input,
             pull,
             NRF_GPIO_PIN_S0S1,
-            NRF_GPIO_PIN_NOSENSE);
+            sense);
     } else {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid pin mode: %d"), mode);
     }
@@ -614,6 +623,10 @@ static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AF_OD),     MP_ROM_INT(GPIO_MODE_AF_OD) },
     { MP_ROM_QSTR(MP_QSTR_PULL_NONE), MP_ROM_INT(GPIO_NOPULL) },
 */
+    { MP_ROM_QSTR(MP_QSTR_SENSE_DISABLED), MP_ROM_INT(NRF_GPIO_PIN_NOSENSE) },
+    { MP_ROM_QSTR(MP_QSTR_SENSE_LOW),      MP_ROM_INT(NRF_GPIO_PIN_SENSE_LOW) },
+    { MP_ROM_QSTR(MP_QSTR_SENSE_HIGH),     MP_ROM_INT(NRF_GPIO_PIN_SENSE_HIGH) },
+
     #include "genhdr/pins_af_const.h"
 };
 

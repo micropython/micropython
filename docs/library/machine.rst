@@ -166,6 +166,9 @@ Power related functions
      nRF microcontrollers are incapable of waking on a timer as all clocks are off in
      the deep sleep state.
 
+   * Pins are configured as wake sources using the ``sense`` argument to the
+     `Pin` constructor.
+
 .. function:: wake_reason()
 
    Get the wake reason. See :ref:`constants <machine_constants>` for the possible return values.
