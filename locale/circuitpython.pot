@@ -896,10 +896,6 @@ msgstr ""
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr ""
@@ -1380,6 +1376,10 @@ msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "Must be an odd square number of weights"
 msgstr ""
 
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
@@ -2537,6 +2537,10 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
+msgstr ""
+
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3879,10 +3883,6 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4275,6 +4275,10 @@ msgstr ""
 #: py/emitinlinextensa.c
 #, c-format
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
+msgstr ""
+
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
 msgstr ""
 
 #: shared-module/gifio/GifWriter.c
