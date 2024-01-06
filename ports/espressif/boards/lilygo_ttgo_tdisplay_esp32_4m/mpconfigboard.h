@@ -26,7 +26,7 @@
 
 // Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "LILYGO TTGO T-DISPLAY v1.1"
+#define MICROPY_HW_BOARD_NAME       "LILYGO TTGO T-DISPLAY v1.1 4M"
 #define MICROPY_HW_MCU_NAME         "ESP32"
 
 // UART pins attached to the USB-serial converter chip
