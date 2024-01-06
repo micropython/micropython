@@ -37,10 +37,9 @@ uint8_t display_init_sequence[] = {
     0x01, DELAY, 0x96,  // _SWRESET and Delay 150ms
     0x11, DELAY, 0xFF,  // _SLPOUT and Delay 500ms
     0x3A, DELAY | 1, 0x55, 0x0A,  // _COLMOD and Delay 10ms
-    0x36, 0x01, 0x08,  // _MADCTL
     0x21, DELAY, 0x0A,  // _INVON Hack and Delay 10ms
     0x13, DELAY, 0x0A,  // _NORON and Delay 10ms
-    0x36, 0x01, 0x68,  // _MADCTL
+    0x36, 0x01, 0x60,   // _MADCTL
     0x29, DELAY, 0xFF,  // _DISPON and Delay 500ms
 };
 
