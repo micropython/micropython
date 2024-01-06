@@ -29,8 +29,8 @@
 #include "shared-module/displayio/Bitmap.h"
 
 void shared_module_bitmapfilter_morph(
-    displayio_bitmap_t *src,
-    displayio_bitmap_t *dest,
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
     const int ksize,
     const int *krn,
     const float m,

@@ -1,34 +1,52 @@
+from displayio import Bitmap
 import bitmapfilter
-import displayio
 
-b = displayio.Bitmap(5, 5, 65535)
-b[2, 2] = 0x1F00  #  Blue in RGB565_SWAPPED
-b[0, 0] = 0xE007  #  Green in RGB565_SWAPPED
-b[0, 4] = 0x00F8  #  Red in RGB565_SWAPPED
-weights = (1, 1, 1, 1, 1, 1, 1, 1, 1)
+palette = list(" ░░▒▒▓▓█")
 
 
-def print_bitmap(bitmap):
-    for i in range(bitmap.height):
-        for j in range(bitmap.width):
-            p = bitmap[j, i]
-            p = ((p << 8) & 0xFF00) | (p >> 8)
-
-            r = (p >> 8) & 0xF8
-            r |= r >> 5
-
-            g = (p >> 3) & 0xFC
-            g |= g >> 6
-
-            b = (p << 3) & 0xF8
-            b |= b >> 5
-            print(f"{r:02x}{g:02x}{b:02x}", end=" ")
+def dump_bitmap(b):
+    for i in range(b.height):
+        for j in range(b.width):
+            # Bit order is gggBBBBBRRRRRGGG" so this takes high order bits of G
+            p = b[i, j] & 7
+            print(end=palette[p])
         print()
     print()
 
 
-print(len(weights))
+def make_circle_bitmap():
+    b = Bitmap(17, 17, 65535)
+    for i in range(b.height):
+        y = i - 8
+        for j in range(b.width):
+            x = j - 8
+            c = (x * x + y * y) > 64
+            b[i, j] = 0xFFFF if c else 0
+    return b
 
-print_bitmap(b)
-bitmapfilter.morph(b, b, weights, m=1 / 9)
-print_bitmap(b)
+
+def make_quadrant_bitmap():
+    b = Bitmap(17, 17, 1)
+    for i in range(b.height):
+        for j in range(b.width):
+            b[i, j] = (i < 8) ^ (j < 8)
+    return b
+
+
+blur = (1, 2, 1, 2, 4, 2, 1, 2, 1)
+sharpen = (-1, -2, -1, -2, 4, -2, -1, -2, -1)
+b = make_circle_bitmap()
+dump_bitmap(b)
+bitmapfilter.morph(b, weights=blur)
+dump_bitmap(b)
+
+b = make_circle_bitmap()
+q = make_quadrant_bitmap()
+dump_bitmap(q)
+bitmapfilter.morph(b, mask=q, weights=blur, add=32)
+dump_bitmap(b)
+
+# This is a kind of edge filter
+b = make_circle_bitmap()
+bitmapfilter.morph(b, weights=sharpen, threshold=True, add=8, invert=True)
+dump_bitmap(b)

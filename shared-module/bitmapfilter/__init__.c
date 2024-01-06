@@ -4,7 +4,7 @@
  * Copyright (c) 2024 Jeff Epler for Adafruit Industries
  *
  * This work is licensed under the MIT license, see the file LICENSE for details.
- * Adapted from https://github.com/openmv/openmv/blob/master/src/omv/imlib/filter.c#L2083
+ * Adapted from https://github.com/openmv/openmv/blob/master/bitmap/omv/imlib/filter.c#L2083
  */
 
 #include <stdbool.h>
@@ -12,6 +12,7 @@
 
 #include "py/runtime.h"
 
+#include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/bitmapfilter/__init__.h"
 #include "shared-module/bitmapfilter/__init__.h"
 
@@ -28,7 +29,7 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 
 static void check_matching_details(displayio_bitmap_t *b1, displayio_bitmap_t *b2) {
-    if (b1->width != b2->width || b1->height != b2->height || b1->bits_per_value != b2->bits_per_value) {
+    if (b1->width != b2->width || b1->height != b2->height) {
         mp_raise_ValueError(MP_ERROR_TEXT("bitmap size and depth must match"));
     }
 }
@@ -135,8 +136,8 @@ static void scratch_bitmap16(displayio_bitmap_t *buf, int rows, int cols) {
     })
 
 void shared_module_bitmapfilter_morph(
-    displayio_bitmap_t *src,
-    displayio_bitmap_t *dest,
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
     const int ksize,
     const int *krn,
     const float m,
@@ -149,25 +150,30 @@ void shared_module_bitmapfilter_morph(
 
     const int32_t m_int = (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * m);
 
-    check_matching_details(src, dest);
+    check_matching_details(bitmap, bitmap);
 
-    switch (src->bits_per_value) {
+    switch (bitmap->bits_per_value) {
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("unsupported bitmap depth"));
         case 16: {
             displayio_bitmap_t buf;
-            scratch_bitmap16(&buf, brows, src->width);
+            scratch_bitmap16(&buf, brows, bitmap->width);
 
-            for (int y = 0, yy = src->height; y < yy; y++) {
-                uint16_t *row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(src, y);
+            for (int y = 0, yy = bitmap->height; y < yy; y++) {
+                uint16_t *row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, y);
                 uint16_t *buf_row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(&buf, (y % brows));
 
-                for (int x = 0, xx = src->width; x < xx; x++) {
+                for (int x = 0, xx = bitmap->width; x < xx; x++) {
+                    if (mask && common_hal_displayio_bitmap_get_pixel(mask, x, y)) {
+                        IMAGE_PUT_RGB565_PIXEL_FAST(buf_row_ptr, x, IMAGE_GET_RGB565_PIXEL_FAST(row_ptr, x));
+                        continue; // Short circuit.
+
+                    }
                     int32_t tmp, r_acc = 0, g_acc = 0, b_acc = 0, ptr = 0;
 
-                    if (x >= ksize && x < src->width - ksize && y >= ksize && y < src->height - ksize) {
+                    if (x >= ksize && x < bitmap->width - ksize && y >= ksize && y < bitmap->height - ksize) {
                         for (int j = -ksize; j <= ksize; j++) {
-                            uint16_t *k_row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(src, y + j);
+                            uint16_t *k_row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, y + j);
                             for (int k = -ksize; k <= ksize; k++) {
                                 int pixel = IMAGE_GET_RGB565_PIXEL_FAST(k_row_ptr, x + k);
                                 r_acc += krn[ptr] * COLOR_RGB565_TO_R5(pixel);
@@ -177,11 +183,11 @@ void shared_module_bitmapfilter_morph(
                         }
                     } else {
                         for (int j = -ksize; j <= ksize; j++) {
-                            uint16_t *k_row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(src,
-                                IM_MIN(IM_MAX(y + j, 0), (src->height - 1)));
+                            uint16_t *k_row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap,
+                                IM_MIN(IM_MAX(y + j, 0), (bitmap->height - 1)));
                             for (int k = -ksize; k <= ksize; k++) {
                                 int pixel = IMAGE_GET_RGB565_PIXEL_FAST(k_row_ptr,
-                                    IM_MIN(IM_MAX(x + k, 0), (src->width - 1)));
+                                    IM_MIN(IM_MAX(x + k, 0), (bitmap->width - 1)));
                                 r_acc += krn[ptr] * COLOR_RGB565_TO_R5(pixel);
                                 g_acc += krn[ptr] * COLOR_RGB565_TO_G6(pixel);
                                 b_acc += krn[ptr++] * COLOR_RGB565_TO_B5(pixel);
@@ -224,17 +230,17 @@ void shared_module_bitmapfilter_morph(
                 }
 
                 if (y >= ksize) {     // Transfer buffer lines...
-                    memcpy(IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(dest, (y - ksize)),
+                    memcpy(IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, (y - ksize)),
                         IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(&buf, ((y - ksize) % brows)),
-                        IMAGE_RGB565_LINE_LEN_BYTES(src));
+                        IMAGE_RGB565_LINE_LEN_BYTES(bitmap));
                 }
             }
 
             // Copy any remaining lines from the buffer image...
-            for (int y = IM_MAX(src->height - ksize, 0), yy = src->height; y < yy; y++) {
-                memcpy(IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(dest, y),
+            for (int y = IM_MAX(bitmap->height - ksize, 0), yy = bitmap->height; y < yy; y++) {
+                memcpy(IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, y),
                     IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(&buf, (y % brows)),
-                    IMAGE_RGB565_LINE_LEN_BYTES(src));
+                    IMAGE_RGB565_LINE_LEN_BYTES(bitmap));
             }
 
             break;
