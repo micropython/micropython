@@ -150,8 +150,11 @@ soft_reset:
     machine_i2s_init0();
     #endif
 
-    // run boot-up scripts
-    pyexec_frozen_module("_boot.py", false);
+    // Run optional frozen boot code.
+    #ifdef MICROPY_BOARD_FROZEN_BOOT_FILE
+    pyexec_frozen_module(MICROPY_BOARD_FROZEN_BOOT_FILE, false);
+    #endif
+
     int ret = pyexec_file_if_exists("boot.py");
 
     #if MICROPY_HW_ENABLE_USBDEV

@@ -425,6 +425,10 @@ typedef long mp_off_t;
 #define MICROPY_BOARD_STARTUP boardctrl_startup
 #endif
 
+#ifndef MICROPY_BOARD_FROZEN_BOOT_FILE
+#define MICROPY_BOARD_FROZEN_BOOT_FILE "_boot.py"
+#endif
+
 void boardctrl_startup(void);
 
 #ifndef MICROPY_PY_NETWORK_LAN
