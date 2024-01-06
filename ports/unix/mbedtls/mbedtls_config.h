@@ -29,6 +29,9 @@
 // Set mbedtls configuration
 #define MBEDTLS_CIPHER_MODE_CTR // needed for MICROPY_PY_CRYPTOLIB_CTR
 
+// Enable DTLS
+#define MBEDTLS_SSL_PROTO_DTLS
+
 // Enable mbedtls modules
 #define MBEDTLS_HAVEGE_C
 #define MBEDTLS_TIMING_C
