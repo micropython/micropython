@@ -88,6 +88,12 @@
 #define MICROPY_PY_MACHINE_UART_IRQ (0)
 #endif
 
+// Whether to enable the direct access to the UART FIFO through the buffer interface.
+// Requires a port to implement mp_machine_uart_fifo_buffer().
+#ifndef MICROPY_PY_MACHINE_UART_FIFO_BUFFER
+#define MICROPY_PY_MACHINE_UART_FIFO_BUFFER (0)
+#endif
+
 // Temporary support for legacy construction of SoftI2C via I2C type.
 #define MP_MACHINE_I2C_CHECK_FOR_LEGACY_SOFTI2C_CONSTRUCTION(n_args, n_kw, all_args) \
     do { \

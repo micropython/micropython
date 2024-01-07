@@ -54,6 +54,10 @@ STATIC void mp_machine_uart_writechar(machine_uart_obj_t *self, uint16_t data);
 STATIC mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args);
 #endif
 
+#if MICROPY_PY_MACHINE_UART_FIFO_BUFFER
+STATIC mp_int_t mp_machine_uart_fifo_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags);
+#endif
+
 STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode);
 STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode);
 STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode);
@@ -181,6 +185,9 @@ MP_DEFINE_CONST_OBJ_TYPE(
     make_new, mp_machine_uart_make_new,
     print, mp_machine_uart_print,
     protocol, &uart_stream_p,
+    #if MICROPY_PY_MACHINE_UART_FIFO_BUFFER
+    buffer, mp_machine_uart_fifo_buffer,
+    #endif
     locals_dict, &machine_uart_locals_dict
     );
 

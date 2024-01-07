@@ -570,5 +570,15 @@ STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uint
     return ret;
 }
 
+STATIC mp_int_t mp_machine_uart_fifo_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    machine_uart_obj_t *self = o_in;
+
+    bufinfo->len = 4;
+    bufinfo->typecode = 'I';
+    bufinfo->buf = (void *)&uart_get_hw(self->uart)->dr;
+
+    return 0;
+}
+
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_rx_buffer[2]);
 MP_REGISTER_ROOT_POINTER(void *rp2_uart_tx_buffer[2]);
