@@ -109,7 +109,9 @@ static MP_DEFINE_CONST_OBJ_TYPE(
 
 #endif // MICROPY_PY_IO_IOBASE
 
-#if MICROPY_PY_IO_BUFFEREDWRITER
+#if MICROPY_PY_IO_BUFFEREDWRITER || MICROPY_PY_IO_BUFFEREDREADER
+
+// The structure and the new method are shared by reader and writer
 typedef struct _mp_obj_bufwriter_t {
     mp_obj_base_t base;
     mp_obj_t stream;
@@ -130,6 +132,9 @@ static mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return o;
 }
 
+#endif // MICROPY_PY_IO_BUFFEREDWRITER || MICROPY_PY_IO_BUFFEREDREADER
+
+#if MICROPY_PY_IO_BUFFEREDWRITER
 // Writes out the data stored in the buffer so far
 static int bufwriter_do_write(mp_obj_bufwriter_t *self) {
     int rv = 0;
@@ -239,7 +244,87 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &bufwriter_stream_p,
     locals_dict, &bufwriter_locals_dict
     );
+
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
+
+#if MICROPY_PY_IO_BUFFEREDREADER
+
+static mp_uint_t bufreader_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+    mp_obj_bufwriter_t *self = MP_OBJ_TO_PTR(self_in);
+
+    mp_uint_t org_size = size;
+    // Cache this value since it should not change thus avoiding a dereference
+    size_t alloc = self->alloc;
+
+    *errcode = self->error;
+    self->error = 0;
+
+    while (*errcode == 0 && size > 0) {
+        // Buffer filling policy here is to fill the entire buffer all the time.
+        // This allows e.g. to have a block device as backing storage and read
+        // entire blocks from it. memcpy below is not ideal and could be
+        // optimized in some cases. But the way it is now it at least ensures
+        // that buffer is word-aligned, to guard against obscure cases when it
+        // matters, e.g.
+        // https://github.com/micropython/micropython/issues/1863
+
+        // Buffer needs to have at least one byte
+        if (self->len == 0) {
+            self->len = mp_stream_read_exactly(self->stream, self->buf, alloc, errcode);
+            if (self->len < alloc) {
+                // If no data was read stop the loop as it is either an error or an EOF
+                // This check is moved here because it speeds up the more common case
+                // where the buffer was completely filled.
+                if (self->len == 0) {
+                    break;
+                }
+                // Buffers may overlap, therefore we use memmove instead of memcpy
+                memmove(self->buf + (alloc - self->len), self->buf, self->len);
+            }
+        }
+        mp_uint_t rem = MIN(self->len, size);
+        memcpy(buf, self->buf + (alloc - self->len), rem);
+        self->len -= rem;
+        buf = (byte *)buf + rem;
+        size -= rem;
+    }
+
+    // If there is a prior error
+    if (*errcode != 0) {
+        // If no data was read return it
+        if (size == org_size) {
+            return MP_STREAM_ERROR;
+        }
+        // Otherwise save it so we can fail on the next call
+        self->error = *errcode;
+        *errcode = 0;
+    }
+
+    // Return the data that has been read so far
+    return org_size - size;
+}
+
+static const mp_rom_map_elem_t bufreader_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
+    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
+};
+static MP_DEFINE_CONST_DICT(bufreader_locals_dict, bufreader_locals_dict_table);
+
+static const mp_stream_p_t bufreader_stream_p = {
+    .read = bufreader_read,
+};
+
+static MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bufreader,
+    MP_QSTR_BufferedReader,
+    MP_TYPE_FLAG_NONE,
+    make_new, bufwriter_make_new,
+    protocol, &bufreader_stream_p,
+    locals_dict, &bufreader_locals_dict
+    );
+
+#endif // MICROPY_PY_IO_BUFFEREDREADER
 
 static const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_io) },
@@ -255,6 +340,9 @@ static const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     #endif
     #if MICROPY_PY_IO_BUFFEREDWRITER
     { MP_ROM_QSTR(MP_QSTR_BufferedWriter), MP_ROM_PTR(&mp_type_bufwriter) },
+    #endif
+    #if MICROPY_PY_IO_BUFFEREDREADER
+    { MP_ROM_QSTR(MP_QSTR_BufferedReader), MP_ROM_PTR(&mp_type_bufreader) },
     #endif
 };
 
