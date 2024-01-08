@@ -34,7 +34,7 @@ def make_quadrant_bitmap():
 
 
 blur = (1, 2, 1, 2, 4, 2, 1, 2, 1)
-sharpen = (-1, -2, -1, -2, 4, -2, -1, -2, -1)
+sharpen = [-1, -2, -1, -2, 4, -2, -1, -2, -1]
 b = make_circle_bitmap()
 dump_bitmap(b)
 bitmapfilter.morph(b, weights=blur)

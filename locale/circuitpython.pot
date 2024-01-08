@@ -216,7 +216,8 @@ msgstr ""
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -1376,10 +1377,6 @@ msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
-msgstr ""
-
-#: shared-bindings/bitmapfilter/__init__.c
-msgid "Must be an odd square number of weights"
 msgstr ""
 
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
@@ -4325,6 +4322,12 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c

@@ -33,7 +33,7 @@
 //|
 //| def morph(
 //|     bitmap: displayio.Bitmap,
-//|     weights: tuple[int],
+//|     weights: Sequence[int],
 //|     mul: float = 1.0,
 //|     add: int = 0,
 //|     mask: displayio.Bitmap | None = None,
@@ -72,9 +72,8 @@
 //|     changes to 1. Set ``invert`` to invert the binary image resulting output.
 //|
 //|     ``mask`` is another image to use as a pixel level mask for the operation.
-//|     The mask should be an image with just black or white pixels and should
-//|     be the same size as the image being operated on. Only pixels set in the
-//|     mask are modified.
+//|     The mask should be an image the same size as the image being operated on.
+//|     Only pixels set to a non-zero value in the mask are modified.
 //|
 //|     .. code-block:: python
 //|
@@ -115,20 +114,23 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_int_t b = mp_obj_get_int(args[ARG_add].u_obj);
 
-    size_t n_weights;
-    mp_obj_t weights = mp_arg_validate_type(args[ARG_weights].u_obj, &mp_type_tuple, MP_QSTR_weights);
-    mp_obj_t *items;
-    mp_obj_tuple_get(weights, &n_weights, &items);
-    mp_arg_validate_length_min(n_weights, 9, MP_QSTR_items);
+    mp_obj_t weights = args[ARG_weights].u_obj;
+    mp_obj_t obj_len = mp_obj_len(weights);
+    if (obj_len == MP_OBJ_NULL || !mp_obj_is_small_int(obj_len)) {
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_weights, MP_QSTR_Sequence, mp_obj_get_type(weights)->name);
+    }
+
+    size_t n_weights = MP_OBJ_SMALL_INT_VALUE(obj_len);
+
     size_t sq_n_weights = (int)MICROPY_FLOAT_C_FUN(sqrt)(n_weights);
     if (sq_n_weights % 2 == 0 || sq_n_weights * sq_n_weights != n_weights) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Must be an odd square number of weights"));
+        mp_raise_ValueError(MP_ERROR_TEXT("weights must be a sequence with an odd square number of elements (usually 9 or 25)"));
     }
 
     int iweights[n_weights];
     int weight_sum = 0;
     for (size_t i = 0; i < n_weights; i++) {
-        mp_int_t j = mp_obj_get_int(items[i]);
+        mp_int_t j = mp_obj_get_int(mp_obj_subscr(weights, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
         iweights[i] = j;
         weight_sum += j;
     }
