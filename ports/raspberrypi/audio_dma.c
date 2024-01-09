@@ -122,7 +122,7 @@ STATIC size_t audio_dma_convert_samples(audio_dma_t *dma, uint8_t *input, uint32
         // Not currently used, but might be in the future.
         mp_raise_RuntimeError(MP_ERROR_TEXT("Audio conversion not implemented"));
     }
-    if (dma->swap_channel){
+    if (dma->swap_channel) {
         // Loop for swapping left and right channels
         for (uint32_t i = 0; i < out_i; i += 2) {
             uint16_t temp = ((uint16_t *)output)[i];
