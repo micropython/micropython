@@ -1,17 +1,6 @@
 from displayio import Bitmap
 import bitmapfilter
-
-palette = list(" ░░▒▒▓▓█")
-
-
-def dump_bitmap(b):
-    for i in range(b.height):
-        for j in range(b.width):
-            # Bit order is gggBBBBBRRRRRGGG" so this takes high order bits of G
-            p = b[i, j] & 7
-            print(end=palette[p])
-        print()
-    print()
+from dump_bitmap import dump_bitmap
 
 
 def make_circle_bitmap():
