@@ -141,12 +141,101 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
         args[ARG_threshold].u_bool, args[ARG_offset].u_bool, args[ARG_invert].u_bool);
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_morph_obj, 0, bitmapfilter_morph);
+
+static mp_float_t float_subscr(mp_obj_t o, int i) {
+    return mp_obj_get_float(mp_obj_subscr(o, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+
+}
+//| def mix(
+//|     bitmap: displayio.Bitmap, weights: Sequence[int], mask: displayio.Bitmap | None = None
+//| ):
+//|     """Perform a channel mixing operation on the bitmap
+//|
+//|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
+//|     according to the ``weights``.
+//|
+//|     If ``weights`` is a list of length 3, then each channel is scaled independently:
+//|     The numbers are the red, green, and blue channel scales.
+//|
+//|     If ``weights`` is a list of length 9, then channels are mixed. The first three
+//|     numbers are the fraction of red, green and blue input channels mixed into the
+//|     red output channel. The next 3 numbers are for green, and the final 3 are for blue.
+//|
+//|     If ``weights`` is a list of length 12, then channels are mixed with an offset.
+//|     Every fourth value is the offset value.
+//|
+//|     For example, to perform a sepia conversion on an input image,
+//|
+//|     .. code-block:: python
+//|
+//|         sepia_weights = [
+//|             .393,  .769,   .189,
+//|             .349,  .686,   .168,
+//|             .272,  .534,   .131]
+//|
+//|         def sepia(bitmap):
+//|             \"""Convert the bitmap to sepia\"""
+//|             bitmapfilter.mix(bitmap, sepia_weights)
+//|     """
+//|
+STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_bitmap, ARG_weights, ARG_mask };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_weights, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_mask, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
+    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+
+    mp_float_t weights[12];
+    memset(weights, 0, sizeof(weights));
+
+    mp_obj_t weights_obj = args[ARG_weights].u_obj;
+    mp_int_t len = mp_obj_get_int(mp_obj_len(weights_obj));
+
+    switch (len) {
+        case 3:
+            for (int i = 0; i < 3; i++) {
+                weights[5 * i] = float_subscr(weights_obj, i);
+            }
+            break;
+        case 9:
+            for (int i = 0; i < 9; i++) {
+                weights[i + i / 3] = float_subscr(weights_obj, i);
+            }
+            break;
+        case 12:
+            for (int i = 0; i < 12; i++) {
+                weights[i] = float_subscr(weights_obj, i);
+            }
+            break;
+        default:
+            mp_raise_ValueError(
+                MP_ERROR_TEXT("weights must be a sequence of length 3, 9, or 12"));
+    }
+
+
+    displayio_bitmap_t *mask = NULL;
+    if (args[ARG_mask].u_obj != mp_const_none) {
+        mp_arg_validate_type(args[ARG_mask].u_obj, &displayio_bitmap_type, MP_QSTR_mask);
+        mask = MP_OBJ_TO_PTR(args[ARG_mask].u_obj);
+    }
+
+    shared_module_bitmapfilter_mix(bitmap, mask, weights);
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_mix_obj, 0, bitmapfilter_mix);
 
 STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmapfilter) },
     { MP_ROM_QSTR(MP_QSTR_morph), MP_ROM_PTR(&bitmapfilter_morph_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mix), MP_ROM_PTR(&bitmapfilter_mix_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);
 

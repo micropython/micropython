@@ -4325,6 +4325,10 @@ msgid "wbits"
 msgstr ""
 
 #: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be a sequence of length 3, 9, or 12"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
 msgid ""
 "weights must be a sequence with an odd square number of elements (usually 9 "
 "or 25)"

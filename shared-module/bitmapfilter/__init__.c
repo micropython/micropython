@@ -247,3 +247,73 @@ void shared_module_bitmapfilter_morph(
         }
     }
 }
+
+void shared_module_bitmapfilter_mix(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    const mp_float_t weights[12]) {
+
+    int wt[12];
+    for (int i = 0; i < 12; i++) {
+        // The different scale factors correct for G having 6 bits while R, G have 5
+        // by doubling the scale for R/B->G and halving the scale for G->R/B.
+        // As well, the final value in each row has to be scaled up by the
+        // component's maxval.
+        int scale =
+            (i == 1 || i == 9) ? 32768 :
+            (i == 4 || i == 6) ? 131072 :
+            (i == 3 || i == 11) ? 65535 * COLOR_B5_MAX :
+            (i == 7) ? 65535 * COLOR_G6_MAX :
+            65536;
+        wt[i] = (int32_t)MICROPY_FLOAT_C_FUN(round)(scale * weights[i]);
+    }
+
+    check_matching_details(bitmap, bitmap);
+
+    switch (bitmap->bits_per_value) {
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported bitmap depth"));
+        case 16: {
+            for (int y = 0, yy = bitmap->height; y < yy; y++) {
+                uint16_t *row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, y);
+                for (int x = 0, xx = bitmap->width; x < xx; x++) {
+                    if (mask && common_hal_displayio_bitmap_get_pixel(mask, x, y)) {
+                        continue; // Short circuit.
+                    }
+                    int pixel = IMAGE_GET_RGB565_PIXEL_FAST(row_ptr, x);
+                    int32_t r_acc = 0, g_acc = 0, b_acc = 0;
+                    int r = COLOR_RGB565_TO_R5(pixel);
+                    int g = COLOR_RGB565_TO_G6(pixel);
+                    int b = COLOR_RGB565_TO_B5(pixel);
+                    r_acc = r * wt[0] + g * wt[1] + b * wt[2] + wt[3];
+                    r_acc >>= 16;
+                    if (r_acc < 0) {
+                        r_acc = 0;
+                    } else if (r_acc > COLOR_R5_MAX) {
+                        r_acc = COLOR_R5_MAX;
+                    }
+
+                    g_acc = r * wt[4] + g * wt[5] + b * wt[6] + wt[7];
+                    g_acc >>= 16;
+                    if (g_acc < 0) {
+                        g_acc = 0;
+                    } else if (g_acc > COLOR_G6_MAX) {
+                        g_acc = COLOR_G6_MAX;
+                    }
+
+                    b_acc = r * wt[8] + g * wt[9] + b * wt[10] + wt[11];
+                    b_acc >>= 16;
+                    if (b_acc < 0) {
+                        b_acc = 0;
+                    } else if (b_acc > COLOR_B5_MAX) {
+                        b_acc = COLOR_B5_MAX;
+                    }
+
+                    pixel = COLOR_R5_G6_B5_TO_RGB565(r_acc, g_acc, b_acc);
+                    IMAGE_PUT_RGB565_PIXEL_FAST(row_ptr, x, pixel);
+                }
+            }
+            break;
+        }
+    }
+}

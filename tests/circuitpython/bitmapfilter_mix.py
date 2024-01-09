@@ -1,0 +1,42 @@
+from displayio import Bitmap
+import bitmapfilter
+import ulab
+from dump_bitmap import dump_bitmap_rgb_swapped
+from blinka_image import decode_blinka
+
+
+def make_quadrant_bitmap():
+    b = Bitmap(17, 17, 1)
+    for i in range(b.height):
+        for j in range(b.width):
+            b[i, j] = (i < 8) ^ (j < 8)
+    return b
+
+
+q = make_quadrant_bitmap()
+b = decode_blinka(3)
+dump_bitmap_rgb_swapped(b)
+
+sepia_weights = [0.393, 0.769, 0.189, 0.349, 0.686, 0.168, 0.272, 0.534, 0.131]
+
+print("sepia")
+bitmapfilter.mix(b, sepia_weights)
+dump_bitmap_rgb_swapped(b)
+
+# Red channel only
+print("red channel only (note: masked)")
+b = decode_blinka(3)
+bitmapfilter.mix(b, [1, 0, 0], mask=q)
+dump_bitmap_rgb_swapped(b)
+
+# Scale green channel
+print("scale green channel (note: masked)")
+b = decode_blinka(3)
+bitmapfilter.mix(b, [1, 2, 0], mask=q)
+dump_bitmap_rgb_swapped(b)
+
+# Swap R & G channels, invert B channel
+print("swap R&G, invert B")
+b = decode_blinka(3)
+bitmapfilter.mix(b, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 1])
+dump_bitmap_rgb_swapped(b)

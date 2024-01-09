@@ -38,3 +38,8 @@ void shared_module_bitmapfilter_morph(
     bool threshold,
     int offset,
     bool invert);
+
+void shared_module_bitmapfilter_mix(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    const mp_float_t weights[12]);
