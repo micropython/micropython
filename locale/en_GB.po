@@ -7,15 +7,15 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Scott Shawcroft <scott@tannewt.org>\n"
+"PO-Revision-Date: 2024-01-02 22:11+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 #: main.c
 msgid ""
@@ -101,7 +101,7 @@ msgstr "%q and %q must be different"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "%q and %q must share a clock unit"
-msgstr ""
+msgstr "%q and %q must share a clock unit"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -217,7 +217,7 @@ msgstr "%q must be array of type 'h'"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "%q must be multiple of 8."
-msgstr ""
+msgstr "%q must be multiple of 8."
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
@@ -227,7 +227,7 @@ msgstr "%q must be of type %q or %q, not %q"
 
 #: shared-bindings/jpegio/JpegDecoder.c
 msgid "%q must be of type %q, %q, or %q, not %q"
-msgstr ""
+msgstr "%q must be of type %q, %q, or %q, not %q"
 
 #: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
@@ -260,7 +260,7 @@ msgstr "%q step cannot be zero"
 
 #: shared-module/bitbangio/I2C.c
 msgid "%q too long"
-msgstr ""
+msgstr "%q too long"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -268,7 +268,7 @@ msgstr "%q() takes %d positional arguments but %d were given"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "%q() without %q()"
-msgstr ""
+msgstr "%q() without %q()"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -897,7 +897,7 @@ msgstr "Data chunk must follow fmt chunk"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Data format error (may be broken data)"
-msgstr ""
+msgstr "Data format error (may be broken data)"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -915,7 +915,7 @@ msgstr "Deep sleep pins must use a rising edge with pulldown"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Destination bitmap too small to contain image"
-msgstr ""
+msgstr "Destination bitmap too small to contain image"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -923,7 +923,7 @@ msgstr "Destination capacity is smaller than destination_length."
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Device error or wrong termination of input stream"
-msgstr ""
+msgstr "Device error or wrong termination of input stream"
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -1205,11 +1205,11 @@ msgstr "Insufficient encryption"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient memory pool for the image"
-msgstr ""
+msgstr "Insufficient memory pool for the image"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient stream input buffer"
-msgstr ""
+msgstr "Insufficient stream input buffer"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
@@ -1243,7 +1243,7 @@ msgstr "Interrupt error."
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Interrupted by output function"
-msgstr ""
+msgstr "Interrupted by output function"
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
@@ -1509,7 +1509,7 @@ msgstr "No free GCLKs"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "No free GLCKs"
-msgstr ""
+msgstr "No free GLCKs"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1587,7 +1587,7 @@ msgstr "Not playing"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Not supported JPEG standard"
-msgstr ""
+msgstr "Not supported JPEG standard"
 
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
@@ -1616,7 +1616,7 @@ msgstr "Ok"
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 #, c-format
 msgid "Only 8 or 16 bit mono with %dx oversampling supported."
-msgstr ""
+msgstr "Only 8 or 16 bit mono with %dx oversampling supported."
 
 #: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
@@ -1733,7 +1733,7 @@ msgstr "PWM slice channel A already in use"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Parameter error"
-msgstr ""
+msgstr "Parameter error"
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -1846,7 +1846,7 @@ msgstr "RISE_AND_FALL not available on this chip"
 
 #: shared-module/displayio/OnDiskBitmap.c
 msgid "RLE-compressed BMP not supported"
-msgstr ""
+msgstr "RLE-compressed BMP not supported"
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -1915,7 +1915,7 @@ msgstr "Right channel unsupported"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Right format but not supported"
-msgstr ""
+msgstr "Right format but not supported"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
