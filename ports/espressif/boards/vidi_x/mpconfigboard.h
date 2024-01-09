@@ -29,7 +29,7 @@
 #define MICROPY_HW_BOARD_NAME       "VIDI X"
 #define MICROPY_HW_MCU_NAME         "ESP32"
 
-#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
+#define MICROPY_HW_LED_STATUS (&pin_GPIO2)
 
 #define CIRCUITPY_BOARD_I2C         (1)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO15, .sda = &pin_GPIO4}}
