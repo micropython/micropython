@@ -140,8 +140,8 @@ void shared_module_bitmapfilter_morph(
     displayio_bitmap_t *mask,
     const int ksize,
     const int *krn,
-    const float m,
-    const int b,
+    const mp_float_t m,
+    const mp_float_t b,
     bool threshold,
     int offset,
     bool invert) {
@@ -149,6 +149,7 @@ void shared_module_bitmapfilter_morph(
     int brows = ksize + 1;
 
     const int32_t m_int = (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * m);
+    const int32_t b_int = (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * COLOR_G6_MAX * b);
 
     check_matching_details(bitmap, bitmap);
 
@@ -169,7 +170,7 @@ void shared_module_bitmapfilter_morph(
                         continue; // Short circuit.
 
                     }
-                    int32_t tmp, r_acc = 0, g_acc = 0, b_acc = 0, ptr = 0;
+                    int32_t r_acc = 0, g_acc = 0, b_acc = 0, ptr = 0;
 
                     if (x >= ksize && x < bitmap->width - ksize && y >= ksize && y < bitmap->height - ksize) {
                         for (int j = -ksize; j <= ksize; j++) {
@@ -194,22 +195,19 @@ void shared_module_bitmapfilter_morph(
                             }
                         }
                     }
-                    tmp = (r_acc * m_int) >> 16;
-                    r_acc = tmp + b;
+                    r_acc = (r_acc * m_int + b_int) >> 16;
                     if (r_acc > COLOR_R5_MAX) {
                         r_acc = COLOR_R5_MAX;
                     } else if (r_acc < 0) {
                         r_acc = 0;
                     }
-                    tmp = (g_acc * m_int) >> 16;
-                    g_acc = tmp + b;
+                    g_acc = (g_acc * m_int + b_int * 2) >> 16;
                     if (g_acc > COLOR_G6_MAX) {
                         g_acc = COLOR_G6_MAX;
                     } else if (g_acc < 0) {
                         g_acc = 0;
                     }
-                    tmp = (b_acc * m_int) >> 16;
-                    b_acc = tmp + b;
+                    b_acc = (b_acc * m_int + b_int) >> 16;
                     if (b_acc > COLOR_B5_MAX) {
                         b_acc = COLOR_B5_MAX;
                     } else if (b_acc < 0) {

@@ -35,7 +35,7 @@
 //|     bitmap: displayio.Bitmap,
 //|     weights: Sequence[int],
 //|     mul: float = 1.0,
-//|     add: int = 0,
+//|     add: float = 0,
 //|     mask: displayio.Bitmap | None = None,
 //|     threshold=False,
 //|     offset: int = 0,
@@ -112,7 +112,7 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
         mask = MP_OBJ_TO_PTR(args[ARG_mask].u_obj);
     }
 
-    mp_int_t b = mp_obj_get_int(args[ARG_add].u_obj);
+    mp_float_t b = mp_obj_get_float(args[ARG_add].u_obj);
 
     mp_obj_t weights = args[ARG_weights].u_obj;
     mp_obj_t obj_len = mp_obj_len(weights);
@@ -137,7 +137,7 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     mp_float_t m = args[ARG_mul].u_obj != mp_const_none ? mp_obj_get_float(args[ARG_mul].u_obj) : 1 / (mp_float_t)weight_sum;
 
-    shared_module_bitmapfilter_morph(bitmap, mask, sq_n_weights / 2, iweights, (float)m, b,
+    shared_module_bitmapfilter_morph(bitmap, mask, sq_n_weights / 2, iweights, m, b,
         args[ARG_threshold].u_bool, args[ARG_offset].u_bool, args[ARG_invert].u_bool);
     return mp_const_none;
 }

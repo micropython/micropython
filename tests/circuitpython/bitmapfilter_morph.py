@@ -32,10 +32,10 @@ dump_bitmap(b)
 b = make_circle_bitmap()
 q = make_quadrant_bitmap()
 dump_bitmap(q)
-bitmapfilter.morph(b, mask=q, weights=blur, add=32)
+bitmapfilter.morph(b, mask=q, weights=blur, add=1 / 4)
 dump_bitmap(b)
 
 # This is a kind of edge filter
 b = make_circle_bitmap()
-bitmapfilter.morph(b, weights=sharpen, threshold=True, add=8, invert=True)
+bitmapfilter.morph(b, weights=sharpen, threshold=True, add=0.125, invert=True)
 dump_bitmap(b)
