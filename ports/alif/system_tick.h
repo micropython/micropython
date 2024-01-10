@@ -34,5 +34,7 @@ void system_tick_init(void);
 uint32_t system_tick_get_u32(void);
 uint64_t system_tick_get_u64(void);
 void system_tick_wfe_with_timeout_us(uint32_t timeout_us);
+void system_tick_schedule_after_us(uint32_t ticks_us);
+void system_tick_schedule_callback(void);
 
 #endif // MICROPY_INCLUDED_ALIF_SYSTEM_TICK_H
