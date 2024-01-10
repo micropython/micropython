@@ -47,6 +47,7 @@ enum {
 
 typedef void (*pendsv_dispatch_t)(void);
 
+void pendsv_init(void);
 void pendsv_suspend(void);
 void pendsv_resume(void);
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);

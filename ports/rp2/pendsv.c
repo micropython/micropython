@@ -25,6 +25,7 @@
  */
 
 #include <assert.h>
+#include "pico/mutex.h"
 #include "py/mpconfig.h"
 #include "pendsv.h"
 #include "RP2040.h"
@@ -34,15 +35,21 @@
 #endif
 
 static pendsv_dispatch_t pendsv_dispatch_table[PENDSV_DISPATCH_NUM_SLOTS];
-static int pendsv_lock;
+static recursive_mutex_t pendsv_mutex;
+
+void pendsv_init(void) {
+    recursive_mutex_init(&pendsv_mutex);
+}
 
 void pendsv_suspend(void) {
-    pendsv_lock++;
+    // Recursive Mutex here as either core may call pendsv_suspend() and expect
+    // both mutual exclusion (other core can't enter pendsv_suspend() at the
+    // same time), and that no PendSV handler will run.
+    recursive_mutex_enter_blocking(&pendsv_mutex);
 }
 
 void pendsv_resume(void) {
-    pendsv_lock--;
-    assert(pendsv_lock >= 0);
+    recursive_mutex_exit(&pendsv_mutex);
     // Run pendsv if needed.  Find an entry with a dispatch and call pendsv dispatch
     // with it.  If pendsv runs it will service all slots.
     int count = PENDSV_DISPATCH_NUM_SLOTS;
@@ -55,9 +62,11 @@ void pendsv_resume(void) {
 }
 
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
-    assert(pendsv_lock >= 0);
     pendsv_dispatch_table[slot] = f;
-    if (pendsv_lock == 0) {
+    if (pendsv_mutex.enter_count == 0) {
+        // There is a race here where other core calls pendsv_suspend() before
+        // ISR can execute, but dispatch will happen later when other core
+        // calls pendsv_resume().
         SCB->ICSR = SCB_ICSR_PENDSVSET_Msk;
     } else {
         #if MICROPY_PY_NETWORK_CYW43
@@ -68,7 +77,14 @@ void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f) {
 
 // PendSV interrupt handler to perform background processing.
 void PendSV_Handler(void) {
-    assert(pendsv_lock == 0);
+
+    if (!recursive_mutex_try_enter(&pendsv_mutex, NULL)) {
+        // Failure here means core 1 holds pendsv_mutex. ISR will
+        // run again after core 1 calls pendsv_resume().
+        return;
+    }
+    // Core 0 should not already have locked pendsv_mutex
+    assert(pensv_mutex.enter_count == 1);
 
     #if MICROPY_PY_NETWORK_CYW43
     CYW43_STAT_INC(PENDSV_RUN_COUNT);
@@ -81,4 +97,6 @@ void PendSV_Handler(void) {
             f();
         }
     }
+
+    recursive_mutex_exit(&pendsv_mutex);
 }
