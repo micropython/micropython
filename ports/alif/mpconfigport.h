@@ -33,7 +33,7 @@
 #include "mpconfigboard.h"
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
-#define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_EXTRA_FEATURES)
+#define MICROPY_CONFIG_ROM_LEVEL                (MICROPY_CONFIG_ROM_LEVEL_FULL_FEATURES)
 #endif
 
 #define MICROPY_HW_ENABLE_UART_REPL             (1) // useful if there is no USB
