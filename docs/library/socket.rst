@@ -106,6 +106,12 @@ Functions
       from an exception object). The use of negative values is a provisional
       detail which may change in the future.
 
+   .. admonition:: Difference to CPython
+      :class: attention
+
+      The optional arguments to this function are not keyword arguments and must
+      be passed as positional arguments.
+
 .. function:: inet_ntop(af, bin_addr)
 
    Convert a binary network address *bin_addr* of the given address family *af*
