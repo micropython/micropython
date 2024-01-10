@@ -33,5 +33,6 @@ extern uint64_t system_core_clock_mhz;
 void system_tick_init(void);
 uint32_t system_tick_get_u32(void);
 uint64_t system_tick_get_u64(void);
+void system_tick_wfe_with_timeout_us(uint32_t timeout_us);
 
 #endif // MICROPY_INCLUDED_ALIF_SYSTEM_TICK_H

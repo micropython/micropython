@@ -29,6 +29,8 @@
 
 #include "utimer.h"
 
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+
 #define UTIMER ((UTIMER_Type *)UTIMER_BASE)
 #define UTIMER_CHANNEL (11)
 
@@ -56,6 +58,19 @@ void system_tick_init(void) {
     utimer_unmask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_OVER_FLOW_MASK);
     utimer_control_enable(UTIMER, UTIMER_CHANNEL);
     utimer_counter_start(UTIMER, UTIMER_CHANNEL);
+
+    // Set up the UTIMER compare interrupt, to be used later.
+    system_tick_nvic_config(2);
+    UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_COMPARE_CTRL_A |= COMPARE_CTRL_DRV_COMPARE_EN;
+}
+
+// COMPARE_A_BUF1
+void UTIMER_IRQ90Handler(void) {
+    uint32_t chan_interrupt = UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_CHAN_INTERRUPT;
+    if (chan_interrupt & CHAN_INTERRUPT_COMPARE_A_BUF1_MASK) {
+        utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
+        __SEV();
+    }
 }
 
 // OVER_FLOW
@@ -88,4 +103,26 @@ uint64_t system_tick_get_u64(void) {
 
     // This ticks runs at SystemCoreClock.
     return (uint64_t)ticks_hi << 32 | ticks_lo;
+}
+
+void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
+    // Maximum 10 second timeout, to not overflow signed 32-bit ticks when
+    // system_core_clock_mhz==400.
+    uint32_t timeout_ticks = MIN(timeout_us, 10000000) * system_core_clock_mhz;
+
+    // Set up the UTIMER compare interrupt to fire after the given timeout.
+    uint32_t cntr = utimer_get_count(UTIMER, UTIMER_CHANNEL, UTIMER_CNTR);
+    utimer_set_count(UTIMER, UTIMER_CHANNEL, UTIMER_COMPARE_A_BUF1, cntr + timeout_ticks);
+    utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
+    utimer_unmask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
+
+    // Wait for an event (or compare timeout event) if the timeout hasn't expired yet
+    // (this check handles the case of short timeouts).
+    uint32_t cntr2 = utimer_get_count(UTIMER, UTIMER_CHANNEL, UTIMER_CNTR);
+    if ((uint32_t)(cntr2 - cntr) < timeout_ticks) {
+        __WFE();
+    }
+
+    // Disable the UTIMER compare interrupt.
+    utimer_mask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
 }
