@@ -133,10 +133,14 @@ void mp_hal_delay_us(mp_uint_t us) {
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t t0 = mp_hal_ticks_ms();
-    do {
-        // TODO: power saving wait
-        mp_event_handle_nowait();
-    } while (mp_hal_ticks_ms() - t0 < ms);
+    mp_event_handle_nowait();
+    for (;;) {
+        uint32_t t1 = mp_hal_ticks_ms();
+        if (t1 - t0 >= ms) {
+            break;
+        }
+        mp_event_wait_ms(ms - (t1 - t0));
+    }
 }
 
 uint64_t mp_hal_time_ns(void) {

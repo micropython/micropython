@@ -27,6 +27,7 @@
 #include "py/ringbuf.h"
 #include "shared/runtime/interrupt_char.h"
 #include "irq.h"
+#include "system_tick.h"
 #include ALIF_CMSIS_H
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
@@ -47,8 +48,7 @@
         if ((TIMEOUT_MS) < 0) { \
             __WFE(); \
         } else { \
-            /* TODO */ \
-            __WFE(); \
+            system_tick_wfe_with_timeout_us(TIMEOUT_MS * 1000); \
         } \
     } while (0)
 
@@ -57,12 +57,11 @@
     (SCB_CleanDCache_by_Addr((uint32_t *)((uint32_t)addr & ~0x1f), \
     ((uint32_t)((uint8_t *)addr + size + 0x1f) & ~0x1f) - ((uint32_t)addr & ~0x1f)))
 
-extern ringbuf_t stdin_ringbuf;
-
-// TODO
-#define mp_hal_quiet_timing_enter() 0
-#define mp_hal_quiet_timing_exit(x) (void)x
+#define mp_hal_quiet_timing_enter() raise_irq_pri(IRQ_PRI_QUIET_TIMING)
+#define mp_hal_quiet_timing_exit(irq_state) restore_irq_pri(irq_state)
 #define mp_hal_delay_us_fast mp_hal_delay_us
+
+extern ringbuf_t stdin_ringbuf;
 
 /******************************************************************************/
 // C-level pin HAL
