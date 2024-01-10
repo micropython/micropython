@@ -38,6 +38,7 @@
 #include "mpuart.h"
 #include "ospi_flash.h"
 #include "pendsv.h"
+#include "system_tick.h"
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -53,7 +54,7 @@ NORETURN void panic(const char *msg) {
 }
 
 void _start(void) {
-    SysTick_Config(SystemCoreClock / 1000);
+    system_tick_init();
 
     MICROPY_BOARD_STARTUP();
 

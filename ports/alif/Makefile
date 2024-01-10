@@ -119,6 +119,7 @@ SRC_C = \
 	msc_disk.c \
 	ospi_flash.c \
 	pendsv.c \
+	system_tick.c \
 	usbd.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
@@ -175,6 +176,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
 	drivers/source/pinconf.c \
 	drivers/source/uart.c \
+	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \
 	)
 

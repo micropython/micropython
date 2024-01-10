@@ -36,6 +36,7 @@
 #include "shared/tinyusb/mp_usbd_cdc.h"
 #include "tusb.h"
 #include "mpuart.h"
+#include "system_tick.h"
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
@@ -109,42 +110,33 @@ mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     return did_write ? ret : 0;
 }
 
-static uint32_t volatile ticks_ms;
-
-void SysTick_Handler(void) {
-    ++ticks_ms;
-}
-
 mp_uint_t mp_hal_ticks_cpu(void) {
-    if (!(DWT->CTRL & DWT_CTRL_CYCCNTENA_Msk)) {
-        CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-        #if defined(__CORTEX_M) && __CORTEX_M == 7
-        // on Cortex-M7 we must unlock the DWT before writing to its registers
-        DWT->LAR = 0xc5acce55;
-        #endif
-        DWT->CYCCNT = 0;
-        DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-    }
-    return DWT->CYCCNT;
+    return system_tick_get_u32();
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
-    return ticks_ms / 1000;
+    // Convert system tick to microsecond counter.
+    return system_tick_get_u64() / system_core_clock_mhz;
 }
 
 mp_uint_t mp_hal_ticks_ms(void) {
-    return ticks_ms;
+    // Convert system tick to millisecond counter.
+    return system_tick_get_u64() / (SystemCoreClock / 1000);
 }
 
 void mp_hal_delay_us(mp_uint_t us) {
-    mp_hal_delay_ms(us / 1000);
+    uint64_t ticks_delay = (uint64_t)us * system_core_clock_mhz;
+    uint64_t start = system_tick_get_u64();
+    while (system_tick_get_u64() - start < ticks_delay) {
+    }
 }
 
 void mp_hal_delay_ms(mp_uint_t ms) {
     uint32_t t0 = mp_hal_ticks_ms();
-    while ((mp_hal_ticks_ms() - t0) < ms) {
-        __WFI();
-    }
+    do {
+        // TODO: power saving wait
+        mp_event_handle_nowait();
+    } while (mp_hal_ticks_ms() - t0 < ms);
 }
 
 uint64_t mp_hal_time_ns(void) {
