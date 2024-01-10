@@ -38,8 +38,11 @@
 //
 // Lower number implies higher interrupt priority.
 
-#define IRQ_PRI_SYSTICK         0
-#define IRQ_PRI_PENDSV          15
+#define NVIC_PRIORITY_GROUPING  (0)
+#define IRQ_PRI_SYSTEM_TICK     NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 2, 0)
+#define IRQ_PRI_QUIET_TIMING    NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 1, 0)
+#define IRQ_PRI_UART_REPL       NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 1, 0)
+#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 127, 0)
 
 // these states correspond to values from query_irq, enable_irq and disable_irq
 #define IRQ_STATE_DISABLED (0x00000001)
@@ -60,7 +63,6 @@ static inline uint32_t disable_irq(void) {
 }
 
 // irqs with a priority value greater or equal to "pri" will be disabled
-// "pri" should be between 1 and 15 inclusive
 static inline uint32_t raise_irq_pri(uint32_t pri) {
     uint32_t basepri = __get_BASEPRI();
     // If non-zero, the processor does not process any exception with a

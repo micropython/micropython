@@ -59,7 +59,7 @@ void mp_uart_init(void) {
     uart_set_data_parity_stop_bits(UART_PTR, UART_DATA_BITS_8, UART_PARITY_NONE, UART_STOP_BITS_1);
     uart_set_flow_control(UART_PTR, UART_FLOW_CONTROL_NONE);
     NVIC_ClearPendingIRQ(UART_IRQN);
-    NVIC_SetPriority(UART_IRQN, 0);
+    NVIC_SetPriority(UART_IRQN, IRQ_PRI_UART_REPL);
     NVIC_EnableIRQ(UART_IRQN);
     uart_set_tx_trigger(UART_PTR, UART_TX_FIFO_EMPTY);
     uart_set_rx_trigger(UART_PTR, UART_RX_ONE_CHAR_IN_FIFO);

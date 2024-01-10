@@ -39,7 +39,7 @@ static volatile uint32_t system_tick_hi;
 
 static void system_tick_nvic_config(unsigned int index) {
     NVIC_ClearPendingIRQ(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + index);
-    NVIC_SetPriority(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + index, 0);
+    NVIC_SetPriority(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + index, IRQ_PRI_SYSTEM_TICK);
     NVIC_EnableIRQ(UTIMER_IRQ0_IRQn + UTIMER_CHANNEL * 8 + index);
 }
 
