@@ -25,6 +25,10 @@
  *
  * ESP-Hosted network interface.
  */
+#ifndef ESP_HOSTED_DEBUG
+#define ESP_HOSTED_DEBUG    (0)
+#endif
+#define DO_PRINTF (ESP_HOSTED_DEBUG)
 
 #include "py/mphal.h"
 

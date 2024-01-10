@@ -27,6 +27,10 @@
  * NINA-W10 WiFi driver.
  */
 
+#if NINA_DEBUG
+#define DO_PRINTF (DO_PRINTF_DEBUG)
+#endif
+
 #include "py/mphal.h"
 #include "py/mperrno.h"
 
@@ -36,6 +40,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "py/mpprint.h"
 #include "nina_bsp.h"
 #include "nina_wifi_drv.h"
 
@@ -62,12 +67,6 @@
 
 #define NINA_SSELECT_TIMEOUT    (1000)
 #define NINA_CONNECT_TIMEOUT    (10000)
-
-#if NINA_DEBUG
-#define debug_printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
-#else
-#define debug_printf(...)
-#endif
 
 #ifndef __REVSH
 #define __REVSH(x) ((((uint16_t)x) << 8) | (((uint16_t)x) >> 8))

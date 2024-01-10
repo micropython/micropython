@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+#if SDIO_DEBUG
+#define DO_PRINTF (DO_PRINTF_DEBUG)
+#endif
+
 #include <stdio.h>
 #include "py/mperrno.h"
 #include "py/mphal.h"
@@ -78,12 +82,6 @@
 #define SDMMC_CLOCK_400KHZ      (400000U)
 #define SDMMC_CLOCK_25MHZ       (25000000U)
 #define SDMMC_CLOCK_50MHZ       (50000000U)
-
-#if SDIO_DEBUG
-#define debug_printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
-#else
-#define debug_printf(...)
-#endif
 
 #define DMA_DESCRIPTOR_BUFFER_SIZE (32U)
 AT_NONCACHEABLE_SECTION_ALIGN(

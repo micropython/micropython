@@ -25,6 +25,8 @@
  * THE SOFTWARE.
  */
 
+#define DO_PRINTF (DO_PRINTF_ERROR)
+
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mphal.h"
@@ -36,9 +38,6 @@
 #include "uart.h"
 
 #if MICROPY_PY_BLUETOOTH
-
-#define debug_printf(...) // mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
-#define error_printf(...) mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 

@@ -27,6 +27,10 @@
  * NINA-W10 driver BSP implementation.
  */
 
+#if NINA_DEBUG
+#define DO_PRINTF (DO_PRINTF_DEBUG)
+#endif
+
 #include "py/mphal.h"
 
 #if MICROPY_PY_NETWORK_NINAW10
@@ -39,12 +43,6 @@
 
 #include "nina_bsp.h"
 #include "nina_wifi_drv.h"
-
-#if NINA_DEBUG
-#define debug_printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
-#else
-#define debug_printf(...)
-#endif
 
 int nina_bsp_init(void) {
     mp_hal_pin_output(MICROPY_HW_NINA_GPIO1);

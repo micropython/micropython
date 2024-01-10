@@ -30,6 +30,8 @@
 
 #if MICROPY_PY_NETWORK && MICROPY_PY_NETWORK_NINAW10
 
+#define DO_PRINTF (DO_PRINTF_SUPPRESS)
+
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -76,8 +78,6 @@ typedef struct _nina_obj_t {
 #define NINAW10_POLL_INTERVAL   (100)
 
 #define is_nonblocking_error(errno) ((errno) == MP_EAGAIN || (errno) == MP_EWOULDBLOCK || (errno) == MP_EINPROGRESS)
-
-#define debug_printf(...) // mp_printf(&mp_plat_print, __VA_ARGS__)
 
 static uint16_t bind_port = BIND_PORT_RANGE_MIN;
 const mp_obj_type_t mod_network_nic_type_nina;
