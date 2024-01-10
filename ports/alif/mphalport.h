@@ -27,6 +27,7 @@
 #include "py/ringbuf.h"
 #include "shared/runtime/interrupt_char.h"
 #include "irq.h"
+#include "system_tick.h"
 #include ALIF_CMSIS_H
 
 #define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
@@ -47,8 +48,7 @@
         if ((TIMEOUT_MS) < 0) { \
             __WFE(); \
         } else { \
-            /* TODO */ \
-            __WFE(); \
+            system_tick_wfe_with_timeout_us(TIMEOUT_MS * 1000); \
         } \
     } while (0)
 
