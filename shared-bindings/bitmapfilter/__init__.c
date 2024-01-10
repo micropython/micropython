@@ -229,13 +229,40 @@ STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map
     shared_module_bitmapfilter_mix(bitmap, mask, weights);
     return mp_const_none;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_mix_obj, 0, bitmapfilter_mix);
+
+STATIC mp_obj_t bitmapfilter_solarize(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_bitmap, ARG_threshold, ARG_mask };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_threshold, MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_mask, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_float_t threshold = (args[ARG_threshold].u_obj == NULL) ? MICROPY_FLOAT_CONST(0.5) : mp_obj_get_float(args[ARG_threshold].u_obj);
+    mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
+    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+
+
+    displayio_bitmap_t *mask = NULL;
+    if (args[ARG_mask].u_obj != mp_const_none) {
+        mp_arg_validate_type(args[ARG_mask].u_obj, &displayio_bitmap_type, MP_QSTR_mask);
+        mask = MP_OBJ_TO_PTR(args[ARG_mask].u_obj);
+    }
+
+    shared_module_bitmapfilter_solarize(bitmap, mask, threshold);
+    return mp_const_none;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
 
 STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmapfilter) },
     { MP_ROM_QSTR(MP_QSTR_morph), MP_ROM_PTR(&bitmapfilter_morph_obj) },
     { MP_ROM_QSTR(MP_QSTR_mix), MP_ROM_PTR(&bitmapfilter_mix_obj) },
+    { MP_ROM_QSTR(MP_QSTR_solarize), MP_ROM_PTR(&bitmapfilter_solarize_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);
 

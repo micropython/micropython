@@ -258,10 +258,10 @@ void shared_module_bitmapfilter_mix(
         // As well, the final value in each row has to be scaled up by the
         // component's maxval.
         int scale =
-            (i == 1 || i == 9) ? 32768 :
-            (i == 4 || i == 6) ? 131072 :
-            (i == 3 || i == 11) ? 65535 * COLOR_B5_MAX :
-            (i == 7) ? 65535 * COLOR_G6_MAX :
+            (i == 1 || i == 9) ? 32768 : // Mixing G into R/B
+            (i == 4 || i == 6) ? 131072 : // Mixing R/B into G
+            (i == 3 || i == 11) ? 65535 * COLOR_B5_MAX : // Offset for R/B
+            (i == 7) ? 65535 * COLOR_G6_MAX : // Offset for G
             65536;
         wt[i] = (int32_t)MICROPY_FLOAT_C_FUN(round)(scale * weights[i]);
     }
@@ -309,6 +309,38 @@ void shared_module_bitmapfilter_mix(
 
                     pixel = COLOR_R5_G6_B5_TO_RGB565(r_acc, g_acc, b_acc);
                     IMAGE_PUT_RGB565_PIXEL_FAST(row_ptr, x, pixel);
+                }
+            }
+            break;
+        }
+    }
+}
+
+void shared_module_bitmapfilter_solarize(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    const mp_float_t threshold) {
+
+    int threshold_i = (int32_t)MICROPY_FLOAT_C_FUN(round)(256 * threshold);
+    switch (bitmap->bits_per_value) {
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported bitmap depth"));
+        case 16: {
+            for (int y = 0, yy = bitmap->height; y < yy; y++) {
+                uint16_t *row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, y);
+                for (int x = 0, xx = bitmap->width; x < xx; x++) {
+                    if (mask && common_hal_displayio_bitmap_get_pixel(mask, x, y)) {
+                        continue; // Short circuit.
+                    }
+                    int pixel = IMAGE_GET_RGB565_PIXEL_FAST(row_ptr, x);
+                    if (COLOR_RGB565_TO_Y(pixel) > threshold_i) {
+                        int r = COLOR_R5_MAX - COLOR_RGB565_TO_R5(pixel);
+                        int g = COLOR_G6_MAX - COLOR_RGB565_TO_G6(pixel);
+                        int b = COLOR_B5_MAX - COLOR_RGB565_TO_B5(pixel);
+
+                        pixel = COLOR_R5_G6_B5_TO_RGB565(r, g, b);
+                        IMAGE_PUT_RGB565_PIXEL_FAST(row_ptr, x, pixel);
+                    }
                 }
             }
             break;

@@ -43,3 +43,8 @@ void shared_module_bitmapfilter_mix(
     displayio_bitmap_t *bitmap,
     displayio_bitmap_t *mask,
     const mp_float_t weights[12]);
+
+void shared_module_bitmapfilter_solarize(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    const mp_float_t threshold);
