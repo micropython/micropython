@@ -94,6 +94,7 @@ SRC_O += \
 
 SRC_C = \
 	alif_flash.c \
+	fatfs_port.c \
 	machine_pin.c \
 	main.c \
 	modalif.c \

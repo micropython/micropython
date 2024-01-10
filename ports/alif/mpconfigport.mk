@@ -5,7 +5,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_FLOAT_IMPL ?= double
 
 # VFS support.
-MICROPY_VFS_FAT ?= 0
+MICROPY_VFS_FAT ?= 1
 MICROPY_VFS_LFS2 ?= 1
 
 # File containing description of content to be frozen into firmware.
