@@ -100,6 +100,7 @@ SRC_C = \
 	mphalport.c \
 	mpuart.c \
 	ospi_flash.c \
+	pendsv.c \
 	system_tick.c \
 	usbd.c \
 	$(GEN_PINS_SRC) \

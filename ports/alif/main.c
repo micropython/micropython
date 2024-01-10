@@ -35,6 +35,7 @@
 #include "shared/runtime/pyexec.h"
 #include "tusb.h"
 #include "mpuart.h"
+#include "pendsv.h"
 #include "system_tick.h"
 
 extern uint8_t __StackTop, __StackLimit;
@@ -52,6 +53,7 @@ NORETURN void panic(const char *msg) {
 
 void _start(void) {
     system_tick_init();
+    pendsv_init();
 
     *(volatile uint32_t *)0x4900C004 |= 9; // 12_0 + 12_3 as output (blue + red LED)
 
