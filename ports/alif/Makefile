@@ -100,6 +100,7 @@ SRC_C = \
 	mphalport.c \
 	mpuart.c \
 	ospi_flash.c \
+	system_tick.c \
 	usbd.c \
 	$(GEN_PINS_SRC) \
 
@@ -153,6 +154,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP)/,\
 	Device/core/$(TARGET_CORE)/source/startup_$(TARGET_CORE).c \
 	drivers/source/pinconf.c \
 	drivers/source/uart.c \
+	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \
 	)
 

@@ -35,7 +35,7 @@
 #include "shared/runtime/pyexec.h"
 #include "tusb.h"
 #include "mpuart.h"
-#include "ospi_flash.h"
+#include "system_tick.h"
 
 extern uint8_t __StackTop, __StackLimit;
 extern uint8_t __GcHeapStart, __GcHeapEnd;
@@ -51,7 +51,7 @@ NORETURN void panic(const char *msg) {
 }
 
 void _start(void) {
-    SysTick_Config(SystemCoreClock / 1000);
+    system_tick_init();
 
     *(volatile uint32_t *)0x4900C004 |= 9; // 12_0 + 12_3 as output (blue + red LED)
 
