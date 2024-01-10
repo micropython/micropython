@@ -31,11 +31,13 @@
 #include "py/stream.h"
 #include "extmod/misc.h"
 #include "shared/runtime/interrupt_char.h"
+#include "shared/runtime/softtimer.h"
 #include "shared/timeutils/timeutils.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "shared/tinyusb/mp_usbd_cdc.h"
 #include "tusb.h"
 #include "mpuart.h"
+#include "pendsv.h"
 #include "system_tick.h"
 
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
@@ -145,4 +147,19 @@ void mp_hal_delay_ms(mp_uint_t ms) {
 
 uint64_t mp_hal_time_ns(void) {
     return 0;
+}
+
+void system_tick_schedule_callback(void) {
+    pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
+}
+
+uint32_t soft_timer_get_ms(void) {
+    return mp_hal_ticks_ms();
+}
+
+void soft_timer_schedule_at_ms(uint32_t ticks_ms) {
+    int32_t ms = soft_timer_ticks_diff(ticks_ms, mp_hal_ticks_ms());
+    ms = MAX(0, ms);
+    ms = MIN(ms, 4000000); // ensure ms * 1000 doesn't overflow
+    system_tick_schedule_after_us(ms * 1000);
 }

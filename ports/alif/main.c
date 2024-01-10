@@ -33,6 +33,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
 #include "tusb.h"
 #include "mpuart.h"
@@ -119,6 +120,7 @@ void _start(void) {
 
     soft_reset_exit:
         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
+        soft_timer_deinit();
         gc_sweep_all();
         mp_deinit();
     }

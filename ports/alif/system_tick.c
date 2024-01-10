@@ -59,9 +59,13 @@ void system_tick_init(void) {
     utimer_control_enable(UTIMER, UTIMER_CHANNEL);
     utimer_counter_start(UTIMER, UTIMER_CHANNEL);
 
-    // Set up the UTIMER compare interrupt, to be used later.
+    // Set up the UTIMER compare A interrupt, to be used by system_tick_wfe_with_timeout_us.
     system_tick_nvic_config(2);
     UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_COMPARE_CTRL_A |= COMPARE_CTRL_DRV_COMPARE_EN;
+
+    // Set up the UTIMER compare B interrupt, to be used by soft-timer.
+    system_tick_nvic_config(4);
+    UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_COMPARE_CTRL_B |= COMPARE_CTRL_DRV_COMPARE_EN;
 }
 
 // COMPARE_A_BUF1
@@ -69,6 +73,17 @@ void UTIMER_IRQ90Handler(void) {
     uint32_t chan_interrupt = UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_CHAN_INTERRUPT;
     if (chan_interrupt & CHAN_INTERRUPT_COMPARE_A_BUF1_MASK) {
         utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
+        __SEV();
+    }
+}
+
+// COMPARE_B_BUF1
+void UTIMER_IRQ92Handler(void) {
+    uint32_t chan_interrupt = UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_CHAN_INTERRUPT;
+    if (chan_interrupt & CHAN_INTERRUPT_COMPARE_B_BUF1_MASK) {
+        utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+        utimer_mask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+        system_tick_schedule_callback();
         __SEV();
     }
 }
@@ -106,7 +121,7 @@ uint64_t system_tick_get_u64(void) {
 }
 
 void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
-    // Maximum 10 second timeout, to not overflow signed 32-bit ticks when
+    // Maximum 10 second timeout, to not overflow 32-bit ticks when
     // system_core_clock_mhz==400.
     uint32_t timeout_ticks = MIN(timeout_us, 10000000) * system_core_clock_mhz;
 
@@ -125,4 +140,29 @@ void system_tick_wfe_with_timeout_us(uint32_t timeout_us) {
 
     // Disable the UTIMER compare interrupt.
     utimer_mask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_A_BUF1_MASK);
+}
+
+void system_tick_schedule_after_us(uint32_t ticks_us) {
+    // Disable the interrupt in case it's still active.
+    utimer_mask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+
+    // Maximum 10 second timeout, to not overflow 32-bit ticks when
+    // system_core_clock_mhz==400.
+    uint32_t timeout_ticks = MIN(ticks_us, 10000000) * system_core_clock_mhz;
+
+    // Set up the UTIMER compare interrupt to fire after the given timeout.
+    uint32_t cntr = utimer_get_count(UTIMER, UTIMER_CHANNEL, UTIMER_CNTR);
+    utimer_set_count(UTIMER, UTIMER_CHANNEL, UTIMER_COMPARE_B_BUF1, cntr + timeout_ticks);
+    utimer_clear_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+    utimer_unmask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+
+    // Handle the case of short timeouts.
+    uint32_t cntr2 = utimer_get_count(UTIMER, UTIMER_CHANNEL, UTIMER_CNTR);
+    if ((uint32_t)(cntr2 - cntr) >= timeout_ticks) {
+        if (!(UTIMER->UTIMER_CHANNEL_CFG[UTIMER_CHANNEL].UTIMER_CHAN_INTERRUPT_MASK & CHAN_INTERRUPT_COMPARE_B_BUF1_MASK)) {
+            // Interrupt is still enabled, so disable it and manually call the callback.
+            utimer_mask_interrupt(UTIMER, UTIMER_CHANNEL, CHAN_INTERRUPT_COMPARE_B_BUF1_MASK);
+            system_tick_schedule_callback();
+        }
+    }
 }
