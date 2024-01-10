@@ -62,9 +62,9 @@ CFLAGS += -Wdouble-promotion -Wfloat-conversion
 CFLAGS += -fdata-sections -ffunction-sections
 CFLAGS += -D$(TARGET_CORE) -DCORE_$(TARGET_CORE) -DALIF_CMSIS_H="\"$(TARGET_CORE).h\""
 
-ifeq ($(MICROPY_FLOAT_IMPL),single)
+ifeq ($(MICROPY_FLOAT_IMPL),float)
 CFLAGS += -fsingle-precision-constant
-CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_SINGLE
+CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 else
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
 endif
@@ -103,7 +103,7 @@ SRC_C = \
 	usbd.c \
 	$(GEN_PINS_SRC) \
 
-ifeq ($(MICROPY_FLOAT_IMPL),single)
+ifeq ($(MICROPY_FLOAT_IMPL),float)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
 $(BUILD)/lib/libm/%.o: CFLAGS += -Wno-maybe-uninitialized

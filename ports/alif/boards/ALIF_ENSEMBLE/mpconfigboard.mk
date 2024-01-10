@@ -1,1 +1,1 @@
-MICROPY_FLOAT_IMPL = single
+MICROPY_FLOAT_IMPL = float
