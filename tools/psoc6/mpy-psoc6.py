@@ -172,7 +172,7 @@ def fwloader_update_kitprog():
 
     fwl_proc = subprocess.Popen(fwloader_args, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     try:
-        out, err = fwl_proc.communicate(timeout=20)
+        out, err = fwl_proc.communicate(timeout=100)
     except:
         fwl_proc.kill()
         sys.exit(colour_str_error("fwloader error"))
