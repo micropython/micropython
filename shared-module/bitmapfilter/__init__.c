@@ -94,6 +94,7 @@ static void scratch_bitmap16(displayio_bitmap_t *buf, int rows, int cols) {
     ((rowptr)[(x)] = __builtin_bswap16((val)))
 #define COLOR_R5_G6_B5_TO_RGB565(r, g, b) \
     (((r) << 11) | ((g) << 5) | (b))
+#define COLOR_R8_G8_B8_TO_RGB565(r8, g8, b8)    ((((r8) & 0xF8) << 8) | (((g8) & 0xFC) << 3) | ((b8) >> 3))
 
 #define COLOR_RGB565_TO_R5(pixel) (((pixel) >> 11) & 0x1F)
 #define COLOR_RGB565_TO_R8(pixel) \
@@ -121,6 +122,12 @@ static void scratch_bitmap16(displayio_bitmap_t *buf, int rows, int cols) {
 #define COLOR_R5_MAX (0x1F)
 #define COLOR_G6_MAX (0x3F)
 #define COLOR_B5_MAX (0x1F)
+#define COLOR_R8_MIN                            0
+#define COLOR_R8_MAX                            255
+#define COLOR_G8_MIN                            0
+#define COLOR_G8_MAX                            255
+#define COLOR_B8_MIN                            0
+#define COLOR_B8_MAX                            255
 
 #define COLOR_RGB565_BINARY_MAX (0xffff)
 #define COLOR_RGB565_BINARY_MIN (0x0000)
@@ -134,6 +141,40 @@ static void scratch_bitmap16(displayio_bitmap_t *buf, int rows, int cols) {
         int b = COLOR_RGB565_TO_B8(__rgb565); \
         COLOR_RGB888_TO_Y(r, g, b); \
     })
+
+#define COLOR_RGB888_TO_U(r8, g8, b8)           ((((r8) * -21) - ((g8) * 43) + ((b8) * 64)) >> 7) // -0.168736R - 0.331264G + 0.5B
+#define COLOR_RGB565_TO_U(rgb565)                \
+    ({                                           \
+        __typeof__ (rgb565) __rgb565 = (rgb565); \
+        int r = COLOR_RGB565_TO_R8(__rgb565);    \
+        int g = COLOR_RGB565_TO_G8(__rgb565);    \
+        int b = COLOR_RGB565_TO_B8(__rgb565);    \
+        COLOR_RGB888_TO_U(r, g, b);              \
+    })
+
+#define COLOR_RGB888_TO_V(r8, g8, b8)           ((((r8) * 64) - ((g8) * 54) - ((b8) * 10)) >> 7) // 0.5R - 0.418688G - 0.081312B
+#define COLOR_RGB565_TO_V(rgb565)                \
+    ({                                           \
+        __typeof__ (rgb565) __rgb565 = (rgb565); \
+        int r = COLOR_RGB565_TO_R8(__rgb565);    \
+        int g = COLOR_RGB565_TO_G8(__rgb565);    \
+        int b = COLOR_RGB565_TO_B8(__rgb565);    \
+        COLOR_RGB888_TO_V(r, g, b);              \
+    })
+
+// https://en.wikipedia.org/wiki/YCbCr -> JPEG Conversion
+STATIC uint16_t imlib_yuv_to_rgb(uint8_t y, int8_t u, int8_t v) {
+    uint32_t r = IM_MAX(IM_MIN(y + ((91881 * v) >> 16), COLOR_R8_MAX), COLOR_R8_MIN);
+    uint32_t g = IM_MAX(IM_MIN(y - (((22554 * u) + (46802 * v)) >> 16), COLOR_G8_MAX), COLOR_G8_MIN);
+    uint32_t b = IM_MAX(IM_MIN(y + ((116130 * u) >> 16), COLOR_B8_MAX), COLOR_B8_MIN);
+
+    return COLOR_R8_G8_B8_TO_RGB565(r, g, b);
+}
+
+// CIRCUITPY-CHANGE (vs openmv): an offset is removed so that the Y value is the
+// same as from COLOR_RGB565_TO_Y.
+#define COLOR_YUV_TO_RGB565(y, u, v)            imlib_yuv_to_rgb((y), u, v)
+
 
 void shared_module_bitmapfilter_morph(
     displayio_bitmap_t *bitmap,
@@ -333,12 +374,12 @@ void shared_module_bitmapfilter_solarize(
                         continue; // Short circuit.
                     }
                     int pixel = IMAGE_GET_RGB565_PIXEL_FAST(row_ptr, x);
-                    if (COLOR_RGB565_TO_Y(pixel) > threshold_i) {
-                        int r = COLOR_R5_MAX - COLOR_RGB565_TO_R5(pixel);
-                        int g = COLOR_G6_MAX - COLOR_RGB565_TO_G6(pixel);
-                        int b = COLOR_B5_MAX - COLOR_RGB565_TO_B5(pixel);
-
-                        pixel = COLOR_R5_G6_B5_TO_RGB565(r, g, b);
+                    int y = COLOR_RGB565_TO_Y(pixel);
+                    if (y > threshold_i) {
+                        y = MIN(255, MAX(0, 2 * threshold_i - y));
+                        int u = COLOR_RGB565_TO_U(pixel);
+                        int v = COLOR_RGB565_TO_V(pixel);
+                        pixel = COLOR_YUV_TO_RGB565(y, u, v);
                         IMAGE_PUT_RGB565_PIXEL_FAST(row_ptr, x, pixel);
                     }
                 }
