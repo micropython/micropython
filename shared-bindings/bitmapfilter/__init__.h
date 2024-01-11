@@ -48,3 +48,12 @@ void shared_module_bitmapfilter_solarize(
     displayio_bitmap_t *bitmap,
     displayio_bitmap_t *mask,
     const mp_float_t threshold);
+
+typedef struct {
+    uint8_t r[32], g[64], b[32];
+} bitmapfilter_lookup_table_t;
+
+void shared_module_bitmapfilter_lookup(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    const bitmapfilter_lookup_table_t *table);

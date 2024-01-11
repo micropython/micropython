@@ -269,11 +269,90 @@ STATIC mp_obj_t bitmapfilter_solarize(size_t n_args, const mp_obj_t *pos_args, m
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
 
+
+//| LookupFunction = Callable[[float], float]
+//| ThreeLookupFunctions = Tuple[LookupFunction, LookupFunction, LookupFunction]
+//|
+//| def lookup(
+//|     bitmap: displayio.Bitmap,
+//|     lookup: LookupFunction | ThreeLookupFunctions,
+//|     lookup_g: LookupFunction,
+//|     lookup_b: LookupFunction,
+//|     mask: displayio.Bitmap | None,
+//| ) -> displayio.Bitmap:
+//|     """Modify the channels of a bitmap according to a look-up table
+//|
+//|     This can be used to implement non-linear transformations of color values,
+//|     such as gamma curves.
+//|
+//|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
+//|     according to the values in the ``table``s.
+//|
+//|     Each lookup function is called for each possible channel value from 0 to 1
+//|     inclusive (64 times for green, 32 times for red or blue), and the return
+//|     value (also from 0 to 1) is used whenever that color value is returned.
+//|     """
+//|
+
+STATIC int scaled_lut(int maxval, mp_obj_t func, int i) {
+    mp_obj_t obj = mp_call_function_1(func, mp_obj_new_float(i / (mp_float_t)maxval));
+    mp_float_t val = mp_obj_get_float(obj);
+    return (int)MICROPY_FLOAT_C_FUN(round)(val * maxval);
+}
+
+STATIC mp_obj_t bitmapfilter_lookup(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_bitmap, ARG_lookup, ARG_mask };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_lookup, MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_mask, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
+    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+
+    mp_obj_t lookup_r, lookup_g, lookup_b;
+
+    if (mp_obj_is_tuple_compatible(args[ARG_lookup].u_obj)) {
+        mp_obj_tuple_t *lookup_tuple = MP_OBJ_TO_PTR(args[ARG_lookup].u_obj);
+        mp_arg_validate_length(lookup_tuple->len, 3, MP_QSTR_lookup);
+        lookup_r = lookup_tuple->items[0];
+        lookup_g = lookup_tuple->items[1];
+        lookup_b = lookup_tuple->items[2];
+    } else {
+        lookup_r = lookup_g = lookup_b = args[ARG_lookup].u_obj;
+    }
+
+    bitmapfilter_lookup_table_t table;
+
+    for (int i = 0; i < 32; i++) {
+        table.r[i] = scaled_lut(31, lookup_r, i);
+        table.b[i] = lookup_r == lookup_b ? table.r[i] : scaled_lut(31, lookup_b, i);
+    }
+    for (int i = 0; i < 64; i++) {
+        table.g[i] = scaled_lut(63, lookup_g, i);
+    }
+
+    displayio_bitmap_t *mask = NULL;
+    if (args[ARG_mask].u_obj != mp_const_none) {
+        mp_arg_validate_type(args[ARG_mask].u_obj, &displayio_bitmap_type, MP_QSTR_mask);
+        mask = MP_OBJ_TO_PTR(args[ARG_mask].u_obj);
+    }
+
+    shared_module_bitmapfilter_lookup(bitmap, mask, &table);
+    return args[ARG_bitmap].u_obj;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_lookup_obj, 0, bitmapfilter_lookup);
+
 STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmapfilter) },
     { MP_ROM_QSTR(MP_QSTR_morph), MP_ROM_PTR(&bitmapfilter_morph_obj) },
     { MP_ROM_QSTR(MP_QSTR_mix), MP_ROM_PTR(&bitmapfilter_mix_obj) },
     { MP_ROM_QSTR(MP_QSTR_solarize), MP_ROM_PTR(&bitmapfilter_solarize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_lookup), MP_ROM_PTR(&bitmapfilter_lookup_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);
 

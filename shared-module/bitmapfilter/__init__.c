@@ -388,3 +388,36 @@ void shared_module_bitmapfilter_solarize(
         }
     }
 }
+
+void shared_module_bitmapfilter_lookup(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    const bitmapfilter_lookup_table_t *table) {
+
+    switch (bitmap->bits_per_value) {
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported bitmap depth"));
+        case 16: {
+            for (int y = 0, yy = bitmap->height; y < yy; y++) {
+                uint16_t *row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, y);
+                for (int x = 0, xx = bitmap->width; x < xx; x++) {
+                    if (mask && common_hal_displayio_bitmap_get_pixel(mask, x, y)) {
+                        continue; // Short circuit.
+                    }
+                    int pixel = IMAGE_GET_RGB565_PIXEL_FAST(row_ptr, x);
+                    int r = COLOR_RGB565_TO_R5(pixel);
+                    int g = COLOR_RGB565_TO_G6(pixel);
+                    int b = COLOR_RGB565_TO_B5(pixel);
+
+                    r = table->r[r];
+                    g = table->g[g];
+                    b = table->b[b];
+
+                    pixel = COLOR_R5_G6_B5_TO_RGB565(r, g, b);
+                    IMAGE_PUT_RGB565_PIXEL_FAST(row_ptr, x, pixel);
+                }
+            }
+            break;
+        }
+    }
+}
