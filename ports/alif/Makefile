@@ -100,6 +100,7 @@ SRC_C = \
 	modalif.c \
 	mphalport.c \
 	mpuart.c \
+	msc_disk.c \
 	ospi_flash.c \
 	pendsv.c \
 	system_tick.c \
@@ -144,6 +145,7 @@ DRIVERS_SRC_C += $(addprefix drivers/,\
 TINYUSB_SRC_C += \
 	lib/tinyusb/src/tusb.c \
 	lib/tinyusb/src/class/cdc/cdc_device.c \
+	lib/tinyusb/src/class/msc/msc_device.c \
 	lib/tinyusb/src/common/tusb_fifo.c \
 	lib/tinyusb/src/device/usbd.c \
 	lib/tinyusb/src/device/usbd_control.c \

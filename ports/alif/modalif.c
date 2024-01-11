@@ -31,6 +31,10 @@
 static const mp_rom_map_elem_t alif_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_alif) },
     { MP_ROM_QSTR(MP_QSTR_Flash),               MP_ROM_PTR(&alif_flash_type) },
+    #if MICROPY_HW_USB_MSC
+    // Attribute to indicate USB MSC is enabled.
+    { MP_ROM_QSTR(MP_QSTR_usb_msc),             MP_ROM_TRUE },
+    #endif
 };
 static MP_DEFINE_CONST_DICT(alif_module_globals, alif_module_globals_table);
 

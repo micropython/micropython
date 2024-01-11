@@ -42,7 +42,9 @@
 #define MICROPY_HW_USB_PRODUCT_FS_STRING        "Board in HS mode"
 #define MICROPY_HW_USB_CDC                      (1)
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT           (500)
+#ifndef MICROPY_HW_USB_MSC
 #define MICROPY_HW_USB_MSC                      (0)
+#endif
 #ifndef MICROPY_HW_USB_VID
 #define MICROPY_HW_USB_VID                      (0xf055)
 #endif
