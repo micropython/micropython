@@ -38,6 +38,7 @@
 
 #define MICROPY_HW_ENABLE_UART_REPL             (1) // useful if there is no USB
 #define MICROPY_HW_ENABLE_USBDEV                (1)
+
 #define MICROPY_HW_USB_PRODUCT_FS_STRING        "Board in HS mode"
 #define MICROPY_HW_USB_CDC                      (1)
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT           (500)
@@ -48,6 +49,8 @@
 #ifndef MICROPY_HW_USB_PID
 #define MICROPY_HW_USB_PID                      (0x9802) // interface has CDC only
 #endif
+
+#define MICROPY_HW_FLASH_BLOCK_SIZE_BYTES       (4096)
 
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE             uint16_t
@@ -100,7 +103,7 @@
 #define MICROPY_FATFS_MULTI_PARTITION           (1)
 // Set FatFS block size to flash sector size to avoid caching
 // the flash sector in memory to support smaller block sizes.
-#define MICROPY_FATFS_MAX_SS                    (FLASH_SECTOR_SIZE)
+#define MICROPY_FATFS_MAX_SS                    (MICROPY_HW_FLASH_BLOCK_SIZE_BYTES)
 #endif
 
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER

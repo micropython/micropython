@@ -36,6 +36,7 @@
 #include "shared/runtime/softtimer.h"
 #include "tusb.h"
 #include "mpuart.h"
+#include "ospi_flash.h"
 #include "pendsv.h"
 #include "system_tick.h"
 
@@ -63,6 +64,8 @@ void _start(void) {
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_init();
     #endif
+
+    ospi_flash_init();
 
     #if MICROPY_HW_ENABLE_USBDEV
     // Takes about 200ms.

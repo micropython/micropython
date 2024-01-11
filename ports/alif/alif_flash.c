@@ -30,16 +30,6 @@
 #include "modalif.h"
 #include "ospi_flash.h"
 
-#define BLOCK_SIZE_BYTES (4096)
-
-#ifndef MICROPY_HW_FLASH_STORAGE_BASE
-#define MICROPY_HW_FLASH_STORAGE_BASE_ADDR (0)
-#endif
-
-#ifndef MICROPY_HW_FLASH_STORAGE_BYTES
-#define MICROPY_HW_FLASH_STORAGE_BYTES (32 * 1024 * 1024)
-#endif
-
 typedef struct _alif_flash_obj_t {
     mp_obj_base_t base;
     uint32_t flash_base_addr;
@@ -62,8 +52,6 @@ static mp_obj_t alif_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ospi_flash_init();
-
     if (args[ARG_start].u_int == -1 && args[ARG_len].u_int == -1) {
         // Default singleton object that accesses entire flash
         return MP_OBJ_FROM_PTR(&alif_flash_obj);
@@ -74,14 +62,14 @@ static mp_obj_t alif_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
     mp_int_t start = args[ARG_start].u_int;
     if (start == -1) {
         start = 0;
-    } else if (!(0 <= start && start < MICROPY_HW_FLASH_STORAGE_BYTES && start % BLOCK_SIZE_BYTES == 0)) {
+    } else if (!(0 <= start && start < MICROPY_HW_FLASH_STORAGE_BYTES && start % MICROPY_HW_FLASH_BLOCK_SIZE_BYTES == 0)) {
         mp_raise_ValueError(NULL);
     }
 
     mp_int_t len = args[ARG_len].u_int;
     if (len == -1) {
         len = MICROPY_HW_FLASH_STORAGE_BYTES - start;
-    } else if (!(0 < len && start + len <= MICROPY_HW_FLASH_STORAGE_BYTES && len % BLOCK_SIZE_BYTES == 0)) {
+    } else if (!(0 < len && start + len <= MICROPY_HW_FLASH_STORAGE_BYTES && len % MICROPY_HW_FLASH_BLOCK_SIZE_BYTES == 0)) {
         mp_raise_ValueError(NULL);
     }
 
@@ -93,7 +81,7 @@ static mp_obj_t alif_flash_make_new(const mp_obj_type_t *type, size_t n_args, si
 
 static mp_obj_t alif_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     alif_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
+    uint32_t offset = mp_obj_get_int(args[1]) * MICROPY_HW_FLASH_BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
     if (n_args == 4) {
@@ -107,7 +95,7 @@ static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(alif_flash_readblocks_obj, 3, 4, alif
 
 static mp_obj_t alif_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     alif_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
-    uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
+    uint32_t offset = mp_obj_get_int(args[1]) * MICROPY_HW_FLASH_BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
     if (n_args == 3) {
@@ -119,8 +107,8 @@ static mp_obj_t alif_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
             if (ret < 0) {
                 return MP_OBJ_NEW_SMALL_INT(ret);
             }
-            addr += BLOCK_SIZE_BYTES;
-            len -= BLOCK_SIZE_BYTES;
+            addr += MICROPY_HW_FLASH_BLOCK_SIZE_BYTES;
+            len -= MICROPY_HW_FLASH_BLOCK_SIZE_BYTES;
         }
     } else {
         offset += mp_obj_get_int(args[3]);
@@ -142,11 +130,11 @@ static mp_obj_t alif_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg
         case MP_BLOCKDEV_IOCTL_SYNC:
             return MP_OBJ_NEW_SMALL_INT(0);
         case MP_BLOCKDEV_IOCTL_BLOCK_COUNT:
-            return MP_OBJ_NEW_SMALL_INT(self->flash_size / BLOCK_SIZE_BYTES);
+            return MP_OBJ_NEW_SMALL_INT(self->flash_size / MICROPY_HW_FLASH_BLOCK_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
-            return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
+            return MP_OBJ_NEW_SMALL_INT(MICROPY_HW_FLASH_BLOCK_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
-            uint32_t offset = mp_obj_get_int(arg_in) * BLOCK_SIZE_BYTES;
+            uint32_t offset = mp_obj_get_int(arg_in) * MICROPY_HW_FLASH_BLOCK_SIZE_BYTES;
             int ret = ospi_flash_erase_sector(self->flash_base_addr + offset);
             return MP_OBJ_NEW_SMALL_INT(ret);
         }
