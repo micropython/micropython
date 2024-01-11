@@ -115,9 +115,9 @@ STATIC void core1_entry_wrapper(void) {
 }
 
 mp_uint_t mp_thread_get_id(void) {
-    // On RP2, there are only two threads, one for each core, so the thread id
-    // is the core number.
-    return get_core_num();
+    // On RP2, there are only two threads, one for each core.
+    // _thread.get_ident() must be non-zero.
+    return get_core_num() + 1;
 }
 
 mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
@@ -149,7 +149,7 @@ mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size
     // Adjust stack_size to provide room to recover from hitting the limit.
     *stack_size -= 512;
 
-    return 1;
+    return 2; // mp_thread_get_id() result for core 1
 }
 
 void mp_thread_start(void) {
