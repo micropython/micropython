@@ -40,7 +40,7 @@
 //|     threshold=False,
 //|     offset: int = 0,
 //|     invert: bool = False,
-//| ):
+//| ) -> displayio.Bitmap:
 //|     """Convolve an image with a kernel
 //|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
@@ -139,7 +139,7 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
 
     shared_module_bitmapfilter_morph(bitmap, mask, sq_n_weights / 2, iweights, m, b,
         args[ARG_threshold].u_bool, args[ARG_offset].u_bool, args[ARG_invert].u_bool);
-    return mp_const_none;
+    return args[ARG_bitmap].u_obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_morph_obj, 0, bitmapfilter_morph);
 
@@ -149,7 +149,7 @@ static mp_float_t float_subscr(mp_obj_t o, int i) {
 }
 //| def mix(
 //|     bitmap: displayio.Bitmap, weights: Sequence[int], mask: displayio.Bitmap | None = None
-//| ):
+//| ) -> displayio.Bitmap:
 //|     """Perform a channel mixing operation on the bitmap
 //|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
@@ -157,6 +157,11 @@ static mp_float_t float_subscr(mp_obj_t o, int i) {
 //|
 //|     If ``weights`` is a list of length 3, then each channel is scaled independently:
 //|     The numbers are the red, green, and blue channel scales.
+//|
+//|     If ``weights`` is a list of length 6, then each channel is scaled and
+//|     offset independently: The first two numbers are applied to the red channel:
+//|     scale and offset. The second two number are applied to the green
+//|     channel, and the last two numbers to the blue channel.
 //|
 //|     If ``weights`` is a list of length 9, then channels are mixed. The first three
 //|     numbers are the fraction of red, green and blue input channels mixed into the
@@ -204,6 +209,12 @@ STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map
                 weights[5 * i] = float_subscr(weights_obj, i);
             }
             break;
+        case 6:
+            for (int i = 0; i < 3; i++) {
+                weights[5 * i] = float_subscr(weights_obj, i * 2);
+                weights[4 * i + 3] = float_subscr(weights_obj, i * 2 + 1);
+            }
+            break;
         case 9:
             for (int i = 0; i < 9; i++) {
                 weights[i + i / 3] = float_subscr(weights_obj, i);
@@ -216,7 +227,7 @@ STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map
             break;
         default:
             mp_raise_ValueError(
-                MP_ERROR_TEXT("weights must be a sequence of length 3, 9, or 12"));
+                MP_ERROR_TEXT("weights must be a sequence of length 3, 6, 9, or 12"));
     }
 
 
@@ -227,7 +238,7 @@ STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map
     }
 
     shared_module_bitmapfilter_mix(bitmap, mask, weights);
-    return mp_const_none;
+    return args[ARG_bitmap].u_obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_mix_obj, 0, bitmapfilter_mix);
 
@@ -253,7 +264,7 @@ STATIC mp_obj_t bitmapfilter_solarize(size_t n_args, const mp_obj_t *pos_args, m
     }
 
     shared_module_bitmapfilter_solarize(bitmap, mask, threshold);
-    return mp_const_none;
+    return args[ARG_bitmap].u_obj;
 }
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
