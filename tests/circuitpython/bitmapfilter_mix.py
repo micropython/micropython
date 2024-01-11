@@ -2,7 +2,11 @@ from displayio import Bitmap
 import bitmapfilter
 import ulab
 from dump_bitmap import dump_bitmap_rgb_swapped
-from blinka_image import decode_blinka
+from blinka_image import decode_resource
+
+
+def test_pattern():
+    return decode_resource("testpattern", 2)
 
 
 def make_quadrant_bitmap():
@@ -14,7 +18,7 @@ def make_quadrant_bitmap():
 
 
 q = make_quadrant_bitmap()
-b = decode_blinka(3)
+b = test_pattern()
 dump_bitmap_rgb_swapped(b)
 
 sepia_weights = [0.393, 0.769, 0.189, 0.349, 0.686, 0.168, 0.272, 0.534, 0.131]
@@ -25,18 +29,24 @@ dump_bitmap_rgb_swapped(b)
 
 # Red channel only
 print("red channel only (note: masked)")
-b = decode_blinka(3)
+b = test_pattern()
 bitmapfilter.mix(b, [1, 0, 0], mask=q)
 dump_bitmap_rgb_swapped(b)
 
 # Scale green channel
 print("scale green channel (note: masked)")
-b = decode_blinka(3)
+b = test_pattern()
 bitmapfilter.mix(b, [1, 2, 0], mask=q)
 dump_bitmap_rgb_swapped(b)
 
-# Swap R & G channels, invert B channel
-print("swap R&G, invert B")
-b = decode_blinka(3)
-bitmapfilter.mix(b, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, -1, 1])
+# Swap R & G channels
+print("swap R&G")
+b = test_pattern()
+bitmapfilter.mix(b, [0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0])
+dump_bitmap_rgb_swapped(b)
+
+# invert B
+print("invert B")
+b = test_pattern()
+bitmapfilter.mix(b, [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, -1, 1])
 dump_bitmap_rgb_swapped(b)
