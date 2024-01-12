@@ -26,6 +26,7 @@
 #define RA_RA_CONFIG_H_
 
 #include <stdint.h>
+#include "py/mpconfig.h"
 
 #if defined(RA4M1) | defined(RA4W1)
 #define SCI_CH_MAX      10
