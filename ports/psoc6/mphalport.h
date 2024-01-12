@@ -14,8 +14,11 @@
 
 // port-specific includes
 
-#define MICROPY_BEGIN_ATOMIC_SECTION()      (0)
-#define MICROPY_END_ATOMIC_SECTION(state)   {(void)state;}
+#define MICROPY_BEGIN_ATOMIC_SECTION()     cyhal_system_critical_section_enter()
+#define MICROPY_END_ATOMIC_SECTION(state)  cyhal_system_critical_section_exit(state)
+
+// #define MICROPY_BEGIN_ATOMIC_SECTION()      (0)
+// #define MICROPY_END_ATOMIC_SECTION(state)   {(void)state;}
 
 #define MP_HAL_PIN_FMT   "%u"
 #define mp_hal_pin_obj_t uint
@@ -53,10 +56,6 @@ void mp_hal_pin_input(mp_hal_pin_obj_t pin);
 uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 
 int mp_hal_stdin_rx_chr(void);
-
-mp_uint_t begin_atomic_section();
-void end_atomic_section(mp_uint_t state);
-
 
 static inline void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt) {
     printf("mp_hal_pin_config %d   mode : %ld   pull : %ld   alt : %ld\n", pin, mode, pull, alt);

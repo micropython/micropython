@@ -148,17 +148,3 @@ void mp_hal_pin_input(mp_hal_pin_obj_t pin) {
 mp_hal_pin_obj_t mp_hal_get_pin_obj(mp_obj_t obj) {
     return pin_addr_by_name(obj);
 }
-
-
-// TODO: move to another file or define as macro in mpconfigport.h
-mp_uint_t begin_atomic_section() {
-    // __disable_irq();
-    // return 0;
-    return cyhal_system_critical_section_enter();
-}
-
-
-void end_atomic_section(mp_uint_t state) {
-    // __enable_irq();
-    cyhal_system_critical_section_exit(state);
-}
