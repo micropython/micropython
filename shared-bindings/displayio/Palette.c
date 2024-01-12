@@ -32,7 +32,6 @@
 #include "py/binary.h"
 #include "py/objproperty.h"
 #include "py/runtime.h"
-#include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 
 //| class Palette:
@@ -52,7 +51,7 @@
 STATIC mp_obj_t displayio_palette_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_color_count, ARG_dither };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_color_count, MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_color_count, MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0 } },
         { MP_QSTR_dither, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];

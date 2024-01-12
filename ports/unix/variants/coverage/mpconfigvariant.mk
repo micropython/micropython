@@ -38,6 +38,8 @@ SRC_BITMAP := \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/codeop/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
+	shared-bindings/displayio/ColorConverter.c \
+	shared-bindings/displayio/Palette.c \
 	shared-bindings/jpegio/__init__.c \
 	shared-bindings/jpegio/JpegDecoder.c \
 	shared-bindings/locale/__init__.c \
@@ -66,7 +68,7 @@ SRC_BITMAP := \
 	shared-module/displayio/area.c \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
-	shared-module/displayio/ColorConverter.c \
+	shared-module/displayio/Palette.c \
 	shared-module/jpegio/__init__.c \
 	shared-module/jpegio/JpegDecoder.c \
 	shared-module/os/getenv.c \
