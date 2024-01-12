@@ -12,6 +12,7 @@
 #define MICROPY_PY_HASHLIB_SHA256               (1)
 
 // Flash type enablement for board
+#define MICROPY_PY_EXT_FLASH (1)
 #if (MICROPY_PY_EXT_FLASH)
 #define EXT_FLASH_BASE                              (0x00)          /** 0x00 */
 #define EXT_FLASH_SIZE                              (0x4000000)     /** 64MB */
