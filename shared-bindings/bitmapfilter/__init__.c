@@ -304,7 +304,7 @@ STATIC mp_obj_t bitmapfilter_lookup(size_t n_args, const mp_obj_t *pos_args, mp_
     enum { ARG_bitmap, ARG_lookup, ARG_mask };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
-        { MP_QSTR_lookup, MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_lookup, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
         { MP_QSTR_mask, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
