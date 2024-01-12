@@ -35,7 +35,7 @@
 //| def morph(
 //|     bitmap: displayio.Bitmap,
 //|     weights: Sequence[int],
-//|     mul: float = 1.0,
+//|     mul: float | None = None,
 //|     add: float = 0,
 //|     mask: displayio.Bitmap | None = None,
 //|     threshold=False,
@@ -89,6 +89,11 @@
 //|     """
 //|
 
+
+STATIC mp_float_t get_m(mp_obj_t mul_obj, mp_float_t sum) {
+    return mul_obj != mp_const_none ? mp_obj_get_float(mul_obj) : sum ? 1 / (mp_float_t)sum : 1;
+}
+
 STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_weights, ARG_mul, ARG_add, ARG_threshold, ARG_offset, ARG_invert, ARG_mask };
     static const mp_arg_t allowed_args[] = {
@@ -136,7 +141,7 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
         weight_sum += j;
     }
 
-    mp_float_t m = args[ARG_mul].u_obj != mp_const_none ? mp_obj_get_float(args[ARG_mul].u_obj) : 1 / (mp_float_t)weight_sum;
+    mp_float_t m = get_m(args[ARG_mul].u_obj, weight_sum);
 
     shared_module_bitmapfilter_morph(bitmap, mask, sq_n_weights / 2, iweights, m, b,
         args[ARG_threshold].u_bool, args[ARG_offset].u_bool, args[ARG_invert].u_bool);
@@ -144,10 +149,153 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_morph_obj, 0, bitmapfilter_morph);
 
-static mp_float_t float_subscr(mp_obj_t o, int i) {
-    return mp_obj_get_float(mp_obj_subscr(o, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+//|
+//| def morph9(
+//|     bitmap: displayio.Bitmap,
+//|     weights: Sequence[int],
+//|     mul: Sequence[float] | None,
+//|     add: Sequence[float] | None,
+//|     mask: displayio.Bitmap | None = None,
+//|     threshold=False,
+//|     offset: int = 0,
+//|     invert: bool = False,
+//| ) -> displayio.Bitmap:
+//|     """Convolve an image with a kernel
+//|
+//|     This is like a combination of 9 calls to morph plus one call to mix. It's
+//|     so complicated and hard to explain that it must be good for something.
+//|
+//|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
+//|     according to the ``weights``. Then a scaling factor ``m`` and an
+//|     offset factor ``b`` are applied.
+//|
+//|     The ``weights`` must be a tuple of integers. The length of the tuple
+//|     must be 9 times the square of an odd number, such as 81 or 225. The weights
+//|     are taken in groups of 9, with the first 3 giving the proportion of each of
+//|     R, G, and B that are mixed into the output R, the next three the
+//|     proportions mixed into the output G, and the last 3 the proportions that
+//|     are mixed into the output blue.
+//|
+//|     ``mul`` is a sequence of 3 numbers to multiply the convolution pixel
+//|     results by. When not set it defaults to a value that will prevent scaling
+//|     in the convolution output.
+//|
+//|     ``add`` is a sequence of 3 numbers giving a value to add to each
+//|     convolution pixel result. If unspecified or None, 0 is used for all 3 channels.
+//|
+//|     ``mul`` basically allows you to do a global contrast adjustment and
+//|     add allows you to do a global brightness adjustment. Pixels that go
+//|     outside of the image mins and maxes for color channels will be
+//|     clipped.
+//|
+//|     If you’d like to adaptive threshold the image on the output of the
+//|     filter you can pass ``threshold=True`` which will enable adaptive
+//|     thresholding of the image which sets pixels to one or zero based on a
+//|     pixel’s brightness in relation to the brightness of the kernel of pixels
+//|     around them. A negative ``offset`` value sets more pixels to 1 as you make
+//|     it more negative while a positive value only sets the sharpest contrast
+//|     changes to 1. Set ``invert`` to invert the binary image resulting output.
+//|
+//|     ``mask`` is another image to use as a pixel level mask for the operation.
+//|     The mask should be an image the same size as the image being operated on.
+//|     Only pixels set to a non-zero value in the mask are modified.
+//|
+//|     .. code-block:: python
+//|
+//|         kernel_gauss_3 = [
+//|             1, 2, 1,
+//|             2, 4, 2,
+//|             1, 2, 1]
+//|
+//|         def blur(bitmap):
+//|             \"""Blur the bitmap with a 3x3 gaussian kernel\"""
+//|             bitmapfilter.morph(bitmap, kernel_gauss_3, 1/sum(kernel_gauss_3))
+//|     """
+//|
 
+static mp_obj_t subscr(mp_obj_t o, int i) {
+    return mp_obj_subscr(o, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
 }
+
+static mp_obj_t subscr_maybe(mp_obj_t o, int i) {
+    return o == mp_const_none ? o : subscr(o, i);
+}
+
+static mp_float_t float_subscr(mp_obj_t o, int i) {
+    return mp_obj_get_float(subscr(o, i));
+}
+
+STATIC mp_float_t float_subscr_maybe(mp_obj_t seq_maybe, int i, mp_float_t defval) {
+    if (seq_maybe == mp_const_none) {
+        return defval;
+    }
+    return float_subscr(seq_maybe, i);
+}
+
+STATIC mp_obj_t bitmapfilter_morph9(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_bitmap, ARG_weights, ARG_mul, ARG_add, ARG_threshold, ARG_offset, ARG_invert, ARG_mask };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_weights, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_mul, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+        { MP_QSTR_add, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+        { MP_QSTR_threshold, MP_ARG_BOOL, { .u_bool = false } },
+        { MP_QSTR_offset, MP_ARG_INT, { .u_int = 0 } },
+        { MP_QSTR_invert, MP_ARG_BOOL, { .u_bool = false } },
+        { MP_QSTR_mask, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
+    displayio_bitmap_t *bitmap = args[ARG_bitmap].u_obj;
+
+    displayio_bitmap_t *mask = NULL; // the mask bitmap
+    if (args[ARG_mask].u_obj != mp_const_none) {
+        mp_arg_validate_type(args[ARG_mask].u_obj, &displayio_bitmap_type, MP_QSTR_mask);
+        mask = MP_OBJ_TO_PTR(args[ARG_mask].u_obj);
+    }
+
+    mp_float_t b[3] = {
+        float_subscr_maybe(args[ARG_add].u_obj, 0, 0),
+        float_subscr_maybe(args[ARG_add].u_obj, 1, 0),
+        float_subscr_maybe(args[ARG_add].u_obj, 2, 0),
+    };
+
+    mp_obj_t weights = args[ARG_weights].u_obj;
+    mp_obj_t obj_len = mp_obj_len(weights);
+    if (obj_len == MP_OBJ_NULL || !mp_obj_is_small_int(obj_len)) {
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_weights, MP_QSTR_Sequence, mp_obj_get_type(weights)->name);
+    }
+
+    size_t n_weights = MP_OBJ_SMALL_INT_VALUE(obj_len);
+
+    size_t sq_n_weights = (int)MICROPY_FLOAT_C_FUN(sqrt)(n_weights / 9);
+    if (sq_n_weights % 2 == 0 || sq_n_weights * sq_n_weights * 9 != n_weights) {
+        mp_raise_ValueError(MP_ERROR_TEXT("weights must be a sequence with 9 times an odd square number of elements (usually 81 or 225)"));
+    }
+
+    int iweights[n_weights];
+    int weight_sum[3] = {0, 0, 0};
+    for (size_t i = 0; i < n_weights; i++) {
+        mp_int_t j = mp_obj_get_int(mp_obj_subscr(weights, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL));
+        iweights[i] = j;
+        int target_channel = (i / 3) % 3;
+        weight_sum[target_channel] += j;
+    }
+
+    mp_float_t m[3] = {
+        get_m(subscr_maybe(args[ARG_mul].u_obj, 0), weight_sum[0]),
+        get_m(subscr_maybe(args[ARG_mul].u_obj, 1), weight_sum[1]),
+        get_m(subscr_maybe(args[ARG_mul].u_obj, 2), weight_sum[2])
+    };
+
+    shared_module_bitmapfilter_morph9(bitmap, mask, sq_n_weights / 2, iweights, m, b,
+        args[ARG_threshold].u_bool, args[ARG_offset].u_bool, args[ARG_invert].u_bool);
+    return args[ARG_bitmap].u_obj;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_morph9_obj, 0, bitmapfilter_morph9);
+
 //| def mix(
 //|     bitmap: displayio.Bitmap, weights: Sequence[int], mask: displayio.Bitmap | None = None
 //| ) -> displayio.Bitmap:
@@ -409,6 +557,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_false_color_obj, 0, bitmapfilter_false_c
 STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmapfilter) },
     { MP_ROM_QSTR(MP_QSTR_morph), MP_ROM_PTR(&bitmapfilter_morph_obj) },
+    { MP_ROM_QSTR(MP_QSTR_morph9), MP_ROM_PTR(&bitmapfilter_morph9_obj) },
     { MP_ROM_QSTR(MP_QSTR_mix), MP_ROM_PTR(&bitmapfilter_mix_obj) },
     { MP_ROM_QSTR(MP_QSTR_solarize), MP_ROM_PTR(&bitmapfilter_solarize_obj) },
     { MP_ROM_QSTR(MP_QSTR_false_color), MP_ROM_PTR(&bitmapfilter_false_color_obj) },

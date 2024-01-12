@@ -39,6 +39,17 @@ void shared_module_bitmapfilter_morph(
     int offset,
     bool invert);
 
+void shared_module_bitmapfilter_morph9(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    const int ksize,
+    const int *krn,
+    const mp_float_t m[3],
+    const mp_float_t b[3],
+    bool threshold,
+    int offset,
+    bool invert);
+
 void shared_module_bitmapfilter_mix(
     displayio_bitmap_t *bitmap,
     displayio_bitmap_t *mask,
