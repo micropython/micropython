@@ -28,6 +28,7 @@
 
 #include "py/runtime.h"
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/bitmapfilter/__init__.h"
 
 //|
@@ -347,11 +348,54 @@ STATIC mp_obj_t bitmapfilter_lookup(size_t n_args, const mp_obj_t *pos_args, mp_
 
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_lookup_obj, 0, bitmapfilter_lookup);
 
+//| def false_color(
+//|     bitmap: displayio.Bitmap,
+//|     palette: displayio.Palette | Sequence[int],
+//|     mask: displayio.Bitmap | None,
+//| ) -> displayio.Bitmap:
+//|     """Convert the image to false color using the given palette
+//|
+//|     The ``bitmap``, which must be in RGB565_SWAPPED format, is converted into false color:
+//|
+//|     Each pixel is converted to a luminance (brightness/greyscale) value
+//|     in the range 0..255, then the corresponding palette entry is looked up and
+//|     stored in the bitmap.
+//|     """
+//|
+STATIC mp_obj_t bitmapfilter_false_color(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_bitmap, ARG_palette, ARG_mask };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_bitmap, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_palette, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_mask, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_arg_validate_type(args[ARG_bitmap].u_obj, &displayio_bitmap_type, MP_QSTR_bitmap);
+    displayio_bitmap_t *bitmap = MP_OBJ_TO_PTR(args[ARG_bitmap].u_obj);
+
+    mp_arg_validate_type(args[ARG_palette].u_obj, &displayio_palette_type, MP_QSTR_palette);
+    displayio_palette_t *palette = MP_OBJ_TO_PTR(args[ARG_palette].u_obj);
+    mp_arg_validate_length(palette->color_count, 256, MP_QSTR_palette);
+
+    displayio_bitmap_t *mask = NULL;
+    if (args[ARG_mask].u_obj != mp_const_none) {
+        mp_arg_validate_type(args[ARG_mask].u_obj, &displayio_bitmap_type, MP_QSTR_mask);
+        mask = MP_OBJ_TO_PTR(args[ARG_mask].u_obj);
+    }
+
+    shared_module_bitmapfilter_false_color(bitmap, mask, palette->colors);
+    return args[ARG_bitmap].u_obj;
+}
+
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_false_color_obj, 0, bitmapfilter_false_color);
 STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmapfilter) },
     { MP_ROM_QSTR(MP_QSTR_morph), MP_ROM_PTR(&bitmapfilter_morph_obj) },
     { MP_ROM_QSTR(MP_QSTR_mix), MP_ROM_PTR(&bitmapfilter_mix_obj) },
     { MP_ROM_QSTR(MP_QSTR_solarize), MP_ROM_PTR(&bitmapfilter_solarize_obj) },
+    { MP_ROM_QSTR(MP_QSTR_false_color), MP_ROM_PTR(&bitmapfilter_false_color_obj) },
     { MP_ROM_QSTR(MP_QSTR_lookup), MP_ROM_PTR(&bitmapfilter_lookup_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);

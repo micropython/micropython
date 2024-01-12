@@ -57,3 +57,8 @@ void shared_module_bitmapfilter_lookup(
     displayio_bitmap_t *bitmap,
     displayio_bitmap_t *mask,
     const bitmapfilter_lookup_table_t *table);
+
+void shared_module_bitmapfilter_false_color(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    _displayio_color_t palette[256]);

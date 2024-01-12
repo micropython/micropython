@@ -13,6 +13,7 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/bitmapfilter/__init__.h"
 #include "shared-module/bitmapfilter/__init__.h"
 
@@ -418,6 +419,40 @@ void shared_module_bitmapfilter_lookup(
                 }
             }
             break;
+        }
+    }
+}
+
+void shared_module_bitmapfilter_false_color(
+    displayio_bitmap_t *bitmap,
+    displayio_bitmap_t *mask,
+    _displayio_color_t palette[256]) {
+
+    uint16_t table[256];
+    for (int i = 0; i < 256; i++) {
+        uint32_t rgb888 = palette[i].rgb888;
+        int r = rgb888 >> 16;
+        int g = (rgb888 >> 8) & 0xff;
+        int b = rgb888 & 0xff;
+        table[i] = COLOR_R8_G8_B8_TO_RGB565(r, g, b);
+    }
+
+    switch (bitmap->bits_per_value) {
+        default:
+            mp_raise_ValueError(MP_ERROR_TEXT("unsupported bitmap depth"));
+        case 16: {
+            for (int y = 0, yy = bitmap->height; y < yy; y++) {
+                uint16_t *row_ptr = IMAGE_COMPUTE_RGB565_PIXEL_ROW_PTR(bitmap, y);
+                for (int x = 0, xx = bitmap->width; x < xx; x++) {
+                    if (mask && common_hal_displayio_bitmap_get_pixel(mask, x, y)) {
+                        continue; // Short circuit.
+                    }
+                    int pixel = IMAGE_GET_RGB565_PIXEL_FAST(row_ptr, x);
+                    int y = COLOR_RGB565_TO_Y(pixel);
+                    pixel = table[y];
+                    IMAGE_PUT_RGB565_PIXEL_FAST(row_ptr, x, pixel);
+                }
+            }
         }
     }
 }
