@@ -360,7 +360,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_lookup_obj, 0, bitmapfilter_lookup);
 
 //| def false_color(
 //|     bitmap: displayio.Bitmap,
-//|     palette: displayio.Palette | Sequence[int],
+//|     palette: displayio.Palette,
 //|     mask: displayio.Bitmap | None,
 //| ) -> displayio.Bitmap:
 //|     """Convert the image to false color using the given palette
