@@ -171,6 +171,10 @@ static mp_float_t float_subscr(mp_obj_t o, int i) {
 //|     If ``weights`` is a list of length 12, then channels are mixed with an offset.
 //|     Every fourth value is the offset value.
 //|
+//|     ``mask`` is another image to use as a pixel level mask for the operation.
+//|     The mask should be an image the same size as the image being operated on.
+//|     Only pixels set to a non-zero value in the mask are modified.
+//|
 //|     For example, to perform a sepia conversion on an input image,
 //|
 //|     .. code-block:: python
@@ -277,8 +281,6 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
 //| def lookup(
 //|     bitmap: displayio.Bitmap,
 //|     lookup: LookupFunction | ThreeLookupFunctions,
-//|     lookup_g: LookupFunction,
-//|     lookup_b: LookupFunction,
 //|     mask: displayio.Bitmap | None,
 //| ) -> displayio.Bitmap:
 //|     """Modify the channels of a bitmap according to a look-up table
@@ -287,11 +289,19 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
 //|     such as gamma curves.
 //|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
-//|     according to the values in the ``table``s.
+//|     according to the values of the ``lookup`` function or functions.
+//|
+//|     If one ``lookup`` function is supplied, the same function is used for all 3
+//|     image channels. Otherwise, it must be a tuple of 3 functions. The first
+//|     function is used for R, the second function for G, and the third for B.
 //|
 //|     Each lookup function is called for each possible channel value from 0 to 1
 //|     inclusive (64 times for green, 32 times for red or blue), and the return
 //|     value (also from 0 to 1) is used whenever that color value is returned.
+//|
+//|     ``mask`` is another image to use as a pixel level mask for the operation.
+//|     The mask should be an image the same size as the image being operated on.
+//|     Only pixels set to a non-zero value in the mask are modified.
 //|     """
 //|
 
@@ -355,11 +365,17 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_lookup_obj, 0, bitmapfilter_lookup);
 //| ) -> displayio.Bitmap:
 //|     """Convert the image to false color using the given palette
 //|
-//|     The ``bitmap``, which must be in RGB565_SWAPPED format, is converted into false color:
+//|     The ``bitmap``, which must be in RGB565_SWAPPED format, is converted into false color.
+//|
+//|     The ``palette``, which must be of length 256, is used as a look-up table.
 //|
 //|     Each pixel is converted to a luminance (brightness/greyscale) value
 //|     in the range 0..255, then the corresponding palette entry is looked up and
 //|     stored in the bitmap.
+//|
+//|     ``mask`` is another image to use as a pixel level mask for the operation.
+//|     The mask should be an image the same size as the image being operated on.
+//|     Only pixels set to a non-zero value in the mask are modified.
 //|     """
 //|
 STATIC mp_obj_t bitmapfilter_false_color(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
