@@ -321,10 +321,12 @@ void common_hal_bleio_characteristic_add_descriptor(
     bleio_descriptor_obj_t *descriptor) {
 
     sl_status_t sc = SL_STATUS_FAIL;
-    const uint8_t value;
     uuid_128 bt_uuid_128;
     sl_bt_uuid_16_t bt_uuid_16;
     uint16_t gattdb_session;
+    mp_buffer_info_t desc_value_bufinfo;
+
+    mp_get_buffer_raise(descriptor->initial_value, &desc_value_bufinfo, MP_BUFFER_READ);
 
     sc = sl_bt_gattdb_new_session(&gattdb_session);
 
@@ -337,28 +339,35 @@ void common_hal_bleio_characteristic_add_descriptor(
         bt_uuid_16.data[0] = descriptor->uuid->efr_ble_uuid.uuid16.value & 0xff;
         bt_uuid_16.data[1] = descriptor->uuid->efr_ble_uuid.uuid16.value >> 8;
 
-        sl_bt_gattdb_add_uuid16_descriptor(self->session,
+        sl_bt_gattdb_add_uuid16_descriptor(gattdb_session,
             self->handle,
-            descriptor->handle,
+            SL_BT_GATTDB_DESCRIPTOR_READ | SL_BT_GATTDB_DESCRIPTOR_WRITE,
             0,
             bt_uuid_16,
-            sl_bt_gattdb_user_managed_value,
+            sl_bt_gattdb_variable_length_value,
             descriptor->max_length,
-            2,
-            &value,
+            desc_value_bufinfo.len,
+            desc_value_bufinfo.buf,
             &descriptor->handle);
     } else {
         memcpy(bt_uuid_128.data, descriptor->uuid->efr_ble_uuid.uuid128.value, 16);
         sl_bt_gattdb_add_uuid128_descriptor(self->session,
             self->handle,
-            descriptor->handle,
+            SL_BT_GATTDB_DESCRIPTOR_READ | SL_BT_GATTDB_DESCRIPTOR_WRITE,
             0,
             bt_uuid_128,
-            sl_bt_gattdb_user_managed_value,
+            sl_bt_gattdb_variable_length_value,
             descriptor->max_length,
-            2,
-            &value,
+            desc_value_bufinfo.len,
+            desc_value_bufinfo.buf,
             &descriptor->handle);
+    }
+
+    // This indicates the new added descriptor shall be started.
+    sc = sl_bt_gattdb_start_characteristic(gattdb_session, self->handle);
+    if (SL_STATUS_OK != sc) {
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Start charateristic fail."));
+        return;
     }
 
     sc = sl_bt_gattdb_commit(gattdb_session);
