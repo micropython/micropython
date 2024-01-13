@@ -90,7 +90,7 @@
 //|
 
 
-STATIC mp_float_t get_m(mp_obj_t mul_obj, mp_float_t sum) {
+STATIC mp_float_t get_m(mp_obj_t mul_obj, int sum) {
     return mul_obj != mp_const_none ? mp_obj_get_float(mul_obj) : sum ? 1 / (mp_float_t)sum : 1;
 }
 
