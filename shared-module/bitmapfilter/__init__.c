@@ -181,7 +181,7 @@ void shared_module_bitmapfilter_morph9(
     displayio_bitmap_t *bitmap,
     displayio_bitmap_t *mask,
     const int ksize,
-    const int *krn,
+    int krn[9 * (2 * ksize + 1) * (2 * ksize + 1)], // Note: modifies krn[]
     const mp_float_t m[3],
     const mp_float_t b[3],
     bool threshold,
@@ -190,15 +190,24 @@ void shared_module_bitmapfilter_morph9(
 
     int brows = ksize + 1;
 
-    const int32_t m_int[3] = {
-        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * m[0]),
-        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * m[1]),
-        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * m[2])
-    };
+    int arrsize = (ksize * 2 + 1) * (ksize * 2 + 1) * 9;
+
+    for (int i = 0; i < arrsize; i++) {
+        int source_channel = i % 3;
+        int target_channel = (i / 3) % 3;
+        int source_is_green = (source_channel == 1);
+        int target_is_green = (target_channel == 1);
+
+        int scale = (source_is_green == target_is_green) ? 65536
+            : source_is_green ? 32768 : 131072;
+
+        krn[i] = (int)MICROPY_FLOAT_C_FUN(round)(scale * m[target_channel] * krn[i]);
+    }
+
     const int32_t b_int[3] = {
-        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * COLOR_G6_MAX * b[0]),
-        (int32_t)MICROPY_FLOAT_C_FUN(round)(2 * 65536 * COLOR_G6_MAX * b[1]),
-        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * COLOR_G6_MAX * b[2])
+        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * COLOR_R5_MAX * b[0]),
+        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * COLOR_G6_MAX * b[1]),
+        (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * COLOR_B5_MAX * b[2])
     };
 
     check_matching_details(bitmap, bitmap);
@@ -220,7 +229,7 @@ void shared_module_bitmapfilter_morph9(
                         continue; // Short circuit.
 
                     }
-                    int32_t r_acc = 0, g_acc = 0, b_acc = 0, ptr = 0;
+                    int32_t r_acc = b_int[0], g_acc = b_int[1], b_acc = b_int[2], ptr = 0;
 
                     if (x >= ksize && x < bitmap->width - ksize && y >= ksize && y < bitmap->height - ksize) {
                         for (int j = -ksize; j <= ksize; j++) {
@@ -231,13 +240,13 @@ void shared_module_bitmapfilter_morph9(
                                 int g = COLOR_RGB565_TO_G6(pixel);
                                 int b = COLOR_RGB565_TO_B5(pixel);
                                 r_acc += krn[ptr++] * r;
-                                r_acc += (krn[ptr++] * g) / 2;
+                                r_acc += krn[ptr++] * g;
                                 r_acc += krn[ptr++] * b;
-                                g_acc += (krn[ptr++] * r) * 2;
+                                g_acc += krn[ptr++] * r;
                                 g_acc += krn[ptr++] * g;
-                                g_acc += (krn[ptr++] * b) * 2;
+                                g_acc += krn[ptr++] * b;
                                 b_acc += krn[ptr++] * r;
-                                b_acc += (krn[ptr++] * g) / 2;
+                                b_acc += krn[ptr++] * g;
                                 b_acc += krn[ptr++] * b;
                             }
                         }
@@ -252,30 +261,30 @@ void shared_module_bitmapfilter_morph9(
                                 int g = COLOR_RGB565_TO_G6(pixel);
                                 int b = COLOR_RGB565_TO_B5(pixel);
                                 r_acc += krn[ptr++] * r;
-                                r_acc += (krn[ptr++] * g) / 2;
+                                r_acc += krn[ptr++] * g;
                                 r_acc += krn[ptr++] * b;
-                                g_acc += (krn[ptr++] * r) * 2;
+                                g_acc += krn[ptr++] * r;
                                 g_acc += krn[ptr++] * g;
-                                g_acc += (krn[ptr++] * b) * 2;
+                                g_acc += krn[ptr++] * b;
                                 b_acc += krn[ptr++] * r;
-                                b_acc += (krn[ptr++] * g) / 2;
+                                b_acc += krn[ptr++] * g;
                                 b_acc += krn[ptr++] * b;
                             }
                         }
                     }
-                    r_acc = (r_acc * m_int[0] + b_int[0]) >> 16;
+                    r_acc >>= 16;
                     if (r_acc > COLOR_R5_MAX) {
                         r_acc = COLOR_R5_MAX;
                     } else if (r_acc < 0) {
                         r_acc = 0;
                     }
-                    g_acc = (g_acc * m_int[1] + b_int[1]) >> 16;
+                    g_acc >>= 16;
                     if (g_acc > COLOR_G6_MAX) {
                         g_acc = COLOR_G6_MAX;
                     } else if (g_acc < 0) {
                         g_acc = 0;
                     }
-                    b_acc = (b_acc * m_int[2] + b_int[2]) >> 16;
+                    b_acc >>= 16;
                     if (b_acc > COLOR_B5_MAX) {
                         b_acc = COLOR_B5_MAX;
                     } else if (b_acc < 0) {
