@@ -203,7 +203,7 @@ PY_O += $(PY_CORE_O)
 
 # object file for frozen code specified via a manifest
 ifneq ($(FROZEN_MANIFEST),)
-PY_O += $(BUILD)/$(BUILD)/frozen_content.o
+PY_O += $(BUILD)/frozen_content.o
 endif
 
 # Sources that may contain qstrings
