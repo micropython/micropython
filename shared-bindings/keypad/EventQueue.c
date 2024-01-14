@@ -159,7 +159,6 @@ STATIC mp_uint_t eventqueue_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t
 }
 
 STATIC const mp_stream_p_t eventqueue_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .ioctl = eventqueue_ioctl,
 };
 #endif

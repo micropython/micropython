@@ -1,5 +1,5 @@
 USB_VID = 0x303A
-USB_PID = 0x4001
+USB_PID = 0x81CF
 USB_PRODUCT = "Flipper Zero Wi-Fi Dev"
 USB_MANUFACTURER = "Flipper Devices Inc."
 

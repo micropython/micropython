@@ -42,7 +42,7 @@ uint8_t display_init_sequence[] = {
     // normal display mode on
     0x13, 0,
     // display and color format settings
-    0x36, 1, 0x08,
+    0x36, 1, 0x68,
     0xB6, 2, 0x0A, 0x82,
     0x3A, 1 | DELAY,  0x55, 10,
     // ST7789V frame rate setting
@@ -99,9 +99,9 @@ static void display_init(void) {
         bus,
         240,            // width (after rotation)
         135,            // height (after rotation)
-        53,             // column start
-        40,             // row start
-        90,             // rotation
+        40,             // column start
+        53,             // row start
+        0,              // rotation
         16,             // color depth
         false,          // grayscale
         false,          // pixels in a byte share a row. Only valid for depths < 8
@@ -116,13 +116,13 @@ static void display_init(void) {
         &pin_GPIO4,     // backlight pin
         NO_BRIGHTNESS_COMMAND,
         1.0f,           // brightness (ignored)
-        false,          // auto_brightness
         false,          // single_byte_bounds
         false,          // data_as_commands
         true,           // auto_refresh
         60,             // native_frames_per_second
         true,           // backlight_on_high
-        false           // SH1107_addressing
+        false,          // SH1107_addressing
+        50000           // backlight pwm frequency
         );
 
     common_hal_never_reset_pin(&pin_GPIO4); // backlight pin

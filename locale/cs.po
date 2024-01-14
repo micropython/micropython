@@ -97,6 +97,10 @@ msgstr "%q a %q obsahují duplicitní piny"
 msgid "%q and %q must be different"
 msgstr "%q a %q musí být rozdílné"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q obsahuje duplicitní piny"
@@ -209,11 +213,19 @@ msgstr "%q musí být pole typu 'H V"
 msgid "%q must be array of type 'h'"
 msgstr "%q musí být pole typu 'h'"
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr ""
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q musí být typu %q nebo %q, ne %q"
+
+#: shared-bindings/jpegio/JpegDecoder.c
+msgid "%q must be of type %q, %q, or %q, not %q"
+msgstr ""
 
 #: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
@@ -244,9 +256,17 @@ msgstr ""
 msgid "%q step cannot be zero"
 msgstr "%q krok nemůže být nula"
 
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
+msgstr ""
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() vyžaduje %d pozičních argumentů, ale pouze %d jich bylo zadáno"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "%q() without %q()"
+msgstr ""
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -436,12 +456,6 @@ msgstr "0.0 na komplexní mocninu"
 msgid "3-arg pow() not supported"
 msgstr "pow() nepodporuje 3 argumenty"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr "Kanál hardwarového přerušení je již používán"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "AP nemohl být spuštěn"
@@ -624,14 +638,6 @@ msgstr "Pod minimální obnovovací frekvencí"
 msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr "Výběr bitových hodin a slov musí sdílet jednotku hodin"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr "Bitová hloubka musí být násobkem 8."
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr "Velikost bitmapy a počet bitů na hodnotu se musí shodovat"
@@ -643,10 +649,6 @@ msgstr "Bootovací zařízení musí být první (rozhraní #0)."
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "RX a TX jsou vyžadovány pro kontrolu toku"
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
-msgstr "Oba piny musí podporovat hardwarové přerušení"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -834,10 +836,6 @@ msgstr "CharacteristicBuffer psaní není poskytováno"
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "Jádro kódu CircuitPython tvrdě havarovalo. Jejda!\n"
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr "Hodiny jsou příliš dlouhé"
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Jednotka hodin je používána"
@@ -965,9 +963,12 @@ msgstr "ECB operuje najednou pouze 16 bajtů"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF alokace paměti selhala"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT kanál se již používá"
@@ -1128,13 +1129,6 @@ msgstr "Základní chyba"
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Skupina již byla použita"
-
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
-msgstr "Poloduplexní SPI není implementované"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
@@ -1369,10 +1363,6 @@ msgstr "MAC adresa byla chybná"
 msgid "Mapping must be a tuple"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr ""
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
@@ -1514,9 +1504,14 @@ msgstr "Žádné připojení: nelze určit délku"
 msgid "No default %q bus"
 msgstr "Žádná výchozí sběrnice %q"
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Žádné volné GCLK"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
+msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1719,10 +1714,6 @@ msgstr "Došly sockety"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr ""
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
-msgstr ""
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1774,6 +1765,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr "Pin musí být na PWM kanálu B"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr ""
 
@@ -1850,6 +1842,10 @@ msgstr ""
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "RISE_AND_FALL není na tomto čipu k dispozici"
+
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "RLE-compressed BMP not supported"
+msgstr ""
 
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
@@ -2111,7 +2107,6 @@ msgstr "Příliš mnoho displejů"
 msgid "Total data to write is larger than %q"
 msgstr "Velikost dat k zápisu je větší než %q"
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2202,11 +2197,6 @@ msgstr "Není možné vytvořit zámek"
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "I2C display nenalezen na %x"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
-msgstr "Nelze najít volný GCLK"
 
 #: py/parse.c
 msgid "Unable to init parser"
@@ -4436,6 +4426,27 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "A hardware interrupt channel is already in use"
+#~ msgstr "Kanál hardwarového přerušení je již používán"
+
+#~ msgid "Bit clock and word select must share a clock unit"
+#~ msgstr "Výběr bitových hodin a slov musí sdílet jednotku hodin"
+
+#~ msgid "Bit depth must be multiple of 8."
+#~ msgstr "Bitová hloubka musí být násobkem 8."
+
+#~ msgid "Both pins must support hardware interrupts"
+#~ msgstr "Oba piny musí podporovat hardwarové přerušení"
+
+#~ msgid "Clock stretch too long"
+#~ msgstr "Hodiny jsou příliš dlouhé"
+
+#~ msgid "Half duplex SPI is not implemented"
+#~ msgstr "Poloduplexní SPI není implementované"
+
+#~ msgid "Unable to find free GCLK"
+#~ msgstr "Nelze najít volný GCLK"
 
 #~ msgid ""
 #~ "\n"

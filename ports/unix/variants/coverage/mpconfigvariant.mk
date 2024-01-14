@@ -35,6 +35,7 @@ SRC_BITMAP := \
 	shared-bindings/audiomixer/Mixer.c \
 	shared-bindings/audiomixer/MixerVoice.c \
 	shared-bindings/bitmaptools/__init__.c \
+	shared-bindings/codeop/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
 	shared-bindings/jpegio/__init__.c \
 	shared-bindings/jpegio/JpegDecoder.c \
@@ -87,6 +88,7 @@ CFLAGS += \
 	-DCIRCUITPY_AUDIOMIXER=1 \
 	-DCIRCUITPY_AUDIOCORE_DEBUG=1 \
 	-DCIRCUITPY_BITMAPTOOLS=1 \
+	-DCIRCUITPY_CODEOP=1 \
 	-DCIRCUITPY_DISPLAYIO_UNIX=1 \
 	-DCIRCUITPY_FUTURE=1 \
 	-DCIRCUITPY_GIFIO=1 \

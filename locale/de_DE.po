@@ -6,14 +6,14 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Daniel Bravo Darriba <bravodarriba@gmail.com>\n"
+"PO-Revision-Date: 2024-01-07 16:06+0000\n"
+"Last-Translator: Luc <some_physics@live.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 #: main.c
 msgid ""
@@ -95,6 +95,10 @@ msgstr "%q und %q enthalten doppelte Pins"
 msgid "%q and %q must be different"
 msgstr "%q und %q müssen unterschiedlich sein"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q enthält doppelte Pins"
@@ -156,7 +160,7 @@ msgstr "%q länge muss größer oder gleich %d sein"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q moved from %q to %q"
-msgstr ""
+msgstr "%q von %q nach %q versetzt"
 
 #: py/argcheck.c
 msgid "%q must be %d"
@@ -181,7 +185,7 @@ msgstr "%q muss <= %d sein"
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "%q must be <= %u"
-msgstr ""
+msgstr "%q muss <= %u sein"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
@@ -198,7 +202,7 @@ msgstr ""
 
 #: shared-bindings/warnings/__init__.c
 msgid "%q must be a subclass of %q"
-msgstr ""
+msgstr "%q muss eine Unterklasse von %q sein"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
@@ -208,11 +212,19 @@ msgstr "%q muss ein Array vom Typ 'H' sein"
 msgid "%q must be array of type 'h'"
 msgstr "%q muss ein Array vom Typ 'h' sein"
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr "%q muss ein Vielfaches von 8 sein."
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q muss von Typ %q oder %q sein, nicht %q"
+
+#: shared-bindings/jpegio/JpegDecoder.c
+msgid "%q must be of type %q, %q, or %q, not %q"
+msgstr "%q muss vom Typ %q, %q oder %q sein, und nicht %q"
 
 #: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
@@ -237,16 +249,24 @@ msgstr "%q außerhalb des Bereichs"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q renamed %q"
-msgstr ""
+msgstr "%q umbenannt zu %q"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
 msgstr "Schritt %q kann nicht Null sein"
 
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
+msgstr "%q zu lang"
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr ""
 "%q() nimmt %d Argumente ohne Schlüsselwort an, aber es wurden %d angegeben"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "%q() without %q()"
+msgstr "%q() ohne %q()"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -258,11 +278,11 @@ msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
+msgstr "%q[%u] schiebt mehr Bits rein als Pins vorhanden sind"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u] schiebt mehr Bits raus als Pins vorhanden sind"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
@@ -270,7 +290,7 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
+msgstr "%q[%u] wartet auf Eingang ausserhalb der Anzahl"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
@@ -384,7 +404,7 @@ msgstr "'await' außerhalb einer Funktion"
 
 #: py/compile.c
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "'break'/'continue' ausserhalb einer Schleife"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -426,7 +446,7 @@ msgstr ", in %q\n"
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 msgid ".show(x) removed. Use .root_group = x"
-msgstr ""
+msgstr ".show(x) wurde entfernt. Benutze .root_group = x"
 
 #: py/objcomplex.c
 msgid "0.0 to a complex power"
@@ -436,15 +456,9 @@ msgstr "0.0 zu einer komplexen Potenz"
 msgid "3-arg pow() not supported"
 msgstr "3-arg pow() wird nicht unterstützt"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
-msgstr ""
+msgstr "Access Point konnte nicht gestartet werden"
 
 #: shared-bindings/_bleio/Address.c shared-bindings/ipaddress/IPv4Address.c
 #, c-format
@@ -624,14 +638,6 @@ msgstr "Unterhalb der minimalen Frame Rate"
 msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr "Bit clock und word select müssen eine clock unit teilen"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr "Bit depth muss ein Vielfaches von 8 sein."
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr "Bitmap-Grösse und Bits pro Wert müssen übereinstimmen"
@@ -643,10 +649,6 @@ msgstr "Boot-Device muss an erster Stelle kommen (Interface #0)."
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "Sowohl RX als auch TX sind zu Flusssteuerung erforderlich"
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
-msgstr "Beide Pins müssen Hardware-Interrupts unterstützen"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -690,7 +692,7 @@ msgstr "Puffer um %d Bytes zu kurz"
 #: shared-bindings/framebufferio/FramebufferDisplay.c
 #: shared-bindings/struct/__init__.c shared-module/struct/__init__.c
 msgid "Buffer too small"
-msgstr ""
+msgstr "Puffer ist zu klein"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "Buffers must be same size"
@@ -834,10 +836,6 @@ msgstr "Schreiben von CharacteristicBuffer ist nicht vorgesehen"
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "Der CircuitPython-Kerncode ist hart abgestürzt. Hoppla!\n"
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr "Clock stretch zu lang"
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "Clock unit wird benutzt"
@@ -967,9 +965,12 @@ msgstr "Die EZB arbeitet jeweils nur mit 16 Bytes"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF Speicherallozierung fehlgeschlagen"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT Kanal ist schon in Benutzung"
@@ -1133,13 +1134,6 @@ msgstr "Generischer Fehler"
 #: shared-module/framebufferio/FramebufferDisplay.c
 msgid "Group already used"
 msgstr "Gruppe schon benutzt"
-
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
-msgstr "Hald-Duplex SPI is tnicht implementiert"
 
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
@@ -1378,11 +1372,6 @@ msgstr "MAC Adresse war ungültig"
 msgid "Mapping must be a tuple"
 msgstr "Zuordnung muss ein Tupel sein"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr ""
-"Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
-
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Mismatched data size"
@@ -1394,31 +1383,31 @@ msgstr "Nicht übereinstimmendes Swap-Flag"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] reads pin(s)"
-msgstr ""
+msgstr "first_in_pin fehlt. %q[%u] liest Pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] shifts in from pin(s)"
-msgstr ""
+msgstr "first_in_pin fehlt. %q[%u] schiebt Daten über Pin(s) rein"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_in_pin. %q[%u] waits based on pin"
-msgstr ""
+msgstr "first_in_pin fehlt. %q[%u] wartet basierend auf Pin"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] shifts out to pin(s)"
-msgstr ""
+msgstr "first_out_pin fehlt. %q[%u] schiebt über Pin(s) raus"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_out_pin. %q[%u] writes pin(s)"
-msgstr ""
+msgstr "first_out_pin fehlt. %q[%u] schreibt Pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing first_set_pin. %q[%u] sets pin(s)"
-msgstr ""
+msgstr "first_set_pin fehlt. %q[%u] setzt Pin(s)"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
-msgstr ""
+msgstr "jmp_pin fehlt. %q[%u] springt basierend auf dem Pin"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1426,7 +1415,7 @@ msgstr "Muss eine %q Unterklasse sein."
 
 #: ports/espressif/common-hal/dotclockframebuffer/DotClockFramebuffer.c
 msgid "Must provide 5/6/5 RGB pins"
-msgstr ""
+msgstr "Es müssen 5/6/5 RGB Pins zur Verfügung gestellt werden"
 
 #: ports/mimxrt10xx/common-hal/busio/SPI.c shared-bindings/busio/SPI.c
 msgid "Must provide MISO or MOSI pin"
@@ -1524,9 +1513,14 @@ msgstr "Keine Verbindung: Länge kann nicht bestimmt werden"
 msgid "No default %q bus"
 msgstr "Kein Standard %q Bus"
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Keine freien GCLKs"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
+msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1634,7 +1628,7 @@ msgstr "Ok"
 #: ports/raspberrypi/common-hal/audiobusio/PDMIn.c
 #, c-format
 msgid "Only 8 or 16 bit mono with %dx oversampling supported."
-msgstr ""
+msgstr "Es wird nur 8 oder 16 bit mono mit %dx Oversampling unterstützt."
 
 #: ports/espressif/common-hal/wifi/__init__.c
 #: ports/raspberrypi/common-hal/wifi/__init__.c
@@ -1732,10 +1726,6 @@ msgstr "Keine Sockets mehr verfügbar"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "Out-Buffer-Elemente müssen <= 4 bytes lang sein"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
-msgstr "Oversample muss ein Vielfaches von 8 sein."
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1787,6 +1777,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr "Pin muss auf PWM-Kanal B sein"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr "Pin muss Hardware-Interrupts unterstützen"
 
@@ -1868,6 +1859,10 @@ msgstr "Pull wird nicht verwendet, wenn die Richtung output ist."
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "RISE_AND_FALL ist auf diesem Chip nicht verfügbar"
 
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "RLE-compressed BMP not supported"
+msgstr ""
+
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr "RNG DeInit-Fehler"
@@ -1935,7 +1930,7 @@ msgstr "Rechter Kanal wird nicht unterstützt"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Right format but not supported"
-msgstr ""
+msgstr "Korrektes Format, wird aber nicht unterstützt"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
@@ -2134,7 +2129,6 @@ msgstr "Zu viele displays"
 msgid "Total data to write is larger than %q"
 msgstr "Gesamte zu schreibende Datenmenge ist größer als %q"
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2226,11 +2220,6 @@ msgstr "Lock kann nicht erzeugt werden"
 msgid "Unable to find I2C Display at %x"
 msgstr "Konnte kein I2C Display finden an %x"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
-msgstr "Konnte keinen freien GCLK finden"
-
 #: py/parse.c
 msgid "Unable to init parser"
 msgstr "Parser konnte nicht gestartet werden"
@@ -2250,7 +2239,7 @@ msgstr "Schreiben in nvm nicht möglich."
 
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Unable to write to read-only memory"
-msgstr ""
+msgstr "schreibgeschützter Speicher kann nicht beschrieben werden"
 
 #: shared-bindings/alarm/SleepMemory.c
 msgid "Unable to write to sleep_memory."
@@ -2432,7 +2421,7 @@ msgstr "Knopf A wurde beim Starten gedrückt."
 
 #: ports/espressif/boards/m5stack_m5paper/mpconfigboard.h
 msgid "You pressed button DOWN at start up."
-msgstr ""
+msgstr "Der DOWN-Knopf wurde beim Starten gedrückt."
 
 #: supervisor/shared/safe_mode.c
 msgid "You pressed the BOOT button at start up"
@@ -2562,7 +2551,7 @@ msgstr ""
 
 #: py/compile.c
 msgid "async for/with outside async function"
-msgstr ""
+msgstr "asynchrones for/with ausserhalb einer asynchronen Funktion"
 
 #: extmod/ulab/code/numpy/numerical.c
 msgid "attempt to get (arg)min/(arg)max of empty sequence"
@@ -2574,7 +2563,7 @@ msgstr "Versuch, argmin/argmax einer leeren Sequenz zu ermitteln"
 
 #: py/objstr.c
 msgid "attributes not supported"
-msgstr ""
+msgstr "Attribute werden nicht unterstützt"
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "axis is out of bounds"
@@ -2772,7 +2761,7 @@ msgstr "Kann '%q' nicht implizit nach 'bool' konvertieren"
 
 #: py/runtime.c
 msgid "can't import name %q"
-msgstr ""
+msgstr "Name %q kann nicht importiert werden"
 
 #: py/emitnative.c
 msgid "can't load from '%q'"
@@ -2840,7 +2829,7 @@ msgstr ""
 
 #: extmod/modasyncio.c
 msgid "can't wait"
-msgstr ""
+msgstr "kann nicht warten"
 
 #: extmod/ulab/code/ndarray.c
 msgid "cannot assign new shape"
@@ -3042,7 +3031,7 @@ msgstr "dtype muss Float oder komplex sein"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "dtype of int32 is not supported"
-msgstr ""
+msgstr "int32 dtype wird nicht unterstützt"
 
 #: py/objdeque.c
 msgid "empty"
@@ -3177,7 +3166,7 @@ msgstr "Die Schriftart (font) muss 2048 Byte lang sein"
 
 #: extmod/moddeflate.c
 msgid "format"
-msgstr ""
+msgstr "Format"
 
 #: py/objstr.c
 msgid "format requires a dict"
@@ -3283,7 +3272,7 @@ msgstr ""
 
 #: py/persistentcode.c
 msgid "incompatible .mpy file"
-msgstr ""
+msgstr "inkompatible .mpy Datei"
 
 #: py/objstr.c
 msgid "incomplete format"
@@ -3665,7 +3654,7 @@ msgstr "Dieser Name ist nirgends definiert worden (Schreibweise kontrollieren)"
 
 #: py/persistentcode.c
 msgid "native code in .mpy unsupported"
-msgstr ""
+msgstr "Nativer Code in .mpy wird nicht unterstützt"
 
 #: py/asmthumb.c
 msgid "native method too big"
@@ -3759,7 +3748,7 @@ msgstr "keine 128-bit UUID"
 
 #: py/parse.c
 msgid "not a constant"
-msgstr ""
+msgstr "keine Konstante"
 
 #: py/objstr.c
 msgid "not all arguments converted during string formatting"
@@ -3914,7 +3903,7 @@ msgstr "Die Operation wird für den angegebenen Typ nicht unterstützt"
 
 #: extmod/ulab/code/ndarray_operators.c
 msgid "operation not supported for the input types"
-msgstr ""
+msgstr "Operation wird für die Eingabetypen nicht unterstützt"
 
 #: py/modbuiltins.c
 msgid "ord expects a character"
@@ -4244,7 +4233,7 @@ msgstr "tobytes kann nur für dichte Arrays aufgerufen werden"
 
 #: py/compile.c
 msgid "too many args"
-msgstr ""
+msgstr "zu viele Argumente"
 
 #: extmod/ulab/code/ndarray.c extmod/ulab/code/numpy/create.c
 msgid "too many dimensions"
@@ -4492,6 +4481,34 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "A hardware interrupt channel is already in use"
+#~ msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"
+
+#~ msgid "Bit clock and word select must share a clock unit"
+#~ msgstr "Bit clock und word select müssen eine clock unit teilen"
+
+#~ msgid "Bit depth must be multiple of 8."
+#~ msgstr "Bit depth muss ein Vielfaches von 8 sein."
+
+#~ msgid "Both pins must support hardware interrupts"
+#~ msgstr "Beide Pins müssen Hardware-Interrupts unterstützen"
+
+#~ msgid "Clock stretch too long"
+#~ msgstr "Clock stretch zu lang"
+
+#~ msgid "Half duplex SPI is not implemented"
+#~ msgstr "Hald-Duplex SPI is tnicht implementiert"
+
+#~ msgid "Microphone startup delay must be in range 0.0 to 1.0"
+#~ msgstr ""
+#~ "Die Startverzögerung des Mikrofons muss im Bereich von 0,0 bis 1,0 liegen"
+
+#~ msgid "Oversample must be multiple of 8."
+#~ msgstr "Oversample muss ein Vielfaches von 8 sein."
+
+#~ msgid "Unable to find free GCLK"
+#~ msgstr "Konnte keinen freien GCLK finden"
 
 #~ msgid ""
 #~ "\n"

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-12-06 22:06+0000\n"
+"PO-Revision-Date: 2024-01-09 03:06+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.3-dev\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 #: main.c
 msgid ""
@@ -99,6 +99,10 @@ msgstr "%q hé %q bāo hán chóng fù yǐn jiǎo"
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
 msgstr "%q hé %q bìxū bùtóng"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "%q and %q must share a clock unit"
+msgstr "%q hé %q bìxū gòngxiǎng yígè shízhōng dānyuán"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -213,11 +217,19 @@ msgstr "%q bì xū shì lèi xíng wéi 'H' de shù zǔ"
 msgid "%q must be array of type 'h'"
 msgstr "%q bìxū shì lèixíng wéi 'h' de shùzǔ"
 
+#: shared-bindings/audiobusio/PDMIn.c
+msgid "%q must be multiple of 8."
+msgstr "%q bìxū shì 8 debèishù."
+
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q de lèi xíng bì xū shì %q huò %q, ér bù shì %q"
+
+#: shared-bindings/jpegio/JpegDecoder.c
+msgid "%q must be of type %q, %q, or %q, not %q"
+msgstr "%q bìxūshì %q, %q huò %q lèixíng, érbùshì %q"
 
 #: py/argcheck.c shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
@@ -248,9 +260,17 @@ msgstr "%q zhòngmìngmíngwéi %q"
 msgid "%q step cannot be zero"
 msgstr "%q bù cháng bù néng wéi líng"
 
+#: shared-module/bitbangio/I2C.c
+msgid "%q too long"
+msgstr "%q tàicháng"
+
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
 msgstr "%q() yāoqiú shūrù %d gè wèizhì cānshù, dàn mùqián shūrù le %d gè"
+
+#: shared-module/jpegio/JpegDecoder.c
+msgid "%q() without %q()"
+msgstr "búdài %q() de %q()"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
@@ -440,12 +460,6 @@ msgstr "0.0 de fùshù cì mì"
 msgid "3-arg pow() not supported"
 msgstr "bù zhī chí 3-arg pow()"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "A hardware interrupt channel is already in use"
-msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
-
 #: ports/raspberrypi/common-hal/wifi/Radio.c
 msgid "AP could not be started"
 msgstr "wúfǎ qǐdòng AP"
@@ -628,14 +642,6 @@ msgstr "dīyú zuìdī zhēnlǜ"
 msgid "Bit clock and word select must be sequential GPIO pins"
 msgstr "wèi shízhōng hézì xuǎnzé bìxū shì shùnxù GPIO yǐnjiǎo"
 
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "Bit clock and word select must share a clock unit"
-msgstr "wèi shízhōng hé zì xuǎnzé bìxū gòngxiǎng yīgè shízhōng dānyuán"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Bit depth must be multiple of 8."
-msgstr "wèi shēndù bìxū shì 8 de zhěngshùbèi."
-
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Bitmap size and bits per value must match"
 msgstr "wèi tú dàxiǎo hé měi gè zhí de wèi shù bìxū pǐpèi"
@@ -647,10 +653,6 @@ msgstr "yǐn dǎo shè bèi bì xū shì dì yī gè (jiē kǒu #0)."
 #: ports/mimxrt10xx/common-hal/busio/UART.c
 msgid "Both RX and TX required for flow control"
 msgstr "RX hé TX dōu xū yào liúliàng kòngzhì"
-
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Both pins must support hardware interrupts"
-msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/framebufferio/FramebufferDisplay.c
@@ -837,10 +839,6 @@ msgstr "Wèi tígōng zìfú huǎncún xiěrù"
 msgid "CircuitPython core code crashed hard. Whoops!\n"
 msgstr "CircuitPython de héxīn chūxiàn gùzhàng. Āiyā!\n"
 
-#: shared-module/bitbangio/I2C.c
-msgid "Clock stretch too long"
-msgstr "shízhōng yánzhǎn guòcháng"
-
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "Clock unit in use"
 msgstr "shízhōng dānyuán zhèngzài shǐyòng zhōng"
@@ -902,7 +900,7 @@ msgstr "Shùjù kuài bìxū zūnxún fmt qū kuài"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Data format error (may be broken data)"
-msgstr ""
+msgstr "shùjù géshì cuòwù (kěnéngshì shùjù sǔnhuài)"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -921,7 +919,7 @@ msgstr ""
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Destination bitmap too small to contain image"
-msgstr ""
+msgstr "mùbiāo wèitú tàixiǎo, wúfǎ bāohán túxiàng"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -929,7 +927,7 @@ msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Device error or wrong termination of input stream"
-msgstr ""
+msgstr "shèbèi cuòwù huò shū rùliú cuòwù zhōngzhǐ"
 
 #: ports/nrf/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
@@ -968,9 +966,12 @@ msgstr "ECB yí cì zhǐ shǐ yòng 16 gè zì jié"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF nèicún fēnpèi shībài"
 
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
 #: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/ps2io/Ps2.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
 msgid "EXTINT channel already in use"
 msgstr "EXTINT píndào yǐjīng shǐyòng"
@@ -1136,13 +1137,6 @@ msgstr "tōng yòng gù zhàng"
 msgid "Group already used"
 msgstr "Jítuán yǐjīng shǐyòngguò"
 
-#: ports/atmel-samd/common-hal/busio/SPI.c ports/cxd56/common-hal/busio/SPI.c
-#: ports/espressif/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
-#: ports/raspberrypi/common-hal/busio/SPI.c
-msgid "Half duplex SPI is not implemented"
-msgstr "wèi shí xiàn bàn shuāng gōng SPI"
-
 #: supervisor/shared/safe_mode.c
 msgid "Hard fault: memory access or instruction error."
 msgstr "yìng gùzhàng: nèicún fǎngwèn huò zhǐlìng cuòwù."
@@ -1224,11 +1218,11 @@ msgstr "Jiāmì bùzú"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient memory pool for the image"
-msgstr ""
+msgstr "yìngxiàng de nèicún chí bùzú"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient stream input buffer"
-msgstr ""
+msgstr "liú shūrù huǎnchōngqū bùzú"
 
 #: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
@@ -1262,7 +1256,7 @@ msgstr "zhōng duàn cuò wù."
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Interrupted by output function"
-msgstr ""
+msgstr "bèi shūchū gōngnéng zhōngduàn"
 
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
 #: ports/mimxrt10xx/common-hal/pwmio/PWMOut.c
@@ -1379,10 +1373,6 @@ msgstr "MAC dì zhǐ wú xiào"
 #: shared-bindings/is31fl3741/IS31FL3741.c
 msgid "Mapping must be a tuple"
 msgstr "yìng shè bì xū shì yuán zǔ"
-
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Microphone startup delay must be in range 0.0 to 1.0"
-msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
 
 #: ports/raspberrypi/bindings/rp2pio/StateMachine.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
@@ -1525,9 +1515,14 @@ msgstr "Wú liánjiē: Wúfǎ quèdìng chángdù"
 msgid "No default %q bus"
 msgstr "wú mòrèn %q zǒngxiàn"
 
+#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Méiyǒu miǎnfèi de GCLKs"
+
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
+msgid "No free GLCKs"
+msgstr "méiyǒu miǎnfèide GLCK"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1605,7 +1600,7 @@ msgstr "Wèi bòfàng"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Not supported JPEG standard"
-msgstr ""
+msgstr "bù zhīchí JPEG biāozhǔn"
 
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
@@ -1732,10 +1727,6 @@ msgstr "tào jiē zì wài"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "huǎn chōng wài yuán sù bì xū <= 4 zì jié cháng"
 
-#: shared-bindings/audiobusio/PDMIn.c
-msgid "Oversample must be multiple of 8."
-msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
-
 #: shared-bindings/pwmio/PWMOut.c
 msgid ""
 "PWM frequency not writable when variable_frequency is False on construction."
@@ -1755,7 +1746,7 @@ msgstr "PWM qiē piàn tōng dào A yǐ zài shǐ yòng zhōng"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Parameter error"
-msgstr ""
+msgstr "cānshù cuòwù"
 
 #: ports/espressif/common-hal/audiobusio/__init__.c
 msgid "Peripheral in use"
@@ -1787,6 +1778,7 @@ msgid "Pin must be on PWM Channel B"
 msgstr "yǐn jiǎo bì xū zài Pwm pín dào B shàng"
 
 #: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 msgid "Pin must support hardware interrupts"
 msgstr "Yǐn jiǎo bìxū zhīchí yìngjiàn zhōngduàn"
 
@@ -1867,6 +1859,10 @@ msgstr "Fāngxiàng shūchū shí Pull méiyǒu shǐyòng."
 msgid "RISE_AND_FALL not available on this chip"
 msgstr "RISE_AND_FALL zài cǐ xīn piàn shàng bù kě yòng"
 
+#: shared-module/displayio/OnDiskBitmap.c
+msgid "RLE-compressed BMP not supported"
+msgstr "bù zhīchí RLE-yāsuōde BMP"
+
 #: ports/stm/common-hal/os/__init__.c
 msgid "RNG DeInit Error"
 msgstr "RNG qǔxiāo chūshǐhuà cuòwù"
@@ -1934,7 +1930,7 @@ msgstr "Bù zhīchí yòu tōngdào"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Right format but not supported"
-msgstr ""
+msgstr "géshì zhèngquè, dànbù zhīchí"
 
 #: main.c
 msgid "Running in safe mode! Not running saved code.\n"
@@ -2128,7 +2124,6 @@ msgstr "Xiǎnshì tài duō"
 msgid "Total data to write is larger than %q"
 msgstr "yào biān xiě de zǒng shù jù dà yú %q"
 
-#: ports/atmel-samd/common-hal/alarm/touch/TouchAlarm.c
 #: ports/raspberrypi/common-hal/alarm/touch/TouchAlarm.c
 #: ports/stm/common-hal/alarm/touch/TouchAlarm.c
 msgid "Touch alarms not available"
@@ -2219,11 +2214,6 @@ msgstr "Wúfǎ chuàngjiàn suǒ"
 #, c-format
 msgid "Unable to find I2C Display at %x"
 msgstr "Wúfǎ zài%x zhǎodào I2C xiǎnshìqì"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-#: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
-msgid "Unable to find free GCLK"
-msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 
 #: py/parse.c
 msgid "Unable to init parser"
@@ -4465,6 +4455,33 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "A hardware interrupt channel is already in use"
+#~ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
+
+#~ msgid "Bit clock and word select must share a clock unit"
+#~ msgstr "wèi shízhōng hé zì xuǎnzé bìxū gòngxiǎng yīgè shízhōng dānyuán"
+
+#~ msgid "Bit depth must be multiple of 8."
+#~ msgstr "wèi shēndù bìxū shì 8 de zhěngshùbèi."
+
+#~ msgid "Both pins must support hardware interrupts"
+#~ msgstr "liǎnggè yǐnjiǎo dōu bìxū zhīchí yìngjiàn zhōngduàn"
+
+#~ msgid "Clock stretch too long"
+#~ msgstr "shízhōng yánzhǎn guòcháng"
+
+#~ msgid "Half duplex SPI is not implemented"
+#~ msgstr "wèi shí xiàn bàn shuāng gōng SPI"
+
+#~ msgid "Microphone startup delay must be in range 0.0 to 1.0"
+#~ msgstr "Màikèfēng qǐdòng yánchí bìxū zài 0.0 Dào 1.0 De fànwéi nèi"
+
+#~ msgid "Oversample must be multiple of 8."
+#~ msgstr "Guò cǎiyàng bìxū shì 8 de bèishù."
+
+#~ msgid "Unable to find free GCLK"
+#~ msgstr "Wúfǎ zhǎodào miǎnfèi de GCLK"
 
 #~ msgid ""
 #~ "\n"

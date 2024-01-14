@@ -132,6 +132,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_BUILTINS_STR_UNICODE  (1)
 
 #define MICROPY_PY_BINASCII             (CIRCUITPY_BINASCII)
+#define MICROPY_PY_BINASCII_CRC32       (CIRCUITPY_BINASCII && CIRCUITPY_ZLIB)
 #define MICROPY_PY_CMATH                 (0)
 #define MICROPY_PY_COLLECTIONS           (CIRCUITPY_COLLECTIONS)
 #define MICROPY_PY_DESCRIPTORS           (1)
@@ -142,6 +143,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
 #define MICROPY_PY_IO                    (CIRCUITPY_IO)
+#define MICROPY_PY_IO_IOBASE             (CIRCUITPY_IO_IOBASE)
 // In extmod
 #define MICROPY_PY_JSON                 (CIRCUITPY_JSON)
 #define MICROPY_PY_MATH                  (0)

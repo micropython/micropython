@@ -354,10 +354,10 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         x509write_csr.c \
         xtea.c \
 	)
-SRC_C += $(SRC_MBEDTLS) mbedtls/mbedtls_port.c mbedtls/crt_bundle.c
+SRC_C += $(SRC_MBEDTLS) $(TOP)/lib/mbedtls_config/mbedtls_port.c $(TOP)/lib/mbedtls_config/crt_bundle.c
 CFLAGS += \
 	  -isystem $(TOP)/lib/mbedtls/include \
-	  -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"' \
+	  -DMBEDTLS_CONFIG_FILE='"$(TOP)/lib/mbedtls_config/mbedtls_config.h"' \
 
 $(BUILD)/x509_crt_bundle.S: $(TOP)/lib/certificates/data/roots.pem $(TOP)/tools/gen_crt_bundle.py
 	$(Q)$(PYTHON) $(TOP)/tools/gen_crt_bundle.py -i $< -o $@ --asm
