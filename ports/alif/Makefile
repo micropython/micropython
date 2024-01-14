@@ -27,11 +27,11 @@ CROSS_COMPILE ?= arm-none-eabi-
 GIT_SUBMODULES += lib/tinyusb lib/alif_ensemble-cmsis-dfp
 
 ALIF_SDK ?= alif-sdk
-ALIF_DFP ?= $(abspath ../../lib/alif_ensemble-cmsis-dfp)
+ALIF_DFP ?= $(TOP)/lib/alif_ensemble-cmsis-dfp
 CMSIS_DIR ?= $(TOP)/lib/cmsis/inc
 
-TARGET_CORE ?= M55_HP
-ALIF_CONFIG ?= mcu/$(TARGET_CORE)_cfg.json
+MCU_CORE ?= M55_HP
+ALIF_CONFIG ?= mcu/$(MCU_CORE)_cfg.json
 LD_FILE ?= mcu/ensemble.ld.S
 
 INC += -I.
@@ -42,9 +42,9 @@ INC += -I$(CMSIS_DIR)
 INC += -I$(ALIF_DFP)/drivers/include/
 INC += -I$(ALIF_DFP)/ospi_xip/source/ospi
 INC += -I$(ALIF_DFP)/Device/common/include/
-INC += -I$(ALIF_DFP)/Device/core/$(TARGET_CORE)/config/
-INC += -I$(ALIF_DFP)/Device/core/$(TARGET_CORE)/include/
-INC += -I$(ALIF_DFP)/Device/E7/AE722F80F55D5XX/
+INC += -I$(ALIF_DFP)/Device/core/$(MCU_CORE)/config/
+INC += -I$(ALIF_DFP)/Device/core/$(MCU_CORE)/include/
+INC += -I$(ALIF_DFP)/Device/$(MCU_SERIES)/$(MCU_VARIANT)/
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -Itinyusb_port
 
@@ -60,7 +60,7 @@ CFLAGS_CORTEX_M55 += -mthumb -mcpu=cortex-m55 -mtune=cortex-m55 $(CFLAGS_FPU)
 CFLAGS += $(INC) -Wall -Werror -std=c99 $(CFLAGS_CORTEX_M55) -nostdlib
 CFLAGS += -Wdouble-promotion -Wfloat-conversion
 CFLAGS += -fdata-sections -ffunction-sections
-CFLAGS += -D$(TARGET_CORE) -DCORE_$(TARGET_CORE) -DALIF_CMSIS_H="\"$(TARGET_CORE).h\""
+CFLAGS += -D$(MCU_CORE) -DCORE_$(MCU_CORE) -DALIF_CMSIS_H="\"$(MCU_CORE).h\""
 
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 CFLAGS += -fsingle-precision-constant
@@ -105,7 +105,6 @@ SRC_C = \
 	pendsv.c \
 	system_tick.c \
 	usbd.c \
-	$(GEN_PINS_SRC) \
 
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
@@ -155,7 +154,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP)/,\
 	Device/common/source/mpu_M55.c \
 	Device/common/source/system_M55.c \
 	Device/common/source/system_utils.c \
-	Device/core/$(TARGET_CORE)/source/startup_$(TARGET_CORE).c \
+	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
 	drivers/source/pinconf.c \
 	drivers/source/uart.c \
 	drivers/source/utimer.c \
@@ -163,7 +162,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP)/,\
 	)
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SHARED_SRC_C)
+SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(SRC_O))
@@ -173,6 +172,7 @@ OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(TINYUSB_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(ALIF_SRC_C:.c=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 ################################################################################
 # Main targets
