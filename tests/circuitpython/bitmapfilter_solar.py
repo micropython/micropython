@@ -21,8 +21,6 @@ q = make_quadrant_bitmap()
 b = test_pattern()
 dump_bitmap_rgb_swapped(b)
 
-sepia_weights = [0.393, 0.769, 0.189, 0.349, 0.686, 0.168, 0.272, 0.534, 0.131]
-
 print("solarize (masked)")
 bitmapfilter.solarize(b, mask=q)
 dump_bitmap_rgb_swapped(b)
