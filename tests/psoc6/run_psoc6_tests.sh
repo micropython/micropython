@@ -17,9 +17,10 @@ usage() {
   echo "  -i            run implemented tests only and exclude known failing tests"
   echo "  -n            run not yet implemented tests only"
   echo "  -w            run wifi tests => needs secrets.py key file>"
+  echo "  -v            run virtual filesystem related tests"
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
-  echo "  --psco6       run only psoc6 port related tests"
+  echo "  --psoc6       run only psoc6 port related tests"
   echo "  --psoc6-multi run only psoc6 port multi tests (requires 2 instances)"
   exit 1;
 }
@@ -36,7 +37,7 @@ for arg in "$@"; do
   esac
 done
 
-while getopts "acd:e:fhimnpw" o; do
+while getopts "acd:e:fhimnpwv" o; do
   case "${o}" in
     a)
        all=1
@@ -70,6 +71,9 @@ while getopts "acd:e:fhimnpw" o; do
        ;;
     w)
        wifi=1
+       ;;
+    v)
+       fs=1
        ;;
     *)
        usage
@@ -113,6 +117,10 @@ fi
 
 if [ -z "${wifi}" ]; then
   wifi=0
+fi
+
+if [ -z "${fs}" ]; then
+  fs=0
 fi
 
 if [ -z "${psoc6OnlyMulti}" ]; then
@@ -229,6 +237,24 @@ if [ ${wifi} -eq 1 ]; then
 
 fi
 
+if [ ${fs} -eq 1 ]; then
+
+  echo "  running filesystem tests ..."
+  echo
+
+  ./run-tests.py --target psoc6 --device ${device0} \
+         \
+          extmod/vfs_basic.py \
+          extmod/vfs_lfs_superblock.py \
+          extmod/vfs_userfs.py \
+    | tee -a ${resultsFile}
+
+  echo
+  echo "  done."
+  echo
+
+fi
+
 
 if [ ${implemented} -eq 1 ]; then
 
@@ -268,7 +294,7 @@ if [ ${implemented} -eq 1 ]; then
         \
         -e extmod/re_stack_overflow.py \
         -e extmod/socket_udp_nonblock.py \
-        -e extmod/vfs_lfs_mtime.py \
+
         \
         -e feature_check/async_check.py \
         -e feature_check/bytearray.py \
