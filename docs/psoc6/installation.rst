@@ -210,11 +210,7 @@ If you want to skip the KitProg firmware update step, you can use the flag ``-s`
 Direct binary flashing
 ----------------------
 
-Another alternative to program the board is to directly provide the binary file. The ``firmware-deploy`` command is providing this option. 
-This commands is skipping all the tools download and installation, neither download the MicoPython firmware.
-Therefore, it requires that `openocd <https://www.infineon.com/cms/en/design-support/software/free-and-open-source-software-foss/modustoolbox-foss-packages/?searchTerm=~%27openocd#!designsupport>`_ is already installed and available in the system path.
-In exchange, it will be faster for batch flashing, or any situation where subsequent binary flashing needs to be performed.
-
+Another alternative to program the board is to directly provide the binary file. The ``firmware-deploy`` command is enabling this option. 
 The board needs to be specified, and the path and name of the ``.hex`` file:
 
 .. tabs::
