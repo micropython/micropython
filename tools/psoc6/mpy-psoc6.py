@@ -587,6 +587,8 @@ def parser():
         device_setup(args.board, args.version, args.skip_fw_update, args.q)
 
     def parser_firmware_deploy(args):
+        openocd_download_install()
+        openocd_board_conf_download(args.board)
         openocd_program(args.board, args.hexfile)
 
     def parser_device_erase(args):
@@ -684,8 +686,7 @@ def parser():
         "firmware-deploy",
         description="Firmware deployment on MicroPython device. \
                     Use this command to deploy an existing .hex file \
-                    on a PSoC6 board. \
-                    Requires openocd available on the system path.",
+                    on a PSoC6 board.",
     )
     parser_fd.add_argument(
         "-b", "--board", default=None, type=str, required=True, help="PSoC6 prototyping kit name"
