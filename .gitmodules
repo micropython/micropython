@@ -357,3 +357,24 @@
 [submodule "frozen/CircuitPython_AXP313A"]
 	path = frozen/CircuitPython_AXP313A
 	url = https://github.com/bill88t/CircuitPython_AXP313A
+[submodule "frozen/Adafruit_CircuitPython_framebuf"]
+	path = frozen/Adafruit_CircuitPython_framebuf
+	url = https://github.com/adafruit/Adafruit_CircuitPython_framebuf
+[submodule "frozen/Adafruit_CircuitPython_SSD1306"]
+	path = frozen/Adafruit_CircuitPython_SSD1306
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SSD1306
+[submodule "frozen/Adafruit_CircuitPython_DisplayIO_SSD1306"]
+	path = frozen/Adafruit_CircuitPython_DisplayIO_SSD1306
+	url = https://github.com/adafruit/Adafruit_CircuitPython_DisplayIO_SSD1306
+[submodule "frozen/Adafruit_CircuitPython_ImageLoad"]
+	path = frozen/Adafruit_CircuitPython_ImageLoad
+	url = https://github.com/adafruit/Adafruit_CircuitPython_ImageLoad
+[submodule "frozen/Adafruit_CircuitPython_AHTx0"]
+	path = frozen/Adafruit_CircuitPython_AHTx0
+	url = https://github.com/adafruit/Adafruit_CircuitPython_AHTx0
+[submodule "frozen/Adafruit_CircuitPython_SD"]
+	path = frozen/Adafruit_CircuitPython_SD
+	url = https://github.com/adafruit/Adafruit_CircuitPython_SD
+[submodule "frozen/Adafruit_CircuitPython_HTTPServer"]
+	path = frozen/Adafruit_CircuitPython_HTTPServer
+	url = https://github.com/adafruit/Adafruit_CircuitPython_HTTPServer
