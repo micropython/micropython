@@ -304,11 +304,11 @@ class Pyboard:
                         self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
                         self.serial.rts = False  # RTS False = EN High = MCU enabled
                         if hard_reset:
-                           time.sleep(0.2)
-                           self.serial.rts = True  # this is reset (setting this "high" resets the MCU)
-                           time.sleep(0.2)
-                           self.serial.rts = False
-                           time.sleep(2) # must wait for the reset, otherwise the ctrl-A gets lost
+                            time.sleep(0.2)
+                            self.serial.rts = True  # this is reset (setting this "high" resets the MCU)
+                            time.sleep(0.2)
+                            self.serial.rts = False
+                            time.sleep(2) # must wait for the reset, otherwise the ctrl-A gets lost
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
