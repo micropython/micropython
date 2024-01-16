@@ -265,7 +265,7 @@ class ProcessPtyToTerminal:
 
 class Pyboard:
     def __init__(
-        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True
+        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True, hard_reset=True
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
@@ -301,6 +301,14 @@ class Pyboard:
                         self.serial.open()
                     else:
                         self.serial = serial.Serial(device, **serial_kwargs)
+                        self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
+                        self.serial.rts = False  # RTS False = EN High = MCU enabled
+                        if hard_reset:
+                           time.sleep(0.2)
+                           self.serial.rts=1 # this is reset (setting this "high" resets the MCU)
+                           time.sleep(0.2)
+                           self.serial.rts=0
+                           time.sleep(2) # must wait for the reset, otherwise the ctrl-A gets lost
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
@@ -359,7 +367,7 @@ class Pyboard:
         self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
 
         if soft_reset:
-            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>")
+            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>", timeout=1)
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 print(data)
                 raise PyboardError("could not enter raw repl")
@@ -374,7 +382,7 @@ class Pyboard:
                 print(data)
                 raise PyboardError("could not enter raw repl")
 
-        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n")
+        data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n", timeout=1)
         if not data.endswith(b"raw REPL; CTRL-B to exit\r\n"):
             print(data)
             raise PyboardError("could not enter raw repl")
@@ -784,6 +792,12 @@ def main():
     cmd_parser.add_argument("-p", "--password", default="python", help="the telnet login password")
     cmd_parser.add_argument("-c", "--command", help="program passed in as string")
     cmd_parser.add_argument(
+        "--hard-reset",
+        action="store_true",
+        dest="hard_reset",
+        help="Perform a hard reset when connecting to the board (requires your serial programmer to properly wire RTS pin to reset)",
+    )
+    cmd_parser.add_argument(
         "-w",
         "--wait",
         default=0,
@@ -801,6 +815,7 @@ def main():
         "--no-soft-reset",
         action="store_false",
         dest="soft_reset",
+        help="Whether to perform a soft reset when connecting to the board [default]",
     )
     group = cmd_parser.add_mutually_exclusive_group()
     group.add_argument(
@@ -839,7 +854,7 @@ def main():
     # open the connection to the pyboard
     try:
         pyb = Pyboard(
-            args.device, args.baudrate, args.user, args.password, args.wait, args.exclusive
+            args.device, args.baudrate, args.user, args.password, args.wait, args.exclusive, hard_reset=args.hard_reset
         )
     except PyboardError as er:
         print(er)

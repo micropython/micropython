@@ -25,7 +25,11 @@ Running ``pyboard.py --help`` gives the following output:
 .. code-block:: text
 
     usage: pyboard [-h] [-d DEVICE] [-b BAUDRATE] [-u USER] [-p PASSWORD]
-                   [-c COMMAND] [-w WAIT] [--follow | --no-follow] [-f]
+                   [-c COMMAND] [-w WAIT] [--follow | --no-follow] 
+
+
+
+[-f]
                    [files [files ...]]
 
     Run scripts on the pyboard.
@@ -48,6 +52,10 @@ Running ``pyboard.py --help`` gives the following output:
                             available
       --follow              follow the output after running the scripts
                             [default if no scripts given]
+      --no-soft-reset       Prevent performing a soft reset when connecting to MCU
+      --hard-reset          pulse the MCU reset pin to hard-reset the MCU (if your
+                            serial connection wires RTS to reset pin properly)
+      --no-exclusive        Open the serial device shared (not exclusive) access
       -f, --filesystem      perform a filesystem action: cp local :device | cp
                             :device local | cat path | ls [path] | rm path | mkdir
                             path | rmdir path
