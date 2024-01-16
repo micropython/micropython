@@ -4330,12 +4330,6 @@ msgstr ""
 
 #: shared-bindings/bitmapfilter/__init__.c
 msgid ""
-"weights must be a sequence with 9 times an odd square number of elements "
-"(usually 81 or 225)"
-msgstr ""
-
-#: shared-bindings/bitmapfilter/__init__.c
-msgid ""
 "weights must be a sequence with an odd square number of elements (usually 9 "
 "or 25)"
 msgstr ""
