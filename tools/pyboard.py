@@ -305,7 +305,7 @@ class Pyboard:
                         self.serial.rts = False  # RTS False = EN High = MCU enabled
                         if hard_reset:
                            time.sleep(0.2)
-                           self.serial.rts = True # this is reset (setting this "high" resets the MCU)
+                           self.serial.rts = True  # this is reset (setting this "high" resets the MCU)
                            time.sleep(0.2)
                            self.serial.rts = False
                            time.sleep(2) # must wait for the reset, otherwise the ctrl-A gets lost
