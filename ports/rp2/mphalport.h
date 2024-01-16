@@ -37,8 +37,13 @@
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 // Entering a critical section.
+#if MICROPY_PY_THREAD
 #define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
 #define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
+#else
+#define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
+#define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
+#endif
 
 #define MICROPY_PY_PENDSV_ENTER   pendsv_suspend()
 #define MICROPY_PY_PENDSV_EXIT    pendsv_resume()
