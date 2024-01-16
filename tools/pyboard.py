@@ -288,7 +288,7 @@ class Pyboard:
             import serial.tools.list_ports
 
             # Set options, and exclusive if pyserial supports it
-            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1}
+            serial_kwargs = {"baudrate": baudrate, "interCharTimeout": 1, "rtscts": 0, "dsrdtr": 0}
             if serial.__version__ >= "3.3":
                 serial_kwargs["exclusive"] = exclusive
 
@@ -307,9 +307,20 @@ class Pyboard:
                             self.serial.rts = False  # RTS False = EN High = MCU enabled
                         self.serial.open()
                     else:
-                        self.serial = serial.Serial(device, **serial_kwargs)
+                        #self.serial = serial.Serial(device, **serial_kwargs)
+                        #Cannot do serial.Serial(device...) because below is only way to block a high-pulse on rts
+                        self.serial = serial.Serial()
                         self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
                         self.serial.rts = False  # RTS False = EN High = MCU enabled
+                        self.serial.port = device
+                        self.serial.baudrate = serial_kwargs["baudrate"]
+                        self.serial.rtscts = 0
+                        self.serial.dsrdtr = 0
+                        self.serial.inter_byte_timeout = serial_kwargs["interCharTimeout"]
+                        self.serial.exclusive = serial_kwargs["exclusive"]
+                        self.serial.open()
+
+
                         if hard_reset:
                             time.sleep(0.2)
                             # this is reset (setting this "high" resets the MCU)
@@ -379,7 +390,7 @@ class Pyboard:
         retry = 10
         while retry > 0:  # resend every 1s (sends get lost while resetting)
             retry = retry - 1
-            self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
+            self.serial.write(b"\r\x01\x01")  # ctrl-A: enter raw REPL (needs 2)
             data = self.read_until(0, b"raw REPL; CTRL-B to exit\r\n>", timeout=1)
             if data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 retry = 0
