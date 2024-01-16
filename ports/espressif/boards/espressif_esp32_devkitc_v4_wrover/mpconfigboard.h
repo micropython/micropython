@@ -29,8 +29,6 @@
 #define MICROPY_HW_BOARD_NAME       "Espressif ESP32 DevKitc V4 WROVER"
 #define MICROPY_HW_MCU_NAME         "ESP32"
 
-#define MICROPY_HW_LED_STATUS       (&pin_GPIO13)
-
 #define CIRCUITPY_BOARD_I2C         (1)
 #define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO22, .sda = &pin_GPIO23}}
 
