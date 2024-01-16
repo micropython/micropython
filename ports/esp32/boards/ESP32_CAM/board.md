@@ -23,3 +23,7 @@ and run this command:-
 then flash is like this:-
 
     esptool.py -p $PORT write_flash --flash_mode dio --flash_size 4MB --flash_freq 40m 0x1000 build-ESP32_CAM/bootloader/bootloader.bin 0x8000 build-ESP32_CAM/partition_table/partition-table.bin 0x10000 build-ESP32_CAM/micropython.bin
+
+Note that these boards wire RTS and DSR to reset and gpio0 pins, so you need the fixed pyboard.py that includes the --hard-reset to talk to them.  For example:-
+
+    pyboard.py --device $PORT --hard-reset -f ls
