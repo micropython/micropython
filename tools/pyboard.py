@@ -265,7 +265,14 @@ class ProcessPtyToTerminal:
 
 class Pyboard:
     def __init__(
-        self, device, baudrate=115200, user="micro", password="python", wait=0, exclusive=True, hard_reset=False
+        self,
+        device,
+        baudrate=115200,
+        user="micro",
+        password="python",
+        wait=0,
+        exclusive=True,
+        hard_reset=False
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
@@ -305,10 +312,12 @@ class Pyboard:
                         self.serial.rts = False  # RTS False = EN High = MCU enabled
                         if hard_reset:
                             time.sleep(0.2)
-                            self.serial.rts = True  # this is reset (setting this "high" resets the MCU)
+                            # this is reset (setting this "high" resets the MCU)
+                            self.serial.rts = True
                             time.sleep(0.2)
                             self.serial.rts = False
-                            time.sleep(2) # must wait for the reset, otherwise the ctrl-A gets lost
+                            # must wait for the reset, otherwise the ctrl-A gets lost
+                            time.sleep(2.0)
                     break
                 except (OSError, IOError):  # Py2 and Py3 have different errors
                     if wait == 0:
@@ -333,7 +342,10 @@ class Pyboard:
         # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
         assert data_consumer is None or len(ending) == 1
 
-        data = self.serial.read(min_num_bytes)
+        if min_num_bytes>0:
+            data = self.serial.read(min_num_bytes)
+        else:
+            data = b''
         if data_consumer:
             data_consumer(data)
         timeout_count = 0
@@ -364,10 +376,17 @@ class Pyboard:
             self.serial.read(n)
             n = self.serial.inWaiting()
 
-        self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
+        retry = 10
+        while retry > 0: # resend every 1s (sends get lost while resetting)
+            retry = retry - 1
+            self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
+            data = self.read_until(0, b"raw REPL; CTRL-B to exit\r\n>", timeout=1)
+            if data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
+                retry = 0
+            else:
+                time.sleep(0.1)
 
         if soft_reset:
-            data = self.read_until(1, b"raw REPL; CTRL-B to exit\r\n>", timeout=1)
             if not data.endswith(b"raw REPL; CTRL-B to exit\r\n>"):
                 print(data)
                 raise PyboardError("could not enter raw repl")
@@ -854,7 +873,13 @@ def main():
     # open the connection to the pyboard
     try:
         pyb = Pyboard(
-            args.device, args.baudrate, args.user, args.password, args.wait, args.exclusive, hard_reset=args.hard_reset
+            args.device,
+            args.baudrate,
+            args.user,
+            args.password,
+            args.wait,
+            args.exclusive,
+            hard_reset=args.hard_reset
         )
     except PyboardError as er:
         print(er)
