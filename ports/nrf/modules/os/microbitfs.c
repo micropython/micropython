@@ -80,10 +80,6 @@
 /** Must be such that sizeof(file_header) < DATA_PER_CHUNK */
 #define MAX_FILENAME_LENGTH 120
 
-//Minimum number of free chunks to justify sweeping.
-//If this is too low it may cause excessive wear
-#define MIN_CHUNKS_FOR_SWEEP (FLASH_PAGESIZE / CHUNK_SIZE)
-
 #define FILE_NOT_FOUND ((uint8_t)-1)
 
 /** Maximum number of chunks allowed in filesystem. 252 chunks is 31.5kB */
@@ -268,9 +264,9 @@ STATIC uint8_t microbit_find_file(const char *name, int name_len) {
 // Search the chunks:
 // 1  If an UNUSED chunk is found, then return that.
 // 2. If an entire page of FREED chunks is found, then erase the page and return the first chunk
-// 3. If the number of FREED chunks is >= MIN_CHUNKS_FOR_SWEEP, then
+// 3. If the number of FREED chunks is > 0, then
 // 3a. Sweep the filesystem and restart.
-// 3b. Fail and return FILE_NOT_FOUND
+// 3b. Otherwise, fail and return FILE_NOT_FOUND.
 //
 STATIC uint8_t find_chunk_and_erase(void) {
     // Start search at a random chunk to spread the wear more evenly.
@@ -311,7 +307,7 @@ STATIC uint8_t find_chunk_and_erase(void) {
         if (index == chunks_in_file_system+1) index = 1;
     } while (index != start_index);
     DEBUG(("FILE DEBUG: %lu free chunks\r\n", freed_chunks));
-    if (freed_chunks < MIN_CHUNKS_FOR_SWEEP) {
+    if (freed_chunks == 0) {
         return FILE_NOT_FOUND;
     }
     // No freed pages, so sweep file system.
