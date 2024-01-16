@@ -272,7 +272,7 @@ class Pyboard:
         password="python",
         wait=0,
         exclusive=True,
-        hard_reset=False
+        hard_reset=False,
     ):
         self.in_raw_repl = False
         self.use_raw_paste = True
@@ -342,10 +342,10 @@ class Pyboard:
         # if data_consumer is used then data is not accumulated and the ending must be 1 byte long
         assert data_consumer is None or len(ending) == 1
 
-        if min_num_bytes>0:
+        if min_num_bytes > 0:
             data = self.serial.read(min_num_bytes)
         else:
-            data = b''
+            data = b""
         if data_consumer:
             data_consumer(data)
         timeout_count = 0
@@ -377,7 +377,7 @@ class Pyboard:
             n = self.serial.inWaiting()
 
         retry = 10
-        while retry > 0: # resend every 1s (sends get lost while resetting)
+        while retry > 0:  # resend every 1s (sends get lost while resetting)
             retry = retry - 1
             self.serial.write(b"\r\x01")  # ctrl-A: enter raw REPL
             data = self.read_until(0, b"raw REPL; CTRL-B to exit\r\n>", timeout=1)
@@ -879,7 +879,7 @@ def main():
             args.password,
             args.wait,
             args.exclusive,
-            hard_reset=args.hard_reset
+            hard_reset=args.hard_reset,
         )
     except PyboardError as er:
         print(er)
