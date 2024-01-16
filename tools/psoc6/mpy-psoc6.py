@@ -570,6 +570,14 @@ def quick_start(board, version):
     wait_user_termination()
 
 
+def firmware_deploy(board, hex_file):
+    openocd_download_install()
+    openocd_board_conf_download(board)
+    print(f"Deploying hex file {hex_file} ...")
+    openocd_program(board, hex_file)
+    print(colour_str_success(f"Firmware {hex_file} deployed successfully"))
+
+
 def clean_tool_downloads():
     fwloader_remove()
     openocd_remove()
@@ -587,9 +595,7 @@ def parser():
         device_setup(args.board, args.version, args.skip_fw_update, args.q)
 
     def parser_firmware_deploy(args):
-        openocd_download_install()
-        openocd_board_conf_download(args.board)
-        openocd_program(args.board, args.hexfile)
+        firmware_deploy(args.board, args.hexfile)
 
     def parser_device_erase(args):
         device_erase(args.board, args.q)
