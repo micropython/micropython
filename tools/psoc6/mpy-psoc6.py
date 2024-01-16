@@ -16,15 +16,15 @@ def colour_str_success(msg):
 
 
 def colour_str_error(msg):
-    green_str_start = "\x1b[1;31;40m"
+    red_str_start = "\x1b[1;31;40m"
     str_color_end = "\x1b[0m"
-    return green_str_start + msg + str_color_end
+    return red_str_start + msg + str_color_end
 
 
 def colour_str_highlight(msg):
-    green_str_start = "\x1b[1;35;40m"
+    purple_str_start = "\x1b[1;35;40m"
     str_color_end = "\x1b[0m"
-    return green_str_start + msg + str_color_end
+    return purple_str_start + msg + str_color_end
 
 
 def set_environment():
