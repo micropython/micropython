@@ -78,6 +78,27 @@ struct keycode_mapper {
 #define CURSOR_INS "\e[2~"
 #define CURSOR_DEL "\e[3~"
 
+// https://aperiodic.net/phil/archives/Geekery/term-function-keys/
+#define F1      "\eOP"
+#define F2      "\eOQ"
+#define F3      "\eOR"
+#define F4      "\eOS"
+#define F5      "\e[15~"
+#define F6      "\e[17~"
+#define F7      "\e[18~"
+#define F8      "\e[19~"
+#define F9      "\e[20~"
+#define F10     "\e[21~"
+#define F11     "\e[23~"
+#define F12     "\e[24~"
+#define PRINT_SCREEN     "\e[i"
+#define CTRL_UP "\e[1;5A"
+#define CTRL_DOWN "\e[1;5B"
+#define CTRL_RIGHT "\e[1;5C"
+#define CTRL_LEFT "\e[1;5D"
+
+
+
 STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_A, HID_KEY_Z, 'a', 0, NULL},
 
@@ -90,13 +111,46 @@ STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_ENTER, HID_KEY_SLASH, 0, FLAG_SHIFT, "\n\x1b\177\t _+{}|~:\"~<>?" },
     { HID_KEY_ENTER, HID_KEY_SLASH, 0, 0, "\r\x1b\10\t -=[]\\#;'`,./" },
 
-    { HID_KEY_F1, HID_KEY_F1, 0x1e, 0, }, // help key on xerox 820 kbd
+    // { HID_KEY_F1, HID_KEY_F1, 0x1e, 0, }, // help key on xerox 820 kbd 
 
     { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, FLAG_NUMLOCK | FLAG_STRING,
       "/\0" "*\0" "-\0" "+\0" "\n\0" CURSOR_END SEP CURSOR_DOWN SEP CURSOR_PGDN SEP CURSOR_LEFT SEP NOTHING SEP CURSOR_RIGHT SEP CURSOR_HOME SEP CURSOR_UP SEP CURSOR_PGDN SEP CURSOR_INS SEP CURSOR_DEL},
     { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, 0, "/*-+\n1234567890." },
 
-    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_UP, 0, FLAG_STRING, CURSOR_RIGHT SEP CURSOR_LEFT SEP CURSOR_DOWN SEP CURSOR_UP },
+    // { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_UP, 0, FLAG_STRING, CURSOR_RIGHT SEP CURSOR_LEFT SEP CURSOR_DOWN SEP CURSOR_UP },
+    { HID_KEY_PAUSE, HID_KEY_PAUSE, 0x1a, 0, },
+    { HID_KEY_PAGE_DOWN, HID_KEY_PAGE_DOWN, 0, FLAG_STRING, CURSOR_PGDN },
+    { HID_KEY_PAGE_UP, HID_KEY_PAGE_UP, 0, FLAG_STRING, CURSOR_PGUP },
+    { HID_KEY_HOME, HID_KEY_HOME, 0, FLAG_STRING, CURSOR_HOME },
+    { HID_KEY_END, HID_KEY_END, 0, FLAG_STRING, CURSOR_END },
+    { HID_KEY_INSERT, HID_KEY_INSERT, 0, FLAG_STRING, CURSOR_INS },
+    { HID_KEY_DELETE, HID_KEY_DELETE, 0, FLAG_STRING, CURSOR_DEL },
+
+    { HID_KEY_F1, HID_KEY_F1, 0, FLAG_STRING, F1 },
+    { HID_KEY_F2, HID_KEY_F2, 0, FLAG_STRING, F2 },
+    { HID_KEY_F3, HID_KEY_F3, 0, FLAG_STRING, F3 },
+    { HID_KEY_F4, HID_KEY_F4, 0, FLAG_STRING, F4 },
+    { HID_KEY_F5, HID_KEY_F5, 0, FLAG_STRING, F5 },
+    { HID_KEY_F6, HID_KEY_F6, 0, FLAG_STRING, F6 },
+    { HID_KEY_F7, HID_KEY_F7, 0, FLAG_STRING, F7 },
+    { HID_KEY_F8, HID_KEY_F8, 0, FLAG_STRING, F8 },
+    { HID_KEY_F9, HID_KEY_F9, 0, FLAG_STRING, F9 },
+    { HID_KEY_F10, HID_KEY_F10, 0, FLAG_STRING, F10 },
+    { HID_KEY_F11, HID_KEY_F11, 0, FLAG_STRING, F11 },
+    { HID_KEY_F12, HID_KEY_F12, 0, FLAG_STRING, F12 },
+    { HID_KEY_PRINT_SCREEN, HID_KEY_PRINT_SCREEN, 0, FLAG_STRING, PRINT_SCREEN },
+    
+
+    { HID_KEY_ARROW_UP, HID_KEY_ARROW_UP, 0 , FLAG_STRING+FLAG_CTRL,CTRL_UP  },
+    { HID_KEY_ARROW_DOWN, HID_KEY_ARROW_DOWN, 0 , FLAG_STRING+FLAG_CTRL, CTRL_DOWN },
+    { HID_KEY_ARROW_LEFT, HID_KEY_ARROW_LEFT, 0 , FLAG_STRING+FLAG_CTRL, CTRL_LEFT },
+    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_RIGHT, 0 , FLAG_STRING+FLAG_CTRL, CTRL_RIGHT},
+    { HID_KEY_ARROW_UP, HID_KEY_ARROW_UP, 0 , FLAG_STRING,CURSOR_UP  },
+    { HID_KEY_ARROW_DOWN, HID_KEY_ARROW_DOWN, 0 , FLAG_STRING, CURSOR_DOWN },
+    { HID_KEY_ARROW_LEFT, HID_KEY_ARROW_LEFT, 0 , FLAG_STRING, CURSOR_LEFT },
+    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_RIGHT, 0 , FLAG_STRING, CURSOR_RIGHT},
+
+
 
 };
 
@@ -243,6 +297,9 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 if (mapper->flags & FLAG_CTRL && !ctrl) {
                     continue;
                 }
+                if (!(mapper->flags & FLAG_CTRL) && ctrl) {
+                    continue;
+                }                
                 if (mapper->flags & FLAG_STRING) {
                     const char *msg = skip_nuls(mapper->data, keycode - mapper->first);
                     send_bufz(msg);
