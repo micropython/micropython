@@ -58,7 +58,7 @@ const mp_print_t mp_sys_stdout_print = {&mp_sys_stdout_obj, mp_stream_write_adap
 #endif
 
 // version - Python language version that this implementation conforms to, as a string
-STATIC MP_DEFINE_STR_OBJ(mp_sys_version_obj, "3.4.0; " MICROPY_FULL_VERSION_INFO);
+STATIC const MP_DEFINE_STR_OBJ(mp_sys_version_obj, "3.4.0; " MICROPY_FULL_VERSION_INFO);
 
 // version_info - Python language version that this implementation conforms to, as a tuple of ints
 #define I(n) MP_OBJ_NEW_SMALL_INT(n)
