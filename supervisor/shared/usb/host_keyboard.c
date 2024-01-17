@@ -110,7 +110,7 @@ STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_ENTER, HID_KEY_SLASH, 0, FLAG_SHIFT, "\n\x1b\177\t _+{}|~:\"~<>?" },
     { HID_KEY_ENTER, HID_KEY_SLASH, 0, 0, "\r\x1b\10\t -=[]\\#;'`,./" },
 
-    // { HID_KEY_F1, HID_KEY_F1, 0x1e, 0, }, // help key on xerox 820 kbd 
+    // { HID_KEY_F1, HID_KEY_F1, 0x1e, 0, }, // help key on xerox 820 kbd
 
     { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, FLAG_NUMLOCK | FLAG_STRING,
       "/\0" "*\0" "-\0" "+\0" "\n\0" CURSOR_END SEP CURSOR_DOWN SEP CURSOR_PGDN SEP CURSOR_LEFT SEP NOTHING SEP CURSOR_RIGHT SEP CURSOR_HOME SEP CURSOR_UP SEP CURSOR_PGDN SEP CURSOR_INS SEP CURSOR_DEL},
