@@ -35,7 +35,7 @@ jobs:
 
     - name: Cached ESP-IDF install
       id: cache_esp_idf
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ./esp-idf/
