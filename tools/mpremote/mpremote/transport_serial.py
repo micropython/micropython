@@ -59,7 +59,14 @@ def reraise_filesystem_error(e, info):
 
 
 class SerialTransport(Transport):
-    def __init__(self, device, baudrate=115200, wait=0, exclusive=True):
+    def __init__(
+        self,
+        device,
+        baudrate=115200,
+        wait=0,
+        exclusive=True,
+        hard_reset=False,
+    ):
         self.in_raw_repl = False
         self.use_raw_paste = True
         self.device_name = device
@@ -90,7 +97,30 @@ class SerialTransport(Transport):
                         self.serial.rts = False  # RTS False = EN High = MCU enabled
                     self.serial.open()
                 else:
-                    self.serial = serial.Serial(device, **serial_kwargs)
+                    # Must not put device in .Serial(), else rts locks up ESP8266/ESP32
+                    self.serial = serial.Serial()
+                    self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
+                    self.serial.rts = False  # RTS False = EN High = MCU enabled
+                    self.serial.port = device
+                    self.serial.baudrate = serial_kwargs["baudrate"]
+                    # Do not use hardware flow control (rts used for MCU reset)
+                    self.serial.rtscts = 0
+                    # Do not use hardware flow control (dtr used for gpio0)
+                    self.serial.dsrdtr = 0
+                    self.serial.inter_byte_timeout = serial_kwargs["interCharTimeout"]
+                    if "exclusive" in serial_kwargs:
+                        self.serial.exclusive = serial_kwargs["exclusive"]
+                    self.serial.open()
+
+                    if hard_reset:
+                        # pause ( the above open() only just pulled the line low )
+                        time.sleep(0.2)
+                        # this is reset (setting this "high" resets MCU boards that use RTS/CTS for flashing)
+                        self.serial.rts = True
+                        time.sleep(0.2)
+                        self.serial.rts = False
+                        # must wait for the reset, otherwise subsequent commands (the ctrl-A) get lost
+                        time.sleep(2.0)
                 break
             except OSError:
                 if wait == 0:
