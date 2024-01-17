@@ -307,7 +307,7 @@ class Pyboard:
                             self.serial.rts = False  # RTS False = EN High = MCU enabled
                         self.serial.open()
                     else:
-                        # Must not put device in .Serial(), else rts locks up ESP8266/ESP32
+                        # Must not put device in .Serial(), else RTS line locks up ESP8266/ESP32 
                         self.serial = serial.Serial()
                         self.serial.dtr = False  # DTR False = gpio0 High = Normal boot
                         self.serial.rts = False  # RTS False = EN High = MCU enabled
