@@ -402,7 +402,7 @@ void dcd_edpt_clear_stall(uint8_t rhport, uint8_t ep_addr)
     _dcd_cmd_wait(ep, CMDTYP_DEPCSTALL, 0);
 }
 
-void USB_IRQHandler(void)
+MP_WEAK void USB_IRQHandler(void)
 {
     dcd_int_handler(TUD_OPT_RHPORT);
 }
