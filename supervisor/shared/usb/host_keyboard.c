@@ -78,6 +78,7 @@ struct keycode_mapper {
 #define CURSOR_INS "\e[2~"
 #define CURSOR_DEL "\e[3~"
 
+//https://learn.microsoft.com/ru-ru/windows/console/console-virtual-terminal-sequences
 // https://aperiodic.net/phil/archives/Geekery/term-function-keys/
 #define F1      "\eOP"
 #define F2      "\eOQ"
@@ -96,8 +97,6 @@ struct keycode_mapper {
 #define CTRL_DOWN "\e[1;5B"
 #define CTRL_RIGHT "\e[1;5C"
 #define CTRL_LEFT "\e[1;5D"
-
-
 
 STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_A, HID_KEY_Z, 'a', 0, NULL},
