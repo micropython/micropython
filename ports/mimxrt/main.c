@@ -34,8 +34,8 @@
 #include "shared/runtime/gchelper.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "ticks.h"
-#include "tusb.h"
 #include "led.h"
 #include "pendsv.h"
 #include "modmachine.h"
@@ -63,7 +63,6 @@ void board_init(void);
 int main(void) {
     board_init();
     ticks_init();
-    tusb_init();
     pendsv_init();
 
     #if MICROPY_PY_LWIP
@@ -115,6 +114,9 @@ int main(void) {
 
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
+
+        mp_usbd_init();
+
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
         }

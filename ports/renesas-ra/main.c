@@ -36,6 +36,7 @@
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
+#include "shared/tinyusb/mp_usbd.h"
 #include "lib/oofatfs/ff.h"
 #include "lib/littlefs/lfs1.h"
 #include "lib/littlefs/lfs1_util.h"
@@ -63,7 +64,6 @@
 #include "usrsw.h"
 #include "rtc.h"
 #include "storage.h"
-#include "tusb.h"
 #if MICROPY_PY_LWIP
 #include "lwip/init.h"
 #include "lwip/apps/mdns.h"
@@ -270,10 +270,6 @@ int main(void) {
     state.reset_mode = 1;
     state.log_soft_reset = false;
 
-    #if MICROPY_HW_ENABLE_USBDEV
-    tusb_init();
-    #endif
-
     #if MICROPY_PY_BLUETOOTH
     mp_bluetooth_hci_init();
     #endif
@@ -366,13 +362,19 @@ soft_reset:
     #endif
 
     // Run boot.py (or whatever else a board configures at this stage).
-    if (MICROPY_BOARD_RUN_BOOT_PY(&state) == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
-        goto soft_reset_exit;
-    }
+    int boot_res = MICROPY_BOARD_RUN_BOOT_PY(&state);
 
     // Now we initialise sub-systems that need configuration from boot.py,
     // or whose initialisation can be safely deferred until after running
     // boot.py.
+
+    #if MICROPY_HW_ENABLE_USBDEV
+    mp_usbd_init();
+    #endif
+
+    if (boot_res == BOARDCTRL_GOTO_SOFT_RESET_EXIT) {
+        goto soft_reset_exit;
+    }
 
     // At this point everything is fully configured and initialised.
 
