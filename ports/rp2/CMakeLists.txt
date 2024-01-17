@@ -129,6 +129,7 @@ set(MICROPY_SOURCE_PORT
     mphalport.c
     mpnetworkport.c
     mpthreadport.c
+    mutex_extra.c
     pendsv.c
     rp2_flash.c
     rp2_pio.c

@@ -27,13 +27,15 @@ import pyboard
 
 if os.name == "nt":
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3.exe")
-    MICROPYTHON = os.getenv(
-        "MICROPY_MICROPYTHON", test_dir + "/../ports/windows/build-standard/micropython.exe"
+    MICROPYTHON = os.path.abspath(
+        os.getenv(
+            "MICROPY_MICROPYTHON", test_dir + "/../ports/windows/build-standard/micropython.exe"
+        )
     )
 else:
     CPYTHON3 = os.getenv("MICROPY_CPYTHON3", "python3")
-    MICROPYTHON = os.getenv(
-        "MICROPY_MICROPYTHON", test_dir + "/../ports/unix/build-standard/micropython"
+    MICROPYTHON = os.path.abspath(
+        os.getenv("MICROPY_MICROPYTHON", test_dir + "/../ports/unix/build-standard/micropython")
     )
 
 # For diff'ing test output
@@ -155,6 +157,7 @@ class PyInstance:
 class PyInstanceSubProcess(PyInstance):
     def __init__(self, argv, env=None):
         self.argv = argv
+        self.cwd = None
         self.env = {n: v for n, v in (i.split("=") for i in env)} if env else None
         self.popen = None
         self.finished = True
@@ -163,8 +166,9 @@ class PyInstanceSubProcess(PyInstance):
         return self.argv[0].rsplit("/")[-1]
 
     def prepare_script_from_file(self, filename, prepend, append):
-        # Make tests run in an isolated environment (i.e. `import io` would
-        # otherwise get the `tests/io` directory).
+        # Make tests run in the directory of the test file, and in an isolated environment
+        # (i.e. `import io` would otherwise get the `tests/io` directory).
+        self.cwd = os.path.dirname(filename)
         remove_cwd_from_sys_path = b"import sys\nsys.path.remove('')\n\n"
         return remove_cwd_from_sys_path + super().prepare_script_from_file(
             filename, prepend, append
@@ -179,6 +183,7 @@ class PyInstanceSubProcess(PyInstance):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 input=script,
+                cwd=self.cwd,
                 env=self.env,
             )
             output = p.stdout
@@ -192,6 +197,7 @@ class PyInstanceSubProcess(PyInstance):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
+            cwd=self.cwd,
             env=self.env,
         )
         self.finished = False

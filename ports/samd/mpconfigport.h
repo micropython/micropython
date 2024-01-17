@@ -40,25 +40,18 @@
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
 
-// Compiler configuration
-#define MICROPY_COMP_CONST                  (1)
-
 // Python internal features
 #define MICROPY_ENABLE_GC                   (1)
-#define MICROPY_ENABLE_FINALISER            (1)
-#define MICROPY_KBD_EXCEPTION               (1)
-#define MICROPY_HELPER_REPL                 (1)
-#define MICROPY_REPL_AUTO_INDENT            (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ENABLE_SOURCE_LINE          (1)
-#define MICROPY_STREAMS_NON_BLOCK           (1)
+#define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
+#ifndef MICROPY_PY_BUILTINS_COMPLEX
+#define MICROPY_PY_BUILTINS_COMPLEX         (0)
+#endif
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_TERSE)
-#define MICROPY_PY_BUILTINS_HELP            (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT       samd_help_text
-#define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
 #define MICROPY_USE_INTERNAL_ERRNO          (1)
-#define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_STATIC_NODES      (1)
+
 #define MICROPY_HW_ENABLE_USBDEV            (1)
 #define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
 
@@ -71,22 +64,9 @@
 #ifndef MICROPY_HW_USB_DESC_STR_MAX
 #define MICROPY_HW_USB_DESC_STR_MAX (32)
 #endif
-
 #endif
 
-// Control over Python builtins
-#define MICROPY_PY_BUILTINS_BYTES_HEX       (1)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW      (1)
-#define MICROPY_PY_BUILTINS_INPUT           (1)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)
-#define MICROPY_PY_SYS                      (1)
 #define MICROPY_PY_SYS_PLATFORM             "samd"
-#define MICROPY_PY_SYS_EXIT                 (1)
-#define MICROPY_PY_SYS_STDFILES             (1)
-#define MICROPY_PY_SYS_MAXSIZE              (1)
-#define MICROPY_PY_IO                       (1)
-#define MICROPY_PY_IO_IOBASE                (1)
 
 // Extended modules
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
@@ -97,19 +77,9 @@
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER       (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
-#define MICROPY_PY_OS                       (1)
 #define MICROPY_PY_OS_INCLUDEFILE           "ports/samd/modos.c"
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_VFS                         (1)
-#define MICROPY_PY_JSON                     (1)
-#define MICROPY_PY_RE                       (1)
-#define MICROPY_PY_BINASCII                 (1)
-#define MICROPY_PY_UCTYPES                  (1)
-#define MICROPY_PY_HEAPQ                    (1)
-#define MICROPY_PY_RANDOM                   (1)
-#define MICROPY_PY_DEFLATE                  (1)
-#define MICROPY_PY_ASYNCIO                  (1)
-#define MICROPY_PY_MACHINE_RTC              (1)
 #ifndef MICROPY_PY_MACHINE_ADC
 #define MICROPY_PY_MACHINE_ADC              (1)
 #endif
@@ -151,8 +121,6 @@
 #define MICROPY_PY_MACHINE_WDT              (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/samd/machine_wdt.c"
 #define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS   (1)
-#define MICROPY_PY_ONEWIRE                  (1)
-#define MICROPY_PY_PLATFORM                 (1)
 #define MICROPY_PLATFORM_VERSION            "ASF4"
 
 #define MP_STATE_PORT MP_STATE_VM
@@ -191,6 +159,9 @@
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
+
+// Need an implementation of the log2 function which is not a macro.
+#define MP_NEED_LOG2 (1)
 
 // Need to provide a declaration/definition of alloca()
 #include <alloca.h>

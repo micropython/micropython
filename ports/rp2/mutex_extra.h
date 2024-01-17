@@ -1,7 +1,9 @@
 /*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Renesas Electronics Corporation
+ * Copyright (c) 2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,31 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H
+#define MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H
 
-#ifndef RA_RA_TIMER_H_
-#define RA_RA_TIMER_H_
+#include "pico/mutex.h"
 
-#include <stdint.h>
+uint32_t mutex_enter_blocking_and_disable_interrupts(mutex_t *mtx);
+void mutex_exit_and_restore_interrupts(mutex_t *mtx, uint32_t save);
 
-void SysTick_Handler(void);
-uint32_t HAL_GetTick(void);
-
-#define DEF_CLKDEV    2
-#define TENUSEC_COUNT (PCLK / DEF_CLKDEV / 100000)
-#define MSEC_COUNT    (PCLK / DEF_CLKDEV / 100)
-
-typedef void (*AGT_TIMER_CB)(void *);
-
-void ra_agt_timer_set_callback(uint32_t ch, AGT_TIMER_CB cb, void *param);
-void ra_agt_int_isr0(void);
-void ra_agt_int_isr1(void);
-void ra_agt_timer_start(uint32_t ch);
-void ra_agt_timer_stop(uint32_t ch);
-void ra_agt_timer_set_freq(uint32_t ch, float freq);
-float ra_agt_timer_get_freq(uint32_t ch);
-void ra_agt_timer_init(uint32_t ch, float freq);
-void ra_agt_timer_deinit(uint32_t ch);
-__WEAK void agt_int_isr(void);
-uint32_t mtick();
-
-#endif /* RA_RA_TIMER_H_ */
+#endif // MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H

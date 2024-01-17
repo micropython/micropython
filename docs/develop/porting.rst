@@ -83,7 +83,7 @@ The basic MicroPython firmware is implemented in the main port file, e.g ``main.
    }
 
    // There is no filesystem so opening a file raises an exception.
-   mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+   mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
        mp_raise_OSError(MP_ENOENT);
    }
 

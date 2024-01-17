@@ -1,2 +1,2 @@
 pyserial >= 3.3
-importlib_metadata >= 1.4
+importlib_metadata >= 1.4; python_version < "3.8"

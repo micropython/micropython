@@ -32,7 +32,7 @@ Methods
 
     The program is added to the instruction memory of this PIO instance. If the
     instruction memory already contains this program, then its offset is
-    re-used so as to save on instruction memory.
+    reused so as to save on instruction memory.
 
     - *freq* is the frequency in Hz to run the state machine at. Defaults to
       the system clock frequency.

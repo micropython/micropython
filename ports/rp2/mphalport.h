@@ -37,11 +37,34 @@
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 // Entering a critical section.
+#if MICROPY_PY_THREAD
 #define MICROPY_BEGIN_ATOMIC_SECTION()     mp_thread_begin_atomic_section()
 #define MICROPY_END_ATOMIC_SECTION(state)  mp_thread_end_atomic_section(state)
+#else
+#define MICROPY_BEGIN_ATOMIC_SECTION()     save_and_disable_interrupts()
+#define MICROPY_END_ATOMIC_SECTION(state)  restore_interrupts(state)
+#endif
 
 #define MICROPY_PY_PENDSV_ENTER   pendsv_suspend()
 #define MICROPY_PY_PENDSV_EXIT    pendsv_resume()
+
+// Prevent the "lwIP task" from running when unsafe to do so.
+#define MICROPY_PY_LWIP_ENTER   lwip_lock_acquire();
+#define MICROPY_PY_LWIP_REENTER lwip_lock_acquire();
+#define MICROPY_PY_LWIP_EXIT    lwip_lock_release();
+
+// Port level Wait-for-Event macro
+//
+// Do not use this macro directly, include py/runtime.h and
+// call mp_event_wait_indefinite() or mp_event_wait_ms(timeout)
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) \
+    do {                                 \
+        if ((TIMEOUT_MS) < 0) { \
+            __wfe(); \
+        } else { \
+            best_effort_wfe_or_timeout(make_timeout_time_ms(TIMEOUT_MS)); \
+        } \
+    } while (0)
 
 extern int mp_interrupt_char;
 extern ringbuf_t stdin_ringbuf;

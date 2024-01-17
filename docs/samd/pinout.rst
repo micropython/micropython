@@ -870,7 +870,7 @@ Adafruit ItsyBitsy M4 Express :ref:`samd51_pinout_table`.
 
 The default devices at the board are:
 
-- UART 1 at pins PB23/PB22, labelled RXD/TXD
+- UART 2 at pins PA13/PA12, labelled RXD/TXD
 - I2C 5 at pins PA22/PA23, labelled SDA/SCL
 - SPI 4 at pins PB12/PB11/PB13, labelled MOSI, MISO and SCK
 - DAC output on pins PA02 and PA05, labelled A0 and A4
@@ -884,36 +884,36 @@ The tables shown above were created with small a Python script running on the ta
   from machine import Pin
   import os
 
-  def print_entry(e, txt):
+  def print_item(e, txt):
       print(txt, end=": ")
       if e == 255:
           print(" - ", end="")
       else:
           print("%d/%d" % (e >> 4, e & 0x0f), end="")
 
-  def print_pininfo(pin, info):
-      print("%3d" % pin, end=" ")
-      print("P%c%02d" % ("ABCD"[pin // 32], pin % 32), end="")
-      print(" %12s" % info[0], end="")
+  def print_pininfo(pin_id, name, info):
+
+      print("%3d" % pin_id, end=" ")
+      print("%4s %12s" % (info[0], name), end="")
       print(" IRQ:%2s" % (info[1] if info[1] != 255 else "-"), end="")
       print(" ADC0:%2s" % (info[2] if info[2] != 255 else "-"), end="")
       if len(info) == 7:
-          print_entry(info[3], " Serial1")
-          print_entry(info[4], " Serial2")
-          print_entry(info[5], " PWM1" if (info[5] >> 4) < 3 else "   TC")
-          print_entry(info[6], " PWM2")
+          print_item(info[3], " Serial1")
+          print_item(info[4], " Serial2")
+          print_item(info[5], " PWM1" if (info[5] >> 4) < 3 else "   TC")
+          print_item(info[6], " PWM2")
       else:
           print(" ADC1:%2s" % (info[3] if info[3] != 255 else "-"), end="")
-          print_entry(info[4], " Serial1")
-          print_entry(info[5], " Serial2")
-          print_entry(info[6], " TC")
-          print_entry(info[7], " PWM1")
-          print_entry(info[8], " PWM2")
+          print_item(info[4], " Serial1")
+          print_item(info[5], " Serial2")
+          print_item(info[6], " TC")
+          print_item(info[7], " PWM1")
+          print_item(info[8], " PWM2")
       print()
 
   def tblkey(i):
-      name = i[1][0]
-      if name != "-":
+      name = i[1]
+      if name != "":
           if len(name) < 3:
               return " " + name
           else:
@@ -921,17 +921,25 @@ The tables shown above were created with small a Python script running on the ta
       else:
           return "zzzzzzz%03d" % i[0]
 
-  def table(num = 127):
+  def table(num=127, sort=True):
       pintbl = []
+      inv_bd = {v: k for k, v in Pin.board.__dict__.items()}
       for i in range(num):
           try:
-              pintbl.append((i, pininfo(i)))
+              p = Pin(i)
+              pi = pininfo(p)
+              if p in inv_bd.keys():
+                  name = inv_bd[p]
+              else:
+                  name = ""
+              pintbl.append((i, name, pininfo(i)))
           except:
               pass
               # print("not defined")
 
-      pintbl.sort(key=tblkey)
+      if sort:
+          pintbl.sort(key=tblkey)
       for item in pintbl:
-          print_pininfo(item[0], item[1])
+          print_pininfo(item[0], item[1], item[2])
 
   table()

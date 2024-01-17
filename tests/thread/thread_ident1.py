@@ -5,7 +5,12 @@
 import _thread
 
 
+# Initialise variables (also preallocate their spot in the globals dict so the
+# globals dict is not resized while threads are running).
 tid = None
+tid_main = None
+new_tid = None
+finished = False
 
 
 def thread_entry():
@@ -19,7 +24,6 @@ def thread_entry():
 tid_main = _thread.get_ident()
 print("main", type(tid_main) == int, tid_main != 0)
 
-finished = False
 new_tid = _thread.start_new_thread(thread_entry, ())
 
 while not finished:

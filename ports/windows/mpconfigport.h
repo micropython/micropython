@@ -224,15 +224,6 @@ typedef long mp_off_t;
 
 #include "realpath.h"
 #include "init.h"
-#include "sleep.h"
-
-#if MICROPY_ENABLE_SCHEDULER
-// Use minimum 1mSec sleep to make sure there is effectively a wait period:
-// something like usleep(500) truncates and ends up calling Sleep(0).
-#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) msec_sleep(MAX(1.0, (double)(TIMEOUT_MS)))
-#else
-#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) /* No-op */
-#endif
 
 #ifdef __GNUC__
 #define MP_NOINLINE __attribute__((noinline))

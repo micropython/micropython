@@ -279,10 +279,10 @@ int usleep(__int64 usec) {
 #endif
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    #ifdef MICROPY_EVENT_POLL_HOOK
+    #if MICROPY_ENABLE_SCHEDULER
     mp_uint_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     #else
     msec_sleep((double)ms);

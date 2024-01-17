@@ -86,7 +86,7 @@ STATIC const uint32_t rp2_dma_ctrl_field_count = MP_ARRAY_SIZE(rp2_dma_ctrl_fiel
 STATIC uint32_t rp2_dma_register_value_from_obj(mp_obj_t o, int reg_type) {
     if (reg_type == REG_TYPE_ADDR_READ || reg_type == REG_TYPE_ADDR_WRITE) {
         mp_buffer_info_t buf_info;
-        mp_uint_t flags = MP_BUFFER_READ;
+        mp_uint_t flags = (reg_type == REG_TYPE_ADDR_READ) ? MP_BUFFER_READ : MP_BUFFER_WRITE;
         if (mp_get_buffer(o, &buf_info, flags)) {
             return (uint32_t)buf_info.buf;
         }
