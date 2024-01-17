@@ -48,6 +48,10 @@
 #include "shared-bindings/storage/__init__.h"
 #endif
 
+#if CIRCUITPY_USB_UVC
+#include "shared-module/uvc/__init__.h"
+#endif
+
 #include "shared-bindings/microcontroller/Processor.h"
 
 
@@ -176,6 +180,11 @@ static bool usb_build_configuration_descriptor(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_UVC
+    if (usb_uvc_enabled()) {
+        total_descriptor_length += usb_uvc_descriptor_length();
+    }
+    #endif
 
     // Now we know how big the configuration descriptor will be, so we can allocate space for it.
     configuration_descriptor =
@@ -256,6 +265,12 @@ static bool usb_build_configuration_descriptor(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_UVC
+    if (usb_uvc_enabled()) {
+        descriptor_buf_remaining += usb_uvc_add_descriptor(
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
+    }
+    #endif
     // Now we know how many interfaces have been used.
     configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = descriptor_counts.current_interface;
 
