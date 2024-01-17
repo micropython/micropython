@@ -34,8 +34,6 @@ uint32_t HAL_GetTick(void);
 #define TENUSEC_COUNT (PCLK / DEF_CLKDEV / 100000)
 #define MSEC_COUNT    (PCLK / DEF_CLKDEV / 100)
 
-__attribute__((naked)) void min_delay(__attribute__((unused)) uint32_t loop_cnt);
-
 typedef void (*AGT_TIMER_CB)(void *);
 
 void ra_agt_timer_set_callback(uint32_t ch, AGT_TIMER_CB cb, void *param);

@@ -36,6 +36,12 @@
 #define MICROPY_END_ATOMIC_SECTION(x) (void)x; mp_thread_unix_end_atomic_section()
 #endif
 
+// In lieu of a WFI(), slow down polling from being a tight loop.
+//
+// Note that we don't delay for the full TIMEOUT_MS, as execution
+// can't be woken from the delay.
+#define MICROPY_INTERNAL_WFE(TIMEOUT_MS) mp_hal_delay_us(500)
+
 void mp_hal_set_interrupt_char(char c);
 
 #define mp_hal_stdio_poll unused // this is not implemented, nor needed

@@ -221,10 +221,11 @@ int mp_hal_stdin_rx_chr(void) {
     }
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     MP_THREAD_GIL_EXIT();
-    write(STDOUT_FILENO, str, len);
+    int ret = write(STDOUT_FILENO, str, len);
     MP_THREAD_GIL_ENTER();
+    return ret < 0 ? 0 : ret; // return the number of bytes written, so in case of an error in the syscall, return 0
 }
 
 void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {
@@ -278,10 +279,10 @@ int usleep(__int64 usec) {
 #endif
 
 void mp_hal_delay_ms(mp_uint_t ms) {
-    #ifdef MICROPY_EVENT_POLL_HOOK
+    #if MICROPY_ENABLE_SCHEDULER
     mp_uint_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
     #else
     msec_sleep((double)ms);

@@ -140,10 +140,15 @@ void mp_hal_delay_ms(mp_uint_t delay) {
     }
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
-    mp_os_dupterm_tx_strn(str, len);
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
+    mp_uint_t ret = len;
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        ret = dupterm_res;
+    }
     // and also to telnet
     telnet_tx_strn(str, len);
+    return ret;
 }
 
 int mp_hal_stdin_rx_chr(void) {

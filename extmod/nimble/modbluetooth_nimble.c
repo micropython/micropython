@@ -53,10 +53,6 @@
 #include "nimble/host/src/ble_hs_hci_priv.h"
 #endif
 
-#ifndef MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME
-#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME "MPY NIMBLE"
-#endif
-
 #define DEBUG_printf(...) // printf("nimble: " __VA_ARGS__)
 
 #define ERRNO_BLUETOOTH_NOT_ACTIVE MP_ENODEV
@@ -349,9 +345,6 @@ STATIC void sync_cb(void) {
         rc = ble_att_set_preferred_mtu(MP_BLUETOOTH_DEFAULT_ATTR_LEN + 3);
         assert(rc == 0);
     }
-
-    DEBUG_printf("sync_cb: Setting device name\n");
-    ble_svc_gap_device_name_set(MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME);
 
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_ACTIVE;
 }

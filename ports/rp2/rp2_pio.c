@@ -809,6 +809,23 @@ STATIC mp_obj_t rp2_state_machine_tx_fifo(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_tx_fifo_obj, rp2_state_machine_tx_fifo);
 
+// Buffer protocol implementation for StateMachine.
+// The buffer represents one of the FIFO ports of the state machine. Note that a different
+// pointer is returned depending on if this is for reading or writing.
+STATIC mp_int_t rp2_state_machine_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(o_in);
+
+    bufinfo->len = 4;
+    bufinfo->typecode = 'I';
+
+    if (flags & MP_BUFFER_WRITE) {
+        bufinfo->buf = (void *)&self->pio->txf[self->sm];
+    } else {
+        bufinfo->buf = (void *)&self->pio->rxf[self->sm];
+    }
+    return 0;
+}
+
 // StateMachine.irq(handler=None, trigger=0|1, hard=False)
 STATIC mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger, ARG_hard };
@@ -884,6 +901,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     make_new, rp2_state_machine_make_new,
     print, rp2_state_machine_print,
+    buffer, rp2_state_machine_get_buffer,
     locals_dict, &rp2_state_machine_locals_dict
     );
 

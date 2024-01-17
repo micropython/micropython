@@ -53,6 +53,11 @@ void mp_hal_set_interrupt_char(int c); // -1 to disable
 #define MICROPY_PY_PENDSV_REENTER atomic_state = raise_irq_pri(IRQ_PRI_PENDSV);
 #define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state);
 
+// Prevent the "lwIP task" from running.
+#define MICROPY_PY_LWIP_ENTER   MICROPY_PY_PENDSV_ENTER
+#define MICROPY_PY_LWIP_REENTER MICROPY_PY_PENDSV_REENTER
+#define MICROPY_PY_LWIP_EXIT    MICROPY_PY_PENDSV_EXIT
+
 // Timing functions.
 
 #if __CORTEX_M == 0

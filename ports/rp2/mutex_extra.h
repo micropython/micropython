@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013, 2014 Damien P. George and 2017, 2018 Rami Ali
+ * Copyright (c) 2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H
+#define MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H
 
-#include "py/obj.h"
-#include "shared/runtime/interrupt_char.h"
+#include "pico/mutex.h"
 
-#define mp_hal_stdin_rx_chr() (0)
-mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len);
+uint32_t mutex_enter_blocking_and_disable_interrupts(mutex_t *mtx);
+void mutex_exit_and_restore_interrupts(mutex_t *mtx, uint32_t save);
 
-void mp_hal_delay_ms(mp_uint_t ms);
-void mp_hal_delay_us(mp_uint_t us);
-mp_uint_t mp_hal_ticks_ms(void);
-mp_uint_t mp_hal_ticks_us(void);
-mp_uint_t mp_hal_ticks_cpu(void);
-
-int mp_hal_get_interrupt_char(void);
-
-#if MICROPY_VFS_POSIX
-
-#include <errno.h>
-
-// This macro is used to implement PEP 475 to retry specified syscalls on EINTR
-#define MP_HAL_RETRY_SYSCALL(ret, syscall, raise) \
-    { \
-        for (;;) { \
-            ret = syscall; \
-            if (ret == -1) { \
-                int err = errno; \
-                if (err == EINTR) { \
-                    mp_handle_pending(true); \
-                    continue; \
-                } \
-                raise; \
-            } \
-            break; \
-        } \
-    }
-
-#endif
+#endif // MICROPY_INCLUDED_RP2_MUTEX_EXTRA_H

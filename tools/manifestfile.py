@@ -194,6 +194,8 @@ class ManifestFile:
         self._visited = set()
         # Stack of metadata for each level.
         self._metadata = [ManifestPackageMetadata()]
+        # Registered external libraries.
+        self._libraries = {}
 
     def _resolve_path(self, path):
         # Convert path to an absolute path, applying variable substitutions.
@@ -208,6 +210,7 @@ class ManifestFile:
             "metadata": self.metadata,
             "include": self.include,
             "require": self.require,
+            "add_library": self.add_library,
             "package": self.package,
             "module": self.module,
             "options": IncludeOptions(**kwargs),
@@ -388,14 +391,25 @@ class ManifestFile:
             if is_require:
                 self._metadata.pop()
 
-    def require(self, name, version=None, unix_ffi=False, pypi=None, **kwargs):
+    def _require_from_path(self, library_path, name, version, extra_kwargs):
+        for root, dirnames, filenames in os.walk(library_path):
+            if os.path.basename(root) == name and "manifest.py" in filenames:
+                self.include(root, is_require=True, **extra_kwargs)
+                return True
+        return False
+
+    def require(self, name, version=None, unix_ffi=False, pypi=None, library=None, **kwargs):
         """
-        Require a module by name from micropython-lib.
+        Require a package by name from micropython-lib.
 
         Optionally specify unix_ffi=True to use a module from the unix-ffi directory.
 
         Optionally specify pipy="package-name" to indicate that this should
         use the named package from PyPI when building for CPython.
+
+        Optionally specify library="name" to reference a package from a
+        library that has been previously registered with add_library(). Otherwise
+        micropython-lib will be used.
         """
         self._metadata[-1].check_initialised(self._mode)
 
@@ -406,26 +420,45 @@ class ManifestFile:
             self._pypi_dependencies.append(pypi)
             return
 
-        if self._path_vars["MPY_LIB_DIR"]:
+        if library is not None:
+            # Find package in external library.
+            if library not in self._libraries:
+                raise ValueError("Unknown library '{}' for require('{}').".format(library, name))
+            library_path = self._libraries[library]
+            # Search for {library_path}/**/{name}/manifest.py.
+            if not self._require_from_path(library_path, name, version, kwargs):
+                raise ValueError(
+                    "Package '{}' not found in external library '{}' ({}).".format(
+                        name, library, library_path
+                    )
+                )
+        elif self._path_vars["MPY_LIB_DIR"]:
+            # Find package in micropython-lib, in one of the three top-level directories.
             lib_dirs = ["micropython", "python-stdlib", "python-ecosys"]
             if unix_ffi:
-                # Search unix-ffi only if unix_ffi=True, and make unix-ffi modules
+                # Additionally search unix-ffi only if unix_ffi=True, and make unix-ffi modules
                 # take precedence.
                 lib_dirs = ["unix-ffi"] + lib_dirs
 
             for lib_dir in lib_dirs:
                 # Search for {lib_dir}/**/{name}/manifest.py.
-                for root, dirnames, filenames in os.walk(
-                    os.path.join(self._path_vars["MPY_LIB_DIR"], lib_dir)
+                if self._require_from_path(
+                    os.path.join(self._path_vars["MPY_LIB_DIR"], lib_dir), name, version, kwargs
                 ):
-                    if os.path.basename(root) == name and "manifest.py" in filenames:
-                        self.include(root, is_require=True, **kwargs)
-                        return
+                    return
 
-            raise ValueError("Library not found in local micropython-lib: {}".format(name))
+            raise ValueError("Package '{}' not found in local micropython-lib.".format(name))
         else:
             # TODO: HTTP request to obtain URLs from manifest.json.
             raise ValueError("micropython-lib not available for require('{}').", name)
+
+    def add_library(self, library, library_path):
+        """
+        Register the path to an external named library.
+
+        This allows require("name", library="library") to find packages in that library.
+        """
+        self._libraries[library] = self._resolve_path(library_path)
 
     def package(self, package_path, files=None, base_path=".", opt=None):
         """

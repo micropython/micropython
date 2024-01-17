@@ -94,8 +94,14 @@ void mp_hal_debug_str(const char *str) {
 }
 #endif
 
-void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    mp_os_dupterm_tx_strn(str, len);
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res < 0) {
+        // no outputs, nothing was written
+        return 0;
+    } else {
+        return dupterm_res;
+    }
 }
 
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {

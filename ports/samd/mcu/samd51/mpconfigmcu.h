@@ -10,23 +10,9 @@
 // Python internal features
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF  (1)
 
-#define MICROPY_FLOAT_IMPL              (MICROPY_FLOAT_IMPL_FLOAT)
-
-#ifndef MICROPY_PY_BUILTINS_COMPLEX
-#define MICROPY_PY_BUILTINS_COMPLEX     (0)
-#endif
-
-#ifndef MICROPY_PY_MATH
-#define MICROPY_PY_MATH                 (1)
-#define MP_NEED_LOG2                    (1)
-#endif
-
-#ifndef MICROPY_PY_CMATH
-#define MICROPY_PY_CMATH                (0)
-#endif
-
 #define MICROPY_PY_OS_SYNC              (1)
 #define MICROPY_PY_OS_URANDOM           (1)
+#define MICROPY_PY_ONEWIRE              (1)
 #define MICROPY_PY_RANDOM_SEED_INIT_FUNC (trng_random_u32())
 unsigned long trng_random_u32(void);
 

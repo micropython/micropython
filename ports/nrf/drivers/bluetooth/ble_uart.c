@@ -110,10 +110,11 @@ int mp_hal_stdin_rx_chr(void) {
     return (int)byte;
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     // Not connected: drop output
-    if (!ble_uart_enabled()) return;
+    if (!ble_uart_enabled()) return 0;
 
+    mp_uint_t ret = len;
     uint8_t *buf = (uint8_t *)str;
     size_t send_len;
 
@@ -134,6 +135,7 @@ void mp_hal_stdout_tx_strn(const char *str, size_t len) {
         len -= send_len;
         buf += send_len;
     }
+    return ret;
 }
 
 void ble_uart_tx_char(char c) {
