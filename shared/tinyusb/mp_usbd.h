@@ -28,6 +28,13 @@
 #define MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_H
 
 #include "py/obj.h"
+#include "tusb.h"
+
+static inline void mp_usbd_init(void) {
+    // Currently this is a thin wrapper around tusb_init(), however
+    // runtime USB support will require this to be extended.
+    tusb_init();
+}
 
 // Call this to explicitly run the TinyUSB device task.
 void mp_usbd_task(void);
