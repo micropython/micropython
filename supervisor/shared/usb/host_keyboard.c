@@ -78,7 +78,7 @@ struct keycode_mapper {
 #define CURSOR_INS "\e[2~"
 #define CURSOR_DEL "\e[3~"
 
-//https://learn.microsoft.com/ru-ru/windows/console/console-virtual-terminal-sequences
+// https://learn.microsoft.com/ru-ru/windows/console/console-virtual-terminal-sequences
 // https://aperiodic.net/phil/archives/Geekery/term-function-keys/
 #define F1      "\eOP"
 #define F2      "\eOQ"
@@ -138,7 +138,6 @@ STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_F11, HID_KEY_F11, 0, FLAG_STRING, F11 },
     { HID_KEY_F12, HID_KEY_F12, 0, FLAG_STRING, F12 },
     { HID_KEY_PRINT_SCREEN, HID_KEY_PRINT_SCREEN, 0, FLAG_STRING, PRINT_SCREEN },
-    
 
     { HID_KEY_ARROW_UP, HID_KEY_ARROW_UP, 0 , FLAG_STRING+FLAG_CTRL,CTRL_UP  },
     { HID_KEY_ARROW_DOWN, HID_KEY_ARROW_DOWN, 0 , FLAG_STRING+FLAG_CTRL, CTRL_DOWN },
@@ -148,8 +147,6 @@ STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_ARROW_DOWN, HID_KEY_ARROW_DOWN, 0 , FLAG_STRING, CURSOR_DOWN },
     { HID_KEY_ARROW_LEFT, HID_KEY_ARROW_LEFT, 0 , FLAG_STRING, CURSOR_LEFT },
     { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_RIGHT, 0 , FLAG_STRING, CURSOR_RIGHT},
-
-
 
 };
 
