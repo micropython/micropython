@@ -1040,7 +1040,7 @@ the last matching regex is used:
             elif args.target in ("renesas-ra"):
                 test_dirs += ("float", "inlineasm", "ports/renesas-ra")
             elif args.target == "rp2":
-                test_dirs += ("float", "stress", "inlineasm", "thread")
+                test_dirs += ("float", "stress", "inlineasm", "thread", "ports/rp2")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":
