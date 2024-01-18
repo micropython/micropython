@@ -45,8 +45,8 @@
 //|     """Convolve an image with a kernel
 //|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
-//|     according to the ``weights``. Then a scaling factor ``m`` and an
-//|     offset factor ``b`` are applied.
+//|     according to the ``weights``. Then a scaling factor ``mul`` and an
+//|     offset factor ``add`` are applied.
 //|
 //|     The ``weights`` must be a tuple of integers. The length of the tuple
 //|     must be the square of an odd number, usually 9 and sometimes 25.
