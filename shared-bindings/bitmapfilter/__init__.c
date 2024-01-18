@@ -27,6 +27,7 @@
 #include <math.h>
 
 #include "py/runtime.h"
+#include "py/objnamedtuple.h"
 #include "shared-bindings/displayio/Bitmap.h"
 #include "shared-bindings/displayio/Palette.h"
 #include "shared-bindings/bitmapfilter/__init__.h"
@@ -163,6 +164,81 @@ static mp_obj_t subscr(mp_obj_t o, int i) {
 static mp_float_t float_subscr(mp_obj_t o, int i) {
     return mp_obj_get_float(subscr(o, i));
 }
+
+//| ChannelScale = namedtuple("ChannelScale", ["r", "g", "b"])
+//| """A weight object to use with mix() that scales each channel
+//| independently."""
+static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_type = {
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelScale),
+    .n_fields = 3,
+    .fields = {
+        MP_QSTR_r,
+        MP_QSTR_g,
+        MP_QSTR_b,
+    },
+};
+//| ChannelScaleOffset = namedtuple("ChannelScale", ["r", "g", "b", "r_add", "g_add", "b_add"])
+//| """A weight object to use with mix() that scales each channel
+//| independently and adds an offset."""
+static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_offset_type = {
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelScaleOffset),
+    .n_fields = 6,
+    .fields = {
+        MP_QSTR_r,
+        MP_QSTR_g,
+        MP_QSTR_b,
+        MP_QSTR_r_add,
+        MP_QSTR_g_add,
+        MP_QSTR_b_add,
+    },
+};
+
+//| ChannelMixer = namedtuple(
+//|     "ChannelMixer", ["rr", "rg", "rb", "gr", "gg", "gb", "br", "bg", "bb"]
+//| )
+//| """A weight object to use with mix() that mixes in portions of each
+//| channel into every other channel. For instance ``rg`` gives the portion of the green channel to mix into red."""
+static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_type = {
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelMixer),
+    .n_fields = 9,
+    .fields = {
+        MP_QSTR_rr,
+        MP_QSTR_rg,
+        MP_QSTR_rb,
+        MP_QSTR_gr,
+        MP_QSTR_gg,
+        MP_QSTR_gb,
+        MP_QSTR_br,
+        MP_QSTR_bg,
+        MP_QSTR_bb,
+    },
+};
+
+//| ChannelMixerOffset = namedtuple(
+//|     "ChannelMixerOffset",
+//|     ["rr", "rg", "rb", "r_add", "gr", "gg", "gb", "g_add", "br", "bg", "bb", "b_add"],
+//| )
+//| """A weight object to use with mix() that mixes in portions of each
+//| channel into every other channel and adds an offset. For instance ``rg`` gives the portion of the green channel to mix into red."""
+//|
+static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelMixerOffset),
+    .n_fields = 9,
+    .fields = {
+        MP_QSTR_rr,
+        MP_QSTR_rg,
+        MP_QSTR_rb,
+        MP_QSTR_r_add,
+        MP_QSTR_gr,
+        MP_QSTR_gg,
+        MP_QSTR_gb,
+        MP_QSTR_g_add,
+        MP_QSTR_br,
+        MP_QSTR_bg,
+        MP_QSTR_bb,
+        MP_QSTR_b_add,
+    },
+};
 
 //| def mix(
 //|     bitmap: displayio.Bitmap, weights: Sequence[int], mask: displayio.Bitmap | None = None
@@ -429,6 +505,10 @@ STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_solarize), MP_ROM_PTR(&bitmapfilter_solarize_obj) },
     { MP_ROM_QSTR(MP_QSTR_false_color), MP_ROM_PTR(&bitmapfilter_false_color_obj) },
     { MP_ROM_QSTR(MP_QSTR_lookup), MP_ROM_PTR(&bitmapfilter_lookup_obj) },
+    { MP_ROM_QSTR(MP_QSTR_ChannelScale), MP_ROM_PTR(&bitmapfilter_channel_scale_type) },
+    { MP_ROM_QSTR(MP_QSTR_ChannelScaleOffset), MP_ROM_PTR(&bitmapfilter_channel_scale_offset_type) },
+    { MP_ROM_QSTR(MP_QSTR_ChannelMixer), MP_ROM_PTR(&bitmapfilter_channel_mixer_type) },
+    { MP_ROM_QSTR(MP_QSTR_ChannelMixerOffset), MP_ROM_PTR(&bitmapfilter_channel_mixer_offset_type) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);
 
