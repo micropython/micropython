@@ -168,10 +168,22 @@ static mp_float_t float_subscr(mp_obj_t o, int i) {
 }
 
 //| class ChannelScale:
-//|     """A weight object to use with mix()"""
+//|     """A weight object to use with mix() that scales each channel independently
+//|
+//|     This is useful for global contrast and brightness adjustment on a
+//|     per-component basis. For instance, to cut red contrast in half (while keeping the minimum value
+//|     as black or 0.0),
+//|
+//|     .. code-block:: python
+//|
+//|         reduce_red_contrast = bitmapfilter.ChannelScale(0.5, 1, 1)
+//|     """
 //|
 //|     def __init__(self, r: float, g: float, b: float) -> None:
-//|         """The parameters each give a scale to apply to the respective image component"""
+//|         """Construct a ChannelScale object
+//|
+//|         The ``r`` parameter gives the scale factor for the red channel of
+//|         pixels, and so forth."""
 //|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelScale),
@@ -183,16 +195,28 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_type = {
     },
 };
 //| class ChannelScaleOffset:
-//|     """A weight object to use with mix()"""
+//|     """A weight object to use with mix() that scales and offsets each channel independently
+//|
+//|     The ``r``, ``g``, and ``b`` parameters give a scale factor for each color
+//|     component, while the ``r_add`, ``g_add`` and ``b_add`` give offset values
+//|     added to each component.
+//|
+//|     This is useful for global contrast and brightness adjustment on a
+//|     per-component basis. For instance, to cut red contrast in half while adjusting the
+//|     brightness so that the middle value is still 0.5:
+//|
+//|     .. code-block:: python
+//|
+//|         reduce_red_contrast = bitmapfilter.ChannelScaleOffset(
+//|                 0.5, 0.25,
+//|                 1, 0,
+//|                 1, 0)
+//|     """
 //|
 //|     def __init__(
 //|         self, r: float, r_add: float, g: float, g_add: float, b: float, b_add: float
 //|     ) -> None:
-//|         """Scale and offset each channel independently.
-//|
-//|         The ``r``, ``g``, and ``b`` parameters each give a scale to apply
-//|         to the respective image component, while the ``r_add``,
-//|         ``g_add``, and ``b_add`` parameters give an offset value to add."""
+//|         """Construct a ChannelScaleOffset object"""
 //|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_offset_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelScaleOffset),
@@ -208,7 +232,32 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_offset_type = {
 };
 
 //| class ChannelMixer:
-//|     """A weight object to use with mix()"""
+//|     """A weight object to use with mix() that mixes different channels together
+//|
+//|     The parameters with names like ``rb`` give the fraction of
+//|     each channel to mix into every other channel. For instance,
+//|     ``rb`` gives the fraction of blue to mix into red, and ``gg``
+//|     gives the fraction of green to mix into green.
+//|
+//|     Conversion to sepia is an example where a ChannelMixer is appropriate,
+//|     because the sepia conversion is defined as mixing a certain fraction of R,
+//|     G, and B input values into each output value:
+//|
+//|     .. code-block:: python
+//|
+//|         sepia_weights = bitmapfilter.ChannelMixer(
+//|             .393,  .769,   .189,
+//|             .349,  .686,   .168,
+//|             .272,  .534,   .131)
+//|
+//|         def sepia(bitmap):
+//|             \"""Convert the bitmap to sepia\"""
+//|             bitmapfilter.mix(bitmap, sepia_weights)
+//|         mix_into_red = ChannelMixer(
+//|                 0.5, 0.25, 0.25,
+//|                 0,   1,    0,
+//|                 0,   1,    0)
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -222,12 +271,7 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_offset_type = {
 //|         bg: float,
 //|         bb: float,
 //|     ) -> None:
-//|         """Perform a mixing operation where each channel can receive a fraction of every other channel.
-//|
-//|         The parameters with names like ``rb`` give the fraction of
-//|         each channel to mix into every other channel. For instance,
-//|         ``rb`` gives the fraction of blue to mix into red, and ``gg``
-//|         gives the fraction of green to mix into green."""
+//|         """Construct a ChannelMixer object"""
 //|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelMixer),
@@ -246,7 +290,23 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_type = {
 };
 
 //| class ChannelMixerOffset:
-//|     """A weight object to use with mix()"""
+//|     """A weight object to use with mix() that mixes different channels together, plus an offset value
+//|
+//|     The parameters with names like ``rb`` give the fraction of
+//|     each channel to mix into every other channel. For instance,
+//|     ``rb`` gives the fraction of blue to mix into red, and ``gg``
+//|     gives the fraction of green to mix into green.  The ``r_add``, ``g_add``
+//|     and ``b_add`` parameters give offsets applied to each component.
+//|
+//|     For instance, to perform sepia conversion but also increase the overall brightness by 10%:
+//|
+//|     .. code-block:: python
+//|
+//|         sepia_weights_brighten = bitmapfilter.ChannelMixerOffset(
+//|             .393,  .769,   .189, .1
+//|             .349,  .686,   .168, .1
+//|             .272,  .534,   .131, .1)
+//|     """
 //|
 //|     def __init__(
 //|         self,
@@ -263,13 +323,7 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_type = {
 //|         bb: float,
 //|         b_add: float,
 //|     ) -> None:
-//|         """Perform a mixing operation where each channel can receive a fraction of every other channel, plus an offset value.
-//|
-//|         The parameters with names like ``rb`` give the fraction of
-//|         each channel to mix into every other channel. For instance,
-//|         ``rb`` gives the fraction of blue to mix into red, and ``gg``
-//|         gives the fraction of green to mix into green. The ``_add``
-//|         parameters give an offset value to add to the channel."""
+//|         """Construct a ChannelMixerOffset object"""
 //|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelMixerOffset),
@@ -304,42 +358,17 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
 //|     according to the ``weights``.
 //|
-//|     If ``weights`` is a `ChannelScale`
-//|     object, then each channel is scaled independently: The
-//|     numbers are the red, green, and blue channel scales.
+//|     The ``weights`` must be one of the above types: `ChannelScale`,
+//|     `ChannelScaleOffset`, `ChannelMixer`, or `ChannelMixerOffset`. For the
+//|     effect of each different kind of weights object, see the type
+//|     documentation.
 //|
-//|     If ``weights`` is a `ChannelScaleOffset`
-//|     object, then each channel is scaled and offset independently:
-//|     The first two numbers are applied to the red channel: scale and
-//|     offset. The second two number are applied to the green channel,
-//|     and the last two numbers to the blue channel.
-//|
-//|     If ``weights`` is a `ChannelMixer`
-//|     object, then channels are mixed. The first three
-//|     numbers are the fraction of red, green and blue input channels
-//|     mixed into the red output channel. The next 3 numbers are for
-//|     green, and the final 3 are for blue.
-//|
-//|     If ``weights`` `ChannelMixerOffset`
-//|     object, then channels are mixed with an offset.
-//|     Every fourth value is the offset value.
+//|     After computation, any out of range values are clamped to the greatest or
+//|     smallest valid value.
 //|
 //|     ``mask`` is another image to use as a pixel level mask for the operation.
 //|     The mask should be an image the same size as the image being operated on.
 //|     Only pixels set to a non-zero value in the mask are modified.
-//|
-//|     For example, to perform a sepia conversion on an input image,
-//|
-//|     .. code-block:: python
-//|
-//|         sepia_weights = bitmapfilter.ChannelMixer(
-//|             .393,  .769,   .189,
-//|             .349,  .686,   .168,
-//|             .272,  .534,   .131)
-//|
-//|         def sepia(bitmap):
-//|             \"""Convert the bitmap to sepia\"""
-//|             bitmapfilter.mix(bitmap, sepia_weights)
 //|     """
 //|
 STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -398,7 +427,7 @@ STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_mix_obj, 0, bitmapfilter_mix);
 
 //| def solarize(bitmap, threshold: float = 0.5, mask: displayio.Bitmap | None = None):
-//|     """Creat a "solarization" effect on an image
+//|     """Create a "solarization" effect on an image
 //|
 //|     This filter inverts pixels with brightness values above ``threshold``, while leaving
 //|     lower brightness pixels alone.
