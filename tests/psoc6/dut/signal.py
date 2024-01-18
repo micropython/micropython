@@ -15,6 +15,9 @@ elif "CY8CPROTO-063-BLE" in machine:
 # Pin out and pin in must be connected
 # together in the board
 
+# value() as get is not supported,
+# same as undefined for pin.value() for output
+
 pin_out = Pin(pin1_name, mode=Pin.OUT, value=True)
 pin_in = Pin(pin2_name, Pin.IN)
 
@@ -25,19 +28,15 @@ signal = Signal(pin_out, invert=False)
 
 signal.on()
 print("signal is high when on(): ", pin_in.value() == 1)
-print("signal is active when on(): ", signal.value() == True)
 
 signal.value(0)
-print("signal is high when value(0): ", pin_in.value() == 0)
-print("signal is inactive when value(0): ", signal.value() == False)
+print("signal is low when value(0): ", pin_in.value() == 0)
 
 signal.value(1)
 print("signal is high when value(1): ", pin_in.value() == 1)
-print("signal is active when value(1): ", signal.value() == True)
 
 signal.off()
 print("signal is low when off(): ", pin_in.value() == 0)
-print("signal is inactive when off(): ", signal.value() == False)
 
 print("\n")
 
@@ -47,16 +46,12 @@ signal = Signal(pin_out, invert=True)
 
 signal.on()
 print("signal is low when on(): ", pin_in.value() == 0)
-print("signal is active when on(): ", signal.value() == True)
 
 signal.value(0)
 print("signal is high when value(0): ", pin_in.value() == 1)
-print("signal is inactive when value(0): ", signal.value() == False)
 
 signal.value(1)
 print("signal is low when value(1): ", pin_in.value() == 0)
-print("signal is active when value(1): ", signal.value() == True)
 
 signal.off()
 print("signal is high when off(): ", pin_in.value() == 1)
-print("signal is inactive when off(): ", signal.value() == False)

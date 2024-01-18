@@ -1,20 +1,12 @@
 non-inverted
 signal is high when on():  True
-signal is active when on():  False
-signal is high when value(0):  True
-signal is inactive when value(0):  True
+signal is low when value(0):  True
 signal is high when value(1):  True
-signal is active when value(1):  False
 signal is low when off():  True
-signal is inactive when off():  True
 
 
 inverted
 signal is low when on():  True
-signal is active when on():  True
 signal is high when value(0):  True
-signal is inactive when value(0):  False
 signal is low when value(1):  True
-signal is active when value(1):  True
 signal is high when off():  True
-signal is inactive when off():  False
