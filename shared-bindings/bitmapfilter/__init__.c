@@ -273,7 +273,7 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_type = {
 //|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelMixerOffset),
-    .n_fields = 9,
+    .n_fields = 12,
     .fields = {
         MP_QSTR_rr,
         MP_QSTR_rg,
@@ -359,33 +359,30 @@ STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map
     memset(weights, 0, sizeof(weights));
 
     mp_obj_t weights_obj = args[ARG_weights].u_obj;
-    mp_int_t len = mp_obj_get_int(mp_obj_len(weights_obj));
-
-    switch (len) {
-        case 3:
-            for (int i = 0; i < 3; i++) {
-                weights[5 * i] = float_subscr(weights_obj, i);
-            }
-            break;
-        case 6:
-            for (int i = 0; i < 3; i++) {
-                weights[5 * i] = float_subscr(weights_obj, i * 2);
-                weights[4 * i + 3] = float_subscr(weights_obj, i * 2 + 1);
-            }
-            break;
-        case 9:
-            for (int i = 0; i < 9; i++) {
-                weights[i + i / 3] = float_subscr(weights_obj, i);
-            }
-            break;
-        case 12:
-            for (int i = 0; i < 12; i++) {
-                weights[i] = float_subscr(weights_obj, i);
-            }
-            break;
-        default:
-            mp_raise_ValueError(
-                MP_ERROR_TEXT("weights must be a sequence of length 3, 6, 9, or 12"));
+    if (mp_obj_is_type(weights_obj, (const mp_obj_type_t *)&bitmapfilter_channel_scale_type)) {
+        for (int i = 0; i < 3; i++) {
+            weights[5 * i] = float_subscr(weights_obj, i);
+        }
+    } else if (mp_obj_is_type(weights_obj, (const mp_obj_type_t *)&bitmapfilter_channel_scale_offset_type)) {
+        for (int i = 0; i < 3; i++) {
+            weights[5 * i] = float_subscr(weights_obj, i * 2);
+            weights[4 * i + 3] = float_subscr(weights_obj, i * 2 + 1);
+        }
+    } else if (mp_obj_is_type(weights_obj, (const mp_obj_type_t *)&bitmapfilter_channel_mixer_type)) {
+        for (int i = 0; i < 9; i++) {
+            weights[i + i / 3] = float_subscr(weights_obj, i);
+        }
+    } else if (mp_obj_is_type(weights_obj, (const mp_obj_type_t *)&bitmapfilter_channel_mixer_offset_type)) {
+        for (int i = 0; i < 12; i++) {
+            weights[i] = float_subscr(weights_obj, i);
+        }
+    } else {
+        mp_raise_ValueError_varg(
+            MP_ERROR_TEXT("weights must be an object of type %q, %q, %q, or %q, not %q "),
+            MP_QSTR_ScaleMixer, MP_QSTR_ScaleMixerOffset,
+            MP_QSTR_ChannelMixer, MP_QSTR_ChannelMixerOffset,
+            mp_obj_get_type_qstr(weights_obj)
+            );
     }
 
 
