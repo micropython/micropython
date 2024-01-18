@@ -44,6 +44,13 @@
 //| ) -> displayio.Bitmap:
 //|     """Convolve an image with a kernel
 //|
+//|     The name of the function comes from
+//|     `OpenMV <https://docs.openmv.io/library/omv.image.html#image.Image.morph>`_.
+//|
+//|     For background on how this kind of image processing, including some
+//|     useful ``weights`` values, see `wikipedia's article on the
+//|     subject <https://en.wikipedia.org/wiki/Kernel_(image_processing)>`_.
+//|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
 //|     according to the ``weights``. Then a scaling factor ``mul`` and an
 //|     offset factor ``add`` are applied.
@@ -53,9 +60,10 @@
 //|     Specific weights create different effects. For instance, these
 //|     weights represent a 3x3 gaussian blur:
 //|
-//|     ``mul`` is number to multiply the convolution pixel results by. When
-//|     not set it defaults to a value that will prevent scaling in the
-//|     convolution output.
+//|     ``mul`` is number to multiply the convolution pixel results by.
+//|     If `None` (the default) is passed, the value of ``1/sum(weights)``
+//|     is used (or ``1`` if ``sum(weights)`` is 0). For most weights, his
+//|     default value will preserve the overall image brightness.
 //|
 //|     ``add`` is a value to add to each convolution pixel result.
 //|
