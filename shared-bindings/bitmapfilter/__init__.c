@@ -47,6 +47,8 @@
 //|
 //|     The name of the function comes from
 //|     `OpenMV <https://docs.openmv.io/library/omv.image.html#image.Image.morph>`_.
+//|     ImageMagick calls this "-morphology" ("-morph" is an unrelated image blending
+//|     algorithm). PIL calls this "kernel".
 //|
 //|     For background on how this kind of image processing, including some
 //|     useful ``weights`` values, see `wikipedia's article on the
@@ -289,33 +291,37 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
 };
 
 //| def mix(
-//|     bitmap: displayio.Bitmap, weights: Sequence[int], mask: displayio.Bitmap | None = None
+//|     bitmap: displayio.Bitmap,
+//|     weights: ChannelScale | ChannelScaleOffset | ChannelMixer | ChannelMixerOffset,
+//|     mask: displayio.Bitmap | None = None,
 //| ) -> displayio.Bitmap:
 //|     """Perform a channel mixing operation on the bitmap
 //|
 //|     This is similar to the "channel mixer" tool in popular photo editing software.
+//|     Imagemagick calls this "-color-matrix". In PIL, this is accomplished with the
+//|     ``convert`` method's ``matrix`` argument.
 //|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
 //|     according to the ``weights``.
 //|
-//|     If ``weights`` is a list of length 3 (or a `ChannelScale`
-//|     object), then each channel is scaled independently: The
+//|     If ``weights`` is a `ChannelScale`
+//|     object, then each channel is scaled independently: The
 //|     numbers are the red, green, and blue channel scales.
 //|
-//|     If ``weights`` is a list of length 6 (or a `ChannelScaleOffset`
-//|     object), then each channel is scaled and offset independently:
+//|     If ``weights`` is a `ChannelScaleOffset`
+//|     object, then each channel is scaled and offset independently:
 //|     The first two numbers are applied to the red channel: scale and
 //|     offset. The second two number are applied to the green channel,
 //|     and the last two numbers to the blue channel.
 //|
-//|     If ``weights`` is a list of length 9 (or a `ChannelMixer`
-//|     object), then channels are mixed. The first three
+//|     If ``weights`` is a `ChannelMixer`
+//|     object, then channels are mixed. The first three
 //|     numbers are the fraction of red, green and blue input channels
 //|     mixed into the red output channel. The next 3 numbers are for
 //|     green, and the final 3 are for blue.
 //|
-//|     If ``weights`` is a list of length 12 (or a `ChannelMixerOffest`
-//|     object), then channels are mixed with an offset.
+//|     If ``weights`` `ChannelMixerOffset`
+//|     object, then channels are mixed with an offset.
 //|     Every fourth value is the offset value.
 //|
 //|     ``mask`` is another image to use as a pixel level mask for the operation.
@@ -394,6 +400,20 @@ STATIC mp_obj_t bitmapfilter_mix(size_t n_args, const mp_obj_t *pos_args, mp_map
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_mix_obj, 0, bitmapfilter_mix);
 
+//| def solarize(bitmap, threshold: float = 0.5, mask: displayio.Bitmap | None = None):
+//|     """Creat a "solarization" effect on an image
+//|
+//|     This filter inverts pixels with brightness values above ``threshold``, while leaving
+//|     lower brightness pixels alone.
+//|
+//|     This effect is similar to `an effect observed in real life film
+//|     <https://en.wikipedia.org/wiki/Solarization_(photography)>`_ which can also be
+//|     `produced during the printmaking process
+//|     <https://en.wikipedia.org/wiki/Sabattier_effect>`_
+//|
+//|     PIL and ImageMagic both call this "solarize".
+//|     """
+//|
 STATIC mp_obj_t bitmapfilter_solarize(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_bitmap, ARG_threshold, ARG_mask };
     static const mp_arg_t allowed_args[] = {
@@ -437,6 +457,9 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
 //|
 //|     This can be used to implement non-linear transformations of color values,
 //|     such as gamma curves.
+//|
+//|     This is similar to, but more limiting than, PIL's "LUT3D" facility. It is not
+//|     directly available in OpenMV or ImageMagic.
 //|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
 //|     according to the values of the ``lookup`` function or functions.
@@ -514,6 +537,11 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_lookup_obj, 0, bitmapfilter_lookup);
 //|     mask: displayio.Bitmap | None,
 //| ) -> displayio.Bitmap:
 //|     """Convert the image to false color using the given palette
+//|
+//|     In OpenMV this is accomplished via the ``ironbow`` function, which uses a default
+//|     palette known as "ironbow". Imagemagic produces a similar effect with ``-clut``.
+//|     PIL can accomplish this by converting an image to "L" format, then applying a
+//|     palette to convert it into "P" mode.
 //|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is converted into false color.
 //|
