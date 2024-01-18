@@ -56,14 +56,14 @@
 //|     according to the ``weights``. Then a scaling factor ``mul`` and an
 //|     offset factor ``add`` are applied.
 //|
-//|     The ``weights`` must be a tuple of integers. The length of the tuple
+//|     The ``weights`` must be a sequence of integers. The length of the tuple
 //|     must be the square of an odd number, usually 9 and sometimes 25.
 //|     Specific weights create different effects. For instance, these
-//|     weights represent a 3x3 gaussian blur:
+//|     weights represent a 3x3 gaussian blur: ``[1, 2, 1, 2, 4, 2, 1, 2, 1]``
 //|
 //|     ``mul`` is number to multiply the convolution pixel results by.
 //|     If `None` (the default) is passed, the value of ``1/sum(weights)``
-//|     is used (or ``1`` if ``sum(weights)`` is 0). For most weights, his
+//|     is used (or ``1`` if ``sum(weights)`` is ``0``). For most weights, his
 //|     default value will preserve the overall image brightness.
 //|
 //|     ``add`` is a value to add to each convolution pixel result.
@@ -165,9 +165,12 @@ static mp_float_t float_subscr(mp_obj_t o, int i) {
     return mp_obj_get_float(subscr(o, i));
 }
 
-//| ChannelScale = namedtuple("ChannelScale", ["r", "g", "b"])
-//| """A weight object to use with mix() that scales each channel
-//| independently."""
+//| class ChannelScale:
+//|     """A weight object to use with mix()"""
+//|
+//|     def __init__(self, r: float, g: float, b: float) -> None:
+//|         """The parameters each give a scale to apply to the respective image component"""
+//|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelScale),
     .n_fields = 3,
@@ -177,9 +180,18 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_type = {
         MP_QSTR_b,
     },
 };
-//| ChannelScaleOffset = namedtuple("ChannelScale", ["r", "g", "b", "r_add", "g_add", "b_add"])
-//| """A weight object to use with mix() that scales each channel
-//| independently and adds an offset."""
+//| class ChannelScaleOffset:
+//|     """A weight object to use with mix()"""
+//|
+//|     def __init__(
+//|         self, r: float, r_add: float, g: float, g_add: float, b: float, b_add: float
+//|     ) -> None:
+//|         """Scale and offset each channel independently.
+//|
+//|         The ``r``, ``g``, and ``b`` parameters each give a scale to apply
+//|         to the respective image component, while the ``r_add``,
+//|         ``g_add``, and ``b_add`` parameters give an offset value to add."""
+//|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_offset_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelScaleOffset),
     .n_fields = 6,
@@ -193,11 +205,28 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_scale_offset_type = {
     },
 };
 
-//| ChannelMixer = namedtuple(
-//|     "ChannelMixer", ["rr", "rg", "rb", "gr", "gg", "gb", "br", "bg", "bb"]
-//| )
-//| """A weight object to use with mix() that mixes in portions of each
-//| channel into every other channel. For instance ``rg`` gives the portion of the green channel to mix into red."""
+//| class ChannelMixer:
+//|     """A weight object to use with mix()"""
+//|
+//|     def __init__(
+//|         self,
+//|         rr: float,
+//|         rg: float,
+//|         rb: float,
+//|         gr: float,
+//|         gg: float,
+//|         gb: float,
+//|         br: float,
+//|         bg: float,
+//|         bb: float,
+//|     ) -> None:
+//|         """Perform a mixing operation where each channel can receive a fraction of every other channel.
+//|
+//|         The parameters with names like ``rb`` give the fraction of
+//|         each channel to mix into every other channel. For instance,
+//|         ``rb`` gives the fraction of blue to mix into red, and ``gg``
+//|         gives the fraction of green to mix into green."""
+//|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelMixer),
     .n_fields = 9,
@@ -214,12 +243,31 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_type = {
     },
 };
 
-//| ChannelMixerOffset = namedtuple(
-//|     "ChannelMixerOffset",
-//|     ["rr", "rg", "rb", "r_add", "gr", "gg", "gb", "g_add", "br", "bg", "bb", "b_add"],
-//| )
-//| """A weight object to use with mix() that mixes in portions of each
-//| channel into every other channel and adds an offset. For instance ``rg`` gives the portion of the green channel to mix into red."""
+//| class ChannelMixerOffset:
+//|     """A weight object to use with mix()"""
+//|
+//|     def __init__(
+//|         self,
+//|         rr: float,
+//|         rg: float,
+//|         rb: float,
+//|         r_add: float,
+//|         gr: float,
+//|         gg: float,
+//|         gb: float,
+//|         g_add: float,
+//|         br: float,
+//|         bg: float,
+//|         bb: float,
+//|         b_add: float,
+//|     ) -> None:
+//|         """Perform a mixing operation where each channel can receive a fraction of every other channel, plus an offset value.
+//|
+//|         The parameters with names like ``rb`` give the fraction of
+//|         each channel to mix into every other channel. For instance,
+//|         ``rb`` gives the fraction of blue to mix into red, and ``gg``
+//|         gives the fraction of green to mix into green. The ``_add``
+//|         parameters give an offset value to add to the channel."""
 //|
 static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
     NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_ChannelMixerOffset),
@@ -368,7 +416,10 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_solarize_obj, 0, bitmapfilter_solarize);
 
 
 //| LookupFunction = Callable[[float], float]
+//| """Any function which takes a number and returns a number. The input
+//| and output values should be in the range from 0 to 1 inclusive."""
 //| ThreeLookupFunctions = Tuple[LookupFunction, LookupFunction, LookupFunction]
+//| """Any sequenceof three `LookupFunction` objects"""
 //|
 //| def lookup(
 //|     bitmap: displayio.Bitmap,
