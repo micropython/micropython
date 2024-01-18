@@ -415,7 +415,7 @@ function ci_unix_build_helper {
 }
 
 function ci_unix_build_ffi_lib_helper {
-    $1 $2 -shared -o tests/unix/ffi_lib.so tests/unix/ffi_lib.c
+    $1 $2 -shared -o tests/ports/unix/ffi_lib.so tests/ports/unix/ffi_lib.c
 }
 
 function ci_unix_run_tests_helper {
