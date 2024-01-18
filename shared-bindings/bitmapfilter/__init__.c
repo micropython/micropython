@@ -293,22 +293,29 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
 //| ) -> displayio.Bitmap:
 //|     """Perform a channel mixing operation on the bitmap
 //|
+//|     This is similar to the "channel mixer" tool in popular photo editing software.
+//|
 //|     The ``bitmap``, which must be in RGB565_SWAPPED format, is modified
 //|     according to the ``weights``.
 //|
-//|     If ``weights`` is a list of length 3, then each channel is scaled independently:
-//|     The numbers are the red, green, and blue channel scales.
+//|     If ``weights`` is a list of length 3 (or a `ChannelScale`
+//|     object), then each channel is scaled independently: The
+//|     numbers are the red, green, and blue channel scales.
 //|
-//|     If ``weights`` is a list of length 6, then each channel is scaled and
-//|     offset independently: The first two numbers are applied to the red channel:
-//|     scale and offset. The second two number are applied to the green
-//|     channel, and the last two numbers to the blue channel.
+//|     If ``weights`` is a list of length 6 (or a `ChannelScaleOffset`
+//|     object), then each channel is scaled and offset independently:
+//|     The first two numbers are applied to the red channel: scale and
+//|     offset. The second two number are applied to the green channel,
+//|     and the last two numbers to the blue channel.
 //|
-//|     If ``weights`` is a list of length 9, then channels are mixed. The first three
-//|     numbers are the fraction of red, green and blue input channels mixed into the
-//|     red output channel. The next 3 numbers are for green, and the final 3 are for blue.
+//|     If ``weights`` is a list of length 9 (or a `ChannelMixer`
+//|     object), then channels are mixed. The first three
+//|     numbers are the fraction of red, green and blue input channels
+//|     mixed into the red output channel. The next 3 numbers are for
+//|     green, and the final 3 are for blue.
 //|
-//|     If ``weights`` is a list of length 12, then channels are mixed with an offset.
+//|     If ``weights`` is a list of length 12 (or a `ChannelMixerOffest`
+//|     object), then channels are mixed with an offset.
 //|     Every fourth value is the offset value.
 //|
 //|     ``mask`` is another image to use as a pixel level mask for the operation.
@@ -319,10 +326,10 @@ static const mp_obj_namedtuple_type_t bitmapfilter_channel_mixer_offset_type = {
 //|
 //|     .. code-block:: python
 //|
-//|         sepia_weights = [
+//|         sepia_weights = bitmapfilter.ChannelMixer(
 //|             .393,  .769,   .189,
 //|             .349,  .686,   .168,
-//|             .272,  .534,   .131]
+//|             .272,  .534,   .131)
 //|
 //|         def sepia(bitmap):
 //|             \"""Convert the bitmap to sepia\"""
