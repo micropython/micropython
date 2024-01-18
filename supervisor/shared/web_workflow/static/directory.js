@@ -72,9 +72,11 @@ async function refresh_list() {
     let editable = data.writable;
     new_directory_name.disabled = !editable;
     set_upload_enabled(editable);
+    let usbwarning = document.querySelector("#usbwarning");
     if (!editable) {
-        let usbwarning = document.querySelector("#usbwarning");
         usbwarning.style.display = "block";
+    } else {
+        usbwarning.style.display = "none";
     }
 
     if (current_path != "/") {
@@ -191,10 +193,13 @@ async function mkdir(e) {
 
 async function upload(e) {
     set_upload_enabled(false);
-    let progress = document.querySelector("progress");
+    let progress = document.querySelector("#progress");
     let made_dirs = new Set();
-    progress.max = files.files.length + dirs.files.length;
-    progress.value = 0;
+    let total = files.files.length + dirs.files.length;
+
+    var uploaded = 0;
+    var failed = 0;
+    progress.textContent = `Uploaded ${uploaded} out of ${total} files`;
     for (const file of [...files.files, ...dirs.files]) {
         let file_name = file.name;
         if (file.webkitRelativePath) {
@@ -221,12 +226,21 @@ async function upload(e) {
         )
         if (response.ok) {
             refresh_list();
+            uploaded += 1;
+        } else {
+            failed += 1;
         }
-        progress.value += 1;
+        progress.textContent = `Uploaded ${uploaded} out of ${total} files`;
+    }
+    var s = "";
+    if (failed > 0) {
+        if (failed > 1) {
+            s = "s";
+        }
+        progress.textContent = `${failed} upload${s} failed`;
     }
     files.value = "";
     dirs.value = "";
-    progress.value = 0;
     set_upload_enabled(true);
 }
 

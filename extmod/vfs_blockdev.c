@@ -77,6 +77,8 @@ void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
 
 int mp_vfs_blockdev_read(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, uint8_t *buf) {
     if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
+        // CIRCUITPY-CHANGE: Pass the blockdev object into native readblocks so
+        // it has the corresponding state.
         mp_uint_t (*f)(mp_obj_t self, uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->readblocks[2];
         return f(self->readblocks[1], buf, block_num, num_blocks);
     } else {
@@ -109,6 +111,8 @@ int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_
     }
 
     if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
+        // CIRCUITPY-CHANGE: Pass the blockdev object into native readblocks so
+        // it has the corresponding state.
         mp_uint_t (*f)(mp_obj_t self, const uint8_t *, uint32_t, uint32_t) = (void *)(uintptr_t)self->writeblocks[2];
         return f(self->writeblocks[1], buf, block_num, num_blocks);
     } else {
@@ -141,6 +145,7 @@ int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t 
 
 mp_obj_t mp_vfs_blockdev_ioctl(mp_vfs_blockdev_t *self, uintptr_t cmd, uintptr_t arg) {
     if (self->flags & MP_BLOCKDEV_FLAG_HAVE_IOCTL) {
+        // CIRCUITPY-CHANGE: Support native IOCTL so it can run outside of the VM.
         if (self->flags & MP_BLOCKDEV_FLAG_NATIVE) {
             size_t out_value;
             bool (*f)(mp_obj_t self, uint32_t, uint32_t, size_t *) = (void *)(uintptr_t)self->u.ioctl[2];

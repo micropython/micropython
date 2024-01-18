@@ -133,7 +133,7 @@ FRESULT supervisor_workflow_move(const char *old_path, const char *new_path) {
     }
     FATFS *fs = &active_mount->fatfs;
 
-    FRESULT result = f_rename(fs, old_path, new_path);
+    FRESULT result = f_rename(fs, old_mount_path, new_mount_path);
     filesystem_unlock(active_mount);
     return result;
 }
@@ -144,13 +144,27 @@ FRESULT supervisor_workflow_mkdir(DWORD fattime, const char *full_path) {
     if (active_mount == NULL || !filesystem_native_fatfs(active_mount)) {
         return FR_NO_PATH;
     }
+
+    // If there is a mount on the directory, then the mount_path will be empty.
+    if (strlen(mount_path) == 0) {
+        return FR_EXIST;
+    }
+
+    // Check to see if the directory exists already. We don't care about writing
+    // it if it already exists.
+    FATFS *fs = &active_mount->fatfs;
+    FILINFO file;
+    FRESULT result = f_stat(fs, mount_path, &file);
+    if (result == FR_OK) {
+        return FR_EXIST;
+    }
+
     if (!filesystem_lock(active_mount)) {
         return FR_WRITE_PROTECTED;
     }
-    FATFS *fs = &active_mount->fatfs;
 
     override_fattime(fattime);
-    FRESULT result = f_mkdir(fs, mount_path);
+    result = f_mkdir(fs, mount_path);
     override_fattime(0);
     filesystem_unlock(active_mount);
     return result;
@@ -171,8 +185,10 @@ FRESULT supervisor_workflow_mkdir_parents(DWORD fattime, char *path) {
         }
     }
     // Make the target directory.
-    if (result != FR_OK && result != FR_EXIST) {
+    if (result == FR_OK || result == FR_EXIST) {
         result = supervisor_workflow_mkdir(fattime, path);
+        // This may return FR_EXIST when a file with the same name already exists.
+        // FATFS does the same thing.
     }
     override_fattime(0);
     return result;
@@ -229,13 +245,13 @@ FRESULT supervisor_workflow_delete_recursive(const char *full_path) {
     }
     FATFS *fs = &active_mount->fatfs;
     FILINFO file;
-    FRESULT result = f_stat(fs, full_path, &file);
+    FRESULT result = f_stat(fs, mount_path, &file);
     if (result == FR_OK) {
         if ((file.fattrib & AM_DIR) != 0) {
-            result = supervisor_workflow_delete_directory_contents(fs, full_path);
+            result = supervisor_workflow_delete_directory_contents(fs, mount_path);
         }
         if (result == FR_OK) {
-            result = f_unlink(fs, full_path);
+            result = f_unlink(fs, mount_path);
         }
     }
     filesystem_unlock(active_mount);

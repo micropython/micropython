@@ -1189,28 +1189,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
             _decode_percents(request->path);
 
             char *path = request->path + 3;
-            const char *path_out = NULL;
             size_t pathlen = strlen(path);
-
-            mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &path_out);
-            if (vfs == MP_VFS_NONE) {
-                _reply_missing(socket, request);
-                return false;
-            }
-            fs_user_mount_t *fs_mount;
-            if (vfs == MP_VFS_ROOT) {
-                fs_mount = filesystem_circuitpy();
-            } else {
-                fs_mount = MP_OBJ_TO_PTR(vfs->obj);
-                // Skip non-fat and non-native block file systems.
-                if (!filesystem_native_fatfs(fs_mount)) {
-                    _reply_missing(socket, request);
-                    return false;
-                }
-                path += strlen(vfs->str);
-                pathlen = strlen(path);
-            }
-            FATFS *fs = &fs_mount->fatfs;
             // Trailing / is a directory.
             bool directory = false;
             if (path[pathlen - 1] == '/') {
@@ -1220,11 +1199,16 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 }
                 directory = true;
             }
+
+            // These manipulations work on the full path so do them first.
+
             // Delete is almost identical for files and directories so share the
             // implementation.
             if (strcasecmp(request->method, "DELETE") == 0) {
                 FRESULT result = supervisor_workflow_delete_recursive(path);
-                if (result == FR_NO_PATH || result == FR_NO_FILE) {
+                if (result == FR_WRITE_PROTECTED) {
+                    _reply_conflict(socket, request);
+                } else if (result == FR_NO_PATH || result == FR_NO_FILE) {
                     _reply_missing(socket, request);
                 } else if (result != FR_OK) {
                     _reply_server_error(socket, request);
@@ -1232,6 +1216,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     _reply_no_content(socket, request);
                     return true;
                 }
+                return false;
             } else if (strcasecmp(request->method, "MOVE") == 0) {
                 _decode_percents(request->destination);
                 char *destination = request->destination + 3;
@@ -1253,7 +1238,51 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     _reply_created(socket, request);
                     return true;
                 }
-            } else if (directory) {
+                return false;
+            } else if (directory && strcasecmp(request->method, "PUT") == 0) {
+                DWORD fattime = 0;
+                if (request->timestamp_ms > 0) {
+                    truncate_time(request->timestamp_ms * 1000000, &fattime);
+                }
+                FRESULT result = supervisor_workflow_mkdir_parents(fattime, path);
+                if (result == FR_WRITE_PROTECTED) {
+                    _reply_conflict(socket, request);
+                } else if (result == FR_EXIST) {
+                    _reply_no_content(socket, request);
+                } else if (result == FR_NO_PATH) {
+                    _reply_missing(socket, request);
+                } else if (result != FR_OK) {
+                    _reply_server_error(socket, request);
+                } else {
+                    _reply_created(socket, request);
+                    return true;
+                }
+                return false;
+            }
+
+            // These responses don't use helpers because they stream data in and
+            // out. So, share the mount lookup code.
+            const char *path_out = NULL;
+            mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &path_out);
+            if (vfs == MP_VFS_NONE) {
+                _reply_missing(socket, request);
+                return false;
+            }
+            fs_user_mount_t *fs_mount;
+            if (vfs == MP_VFS_ROOT) {
+                fs_mount = filesystem_circuitpy();
+            } else {
+                fs_mount = MP_OBJ_TO_PTR(vfs->obj);
+                // Skip non-fat and non-native block file systems.
+                if (!filesystem_native_fatfs(fs_mount)) {
+                    _reply_missing(socket, request);
+                    return false;
+                }
+                path += strlen(vfs->str);
+                pathlen = strlen(path);
+            }
+            FATFS *fs = &fs_mount->fatfs;
+            if (directory) {
                 if (strcasecmp(request->method, "GET") == 0) {
                     FF_DIR dir;
                     FRESULT res = f_opendir(fs, &dir, path);
@@ -1274,24 +1303,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
 
                     f_closedir(&dir);
-                } else if (strcasecmp(request->method, "PUT") == 0) {
-                    DWORD fattime = 0;
-                    if (request->timestamp_ms > 0) {
-                        truncate_time(request->timestamp_ms * 1000000, &fattime);
-                    }
-                    FRESULT result = supervisor_workflow_mkdir_parents(fattime, path);
-                    if (result == FR_WRITE_PROTECTED) {
-                        _reply_conflict(socket, request);
-                    } else if (result == FR_EXIST) {
-                        _reply_no_content(socket, request);
-                    } else if (result == FR_NO_PATH) {
-                        _reply_missing(socket, request);
-                    } else if (result != FR_OK) {
-                        _reply_server_error(socket, request);
-                    } else {
-                        _reply_created(socket, request);
-                        return true;
-                    }
                 }
             } else { // Dealing with a file.
                 if (strcasecmp(request->method, "GET") == 0) {

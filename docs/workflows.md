@@ -209,7 +209,7 @@ time resolution) used for the directories modification time. The RTC time will u
 
 Returns:
 
-* `204 No Content` - Directory exists
+* `204 No Content` - Directory or file exists
 * `201 Created` - Directory created
 * `401 Unauthorized` - Incorrect password
 * `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set

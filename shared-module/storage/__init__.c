@@ -177,16 +177,20 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool rea
     args[0] = readonly ? mp_const_true : mp_const_false;
     args[1] = mp_const_false; // Don't make the file system automatically when mounting.
 
-    // Check that there's file or directory with the same name as the mount point.
+    // Check that there is a directory with the same name as the mount point.
     // But it's ok to mount '/' in any case.
     if (strcmp(vfs->str, "/") != 0) {
         nlr_buf_t nlr;
         if (nlr_push(&nlr) == 0) {
-            common_hal_os_stat(mount_path);
+            mp_obj_t mount_point_stat = common_hal_os_stat(mount_path);
             nlr_pop();
+            mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mount_point_stat);
+            if ((MP_OBJ_SMALL_INT_VALUE(t->items[0]) & MP_S_IFDIR) == 0) {
+                mp_raise_RuntimeError(MP_ERROR_TEXT("Mount point must be a directory"));
+            }
         } else {
-            // Something with the same name doesn't exists.
-            mp_raise_RuntimeError(MP_ERROR_TEXT("Mount point missing. Create first (maybe via USB)"));
+            // Something with the same name doesn't exist.
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Mount point directory missing. Create first (maybe via USB)"));
         }
     }
 
