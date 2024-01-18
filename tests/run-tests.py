@@ -183,7 +183,7 @@ special_tests = [
         "basics/bytes_compare3.py",
         "basics/builtin_help.py",
         "thread/thread_exc2.py",
-        "esp32/partition_ota.py",
+        "ports/esp32/partition_ota.py",
     )
 ]
 
@@ -1036,16 +1036,16 @@ the last matching regex is used:
             )
             if args.target == "pyboard":
                 # run pyboard tests
-                test_dirs += ("float", "stress", "pyb", "inlineasm")
+                test_dirs += ("float", "stress", "inlineasm", "ports/stm32")
             elif args.target in ("renesas-ra"):
-                test_dirs += ("float", "inlineasm", "renesas-ra")
+                test_dirs += ("float", "inlineasm", "ports/renesas-ra")
             elif args.target == "rp2":
                 test_dirs += ("float", "stress", "inlineasm", "thread")
             elif args.target in ("esp8266", "esp32", "minimal", "nrf"):
                 test_dirs += ("float",)
             elif args.target == "wipy":
                 # run WiPy tests
-                test_dirs += ("wipy",)
+                test_dirs += ("ports/cc3200",)
             elif args.target == "unix":
                 # run PC tests
                 test_dirs += (
@@ -1054,8 +1054,8 @@ the last matching regex is used:
                     "io",
                     "stress",
                     "unicode",
-                    "unix",
                     "cmdline",
+                    "ports/unix",
                 )
             elif args.target == "qemu-arm":
                 if not args.write_exp:
@@ -1065,7 +1065,7 @@ the last matching regex is used:
                 test_dirs += (
                     "float",
                     "inlineasm",
-                    "qemu-arm",
+                    "ports/qemu-arm",
                 )
         else:
             # run tests from these directories
