@@ -83,13 +83,14 @@ SECTIONS
   /* The startup code goes first into internal RAM */
   .interrupts :
   {
-    __VECTOR_TABLE = .;
+    __Vectors = .;
+    __vector_table = .;
     . = ALIGN(4);
     KEEP(*(.isr_vector))     /* Startup code */
     . = ALIGN(4);
   } > m_interrupts
 
-  __VECTOR_RAM = __VECTOR_TABLE;
+  __VECTOR_RAM = __Vectors;
   __RAM_VECTOR_TABLE_SIZE_BYTES = 0x0;
 
   /* The program code and other data goes into internal RAM */
