@@ -80,10 +80,11 @@ struct keycode_mapper {
 
 // https://learn.microsoft.com/ru-ru/windows/console/console-virtual-terminal-sequences
 // https://aperiodic.net/phil/archives/Geekery/term-function-keys/
-#define F1      "\eOP"
-#define F2      "\eOQ"
-#define F3      "\eOR"
-#define F4      "\eOS"
+// https://www.microfocus.com/documentation/rumba/desktop951/RumbaSystemAdminGuide/GUID-5F92BA7F-107A-4101-B4E7-E0FC73F0CD99.html
+#define F1      "\e[11~"
+#define F2      "\e[12~"
+#define F3      "\e[13~"
+#define F4      "\e[14~"
 #define F5      "\e[15~"
 #define F6      "\e[17~"
 #define F7      "\e[18~"
@@ -117,37 +118,11 @@ STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, 0, "/*-+\n1234567890." },
 
     // { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_UP, 0, FLAG_STRING, CURSOR_RIGHT SEP CURSOR_LEFT SEP CURSOR_DOWN SEP CURSOR_UP },
+    { HID_KEY_INSERT, HID_KEY_ARROW_UP, 0, FLAG_STRING, CURSOR_INS SEP CURSOR_HOME SEP CURSOR_PGUP SEP CURSOR_DEL SEP CURSOR_END SEP CURSOR_PGDN SEP CURSOR_RIGHT SEP CURSOR_LEFT SEP CURSOR_DOWN SEP CURSOR_UP },
     { HID_KEY_PAUSE, HID_KEY_PAUSE, 0x1a, 0, },
-    { HID_KEY_PAGE_DOWN, HID_KEY_PAGE_DOWN, 0, FLAG_STRING, CURSOR_PGDN },
-    { HID_KEY_PAGE_UP, HID_KEY_PAGE_UP, 0, FLAG_STRING, CURSOR_PGUP },
-    { HID_KEY_HOME, HID_KEY_HOME, 0, FLAG_STRING, CURSOR_HOME },
-    { HID_KEY_END, HID_KEY_END, 0, FLAG_STRING, CURSOR_END },
-    { HID_KEY_INSERT, HID_KEY_INSERT, 0, FLAG_STRING, CURSOR_INS },
-    { HID_KEY_DELETE, HID_KEY_DELETE, 0, FLAG_STRING, CURSOR_DEL },
-
-    { HID_KEY_F1, HID_KEY_F1, 0, FLAG_STRING, F1 },
-    { HID_KEY_F2, HID_KEY_F2, 0, FLAG_STRING, F2 },
-    { HID_KEY_F3, HID_KEY_F3, 0, FLAG_STRING, F3 },
-    { HID_KEY_F4, HID_KEY_F4, 0, FLAG_STRING, F4 },
-    { HID_KEY_F5, HID_KEY_F5, 0, FLAG_STRING, F5 },
-    { HID_KEY_F6, HID_KEY_F6, 0, FLAG_STRING, F6 },
-    { HID_KEY_F7, HID_KEY_F7, 0, FLAG_STRING, F7 },
-    { HID_KEY_F8, HID_KEY_F8, 0, FLAG_STRING, F8 },
-    { HID_KEY_F9, HID_KEY_F9, 0, FLAG_STRING, F9 },
-    { HID_KEY_F10, HID_KEY_F10, 0, FLAG_STRING, F10 },
-    { HID_KEY_F11, HID_KEY_F11, 0, FLAG_STRING, F11 },
-    { HID_KEY_F12, HID_KEY_F12, 0, FLAG_STRING, F12 },
+    { HID_KEY_F1, HID_KEY_F12, 0, FLAG_STRING, F1 SEP F2 SEP F3 SEP F4 SEP F5 SEP F6 SEP F7 SEP F8 SEP F9 SEP F10 SEP F11 SEP F12},
     { HID_KEY_PRINT_SCREEN, HID_KEY_PRINT_SCREEN, 0, FLAG_STRING, PRINT_SCREEN },
-
-    { HID_KEY_ARROW_UP, HID_KEY_ARROW_UP, 0 , FLAG_STRING+FLAG_CTRL,CTRL_UP  },
-    { HID_KEY_ARROW_DOWN, HID_KEY_ARROW_DOWN, 0 , FLAG_STRING+FLAG_CTRL, CTRL_DOWN },
-    { HID_KEY_ARROW_LEFT, HID_KEY_ARROW_LEFT, 0 , FLAG_STRING+FLAG_CTRL, CTRL_LEFT },
-    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_RIGHT, 0 , FLAG_STRING+FLAG_CTRL, CTRL_RIGHT},
-    { HID_KEY_ARROW_UP, HID_KEY_ARROW_UP, 0 , FLAG_STRING,CURSOR_UP  },
-    { HID_KEY_ARROW_DOWN, HID_KEY_ARROW_DOWN, 0 , FLAG_STRING, CURSOR_DOWN },
-    { HID_KEY_ARROW_LEFT, HID_KEY_ARROW_LEFT, 0 , FLAG_STRING, CURSOR_LEFT },
-    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_RIGHT, 0 , FLAG_STRING, CURSOR_RIGHT},
-
+    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_UP, 0, FLAG_STRING | FLAG_CTRL, CTRL_RIGHT SEP CTRL_LEFT SEP CTRL_DOWN SEP CTRL_UP },
 };
 
 STATIC bool report_contains(const hid_keyboard_report_t *report, uint8_t key) {
@@ -293,9 +268,9 @@ STATIC void process_event(uint8_t dev_addr, uint8_t instance, const hid_keyboard
                 if (mapper->flags & FLAG_CTRL && !ctrl) {
                     continue;
                 }
-                if (!(mapper->flags & FLAG_CTRL) && ctrl) {
+                if (!(mapper->flags & FLAG_CTRL) && ctrl && (mapper->flags & FLAG_STRING)) {
                     continue;
-                }                
+                }
                 if (mapper->flags & FLAG_STRING) {
                     const char *msg = skip_nuls(mapper->data, keycode - mapper->first);
                     send_bufz(msg);
