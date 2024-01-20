@@ -85,7 +85,7 @@ struct keycode_mapper {
 #define F1      "\e[OP"
 #define F2      "\e[OQ"
 #define F3      "\e[OR"
-#define F4      "\e[1S"
+#define F4      "\e[OS"
 #define F5      "\e[15~"
 #define F6      "\e[17~"
 #define F7      "\e[18~"
