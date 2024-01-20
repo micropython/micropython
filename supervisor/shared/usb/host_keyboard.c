@@ -82,10 +82,10 @@ struct keycode_mapper {
 // https://aperiodic.net/phil/archives/Geekery/term-function-keys/
 // https://www.microfocus.com/documentation/rumba/desktop951/RumbaSystemAdminGuide/GUID-5F92BA7F-107A-4101-B4E7-E0FC73F0CD99.html
 // showkey -a
-#define F1      "\e[OP"
-#define F2      "\e[OQ"
-#define F3      "\e[OR"
-#define F4      "\e[OS"
+#define F1      "\eOP"
+#define F2      "\eOQ"
+#define F3      "\eOR"
+#define F4      "\eOS"
 #define F5      "\e[15~"
 #define F6      "\e[17~"
 #define F7      "\e[18~"
