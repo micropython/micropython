@@ -107,6 +107,9 @@ SRC_LIB_LIBM_C += $(addprefix lib/libm/,\
 SRC_LIB_LIBM_SQRT_SW_C += lib/libm/ef_sqrt.c
 SRC_LIB_LIBM_SQRT_HW_C += lib/libm/thumb_vfp_sqrtf.c
 
+# Disable warnings in libm.
+$(BUILD)/lib/libm/kf_rem_pio2.o: CFLAGS += -Wno-maybe-uninitialized
+
 # Double-precision math library.
 SRC_LIB_LIBM_DBL_C += $(addprefix lib/libm_dbl/,\
 	__cos.c \
