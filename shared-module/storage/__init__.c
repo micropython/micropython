@@ -186,11 +186,11 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool rea
             nlr_pop();
             mp_obj_tuple_t *t = MP_OBJ_TO_PTR(mount_point_stat);
             if ((MP_OBJ_SMALL_INT_VALUE(t->items[0]) & MP_S_IFDIR) == 0) {
-                mp_raise_RuntimeError(MP_ERROR_TEXT("Mount point must be a directory"));
+                mp_raise_RuntimeError(MP_ERROR_TEXT("Mount point directory missing"));
             }
         } else {
             // Something with the same name doesn't exist.
-            mp_raise_RuntimeError(MP_ERROR_TEXT("Mount point directory missing. Create first (maybe via USB)"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Mount point directory missing"));
         }
     }
 
