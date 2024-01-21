@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,26 +24,6 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
+#include "supervisor/board.h"
 
-#include "common-hal/pwmio/PWMOut.h"
-
-#include "audio_dma.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    pwmio_pwmout_obj_t left_pwm;
-    pwmio_pwmout_obj_t right_pwm;
-    audio_dma_t dma;
-    uint16_t quiescent_value;
-    uint8_t pacing_timer;
-    bool stereo;     // if false, only using left_pwm.
-    bool swap_channel;
-} audiopwmio_pwmaudioout_obj_t;
-
-void audiopwmout_reset(void);
-
-void audiopwmout_background(void);
-
-#endif  // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
