@@ -52,9 +52,9 @@ port
 
 builtins        micropython     __future__      _asyncio
 _thread         aesio           array           audiocore
-audiomixer      binascii        bitmaptools     cexample
-cmath           codeop          collections     cppexample
-displayio       errno           example_package
+audiomixer      binascii        bitmapfilter    bitmaptools
+cexample        cmath           codeop          collections
+cppexample      displayio       errno           example_package
 gc              hashlib         heapq           io
 jpegio          json            locale          math
 os              platform        qrio            rainbowio

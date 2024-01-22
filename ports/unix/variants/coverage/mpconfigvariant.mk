@@ -34,9 +34,12 @@ SRC_BITMAP := \
 	shared-bindings/audiomixer/__init__.c \
 	shared-bindings/audiomixer/Mixer.c \
 	shared-bindings/audiomixer/MixerVoice.c \
+	shared-bindings/bitmapfilter/__init__.c \
 	shared-bindings/bitmaptools/__init__.c \
 	shared-bindings/codeop/__init__.c \
 	shared-bindings/displayio/Bitmap.c \
+	shared-bindings/displayio/ColorConverter.c \
+	shared-bindings/displayio/Palette.c \
 	shared-bindings/jpegio/__init__.c \
 	shared-bindings/jpegio/JpegDecoder.c \
 	shared-bindings/locale/__init__.c \
@@ -60,11 +63,12 @@ SRC_BITMAP := \
 	shared-module/audiomixer/__init__.c \
 	shared-module/audiomixer/Mixer.c \
 	shared-module/audiomixer/MixerVoice.c \
+	shared-module/bitmapfilter/__init__.c \
 	shared-module/bitmaptools/__init__.c \
 	shared-module/displayio/area.c \
 	shared-module/displayio/Bitmap.c \
 	shared-module/displayio/ColorConverter.c \
-	shared-module/displayio/ColorConverter.c \
+	shared-module/displayio/Palette.c \
 	shared-module/jpegio/__init__.c \
 	shared-module/jpegio/JpegDecoder.c \
 	shared-module/os/getenv.c \
