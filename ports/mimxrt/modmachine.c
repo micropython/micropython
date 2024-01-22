@@ -139,10 +139,10 @@ NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
         }
     }
 
-    #ifdef MIMXRT117x_SERIES
+    #if defined(MIMXRT117x_SERIES)
     machine_pin_config(pin_WAKEUP_DIG, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
     GPC_CM_EnableIrqWakeup(GPC_CPU_MODE_CTRL_0, GPIO13_Combined_0_31_IRQn, true);
-    #elif defined IOMUXC_SNVS_WAKEUP_GPIO5_IO00
+    #elif defined(pin_WAKEUP)
     machine_pin_config(pin_WAKEUP, PIN_MODE_IT_RISING, PIN_PULL_DISABLED, PIN_DRIVE_OFF, 0, PIN_AF_MODE_ALT5);
     GPC_EnableIRQ(GPC, GPIO5_Combined_0_15_IRQn);
     #endif
