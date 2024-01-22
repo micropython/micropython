@@ -226,7 +226,8 @@ msgstr "%q muss von Typ %q oder %q sein, nicht %q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr "%q muss vom Typ %q, %q oder %q sein, und nicht %q"
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q muss von Typ %q sein, nicht %q"
 
@@ -914,10 +915,6 @@ msgstr "Zu vielen Daten für das advertisement packet"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr "Deep Sleep Pins müssen eine steigende Flanke mit Pulldown verwenden"
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -2601,6 +2598,10 @@ msgstr "Falscher Typcode"
 msgid "binary op %q not implemented"
 msgstr "Der binäre Operator %q ist nicht implementiert"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr "Bitmap-Größen müssen übereinstimmen"
@@ -3965,10 +3966,6 @@ msgstr "Die Parameter müssen Register der Reihenfolge a2 bis a5 sein"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "Parameter müssen Register im Bereich von r0 bis r3 sein"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "Pixelkoordinaten außerhalb der Grenzen"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "Abfrage der Datei unter Win32 nicht verfügbar"
@@ -4365,6 +4362,10 @@ msgstr "nicht unterstützter Thumb-Befehl '%s' mit %d Argumenten"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "nicht unterstützte Xtensa-Anweisung '%s' mit %d Argumenten"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "Farbraum wird nicht unterstützt für GifWriter"
@@ -4409,6 +4410,16 @@ msgstr "Wert außerhalb des Zielbereiches"
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4481,6 +4492,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "Pixelkoordinaten außerhalb der Grenzen"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Ein Hardware Interrupt Kanal wird schon benutzt"

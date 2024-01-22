@@ -230,7 +230,8 @@ msgstr "%q måste vara av typen %q eller %q, inte %q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr "%q måste vara av typen %q, %q, eller %q, inte %q"
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q måste vara av typen %q, inte %q"
 
@@ -915,10 +916,6 @@ msgstr "Data för stor för annonseringspaket"
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr "Deep sleep-pinnar måste använda en stigande flank med pulldown"
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr "Distinationsbitmap för liten för att få plats med bild"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -2587,6 +2584,10 @@ msgstr "Ogiltig typkod"
 msgid "binary op %q not implemented"
 msgstr "binär op %q är inte implementerad"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr "bitmappsstorlekar måste matcha"
@@ -3934,10 +3935,6 @@ msgstr "parametrarna måste registreras i följd a2-a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parametrarna måste registreras i följd r0-r3"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "pixelkoordinater utanför gränserna"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "filbevakning är inte tillgänglig på win32"
@@ -4332,6 +4329,10 @@ msgstr "Thumb-instruktion '%s' med %d argument stöd inte"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "Xtensa-instruktion '%s' med %d argument stöds inte"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "färgrymd stöds inte för GifWriter"
@@ -4377,6 +4378,16 @@ msgstr "värde utanför målintervall"
 #: extmod/moddeflate.c
 msgid "wbits"
 msgstr "wbits"
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
+msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4448,6 +4459,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "Destination bitmap too small to contain image"
+#~ msgstr "Distinationsbitmap för liten för att få plats med bild"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "pixelkoordinater utanför gränserna"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "En kanal för hårdvaruavbrott används redan"

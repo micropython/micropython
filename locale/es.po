@@ -231,7 +231,8 @@ msgstr "%q debe ser del tipo %q o %q, y no %q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q debe ser del tipo %q, y no %q"
 
@@ -924,10 +925,6 @@ msgstr "Data es muy grande para el paquete de anuncio"
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 "Pines de sueño profundo deben usar eje de subida con jalado hacia abajo"
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -2612,6 +2609,10 @@ msgstr "typecode erroneo"
 msgid "binary op %q not implemented"
 msgstr "operacion binaria %q no implementada"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr "Los tamaños de los bitmap deben coincidir"
@@ -3962,10 +3963,6 @@ msgstr "los parámetros deben ser registros en secuencia de a2 a a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "los parametros deben ser registros en secuencia del r0 al r3"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "coordenadas del pixel fuera de límites"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "el sondeo del archivo no esta disponible en win32"
@@ -4361,6 +4358,10 @@ msgstr "instrucción de tipo Thumb no admitida '%s' con %d argumentos"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "instrucción Xtensa '%s' con %d argumentos no soportada"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "espacio de color no soportado para GifWriter"
@@ -4405,6 +4406,16 @@ msgstr "valor fuera de alcance al blanco"
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4477,6 +4488,9 @@ msgstr "zi debe ser de tipo flotante"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi debe ser una forma (n_section,2)"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "coordenadas del pixel fuera de límites"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Un canal de interrupción por hardware ya está en uso"

@@ -235,7 +235,8 @@ msgstr "%q는 %q가 아닌 %q 또는 %q 유형이어야 합니다"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q는 %q가 아니라 %q 유형이어야 합니다"
 
@@ -944,10 +945,6 @@ msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니
 #, fuzzy
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr "딥 슬립 핀은 풀다운이 있는 상승 에지를 사용해야 합니다"
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr "대상 비트맵이 이미지를 포함하기에는 너무 작습니다"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -2620,6 +2617,10 @@ msgstr ""
 msgid "binary op %q not implemented"
 msgstr ""
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr ""
@@ -3960,10 +3961,6 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4358,6 +4355,10 @@ msgstr ""
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr ""
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr ""
@@ -4402,6 +4403,16 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4474,6 +4485,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Destination bitmap too small to contain image"
+#~ msgstr "대상 비트맵이 이미지를 포함하기에는 너무 작습니다"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "하드웨어 인터럽트 채널이 이미 사용 중입니다"
