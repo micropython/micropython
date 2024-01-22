@@ -336,8 +336,8 @@ void port_free(void *ptr) {
     heap_caps_free(ptr);
 }
 
-void port_realloc(void *ptr, size_t size) {
-    heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
+void *port_realloc(void *ptr, size_t size) {
+    return heap_caps_realloc(ptr, size, MALLOC_CAP_8BIT);
 }
 
 size_t port_heap_get_largest_free_size(void) {
