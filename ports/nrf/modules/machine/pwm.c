@@ -233,6 +233,11 @@ static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     self->p_config->mode[pwm_channel] = MODE_HIGH_LOW;
     self->p_config->defer_start = false;
 
+    // Allocate the device if it was not used before.
+    if (hard_configs[pwm_id].active == FREE) {
+        hard_configs[pwm_id].active = STOPPED;
+    }
+
     // start the PWM running for this channel
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
