@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-01-21 12:01+0000\n"
+"PO-Revision-Date: 2024-01-22 14:03+0000\n"
 "Last-Translator: Nemoto <sidespoilenm@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
@@ -362,35 +362,35 @@ msgstr "'%s'には{r0, r1, ...}が必要"
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' 整数 %d は範囲 %d..%d 内にありません"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' 整数 0x%x はマスク 0x%x に適合しません"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "'%s' オブジェクトは要素の代入をサポートしていません"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "'%s' オブジェクトは要素の削除をサポートしていません"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
-msgstr ""
+msgstr "'%s' オブジェクトに '%q' という属性はありません"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "'%s' オブジェクトは添え字を使えません"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "'=' は書式指定子での使用が認められていません"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
@@ -406,7 +406,7 @@ msgstr "関数外でのawait"
 
 #: py/compile.c
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "ループ外の 'break'/'continue'"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -426,7 +426,7 @@ msgstr "関数外でのreturn"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' が非同期関数内にあります"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -442,7 +442,7 @@ msgstr "*xは代入先でなければなりません"
 
 #: py/obj.c
 msgid ", in %q\n"
-msgstr ""
+msgstr "%q 内の\n"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
