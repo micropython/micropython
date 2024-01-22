@@ -216,7 +216,8 @@ msgstr ""
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -899,10 +900,6 @@ msgstr "Data te groot voor advertisement pakket"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -2562,6 +2559,10 @@ msgstr "verkeerde typecode"
 msgid "binary op %q not implemented"
 msgstr "binaire op %q niet geïmplementeerd"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr ""
@@ -3908,10 +3909,6 @@ msgstr "parameters moeten registers zijn in de volgorde a2 tot a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parameters moeten registers zijn in de volgorde r0 tot r3"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "pixel coördinaten buiten bereik"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4306,6 +4303,10 @@ msgstr "niet ondersteunde Thumb instructie '%s' met %d argumenten"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "niet ondersteunde Xtensa instructie '%s' met %d argumenten"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr ""
@@ -4350,6 +4351,16 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4422,6 +4433,9 @@ msgstr "zi moet van type float zijn"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi moet vorm (n_section, 2) hebben"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "pixel coördinaten buiten bereik"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Een hardware interrupt kanaal is al in gebruik"

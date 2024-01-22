@@ -217,7 +217,8 @@ msgstr ""
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr ""
 
@@ -903,10 +904,6 @@ msgstr "Hindi makasya ang data sa loob ng advertisement packet"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -2555,6 +2552,10 @@ msgstr "masamang typecode"
 msgid "binary op %q not implemented"
 msgstr "binary op %q hindi implemented"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr ""
@@ -3908,11 +3909,6 @@ msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence a2 hanggang a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "ang mga parameter ay dapat na nagrerehistro sa sequence r0 hanggang r3"
 
-#: shared-bindings/bitmaptools/__init__.c
-#, fuzzy
-msgid "pixel coordinates out of bounds"
-msgstr "wala sa sakop ang address"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4307,6 +4303,10 @@ msgstr "hindi sinusuportahan ang thumb instruktion '%s' sa %d argumento"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "hindi sinusuportahan ang instruction ng Xtensa '%s' sa %d argumento"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr ""
@@ -4351,6 +4351,16 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4423,6 +4433,10 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#, fuzzy
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "wala sa sakop ang address"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Isang channel ng hardware interrupt ay ginagamit na"

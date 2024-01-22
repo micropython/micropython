@@ -233,7 +233,8 @@ msgstr "%q должно быть типа%q или%q, а не%q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q должно быть типа %q, а не %q"
 
@@ -927,10 +928,6 @@ msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 "Выводы глубокого сна должны использовать сигнал по возрастанию с подтяжкой к "
 "земле"
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -2627,6 +2624,10 @@ msgstr "Неверный шрифт"
 msgid "binary op %q not implemented"
 msgstr "двоичная операция %q не реализована"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr "Размеры растровых изображений должны совпадать"
@@ -4000,10 +4001,6 @@ msgstr "Параметры должны быть регистрами в пос�
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "Параметры должны быть регистрами в последовательности от r0 до r3"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "пиксельные координаты за пределами границ"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "Опрос в файле недоступен в Win32"
@@ -4404,6 +4401,10 @@ msgstr "неподдерживаемая инструкция Thumb '%s' с ар
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "неподдерживаемая инструкция Xtensa '%s' с аргументами %d"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "неподдерживаемое цветовое пространство для GifWriter"
@@ -4451,6 +4452,16 @@ msgstr "Величина выходящая за пределы диапазон
 #, fuzzy
 msgid "wbits"
 msgstr "wbits"
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
+msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4522,6 +4533,9 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "пиксельные координаты за пределами границ"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Канал аппаратного прерывания уже используется"

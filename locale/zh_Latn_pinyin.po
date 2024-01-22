@@ -231,7 +231,8 @@ msgstr "%q de lèi xíng bì xū shì %q huò %q, ér bù shì %q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr "%q bìxūshì %q, %q huò %q lèixíng, érbùshì %q"
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q de lèi xíng bì xū shì %q, ér bù shì %q"
 
@@ -916,10 +917,6 @@ msgstr "Guǎnggào bāo de shùjù tài dà"
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 "shēn dù shuì mián bié zhēn bì xū shǐ yòng xià lā shàng shēng de biān yuán"
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr "mùbiāo wèitú tàixiǎo, wúfǎ bāohán túxiàng"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
@@ -2591,6 +2588,10 @@ msgstr "cuòwù de dàimǎ lèixíng"
 msgid "binary op %q not implemented"
 msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr "wèi tú dà xiǎo bì xū pǐ pèi"
@@ -3938,10 +3939,6 @@ msgstr "cānshù bìxū shì xùliè a2 zhì a5 de dēngjì shù"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "cānshù bìxū shì xùliè r0 zhì r3 de dēngjì qì"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "xiàngsù zuòbiāo chāochū biānjiè"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "zài win32 shàng bù tí gōng wén jiàn tóu piào"
@@ -4339,6 +4336,10 @@ msgstr "bù zhīchí de Thumb zhǐshì '%s', shǐyòng %d cānshù"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "bù zhīchí de Xtensa zhǐlìng '%s', shǐyòng %d cānshù"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "GifWriter bú zhī chí cǐ sè cǎi kōng jiān"
@@ -4384,6 +4385,16 @@ msgstr "zhí fàn wéi wài de mù biāo"
 #: extmod/moddeflate.c
 msgid "wbits"
 msgstr "fànwéi"
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
+msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4455,6 +4466,12 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Destination bitmap too small to contain image"
+#~ msgstr "mùbiāo wèitú tàixiǎo, wúfǎ bāohán túxiàng"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "xiàngsù zuòbiāo chāochū biānjiè"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"
