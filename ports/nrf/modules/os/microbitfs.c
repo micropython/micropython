@@ -80,13 +80,6 @@
 /** Must be such that sizeof(file_header) < DATA_PER_CHUNK */
 #define MAX_FILENAME_LENGTH 120
 
-<<<<<<< HEAD
-=======
-// Minimum number of free chunks to justify sweeping.
-// If this is too low it may cause excessive wear
-#define MIN_CHUNKS_FOR_SWEEP (FLASH_PAGESIZE / CHUNK_SIZE)
-
->>>>>>> 7cfef87f1 (ports/nrf: Fix code formatting.)
 #define FILE_NOT_FOUND ((uint8_t)-1)
 
 /** Maximum number of chunks allowed in filesystem. 252 chunks is 31.5kB */
