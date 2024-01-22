@@ -30,4 +30,4 @@
 mp_dynamic_compiler_t mp_dynamic_compiler = {0};
 #endif
 
-mp_state_ctx_t mp_state_ctx;
+mp_state_ctx_t mp_state_ctx = {0};
