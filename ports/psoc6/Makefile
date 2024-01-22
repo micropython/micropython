@@ -186,7 +186,7 @@ endif
 SRC_C = help.c \
 		main.c \
 		mphalport.c \
-		$(BUILD)/frozen_content.c 
+		frozen_content.c 
 
 SRC_ASM += shared/runtime/gchelper_thumb1.s
 
