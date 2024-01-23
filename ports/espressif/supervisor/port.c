@@ -107,9 +107,6 @@
 #include "esp_log.h"
 #define TAG "port"
 
-uint32_t *heap;
-uint32_t heap_size;
-
 STATIC esp_timer_handle_t _tick_timer;
 STATIC esp_timer_handle_t _sleep_timer;
 
@@ -255,9 +252,6 @@ safe_mode_t port_init(void) {
     esp_rom_install_uart_printf();
     #endif
 
-    heap = NULL;
-    heap_size = 0;
-
     #define pin_GPIOn(n) pin_GPIO##n
     #define pin_GPIOn_EXPAND(x) pin_GPIOn(x)
 
@@ -329,7 +323,16 @@ void *port_malloc(size_t size, bool dma_capable) {
     if (dma_capable) {
         caps |= MALLOC_CAP_DMA;
     }
-    return heap_caps_malloc(size, caps);
+
+    void *ptr = NULL;
+    // Try SPIRAM first when available.
+    #ifdef CONFIG_SPIRAM
+    ptr = heap_caps_malloc(size, caps | MALLOC_CAP_SPIRAM);
+    #endif
+    if (ptr == NULL) {
+        ptr = heap_caps_malloc(size, caps);
+    }
+    return ptr;
 }
 
 void port_free(void *ptr) {
@@ -341,7 +344,7 @@ void *port_realloc(void *ptr, size_t size) {
 }
 
 size_t port_heap_get_largest_free_size(void) {
-    size_t free_size = heap_caps_get_largest_free_block(0);
+    size_t free_size = heap_caps_get_largest_free_block(MALLOC_CAP_8BIT);
     return free_size;
 }
 
