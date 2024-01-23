@@ -20,8 +20,13 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: 'micropython repo'  # test build with space in path
     steps:
     - uses: actions/checkout@v4
+      with:
+        path: 'micropython repo'
     - name: Install packages
       run: source tools/ci.sh && ci_mimxrt_setup
     - name: Build
