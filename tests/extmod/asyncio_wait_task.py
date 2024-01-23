@@ -68,5 +68,16 @@ async def main():
     except ValueError:
         print("ValueError")
 
+    # Wait on a task that raises, but the waiting is done some time later.
+    # Need to suppress the "Task exception wasn't retrieved" message.
+    asyncio.get_event_loop().set_exception_handler(lambda loop, context: None)
+    t = asyncio.create_task(task_raise())
+    for _ in range(5):
+        await asyncio.sleep(0)
+    try:
+        await t
+    except ValueError:
+        print("ValueError")
+
 
 asyncio.run(main())
