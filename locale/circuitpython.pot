@@ -497,7 +497,6 @@ msgstr ""
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr ""
 
@@ -520,13 +519,11 @@ msgid "All sync event channels in use"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr ""
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
@@ -537,7 +534,7 @@ msgstr ""
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
+#: ports/stm/peripherals/timers.c
 msgid "All timers in use"
 msgstr ""
 
@@ -776,12 +773,6 @@ msgstr ""
 msgid "Cannot remount '/' when visible via USB."
 msgstr ""
 
-#: ports/atmel-samd/common-hal/microcontroller/__init__.c
-#: ports/cxd56/common-hal/microcontroller/__init__.c
-#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
-msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
-
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
 msgstr ""
@@ -797,10 +788,6 @@ msgstr ""
 
 #: py/objslice.c
 msgid "Cannot subclass slice"
-msgstr ""
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Cannot vary frequency on a timer that is already in use"
 msgstr ""
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
@@ -843,10 +830,6 @@ msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
-msgstr ""
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Could not start PWM"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -938,16 +921,6 @@ msgstr ""
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/ps2io/Ps2.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-msgid "EXTINT channel already in use"
 msgstr ""
 
 #: extmod/modre.c
@@ -1082,10 +1055,6 @@ msgid ""
 "Frequency must be 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 or 1008 Mhz"
 msgstr ""
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Frequency must match existing PWMOut using this timer"
-msgstr ""
-
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
@@ -1195,13 +1164,23 @@ msgid "Internal define error"
 msgstr ""
 
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
-#: shared-module/os/getenv.c
+#: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr ""
 
 #: shared-module/rgbmatrix/RGBMatrix.c
 #, c-format
 msgid "Internal error #%d"
+msgstr ""
+
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
+msgid "Internal resource(s) in use"
 msgstr ""
 
 #: supervisor/shared/safe_mode.c
@@ -1221,7 +1200,7 @@ msgstr ""
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/epaperdisplay/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid %q"
 msgstr ""
 
@@ -1457,8 +1436,10 @@ msgstr ""
 msgid "No IP"
 msgstr ""
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "No available clocks"
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c
+#: ports/cxd56/common-hal/microcontroller/__init__.c
+#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
+msgid "No bootloader present"
 msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
@@ -1681,11 +1662,6 @@ msgstr ""
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr ""
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid ""
-"PWM frequency not writable when variable_frequency is False on construction."
-msgstr ""
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "PWM restart"
 msgstr ""
@@ -1729,11 +1705,6 @@ msgstr ""
 
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
-msgstr ""
-
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Pin must support hardware interrupts"
 msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c

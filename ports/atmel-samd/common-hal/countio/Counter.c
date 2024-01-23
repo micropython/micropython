@@ -1,6 +1,7 @@
 
 #include "common-hal/countio/Counter.h"
 #include "shared-bindings/countio/Counter.h"
+#include "shared-bindings/microcontroller/Pin.h"
 
 #include "atmel_start_pins.h"
 
@@ -11,13 +12,13 @@
 void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
     if (!pin->has_extint) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Pin must support hardware interrupts"));
+        raise_ValueError_invalid_pin();
     }
 
 
     if (eic_get_enable()) {
         if (!eic_channel_free(pin->extint_channel)) {
-            mp_raise_RuntimeError(MP_ERROR_TEXT("EXTINT channel already in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
         }
     } else {
         turn_on_external_interrupt_controller();

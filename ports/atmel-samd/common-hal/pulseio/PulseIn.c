@@ -155,7 +155,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
         raise_ValueError_invalid_pin();
     }
     if (eic_get_enable() && !eic_channel_free(pin->extint_channel)) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("EXTINT channel already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
     }
 
     self->buffer = (uint16_t *)m_malloc(maxlen * sizeof(uint16_t));
