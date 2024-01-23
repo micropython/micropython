@@ -41,7 +41,7 @@
 // all TWI instances have the same max size
 // 16 bits for 840, 10 bits for 810, 8 bits for 832
 #define I2C_MAX_XFER_LEN         MIN(((1UL << TWIM0_EASYDMA_MAXCNT_SIZE) - 1), 1024)
-#define I2C_TIMEOUT 1000 //1 second timeout
+#define I2C_TIMEOUT 1000 // 1 second timeout
 
 STATIC twim_peripheral_t twim_peripherals[] = {
     #if NRFX_CHECK(NRFX_TWIM0_ENABLED)
@@ -103,9 +103,9 @@ static uint8_t twi_error_to_mp(const nrfx_err_t err) {
     return 0;
 }
 
-static void twim_event_handler(nrfx_twim_evt_t const * p_event, void *p_context) {
+static void twim_event_handler(nrfx_twim_evt_t const *p_event, void *p_context) {
     // this is the callback handler - sets transferring to false and records the most recent event.
-    twim_peripheral_t *peripheral  = (twim_peripheral_t *) p_context;
+    twim_peripheral_t *peripheral = (twim_peripheral_t *) p_context;
     peripheral->last_event_type = p_event->type;
     peripheral->transferring = false;
 }
@@ -254,7 +254,7 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
-STATIC nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_desc_t const * p_xfer_desc, uint32_t flags) {
+STATIC nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_desc_t const *p_xfer_desc, uint32_t flags) {
     // does non-blocking transfer and raises and exception if it takes longer than I2C_TIMEOUT ms to complete
     uint64_t deadline = supervisor_ticks_ms64() + I2C_TIMEOUT;
     nrfx_err_t err = NRFX_SUCCESS;
