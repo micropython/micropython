@@ -30,6 +30,7 @@
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
+#include "supervisor/shared/tick.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
 
@@ -39,18 +40,23 @@
 
 // all TWI instances have the same max size
 // 16 bits for 840, 10 bits for 810, 8 bits for 832
-#define I2C_MAX_XFER_LEN         ((1UL << TWIM0_EASYDMA_MAXCNT_SIZE) - 1)
+#define I2C_MAX_XFER_LEN         MIN(((1UL << TWIM0_EASYDMA_MAXCNT_SIZE) - 1), 1024)
+#define I2C_TIMEOUT 1000 //1 second timeout
 
 STATIC twim_peripheral_t twim_peripherals[] = {
     #if NRFX_CHECK(NRFX_TWIM0_ENABLED)
     // SPIM0 and TWIM0 share an address.
     { .twim = NRFX_TWIM_INSTANCE(0),
-      .in_use = false},
+      .in_use = false,
+      .transferring = false,
+      .last_event_type = NRFX_TWIM_EVT_DONE},
     #endif
     #if NRFX_CHECK(NRFX_TWIM1_ENABLED)
     // SPIM1 and TWIM1 share an address.
     { .twim = NRFX_TWIM_INSTANCE(1),
-      .in_use = false},
+      .in_use = false,
+      .transferring = false,
+      .last_event_type = NRFX_TWIM_EVT_DONE},
     #endif
 };
 
@@ -84,14 +90,24 @@ static uint8_t twi_error_to_mp(const nrfx_err_t err) {
             return MP_ENODEV;
         case NRFX_ERROR_BUSY:
             return MP_EBUSY;
-        case NRFX_ERROR_DRV_TWI_ERR_DNACK:
         case NRFX_ERROR_INVALID_ADDR:
+        case NRFX_ERROR_DRV_TWI_ERR_DNACK:
+        case NRFX_ERROR_DRV_TWI_ERR_OVERRUN:
             return MP_EIO;
+        case NRFX_ERROR_TIMEOUT:
+            return MP_ETIMEDOUT;
         default:
             break;
     }
 
     return 0;
+}
+
+static void twim_event_handler(nrfx_twim_evt_t const * p_event, void *p_context) {
+    // this is the callback handler - sets transferring to false and records the most recent event.
+    twim_peripheral_t *peripheral  = (twim_peripheral_t *) p_context;
+    peripheral->last_event_type = p_event->type;
+    peripheral->transferring = false;
 }
 
 void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *scl, const mcu_pin_obj_t *sda, uint32_t frequency, uint32_t timeout) {
@@ -155,7 +171,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self, const mcu_pin_obj_t *
 
     // About to init. If we fail after this point, common_hal_busio_i2c_deinit() will set in_use to false.
     self->twim_peripheral->in_use = true;
-    nrfx_err_t err = nrfx_twim_init(&self->twim_peripheral->twim, &config, NULL, NULL);
+    nrfx_err_t err = nrfx_twim_init(&self->twim_peripheral->twim, &config, twim_event_handler, self->twim_peripheral);
     if (err != NRFX_SUCCESS) {
         common_hal_busio_i2c_deinit(self);
         mp_raise_OSError(MP_EIO);
@@ -238,6 +254,37 @@ void common_hal_busio_i2c_unlock(busio_i2c_obj_t *self) {
     self->has_lock = false;
 }
 
+STATIC nrfx_err_t _twim_xfer_with_timeout(busio_i2c_obj_t *self, nrfx_twim_xfer_desc_t const * p_xfer_desc, uint32_t flags) {
+    // does non-blocking transfer and raises and exception if it takes longer than I2C_TIMEOUT ms to complete
+    uint64_t deadline = supervisor_ticks_ms64() + I2C_TIMEOUT;
+    nrfx_err_t err = NRFX_SUCCESS;
+    self->twim_peripheral->transferring = true;
+    err = nrfx_twim_xfer(&self->twim_peripheral->twim, p_xfer_desc, flags);
+    if (err != NRFX_SUCCESS) {
+        self->twim_peripheral->transferring = false;
+        return err;
+    }
+    while (self->twim_peripheral->transferring) {
+        if (supervisor_ticks_ms64() > deadline) {
+            self->twim_peripheral->transferring = false;
+            return NRFX_ERROR_TIMEOUT;
+        }
+    }
+    switch (self->twim_peripheral->last_event_type) {
+        case NRFX_TWIM_EVT_DONE:       ///< Transfer completed event.
+            return NRFX_SUCCESS;
+        case NRFX_TWIM_EVT_ADDRESS_NACK: ///< Error event: NACK received after sending the address.
+            return NRFX_ERROR_DRV_TWI_ERR_ANACK;
+        case NRFX_TWIM_EVT_BUS_ERROR:     ///< Error event: An unexpected transition occurred on the bus.
+        case NRFX_TWIM_EVT_DATA_NACK:    ///< Error event: NACK received after sending a data byte.
+            return NRFX_ERROR_DRV_TWI_ERR_DNACK;
+        case NRFX_TWIM_EVT_OVERRUN:      ///< Error event: The unread data is replaced by new data.
+            return NRFX_ERROR_DRV_TWI_ERR_OVERRUN;
+        default:                         /// unknown error...
+            return NRFX_ERROR_INTERNAL;
+    }
+}
+
 STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr, const uint8_t *data, size_t len, bool stopBit) {
     if (len == 0) {
         return common_hal_busio_i2c_probe(self, addr) ? 0 : MP_ENODEV;
@@ -253,7 +300,7 @@ STATIC uint8_t _common_hal_busio_i2c_write(busio_i2c_obj_t *self, uint16_t addr,
         nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_TX(addr, (uint8_t *)data, xact_len);
         uint32_t const flags = (stopBit ? 0 : NRFX_TWIM_FLAG_TX_NO_STOP);
 
-        if (NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, flags))) {
+        if (NRFX_SUCCESS != (err = _twim_xfer_with_timeout(self, &xfer_desc, flags))) {
             break;
         }
 
@@ -284,7 +331,7 @@ uint8_t common_hal_busio_i2c_read(busio_i2c_obj_t *self, uint16_t addr, uint8_t 
         const size_t xact_len = MIN(len, I2C_MAX_XFER_LEN);
         nrfx_twim_xfer_desc_t xfer_desc = NRFX_TWIM_XFER_DESC_RX(addr, data, xact_len);
 
-        if (NRFX_SUCCESS != (err = nrfx_twim_xfer(&self->twim_peripheral->twim, &xfer_desc, 0))) {
+        if (NRFX_SUCCESS != (err = _twim_xfer_with_timeout(self, &xfer_desc, 0))) {
             break;
         }
 
