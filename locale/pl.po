@@ -224,7 +224,8 @@ msgstr ""
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q musi być typu %q, a nie %q"
 
@@ -910,10 +911,6 @@ msgstr "Zbyt dużo danych pakietu rozgłoszeniowego"
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -2572,6 +2569,10 @@ msgstr "zły typecode"
 msgid "binary op %q not implemented"
 msgstr "brak dwu-argumentowego operatora %q"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
+
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
 msgstr ""
@@ -3914,10 +3915,6 @@ msgstr "parametry muszą być rejestrami w kolejności a2 do a5"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "parametry muszą być rejestrami w kolejności r0 do r3"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "współrzędne piksela poza zakresem"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4312,6 +4309,10 @@ msgstr "zła instrukcja Thumb '%s' z %d argumentami"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "zła instrukcja Xtensa '%s' z %d argumentami"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr ""
@@ -4356,6 +4357,16 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4428,6 +4439,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "współrzędne piksela poza zakresem"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Kanał przerwań sprzętowych w użyciu"

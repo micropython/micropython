@@ -168,7 +168,7 @@ Run ``cd ports/espressif`` from ``circuitpython/`` to move to the espressif port
 
 .. code-block::
 
-    ./esp-idf/export.sh
+    source ./esp-idf/export.sh
 
 When CircuitPython updates the ESP-IDF to a new release, you may need to run this installation process again. The exact commands used may also vary based on your shell environment.
 

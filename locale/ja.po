@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-11-16 15:03+0000\n"
-"Last-Translator: Yutaro Urata <yutarourata04@gmail.com>\n"
+"PO-Revision-Date: 2024-01-22 14:03+0000\n"
+"Last-Translator: Nemoto <sidespoilenm@gmail.com>\n"
 "Language-Team: none\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.2\n"
+"X-Generator: Weblate 5.4-dev\n"
 
 #: main.c
 msgid ""
@@ -40,18 +40,25 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"プログラムに問題がある場合は、github.com/adafruit/circuitpython/issues に問題"
+"を報告してください。"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "Press reset to exit safe mode.\n"
 msgstr ""
+"\n"
+"セーフモードからぬけるにはリセットを押してください。\n"
 
 #: supervisor/shared/safe_mode.c
 msgid ""
 "\n"
 "You are in safe mode because:\n"
 msgstr ""
+"\n"
+"セーフモードに入った理由:\n"
 
 #: py/obj.c
 msgid "  File \"%q\""
@@ -63,7 +70,7 @@ msgstr "  ファイル \"%q\", 行 %d"
 
 #: py/builtinhelp.c
 msgid " is of type %q\n"
-msgstr ""
+msgstr " は %q 型\n"
 
 #: main.c
 msgid " not found.\n"
@@ -86,7 +93,7 @@ msgstr "%dアドレスピン、%dRGBピン、%dタイルは%dの高さを指示�
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q and %q contain duplicate pins"
-msgstr ""
+msgstr "%q と %q に重複するピンがあります"
 
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
 msgid "%q and %q must be different"
@@ -94,11 +101,11 @@ msgstr "%qと%qが必ず異なるのは必要"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "%q and %q must share a clock unit"
-msgstr ""
+msgstr "%q と %q はクロックユニットを共有する必要があります"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
-msgstr ""
+msgstr "%q に重複するピンがあります"
 
 #: ports/atmel-samd/common-hal/sdioio/SDCard.c
 msgid "%q failure: %d"
@@ -106,7 +113,7 @@ msgstr "%q 失敗: %d"
 
 #: py/argcheck.c
 msgid "%q in %q must be of type %q, not %q"
-msgstr ""
+msgstr "%q 内の %q は %q 型である必要があり、 %q 型は使用できません"
 
 #: ports/espressif/common-hal/espulp/ULP.c
 #: ports/mimxrt10xx/common-hal/audiobusio/__init__.c
@@ -125,7 +132,7 @@ msgstr "%q インデックスは範囲外"
 
 #: py/obj.c
 msgid "%q indices must be integers, not %s"
-msgstr ""
+msgstr "%q インデックスは %s ではなく整数でなければなりません"
 
 #: shared-module/bitbangio/SPI.c
 msgid "%q init failed"
@@ -141,27 +148,27 @@ msgstr "このボードでは%qが読み取り専用"
 
 #: py/argcheck.c shared-bindings/usb_hid/Device.c
 msgid "%q length must be %d"
-msgstr ""
+msgstr "%q の長さは %d である必要があります"
 
 #: py/argcheck.c
 msgid "%q length must be %d-%d"
-msgstr ""
+msgstr "%q の長さは %d-%d である必要があります"
 
 #: py/argcheck.c
 msgid "%q length must be <= %d"
-msgstr ""
+msgstr "%q の長さは <= %d である必要があります"
 
 #: py/argcheck.c
 msgid "%q length must be >= %d"
-msgstr ""
+msgstr "%q の長さは >= %d である必要があります"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q moved from %q to %q"
-msgstr ""
+msgstr "%q は %q から %q へ移動しました"
 
 #: py/argcheck.c
 msgid "%q must be %d"
-msgstr ""
+msgstr "%q は %d である必要があります"
 
 #: py/argcheck.c shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/displayio/Bitmap.c
@@ -169,70 +176,73 @@ msgstr ""
 #: shared-bindings/is31fl3741/FrameBuffer.c
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 msgid "%q must be %d-%d"
-msgstr ""
+msgstr "%q は %d-%d である必要があります"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 msgid "%q must be 1 when %q is True"
-msgstr ""
+msgstr "%q は %q が True のとき 1 である必要があります"
 
 #: py/argcheck.c shared-bindings/gifio/GifWriter.c
 #: shared-module/gifio/OnDiskGif.c
 msgid "%q must be <= %d"
-msgstr ""
+msgstr "%q は <= %d である必要があります"
 
 #: ports/espressif/common-hal/watchdog/WatchDogTimer.c
 msgid "%q must be <= %u"
-msgstr ""
+msgstr "%q は <= %u である必要があります"
 
 #: py/argcheck.c
 msgid "%q must be >= %d"
-msgstr ""
+msgstr "%q は >= %d である必要があります"
 
 #: shared-bindings/analogbufio/BufferedIn.c
 msgid "%q must be a bytearray or array of type 'H' or 'B'"
-msgstr ""
+msgstr "%q は bytearray か、 'H' または 'B' 型の array である必要があります"
 
 #: shared-bindings/audiocore/RawSample.c
 msgid "%q must be a bytearray or array of type 'h', 'H', 'b', or 'B'"
 msgstr ""
+"%q は bytearray か、 'h', 'H', 'b', 'B' 型の array である必要があります"
 
 #: shared-bindings/warnings/__init__.c
 msgid "%q must be a subclass of %q"
-msgstr ""
+msgstr "%q は %q のサブクラスである必要があります"
 
 #: ports/espressif/common-hal/analogbufio/BufferedIn.c
 msgid "%q must be array of type 'H'"
-msgstr ""
+msgstr "%q は 'H' 型の array である必要があります"
 
 #: shared-module/synthio/__init__.c
 msgid "%q must be array of type 'h'"
-msgstr ""
+msgstr "%q は 'h' 型の array である必要があります"
 
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "%q must be multiple of 8."
-msgstr ""
+msgstr "%q は 8 の倍数である必要があります"
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
 #: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
-msgstr ""
+msgstr "%q は %q 型か %q 型である必要があります、 %q 型は使用できません"
 
 #: shared-bindings/jpegio/JpegDecoder.c
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
+"%q は %q 型や %q 型または %q 型である必要があります、 %q 型は使用できません"
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
-msgstr ""
+msgstr "%q は %q 型である必要があります、 %q 型は使用できません"
 
 #: ports/atmel-samd/common-hal/busio/UART.c
 msgid "%q must be power of 2"
-msgstr ""
+msgstr "%q は 2 のべき乗である必要があります"
 
 #: shared-bindings/wifi/Monitor.c
 msgid "%q out of bounds"
-msgstr ""
+msgstr "%q が境界外"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
@@ -245,15 +255,15 @@ msgstr "%q が範囲外"
 
 #: py/objmodule.c py/runtime.c
 msgid "%q renamed %q"
-msgstr ""
+msgstr "%q は %q に名前を変更されました"
 
 #: py/objrange.c py/objslice.c shared-bindings/random/__init__.c
 msgid "%q step cannot be zero"
-msgstr ""
+msgstr "%q ステップを 0 にすることはできません"
 
 #: shared-module/bitbangio/I2C.c
 msgid "%q too long"
-msgstr ""
+msgstr "%q が長すぎます"
 
 #: py/bc.c py/objnamedtuple.c
 msgid "%q() takes %d positional arguments but %d were given"
@@ -261,36 +271,36 @@ msgstr "%q() は %d 個の位置引数を取りますが、%d 個与えられま
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "%q() without %q()"
-msgstr ""
+msgstr "%q() に %q() がありません"
 
 #: shared-bindings/usb_hid/Device.c
 msgid "%q, %q, and %q must all be the same length"
-msgstr ""
+msgstr "%q と %q および %q はすべて同じ長さである必要があります"
 
 #: py/objint.c shared-bindings/storage/__init__.c
 msgid "%q=%q"
-msgstr ""
+msgstr "%q=%q"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts in more bits than pin count"
-msgstr ""
+msgstr "%q[%u] はピン数よりも多くのビットをシフトインします"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] shifts out more bits than pin count"
-msgstr ""
+msgstr "%q[%u] はピン数よりも多くのビットをシフトアウトします"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] uses extra pin"
-msgstr ""
+msgstr "%q[%u] は指定外のピンを使用しています"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "%q[%u] waits on input outside of count"
-msgstr ""
+msgstr "%q[%u] はカウント外の入力を待機します"
 
 #: ports/espressif/common-hal/espidf/__init__.c
 #, c-format
 msgid "%s error 0x%x"
-msgstr ""
+msgstr "%s エラー 0x%x"
 
 #: py/argcheck.c
 msgid "'%q' argument required"
@@ -335,7 +345,7 @@ msgstr "'%s'にはFPUレジスタが必要"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects an address of the form [a, b]"
-msgstr ""
+msgstr "'%s' には [a, b] 形式のアドレスが必要です"
 
 #: py/emitinlinethumb.c py/emitinlinextensa.c
 #, c-format
@@ -345,7 +355,7 @@ msgstr "'%s' には整数が必要"
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' expects at most r%d"
-msgstr ""
+msgstr "'%s' は最大でも r%d 必要です"
 
 #: py/emitinlinethumb.c
 #, c-format
@@ -355,35 +365,35 @@ msgstr "'%s'には{r0, r1, ...}が必要"
 #: py/emitinlinextensa.c
 #, c-format
 msgid "'%s' integer %d isn't within range %d..%d"
-msgstr ""
+msgstr "'%s' 整数 %d は範囲 %d..%d 内にありません"
 
 #: py/emitinlinethumb.c
 #, c-format
 msgid "'%s' integer 0x%x doesn't fit in mask 0x%x"
-msgstr ""
+msgstr "'%s' 整数 0x%x はマスク 0x%x に適合しません"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item assignment"
-msgstr ""
+msgstr "'%s' オブジェクトは要素の代入をサポートしていません"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object doesn't support item deletion"
-msgstr ""
+msgstr "'%s' オブジェクトは要素の削除をサポートしていません"
 
 #: py/runtime.c
 msgid "'%s' object has no attribute '%q'"
-msgstr ""
+msgstr "'%s' オブジェクトに '%q' という属性はありません"
 
 #: py/obj.c
 #, c-format
 msgid "'%s' object isn't subscriptable"
-msgstr ""
+msgstr "'%s' オブジェクトは添え字を使えません"
 
 #: py/objstr.c
 msgid "'=' alignment not allowed in string format specifier"
-msgstr ""
+msgstr "'=' は書式指定子での使用が認められていません"
 
 #: shared-module/struct/__init__.c
 msgid "'S' and 'O' are not supported format types"
@@ -399,7 +409,7 @@ msgstr "関数外でのawait"
 
 #: py/compile.c
 msgid "'break'/'continue' outside loop"
-msgstr ""
+msgstr "ループ外の 'break'/'continue'"
 
 #: py/compile.c
 msgid "'data' requires at least 2 arguments"
@@ -419,7 +429,7 @@ msgstr "関数外でのreturn"
 
 #: py/compile.c
 msgid "'yield from' inside async function"
-msgstr ""
+msgstr "'yield from' が非同期関数内にあります"
 
 #: py/compile.c
 msgid "'yield' outside function"
@@ -435,7 +445,7 @@ msgstr "*xは代入先でなければなりません"
 
 #: py/obj.c
 msgid ", in %q\n"
-msgstr ""
+msgstr "%q 内の\n"
 
 #: shared-bindings/busdisplay/BusDisplay.c
 #: shared-bindings/epaperdisplay/EPaperDisplay.c
@@ -904,10 +914,6 @@ msgstr "データが、アドバタイズメントパケットには大きすぎ
 
 #: ports/stm/common-hal/alarm/pin/PinAlarm.c
 msgid "Deep sleep pins must use a rising edge with pulldown"
-msgstr ""
-
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
 msgstr ""
 
 #: shared-bindings/audiobusio/PDMIn.c
@@ -1804,6 +1810,8 @@ msgstr ""
 #: main.c
 msgid "Pretending to deep sleep until alarm, CTRL-C or file write.\n"
 msgstr ""
+"アラームや CTRL-C 、またはファイルの書き込みが発生するまで、仮のディープス"
+"リープ状態になります。\n"
 
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Program does IN without loading ISR"
@@ -2551,6 +2559,10 @@ msgstr "不正なtypecode"
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
+msgstr ""
+
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -3898,10 +3910,6 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4296,6 +4304,10 @@ msgstr ""
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr ""
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr ""
@@ -4340,6 +4352,16 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c

@@ -140,6 +140,8 @@ static void reset_devices(void) {
 STATIC uint8_t *_heap;
 STATIC uint8_t *_pystack;
 
+STATIC const char line_clear[] = "\x1b[2K\x1b[0G";
+
 #if MICROPY_ENABLE_PYSTACK || MICROPY_ENABLE_GC
 STATIC uint8_t *_allocate_memory(safe_mode_t safe_mode, const char *env_key, size_t default_size, size_t *final_size) {
     *final_size = default_size;
@@ -296,6 +298,7 @@ STATIC bool maybe_run_list(const char *const *filenames, size_t n_filenames) {
     if (_current_executing_filename == NULL) {
         return false;
     }
+    mp_hal_stdout_tx_str(line_clear);
     mp_hal_stdout_tx_str(_current_executing_filename);
     serial_write_compressed(MP_ERROR_TEXT(" output:\n"));
 
@@ -409,6 +412,7 @@ STATIC void cleanup_after_vm(mp_obj_t exception) {
 }
 
 STATIC void print_code_py_status_message(safe_mode_t safe_mode) {
+    mp_hal_stdout_tx_str(line_clear);
     if (autoreload_is_enabled()) {
         serial_write_compressed(
             MP_ERROR_TEXT("Auto-reload is on. Simply save files over USB to run them or enter REPL to disable.\n"));
@@ -1004,6 +1008,7 @@ int __attribute__((used)) main(void) {
 
     // Start the debug serial
     serial_early_init();
+    mp_hal_stdout_tx_str(line_clear);
 
     // Wait briefly to give a reset window where we'll enter safe mode after the reset.
     if (get_safe_mode() == SAFE_MODE_NONE) {
@@ -1054,6 +1059,8 @@ int __attribute__((used)) main(void) {
 
     // displays init after filesystem, since they could share the flash SPI
     board_init();
+
+    mp_hal_stdout_tx_str(line_clear);
 
     // This is first time we are running CircuitPython after a reset or power-up.
     supervisor_set_run_reason(RUN_REASON_STARTUP);
