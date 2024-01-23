@@ -154,11 +154,16 @@ Trigger can be ``Pin.IRQ_FALLING`` or ``Pin.IRQ_RISING`` or ``PIN.IRQ_FALLING||P
 
 Set pin value to its complement.
 
+Signal 
+^^^^^^
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
 using ``on()`` or ``value(1)``.
 
+.. warning::
+
+    The :ref:`machine.Signal value()<machine.Signal>` getter functionality is not supported in this port, and the returned value is undefined. This is the same behavior as the :ref:`machine.Pin value()<machine.Pin>` for Pin.OUT mode, which is the object supporting the Signal object.
 
 Software I2C bus
 ----------------
