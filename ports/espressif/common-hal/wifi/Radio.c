@@ -250,6 +250,47 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     set_mode_ap(self, false);
 }
 
+mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
+    wifi_sta_list_t esp_sta_list;
+    esp_netif_pair_mac_ip_t mac_ip_pair[ESP_WIFI_MAX_CONN_NUM];
+    esp_err_t result;
+
+    result = esp_wifi_ap_get_sta_list(&esp_sta_list);
+    if (result == ESP_OK) {
+        for (int i = 0; i < esp_sta_list.num; i++) {
+            memcpy(mac_ip_pair[i].mac, esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH);
+            mac_ip_pair[i].ip.addr = 0;
+        }
+
+        result = esp_netif_dhcps_get_clients_by_mac(self->ap_netif, esp_sta_list.num, mac_ip_pair);
+    }
+
+    if (!self->ap_mode || result != ESP_OK) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Interface must be in access point mode"));
+    }
+
+    mp_obj_t mp_sta_list = mp_obj_new_list(0, NULL);
+    for (int i = 0; i < esp_sta_list.num; i++) {
+        mp_obj_dict_t *dict = MP_OBJ_TO_PTR(mp_obj_new_dict(3));
+
+        mp_obj_dict_store(dict, MP_OBJ_NEW_QSTR(MP_QSTR_mac), mp_obj_new_bytes(esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH));
+        mp_obj_dict_store(dict, MP_OBJ_NEW_QSTR(MP_QSTR_rssi), MP_OBJ_NEW_SMALL_INT(esp_sta_list.sta[i].rssi));
+        if (mac_ip_pair[i].ip.addr) {
+            mp_obj_dict_store(dict, MP_OBJ_NEW_QSTR(MP_QSTR_ipv4_address), common_hal_ipaddress_new_ipv4address(mac_ip_pair[i].ip.addr));
+        } else {
+            mp_obj_dict_store(dict, MP_OBJ_NEW_QSTR(MP_QSTR_ipv4_address), mp_const_none);
+        }
+
+        mp_obj_list_append(mp_sta_list, dict);
+    }
+
+    return mp_sta_list;
+}
+
+mp_obj_t common_hal_wifi_radio_get_max_stations_ap(wifi_radio_obj_t *self) {
+    return MP_OBJ_NEW_SMALL_INT(ESP_WIFI_MAX_CONN_NUM);
+}
+
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("wifi is not enabled"));
