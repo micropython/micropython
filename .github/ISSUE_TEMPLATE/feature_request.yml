@@ -1,0 +1,65 @@
+name: Feature request
+description: Request a feature or improvement
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This form is for requesting features or improvements in MicroPython.
+
+        #### Get feedback first
+
+        Before submitting a new feature idea here, suggest starting a discussion on [Discord](https://discord.gg/RB8HZSAExQ) or [GitHub Discussions](https://github.com/orgs/micropython/discussions/) to get early feedback from the community and maintainers.
+
+        #### Not a MicroPython core feature?
+
+        * If you have a question \"How Do I ...?\", please post it on GitHub Discussions or Discord instead of here.
+        * Could this feature be implemented as a pure Python library? If so, please open the request on the [micropython-lib repository](https://github.com/micropython/micropython-lib/issues) instead.
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checks
+      description: |
+        Before submitting your feature request, please go over these check points:
+      options:
+      - label: |
+           I agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone.
+        required: true
+      - label: |
+          I've searched for [existing issues](https://github.com/micropython/micropython/issues) regarding this feature, and didn't find any.
+        required: true
+  - type: textarea
+    id: feature
+    attributes:
+      label: Description
+      description: |
+        Describe the feature you'd like to see added to MicroPython. What does this feature enable and why is it useful?
+
+        * For core Python features, where possible please include a link to the relevant PEP or CPython documentation.
+        * For new architectures / ports / boards, please provide links to relevant documentation, specifications, and toolchains. Any information about the popularity and unique features about this hardware would also be useful.
+        * For features for existing ports (e.g. new peripherals or microcontroller features), please describe which port(s) it applies to, and whether this is could be an extension to the machine API or a port-specific module?
+        * For drivers (e.g. for external hardware), please link to datasheets and/or existing drivers from other sources.
+
+        If there is an existing discussion somewhere about this feature, please add a link to it as well.
+    validations:
+      required: true
+  - type: textarea
+    id: size
+    attributes:
+      label: Code Size
+      description: |
+         MicroPython aims to strike a balance between functionality and code size. Can this feature be optionally enabled?
+
+         If you believe the usefulness of this feature would outweigh the additional code size, please explain. (It's OK to say you're unsure here, we're happy to discuss this with you.)
+  - type: checkboxes
+    id: implementation
+    attributes:
+      label: Implementation
+      options:
+      - label: I intend to implement this feature and would submit a Pull Request if desirable.
+      - label: I hope the MicroPython maintainers or community will implement this feature.
+      - label: I would like to [Sponsor](https://github.com/sponsors/micropython#sponsors) development of this feature.
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to suggest improvements for MicroPython.

@@ -1,0 +1,107 @@
+name: Bug report
+description: Report a bug or unexpected behaviour
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide as much detail as you can, it really helps us find and fix bugs faster.
+
+        #### Not a bug report?
+
+        * If you have a question \"How Do I ...?\", please post it on [GitHub Discussions](https://github.com/orgs/micropython/discussions/) or [Discord](https://discord.gg/RB8HZSAExQ) instead of here.
+        * For missing or incorrect documentation, or feature requests, then please [choose a different issue type](https://github.com/micropython/micropython/issues/new/choose).
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Checks
+      description: |
+        Before submitting your bug report, please go over these check points:
+      options:
+      - label: |
+           I agree to follow the MicroPython [Code of Conduct](https://github.com/micropython/micropython/blob/master/CODEOFCONDUCT.md) to ensure a safe and respectful space for everyone.
+        required: true
+      - label: |
+          I've searched for [existing issues](https://github.com/micropython/micropython/issues) matching this bug, and didn't find any.
+        required: true
+  - type: input
+    id: port-board-hw
+    attributes:
+      label: Port, board and/or hardware
+      description: |
+        Which MicroPython port(s) and board(s) are you using?
+      placeholder: |
+        esp32 port, ESP32-Fantastic board.
+    validations:
+       required: true
+  - type: textarea
+    id: version
+    attributes:
+      label: MicroPython version
+      description: |
+        To find the version:
+
+        1. Open a serial REPL.
+        2. Type Ctrl-B to see the startup message.
+        3. Copy-paste that output here.
+
+        If the issue is about building MicroPython, please provide output of `git describe --dirty` and as much information as possible about the build environment.
+
+        If the version or configuration is modified from the official MicroPython releases or the master branch, please tell us the details of this as well.
+      placeholder: |
+        MicroPython v6.28.3 on 2029-01-23; PyBoard 9 with STM32F9
+    validations:
+      required: true
+  - type: textarea
+    id: steps-reproduce
+    attributes:
+      label: Reproduction
+      description: |
+        What steps will reproduce the problem? Please include all details that could be relevant about the environment, configuration, etc.
+
+        If there is Python code to reproduce this issue then please either:
+        a. Type it into a code block below ([code block guide](https://docs.github.com/en/get-started/writing-on-github/working-with-advanced-formatting/creating-and-highlighting-code-blocks)), or
+        b. Post longer code to a [GitHub gist](https://gist.github.com/), or
+        c. Create a sample project on GitHub.
+
+        For build issues, please provide the exact build commands that you ran.
+      placeholder: |
+        1. Copy paste the code provided below into a new file
+        2. Use `mpremote run` to execute it on the board.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: |
+         What did you expect MicroPython to do? If comparing output with CPython or a different MicroPython port/version then please provide that output here.
+      placeholder: |
+        Expected to print "Hello World".
+
+        Here is the correct output, seen with previous MicroPython version v3.14.159:
+
+        > [...]
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Observed behaviour
+      description: |
+        What actually happened? Where possible please paste exact output, or the complete build log, etc. Very long output can be linked in a [GitHub gist](https://gist.github.com/).
+      placeholder: |
+        This unexpected exception appears:
+
+        > [...]
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: |
+        Is there anything else that might help to resolve this issue?
+      value: No, I've provided everything above.
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to help improve MicroPython.
