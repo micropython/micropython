@@ -185,8 +185,15 @@ MP_NOINLINE static bool init_flash_fs(uint reset_mode) {
 
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
-        mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
-        bdev = MP_OBJ_TYPE_GET_SLOT(&pyb_flash_type, make_new)(&pyb_flash_type, 0, 1, args);
+        mp_obj_t lfs_bdev = pyb_flash_new_obj(0, len);
+        if (lfs_bdev == mp_const_none) {
+            // Invalid len detected, filesystem header block likely corrupted.
+            // Create bdev with default size to attempt to mount the whole flash or
+            // let user attempt recovery if desired.
+            bdev = pyb_flash_new_obj(0, -1);
+        } else {
+            bdev = lfs_bdev;
+        }
     }
 
     #endif
