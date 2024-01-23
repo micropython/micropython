@@ -105,7 +105,7 @@ static uint8_t twi_error_to_mp(const nrfx_err_t err) {
 
 static void twim_event_handler(nrfx_twim_evt_t const *p_event, void *p_context) {
     // this is the callback handler - sets transferring to false and records the most recent event.
-    twim_peripheral_t *peripheral = (twim_peripheral_t *) p_context;
+    twim_peripheral_t *peripheral = (twim_peripheral_t *)p_context;
     peripheral->last_event_type = p_event->type;
     peripheral->transferring = false;
 }
