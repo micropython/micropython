@@ -24,7 +24,7 @@ jobs:
       commit_sha: ${{ steps.commit_sha.outputs.sha_short }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Install packages
         run: source tools/ci.sh && ci_psoc6_setup
       - name: Build
@@ -54,7 +54,7 @@ jobs:
           - CY8CPROTO-062-4343W
           - CY8CPROTO-063-BLE     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Download binaries
       uses: actions/download-artifact@v3
     - name: Container setup
@@ -65,22 +65,23 @@ jobs:
       run: |
         cp mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/firmware.hex .
         source tools/ci.sh && ci_psoc6_flash_multiple_devices ${{ matrix.board }} firmware.hex tools/psoc6/${{ runner.name }}-devs.yml
+    - name: Run psoc6 filesystem test
+      if: matrix.board == 'CY8CPROTO-062-4343W'
+      run: | 
+        devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml))
+        cd tests
+        ./psoc6/run_psoc6_tests.sh -v --dev0 ${devs[0]}
     - name: Run psoc6 multi test
       run: | 
         devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml))
         cd tests
         ./psoc6/run_psoc6_tests.sh --psoc6-multi --dev0 ${devs[0]} --dev1 ${devs[1]}
-    - name: Run psoc6 filesystem test
-      run: | 
-        devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml))
-        cd tests
-        ./psoc6/run_psoc6_tests.sh -v --dev0 ${devs[0]} --dev1 ${devs[1]}
     - name: Run psoc6 tests
       run: | 
         devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml))
         cd tests
         ./psoc6/run_psoc6_tests.sh --psoc6 --dev0 ${devs[0]} 
-    # TODO: Enable when HIL is updgraded 
+    # TODO: Enable when HIL is upgraded 
     # - name: Run all implemented tests
     #   if:  github.event_name == 'pull_request'
     #   continue-on-error: true

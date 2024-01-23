@@ -17,7 +17,7 @@ usage() {
   echo "  -i            run implemented tests only and exclude known failing tests"
   echo "  -n            run not yet implemented tests only"
   echo "  -w            run wifi tests => needs secrets.py key file>"
-  echo "  -v            run virtual filesystem related tests"
+  echo "  -v            run virtual filesystem related tests. If followed by -x, runs advance tests too."
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
   echo "  --psoc6       run only psoc6 port related tests"
@@ -37,7 +37,7 @@ for arg in "$@"; do
   esac
 done
 
-while getopts "acd:e:fhimnpwv" o; do
+while getopts "acd:e:fhimnpwvx" o; do
   case "${o}" in
     a)
        all=1
@@ -74,6 +74,9 @@ while getopts "acd:e:fhimnpwv" o; do
        ;;
     v)
        fs=1
+       ;;
+    x)
+       afs=1
        ;;
     *)
        usage
@@ -121,6 +124,10 @@ fi
 
 if [ -z "${fs}" ]; then
   fs=0
+fi
+
+if [ -z "${afs}" ]; then
+  afs=0
 fi
 
 if [ -z "${psoc6OnlyMulti}" ]; then
@@ -239,7 +246,7 @@ fi
 
 if [ ${fs} -eq 1 ]; then
 
-  echo "  running filesystem tests ..."
+  echo "  running filesystem tests ... "
   echo
 
   ./run-tests.py --target psoc6 --device ${device0} \
@@ -248,6 +255,42 @@ if [ ${fs} -eq 1 ]; then
           extmod/vfs_lfs_superblock.py \
           extmod/vfs_userfs.py \
     | tee -a ${resultsFile}
+
+  echo
+  echo "  done."
+  echo
+
+  echo " attempting to save different test files in flash  "
+  echo
+  echo " saving test_fs_small_file.txt to FS - (size : 10KB) "
+
+  command_output=$( ../tools/mpremote/mpremote.py connect ${device0} cp ./psoc6/test_inputs/test_fs_small_file.txt :/)
+  exp_output="cp ./psoc6/test_inputs/test_fs_small_file.txt :/"
+  if [ "$command_output" != "$exp_output" ]; then
+    echo "Error: Cannot save small file."
+    exit 1
+  fi
+
+  # On device file saving tests for medium and large size takes considerable amount of time. Hence only when needed, this should be triggered.
+  if [ ${afs} -eq 1 ]; then
+
+    echo " saving test_fs_medium_file.txt to FS - (size : 500KB) "
+    command_output=$(../tools/mpremote/mpremote.py connect ${device0} cp ./psoc6/test_inputs/test_fs_medium_file.txt :/)
+    exp_output="cp ./psoc6/test_inputs/test_fs_medium_file.txt :/"
+    if [ "$command_output" != "$exp_output" ]; then
+    echo "Error: Cannot save medium file."
+    exit 1
+    fi
+
+    echo " saving test_fs_large_file.txt to FS - (size : 1MB) "
+    command_output=$(../tools/mpremote/mpremote.py connect ${device0} cp ./psoc6/test_inputs/test_fs_large_file.txt :/)
+    exp_output="cp ./psoc6/test_inputs/test_fs_large_file.txt :/"
+    if [ "$command_output" != "$exp_output" ]; then
+    echo "Error: Cannot save large file."
+    exit 1
+    fi
+  
+  fi
 
   echo
   echo "  done."
