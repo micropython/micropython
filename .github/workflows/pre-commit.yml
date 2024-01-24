@@ -20,7 +20,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         submodules: false
-        progress: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up python
       uses: actions/setup-python@v5
@@ -41,7 +41,7 @@ jobs:
       run: git diff > ~/pre-commit.patch
     - name: Upload patch
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: patch
         path: ~/pre-commit.patch

@@ -26,12 +26,13 @@ jobs:
         board: ${{ fromJSON(inputs.boards) }}
     steps:
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up port
@@ -75,7 +76,7 @@ jobs:
         PULL: ${{ github.event.number }}
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}

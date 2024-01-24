@@ -84,7 +84,7 @@ jobs:
       run: make -j2 ${{ inputs.flags }} BOARD=${{ inputs.board }} DEBUG=${{ inputs.debug && '1' || '0' }} TRANSLATION=${{ inputs.language }}
       working-directory: ports/${{ steps.set-up-port.outputs.port }}
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.board }}-${{ inputs.language }}-${{ inputs.version }}${{ inputs.flags != '' && '-custom' || '' }}${{ inputs.debug && '-debug' || '' }}
         path: ports/${{ steps.set-up-port.outputs.port }}/build-${{ inputs.board }}/firmware.*
