@@ -17,12 +17,13 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        progress: false
         fetch-depth: 1
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up submodules

@@ -42,7 +42,7 @@ jobs:
       run: |
         > custom-build && git add custom-build
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up port
