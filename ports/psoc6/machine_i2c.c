@@ -209,7 +209,7 @@ STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
 }
 
 // configure slave buffers
-// configure callbakcs for slave events
+// configure callbacks for slave events
 
 
 STATIC const mp_machine_i2c_p_t machine_i2c_p = {
