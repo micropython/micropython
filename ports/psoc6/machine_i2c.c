@@ -22,13 +22,16 @@
 #define DEFAULT_I2C_FREQ     (400000)
 #define PSOC_I2C_MASTER_MODE (CYHAL_I2C_MODE_MASTER)
 
+#define i2c_assert_raise_val(msg, ret)   if (ret != CY_RSLT_SUCCESS) { \
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT(msg), ret); \
+}
+
 typedef struct _machine_i2c_obj_t {
     mp_obj_base_t base;
     cyhal_i2c_t i2c_obj;
-    uint8_t i2c_id;
     machine_pin_phy_obj_t *scl;
     machine_pin_phy_obj_t *sda;
-    uint32_t freq;
+    cyhal_i2c_cfg_t cfg;
 } machine_i2c_obj_t;
 
 machine_i2c_obj_t *i2c_obj[MAX_I2C] = { NULL };
@@ -54,20 +57,27 @@ static inline void i2c_obj_free(machine_i2c_obj_t *i2c_obj_ptr) {
     }
 }
 
-STATIC cy_rslt_t i2c_init(machine_i2c_obj_t *machine_i2c_obj) {
+STATIC void i2c_init(machine_i2c_obj_t *machine_i2c_obj, uint32_t freq_hz, int16_t slave_addr) {
     // Define the I2C master configuration structure
-    cyhal_i2c_cfg_t i2c_master_config =
-    {
-        CYHAL_I2C_MODE_MASTER,
-        0, // address is not used for master mode
-        machine_i2c_obj->freq
-    };
+
+    // Set cgf frequency
+    machine_i2c_obj->cfg.frequencyhal_hz = freq_hz;
+
+    // Set mode master or slave
+    if (slave_addr <= 0) {
+        machine_i2c_obj->cfg.is_slave = CYHAL_I2C_MODE_MASTER;
+        machine_i2c_obj->cfg.address = 0;
+    } else {
+        machine_i2c_obj->cfg.is_slave = CYHAL_I2C_MODE_SLAVE;
+        machine_i2c_obj->cfg.address = slave_addr;
+    }
 
     // Initialize I2C master, set the SDA and SCL pins and assign a new clock
     cy_rslt_t result = cyhal_i2c_init(&machine_i2c_obj->i2c_obj, machine_i2c_obj->sda->addr, machine_i2c_obj->scl->addr, NULL);
+    i2c_assert_raise_val("I2C initialisation failed with return code %lx !", result);
 
-    return result == CY_RSLT_SUCCESS ? cyhal_i2c_configure(&machine_i2c_obj->i2c_obj, &i2c_master_config)
-                                     : result;
+    result = cyhal_i2c_configure(&machine_i2c_obj->i2c_obj, &(machine_i2c_obj->cfg));
+    i2c_assert_raise_val("I2C initialisation failed with return code %lx !", result);
 }
 
 STATIC inline void i2c_sda_alloc(machine_i2c_obj_t *i2c_obj, mp_obj_t pin_name) {
@@ -102,33 +112,24 @@ STATIC inline void i2c_scl_free(machine_i2c_obj_t *i2c_obj) {
 
 STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u)", self->i2c_id, self->freq, self->scl->addr, self->sda->addr);
+    mp_printf(print, "I2C(freq=%u, scl=%u, sda=%u)", self->cfg.frequencyhal_hz, self->scl->addr, self->sda->addr);
 }
 
-mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    mplogger_print("%q constructor invoked\n", MP_QSTR_I2C);
-    enum { ARG_id, ARG_freq, ARG_scl, ARG_sda };
+STATIC void machine_i2c_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_freq, ARG_scl, ARG_sda, ARG_addr };
 
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_id, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_freq, MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
         { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}}
     };
 
     // Parse args.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    // Get I2C bus.
-    int i2c_id = mp_obj_get_int(args[ARG_id].u_obj);
-
-    if (i2c_id != PSOC_I2C_MASTER_MODE) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C id '%d' not supported !"), i2c_id);
-    }
-
-    machine_i2c_obj_t *self = i2c_obj_alloc();
-    self->i2c_id = i2c_id;
+    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // get scl & sda pins & configure them
     if (args[ARG_scl].u_obj != mp_const_none) {
@@ -143,14 +144,23 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
         mp_raise_TypeError(MP_ERROR_TEXT("SDA pin must be provided"));
     }
 
-    self->freq = args[ARG_freq].u_int;
+    // initialise I2C at cyhal level
+    i2c_init(self, args[ARG_freq].u_int, args[ARG_addr].u_int);
 
-    // initialise I2C Peripheral and configure as master
-    cy_rslt_t result = i2c_init(self);
+}
 
-    if (result != CY_RSLT_SUCCESS) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("I2C initialisation failed with return code %lx !"), result);
+mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    mp_arg_check_num(n_args, n_kw, 0, 4, true);
+
+    machine_i2c_obj_t *self = i2c_obj_alloc();
+    if (self == NULL) {
+        return mp_const_none;
     }
+
+    mp_map_t kw_args;
+    mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
+    machine_i2c_init((mp_obj_base_t *)self, n_args, args, &kw_args);
+
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -170,10 +180,7 @@ STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
 
     if ((flags & MP_MACHINE_I2C_FLAG_READ) == MP_MACHINE_I2C_FLAG_READ) {
         result = cyhal_i2c_master_read(&self->i2c_obj, addr, buf, len, timeout, send_stop);
-
-        if (result != CY_RSLT_SUCCESS) {
-            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cyhal_i2c_master_read failed with return code %lx !"), result);
-        }
+        i2c_assert_raise_val("cyhal_i2c_master_read failed with return code %lx !", result);
 
         return len;
     } else {
@@ -185,7 +192,7 @@ STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
                 // these 2 errors occur if nothing is attached to sda/scl, but they are pulled-up (0xaa2004) or not pulled-up (0xaa2003).
                 // In the latter case, due to not reaction at all the timeout has to expire. Latency is therefore high.
                 if (result != 0xaa2004 && result != 0xaa2003) {
-                    mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cyhal_i2c_master_write failed with return code %lx !"), result);
+                    i2c_assert_raise_val("cyhal_i2c_master_write failed with return code %lx !", result);
                 }
 
                 return 1;
@@ -194,16 +201,19 @@ STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
             return len;
         } else {
             result = cyhal_i2c_master_write(&self->i2c_obj, addr, buf, len, timeout, send_stop);
-            if (result != CY_RSLT_SUCCESS) {
-                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cyhal_i2c_master_write failed with return code %lx !"), result);
-            }
+            i2c_assert_raise_val("cyhal_i2c_master_write failed with return code %lx !", result);
         }
 
         return len;
     }
 }
 
+// configure slave buffers
+// configure callbakcs for slave events
+
+
 STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+    .init = machine_i2c_init,
     .deinit = machine_i2c_deinit,
     .transfer_single = machine_i2c_transfer,
     .transfer = mp_machine_i2c_transfer_adaptor
