@@ -35,15 +35,9 @@
 #define UVC_ENTITY_CAP_INPUT_TERMINAL  0x01
 #define UVC_ENTITY_CAP_OUTPUT_TERMINAL 0x02
 
-#define FRAME_WIDTH   128
-#define FRAME_HEIGHT  96
-#define FRAME_RATE    10
-
-enum {
-    ITF_NUM_VIDEO_CONTROL,
-    ITF_NUM_VIDEO_STREAMING,
-    ITF_NUM_TOTAL
-};
+#define DEFAULT_FRAME_WIDTH   128
+#define DEFAULT_FRAME_HEIGHT  96
+#define DEFAULT_FRAME_RATE    10
 
 #define TUD_VIDEO_CAPTURE_DESC_UNCOMPR_LEN ( \
     TUD_VIDEO_DESC_IAD_LEN \
@@ -125,20 +119,20 @@ enum {
 #define TUD_VIDEO_DESC_CS_VS_FMT_I420(_fmtidx, _numfmtdesc, _frmidx, _asrx, _asry, _interlace, _cp) \
     TUD_VIDEO_DESC_CS_VS_FMT_UNCOMPR(_fmtidx, _numfmtdesc, TUD_VIDEO_GUID_I420, 12, _frmidx, _asrx, _asry, _interlace, _cp)
 
-#define TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(_stridx, _epin, _width, _height, _fps, _epsize) \
-    TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
+#define TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(_stridx, _epin, _width, _height, _fps, _epsize, _itf_num_video_control, _itf_num_video_streaming) \
+    TUD_VIDEO_DESC_IAD(_itf_num_video_control, /* 2 Interfaces */ 0x02, _stridx), \
     /* Video control 0 */ \
-    TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx), \
+    TUD_VIDEO_DESC_STD_VC(_itf_num_video_control, 0, _stridx), \
     TUD_VIDEO_DESC_CS_VC(/* UVC 1.5*/ 0x0150, \
     /* wTotalLength - bLength */ \
     TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, \
-    UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
+    UVC_CLOCK_FREQUENCY, _itf_num_video_streaming), \
     TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, \
     /*wObjectiveFocalLengthMin*/ 0, /*wObjectiveFocalLengthMax*/ 0, \
     /*wObjectiveFocalLength*/ 0, /*bmControls*/ 0), \
     TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, 1, 0), \
     /* Video stream alt. 0 */ \
-    TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 0, _stridx), \
+    TUD_VIDEO_DESC_STD_VS(_itf_num_video_streaming, 0, 0, _stridx), \
     /* Video stream header for without still image capture */ \
     TUD_VIDEO_DESC_CS_VS_INPUT(/*bNumFormats*/ 1, \
     /*wTotalLength - bLength */ \
@@ -158,24 +152,24 @@ enum {
     (10000000 / _fps), (10000000 / _fps), (10000000 / _fps) * _fps, (10000000 / _fps)), \
     TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
     /* VS alt 1 */ \
-    TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 1, 1, _stridx), \
+    TUD_VIDEO_DESC_STD_VS(_itf_num_video_streaming, 1, 1, _stridx), \
     /* EP */ \
     TUD_VIDEO_DESC_EP_ISO(_epin, _epsize, 1)
 
 #define TUD_VIDEO_CAPTURE_DESCRIPTOR_MJPEG(_stridx, _epin, _width, _height, _fps, _epsize) \
-    TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
+    TUD_VIDEO_DESC_IAD(_itf_num_video_control, /* 2 Interfaces */ 0x02, _stridx), \
     /* Video control 0 */ \
-    TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx), \
+    TUD_VIDEO_DESC_STD_VC(_itf_num_video_control, 0, _stridx), \
     TUD_VIDEO_DESC_CS_VC(/* UVC 1.5*/ 0x0150, \
     /* wTotalLength - bLength */ \
     TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, \
-    UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
+    UVC_CLOCK_FREQUENCY, _itf_num_video_streaming), \
     TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, \
     /*wObjectiveFocalLengthMin*/ 0, /*wObjectiveFocalLengthMax*/ 0, \
     /*wObjectiveFocalLength*/ 0, /*bmControls*/ 0), \
     TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, 1, 0), \
     /* Video stream alt. 0 */ \
-    TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 0, _stridx), \
+    TUD_VIDEO_DESC_STD_VS(_itf_num_video_streaming, 0, 0, _stridx), \
     /* Video stream header for without still image capture */ \
     TUD_VIDEO_DESC_CS_VS_INPUT(/*bNumFormats*/ 1, \
     /*wTotalLength - bLength */ \
@@ -195,25 +189,25 @@ enum {
     (10000000 / _fps), (10000000 / _fps), (10000000 / _fps) * _fps, (10000000 / _fps)), \
     TUD_VIDEO_DESC_CS_VS_COLOR_MATCHING(VIDEO_COLOR_PRIMARIES_BT709, VIDEO_COLOR_XFER_CH_BT709, VIDEO_COLOR_COEF_SMPTE170M), \
     /* VS alt 1 */ \
-    TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 1, 1, _stridx), \
+    TUD_VIDEO_DESC_STD_VS(_itf_num_video_streaming, 1, 1, _stridx), \
     /* EP */ \
     TUD_VIDEO_DESC_EP_ISO(_epin, _epsize, 1)
 
 
-#define TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(_stridx, _epin, _width, _height, _fps, _epsize) \
-    TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
+#define TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(_stridx, _epin, _width, _height, _fps, _epsize, _itf_num_video_control, _itf_num_video_streaming) \
+    TUD_VIDEO_DESC_IAD(_itf_num_video_control, /* 2 Interfaces */ 0x02, _stridx), \
     /* Video control 0 */ \
-    TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx), \
+    TUD_VIDEO_DESC_STD_VC(_itf_num_video_control, 0, _stridx), \
     TUD_VIDEO_DESC_CS_VC(/* UVC 1.5*/ 0x0150, \
     /* wTotalLength - bLength */ \
     TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, \
-    UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
+    UVC_CLOCK_FREQUENCY, _itf_num_video_streaming), \
     TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, \
     /*wObjectiveFocalLengthMin*/ 0, /*wObjectiveFocalLengthMax*/ 0, \
     /*wObjectiveFocalLength*/ 0, /*bmControls*/ 0), \
     TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, 1, 0), \
     /* Video stream alt. 0 */ \
-    TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 1, _stridx), \
+    TUD_VIDEO_DESC_STD_VS(_itf_num_video_streaming, 0, 1, _stridx), \
     /* Video stream header for without still image capture */ \
     TUD_VIDEO_DESC_CS_VS_INPUT(/*bNumFormats*/ 1, \
     /*wTotalLength - bLength */ \
@@ -235,19 +229,19 @@ enum {
     TUD_VIDEO_DESC_EP_BULK(_epin, _epsize, 1)
 
 #define TUD_VIDEO_CAPTURE_DESCRIPTOR_MJPEG_BULK(_stridx, _epin, _width, _height, _fps, _epsize) \
-    TUD_VIDEO_DESC_IAD(ITF_NUM_VIDEO_CONTROL, /* 2 Interfaces */ 0x02, _stridx), \
+    TUD_VIDEO_DESC_IAD(_itf_num_video_control, /* 2 Interfaces */ 0x02, _stridx), \
     /* Video control 0 */ \
-    TUD_VIDEO_DESC_STD_VC(ITF_NUM_VIDEO_CONTROL, 0, _stridx), \
+    TUD_VIDEO_DESC_STD_VC(_itf_num_video_control, 0, _stridx), \
     TUD_VIDEO_DESC_CS_VC(/* UVC 1.5*/ 0x0150, \
     /* wTotalLength - bLength */ \
     TUD_VIDEO_DESC_CAMERA_TERM_LEN + TUD_VIDEO_DESC_OUTPUT_TERM_LEN, \
-    UVC_CLOCK_FREQUENCY, ITF_NUM_VIDEO_STREAMING), \
+    UVC_CLOCK_FREQUENCY, _itf_num_video_streaming), \
     TUD_VIDEO_DESC_CAMERA_TERM(UVC_ENTITY_CAP_INPUT_TERMINAL, 0, 0, \
     /*wObjectiveFocalLengthMin*/ 0, /*wObjectiveFocalLengthMax*/ 0, \
     /*wObjectiveFocalLength*/ 0, /*bmControls*/ 0), \
     TUD_VIDEO_DESC_OUTPUT_TERM(UVC_ENTITY_CAP_OUTPUT_TERMINAL, VIDEO_TT_STREAMING, 0, 1, 0), \
     /* Video stream alt. 0 */ \
-    TUD_VIDEO_DESC_STD_VS(ITF_NUM_VIDEO_STREAMING, 0, 1, _stridx), \
+    TUD_VIDEO_DESC_STD_VS(_itf_num_video_streaming, 0, 1, _stridx), \
     /* Video stream header for without still image capture */ \
     TUD_VIDEO_DESC_CS_VS_INPUT(/*bNumFormats*/ 1, \
     /*wTotalLength - bLength */ \

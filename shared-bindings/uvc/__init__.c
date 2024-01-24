@@ -46,10 +46,64 @@
 //| for the first pixel to be red and the second pixel to be green. However, they can both
 //| be different shades of red.
 //| """
+//|
 
-static const mp_map_elem_t uvc_module_globals_table[] = {
+//| def enable_framebuffer(width: int, height: int) -> None:
+//|     """Enable the UVC gadget, setting the given width & height
+//|
+//|     During ``boot.py``, this function may be used to enable the UVC gadget.
+//|
+//|     Width is rounded up to a multiple of 2.
+//|
+//|     After boot.py completes, the framebuffer will be allocated. Total storage
+//|     of 4×``width``×``height`` bytes is required, reducing the amount available
+//|     for Python objects. If the allocation fails, a note will be written in boot.py
+//|     and UVC will be disabled"""
+//|
+
+STATIC mp_obj_t uvc_enable_framebuffer(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_width, ARG_height };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_width, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = 0 } },
+        { MP_QSTR_height, MP_ARG_REQUIRED | MP_ARG_INT, { .u_int = 0 } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    // (but note that most devices will not be able to allocate this much memory.
+    uint32_t width = mp_arg_validate_int_range(args[ARG_width].u_int, 0, 32767, MP_QSTR_width);
+    uint32_t height = mp_arg_validate_int_range(args[ARG_height].u_int, 0, 32767, MP_QSTR_height);
+    if (!shared_module_uvc_enable(width, height)) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
+    }
+
+    return mp_const_none;
+};
+STATIC MP_DEFINE_CONST_FUN_OBJ_KW(uvc_enable_framebuffer_obj, 0, uvc_enable_framebuffer);
+
+//|
+//| def disable() -> None:
+//|     """Disable the UVC gadget
+//|
+//|     During ``boot.py``, this function may be used to enable the UVC gadget.
+//|
+//|     This function is provided for completeness. The default state of UVC is disabled."""
+//|
+STATIC mp_obj_t uvc_disable(void) {
+    if (!shared_module_uvc_disable()) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
+    }
+
+    return mp_const_none;
+};
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(uvc_disable_obj, uvc_disable);
+
+
+static const mp_rom_map_elem_t uvc_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uvc) },
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&uvc_bitmap_obj) },
+    { MP_ROM_QSTR(MP_QSTR_disable), MP_ROM_PTR(&uvc_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_enable_framebuffer), MP_ROM_PTR(&uvc_enable_framebuffer_obj) },
 };
 
 static MP_DEFINE_CONST_DICT(uvc_module_globals, uvc_module_globals_table);

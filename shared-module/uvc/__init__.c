@@ -1,75 +1,119 @@
 #include "py/runtime.h"
 #include <stdint.h>
+#include "class/video/video_device.h"
+#include "shared-bindings/displayio/Bitmap.h"
+#include "shared-bindings/uvc/__init__.h"
+#include "shared-module/bitmapfilter/macros.h"
 #include "shared-module/uvc/__init__.h"
 #include "shared-module/uvc/uvc_usb_descriptors.h"
-#include "shared-bindings/displayio/Bitmap.h"
-#include "shared-module/bitmapfilter/macros.h"
-#include "class/video/video_device.h"
-#include "supervisor/shared/tick.h"
 #include "supervisor/background_callback.h"
-
-#if CFG_TUD_VIDEO_STREAMING_BULK
-static const uint8_t usb_uvc_descriptor_template[] = {
-    TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(0xaa, 0x80, FRAME_WIDTH, FRAME_HEIGHT, 10, 64)
-};
-
-// Use the "descriptor.c" file to generate/verify these offsets
-const uint8_t interface_indices[] = {2, 10, 29, 59};
-const uint8_t string_indices[] = {7, 16, 65};
-const uint8_t endpoint_indices[] = {72, 153};
-
-#else
-static const uint8_t usb_uvc_descriptor_template[] = {
-    TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(0xaa, 0x80, FRAME_WIDTH, FRAME_HEIGHT, 10, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE)
-};
-
-// Use the "descriptor.c" file to generate/verify these offsets
-const uint8_t interface_indices[] = {2, 10, 29, 59, 153};
-const uint8_t string_indices[] = {7, 16, 65, 159};
-const uint8_t endpoint_indices[] = {72, 162};
-#endif
+#include "supervisor/shared/tick.h"
+#include "device/usbd.h"
 
 static unsigned frame_num = 0;
 static unsigned tx_busy = 0;
-static unsigned interval_ms = 1000 / FRAME_RATE;
+static unsigned interval_ms = 1000 / DEFAULT_FRAME_RATE;
 
 // TODO must dynamically allocate this, otherwise everyone pays for it
-static uint8_t frame_buffer_yuyv[FRAME_WIDTH * FRAME_HEIGHT * 16 / 8];
-static uint16_t frame_buffer_rgb565[FRAME_WIDTH * FRAME_HEIGHT];
+static uint8_t *frame_buffer_yuyv;
+static uint16_t *frame_buffer_rgb565;
 
 displayio_bitmap_t uvc_bitmap_obj = {
     .base = {.type = &displayio_bitmap_type },
-    .width = FRAME_WIDTH,
-    .height = FRAME_HEIGHT,
-    .data = (uint32_t *)frame_buffer_rgb565,
-    .stride = FRAME_WIDTH,
     .bits_per_value = 16,
     .x_shift = 1,
     .x_mask = 1,
     .bitmask = 0xffff,
+    // (other fields set when enabling uvc)
 };
 
+static bool uvc_is_enabled = false;
+static mp_int_t uvc_frame_width, uvc_frame_height;
+
+bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height) {
+    if (tud_connected()) {
+        return false;
+    }
+
+    // this will free any previously allocated framebuffer as a side-effect
+    shared_module_uvc_disable();
+
+    if (frame_width & 1) {
+        // frame_width must be even, round it up
+        frame_width++;
+    }
+
+    uvc_frame_width = frame_width;
+    uvc_frame_height = frame_height;
+
+    size_t framebuffer_size = uvc_frame_width * uvc_frame_height * 2;
+    frame_buffer_yuyv = port_malloc(framebuffer_size, false);
+    frame_buffer_rgb565 = port_malloc(framebuffer_size, false);
+    if (!frame_buffer_yuyv || !frame_buffer_rgb565) {
+        // this will free either of the buffers allocated just above, in
+        // case one succeeded and the other failed.
+        shared_module_uvc_disable();
+        m_malloc_fail(2 * framebuffer_size);
+    }
+    memset(frame_buffer_yuyv, 0, framebuffer_size);
+    memset(frame_buffer_rgb565, 0, framebuffer_size);
+
+    uvc_bitmap_obj.data = (uint32_t *)frame_buffer_rgb565;
+    uvc_bitmap_obj.width = uvc_frame_width;
+    uvc_bitmap_obj.height = uvc_frame_height;
+    uvc_bitmap_obj.stride = uvc_frame_width / 2; /* in uint32_t units */
+
+    uvc_is_enabled = true;
+
+    return true;
+}
+
+bool shared_module_uvc_disable(void) {
+    if (tud_connected()) {
+        return false;
+    }
+    uvc_bitmap_obj.data = NULL; // should be redundant
+    uvc_is_enabled = false;
+    port_free(frame_buffer_yuyv);
+    port_free(frame_buffer_rgb565);
+    frame_buffer_yuyv = NULL;
+    frame_buffer_rgb565 = NULL;
+    return true;
+}
+
 bool usb_uvc_enabled(void) {
-    return true; // TODO
+    return uvc_is_enabled;
 }
 
 size_t usb_uvc_descriptor_length(void) {
-    return sizeof(usb_uvc_descriptor_template);
+    #if CFG_TUD_VIDEO_STREAMING_BULK
+    return sizeof((char[]) {TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(0, 0, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, 0, 0)});
+    #else
+    return sizeof((char[]) {TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(0, 0, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_RATE, 64, 0, 0)});
+    #endif
 }
 
 static void convert_framebuffer(void) {
     uint8_t *dest = frame_buffer_yuyv;
     uint16_t *src = frame_buffer_rgb565;
 
-    for (int i = 0; i < FRAME_WIDTH * FRAME_HEIGHT / 2; i++) {
+    static int i = 0;
+    if ((i++) % 100 == 0) {
+        mp_printf(&mp_plat_print, "convert_framebuffer width=%d height=%d total pixel pairs = %d\n",
+            uvc_frame_width, uvc_frame_height, uvc_frame_width * uvc_frame_height / 2);
+    }
+    for (int i = 0; i < uvc_frame_width * uvc_frame_height / 2; i++) {
         uint16_t p1 = IMAGE_GET_RGB565_PIXEL_FAST(src, 0);
         uint16_t p2 = IMAGE_GET_RGB565_PIXEL_FAST(src, 1);
         src += 2;
 
         int y1 = COLOR_RGB565_TO_Y(p1);
+        int y2 = COLOR_RGB565_TO_Y(p2);
+        if (y2 > y1) {
+            p1 = p2;          /* Use UV value of the brighter pixel */
+        }
         int u = COLOR_RGB565_TO_U(p1) + 128;  // openmv UV are signed in the range [-127,128]
         int v = COLOR_RGB565_TO_V(p1) + 128;
-        int y2 = COLOR_RGB565_TO_Y(p2);
 
         *dest++ = y1;
         *dest++ = u;
@@ -80,31 +124,22 @@ static void convert_framebuffer(void) {
 
 size_t usb_uvc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
     usb_add_interface_string(*current_interface_string, "CircuitPython UVC");
-
-    memcpy(descriptor_buf, usb_uvc_descriptor_template, sizeof(usb_uvc_descriptor_template));
-
-    for (size_t i = 0; i < TU_ARRAY_SIZE(string_indices); i++) {
-        descriptor_buf[string_indices[i]] = *current_interface_string;
-    }
-
+    const uint8_t usb_uvc_descriptor[] = {
+        #if CFG_TUD_VIDEO_STREAMING_BULK
+        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(*current_interface_string, descriptor_counts->current_endpoint | 0x80, uvc_frame_width, uvc_frame_height, DEFAULT_FRAME_RATE, 64, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
+        #else
+        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(*current_interface_string, descriptor_counts->current_endpoint | 0x80, uvc_frame_width, uvc_frame_height, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
+        #endif
+    };
     (*current_interface_string)++;
-
-    for (size_t i = 0; i < TU_ARRAY_SIZE(interface_indices); i++) {
-        descriptor_buf[interface_indices[i]] += descriptor_counts->current_interface;
-    }
     descriptor_counts->current_interface += 2;
-
-    for (size_t i = 0; i < TU_ARRAY_SIZE(endpoint_indices); i++) {
-        // the only endpoint is an IN endpoint so set the 0x80 bit accordingly
-        descriptor_buf[endpoint_indices[i]] = descriptor_counts->current_endpoint | 0x80;
-    }
     descriptor_counts->num_out_endpoints++;
     descriptor_counts->current_endpoint++;
     descriptor_counts->current_interface++;
 
-    supervisor_enable_tick();
+    memcpy(descriptor_buf, usb_uvc_descriptor, sizeof(usb_uvc_descriptor));
 
-    return sizeof(usb_uvc_descriptor_template);
+    return sizeof(usb_uvc_descriptor);
 }
 
 background_callback_t uvc_cb;
@@ -135,7 +170,7 @@ STATIC void uvc_cb_fun(void *unused) {
         already_sent = 1;
         start_ms = supervisor_ticks_ms32();
         convert_framebuffer();
-        bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, FRAME_WIDTH * FRAME_HEIGHT * 16 / 8);
+        bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, uvc_frame_width * uvc_frame_height * 16 / 8);
         (void)result;
         // printf("(!already_sent) frame_xfer -> %d\n", (int)result);
     }
@@ -152,7 +187,7 @@ STATIC void uvc_cb_fun(void *unused) {
     start_ms += interval_ms;
 
     convert_framebuffer();
-    bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, FRAME_WIDTH * FRAME_HEIGHT * 16 / 8);
+    bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, uvc_frame_width * uvc_frame_height * 16 / 8);
     (void)result;
     // printf("frame_xfer -> %d\n", (int)result);
 }
