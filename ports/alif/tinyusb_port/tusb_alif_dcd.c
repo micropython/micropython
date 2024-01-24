@@ -7,26 +7,22 @@
 
 #include "alif_dcd_reg.h"
 
+#include "irq.h"
 #include "clk.h"
 #include "power.h"
 
+#if 1
+// This log and memset is needed to get the USB working, something to do with the extra delay.
 void snprintf_dummy(char *str, size_t size, const char *fmt, ...) {
 }
+static int bi = 0;
+static char logbuf[2049][48];
 
-// This log and memset is needed to get the USB working, something to do with the extra delay.
-#if 1
-#define LOG(...)      snprintf_dummy(logbuf[(bi++) % 2048], 48, __VA_ARGS__);\
-                          memset(logbuf[bi % 2048], ' ', 48)
-#elif 0
-#define LOG(...) \
-    memset(logbuf[(++bi) % 2048], ' ', 48); \
-    memset(logbuf[(++bi) % 2048], ' ', 48)
+#define LOG(...)      snprintf_dummy(logbuf[(bi++) % 2048], 48, __VA_ARGS__); \
+                      memset(logbuf[bi % 2048], ' ', 48)
 #else
 #define LOG(...)
 #endif
-
-char logbuf[2049][48];
-int bi = 0;
 
 /// Structs and Buffers --------------------------------------------------------
 
@@ -141,7 +137,7 @@ void dcd_init(uint8_t rhport)
 
     // enable interrupts in the NVIC
     NVIC_ClearPendingIRQ(USB_IRQ_IRQn);
-    NVIC_SetPriority(USB_IRQ_IRQn, 5);
+    NVIC_SetPriority(USB_IRQ_IRQn, IRQ_PRI_USB);
     dcd_int_enable(rhport);
 }
 
@@ -336,9 +332,15 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
 
     switch (ep) {
         case 0: { // CONTROL OUT
-            // TinyUSB explicitly requests STATUS OUT fetch
-            // DATA OUT in control writes is not supported
-            _dcd_start_xfer(0, _ctrl_buf, 64, TRBCTL_CTL_STAT3);
+            if (0 < total_bytes) {
+                // DATA OUT request
+                _xfer_bytes[0] = total_bytes;
+                _dcd_start_xfer(0, buffer, total_bytes, TRBCTL_CTL_STAT3);
+            } else {
+                // TinyUSB explicitly requests STATUS OUT fetch after DATA IN
+                _xfer_bytes[0] = 0;
+                _dcd_start_xfer(0, _ctrl_buf, 64, TRBCTL_CTL_STAT3);
+            }
         } break;
         case 1: { // CONTROL IN
             // DATA OUT in control reads is not supported
@@ -347,7 +349,7 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
             _xfer_bytes[1] = total_bytes;
 
             if (0 < total_bytes) {
-                RTSS_CleanDCache_by_Addr(buffer, sizeof(buffer));
+                RTSS_CleanDCache_by_Addr(buffer, total_bytes);
                 type = _ctrl_long_data ? TRBCTL_NORMAL : TRBCTL_CTL_DATA;
                 if (64 == total_bytes) {
                     _ctrl_long_data = true;
@@ -359,7 +361,7 @@ bool dcd_edpt_xfer(uint8_t rhport, uint8_t ep_addr, uint8_t * buffer, uint16_t t
         default: { // DATA EPs (BULK & INTERRUPT only)
             _xfer_bytes[ep] = total_bytes;
             if (TUSB_DIR_IN == tu_edpt_dir(ep_addr)) {
-                RTSS_CleanDCache_by_Addr(buffer, sizeof(buffer));
+                RTSS_CleanDCache_by_Addr(buffer, total_bytes);
             } else {
                 total_bytes = 512; // temporary hack, controller requires max
                                    // size requests on OUT endpoints [FIXME]
@@ -445,10 +447,17 @@ static void _dcd_handle_depevt(uint8_t ep, uint8_t evt, uint8_t sts, uint16_t pa
                         _ctrl_buf[4], _ctrl_buf[5], _ctrl_buf[6], _ctrl_buf[7]);
                     dcd_event_setup_received(TUD_OPT_RHPORT, _ctrl_buf, true);
                 } else if (TRBCTL_CTL_STAT3 == trbctl) {
-                    dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_OUT),
-                                            0, XFER_RESULT_SUCCESS, true);
+                    if (0 < _xfer_bytes[0]) {
+                        RTSS_InvalidateDCache_by_Addr((void*) _xfer_trb[0][0], _xfer_bytes[0]);
+                        dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_OUT),
+                                                _xfer_bytes[0] - (_xfer_trb[0][2] & 0xFFFFFF),
+                                                XFER_RESULT_SUCCESS, true);
+                    } else {
+                        dcd_event_xfer_complete(TUD_OPT_RHPORT, tu_edpt_addr(0, TUSB_DIR_OUT),
+                                                0, XFER_RESULT_SUCCESS, true);
+                    }
                 } else {
-                    // not yet supported
+                    // invalid TRBCTL value
                     __BKPT(0);
                 }
             } else if (1 == ep) {

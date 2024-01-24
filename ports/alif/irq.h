@@ -38,11 +38,12 @@
 //
 // Lower number implies higher interrupt priority.
 
-#define NVIC_PRIORITY_GROUPING  (0)
-#define IRQ_PRI_SYSTEM_TICK     NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 2, 0)
-#define IRQ_PRI_QUIET_TIMING    NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 1, 0)
-#define IRQ_PRI_UART_REPL       NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 1, 0)
-#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITY_GROUPING, 127, 0)
+#define NVIC_PRIORITYGROUP_7    ((uint32_t)0x00000000U)
+#define IRQ_PRI_SYSTEM_TICK     NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 2, 0)
+#define IRQ_PRI_QUIET_TIMING    NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 1, 0)
+#define IRQ_PRI_UART_REPL       NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 1, 0)
+#define IRQ_PRI_USB             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 5, 0)
+#define IRQ_PRI_PENDSV          NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 127, 0)
 
 // these states correspond to values from query_irq, enable_irq and disable_irq
 #define IRQ_STATE_DISABLED (0x00000001)
