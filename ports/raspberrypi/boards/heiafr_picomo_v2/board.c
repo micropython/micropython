@@ -81,7 +81,7 @@ void board_init(void) {
 
     busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
     display->base.type = &busdisplay_busdisplay_type;
-    common_hal_busdisplay_busdisplay_construct(display,    
+    common_hal_busdisplay_busdisplay_construct(display,
         bus,
         240, // Width
         280, // Height
