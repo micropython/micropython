@@ -602,7 +602,7 @@ raw_repl_reset:
         }
 
         int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
-        if (ret & PYEXEC_FORCED_EXIT) {
+        if (ret & (PYEXEC_FORCED_EXIT | PYEXEC_RELOAD)) {
             return ret;
         }
     }
@@ -739,7 +739,7 @@ friendly_repl_reset:
         }
 
         ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
-        if (ret & PYEXEC_FORCED_EXIT) {
+        if (ret & (PYEXEC_FORCED_EXIT | PYEXEC_RELOAD)) {
             return ret;
         }
     }
