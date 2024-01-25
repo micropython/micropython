@@ -89,7 +89,7 @@
 #define MICROPY_PY_MACHINE_RESET                (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS     (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
-#define MICROPY_PY_MACHINE_DHT_READINTO         (0)
+#define MICROPY_PY_MACHINE_DHT_READINTO         (1)
 #define MICROPY_PY_MACHINE_PULSE                (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (0)
 #define MICROPY_PY_MACHINE_SOFTSPI              (1)
