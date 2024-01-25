@@ -647,7 +647,107 @@ STATIC void mpz_set(mpz_t *dest, const mpz_t *src) {
     memcpy(dest->dig, src->dig, src->len * sizeof(mpz_dig_t));
 }
 
-void mpz_set_from_int(mpz_t *z, mp_int_t val) {
+#ifndef MICROPY_WRAP_MPZ_SET_FROM_INT
+#define MICROPY_WRAP_MPZ_SET_FROM_INT(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_SET_FROM_LL
+#define MICROPY_WRAP_MPZ_SET_FROM_LL(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_SET_FROM_FLOAT
+#define MICROPY_WRAP_MPZ_SET_FROM_FLOAT(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_SET_FROM_STR
+#define MICROPY_WRAP_MPZ_SET_FROM_STR(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_SET_FROM_BYTES
+#define MICROPY_WRAP_MPZ_SET_FROM_BYTES(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_CMP
+#define MICROPY_WRAP_MPZ_CMP(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_ABS
+#define MICROPY_WRAP_MPZ_ABS(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_NEG
+#define MICROPY_WRAP_MPZ_NEG(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_NOT
+#define MICROPY_WRAP_MPZ_NOT(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_SHL
+#define MICROPY_WRAP_MPZ_SHL(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_SHR
+#define MICROPY_WRAP_MPZ_SHR(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_ADD
+#define MICROPY_WRAP_MPZ_ADD(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_SUB
+#define MICROPY_WRAP_MPZ_SUB(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_AND
+#define MICROPY_WRAP_MPZ_AND(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_OR
+#define MICROPY_WRAP_MPZ_OR(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_XOR
+#define MICROPY_WRAP_MPZ_XOR(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_MUL
+#define MICROPY_WRAP_MPZ_MUL(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_POW
+#define MICROPY_WRAP_MPZ_POW(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_POW3
+#define MICROPY_WRAP_MPZ_POW3(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_DIVMOD
+#define MICROPY_WRAP_MPZ_DIVMOD(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_HASH
+#define MICROPY_WRAP_MPZ_HASH(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_AS_INT
+#define MICROPY_WRAP_MPZ_AS_INT(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_AS_UINT
+#define MICROPY_WRAP_MPZ_AS_UINT(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_AS_BYTES
+#define MICROPY_WRAP_MPZ_AS_BYTES(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+#ifndef MICROPY_WRAP_MPZ_AS_STR
+#define MICROPY_WRAP_MPZ_AS_STR(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f)
+#endif
+
+void MICROPY_WRAP_MPZ_SET_FROM_INT(mpz_set_from_int)(mpz_t * z, mp_int_t val) {
     if (val == 0) {
         z->neg = 0;
         z->len = 0;
@@ -672,7 +772,7 @@ void mpz_set_from_int(mpz_t *z, mp_int_t val) {
     }
 }
 
-void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
+void MICROPY_WRAP_MPZ_SET_FROM_LL(mpz_set_from_ll)(mpz_t * z, long long val, bool is_signed) {
     mpz_need_dig(z, MPZ_NUM_DIG_FOR_LL);
 
     unsigned long long uval;
@@ -692,7 +792,7 @@ void mpz_set_from_ll(mpz_t *z, long long val, bool is_signed) {
 }
 
 #if MICROPY_PY_BUILTINS_FLOAT
-void mpz_set_from_float(mpz_t *z, mp_float_t src) {
+void MICROPY_WRAP_MPZ_SET_FROM_FLOAT(mpz_set_from_float)(mpz_t * z, mp_float_t src) {
     mp_float_union_t u = {src};
     z->neg = u.p.sgn;
     if (u.p.exp == 0) {
@@ -750,7 +850,7 @@ void mpz_set_from_float(mpz_t *z, mp_float_t src) {
 #endif
 
 // Returns number of bytes from str that were processed
-size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigned int base) {
+size_t MICROPY_WRAP_MPZ_SET_FROM_STR(mpz_set_from_str)(mpz_t * z, const char *str, size_t len, bool neg, unsigned int base) {
     assert(base <= 36);
 
     const char *cur = str;
@@ -786,7 +886,7 @@ size_t mpz_set_from_str(mpz_t *z, const char *str, size_t len, bool neg, unsigne
     return cur - str;
 }
 
-void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) {
+void MICROPY_WRAP_MPZ_SET_FROM_BYTES(mpz_set_from_bytes)(mpz_t * z, bool big_endian, size_t len, const byte *buf) {
     int delta = 1;
     if (big_endian) {
         buf += len - 1;
@@ -819,7 +919,7 @@ void mpz_set_from_bytes(mpz_t *z, bool big_endian, size_t len, const byte *buf) 
     z->len = mpn_remove_trailing_zeros(z->dig, z->dig + z->len);
 }
 
-int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
+int MICROPY_WRAP_MPZ_CMP(mpz_cmp)(const mpz_t * z1, const mpz_t *z2) {
     int cmp = (int)z2->neg - (int)z1->neg;
     if (cmp != 0) {
         return cmp;
@@ -833,7 +933,7 @@ int mpz_cmp(const mpz_t *z1, const mpz_t *z2) {
 
 // Computes dest = abs(z)
 // Can have dest, z the same
-void mpz_abs_inpl(mpz_t *dest, const mpz_t *z) {
+void MICROPY_WRAP_MPZ_ABS(mpz_abs_inpl)(mpz_t * dest, const mpz_t *z) {
     if (dest != z) {
         mpz_set(dest, z);
     }
@@ -842,7 +942,7 @@ void mpz_abs_inpl(mpz_t *dest, const mpz_t *z) {
 
 // Computes dest = -z
 // Can have dest, z the same
-void mpz_neg_inpl(mpz_t *dest, const mpz_t *z) {
+void MICROPY_WRAP_MPZ_NEG(mpz_neg_inpl)(mpz_t * dest, const mpz_t *z) {
     if (dest != z) {
         mpz_set(dest, z);
     }
@@ -853,7 +953,7 @@ void mpz_neg_inpl(mpz_t *dest, const mpz_t *z) {
 
 // Computes dest = ~z (= -z - 1)
 // Can have dest, z the same
-void mpz_not_inpl(mpz_t *dest, const mpz_t *z) {
+void MICROPY_WRAP_MPZ_NOT(mpz_not_inpl)(mpz_t * dest, const mpz_t *z) {
     if (dest != z) {
         mpz_set(dest, z);
     }
@@ -876,7 +976,7 @@ void mpz_not_inpl(mpz_t *dest, const mpz_t *z) {
 
 // Computes dest = lhs << rhs
 // Can have dest, lhs the same
-void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
+void MICROPY_WRAP_MPZ_SHL(mpz_shl_inpl)(mpz_t * dest, const mpz_t *lhs, mp_uint_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
     } else {
@@ -888,7 +988,7 @@ void mpz_shl_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
 
 // Computes dest = lhs >> rhs
 // Can have dest, lhs the same
-void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
+void MICROPY_WRAP_MPZ_SHR(mpz_shr_inpl)(mpz_t * dest, const mpz_t *lhs, mp_uint_t rhs) {
     if (lhs->len == 0 || rhs == 0) {
         mpz_set(dest, lhs);
     } else {
@@ -925,7 +1025,7 @@ void mpz_shr_inpl(mpz_t *dest, const mpz_t *lhs, mp_uint_t rhs) {
 
 // Computes dest = lhs + rhs
 // Can have dest, lhs, rhs the same
-void mpz_add_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_ADD(mpz_add_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs) {
     if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
         const mpz_t *temp = lhs;
         lhs = rhs;
@@ -945,7 +1045,7 @@ void mpz_add_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
 // Computes dest = lhs - rhs
 // Can have dest, lhs, rhs the same
-void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_SUB(mpz_sub_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs) {
     bool neg = false;
 
     if (mpn_cmp(lhs->dig, lhs->len, rhs->dig, rhs->len) < 0) {
@@ -974,7 +1074,7 @@ void mpz_sub_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
 // Computes dest = lhs & rhs
 // Can have dest, lhs, rhs the same
-void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_AND(mpz_and_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs) {
     // make sure lhs has the most digits
     if (lhs->len < rhs->len) {
         const mpz_t *temp = lhs;
@@ -1007,7 +1107,7 @@ void mpz_and_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
 // Computes dest = lhs | rhs
 // Can have dest, lhs, rhs the same
-void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_OR(mpz_or_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs) {
     // make sure lhs has the most digits
     if (lhs->len < rhs->len) {
         const mpz_t *temp = lhs;
@@ -1040,7 +1140,7 @@ void mpz_or_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
 // Computes dest = lhs ^ rhs
 // Can have dest, lhs, rhs the same
-void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_XOR(mpz_xor_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs) {
     // make sure lhs has the most digits
     if (lhs->len < rhs->len) {
         const mpz_t *temp = lhs;
@@ -1077,7 +1177,7 @@ void mpz_xor_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
 // Computes dest = lhs * rhs
 // Can have dest, lhs, rhs the same
-void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_MUL(mpz_mul_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs) {
     if (lhs->len == 0 || rhs->len == 0) {
         mpz_set_from_int(dest, 0);
         return;
@@ -1108,7 +1208,7 @@ void mpz_mul_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
 // Computes dest = lhs ** rhs
 // Can have dest, lhs, rhs the same
-void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_POW(mpz_pow_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs) {
     if (lhs->len == 0 || rhs->neg != 0) {
         mpz_set_from_int(dest, 0);
         return;
@@ -1141,7 +1241,7 @@ void mpz_pow_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs) {
 
 // Computes dest = (lhs ** rhs) % mod
 // Can have dest, lhs, rhs the same; mod can't be the same as dest
-void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t *mod) {
+void MICROPY_WRAP_MPZ_POW3(mpz_pow3_inpl)(mpz_t * dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t *mod) {
     if (lhs->len == 0 || rhs->neg != 0 || (mod->len == 1 && mod->dig[0] == 1)) {
         mpz_set_from_int(dest, 0);
         return;
@@ -1181,7 +1281,7 @@ void mpz_pow3_inpl(mpz_t *dest, const mpz_t *lhs, const mpz_t *rhs, const mpz_t 
 //  0 <= rem < rhs
 // Can have lhs, rhs the same
 // Assumes rhs != 0 (undefined behaviour if it is)
-void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const mpz_t *rhs) {
+void MICROPY_WRAP_MPZ_DIVMOD(mpz_divmod_inpl)(mpz_t * dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const mpz_t *rhs) {
     assert(!mpz_is_zero(rhs));
 
     mpz_need_dig(dest_quo, lhs->len + 1); // +1 necessary?
@@ -1206,7 +1306,7 @@ void mpz_divmod_inpl(mpz_t *dest_quo, mpz_t *dest_rem, const mpz_t *lhs, const m
 }
 
 // Must return actual int value if it fits in mp_int_t
-mp_int_t mpz_hash(const mpz_t *z) {
+mp_int_t MICROPY_WRAP_MPZ_HASH(mpz_hash)(const mpz_t * z) {
     mp_uint_t val = 0;
     mpz_dig_t *d = z->dig + z->len;
 
@@ -1221,7 +1321,7 @@ mp_int_t mpz_hash(const mpz_t *z) {
     return val;
 }
 
-bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
+bool MICROPY_WRAP_MPZ_AS_INT(mpz_as_int_checked)(const mpz_t * i, mp_int_t *value) {
     mp_uint_t val = 0;
     mpz_dig_t *d = i->dig + i->len;
 
@@ -1241,7 +1341,7 @@ bool mpz_as_int_checked(const mpz_t *i, mp_int_t *value) {
     return true;
 }
 
-bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
+bool MICROPY_WRAP_MPZ_AS_UINT(mpz_as_uint_checked)(const mpz_t * i, mp_uint_t *value) {
     if (i->neg != 0) {
         // can't represent signed values
         return false;
@@ -1262,7 +1362,7 @@ bool mpz_as_uint_checked(const mpz_t *i, mp_uint_t *value) {
     return true;
 }
 
-void mpz_as_bytes(const mpz_t *z, bool big_endian, size_t len, byte *buf) {
+void MICROPY_WRAP_MPZ_AS_BYTES(mpz_as_bytes)(const mpz_t * z, bool big_endian, size_t len, byte *buf) {
     byte *b = buf;
     if (big_endian) {
         b += len;
@@ -1324,7 +1424,7 @@ mp_float_t mpz_as_float(const mpz_t *i) {
 // Assumes enough space in str as calculated by mp_int_format_size
 // base must be between 2 and 32 inclusive
 // Returns length of string, not including null byte
-size_t mpz_as_str_inpl(const mpz_t *i, unsigned int base, const char *prefix, char base_char, char comma, char *str) {
+size_t MICROPY_WRAP_MPZ_AS_STR(mpz_as_str_inpl)(const mpz_t * i, unsigned int base, const char *prefix, char base_char, char comma, char *str) {
     assert(str != NULL);
     assert(2 <= base && base <= 32);
 
