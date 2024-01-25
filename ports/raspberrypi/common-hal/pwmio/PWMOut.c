@@ -119,21 +119,21 @@ pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t ab_channel, bool variable
 
     // Check the channel first.
     if ((channel_use & channel_use_mask) != 0) {
-        return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+        return PWMOUT_INTERNAL_RESOURCES_IN_USE;
     }
     // Now check if the slice is in use and if we can share with it.
     if (target_slice_frequencies[slice] > 0) {
         // If we want to change frequency then we can't share.
         if (variable_frequency) {
-            return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+            return PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE;
         }
         // If the other user wants a variable frequency then we can't share either.
         if ((slice_variable_frequency & (1 << slice)) != 0) {
-            return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+            return PWMOUT_INTERNAL_RESOURCES_IN_USE;
         }
         // If we're both fixed frequency but we don't match target frequencies then we can't share.
         if (target_slice_frequencies[slice] != frequency) {
-            return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+            return PWMOUT_INVALID_FREQUENCY_ON_PIN;
         }
     }
 

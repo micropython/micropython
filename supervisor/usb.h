@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_USB_H
-#define MICROPY_INCLUDED_SUPERVISOR_USB_H
+#pragma once
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -85,11 +84,6 @@ void usb_setup_with_vm(void);
 void usb_msc_mount(void);
 void usb_msc_umount(void);
 bool usb_msc_ejected(void);
-
-// Locking MSC prevents presenting the drive on plug-in when in use by something
-// else (likely BLE.)
-bool usb_msc_lock(void);
-void usb_msc_unlock(void);
 #endif
 
 #if CIRCUITPY_USB_KEYBOARD_WORKFLOW
@@ -102,5 +96,3 @@ void usb_keyboard_detach(uint8_t dev_addr, uint8_t interface);
 void usb_keyboard_attach(uint8_t dev_addr, uint8_t interface);
 void usb_keymap_set(const uint8_t *buf, size_t len);
 #endif
-
-#endif // MICROPY_INCLUDED_SUPERVISOR_USB_H
