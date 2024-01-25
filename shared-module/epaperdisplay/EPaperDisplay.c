@@ -507,6 +507,7 @@ void epaperdisplay_epaperdisplay_collect_ptrs(epaperdisplay_epaperdisplay_obj_t 
     displayio_display_bus_collect_ptrs(&self->bus);
     gc_collect_ptr((void *)self->start_sequence);
     gc_collect_ptr((void *)self->stop_sequence);
+    gc_collect_ptr((void *)self->refresh_sequence);
 }
 
 size_t maybe_refresh_epaperdisplay(void) {
