@@ -663,11 +663,6 @@ static const mp_rom_map_elem_t machine_i2c_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readfrom_mem), MP_ROM_PTR(&machine_i2c_readfrom_mem_obj) },
     { MP_ROM_QSTR(MP_QSTR_readfrom_mem_into), MP_ROM_PTR(&machine_i2c_readfrom_mem_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeto_mem), MP_ROM_PTR(&machine_i2c_writeto_mem_obj) },
-
-    // port extensions
-    #ifdef MICROPY_PORT_I2C_EXTENSION
-    MICROPY_PORT_I2C_EXTENSION
-    #endif
 };
 MP_DEFINE_CONST_DICT(mp_machine_i2c_locals_dict, machine_i2c_locals_dict_table);
 
