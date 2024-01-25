@@ -55,6 +55,12 @@
 #define MICROPY_OPT_MAP_LOOKUP_CACHE (__CORTEX_M > 0)
 #endif
 
+#if __CORTEX_M == 0
+// Just use -Os for everything to avoid using extra flash. Using M0 as a stand-in
+// for "likely has small flash", this could be moved to the board config instead.
+#define MICROPY_APPLY_COMPILER_EXTRA_OPTIMISATIONS(f) f
+#endif
+
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
 #ifndef MICROPY_EMIT_THUMB

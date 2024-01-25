@@ -37,6 +37,9 @@
 // Python internal features
 #define MICROPY_ERROR_REPORTING                 (MICROPY_ERROR_REPORTING_NONE)
 
+// Just use -Os for everything to generate the smallest possible binary.
+#define MICROPY_APPLY_COMPILER_EXTRA_OPTIMISATIONS(f) f
+
 // Type definitions for the specific machine
 
 typedef int32_t mp_int_t; // must be pointer size
