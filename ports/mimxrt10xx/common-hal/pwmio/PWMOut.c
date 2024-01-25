@@ -189,7 +189,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     if (((flexpwm->MCTRL >> PWM_MCTRL_RUN_SHIFT) & sm_mask) != 0) {
         // Another output has claimed this submodule for variable frequency already.
         if ((_pwm_variable_frequency[flexpwm_index] & sm_mask) != 0) {
-            return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+            return PWMOUT_INTERNAL_RESOURCES_IN_USE;
         }
 
         // We want variable frequency but another class has already claim a fixed frequency.
@@ -199,7 +199,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 
         // Another pin is already using this output.
         if ((flexpwm->OUTEN & outen_mask) != 0) {
-            return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+            return PWMOUT_INTERNAL_RESOURCES_IN_USE;
         }
 
         if (frequency != _pwm_sm_frequencies[flexpwm_index][submodule]) {

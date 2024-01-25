@@ -248,7 +248,7 @@ void common_hal_ps2io_ps2_construct(ps2io_ps2_obj_t *self,
         mp_arg_error_invalid(MP_QSTR_clock_pin);
     }
     if (eic_get_enable() && !eic_channel_free(clock_pin->extint_channel)) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("EXTINT channel already in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
     }
 
     clk_hi(self);

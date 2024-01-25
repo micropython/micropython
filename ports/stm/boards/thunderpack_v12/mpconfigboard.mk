@@ -26,3 +26,9 @@ MCU_PACKAGE = UFQFPN48
 
 LD_COMMON = boards/common_nvm.ld
 LD_FILE = boards/STM32F411_nvm_nofs.ld
+
+# Disable TERMINALIO on translations with missing characters.
+ifneq (,$(filter $(TRANSLATION),ja ko ru))
+CIRCUITPY_TERMINALIO = 0
+RELEASE_NEEDS_CLEAN_BUILD = $(CIRCUITPY_DISPLAYIO)
+endif

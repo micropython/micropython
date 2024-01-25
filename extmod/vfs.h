@@ -48,6 +48,8 @@
 #define MP_BLOCKDEV_FLAG_USB_WRITABLE             (0x0010)
 // Bit set when the above flag is checked before opening a file for write.
 #define MP_BLOCKDEV_FLAG_CONCURRENT_WRITE_PROTECTED (0x0020)
+// Bit set when something has claimed the right to mutate the blockdev.
+#define MP_BLOCKDEV_FLAG_LOCKED (0x0040)
 
 // constants for block protocol ioctl
 #define MP_BLOCKDEV_IOCTL_INIT          (1)
