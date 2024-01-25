@@ -39,7 +39,7 @@
 // Lower number implies higher interrupt priority.
 
 #define NVIC_PRIORITYGROUP_7    ((uint32_t)0x00000000U)
-#define IRQ_PRI_SYSTEM_TICK     NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 2, 0)
+#define IRQ_PRI_SYSTEM_TICK     NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 0, 0)
 #define IRQ_PRI_QUIET_TIMING    NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 1, 0)
 #define IRQ_PRI_UART_REPL       NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 1, 0)
 #define IRQ_PRI_USB             NVIC_EncodePriority(NVIC_PRIORITYGROUP_7, 5, 0)
