@@ -17,12 +17,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up submodules
@@ -40,7 +41,7 @@ jobs:
       run: git diff > ~/pre-commit.patch
     - name: Upload patch
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: patch
         path: ~/pre-commit.patch
