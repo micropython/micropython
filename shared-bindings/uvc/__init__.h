@@ -30,3 +30,4 @@
 extern displayio_bitmap_t uvc_bitmap_obj;
 bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height);
 bool shared_module_uvc_disable(void);
+void shared_module_uvc_swapbuffers(void);

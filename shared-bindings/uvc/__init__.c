@@ -98,11 +98,24 @@ STATIC mp_obj_t uvc_disable(void) {
 };
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(uvc_disable_obj, uvc_disable);
 
+//|
+//| def swapbuffers() -> None:
+//|     """Copy the back framebuffer to the front framebuffer
+//|
+//|     This updates the data transmitted to the host computer via USB."""
+//|
+STATIC mp_obj_t uvc_swapbuffers(void) {
+    shared_module_uvc_swapbuffers();
+    return mp_const_none;
+};
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(uvc_swapbuffers_obj, uvc_swapbuffers);
+
 
 static const mp_rom_map_elem_t uvc_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uvc) },
     { MP_ROM_QSTR(MP_QSTR_bitmap), MP_ROM_PTR(&uvc_bitmap_obj) },
     { MP_ROM_QSTR(MP_QSTR_disable), MP_ROM_PTR(&uvc_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_swapbuffers), MP_ROM_PTR(&uvc_swapbuffers_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable_framebuffer), MP_ROM_PTR(&uvc_enable_framebuffer_obj) },
 };
 

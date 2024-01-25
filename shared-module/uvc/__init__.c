@@ -10,6 +10,7 @@
 #include "supervisor/shared/tick.h"
 #include "device/usbd.h"
 
+static bool do_convert = true;
 static unsigned frame_num = 0;
 static unsigned tx_busy = 0;
 static unsigned interval_ms = 1000 / DEFAULT_FRAME_RATE;
@@ -93,15 +94,15 @@ size_t usb_uvc_descriptor_length(void) {
     #endif
 }
 
-static void convert_framebuffer(void) {
+static void convert_framebuffer_maybe(void) {
+    if (!do_convert) {
+        return; // new data not ready yet
+    }
+    do_convert = false; // assumes this happens via background, not interrupt
+
     uint8_t *dest = frame_buffer_yuyv;
     uint16_t *src = frame_buffer_rgb565;
 
-    static int i = 0;
-    if ((i++) % 100 == 0) {
-        mp_printf(&mp_plat_print, "convert_framebuffer width=%d height=%d total pixel pairs = %d\n",
-            uvc_frame_width, uvc_frame_height, uvc_frame_width * uvc_frame_height / 2);
-    }
     for (int i = 0; i < uvc_frame_width * uvc_frame_height / 2; i++) {
         uint16_t p1 = IMAGE_GET_RGB565_PIXEL_FAST(src, 0);
         uint16_t p2 = IMAGE_GET_RGB565_PIXEL_FAST(src, 1);
@@ -120,6 +121,10 @@ static void convert_framebuffer(void) {
         *dest++ = y2;
         *dest++ = v;
     }
+}
+
+void shared_module_uvc_swapbuffers(void) {
+    do_convert = true;
 }
 
 size_t usb_uvc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
@@ -144,35 +149,24 @@ size_t usb_uvc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *desc
 
 background_callback_t uvc_cb;
 
-#define printf(...) mp_printf(&mp_plat_print, __VA_ARGS__)
-
 STATIC void uvc_cb_fun(void *unused) {
     (void)unused;
 
     static unsigned start_ms = 0;
     static unsigned already_sent = 0;
 
-    {
-        static int i;
-        if (i++ % 100 == 0) {
-            // printf("usb_uvc_task i=%d, tud_video_n_streaming=%d already_sent=%d start_ms=%d\n", i, tud_video_n_streaming(0, 0), already_sent, start_ms);
-        }
-    }
-
     if (!tud_video_n_streaming(0, 0)) {
         already_sent = 0;
         frame_num = 0;
-        // printf("not already streaming\n");
         return;
     }
 
     if (!already_sent) {
         already_sent = 1;
         start_ms = supervisor_ticks_ms32();
-        convert_framebuffer();
+        convert_framebuffer_maybe();
         bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, uvc_frame_width * uvc_frame_height * 16 / 8);
         (void)result;
-        // printf("(!already_sent) frame_xfer -> %d\n", (int)result);
     }
 
     unsigned cur = supervisor_ticks_ms32();
@@ -186,10 +180,9 @@ STATIC void uvc_cb_fun(void *unused) {
     }
     start_ms += interval_ms;
 
-    convert_framebuffer();
+    convert_framebuffer_maybe();
     bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, uvc_frame_width * uvc_frame_height * 16 / 8);
     (void)result;
-    // printf("frame_xfer -> %d\n", (int)result);
 }
 
 void usb_uvc_task(void) {
