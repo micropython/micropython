@@ -49,7 +49,9 @@ bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height) {
 
     size_t framebuffer_size = uvc_frame_width * uvc_frame_height * 2;
     frame_buffer_yuyv = port_malloc(framebuffer_size, false);
-    frame_buffer_rgb565 = port_malloc(framebuffer_size, false);
+    uint32_t *frame_buffer_rgb565_uint32 = port_malloc(framebuffer_size, false);
+    frame_buffer_rgb565 = (uint16_t *)frame_buffer_rgb565_uint32;
+
     if (!frame_buffer_yuyv || !frame_buffer_rgb565) {
         // this will free either of the buffers allocated just above, in
         // case one succeeded and the other failed.
@@ -59,7 +61,7 @@ bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height) {
     memset(frame_buffer_yuyv, 0, framebuffer_size);
     memset(frame_buffer_rgb565, 0, framebuffer_size);
 
-    uvc_bitmap_obj.data = (uint32_t *)frame_buffer_rgb565;
+    uvc_bitmap_obj.data = (uint32_t *)frame_buffer_rgb565_uint32;
     uvc_bitmap_obj.width = uvc_frame_width;
     uvc_bitmap_obj.height = uvc_frame_height;
     uvc_bitmap_obj.stride = uvc_frame_width / 2; /* in uint32_t units */
