@@ -1786,22 +1786,32 @@ typedef double mp_float_t;
 /*****************************************************************************/
 /* Hooks for a port to wrap functions with performance-tuning attributes     */
 
+#ifndef MICROPY_APPLY_COMPILER_OPTIMISATIONS
+#if defined(__GNUC__) && !defined(__clang__)
+// Enable -O3 optimisations.
+#define MICROPY_APPLY_COMPILER_OPTIMISATIONS(f) __attribute__((optimize("O2"))) f
+#else
+// Unsupported on other compilers, will use global optimisation setting (typically -Os).
+#define MICROPY_APPLY_COMPILER_OPTIMISATIONS(f) f
+#endif
+#endif
+
 // Ideally apply full compiler optimisations and place in RAM.
 // Use this on small functions that need the highest possible performance.
 #ifndef MICROPY_PERFORMANCE_CRITICAL_LEVEL_1
-#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f) f
+#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f) MICROPY_APPLY_COMPILER_OPTIMISATIONS(f)
 #endif
 
 // Ideally apply full compiler optimisations and optionally place in RAM (if IRAM available).
 // Use this on larger functions that should go in RAM if possible.
 #ifndef MICROPY_PERFORMANCE_CRITICAL_LEVEL_2
-#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_2(f) f
+#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_2(f) MICROPY_APPLY_COMPILER_OPTIMISATIONS(f)
 #endif
 
 // Ideally apply full compiler optimisation if flash available.
 // Use this on functions that are not important enough to place in RAM.
 #ifndef MICROPY_PERFORMANCE_CRITICAL_LEVEL_3
-#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_3(f) f
+#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_3(f) MICROPY_APPLY_COMPILER_OPTIMISATIONS(f)
 #endif
 
 // Ideally apply full compiler optimisation if flash available (but lower priority than level 3).
