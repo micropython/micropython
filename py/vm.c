@@ -195,6 +195,21 @@
 #define TRACE_TICK(current_ip, current_sp, is_exception)
 #endif // MICROPY_PY_SYS_SETTRACE
 
+#ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
+// Using -O3 (rather than -Os) only a small amount to code size but makes a huge difference to speed (20% faster)
+#define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f)
+
+// Note:
+// Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
+// may require disabling tail jump optimization. This will make sure that
+// each opcode has its own dispatching jump which will improve branch
+// branch predictor efficiency.
+// https://marc.info/?l=lua-l&m=129778596120851
+// http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
+// http://www.emulators.com/docs/nx25_nostradamus.htm
+// -fno-crossjumping
+#endif
+
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:

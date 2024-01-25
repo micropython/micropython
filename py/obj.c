@@ -44,6 +44,10 @@ MP_NOINLINE void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *ty
     return base;
 }
 
+#ifndef MICROPY_WRAP_MP_OBJ_GET_TYPE
+#define MICROPY_WRAP_MP_OBJ_GET_TYPE(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f)
+#endif
+
 const mp_obj_type_t *MICROPY_WRAP_MP_OBJ_GET_TYPE(mp_obj_get_type)(mp_const_obj_t o_in) {
     #if MICROPY_OBJ_IMMEDIATE_OBJS && MICROPY_OBJ_REPR == MICROPY_OBJ_REPR_A
 
