@@ -150,7 +150,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         // one output so we start with the TCs to see if they work.
         int8_t direction = -1;
         uint8_t start = NUM_TIMERS_PER_PIN - 1;
-        bool found = false;
         if (variable_frequency) {
             direction = 1;
             start = 0;
@@ -162,7 +161,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
                 continue;
             }
             if (t->is_tc) {
-                found = true;
                 Tc *tc = tc_insts[t->index];
                 if (tc->COUNT16.CTRLA.bit.ENABLE == 0 && t->wave_output == 1) {
                     timer = t;
@@ -178,10 +176,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         }
 
         if (timer == NULL) {
-            if (found) {
-                return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
-            }
-            return PWMOUT_ALL_TIMERS_IN_USE;
+            return PWMOUT_INTERNAL_RESOURCES_IN_USE;
         }
 
         uint8_t resolution = 0;

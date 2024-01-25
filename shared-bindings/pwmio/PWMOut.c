@@ -51,13 +51,7 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
         case PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE:
             mp_arg_error_invalid(MP_QSTR_variable_frequency);
             break;
-        case PWMOUT_ALL_TIMERS_ON_PIN_IN_USE:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
-            break;
-        case PWMOUT_ALL_TIMERS_IN_USE:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
-            break;
-        case PWMOUT_ALL_CHANNELS_IN_USE:
+        case PWMOUT_INTERNAL_RESOURCES_IN_USE:
             mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
             break;
         default:

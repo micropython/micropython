@@ -110,12 +110,12 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
             if (tim_index < TIM_BANK_ARRAY_LEN && tim_channels_taken[tim_index] != 0) {
                 // Timer has already been reserved by an internal module
                 if (stm_peripherals_timer_is_reserved(mcu_tim_banks[tim_index])) {
-                    last_failure = PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+                    last_failure = PWMOUT_INTERNAL_RESOURCES_IN_USE;
                     continue; // keep looking
                 }
                 // is it the same channel? (or all channels reserved by a var-freq)
                 if (tim_channels_taken[tim_index] & (1 << tim_channel_index)) {
-                    last_failure = PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+                    last_failure = PWMOUT_INTERNAL_RESOURCES_IN_USE;
                     continue; // keep looking, might be another viable option
                 }
                 // If the frequencies are the same it's ok

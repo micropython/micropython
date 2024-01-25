@@ -220,7 +220,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         &channel, &pwm_already_in_use, NULL);
 
     if (self->pwm == NULL) {
-        return PWMOUT_ALL_TIMERS_IN_USE;
+        return PWMOUT_INTERNAL_RESOURCES_IN_USE;
     }
 
     self->channel = channel;
