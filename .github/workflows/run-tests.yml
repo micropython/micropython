@@ -45,12 +45,12 @@ jobs:
       with:
         cp-version: ${{ inputs.cp-version }}
     - name: Build unix port
-      run: make -C ports/unix VARIANT=coverage -j2
+      run: make -C ports/unix VARIANT=coverage -j4
     - name: Run tests
-      run: ./run-tests.py -j2 ${{ env[format('TEST_{0}', matrix.test)] }}
+      run: ./run-tests.py -j4 ${{ env[format('TEST_{0}', matrix.test)] }}
       working-directory: tests
     - name: Print failure info
-      run: ./run-tests.py -j2 --print-failures
+      run: ./run-tests.py -j4 --print-failures
       if: failure()
       working-directory: tests
     - name: Build native modules

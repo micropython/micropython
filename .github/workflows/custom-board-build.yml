@@ -81,7 +81,7 @@ jobs:
         riscv64-unknown-elf-gcc --version || true
         mkfs.fat --version || true
     - name: Build board
-      run: make -j2 ${{ inputs.flags }} BOARD=${{ inputs.board }} DEBUG=${{ inputs.debug && '1' || '0' }} TRANSLATION=${{ inputs.language }}
+      run: make -j4 ${{ inputs.flags }} BOARD=${{ inputs.board }} DEBUG=${{ inputs.debug && '1' || '0' }} TRANSLATION=${{ inputs.language }}
       working-directory: ports/${{ steps.set-up-port.outputs.port }}
     - name: Upload artifact
       uses: actions/upload-artifact@v4
