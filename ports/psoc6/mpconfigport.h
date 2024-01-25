@@ -119,8 +119,7 @@
 #define MICROPY_PY_MACHINE_PWM                  (1)
 #define MICROPY_PY_MACHINE_PWM_INCLUDEFILE      "ports/psoc6/machine_pwm.c"
 #define MICROPY_PY_MACHINE_I2C                  (1)
-#define MICROPY_PORT_I2C_EXTENSION \
-    { MP_ROM_QSTR(MP_QSTR_SLAVE), MP_ROM_PTR(&machine_i2c_deinit) },
+#define MICROPY_PY_MACHINE_I2C_SLAVE            (1)
 #define MICROPY_PY_MACHINE_SOFTI2C              (1)
 
 #define MICROPY_PY_MACHINE_SPI                  (1)

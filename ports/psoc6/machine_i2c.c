@@ -209,7 +209,47 @@ STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
 }
 
 // configure slave buffers
-// configure callbacks for slave events
+// i2c_master writes
+// i2c_slave reads from write buffer
+// i2c_slave does something about it
+// i2c_master reads
+// i2c_slave needs needs to have something there is the buffer
+
+STATIC mp_obj_t machine_i2c_slave_configure_receive_buffer(mp_obj_t self_in /*pass a buffer*/) {
+    machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    (void)self->scl;
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_conf_rx_buffer_obj, machine_i2c_slave_configure_receive_buffer);
+
+// STATIC mp_obj_t machine_i2c_slave_configure_transmit_buffer(mp_obj_t self_in /*pass a buffer*/) {
+//     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+//     return mp_const_none;
+// }
+// machine_i2c_slave_configure_rx_buffer() {
+
+// }
+
+// machine_i2c_skave_configure_tx_buffer() {
+
+// }
+
+// STATIC mp_obj_t machine_i2c_slave_configure_transmit_buffer(mp_obj_t self_in /*pass a buffer*/) {
+//     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+//     return mp_const_none;
+// }
+
+// machine_i2c_slave_register_callback(callback_function) {
+
+// }
+
+// machine_i2c_slave_tx_register_callback(callback_function) {
+
+// }
+
+
 
 
 STATIC const mp_machine_i2c_p_t machine_i2c_p = {
@@ -228,6 +268,33 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &machine_i2c_p,
     locals_dict, &mp_machine_i2c_locals_dict
     );
+
+#if MICROPY_PY_MACHINE_I2C_SLAVE
+
+STATIC const mp_rom_map_elem_t machine_i2c_slave_locals_dict_table[] = {
+    // Functions
+    { MP_ROM_QSTR(MP_QSTR_slave_conf_rx_buffer),         MP_ROM_PTR(&machine_i2c_slave_conf_rx_buffer_obj) },
+
+    // Const
+    { MP_ROM_QSTR(MP_QSTR_RD_EVENT),                     MP_ROM_INT(CYHAL_I2C_SLAVE_READ_EVENT) },
+    { MP_ROM_QSTR(MP_QSTR_WR_EVENT),                     MP_ROM_INT(CYHAL_I2C_SLAVE_WRITE_EVENT) },
+    { MP_ROM_QSTR(MP_QSTR_RD_BUF_IN_FIFO_EVENT),         MP_ROM_INT(CYHAL_I2C_SLAVE_RD_IN_FIFO_EVENT) },
+    { MP_ROM_QSTR(MP_QSTR_RD_BUF_EMPTY_EVENT),           MP_ROM_INT(CYHAL_I2C_SLAVE_RD_BUF_EMPTY_EVENT) },
+    { MP_ROM_QSTR(MP_QSTR_RD_CMPLT_EVENT),               MP_ROM_INT(CYHAL_I2C_SLAVE_RD_CMPLT_EVENT) },
+    { MP_ROM_QSTR(MP_QSTR_WR_CMPLT_EVENT),               MP_ROM_INT(CYHAL_I2C_SLAVE_WR_CMPLT_EVENT) },
+    { MP_ROM_QSTR(MP_QSTR_ERR_EVENT),                    MP_ROM_INT(CYHAL_I2C_SLAVE_ERR_EVENT) },
+};
+STATIC MP_DEFINE_CONST_DICT(machine_i2c_slave_locals_dict, machine_i2c_slave_locals_dict_table);
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2c_slave_type,
+    MP_QSTR_I2CSlave,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_i2c_make_new,
+    print, machine_i2c_print,
+    locals_dict, &machine_i2c_slave_locals_dict
+    );
+#endif
 
 void mod_i2c_deinit() {
     for (uint8_t i = 0; i < MAX_I2C; i++) {
