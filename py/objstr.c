@@ -1184,7 +1184,7 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
         int width = -1;
         int precision = -1;
         char type = '\0';
-        int flags = 0;
+        unsigned int flags = 0;
 
         if (format_spec) {
             // The format specifier (from http://docs.python.org/2/library/string.html#formatspec)
@@ -1229,8 +1229,9 @@ static vstr_t mp_obj_str_format_helper(const char *str, const char *top, int *ar
                 }
             }
             s = str_to_int(s, stop, &width);
-            if (*s == ',') {
-                flags |= PF_FLAG_SHOW_COMMA;
+            if (*s == ',' || *s == '_') {
+                MP_STATIC_ASSERT((unsigned)'_' << PF_FLAG_SEP_POS >> PF_FLAG_SEP_POS == '_');
+                flags |= (unsigned)*s << PF_FLAG_SEP_POS;
                 s++;
             }
             if (*s == '.') {

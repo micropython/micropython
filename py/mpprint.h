@@ -33,11 +33,11 @@
 #define PF_FLAG_SPACE_SIGN        (0x004)
 #define PF_FLAG_NO_TRAILZ         (0x008)
 #define PF_FLAG_SHOW_PREFIX       (0x010)
-#define PF_FLAG_SHOW_COMMA        (0x020)
-#define PF_FLAG_PAD_AFTER_SIGN    (0x040)
-#define PF_FLAG_CENTER_ADJUST     (0x080)
-#define PF_FLAG_ADD_PERCENT       (0x100)
-#define PF_FLAG_SHOW_OCTAL_LETTER (0x200)
+#define PF_FLAG_PAD_AFTER_SIGN    (0x020)
+#define PF_FLAG_CENTER_ADJUST     (0x040)
+#define PF_FLAG_ADD_PERCENT       (0x080)
+#define PF_FLAG_SHOW_OCTAL_LETTER (0x100)
+#define PF_FLAG_SEP_POS           (9) // must be above all the above PF_FLAGs
 
 #if MICROPY_PY_IO && MICROPY_PY_SYS_STDFILES
 #define MP_PYTHON_PRINTER &mp_sys_stdout_print
@@ -69,9 +69,9 @@ extern const mp_print_t mp_sys_stdout_print;
 #endif
 
 int mp_print_str(const mp_print_t *print, const char *str);
-int mp_print_strn(const mp_print_t *print, const char *str, size_t len, int flags, char fill, int width);
+int mp_print_strn(const mp_print_t *print, const char *str, size_t len, unsigned int flags, char fill, int width);
 #if MICROPY_PY_BUILTINS_FLOAT
-int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, int flags, char fill, int width, int prec);
+int mp_print_float(const mp_print_t *print, mp_float_t f, char fmt, unsigned int flags, char fill, int width, int prec);
 #endif
 
 int mp_printf(const mp_print_t *print, const char *fmt, ...);
