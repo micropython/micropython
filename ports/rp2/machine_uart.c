@@ -194,7 +194,7 @@ STATIC inline void uart_service_interrupt(machine_uart_obj_t *self) {
     }
     if (uart_get_hw(self->uart)->mis & UART_UARTMIS_TXMIS_BITS) { // tx interrupt?
         // clear all interrupt bits but rx
-        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & (~UART_UARTICR_RXIC_BITS);
+        uart_get_hw(self->uart)->icr = UART_UARTICR_BITS & ~(UART_UARTICR_RXIC_BITS | UART_UARTICR_RTIC_BITS);
         uart_fill_tx_fifo(self);
     }
 }

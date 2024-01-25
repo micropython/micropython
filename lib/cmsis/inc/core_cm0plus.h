@@ -1,11 +1,11 @@
 /**************************************************************************//**
  * @file     core_cm0plus.h
  * @brief    CMSIS Cortex-M0+ Core Peripheral Access Layer Header File
- * @version  V5.0.7
- * @date     13. March 2019
+ * @version  V5.0.9
+ * @date     21. August 2019
  ******************************************************************************/
 /*
- * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ * Copyright (c) 2009-2019 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -742,7 +742,9 @@ __STATIC_INLINE void __NVIC_EnableIRQ(IRQn_Type IRQn)
 {
   if ((int32_t)(IRQn) >= 0)
   {
+    __COMPILER_BARRIER();
     NVIC->ISER[0U] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
+    __COMPILER_BARRIER();
   }
 }
 
@@ -948,11 +950,13 @@ __STATIC_INLINE void NVIC_DecodePriority (uint32_t Priority, uint32_t PriorityGr
 __STATIC_INLINE void __NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
 {
 #if defined (__VTOR_PRESENT) && (__VTOR_PRESENT == 1U)
-  uint32_t vectors = SCB->VTOR;
+  uint32_t *vectors = (uint32_t *)SCB->VTOR;
+  vectors[(int32_t)IRQn + NVIC_USER_IRQ_OFFSET] = vector;
 #else
-  uint32_t vectors = 0x0U;
+  uint32_t *vectors = (uint32_t *)(NVIC_USER_IRQ_OFFSET << 2);      /* point to 1st user interrupt */
+  *(vectors + (int32_t)IRQn) = vector;                              /* use pointer arithmetic to access vector */
 #endif
-  (* (int *) (vectors + ((int32_t)IRQn + NVIC_USER_IRQ_OFFSET) * 4)) = vector;
+  /* ARM Application Note 321 states that the M0+ does not require the architectural barrier */
 }
 
 
@@ -967,11 +971,12 @@ __STATIC_INLINE void __NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
 __STATIC_INLINE uint32_t __NVIC_GetVector(IRQn_Type IRQn)
 {
 #if defined (__VTOR_PRESENT) && (__VTOR_PRESENT == 1U)
-  uint32_t vectors = SCB->VTOR;
+  uint32_t *vectors = (uint32_t *)SCB->VTOR;
+  return vectors[(int32_t)IRQn + NVIC_USER_IRQ_OFFSET];
 #else
-  uint32_t vectors = 0x0U;
+  uint32_t *vectors = (uint32_t *)(NVIC_USER_IRQ_OFFSET << 2);      /* point to 1st user interrupt */
+  return *(vectors + (int32_t)IRQn);                                /* use pointer arithmetic to access vector */
 #endif
-  return (uint32_t)(* (int *) (vectors + ((int32_t)IRQn + NVIC_USER_IRQ_OFFSET) * 4));
 }
 
 
