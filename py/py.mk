@@ -18,9 +18,6 @@ endif
 QSTR_GLOBAL_DEPENDENCIES += $(PY_SRC)/mpconfig.h mpconfigport.h
 QSTR_GLOBAL_REQUIREMENTS += $(HEADER_BUILD)/mpversion.h
 
-# some code is performance bottleneck and compiled with other optimization options
-CSUPEROPT = -O3
-
 # Enable building 32-bit code on 64-bit host.
 ifeq ($(MICROPY_FORCE_32BIT),1)
 CC += -m32
@@ -254,17 +251,3 @@ $(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)
 # Force nlr code to always be compiled with space-saving optimisation so
 # that the function preludes are of a minimal and predictable form.
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os
-
-# optimising gc for speed; 5ms down to 4ms on pybv2
-$(PY_BUILD)/gc.o: CFLAGS += $(CSUPEROPT)
-
-# optimising vm for speed, adds only a small amount to code size but makes a huge difference to speed (20% faster)
-$(PY_BUILD)/vm.o: CFLAGS += $(CSUPEROPT)
-# Optimizing vm.o for modern deeply pipelined CPUs with branch predictors
-# may require disabling tail jump optimization. This will make sure that
-# each opcode has its own dispatching jump which will improve branch
-# branch predictor efficiency.
-# https://marc.info/?l=lua-l&m=129778596120851
-# http://hg.python.org/cpython/file/b127046831e2/Python/ceval.c#l828
-# http://www.emulators.com/docs/nx25_nostradamus.htm
-#-fno-crossjumping
