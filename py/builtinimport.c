@@ -57,16 +57,17 @@
 // uses mp_vfs_import_stat) to also search frozen modules. Given an exact
 // path to a file or directory (e.g. "foo/bar", foo/bar.py" or "foo/bar.mpy"),
 // will return whether the path is a file, directory, or doesn't exist.
-STATIC mp_import_stat_t stat_path(const char *path) {
+STATIC mp_import_stat_t stat_path(vstr_t *path) {
+    const char *str = vstr_null_terminated_str(path);
     #if MICROPY_MODULE_FROZEN
     // Only try and load as a frozen module if it starts with .frozen/.
     const int frozen_path_prefix_len = strlen(MP_FROZEN_PATH_PREFIX);
-    if (strncmp(path, MP_FROZEN_PATH_PREFIX, frozen_path_prefix_len) == 0) {
+    if (strncmp(str, MP_FROZEN_PATH_PREFIX, frozen_path_prefix_len) == 0) {
         // Just stat (which is the return value), don't get the data.
-        return mp_find_frozen_module(path + frozen_path_prefix_len, NULL, NULL);
+        return mp_find_frozen_module(str + frozen_path_prefix_len, NULL, NULL);
     }
     #endif
-    return mp_import_stat(path);
+    return mp_import_stat(str);
 }
 
 // Stat a given filesystem path to a .py file. If the file does not exist,
@@ -75,7 +76,7 @@ STATIC mp_import_stat_t stat_path(const char *path) {
 // files. This uses stat_path above, rather than mp_import_stat directly, so
 // that the .frozen path prefix is handled.
 STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
-    mp_import_stat_t stat = stat_path(vstr_null_terminated_str(path));
+    mp_import_stat_t stat = stat_path(path);
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -85,7 +86,7 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
     // Note: There's no point doing this if it's a frozen path, but adding the check
     // would be extra code, and no harm letting mp_find_frozen_module fail instead.
     vstr_ins_byte(path, path->len - 2, 'm');
-    stat = stat_path(vstr_null_terminated_str(path));
+    stat = stat_path(path);
     if (stat == MP_IMPORT_STAT_FILE) {
         return stat;
     }
@@ -99,7 +100,7 @@ STATIC mp_import_stat_t stat_file_py_or_mpy(vstr_t *path) {
 // result is a file, the path argument will be updated to include the file
 // extension.
 STATIC mp_import_stat_t stat_module(vstr_t *path) {
-    mp_import_stat_t stat = stat_path(vstr_null_terminated_str(path));
+    mp_import_stat_t stat = stat_path(path);
     DEBUG_printf("stat %s: %d\n", vstr_str(path), stat);
     if (stat == MP_IMPORT_STAT_DIR) {
         return stat;
