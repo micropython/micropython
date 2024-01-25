@@ -72,6 +72,9 @@
 //|                 in_report_lengths=(5, 2),
 //|                 out_report_lengths=(6, 0),
 //|             )
+//|
+//|         The HID device is able to wake up a suspended (sleeping) host computer.
+//|         See `send_report()` for details.
 //|         """
 //|         ...
 //|     KEYBOARD: Device
@@ -166,6 +169,16 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 //|         """Send an HID report. If the device descriptor specifies zero or one report id's,
 //|         you can supply `None` (the default) as the value of ``report_id``.
 //|         Otherwise you must specify which report id to use when sending the report.
+//|
+//|         If the USB host is suspended (sleeping), then `send_report()` will request that the host wake up.
+//|         The ``report`` itself will be discarded, to prevent unwanted extraneous characters,
+//|         mouse clicks, etc.
+//|
+//|         Note: Host operating systems allow enabling and disabling specific devices
+//|         and kinds of devices to do wakeup.
+//|         The defaults are different for different operating systems.
+//|         For instance, on Linux, only the primary keyboard may be enabled.
+//|         In addition, there may be USB wakeup settings in the host computer BIOS/UEFI.
 //|         """
 //|         ...
 STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
