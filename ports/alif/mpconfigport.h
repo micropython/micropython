@@ -83,6 +83,9 @@
 
 // Extended modules
 #define MICROPY_EPOCH_IS_1970                   (1)
+#define MICROPY_PY_OS_SEP                       (1)
+#define MICROPY_PY_OS_SYNC                      (1)
+#define MICROPY_PY_OS_UNAME                     (1)
 #define MICROPY_PY_TIME                         (1)
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/alif/modmachine.c"
