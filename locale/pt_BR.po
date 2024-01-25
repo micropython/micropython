@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2023-12-27 22:19+0000\n"
+"PO-Revision-Date: 2024-01-25 18:51+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2613,7 +2613,7 @@ msgstr "a operação binário %q não foi implementada"
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "bitmap size and depth must match"
-msgstr ""
+msgstr "o tamanho e a profundidade do bitmap devem corresponder"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
@@ -4371,7 +4371,7 @@ msgstr "instrução Xtensa '%s' não compatível com argumentos %d"
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "unsupported bitmap depth"
-msgstr ""
+msgstr "profundidade de bitmap não suportada"
 
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
@@ -4424,10 +4424,12 @@ msgid ""
 "weights must be a sequence with an odd square number of elements (usually 9 "
 "or 25)"
 msgstr ""
+"os pesos devem ser uma sequência com um número quadrado ímpar de elementos ("
+"geralmente 9 ou 25)"
 
 #: shared-bindings/bitmapfilter/__init__.c
 msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
-msgstr ""
+msgstr "os pesos devem ser um objeto do tipo %q, %q, %q ou %q, e não %q "
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
