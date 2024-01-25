@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2023 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2024 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,8 @@
 
 #pragma once
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-#include "shared-module/storage/__init__.h"
-#include "shared-module/displayio/Bitmap.h"
+#include "py/obj.h"
 
-bool usb_uvc_enabled(void);
-size_t usb_uvc_descriptor_length(void);
-size_t usb_uvc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
-void usb_uvc_task(void);
-
-extern uint16_t uvc_frame_width, uvc_frame_height;
-extern uint16_t *uvc_framebuffer_rgb565;
+typedef struct uvc_uvcframebuffer_obj {
+    mp_obj_base_t base;
+} uvc_uvcframebuffer_obj_t;

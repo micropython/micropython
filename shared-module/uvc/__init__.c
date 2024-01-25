@@ -17,7 +17,7 @@ static unsigned interval_ms = 1000 / DEFAULT_FRAME_RATE;
 
 // TODO must dynamically allocate this, otherwise everyone pays for it
 static uint8_t *frame_buffer_yuyv;
-static uint16_t *frame_buffer_rgb565;
+uint16_t *uvc_framebuffer_rgb565;
 
 displayio_bitmap_t uvc_bitmap_obj = {
     .base = {.type = &displayio_bitmap_type },
@@ -29,7 +29,7 @@ displayio_bitmap_t uvc_bitmap_obj = {
 };
 
 static bool uvc_is_enabled = false;
-static mp_int_t uvc_frame_width, uvc_frame_height;
+uint16_t uvc_frame_width, uvc_frame_height;
 
 bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height) {
     if (tud_connected()) {
@@ -50,16 +50,16 @@ bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height) {
     size_t framebuffer_size = uvc_frame_width * uvc_frame_height * 2;
     frame_buffer_yuyv = port_malloc(framebuffer_size, false);
     uint32_t *frame_buffer_rgb565_uint32 = port_malloc(framebuffer_size, false);
-    frame_buffer_rgb565 = (uint16_t *)frame_buffer_rgb565_uint32;
+    uvc_framebuffer_rgb565 = (uint16_t *)frame_buffer_rgb565_uint32;
 
-    if (!frame_buffer_yuyv || !frame_buffer_rgb565) {
+    if (!frame_buffer_yuyv || !uvc_framebuffer_rgb565) {
         // this will free either of the buffers allocated just above, in
         // case one succeeded and the other failed.
         shared_module_uvc_disable();
         m_malloc_fail(2 * framebuffer_size);
     }
     memset(frame_buffer_yuyv, 0, framebuffer_size);
-    memset(frame_buffer_rgb565, 0, framebuffer_size);
+    memset(uvc_framebuffer_rgb565, 0, framebuffer_size);
 
     uvc_bitmap_obj.data = (uint32_t *)frame_buffer_rgb565_uint32;
     uvc_bitmap_obj.width = uvc_frame_width;
@@ -78,9 +78,9 @@ bool shared_module_uvc_disable(void) {
     uvc_bitmap_obj.data = NULL; // should be redundant
     uvc_is_enabled = false;
     port_free(frame_buffer_yuyv);
-    port_free(frame_buffer_rgb565);
+    port_free(uvc_framebuffer_rgb565);
     frame_buffer_yuyv = NULL;
-    frame_buffer_rgb565 = NULL;
+    uvc_framebuffer_rgb565 = NULL;
     return true;
 }
 
@@ -103,7 +103,7 @@ static void convert_framebuffer_maybe(void) {
     do_convert = false; // assumes this happens via background, not interrupt
 
     uint8_t *dest = frame_buffer_yuyv;
-    uint16_t *src = frame_buffer_rgb565;
+    uint16_t *src = uvc_framebuffer_rgb565;
 
     for (int i = 0; i < uvc_frame_width * uvc_frame_height / 2; i++) {
         uint16_t p1 = IMAGE_GET_RGB565_PIXEL_FAST(src, 0);
