@@ -36,8 +36,11 @@
 #include "esp_err.h"
 #include "soc/gpio_sig_map.h"
 
-#define PWM_DBG(...)
-// #define PWM_DBG(...) mp_printf(&mp_plat_print, __VA_ARGS__); mp_printf(&mp_plat_print, "\n");
+#if 0 // print debugging info
+#define DEBUG_printf DEBUG_printf
+#else // don't print debugging info
+#define DEBUG_printf(...) (void)0
+#endif
 
 // Total number of channels
 #define PWM_CHANNEL_MAX (LEDC_SPEED_MODE_MAX * LEDC_CHANNEL_MAX)
@@ -348,10 +351,10 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     // Bug: It has been experimentally established that the duty is set during 2 signal periods, but 1 period is expected.
     // See https://github.com/espressif/esp-idf/issues/7288
     if (duty != get_duty_u16(self)) {
-        PWM_DBG("set_duty_u16(%u), get_duty_u16():%u, channel_duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), channel_duty, timer.duty_resolution, timer.freq_hz);
+        DEBUG_printf("set_duty_u16(%u), get_duty_u16():%u, channel_duty:%d, duty_resolution:%d, freq_hz:%d\n", duty, get_duty_u16(self), channel_duty, timer.duty_resolution, timer.freq_hz);
         esp_rom_delay_us(2 * 1000000 / timer.freq_hz);
         if (duty != get_duty_u16(self)) {
-            PWM_DBG("set_duty_u16(%u), get_duty_u16():%u, channel_duty:%d, duty_resolution:%d, freq_hz:%d", duty, get_duty_u16(self), channel_duty, timer.duty_resolution, timer.freq_hz);
+            DEBUG_printf("set_duty_u16(%u), get_duty_u16():%u, channel_duty:%d, duty_resolution:%d, freq_hz:%d\n", duty, get_duty_u16(self), channel_duty, timer.duty_resolution, timer.freq_hz);
         }
     }
     */
