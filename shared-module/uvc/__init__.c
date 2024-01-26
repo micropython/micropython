@@ -140,7 +140,7 @@ size_t usb_uvc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *desc
     };
     (*current_interface_string)++;
     descriptor_counts->current_interface += 2;
-    descriptor_counts->num_out_endpoints++;
+    descriptor_counts->num_in_endpoints++;
     descriptor_counts->current_endpoint++;
     descriptor_counts->current_interface++;
 
