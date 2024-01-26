@@ -93,6 +93,7 @@
 #define MICROPY_PY_OS_SYNC                      (1)
 #define MICROPY_PY_OS_UNAME                     (1)
 #define MICROPY_PY_OS_URANDOM                   (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (se_services_rand64())
 #define MICROPY_PY_TIME                         (1)
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/alif/modmachine.c"
@@ -155,3 +156,6 @@ extern void panic(const char *);
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
 #endif
+
+// Needed for MICROPY_PY_RANDOM_SEED_INIT_FUNC.
+uint64_t se_services_rand64(void);
