@@ -80,14 +80,14 @@ static external_flash_device generic_config = GENERIC;
 static void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE, 0);
     }
 }
 
 static void mp_spiflash_release_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE, 0);
     }
 }
 
@@ -198,7 +198,7 @@ int mp_spiflash_init(mp_spiflash_t *self) {
         mp_hal_pin_output(self->config->bus.u_spi.cs);
         self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
     } else {
-        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT);
+        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, 0);
     }
 
     mp_spiflash_acquire_bus(self);
@@ -325,6 +325,10 @@ int mp_spiflash_init(mp_spiflash_t *self) {
                 ret = -1;
             }
         }
+    }
+
+    if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_FLASH_SIZE, self->device->total_size);
     }
 
     mp_spiflash_release_bus(self);
