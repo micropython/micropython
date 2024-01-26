@@ -42,6 +42,7 @@ INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -I$(CMSIS_DIR)
 INC += -I$(ALIF_DFP_REL_HERE)/drivers/include/
+INC += -I$(ALIF_DFP_REL_HERE)/se_services/include/
 INC += -I$(ALIF_DFP_REL_HERE)/ospi_xip/source/ospi
 INC += -I$(ALIF_DFP_REL_HERE)/Device/common/config/
 INC += -I$(ALIF_DFP_REL_HERE)/Device/common/include/
@@ -120,6 +121,7 @@ SRC_C = \
 	ospi_flash.c \
 	pendsv.c \
 	system_tick.c \
+	se_services.c \
 	usbd.c \
 	$(wildcard $(BOARD_DIR)/*.c)
 
@@ -174,13 +176,23 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/system_M55.c \
 	Device/common/source/system_utils.c \
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
+	drivers/source/mhu_driver.c \
+	drivers/source/mhu_receiver.c \
+	drivers/source/mhu_sender.c \
 	drivers/source/pinconf.c \
 	drivers/source/uart.c \
 	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \
+	se_services/source/services_host_application.c \
+	se_services/source/services_host_boot.c \
+	se_services/source/services_host_clocks.c \
+	se_services/source/services_host_cryptocell.c \
+	se_services/source/services_host_handler.c \
+	se_services/source/services_host_system.c \
 	)
 
 $(BUILD)/tinyusb_port/tusb_alif_dcd.o: CFLAGS += -Wno-unused-variable -DTUSB_ALIF_NO_IRQ_CFG=1
+$(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_boot.o: CFLAGS += -Wno-stringop-truncation
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)

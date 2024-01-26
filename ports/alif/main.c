@@ -39,6 +39,7 @@
 #include "mpuart.h"
 #include "ospi_flash.h"
 #include "pendsv.h"
+#include "se_services.h"
 #include "system_tick.h"
 
 extern uint8_t __StackTop, __StackLimit;
@@ -60,6 +61,7 @@ void _start(void) {
     MICROPY_BOARD_STARTUP();
 
     pendsv_init();
+    se_services_init();
 
     MICROPY_BOARD_EARLY_INIT();
 
