@@ -19,15 +19,6 @@ static unsigned interval_ms = 1000 / DEFAULT_FRAME_RATE;
 static uint8_t *frame_buffer_yuyv;
 uint16_t *uvc_framebuffer_rgb565;
 
-displayio_bitmap_t uvc_bitmap_obj = {
-    .base = {.type = &displayio_bitmap_type },
-    .bits_per_value = 16,
-    .x_shift = 1,
-    .x_mask = 1,
-    .bitmask = 0xffff,
-    // (other fields set when enabling uvc)
-};
-
 static bool uvc_is_enabled = false;
 uint16_t uvc_frame_width, uvc_frame_height;
 
@@ -61,11 +52,6 @@ bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height) {
     memset(frame_buffer_yuyv, 0, framebuffer_size);
     memset(uvc_framebuffer_rgb565, 0, framebuffer_size);
 
-    uvc_bitmap_obj.data = (uint32_t *)frame_buffer_rgb565_uint32;
-    uvc_bitmap_obj.width = uvc_frame_width;
-    uvc_bitmap_obj.height = uvc_frame_height;
-    uvc_bitmap_obj.stride = uvc_frame_width / 2; /* in uint32_t units */
-
     uvc_is_enabled = true;
 
     return true;
@@ -75,7 +61,6 @@ bool shared_module_uvc_disable(void) {
     if (tud_connected()) {
         return false;
     }
-    uvc_bitmap_obj.data = NULL; // should be redundant
     uvc_is_enabled = false;
     port_free(frame_buffer_yuyv);
     port_free(uvc_framebuffer_rgb565);
