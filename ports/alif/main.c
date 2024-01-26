@@ -38,6 +38,7 @@
 #include "mpuart.h"
 #include "ospi_flash.h"
 #include "pendsv.h"
+#include "se_services.h"
 #include "system_tick.h"
 
 extern uint8_t __StackTop, __StackLimit;
@@ -56,6 +57,7 @@ NORETURN void panic(const char *msg) {
 void _start(void) {
     system_tick_init();
     pendsv_init();
+    se_services_init();
 
     *(volatile uint32_t *)0x4900C004 |= 9; // 12_0 + 12_3 as output (blue + red LED)
 

@@ -40,6 +40,7 @@ INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -I$(CMSIS_DIR)
 INC += -I$(ALIF_DFP)/drivers/include/
+INC += -I$(ALIF_DFP)/se_services/include
 INC += -I$(ALIF_DFP)/ospi_xip/source/ospi
 INC += -I$(ALIF_DFP)/Device/common/include/
 INC += -I$(ALIF_DFP)/Device/core/$(MCU_CORE)/config/
@@ -104,6 +105,7 @@ SRC_C = \
 	ospi_flash.c \
 	pendsv.c \
 	system_tick.c \
+	se_services.c \
 	usbd.c \
 
 ifeq ($(MICROPY_FLOAT_IMPL),float)
@@ -155,10 +157,15 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP)/,\
 	Device/common/source/system_M55.c \
 	Device/common/source/system_utils.c \
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
+	drivers/source/mhu_driver.c \
+	drivers/source/mhu_receiver.c \
+	drivers/source/mhu_sender.c \
 	drivers/source/pinconf.c \
 	drivers/source/uart.c \
 	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \
+	se_services/source/services_host_cryptocell.c \
+	se_services/source/services_host_handler.c \
 	)
 
 # List of sources for qstr extraction

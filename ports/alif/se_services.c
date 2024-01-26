@@ -1,0 +1,116 @@
+/*
+ * This file is part of the MicroPython project, http://micropython.org/
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2024 OpenMV LLC.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#include "irq.h"
+#include "se_services.h"
+
+#include "mhu.h"
+#include "services_lib_bare_metal.h"
+#include "services_lib_protocol.h"
+
+// MHU indices.
+#define MHU_M55_SE_MHU0 0
+#define MAX_MHU         1
+
+// The following timeout is implemented in se_services_handle.c as a
+// simple loop busy polling on a variable set from an IRQ.
+#define TIMEOUT         10000000
+
+static const uint32_t mhu_sender_base_address_list[MAX_MHU] = {
+    MHU_SESS_S_TX_BASE,
+};
+
+static const uint32_t mhu_receiver_base_address_list[MAX_MHU] = {
+    MHU_SESS_S_RX_BASE,
+};
+
+// Must be aligned as a uint32_t.
+static uint32_t packet_buffer[SERVICES_MAX_PACKET_BUFFER_SIZE / sizeof(uint32_t)];
+
+static mhu_driver_out_t mhu_driver_out;
+static uint32_t se_services_handle;
+
+void MHU_SESS_S_TX_IRQHandler(void) {
+    mhu_driver_out.sender_irq_handler(MHU_M55_SE_MHU0);
+}
+
+void MHU_SESS_S_RX_IRQHandler(void) {
+    mhu_driver_out.receiver_irq_handler(MHU_M55_SE_MHU0);
+}
+
+int dummy_printf(const char *fmt, ...) {
+    (void)fmt;
+    return 0;
+}
+
+void se_services_init(void) {
+    // Initialize MHU.
+    mhu_driver_in_t mhu_driver_in;
+    mhu_driver_in.sender_base_address_list = (uint32_t *)mhu_sender_base_address_list;
+    mhu_driver_in.receiver_base_address_list = (uint32_t *)mhu_receiver_base_address_list;
+    mhu_driver_in.mhu_count = MAX_MHU;
+    mhu_driver_in.send_msg_acked_callback = SERVICES_send_msg_acked_callback;
+    mhu_driver_in.rx_msg_callback = SERVICES_rx_msg_callback;
+    mhu_driver_in.debug_print = NULL; // not currently used by MHU_driver_initialize
+    MHU_driver_initialize(&mhu_driver_in, &mhu_driver_out);
+
+    // Enable MHU interrupts.
+    NVIC_ClearPendingIRQ(MHU_SESS_S_RX_IRQ_IRQn);
+    NVIC_SetPriority(MHU_SESS_S_RX_IRQ_IRQn, IRQ_PRI_MHU);
+    NVIC_EnableIRQ(MHU_SESS_S_RX_IRQ_IRQn);
+    NVIC_ClearPendingIRQ(MHU_SESS_S_TX_IRQ_IRQn);
+    NVIC_SetPriority(MHU_SESS_S_TX_IRQ_IRQn, IRQ_PRI_MHU);
+    NVIC_EnableIRQ(MHU_SESS_S_TX_IRQ_IRQn);
+
+    // Initialize SE services.
+    services_lib_t services_init_params = {
+        .packet_buffer_address = (uint32_t)packet_buffer,
+        .fn_send_mhu_message = mhu_driver_out.send_message,
+        .fn_wait_ms = NULL, // not currently used by services_host_handler.c
+        .wait_timeout = TIMEOUT,
+        .fn_print_msg = dummy_printf,
+    };
+    SERVICES_initialize(&services_init_params);
+
+    // Create SE services channel for sending requests.
+    se_services_handle = SERVICES_register_channel(MHU_M55_SE_MHU0, 0);
+}
+
+uint64_t se_services_rand64(void) {
+    // If the SE core is not ready then the return value can be
+    // SERVICES_REQ_NOT_ACKNOWLEDGE.  So retry a few times.
+    for (int retry = 0; retry < 100; ++retry) {
+        uint64_t value;
+        int32_t error_code;
+        uint32_t ret = SERVICES_cryptocell_get_rnd(se_services_handle, sizeof(uint64_t), &value, &error_code);
+        if (ret == SERVICES_REQ_SUCCESS) {
+            return value;
+        }
+    }
+
+    // No random number available.
+    return 0;
+}
