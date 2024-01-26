@@ -88,6 +88,7 @@
 #define MICROPY_PY_OS_SYNC                      (1)
 #define MICROPY_PY_OS_UNAME                     (1)
 #define MICROPY_PY_OS_URANDOM                   (1)
+#define MICROPY_PY_RANDOM_SEED_INIT_FUNC        (se_services_rand64())
 #define MICROPY_PY_TIME                         (1)
 #define MICROPY_PY_MACHINE                      (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE          "ports/alif/modmachine.c"
@@ -130,3 +131,6 @@
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef intptr_t mp_off_t;
+
+// Needed for MICROPY_PY_RANDOM_SEED_INIT_FUNC.
+uint64_t se_services_rand64(void);
