@@ -172,8 +172,11 @@ STATIC void uvc_cb_fun(void *unused) {
     (void)result;
 }
 
+
 void usb_uvc_task(void) {
-    background_callback_add(&uvc_cb, uvc_cb_fun, NULL);
+    if (uvc_is_enabled) {
+        background_callback_add(&uvc_cb, uvc_cb_fun, NULL);
+    }
 }
 
 void tud_video_frame_xfer_complete_cb(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) {
