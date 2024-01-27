@@ -52,27 +52,9 @@ SRC_QSTR += $(SRC_C) $(SRC_BINDINGS_EXPANDED) $(STM_SRC_C)
 The `Makefile` defines the modules to build and adds the sources to include the `shared-bindings` version and the `common-hal` version within the port specific directory. You may comment out certain subfolders to reduce the number of modules to add but don't comment out individual classes. It won't compile then.
 
 ### Hooking the modules in
-Built in modules are typically defined in `mpconfigport.h`. To add support you should have something like:
-
-```
-extern const struct _mp_obj_module_t microcontroller_module;
-extern const struct _mp_obj_module_t analogio_module;
-extern const struct _mp_obj_module_t digitalio_module;
-extern const struct _mp_obj_module_t pulseio_module;
-extern const struct _mp_obj_module_t busio_module;
-extern const struct _mp_obj_module_t board_module;
-extern const struct _mp_obj_module_t time_module;
-extern const struct _mp_obj_module_t neopixel_write_module;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_microcontroller), (mp_obj_t)&microcontroller_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_analogio), (mp_obj_t)&analogio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_digitalio), (mp_obj_t)&digitalio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_pulseio), (mp_obj_t)&pulseio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_busio), (mp_obj_t)&busio_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_board), (mp_obj_t)&board_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_time), (mp_obj_t)&time_module }, \
-    { MP_OBJ_NEW_QSTR(MP_QSTR_neopixel_write),(mp_obj_t)&neopixel_write_module } \
+Modules are registered by the macro `MP_REGISTER_MODULE` from `py/obj.h`. The macro takes two arguments: the module name as a QSTR and the module object itself. The `board` module is registered like so:
+```py
+MP_REGISTER_MODULE(MP_QSTR_board, board_module);
 ```
 
 ### Implementing the Common HAL
