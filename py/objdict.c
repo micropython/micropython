@@ -536,7 +536,7 @@ typedef struct _mp_obj_dict_view_t {
 STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_dict_view_it));
     mp_obj_dict_view_it_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_map_elem_t *next = dict_iter_next(MP_OBJ_TO_PTR(self->dict), &self->cur);
+    mp_map_elem_t *next = dict_iter_next(native_dict(self->dict), &self->cur);
 
     if (next == NULL) {
         return MP_OBJ_STOP_ITERATION;
