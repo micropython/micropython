@@ -490,6 +490,9 @@ endif
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
 	ESP_IDF_COMPONENTS_LINK += esp_lcd
 endif
+ifneq ($(CIRCUITPY_PARALLELDISPLAYBUS),0)
+	ESP_IDF_COMPONENTS_LINK += esp_lcd
+endif
 
 ESP_IDF_COMPONENTS_EXPANDED = $(foreach component, $(ESP_IDF_COMPONENTS_LINK), $(BUILD)/esp-idf/esp-idf/$(component)/lib$(component).a)
 
