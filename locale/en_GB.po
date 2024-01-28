@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-01-02 22:11+0000\n"
+"PO-Revision-Date: 2024-01-28 16:01+0000\n"
 "Last-Translator: Andi Chandler <andi@gowling.com>\n"
 "Language-Team: none\n"
 "Language: en_GB\n"
@@ -1201,7 +1201,7 @@ msgstr "Internal error #%d"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
 msgid "Internal resource(s) in use"
-msgstr ""
+msgstr "Internal resource(s) in use"
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
@@ -1370,7 +1370,7 @@ msgstr "Missing jmp_pin. %q[%u] jumps on pin"
 
 #: shared-module/storage/__init__.c
 msgid "Mount point directory missing"
-msgstr ""
+msgstr "Mount point directory missing"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1460,7 +1460,7 @@ msgstr "No IP"
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
-msgstr ""
+msgstr "No bootloader present"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
@@ -1966,7 +1966,7 @@ msgstr "Specify exactly one of data0 or data_pins"
 
 #: supervisor/shared/safe_mode.c
 msgid "Stack overflow. Increase stack size."
-msgstr ""
+msgstr "Stack overflow. Increase stack size."
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2524,7 +2524,7 @@ msgstr "binary op %q not implemented"
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "bitmap size and depth must match"
-msgstr ""
+msgstr "bitmap size and depth must match"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
@@ -4249,7 +4249,7 @@ msgstr "unsupported Xtensa instruction '%s' with %d arguments"
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "unsupported bitmap depth"
-msgstr ""
+msgstr "unsupported bitmap depth"
 
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
@@ -4302,10 +4302,12 @@ msgid ""
 "weights must be a sequence with an odd square number of elements (usually 9 "
 "or 25)"
 msgstr ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
 
 #: shared-bindings/bitmapfilter/__init__.c
 msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
-msgstr ""
+msgstr "weights must be an object of type %q, %q, %q, or %q, not %q "
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
