@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-01-25 18:51+0000\n"
+"PO-Revision-Date: 2024-01-28 16:01+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1217,7 +1217,7 @@ msgstr "Erro interno #%d"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
 msgid "Internal resource(s) in use"
-msgstr ""
+msgstr "Recurso(s) interno(s) em uso"
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
@@ -1386,7 +1386,7 @@ msgstr "Falta jmp_pin. %q[%u] jumper no pino"
 
 #: shared-module/storage/__init__.c
 msgid "Mount point directory missing"
-msgstr ""
+msgstr "Falta o diretório do ponto de montagem"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1476,7 +1476,7 @@ msgstr "Sem IP"
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
-msgstr ""
+msgstr "Nenhum bootloader presente"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
@@ -1992,7 +1992,7 @@ msgstr "Especifique exatamente um do data0 ou do data_pins"
 
 #: supervisor/shared/safe_mode.c
 msgid "Stack overflow. Increase stack size."
-msgstr ""
+msgstr "Estouro de pilha. Aumente o tamanho da pilha."
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
