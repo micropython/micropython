@@ -147,30 +147,7 @@ bool filesystem_init(bool create_allowed, bool force_create) {
         #endif
 
         #if CIRCUITPY_OS_GETENV
-        MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/settings.toml",
-            "# Settings in this file can be retrieved via os.getenv()\n"
-            "# Certain settings starting with CIRCUITPY_ are also used by CircuitPython.\n"
-            "\n"
-            "### Core settings\n"
-            "# CIRCUITPY_HEAP_START_SIZE = 8192\n"
-            "# CIRCUITPY_PYSTACK_SIZE = 1536\n"
-            #if CIRCUITPY_WEB_WORKFLOW
-            "\n"
-            "### Wifi settings\n"
-            "# CIRCUITPY_WIFI_SSID = \"wifi network name\"\n"
-            "# CIRCUITPY_WIFI_PASSWORD = \"wifi password\"\n"
-            "\n"
-            "### Web workflow settings\n"
-            "# CIRCUITPY_WEB_API_PASSWORD = \"api password\"\n"
-            "# CIRCUITPY_WEB_API_PORT = 80\n"
-            "# CIRCUITPY_WEB_INSTANCE_NAME = \"web instance name\"\n"
-            #endif
-            #if CIRCUITPY_BLEIO
-            "\n"
-            "### BLE settings\n"
-            "# CIRCUITPY_BLE_NAME = \"ble device name\"\n"
-            #endif
-            );
+        make_empty_file(&vfs_fat->fatfs, "/settings.toml");
         #endif
         // make a sample code.py file
         MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/code.py", "print(\"Hello World!\")\n");
