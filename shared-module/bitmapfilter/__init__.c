@@ -193,8 +193,6 @@ void shared_module_bitmapfilter_morph(
     const int32_t m_int = (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * m);
     const int32_t b_int = (int32_t)MICROPY_FLOAT_C_FUN(round)(65536 * COLOR_G6_MAX * b);
 
-    check_matching_details(bitmap, bitmap);
-
     switch (bitmap->bits_per_value) {
         default:
             mp_raise_ValueError(MP_ERROR_TEXT("unsupported bitmap depth"));
@@ -307,8 +305,6 @@ void shared_module_bitmapfilter_mix(
             65536;
         wt[i] = (int32_t)MICROPY_FLOAT_C_FUN(round)(scale * weights[i]);
     }
-
-    check_matching_details(bitmap, bitmap);
 
     switch (bitmap->bits_per_value) {
         default:
