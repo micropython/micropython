@@ -143,8 +143,10 @@ bool filesystem_init(bool create_allowed, bool force_create) {
 
         #if CIRCUITPY_SDCARDIO || CIRCUITPY_SDIOIO
         res = f_mkdir(&vfs_fat->fatfs, "/sd");
+        #if CIRCUITPY_FULL_BUILD
         MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/sd/placeholder.txt",
             "This placeholder file allows mounting an SD card at /sd\n");
+        #endif
         #endif
 
         #if CIRCUITPY_OS_GETENV
