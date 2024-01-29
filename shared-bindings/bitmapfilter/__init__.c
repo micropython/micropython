@@ -670,12 +670,12 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_blend_precompute_obj, 0, blend_precomput
 
 //|
 //| def blend(
-//|     dest: Bitmap,
-//|     src1: Bitmap,
-//|     src2: Bitmap,
+//|     dest: displayio.Bitmap,
+//|     src1: displayio.Bitmap,
+//|     src2: displayio.Bitmap,
 //|     lookup: BlendFunction | BlendTable,
-//|     mask: Bitmap = None,
-//| ) -> Bitmap:
+//|     mask: displayio.Bitmap = None,
+//| ) -> displayio.Bitmap:
 //|     """Blend the 'src1' and 'src2' images according to lookup function or table 'lookup'
 //|
 //|     If ``lookup`` is a function, it is converted to a `BlendTable` by
