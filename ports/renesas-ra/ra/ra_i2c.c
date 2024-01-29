@@ -426,7 +426,7 @@ void ra_i2c_init(R_IIC0_Type *i2c_inst, uint32_t scl, uint32_t sda, uint32_t bau
     i2c_inst->ICCR1_b.ICE = 1;     // I2C enable
     ra_i2c_set_baudrate(i2c_inst, baudrate);
     i2c_inst->ICSER = 0x00;         // I2C reset bus status enable register
-    i2c_inst->ICMR3_b.ACKWP = 0x01; // I2C allow to write ACKBT (transfer acknowledge bit)
+    i2c_inst->ICMR3_b.ACKWP = 0x00; // I2C not allow to write ACKBT (transfer acknowledge bit)
     i2c_inst->ICIER = 0xFF;         // Enable all interrupts
     i2c_inst->ICCR1_b.IICRST = 0;   // I2C internal reset
     ra_i2c_irq_enable(i2c_inst);
@@ -480,6 +480,7 @@ void ra_i2c_xunit_read_byte(R_IIC0_Type *i2c_inst, xaction_unit_t *unit) {
 void ra_i2c_xunit_init(xaction_unit_t *unit, uint8_t *buf, uint32_t size, bool fread, void *next) {
     unit->m_bytes_transferred = 0;
     unit->m_bytes_transfer = size;
+    unit->m_bytes_total = size;
     unit->m_fread = fread;
     unit->buf = buf;
     unit->next = (void *)next;
@@ -531,6 +532,37 @@ static void ra_i2c_iceri_isr(R_IIC0_Type *i2c_inst) {
 static void ra_i2c_icrxi_isr(R_IIC0_Type *i2c_inst) {
     xaction_unit_t *unit = current_xaction_unit;
     xaction_t *action = current_xaction;
+    // 1 byte or 2 bytes
+    if (unit->m_bytes_total <= 2) {
+        if (action->m_status == RA_I2C_STATUS_AddrWriteCompleted) {
+            action->m_status = RA_I2C_STATUS_FirstReceiveCompleted;
+            i2c_inst->ICMR3_b.WAIT = 1;
+            // need dummy read processes for 1 byte and 2 bytes receive
+            if (unit->m_bytes_total == 2) {
+                (void)i2c_inst->ICDRR; // dummy read for 2 bytes receive
+            } else {  // m_bytes_total == 1
+                i2c_inst->ICMR3_b.ACKWP = 0x01; // enable write ACKBT (transfer acknowledge bit)
+                i2c_inst->ICMR3_b.ACKBT = 1;
+                i2c_inst->ICMR3_b.ACKWP = 0x00; // disable write ACKBT (transfer acknowledge bit)
+                (void)i2c_inst->ICDRR; // dummy read for 1 byte receive
+            }
+            return;
+        }
+        if (unit->m_bytes_transfer == 2) {      // last two data
+            i2c_inst->ICMR3_b.ACKWP = 0x01; // enable write ACKBT (transfer acknowledge bit)
+            i2c_inst->ICMR3_b.ACKBT = 1;
+            i2c_inst->ICMR3_b.ACKWP = 0x00; // disable write ACKBT (transfer acknowledge bit)
+            ra_i2c_xunit_read_byte(i2c_inst, unit);
+        } else { // last data
+            action->m_status = RA_I2C_STATUS_LastReceiveCompleted;
+            if (action->m_stop == true) {
+                i2c_inst->ICCR2_b.SP = 1; // request top condition
+            }
+            ra_i2c_xunit_read_byte(i2c_inst, unit);
+        }
+        return;
+    }
+    // 3 bytes or more
     if (action->m_status == RA_I2C_STATUS_AddrWriteCompleted) {
         (void)i2c_inst->ICDRR; // dummy read
         action->m_status = RA_I2C_STATUS_FirstReceiveCompleted;
@@ -542,7 +574,9 @@ static void ra_i2c_icrxi_isr(R_IIC0_Type *i2c_inst) {
         }
         ra_i2c_xunit_read_byte(i2c_inst, unit);
     } else if (unit->m_bytes_transfer == 2) {
+        i2c_inst->ICMR3_b.ACKWP = 0x01; // enable write ACKBT (transfer acknowledge bit)
         i2c_inst->ICMR3_b.ACKBT = 1;
+        i2c_inst->ICMR3_b.ACKWP = 0x00; // disable write ACKBT (transfer acknowledge bit)
         ra_i2c_xunit_read_byte(i2c_inst, unit);
     } else {
         // last data
