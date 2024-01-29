@@ -64,6 +64,7 @@ inline void filesystem_tick(void) {
 }
 
 
+__attribute__((unused)) // this function MAY be unused
 static void make_empty_file(FATFS *fatfs, const char *path) {
     FIL fp;
     f_open(fatfs, &fp, path, FA_WRITE | FA_CREATE_ALWAYS);
