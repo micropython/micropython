@@ -311,10 +311,6 @@ STATIC mp_obj_t ssl_context_get_ciphers(mp_obj_t self_in) {
     for (const int *cipher_list = mbedtls_ssl_list_ciphersuites(); *cipher_list; ++cipher_list) {
         const char *cipher_name = mbedtls_ssl_get_ciphersuite_name(*cipher_list);
         mp_obj_list_append(list, MP_OBJ_FROM_PTR(mp_obj_new_str(cipher_name, strlen(cipher_name))));
-        cipher_list++;
-        if (!*cipher_list) {
-            break;
-        }
     }
     return list;
 }
