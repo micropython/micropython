@@ -140,6 +140,12 @@ bool filesystem_init(bool create_allowed, bool force_create) {
         // https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
         #endif
 
+        #if CIRCUITPY_SDCARDIO || CIRCUITPY_SDIOIO
+        res = f_mkdir(&vfs_fat->fatfs, "/sd");
+        MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/sd/placeholder.txt",
+            "This placeholder file allows mounting an SD card at /sd\n");
+        #endif
+
         #if CIRCUITPY_OS_GETENV
         make_empty_file(&vfs_fat->fatfs, "/settings.toml");
         #endif
