@@ -70,20 +70,23 @@ static void make_empty_file(FATFS *fatfs, const char *path) {
     f_close(&fp);
 }
 
+#if CIRCUITPY_FULL_BUILD
+#define MAKE_FILE_WITH_OPTIONAL_CONTENTS(fatfs, filename, string_literal) do { \
+        const byte buffer[] = string_literal; \
+        make_file_with_contents(fatfs, filename, buffer, sizeof(buffer) - 1); \
+} while (0)
 
-static void make_sample_code_file(FATFS *fatfs) {
-    #if CIRCUITPY_FULL_BUILD
+static void make_file_with_contents(FATFS *fatfs, const char *filename, const byte *content, UINT size) {
     FIL fs;
-    UINT char_written = 0;
-    const byte buffer[] = "print(\"Hello World!\")\n";
     // Create or modify existing code.py file
-    f_open(fatfs, &fs, "/code.py", FA_WRITE | FA_CREATE_ALWAYS);
-    f_write(&fs, buffer, sizeof(buffer) - 1, &char_written);
+    f_open(fatfs, &fs, filename, FA_WRITE | FA_CREATE_ALWAYS);
+    f_write(&fs, content, size, &size);
     f_close(&fs);
-    #else
-    make_empty_file(fatfs, "/code.py");
-    #endif
 }
+#else
+#define MAKE_FILE_WITH_OPTIONAL_CONTENTS(fatfs, filename, string_literal) \
+    make_empty_file(fatfs, filename)
+#endif
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
@@ -141,7 +144,7 @@ bool filesystem_init(bool create_allowed, bool force_create) {
         make_empty_file(&vfs_fat->fatfs, "/settings.toml");
         #endif
         // make a sample code.py file
-        make_sample_code_file(&vfs_fat->fatfs);
+        MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/code.py", "print(\"Hello World!\")\n");
 
         // create empty lib directory
         res = f_mkdir(&vfs_fat->fatfs, "/lib");
