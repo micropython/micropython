@@ -134,7 +134,7 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_obj_t weights = args[ARG_weights].u_obj;
     mp_obj_t obj_len = mp_obj_len(weights);
     if (obj_len == MP_OBJ_NULL || !mp_obj_is_small_int(obj_len)) {
-        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_weights, MP_QSTR_Sequence, mp_obj_get_type(weights)->name);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_weights, MP_QSTR_Sequence, mp_obj_get_type_qstr(weights));
     }
 
     size_t n_weights = MP_OBJ_SMALL_INT_VALUE(obj_len);
