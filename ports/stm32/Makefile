@@ -435,6 +435,11 @@ OBJ += $(GEN_PINS_SRC:.c=.o)
 # level.  It doesn't add much to the code size and improves performance a bit.
 # Don't use -O3 with this file because gcc tries to optimise memset in terms of itself.
 $(BUILD)/shared/libc/string0.o: COPT += -O2
+# Don't use -Os for this file, because it causes DMA to fail sometimes for a F7 MPU
+# if src and dest in memory are identical. May apply to other MCU's as well.
+ifeq ($(MCU_SERIES), f7)
+$(BUILD)/lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver/Src/stm32$(MCU_SERIES)xx_hal_dma.o: COPT += -O2
+endif
 
 # We put several files into the first 16K section with the ISRs.
 # If we compile these using -O0 then it won't fit. So if you really want these
