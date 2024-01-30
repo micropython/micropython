@@ -38,7 +38,7 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Save firmware bin
         if: success() && github.repository_owner == 'infineon'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with: 
           name: mpy-psoc6_${{ matrix.board }}_${{ steps.commit_sha.outputs.sha_short }}
           path: ports/psoc6/build/firmware.hex
