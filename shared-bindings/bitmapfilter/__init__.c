@@ -674,7 +674,7 @@ MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_blend_precompute_obj, 0, blend_precomput
 //|     src1: displayio.Bitmap,
 //|     src2: displayio.Bitmap,
 //|     lookup: BlendFunction | BlendTable,
-//|     mask: displayio.Bitmap = None,
+//|     mask: displayio.Bitmap | None = None,
 //| ) -> displayio.Bitmap:
 //|     """Blend the 'src1' and 'src2' images according to lookup function or table 'lookup'
 //|
