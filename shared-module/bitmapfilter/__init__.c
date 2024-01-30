@@ -498,8 +498,8 @@ void shared_module_bitmapfilter_blend(
                     int r2 = FIVE_TO_SIX(COLOR_RGB565_TO_R5(pixel2));
                     int r = SIX_TO_FIVE(lookup[r1 * 64 + r2]);
 
-                    int g1 = COLOR_RGB565_TO_R5(pixel1);
-                    int g2 = COLOR_RGB565_TO_R5(pixel2);
+                    int g1 = COLOR_RGB565_TO_G6(pixel1);
+                    int g2 = COLOR_RGB565_TO_G6(pixel2);
                     int g = lookup[g1 * 64 + g2];
 
                     int b1 = FIVE_TO_SIX(COLOR_RGB565_TO_B5(pixel1));
