@@ -31,17 +31,6 @@ function ci_c_code_formatting_run {
 }
 
 ########################################################################################
-# code spelling
-
-function ci_code_spell_setup {
-    pip3 install codespell tomli
-}
-
-function ci_code_spell_run {
-    codespell
-}
-
-########################################################################################
 # commit formatting
 
 function ci_commit_formatting_run {
