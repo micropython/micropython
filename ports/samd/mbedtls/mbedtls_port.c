@@ -26,13 +26,14 @@
 
 #ifdef MICROPY_SSL_MBEDTLS
 
-#include "mbedtls_config.h"
+#include "mbedtls_config_port.h"
 #include <stdint.h>
 uint32_t trng_random_u32(void);
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
 #include <stdbool.h>
 #include "py/runtime.h"
 #include "shared/timeutils/timeutils.h"
+#include "mbedtls/platform_time.h"
 extern void rtc_gettime(timeutils_struct_time_t *tm);
 #endif
 
@@ -52,6 +53,13 @@ time_t samd_rtctime_seconds(time_t *timer) {
     timeutils_struct_time_t tm;
     rtc_gettime(&tm);
     return timeutils_seconds_since_epoch(tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+}
+
+mbedtls_ms_time_t mbedtls_ms_time(void) {
+    time_t *tv = NULL;
+    mbedtls_ms_time_t current_ms;
+    current_ms = samd_rtctime_seconds(tv) * 1000;
+    return current_ms;
 }
 #endif
 
