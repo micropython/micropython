@@ -73,3 +73,12 @@ void shared_module_bitmapfilter_false_color(
     displayio_bitmap_t *bitmap,
     displayio_bitmap_t *mask,
     _displayio_color_t palette[256]);
+
+void shared_module_bitmapfilter_blend_precompute(mp_obj_t fun, uint8_t lookup[4096]);
+
+void shared_module_bitmapfilter_blend(
+    displayio_bitmap_t *dest,
+    displayio_bitmap_t *src1,
+    displayio_bitmap_t *src2,
+    displayio_bitmap_t *mask,
+    const uint8_t lookup[4096]);
