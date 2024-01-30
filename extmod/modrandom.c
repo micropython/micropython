@@ -86,7 +86,7 @@ STATIC uint32_t yasmarang_randbelow(uint32_t n) {
 #endif
 
 STATIC mp_obj_t mod_random_getrandbits(mp_obj_t num_in) {
-    int n = mp_obj_get_int(num_in);
+    mp_int_t n = mp_obj_get_int(num_in);
     if (n > 32 || n < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("bits must be 32 or less"));
     }
@@ -111,7 +111,7 @@ STATIC mp_obj_t mod_random_seed(size_t n_args, const mp_obj_t *args) {
     } else {
         seed = mp_obj_get_int_truncated(args[0]);
     }
-    yasmarang_pad = seed;
+    yasmarang_pad = (uint32_t)seed;
     yasmarang_n = 69;
     yasmarang_d = 233;
     yasmarang_dat = 0;
@@ -126,7 +126,7 @@ STATIC mp_obj_t mod_random_randrange(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // range(stop)
         if (start > 0) {
-            return mp_obj_new_int(yasmarang_randbelow(start));
+            return mp_obj_new_int(yasmarang_randbelow((uint32_t)start));
         } else {
             goto error;
         }
@@ -135,7 +135,7 @@ STATIC mp_obj_t mod_random_randrange(size_t n_args, const mp_obj_t *args) {
         if (n_args == 2) {
             // range(start, stop)
             if (start < stop) {
-                return mp_obj_new_int(start + yasmarang_randbelow(stop - start));
+                return mp_obj_new_int(start + yasmarang_randbelow((uint32_t)(stop - start)));
             } else {
                 goto error;
             }
@@ -151,7 +151,7 @@ STATIC mp_obj_t mod_random_randrange(size_t n_args, const mp_obj_t *args) {
                 goto error;
             }
             if (n > 0) {
-                return mp_obj_new_int(start + step * yasmarang_randbelow(n));
+                return mp_obj_new_int(start + step * yasmarang_randbelow((uint32_t)n));
             } else {
                 goto error;
             }
@@ -167,7 +167,7 @@ STATIC mp_obj_t mod_random_randint(mp_obj_t a_in, mp_obj_t b_in) {
     mp_int_t a = mp_obj_get_int(a_in);
     mp_int_t b = mp_obj_get_int(b_in);
     if (a <= b) {
-        return mp_obj_new_int(a + yasmarang_randbelow(b - a + 1));
+        return mp_obj_new_int(a + yasmarang_randbelow((uint32_t)(b - a + 1)));
     } else {
         mp_raise_ValueError(NULL);
     }
@@ -177,7 +177,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_random_randint_obj, mod_random_randint);
 STATIC mp_obj_t mod_random_choice(mp_obj_t seq) {
     mp_int_t len = mp_obj_get_int(mp_obj_len(seq));
     if (len > 0) {
-        return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow(len)), MP_OBJ_SENTINEL);
+        return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow((uint32_t)len)), MP_OBJ_SENTINEL);
     } else {
         mp_raise_type(&mp_type_IndexError);
     }
