@@ -130,8 +130,8 @@ mp_obj_t machine_i2c_master_make_new(const mp_obj_type_t *type, size_t n_args, s
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
-        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} }
+        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} }
     };
 
     // Parse args.
@@ -144,17 +144,8 @@ mp_obj_t machine_i2c_master_make_new(const mp_obj_type_t *type, size_t n_args, s
     }
 
     // get scl & sda pins & configure them
-    if (args[ARG_scl].u_obj != mp_const_none) {
-        i2c_scl_alloc(self, args[ARG_scl].u_obj);
-    } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("SCL pin must be provided"));
-    }
-
-    if (args[ARG_sda].u_obj != mp_const_none) {
-        i2c_sda_alloc(self, args[ARG_sda].u_obj);
-    } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("SDA pin must be provided"));
-    }
+    i2c_scl_alloc(self, args[ARG_scl].u_obj);
+    i2c_sda_alloc(self, args[ARG_sda].u_obj);
 
     // initialise I2C at cyhal level
     i2c_init(self, args[ARG_freq].u_int, 0);
@@ -169,9 +160,9 @@ mp_obj_t machine_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = DEFAULT_I2C_FREQ} },
-        { MP_QSTR_scl, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_sda, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}}
+        { MP_QSTR_scl, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_sda, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_addr, MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}}
     };
 
     // Parse args.
@@ -184,21 +175,8 @@ mp_obj_t machine_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, si
     }
 
     // get scl & sda pins & configure them
-    if (args[ARG_scl].u_obj != mp_const_none) {
-        i2c_scl_alloc(self, args[ARG_scl].u_obj);
-    } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("SCL pin must be provided"));
-    }
-
-    if (args[ARG_sda].u_obj != mp_const_none) {
-        i2c_sda_alloc(self, args[ARG_sda].u_obj);
-    } else {
-        mp_raise_TypeError(MP_ERROR_TEXT("SDA pin must be provided"));
-    }
-
-    if (args[ARG_addr].u_int <= 0) {
-        mp_raise_TypeError(MP_ERROR_TEXT("Slave address needs to be provided"));
-    }
+    i2c_scl_alloc(self, args[ARG_scl].u_obj);
+    i2c_sda_alloc(self, args[ARG_sda].u_obj);
 
     // initialise I2C at cyhal level
     i2c_init(self, args[ARG_freq].u_int, args[ARG_addr].u_int);
