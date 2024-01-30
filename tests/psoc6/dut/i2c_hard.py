@@ -1,6 +1,8 @@
 ### I2C
 
 from machine import I2C
+from machine import I2CSlave
+import binascii
 import time
 import os
 
@@ -15,7 +17,8 @@ elif "CY8CPROTO-063-BLE" in machine:
     scl_master_pin = "P6_4"
     sda_master_pin = "P6_5"
 
-# Error missing arguments in constructor
+# 0. Error missing arguments in constructors
+##############################################
 try:
     i2c = I2C(sda=sda_master_pin, freq=400000)
 except TypeError as e:
@@ -26,10 +29,74 @@ try:
 except TypeError as e:
     print(e)
 
-i2c_master = I2C(scl=scl_master_pin, sda=sda_master_pin)
-i2c_slave = I2C(scl=scl_slave_pin, sda=sda_slave_pin, addr=0x45)
+try:
+    i2c = I2CSlave(sda=sda_slave_pin, freq=400000)
+except TypeError as e:
+    print(e)
 
-# addr = i2c.scan()
+try:
+    i2c = I2CSlave(scl=scl_slave_pin, freq=400000)
+except TypeError as e:
+    print(e)
+
+try:
+    i2c = I2CSlave(sda=sda_slave_pin, scl=scl_slave_pin, freq=400000)
+except TypeError as e:
+    print(e)
+
+# 1. Construct slave and master instances
+##############################################
+slave_addr = 0x45
+i2c_slave = I2CSlave(scl=scl_slave_pin, sda=sda_slave_pin, addr=slave_addr)
+
+i2c_master = I2C(scl=scl_master_pin, sda=sda_master_pin)
+
+# 2. Scan for slaves
+##############################################
+addr = i2c_master.scan()
+print("Found slave with address ", slave_addr, " : ", slave_addr == addr[0])
+
+# 3. Master to slave write
+##############################################
+
+# Configure slave
+irq_flag = False
+
+
+def irq_slave(arg):
+    print("irq")
+    # global irq_flag
+    # irq_flag = True
+
+
+i2c_rcv_buf = bytearray(8)
+i2c_slave.conf_receive_buffer(i2c_rcv_buf)
+i2c_slave.irq(callback=irq_slave, events=I2CSlave.WR_EVENT, priority=1)
+
+master_data = b"\x01\x44\x17\x88\x98\x11\x34\xff"
+i2c_master.writeto(slave_addr, master_data)
+
+# # Wait for i2c slave interrupt
+# while irq_flag == False:
+#     pass
+
+# print("received buffer : ", binascii.hexlify(i2c_rcv_buf))
+print("master write to slave received by slave: ", i2c_rcv_buf == master_data)
+
+# # Clear flag
+# irq_flag = False
+
+
+def blocking_delay_ms(delay_ms):
+    start = time.ticks_ms()
+    while time.ticks_diff(time.ticks_ms(), start) < delay_ms:
+        pass
+
+
+blocking_delay_ms(3000)
+
+# 4. Master to slave read
+
 # master_data = b"\x01\x00\x17"
 # counter = 0
 
