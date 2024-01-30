@@ -18,13 +18,3 @@ jobs:
       run: source tools/ci.sh && ci_c_code_formatting_run
     - name: Check code formatting
       run: git diff --exit-code
-
-  code-spelling:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-    - name: Install packages
-      run: source tools/ci.sh && ci_code_spell_setup
-    - name: Run spell checker
-      run: source tools/ci.sh && ci_code_spell_run
