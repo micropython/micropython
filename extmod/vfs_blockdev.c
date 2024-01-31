@@ -32,6 +32,19 @@
 
 #if MICROPY_VFS
 
+// Block device functions are expected to return 0 on success
+// and negative integer on errors. Check for positive integer
+// results as some callers (i.e. littlefs) will produce corrupt
+// results from these.
+static int mp_vfs_check_result(mp_obj_t ret) {
+    if (ret == mp_const_none) {
+        return 0;
+    } else {
+        int i = MP_OBJ_SMALL_INT_VALUE(ret);
+        return i > 0 ? (-MP_EINVAL) : i;
+    }
+}
+
 void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
     mp_load_method(bdev, MP_QSTR_readblocks, self->readblocks);
     mp_load_method_maybe(bdev, MP_QSTR_writeblocks, self->writeblocks);
@@ -66,11 +79,7 @@ int mp_vfs_blockdev_read_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t b
     self->readblocks[3] = MP_OBJ_FROM_PTR(&ar);
     self->readblocks[4] = MP_OBJ_NEW_SMALL_INT(block_off);
     mp_obj_t ret = mp_call_method_n_kw(3, 0, self->readblocks);
-    if (ret == mp_const_none) {
-        return 0;
-    } else {
-        return MP_OBJ_SMALL_INT_VALUE(ret);
-    }
+    return mp_vfs_check_result(ret);
 }
 
 int mp_vfs_blockdev_write(mp_vfs_blockdev_t *self, size_t block_num, size_t num_blocks, const uint8_t *buf) {
@@ -103,11 +112,7 @@ int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t 
     self->writeblocks[3] = MP_OBJ_FROM_PTR(&ar);
     self->writeblocks[4] = MP_OBJ_NEW_SMALL_INT(block_off);
     mp_obj_t ret = mp_call_method_n_kw(3, 0, self->writeblocks);
-    if (ret == mp_const_none) {
-        return 0;
-    } else {
-        return MP_OBJ_SMALL_INT_VALUE(ret);
-    }
+    return mp_vfs_check_result(ret);
 }
 
 mp_obj_t mp_vfs_blockdev_ioctl(mp_vfs_blockdev_t *self, uintptr_t cmd, uintptr_t arg) {
