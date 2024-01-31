@@ -26,3 +26,4 @@ class mydict(dict):
 d = mydict()
 d[3] = 4
 print(d[3])
+print(d.keys())
