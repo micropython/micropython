@@ -45,7 +45,7 @@ static void check_for_deinit(uvc_uvcframebuffer_obj_t *self) {
 //| class UVCFramebuffer:
 //|     """Displays to a USB connected computer using the UVC protocol"""
 //|
-//|     def __new__():
+//|     def __new__(self):
 //|         """Returns the singleton UVC framebuffer object, if UVC is enabled"""
 //
 //|     def refresh(self) -> None:
