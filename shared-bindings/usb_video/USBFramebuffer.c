@@ -48,8 +48,8 @@ static void check_for_deinit(usb_video_uvcframebuffer_obj_t *self) {
 //|     The data in the framebuffer is in RGB565_SWAPPED format.
 //|
 //|     This object is most often used with `framebufferio.FramebufferDisplay`. However,
-//|     it also supports the `WritableBuffer` protocol and can be accessed
-//|     as an array of `H` (unsigned 16-bit values)."""
+//|     it also supports the ``WritableBuffer`` protocol and can be accessed
+//|     as an array of ``H`` (unsigned 16-bit values)."""
 //|
 //|     def __new__(self):
 //|         """Returns the singleton framebuffer object, if USB video is enabled"""
