@@ -177,9 +177,6 @@ void common_hal_storage_mount(mp_obj_t vfs_obj, const char *mount_path, bool rea
     args[0] = readonly ? mp_const_true : mp_const_false;
     args[1] = mp_const_false; // Don't make the file system automatically when mounting.
 
-    // 8.2.x: no check for existence of mount point, to ease the 8.2.x -> 9 transition
-    // 9: requires existence of mount point as directory
-
     // Check that there is a directory with the same name as the mount point.
     // But it's ok to mount '/' in any case.
     if (strcmp(vfs->str, "/") != 0) {
