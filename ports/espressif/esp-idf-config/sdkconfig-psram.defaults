@@ -8,6 +8,12 @@
 # ESP PSRAM
 #
 CONFIG_SPIRAM=y
+#
+# SPI RAM config
+#
+CONFIG_SPIRAM_USE_CAPS_ALLOC=y
+# end of SPI RAM config
+
 # end of ESP PSRAM
 
 #
