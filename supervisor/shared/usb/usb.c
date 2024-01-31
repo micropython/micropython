@@ -57,8 +57,8 @@
 #endif
 
 
-#if CIRCUITPY_USB_UVC
-#include "shared-module/uvc/__init__.h"
+#if CIRCUITPY_USB_VIDEO
+#include "shared-module/usb_video/__init__.h"
 #endif
 
 #include "tusb.h"
@@ -179,8 +179,8 @@ void usb_background(void) {
             tud_cdc_write_flush();
         }
         #endif
-        #if CIRCUITPY_USB_UVC
-        usb_uvc_task();
+        #if CIRCUITPY_USB_VIDEO
+        usb_video_task();
         #endif
     }
 }

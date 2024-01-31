@@ -158,12 +158,12 @@ ifeq ($(CIRCUITPY_USB),1)
 
   endif
 
-  ifeq ($(CIRCUITPY_USB_UVC), 1)
+  ifeq ($(CIRCUITPY_USB_VIDEO), 1)
     SRC_SUPERVISOR += \
-      shared-bindings/uvc/__init__.c \
-      shared-module/uvc/__init__.c \
-      shared-bindings/uvc/UVCFramebuffer.c \
-      shared-module/uvc/UVCFramebuffer.c \
+      shared-bindings/usb_video/__init__.c \
+      shared-module/usb_video/__init__.c \
+      shared-bindings/usb_video/USBFramebuffer.c \
+      shared-module/usb_video/USBFramebuffer.c \
       lib/tinyusb/src/class/video/video_device.c \
 
     CFLAGS += -DCFG_TUD_VIDEO=1 -DCFG_TUD_VIDEO_STREAMING=1 -DCFG_TUD_VIDEO_STREAMING_EP_BUFSIZE=256 -DCFG_TUD_VIDEO_STREAMING_BULK=1

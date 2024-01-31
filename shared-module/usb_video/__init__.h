@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2024 Jeff Epler for Adafruit Industries
+ * Copyright (c) 2023 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,16 @@
 
 #pragma once
 
-typedef struct uvc_uvcframebuffer_obj uvc_uvcframebuffer_obj_t;
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include "shared-module/storage/__init__.h"
+#include "shared-module/displayio/Bitmap.h"
 
-extern const mp_obj_type_t uvc_UVCFramebuffer_type;
-extern uvc_uvcframebuffer_obj_t uvc_uvcframebuffer_singleton_obj;
+bool usb_video_enabled(void);
+size_t usb_video_descriptor_length(void);
+size_t usb_video_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string);
+void usb_video_task(void);
 
-void shared_module_uvc_uvcframebuffer_get_bufinfo(uvc_uvcframebuffer_obj_t *self, mp_buffer_info_t *bufinfo);
-void shared_module_uvc_uvcframebuffer_refresh(uvc_uvcframebuffer_obj_t *self);
-int shared_module_uvc_uvcframebuffer_get_width(uvc_uvcframebuffer_obj_t *self);
-int shared_module_uvc_uvcframebuffer_get_height(uvc_uvcframebuffer_obj_t *self);
+extern uint16_t usb_video_frame_width, usb_video_frame_height;
+extern uint16_t *usb_video_framebuffer_rgb565;

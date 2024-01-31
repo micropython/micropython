@@ -2,10 +2,10 @@
 #include <stdint.h>
 #include "class/video/video_device.h"
 #include "shared-bindings/displayio/Bitmap.h"
-#include "shared-bindings/uvc/__init__.h"
+#include "shared-bindings/usb_video/__init__.h"
 #include "shared-module/bitmapfilter/macros.h"
-#include "shared-module/uvc/__init__.h"
-#include "shared-module/uvc/uvc_usb_descriptors.h"
+#include "shared-module/usb_video/__init__.h"
+#include "shared-module/usb_video/uvc_usb_descriptors.h"
 #include "supervisor/background_callback.h"
 #include "supervisor/shared/tick.h"
 #include "device/usbd.h"
@@ -17,63 +17,63 @@ static unsigned interval_ms = 1000 / DEFAULT_FRAME_RATE;
 
 // TODO must dynamically allocate this, otherwise everyone pays for it
 static uint8_t *frame_buffer_yuyv;
-uint16_t *uvc_framebuffer_rgb565;
+uint16_t *usb_video_framebuffer_rgb565;
 
-static bool uvc_is_enabled = false;
-uint16_t uvc_frame_width, uvc_frame_height;
+static bool usb_video_is_enabled = false;
+uint16_t usb_video_frame_width, usb_video_frame_height;
 
-bool shared_module_uvc_enable(mp_int_t frame_width, mp_int_t frame_height) {
+bool shared_module_usb_video_enable(mp_int_t frame_width, mp_int_t frame_height) {
     if (tud_connected()) {
         return false;
     }
 
     // this will free any previously allocated framebuffer as a side-effect
-    shared_module_uvc_disable();
+    shared_module_usb_video_disable();
 
     if (frame_width & 1) {
         // frame_width must be even, round it up
         frame_width++;
     }
 
-    uvc_frame_width = frame_width;
-    uvc_frame_height = frame_height;
+    usb_video_frame_width = frame_width;
+    usb_video_frame_height = frame_height;
 
-    size_t framebuffer_size = uvc_frame_width * uvc_frame_height * 2;
+    size_t framebuffer_size = usb_video_frame_width * usb_video_frame_height * 2;
     frame_buffer_yuyv = port_malloc(framebuffer_size, false);
     uint32_t *frame_buffer_rgb565_uint32 = port_malloc(framebuffer_size, false);
-    uvc_framebuffer_rgb565 = (uint16_t *)frame_buffer_rgb565_uint32;
+    usb_video_framebuffer_rgb565 = (uint16_t *)frame_buffer_rgb565_uint32;
 
-    if (!frame_buffer_yuyv || !uvc_framebuffer_rgb565) {
+    if (!frame_buffer_yuyv || !usb_video_framebuffer_rgb565) {
         // this will free either of the buffers allocated just above, in
         // case one succeeded and the other failed.
-        shared_module_uvc_disable();
+        shared_module_usb_video_disable();
         m_malloc_fail(2 * framebuffer_size);
     }
     memset(frame_buffer_yuyv, 0, framebuffer_size);
-    memset(uvc_framebuffer_rgb565, 0, framebuffer_size);
+    memset(usb_video_framebuffer_rgb565, 0, framebuffer_size);
 
-    uvc_is_enabled = true;
+    usb_video_is_enabled = true;
 
     return true;
 }
 
-bool shared_module_uvc_disable(void) {
+bool shared_module_usb_video_disable(void) {
     if (tud_connected()) {
         return false;
     }
-    uvc_is_enabled = false;
+    usb_video_is_enabled = false;
     port_free(frame_buffer_yuyv);
-    port_free(uvc_framebuffer_rgb565);
+    port_free(usb_video_framebuffer_rgb565);
     frame_buffer_yuyv = NULL;
-    uvc_framebuffer_rgb565 = NULL;
+    usb_video_framebuffer_rgb565 = NULL;
     return true;
 }
 
-bool usb_uvc_enabled(void) {
-    return uvc_is_enabled;
+bool usb_video_enabled(void) {
+    return usb_video_is_enabled;
 }
 
-size_t usb_uvc_descriptor_length(void) {
+size_t usb_video_descriptor_length(void) {
     #if CFG_TUD_VIDEO_STREAMING_BULK
     return sizeof((char[]) {TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(0, 0, DEFAULT_FRAME_WIDTH, DEFAULT_FRAME_HEIGHT, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, 0, 0)});
     #else
@@ -88,9 +88,9 @@ static void convert_framebuffer_maybe(void) {
     do_convert = false; // assumes this happens via background, not interrupt
 
     uint8_t *dest = frame_buffer_yuyv;
-    uint16_t *src = uvc_framebuffer_rgb565;
+    uint16_t *src = usb_video_framebuffer_rgb565;
 
-    for (int i = 0; i < uvc_frame_width * uvc_frame_height / 2; i++) {
+    for (int i = 0; i < usb_video_frame_width * usb_video_frame_height / 2; i++) {
         uint16_t p1 = IMAGE_GET_RGB565_PIXEL_FAST(src, 0);
         uint16_t p2 = IMAGE_GET_RGB565_PIXEL_FAST(src, 1);
         src += 2;
@@ -110,17 +110,17 @@ static void convert_framebuffer_maybe(void) {
     }
 }
 
-void shared_module_uvc_swapbuffers(void) {
+void shared_module_usb_video_swapbuffers(void) {
     do_convert = true;
 }
 
-size_t usb_uvc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
+size_t usb_video_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string) {
     usb_add_interface_string(*current_interface_string, "CircuitPython UVC");
-    const uint8_t usb_uvc_descriptor[] = {
+    const uint8_t usb_video_descriptor[] = {
         #if CFG_TUD_VIDEO_STREAMING_BULK
-        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(*current_interface_string, descriptor_counts->current_endpoint | 0x80, uvc_frame_width, uvc_frame_height, DEFAULT_FRAME_RATE, 64, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
+        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR_BULK(*current_interface_string, descriptor_counts->current_endpoint | 0x80, usb_video_frame_width, usb_video_frame_height, DEFAULT_FRAME_RATE, 64, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
         #else
-        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(*current_interface_string, descriptor_counts->current_endpoint | 0x80, uvc_frame_width, uvc_frame_height, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
+        TUD_VIDEO_CAPTURE_DESCRIPTOR_UNCOMPR(*current_interface_string, descriptor_counts->current_endpoint | 0x80, usb_video_frame_width, usb_video_frame_height, DEFAULT_FRAME_RATE, CFG_TUD_VIDEO_STREAMING_EP_BUFSIZE, descriptor_counts->current_interface, descriptor_counts->current_interface + 1)
         #endif
     };
     (*current_interface_string)++;
@@ -129,14 +129,14 @@ size_t usb_uvc_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *desc
     descriptor_counts->current_endpoint++;
     descriptor_counts->current_interface++;
 
-    memcpy(descriptor_buf, usb_uvc_descriptor, sizeof(usb_uvc_descriptor));
+    memcpy(descriptor_buf, usb_video_descriptor, sizeof(usb_video_descriptor));
 
-    return sizeof(usb_uvc_descriptor);
+    return sizeof(usb_video_descriptor);
 }
 
-background_callback_t uvc_cb;
+background_callback_t usb_video_cb;
 
-STATIC void uvc_cb_fun(void *unused) {
+STATIC void usb_video_cb_fun(void *unused) {
     (void)unused;
 
     static unsigned start_ms = 0;
@@ -152,37 +152,37 @@ STATIC void uvc_cb_fun(void *unused) {
         already_sent = 1;
         start_ms = supervisor_ticks_ms32();
         convert_framebuffer_maybe();
-        bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, uvc_frame_width * uvc_frame_height * 16 / 8);
+        bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, usb_video_frame_width * usb_video_frame_height * 16 / 8);
         (void)result;
     }
 
     unsigned cur = supervisor_ticks_ms32();
     if (cur - start_ms < interval_ms) {
-        background_callback_add(&uvc_cb, uvc_cb_fun, NULL); // re-queue
+        background_callback_add(&usb_video_cb, usb_video_cb_fun, NULL); // re-queue
         return;                             // not enough time
     }
     if (tx_busy) {
-        background_callback_add(&uvc_cb, uvc_cb_fun, NULL); // re-queue
+        background_callback_add(&usb_video_cb, usb_video_cb_fun, NULL); // re-queue
         return;
     }
     start_ms += interval_ms;
 
     convert_framebuffer_maybe();
-    bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, uvc_frame_width * uvc_frame_height * 16 / 8);
+    bool result = tud_video_n_frame_xfer(0, 0, (void *)frame_buffer_yuyv, usb_video_frame_width * usb_video_frame_height * 16 / 8);
     (void)result;
 }
 
 
-void usb_uvc_task(void) {
-    if (uvc_is_enabled) {
-        background_callback_add(&uvc_cb, uvc_cb_fun, NULL);
+void usb_video_task(void) {
+    if (usb_video_is_enabled) {
+        background_callback_add(&usb_video_cb, usb_video_cb_fun, NULL);
     }
 }
 
 void tud_video_frame_xfer_complete_cb(uint_fast8_t ctl_idx, uint_fast8_t stm_idx) {
     (void)ctl_idx;
     (void)stm_idx;
-    usb_uvc_task();
+    usb_video_task();
     tx_busy = 0;
     /* flip buffer */
     ++frame_num;
