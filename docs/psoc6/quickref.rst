@@ -195,7 +195,6 @@ sda    P6_1           P9_1
 =====  ===========  ============
 
 .. 
-
     TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
     TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
     - From board manual? 
