@@ -164,7 +164,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdioio_sdcard_count_obj, sdioio_sdcard_count);
 //|         :param ~circuitpython_typing.WriteableBuffer buf: The buffer to write into.  Length must be multiple of 512.
 //|
 //|         :return: None"""
-STATIC mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
+STATIC mp_obj_t _sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
@@ -176,7 +176,7 @@ STATIC mp_obj_t sdioio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks);
+MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, _sdioio_sdcard_readblocks);
 
 //|     def writeblocks(self, start_block: int, buf: ReadableBuffer) -> None:
 //|         """Write one or more blocks to the card
@@ -185,7 +185,7 @@ MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_readblocks_obj, sdioio_sdcard_readblocks
 //|         :param ~circuitpython_typing.ReadableBuffer buf: The buffer to read from.  Length must be multiple of 512.
 //|
 //|         :return: None"""
-STATIC mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
+STATIC mp_obj_t _sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -197,7 +197,7 @@ STATIC mp_obj_t sdioio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_writeblocks_obj, sdioio_sdcard_writeblocks);
+MP_DEFINE_CONST_FUN_OBJ_3(sdioio_sdcard_writeblocks_obj, _sdioio_sdcard_writeblocks);
 
 //|     frequency: int
 //|     """The actual SDIO bus frequency. This may not match the frequency
