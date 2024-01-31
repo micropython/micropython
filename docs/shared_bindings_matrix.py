@@ -173,6 +173,11 @@ def get_settings_from_makefile(port_dir, board_name):
 
     This list must explicitly include any setting queried by tools/ci_set_matrix.py.
     """
+    if os.getenv('NO_BINDINGS_MATRIX'):
+        return {
+                'CIRCUITPY_BUILD_EXTENSIONS': '.bin'
+                }
+
     contents = subprocess.run(
         ["make", "-C", port_dir, "-f", "Makefile", f"BOARD={board_name}", "print-CFLAGS", "print-CIRCUITPY_BUILD_EXTENSIONS", "print-FROZEN_MPY_DIRS", "print-SRC_PATTERNS", "print-SRC_SUPERVISOR"],
         encoding="utf-8",
