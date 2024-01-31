@@ -393,6 +393,9 @@ endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 SRC_PATTERNS += usb_hid/%
 endif
+ifeq ($(CIRCUITPY_USB_VIDEO),1)
+SRC_PATTERNS += usb_video/%
+endif
 ifeq ($(CIRCUITPY_USB_HOST),1)
 SRC_PATTERNS += usb_host/% usb/%
 endif

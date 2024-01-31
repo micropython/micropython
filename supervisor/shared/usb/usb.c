@@ -56,6 +56,11 @@
 #include "shared-module/usb_midi/__init__.h"
 #endif
 
+
+#if CIRCUITPY_USB_VIDEO
+#include "shared-module/usb_video/__init__.h"
+#endif
+
 #include "tusb.h"
 
 #if CIRCUITPY_USB_VENDOR
@@ -173,6 +178,9 @@ void usb_background(void) {
             // Console will always be itf 0.
             tud_cdc_write_flush();
         }
+        #endif
+        #if CIRCUITPY_USB_VIDEO
+        usb_video_task();
         #endif
     }
 }
