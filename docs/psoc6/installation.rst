@@ -17,6 +17,21 @@ You can easily download them terminal with the following command:
 
 .. tabs::
 
+    .. group-tab:: Python
+            
+            Download the mpy-psoc6 utility script:
+
+            .. code-block:: bash
+                
+                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
+
+            Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
+            Then install the following packages:
+
+            .. code-block:: bash                
+           
+                pip install requests
+
     .. group-tab:: Linux
 
         Download the mpy-psoc6 utility script:
@@ -39,25 +54,16 @@ You can easily download them terminal with the following command:
 
                 curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.cmd > mpy-psoc6.cmd
 
-    .. group-tab:: Python
-            
-            Download the mpy-psoc6 utility script:
-
-            .. code-block:: bash
-                
-                curl.exe -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
-
-            Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
-            Then install the following packages:
-
-            .. code-block:: bash                
-           
-                pip install requests
-
 
 Find all the available commands and options by running the script with the command help:
 
 .. tabs::
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py --help
 
     .. group-tab:: Linux
 
@@ -71,12 +77,6 @@ Find all the available commands and options by running the script with the comma
             
                 .\mpy-psoc6.cmd help
 
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py --help
-
 .. _psoc6_quick_start:
 
 Quick Start
@@ -86,6 +86,12 @@ With the ``mpy-psoc6`` utility script downloaded, the fastest way to get you up 
 micropython is to run the ``quick-start`` command of the script:
 
 .. tabs::
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py quick-start
 
     .. group-tab:: Linux
         
@@ -98,12 +104,6 @@ micropython is to run the ``quick-start`` command of the script:
             .. code-block:: bash
                 
                 .\mpy-psoc6.cmd quick-start
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py quick-start
 
 The command will take care of the following:
 
@@ -124,6 +124,12 @@ MicropPython firmware version:
 
 .. tabs::
 
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py device-setup
+
     .. group-tab:: Linux
         
             .. code-block:: bash
@@ -135,12 +141,6 @@ MicropPython firmware version:
             .. code-block:: bash
                 
                 .\mpy-psoc6.cmd device-setup
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py device-setup
 
 
 You can run any command any time you want to upgrade to the latest MicroPython firmware version.
@@ -161,6 +161,12 @@ version need to be passed as arguments.
 
 .. tabs::
 
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py device-setup -b CY8CPROTO-062-4343W -v v0.1.1
+
     .. group-tab:: Linux
         
             .. code-block:: bash
@@ -172,12 +178,6 @@ version need to be passed as arguments.
             .. code-block:: bash
                 
                 .\mpy-psoc6.cmd device-setup CY8CPROTO-062-4343W v0.1.1
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py device-setup -b CY8CPROTO-062-4343W -v v0.1.1
 
 .. warning::
     
@@ -215,6 +215,12 @@ The board needs to be specified, and the path and name of the ``.hex`` file:
 
 .. tabs::
 
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py firmware-deploy -b CY8CPROTO-062-4343W -f pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
+
     .. group-tab:: Linux
         
             .. code-block:: bash
@@ -227,11 +233,6 @@ The board needs to be specified, and the path and name of the ``.hex`` file:
                 
                 .\mpy-psoc6.cmd firmware-deploy CY8CPROTO-062-4343W pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
 
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py firmware-deploy -b CY8CPROTO-062-4343W -f pathtodir/mpy-psoc6_CY8CPROTO-062-4343W.hex
 
 Erasing the device (external) file system
 -----------------------------------------
@@ -241,6 +242,12 @@ reprogramming or erasing MicroPython firmware via ``device-setup`` or ``firmware
 Use the ``device-erase`` command to erase of the external memory of your PSoC6â„¢ device:
 
 .. tabs::
+
+    .. group-tab:: Python
+
+            .. code-block:: bash
+                
+                python mpy-psoc6.py device-erase 
 
     .. group-tab:: Linux
         
@@ -253,12 +260,6 @@ Use the ``device-erase`` command to erase of the external memory of your PSoC6â„
             .. code-block:: bash
                 
                 .\mpy-psoc6.cmd device-erase
-
-    .. group-tab:: Python
-
-            .. code-block:: bash
-                
-                python mpy-psoc6.py device-erase 
 
 .. warning::
     
