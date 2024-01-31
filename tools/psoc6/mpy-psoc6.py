@@ -164,7 +164,7 @@ def fwloader_update_kitprog():
         fwloader_out_lines = fwloader_stdout.decode().split("\n")
         for line in fwloader_out_lines:
             if "Error" in line:
-                sys.exit(colour_str_error(line))
+                colour_str_error("warning: " + line.strip("Error: "))
 
     print("Updating kitprog3 firmware...")
     fwloader_cmd = "fw-loader --update-kp3 all"
