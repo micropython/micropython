@@ -145,8 +145,8 @@ bool filesystem_init(bool create_allowed, bool force_create) {
         res = f_mkdir(&vfs_fat->fatfs, "/sd");
         #if CIRCUITPY_FULL_BUILD
         MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/sd/placeholder.txt",
-            "SD cards are mounted at /sd and will shadow this file from Python."
-            " USB will not see the SD card contents here.\n");
+            "SD cards mounted at /sd will hide this file from Python."
+            " SD cards are not visible via USB CIRCUITPY.\n");
         #endif
         #endif
 
