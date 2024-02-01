@@ -36,8 +36,8 @@ SRC_EXTMOD_C += \
 	extmod/modre.c \
 	extmod/modselect.c \
 	extmod/modsocket.c \
-	extmod/modssl_axtls.c \
-	extmod/modssl_mbedtls.c \
+	extmod/modtls_axtls.c \
+	extmod/modtls_mbedtls.c \
 	extmod/modtime.c \
 	extmod/moductypes.c \
 	extmod/modwebrepl.c \
