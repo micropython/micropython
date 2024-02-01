@@ -308,7 +308,9 @@ def run_micropython(pyb, args, test_file, test_file_abspath, is_special=False):
 
     else:
         # run via pyboard interface
-        had_crash, output_mupy = run_script_on_remote_target(pyb, args, test_file, is_special)
+        had_crash, output_mupy = pyb.run_script_on_remote_target(
+            args, test_file_abspath, is_special
+        )
 
     # canonical form for all ports/platforms is to use \n for end-of-line
     output_mupy = output_mupy.replace(b"\r\n", b"\n")
@@ -391,6 +393,51 @@ class ThreadSafeCounter:
     @property
     def value(self):
         return self._value
+
+
+class PyboardNodeRunner:
+    def __init__(self):
+        mjs = os.getenv("MICROPY_MICROPYTHON_MJS")
+        if mjs is None:
+            mjs = base_path("../ports/webassembly/build-standard/micropython.mjs")
+        else:
+            mjs = os.path.abspath(mjs)
+        self.micropython_mjs = mjs
+
+    def close(self):
+        pass
+
+    def run_script_on_remote_target(self, args, test_file, is_special):
+        cwd = os.path.dirname(test_file)
+
+        # Create system command list.
+        cmdlist = ["node"]
+        if test_file.endswith(".py"):
+            # Run a Python script indirectly via "node micropython.mjs <script.py>".
+            cmdlist.append(self.micropython_mjs)
+            if args.heapsize is not None:
+                cmdlist.extend(["-X", "heapsize=" + args.heapsize])
+            cmdlist.append(test_file)
+        else:
+            # Run a js/mjs script directly with Node, passing in the path to micropython.mjs.
+            cmdlist.append(test_file)
+            cmdlist.append(self.micropython_mjs)
+
+        # Run the script.
+        try:
+            had_crash = False
+            output_mupy = subprocess.check_output(
+                cmdlist, stderr=subprocess.STDOUT, timeout=TEST_TIMEOUT, cwd=cwd
+            )
+        except subprocess.CalledProcessError as er:
+            had_crash = True
+            output_mupy = er.output + b"CRASH"
+        except subprocess.TimeoutExpired as er:
+            had_crash = True
+            output_mupy = (er.output or b"") + b"TIMEOUT"
+
+        # Return the results.
+        return had_crash, output_mupy
 
 
 def run_tests(pyb, tests, args, result_dir, num_threads=1):
@@ -631,6 +678,20 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             )  # RA fsp rtc function doesn't support nano sec info
         elif args.target == "qemu-arm":
             skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
+        elif args.target == "webassembly":
+            skip_tests.add("basics/string_format_modulo.py")  # can't print nulls to stdout
+            skip_tests.add("basics/string_strip.py")  # can't print nulls to stdout
+            skip_tests.add("extmod/binascii_a2b_base64.py")
+            skip_tests.add("extmod/re_stack_overflow.py")
+            skip_tests.add("extmod/time_res.py")
+            skip_tests.add("extmod/vfs_posix.py")
+            skip_tests.add("extmod/vfs_posix_enoent.py")
+            skip_tests.add("extmod/vfs_posix_paths.py")
+            skip_tests.add("extmod/vfs_userfs.py")
+            skip_tests.add("micropython/emg_exc.py")
+            skip_tests.add("micropython/extreme_exc.py")
+            skip_tests.add("micropython/heapalloc_exc_compressed_emg_exc.py")
+            skip_tests.add("micropython/import_mpy_invalid.py")
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
@@ -977,6 +1038,7 @@ the last matching regex is used:
     LOCAL_TARGETS = (
         "unix",
         "qemu-arm",
+        "webassembly",
     )
     EXTERNAL_TARGETS = (
         "pyboard",
@@ -997,6 +1059,8 @@ the last matching regex is used:
                 args.mpy_cross_flags = "-march=host"
             elif args.target == "qemu-arm":
                 args.mpy_cross_flags = "-march=armv7m"
+        if args.target == "webassembly":
+            pyb = PyboardNodeRunner()
     elif args.target in EXTERNAL_TARGETS:
         global pyboard
         sys.path.append(base_path("../tools"))
@@ -1015,6 +1079,7 @@ the last matching regex is used:
                 args.mpy_cross_flags = "-march=armv7m"
 
         pyb = pyboard.Pyboard(args.device, args.baudrate, args.user, args.password)
+        pyboard.Pyboard.run_script_on_remote_target = run_script_on_remote_target
         pyb.enter_raw_repl()
     else:
         raise ValueError("target must be one of %s" % ", ".join(LOCAL_TARGETS + EXTERNAL_TARGETS))
@@ -1032,6 +1097,10 @@ the last matching regex is used:
         else:
             tests = []
     elif len(args.files) == 0:
+        test_extensions = ("*.py",)
+        if args.target == "webassembly":
+            test_extensions += ("*.js", "*.mjs")
+
         if args.test_dirs is None:
             test_dirs = (
                 "basics",
@@ -1072,12 +1141,16 @@ the last matching regex is used:
                     "inlineasm",
                     "ports/qemu-arm",
                 )
+            elif args.target == "webassembly":
+                test_dirs += ("float",)
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
         tests = sorted(
             test_file
-            for test_files in (glob("{}/*.py".format(dir)) for dir in test_dirs)
+            for test_files in (
+                glob(os.path.join(dir, ext)) for dir in test_dirs for ext in test_extensions
+            )
             for test_file in test_files
         )
     else:
