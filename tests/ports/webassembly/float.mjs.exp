@@ -1,0 +1,14 @@
+0.5
+inf
+nan
+<class 'float'> True
+0.5
+0.5 Infinity
+0.5 Infinity NaN
+0.5
+Infinity
+NaN
+0.5
+0.5 inf
+0.5 inf nan
+0.4

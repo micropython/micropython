@@ -1142,7 +1142,7 @@ the last matching regex is used:
                     "ports/qemu-arm",
                 )
             elif args.target == "webassembly":
-                test_dirs += ("float",)
+                test_dirs += ("float", "ports/webassembly")
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
