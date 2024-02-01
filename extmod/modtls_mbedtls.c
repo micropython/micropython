@@ -67,6 +67,7 @@ typedef struct _mp_obj_ssl_context_t {
     mbedtls_pk_context pkey;
     int authmode;
     int *ciphersuites;
+    mp_obj_t handler;
 } mp_obj_ssl_context_t;
 
 // This corresponds to an SSLSocket object.
@@ -188,6 +189,16 @@ STATIC void ssl_check_async_handshake_failure(mp_obj_ssl_socket_t *sslsock, int 
     }
 }
 
+STATIC int ssl_sock_cert_verify(void *ptr, mbedtls_x509_crt *crt, int depth, uint32_t *flags) {
+    mp_obj_ssl_context_t *o = ptr;
+    if (o->handler == mp_const_none) {
+        return 0;
+    }
+    mp_obj_array_t cert;
+    mp_obj_memoryview_init(&cert, 'B', 0, crt->raw.len, crt->raw.p);
+    return mp_obj_get_int(mp_call_function_2(o->handler, MP_OBJ_FROM_PTR(&cert), MP_OBJ_NEW_SMALL_INT(depth)));
+}
+
 /******************************************************************************/
 // SSLContext type.
 
@@ -213,6 +224,7 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_x509_crt_init(&self->cert);
     mbedtls_pk_init(&self->pkey);
     self->ciphersuites = NULL;
+    self->handler = mp_const_none;
 
     #ifdef MBEDTLS_DEBUG_C
     // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
@@ -243,6 +255,7 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
         self->authmode = MBEDTLS_SSL_VERIFY_NONE;
     }
     mbedtls_ssl_conf_authmode(&self->conf, self->authmode);
+    mbedtls_ssl_conf_verify(&self->conf, &ssl_sock_cert_verify, self);
     mbedtls_ssl_conf_rng(&self->conf, mbedtls_ctr_drbg_random, &self->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&self->conf, mbedtls_debug, NULL);
@@ -257,6 +270,8 @@ STATIC void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         // Load attribute.
         if (attr == MP_QSTR_verify_mode) {
             dest[0] = MP_OBJ_NEW_SMALL_INT(self->authmode);
+        } else if (attr == MP_QSTR_verify_callback) {
+            dest[0] = self->handler;
         } else {
             // Continue lookup in locals_dict.
             dest[1] = MP_OBJ_SENTINEL;
@@ -267,6 +282,9 @@ STATIC void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
             self->authmode = mp_obj_get_int(dest[1]);
             dest[0] = MP_OBJ_NULL;
             mbedtls_ssl_conf_authmode(&self->conf, self->authmode);
+        } else if (attr == MP_QSTR_verify_callback) {
+            dest[0] = MP_OBJ_NULL;
+            self->handler = dest[1];
         }
     }
 }
