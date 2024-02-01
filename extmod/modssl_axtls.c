@@ -161,6 +161,14 @@ STATIC void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, m
     self->cert = cert_obj;
 }
 
+// SSLContext.load_cert_chain(certfile, keyfile)
+STATIC mp_obj_t ssl_context_load_cert_chain(mp_obj_t self_in, mp_obj_t cert, mp_obj_t pkey) {
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
+    ssl_context_load_key(self, pkey, cert);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_load_cert_chain);
+
 STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname };
     static const mp_arg_t allowed_args[] = {
@@ -182,6 +190,7 @@ STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_context_wrap_socket_obj, 2, ssl_context_wrap_socket);
 
 STATIC const mp_rom_map_elem_t ssl_context_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_context_load_cert_chain_obj)},
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_context_wrap_socket_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_table);
