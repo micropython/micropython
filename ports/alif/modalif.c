@@ -27,10 +27,18 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 #include "modalif.h"
+#include "se_services.h"
+
+static mp_obj_t alif_info(void) {
+    se_services_dump_device_data();
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(alif_info_obj, alif_info);
 
 static const mp_rom_map_elem_t alif_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_alif) },
     { MP_ROM_QSTR(MP_QSTR_Flash),               MP_ROM_PTR(&alif_flash_type) },
+    { MP_ROM_QSTR(MP_QSTR_info),                MP_ROM_PTR(&alif_info_obj) },
     #if MICROPY_HW_USB_MSC
     // Attribute to indicate USB MSC is enabled.
     { MP_ROM_QSTR(MP_QSTR_usb_msc),             MP_ROM_TRUE },
