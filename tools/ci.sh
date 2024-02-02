@@ -178,18 +178,19 @@ function ci_esp8266_build {
 # ports/webassembly
 
 function ci_webassembly_setup {
+    npm install terser
     git clone https://github.com/emscripten-core/emsdk.git
     (cd emsdk && ./emsdk install latest && ./emsdk activate latest)
 }
 
 function ci_webassembly_build {
     source emsdk/emsdk_env.sh
-    make ${MAKEOPTS} -C ports/webassembly
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript submodules
+    make ${MAKEOPTS} -C ports/webassembly VARIANT=pyscript
 }
 
 function ci_webassembly_run_tests {
-    # This port is very slow at running, so only run a few of the tests.
-    (cd tests && MICROPY_MICROPYTHON=../ports/webassembly/node_run.sh ./run-tests.py -j1 basics/builtin_*.py)
+    make -C ports/webassembly VARIANT=pyscript test_min
 }
 
 ########################################################################################
