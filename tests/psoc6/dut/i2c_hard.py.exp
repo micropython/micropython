@@ -1,2 +1,21 @@
-SCL pin must be provided
-SDA pin must be provided
+'scl' argument required
+'sda' argument required
+'scl' argument required
+'sda' argument required
+'addr' argument required
+
+I2C Hardware
+
+[69]
+Found slave with address  69  :  True
+master writeto() and received by slave:  True
+master readfrom_into() and transmitted from slave:  True
+master readfrom() and transmitted from slave:  True
+
+I2C Software
+
+[69]
+Found slave with address  69  :  True
+master writeto() and received by slave:  True
+master readfrom_into() and transmitted from slave:  True
+master readfrom() and transmitted from slave:  True
