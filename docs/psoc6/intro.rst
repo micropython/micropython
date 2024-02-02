@@ -31,6 +31,27 @@ In your computer terminal, type the following commands and follow the instructio
 
 .. tabs::
 
+    .. group-tab:: Python
+
+        Download the mpy-psoc6 utility script:
+
+        .. code-block:: bash
+
+            curl -s -L https://raw.githubusercontent.com/infineon/micropython/ports-psoc6-main/tools/psoc6/mpy-psoc6.py > mpy-psoc6.py
+
+        Make sure you have a recent version on `Python3.x <https://www.python.org/downloads/>`_  installed and the `pip <https://pip.pypa.io/en/stable/installation/>`_ package installer.
+        Then install the following packages:
+
+        .. code-block:: bash                
+        
+            pip install requests
+        
+        Finally run the script:
+
+        .. code-block:: bash                
+           
+            python mpy-psoc6.py quick-start
+
     .. group-tab:: Linux
 
         Download the mpy-psoc6 utility script:
