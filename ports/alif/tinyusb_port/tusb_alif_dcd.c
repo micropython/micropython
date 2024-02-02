@@ -15,11 +15,10 @@
 // This log and memset is needed to get the USB working, something to do with the extra delay.
 void snprintf_dummy(char *str, size_t size, const char *fmt, ...) {
 }
-static int bi = 0;
-static char logbuf[2049][48];
+static char logbuf[48];
 
-#define LOG(...)      snprintf_dummy(logbuf[(bi++) % 2048], 48, __VA_ARGS__); \
-                      memset(logbuf[bi % 2048], ' ', 48)
+#define LOG(...)      memset(logbuf, ' ', 48); \
+                      snprintf_dummy(logbuf, 48, __VA_ARGS__)
 #else
 #define LOG(...)
 #endif
