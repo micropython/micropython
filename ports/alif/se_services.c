@@ -24,6 +24,9 @@
  * THE SOFTWARE.
  */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "irq.h"
 #include "se_services.h"
 
@@ -97,6 +100,40 @@ void se_services_init(void) {
 
     // Create SE services channel for sending requests.
     se_services_handle = SERVICES_register_channel(MHU_M55_SE_MHU0, 0);
+}
+
+void se_services_dump_device_data(void) {
+    uint32_t error_code;
+
+    uint8_t revision[80];
+    SERVICES_get_se_revision(se_services_handle, revision, &error_code);
+
+    SERVICES_version_data_t data;
+    SERVICES_system_get_device_data(se_services_handle, &data, &error_code);
+
+    printf("SE revision: %s\n", revision);
+    printf("ALIF_PN:     %s\n", data.ALIF_PN);
+    printf("Raw device data:\n");
+    for (int i = 0; i < sizeof(data); ++i) {
+        printf(" %02x", ((uint8_t *)&data)[i]);
+        if (i % 16 == 15) {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
+
+void se_services_get_unique_id(uint8_t id[5]) {
+    uint32_t error_code;
+    SERVICES_version_data_t data;
+    SERVICES_system_get_device_data(se_services_handle, &data, &error_code);
+    // The MfgData has 5 bytes of valid data, at least on REV_B2.
+    memcpy(id, data.MfgData, 5);
+}
+
+__attribute__((noreturn)) void se_services_reset_soc(void) {
+    SERVICES_boot_reset_soc(se_services_handle);
+    NVIC_SystemReset();
 }
 
 uint64_t se_services_rand64(void) {

@@ -165,9 +165,14 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	drivers/source/uart.c \
 	drivers/source/utimer.c \
 	ospi_xip/source/ospi/ospi_drv.c \
+	se_services/source/services_host_application.c \
+	se_services/source/services_host_boot.c \
 	se_services/source/services_host_cryptocell.c \
 	se_services/source/services_host_handler.c \
+	se_services/source/services_host_system.c \
 	)
+
+$(BUILD)/$(ALIF_DFP_REL_TOP)/se_services/source/services_host_boot.o: CFLAGS += -Wno-stringop-truncation
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C) $(GEN_PINS_SRC)

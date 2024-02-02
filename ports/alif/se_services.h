@@ -26,7 +26,12 @@
 #ifndef MICROPY_INCLUDED_ALIF_SE_SERVICES_H
 #define MICROPY_INCLUDED_ALIF_SE_SERVICES_H
 
+#include <stdint.h>
+
 void se_services_init(void);
+void se_services_dump_device_data(void);
+void se_services_get_unique_id(uint8_t id[5]);
+__attribute__((noreturn)) void se_services_reset_soc(void);
 uint64_t se_services_rand64(void);
 
 #endif // MICROPY_INCLUDED_ALIF_SE_SERVICES_H
