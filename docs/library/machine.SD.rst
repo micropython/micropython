@@ -20,11 +20,11 @@ more info regarding the pins which can be remapped to be used with a SD card.
 Example usage::
 
     from machine import SD
-    import os
+    import vfs
     # clk cmd and dat0 pins must be passed along with
     # their respective alternate functions
     sd = machine.SD(pins=('GP10', 'GP11', 'GP15'))
-    os.mount(sd, '/sd')
+    vfs.mount(sd, '/sd')
     # do normal file operations
 
 Constructors

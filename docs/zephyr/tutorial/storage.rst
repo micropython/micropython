@@ -21,11 +21,11 @@ file system to access SD cards via disk access (see below).
 
 Example usage of FatFS with an SD card on the mimxrt1050_evk board::
 
-    import os
+    import vfs
     from zephyr import DiskAccess
     bdev = zephyr.DiskAccess('SDHC')        # create block device object using DiskAccess
-    os.VfsFat.mkfs(bdev)                    # create FAT filesystem object using the disk storage block
-    os.mount(bdev, '/sd')                   # mount the filesystem at the SD card subdirectory
+    vfs.VfsFat.mkfs(bdev)                   # create FAT filesystem object using the disk storage block
+    vfs.mount(bdev, '/sd')                  # mount the filesystem at the SD card subdirectory
     with open('/sd/hello.txt','w') as f:    # open a new file in the directory
         f.write('Hello world')              # write to the file
     print(open('/sd/hello.txt').read())     # print contents of the file
@@ -43,11 +43,11 @@ implements the `vfs.AbstractBlockDev` protocol.
 
 Example usage with the internal flash on the reel_board or the rv32m1_vega_ri5cy board::
 
-    import os
+    import vfs
     from zephyr import FlashArea
     bdev = FlashArea(FlashArea.STORAGE, 4096)   # create block device object using FlashArea
-    os.VfsLfs2.mkfs(bdev)                       # create Little filesystem object using the flash area block
-    os.mount(bdev, '/flash')                    # mount the filesystem at the flash storage subdirectory
+    vfs.VfsLfs2.mkfs(bdev)                      # create Little filesystem object using the flash area block
+    vfs.mount(bdev, '/flash')                   # mount the filesystem at the flash storage subdirectory
     with open('/flash/hello.txt','w') as f:     # open a new file in the directory
         f.write('Hello world')                  # write to the file
     print(open('/flash/hello.txt').read())      # print contents of the file

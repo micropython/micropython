@@ -443,27 +443,27 @@ SD card
 
 See :ref:`machine.SDCard <machine.SDCard>`::
 
-    import machine, os
+    import machine, os, vfs
 
     sd = machine.SDCard()
-    fs = os.VfsFat(sd)
-    os.mount(fs, "/sd")  # mount
+    fs = vfs.VfsFat(sd)
+    vfs.mount(fs, "/sd") # mount
     os.listdir('/sd')    # list directory contents
-    os.umount('/sd')     # eject
+    vfs.umount('/sd')    # eject
 
 Note: The i.mx-rt 1011 and 1015 based boards do not support the ``machine.SDCard``
 class.  For these, the SPI based driver ``sdcard.py`` from the MicroPython drivers
 can be used.  When using it, you have to overdrive the CS pin of the SPI hardware
 module.  Example::
 
-    import os, sdcard, machine
+    import vfs, sdcard, machine
 
     cs_pin = "D10"
     spi = machine.SPI(0) # SPI0 with cs at Pin "D10" used for SDCARD
     cs = machine.Pin(cs_pin, machine.Pin.OUT, value=1)
     sd = sdcard.SDCard(spi, cs)
-    vfs = os.VfsFat(sd)
-    os.mount(vfs, "/sdcard")
+    fs = vfs.VfsFat(sd)
+    vfs.mount(fs, "/sdcard")
 
 OneWire driver
 --------------

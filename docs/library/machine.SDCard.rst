@@ -30,7 +30,7 @@ vary from platform to platform.
     The class implements the block protocol defined by :class:`vfs.AbstractBlockDev`.
     This allows the mounting of an SD card to be as simple as::
 
-      os.mount(machine.SDCard(), "/sd")
+      vfs.mount(machine.SDCard(), "/sd")
 
     The constructor takes the following parameters:
 
