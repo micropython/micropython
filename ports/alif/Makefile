@@ -27,7 +27,8 @@ CROSS_COMPILE ?= arm-none-eabi-
 GIT_SUBMODULES += lib/tinyusb lib/alif_ensemble-cmsis-dfp
 
 ALIF_SDK ?= alif-sdk
-ALIF_DFP ?= $(TOP)/lib/alif_ensemble-cmsis-dfp
+ALIF_DFP_REL_TOP ?= lib/alif_ensemble-cmsis-dfp
+ALIF_DFP_REL_HERE ?= $(TOP)/lib/alif_ensemble-cmsis-dfp
 CMSIS_DIR ?= $(TOP)/lib/cmsis/inc
 
 MCU_CORE ?= M55_HP
@@ -39,13 +40,13 @@ INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(BOARD_DIR)
 INC += -I$(CMSIS_DIR)
-INC += -I$(ALIF_DFP)/drivers/include/
-INC += -I$(ALIF_DFP)/se_services/include
-INC += -I$(ALIF_DFP)/ospi_xip/source/ospi
-INC += -I$(ALIF_DFP)/Device/common/include/
-INC += -I$(ALIF_DFP)/Device/core/$(MCU_CORE)/config/
-INC += -I$(ALIF_DFP)/Device/core/$(MCU_CORE)/include/
-INC += -I$(ALIF_DFP)/Device/$(MCU_SERIES)/$(MCU_VARIANT)/
+INC += -I$(ALIF_DFP_REL_HERE)/drivers/include/
+INC += -I$(ALIF_DFP_REL_HERE)/se_services/include
+INC += -I$(ALIF_DFP_REL_HERE)/ospi_xip/source/ospi
+INC += -I$(ALIF_DFP_REL_HERE)/Device/common/include/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/config/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/core/$(MCU_CORE)/include/
+INC += -I$(ALIF_DFP_REL_HERE)/Device/$(MCU_SERIES)/$(MCU_VARIANT)/
 INC += -I$(TOP)/lib/tinyusb/src
 INC += -Itinyusb_port
 
@@ -152,7 +153,7 @@ TINYUSB_SRC_C += \
 	lib/tinyusb/src/device/usbd_control.c \
 	tinyusb_port/tusb_alif_dcd.c \
 
-ALIF_SRC_C += $(addprefix $(ALIF_DFP)/,\
+ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/mpu_M55.c \
 	Device/common/source/system_M55.c \
 	Device/common/source/system_utils.c \
