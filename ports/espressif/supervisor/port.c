@@ -62,13 +62,6 @@
 #include "shared-bindings/socketpool/__init__.h"
 #include "shared-module/os/__init__.h"
 
-#include "peripherals/rmt.h"
-#include "peripherals/timer.h"
-
-#if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
-#include "peripherals/pcnt.h"
-#endif
-
 #if CIRCUITPY_TOUCHIO_USE_NATIVE
 #include "peripherals/touch.h"
 #endif
@@ -366,10 +359,6 @@ void reset_port(void) {
     uart_reset();
     #endif
 
-    #if CIRCUITPY_COUNTIO || CIRCUITPY_ROTARYIO || CIRCUITPY_FREQUENCYIO
-    peripherals_pcnt_reset();
-    #endif
-
     #if CIRCUITPY_DUALBANK
     dualbank_reset();
     #endif
@@ -382,17 +371,8 @@ void reset_port(void) {
     espulp_reset();
     #endif
 
-    #if CIRCUITPY_FREQUENCYIO
-    peripherals_timer_reset();
-    #endif
-
     #if CIRCUITPY_PS2IO
     ps2_reset();
-    #endif
-
-    #if CIRCUITPY_PULSEIO
-    peripherals_rmt_reset();
-    pulsein_reset();
     #endif
 
     #if CIRCUITPY_PWMIO

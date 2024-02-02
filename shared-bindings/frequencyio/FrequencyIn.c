@@ -72,8 +72,6 @@
 STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
 
-    frequencyio_frequencyin_obj_t *self =
-        mp_obj_malloc(frequencyio_frequencyin_obj_t, &frequencyio_frequencyin_type);
     enum { ARG_pin, ARG_capture_period };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_pin, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -86,6 +84,8 @@ STATIC mp_obj_t frequencyio_frequencyin_make_new(const mp_obj_type_t *type, size
 
     const uint16_t capture_period = args[ARG_capture_period].u_int;
 
+    frequencyio_frequencyin_obj_t *self = m_new_obj_with_finaliser(frequencyio_frequencyin_obj_t);
+    self->base.type = &frequencyio_frequencyin_type;
     common_hal_frequencyio_frequencyin_construct(self, pin, capture_period);
 
     return MP_OBJ_FROM_PTR(self);
@@ -207,6 +207,7 @@ MP_PROPERTY_GETTER(frequencyio_frequencyin_value_obj,
 STATIC const mp_rom_map_elem_t frequencyio_frequencyin_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&frequencyio_frequencyin_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&frequencyio_frequencyin_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&frequencyio_frequencyin___exit___obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&frequencyio_frequencyin_value_obj) },
