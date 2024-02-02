@@ -27,6 +27,8 @@
 // This file is never compiled standalone, it's included directly from
 // extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
 
+#include "se_services.h"
+
 #define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
     { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
     { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
@@ -36,11 +38,13 @@ static void mp_machine_idle(void) {
 }
 
 static mp_obj_t mp_machine_unique_id(void) {
-    return mp_obj_new_bytes((const uint8_t *)"ABCD", 4);
+    uint8_t id[5];
+    se_services_get_unique_id(id);
+    return mp_obj_new_bytes(id, sizeof(id));
 }
 
 NORETURN static void mp_machine_reset(void) {
-    NVIC_SystemReset();
+    se_services_reset_soc();
 }
 
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
