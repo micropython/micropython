@@ -26,12 +26,15 @@
 #ifndef MICROPY_INCLUDED_ALIF_SE_SERVICES_H
 #define MICROPY_INCLUDED_ALIF_SE_SERVICES_H
 
-#include <stdint.h>
+#include "services_lib_api.h"
 
 void se_services_init(void);
 void se_services_dump_device_data(void);
 void se_services_get_unique_id(uint8_t id[5]);
 __attribute__((noreturn)) void se_services_reset_soc(void);
 uint64_t se_services_rand64(void);
+uint32_t se_services_enable_clock(clock_enable_t clock, bool enable);
+uint32_t se_services_get_run_profile(run_profile_t *profile);
+uint32_t se_services_set_run_profile(run_profile_t *profile);
 
 #endif // MICROPY_INCLUDED_ALIF_SE_SERVICES_H

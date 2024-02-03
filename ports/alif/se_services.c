@@ -151,3 +151,21 @@ uint64_t se_services_rand64(void) {
     // No random number available.
     return 0;
 }
+
+uint32_t se_services_enable_clock(clock_enable_t clock, bool enable) {
+    uint32_t error_code;
+    SERVICES_clocks_enable_clock(se_services_handle, clock, enable, &error_code);
+    return error_code;
+}
+
+uint32_t se_services_get_run_profile(run_profile_t *profile) {
+    uint32_t error_code;
+    SERVICES_get_run_cfg(se_services_handle, profile, &error_code);
+    return error_code;
+}
+
+uint32_t se_services_set_run_profile(run_profile_t *profile) {
+    uint32_t error_code;
+    SERVICES_set_run_cfg(se_services_handle, profile, &error_code);
+    return error_code;
+}
