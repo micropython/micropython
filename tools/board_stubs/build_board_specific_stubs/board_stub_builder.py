@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Justin Myers for Adafruit Industries
+# SPDX-FileCopyrightText: 2024 Justin Myers
 #
 # SPDX-License-Identifier: MIT
 
@@ -19,9 +19,7 @@ def get_board_pins(pin_filename):
 
             search = re.search(r"MP_ROM_QSTR\(MP_QSTR_(.*?)\), MP_ROM_PTR", line)
             if search is None:
-                search = re.search(
-                    r"MP_OBJ_NEW_QSTR\(MP_QSTR_(.*?)\), MP_ROM_PTR", line
-                )
+                search = re.search(r"MP_OBJ_NEW_QSTR\(MP_QSTR_(.*?)\), MP_ROM_PTR", line)
             if search is None:
                 continue
 
@@ -112,7 +110,9 @@ def create_board_stubs(board_id, records, mappings, board_filename):
             elif extra == "epaper_display":
                 import_name = "EPaperDisplay"
             class_name = f"displayio.{import_name}"
-            member_data = f'"""Returns the `{class_name}` object for the board\'s built in display.\n'
+            member_data = (
+                f'"""Returns the `{class_name}` object for the board\'s built in display.\n'
+            )
             member_data += f"The object created is a singleton, and uses the default parameter values for `{class_name}`.\n"
             member_data += '"""\n'
             member_data += f"{board_member}: {class_name}\n"
@@ -130,9 +130,7 @@ def create_board_stubs(board_id, records, mappings, board_filename):
         frozen_libraries = ", ".join(libraries["frozen_libraries"])
 
     with open(board_filename, "w") as boards_file:
-        boards_file.write(
-            "# SPDX-FileCopyrightText: 2024 Justin Myers for Adafruit Industries\n"
-        )
+        boards_file.write("# SPDX-FileCopyrightText: 2024 Justin Myers for Adafruit Industries\n")
         boards_file.write("#\n")
         boards_file.write("# SPDX-License-Identifier: MIT\n")
         boards_file.write('"""\n')
@@ -244,7 +242,9 @@ def build_stubs(circuitpython_dir, circuitpython_org_dir, export_dir, version="8
 
     libraries = {}
     if circuitpython_org_dir is None:
-        libraries = shared_bindings_matrix.support_matrix_by_board(use_branded_name=False, withurl=False)
+        libraries = shared_bindings_matrix.support_matrix_by_board(
+            use_branded_name=False, withurl=False
+        )
     else:
         with open(f"{circuitpython_org_dir}/_data/files.json") as libraries_file:
             libraries_list = json.load(libraries_file)
@@ -287,9 +287,7 @@ def build_stubs(circuitpython_dir, circuitpython_org_dir, export_dir, version="8
         board_name = board
         with open(f"{board_path}/mpconfigboard.h") as get_name:
             board_contents = get_name.read()
-            board_name_re = re.search(
-                r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)", board_contents
-            )
+            board_name_re = re.search(r"(?<=MICROPY_HW_BOARD_NAME)\s+(.+)", board_contents)
             if board_name_re:
                 board_name = board_name_re.group(1).strip('"')
 
@@ -309,5 +307,6 @@ def build_stubs(circuitpython_dir, circuitpython_org_dir, export_dir, version="8
 
     process(board_mappings, export_dir)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     build_stubs("./", None, "circuitpython-stubs/board_definitions/")
