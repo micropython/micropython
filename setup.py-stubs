@@ -24,6 +24,8 @@ def build_package_data() -> Dict[str, List[str]]:
     result = {}
     for package in packages:
         result[f"{package}-stubs"] = ["*.pyi", "*/*.pyi"]
+    result['circuitpython_setboard'] = ["*.py", "*/*.py"]
+    result['board_definitions'] = ["*.pyi", "*/*.pyi"]
     return result
 
 package_data=build_package_data()
@@ -35,6 +37,11 @@ setup(
     maintainer_email="circuitpython@adafruit.com",
     author_email="circuitpython@adafruit.com",
     license="MIT",
+    entry_points = {
+      'console_scripts': [
+          'circuitpython_setboard = circuitpython_setboard:set_board'
+      ]
+    },
     packages=list(package_data.keys()),
     package_data=package_data,
     package_dir = package_dir,
