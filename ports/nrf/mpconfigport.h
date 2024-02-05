@@ -281,7 +281,6 @@
 #define MICROPY_PY_SYS                        (1)
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS     (1)
 #define MICROPY_PY___FILE__                   (1)
-#define MICROPY_QSTR_BYTES_IN_HASH            (2)
 #endif
 
 #ifndef MICROPY_PY_UBLUEPY

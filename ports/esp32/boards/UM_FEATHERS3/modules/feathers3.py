@@ -65,10 +65,11 @@ def get_battery_voltage():
     This is an approximation only, but useful to detect if the charge state of the battery is getting low.
     """
     adc = ADC(Pin(VBAT_SENSE))  # Assign the ADC pin to read
-    adc.atten(ADC.ATTN_2_5DB)  # Needs 2.5DB attenuation for max voltage of 1.116V w/batt of 4.2V
-    measuredvbat = adc.read()
-    measuredvbat /= 3657  # Divide by 3657 as we are using 2.5dB attenuation, which is max input of 1.25V = 4095 counts
-    measuredvbat *= 4.2  # Multiply by 4.2V, our max charge voltage for a 1S LiPo
+    # Max voltage on ADC input will be 4.2V divided by R2 (442K) & R5 (160K), 4.2 / (160+442) * 160 = 1.1163V
+    adc.atten(ADC.ATTN_2_5DB)  # Needs 2.5DB attenuation to read a max voltage of 1.1163V
+    # Use read_uv() to get ADC reading as this will use the on-chip calibration data
+    measuredvbat = adc.read_uv() / 1000000  # Read micovolts and convert to volts
+    measuredvbat *= 3.7624  # Multiply by ratio of battery voltage to ADC pin voltage: 4.2/1.1163
     return round(measuredvbat, 2)
 
 

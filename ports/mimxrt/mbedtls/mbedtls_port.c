@@ -28,10 +28,11 @@
 
 #ifdef MICROPY_SSL_MBEDTLS
 
-#include "mbedtls_config.h"
+#include "mbedtls_config_port.h"
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
 #include "fsl_snvs_lp.h"
 #include "shared/timeutils/timeutils.h"
+#include "mbedtls/platform_time.h"
 #endif
 
 void trng_random_data(unsigned char *output, size_t len);
@@ -51,6 +52,13 @@ time_t mimxrt_rtctime_seconds(time_t *timer) {
     snvs_lp_srtc_datetime_t date;
     SNVS_LP_SRTC_GetDatetime(SNVS, &date);
     return timeutils_seconds_since_epoch(date.year, date.month, date.day, date.hour, date.minute, date.second);
+}
+
+mbedtls_ms_time_t mbedtls_ms_time(void) {
+    time_t *tv = NULL;
+    mbedtls_ms_time_t current_ms;
+    current_ms = mimxrt_rtctime_seconds(tv) * 1000;
+    return current_ms;
 }
 #endif
 

@@ -231,7 +231,7 @@ SRC_THIRDPARTY_C += $(addprefix $(AXTLS_DIR)/,\
 	)
 else ifeq ($(MICROPY_SSL_MBEDTLS),1)
 MBEDTLS_DIR = lib/mbedtls
-MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config.h\"
+MBEDTLS_CONFIG_FILE ?= \"mbedtls/mbedtls_config_port.h\"
 GIT_SUBMODULES += $(MBEDTLS_DIR)
 CFLAGS_EXTMOD += -DMBEDTLS_CONFIG_FILE=$(MBEDTLS_CONFIG_FILE)
 CFLAGS_EXTMOD += -DMICROPY_SSL_MBEDTLS=1 -I$(TOP)/$(MBEDTLS_DIR)/include
@@ -239,20 +239,25 @@ SRC_THIRDPARTY_C += lib/mbedtls_errors/mp_mbedtls_errors.c
 SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	aes.c \
 	aesni.c \
-	arc4.c \
 	asn1parse.c \
 	asn1write.c \
 	base64.c \
+	bignum_core.c \
+	bignum_mod.c \
+	bignum_mod_raw.c \
 	bignum.c \
-	blowfish.c \
 	camellia.c \
 	ccm.c \
-	certs.c \
 	chacha20.c \
 	chachapoly.c \
 	cipher.c \
 	cipher_wrap.c \
+	nist_kw.c \
+	aria.c \
 	cmac.c \
+	constant_time.c \
+	mps_reader.c \
+	mps_trace.c \
 	ctr_drbg.c \
 	debug.c \
 	des.c \
@@ -265,17 +270,13 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	entropy.c \
 	entropy_poll.c \
 	gcm.c \
-	havege.c \
 	hmac_drbg.c \
-	md2.c \
-	md4.c \
 	md5.c \
 	md.c \
 	oid.c \
 	padlock.c \
 	pem.c \
 	pk.c \
-	pkcs11.c \
 	pkcs12.c \
 	pkcs5.c \
 	pkparse.c \
@@ -286,20 +287,21 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	poly1305.c \
 	ripemd160.c \
 	rsa.c \
-	rsa_internal.c \
+	rsa_alt_helpers.c \
 	sha1.c \
 	sha256.c \
 	sha512.c \
 	ssl_cache.c \
 	ssl_ciphersuites.c \
-	ssl_cli.c \
+	ssl_client.c \
 	ssl_cookie.c \
-	ssl_srv.c \
+	ssl_debug_helpers_generated.c \
 	ssl_msg.c \
 	ssl_ticket.c \
 	ssl_tls.c \
+	ssl_tls12_client.c \
+	ssl_tls12_server.c \
 	timing.c \
-	constant_time.c \
 	x509.c \
 	x509_create.c \
 	x509_crl.c \
@@ -307,7 +309,6 @@ SRC_THIRDPARTY_C += $(addprefix $(MBEDTLS_DIR)/library/,\
 	x509_csr.c \
 	x509write_crt.c \
 	x509write_csr.c \
-	xtea.c \
 	)
 endif
 endif

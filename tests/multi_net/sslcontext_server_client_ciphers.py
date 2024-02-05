@@ -11,8 +11,8 @@ except ImportError:
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
-cert = cafile = "rsa_cert.der"
-key = "rsa_key.der"
+cert = cafile = "ec_cert.der"
+key = "ec_key.der"
 
 try:
     os.stat(cafile)
@@ -48,8 +48,8 @@ def instance1():
     s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
     client_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     ciphers = client_ctx.get_ciphers()
-    assert "TLS-RSA-WITH-AES-256-CBC-SHA256" in ciphers
-    client_ctx.set_ciphers(["TLS-RSA-WITH-AES-256-CBC-SHA256"])
+    assert "TLS-ECDHE-ECDSA-WITH-AES-128-CBC-SHA256" in ciphers
+    client_ctx.set_ciphers(["TLS-ECDHE-ECDSA-WITH-AES-128-CBC-SHA256"])
     client_ctx.verify_mode = ssl.CERT_REQUIRED
     client_ctx.load_verify_locations(cafile=cafile)
     s = client_ctx.wrap_socket(s, server_hostname="micropython.local")

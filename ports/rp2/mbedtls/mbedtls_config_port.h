@@ -27,11 +27,20 @@
 #define MICROPY_INCLUDED_MBEDTLS_CONFIG_H
 
 // Set mbedtls configuration
-#define MBEDTLS_CIPHER_MODE_CTR // needed for MICROPY_PY_CRYPTOLIB_CTR
+#define MBEDTLS_ECP_NIST_OPTIM
+#define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED
 
 // Enable mbedtls modules
-#define MBEDTLS_HAVEGE_C
-#define MBEDTLS_TIMING_C
+#define MBEDTLS_GCM_C
+
+// Time hook
+#include <time.h>
+time_t rp2_rtctime_seconds(time_t *timer);
+#define MBEDTLS_PLATFORM_TIME_MACRO rp2_rtctime_seconds
+#define MBEDTLS_PLATFORM_MS_TIME_ALT mbedtls_ms_time
+
+// Set MicroPython-specific options.
+#define MICROPY_MBEDTLS_CONFIG_BARE_METAL (1)
 
 // Include common mbedtls configuration.
 #include "extmod/mbedtls/mbedtls_config_common.h"

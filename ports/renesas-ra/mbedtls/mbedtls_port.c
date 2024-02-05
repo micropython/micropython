@@ -25,11 +25,12 @@
  */
 
 #include "rng.h"
-#include "mbedtls_config.h"
+#include "mbedtls_config_port.h"
 
 #if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
 #include "rtc.h"
 #include "shared/timeutils/timeutils.h"
+#include "mbedtls/platform_time.h"
 #endif
 
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
@@ -56,6 +57,13 @@ time_t ra_rtctime_seconds(time_t *timer) {
     rtc_get_time(&time);
     rtc_get_date(&date);
     return timeutils_seconds_since_epoch(2000 + date.Year, date.Month, date.Date, time.Hours, time.Minutes, time.Seconds);
+}
+
+mbedtls_ms_time_t mbedtls_ms_time(void) {
+    time_t *tv = NULL;
+    mbedtls_ms_time_t current_ms;
+    current_ms = ra_rtctime_seconds(tv) * 1000;
+    return current_ms;
 }
 #endif
 

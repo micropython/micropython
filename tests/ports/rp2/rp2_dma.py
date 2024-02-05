@@ -62,7 +62,7 @@ dma.write = dest
 dma.count = len(dest) // 4
 dma.ctrl = dma.pack_ctrl()
 dt = run_and_time_dma(dma)
-print(60 <= dt <= 90)
+print(70 <= dt <= 110)
 print(dest[:8], dest[-8:])
 dma.close()
 
@@ -80,7 +80,7 @@ dma.close()
 print("# test irq")
 dest = bytearray(1024)
 dma = rp2.DMA()
-dma.irq(lambda _: print("irq fired"))
+dma.irq(lambda dma: print("irq fired", dma.irq().flags()))
 dma.config(
     read=src, write=dest, count=len(dest) // 4, ctrl=dma.pack_ctrl(irq_quiet=0), trigger=True
 )

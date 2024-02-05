@@ -35,7 +35,6 @@
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #define MICROPY_GC_ALLOC_THRESHOLD          (0)
 #define MICROPY_ALLOC_PATH_MAX              (256)
-#define MICROPY_QSTR_BYTES_IN_HASH          (1)
 
 // MicroPython emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
