@@ -46,7 +46,7 @@ Earlier versions use ``uart.send`` and ``uart.recv``.
 Constructors
 ------------
 
-.. class:: pyb.UART(bus, ...)
+.. class:: UART(bus, ...)
 
    Construct a UART object on the given bus.
    For Pyboard ``bus`` can be 1-4, 6, 'XA', 'XB', 'YA', or 'YB'.

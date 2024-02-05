@@ -1,19 +1,17 @@
-File cmdline/cmd_verbose.py, code block '<module>' (descriptor: \.\+, bytecode \.\+ bytes)
-Raw bytecode (code_info_size=\\d\+, bytecode_size=\\d\+):
- 08 \.\+
-########
-\.\+63
+File cmdline/cmd_verbose.py, code block '<module>' (descriptor: \.\+, bytecode @\.\+ 12 bytes)
+Raw bytecode (code_info_size=4, bytecode_size=8):
+ 08 04 01 40 11 02 81 34 01 59 51 63
 arg names:
 (N_STATE 2)
 (N_EXC_STACK 0)
   bc=0 line=1
   bc=0 line=3
 00 LOAD_NAME print
-03 LOAD_CONST_SMALL_INT 1
-04 CALL_FUNCTION n=1 nkw=0
-06 POP_TOP
-07 LOAD_CONST_NONE
-08 RETURN_VALUE
+02 LOAD_CONST_SMALL_INT 1
+03 CALL_FUNCTION n=1 nkw=0
+05 POP_TOP
+06 LOAD_CONST_NONE
+07 RETURN_VALUE
 1
 mem: total=\\d\+, current=\\d\+, peak=\\d\+
 stack: \\d\+ out of \\d\+

@@ -33,6 +33,10 @@ def f3(a, b, c, d):
     print(x1, x3, x5, x7, x2 + x4 + x6 + x8)
 
 
+def f4():
+    return True, b"bytes", ()
+
+
 global_var = 1
 
 
@@ -45,7 +49,11 @@ def test():
         f1(a=i)  # keyword arguments
         f2(i)  # default arg (second one)
         f2(i, i)  # 2 args
+    f1((1, "two", (b"three",)))  # use a constant tuple
     f3(1, 2, 3, 4)  # function with lots of local state
+    for i in 1, "two":  # iterate over constant tuple
+        print(i)
+    print(f4())  # returns a constant tuple
 
 
 # call test() with heap allocation disabled

@@ -1,5 +1,7 @@
 # Example of using PIO for PWM, and fading the brightness of an LED
 
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
+
 from machine import Pin
 from rp2 import PIO, StateMachine, asm_pio
 from time import sleep
@@ -41,5 +43,5 @@ pwm = PIOPWM(0, 25, max_count=(1 << 16) - 1, count_freq=10_000_000)
 
 while True:
     for i in range(256):
-        pwm.set(i ** 2)
+        pwm.set(i**2)
         sleep(0.01)

@@ -56,6 +56,7 @@ def f6(x1: int, x2: int, x3: int, x4: int, x5: int, x6: int):
 
 f6(1, 2, 3, 4, 5, 6)
 
+
 # test compiling *x, **x, * args (currently unsupported at runtime)
 @micropython.viper
 def f(*x, **y):

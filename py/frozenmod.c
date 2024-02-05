@@ -57,7 +57,7 @@ extern const char mp_frozen_str_content[];
 
 #include "py/emitglue.h"
 
-extern const mp_raw_code_t *const mp_frozen_mpy_content[];
+extern const mp_frozen_module_t *const mp_frozen_mpy_content[];
 
 #endif // MICROPY_MODULE_FROZEN_MPY
 

@@ -1,5 +1,6 @@
 # Miscellaneous viper tests
 
+
 # Test correct use of registers in load and store
 @micropython.viper
 def expand(dest: ptr8, source: ptr8, length: int):

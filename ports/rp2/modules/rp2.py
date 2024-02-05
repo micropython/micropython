@@ -32,11 +32,11 @@ class PIOASMEmit:
         autopull=False,
         push_thresh=32,
         pull_thresh=32,
-        fifo_join=0
+        fifo_join=0,
     ):
-        # uarray is a built-in module so importing it here won't require
+        # array is a built-in module so importing it here won't require
         # scanning the filesystem.
-        from uarray import array
+        from array import array
 
         self.labels = {}
         execctrl = 0
@@ -116,7 +116,7 @@ class PIOASMEmit:
             if label is None:
                 label = 0
             else:
-                if not label in self.labels:
+                if label not in self.labels:
                     raise PIOASMError("unknown label {}".format(label))
                 label = self.labels[label]
             self.prog[_PROG_DATA].append(instr | label)

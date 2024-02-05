@@ -50,7 +50,7 @@
 #define OCF_SET_EVENT_MASK      (0x0001)
 #define OCF_RESET               (0x0003)
 
-#define error_printf(...)   mp_printf(&mp_plat_print, "nina_bt_hci.c: " __VA_ARGS__)
+#define error_printf(...)   // mp_printf(&mp_plat_print, "nina_bt_hci.c: " __VA_ARGS__)
 #define debug_printf(...)   // mp_printf(&mp_plat_print, "nina_bt_hci.c: " __VA_ARGS__)
 
 // Provided by the port, and also possibly shared with the stack.
@@ -75,18 +75,19 @@ static int nina_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param
     // Receive HCI event packet, initially reading 3 bytes (HCI Event, Event code, Plen).
     for (mp_uint_t start = mp_hal_ticks_ms(), size = 3, i = 0; i < size;) {
         while (!mp_bluetooth_hci_uart_any()) {
-            MICROPY_EVENT_POLL_HOOK
+            mp_uint_t elapsed = mp_hal_ticks_ms() - start;
             // Timeout.
-            if ((mp_hal_ticks_ms() - start) > HCI_COMMAND_TIMEOUT) {
+            if (elapsed > HCI_COMMAND_TIMEOUT) {
                 error_printf("timeout waiting for HCI packet\n");
                 return -1;
             }
+            mp_event_wait_ms(HCI_COMMAND_TIMEOUT - elapsed);
         }
 
         buf[i] = mp_bluetooth_hci_uart_readchar();
 
         // There seems to be a sync issue with this fw/module.
-        if (i == 0 && buf[0] == 0xFF) {
+        if (i == 0 && (buf[0] == 0xFF || buf[0] == 0xFE)) {
             continue;
         }
 
@@ -121,19 +122,19 @@ static int nina_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param
 
 int mp_bluetooth_hci_controller_init(void) {
     // This is called immediately after the UART is initialised during stack initialisation.
-    mp_hal_pin_output(MICROPY_HW_NINA_GPIO1);
     mp_hal_pin_output(MICROPY_HW_NINA_RESET);
-
-    mp_hal_pin_write(MICROPY_HW_NINA_GPIO1, 0);
     mp_hal_pin_write(MICROPY_HW_NINA_RESET, 0);
-    mp_hal_delay_ms(100);
+
+    mp_hal_pin_output(MICROPY_HW_NINA_GPIO1);
+    mp_hal_pin_write(MICROPY_HW_NINA_GPIO1, 0);
+    mp_hal_delay_ms(150);
 
     mp_hal_pin_write(MICROPY_HW_NINA_RESET, 1);
     mp_hal_delay_ms(750);
 
-    // The UART must be re-initialize here because the GPIO1/RX pin is used initially
+    // The UART must be re-initialized here because the GPIO1/RX pin is used initially
     // to reset the module in Bluetooth mode. This will change back the pin to UART RX.
-    mp_bluetooth_hci_uart_init(0, 0);
+    mp_bluetooth_hci_uart_init(MICROPY_HW_BLE_UART_ID, MICROPY_HW_BLE_UART_BAUDRATE);
 
     // Send reset command
     return nina_hci_cmd(OGF_HOST_CTL, OCF_RESET, 0, NULL);

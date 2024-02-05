@@ -33,6 +33,10 @@
 #include "py/objtype.h"
 #include "py/objstr.h"
 
+bool mp_obj_is_dict_or_ordereddict(mp_obj_t o) {
+    return mp_obj_is_obj(o) && MP_OBJ_TYPE_GET_SLOT_OR_NULL(((mp_obj_base_t *)MP_OBJ_TO_PTR(o))->type, make_new) == mp_obj_dict_make_new;
+}
+
 const mp_obj_dict_t mp_const_empty_dict_obj = {
     .base = { .type = &mp_type_dict },
     .map = {
@@ -71,10 +75,10 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
     bool first = true;
     const char *item_separator = ", ";
     const char *key_separator = ": ";
-    if (!(MICROPY_PY_UJSON && kind == PRINT_JSON)) {
+    if (!(MICROPY_PY_JSON && kind == PRINT_JSON)) {
         kind = PRINT_REPR;
     } else {
-        #if MICROPY_PY_UJSON_SEPARATORS
+        #if MICROPY_PY_JSON_SEPARATORS
         item_separator = MP_PRINT_GET_EXT(print)->item_separator;
         key_separator = MP_PRINT_GET_EXT(print)->key_separator;
         #endif
@@ -90,7 +94,7 @@ STATIC void dict_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_
             mp_print_str(print, item_separator);
         }
         first = false;
-        bool add_quote = MICROPY_PY_UJSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
+        bool add_quote = MICROPY_PY_JSON && kind == PRINT_JSON && !mp_obj_is_str_or_bytes(next->key);
         if (add_quote) {
             mp_print_str(print, "\"");
         }
@@ -186,6 +190,17 @@ STATIC mp_obj_t dict_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_
                 return mp_const_false;
             }
         }
+        #if MICROPY_CPYTHON_COMPAT
+        case MP_BINARY_OP_INPLACE_OR:
+        case MP_BINARY_OP_OR: {
+            if (op == MP_BINARY_OP_OR) {
+                lhs_in = mp_obj_dict_copy(lhs_in);
+            }
+            mp_obj_t dicts[2] = {lhs_in, rhs_in};
+            dict_update(2, dicts, (mp_map_t *)&mp_const_empty_map);
+            return lhs_in;
+        }
+        #endif
         default:
             // op not supported
             return MP_OBJ_NULL;
@@ -461,12 +476,12 @@ STATIC mp_obj_t dict_view_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC const mp_obj_type_t mp_type_dict_view_it = {
-    { &mp_type_type },
-    .name = MP_QSTR_iterator,
-    .getiter = mp_identity_getiter,
-    .iternext = dict_view_it_iternext,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_dict_view_it,
+    MP_QSTR_iterator,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    iter, dict_view_it_iternext
+    );
 
 STATIC mp_obj_t dict_view_getiter(mp_obj_t view_in, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_dict_view_it_t) <= sizeof(mp_obj_iter_buf_t));
@@ -500,6 +515,15 @@ STATIC void dict_view_print(const mp_print_t *print, mp_obj_t self_in, mp_print_
     mp_print_str(print, "])");
 }
 
+STATIC mp_obj_t dict_view_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
+    mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(o_in);
+    // only dict.values() supports __hash__.
+    if (op == MP_UNARY_OP_HASH && o->kind == MP_DICT_VIEW_VALUES) {
+        return MP_OBJ_NEW_SMALL_INT((mp_uint_t)o_in);
+    }
+    return MP_OBJ_NULL;
+}
+
 STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     // only supported for the 'keys' kind until sets and dicts are refactored
     mp_obj_dict_view_t *o = MP_OBJ_TO_PTR(lhs_in);
@@ -512,17 +536,18 @@ STATIC mp_obj_t dict_view_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t
     return dict_binary_op(op, o->dict, rhs_in);
 }
 
-STATIC const mp_obj_type_t mp_type_dict_view = {
-    { &mp_type_type },
-    .name = MP_QSTR_dict_view,
-    .print = dict_view_print,
-    .binary_op = dict_view_binary_op,
-    .getiter = dict_view_getiter,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_dict_view,
+    MP_QSTR_dict_view,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    print, dict_view_print,
+    unary_op, dict_view_unary_op,
+    binary_op, dict_view_binary_op,
+    iter, dict_view_getiter
+    );
 
 STATIC mp_obj_t mp_obj_new_dict_view(mp_obj_t dict, mp_dict_view_kind_t kind) {
-    mp_obj_dict_view_t *o = m_new_obj(mp_obj_dict_view_t);
-    o->base.type = &mp_type_dict_view;
+    mp_obj_dict_view_t *o = mp_obj_malloc(mp_obj_dict_view_t, &mp_type_dict_view);
     o->dict = dict;
     o->kind = kind;
     return MP_OBJ_FROM_PTR(o);
@@ -586,31 +611,33 @@ STATIC const mp_rom_map_elem_t dict_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(dict_locals_dict, dict_locals_dict_table);
 
-const mp_obj_type_t mp_type_dict = {
-    { &mp_type_type },
-    .name = MP_QSTR_dict,
-    .print = dict_print,
-    .make_new = mp_obj_dict_make_new,
-    .unary_op = dict_unary_op,
-    .binary_op = dict_binary_op,
-    .subscr = dict_subscr,
-    .getiter = dict_getiter,
-    .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_dict,
+    MP_QSTR_dict,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_dict_make_new,
+    print, dict_print,
+    unary_op, dict_unary_op,
+    binary_op, dict_binary_op,
+    subscr, dict_subscr,
+    iter, dict_getiter,
+    locals_dict, &dict_locals_dict
+    );
 
 #if MICROPY_PY_COLLECTIONS_ORDEREDDICT
-const mp_obj_type_t mp_type_ordereddict = {
-    { &mp_type_type },
-    .name = MP_QSTR_OrderedDict,
-    .print = dict_print,
-    .make_new = mp_obj_dict_make_new,
-    .unary_op = dict_unary_op,
-    .binary_op = dict_binary_op,
-    .subscr = dict_subscr,
-    .getiter = dict_getiter,
-    .parent = &mp_type_dict,
-    .locals_dict = (mp_obj_dict_t *)&dict_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_ordereddict,
+    MP_QSTR_OrderedDict,
+    MP_TYPE_FLAG_ITER_IS_GETITER,
+    make_new, mp_obj_dict_make_new,
+    print, dict_print,
+    unary_op, dict_unary_op,
+    binary_op, dict_binary_op,
+    subscr, dict_subscr,
+    iter, dict_getiter,
+    parent, &mp_type_dict,
+    locals_dict, &dict_locals_dict
+    );
 #endif
 
 void mp_obj_dict_init(mp_obj_dict_t *dict, size_t n_args) {

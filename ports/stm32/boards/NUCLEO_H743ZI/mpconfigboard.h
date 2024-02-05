@@ -14,18 +14,24 @@
 void NUCLEO_H743ZI_board_early_init(void);
 
 // The board has an 8MHz HSE, the following gives 400MHz CPU speed
-#define MICROPY_HW_CLK_PLLM (4)
-#define MICROPY_HW_CLK_PLLN (400)
-#define MICROPY_HW_CLK_PLLP (2)
-#define MICROPY_HW_CLK_PLLQ (4)
-#define MICROPY_HW_CLK_PLLR (2)
+#define MICROPY_HW_CLK_PLLM         (4)
+#define MICROPY_HW_CLK_PLLN         (400)
+#define MICROPY_HW_CLK_PLLP         (2)
+#define MICROPY_HW_CLK_PLLQ         (4)
+#define MICROPY_HW_CLK_PLLR         (2)
+#define MICROPY_HW_CLK_PLLVCI       (RCC_PLL1VCIRANGE_1)
+#define MICROPY_HW_CLK_PLLVCO       (RCC_PLL1VCOWIDE)
+#define MICROPY_HW_CLK_PLLFRAC      (0)
 
 // The USB clock is set using PLL3
-#define MICROPY_HW_CLK_PLL3M (4)
-#define MICROPY_HW_CLK_PLL3N (120)
-#define MICROPY_HW_CLK_PLL3P (2)
-#define MICROPY_HW_CLK_PLL3Q (5)
-#define MICROPY_HW_CLK_PLL3R (2)
+#define MICROPY_HW_CLK_PLL3M        (4)
+#define MICROPY_HW_CLK_PLL3N        (120)
+#define MICROPY_HW_CLK_PLL3P        (2)
+#define MICROPY_HW_CLK_PLL3Q        (5)
+#define MICROPY_HW_CLK_PLL3R        (2)
+#define MICROPY_HW_CLK_PLL3VCI      (RCC_PLL3VCIRANGE_1)
+#define MICROPY_HW_CLK_PLL3VCO      (RCC_PLL3VCOWIDE)
+#define MICROPY_HW_CLK_PLL3FRAC     (0)
 
 // 4 wait states
 #define MICROPY_HW_FLASH_LATENCY    FLASH_LATENCY_4

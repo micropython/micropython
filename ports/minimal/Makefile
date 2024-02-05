@@ -23,19 +23,20 @@ ifeq ($(CROSS), 1)
 DFU = $(TOP)/tools/dfu.py
 PYDFU = $(TOP)/tools/pydfu.py
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion
-CFLAGS = $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
-LDFLAGS = -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
+CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
+LDFLAGS += -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
 else
-LD = gcc
-CFLAGS = $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
-LDFLAGS = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+LD = $(CC)
+CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 
 CSUPEROPT = -Os # save some code space
 
 # Tune for Debugging or Optimization
+CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
-CFLAGS += -O0 -ggdb
+CFLAGS += -O0
 else
 CFLAGS += -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
@@ -43,11 +44,6 @@ endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -std=c99,$(CFLAGS))
-CXXFLAGS += $(CXXFLAGS_MOD)
-
-# Flags for user C modules
-CFLAGS += $(CFLAGS_MOD)
-LDFLAGS += $(LDFLAGS_MOD)
 
 LIBS =
 
@@ -64,13 +60,10 @@ ifeq ($(CROSS), 1)
 SRC_C += shared/libc/string0.c
 endif
 
-SRC_C += $(SRC_MOD)
+SRC_QSTR += shared/readline/readline.c shared/runtime/pyexec.c
 
-SRC_CXX += $(SRC_MOD_CXX)
-
-SRC_QSTR += $(SRC_MOD) $(SRC_MOD_CXX)
-
-OBJ += $(PY_CORE_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
+OBJ += $(PY_CORE_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
 
 ifeq ($(CROSS), 1)
@@ -79,7 +72,7 @@ else
 all: $(BUILD)/firmware.elf
 endif
 
-$(BUILD)/_frozen_mpy.c: frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
+$(BUILD)/_frozen_mpy.c: $(TOP)/tests/frozen/frozentest.mpy $(BUILD)/genhdr/qstrdefs.generated.h
 	$(ECHO) "MISC freezing bytecode"
 	$(Q)$(TOP)/tools/mpy-tool.py -f -q $(BUILD)/genhdr/qstrdefs.preprocessed.h -mlongint-impl=none $< > $@
 
@@ -101,12 +94,11 @@ deploy: $(BUILD)/firmware.dfu
 
 # Run emulation build on a POSIX system with suitable terminal settings
 run:
-	stty raw opost -echo
-	build/firmware.elf
-	@echo Resetting terminal...
-# This sleep is useful to spot segfaults
-	sleep 1
-	reset
+	@saved_=`stty -g`; \
+	  stty raw opost -echo; \
+	  $(BUILD)/firmware.elf; \
+	  echo "Exit status: $$?"; \
+	  stty $$saved_
 
 test: $(BUILD)/firmware.elf
 	$(Q)/bin/echo -e "print('hello world!', list(x+1 for x in range(10)), end='eol\\\\n')\\r\\n\\x04" | $(BUILD)/firmware.elf | tail -n2 | grep "^hello world! \\[1, 2, 3, 4, 5, 6, 7, 8, 9, 10\\]eol"

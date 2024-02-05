@@ -29,8 +29,8 @@
 // I2C buses
 #define MICROPY_HW_I2C1_SCL (pin_B6)
 #define MICROPY_HW_I2C1_SDA (pin_B9)
-//#define MICROPY_HW_I2C2_SCL (pin_B10)
-//#define MICROPY_HW_I2C2_SDA (pin_B11)
+// #define MICROPY_HW_I2C2_SCL (pin_B10)
+// #define MICROPY_HW_I2C2_SDA (pin_B11)
 #define MICROPY_HW_I2C3_SCL (pin_A8)
 #define MICROPY_HW_I2C3_SDA (pin_A9)
 

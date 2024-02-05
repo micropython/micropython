@@ -1,20 +1,19 @@
 # test making a FAT filesystem on a very large block device
 
 try:
-    import uos
+    import os
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 try:
-    uos.VfsFat
+    os.VfsFat
 except AttributeError:
     print("SKIP")
     raise SystemExit
 
 
 class RAMBDevSparse:
-
     SEC_SIZE = 512
 
     def __init__(self, blocks):
@@ -47,13 +46,13 @@ class RAMBDevSparse:
 
 try:
     bdev = RAMBDevSparse(4 * 1024 * 1024 * 1024 // RAMBDevSparse.SEC_SIZE)
-    uos.VfsFat.mkfs(bdev)
+    os.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
-vfs = uos.VfsFat(bdev)
-uos.mount(vfs, "/ramdisk")
+vfs = os.VfsFat(bdev)
+os.mount(vfs, "/ramdisk")
 
 print("statvfs:", vfs.statvfs("/ramdisk"))
 
@@ -67,4 +66,4 @@ f = open("/ramdisk/test.txt")
 print(f.read())
 f.close()
 
-uos.umount(vfs)
+os.umount(vfs)

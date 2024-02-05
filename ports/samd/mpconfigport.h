@@ -28,99 +28,120 @@
 
 // Board specific definitions
 #include "mpconfigboard.h"
+// MCU-Specific definitions
+#include "mpconfigmcu.h"
 
 // Memory allocation policies
 #define MICROPY_GC_STACK_ENTRY_TYPE         uint16_t
 #define MICROPY_GC_ALLOC_THRESHOLD          (0)
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT      (32)
 #define MICROPY_ALLOC_PATH_MAX              (256)
-#define MICROPY_QSTR_BYTES_IN_HASH          (1)
 
-// Compiler configuration
-#define MICROPY_COMP_CONST                  (0)
+// MicroPython emitters
+#define MICROPY_PERSISTENT_CODE_LOAD        (1)
 
 // Python internal features
 #define MICROPY_ENABLE_GC                   (1)
-#define MICROPY_KBD_EXCEPTION               (1)
-#define MICROPY_HELPER_REPL                 (1)
 #define MICROPY_LONGINT_IMPL                (MICROPY_LONGINT_IMPL_MPZ)
-#define MICROPY_ENABLE_SOURCE_LINE          (1)
+#define MICROPY_FLOAT_IMPL                  (MICROPY_FLOAT_IMPL_FLOAT)
+#ifndef MICROPY_PY_BUILTINS_COMPLEX
+#define MICROPY_PY_BUILTINS_COMPLEX         (0)
+#endif
 #define MICROPY_ERROR_REPORTING             (MICROPY_ERROR_REPORTING_TERSE)
-#define MICROPY_CPYTHON_COMPAT              (0)
-#define MICROPY_CAN_OVERRIDE_BUILTINS       (1)
-#define MICROPY_PY_BUILTINS_HELP            (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT       samd_help_text
-#define MICROPY_PY_BUILTINS_HELP_MODULES    (1)
+#define MICROPY_USE_INTERNAL_ERRNO          (1)
+#define MICROPY_SCHEDULER_STATIC_NODES      (1)
 
-// fixes sys/usys import issue
-#define MICROPY_MODULE_WEAK_LINKS           (1)
-// Control over Python builtins
-#define MICROPY_PY_ASYNC_AWAIT              (0)
-#define MICROPY_PY_BUILTINS_STR_COUNT       (0)
-#define MICROPY_PY_BUILTINS_MEMORYVIEW      (1)
-#define MICROPY_PY_BUILTINS_SET             (0)
-#define MICROPY_PY_BUILTINS_FROZENSET       (0)
-#define MICROPY_PY_BUILTINS_PROPERTY        (0)
-#define MICROPY_PY_BUILTINS_ENUMERATE       (0)
-#define MICROPY_PY_BUILTINS_FILTER          (0)
-#define MICROPY_PY_BUILTINS_REVERSED        (0)
-#define MICROPY_PY_BUILTINS_NOTIMPLEMENTED  (1)
-#define MICROPY_PY_BUILTINS_MIN_MAX         (0)
-#define MICROPY_PY___FILE__                 (0)
-#define MICROPY_PY_MICROPYTHON_MEM_INFO     (1)
-#define MICROPY_PY_ARRAY_SLICE_ASSIGN       (1)
-#define MICROPY_PY_ATTRTUPLE                (0)
-#define MICROPY_PY_COLLECTIONS              (0)
-#define MICROPY_PY_SYS                      (1)
+#define MICROPY_HW_ENABLE_USBDEV            (1)
+#define MICROPY_HW_USB_CDC_1200BPS_TOUCH    (1)
+
+#if MICROPY_HW_ENABLE_USBDEV
+// Enable USB-CDC serial port
+#ifndef MICROPY_HW_USB_CDC
+#define MICROPY_HW_USB_CDC (1)
+#endif
+// SAMD unique ID is 16 bytes (hex string == 32)
+#ifndef MICROPY_HW_USB_DESC_STR_MAX
+#define MICROPY_HW_USB_DESC_STR_MAX (32)
+#endif
+#endif
+
 #define MICROPY_PY_SYS_PLATFORM             "samd"
-#define MICROPY_PY_SYS_EXIT                 (1)
-#define MICROPY_PY_SYS_STDFILES             (1)
-#define MICROPY_PY_SYS_MAXSIZE              (1)
-#define MICROPY_PY_IO_FILEIO                (1)
-#define MICROPY_PY_IO                       (1)
-#define MICROPY_PY_IO_IOBASE                (1)
 
 // Extended modules
-#define MICROPY_PY_UTIME_MP_HAL             (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS        (1)
+#define MICROPY_PY_TIME_INCLUDEFILE         "ports/samd/modtime.c"
 #define MICROPY_PY_MACHINE                  (1)
-#define MICROPY_PY_UOS                      (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/samd/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
+#define MICROPY_PY_OS_INCLUDEFILE           "ports/samd/modos.c"
 #define MICROPY_READER_VFS                  (1)
 #define MICROPY_VFS                         (1)
-#define MICROPY_PY_UJSON                    (1)
-#define MICROPY_PY_URE                      (1)
-#define MICROPY_PY_UBINASCII                (1)
-#define MICROPY_PY_UCTYPES                  (1)
-#define MICROPY_PY_UHEAPQ                   (1)
-#define MICROPY_PY_URANDOM                  (1)
-#define MICROPY_PY_UZLIB                    (1)
-#define MICROPY_PY_UASYNCIO                 (1)
-
-// Use VfsLfs's types for fileio/textio
-#define mp_type_fileio mp_type_vfs_lfs1_fileio
-#define mp_type_textio mp_type_vfs_lfs1_textio
-
-// Use VFS's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// Hooks to add builtins
-
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-extern const struct _mp_obj_module_t mp_module_machine;
-extern const struct _mp_obj_module_t mp_module_samd;
-extern const struct _mp_obj_module_t mp_module_utime;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_machine), MP_ROM_PTR(&mp_module_machine) }, \
-    { MP_ROM_QSTR(MP_QSTR_samd), MP_ROM_PTR(&mp_module_samd) }, \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_utime) }, \
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
+#ifndef MICROPY_PY_MACHINE_ADC
+#define MICROPY_PY_MACHINE_ADC              (1)
+#endif
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/samd/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_DEINIT       (1)
+#ifndef MICROPY_PY_MACHINE_DAC
+#define MICROPY_PY_MACHINE_DAC              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_I2C
+#define MICROPY_PY_MACHINE_I2C              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SPI
+#define MICROPY_PY_MACHINE_SPI              (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SOFTI2C
+#define MICROPY_PY_MACHINE_SOFTI2C          (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_SOFTSPI
+#define MICROPY_PY_MACHINE_SOFTSPI          (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_UART
+#define MICROPY_PY_MACHINE_UART             (1)
+#endif
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/samd/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
+#define MICROPY_PY_MACHINE_TIMER            (1)
+#define MICROPY_SOFT_TIMER_TICKS_MS         systick_ms
+#define MICROPY_PY_OS_DUPTERM               (3)
+#define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#ifndef MICROPY_PY_MACHINE_PULSE
+#define MICROPY_PY_MACHINE_PULSE            (1)
+#endif
+#ifndef MICROPY_PY_MACHINE_PWM
+#define MICROPY_PY_MACHINE_PWM              (1)
+#define MICROPY_PY_MACHINE_PWM_INCLUDEFILE  "ports/samd/machine_pwm.c"
+#endif
+#define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
+#define MICROPY_PY_MACHINE_WDT              (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/samd/machine_wdt.c"
+#define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS   (1)
+#define MICROPY_PLATFORM_VERSION            "ASF4"
 
 #define MP_STATE_PORT MP_STATE_VM
+
+// Miscellaneous settings
+
+#ifndef MICROPY_HW_USB_VID
+#define MICROPY_HW_USB_VID (0xf055)
+#endif
+#ifndef MICROPY_HW_USB_PID
+#define MICROPY_HW_USB_PID (0x9802)
+#endif
+
+// Additional entries for use with pendsv_schedule_dispatch.
+#ifndef MICROPY_BOARD_PENDSV_ENTRIES
+#define MICROPY_BOARD_PENDSV_ENTRIES
+#endif
+
+// Use internal flash for the file system if no flash file system is selected.
+#if !defined(MICROPY_HW_MCUFLASH) && !defined(MICROPY_HW_QSPIFLASH) && !(defined(MICROPY_HW_SPIFLASH) && defined(MICROPY_HW_SPIFLASH_ID))
+#define MICROPY_HW_MCUFLASH                 (1)
+#endif  // !defined(MICROPY_HW_MCUFLASH) ....
 
 // Miscellaneous settings
 
@@ -128,7 +149,7 @@ extern const struct _mp_obj_module_t mp_module_utime;
     do { \
         extern void mp_handle_pending(bool); \
         mp_handle_pending(true); \
-        __WFI(); \
+        __WFE(); \
     } while (0);
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
@@ -137,6 +158,9 @@ extern const struct _mp_obj_module_t mp_module_utime;
 typedef int mp_int_t; // must be pointer size
 typedef unsigned mp_uint_t; // must be pointer size
 typedef long mp_off_t;
+
+// Need an implementation of the log2 function which is not a macro.
+#define MP_NEED_LOG2 (1)
 
 // Need to provide a declaration/definition of alloca()
 #include <alloca.h>

@@ -11,14 +11,6 @@
 #define MICROPY_HW_UART1_CTS (10)
 #define MICROPY_HW_UART1_RTS (11)
 
-// Qwiic on I2C0
-#define MICROPY_HW_I2C0_SCL  (4)
-#define MICROPY_HW_I2C0_SDA  (5)
-
-#define MICROPY_HW_SPI0_SCK  (18)
-#define MICROPY_HW_SPI0_MOSI (19)
-#define MICROPY_HW_SPI0_MISO (16)
-
 // User LED GPIO25
 
 // VBUS_SENSE GPIO24

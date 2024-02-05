@@ -38,8 +38,7 @@ STATIC void ubluepy_delegate_print(const mp_print_t *print, mp_obj_t o, mp_print
 }
 
 STATIC mp_obj_t ubluepy_delegate_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    ubluepy_delegate_obj_t *s = m_new_obj(ubluepy_delegate_obj_t);
-    s->base.type = type;
+    ubluepy_delegate_obj_t *s = mp_obj_malloc(ubluepy_delegate_obj_t, type);
 
     return MP_OBJ_FROM_PTR(s);
 }
@@ -78,12 +77,13 @@ STATIC const mp_rom_map_elem_t ubluepy_delegate_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_delegate_locals_dict, ubluepy_delegate_locals_dict_table);
 
-const mp_obj_type_t ubluepy_delegate_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_DefaultDelegate,
-    .print = ubluepy_delegate_print,
-    .make_new = ubluepy_delegate_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_delegate_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_delegate_type,
+    MP_QSTR_DefaultDelegate,
+    MP_TYPE_FLAG_NONE,
+    make_new, ubluepy_delegate_make_new,
+    print, ubluepy_delegate_print,
+    locals_dict, &ubluepy_delegate_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL

@@ -32,6 +32,9 @@
 // Used only for memoryview types, set in "typecode" to indicate a writable memoryview
 #define MP_OBJ_ARRAY_TYPECODE_FLAG_RW (0x80)
 
+// Bit size used for mp_obj_array_t.free member.
+#define MP_OBJ_ARRAY_FREE_SIZE_BITS (8 * sizeof(size_t) - 8)
+
 // This structure is used for all of bytearray, array.array, memoryview
 // objects.  Note that memoryview has different meaning for some fields,
 // see comment at the beginning of objarray.c.
@@ -44,7 +47,7 @@ typedef struct _mp_obj_array_t {
     // parent object. (Union is not used to not go into a complication of
     // union-of-bitfields with different toolchains). See comments in
     // objarray.c.
-    size_t free : (8 * sizeof(size_t) - 8);
+    size_t free : MP_OBJ_ARRAY_FREE_SIZE_BITS;
     size_t len; // in elements
     void *items;
 } mp_obj_array_t;
@@ -57,6 +60,11 @@ static inline void mp_obj_memoryview_init(mp_obj_array_t *self, size_t typecode,
     self->len = len;
     self->items = items;
 }
+#endif
+
+#if MICROPY_PY_ARRAY || MICROPY_PY_BUILTINS_BYTEARRAY
+MP_DECLARE_CONST_FUN_OBJ_2(mp_obj_array_append_obj);
+MP_DECLARE_CONST_FUN_OBJ_2(mp_obj_array_extend_obj);
 #endif
 
 #endif // MICROPY_INCLUDED_PY_OBJARRAY_H

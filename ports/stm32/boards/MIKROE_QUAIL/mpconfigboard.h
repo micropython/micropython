@@ -81,13 +81,9 @@
 extern const struct _mp_spiflash_config_t spiflash_config;
 extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE (1)
-#define MICROPY_HW_BDEV_IOCTL(op, arg) ( \
-    (op) == BDEV_IOCTL_NUM_BLOCKS ? (MICROPY_HW_SPIFLASH_SIZE_BITS / 8 / FLASH_BLOCK_SIZE) : \
-    (op) == BDEV_IOCTL_INIT ? spi_bdev_ioctl(&spi_bdev, (op), (uint32_t)&spiflash_config) : \
-    spi_bdev_ioctl(&spi_bdev, (op), (arg)) \
-)
-#define MICROPY_HW_BDEV_READBLOCKS(dest, bl, n) spi_bdev_readblocks(&spi_bdev, (dest), (bl), (n))
-#define MICROPY_HW_BDEV_WRITEBLOCKS(src, bl, n) spi_bdev_writeblocks(&spi_bdev, (src), (bl), (n))
+#define MICROPY_HW_BDEV_SPIFLASH    (&spi_bdev)
+#define MICROPY_HW_BDEV_SPIFLASH_CONFIG (&spiflash_config)
+#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
 
 #endif // !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
@@ -104,6 +100,6 @@ extern struct _spi_bdev_t spi_bdev;
 #define MBOOT_SPIFLASH_BYTE_SIZE    (8 * 1024 * 1024)
 #define MBOOT_SPIFLASH_LAYOUT       "/0x80000000/512*8Kg"
 #define MBOOT_SPIFLASH_ERASE_BLOCKS_PER_PAGE \
-                                    (8 / 4) // 8k page, 4k erase block
+    (8 / 4)                                 // 8k page, 4k erase block
 #define MBOOT_SPIFLASH_CONFIG       (&spiflash_config)
 #define MBOOT_SPIFLASH_SPIFLASH     (&spi_bdev.spiflash)

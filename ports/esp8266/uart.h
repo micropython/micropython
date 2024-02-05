@@ -101,6 +101,7 @@ bool uart_rx_wait(uint32_t timeout_us);
 int uart_rx_char(void);
 void uart_tx_one_char(uint8 uart, uint8 TxChar);
 void uart_flush(uint8 uart);
+int uart_txdone(uint8 uart);
 void uart_os_config(int uart);
 void uart_setup(uint8 uart);
 int uart0_get_rxbuf_len(void);

@@ -13,6 +13,7 @@ above.  The sections below describe the current status of these features.
     ../differences/python_37.rst
     ../differences/python_38.rst
     ../differences/python_39.rst
+    ../differences/python_310.rst
 
 For the features of Python that are implemented by MicroPython, there are
 sometimes differences in their behaviour compared to standard Python.  The

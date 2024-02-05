@@ -356,15 +356,30 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     vstr_add_byte(&lex->vstr, '{');
                     next_char(lex);
                 } else {
+                    // wrap each argument in (), e.g.
+                    // f"{a,b,}, {c}" --> "{}".format((a,b), (c),)
+                    vstr_add_byte(&lex->fstring_args, '(');
                     // remember the start of this argument (if we need it for f'{a=}').
                     size_t i = lex->fstring_args.len;
-                    // extract characters inside the { until we reach the
-                    // format specifier or closing }.
-                    // (MicroPython limitation) note: this is completely unaware of
-                    // Python syntax and will not handle any expression containing '}' or ':'.
-                    // e.g. f'{"}"}' or f'{foo({})}'.
+                    // Extract characters inside the { until the bracket level
+                    // is zero and we reach the conversion specifier '!',
+                    // format specifier ':', or closing '}'. The conversion
+                    // and format specifiers are left unchanged in the format
+                    // string to be handled by str.format.
+                    // (MicroPython limitation) note: this is completely
+                    // unaware of Python syntax and will not handle any
+                    // expression containing '}' or ':'. e.g. f'{"}"}' or f'
+                    // {foo({})}'. However, detection of the '!' will
+                    // specifically ensure that it's followed by [rs] and
+                    // then either the format specifier or the closing
+                    // brace. This allows the use of e.g. != in expressions.
                     unsigned int nested_bracket_level = 0;
-                    while (!is_end(lex) && (nested_bracket_level != 0 || !is_char_or(lex, ':', '}'))) {
+                    while (!is_end(lex) && (nested_bracket_level != 0
+                                            || !(is_char_or(lex, ':', '}')
+                                                 || (is_char(lex, '!')
+                                                     && is_char_following_or(lex, 'r', 's')
+                                                     && is_char_following_following_or(lex, ':', '}'))))
+                           ) {
                         unichar c = CUR_CHAR(lex);
                         if (c == '[' || c == '{') {
                             nested_bracket_level += 1;
@@ -382,7 +397,9 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                         // remove the trailing '='
                         lex->fstring_args.len--;
                     }
-                    // comma-separate args
+                    // close the paren-wrapped arg to .format().
+                    vstr_add_byte(&lex->fstring_args, ')');
+                    // comma-separate args to .format().
                     vstr_add_byte(&lex->fstring_args, ',');
                 }
                 vstr_add_byte(&lex->vstr, '{');
@@ -473,25 +490,23 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
                     }
                 }
                 if (c != MP_LEXER_EOF) {
-                    if (MICROPY_PY_BUILTINS_STR_UNICODE_DYNAMIC) {
-                        if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
-                            vstr_add_char(&lex->vstr, c);
-                        } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
-                            vstr_add_byte(&lex->vstr, c);
-                        } else {
-                            // unicode character out of range
-                            // this raises a generic SyntaxError; could provide more info
-                            lex->tok_kind = MP_TOKEN_INVALID;
-                        }
-                    } else {
-                        // without unicode everything is just added as an 8-bit byte
-                        if (c < 0x100) {
-                            vstr_add_byte(&lex->vstr, c);
-                        } else {
-                            // 8-bit character out of range
-                            // this raises a generic SyntaxError; could provide more info
-                            lex->tok_kind = MP_TOKEN_INVALID;
-                        }
+                    #if MICROPY_PY_BUILTINS_STR_UNICODE
+                    if (c < 0x110000 && lex->tok_kind == MP_TOKEN_STRING) {
+                        // Valid unicode character in a str object.
+                        vstr_add_char(&lex->vstr, c);
+                    } else if (c < 0x100 && lex->tok_kind == MP_TOKEN_BYTES) {
+                        // Valid byte in a bytes object.
+                        vstr_add_byte(&lex->vstr, c);
+                    }
+                    #else
+                    if (c < 0x100) {
+                        // Without unicode everything is just added as an 8-bit byte.
+                        vstr_add_byte(&lex->vstr, c);
+                    }
+                    #endif
+                    else {
+                        // Character out of range; this raises a generic SyntaxError.
+                        lex->tok_kind = MP_TOKEN_INVALID;
                     }
                 }
             } else {
@@ -512,14 +527,14 @@ STATIC void parse_string_literal(mp_lexer_t *lex, bool is_raw, bool is_fstring) 
     vstr_cut_tail_bytes(&lex->vstr, n_closing);
 }
 
+// This function returns whether it has crossed a newline or not.
+// It therefore always return true if stop_at_newline is true
 STATIC bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
-    bool had_physical_newline = false;
     while (!is_end(lex)) {
         if (is_physical_newline(lex)) {
             if (stop_at_newline && lex->nested_bracket_level == 0) {
-                break;
+                return true;
             }
-            had_physical_newline = true;
             next_char(lex);
         } else if (is_whitespace(lex)) {
             next_char(lex);
@@ -528,16 +543,16 @@ STATIC bool skip_whitespace(mp_lexer_t *lex, bool stop_at_newline) {
             while (!is_end(lex) && !is_physical_newline(lex)) {
                 next_char(lex);
             }
-            // had_physical_newline will be set on next loop
+            // will return true on next loop
         } else if (is_char_and(lex, '\\', '\n')) {
-            // line-continuation, so don't set had_physical_newline
+            // line-continuation, so don't return true
             next_char(lex);
             next_char(lex);
         } else {
             break;
         }
     }
-    return had_physical_newline;
+    return false;
 }
 
 void mp_lexer_to_next(mp_lexer_t *lex) {
@@ -562,7 +577,10 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
     vstr_reset(&lex->vstr);
 
     // skip white space and comments
-    bool had_physical_newline = skip_whitespace(lex, false);
+    // set the newline tokens at the line and column of the preceding line:
+    // only advance on the pointer until a new line is crossed, save the
+    // line and column, and then readvance it
+    bool had_physical_newline = skip_whitespace(lex, true);
 
     // set token source information
     lex->tok_line = lex->line;
@@ -576,7 +594,12 @@ void mp_lexer_to_next(mp_lexer_t *lex) {
         lex->tok_kind = MP_TOKEN_INDENT;
         lex->emit_dent -= 1;
 
-    } else if (had_physical_newline && lex->nested_bracket_level == 0) {
+    } else if (had_physical_newline) {
+        // The cursor is at the end of the previous line, pointing to a
+        // physical newline. Skip any remaining whitespace, comments, and
+        // newlines.
+        skip_whitespace(lex, false);
+
         lex->tok_kind = MP_TOKEN_NEWLINE;
 
         size_t num_spaces = lex->column - 1;
@@ -831,6 +854,7 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     vstr_init(&lex->vstr, 32);
     #if MICROPY_PY_FSTRINGS
     vstr_init(&lex->fstring_args, 0);
+    lex->fstring_args_idx = 0;
     #endif
 
     // store sentinel for first indentation level
@@ -846,9 +870,10 @@ mp_lexer_t *mp_lexer_new(qstr src_name, mp_reader_t reader) {
     // preload first token
     mp_lexer_to_next(lex);
 
-    // Check that the first token is in the first column.  If it's not then we
-    // convert the token kind to INDENT so that the parser gives a syntax error.
-    if (lex->tok_column != 1) {
+    // Check that the first token is in the first column unless it is a
+    // newline. Otherwise we convert the token kind to INDENT so that
+    // the parser gives a syntax error.
+    if (lex->tok_column != 1 && lex->tok_kind != MP_TOKEN_NEWLINE) {
         lex->tok_kind = MP_TOKEN_INDENT;
     }
 
@@ -863,10 +888,10 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len
 
 #if MICROPY_READER_POSIX || MICROPY_READER_VFS
 
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_reader_t reader;
     mp_reader_new_file(&reader, filename);
-    return mp_lexer_new(qstr_from_str(filename), reader);
+    return mp_lexer_new(filename, reader);
 }
 
 #if MICROPY_HELPER_LEXER_UNIX

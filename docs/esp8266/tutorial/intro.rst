@@ -18,12 +18,12 @@ The first thing you need is a board with an ESP8266 chip.  The MicroPython
 software supports the ESP8266 chip itself and any board should work.  The main
 characteristic of a board is how much flash it has, how the GPIO pins are
 connected to the outside world, and whether it includes a built-in USB-serial
-convertor to make the UART available to your PC.
+converter to make the UART available to your PC.
 
 The minimum requirement for flash size is 1Mbyte. There is also a special
 build for boards with 512KB, but it is highly limited comparing to the
 normal build: there is no support for filesystem, and thus features which
-depend on it won't work (WebREPL, upip, etc.). As such, 512KB build will
+depend on it won't work (WebREPL, mip, etc.). As such, 512KB build will
 be more interesting for users who build from source and fine-tune parameters
 for their particular application.
 
@@ -70,7 +70,7 @@ need to put your device in boot-loader mode, and second you need to copy across
 the firmware.  The exact procedure for these steps is highly dependent on the
 particular board and you will need to refer to its documentation for details.
 
-If you have a board that has a USB connector, a USB-serial convertor, and has
+If you have a board that has a USB connector, a USB-serial converter, and has
 the DTR and RTS pins wired in a special way then deploying the firmware should
 be easy as all steps can be done automatically.  Boards that have such features
 include the Adafruit Feather HUZZAH and NodeMCU boards.
@@ -128,7 +128,7 @@ Serial prompt
 
 Once you have the firmware on the device you can access the REPL (Python prompt)
 over UART0 (GPIO1=TX, GPIO3=RX), which might be connected to a USB-serial
-convertor, depending on your board.  The baudrate is 115200.  The next part of
+converter, depending on your board.  The baudrate is 115200.  The next part of
 the tutorial will discuss the prompt in more detail.
 
 WiFi
@@ -137,7 +137,7 @@ WiFi
 After a fresh install and boot the device configures itself as a WiFi access
 point (AP) that you can connect to.  The ESSID is of the form MicroPython-xxxxxx
 where the x's are replaced with part of the MAC address of your device (so will
-be the same everytime, and most likely different for all ESP8266 chips).  The
+be the same every time, and most likely different for all ESP8266 chips).  The
 password for the WiFi is micropythoN (note the upper-case N).  Its IP address
 will be 192.168.4.1 once you connect to its network.  WiFi configuration will
 be discussed in more detail later in the tutorial.
@@ -169,7 +169,7 @@ after it, here are troubleshooting recommendations:
 
 * The flashing instructions above use flashing speed of 460800 baud, which is
   good compromise between speed and stability. However, depending on your
-  module/board, USB-UART convertor, cables, host OS, etc., the above baud
+  module/board, USB-UART converter, cables, host OS, etc., the above baud
   rate may be too high and lead to errors. Try a more common 115200 baud
   rate instead in such cases.
 

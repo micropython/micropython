@@ -52,8 +52,7 @@ STATIC mp_obj_t ubluepy_service_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ubluepy_service_obj_t *s = m_new_obj(ubluepy_service_obj_t);
-    s->base.type = type;
+    ubluepy_service_obj_t *s = mp_obj_malloc(ubluepy_service_obj_t, type);
 
     mp_obj_t uuid_obj = args[ARG_NEW_UUID].u_obj;
 
@@ -172,12 +171,13 @@ STATIC const mp_rom_map_elem_t ubluepy_service_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(ubluepy_service_locals_dict, ubluepy_service_locals_dict_table);
 
-const mp_obj_type_t ubluepy_service_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Service,
-    .print = ubluepy_service_print,
-    .make_new = ubluepy_service_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_service_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_service_type,
+    MP_QSTR_Service,
+    MP_TYPE_FLAG_NONE,
+    make_new, ubluepy_service_make_new,
+    print, ubluepy_service_print,
+    locals_dict, &ubluepy_service_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY_PERIPHERAL || MICROPY_PY_UBLUEPY_CENTRAL

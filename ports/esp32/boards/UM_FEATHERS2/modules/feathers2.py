@@ -39,6 +39,7 @@ AMB_LIGHT = const(4)
 
 # Helper functions
 
+
 # LED & Ambient Light Sensor control
 def set_led(state):
     l = Pin(LED, Pin.OUT)

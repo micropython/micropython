@@ -100,10 +100,10 @@ For the stm32 port, the ARM cross-compiler is required:
 
 .. code-block:: bash
 
-   $ sudo apt-get install arm-none-eabi-gcc arm-none-eabi-binutils arm-none-eabi-newlib
+   $ sudo apt-get install gcc-arm-none-eabi libnewlib-arm-none-eabi
 
 See the `ARM GCC
-toolchain <https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm>`_
+toolchain <https://developer.arm.com/downloads/-/arm-gnu-toolchain-downloads>`_
 for the latest details.
 
 Python is also required. Python 2 is supported for now, but we recommend using Python 3.
@@ -228,7 +228,7 @@ You can also specify which board to use:
 .. code-block:: bash
 
    $ cd ports/stm32
-   $ make submodules
+   $ make BOARD=<board> submodules
    $ make BOARD=<board>
 
 See `ports/stm32/boards <https://github.com/micropython/micropython/tree/master/ports/stm32/boards>`_
@@ -245,7 +245,7 @@ that you use a virtual environment:
 
    $ python3 -m venv env
    $ source env/bin/activate
-   $ pip install sphinx
+   $ pip install -r docs/requirements.txt
 
 Navigate to the ``docs`` directory:
 
@@ -322,7 +322,8 @@ tests
 
 tools
 
-  Contains helper tools including the ``upip`` and the ``pyboard.py`` module.
+  Contains scripts used by the build and CI process, as well as user tools such
+  as ``pyboard.py`` and ``mpremote``.
 
 examples
 

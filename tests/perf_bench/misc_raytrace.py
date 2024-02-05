@@ -22,7 +22,7 @@ class Vec:
         return Vec(self.x * rhs, self.y * rhs, self.z * rhs)
 
     def length(self):
-        return (self.x ** 2 + self.y ** 2 + self.z ** 2) ** 0.5
+        return (self.x**2 + self.y**2 + self.z**2) ** 0.5
 
     def normalise(self):
         l = self.length()
@@ -87,12 +87,12 @@ class Sphere:
     def __init__(self, surface, centre, radius):
         self.surface = surface
         self.centre = centre
-        self.radsq = radius ** 2
+        self.radsq = radius**2
 
     def intersect(self, ray):
         v = self.centre - ray.p
         b = v.dot(ray.d)
-        det = b ** 2 - v.dot(v) + self.radsq
+        det = b**2 - v.dot(v) + self.radsq
         if det > 0:
             det **= 0.5
             t1 = b - det
@@ -180,7 +180,7 @@ def trace_ray(scene, ray, depth):
         if ndotl > 0:
             col += light_col * surf.diffuse * ndotl
         if ldotv > 0:
-            col += light_col * surf.specular * ldotv ** surf.spec_idx
+            col += light_col * surf.specular * ldotv**surf.spec_idx
 
     # Reflections
     if depth > 0 and surf.reflect > 0:

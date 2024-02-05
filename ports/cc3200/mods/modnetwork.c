@@ -159,6 +159,8 @@ const mp_obj_module_t mp_module_network = {
     .globals = (mp_obj_dict_t*)&mp_module_network_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);
+
 #if (MICROPY_PORT_HAS_TELNET || MICROPY_PORT_HAS_FTP)
 STATIC const mp_rom_map_elem_t network_server_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&network_server_init_obj) },
@@ -169,10 +171,11 @@ STATIC const mp_rom_map_elem_t network_server_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(network_server_locals_dict, network_server_locals_dict_table);
 
-STATIC const mp_obj_type_t network_server_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Server,
-    .make_new = network_server_make_new,
-    .locals_dict = (mp_obj_t)&network_server_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    network_server_type,
+    MP_QSTR_Server,
+    MP_TYPE_FLAG_NONE,
+    make_new, network_server_make_new,
+    locals_dict, &network_server_locals_dict
+    );
 #endif

@@ -11,12 +11,14 @@ import micropython as X
 
 print(globals()["X"])
 
+
 # function name that matches a constant
 def X():
     print("function X", X)
 
 
 globals()["X"]()
+
 
 # arguments that match a constant
 def f(X, *Y, **Z):
@@ -25,6 +27,7 @@ def f(X, *Y, **Z):
 
 f(1)
 
+
 # class name that matches a constant
 class X:
     def f(self):
@@ -32,6 +35,7 @@ class X:
 
 
 globals()["X"]().f()
+
 
 # constant within a class
 class A:

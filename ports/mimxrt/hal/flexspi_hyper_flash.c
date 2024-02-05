@@ -51,11 +51,11 @@ __attribute__((always_inline)) static inline void clock_disable_clock(clock_ip_n
 
 static void SetFlexSPIDiv(uint32_t div) __attribute__((section(".ram_functions")));
 static void SetFlexSPIDiv(uint32_t div) {
-    FLEXSPI_Enable(FLEXSPI, false);
+    FLEXSPI_Enable(BOARD_FLEX_SPI, false);
     clock_disable_clock(kCLOCK_FlexSpi);
     clock_set_div(kCLOCK_FlexspiDiv, div); /* flexspi clock 332M, DDR mode, internal clock 166M. */
     clock_enable_clock(kCLOCK_FlexSpi);
-    FLEXSPI_Enable(FLEXSPI, true);
+    FLEXSPI_Enable(BOARD_FLEX_SPI, true);
 }
 
 status_t flexspi_nor_hyperbus_read(FLEXSPI_Type *base, uint32_t addr, uint32_t *buffer, uint32_t bytes) __attribute__((section(".ram_functions")));
@@ -173,6 +173,11 @@ status_t flexspi_nor_flash_erase_sector(FLEXSPI_Type *base, uint32_t address) {
     status = flexspi_nor_wait_bus_busy(base);
 
     return status;
+}
+
+status_t flexspi_nor_flash_erase_block(FLEXSPI_Type *base, uint32_t address) __attribute__((section(".ram_functions")));
+status_t flexspi_nor_flash_erase_block(FLEXSPI_Type *base, uint32_t address) {
+    return flexspi_nor_flash_erase_sector(base, address);  // HyperFlash does not support block erase!
 }
 
 status_t flexspi_nor_flash_page_program(FLEXSPI_Type *base, uint32_t address, const uint32_t *src,  uint32_t size) __attribute__((section(".ram_functions")));

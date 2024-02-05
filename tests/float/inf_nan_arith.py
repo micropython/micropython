@@ -3,7 +3,7 @@
 inf = float("inf")
 nan = float("nan")
 
-values = (-2, -1, 0, 1, 2, inf, nan)
+values = (-2, -1, 0, 1, 2, inf, -inf, nan)
 
 for x in values:
     for y in values:
@@ -14,7 +14,7 @@ for x in values:
         except ZeroDivisionError:
             print("  / ZeroDivisionError")
         try:
-            print("  ** pow", x ** y, pow(x, y))
+            print("  ** pow", x**y, pow(x, y))
         except ZeroDivisionError:
             print("  ** pow ZeroDivisionError")
         print("  == != < <= > >=", x == y, x != y, x < y, x <= y, x > y, x >= y)

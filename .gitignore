@@ -1,48 +1,25 @@
-# Compiled Sources
-###################
-*.o
-*.a
-*.elf
-*.bin
-*.map
-*.hex
-*.dis
-*.exe
-
-# Packages
-############
-
-# Logs and Databases
-######################
-*.log
-
-# VIM Swap Files
-######################
-*.swp
+# This .gitignore file is intended to be minimal.
+#
+# If you find that you need additional rules, such as IDE temporary
+# files, please do so either via a global .gitignore file (registered
+# with core.excludesFile), or by adding private repository-specific
+# rules to .git/info/exclude.  See https://git-scm.com/docs/gitignore
+# for more information.
 
 # Build directories
-######################
 build/
 build-*/
+docs/genrst/
 
 # Test failure outputs
-######################
 tests/results/*
 
 # Python cache files
-######################
 __pycache__/
-*.pyc
 
 # Customized Makefile/project overrides
-######################
 GNUmakefile
 user.props
 
-# Generated rst files
-######################
-genrst/
-
 # MacOS desktop metadata files
-######################
 .DS_Store

@@ -29,7 +29,6 @@ except Exception as bad:
     print(type(bad), bad.args[0])
 
 try:
-
     def gen():
         yield
 

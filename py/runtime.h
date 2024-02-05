@@ -29,6 +29,13 @@
 #include "py/mpstate.h"
 #include "py/pystack.h"
 
+// For use with mp_call_function_1_from_nlr_jump_callback.
+#define MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, f, a) \
+    nlr_jump_callback_node_call_function_1_t ctx = { \
+        .func = (void (*)(void *))(f), \
+        .arg = (a), \
+    }
+
 typedef enum {
     MP_VM_RETURN_NORMAL,
     MP_VM_RETURN_YIELD,
@@ -57,6 +64,29 @@ typedef struct _mp_arg_t {
     mp_arg_val_t defval;
 } mp_arg_t;
 
+struct _mp_sched_node_t;
+
+typedef void (*mp_sched_callback_t)(struct _mp_sched_node_t *);
+
+typedef struct _mp_sched_node_t {
+    mp_sched_callback_t callback;
+    struct _mp_sched_node_t *next;
+} mp_sched_node_t;
+
+// For use with mp_globals_locals_set_from_nlr_jump_callback.
+typedef struct _nlr_jump_callback_node_globals_locals_t {
+    nlr_jump_callback_node_t callback;
+    mp_obj_dict_t *globals;
+    mp_obj_dict_t *locals;
+} nlr_jump_callback_node_globals_locals_t;
+
+// For use with mp_call_function_1_from_nlr_jump_callback.
+typedef struct _nlr_jump_callback_node_call_function_1_t {
+    nlr_jump_callback_node_t callback;
+    void (*func)(void *);
+    void *arg;
+} nlr_jump_callback_node_call_function_1_t;
+
 // Tables mapping operator enums to qstrs, defined in objtype.c
 extern const byte mp_unary_op_method_name[];
 extern const byte mp_binary_op_method_name[];
@@ -66,15 +96,35 @@ void mp_deinit(void);
 
 void mp_sched_exception(mp_obj_t exc);
 void mp_sched_keyboard_interrupt(void);
+#if MICROPY_ENABLE_VM_ABORT
+void mp_sched_vm_abort(void);
+#endif
 void mp_handle_pending(bool raise_exc);
-void mp_handle_pending_tail(mp_uint_t atomic_state);
 
 #if MICROPY_ENABLE_SCHEDULER
 void mp_sched_lock(void);
 void mp_sched_unlock(void);
 #define mp_sched_num_pending() (MP_STATE_VM(sched_len))
 bool mp_sched_schedule(mp_obj_t function, mp_obj_t arg);
+bool mp_sched_schedule_node(mp_sched_node_t *node, mp_sched_callback_t callback);
 #endif
+
+// Handles any pending MicroPython events without waiting for an interrupt or event.
+void mp_event_handle_nowait(void);
+
+// Handles any pending MicroPython events and then suspends execution until the
+// next interrupt or event.
+//
+// Note: on "tickless" ports this can suspend execution for a long time,
+// don't call unless you know an interrupt is coming to continue execution.
+// On "ticked" ports it may return early due to the tick interrupt.
+void mp_event_wait_indefinite(void);
+
+// Handle any pending MicroPython events and then suspends execution until the
+// next interrupt or event, or until timeout_ms milliseconds have elapsed.
+//
+// On "ticked" ports it may return early due to the tick interrupt.
+void mp_event_wait_ms(mp_uint_t timeout_ms);
 
 // extra printing method specifically for mp_obj_t's which are integral type
 int mp_print_mp_int(const mp_print_t *print, mp_obj_t x, int base, int base_char, int flags, char fill, int width, int prec);
@@ -100,6 +150,9 @@ static inline mp_obj_dict_t *mp_globals_get(void) {
 static inline void mp_globals_set(mp_obj_dict_t *d) {
     MP_STATE_THREAD(dict_globals) = d;
 }
+
+void mp_globals_locals_set_from_nlr_jump_callback(void *ctx_in);
+void mp_call_function_1_from_nlr_jump_callback(void *ctx_in);
 
 mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
@@ -186,7 +239,9 @@ NORETURN void mp_raise_NotImplementedError(mp_rom_error_text_t msg);
 
 NORETURN void mp_raise_type_arg(const mp_obj_type_t *exc_type, mp_obj_t arg);
 NORETURN void mp_raise_StopIteration(mp_obj_t arg);
+NORETURN void mp_raise_TypeError_int_conversion(mp_const_obj_t arg);
 NORETURN void mp_raise_OSError(int errno_);
+NORETURN void mp_raise_OSError_with_filename(int errno_, const char *filename);
 NORETURN void mp_raise_recursion_depth(void);
 
 #if MICROPY_BUILTIN_METHOD_CHECK_SELF_ARG
@@ -204,8 +259,13 @@ int mp_native_type_from_qstr(qstr qst);
 mp_uint_t mp_native_from_obj(mp_obj_t obj, mp_uint_t type);
 mp_obj_t mp_native_to_obj(mp_uint_t val, mp_uint_t type);
 
-#define mp_sys_path (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_path_obj)))
+#if MICROPY_PY_SYS_PATH
+#define mp_sys_path (MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_PATH]))
+#endif
+
+#if MICROPY_PY_SYS_ARGV
 #define mp_sys_argv (MP_OBJ_FROM_PTR(&MP_STATE_VM(mp_sys_argv_obj)))
+#endif
 
 #if MICROPY_WARNINGS
 #ifndef mp_warning

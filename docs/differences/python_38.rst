@@ -5,15 +5,18 @@ Python 3.8
 
 Python 3.8.0 (final) was released on the 14 October 2019. The Features for 3.8
 are defined in `PEP 569 <https://www.python.org/dev/peps/pep-0569/#id9>`_ and
-a detailed description of the changes can be found in What's New in `Python
+a detailed description of the changes can be found in `What's New in Python
 3.8. <https://docs.python.org/3/whatsnew/3.8.html>`_
 
+.. table::
+  :widths: 20 60 20
+
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | **Features:**                                                                                              | Status        |
+  | **Features**                                                                                               | **Status**    |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
   | `PEP 570 <https://www.python.org/dev/peps/pep-0570/>`_ | Positional-only arguments                         |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
-  | `PEP 572 <https://www.python.org/dev/peps/pep-0572/>`_ | Assignment Expressions                            |               |
+  | `PEP 572 <https://www.python.org/dev/peps/pep-0572/>`_ | Assignment Expressions                            | Complete      |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
   | `PEP 574 <https://www.python.org/dev/peps/pep-0574/>`_ | Pickle protocol 5 with out-of-band data           |               |
   +--------------------------------------------------------+---------------------------------------------------+---------------+
@@ -25,13 +28,16 @@ a detailed description of the changes can be found in What's New in `Python
   +--------------------------------------------------------+---------------------------------------------------+---------------+
   | **Miscellaneous**                                                                                                          |
   +------------------------------------------------------------------------------------------------------------+---------------+
-  |  f-strings support = for self-documenting expressions and debugging                                        | Completed     |
+  |  f-strings support = for self-documenting expressions and debugging                                        | Complete      |
   +------------------------------------------------------------------------------------------------------------+---------------+
 
 Other Language Changes:
 
+.. table::
+  :widths: 90 10
+
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | A *continue* statement was illegal in the *finally* clause due to a problem with the implementation. In    | Completed   |
+  | A *continue* statement was illegal in the *finally* clause due to a problem with the implementation. In    | Complete    |
   | Python 3.8 this restriction was lifted                                                                     |             |
   +------------------------------------------------------------------------------------------------------------+-------------+
   | The *bool*, *int* , and *fractions.Fraction* types now have an *as_integer_ratio()* method like that found |             |
@@ -72,14 +78,17 @@ Other Language Changes:
 
 Changes to built-in modules:
 
+.. table::
+  :widths: 90 10
+
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | `asyncio`                                                                                                                |
+  | `asyncio <https://docs.python.org/3/whatsnew/3.8.html#asyncio>`_                                                         |
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | *asyncio.run()* has graduated from the provisional to stable API                                           | Completed   |
+  | *asyncio.run()* has graduated from the provisional to stable API                                           | Complete    |
   +------------------------------------------------------------------------------------------------------------+-------------+
   | Running *python -m asyncio* launches a natively async REPL                                                 |             |
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | The exception *asyncio.CancelledError* now inherits from *BaseException* rather than *Exception* and no    | Completed   |
+  | The exception *asyncio.CancelledError* now inherits from *BaseException* rather than *Exception* and no    | Complete    |
   | longer inherits from *concurrent.futures.CancelledError*                                                   |             |
   +------------------------------------------------------------------------------------------------------------+-------------+
   | Added *asyncio.Task.get_coro()* for getting the wrapped coroutine within an *asyncio.Task*                 |             |
@@ -90,12 +99,12 @@ Changes to built-in modules:
   | Added support for Happy Eyeballs to *asyncio.loop.create_connection()*. To specify the behavior, two new   |             |
   | parameters have been added: *happy_eyeballs_delay* and interleave.                                         |             |
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | `gc`                                                                                                                     |
+  | `gc <https://docs.python.org/3/whatsnew/3.8.html#gc>`_                                                                   |
   +------------------------------------------------------------------------------------------------------------+-------------+
   | *get_objects()* can now receive an optional generation parameter indicating a generation to get objects    |             |
   | from. (Note, though, that while *gc* is a built-in, *get_objects()* is not implemented for MicroPython)    |             |
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | `math`                                                                                                                   |
+  | `math <https://docs.python.org/3/whatsnew/3.8.html#math>`_                                                               |
   +------------------------------------------------------------------------------------------------------------+-------------+
   | Added new function *math.dist()* for computing Euclidean distance between two points                       |             |
   +------------------------------------------------------------------------------------------------------------+-------------+
@@ -109,9 +118,9 @@ Changes to built-in modules:
   | Added a new function *math.isqrt()* for computing accurate integer square roots without conversion to      |             |
   | floating point                                                                                             |             |
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | The function *math.factorial()* no longer accepts arguments that are not int-like                          | Completed   |
+  | The function *math.factorial()* no longer accepts arguments that are not int-like                          | Complete    |
   +------------------------------------------------------------------------------------------------------------+-------------+
-  | `sys`                                                                                                                    |
+  | `sys <https://docs.python.org/3/whatsnew/3.8.html#sys>`_                                                                 |
   +------------------------------------------------------------------------------------------------------------+-------------+
   | Add new *sys.unraisablehook()* function which can be overridden to control how "unraisable exceptions"     |             |
   | are handled                                                                                                |             |

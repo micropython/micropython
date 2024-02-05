@@ -23,7 +23,7 @@ Usage::
 Constructors
 ------------
 
-.. class:: pyb.ADC(pin)
+.. class:: ADC(pin)
 
    Create an ADC object associated with the given pin.
    This allows you to then read analog values on that pin.

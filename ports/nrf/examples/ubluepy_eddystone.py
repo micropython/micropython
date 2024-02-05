@@ -1,3 +1,4 @@
+from micropython import const
 from ubluepy import Peripheral, constants
 
 BLE_GAP_ADV_FLAG_LE_GENERAL_DISC_MODE = const(0x02)
@@ -53,7 +54,7 @@ def generate_eddystone_adv_packet(url):
         constants.ad_types.AD_TYPE_SERVICE_DATA, service_data
     )
 
-    # generate advertisment packet
+    # generate advertisement packet
     packet = bytearray([])
     packet.extend(packet_flags)
     packet.extend(packet_uuid16)

@@ -1,11 +1,11 @@
 /**************************************************************************//**
  * @file     core_cm23.h
  * @brief    CMSIS Cortex-M23 Core Peripheral Access Layer Header File
- * @version  V5.0.8
- * @date     12. November 2018
+ * @version  V5.1.0
+ * @date     11. February 2020
  ******************************************************************************/
 /*
- * Copyright (c) 2009-2018 Arm Limited. All rights reserved.
+ * Copyright (c) 2009-2020 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -23,9 +23,11 @@
  */
 
 #if   defined ( __ICCARM__ )
-  #pragma system_include         /* treat file as system include file for MISRA check */
+  #pragma system_include                        /* treat file as system include file for MISRA check */
 #elif defined (__clang__)
-  #pragma clang system_header   /* treat file as system include file */
+  #pragma clang system_header                   /* treat file as system include file */
+#elif defined ( __GNUC__ )
+  #pragma GCC diagnostic ignored "-Wpedantic"   /* disable pedantic warning due to unnamed structs/unions */
 #endif
 
 #ifndef __CORE_CM23_H_GENERIC
@@ -1050,6 +1052,7 @@ typedef struct
 #endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
 
 
+/* CoreDebug is deprecated. replaced by DCB (Debug Control Block) */
 /**
   \ingroup  CMSIS_core_register
   \defgroup CMSIS_CoreDebug       Core Debug Registers (CoreDebug)
@@ -1058,7 +1061,7 @@ typedef struct
  */
 
 /**
-  \brief  Structure type to access the Core Debug Register (CoreDebug).
+  \brief  \deprecated Structure type to access the Core Debug Register (CoreDebug).
  */
 typedef struct
 {
@@ -1066,89 +1069,274 @@ typedef struct
   __OM  uint32_t DCRSR;                  /*!< Offset: 0x004 ( /W)  Debug Core Register Selector Register */
   __IOM uint32_t DCRDR;                  /*!< Offset: 0x008 (R/W)  Debug Core Register Data Register */
   __IOM uint32_t DEMCR;                  /*!< Offset: 0x00C (R/W)  Debug Exception and Monitor Control Register */
-        uint32_t RESERVED4[1U];
+        uint32_t RESERVED0[1U];
   __IOM uint32_t DAUTHCTRL;              /*!< Offset: 0x014 (R/W)  Debug Authentication Control Register */
   __IOM uint32_t DSCSR;                  /*!< Offset: 0x018 (R/W)  Debug Security Control and Status Register */
 } CoreDebug_Type;
 
 /* Debug Halting Control and Status Register Definitions */
-#define CoreDebug_DHCSR_DBGKEY_Pos         16U                                            /*!< CoreDebug DHCSR: DBGKEY Position */
-#define CoreDebug_DHCSR_DBGKEY_Msk         (0xFFFFUL << CoreDebug_DHCSR_DBGKEY_Pos)       /*!< CoreDebug DHCSR: DBGKEY Mask */
+#define CoreDebug_DHCSR_DBGKEY_Pos         16U                                            /*!< \deprecated CoreDebug DHCSR: DBGKEY Position */
+#define CoreDebug_DHCSR_DBGKEY_Msk         (0xFFFFUL << CoreDebug_DHCSR_DBGKEY_Pos)       /*!< \deprecated CoreDebug DHCSR: DBGKEY Mask */
 
-#define CoreDebug_DHCSR_S_RESTART_ST_Pos   26U                                            /*!< CoreDebug DHCSR: S_RESTART_ST Position */
-#define CoreDebug_DHCSR_S_RESTART_ST_Msk   (1UL << CoreDebug_DHCSR_S_RESTART_ST_Pos)      /*!< CoreDebug DHCSR: S_RESTART_ST Mask */
+#define CoreDebug_DHCSR_S_RESTART_ST_Pos   26U                                            /*!< \deprecated CoreDebug DHCSR: S_RESTART_ST Position */
+#define CoreDebug_DHCSR_S_RESTART_ST_Msk   (1UL << CoreDebug_DHCSR_S_RESTART_ST_Pos)      /*!< \deprecated CoreDebug DHCSR: S_RESTART_ST Mask */
 
-#define CoreDebug_DHCSR_S_RESET_ST_Pos     25U                                            /*!< CoreDebug DHCSR: S_RESET_ST Position */
-#define CoreDebug_DHCSR_S_RESET_ST_Msk     (1UL << CoreDebug_DHCSR_S_RESET_ST_Pos)        /*!< CoreDebug DHCSR: S_RESET_ST Mask */
+#define CoreDebug_DHCSR_S_RESET_ST_Pos     25U                                            /*!< \deprecated CoreDebug DHCSR: S_RESET_ST Position */
+#define CoreDebug_DHCSR_S_RESET_ST_Msk     (1UL << CoreDebug_DHCSR_S_RESET_ST_Pos)        /*!< \deprecated CoreDebug DHCSR: S_RESET_ST Mask */
 
-#define CoreDebug_DHCSR_S_RETIRE_ST_Pos    24U                                            /*!< CoreDebug DHCSR: S_RETIRE_ST Position */
-#define CoreDebug_DHCSR_S_RETIRE_ST_Msk    (1UL << CoreDebug_DHCSR_S_RETIRE_ST_Pos)       /*!< CoreDebug DHCSR: S_RETIRE_ST Mask */
+#define CoreDebug_DHCSR_S_RETIRE_ST_Pos    24U                                            /*!< \deprecated CoreDebug DHCSR: S_RETIRE_ST Position */
+#define CoreDebug_DHCSR_S_RETIRE_ST_Msk    (1UL << CoreDebug_DHCSR_S_RETIRE_ST_Pos)       /*!< \deprecated CoreDebug DHCSR: S_RETIRE_ST Mask */
 
-#define CoreDebug_DHCSR_S_LOCKUP_Pos       19U                                            /*!< CoreDebug DHCSR: S_LOCKUP Position */
-#define CoreDebug_DHCSR_S_LOCKUP_Msk       (1UL << CoreDebug_DHCSR_S_LOCKUP_Pos)          /*!< CoreDebug DHCSR: S_LOCKUP Mask */
+#define CoreDebug_DHCSR_S_LOCKUP_Pos       19U                                            /*!< \deprecated CoreDebug DHCSR: S_LOCKUP Position */
+#define CoreDebug_DHCSR_S_LOCKUP_Msk       (1UL << CoreDebug_DHCSR_S_LOCKUP_Pos)          /*!< \deprecated CoreDebug DHCSR: S_LOCKUP Mask */
 
-#define CoreDebug_DHCSR_S_SLEEP_Pos        18U                                            /*!< CoreDebug DHCSR: S_SLEEP Position */
-#define CoreDebug_DHCSR_S_SLEEP_Msk        (1UL << CoreDebug_DHCSR_S_SLEEP_Pos)           /*!< CoreDebug DHCSR: S_SLEEP Mask */
+#define CoreDebug_DHCSR_S_SLEEP_Pos        18U                                            /*!< \deprecated CoreDebug DHCSR: S_SLEEP Position */
+#define CoreDebug_DHCSR_S_SLEEP_Msk        (1UL << CoreDebug_DHCSR_S_SLEEP_Pos)           /*!< \deprecated CoreDebug DHCSR: S_SLEEP Mask */
 
-#define CoreDebug_DHCSR_S_HALT_Pos         17U                                            /*!< CoreDebug DHCSR: S_HALT Position */
-#define CoreDebug_DHCSR_S_HALT_Msk         (1UL << CoreDebug_DHCSR_S_HALT_Pos)            /*!< CoreDebug DHCSR: S_HALT Mask */
+#define CoreDebug_DHCSR_S_HALT_Pos         17U                                            /*!< \deprecated CoreDebug DHCSR: S_HALT Position */
+#define CoreDebug_DHCSR_S_HALT_Msk         (1UL << CoreDebug_DHCSR_S_HALT_Pos)            /*!< \deprecated CoreDebug DHCSR: S_HALT Mask */
 
-#define CoreDebug_DHCSR_S_REGRDY_Pos       16U                                            /*!< CoreDebug DHCSR: S_REGRDY Position */
-#define CoreDebug_DHCSR_S_REGRDY_Msk       (1UL << CoreDebug_DHCSR_S_REGRDY_Pos)          /*!< CoreDebug DHCSR: S_REGRDY Mask */
+#define CoreDebug_DHCSR_S_REGRDY_Pos       16U                                            /*!< \deprecated CoreDebug DHCSR: S_REGRDY Position */
+#define CoreDebug_DHCSR_S_REGRDY_Msk       (1UL << CoreDebug_DHCSR_S_REGRDY_Pos)          /*!< \deprecated CoreDebug DHCSR: S_REGRDY Mask */
 
-#define CoreDebug_DHCSR_C_MASKINTS_Pos      3U                                            /*!< CoreDebug DHCSR: C_MASKINTS Position */
-#define CoreDebug_DHCSR_C_MASKINTS_Msk     (1UL << CoreDebug_DHCSR_C_MASKINTS_Pos)        /*!< CoreDebug DHCSR: C_MASKINTS Mask */
+#define CoreDebug_DHCSR_C_MASKINTS_Pos      3U                                            /*!< \deprecated CoreDebug DHCSR: C_MASKINTS Position */
+#define CoreDebug_DHCSR_C_MASKINTS_Msk     (1UL << CoreDebug_DHCSR_C_MASKINTS_Pos)        /*!< \deprecated CoreDebug DHCSR: C_MASKINTS Mask */
 
-#define CoreDebug_DHCSR_C_STEP_Pos          2U                                            /*!< CoreDebug DHCSR: C_STEP Position */
-#define CoreDebug_DHCSR_C_STEP_Msk         (1UL << CoreDebug_DHCSR_C_STEP_Pos)            /*!< CoreDebug DHCSR: C_STEP Mask */
+#define CoreDebug_DHCSR_C_STEP_Pos          2U                                            /*!< \deprecated CoreDebug DHCSR: C_STEP Position */
+#define CoreDebug_DHCSR_C_STEP_Msk         (1UL << CoreDebug_DHCSR_C_STEP_Pos)            /*!< \deprecated CoreDebug DHCSR: C_STEP Mask */
 
-#define CoreDebug_DHCSR_C_HALT_Pos          1U                                            /*!< CoreDebug DHCSR: C_HALT Position */
-#define CoreDebug_DHCSR_C_HALT_Msk         (1UL << CoreDebug_DHCSR_C_HALT_Pos)            /*!< CoreDebug DHCSR: C_HALT Mask */
+#define CoreDebug_DHCSR_C_HALT_Pos          1U                                            /*!< \deprecated CoreDebug DHCSR: C_HALT Position */
+#define CoreDebug_DHCSR_C_HALT_Msk         (1UL << CoreDebug_DHCSR_C_HALT_Pos)            /*!< \deprecated CoreDebug DHCSR: C_HALT Mask */
 
-#define CoreDebug_DHCSR_C_DEBUGEN_Pos       0U                                            /*!< CoreDebug DHCSR: C_DEBUGEN Position */
-#define CoreDebug_DHCSR_C_DEBUGEN_Msk      (1UL /*<< CoreDebug_DHCSR_C_DEBUGEN_Pos*/)     /*!< CoreDebug DHCSR: C_DEBUGEN Mask */
+#define CoreDebug_DHCSR_C_DEBUGEN_Pos       0U                                            /*!< \deprecated CoreDebug DHCSR: C_DEBUGEN Position */
+#define CoreDebug_DHCSR_C_DEBUGEN_Msk      (1UL /*<< CoreDebug_DHCSR_C_DEBUGEN_Pos*/)     /*!< \deprecated CoreDebug DHCSR: C_DEBUGEN Mask */
 
 /* Debug Core Register Selector Register Definitions */
-#define CoreDebug_DCRSR_REGWnR_Pos         16U                                            /*!< CoreDebug DCRSR: REGWnR Position */
-#define CoreDebug_DCRSR_REGWnR_Msk         (1UL << CoreDebug_DCRSR_REGWnR_Pos)            /*!< CoreDebug DCRSR: REGWnR Mask */
+#define CoreDebug_DCRSR_REGWnR_Pos         16U                                            /*!< \deprecated CoreDebug DCRSR: REGWnR Position */
+#define CoreDebug_DCRSR_REGWnR_Msk         (1UL << CoreDebug_DCRSR_REGWnR_Pos)            /*!< \deprecated CoreDebug DCRSR: REGWnR Mask */
 
-#define CoreDebug_DCRSR_REGSEL_Pos          0U                                            /*!< CoreDebug DCRSR: REGSEL Position */
-#define CoreDebug_DCRSR_REGSEL_Msk         (0x1FUL /*<< CoreDebug_DCRSR_REGSEL_Pos*/)     /*!< CoreDebug DCRSR: REGSEL Mask */
+#define CoreDebug_DCRSR_REGSEL_Pos          0U                                            /*!< \deprecated CoreDebug DCRSR: REGSEL Position */
+#define CoreDebug_DCRSR_REGSEL_Msk         (0x1FUL /*<< CoreDebug_DCRSR_REGSEL_Pos*/)     /*!< \deprecated CoreDebug DCRSR: REGSEL Mask */
 
 /* Debug Exception and Monitor Control Register */
-#define CoreDebug_DEMCR_DWTENA_Pos         24U                                            /*!< CoreDebug DEMCR: DWTENA Position */
-#define CoreDebug_DEMCR_DWTENA_Msk         (1UL << CoreDebug_DEMCR_DWTENA_Pos)            /*!< CoreDebug DEMCR: DWTENA Mask */
+#define CoreDebug_DEMCR_DWTENA_Pos         24U                                            /*!< \deprecated CoreDebug DEMCR: DWTENA Position */
+#define CoreDebug_DEMCR_DWTENA_Msk         (1UL << CoreDebug_DEMCR_DWTENA_Pos)            /*!< \deprecated CoreDebug DEMCR: DWTENA Mask */
 
-#define CoreDebug_DEMCR_VC_HARDERR_Pos     10U                                            /*!< CoreDebug DEMCR: VC_HARDERR Position */
-#define CoreDebug_DEMCR_VC_HARDERR_Msk     (1UL << CoreDebug_DEMCR_VC_HARDERR_Pos)        /*!< CoreDebug DEMCR: VC_HARDERR Mask */
+#define CoreDebug_DEMCR_VC_HARDERR_Pos     10U                                            /*!< \deprecated CoreDebug DEMCR: VC_HARDERR Position */
+#define CoreDebug_DEMCR_VC_HARDERR_Msk     (1UL << CoreDebug_DEMCR_VC_HARDERR_Pos)        /*!< \deprecated CoreDebug DEMCR: VC_HARDERR Mask */
 
-#define CoreDebug_DEMCR_VC_CORERESET_Pos    0U                                            /*!< CoreDebug DEMCR: VC_CORERESET Position */
-#define CoreDebug_DEMCR_VC_CORERESET_Msk   (1UL /*<< CoreDebug_DEMCR_VC_CORERESET_Pos*/)  /*!< CoreDebug DEMCR: VC_CORERESET Mask */
+#define CoreDebug_DEMCR_VC_CORERESET_Pos    0U                                            /*!< \deprecated CoreDebug DEMCR: VC_CORERESET Position */
+#define CoreDebug_DEMCR_VC_CORERESET_Msk   (1UL /*<< CoreDebug_DEMCR_VC_CORERESET_Pos*/)  /*!< \deprecated CoreDebug DEMCR: VC_CORERESET Mask */
 
 /* Debug Authentication Control Register Definitions */
-#define CoreDebug_DAUTHCTRL_INTSPNIDEN_Pos  3U                                            /*!< CoreDebug DAUTHCTRL: INTSPNIDEN, Position */
-#define CoreDebug_DAUTHCTRL_INTSPNIDEN_Msk (1UL << CoreDebug_DAUTHCTRL_INTSPNIDEN_Pos)    /*!< CoreDebug DAUTHCTRL: INTSPNIDEN, Mask */
+#define CoreDebug_DAUTHCTRL_INTSPNIDEN_Pos  3U                                            /*!< \deprecated CoreDebug DAUTHCTRL: INTSPNIDEN, Position */
+#define CoreDebug_DAUTHCTRL_INTSPNIDEN_Msk (1UL << CoreDebug_DAUTHCTRL_INTSPNIDEN_Pos)    /*!< \deprecated CoreDebug DAUTHCTRL: INTSPNIDEN, Mask */
 
-#define CoreDebug_DAUTHCTRL_SPNIDENSEL_Pos  2U                                            /*!< CoreDebug DAUTHCTRL: SPNIDENSEL Position */
-#define CoreDebug_DAUTHCTRL_SPNIDENSEL_Msk (1UL << CoreDebug_DAUTHCTRL_SPNIDENSEL_Pos)    /*!< CoreDebug DAUTHCTRL: SPNIDENSEL Mask */
+#define CoreDebug_DAUTHCTRL_SPNIDENSEL_Pos  2U                                            /*!< \deprecated CoreDebug DAUTHCTRL: SPNIDENSEL Position */
+#define CoreDebug_DAUTHCTRL_SPNIDENSEL_Msk (1UL << CoreDebug_DAUTHCTRL_SPNIDENSEL_Pos)    /*!< \deprecated CoreDebug DAUTHCTRL: SPNIDENSEL Mask */
 
-#define CoreDebug_DAUTHCTRL_INTSPIDEN_Pos   1U                                            /*!< CoreDebug DAUTHCTRL: INTSPIDEN Position */
-#define CoreDebug_DAUTHCTRL_INTSPIDEN_Msk  (1UL << CoreDebug_DAUTHCTRL_INTSPIDEN_Pos)     /*!< CoreDebug DAUTHCTRL: INTSPIDEN Mask */
+#define CoreDebug_DAUTHCTRL_INTSPIDEN_Pos   1U                                            /*!< \deprecated CoreDebug DAUTHCTRL: INTSPIDEN Position */
+#define CoreDebug_DAUTHCTRL_INTSPIDEN_Msk  (1UL << CoreDebug_DAUTHCTRL_INTSPIDEN_Pos)     /*!< \deprecated CoreDebug DAUTHCTRL: INTSPIDEN Mask */
 
-#define CoreDebug_DAUTHCTRL_SPIDENSEL_Pos   0U                                            /*!< CoreDebug DAUTHCTRL: SPIDENSEL Position */
-#define CoreDebug_DAUTHCTRL_SPIDENSEL_Msk  (1UL /*<< CoreDebug_DAUTHCTRL_SPIDENSEL_Pos*/) /*!< CoreDebug DAUTHCTRL: SPIDENSEL Mask */
+#define CoreDebug_DAUTHCTRL_SPIDENSEL_Pos   0U                                            /*!< \deprecated CoreDebug DAUTHCTRL: SPIDENSEL Position */
+#define CoreDebug_DAUTHCTRL_SPIDENSEL_Msk  (1UL /*<< CoreDebug_DAUTHCTRL_SPIDENSEL_Pos*/) /*!< \deprecated CoreDebug DAUTHCTRL: SPIDENSEL Mask */
 
 /* Debug Security Control and Status Register Definitions */
-#define CoreDebug_DSCSR_CDS_Pos            16U                                            /*!< CoreDebug DSCSR: CDS Position */
-#define CoreDebug_DSCSR_CDS_Msk            (1UL << CoreDebug_DSCSR_CDS_Pos)               /*!< CoreDebug DSCSR: CDS Mask */
+#define CoreDebug_DSCSR_CDS_Pos            16U                                            /*!< \deprecated CoreDebug DSCSR: CDS Position */
+#define CoreDebug_DSCSR_CDS_Msk            (1UL << CoreDebug_DSCSR_CDS_Pos)               /*!< \deprecated CoreDebug DSCSR: CDS Mask */
 
-#define CoreDebug_DSCSR_SBRSEL_Pos          1U                                            /*!< CoreDebug DSCSR: SBRSEL Position */
-#define CoreDebug_DSCSR_SBRSEL_Msk         (1UL << CoreDebug_DSCSR_SBRSEL_Pos)            /*!< CoreDebug DSCSR: SBRSEL Mask */
+#define CoreDebug_DSCSR_SBRSEL_Pos          1U                                            /*!< \deprecated CoreDebug DSCSR: SBRSEL Position */
+#define CoreDebug_DSCSR_SBRSEL_Msk         (1UL << CoreDebug_DSCSR_SBRSEL_Pos)            /*!< \deprecated CoreDebug DSCSR: SBRSEL Mask */
 
-#define CoreDebug_DSCSR_SBRSELEN_Pos        0U                                            /*!< CoreDebug DSCSR: SBRSELEN Position */
-#define CoreDebug_DSCSR_SBRSELEN_Msk       (1UL /*<< CoreDebug_DSCSR_SBRSELEN_Pos*/)      /*!< CoreDebug DSCSR: SBRSELEN Mask */
+#define CoreDebug_DSCSR_SBRSELEN_Pos        0U                                            /*!< \deprecated CoreDebug DSCSR: SBRSELEN Position */
+#define CoreDebug_DSCSR_SBRSELEN_Msk       (1UL /*<< CoreDebug_DSCSR_SBRSELEN_Pos*/)      /*!< \deprecated CoreDebug DSCSR: SBRSELEN Mask */
 
 /*@} end of group CMSIS_CoreDebug */
+
+
+/**
+  \ingroup    CMSIS_core_register
+  \defgroup CMSIS_DCB       Debug Control Block
+  \brief    Type definitions for the Debug Control Block Registers
+  @{
+ */
+
+/**
+  \brief  Structure type to access the Debug Control Block Registers (DCB).
+ */
+typedef struct
+{
+  __IOM uint32_t DHCSR;                  /*!< Offset: 0x000 (R/W)  Debug Halting Control and Status Register */
+  __OM  uint32_t DCRSR;                  /*!< Offset: 0x004 ( /W)  Debug Core Register Selector Register */
+  __IOM uint32_t DCRDR;                  /*!< Offset: 0x008 (R/W)  Debug Core Register Data Register */
+  __IOM uint32_t DEMCR;                  /*!< Offset: 0x00C (R/W)  Debug Exception and Monitor Control Register */
+        uint32_t RESERVED0[1U];
+  __IOM uint32_t DAUTHCTRL;              /*!< Offset: 0x014 (R/W)  Debug Authentication Control Register */
+  __IOM uint32_t DSCSR;                  /*!< Offset: 0x018 (R/W)  Debug Security Control and Status Register */
+} DCB_Type;
+
+/* DHCSR, Debug Halting Control and Status Register Definitions */
+#define DCB_DHCSR_DBGKEY_Pos               16U                                            /*!< DCB DHCSR: Debug key Position */
+#define DCB_DHCSR_DBGKEY_Msk               (0xFFFFUL << DCB_DHCSR_DBGKEY_Pos)             /*!< DCB DHCSR: Debug key Mask */
+
+#define DCB_DHCSR_S_RESTART_ST_Pos         26U                                            /*!< DCB DHCSR: Restart sticky status Position */
+#define DCB_DHCSR_S_RESTART_ST_Msk         (0x1UL << DCB_DHCSR_S_RESTART_ST_Pos)          /*!< DCB DHCSR: Restart sticky status Mask */
+
+#define DCB_DHCSR_S_RESET_ST_Pos           25U                                            /*!< DCB DHCSR: Reset sticky status Position */
+#define DCB_DHCSR_S_RESET_ST_Msk           (0x1UL << DCB_DHCSR_S_RESET_ST_Pos)            /*!< DCB DHCSR: Reset sticky status Mask */
+
+#define DCB_DHCSR_S_RETIRE_ST_Pos          24U                                            /*!< DCB DHCSR: Retire sticky status Position */
+#define DCB_DHCSR_S_RETIRE_ST_Msk          (0x1UL << DCB_DHCSR_S_RETIRE_ST_Pos)           /*!< DCB DHCSR: Retire sticky status Mask */
+
+#define DCB_DHCSR_S_SDE_Pos                20U                                            /*!< DCB DHCSR: Secure debug enabled Position */
+#define DCB_DHCSR_S_SDE_Msk                (0x1UL << DCB_DHCSR_S_SDE_Pos)                 /*!< DCB DHCSR: Secure debug enabled Mask */
+
+#define DCB_DHCSR_S_LOCKUP_Pos             19U                                            /*!< DCB DHCSR: Lockup status Position */
+#define DCB_DHCSR_S_LOCKUP_Msk             (0x1UL << DCB_DHCSR_S_LOCKUP_Pos)              /*!< DCB DHCSR: Lockup status Mask */
+
+#define DCB_DHCSR_S_SLEEP_Pos              18U                                            /*!< DCB DHCSR: Sleeping status Position */
+#define DCB_DHCSR_S_SLEEP_Msk              (0x1UL << DCB_DHCSR_S_SLEEP_Pos)               /*!< DCB DHCSR: Sleeping status Mask */
+
+#define DCB_DHCSR_S_HALT_Pos               17U                                            /*!< DCB DHCSR: Halted status Position */
+#define DCB_DHCSR_S_HALT_Msk               (0x1UL << DCB_DHCSR_S_HALT_Pos)                /*!< DCB DHCSR: Halted status Mask */
+
+#define DCB_DHCSR_S_REGRDY_Pos             16U                                            /*!< DCB DHCSR: Register ready status Position */
+#define DCB_DHCSR_S_REGRDY_Msk             (0x1UL << DCB_DHCSR_S_REGRDY_Pos)              /*!< DCB DHCSR: Register ready status Mask */
+
+#define DCB_DHCSR_C_MASKINTS_Pos            3U                                            /*!< DCB DHCSR: Mask interrupts control Position */
+#define DCB_DHCSR_C_MASKINTS_Msk           (0x1UL << DCB_DHCSR_C_MASKINTS_Pos)            /*!< DCB DHCSR: Mask interrupts control Mask */
+
+#define DCB_DHCSR_C_STEP_Pos                2U                                            /*!< DCB DHCSR: Step control Position */
+#define DCB_DHCSR_C_STEP_Msk               (0x1UL << DCB_DHCSR_C_STEP_Pos)                /*!< DCB DHCSR: Step control Mask */
+
+#define DCB_DHCSR_C_HALT_Pos                1U                                            /*!< DCB DHCSR: Halt control Position */
+#define DCB_DHCSR_C_HALT_Msk               (0x1UL << DCB_DHCSR_C_HALT_Pos)                /*!< DCB DHCSR: Halt control Mask */
+
+#define DCB_DHCSR_C_DEBUGEN_Pos             0U                                            /*!< DCB DHCSR: Debug enable control Position */
+#define DCB_DHCSR_C_DEBUGEN_Msk            (0x1UL /*<< DCB_DHCSR_C_DEBUGEN_Pos*/)         /*!< DCB DHCSR: Debug enable control Mask */
+
+/* DCRSR, Debug Core Register Select Register Definitions */
+#define DCB_DCRSR_REGWnR_Pos               16U                                            /*!< DCB DCRSR: Register write/not-read Position */
+#define DCB_DCRSR_REGWnR_Msk               (0x1UL << DCB_DCRSR_REGWnR_Pos)                /*!< DCB DCRSR: Register write/not-read Mask */
+
+#define DCB_DCRSR_REGSEL_Pos                0U                                            /*!< DCB DCRSR: Register selector Position */
+#define DCB_DCRSR_REGSEL_Msk               (0x7FUL /*<< DCB_DCRSR_REGSEL_Pos*/)           /*!< DCB DCRSR: Register selector Mask */
+
+/* DCRDR, Debug Core Register Data Register Definitions */
+#define DCB_DCRDR_DBGTMP_Pos                0U                                            /*!< DCB DCRDR: Data temporary buffer Position */
+#define DCB_DCRDR_DBGTMP_Msk               (0xFFFFFFFFUL /*<< DCB_DCRDR_DBGTMP_Pos*/)     /*!< DCB DCRDR: Data temporary buffer Mask */
+
+/* DEMCR, Debug Exception and Monitor Control Register Definitions */
+#define DCB_DEMCR_TRCENA_Pos               24U                                            /*!< DCB DEMCR: Trace enable Position */
+#define DCB_DEMCR_TRCENA_Msk               (0x1UL << DCB_DEMCR_TRCENA_Pos)                /*!< DCB DEMCR: Trace enable Mask */
+
+#define DCB_DEMCR_VC_HARDERR_Pos           10U                                            /*!< DCB DEMCR: Vector Catch HardFault errors Position */
+#define DCB_DEMCR_VC_HARDERR_Msk           (0x1UL << DCB_DEMCR_VC_HARDERR_Pos)            /*!< DCB DEMCR: Vector Catch HardFault errors Mask */
+
+#define DCB_DEMCR_VC_CORERESET_Pos          0U                                            /*!< DCB DEMCR: Vector Catch Core reset Position */
+#define DCB_DEMCR_VC_CORERESET_Msk         (0x1UL /*<< DCB_DEMCR_VC_CORERESET_Pos*/)      /*!< DCB DEMCR: Vector Catch Core reset Mask */
+
+/* DAUTHCTRL, Debug Authentication Control Register Definitions */
+#define DCB_DAUTHCTRL_INTSPNIDEN_Pos        3U                                            /*!< DCB DAUTHCTRL: Internal Secure non-invasive debug enable Position */
+#define DCB_DAUTHCTRL_INTSPNIDEN_Msk       (0x1UL << DCB_DAUTHCTRL_INTSPNIDEN_Pos)        /*!< DCB DAUTHCTRL: Internal Secure non-invasive debug enable Mask */
+
+#define DCB_DAUTHCTRL_SPNIDENSEL_Pos        2U                                            /*!< DCB DAUTHCTRL: Secure non-invasive debug enable select Position */
+#define DCB_DAUTHCTRL_SPNIDENSEL_Msk       (0x1UL << DCB_DAUTHCTRL_SPNIDENSEL_Pos)        /*!< DCB DAUTHCTRL: Secure non-invasive debug enable select Mask */
+
+#define DCB_DAUTHCTRL_INTSPIDEN_Pos         1U                                            /*!< DCB DAUTHCTRL: Internal Secure invasive debug enable Position */
+#define DCB_DAUTHCTRL_INTSPIDEN_Msk        (0x1UL << DCB_DAUTHCTRL_INTSPIDEN_Pos)         /*!< DCB DAUTHCTRL: Internal Secure invasive debug enable Mask */
+
+#define DCB_DAUTHCTRL_SPIDENSEL_Pos         0U                                            /*!< DCB DAUTHCTRL: Secure invasive debug enable select Position */
+#define DCB_DAUTHCTRL_SPIDENSEL_Msk        (0x1UL /*<< DCB_DAUTHCTRL_SPIDENSEL_Pos*/)     /*!< DCB DAUTHCTRL: Secure invasive debug enable select Mask */
+
+/* DSCSR, Debug Security Control and Status Register Definitions */
+#define DCB_DSCSR_CDSKEY_Pos               17U                                            /*!< DCB DSCSR: CDS write-enable key Position */
+#define DCB_DSCSR_CDSKEY_Msk               (0x1UL << DCB_DSCSR_CDSKEY_Pos)                /*!< DCB DSCSR: CDS write-enable key Mask */
+
+#define DCB_DSCSR_CDS_Pos                  16U                                            /*!< DCB DSCSR: Current domain Secure Position */
+#define DCB_DSCSR_CDS_Msk                  (0x1UL << DCB_DSCSR_CDS_Pos)                   /*!< DCB DSCSR: Current domain Secure Mask */
+
+#define DCB_DSCSR_SBRSEL_Pos                1U                                            /*!< DCB DSCSR: Secure banked register select Position */
+#define DCB_DSCSR_SBRSEL_Msk               (0x1UL << DCB_DSCSR_SBRSEL_Pos)                /*!< DCB DSCSR: Secure banked register select Mask */
+
+#define DCB_DSCSR_SBRSELEN_Pos              0U                                            /*!< DCB DSCSR: Secure banked register select enable Position */
+#define DCB_DSCSR_SBRSELEN_Msk             (0x1UL /*<< DCB_DSCSR_SBRSELEN_Pos*/)          /*!< DCB DSCSR: Secure banked register select enable Mask */
+
+/*@} end of group CMSIS_DCB */
+
+
+
+/**
+  \ingroup  CMSIS_core_register
+  \defgroup CMSIS_DIB       Debug Identification Block
+  \brief    Type definitions for the Debug Identification Block Registers
+  @{
+ */
+
+/**
+  \brief  Structure type to access the Debug Identification Block Registers (DIB).
+ */
+typedef struct
+{
+  __OM  uint32_t DLAR;                   /*!< Offset: 0x000 ( /W)  SCS Software Lock Access Register */
+  __IM  uint32_t DLSR;                   /*!< Offset: 0x004 (R/ )  SCS Software Lock Status Register */
+  __IM  uint32_t DAUTHSTATUS;            /*!< Offset: 0x008 (R/ )  Debug Authentication Status Register */
+  __IM  uint32_t DDEVARCH;               /*!< Offset: 0x00C (R/ )  SCS Device Architecture Register */
+  __IM  uint32_t DDEVTYPE;               /*!< Offset: 0x010 (R/ )  SCS Device Type Register */
+} DIB_Type;
+
+/* DLAR, SCS Software Lock Access Register Definitions */
+#define DIB_DLAR_KEY_Pos                    0U                                            /*!< DIB DLAR: KEY Position */
+#define DIB_DLAR_KEY_Msk                   (0xFFFFFFFFUL /*<< DIB_DLAR_KEY_Pos */)        /*!< DIB DLAR: KEY Mask */
+
+/* DLSR, SCS Software Lock Status Register Definitions */
+#define DIB_DLSR_nTT_Pos                    2U                                            /*!< DIB DLSR: Not thirty-two bit Position */
+#define DIB_DLSR_nTT_Msk                   (0x1UL << DIB_DLSR_nTT_Pos )                   /*!< DIB DLSR: Not thirty-two bit Mask */
+
+#define DIB_DLSR_SLK_Pos                    1U                                            /*!< DIB DLSR: Software Lock status Position */
+#define DIB_DLSR_SLK_Msk                   (0x1UL << DIB_DLSR_SLK_Pos )                   /*!< DIB DLSR: Software Lock status Mask */
+
+#define DIB_DLSR_SLI_Pos                    0U                                            /*!< DIB DLSR: Software Lock implemented Position */
+#define DIB_DLSR_SLI_Msk                   (0x1UL /*<< DIB_DLSR_SLI_Pos*/)                /*!< DIB DLSR: Software Lock implemented Mask */
+
+/* DAUTHSTATUS, Debug Authentication Status Register Definitions */
+#define DIB_DAUTHSTATUS_SNID_Pos            6U                                            /*!< DIB DAUTHSTATUS: Secure Non-invasive Debug Position */
+#define DIB_DAUTHSTATUS_SNID_Msk           (0x3UL << DIB_DAUTHSTATUS_SNID_Pos )           /*!< DIB DAUTHSTATUS: Secure Non-invasive Debug Mask */
+
+#define DIB_DAUTHSTATUS_SID_Pos             4U                                            /*!< DIB DAUTHSTATUS: Secure Invasive Debug Position */
+#define DIB_DAUTHSTATUS_SID_Msk            (0x3UL << DIB_DAUTHSTATUS_SID_Pos )            /*!< DIB DAUTHSTATUS: Secure Invasive Debug Mask */
+
+#define DIB_DAUTHSTATUS_NSNID_Pos           2U                                            /*!< DIB DAUTHSTATUS: Non-secure Non-invasive Debug Position */
+#define DIB_DAUTHSTATUS_NSNID_Msk          (0x3UL << DIB_DAUTHSTATUS_NSNID_Pos )          /*!< DIB DAUTHSTATUS: Non-secure Non-invasive Debug Mask */
+
+#define DIB_DAUTHSTATUS_NSID_Pos            0U                                            /*!< DIB DAUTHSTATUS: Non-secure Invasive Debug Position */
+#define DIB_DAUTHSTATUS_NSID_Msk           (0x3UL /*<< DIB_DAUTHSTATUS_NSID_Pos*/)        /*!< DIB DAUTHSTATUS: Non-secure Invasive Debug Mask */
+
+/* DDEVARCH, SCS Device Architecture Register Definitions */
+#define DIB_DDEVARCH_ARCHITECT_Pos         21U                                            /*!< DIB DDEVARCH: Architect Position */
+#define DIB_DDEVARCH_ARCHITECT_Msk         (0x7FFUL << DIB_DDEVARCH_ARCHITECT_Pos )       /*!< DIB DDEVARCH: Architect Mask */
+
+#define DIB_DDEVARCH_PRESENT_Pos           20U                                            /*!< DIB DDEVARCH: DEVARCH Present Position */
+#define DIB_DDEVARCH_PRESENT_Msk           (0x1FUL << DIB_DDEVARCH_PRESENT_Pos )          /*!< DIB DDEVARCH: DEVARCH Present Mask */
+
+#define DIB_DDEVARCH_REVISION_Pos          16U                                            /*!< DIB DDEVARCH: Revision Position */
+#define DIB_DDEVARCH_REVISION_Msk          (0xFUL << DIB_DDEVARCH_REVISION_Pos )          /*!< DIB DDEVARCH: Revision Mask */
+
+#define DIB_DDEVARCH_ARCHVER_Pos           12U                                            /*!< DIB DDEVARCH: Architecture Version Position */
+#define DIB_DDEVARCH_ARCHVER_Msk           (0xFUL << DIB_DDEVARCH_ARCHVER_Pos )           /*!< DIB DDEVARCH: Architecture Version Mask */
+
+#define DIB_DDEVARCH_ARCHPART_Pos           0U                                            /*!< DIB DDEVARCH: Architecture Part Position */
+#define DIB_DDEVARCH_ARCHPART_Msk          (0xFFFUL /*<< DIB_DDEVARCH_ARCHPART_Pos*/)     /*!< DIB DDEVARCH: Architecture Part Mask */
+
+/* DDEVTYPE, SCS Device Type Register Definitions */
+#define DIB_DDEVTYPE_SUB_Pos                4U                                            /*!< DIB DDEVTYPE: Sub-type Position */
+#define DIB_DDEVTYPE_SUB_Msk               (0xFUL << DIB_DDEVTYPE_SUB_Pos )               /*!< DIB DDEVTYPE: Sub-type Mask */
+
+#define DIB_DDEVTYPE_MAJOR_Pos              0U                                            /*!< DIB DDEVTYPE: Major type Position */
+#define DIB_DDEVTYPE_MAJOR_Msk             (0xFUL /*<< DIB_DDEVTYPE_MAJOR_Pos*/)          /*!< DIB DDEVTYPE: Major type Mask */
+
+
+/*@} end of group CMSIS_DIB */
 
 
 /**
@@ -1188,7 +1376,9 @@ typedef struct
   #define SCS_BASE            (0xE000E000UL)                             /*!< System Control Space Base Address */
   #define DWT_BASE            (0xE0001000UL)                             /*!< DWT Base Address */
   #define TPI_BASE            (0xE0040000UL)                             /*!< TPI Base Address */
-  #define CoreDebug_BASE      (0xE000EDF0UL)                             /*!< Core Debug Base Address */
+  #define CoreDebug_BASE      (0xE000EDF0UL)                             /*!< \deprecated Core Debug Base Address */
+  #define DCB_BASE            (0xE000EDF0UL)                             /*!< DCB Base Address */
+  #define DIB_BASE            (0xE000EFB0UL)                             /*!< DIB Base Address */
   #define SysTick_BASE        (SCS_BASE +  0x0010UL)                     /*!< SysTick Base Address */
   #define NVIC_BASE           (SCS_BASE +  0x0100UL)                     /*!< NVIC Base Address */
   #define SCB_BASE            (SCS_BASE +  0x0D00UL)                     /*!< System Control Block Base Address */
@@ -1199,7 +1389,9 @@ typedef struct
   #define NVIC                ((NVIC_Type      *)     NVIC_BASE        ) /*!< NVIC configuration struct */
   #define DWT                 ((DWT_Type       *)     DWT_BASE         ) /*!< DWT configuration struct */
   #define TPI                 ((TPI_Type       *)     TPI_BASE         ) /*!< TPI configuration struct */
-  #define CoreDebug           ((CoreDebug_Type *)     CoreDebug_BASE   ) /*!< Core Debug configuration struct */
+  #define CoreDebug           ((CoreDebug_Type *)     CoreDebug_BASE   ) /*!< \deprecated Core Debug configuration struct */
+  #define DCB                 ((DCB_Type       *)     DCB_BASE         ) /*!< DCB configuration struct */
+  #define DIB                 ((DIB_Type       *)     DIB_BASE         ) /*!< DIB configuration struct */
 
   #if defined (__MPU_PRESENT) && (__MPU_PRESENT == 1U)
     #define MPU_BASE          (SCS_BASE +  0x0D90UL)                     /*!< Memory Protection Unit */
@@ -1213,7 +1405,9 @@ typedef struct
 
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
   #define SCS_BASE_NS         (0xE002E000UL)                             /*!< System Control Space Base Address (non-secure address space) */
-  #define CoreDebug_BASE_NS   (0xE002EDF0UL)                             /*!< Core Debug Base Address           (non-secure address space) */
+  #define CoreDebug_BASE_NS   (0xE002EDF0UL)                             /*!< \deprecated Core Debug Base Address           (non-secure address space) */
+  #define DCB_BASE_NS         (0xE002EDF0UL)                             /*!< DCB Base Address                  (non-secure address space) */
+  #define DIB_BASE_NS         (0xE002EFB0UL)                             /*!< DIB Base Address                  (non-secure address space) */
   #define SysTick_BASE_NS     (SCS_BASE_NS +  0x0010UL)                  /*!< SysTick Base Address              (non-secure address space) */
   #define NVIC_BASE_NS        (SCS_BASE_NS +  0x0100UL)                  /*!< NVIC Base Address                 (non-secure address space) */
   #define SCB_BASE_NS         (SCS_BASE_NS +  0x0D00UL)                  /*!< System Control Block Base Address (non-secure address space) */
@@ -1221,7 +1415,9 @@ typedef struct
   #define SCB_NS              ((SCB_Type       *)     SCB_BASE_NS      ) /*!< SCB configuration struct          (non-secure address space) */
   #define SysTick_NS          ((SysTick_Type   *)     SysTick_BASE_NS  ) /*!< SysTick configuration struct      (non-secure address space) */
   #define NVIC_NS             ((NVIC_Type      *)     NVIC_BASE_NS     ) /*!< NVIC configuration struct         (non-secure address space) */
-  #define CoreDebug_NS        ((CoreDebug_Type *)     CoreDebug_BASE_NS) /*!< Core Debug configuration struct   (non-secure address space) */
+  #define CoreDebug_NS        ((CoreDebug_Type *)     CoreDebug_BASE_NS) /*!< \deprecated Core Debug configuration struct   (non-secure address space) */
+  #define DCB_NS              ((DCB_Type       *)     DCB_BASE_NS      ) /*!< DCB configuration struct          (non-secure address space) */
+  #define DIB_NS              ((DIB_Type       *)     DIB_BASE_NS      ) /*!< DIB configuration struct          (non-secure address space) */
 
   #if defined (__MPU_PRESENT) && (__MPU_PRESENT == 1U)
     #define MPU_BASE_NS       (SCS_BASE_NS +  0x0D90UL)                  /*!< Memory Protection Unit            (non-secure address space) */
@@ -1238,6 +1434,7 @@ typedef struct
   Core Function Interface contains:
   - Core NVIC Functions
   - Core SysTick Functions
+  - Core Debug Functions
   - Core Register Access Functions
  ******************************************************************************/
 /**
@@ -1304,11 +1501,11 @@ typedef struct
 /* Integrity Signature (from ARMv8-M Architecture Reference Manual) for exception context stacking                            */
 #if defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)  /* Value for processors with floating-point extension:                  */
 #define EXC_INTEGRITY_SIGNATURE     (0xFEFA125AUL)     /* bit [0] SFTC must match LR bit[4] EXC_RETURN_FTYPE                   */
-#else 
+#else
 #define EXC_INTEGRITY_SIGNATURE     (0xFEFA125BUL)     /* Value for processors without floating-point extension                */
 #endif
 
-	
+
 /* Interrupt Priorities are WORD accessible only under Armv6-M                  */
 /* The following MACROS handle generation of the register offset and byte masks */
 #define _BIT_SHIFT(IRQn)         (  ((((uint32_t)(int32_t)(IRQn))         )      &  0x03UL) * 8UL)
@@ -1328,7 +1525,9 @@ __STATIC_INLINE void __NVIC_EnableIRQ(IRQn_Type IRQn)
 {
   if ((int32_t)(IRQn) >= 0)
   {
+    __COMPILER_BARRIER();
     NVIC->ISER[(((uint32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
+    __COMPILER_BARRIER();
   }
 }
 
@@ -1627,6 +1826,7 @@ __STATIC_INLINE void __NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
   uint32_t *vectors = (uint32_t *)0x0U;
 #endif
   vectors[(int32_t)IRQn + NVIC_USER_IRQ_OFFSET] = vector;
+  __DSB();
 }
 
 
@@ -1906,6 +2106,110 @@ __STATIC_INLINE void TZ_SAU_Disable(void)
 #endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
 
 /*@} end of CMSIS_Core_SAUFunctions */
+
+
+
+
+/* ##################################    Debug Control function  ############################################ */
+/**
+  \ingroup  CMSIS_Core_FunctionInterface
+  \defgroup CMSIS_Core_DCBFunctions Debug Control Functions
+  \brief    Functions that access the Debug Control Block.
+  @{
+ */
+
+ 
+/**
+  \brief   Set Debug Authentication Control Register
+  \details writes to Debug Authentication Control register.
+  \param [in]  value  value to be writen.
+ */
+__STATIC_INLINE void DCB_SetAuthCtrl(uint32_t value)
+{
+    __DSB();
+    __ISB();
+    DCB->DAUTHCTRL = value;
+    __DSB();
+    __ISB();
+}
+
+
+/**
+  \brief   Get Debug Authentication Control Register
+  \details Reads Debug Authentication Control register.
+  \return             Debug Authentication Control Register.
+ */
+__STATIC_INLINE uint32_t DCB_GetAuthCtrl(void)
+{
+    return (DCB->DAUTHCTRL);
+}
+
+
+#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
+/**
+  \brief   Set Debug Authentication Control Register (non-secure)
+  \details writes to non-secure Debug Authentication Control register when in secure state.
+  \param [in]  value  value to be writen
+ */
+__STATIC_INLINE void TZ_DCB_SetAuthCtrl_NS(uint32_t value)
+{
+    __DSB();
+    __ISB();
+    DCB_NS->DAUTHCTRL = value;
+    __DSB();
+    __ISB();
+}
+
+
+/**
+  \brief   Get Debug Authentication Control Register (non-secure)
+  \details Reads non-secure Debug Authentication Control register when in secure state.
+  \return             Debug Authentication Control Register.
+ */
+__STATIC_INLINE uint32_t TZ_DCB_GetAuthCtrl_NS(void)
+{
+    return (DCB_NS->DAUTHCTRL);
+}
+#endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
+
+/*@} end of CMSIS_Core_DCBFunctions */
+
+
+
+
+/* ##################################    Debug Identification function  ############################################ */
+/**
+  \ingroup  CMSIS_Core_FunctionInterface
+  \defgroup CMSIS_Core_DIBFunctions Debug Identification Functions
+  \brief    Functions that access the Debug Identification Block.
+  @{
+ */
+
+ 
+/**
+  \brief   Get Debug Authentication Status Register
+  \details Reads Debug Authentication Status register.
+  \return             Debug Authentication Status Register.
+ */
+__STATIC_INLINE uint32_t DIB_GetAuthStatus(void)
+{
+    return (DIB->DAUTHSTATUS);
+}
+
+
+#if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
+/**
+  \brief   Get Debug Authentication Status Register (non-secure)
+  \details Reads non-secure Debug Authentication Status register when in secure state.
+  \return             Debug Authentication Status Register.
+ */
+__STATIC_INLINE uint32_t TZ_DIB_GetAuthStatus_NS(void)
+{
+    return (DIB_NS->DAUTHSTATUS);
+}
+#endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
+
+/*@} end of CMSIS_Core_DCBFunctions */
 
 
 

@@ -24,9 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "extmod/vfs_fat.h"
@@ -83,7 +80,11 @@ uint32_t storage_get_block_count(void) {
 static void storage_systick_callback(uint32_t ticks_ms) {
     if (STORAGE_IDLE_TICK(ticks_ms)) {
         // Trigger a FLASH IRQ to execute at a lower priority
+        #if __CORTEX_M == 0
+        NVIC_SetPendingIRQ(FLASH_IRQn);
+        #else
         NVIC->STIR = FLASH_IRQn;
+        #endif
     }
 }
 
@@ -140,7 +141,6 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
 }
 
 bool storage_read_block(uint8_t *dest, uint32_t block) {
-    // printf("RD %u\n", block);
     if (block == 0) {
         // fake the MBR so we can decide on our own partition table
 
@@ -172,7 +172,6 @@ bool storage_read_block(uint8_t *dest, uint32_t block) {
 }
 
 bool storage_write_block(const uint8_t *src, uint32_t block) {
-    // printf("WR %u\n", block);
     if (block == 0) {
         // can't write MBR, but pretend we did
         return true;
@@ -298,8 +297,7 @@ STATIC mp_obj_t pyb_flash_make_new(const mp_obj_type_t *type, size_t n_args, siz
         return MP_OBJ_FROM_PTR(&pyb_flash_obj);
     }
 
-    pyb_flash_obj_t *self = m_new_obj(pyb_flash_obj_t);
-    self->base.type = &pyb_flash_type;
+    pyb_flash_obj_t *self = mp_obj_malloc(pyb_flash_obj_t, &pyb_flash_type);
     self->use_native_block_size = false;
 
     uint32_t bl_len = (storage_get_block_count() - FLASH_PART1_START_BLOCK) * FLASH_BLOCK_SIZE;
@@ -450,13 +448,14 @@ STATIC const mp_rom_map_elem_t pyb_flash_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(pyb_flash_locals_dict, pyb_flash_locals_dict_table);
 
-const mp_obj_type_t pyb_flash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-    .print = pyb_flash_print,
-    .make_new = pyb_flash_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_flash_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_flash_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_flash_make_new,
+    print, pyb_flash_print,
+    locals_dict, &pyb_flash_locals_dict
+    );
 
 void pyb_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;

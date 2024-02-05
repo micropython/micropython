@@ -53,7 +53,7 @@ enum mboot_pack_chunk_format {
     MBOOT_PACK_CHUNK_FW_GZIP = 3,
 };
 
-// Each DFU chunk transfered has this header to validate it.
+// Each DFU chunk transferred has this header to validate it.
 
 typedef struct _mboot_pack_chunk_buf_t {
     struct {
@@ -75,7 +75,7 @@ extern const uint8_t mboot_pack_secretbox_key[hydro_secretbox_KEYBYTES];
 // Implementation
 
 void mboot_pack_init(void);
-int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len);
+int mboot_pack_write(uint32_t addr, const uint8_t *src8, size_t len, bool dry_run);
 
 #endif // MBOOT_ENABLE_PACKING
 

@@ -66,6 +66,9 @@
 #define  USBD_IDX_SERIAL_STR                            0x03
 #define  USBD_IDX_CONFIG_STR                            0x04
 #define  USBD_IDX_INTERFACE_STR                         0x05
+#define  USBD_IDX_INTERFACE_CDC0_STR                    0x06
+#define  USBD_IDX_INTERFACE_CDC1_STR                    0x07
+#define  USBD_IDX_INTERFACE_CDC2_STR                    0x08
 
 #define  USB_REQ_TYPE_STANDARD                          0x00
 #define  USB_REQ_TYPE_CLASS                             0x20
@@ -267,8 +270,12 @@ typedef struct _USBD_HandleTypeDef
    with the DMA during the transaction process should be 4-bytes aligned */
 
 #if defined   (__GNUC__)        /* GNU Compiler */
-  #define __ALIGN_END    __attribute__ ((aligned (4)))
-  #define __ALIGN_BEGIN
+  #ifndef __ALIGN_END
+    #define __ALIGN_END    __attribute__ ((aligned (4)))
+  #endif /* __ALIGN_END */
+  #ifndef __ALIGN_BEGIN
+    #define __ALIGN_BEGIN
+  #endif /* __ALIGN_BEGIN */
 #else
   #define __ALIGN_END
   #if defined   (__CC_ARM)      /* ARM Compiler */

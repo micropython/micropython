@@ -70,9 +70,7 @@ STATIC mp_obj_t machine_temp_make_new(const mp_obj_type_t *type, size_t n_args, 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    machine_temp_obj_t *self = m_new_obj(machine_temp_obj_t);
-
-    self->base.type = &machine_temp_type;
+    machine_temp_obj_t *self = mp_obj_malloc(machine_temp_obj_t, &machine_temp_type);
 
     return MP_OBJ_FROM_PTR(self);
 }
@@ -114,12 +112,13 @@ STATIC const mp_rom_map_elem_t machine_temp_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_temp_locals_dict, machine_temp_locals_dict_table);
 
-const mp_obj_type_t machine_temp_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Temp,
-    .make_new = machine_temp_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_temp_locals_dict,
-    .print = machine_temp_print,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_temp_type,
+    MP_QSTR_Temp,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_temp_make_new,
+    locals_dict, &machine_temp_locals_dict,
+    print, machine_temp_print
+    );
 
 #endif // MICROPY_PY_MACHINE_TEMP

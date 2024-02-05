@@ -37,6 +37,13 @@ Reset_Handler:
     str r1,[r0]                  /* store FLEXRAM configuration value to IOMUXC_GPR17 */
     dsb
     isb
+#if defined MIMXRT117x_SERIES
+    ldr r0, =__iomux_gpr18_adr   /* load IOMUXC_GPR18 register address to R0 */
+    ldr r1, =__iomux_gpr18_value /* move FlexRAM configuration value to R1 */
+    str r1,[r0]                  /* store FLEXRAM configuration value to IOMUXC_GPR18 */
+    dsb
+    isb
+#endif
     ldr r0, =__iomux_gpr16_adr  /* load IOMUXC_GPR16 register address to R0 */
     ldr r1,[r0]                 /* load IOMUXC_GPR16 register value to R1 */
     orr r1, r1, #4              /* set corresponding FLEXRAM_BANK_CFG_SEL bit */
@@ -53,7 +60,7 @@ Reset_Handler:
  *      linker script.
  *      __etext: End of code section, i.e., begin of data sections to copy from.
  *      __data_start__/__data_end__: RAM address range that data should be
- *      __noncachedata_start__/__noncachedata_end__ : none cachable region
+ *      __noncachedata_start__/__noncachedata_end__ : non-cacheable region
  *      __ram_function_start__/__ram_function_end__ : ramfunction region
  *      copied to. Both must be aligned to 4 bytes boundary.  */
 
@@ -73,7 +80,7 @@ Reset_Handler:
     str    r0, [r2, r3]
     bgt    .LC0
 .LC1:
-#else  /* code size implemenation */
+#else  /* code size implementation */
 .LC0:
     cmp     r2, r3
     ittt    lt
@@ -96,7 +103,7 @@ Reset_Handler:
     str    r0, [r2, r3]
     bgt    .LC_ramfunc_copy_start
 .LC_ramfunc_copy_end:
-#else  /* code size implemenation */
+#else  /* code size implementation */
 .LC_ramfunc_copy_start:
     cmp     r2, r3
     ittt    lt
@@ -120,7 +127,7 @@ Reset_Handler:
     str    r0, [r2, r3]
     bgt    .LC2
 .LC3:
-#else  /* code size implemenation */
+#else  /* code size implementation */
 .LC2:
     cmp     r2, r3
     ittt    lt

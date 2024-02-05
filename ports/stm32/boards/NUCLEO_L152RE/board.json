@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "./deploy.md"
+    ],
+    "docs": "",
+    "features": [],
+    "images": [
+        "nucleo_l152re.jpg"
+    ],
+    "mcu": "stm32l1",
+    "product": "Nucleo L152RE",
+    "thumbnail": "",
+    "url": "",
+    "vendor": "ST Microelectronics"
+}

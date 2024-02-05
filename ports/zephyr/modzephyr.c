@@ -29,10 +29,10 @@
 #if MICROPY_PY_ZEPHYR
 
 #include <stdio.h>
-#include <zephyr.h>
-#include <debug/thread_analyzer.h>
-#include <shell/shell.h>
-#include <shell/shell_uart.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/debug/thread_analyzer.h>
+#include <zephyr/shell/shell.h>
+#include <zephyr/shell/shell_uart.h>
 
 #include "modzephyr.h"
 #include "py/runtime.h"
@@ -88,5 +88,7 @@ const mp_obj_module_t mp_module_zephyr = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_time_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_zephyr, mp_module_zephyr);
 
 #endif // MICROPY_PY_ZEPHYR

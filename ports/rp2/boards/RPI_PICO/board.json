@@ -1,0 +1,19 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "USB"
+    ],
+    "images": [
+        "rp2-pico.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Pico",
+    "thumbnail": "",
+    "url": "https://www.raspberrypi.com/products/raspberry-pi-pico/",
+    "vendor": "Raspberry Pi"
+}

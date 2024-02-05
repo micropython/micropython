@@ -8,25 +8,28 @@ on:
       - 'tools/**'
       - 'py/**'
       - 'extmod/**'
+      - 'shared/**'
       - 'lib/**'
       - 'drivers/**'
       - 'ports/stm32/**'
 
-jobs:
-  build_pyb:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v2
-    - name: Install packages
-      run: source tools/ci.sh && ci_stm32_setup
-    - name: Build
-      run: source tools/ci.sh && ci_stm32_pyb_build
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
-  build_nucleo:
+jobs:
+  build_stm32:
+    strategy:
+      fail-fast: false
+      matrix:
+        ci_func:  # names are functions in ci.sh
+          - stm32_pyb_build
+          - stm32_nucleo_build
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install packages
       run: source tools/ci.sh && ci_stm32_setup
-    - name: Build
-      run: source tools/ci.sh && ci_stm32_nucleo_build
+    - name: Build ci_${{matrix.ci_func }}
+      run: source tools/ci.sh && ci_${{ matrix.ci_func }}
+

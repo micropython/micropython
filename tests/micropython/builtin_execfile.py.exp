@@ -1,0 +1,7 @@
+mount False False
+open /noexist.py rb
+OSError
+open /test.py rb
+123
+TypeError
+umount

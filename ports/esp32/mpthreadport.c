@@ -42,19 +42,19 @@
 #define MP_THREAD_PRIORITY                              (ESP_TASK_PRIO_MIN + 1)
 
 // this structure forms a linked list, one node per active thread
-typedef struct _thread_t {
+typedef struct _mp_thread_t {
     TaskHandle_t id;        // system id of thread
     int ready;              // whether the thread is ready and running
     void *arg;              // thread Python args, a GC root pointer
     void *stack;            // pointer to the stack
     size_t stack_len;       // number of words in the stack
-    struct _thread_t *next;
-} thread_t;
+    struct _mp_thread_t *next;
+} mp_thread_t;
 
 // the mutex controls access to the linked list
 STATIC mp_thread_mutex_t thread_mutex;
-STATIC thread_t thread_entry0;
-STATIC thread_t *thread = NULL; // root pointer, handled by mp_thread_gc_others
+STATIC mp_thread_t thread_entry0;
+STATIC mp_thread_t *thread = NULL; // root pointer, handled by mp_thread_gc_others
 
 void mp_thread_init(void *stack, uint32_t stack_len) {
     mp_thread_set_state(&mp_state_ctx.thread);
@@ -76,7 +76,7 @@ void mp_thread_init(void *stack, uint32_t stack_len) {
 
 void mp_thread_gc_others(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
-    for (thread_t *th = thread; th != NULL; th = th->next) {
+    for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         gc_collect_root((void **)&th, 1);
         gc_collect_root(&th->arg, 1); // probably not needed
         if (th->id == xTaskGetCurrentTaskHandle()) {
@@ -98,9 +98,13 @@ void mp_thread_set_state(mp_state_thread_t *state) {
     vTaskSetThreadLocalStoragePointer(NULL, 1, state);
 }
 
+mp_uint_t mp_thread_get_id(void) {
+    return (mp_uint_t)xTaskGetCurrentTaskHandle();
+}
+
 void mp_thread_start(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
-    for (thread_t *th = thread; th != NULL; th = th->next) {
+    for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == xTaskGetCurrentTaskHandle()) {
             th->ready = 1;
             break;
@@ -120,7 +124,7 @@ STATIC void freertos_entry(void *arg) {
     }
 }
 
-void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, char *name) {
+mp_uint_t mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, int priority, char *name) {
     // store thread entry function into a global variable so we can access it
     ext_thread_entry = entry;
 
@@ -131,7 +135,7 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     }
 
     // Allocate linked-list node (must be outside thread_mutex lock)
-    thread_t *th = m_new_obj(thread_t);
+    mp_thread_t *th = m_new_obj(mp_thread_t);
 
     mp_thread_mutex_lock(&thread_mutex, 1);
 
@@ -154,15 +158,17 @@ void mp_thread_create_ex(void *(*entry)(void *), void *arg, size_t *stack_size, 
     *stack_size -= 1024;
 
     mp_thread_mutex_unlock(&thread_mutex);
+
+    return (mp_uint_t)th->id;
 }
 
-void mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
-    mp_thread_create_ex(entry, arg, stack_size, MP_THREAD_PRIORITY, "mp_thread");
+mp_uint_t mp_thread_create(void *(*entry)(void *), void *arg, size_t *stack_size) {
+    return mp_thread_create_ex(entry, arg, stack_size, MP_THREAD_PRIORITY, "mp_thread");
 }
 
 void mp_thread_finish(void) {
     mp_thread_mutex_lock(&thread_mutex, 1);
-    for (thread_t *th = thread; th != NULL; th = th->next) {
+    for (mp_thread_t *th = thread; th != NULL; th = th->next) {
         if (th->id == xTaskGetCurrentTaskHandle()) {
             th->ready = 0;
             break;
@@ -178,9 +184,9 @@ void vPortCleanUpTCB(void *tcb) {
         // threading not yet initialised
         return;
     }
-    thread_t *prev = NULL;
+    mp_thread_t *prev = NULL;
     mp_thread_mutex_lock(&thread_mutex, 1);
-    for (thread_t *th = thread; th != NULL; prev = th, th = th->next) {
+    for (mp_thread_t *th = thread; th != NULL; prev = th, th = th->next) {
         // unlink the node from the list
         if ((void *)th->id == tcb) {
             if (prev != NULL) {
@@ -216,7 +222,7 @@ void mp_thread_deinit(void) {
         // Find a task to delete
         TaskHandle_t id = NULL;
         mp_thread_mutex_lock(&thread_mutex, 1);
-        for (thread_t *th = thread; th != NULL; th = th->next) {
+        for (mp_thread_t *th = thread; th != NULL; th = th->next) {
             // Don't delete the current task
             if (th->id != xTaskGetCurrentTaskHandle()) {
                 id = th->id;

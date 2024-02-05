@@ -10,6 +10,7 @@ def f():
 
 f()
 
+
 # using True as a conditional
 @micropython.viper
 def f():
@@ -20,6 +21,7 @@ def f():
 
 f()
 
+
 # using an int as a conditional
 @micropython.viper
 def g():
@@ -29,6 +31,7 @@ def g():
 
 
 g()
+
 
 # using an int as a conditional that has the lower 16-bits clear
 @micropython.viper

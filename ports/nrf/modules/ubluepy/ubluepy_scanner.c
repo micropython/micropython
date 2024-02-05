@@ -38,8 +38,7 @@
 STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_data_t * data) {
     ubluepy_scanner_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
-    ubluepy_scan_entry_obj_t * item = m_new_obj(ubluepy_scan_entry_obj_t);
-    item->base.type = &ubluepy_scan_entry_type;
+    ubluepy_scan_entry_obj_t * item = mp_obj_malloc(ubluepy_scan_entry_obj_t, &ubluepy_scan_entry_type);
 
     vstr_t vstr;
     vstr_init(&vstr, 17);
@@ -78,8 +77,7 @@ STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_arg
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
-    ubluepy_scanner_obj_t * s = m_new_obj(ubluepy_scanner_obj_t);
-    s->base.type = type;
+    ubluepy_scanner_obj_t * s = mp_obj_malloc(ubluepy_scanner_obj_t, type);
 
     return MP_OBJ_FROM_PTR(s);
 }
@@ -116,12 +114,13 @@ STATIC const mp_rom_map_elem_t ubluepy_scanner_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(ubluepy_scanner_locals_dict, ubluepy_scanner_locals_dict_table);
 
 
-const mp_obj_type_t ubluepy_scanner_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Scanner,
-    .print = ubluepy_scanner_print,
-    .make_new = ubluepy_scanner_make_new,
-    .locals_dict = (mp_obj_dict_t*)&ubluepy_scanner_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ubluepy_scanner_type,
+    MP_QSTR_Scanner,
+    MP_TYPE_FLAG_NONE,
+    make_new, ubluepy_scanner_make_new,
+    print, ubluepy_scanner_print,
+    locals_dict, &ubluepy_scanner_locals_dict
+    );
 
 #endif // MICROPY_PY_UBLUEPY_CENTRAL

@@ -37,7 +37,7 @@ First activate the station interface::
 
 Then connect to your WiFi network::
 
-    >>> sta_if.connect('<your ESSID>', '<your password>')
+    >>> sta_if.connect('<your SSID>', '<your key>')
 
 To check if the connection is established use::
 
@@ -61,7 +61,7 @@ connect to your WiFi network::
         if not sta_if.isconnected():
             print('connecting to network...')
             sta_if.active(True)
-            sta_if.connect('<essid>', '<password>')
+            sta_if.connect('<ssid>', '<key>')
             while not sta_if.isconnected():
                 pass
         print('network config:', sta_if.ifconfig())

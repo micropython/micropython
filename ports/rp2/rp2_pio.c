@@ -68,6 +68,11 @@ typedef struct _rp2_state_machine_irq_obj_t {
 STATIC const rp2_state_machine_obj_t rp2_state_machine_obj[8];
 STATIC uint8_t rp2_state_machine_initial_pc[8];
 
+// These masks keep track of PIO instruction memory used by this module.
+STATIC uint32_t rp2_pio_instruction_memory_usage_mask[2];
+
+STATIC const rp2_state_machine_obj_t *rp2_state_machine_get_object(mp_int_t sm_id);
+STATIC void rp2_state_machine_reset_all(void);
 STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
 
 STATIC void pio_irq0(PIO pio) {
@@ -101,11 +106,42 @@ STATIC void pio1_irq0(void) {
     pio_irq0(pio1);
 }
 
-void rp2_pio_init(void) {
-    // Reset all PIO instruction memory.
-    pio_clear_instruction_memory(pio0);
-    pio_clear_instruction_memory(pio1);
+// Calls pio_add_program() and keeps track of used instruction memory.
+STATIC uint rp2_pio_add_managed_program(PIO pio, struct pio_program *pio_program) {
+    uint offset = pio_add_program(pio, pio_program);
+    uint32_t mask = ((1 << pio_program->length) - 1) << offset;
+    rp2_pio_instruction_memory_usage_mask[pio_get_index(pio)] |= mask;
+    return offset;
+}
 
+// Calls pio_remove_program() and keeps track of used instruction memory.
+STATIC void rp2_pio_remove_managed_program(PIO pio, struct pio_program *pio_program, uint offset) {
+    pio_remove_program(pio, pio_program, offset);
+    uint32_t mask = ((1 << pio_program->length) - 1) << offset;
+    rp2_pio_instruction_memory_usage_mask[pio_get_index(pio)] &= ~mask;
+}
+
+// Calls pio_remove_program() for all programs registered with rp2_pio_add_managed_program(),
+// that weren't already removed via rp2_pio_remove_managed_program().
+STATIC void rp2_pio_remove_all_managed_programs(PIO pio) {
+    uint32_t mask = rp2_pio_instruction_memory_usage_mask[pio_get_index(pio)];
+    for (size_t i = 0; i < 32; ++i) {
+        if (mask & (1 << i)) {
+            size_t j;
+            for (j = i + 1; j < 32; ++j) {
+                if (!(mask & (1 << j))) {
+                    break;
+                }
+            }
+            struct pio_program pio_program = { NULL, j - i, -1 };
+            pio_remove_program(pio, &pio_program, i);
+            i = j; // i indexes an unused bit, or is 32
+        }
+    }
+    rp2_pio_instruction_memory_usage_mask[pio_get_index(pio)] = 0;
+}
+
+void rp2_pio_init(void) {
     // Set up interrupts.
     memset(MP_STATE_PORT(rp2_pio_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_pio_irq_obj)));
     memset(MP_STATE_PORT(rp2_state_machine_irq_obj), 0, sizeof(MP_STATE_PORT(rp2_state_machine_irq_obj)));
@@ -118,6 +154,14 @@ void rp2_pio_deinit(void) {
     irq_set_mask_enabled((1u << PIO0_IRQ_0) | (1u << PIO0_IRQ_1), false);
     irq_remove_handler(PIO0_IRQ_0, pio0_irq0);
     irq_remove_handler(PIO1_IRQ_0, pio1_irq0);
+
+    rp2_state_machine_reset_all();
+
+    // Reset all PIO instruction memory allocated by this module.
+    // Note: other subsystems (eg the CYW43 driver) may use the PIO,
+    // and their PIO programs should remain intact.
+    rp2_pio_remove_all_managed_programs(pio0);
+    rp2_pio_remove_all_managed_programs(pio1);
 }
 
 /******************************************************************************/
@@ -233,7 +277,7 @@ STATIC mp_obj_t rp2_pio_add_program(mp_obj_t self_in, mp_obj_t prog_in) {
     if (!pio_can_add_program(self->pio, &pio_program)) {
         mp_raise_OSError(MP_ENOMEM);
     }
-    uint offset = pio_add_program(self->pio, &pio_program);
+    uint offset = rp2_pio_add_managed_program(self->pio, &pio_program);
 
     // Store the program offset in the program object.
     prog[PROG_OFFSET_PIO0 + PIO_NUM(self->pio)] = MP_OBJ_NEW_SMALL_INT(offset);
@@ -267,7 +311,7 @@ STATIC mp_obj_t rp2_pio_remove_program(size_t n_args, const mp_obj_t *args) {
 
     // Remove the program from the instruction memory.
     struct pio_program pio_program = { NULL, length, -1 };
-    pio_remove_program(self->pio, &pio_program, offset);
+    rp2_pio_remove_managed_program(self->pio, &pio_program, offset);
 
     return mp_const_none;
 }
@@ -280,11 +324,11 @@ STATIC mp_obj_t rp2_pio_state_machine(size_t n_args, const mp_obj_t *pos_args, m
     // Get and verify the state machine id.
     mp_int_t sm_id = mp_obj_get_int(pos_args[1]);
     if (!(0 <= sm_id && sm_id < 4)) {
-        mp_raise_ValueError("invalide state machine");
+        mp_raise_ValueError("invalid StateMachine");
     }
 
     // Return the correct StateMachine object.
-    const rp2_state_machine_obj_t *sm = &rp2_state_machine_obj[(self->pio == pio0 ? 0 : 4) + sm_id];
+    const rp2_state_machine_obj_t *sm = rp2_state_machine_get_object((self->pio == pio0 ? 0 : 4) + sm_id);
 
     if (n_args > 2 || kw_args->used > 0) {
         // Configuration arguments given so init this StateMachine.
@@ -371,13 +415,14 @@ STATIC const mp_rom_map_elem_t rp2_pio_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_pio_locals_dict, rp2_pio_locals_dict_table);
 
-const mp_obj_type_t rp2_pio_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PIO,
-    .print = rp2_pio_print,
-    .make_new = rp2_pio_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rp2_pio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2_pio_type,
+    MP_QSTR_PIO,
+    MP_TYPE_FLAG_NONE,
+    make_new, rp2_pio_make_new,
+    print, rp2_pio_print,
+    locals_dict, &rp2_pio_locals_dict
+    );
 
 STATIC mp_uint_t rp2_pio_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     rp2_pio_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -408,6 +453,9 @@ STATIC const mp_irq_methods_t rp2_pio_irq_methods = {
 /******************************************************************************/
 // StateMachine object
 
+// This mask keeps track of state machines claimed by this module.
+STATIC uint32_t rp2_state_machine_claimed_mask;
+
 STATIC const mp_irq_methods_t rp2_state_machine_irq_methods;
 
 STATIC const rp2_state_machine_obj_t rp2_state_machine_obj[] = {
@@ -420,6 +468,35 @@ STATIC const rp2_state_machine_obj_t rp2_state_machine_obj[] = {
     { { &rp2_state_machine_type }, pio1, PIO1_IRQ_0, 2, 6 },
     { { &rp2_state_machine_type }, pio1, PIO1_IRQ_0, 3, 7 },
 };
+
+STATIC const rp2_state_machine_obj_t *rp2_state_machine_get_object(mp_int_t sm_id) {
+    if (!(0 <= sm_id && sm_id < MP_ARRAY_SIZE(rp2_state_machine_obj))) {
+        mp_raise_ValueError("invalid StateMachine");
+    }
+
+    const rp2_state_machine_obj_t *sm_obj = &rp2_state_machine_obj[sm_id];
+
+    if (!(rp2_state_machine_claimed_mask & (1 << sm_id))) {
+        if (pio_sm_is_claimed(sm_obj->pio, sm_obj->sm)) {
+            mp_raise_ValueError("StateMachine claimed by external resource");
+        }
+        pio_sm_claim(sm_obj->pio, sm_obj->sm);
+        rp2_state_machine_claimed_mask |= 1 << sm_id;
+    }
+
+    return sm_obj;
+}
+
+STATIC void rp2_state_machine_reset_all(void) {
+    for (size_t i = 0; i < MP_ARRAY_SIZE(rp2_state_machine_obj); ++i) {
+        if (rp2_state_machine_claimed_mask & (1 << i)) {
+            const rp2_state_machine_obj_t *sm_obj = &rp2_state_machine_obj[i];
+            pio_sm_unclaim(sm_obj->pio, sm_obj->sm);
+            pio_sm_set_enabled(sm_obj->pio, sm_obj->sm, false);
+        }
+    }
+    rp2_state_machine_claimed_mask = 0;
+}
 
 STATIC void rp2_state_machine_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -464,8 +541,8 @@ STATIC mp_obj_t rp2_state_machine_init_helper(const rp2_state_machine_obj_t *sel
     if (offset < 0) {
         rp2_pio_add_program(&rp2_pio_obj[PIO_NUM(self->pio)], args[ARG_prog].u_obj);
         offset = mp_obj_get_int(prog[PROG_OFFSET_PIO0 + PIO_NUM(self->pio)]);
-        rp2_state_machine_initial_pc[self->id] = offset;
     }
+    rp2_state_machine_initial_pc[self->id] = offset;
 
     // Compute the clock divider.
     uint16_t clkdiv_int;
@@ -567,10 +644,7 @@ STATIC mp_obj_t rp2_state_machine_make_new(const mp_obj_type_t *type, size_t n_a
 
     // Get the StateMachine object.
     mp_int_t sm_id = mp_obj_get_int(args[0]);
-    if (!(0 <= sm_id && sm_id < MP_ARRAY_SIZE(rp2_state_machine_obj))) {
-        mp_raise_ValueError("invalid StateMachine");
-    }
-    const rp2_state_machine_obj_t *self = &rp2_state_machine_obj[sm_id];
+    const rp2_state_machine_obj_t *self = rp2_state_machine_get_object(sm_id);
 
     if (n_args > 1 || n_kw > 0) {
         // Configuration arguments given so init this StateMachine.
@@ -610,16 +684,19 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_restart_obj, rp2_state_machin
 // StateMachine.exec(instr)
 STATIC mp_obj_t rp2_state_machine_exec(mp_obj_t self_in, mp_obj_t instr_in) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_obj_t rp2_module = mp_import_name(MP_QSTR_rp2, mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
-    mp_obj_t asm_pio_encode = mp_load_attr(rp2_module, MP_QSTR_asm_pio_encode);
-    uint32_t sideset_count = self->pio->sm[self->sm].pinctrl >> PIO_SM0_PINCTRL_SIDESET_COUNT_LSB;
-    uint8_t sideset_opt = !!(self->pio->sm[self->sm].execctrl & (1 << PIO_SM0_EXECCTRL_SIDE_EN_LSB));
-    mp_obj_t args[3];
-    args[0] = instr_in;
-    args[1] = MP_OBJ_NEW_SMALL_INT(sideset_count);
-    args[2] = MP_OBJ_NEW_SMALL_INT(sideset_opt);
-    mp_obj_t encoded_obj = mp_call_function_n_kw(asm_pio_encode, 3, 0, args);
-    mp_int_t encoded = mp_obj_get_int(encoded_obj);
+    mp_int_t encoded = 0;
+    if (!mp_obj_get_int_maybe(instr_in, &encoded)) {
+        mp_obj_t rp2_module = mp_import_name(MP_QSTR_rp2, mp_const_none, MP_OBJ_NEW_SMALL_INT(0));
+        mp_obj_t asm_pio_encode = mp_load_attr(rp2_module, MP_QSTR_asm_pio_encode);
+        uint32_t sideset_count = self->pio->sm[self->sm].pinctrl >> PIO_SM0_PINCTRL_SIDESET_COUNT_LSB;
+        uint8_t sideset_opt = !!(self->pio->sm[self->sm].execctrl & (1 << PIO_SM0_EXECCTRL_SIDE_EN_LSB));
+        mp_obj_t args[3];
+        args[0] = instr_in;
+        args[1] = MP_OBJ_NEW_SMALL_INT(sideset_count);
+        args[2] = MP_OBJ_NEW_SMALL_INT(sideset_opt);
+        mp_obj_t encoded_obj = mp_call_function_n_kw(asm_pio_encode, 3, 0, args);
+        encoded = mp_obj_get_int(encoded_obj);
+    }
     pio_sm_exec(self->pio, self->sm, encoded);
     return mp_const_none;
 }
@@ -652,8 +729,7 @@ STATIC mp_obj_t rp2_state_machine_get(size_t n_args, const mp_obj_t *args) {
     for (;;) {
         while (pio_sm_is_rx_fifo_empty(self->pio, self->sm)) {
             // This delay must be fast.
-            mp_handle_pending(true);
-            MICROPY_HW_USBDEV_TASK_HOOK
+            mp_event_handle_nowait();
         }
         uint32_t value = pio_sm_get(self->pio, self->sm) >> shift;
         if (dest == NULL) {
@@ -711,8 +787,7 @@ STATIC mp_obj_t rp2_state_machine_put(size_t n_args, const mp_obj_t *args) {
         }
         while (pio_sm_is_tx_fifo_full(self->pio, self->sm)) {
             // This delay must be fast.
-            mp_handle_pending(true);
-            MICROPY_HW_USBDEV_TASK_HOOK
+            mp_event_handle_nowait();
         }
         pio_sm_put(self->pio, self->sm, value << shift);
     }
@@ -733,6 +808,23 @@ STATIC mp_obj_t rp2_state_machine_tx_fifo(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(pio_sm_get_tx_fifo_level(self->pio, self->sm));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_state_machine_tx_fifo_obj, rp2_state_machine_tx_fifo);
+
+// Buffer protocol implementation for StateMachine.
+// The buffer represents one of the FIFO ports of the state machine. Note that a different
+// pointer is returned depending on if this is for reading or writing.
+STATIC mp_int_t rp2_state_machine_get_buffer(mp_obj_t o_in, mp_buffer_info_t *bufinfo, mp_uint_t flags) {
+    rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(o_in);
+
+    bufinfo->len = 4;
+    bufinfo->typecode = 'I';
+
+    if (flags & MP_BUFFER_WRITE) {
+        bufinfo->buf = (void *)&self->pio->txf[self->sm];
+    } else {
+        bufinfo->buf = (void *)&self->pio->rxf[self->sm];
+    }
+    return 0;
+}
 
 // StateMachine.irq(handler=None, trigger=0|1, hard=False)
 STATIC mp_obj_t rp2_state_machine_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -803,13 +895,15 @@ STATIC const mp_rom_map_elem_t rp2_state_machine_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_state_machine_locals_dict, rp2_state_machine_locals_dict_table);
 
-const mp_obj_type_t rp2_state_machine_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_StateMachine,
-    .print = rp2_state_machine_print,
-    .make_new = rp2_state_machine_make_new,
-    .locals_dict = (mp_obj_dict_t *)&rp2_state_machine_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    rp2_state_machine_type,
+    MP_QSTR_StateMachine,
+    MP_TYPE_FLAG_NONE,
+    make_new, rp2_state_machine_make_new,
+    print, rp2_state_machine_print,
+    buffer, rp2_state_machine_get_buffer,
+    locals_dict, &rp2_state_machine_locals_dict
+    );
 
 STATIC mp_uint_t rp2_state_machine_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     rp2_state_machine_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -836,3 +930,6 @@ STATIC const mp_irq_methods_t rp2_state_machine_irq_methods = {
     .trigger = rp2_state_machine_irq_trigger,
     .info = rp2_state_machine_irq_info,
 };
+
+MP_REGISTER_ROOT_POINTER(void *rp2_pio_irq_obj[2]);
+MP_REGISTER_ROOT_POINTER(void *rp2_state_machine_irq_obj[8]);

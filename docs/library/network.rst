@@ -89,7 +89,7 @@ parameter should be `id`.
        network media, there are different variants of predefined/
        recommended tuple formats, among them:
 
-       * WiFi: (ssid, bssid, channel, RSSI, authmode, hidden). There
+       * WiFi: (ssid, bssid, channel, RSSI, security, hidden). There
          may be further fields, specific to a particular device.
 
        The function may accept additional keyword arguments to filter scan
@@ -133,10 +133,10 @@ parameter should be `id`.
        querying, a parameter name should be quoted as a string, and only one
        parameter can be queried at a time::
 
-        # Set WiFi access point name (formally known as ESSID) and WiFi channel
-        ap.config(essid='My AP', channel=11)
+        # Set WiFi access point name (formally known as SSID) and WiFi channel
+        ap.config(ssid='My AP', channel=11)
         # Query params one by one
-        print(ap.config('essid'))
+        print(ap.config('ssid'))
         print(ap.config('channel'))
 
 Specific network class implementations
@@ -150,20 +150,58 @@ provide a way to control networking interfaces of various kinds.
 
    network.WLAN.rst
    network.WLANWiPy.rst
-   network.CC3K.rst
    network.WIZNET5K.rst
+   network.LAN.rst
 
 Network functions
 =================
 
 The following are functions available in the network module.
 
+.. function:: country([code])
+
+    Get or set the two-letter ISO 3166-1 Alpha-2 country code to be used for
+    radio compliance.
+
+    If the *code* parameter is provided, the country will be set to this value.
+    If the function is called without parameters, it returns the current
+    country.
+
+    The default code ``"XX"`` represents the "worldwide" region.
+
+.. function:: hostname([name])
+
+    Get or set the hostname that will identify this device on the network. It will
+    be used by all interfaces.
+
+    This hostname is used for:
+     * Sending to the DHCP server in the client request. (If using DHCP)
+     * Broadcasting via mDNS. (If enabled)
+
+    If the *name* parameter is provided, the hostname will be set to this value.
+    If the function is called without parameters, it returns the current
+    hostname.
+
+    A change in hostname is typically only applied during connection. For DHCP
+    this is because the hostname is part of the DHCP client request, and the
+    implementation of mDNS in most ports only initialises the hostname once
+    during connection. For this reason, you must set the hostname before
+    activating/connecting your network interfaces.
+
+    The length of the hostname is limited to 32 characters.
+    :term:`MicroPython ports <MicroPython port>` may choose to set a lower
+    limit for memory reasons. If the given name does not fit, a `ValueError`
+    is raised.
+
+    The default hostname is typically the name of the board.
+
 .. function:: phy_mode([mode])
 
     Get or set the PHY mode.
 
-    If the *mode* parameter is provided, sets the mode to its value. If
-    the function is called without parameters, returns the current mode.
+    If the *mode* parameter is provided, the PHY mode will be set to this value.
+    If the function is called without parameters, it returns the current PHY
+    mode.
 
     The possible modes are defined as constants:
         * ``MODE_11B`` -- IEEE 802.11b,

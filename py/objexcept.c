@@ -81,6 +81,8 @@ void mp_init_emergency_exception_buf(void) {
 #else
 #define mp_emergency_exception_buf_size MP_STATE_VM(mp_emergency_exception_buf_size)
 
+#include "py/mphal.h" // for MICROPY_BEGIN_ATOMIC_SECTION/MICROPY_END_ATOMIC_SECTION
+
 void mp_init_emergency_exception_buf(void) {
     mp_emergency_exception_buf_size = 0;
     MP_STATE_VM(mp_emergency_exception_buf) = NULL;
@@ -111,6 +113,10 @@ mp_obj_t mp_alloc_emergency_exception_buf(mp_obj_t size_in) {
 #endif
 #endif  // MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
 
+bool mp_obj_is_native_exception_instance(mp_obj_t self_in) {
+    return MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(self_in), make_new) == mp_obj_exception_make_new;
+}
+
 STATIC mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
     assert(mp_obj_is_exception_instance(self_in));
     if (mp_obj_is_native_exception_instance(self_in)) {
@@ -122,7 +128,7 @@ STATIC mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
 
 STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
     #if MICROPY_ROM_TEXT_COMPRESSION
-    if (o->args->len == 1 && mp_obj_is_type(o->args->items[0], &mp_type_str)) {
+    if (o->args->len == 1 && mp_obj_is_exact_type(o->args->items[0], &mp_type_str)) {
         mp_obj_str_t *o_str = MP_OBJ_TO_PTR(o->args->items[0]);
         if (MP_IS_COMPRESSED_ROM_STRING(o_str->data)) {
             byte *buf = m_new_maybe(byte, MP_MAX_UNCOMPRESSED_TEXT_LEN + 1);
@@ -174,7 +180,7 @@ void mp_obj_exception_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kin
             return;
         }
 
-        #if MICROPY_PY_UERRNO
+        #if MICROPY_PY_ERRNO
         // try to provide a nice OSError error message
         if (o->base.type == &mp_type_OSError && o->args->len > 0 && o->args->len < 3 && mp_obj_is_small_int(o->args->items[0])) {
             qstr qst = mp_errno_to_str(o->args->items[0]);
@@ -213,11 +219,11 @@ mp_obj_t mp_obj_exception_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
     mp_obj_tuple_t *o_tuple;
     if (n_args == 0) {
-        // No args, can use the empty tuple straightaway
+        // No args, can use the empty tuple straight away
         o_tuple = (mp_obj_tuple_t *)&mp_const_empty_tuple_obj;
     } else {
         // Try to allocate memory for the tuple containing the args
-        o_tuple = m_new_obj_var_maybe(mp_obj_tuple_t, mp_obj_t, n_args);
+        o_tuple = m_new_obj_var_maybe(mp_obj_tuple_t, items, mp_obj_t, n_args);
 
         #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF
         // If we are called by mp_obj_new_exception_msg_varg then it will have
@@ -284,13 +290,14 @@ void mp_obj_exception_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_BaseException = {
-    { &mp_type_type },
-    .name = MP_QSTR_BaseException,
-    .print = mp_obj_exception_print,
-    .make_new = mp_obj_exception_make_new,
-    .attr = mp_obj_exception_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_BaseException,
+    MP_QSTR_BaseException,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_obj_exception_make_new,
+    print, mp_obj_exception_print,
+    attr, mp_obj_exception_attr
+    );
 
 // *FORMAT-OFF*
 
@@ -374,12 +381,12 @@ MP_DEFINE_EXCEPTION(Exception, BaseException)
 // *FORMAT-ON*
 
 mp_obj_t mp_obj_new_exception(const mp_obj_type_t *exc_type) {
-    assert(exc_type->make_new == mp_obj_exception_make_new);
+    assert(MP_OBJ_TYPE_GET_SLOT_OR_NULL(exc_type, make_new) == mp_obj_exception_make_new);
     return mp_obj_exception_make_new(exc_type, 0, 0, NULL);
 }
 
 mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args, const mp_obj_t *args) {
-    assert(exc_type->make_new == mp_obj_exception_make_new);
+    assert(MP_OBJ_TYPE_GET_SLOT_OR_NULL(exc_type, make_new) == mp_obj_exception_make_new);
     return mp_obj_exception_make_new(exc_type, n_args, 0, args);
 }
 
@@ -387,7 +394,7 @@ mp_obj_t mp_obj_new_exception_args(const mp_obj_type_t *exc_type, size_t n_args,
 
 mp_obj_t mp_obj_new_exception_msg(const mp_obj_type_t *exc_type, mp_rom_error_text_t msg) {
     // Check that the given type is an exception type
-    assert(exc_type->make_new == mp_obj_exception_make_new);
+    assert(MP_OBJ_TYPE_GET_SLOT_OR_NULL(exc_type, make_new) == mp_obj_exception_make_new);
 
     // Try to allocate memory for the message
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
@@ -466,7 +473,7 @@ mp_obj_t mp_obj_new_exception_msg_vlist(const mp_obj_type_t *exc_type, mp_rom_er
     assert(fmt != NULL);
 
     // Check that the given type is an exception type
-    assert(exc_type->make_new == mp_obj_exception_make_new);
+    assert(MP_OBJ_TYPE_GET_SLOT_OR_NULL(exc_type, make_new) == mp_obj_exception_make_new);
 
     // Try to allocate memory for the message
     mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
@@ -537,7 +544,7 @@ bool mp_obj_is_exception_type(mp_obj_t self_in) {
     if (mp_obj_is_type(self_in, &mp_type_type)) {
         // optimisation when self_in is a builtin exception
         mp_obj_type_t *self = MP_OBJ_TO_PTR(self_in);
-        if (self->make_new == mp_obj_exception_make_new) {
+        if (MP_OBJ_TYPE_GET_SLOT_OR_NULL(self, make_new) == mp_obj_exception_make_new) {
             return true;
         }
     }
@@ -574,6 +581,16 @@ void mp_obj_exception_add_traceback(mp_obj_t self_in, qstr file, size_t line, qs
 
     // append this traceback info to traceback data
     // if memory allocation fails (eg because gc is locked), just return
+
+    #if MICROPY_PY_SYS_TRACEBACKLIMIT
+    mp_int_t max_traceback = MP_OBJ_SMALL_INT_VALUE(MP_STATE_VM(sys_mutable[MP_SYS_MUTABLE_TRACEBACKLIMIT]));
+    if (max_traceback <= 0) {
+        return;
+    } else if (self->traceback_data != NULL && self->traceback_len >= max_traceback * TRACEBACK_ENTRY_LEN) {
+        self->traceback_len -= TRACEBACK_ENTRY_LEN;
+        memmove(self->traceback_data, self->traceback_data + TRACEBACK_ENTRY_LEN, self->traceback_len * sizeof(self->traceback_data[0]));
+    }
+    #endif
 
     if (self->traceback_data == NULL) {
         self->traceback_data = m_new_maybe(size_t, TRACEBACK_ENTRY_LEN);

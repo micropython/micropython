@@ -27,7 +27,6 @@
 #include <stdio.h>
 #include "ets_sys.h"
 #include "etshal.h"
-#include "esp_mphal.h"
 #include "user_interface.h"
 #include "extmod/misc.h"
 

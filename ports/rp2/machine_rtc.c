@@ -35,10 +35,10 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
+#include "extmod/modmachine.h"
 #include "shared/timeutils/timeutils.h"
 #include "hardware/rtc.h"
 #include "pico/util/datetime.h"
-#include "modmachine.h"
 
 typedef struct _machine_rtc_obj_t {
     mp_obj_base_t base;
@@ -58,6 +58,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
         rtc_init();
         datetime_t t = { .month = 1, .day = 1 };
         rtc_set_datetime(&t);
+        mp_hal_time_ns_set_from_rtc();
     }
     // return constant object
     return (mp_obj_t)&machine_rtc_obj;
@@ -104,6 +105,7 @@ STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
         if (!rtc_set_datetime(&t)) {
             mp_raise_OSError(MP_EINVAL);
         }
+        mp_hal_time_ns_set_from_rtc();
 
     }
     return mp_const_none;
@@ -115,9 +117,10 @@ STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
-const mp_obj_type_t machine_rtc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RTC,
-    .make_new = machine_rtc_make_new,
-    .locals_dict = (mp_obj_t)&machine_rtc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_rtc_type,
+    MP_QSTR_RTC,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_rtc_make_new,
+    locals_dict, &machine_rtc_locals_dict
+    );

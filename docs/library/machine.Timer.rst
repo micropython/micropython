@@ -38,12 +38,15 @@ Constructors
 Methods
 -------
 
-.. method:: Timer.init(*, mode=Timer.PERIODIC, period=-1, callback=None)
+.. method:: Timer.init(*, mode=Timer.PERIODIC, freq=-1, period=-1, callback=None)
 
    Initialise the timer. Example::
 
        def mycallback(t):
            pass
+
+       # periodic at 1kHz
+       tim.init(mode=Timer.PERIODIC, freq=1000, callback=mycallback)
 
        # periodic with 100ms period
        tim.init(period=100, callback=mycallback)
@@ -60,12 +63,17 @@ Methods
        - ``Timer.PERIODIC`` - The timer runs periodically at the configured
          frequency of the channel.
 
+     - ``freq`` - The timer frequency, in units of Hz.  The upper bound of
+       the frequency is dependent on the port.  When both the ``freq`` and
+       ``period`` arguments are given, ``freq`` has a higher priority and
+       ``period`` is ignored.
+
      - ``period`` - The timer period, in milliseconds.
 
      - ``callback`` - The callable to call upon expiration of the timer period.
        The callback must take one argument, which is passed the Timer object.
        The ``callback`` argument shall be specified. Otherwise an exception
-       will occurr upon timer expiration:
+       will occur upon timer expiration:
        ``TypeError: 'NoneType' object isn't callable``
 
 .. method:: Timer.deinit()

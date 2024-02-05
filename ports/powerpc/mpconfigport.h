@@ -35,10 +35,8 @@
 
 // #define MICROPY_DEBUG_VERBOSE    (1)
 
-#define MICROPY_QSTR_BYTES_IN_HASH  (1)
 #define MICROPY_QSTR_EXTRA_POOL     mp_qstr_frozen_const_pool
 #define MICROPY_ALLOC_PATH_MAX      (256)
-#define MICROPY_ALLOC_PARSE_CHUNK_INIT (16)
 #define MICROPY_EMIT_X64            (0)
 #define MICROPY_EMIT_THUMB          (0)
 #define MICROPY_EMIT_INLINE_THUMB   (0)
@@ -111,9 +109,6 @@ typedef long mp_off_t;
 #define MICROPY_HW_MCU_NAME "POWERPC"
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];
 
 // powerpc64 gcc doesn't seem to define these
 // These are pointers, so make them 64 bit types

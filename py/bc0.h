@@ -28,6 +28,18 @@
 
 // MicroPython bytecode opcodes, grouped based on the format of the opcode
 
+// All opcodes are encoded as a byte with an optional argument.  Arguments are
+// variable-length encoded so they can be as small as possible.  The possible
+// encodings for arguments are (ip[0] is the opcode):
+//
+//  - unsigned relative bytecode offset:
+//      - if ip[1] high bit is clear then: arg = ip[1]
+//      - if ip[1] high bit is set then:   arg = ip[1] & 0x7f | ip[2] << 7
+//
+//  - signed relative bytecode offset:
+//      - if ip[1] high bit is clear then: arg = ip[1] - 0x40
+//      - if ip[1] high bit is set then:   arg = (ip[1] & 0x7f | ip[2] << 7) - 0x4000
+
 #define MP_BC_MASK_FORMAT                   (0xf0)
 #define MP_BC_MASK_EXTRA_BYTE               (0x9e)
 
@@ -101,17 +113,17 @@
 #define MP_BC_ROT_TWO                       (MP_BC_BASE_BYTE_O + 0x0a)
 #define MP_BC_ROT_THREE                     (MP_BC_BASE_BYTE_O + 0x0b)
 
-#define MP_BC_JUMP                          (MP_BC_BASE_JUMP_E + 0x02) // rel byte code offset, 16-bit signed, in excess
-#define MP_BC_POP_JUMP_IF_TRUE              (MP_BC_BASE_JUMP_E + 0x03) // rel byte code offset, 16-bit signed, in excess
-#define MP_BC_POP_JUMP_IF_FALSE             (MP_BC_BASE_JUMP_E + 0x04) // rel byte code offset, 16-bit signed, in excess
-#define MP_BC_JUMP_IF_TRUE_OR_POP           (MP_BC_BASE_JUMP_E + 0x05) // rel byte code offset, 16-bit signed, in excess
-#define MP_BC_JUMP_IF_FALSE_OR_POP          (MP_BC_BASE_JUMP_E + 0x06) // rel byte code offset, 16-bit signed, in excess
-#define MP_BC_UNWIND_JUMP                   (MP_BC_BASE_JUMP_E + 0x00) // rel byte code offset, 16-bit signed, in excess; then a byte
-#define MP_BC_SETUP_WITH                    (MP_BC_BASE_JUMP_E + 0x07) // rel byte code offset, 16-bit unsigned
-#define MP_BC_SETUP_EXCEPT                  (MP_BC_BASE_JUMP_E + 0x08) // rel byte code offset, 16-bit unsigned
-#define MP_BC_SETUP_FINALLY                 (MP_BC_BASE_JUMP_E + 0x09) // rel byte code offset, 16-bit unsigned
-#define MP_BC_POP_EXCEPT_JUMP               (MP_BC_BASE_JUMP_E + 0x0a) // rel byte code offset, 16-bit unsigned
-#define MP_BC_FOR_ITER                      (MP_BC_BASE_JUMP_E + 0x0b) // rel byte code offset, 16-bit unsigned
+#define MP_BC_UNWIND_JUMP                   (MP_BC_BASE_JUMP_E + 0x00) // signed relative bytecode offset; then a byte
+#define MP_BC_JUMP                          (MP_BC_BASE_JUMP_E + 0x02) // signed relative bytecode offset
+#define MP_BC_POP_JUMP_IF_TRUE              (MP_BC_BASE_JUMP_E + 0x03) // signed relative bytecode offset
+#define MP_BC_POP_JUMP_IF_FALSE             (MP_BC_BASE_JUMP_E + 0x04) // signed relative bytecode offset
+#define MP_BC_JUMP_IF_TRUE_OR_POP           (MP_BC_BASE_JUMP_E + 0x05) // unsigned relative bytecode offset
+#define MP_BC_JUMP_IF_FALSE_OR_POP          (MP_BC_BASE_JUMP_E + 0x06) // unsigned relative bytecode offset
+#define MP_BC_SETUP_WITH                    (MP_BC_BASE_JUMP_E + 0x07) // unsigned relative bytecode offset
+#define MP_BC_SETUP_EXCEPT                  (MP_BC_BASE_JUMP_E + 0x08) // unsigned relative bytecode offset
+#define MP_BC_SETUP_FINALLY                 (MP_BC_BASE_JUMP_E + 0x09) // unsigned relative bytecode offset
+#define MP_BC_POP_EXCEPT_JUMP               (MP_BC_BASE_JUMP_E + 0x0a) // unsigned relative bytecode offset
+#define MP_BC_FOR_ITER                      (MP_BC_BASE_JUMP_E + 0x0b) // unsigned relative bytecode offset
 #define MP_BC_WITH_CLEANUP                  (MP_BC_BASE_BYTE_O + 0x0c)
 #define MP_BC_END_FINALLY                   (MP_BC_BASE_BYTE_O + 0x0d)
 #define MP_BC_GET_ITER                      (MP_BC_BASE_BYTE_O + 0x0e)

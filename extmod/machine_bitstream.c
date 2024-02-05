@@ -27,7 +27,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "extmod/machine_bitstream.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_BITSTREAM
 

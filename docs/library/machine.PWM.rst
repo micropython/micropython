@@ -10,7 +10,8 @@ Example usage::
 
     from machine import PWM
 
-    pwm = PWM(pin)          # create a PWM object on a pin
+    pwm = PWM(pin, freq=50, duty_u16=8192)  # create a PWM object on a pin
+                                            # and set freq and duty
     pwm.duty_u16(32768)     # set duty to 50%
 
     # reinitialise with a period of 200us, duty of 5us
@@ -23,7 +24,7 @@ Example usage::
 Constructors
 ------------
 
-.. class:: PWM(dest, \*, freq, duty_u16, duty_ns)
+.. class:: PWM(dest, *, freq, duty_u16, duty_ns, invert)
 
    Construct and return a new PWM object using the following parameters:
 
@@ -34,15 +35,17 @@ Constructors
         PWM cycle.
       - *duty_u16* sets the duty cycle as a ratio ``duty_u16 / 65535``.
       - *duty_ns* sets the pulse width in nanoseconds.
+      - *invert*  inverts the respective output if the value is True
 
    Setting *freq* may affect other PWM objects if the objects share the same
    underlying PWM generator (this is hardware specific).
    Only one of *duty_u16* and *duty_ns* should be specified at a time.
+   *invert* is not available at all ports.
 
 Methods
 -------
 
-.. method:: PWM.init(\*, freq, duty_u16, duty_ns)
+.. method:: PWM.init(*, freq, duty_u16, duty_ns)
 
    Modify settings for the PWM object.  See the above constructor for details
    about the parameters.
@@ -78,6 +81,13 @@ Methods
 
    With a single *value* argument the pulse width is set to that value.
 
+Specific PWM class implementations
+----------------------------------
+
+The following concrete class(es) implement enhancements to the PWM class.
+
+   | :ref:`pyb.Timer for PyBoard <pyb.Timer>`  
+
 Limitations of PWM
 ------------------
 
@@ -89,6 +99,11 @@ Limitations of PWM
   After rounding the divider is set to 267 and the PWM frequency will be
   80000000 / 267 = 299625.5 Hz, not 300kHz.  If the divider is set to 266 then
   the PWM frequency will be 80000000 / 266 = 300751.9 Hz, but again not 300kHz.
+
+  Some ports like the RP2040 one use a fractional divider, which allow a finer
+  granularity of the frequency at higher frequencies by switching the PWM
+  pulse duration between two adjacent values, such that the resulting average
+  frequency is more close to the intended one, at the cost of spectral purity. 
 
 * The duty cycle has the same discrete nature and its absolute accuracy is not
   achievable.  On most hardware platforms the duty will be applied at the next

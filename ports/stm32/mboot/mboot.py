@@ -38,7 +38,7 @@ class Bootloader:
                 self.i2c.readfrom_into(self.addr, self.buf1)
                 n = self.buf1[0]
                 break
-            except OSError as er:
+            except OSError:
                 time.sleep_us(500)
             if time.ticks_diff(time.ticks_ms(), start) > 5000:
                 raise Exception("timeout")

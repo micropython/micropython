@@ -31,6 +31,8 @@
 #if MICROPY_PY_BLUETOOTH && MICROPY_BLUETOOTH_BTSTACK
 
 #include "lib/btstack/src/btstack.h"
+#include "lib/btstack/src/hci_transport_h4.h"
+#include "lib/btstack/platform/embedded/hci_dump_embedded_stdout.h"
 #include "extmod/mpbthci.h"
 #include "extmod/btstack/btstack_hci_uart.h"
 #include "extmod/btstack/modbluetooth_btstack.h"
@@ -137,16 +139,10 @@ void mp_bluetooth_hci_poll(void) {
 }
 
 void mp_bluetooth_btstack_port_init(void) {
-    static bool run_loop_init = false;
-    if (!run_loop_init) {
-        run_loop_init = true;
-        btstack_run_loop_init(&mp_btstack_runloop_stm32);
-    } else {
-        mp_btstack_runloop_stm32.init();
-    }
+    btstack_run_loop_init(&mp_btstack_runloop_stm32);
 
-    // hci_dump_open(NULL, HCI_DUMP_STDOUT);
-    const hci_transport_t *transport = hci_transport_h4_instance(&mp_bluetooth_btstack_hci_uart_block);
+    // hci_dump_init(hci_dump_embedded_stdout_get_instance());
+    const hci_transport_t *transport = hci_transport_h4_instance_for_uart(&mp_bluetooth_btstack_hci_uart_block);
     hci_init(transport, &hci_transport_config_uart);
 
     #ifdef MICROPY_HW_BLE_BTSTACK_CHIPSET_INSTANCE

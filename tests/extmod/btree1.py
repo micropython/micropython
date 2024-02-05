@@ -1,19 +1,22 @@
 try:
     import btree
-    import uio
-    import uerrno
+    import io
+    import errno
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 # f = open("_test.db", "w+b")
-f = uio.BytesIO()
+f = io.BytesIO()
 db = btree.open(f, pagesize=512)
+
+mv = memoryview(b"bar1foo1")
 
 db[b"foo3"] = b"bar3"
 db[b"foo1"] = b"bar1"
-db[b"foo2"] = b"bar2"
-db[b"bar1"] = b"foo1"
+# any type that implements buffer protocol works for key and value
+db["foo2"] = "bar2"
+db[mv[:4]] = mv[4:]
 
 dbstr = str(db)
 print(dbstr[:7], dbstr[-1:])
@@ -65,7 +68,7 @@ print(db.seq(1, b"qux"))
 try:
     db.seq(b"foo1")
 except OSError as e:
-    print(e.errno == uerrno.EINVAL)
+    print(e.errno == errno.EINVAL)
 
 print(list(db.keys()))
 print(list(db.values()))

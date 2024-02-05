@@ -2,15 +2,29 @@ name: Check code formatting
 
 on: [push, pull_request]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  code-formatting:
+    runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
     - name: Install packages
-      run: source tools/ci.sh && ci_code_formatting_setup
+      run: source tools/ci.sh && ci_c_code_formatting_setup
     - name: Run code formatting
-      run: source tools/ci.sh && ci_code_formatting_run
+      run: source tools/ci.sh && ci_c_code_formatting_run
     - name: Check code formatting
       run: git diff --exit-code
+
+  code-spelling:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+    - name: Install packages
+      run: source tools/ci.sh && ci_code_spell_setup
+    - name: Run spell checker
+      run: source tools/ci.sh && ci_code_spell_run

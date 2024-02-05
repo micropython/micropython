@@ -86,7 +86,7 @@ Filesystem access
 
 .. function:: statvfs(path)
 
-   Get the status of a fileystem.
+   Get the status of a filesystem.
 
    Returns a tuple with the filesystem information in the following order:
 

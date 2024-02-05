@@ -3,7 +3,7 @@
 reserved_size = MICROPY_HW_FLASH_RESERVED;
 #endif
 
-#if MICROPY_HW_FLASH_TYPE == qspi_nor
+#if MICROPY_HW_FLASH_TYPE == qspi_nor_flash
 flash_start         = 0x60000000;
 #else
 #error Unknown MICROPY_HW_FLASH_TYPE
@@ -27,7 +27,7 @@ dtcm_size           = 0x00018000;
 ocrm_start          = 0x20200000;
 ocrm_size           = 0x00018000;
 
-#ifdef MICROPY_HW_SDRAM_AVAIL
+#if MICROPY_HW_SDRAM_AVAIL
 sdram_start         = 0x80000000;
 sdram_size          = MICROPY_HW_SDRAM_SIZE;
 #endif
@@ -37,7 +37,7 @@ __stack_size__ = 0x6000;
 _estack = __StackTop;
 _sstack = __StackLimit;
 
-#ifdef MICROPY_HW_SDRAM_AVAIL
+#if MICROPY_HW_SDRAM_AVAIL
 _gc_heap_start = ORIGIN(m_sdram);
 _gc_heap_end = ORIGIN(m_sdram) + LENGTH(m_sdram);
 #else

@@ -29,11 +29,19 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
 #include "py/mphal.h"
 #include "py/mpthread.h"
 #include "py/runtime.h"
 #include "extmod/misc.h"
+
+#if defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2, 25)
+#include <sys/random.h>
+#define _HAVE_GETRANDOM
+#endif
+#endif
 
 #ifndef _WIN32
 #include <signal.h>
@@ -176,10 +184,15 @@ main_term:;
     return c;
 }
 
-void mp_hal_stdout_tx_strn(const char *str, size_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_uint_t written = ret < 0 ? 0 : ret;
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res >= 0) {
+        written = MIN((mp_uint_t)dupterm_res, written);
+    }
+    return written;
 }
 
 // cooked is same as uncooked because the terminal does some postprocessing
@@ -191,6 +204,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
+#ifndef mp_hal_ticks_ms
 mp_uint_t mp_hal_ticks_ms(void) {
     #if (defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0) && defined(_POSIX_MONOTONIC_CLOCK)
     struct timespec tv;
@@ -202,7 +216,9 @@ mp_uint_t mp_hal_ticks_ms(void) {
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
     #endif
 }
+#endif
 
+#ifndef mp_hal_ticks_us
 mp_uint_t mp_hal_ticks_us(void) {
     #if (defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0) && defined(_POSIX_MONOTONIC_CLOCK)
     struct timespec tv;
@@ -214,23 +230,32 @@ mp_uint_t mp_hal_ticks_us(void) {
     return tv.tv_sec * 1000000 + tv.tv_usec;
     #endif
 }
+#endif
 
+#ifndef mp_hal_time_ns
 uint64_t mp_hal_time_ns(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
 }
+#endif
 
+#ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms) {
-    #ifdef MICROPY_EVENT_POLL_HOOK
     mp_uint_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
-        // MICROPY_EVENT_POLL_HOOK does mp_hal_delay_us(500) (i.e. usleep(500)).
-        MICROPY_EVENT_POLL_HOOK
+        mp_event_wait_ms(1);
     }
+}
+#endif
+
+void mp_hal_get_random(size_t n, void *buf) {
+    #ifdef _HAVE_GETRANDOM
+    RAISE_ERRNO(getrandom(buf, n, 0), errno);
     #else
-    // TODO: POSIX et al. define usleep() as guaranteedly capable only of 1s sleep:
-    // "The useconds argument shall be less than one million."
-    usleep(ms * 1000);
+    int fd = open("/dev/random", O_RDONLY);
+    RAISE_ERRNO(fd, errno);
+    RAISE_ERRNO(read(fd, buf, n), errno);
+    close(fd);
     #endif
 }

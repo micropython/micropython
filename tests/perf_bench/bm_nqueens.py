@@ -5,6 +5,7 @@
 # author: collinwinter@google.com (Collin Winter)
 # n_queens function: Copyright 2009 Raymond Hettinger
 
+
 # Pure-Python implementation of itertools.permutations().
 def permutations(iterable, r=None):
     """permutations(range(3), 2) --> (0,1) (0,2) (1,0) (1,2) (2,0) (2,1)"""
@@ -46,7 +47,7 @@ def n_queens(queen_count):
 # Benchmark interface
 
 bm_params = {
-    (50, 25): (1, 5),
+    (32, 10): (1, 5),
     (100, 25): (1, 6),
     (1000, 100): (1, 7),
     (5000, 100): (1, 8),

@@ -24,70 +24,62 @@
  * THE SOFTWARE.
  */
 
+#include "py/runtime.h"
+
 #ifdef MICROPY_SSL_MBEDTLS
 
-#include "py/runtime.h"
-#include "py/gc.h"
-#include "fsl_trng.h"
-#include "mbedtls_config.h"
-
-#define DEBUG (0)
-
-#if DEBUG
-static size_t count_links(uint32_t *nb) {
-    void **p = MP_STATE_PORT(mbedtls_memory);
-    size_t n = 0;
-    *nb = 0;
-    while (p != NULL) {
-        ++n;
-        *nb += gc_nbytes(p);
-        p = (void **)p[1];
-    }
-    return n;
-}
+#include "mbedtls_config_port.h"
+#if defined(MBEDTLS_HAVE_TIME) || defined(MBEDTLS_HAVE_TIME_DATE)
+#include "fsl_snvs_lp.h"
+#include "shared/timeutils/timeutils.h"
+#include "mbedtls/platform_time.h"
 #endif
 
-void *m_calloc_mbedtls(size_t nmemb, size_t size) {
-    void **ptr = m_malloc0(nmemb * size + 2 * sizeof(uintptr_t));
-    #if DEBUG
-    uint32_t nb;
-    size_t n = count_links(&nb);
-    printf("mbed_alloc(%u, %u) -> (%u;%u) %p\n", nmemb, size, n, (uint)nb, ptr);
-    #endif
-    if (MP_STATE_PORT(mbedtls_memory) != NULL) {
-        MP_STATE_PORT(mbedtls_memory)[0] = ptr;
-    }
-    ptr[0] = NULL;
-    ptr[1] = MP_STATE_PORT(mbedtls_memory);
-    MP_STATE_PORT(mbedtls_memory) = ptr;
-    return &ptr[2];
-}
-
-void m_free_mbedtls(void *ptr_in) {
-    void **ptr = &((void **)ptr_in)[-2];
-    #if DEBUG
-    uint32_t nb;
-    size_t n = count_links(&nb);
-    printf("mbed_free(%p, [%p, %p], nbytes=%u, links=%u;%u)\n", ptr, ptr[0], ptr[1], gc_nbytes(ptr), n, (uint)nb);
-    #endif
-    if (ptr[1] != NULL) {
-        ((void **)ptr[1])[0] = ptr[0];
-    }
-    if (ptr[0] != NULL) {
-        ((void **)ptr[0])[1] = ptr[1];
-    } else {
-        MP_STATE_PORT(mbedtls_memory) = ptr[1];
-    }
-    m_free(ptr);
-}
+void trng_random_data(unsigned char *output, size_t len);
 
 int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen) {
 
     // assumes that TRNG_Init was called during startup
     *olen = len;
-    TRNG_GetRandomData(TRNG, output, len);
+    trng_random_data(output, len);
 
     return 0;
 }
+
+#if defined(MBEDTLS_HAVE_TIME)
+time_t mimxrt_rtctime_seconds(time_t *timer) {
+    // Get date and date in CPython order.
+    snvs_lp_srtc_datetime_t date;
+    SNVS_LP_SRTC_GetDatetime(SNVS, &date);
+    return timeutils_seconds_since_epoch(date.year, date.month, date.day, date.hour, date.minute, date.second);
+}
+
+mbedtls_ms_time_t mbedtls_ms_time(void) {
+    time_t *tv = NULL;
+    mbedtls_ms_time_t current_ms;
+    current_ms = mimxrt_rtctime_seconds(tv) * 1000;
+    return current_ms;
+}
+#endif
+
+#if defined(MBEDTLS_HAVE_TIME_DATE)
+struct tm *gmtime(const time_t *timep) {
+    static struct tm tm;
+    timeutils_struct_time_t tm_buf = {0};
+    timeutils_seconds_since_epoch_to_struct_time(*timep, &tm_buf);
+
+    tm.tm_sec = tm_buf.tm_sec;
+    tm.tm_min = tm_buf.tm_min;
+    tm.tm_hour = tm_buf.tm_hour;
+    tm.tm_mday = tm_buf.tm_mday;
+    tm.tm_mon = tm_buf.tm_mon - 1;
+    tm.tm_year = tm_buf.tm_year - 1900;
+    tm.tm_wday = tm_buf.tm_wday;
+    tm.tm_yday = tm_buf.tm_yday;
+    tm.tm_isdst = -1;
+
+    return &tm;
+}
+#endif
 
 #endif

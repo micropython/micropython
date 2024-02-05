@@ -5,7 +5,6 @@ import lwip
 
 
 def main():
-
     ROM = uctypes.bytearray_at(0x40200000, 16)
     fid = esp.flash_id()
 

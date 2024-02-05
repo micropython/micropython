@@ -28,15 +28,14 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <zephyr.h>
-#include <drivers/spi.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/drivers/spi.h>
 
 #include "py/runtime.h"
 #include "py/gc.h"
 #include "py/mphal.h"
 #include "py/mperrno.h"
-#include "extmod/machine_spi.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_PY_MACHINE_SPI
 
@@ -106,9 +105,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
         .cs = NULL
     };
 
-    machine_hard_spi_obj_t *self = m_new_obj(machine_hard_spi_obj_t);
-
-    self->base.type = &machine_hard_spi_type;
+    machine_hard_spi_obj_t *self = mp_obj_malloc(machine_hard_spi_obj_t, &machine_spi_type);
     self->dev = dev;
     self->config = cfg;
 
@@ -199,13 +196,14 @@ STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
     .transfer = machine_hard_spi_transfer,
 };
 
-const mp_obj_type_t machine_hard_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .print = machine_hard_spi_print,
-    .make_new = machine_hard_spi_make_new,
-    .protocol = &machine_hard_spi_p,
-    .locals_dict = (mp_obj_dict_t *)&mp_machine_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_hard_spi_make_new,
+    print, machine_hard_spi_print,
+    protocol, &machine_hard_spi_p,
+    locals_dict, &mp_machine_spi_locals_dict
+    );
 
 #endif // MICROPY_PY_MACHINE_SPI

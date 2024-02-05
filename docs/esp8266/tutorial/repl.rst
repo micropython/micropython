@@ -13,7 +13,7 @@ REPL over the serial port
 
 The REPL is always available on the UART0 serial peripheral, which is connected
 to the pins GPIO1 for TX and GPIO3 for RX.  The baudrate of the REPL is 115200.
-If your board has a USB-serial convertor on it then you should be able to access
+If your board has a USB-serial converter on it then you should be able to access
 the REPL directly from your PC.  Otherwise you will need to have a way of
 communicating with the UART.
 

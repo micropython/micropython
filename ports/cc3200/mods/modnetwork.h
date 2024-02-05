@@ -35,10 +35,6 @@
 /******************************************************************************
  DEFINE TYPES
  ******************************************************************************/
-typedef struct _mod_network_nic_type_t {
-    mp_obj_type_t base;
-} mod_network_nic_type_t;
-
 typedef struct _mod_network_socket_base_t {
     union {
         struct {
@@ -63,7 +59,7 @@ typedef struct _mod_network_socket_obj_t {
 /******************************************************************************
  EXPORTED DATA
  ******************************************************************************/
-extern const mod_network_nic_type_t mod_network_nic_type_wlan;
+extern const mp_obj_type_t mod_network_nic_type_wlan;
 
 /******************************************************************************
  DECLARE FUNCTIONS

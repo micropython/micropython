@@ -40,7 +40,7 @@
 
 #if MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD
 
-#if defined(STM32F7) || defined(STM32H7) || defined(STM32L4)
+#if defined(STM32F7) || defined(STM32H5) || defined(STM32H7) || defined(STM32L4)
 
 // The H7/F7/L4 have 2 SDMMC peripherals, but at the moment this driver only supports
 // using one of them in a given build, selected by MICROPY_HW_SDCARD_SDMMC.
@@ -86,7 +86,7 @@
 #endif
 
 // The F7 & L4 series calls the peripheral SDMMC rather than SDIO, so provide some
-// #defines for backwards compatability.
+// #defines for backwards compatibility.
 
 #define SDIO_CLOCK_EDGE_RISING              SDMMC_CLOCK_EDGE_RISING
 #define SDIO_CLOCK_EDGE_FALLING             SDMMC_CLOCK_EDGE_FALLING
@@ -104,7 +104,7 @@
 #define SDIO_HARDWARE_FLOW_CONTROL_DISABLE  SDMMC_HARDWARE_FLOW_CONTROL_DISABLE
 #define SDIO_HARDWARE_FLOW_CONTROL_ENABLE   SDMMC_HARDWARE_FLOW_CONTROL_ENABLE
 
-#if defined(STM32H7)
+#if defined(STM32H5) || defined(STM32H7)
 #define SDIO_TRANSFER_CLK_DIV               SDMMC_NSpeed_CLK_DIV
 #define SDIO_USE_GPDMA                      0
 #else
@@ -200,6 +200,14 @@ void sdcard_init(void) {
     #endif
 }
 
+void sdcard_select_sd(void) {
+    pyb_sdmmc_flags |= PYB_SDMMC_FLAG_SD;
+}
+
+void sdcard_select_mmc(void) {
+    pyb_sdmmc_flags |= PYB_SDMMC_FLAG_MMC;
+}
+
 STATIC void sdmmc_msp_init(void) {
     // enable SDIO clock
     SDMMC_CLK_ENABLE();
@@ -249,7 +257,7 @@ bool sdcard_is_present(void) {
     }
     #endif
     #if defined(MICROPY_HW_SDCARD_DETECT_PIN)
-    return HAL_GPIO_ReadPin(MICROPY_HW_SDCARD_DETECT_PIN->gpio, MICROPY_HW_SDCARD_DETECT_PIN->pin_mask) == MICROPY_HW_SDCARD_DETECT_PRESENT;
+    return mp_hal_pin_read(MICROPY_HW_SDCARD_DETECT_PIN) == MICROPY_HW_SDCARD_DETECT_PRESENT;
     #else
     return true;
     #endif
@@ -260,7 +268,7 @@ STATIC HAL_StatusTypeDef sdmmc_init_sd(void) {
     // SD device interface configuration
     sdmmc_handle.sd.Instance = SDIO;
     sdmmc_handle.sd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
-    #ifndef STM32H7
+    #if !defined(STM32H5) && !defined(STM32H7)
     sdmmc_handle.sd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
     #endif
     sdmmc_handle.sd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_ENABLE;
@@ -680,6 +688,8 @@ mp_uint_t sdcard_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t n
 //
 // Expose the SD card or MMC as an object with the block protocol.
 
+#if !BUILDING_MBOOT
+
 // There are singleton SDCard/MMCard objects
 #if MICROPY_HW_ENABLE_SDCARD
 const mp_obj_base_t pyb_sdcard_obj = {&pyb_sdcard_type};
@@ -862,21 +872,23 @@ STATIC const mp_rom_map_elem_t pyb_sdcard_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(pyb_sdcard_locals_dict, pyb_sdcard_locals_dict_table);
 
 #if MICROPY_HW_ENABLE_SDCARD
-const mp_obj_type_t pyb_sdcard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SDCard,
-    .make_new = pyb_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_sdcard_type,
+    MP_QSTR_SDCard,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_sdcard_make_new,
+    locals_dict, &pyb_sdcard_locals_dict
+    );
 #endif
 
 #if MICROPY_HW_ENABLE_MMCARD
-const mp_obj_type_t pyb_mmcard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_MMCard,
-    .make_new = pyb_mmcard_make_new,
-    .locals_dict = (mp_obj_dict_t *)&pyb_sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_mmcard_type,
+    MP_QSTR_MMCard,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_mmcard_make_new,
+    locals_dict, &pyb_sdcard_locals_dict
+    );
 #endif
 
 void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
@@ -896,5 +908,7 @@ void sdcard_init_vfs(fs_user_mount_t *vfs, int part) {
     vfs->blockdev.u.ioctl[0] = MP_OBJ_FROM_PTR(&pyb_sdcard_ioctl_obj);
     vfs->blockdev.u.ioctl[1] = MP_OBJ_FROM_PTR(&pyb_sdcard_obj);
 }
+
+#endif // !BUILDING_MBOOT
 
 #endif // MICROPY_HW_ENABLE_SDCARD || MICROPY_HW_ENABLE_MMCARD

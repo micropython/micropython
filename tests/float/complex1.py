@@ -4,9 +4,19 @@
 print(complex(1))
 print(complex(1.2))
 print(complex(1.2j))
+print(complex("j"))
+print(complex("J"))
 print(complex("1"))
 print(complex("1.2"))
 print(complex("1.2j"))
+print(complex("1+j"))
+print(complex("1+2j"))
+print(complex("-1-2j"))
+print(complex("+1-2j"))
+print(complex(" -1-2j "))
+print(complex(" +1-2j "))
+print(complex("nanj"))
+print(complex("nan-infj"))
 print(complex(1, 2))
 print(complex(1j, 2j))
 
@@ -27,15 +37,15 @@ print(1j * 2j)
 print(1j / 2)
 print((1j / 2j).real)
 print(1j / (1 + 2j))
-ans = 0j ** 0
+ans = 0j**0
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 0j ** 1
+ans = 0j**1
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 0j ** 0j
+ans = 0j**0j
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 1j ** 2.5
+ans = 1j**2.5
 print("%.5g %.5g" % (ans.real, ans.imag))
-ans = 1j ** 2.5j
+ans = 1j**2.5j
 print("%.5g %.5g" % (ans.real, ans.imag))
 
 # comparison
@@ -71,6 +81,13 @@ print(float("nan") * 1j)
 print(float("-nan") * 1j)
 print(float("inf") * (1 + 1j))
 print(float("-inf") * (1 + 1j))
+
+# malformed complex strings
+for test in ("1+2", "1j+2", "1+2j+3", "1+2+3j", "1 + 2j"):
+    try:
+        complex(test)
+    except ValueError:
+        print("ValueError", test)
 
 # can't assign to attributes
 try:
@@ -116,10 +133,10 @@ except ZeroDivisionError:
 
 # zero division via power
 try:
-    0j ** -1
+    0j**-1
 except ZeroDivisionError:
     print("ZeroDivisionError")
 try:
-    0j ** 1j
+    0j**1j
 except ZeroDivisionError:
     print("ZeroDivisionError")

@@ -45,7 +45,7 @@ def transfer_file(args):
             if "250" in ftp.cwd("/flash"):
                 if not ftp_directory_exists(ftp, "sys"):
                     print("/flash/sys directory does not exist")
-                    if not "550" in ftp.mkd("sys"):
+                    if "550" not in ftp.mkd("sys"):
                         print("/flash/sys directory created")
                     else:
                         print("Error: cannot create /flash/sys directory")
@@ -109,7 +109,7 @@ def reset_board(args):
     finally:
         try:
             tn.close()
-        except Exception as e:
+        except Exception:
             pass
         return success
 
@@ -152,9 +152,9 @@ def verify_update(args):
             with open(tag_file_path) as tag_file:
                 for line in tag_file:
                     bline = bytes(line, "ascii")
-                    if b"MICROPY_GIT_HASH" in bline:
+                    if b"MICROPY_GIT_TAG" in bline:
                         bline = (
-                            bline.lstrip(b"#define MICROPY_GIT_HASH ")
+                            bline.lstrip(b"#define MICROPY_GIT_TAG ")
                             .replace(b'"', b"")
                             .replace(b"\r", b"")
                             .replace(b"\n", b"")
@@ -167,7 +167,7 @@ def verify_update(args):
     finally:
         try:
             tn.close()
-        except Exception as e:
+        except Exception:
             pass
         return success
 

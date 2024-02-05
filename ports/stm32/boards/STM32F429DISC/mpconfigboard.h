@@ -32,10 +32,10 @@
 #define MICROPY_HW_I2C3_SDA (pin_C9)
 
 // SPI buses
-//#define MICROPY_HW_SPI1_NSS     (pin_A4)
-//#define MICROPY_HW_SPI1_SCK     (pin_A5)
-//#define MICROPY_HW_SPI1_MISO    (pin_A6)
-//#define MICROPY_HW_SPI1_MOSI    (pin_A7)
+// #define MICROPY_HW_SPI1_NSS     (pin_A4)
+// #define MICROPY_HW_SPI1_SCK     (pin_A5)
+// #define MICROPY_HW_SPI1_MISO    (pin_A6)
+// #define MICROPY_HW_SPI1_MOSI    (pin_A7)
 #if defined(USE_USB_HS_IN_FS)
 // The HS USB uses B14 & B15 for D- and D+
 #else
@@ -44,18 +44,18 @@
 #define MICROPY_HW_SPI2_MISO (pin_B14)
 #define MICROPY_HW_SPI2_MOSI (pin_B15)
 #endif
-//#define MICROPY_HW_SPI4_NSS     (pin_E11)
-//#define MICROPY_HW_SPI4_SCK     (pin_E12)
-//#define MICROPY_HW_SPI4_MISO    (pin_E13)
-//#define MICROPY_HW_SPI4_MOSI    (pin_E14)
+// #define MICROPY_HW_SPI4_NSS     (pin_E11)
+// #define MICROPY_HW_SPI4_SCK     (pin_E12)
+// #define MICROPY_HW_SPI4_MISO    (pin_E13)
+// #define MICROPY_HW_SPI4_MOSI    (pin_E14)
 #define MICROPY_HW_SPI5_NSS     (pin_F6)
 #define MICROPY_HW_SPI5_SCK     (pin_F7)
 #define MICROPY_HW_SPI5_MISO    (pin_F8)
 #define MICROPY_HW_SPI5_MOSI    (pin_F9)
-//#define MICROPY_HW_SPI6_NSS     (pin_G8)
-//#define MICROPY_HW_SPI6_SCK     (pin_G13)
-//#define MICROPY_HW_SPI6_MISO    (pin_G12)
-//#define MICROPY_HW_SPI6_MOSI    (pin_G14)
+// #define MICROPY_HW_SPI6_NSS     (pin_G8)
+// #define MICROPY_HW_SPI6_SCK     (pin_G13)
+// #define MICROPY_HW_SPI6_MISO    (pin_G12)
+// #define MICROPY_HW_SPI6_MOSI    (pin_G14)
 
 // CAN buses
 #define MICROPY_HW_CAN1_TX (pin_B9)

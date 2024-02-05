@@ -29,6 +29,7 @@ elif platform.python_version_tuple()[0] == "3":
 
 # end compatibility code
 
+
 # given a list of (name,regex) pairs, find the first one that matches the given line
 def re_match_first(regexs, line):
     for name, regex in regexs:
@@ -64,15 +65,19 @@ class Lexer:
         (
             "#define typedef",
             re.compile(
-                r"#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)"
+                r"#define +(?P<id>[A-Z0-9_]+(ext)?) +\(\([A-Za-z0-9_]+_(Global)?TypeDef \*\) (?P<id2>[A-Za-z0-9_]+)\)($| +/\*)"
             ),
         ),
         ("typedef struct", re.compile(r"typedef struct$")),
         ("{", re.compile(r"{$")),
         ("}", re.compile(r"}$")),
         (
+            "} _t",
+            re.compile(r"} *([A-Za-z0-9_]+)_t;$"),
+        ),
+        (
             "} TypeDef",
-            re.compile(r"} *(?P<id>[A-Z][A-Za-z0-9_]+)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$"),
+            re.compile(r"} *(?P<id>[A-Z][A-Za-z0-9_]*)_(?P<global>([A-Za-z0-9_]+)?)TypeDef;$"),
         ),
         (
             "IO reg",
@@ -156,7 +161,7 @@ def parse_file(filename):
                     for i in range(int(d["array"])):
                         regs.append((reg + str(i), offset + i * bits // 8, bits, comment))
                 m = lexer.next_match()
-            if m[0] == "}":
+            if m[0] in ("}", "} _t"):
                 pass
             elif m[0] == "} TypeDef":
                 d = m[1].groupdict()
@@ -178,22 +183,20 @@ def print_int_obj(val, needed_mpzs):
         needed_mpzs.add(val)
 
 
-def print_periph(periph_name, periph_val, needed_qstrs, needed_mpzs):
+def print_periph(periph_name, periph_val, needed_mpzs):
     qstr = periph_name.upper()
     print("{ MP_ROM_QSTR(MP_QSTR_%s), " % qstr, end="")
     print_int_obj(periph_val, needed_mpzs)
     print(" },")
-    needed_qstrs.add(qstr)
 
 
-def print_regs(reg_name, reg_defs, needed_qstrs, needed_mpzs):
+def print_regs(reg_name, reg_defs, needed_mpzs):
     reg_name = reg_name.upper()
     for r in reg_defs:
         qstr = reg_name + "_" + r[0]
         print("{ MP_ROM_QSTR(MP_QSTR_%s), " % qstr, end="")
         print_int_obj(r[1], needed_mpzs)
         print(" }, // %s-bits, %s" % (r[2], r[3]))
-        needed_qstrs.add(qstr)
 
 
 # This version of print regs groups registers together into submodules (eg GPIO submodule).
@@ -203,7 +206,7 @@ def print_regs(reg_name, reg_defs, needed_qstrs, needed_mpzs):
 # As such, we don't use this version.
 # And for the number of constants we have, this function seems to use about the same amount
 # of ROM as print_regs.
-def print_regs_as_submodules(reg_name, reg_defs, modules, needed_qstrs):
+def print_regs_as_submodules(reg_name, reg_defs, modules):
     mod_name_lower = reg_name.lower() + "_"
     mod_name_upper = mod_name_lower.upper()
     modules.append((mod_name_lower, mod_name_upper))
@@ -215,14 +218,12 @@ STATIC const mp_rom_map_elem_t stm_%s_globals_table[] = {
 """
         % (mod_name_lower, mod_name_upper)
     )
-    needed_qstrs.add(mod_name_upper)
 
     for r in reg_defs:
         print(
             "    { MP_ROM_QSTR(MP_QSTR_%s), MP_ROM_INT(%#x) }, // %s-bits, %s"
             % (r[0], r[1], r[2], r[3])
         )
-        needed_qstrs.add(r[0])
 
     print(
         """};
@@ -243,13 +244,6 @@ def main():
     cmd_parser = argparse.ArgumentParser(description="Extract ST constants from a C header file.")
     cmd_parser.add_argument("file", nargs=1, help="input file")
     cmd_parser.add_argument(
-        "-q",
-        "--qstr",
-        dest="qstr_filename",
-        default="build/stmconst_qstr.h",
-        help="Specified the name of the generated qstr header file",
-    )
-    cmd_parser.add_argument(
         "--mpz",
         dest="mpz_filename",
         default="build/stmconst_mpz.h",
@@ -264,15 +258,13 @@ def main():
         reg_defs["GPIO"].append(["BSRRL", 0x18, 16, "legacy register"])
         reg_defs["GPIO"].append(["BSRRH", 0x1A, 16, "legacy register"])
 
-    modules = []
-    needed_qstrs = set()
     needed_mpzs = set()
 
     print("// Automatically generated from %s by make-stmconst.py" % args.file[0])
     print("")
 
     for periph_name, periph_val in periphs:
-        print_periph(periph_name, periph_val, needed_qstrs, needed_mpzs)
+        print_periph(periph_name, periph_val, needed_mpzs)
 
     for reg in (
         "ADC",
@@ -281,6 +273,7 @@ def main():
         #'CAN_FIFOMailBox',
         #'CAN_FilterRegister',
         #'CAN',
+        "FDCAN",
         "CRC",
         "DAC",
         "DBGMCU",
@@ -304,20 +297,14 @@ def main():
         "IPCC",
     ):
         if reg in reg_defs:
-            print_regs(reg, reg_defs[reg], needed_qstrs, needed_mpzs)
-        # print_regs_as_submodules(reg, reg_defs[reg], modules, needed_qstrs)
+            print_regs(reg, reg_defs[reg], needed_mpzs)
+        # print_regs_as_submodules(reg, reg_defs[reg], modules)
 
     # print("#define MOD_STM_CONST_MODULES \\")
     # for mod_lower, mod_upper in modules:
     #    print("    { MP_ROM_QSTR(MP_QSTR_%s), MP_ROM_PTR(&stm_%s_obj) }, \\" % (mod_upper, mod_lower))
 
     print("")
-
-    with open(args.qstr_filename, "wt") as qstr_file:
-        print("#if MICROPY_PY_STM", file=qstr_file)
-        for qstr in sorted(needed_qstrs):
-            print("Q({})".format(qstr), file=qstr_file)
-        print("#endif // MICROPY_PY_STM", file=qstr_file)
 
     with open(args.mpz_filename, "wt") as mpz_file:
         for mpz in sorted(needed_mpzs):

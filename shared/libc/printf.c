@@ -60,28 +60,26 @@ int snprintf(char *str, size_t size, const char *fmt, ...);
 int printf(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
-    int ret = mp_vprintf(&mp_plat_print, fmt, ap);
+    int ret = mp_vprintf(MICROPY_INTERNAL_PRINTF_PRINTER, fmt, ap);
     va_end(ap);
     return ret;
 }
 
 int vprintf(const char *fmt, va_list ap) {
-    return mp_vprintf(&mp_plat_print, fmt, ap);
+    return mp_vprintf(MICROPY_INTERNAL_PRINTF_PRINTER, fmt, ap);
 }
 
 // need this because gcc optimises printf("%c", c) -> putchar(c), and printf("a") -> putchar('a')
 int putchar(int c) {
     char chr = c;
-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
+    MICROPY_INTERNAL_PRINTF_PRINTER->print_strn(MICROPY_INTERNAL_PRINTF_PRINTER->data, &chr, 1);
     return chr;
 }
 
 // need this because gcc optimises printf("string\n") -> puts("string")
 int puts(const char *s) {
-    mp_hal_stdout_tx_strn_cooked(s, strlen(s));
-    char chr = '\n';
-    mp_hal_stdout_tx_strn_cooked(&chr, 1);
-    return 1;
+    MICROPY_INTERNAL_PRINTF_PRINTER->print_strn(MICROPY_INTERNAL_PRINTF_PRINTER->data, s, strlen(s));
+    return putchar('\n'); // will return 10, which is >0 per specs of puts
 }
 
 typedef struct _strn_print_env_t {

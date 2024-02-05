@@ -11,6 +11,7 @@
 #include <string.h>
 #include "py/runtime.h"
 #include "py/mphal.h"
+#include "boardctrl.h"
 #include "pin.h"
 #include "pin_static_af.h"
 #include "mpu.h"
@@ -50,7 +51,6 @@
 #ifdef FMC_SDRAM_BANK
 
 static void sdram_init_seq(SDRAM_HandleTypeDef *hsdram, FMC_SDRAM_CommandTypeDef *command);
-extern void __fatal_error(const char *msg);
 
 bool sdram_init(void) {
     SDRAM_HandleTypeDef hsdram;
@@ -244,7 +244,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
     #define REFRESH_COUNT (MICROPY_HW_SDRAM_REFRESH_RATE * 90000 / 8192 - 20)
     HAL_SDRAM_ProgramRefreshRate(hsdram, REFRESH_COUNT);
 
-    #if defined(STM32F7)
+    #if defined(STM32F7) || defined(STM32H7)
     /* Enable MPU for the SDRAM Memory Region to allow non-aligned
        accesses (hard-fault otherwise)
        Initially disable all access for the entire SDRAM memory space,
@@ -259,7 +259,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
 
 void sdram_enter_low_power(void) {
     // Enter self-refresh mode.
-    // In self-refresh mode the SDRAM retains data with external clocking.
+    // In self-refresh mode the SDRAM retains data without external clocking.
     FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_SELFREFRESH_MODE |     // Command Mode
         FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
         (0 << 5U) |                                                  // Auto Refresh Number -1
@@ -273,6 +273,14 @@ void sdram_leave_low_power(void) {
     FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_NORMAL_MODE |          // Command Mode
         FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
         (0 << 5U) |                                                  // Auto Refresh Number - 1
+        (0 << 9U));                                                  // Mode Register Definition
+}
+
+void sdram_enter_power_down(void) {
+    // Enter power-down mode.
+    FMC_SDRAM_DEVICE->SDCMR |= (FMC_SDRAM_CMD_POWERDOWN_MODE |       // Command Mode
+        FMC_SDRAM_CMD_TARGET_BANK |                                  // Command Target
+        (0 << 5U) |                                                  // Auto Refresh Number -1
         (0 << 9U));                                                  // Mode Register Definition
 }
 
@@ -317,7 +325,7 @@ bool __attribute__((optimize("Os"))) sdram_test(bool exhaustive) {
             snprintf(error_buffer, sizeof(error_buffer),
                 "Data bus test failed at 0x%p expected 0x%x found 0x%lx",
                 &mem_base[0], (1 << i), ((volatile uint32_t *)mem_base)[0]);
-            __fatal_error(error_buffer);
+            MICROPY_BOARD_FATAL_ERROR(error_buffer);
             #endif
             return false;
         }
@@ -332,13 +340,13 @@ bool __attribute__((optimize("Os"))) sdram_test(bool exhaustive) {
             snprintf(error_buffer, sizeof(error_buffer),
                 "Address bus test failed at 0x%p expected 0x%x found 0x%x",
                 &mem_base[i], pattern, mem_base[i]);
-            __fatal_error(error_buffer);
+            MICROPY_BOARD_FATAL_ERROR(error_buffer);
             #endif
             return false;
         }
     }
 
-    // Check for aliasing (overlaping addresses)
+    // Check for aliasing (overlapping addresses)
     mem_base[0] = antipattern;
     __DSB();
     for (uint32_t i = 1; i < MICROPY_HW_SDRAM_SIZE; i <<= 1) {
@@ -347,7 +355,7 @@ bool __attribute__((optimize("Os"))) sdram_test(bool exhaustive) {
             snprintf(error_buffer, sizeof(error_buffer),
                 "Address bus overlap at 0x%p expected 0x%x found 0x%x",
                 &mem_base[i], pattern, mem_base[i]);
-            __fatal_error(error_buffer);
+            MICROPY_BOARD_FATAL_ERROR(error_buffer);
             #endif
             return false;
         }
@@ -368,7 +376,7 @@ bool __attribute__((optimize("Os"))) sdram_test(bool exhaustive) {
                 snprintf(error_buffer, sizeof(error_buffer),
                     "Address bus slow test failed at 0x%p expected 0x%x found 0x%x",
                     &mem_base[i], ((i % 2) ? pattern : antipattern), mem_base[i]);
-                __fatal_error(error_buffer);
+                MICROPY_BOARD_FATAL_ERROR(error_buffer);
                 #endif
                 return false;
             }

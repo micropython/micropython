@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy_mimxrt.md"
+    ],
+    "docs": "",
+    "features": [
+        "Audio Codec",
+        "External Flash",
+        "Microphone",
+        "USB"
+    ],
+    "images": [
+        "MIMXRT1015-EVK-TOP.jpg"
+    ],
+    "mcu": "mimxrt",
+    "product": "MIMXRT1015_EVK",
+    "thumbnail": "",
+    "url": "https://www.nxp.com/design/development-boards/i-mx-evaluation-and-development-boards/i-mx-rt1015-evaluation-kit:MIMXRT1015-EVK",
+    "vendor": "NXP"
+}

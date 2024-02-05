@@ -58,7 +58,7 @@
 _start:
     b       boot_entry
 
-/* QEMU comes in at 0x10. Put a value in argc/r3 to distingush from
+/* QEMU comes in at 0x10. Put a value in argc/r3 to distinguish from
  * microwatt. */
     . = 0x10
     FIXUP_ENDIAN

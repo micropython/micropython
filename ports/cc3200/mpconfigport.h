@@ -59,7 +59,6 @@
 #else
 #define MICROPY_CPYTHON_COMPAT                      (0)
 #endif
-#define MICROPY_QSTR_BYTES_IN_HASH                  (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN                    (2)
@@ -71,13 +70,13 @@
 #define MICROPY_FATFS_SYNC_T                        SemaphoreHandle_t
 
 #define MICROPY_STREAMS_NON_BLOCK                   (1)
-#define MICROPY_MODULE_WEAK_LINKS                   (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS               (1)
 #define MICROPY_USE_INTERNAL_ERRNO                  (1)
 #define MICROPY_VFS                                 (1)
 #define MICROPY_VFS_FAT                             (1)
 #define MICROPY_PY_ASYNC_AWAIT (0)
 #define MICROPY_PY_ALL_SPECIAL_METHODS              (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX               (1)
 #define MICROPY_PY_BUILTINS_INPUT                   (1)
 #define MICROPY_PY_BUILTINS_HELP                    (1)
 #define MICROPY_PY_BUILTINS_HELP_TEXT               cc3200_help_text
@@ -104,86 +103,51 @@
 #define MICROPY_PY_SYS_STDFILES                     (1)
 #define MICROPY_PY_CMATH                            (0)
 #define MICROPY_PY_IO                               (1)
-#define MICROPY_PY_IO_FILEIO                        (1)
-#define MICROPY_PY_UERRNO                           (1)
-#define MICROPY_PY_UERRNO_ERRORCODE                 (0)
+#define MICROPY_PY_ERRNO                            (1)
+#define MICROPY_PY_ERRNO_ERRORCODE                  (0)
 #define MICROPY_PY_THREAD                           (1)
 #define MICROPY_PY_THREAD_GIL                       (1)
-#define MICROPY_PY_UBINASCII                        (1)
+#define MICROPY_PY_BINASCII                         (1)
 #define MICROPY_PY_UCTYPES                          (0)
-#define MICROPY_PY_UZLIB                            (0)
-#define MICROPY_PY_UJSON                            (1)
-#define MICROPY_PY_URE                              (1)
-#define MICROPY_PY_UHEAPQ                           (0)
-#define MICROPY_PY_UHASHLIB                         (0)
-#define MICROPY_PY_USELECT                          (1)
-#define MICROPY_PY_UTIME_MP_HAL                     (1)
+#define MICROPY_PY_DEFLATE                          (0)
+#define MICROPY_PY_JSON                             (1)
+#define MICROPY_PY_RE                               (1)
+#define MICROPY_PY_HEAPQ                            (0)
+#define MICROPY_PY_HASHLIB                          (0)
+#define MICROPY_PY_OS                               (1)
+#define MICROPY_PY_OS_INCLUDEFILE                   "ports/cc3200/mods/modos.c"
+#define MICROPY_PY_OS_DUPTERM                       (1)
+#define MICROPY_PY_OS_SYNC                          (1)
+#define MICROPY_PY_OS_URANDOM                       (1)
+#define MICROPY_PY_SELECT                           (1)
+#define MICROPY_PY_TIME                             (1)
+#define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME     (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS                (1)
+#define MICROPY_PY_TIME_INCLUDEFILE                 "ports/cc3200/mods/modtime.c"
+#define MICROPY_PY_MACHINE                          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE              "ports/cc3200/mods/modmachine.c"
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS         (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ   (1)
+#define MICROPY_PY_MACHINE_WDT                      (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE          "ports/cc3200/mods/machine_wdt.c"
 
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF      (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE        (0)
 #define MICROPY_KBD_EXCEPTION                       (1)
 
-// We define our own list of errno constants to include in uerrno module
-#define MICROPY_PY_UERRNO_LIST \
+// We define our own list of errno constants to include in errno module
+#define MICROPY_PY_ERRNO_LIST \
     X(EPERM) \
     X(EIO) \
     X(ENODEV) \
     X(EINVAL) \
     X(ETIMEDOUT) \
 
-// TODO these should be generic, not bound to fatfs
-#define mp_type_fileio mp_type_vfs_fat_fileio
-#define mp_type_textio mp_type_vfs_fat_textio
-
-// use vfs's functions for import stat and builtin open
-#define mp_import_stat mp_vfs_import_stat
-#define mp_builtin_open mp_vfs_open
-#define mp_builtin_open_obj mp_vfs_open_obj
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open),  MP_ROM_PTR(&mp_builtin_open_obj) },   \
-
-// extra built in modules to add to the list of known ones
-extern const struct _mp_obj_module_t machine_module;
-extern const struct _mp_obj_module_t wipy_module;
-extern const struct _mp_obj_module_t mp_module_ure;
-extern const struct _mp_obj_module_t mp_module_ujson;
-extern const struct _mp_obj_module_t mp_module_uos;
-extern const struct _mp_obj_module_t mp_module_utime;
-extern const struct _mp_obj_module_t mp_module_uselect;
-extern const struct _mp_obj_module_t mp_module_usocket;
-extern const struct _mp_obj_module_t mp_module_network;
-extern const struct _mp_obj_module_t mp_module_ubinascii;
-extern const struct _mp_obj_module_t mp_module_ussl;
-
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_umachine),    MP_ROM_PTR(&machine_module) },      \
-    { MP_ROM_QSTR(MP_QSTR_wipy),        MP_ROM_PTR(&wipy_module) },         \
-    { MP_ROM_QSTR(MP_QSTR_uos),         MP_ROM_PTR(&mp_module_uos) },       \
-    { MP_ROM_QSTR(MP_QSTR_utime),       MP_ROM_PTR(&mp_module_utime) },     \
-    { MP_ROM_QSTR(MP_QSTR_uselect),     MP_ROM_PTR(&mp_module_uselect) },   \
-    { MP_ROM_QSTR(MP_QSTR_usocket),     MP_ROM_PTR(&mp_module_usocket) },   \
-    { MP_ROM_QSTR(MP_QSTR_network),     MP_ROM_PTR(&mp_module_network) },   \
-    { MP_ROM_QSTR(MP_QSTR_ubinascii),   MP_ROM_PTR(&mp_module_ubinascii) }, \
-    { MP_ROM_QSTR(MP_QSTR_ussl),        MP_ROM_PTR(&mp_module_ussl) },      \
-
 // extra constants
 #define MICROPY_PORT_CONSTANTS \
-    { MP_ROM_QSTR(MP_QSTR_umachine),     MP_ROM_PTR(&machine_module) },      \
+    { MP_ROM_QSTR(MP_QSTR_machine),     MP_ROM_PTR(&mp_module_machine) },  \
 
-// vm state and root pointers for the gc
 #define MP_STATE_PORT MP_STATE_VM
-#define MICROPY_PORT_ROOT_POINTERS                                        \
-    const char *readline_hist[8];                                         \
-    mp_obj_t mp_const_user_interrupt;                                     \
-    mp_obj_t machine_config_main;                                         \
-    mp_obj_list_t pyb_sleep_obj_list;                                     \
-    mp_obj_list_t mp_irq_obj_list;                                        \
-    mp_obj_list_t pyb_timer_channel_obj_list;                             \
-    struct _pyb_uart_obj_t *pyb_uart_objs[2];                             \
-    struct _os_term_dup_obj_t *os_term_dup_obj;                           \
-
 
 // type definitions for the specific machine
 #define MICROPY_MAKE_POINTER_CALLABLE(p)            ((void *)((mp_uint_t)(p) | 1))
@@ -196,13 +160,7 @@ typedef int32_t mp_int_t;                           // must be pointer size
 typedef unsigned int mp_uint_t;                     // must be pointer size
 typedef long mp_off_t;
 
-#define MICROPY_BEGIN_ATOMIC_SECTION()              disable_irq()
-#define MICROPY_END_ATOMIC_SECTION(state)           enable_irq(state)
 #define MICROPY_EVENT_POLL_HOOK                     __WFI();
-
-// assembly functions to handle critical sections, interrupt
-// disabling/enabling and sleep mode enter/exit
-#include "cc3200_asm.h"
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>

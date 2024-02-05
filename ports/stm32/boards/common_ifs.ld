@@ -13,6 +13,8 @@
 
 ENTRY(Reset_Handler)
 
+REGION_ALIAS("FLASH_COMMON", FLASH_TEXT);
+
 /* define output sections */
 SECTIONS
 {
@@ -22,7 +24,7 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.isr_vector)) /* Startup code */
 
-        /* This first flash block is 16K annd the isr vectors only take up
+        /* This first flash block is 16K and the isr vectors only take up
            about 400 bytes. So we pull in a couple of object files to pad it
            out. */
 
@@ -41,19 +43,7 @@ SECTIONS
         . = ALIGN(4);
     } >FLASH_ISR
 
-    /* The program code and other data goes into FLASH */
-    .text :
-    {
-        . = ALIGN(4);
-        *(.text*)          /* .text* sections (code) */
-        *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
-    /*  *(.glue_7)   */    /* glue arm to thumb code */
-    /*  *(.glue_7t)  */    /* glue thumb to arm code */
-
-        . = ALIGN(4);
-        _etext = .;        /* define a global symbol at end of code */
-    } >FLASH_TEXT
-
-    INCLUDE common_extratext_data_in_flash_text.ld
+    INCLUDE common_text.ld
+    INCLUDE common_extratext_data_in_flash.ld
     INCLUDE common_bss_heap_stack.ld
 }

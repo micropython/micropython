@@ -1,19 +1,18 @@
 try:
-    import uerrno
-    import uos
+    import errno
+    import os
 except ImportError:
     print("SKIP")
     raise SystemExit
 
 try:
-    uos.VfsFat
+    os.VfsFat
 except AttributeError:
     print("SKIP")
     raise SystemExit
 
 
 class RAMFS_OLD:
-
     SEC_SIZE = 512
 
     def __init__(self, blocks):
@@ -42,9 +41,9 @@ except MemoryError:
     print("SKIP")
     raise SystemExit
 
-uos.VfsFat.mkfs(bdev)
-vfs = uos.VfsFat(bdev)
-uos.mount(vfs, "/ramdisk")
+os.VfsFat.mkfs(bdev)
+vfs = os.VfsFat(bdev)
+os.mount(vfs, "/ramdisk")
 
 # file io
 with vfs.open("file.txt", "w") as f:

@@ -120,7 +120,7 @@ minus sign in front of the y-coordinate in the ``hid.send()`` line above.
 Restoring your pyboard to normal
 --------------------------------
 
-If you leave your pyboard as-is, it'll behave as a mouse everytime you plug
+If you leave your pyboard as-is, it'll behave as a mouse every time you plug
 it in.  You probably want to change it back to normal.  To do this you need
 to first enter safe mode (see above), and then edit the ``boot.py`` file.
 In the ``boot.py`` file, comment out (put a # in front of) the line with the

@@ -4,10 +4,12 @@
     ],
     "docs": "",
     "features": [
-        "Micro USB",
-        "SPI Flash"
+        "External Flash",
+        "USB"
     ],
-    "images": ["2033-atsamd21-xpro.jpg"],
+    "images": [
+        "2033-atsamd21-xpro.jpg"
+    ],
     "mcu": "samd21",
     "product": "SAMD21 Xplained Pro",
     "thumbnail": "",

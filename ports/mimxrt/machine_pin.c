@@ -34,6 +34,9 @@
 #include "shared/runtime/mpirq.h"
 #include "extmod/virtpin.h"
 #include "pin.h"
+#if MICROPY_PY_NETWORK_CYW43
+#include "pendsv.h"
+#endif
 
 // Local functions
 STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args);
@@ -58,17 +61,19 @@ enum {
 };
 
 // Pin mapping dictionaries
-const mp_obj_type_t machine_pin_cpu_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_cpu,
-    .locals_dict = (mp_obj_t)&machine_pin_cpu_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_cpu_pins_obj_type,
+    MP_QSTR_cpu,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_cpu_pins_locals_dict
+    );
 
-const mp_obj_type_t machine_pin_board_pins_obj_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_board,
-    .locals_dict = (mp_obj_t)&machine_pin_board_pins_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_board_pins_obj_type,
+    MP_QSTR_board,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &machine_pin_board_pins_locals_dict
+    );
 
 STATIC const mp_irq_methods_t machine_pin_irq_methods;
 
@@ -96,6 +101,16 @@ void call_handler(GPIO_Type *gpio, int gpio_nr, int pin) {
         if (isr & mask) {
             gpio->ISR = mask; // clear the ISR flag
             int index = GET_PIN_IRQ_INDEX(gpio_nr, pin);
+            #if MICROPY_PY_NETWORK_CYW43
+            extern void (*cyw43_poll)(void);
+            const machine_pin_obj_t *pin = MICROPY_HW_WL_HOST_WAKE;
+            if (pin->gpio == gpio && pin->pin == (index % 32)) {
+                if (cyw43_poll) {
+                    pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, cyw43_poll);
+                }
+                return;
+            }
+            #endif
             machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
             if (irq != NULL) {
                 irq->flags = irq->trigger;
@@ -147,6 +162,16 @@ void GPIO5_Combined_16_31_IRQHandler(void) {
     call_handler(gpiobases[5], 5, 16);
 }
 
+#if defined(MIMXRT117x_SERIES)
+void GPIO6_Combined_0_15_IRQHandler(void) {
+    call_handler(gpiobases[6], 6, 0);
+}
+
+void GPIO6_Combined_16_31_IRQHandler(void) {
+    call_handler(gpiobases[6], 6, 16);
+}
+#endif
+
 // Deinit all pin IRQ handlers.
 void machine_pin_irq_deinit(void) {
     for (int i = 0; i < ARRAY_SIZE(MP_STATE_PORT(machine_pin_irq_objects)); ++i) {
@@ -162,14 +187,70 @@ void machine_pin_irq_deinit(void) {
 // Simplified mode setting used by the extmod modules
 void machine_pin_set_mode(const machine_pin_obj_t *self, uint8_t mode) {
     gpio_pin_config_t pin_config = {kGPIO_DigitalInput, 1, kGPIO_NoIntmode};
+    uint32_t pad_config;
 
     pin_config.direction = (mode == PIN_MODE_IN ? kGPIO_DigitalInput : kGPIO_DigitalOutput);
-    GPIO_PinInit(self->gpio, self->pin, &pin_config);
     if (mode == PIN_MODE_OPEN_DRAIN) {
-        uint32_t pad_config = *(uint32_t *)self->configRegister;
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1) | IOMUXC_SW_PAD_CTL_PAD_DSE(0b110);
-        IOMUXC_SetPinMux(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
-        IOMUXC_SetPinConfig(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, pad_config);
+        pad_config = pin_generate_config(PIN_PULL_UP_22K, mode, PIN_DRIVE_3, self->configRegister);
+    } else {
+        pad_config = pin_generate_config(PIN_PULL_DISABLED, mode, PIN_DRIVE_3, self->configRegister);
+    }
+    IOMUXC_SetPinConfig(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, pad_config);
+    IOMUXC_SetPinMux(self->muxRegister, PIN_AF_MODE_ALT5, 0, 0, self->configRegister, 1U);
+    GPIO_PinInit(self->gpio, self->pin, &pin_config);
+}
+
+void machine_pin_config(const machine_pin_obj_t *self, uint8_t mode,
+    uint8_t pull, uint8_t drive, uint8_t speed, uint8_t alt) {
+    (void)speed;
+    gpio_pin_config_t pin_config = {0};
+
+    if (IS_GPIO_IT_MODE(mode)) {
+        if (mode == PIN_MODE_IT_FALLING) {
+            pin_config.interruptMode = kGPIO_IntFallingEdge;
+        } else if (mode == PIN_MODE_IT_RISING) {
+            pin_config.interruptMode = kGPIO_IntRisingEdge;
+        } else if (mode == PIN_MODE_IT_BOTH) {
+            pin_config.interruptMode = kGPIO_IntRisingOrFallingEdge;
+        }
+        // Set pad config mode to input.
+        mode = PIN_MODE_IN;
+    }
+
+    if (mode == PIN_MODE_IN) {
+        pin_config.direction = kGPIO_DigitalInput;
+    } else {
+        pin_config.direction = kGPIO_DigitalOutput;
+    }
+
+    if (mode != PIN_MODE_ALT) {
+        // GPIO is always ALT5
+        alt = PIN_AF_MODE_ALT5;
+    }
+
+    const machine_pin_af_obj_t *af = pin_find_af(self, alt);
+    if (af == NULL) {
+        return;
+    }
+
+    // Configure the pad.
+    uint32_t pad_config = pin_generate_config(pull, mode, drive, self->configRegister);
+    IOMUXC_SetPinMux(self->muxRegister, alt, af->input_register, af->input_daisy, self->configRegister, 0U);
+    IOMUXC_SetPinConfig(self->muxRegister, alt, af->input_register, af->input_daisy, self->configRegister, pad_config);
+
+    // Initialize the pin.
+    GPIO_PinInit(self->gpio, self->pin, &pin_config);
+
+    // Configure interrupt (if enabled).
+    if (pin_config.interruptMode != kGPIO_NoIntmode) {
+        uint32_t gpio_nr = GPIO_get_instance(self->gpio);
+        uint32_t irq_num = self->pin < 16 ? GPIO_combined_low_irqs[gpio_nr] : GPIO_combined_high_irqs[gpio_nr];
+
+        GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
+        GPIO_PortClearInterruptFlags(self->gpio, ~0);
+
+        NVIC_SetPriority(irq_num, IRQ_PRI_EXTINT);
+        EnableIRQ(irq_num);
     }
 }
 
@@ -190,7 +271,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         [PIN_INIT_ARG_MODE] { MP_QSTR_mode, MP_ARG_REQUIRED | MP_ARG_INT },
         [PIN_INIT_ARG_PULL] { MP_QSTR_pull, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE}},
         [PIN_INIT_ARG_VALUE] { MP_QSTR_value, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL}},
-        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_POWER_3}},
+        [PIN_INIT_ARG_DRIVE] { MP_QSTR_drive, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = PIN_DRIVE_3}},
         // TODO: Implement additional arguments
         /*
         { MP_QSTR_af, MP_ARG_INT, {.u_int = -1}}, // legacy
@@ -213,6 +294,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
         const machine_pin_af_obj_t *af_obj;
         uint32_t pad_config = 0UL;
         uint8_t pull = PIN_PULL_DISABLED;
+        uint32_t drive = (uint32_t)args[PIN_INIT_ARG_DRIVE].u_int;
 
         // Generate pin configuration
         if ((args[PIN_INIT_ARG_VALUE].u_obj != MP_OBJ_NULL) && (mp_obj_is_true(args[PIN_INIT_ARG_VALUE].u_obj))) {
@@ -233,38 +315,7 @@ STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
             pull = (uint8_t)mp_obj_get_int(args[PIN_INIT_ARG_PULL].u_obj);
         }
 
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SRE(0U);  // Slow Slew Rate
-        pad_config |= IOMUXC_SW_PAD_CTL_PAD_SPEED(0b01);  // medium(100MHz)
-
-        if (mode == PIN_MODE_OPEN_DRAIN) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b1);  // Open Drain Enabled
-        } else {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_ODE(0b0);  // Open Drain Disabled
-        }
-
-        if (pull == PIN_PULL_DISABLED) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(0); // Pull/Keeper Disabled
-        } else if (pull == PIN_PULL_HOLD) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) | // Pull/Keeper Enabled
-                IOMUXC_SW_PAD_CTL_PAD_PUE(0);            // Keeper selected
-        } else {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_PKE(1) |  // Pull/Keeper Enabled
-                IOMUXC_SW_PAD_CTL_PAD_PUE(1) |            // Pull selected
-                IOMUXC_SW_PAD_CTL_PAD_PUS(pull);
-        }
-
-        if (mode == PIN_MODE_IN) {
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(0b000) |  // output driver disabled
-                IOMUXC_SW_PAD_CTL_PAD_HYS(1U);  // Hysteresis enabled
-        } else {
-            uint drive = args[PIN_INIT_ARG_DRIVE].u_int;
-            if (!IS_GPIO_DRIVE(drive)) {
-                mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid drive strength: %d"), drive);
-            }
-
-            pad_config |= IOMUXC_SW_PAD_CTL_PAD_DSE(drive) |
-                IOMUXC_SW_PAD_CTL_PAD_HYS(0U);  // Hysteresis disabled
-        }
+        pad_config = pin_generate_config(pull, mode, drive, self->configRegister);
 
         // Configure PAD as GPIO
         IOMUXC_SetPinMux(self->muxRegister, af_obj->af_mode, 0, 0, self->configRegister, 1U);  // Software Input On Field: Input Path is determined by functionality
@@ -313,6 +364,14 @@ STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_on_obj, machine_pin_on);
 
+// pin.toggle()
+STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+    machine_pin_obj_t *self = self_in;
+    mp_hal_pin_toggle(self);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+
 // pin.value([value])
 STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
     return machine_pin_obj_call(args[0], (n_args - 1), 0, args + 1);
@@ -344,6 +403,13 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
         mp_raise_ValueError(MP_ERROR_TEXT("IRQ not supported on given Pin"));
     }
     machine_pin_irq_obj_t *irq = MP_STATE_PORT(machine_pin_irq_objects[index]);
+
+    if (args[ARG_handler].u_obj == mp_const_none) {
+        // remove the IRQ from the table, leave it to gc to free it.
+        GPIO_PortDisableInterrupts(self->gpio, 1U << self->pin);
+        MP_STATE_PORT(machine_pin_irq_objects[index]) = NULL;
+        return mp_const_none;
+    }
 
     // Allocate the IRQ object if it doesn't already exist.
     if (irq == NULL) {
@@ -379,9 +445,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
             GPIO_PinSetInterruptConfig(self->gpio, self->pin, irq->trigger);
             // Enable the specific Pin interrupt
             GPIO_PortEnableInterrupts(self->gpio, 1U << self->pin);
+            // Enable LEVEL1 interrupt again
+            EnableIRQ(irq_num);
         }
-        // Enable LEVEL1 interrupt again
-        EnableIRQ(irq_num);
     }
 
     return MP_OBJ_FROM_PTR(irq);
@@ -394,6 +460,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on),      MP_ROM_PTR(&machine_pin_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_low),     MP_ROM_PTR(&machine_pin_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_high),    MP_ROM_PTR(&machine_pin_on_obj) },
+    { MP_ROM_QSTR(MP_QSTR_toggle),  MP_ROM_PTR(&machine_pin_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),   MP_ROM_PTR(&machine_pin_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_init),    MP_ROM_PTR(&machine_pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),     MP_ROM_PTR(&machine_pin_irq_obj) },
@@ -411,21 +478,20 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(PIN_PULL_DOWN_100K) },
     { MP_ROM_QSTR(MP_QSTR_PULL_HOLD), MP_ROM_INT(PIN_PULL_HOLD) },
 
-    { MP_ROM_QSTR(MP_QSTR_DRIVER_OFF), MP_ROM_INT(PIN_DRIVE_OFF) },
-    { MP_ROM_QSTR(MP_QSTR_POWER_0),    MP_ROM_INT(PIN_DRIVE_POWER_0) }, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
-    { MP_ROM_QSTR(MP_QSTR_POWER_1),    MP_ROM_INT(PIN_DRIVE_POWER_1) }, // R0/2
-    { MP_ROM_QSTR(MP_QSTR_POWER_2),    MP_ROM_INT(PIN_DRIVE_POWER_2) }, // R0/3
-    { MP_ROM_QSTR(MP_QSTR_POWER_3),    MP_ROM_INT(PIN_DRIVE_POWER_3) }, // R0/4
-    { MP_ROM_QSTR(MP_QSTR_POWER_4),    MP_ROM_INT(PIN_DRIVE_POWER_4) }, // R0/5
-    { MP_ROM_QSTR(MP_QSTR_POWER_5),    MP_ROM_INT(PIN_DRIVE_POWER_5) }, // R0/6
-    { MP_ROM_QSTR(MP_QSTR_POWER_6),    MP_ROM_INT(PIN_DRIVE_POWER_6) }, // R0/7
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_OFF),  MP_ROM_INT(PIN_DRIVE_OFF) },
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_0),    MP_ROM_INT(PIN_DRIVE_0) }, // R0 (150 Ohm @3.3V / 260 Ohm @ 1.8V)
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_1),    MP_ROM_INT(PIN_DRIVE_1) }, // R0/2
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_2),    MP_ROM_INT(PIN_DRIVE_2) }, // R0/3
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_3),    MP_ROM_INT(PIN_DRIVE_3) }, // R0/4
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_4),    MP_ROM_INT(PIN_DRIVE_4) }, // R0/5
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_5),    MP_ROM_INT(PIN_DRIVE_5) }, // R0/6
+    { MP_ROM_QSTR(MP_QSTR_DRIVE_6),    MP_ROM_INT(PIN_DRIVE_6) }, // R0/7
 
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING), MP_ROM_INT(1) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING), MP_ROM_INT(2) },
 
 };
 STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
-
 
 STATIC mp_uint_t machine_pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
@@ -447,24 +513,26 @@ STATIC const mp_pin_p_t machine_pin_obj_protocol = {
     .ioctl = machine_pin_ioctl,
 };
 
-const mp_obj_type_t machine_pin_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_Pin,
-    .print = machine_pin_obj_print,
-    .call = machine_pin_obj_call,
-    .make_new = mp_pin_make_new,
-    .protocol = &machine_pin_obj_protocol,
-    .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_pin_make_new,
+    print, machine_pin_obj_print,
+    call, machine_pin_obj_call,
+    protocol, &machine_pin_obj_protocol,
+    locals_dict, &machine_pin_locals_dict
+    );
 
 // FIXME: Create actual pin_af type!!!
-const mp_obj_type_t machine_pin_af_type = {
-    {&mp_type_type},
-    .name = MP_QSTR_PinAF,
-    .print = machine_pin_obj_print,
-    .make_new = mp_pin_make_new,
-    .locals_dict = (mp_obj_dict_t *)&machine_pin_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pin_af_type,
+    MP_QSTR_PinAF,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_pin_make_new,
+    print, machine_pin_obj_print,
+    locals_dict, &machine_pin_locals_dict
+    );
 
 STATIC mp_uint_t machine_pin_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -499,3 +567,5 @@ STATIC const mp_irq_methods_t machine_pin_irq_methods = {
     .trigger = machine_pin_irq_trigger,
     .info = machine_pin_irq_info,
 };
+
+MP_REGISTER_ROOT_POINTER(void *machine_pin_irq_objects[MICROPY_HW_NUM_PIN_IRQS]);

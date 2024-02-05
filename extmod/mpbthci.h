@@ -27,6 +27,9 @@
 #ifndef MICROPY_INCLUDED_EXTMOD_MPBTHCI_H
 #define MICROPY_INCLUDED_EXTMOD_MPBTHCI_H
 
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE  (0)
+#define MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET  (1)
+
 // --- Optionally can be implemented by the driver. ---------------------------
 
 // Start/stop the HCI controller.
@@ -46,7 +49,13 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate);
 int mp_bluetooth_hci_uart_deinit(void);
 int mp_bluetooth_hci_uart_set_baudrate(uint32_t baudrate);
 int mp_bluetooth_hci_uart_any(void);
-int mp_bluetooth_hci_uart_readchar(void);
 int mp_bluetooth_hci_uart_write(const uint8_t *buf, size_t len);
+
+// Used for mode: MICROPY_PY_BLUETOOTH_HCI_READ_MODE_BYTE
+int mp_bluetooth_hci_uart_readchar(void);
+
+// Used for mode: MICROPY_PY_BLUETOOTH_HCI_READ_MODE_PACKET
+typedef void (*mp_bluetooth_hci_uart_readchar_t)(uint8_t chr);
+int mp_bluetooth_hci_uart_readpacket(mp_bluetooth_hci_uart_readchar_t handler);
 
 #endif // MICROPY_INCLUDED_EXTMOD_MPBTHCI_H

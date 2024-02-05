@@ -298,6 +298,15 @@ Miscellaneous functions
    The *high_speed* parameter, when set to ``True``, enables USB HS mode if
    it is supported by the hardware.
 
+Constants
+---------
+
+.. data:: pyb.hid_mouse
+          pyb.hid_keyboard
+
+   A tuple of (subclass, protocol, max packet length, polling interval, report
+   descriptor) to set appropriate values for a USB mouse or keyboard.
+
 Classes
 -------
 

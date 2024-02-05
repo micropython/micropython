@@ -170,15 +170,8 @@ STATIC mp_obj_t stringio_getvalue(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(stringio_getvalue_obj, stringio_getvalue);
 
-STATIC mp_obj_t stringio___exit__(size_t n_args, const mp_obj_t *args) {
-    (void)n_args;
-    return mp_stream_close(args[0]);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(stringio___exit___obj, 4, 4, stringio___exit__);
-
 STATIC mp_obj_stringio_t *stringio_new(const mp_obj_type_t *type) {
-    mp_obj_stringio_t *o = m_new_obj(mp_obj_stringio_t);
-    o->base.type = type;
+    mp_obj_stringio_t *o = mp_obj_malloc(mp_obj_stringio_t, type);
     o->pos = 0;
     o->ref_obj = MP_OBJ_NULL;
     return o;
@@ -233,7 +226,7 @@ STATIC const mp_rom_map_elem_t stringio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
     { MP_ROM_QSTR(MP_QSTR_getvalue), MP_ROM_PTR(&stringio_getvalue_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&stringio___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(stringio_locals_dict, stringio_locals_dict_table);
@@ -245,16 +238,15 @@ STATIC const mp_stream_p_t stringio_stream_p = {
     .is_text = true,
 };
 
-const mp_obj_type_t mp_type_stringio = {
-    { &mp_type_type },
-    .name = MP_QSTR_StringIO,
-    .print = stringio_print,
-    .make_new = stringio_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &stringio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stringio,
+    MP_QSTR_StringIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, stringio_make_new,
+    print, stringio_print,
+    protocol, &stringio_stream_p,
+    locals_dict, &stringio_locals_dict
+    );
 
 #if MICROPY_PY_IO_BYTESIO
 STATIC const mp_stream_p_t bytesio_stream_p = {
@@ -263,16 +255,15 @@ STATIC const mp_stream_p_t bytesio_stream_p = {
     .ioctl = stringio_ioctl,
 };
 
-const mp_obj_type_t mp_type_bytesio = {
-    { &mp_type_type },
-    .name = MP_QSTR_BytesIO,
-    .print = stringio_print,
-    .make_new = stringio_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &bytesio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&stringio_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_bytesio,
+    MP_QSTR_BytesIO,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, stringio_make_new,
+    print, stringio_print,
+    protocol, &bytesio_stream_p,
+    locals_dict, &stringio_locals_dict
+    );
 #endif
 
 #endif

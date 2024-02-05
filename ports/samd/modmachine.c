@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2019-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "extmod/machine_mem.h"
-#include "samd_soc.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/modmachine.c via MICROPY_PY_MACHINE_INCLUDEFILE.
+
 #include "modmachine.h"
+#include "samd_soc.h"
 
 // ASF 4
 #include "hal_flash.h"
@@ -36,95 +37,134 @@
 #include "hpl_pm_base.h"
 
 #if defined(MCU_SAMD21)
-#define DBL_TAP_ADDR ((volatile uint32_t *)(0x20000000 + 32 * 1024 - 4))
+#define DBL_TAP_ADDR    ((volatile uint32_t *)(HMCRAMC0_ADDR + HMCRAMC0_SIZE - 4))
 #elif defined(MCU_SAMD51)
-#define DBL_TAP_ADDR ((volatile uint32_t *)(0x20000000 + 192 * 1024 - 4))
+#define DBL_TAP_ADDR    ((volatile uint32_t *)(HSRAM_ADDR + HSRAM_SIZE - 4))
 #endif
+// A board may define a DPL_TAP_ADDR_ALT, which will be set as well
+// Needed at the moment for Sparkfun SAMD51 Thing Plus
 #define DBL_TAP_MAGIC_LOADER 0xf01669ef
 #define DBL_TAP_MAGIC_RESET 0xf02669ef
 
-MP_DEFINE_CONST_FUN_OBJ_0(machine_uart_init_obj, machine_uart_init);
-MP_DEFINE_CONST_FUN_OBJ_0(machine_uart_deinit_obj, machine_uart_deinit);
+#define LIGHTSLEEP_CPU_FREQ 200000
 
-STATIC mp_obj_t machine_reset(void) {
+#define MICROPY_PY_MACHINE_EXTRA_GLOBALS \
+    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_Timer),               MP_ROM_PTR(&machine_timer_type) }, \
+    { MP_ROM_QSTR(MP_QSTR_RTC),                 MP_ROM_PTR(&machine_rtc_type) }, \
+    \
+    /* Class constants. */ \
+    /* Use numerical constants instead of the symbolic names, */ \
+    /* since the names differ between SAMD21 and SAMD51. */ \
+    { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(0x01) }, \
+    { MP_ROM_QSTR(MP_QSTR_HARD_RESET),          MP_ROM_INT(0x10) }, \
+    { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(0x20) }, \
+    { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(0x40) }, \
+    { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(0x80) }, \
+
+extern bool EIC_occured;
+extern uint32_t _dbl_tap_addr;
+
+NORETURN STATIC void mp_machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
-    NVIC_SystemReset();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_obj, machine_reset);
-
-STATIC mp_obj_t machine_bootloader(void) {
-    *DBL_TAP_ADDR = DBL_TAP_MAGIC_LOADER;
-    NVIC_SystemReset();
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_bootloader_obj, machine_bootloader);
-
-STATIC mp_obj_t machine_freq(void) {
-    return MP_OBJ_NEW_SMALL_INT(CPU_FREQ);
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_freq_obj, machine_freq);
-
-STATIC mp_obj_t machine_unique_id(void) {
-    // Each device has a unique 128-bit serial number which is a concatenation of four 32-bit
-    // words contained at the following addresses. The uniqueness of the serial number is
-    // guaranteed only when using all 128 bits.
-    // Atmel SAM D21E / SAM D21G / SAM D21J
-    // SMART ARM-Based Microcontroller
-    // DATASHEET
-    // 9.6 (SAMD51) or 9.3.3 (or 10.3.3 depending on which manual)(SAMD21) Serial Number
-    //
-    // EXAMPLE (SAMD21)
-    // ----------------
-    // OpenOCD:
-    // Word0:
-    // > at91samd21g18.cpu mdw 0x0080A00C 1
-    // 0x0080a00c: 6e27f15f
-    // Words 1-3:
-    // > at91samd21g18.cpu mdw 0x0080A040 3
-    // 0x0080a040: 50534b54 332e3120 ff091645
-    //
-    // MicroPython (this code and same order as shown in Arduino IDE)
-    // >>> ubinascii.hexlify(machine.unique_id())
-    // b'6e27f15f50534b54332e3120ff091645'
-
-    #if defined(MCU_SAMD21)
-    uint32_t *id_addresses[4] = {(uint32_t *)0x0080A00C, (uint32_t *)0x0080A040,
-                                 (uint32_t *)0x0080A044, (uint32_t *)0x0080A048};
-    #elif defined(MCU_SAMD51)
-    uint32_t *id_addresses[4] = {(uint32_t *)0x008061FC, (uint32_t *)0x00806010,
-                                 (uint32_t *)0x00806014, (uint32_t *)0x00806018};
+    #ifdef DBL_TAP_ADDR_ALT
+    *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_RESET;
     #endif
-    uint8_t raw_id[16];
+    NVIC_SystemReset();
+}
 
-    for (int i = 0; i < 4; i++) {
-        for (int k = 0; k < 4; k++) {
-            // 'Reverse' the read bytes into a 32 bit word (Consistent with Arduino)
-            raw_id[4 * i + k] = (*(id_addresses[i]) >> (24 - k * 8)) & 0xff;
+NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
+    *DBL_TAP_ADDR = DBL_TAP_MAGIC_LOADER;
+    #ifdef DBL_TAP_ADDR_ALT
+    *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_LOADER;
+    #endif
+    NVIC_SystemReset();
+}
+
+STATIC mp_obj_t mp_machine_get_freq(void) {
+    return MP_OBJ_NEW_SMALL_INT(get_cpu_freq());
+}
+
+STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+    uint32_t freq = mp_obj_get_int(args[0]);
+    if (freq >= 1000000 && freq <= MAX_CPU_FREQ) {
+        set_cpu_freq(freq);
+    }
+}
+
+STATIC mp_obj_t mp_machine_unique_id(void) {
+    samd_unique_id_t id;
+    samd_get_unique_id(&id);
+    return mp_obj_new_bytes((byte *)&id.bytes, sizeof(id.bytes));
+}
+
+STATIC void mp_machine_idle(void) {
+    MICROPY_EVENT_POLL_HOOK;
+}
+
+STATIC mp_int_t mp_machine_reset_cause(void) {
+    #if defined(MCU_SAMD21)
+    return PM->RCAUSE.reg;
+    #elif defined(MCU_SAMD51)
+    return RSTC->RCAUSE.reg;
+    #else
+    return 0;
+    #endif
+}
+
+STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+    int32_t duration = -1;
+    uint32_t freq = get_cpu_freq();
+    if (n_args > 0) {
+        duration = mp_obj_get_int(args[0]);
+    }
+    EIC_occured = false;
+    // Slow down
+    set_cpu_freq(LIGHTSLEEP_CPU_FREQ);
+    #if defined(MCU_SAMD21)
+    // Switch the peripheral clock off
+    GCLK->GENCTRL.reg = GCLK_GENCTRL_ID(2);
+    while (GCLK->STATUS.bit.SYNCBUSY) {
+    }
+    // Switch the EIC temporarily to GCLK3, since GCLK2 is off
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK3 | EIC_GCLK_ID;
+    if (duration > 0) {
+        uint32_t t0 = systick_ms;
+        while ((systick_ms - t0 < duration) && (EIC_occured == false)) {
+            __WFI();
+        }
+    } else {
+        while (EIC_occured == false) {
+            __WFI();
         }
     }
+    GCLK->CLKCTRL.reg = GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_GEN_GCLK2 | EIC_GCLK_ID;
 
-    return mp_obj_new_bytes((byte *)&raw_id, sizeof(raw_id));
+    #elif defined(MCU_SAMD51)
+    // Switch the peripheral clock off
+    GCLK->GENCTRL[2].reg = 0;
+    while (GCLK->SYNCBUSY.bit.GENCTRL2) {
+    }
+    // Switch the EIC temporarily to GCLK3, since GCLK2 is off
+    GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK3;
+    if (duration > 0) {
+        uint32_t t0 = systick_ms;
+        while ((systick_ms - t0 < duration) && (EIC_occured == false)) {
+            __WFI();
+        }
+    } else {
+        while (EIC_occured == false) {
+            __WFI();
+        }
+    }
+    GCLK->PCHCTRL[EIC_GCLK_ID].reg = GCLK_PCHCTRL_CHEN | GCLK_PCHCTRL_GEN_GCLK2;
+
+    #endif
+    // Speed up again
+    set_cpu_freq(freq);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
-STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_umachine) },
-    { MP_ROM_QSTR(MP_QSTR_reset),               MP_ROM_PTR(&machine_reset_obj) },
-    { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
-    { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem8),                MP_ROM_PTR(&machine_mem8_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem16),               MP_ROM_PTR(&machine_mem16_obj) },
-    { MP_ROM_QSTR(MP_QSTR_mem32),               MP_ROM_PTR(&machine_mem32_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unique_id),           MP_ROM_PTR(&machine_unique_id_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uart_init),           MP_ROM_PTR(&machine_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_uart_deinit),         MP_ROM_PTR(&machine_uart_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR_Pin),                 MP_ROM_PTR(&machine_pin_type) },
-    { MP_ROM_QSTR(MP_QSTR_LED),                 MP_ROM_PTR(&machine_led_type) },
-};
-STATIC MP_DEFINE_CONST_DICT(machine_module_globals, machine_module_globals_table);
-
-const mp_obj_module_t mp_module_machine = {
-    .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&machine_module_globals,
-};
+NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+    mp_machine_lightsleep(n_args, args);
+    mp_machine_reset();
+}

@@ -1,11 +1,8 @@
 try:
     from collections import OrderedDict
 except ImportError:
-    try:
-        from ucollections import OrderedDict
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 x = OrderedDict()
 y = OrderedDict()

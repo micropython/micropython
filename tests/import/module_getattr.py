@@ -8,6 +8,7 @@ try:
 except AttributeError:
     pass
 
+
 # define __getattr__
 def __getattr__(attr):
     if attr == "does_not_exist":

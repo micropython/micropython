@@ -1,10 +1,6 @@
 try:
-    try:
-        import uio as io
-        import usys as sys
-    except ImportError:
-        import io
-        import sys
+    import io
+    import sys
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -39,6 +35,7 @@ try:
 except Exception as e:
     print("caught")
     print_exc(e)
+
 
 # exception message with more than 1 source-code line
 def f():
@@ -76,6 +73,7 @@ try:
 except Exception as e:
     print("caught")
     print_exc(e)
+
 
 # Here we have a function with lots of bytecode generated for a single source-line, and
 # there is an error right at the end of the bytecode.  It should report the correct line.

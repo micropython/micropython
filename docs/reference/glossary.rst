@@ -32,7 +32,7 @@ Glossary
 
     callee-owned tuple
         This is a MicroPython-specific construct where, for efficiency
-        reasons, some built-in functions or methods may re-use the same
+        reasons, some built-in functions or methods may reuse the same
         underlying tuple object to return data. This avoids having to allocate
         a new tuple for every call, and reduces heap fragmentation. Programs
         should not hold references to callee-owned tuples and instead only
@@ -52,7 +52,7 @@ Glossary
     cross-compiler
         Also known as ``mpy-cross``. This tool runs on your PC and converts a
         :term:`.py file` containing MicroPython code into a :term:`.mpy file`
-        containing MicroPython bytecode. This means it loads faster (the board
+        containing MicroPython :term:`bytecode`. This means it loads faster (the board
         doesn't have to compile the code), and uses less space on flash (the
         bytecode is more space efficient).
 
@@ -120,7 +120,7 @@ Glossary
         <https://github.com/micropython/micropython-lib>`_ which provides
         implementations for many modules from CPython's standard library.
 
-        Some of the modules are are implemented in pure Python, and are able to
+        Some of the modules are implemented in pure Python, and are able to
         be used on all ports. However, the majority of these modules use
         :term:`FFI` to access operating system functionality, and as such can
         only be used on the :term:`MicroPython Unix port` (with limited support
@@ -128,7 +128,7 @@ Glossary
 
         Unlike the :term:`CPython` stdlib, micropython-lib modules are
         intended to be installed individually - either using manual copying or
-        using :term:`upip`.
+        using :term:`mip`.
 
     MicroPython port
         MicroPython supports different :term:`boards <board>`, RTOSes, and
@@ -151,16 +151,28 @@ Glossary
         machine-independent features. It can also function in a similar way to
         :term:`CPython`'s ``python`` executable.
 
+    mip
+        A package installer for MicroPython (mip - "mip installs packages"). It
+        installs MicroPython packages either from :term:`micropython-lib`,
+        GitHub, or arbitrary URLs.  mip can be used on-device on
+        network-capable boards, and internally by tools such
+        as :term:`mpremote`.
+
+        See :ref:`packages` for more information on using ``mip``.
+
+    mpremote
+        A tool for interacting with a MicroPython device. See :ref:`mpremote`.
+
     .mpy file
         The output of the :term:`cross-compiler`. A compiled form of a
-        :term:`.py file` that contains MicroPython bytecode instead of Python
-        source code.
+        :term:`.py file` that contains MicroPython :term:`bytecode` instead of
+        Python source code.
 
     native
         Usually refers to "native code", i.e. machine code for the target
         microcontroller (such as ARM Thumb, Xtensa, x86/x64). The ``@native``
         decorator can be applied to a MicroPython function to generate native
-        code instead of bytecode for that function, which will likely be
+        code instead of :term:`bytecode` for that function, which will likely be
         faster but use more RAM.
 
     port
@@ -193,8 +205,10 @@ Glossary
         as a serial port over USB.
 
     upip
-        (Literally, "micro pip"). A package manager for MicroPython, inspired
+        A now-obsolete package manager for MicroPython, inspired
         by :term:`CPython`'s pip, but much smaller and with reduced
-        functionality.
-        upip runs both on the :term:`Unix port <MicroPython Unix port>` and on
-        :term:`baremetal` ports which offer filesystem and networking support.
+        functionality. See its replacement, :term:`mip`.
+
+    webrepl
+        A way of connecting to the REPL (and transferring files) on a device
+        over the internet from a browser. See https://micropython.org/webrepl

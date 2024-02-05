@@ -17,6 +17,7 @@ for l in range(254, 259):
         continue
     print(var in g)
 
+
 # calling a function with kwarg
 def f(**k):
     print(k)
@@ -35,6 +36,7 @@ for l in range(254, 259):
         print(type(id, (), {}).__name__)
     except RuntimeError:
         print("RuntimeError", l)
+
 
 # hasattr, setattr, getattr
 class A:

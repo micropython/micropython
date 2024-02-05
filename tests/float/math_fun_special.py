@@ -44,9 +44,9 @@ functions = [
 ]
 
 for function_name, function, test_vals in functions:
-    print(function_name)
     for value in test_vals:
         try:
-            print("{:.4g}".format(function(value)))
+            ans = "{:.4g}".format(function(value))
         except ValueError as e:
-            print(str(e))
+            ans = str(e)
+        print("{}({:.4g}) = {}".format(function_name, value, ans))

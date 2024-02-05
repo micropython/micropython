@@ -9,7 +9,7 @@ Functions
 
 .. function:: const(expr)
 
-   Used to declare that the expression is a constant so that the compile can
+   Used to declare that the expression is a constant so that the compiler can
    optimise it.  The use of this function should be as follows::
 
     from micropython import const

@@ -83,13 +83,14 @@ STATIC mp_obj_t complex_make_new(const mp_obj_type_t *type_in, size_t n_args, si
                 // a string, parse it
                 size_t l;
                 const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_decimal(s, l, true, true, NULL);
+                return mp_parse_num_complex(s, l, NULL);
             } else if (mp_obj_is_type(args[0], &mp_type_complex)) {
                 // a complex, just return it
                 return args[0];
             } else {
-                // something else, try to cast it to a complex
-                return mp_obj_new_complex(mp_obj_get_float(args[0]), 0);
+                mp_float_t real, imag;
+                mp_obj_get_complex(args[0], &real, &imag);
+                return mp_obj_new_complex(real, imag);
             }
 
         case 2:
@@ -150,20 +151,17 @@ STATIC void complex_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     }
 }
 
-const mp_obj_type_t mp_type_complex = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
-    .name = MP_QSTR_complex,
-    .print = complex_print,
-    .make_new = complex_make_new,
-    .unary_op = complex_unary_op,
-    .binary_op = complex_binary_op,
-    .attr = complex_attr,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_complex, MP_QSTR_complex, MP_TYPE_FLAG_EQ_NOT_REFLEXIVE | MP_TYPE_FLAG_EQ_CHECKS_OTHER_TYPE,
+    make_new, complex_make_new,
+    print, complex_print,
+    unary_op, complex_unary_op,
+    binary_op, complex_binary_op,
+    attr, complex_attr
+    );
 
 mp_obj_t mp_obj_new_complex(mp_float_t real, mp_float_t imag) {
-    mp_obj_complex_t *o = m_new_obj(mp_obj_complex_t);
-    o->base.type = &mp_type_complex;
+    mp_obj_complex_t *o = mp_obj_malloc(mp_obj_complex_t, &mp_type_complex);
     o->real = real;
     o->imag = imag;
     return MP_OBJ_FROM_PTR(o);

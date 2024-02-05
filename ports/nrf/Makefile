@@ -1,11 +1,17 @@
-# Select the board to build for: if not given on the command line,
-# then default to pca10040.
-BOARD ?= pca10040
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to PCA10040.
+BOARD ?= PCA10040
+BOARD_DIR ?= boards/$(BOARD)
+endif
+
 ifeq ($(wildcard boards/$(BOARD)/.),)
 $(error Invalid BOARD specified)
 endif
-
-BOARD_DIR ?= boards/$(BOARD)
 
 # If SoftDevice is selected, try to use that one.
 SD ?=
@@ -45,7 +51,7 @@ endif
 -include boards/$(BOARD)/modules/boardmodules.mk
 
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
 ifeq ($(DEBUG), 0)
@@ -56,12 +62,11 @@ FROZEN_MANIFEST ?= modules/manifest.py
 
 # include py core make definitions
 include ../../py/py.mk
+include ../../extmod/extmod.mk
 
-GIT_SUBMODULES = lib/nrfx lib/tinyusb
+GIT_SUBMODULES += lib/nrfx lib/tinyusb
 
 MICROPY_VFS_FAT ?= 0
-MPY_CROSS = ../../mpy-cross/mpy-cross
-MPY_TOOL = ../../tools/mpy-tool.py
 
 CROSS_COMPILE ?= arm-none-eabi-
 
@@ -107,6 +112,14 @@ endif
 NRF_DEFINES += -D$(MCU_SUB_VARIANT_UPPER)
 NRF_DEFINES += -DCONFIG_GPIO_AS_PINRESET
 
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = boards/$(BOARD)/pins.csv
+AF_FILE = $(MCU_VARIANT)_af.csv
+PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_gen.c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+
 CFLAGS_CORTEX_M = -mthumb -mabi=aapcs -fsingle-precision-constant -Wdouble-promotion
 
 CFLAGS_MCU_m33 = $(CFLAGS_CORTEX_M) -mcpu=cortex-m33 -march=armv8-m.main+dsp -mcmse -mfpu=fpv5-sp-d16 -mfloat-abi=hard
@@ -123,14 +136,13 @@ CFLAGS += -ffunction-sections -fdata-sections
 LDFLAGS += -Wl,--gc-sections
 endif
 
-
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
-CFLAGS += $(INC) -Wall -Werror -g -ansi -std=c11 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Werror -ansi -std=c11 -nostdlib $(COPT) $(NRF_DEFINES) $(CFLAGS_EXTRA)
 CFLAGS += -fno-strict-aliasing
 CFLAGS += -Iboards/$(BOARD)
 CFLAGS += -DNRF5_HAL_H='<$(MCU_VARIANT)_hal.h>'
 
-LDFLAGS = $(CFLAGS)
+LDFLAGS += $(CFLAGS)
 LDFLAGS += -Xlinker -Map=$(@:.elf=.map)
 LDFLAGS += -mthumb -mabi=aapcs $(addprefix -T,$(LD_FILES)) -L boards/
 
@@ -141,9 +153,12 @@ endif
 #Debugging/Optimization
 ifeq ($(DEBUG), 1)
 #ASMFLAGS += -g -gtabs+
-CFLAGS += -O0 -ggdb
+CFLAGS += -g -O0
 LDFLAGS += -O0
 else
+ifneq ($(LTO), 1)
+CFLAGS += -g  # always include debug info in the ELF, unless LTO is on
+endif
 CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
 endif
@@ -152,90 +167,32 @@ LIBS = \
 
 ifeq ($(MCU_VARIANT), nrf52)
 
-SRC_LIB += $(addprefix lib/,\
-        libm/math.c \
-        libm/fmodf.c \
-        libm/nearbyintf.c \
-        libm/ef_sqrt.c \
-        libm/kf_rem_pio2.c \
-        libm/kf_sin.c \
-        libm/kf_cos.c \
-        libm/kf_tan.c \
-        libm/ef_rem_pio2.c \
-        libm/sf_sin.c \
-        libm/sf_cos.c \
-        libm/sf_tan.c \
-        libm/sf_frexp.c \
-        libm/sf_modf.c \
-        libm/sf_ldexp.c \
-        libm/asinfacosf.c \
-        libm/acoshf.c \
-        libm/asinhf.c \
-        libm/atanf.c \
-        libm/atan2f.c \
-        libm/atanhf.c \
-        libm/log1pf.c \
-        libm/sf_erf.c \
-        libm/erf_lgamma.c \
-        libm/wf_lgamma.c \
-        libm/wf_tgamma.c \
-        libm/roundf.c \
-	)
+SRC_LIB_C += $(SRC_LIB_LIBM_C)
+SRC_LIB_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 endif
 
 ifeq ($(MCU_VARIANT), nrf91)
 
-SRC_LIB += $(addprefix lib/,\
-        libm/math.c \
-        libm/fmodf.c \
-        libm/nearbyintf.c \
-        libm/ef_sqrt.c \
-        libm/kf_rem_pio2.c \
-        libm/kf_sin.c \
-        libm/kf_cos.c \
-        libm/kf_tan.c \
-        libm/ef_rem_pio2.c \
-        libm/sf_sin.c \
-        libm/sf_cos.c \
-        libm/sf_tan.c \
-        libm/sf_frexp.c \
-        libm/sf_modf.c \
-        libm/sf_ldexp.c \
-        libm/asinfacosf.c \
-        libm/acoshf.c \
-        libm/asinhf.c \
-        libm/atanf.c \
-        libm/atan2f.c \
-        libm/atanhf.c \
-        libm/log1pf.c \
-        libm/sf_erf.c \
-        libm/erf_lgamma.c \
-        libm/wf_lgamma.c \
-        libm/wf_tgamma.c \
-        libm/roundf.c \
-        )
-
-SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
-        nrfx_uarte.c \
-        nrfx_twim.c \
-        )
+SRC_LIB_C += $(SRC_LIB_LIBM_C)
+SRC_LIB_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 include drivers/secureboot/secureboot.mk
 
 endif
 
-SRC_LIB += $(addprefix shared/,\
+SRC_SHARED_C += $(addprefix shared/,\
 	libc/string0.c \
 	readline/readline.c \
 	runtime/pyexec.c \
 	runtime/sys_stdio_mphal.c \
 	runtime/interrupt_char.c \
+	tinyusb/mp_cdc_common.c \
 	timeutils/timeutils.c \
 	)
 
 ifeq ($(MICROPY_FATFS), 1)
-SRC_LIB += $(addprefix lib/,\
+SRC_LIB_C += $(addprefix lib/,\
         oofatfs/ff.c \
         oofatfs/ffunicode.c \
         )
@@ -245,11 +202,13 @@ endif
 SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 	prs/nrfx_prs.c \
 	nrfx_uart.c \
+        nrfx_uarte.c \
 	nrfx_adc.c \
 	nrfx_saadc.c \
 	nrfx_temp.c \
 	nrfx_rng.c \
 	nrfx_twi.c \
+        nrfx_twim.c \
 	nrfx_spi.c \
 	nrfx_spim.c \
 	nrfx_rtc.c \
@@ -274,6 +233,7 @@ SRC_C += \
 	drivers/ticker.c \
 	drivers/bluetooth/ble_drv.c \
 	drivers/bluetooth/ble_uart.c \
+	$(wildcard $(BOARD_DIR)/*.c) \
 
 ifeq ($(MCU_SUB_VARIANT), nrf52840)
 
@@ -300,22 +260,17 @@ SRC_C += $(addprefix lib/tinyusb/src/,\
 	tusb.c \
 	portable/nordic/nrf5x/dcd_nrf5x.c \
 	)
+
 endif
 
 DRIVERS_SRC_C += $(addprefix modules/,\
-	machine/modmachine.c \
-	machine/uart.c \
 	machine/spi.c \
 	machine/i2c.c \
-	machine/adc.c \
 	machine/pin.c \
 	machine/timer.c \
 	machine/rtcounter.c \
-	machine/pwm.c \
 	machine/temp.c \
-	uos/moduos.c \
-	uos/microbitfs.c \
-	utime/modutime.c \
+	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \
 	ubluepy/modubluepy.c \
@@ -343,14 +298,15 @@ SRC_C += \
 LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 LIBS += -L $(dir $(LIBGCC_FILE_NAME)) -lgcc
 
-OBJ += $(PY_O) $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
+OBJ += $(PY_O)
+OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_NRFX_HAL:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_LIB:.c=.o))
-OBJ += $(BUILD)/pins_gen.o
+OBJ += $(addprefix $(BUILD)/, $(SRC_LIB_C:.c=.o))
+OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_C:.c=.o))
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 $(BUILD)/$(OOFATFS_DIR)/ff.o: COPT += -Os
 $(filter $(PY_BUILD)/../extmod/vfs_fat_%.o, $(PY_O)): COPT += -Os
@@ -495,23 +451,28 @@ nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
 
 deploy: nrfutil_dfu_deploy
+
+else ifeq ($(FLASHER), bossac)
+
+BOSSAC_PORT ?= /dev/ttyACM0
+BOSSAC_OFFSET ?= 0x16000
+
+deploy: $(BUILD)/$(OUTPUT_FILENAME).bin
+	$(Q)bossac -e -w --offset=$(BOSSAC_OFFSET) --port=$(BOSSAC_PORT) -i -d -U -R $<
+
 endif
 
 flash: deploy
 
 $(BUILD)/$(OUTPUT_FILENAME).elf: $(OBJ)
 	$(ECHO) "LINK $@"
-	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_LIB) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(SRC_MOD)
+SRC_QSTR += $(SRC_C) $(SRC_SHARED_C) $(DRIVERS_SRC_C) $(SRC_BOARD_MODULES) $(GEN_PINS_SRC)
 
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
-
-# Making OBJ use an order-only depenedency on the generated pins.h file
+# Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
@@ -520,28 +481,10 @@ $(OBJ): | $(HEADER_BUILD)/pins.h
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_gen.c and pins.h
-$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(BUILD)/%_qstr.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_gen.c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h: boards/$(BOARD)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "Create $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) --prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) --af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
-
-$(BUILD)/pins_gen.o: $(BUILD)/pins_gen.c
-	$(call compile_c)
-
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = boards/$(BOARD)/pins.csv
-AF_FILE = $(MCU_VARIANT)_af.csv
-PREFIX_FILE = boards/$(MCU_VARIANT)_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_gen.c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
-
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) --output-af-const $(GEN_PINS_AF_CONST)
 
 $(PY_BUILD)/nlr%.o: CFLAGS += -Os -fno-lto
 

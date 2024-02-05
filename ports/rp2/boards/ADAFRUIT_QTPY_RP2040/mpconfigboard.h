@@ -12,16 +12,9 @@
 #define MICROPY_HW_UART1_CTS (10)
 #define MICROPY_HW_UART1_RTS (7)
 
-#define MICROPY_HW_I2C0_SCL  (25)
-#define MICROPY_HW_I2C0_SDA  (24)
-
-// STEMMA QT / Qwiic on I2C1
+// STEMMA QT / Qwiic on (non-default) I2C1
 #define MICROPY_HW_I2C1_SCL  (23)
 #define MICROPY_HW_I2C1_SDA  (22)
-
-#define MICROPY_HW_SPI0_SCK  (6)
-#define MICROPY_HW_SPI0_MOSI (3)
-#define MICROPY_HW_SPI0_MISO (4)
 
 // NeoPixel data GPIO12, power GPIO11
 

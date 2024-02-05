@@ -1,0 +1,20 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+        "Dual-core",
+        "External Flash",
+        "RGB LED",
+        "USB-C"
+    ],
+    "images": [
+        "nullbits_bit_c_pro.jpg"
+    ],
+    "mcu": "rp2040",
+    "product": "Bit-C PRO",
+    "thumbnail": "",
+    "url": "https://nullbits.co/bit-c-pro",
+    "vendor": "nullbits"
+}

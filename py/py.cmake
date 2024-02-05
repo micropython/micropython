@@ -47,12 +47,13 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/modstruct.c
     ${MICROPY_PY_DIR}/modsys.c
     ${MICROPY_PY_DIR}/modthread.c
-    ${MICROPY_PY_DIR}/moduerrno.c
+    ${MICROPY_PY_DIR}/moderrno.c
     ${MICROPY_PY_DIR}/mpprint.c
     ${MICROPY_PY_DIR}/mpstate.c
     ${MICROPY_PY_DIR}/mpz.c
     ${MICROPY_PY_DIR}/nativeglue.c
     ${MICROPY_PY_DIR}/nlr.c
+    ${MICROPY_PY_DIR}/nlrmips.c
     ${MICROPY_PY_DIR}/nlrpowerpc.c
     ${MICROPY_PY_DIR}/nlrsetjmp.c
     ${MICROPY_PY_DIR}/nlrthumb.c

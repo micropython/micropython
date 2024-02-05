@@ -7,6 +7,8 @@ endif
 
 # Make 'release' the default build type
 BTYPE ?= release
+# Make the 'application' by default ('bootloader' can be built explicitly)
+BTARGET ?= application
 
 # Port for flashing firmware
 PORT ?= /dev/ttyUSB1
@@ -20,25 +22,28 @@ include ../../py/mkenv.mk
 CROSS_COMPILE ?= arm-none-eabi-
 
 CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -march=armv7e-m -mabi=aapcs -mcpu=cortex-m4 -msoft-float -mfloat-abi=soft -fsingle-precision-constant -Wdouble-promotion
-CFLAGS = -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) -Os
+CFLAGS += -Wall -Wpointer-arith -Werror -std=gnu99 -nostdlib $(CFLAGS_CORTEX_M4) -Os
 CFLAGS += -g -ffunction-sections -fdata-sections -fno-common -fsigned-char -mno-unaligned-access
 CFLAGS += -Iboards/$(BOARD)
-CFLAGS += $(CFLAGS_MOD)
 
-LDFLAGS = -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
+# Workaround gcc 12.1 bug.
+CFLAGS += -Wno-array-bounds
+
+LDFLAGS += -Wl,-nostdlib -Wl,--gc-sections -Wl,-Map=$@.map
 
 FLASH_SIZE_WIPY = 2M
 FLASH_SIZE_LAUNCHXL = 1M
 
 ifeq ($(BTARGET), application)
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS = qstrdefsport.h $(BUILD)/pins_qstr.h
+QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 
 # include MicroPython make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 include application.mk
 else
 ifeq ($(BTARGET), bootloader)

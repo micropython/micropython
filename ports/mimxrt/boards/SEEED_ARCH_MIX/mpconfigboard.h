@@ -1,6 +1,8 @@
 #define MICROPY_HW_BOARD_NAME "Seeed ARCH MIX"
 #define MICROPY_HW_MCU_NAME   "MIMXRT1052DVL5B"
 
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-arch-mix"
+
 // MIMXRT1050_EVKB has 1 user LED
 #define MICROPY_HW_LED1_PIN (pin_GPIO_AD_B0_09)
 #define MICROPY_HW_LED2_PIN (pin_GPIO_AD_B0_10)
@@ -30,17 +32,31 @@
     { 0 }, { 0 }, \
     { IOMUXC_GPIO_AD_B1_10_LPUART8_TX }, { IOMUXC_GPIO_AD_B1_11_LPUART8_RX },
 
+#define IOMUX_TABLE_UART_CTS_RTS \
+    { IOMUXC_GPIO_AD_B0_14_LPUART1_CTS_B }, { IOMUXC_GPIO_AD_B0_15_LPUART1_RTS_B }, \
+    { IOMUXC_GPIO_AD_B1_00_LPUART2_CTS_B }, { IOMUXC_GPIO_AD_B1_01_LPUART2_RTS_B }, \
+    { IOMUXC_GPIO_AD_B1_04_LPUART3_CTS_B }, { IOMUXC_GPIO_AD_B1_05_LPUART3_RTS_B }, \
+    { IOMUXC_GPIO_EMC_17_LPUART4_CTS_B }, { IOMUXC_GPIO_EMC_18_LPUART4_RTS_B }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { 0 }, { 0 }, \
+    { IOMUXC_GPIO_SD_B0_02_LPUART8_CTS_B }, { IOMUXC_GPIO_SD_B0_03_LPUART8_RTS_B },
+
 #define MICROPY_HW_SPI_INDEX { 3, 4 }
 
 #define IOMUX_TABLE_SPI \
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
+    { 0 }, \
     { 0 }, { 0 }, \
     { 0 }, { 0 }, \
+    { 0 }, \
     { IOMUXC_GPIO_AD_B1_15_LPSPI3_SCK }, { IOMUXC_GPIO_AD_B1_12_LPSPI3_PCS0 }, \
     { IOMUXC_GPIO_AD_B1_14_LPSPI3_SDO }, { IOMUXC_GPIO_AD_B1_13_LPSPI3_SDI },  \
+    { 0 }, \
     { IOMUXC_GPIO_B1_07_LPSPI4_SCK }, { IOMUXC_GPIO_B1_04_LPSPI4_PCS0 }, \
-    { IOMUXC_GPIO_B1_06_LPSPI4_SDO }, { IOMUXC_GPIO_B1_05_LPSPI4_SDI },
+    { IOMUXC_GPIO_B1_06_LPSPI4_SDO }, { IOMUXC_GPIO_B1_05_LPSPI4_SDI }, \
+    { IOMUXC_GPIO_B1_03_LPSPI4_PCS1 }
 
 #define DMA_REQ_SRC_RX { 0, kDmaRequestMuxLPSPI1Rx, kDmaRequestMuxLPSPI2Rx, \
                          kDmaRequestMuxLPSPI3Rx, kDmaRequestMuxLPSPI4Rx }
@@ -61,6 +77,36 @@
     { IOMUXC_GPIO_B0_04_LPI2C2_SCL }, { IOMUXC_GPIO_B0_05_LPI2C2_SDA }, \
     { IOMUXC_GPIO_AD_B1_07_LPI2C3_SCL }, { IOMUXC_GPIO_AD_B1_06_LPI2C3_SDA }
 
+#define MICROPY_PY_MACHINE_I2S (1)
+#define MICROPY_HW_I2S_NUM (1)
+#define I2S_CLOCK_MUX { 0, kCLOCK_Sai1Mux }
+#define I2S_CLOCK_PRE_DIV { 0, kCLOCK_Sai1PreDiv }
+#define I2S_CLOCK_DIV { 0, kCLOCK_Sai1Div }
+#define I2S_IOMUXC_GPR_MODE { 0, kIOMUXC_GPR_SAI1MClkOutputDir }
+#define I2S_DMA_REQ_SRC_RX { 0, kDmaRequestMuxSai1Rx }
+#define I2S_DMA_REQ_SRC_TX { 0, kDmaRequestMuxSai1Tx }
+#define I2S_AUDIO_PLL_CLOCK (2U)
+
+#define I2S_GPIO(_hwid, _fn, _mode, _pin, _iomux) \
+    { \
+        .hw_id = _hwid, \
+        .fn = _fn, \
+        .mode = _mode, \
+        .name = MP_QSTR_##_pin, \
+        .iomux = {_iomux}, \
+    }
+
+#define I2S_GPIO_MAP \
+    { \
+        I2S_GPIO(1, MCK, TX, GPIO_AD_B1_09, IOMUXC_GPIO_AD_B1_09_SAI1_MCLK), /* pin J4 09 */ \
+        I2S_GPIO(1, SCK, RX, GPIO_AD_B1_11, IOMUXC_GPIO_AD_B1_11_SAI1_RX_BCLK), /* pin J4 11 */ \
+        I2S_GPIO(1, WS, RX, GPIO_AD_B1_10, IOMUXC_GPIO_AD_B1_10_SAI1_RX_SYNC), /* pin J4 10 */ \
+        I2S_GPIO(1, SD, RX, GPIO_AD_B1_12, IOMUXC_GPIO_AD_B1_12_SAI1_RX_DATA00), /* pin J4 12 */ \
+        I2S_GPIO(1, SCK, TX, GPIO_AD_B1_14, IOMUXC_GPIO_AD_B1_14_SAI1_TX_BCLK), /* pin J4 14 */ \
+        I2S_GPIO(1, WS, TX, GPIO_AD_B1_15, IOMUXC_GPIO_AD_B1_15_SAI1_TX_SYNC), /* pin J4 15 */ \
+        I2S_GPIO(1, SD, TX, GPIO_AD_B1_13, IOMUXC_GPIO_AD_B1_13_SAI1_TX_DATA00) /* pin J4 13 */ \
+    }
+
 #define USDHC_DUMMY_PIN NULL, 0
 
 #define MICROPY_USDHC1 \
@@ -80,9 +126,6 @@
 #define ENET_PHY            LAN8720
 #define ENET_PHY_OPS        phylan8720_ops
 #define ENET_TX_CLK_OUTPUT  false
-
-// Etherner PIN definitions
-// No reset and interrupt pin by intention
 
 #define IOMUX_TABLE_ENET \
     { IOMUXC_GPIO_B1_04_ENET_RX_DATA00, 0, 0xB0E9u }, \

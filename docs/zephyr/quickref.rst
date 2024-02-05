@@ -19,7 +19,7 @@ See the corresponding section of the tutorial: :ref:`intro`.
 Delay and timing
 ----------------
 
-Use the :mod:`time <utime>` module::
+Use the :mod:`time <time>` module::
 
     import time
 
@@ -151,7 +151,7 @@ Use the :ref:`zsensor.Sensor <zsensor.Sensor>` class to access sensor data::
     accel.measure()               # obtain a measurement reading from the accelerometer
 
     # each of these prints the value taken by measure()
-    accel.float(zsensor.ACCEL_X)  # print measurement value for accelerometer X-axis sensor channel as float
-    accel.millis(zsensor.ACCEL_Y) # print measurement value for accelerometer Y-axis sensor channel in millionths
-    accel.micro(zsensor.ACCEL_Z)  # print measurement value for accelerometer Z-axis sensor channel in thousandths
-    accel.int(zsensor.ACCEL_X)    # print measurement integer value only for accelerometer X-axis sensor channel
+    accel.get_float(zsensor.ACCEL_X)  # print measurement value for accelerometer X-axis sensor channel as float
+    accel.get_millis(zsensor.ACCEL_Y) # print measurement value for accelerometer Y-axis sensor channel in millionths
+    accel.get_micro(zsensor.ACCEL_Z)  # print measurement value for accelerometer Z-axis sensor channel in thousandths
+    accel.get_int(zsensor.ACCEL_X)    # print measurement integer value only for accelerometer X-axis sensor channel

@@ -32,6 +32,8 @@
 #include "py/gc.h"
 #include "py/mphal.h"
 
+#if MICROPY_PY_MICROPYTHON
+
 // Various builtins specific to MicroPython runtime,
 // living in micropython module
 
@@ -79,10 +81,10 @@ mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args) {
     mp_printf(&mp_plat_print, "stack: " UINT_FMT "\n", mp_stack_usage());
     #endif
     #if MICROPY_ENABLE_GC
-    gc_dump_info();
+    gc_dump_info(&mp_plat_print);
     if (n_args == 1) {
         // arg given means dump gc allocation table
-        gc_dump_alloc_table();
+        gc_dump_alloc_table(&mp_plat_print);
     }
     #else
     (void)n_args;
@@ -209,3 +211,7 @@ const mp_obj_module_t mp_module_micropython = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_micropython_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_micropython, mp_module_micropython);
+
+#endif // MICROPY_PY_MICROPYTHON

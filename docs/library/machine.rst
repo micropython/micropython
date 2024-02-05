@@ -19,6 +19,44 @@ This is true for both physical devices with IDs >= 0 and "virtual" devices
 with negative IDs like -1 (these "virtual" devices are still thin shims on
 top of real hardware and real hardware interrupts). See :ref:`isr_rules`.
 
+Memory access
+-------------
+
+The module exposes three objects used for raw memory access.
+
+.. data:: mem8
+
+    Read/write 8 bits of memory.
+
+.. data:: mem16
+
+    Read/write 16 bits of memory.
+
+.. data:: mem32
+
+    Read/write 32 bits of memory.
+
+Use subscript notation ``[...]`` to index these objects with the address of
+interest. Note that the address is the byte address, regardless of the size of
+memory being accessed.
+
+Example use (registers are specific to an stm32 microcontroller):
+
+.. code-block:: python3
+
+    import machine
+    from micropython import const
+
+    GPIOA = const(0x48000000)
+    GPIO_BSRR = const(0x18)
+    GPIO_IDR = const(0x10)
+
+    # set PA2 high
+    machine.mem32[GPIOA + GPIO_BSRR] = 1 << 2
+
+    # read PA3
+    value = (machine.mem32[GPIOA + GPIO_IDR] >> 3) & 1
+
 Reset related functions
 -----------------------
 
@@ -47,6 +85,23 @@ Reset related functions
 
 Interrupt related functions
 ---------------------------
+
+The following functions allow control over interrupts.  Some systems require
+interrupts to operate correctly so disabling them for long periods may
+compromise core functionality, for example watchdog timers may trigger
+unexpectedly.  Interrupts should only be disabled for a minimum amount of time
+and then re-enabled to their previous state.  For example::
+
+    import machine
+
+    # Disable interrupts
+    state = machine.disable_irq()
+
+    # Do a small amount of time-critical work here
+
+    # Enable interrupts
+    machine.enable_irq(state)
+
 
 .. function:: disable_irq()
 

@@ -50,7 +50,6 @@
 #include "pin.h"
 #include "pybpin.h"
 #include "pins.h"
-#include "moduos.h"
 
 /// \moduleref pyb
 /// \class UART - duplex serial communication bus
@@ -66,6 +65,7 @@
 #define PYBUART_TX_MAX_TIMEOUT_MS               (5)
 
 #define PYBUART_RX_BUFFER_LEN                   (256)
+#define PYBUART_TX_BUFFER_LEN                   (17)
 
 // interrupt triggers
 #define UART_TRIGGER_RX_ANY                     (0x01)
@@ -248,7 +248,7 @@ STATIC void UARTGenericIntHandler(uint32_t uart_id) {
         MAP_UARTIntClear(self->reg, UART_INT_RX | UART_INT_RT);
         while (UARTCharsAvail(self->reg)) {
             int data = MAP_UARTCharGetNonBlocking(self->reg);
-            if (MP_STATE_PORT(os_term_dup_obj) && MP_STATE_PORT(os_term_dup_obj)->stream_o == self && data == mp_interrupt_char) {
+            if (MP_STATE_VM(dupterm_objs[0]) == MP_OBJ_FROM_PTR(self) && data == mp_interrupt_char) {
                 // raise an exception when interrupts are finished
                 mp_sched_keyboard_interrupt();
             } else { // there's always a read buffer available
@@ -558,6 +558,17 @@ invalid_args:
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_uart_irq_obj, 1, pyb_uart_irq);
 
+STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
+    pyb_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+
+    if (MAP_UARTBusy(self->reg) == false) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
+
 STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),        MP_ROM_PTR(&pyb_uart_init_obj) },
@@ -565,6 +576,7 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_any),         MP_ROM_PTR(&pyb_uart_any_obj) },
     { MP_ROM_QSTR(MP_QSTR_sendbreak),   MP_ROM_PTR(&pyb_uart_sendbreak_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),         MP_ROM_PTR(&pyb_uart_irq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_txdone),      MP_ROM_PTR(&machine_uart_txdone_obj) },
 
     /// \method read([nbytes])
     { MP_ROM_QSTR(MP_QSTR_read),        MP_ROM_PTR(&mp_stream_read_obj) },
@@ -574,6 +586,7 @@ STATIC const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readinto),    MP_ROM_PTR(&mp_stream_readinto_obj) },
     /// \method write(buf)
     { MP_ROM_QSTR(MP_QSTR_write),       MP_ROM_PTR(&mp_stream_write_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flush),       MP_ROM_PTR(&mp_stream_flush_obj) },
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RX_ANY),      MP_ROM_INT(UART_TRIGGER_RX_ANY) },
@@ -635,6 +648,21 @@ STATIC mp_uint_t pyb_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t a
         if ((flags & MP_STREAM_POLL_WR) && MAP_UARTSpaceAvail(self->reg)) {
             ret |= MP_STREAM_POLL_WR;
         }
+    } else if (request == MP_STREAM_FLUSH) {
+        // The timeout is estimated using the buffer size and the baudrate.
+        // Take the worst case assumptions at 13 bit symbol size times 2.
+        uint64_t timeout = mp_hal_ticks_ms()  +
+            (PYBUART_TX_BUFFER_LEN) * 13000 * 2 / self->baudrate;
+
+        do {
+            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+                return 0;
+            }
+            MICROPY_EVENT_POLL_HOOK
+        } while (mp_hal_ticks_ms() < timeout);
+
+        *errcode = MP_ETIMEDOUT;
+        ret = MP_STREAM_ERROR;;
     } else {
         *errcode = MP_EINVAL;
         ret = MP_STREAM_ERROR;
@@ -656,13 +684,14 @@ STATIC const mp_irq_methods_t uart_irq_methods = {
     .flags = uart_irq_flags
 };
 
-const mp_obj_type_t pyb_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .print = pyb_uart_print,
-    .make_new = pyb_uart_make_new,
-    .getiter = mp_identity_getiter,
-    .iternext = mp_stream_unbuffered_iter,
-    .protocol = &uart_stream_p,
-    .locals_dict = (mp_obj_t)&pyb_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_STREAM,
+    make_new, pyb_uart_make_new,
+    print, pyb_uart_print,
+    protocol, &uart_stream_p,
+    locals_dict, &pyb_uart_locals_dict
+    );
+
+MP_REGISTER_ROOT_POINTER(struct _pyb_uart_obj_t *pyb_uart_objs[2]);

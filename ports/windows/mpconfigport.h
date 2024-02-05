@@ -33,6 +33,12 @@
 #ifndef MICROPY_USE_READLINE
 #define MICROPY_USE_READLINE        (1)
 #endif
+#ifndef MICROPY_USE_READLINE_HISTORY
+#define MICROPY_USE_READLINE_HISTORY (1)
+#endif
+#ifndef MICROPY_READLINE_HISTORY_SIZE
+#define MICROPY_READLINE_HISTORY_SIZE (50)
+#endif
 
 #define MICROPY_ALLOC_PATH_MAX      (260) // see minwindef.h for msvc or limits.h for mingw
 #define MICROPY_PERSISTENT_CODE_LOAD (1)
@@ -51,7 +57,7 @@
 #define MICROPY_DEBUG_PRINTER       (&mp_stderr_print)
 #define MICROPY_DEBUG_PRINTERS      (1)
 #define MICROPY_READER_POSIX        (1)
-#define MICROPY_USE_READLINE_HISTORY (1)
+#define MICROPY_READER_VFS          (1)
 #define MICROPY_HELPER_REPL         (1)
 #define MICROPY_REPL_EMACS_KEYS     (1)
 #define MICROPY_REPL_AUTO_INDENT    (1)
@@ -66,14 +72,18 @@
 #endif
 #define MICROPY_STREAMS_POSIX_API   (1)
 #define MICROPY_OPT_COMPUTED_GOTO   (0)
-#define MICROPY_MODULE_WEAK_LINKS   (1)
 #define MICROPY_MODULE_OVERRIDE_MAIN_IMPORT (1)
 #define MICROPY_CAN_OVERRIDE_BUILTINS (1)
-#define MICROPY_VFS_POSIX_FILE      (1)
+#ifndef MICROPY_ENABLE_SCHEDULER
+#define MICROPY_ENABLE_SCHEDULER    (1)
+#endif
+#define MICROPY_VFS                 (1)
+#define MICROPY_VFS_POSIX           (1)
 #define MICROPY_PY_FUNCTION_ATTRS   (1)
 #define MICROPY_PY_DESCRIPTORS      (1)
 #define MICROPY_PY_DELATTR_SETATTR  (1)
 #define MICROPY_PY_FSTRINGS         (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE (1)
 #define MICROPY_PY_BUILTINS_STR_CENTER (1)
 #define MICROPY_PY_BUILTINS_STR_PARTITION (1)
@@ -114,28 +124,39 @@
 #define MICROPY_PY_MATH_ISCLOSE     (MICROPY_PY_MATH_SPECIAL_FUNCTIONS)
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_IO_IOBASE        (1)
-#define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 #ifndef MICROPY_STACKLESS
 #define MICROPY_STACKLESS           (0)
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
-#define MICROPY_PY_UTIME            (1)
-#define MICROPY_PY_UTIME_MP_HAL     (1)
-#define MICROPY_PY_UERRNO           (1)
+#define MICROPY_PY_OS               (1)
+#define MICROPY_PY_OS_INCLUDEFILE   "ports/unix/modos.c"
+#define MICROPY_PY_OS_ERRNO         (1)
+#define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
+#define MICROPY_PY_OS_SEP           (1)
+#define MICROPY_PY_OS_STATVFS       (0)
+#define MICROPY_PY_OS_SYSTEM        (1)
+#define MICROPY_PY_OS_URANDOM       (1)
+#define MICROPY_PY_TIME             (1)
+#define MICROPY_PY_TIME_TIME_TIME_NS (1)
+#define MICROPY_PY_TIME_CUSTOM_SLEEP (1)
+#define MICROPY_PY_TIME_INCLUDEFILE "ports/unix/modtime.c"
+#define MICROPY_PY_ERRNO            (1)
 #define MICROPY_PY_UCTYPES          (1)
-#define MICROPY_PY_UZLIB            (1)
-#define MICROPY_PY_UJSON            (1)
-#define MICROPY_PY_URE              (1)
-#define MICROPY_PY_UHEAPQ           (1)
-#define MICROPY_PY_UTIMEQ           (1)
-#define MICROPY_PY_UHASHLIB         (1)
-#define MICROPY_PY_UBINASCII        (1)
-#define MICROPY_PY_UBINASCII_CRC32  (1)
-#define MICROPY_PY_URANDOM          (1)
+#define MICROPY_PY_DEFLATE          (1)
+#define MICROPY_PY_DEFLATE_COMPRESS (1)
+#define MICROPY_PY_JSON             (1)
+#define MICROPY_PY_RE               (1)
+#define MICROPY_PY_HEAPQ            (1)
+#define MICROPY_PY_HASHLIB          (1)
+#define MICROPY_PY_BINASCII         (1)
+#define MICROPY_PY_BINASCII_CRC32   (1)
+#define MICROPY_PY_RANDOM           (1)
 #define MICROPY_PY_MACHINE          (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE "ports/unix/modmachine.c"
 #define MICROPY_PY_MACHINE_PULSE    (1)
+#define MICROPY_PY_MACHINE_PIN_BASE (1)
 #define MICROPY_MACHINE_MEM_GET_READ_ADDR   mod_machine_mem_get_addr
 #define MICROPY_MACHINE_MEM_GET_WRITE_ADDR  mod_machine_mem_get_addr
 
@@ -157,9 +178,6 @@ extern const struct _mp_print_t mp_stderr_print;
 #define MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF   (1)
 #define MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE     (256)
 #define MICROPY_KBD_EXCEPTION       (1)
-
-#define mp_type_fileio mp_type_vfs_posix_fileio
-#define mp_type_textio mp_type_vfs_posix_textio
 
 #define MICROPY_PORT_INIT_FUNC      init()
 #define MICROPY_PORT_DEINIT_FUNC    deinit()
@@ -197,21 +215,6 @@ typedef long long mp_off_t;
 typedef long mp_off_t;
 #endif
 
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
-
-extern const struct _mp_obj_module_t mp_module_os;
-extern const struct _mp_obj_module_t mp_module_time;
-#define MICROPY_PORT_BUILTIN_MODULES \
-    { MP_ROM_QSTR(MP_QSTR_utime), MP_ROM_PTR(&mp_module_time) }, \
-    { MP_ROM_QSTR(MP_QSTR_umachine), MP_ROM_PTR(&mp_module_machine) }, \
-    { MP_ROM_QSTR(MP_QSTR_uos), MP_ROM_PTR(&mp_module_os) }, \
-
-#if MICROPY_USE_READLINE == 1
-#define MICROPY_PORT_ROOT_POINTERS \
-    char *readline_hist[50];
-#endif
-
 #define MP_STATE_PORT               MP_STATE_VM
 
 #define MICROPY_MPHALPORT_H         "windows_mphal.h"
@@ -221,7 +224,6 @@ extern const struct _mp_obj_module_t mp_module_time;
 
 #include "realpath.h"
 #include "init.h"
-#include "sleep.h"
 
 #ifdef __GNUC__
 #define MP_NOINLINE __attribute__((noinline))
@@ -242,9 +244,10 @@ extern const struct _mp_obj_module_t mp_module_time;
 #define NORETURN                    __declspec(noreturn)
 #define MP_WEAK
 #define MP_NOINLINE                 __declspec(noinline)
+#define MP_ALWAYSINLINE             __forceinline
 #define MP_LIKELY(x)                (x)
 #define MP_UNLIKELY(x)              (x)
-#define MICROPY_PORT_CONSTANTS      { "dummy", 0 } // can't have zero-sized array
+#define MICROPY_PORT_CONSTANTS      { MP_ROM_QSTR(MP_QSTR_dummy), MP_ROM_PTR(NULL) } // can't have zero-sized array
 #ifdef _WIN64
 #define MP_SSIZE_MAX                _I64_MAX
 #else

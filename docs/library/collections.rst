@@ -12,7 +12,7 @@ hold/accumulate various objects.
 Classes
 -------
 
-.. function:: deque(iterable, maxlen[, flags])
+.. class:: deque(iterable, maxlen[, flags])
 
     Deques (double-ended queues) are a list-like container that support O(1)
     appends and pops from either side of the deque.  New deques are created
@@ -57,7 +57,7 @@ Classes
         print(t1.name)
         assert t2.name == t2[1]
 
-.. function:: OrderedDict(...)
+.. class:: OrderedDict(...)
 
     ``dict`` type subclass which remembers and preserves the order of keys
     added. When ordered dict is iterated over, keys/items are returned in

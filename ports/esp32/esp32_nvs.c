@@ -44,8 +44,7 @@ typedef struct _esp32_nvs_obj_t {
 
 // *esp32_nvs_new allocates a python NVS object given a handle to an esp-idf namespace C obj.
 STATIC esp32_nvs_obj_t *esp32_nvs_new(nvs_handle_t namespace) {
-    esp32_nvs_obj_t *self = m_new_obj(esp32_nvs_obj_t);
-    self->base.type = &esp32_nvs_type;
+    esp32_nvs_obj_t *self = mp_obj_malloc(esp32_nvs_obj_t, &esp32_nvs_type);
     self->namespace = namespace;
     return self;
 }
@@ -142,10 +141,11 @@ STATIC const mp_rom_map_elem_t esp32_nvs_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(esp32_nvs_locals_dict, esp32_nvs_locals_dict_table);
 
-const mp_obj_type_t esp32_nvs_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_NVS,
-    .print = esp32_nvs_print,
-    .make_new = esp32_nvs_make_new,
-    .locals_dict = (mp_obj_dict_t *)&esp32_nvs_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    esp32_nvs_type,
+    MP_QSTR_NVS,
+    MP_TYPE_FLAG_NONE,
+    make_new, esp32_nvs_make_new,
+    print, esp32_nvs_print,
+    locals_dict, &esp32_nvs_locals_dict
+    );

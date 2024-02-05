@@ -64,7 +64,7 @@ hypothetical new module ``subsystem`` in the file ``modsubsystem.c``:
        .globals = (mp_obj_dict_t *)&mp_module_subsystem_globals,
    };
 
-   MP_REGISTER_MODULE(MP_QSTR_subsystem, mp_module_subsystem, MICROPY_PY_SUBSYSTEM);
+   MP_REGISTER_MODULE(MP_QSTR_subsystem, mp_module_subsystem);
 
    #endif
 

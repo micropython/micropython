@@ -14,7 +14,6 @@ assert len(sys.argv) == 4
 md5 = hashlib.md5()
 
 with open(sys.argv[3], "wb") as fout:
-
     with open(sys.argv[1], "rb") as f:
         data_flash = f.read()
         fout.write(data_flash)

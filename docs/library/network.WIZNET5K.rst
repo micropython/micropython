@@ -6,7 +6,7 @@ class WIZNET5K -- control WIZnet5x00 Ethernet modules
 
 This class allows you to control WIZnet5x00 Ethernet adaptors based on
 the W5200 and W5500 chipsets.  The particular chipset that is supported
-by the firmware is selected at compile-time via the MICROPY_PY_WIZNET5K
+by the firmware is selected at compile-time via the MICROPY_PY_NETWORK_WIZNET5K
 option.
 
 Example usage::

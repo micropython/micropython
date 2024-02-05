@@ -108,7 +108,7 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
     int i;
     for (i = 0; i < len; i++) {
         while (lpc_uart_tx_full()) {
@@ -116,4 +116,5 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         }
         lpc_uart_reg_write(REG_RBR, str[i]);
     }
+    return len;
 }

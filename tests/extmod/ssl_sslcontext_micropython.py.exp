@@ -1,0 +1,4 @@
+TypeError
+AttributeError on load
+AttributeError on store
+AttributeError on delete

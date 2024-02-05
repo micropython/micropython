@@ -38,11 +38,11 @@
 #define TIMING_RESET1 (480)
 #define TIMING_RESET2 (70)
 #define TIMING_RESET3 (410)
-#define TIMING_READ1 (5)
-#define TIMING_READ2 (5)
-#define TIMING_READ3 (40)
-#define TIMING_WRITE1 (10)
-#define TIMING_WRITE2 (50)
+#define TIMING_READ1  (6)
+#define TIMING_READ2  (9)
+#define TIMING_READ3  (55)
+#define TIMING_WRITE1 (6)
+#define TIMING_WRITE2 (54)
 #define TIMING_WRITE3 (10)
 
 STATIC int onewire_bus_reset(mp_hal_pin_obj_t pin) {
@@ -162,5 +162,7 @@ const mp_obj_module_t mp_module_onewire = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&onewire_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR__onewire, mp_module_onewire);
 
 #endif // MICROPY_PY_ONEWIRE

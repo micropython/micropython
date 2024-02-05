@@ -8,5 +8,5 @@ workaround: If you need integers larger than native wordsize use the random modu
 import random
 
 
-x = random.randint(2 ** 128 - 1, 2 ** 128)
+x = random.randint(2**128 - 1, 2**128)
 print("x={}".format(x))

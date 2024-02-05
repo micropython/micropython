@@ -121,8 +121,8 @@ enum {
 #define I2S2  SPI2
 #define I2S3  SPI3
 
-#if defined(STM32H7)
-// Make H7 FDCAN more like CAN
+#if defined(STM32G4) || defined(STM32H7)
+// Make G4/H7 FDCAN more like CAN
 #define CAN1 FDCAN1
 #define CAN2 FDCAN2
 #define GPIO_AF9_CAN1 GPIO_AF9_FDCAN1
@@ -133,6 +133,8 @@ enum {
     PIN_ADC1  = (1 << 0),
     PIN_ADC2  = (1 << 1),
     PIN_ADC3  = (1 << 2),
+    PIN_ADC4  = (1 << 3),
+    PIN_ADC5  = (1 << 4),
 };
 
 typedef GPIO_TypeDef pin_gpio_t;

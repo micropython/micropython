@@ -5,8 +5,7 @@
   <h1>MicroPython documentation</h1>
 
   <p>
-    {{ _('Welcome! This is the documentation for MicroPython') }}
-    v{{ release|e }}{% if last_updated %}, {{ _('last updated') }} {{ last_updated|e }}{% endif %}.
+    {{ _('Welcome! This is the documentation for MicroPython') }}{% if last_updated %}, {{ _('last updated') }} {{ last_updated|e }}{% endif %}.
   </p>
 
   <p>
@@ -63,6 +62,10 @@
         <span class="linkdescr">pinout for rp2xxx-based boards, snippets of useful code, and a tutorial</span>
       </p>
       <p class="biglink">
+        <a class="biglink" href="{{ pathto("mimxrt/quickref") }}">Quick reference for the NXP i.MXRT 10xx</a><br/>
+        <span class="linkdescr">general introduction, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
         <a class="biglink" href="{{ pathto("wipy/quickref") }}">Quick reference for the WiPy/CC3200</a><br/>
         <span class="linkdescr">pinout for the WiPy/CC3200, snippets of useful code, and a tutorial</span>
       </p>
@@ -73,6 +76,14 @@
       <p class="biglink">
         <a class="biglink" href="{{ pathto("zephyr/quickref") }}">Quick reference for the Zephyr port</a><br/>
         <span class="linkdescr">snippets of useful code and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("renesas-ra/quickref") }}">Quick reference for the Renesas RA</a><br/>
+        <span class="linkdescr">general information for Renesas RA based boards, snippets of useful code, and a tutorial</span>
+      </p>
+      <p class="biglink">
+        <a class="biglink" href="{{ pathto("samd/quickref") }}">Quick reference for the SAMD21/SAMD51</a><br/>
+        <span class="linkdescr">general information for SAMD21/SAMD51 based boards, snippets of useful code, and a tutorial</span>
       </p>
     </td>
   </tr></table>
@@ -111,7 +122,7 @@
         <span class="linkdescr">the official MicroPython site</span>
       </p>
       <p class="biglink">
-        <a class="biglink" href="http://forum.micropython.org">MicroPython forum</a><br/>
+        <a class="biglink" href="https://github.com/orgs/micropython/discussions">GitHub Discussions</a><br/>
         <span class="linkdescr">community discussion for all things related to MicroPython</span>
       </p>
     </td>

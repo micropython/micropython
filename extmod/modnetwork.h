@@ -43,23 +43,44 @@
 
 // Common option flags per-socket.
 #define MOD_NETWORK_SO_REUSEADDR    (0x0004)
+#define MOD_NETWORK_SO_BROADCAST    (0x0020)
 #define MOD_NETWORK_SO_KEEPALIVE    (0x0008)
 #define MOD_NETWORK_SO_SNDTIMEO     (0x1005)
 #define MOD_NETWORK_SO_RCVTIMEO     (0x1006)
 
+#define MOD_NETWORK_SS_NEW          (0)
+#define MOD_NETWORK_SS_LISTENING    (1)
+#define MOD_NETWORK_SS_CONNECTED    (2)
+#define MOD_NETWORK_SS_CLOSED       (3)
+
+extern char mod_network_country_code[2];
+
+#ifndef MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN
+// Doesn't include the null terminator.
+#define MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN (32)
+#endif
+
+// This is a null-terminated string.
+extern char mod_network_hostname_data[MICROPY_PY_NETWORK_HOSTNAME_MAX_LEN + 1];
+
+// To support backwards-compatible (esp32, esp8266, cyw43)
+// `if.config(hostname=...)` to forward directly to the implementation of
+// `network.hostname(...)`.
+mp_obj_t mod_network_hostname(size_t n_args, const mp_obj_t *args);
+
 #if MICROPY_PY_LWIP
 struct netif;
+void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
-#else
+#elif defined(MICROPY_PORT_NETWORK_INTERFACES)
 
 struct _mod_network_socket_obj_t;
 
-typedef struct _mod_network_nic_type_t {
-    mp_obj_type_t base;
-
+typedef struct _mod_network_nic_protocol_t {
     // API for non-socket operations
     int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
+    void (*deinit)(void);
 
     // API for socket operations; return -1 on error
     int (*socket)(struct _mod_network_socket_obj_t *socket, int *_errno);
@@ -75,29 +96,33 @@ typedef struct _mod_network_nic_type_t {
     int (*setsockopt)(struct _mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
     int (*settimeout)(struct _mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
     int (*ioctl)(struct _mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
-} mod_network_nic_type_t;
+} mod_network_nic_protocol_t;
 
 typedef struct _mod_network_socket_obj_t {
     mp_obj_base_t base;
     mp_obj_t nic;
-    mod_network_nic_type_t *nic_type;
+    mod_network_nic_protocol_t *nic_protocol;
     uint32_t domain : 5;
     uint32_t type   : 5;
     uint32_t proto  : 5;
     uint32_t bound  : 1;
     int32_t fileno  : 16;
-    #if MICROPY_PY_USOCKET_EXTENDED_STATE
-    // Extended socket state for NICs/ports that need it.
     int32_t timeout;
-    void *state;
+    mp_obj_t callback;
+    int32_t state   : 8;
+    #if MICROPY_PY_SOCKET_EXTENDED_STATE
+    // Extended socket state for NICs/ports that need it.
+    void *_private;
     #endif
 } mod_network_socket_obj_t;
 
-#endif // MICROPY_PY_LWIP
+#endif // MICROPY_PY_LWIP / MICROPY_PORT_NETWORK_INTERFACES
 
+#ifdef MICROPY_PORT_NETWORK_INTERFACES
 void mod_network_init(void);
 void mod_network_deinit(void);
 void mod_network_register_nic(mp_obj_t nic);
 mp_obj_t mod_network_find_nic(const uint8_t *ip);
+#endif
 
 #endif // MICROPY_INCLUDED_MODNETWORK_H

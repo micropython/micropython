@@ -46,13 +46,13 @@ STATIC void ble_host_task(void *param) {
 
 void mp_bluetooth_nimble_port_hci_init(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_init\n");
-    esp_nimble_hci_and_controller_init();
+    esp_nimble_hci_init();
 }
 
 void mp_bluetooth_nimble_port_hci_deinit(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_deinit\n");
 
-    esp_nimble_hci_and_controller_deinit();
+    esp_nimble_hci_deinit();
 }
 
 void mp_bluetooth_nimble_port_start(void) {

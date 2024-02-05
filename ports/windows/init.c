@@ -30,7 +30,6 @@
 #ifdef _MSC_VER
 #include <crtdbg.h>
 #endif
-#include "sleep.h"
 #include "fmode.h"
 
 extern BOOL WINAPI console_sighandler(DWORD evt);
@@ -54,7 +53,6 @@ void init() {
     _set_invalid_parameter_handler(invalid_param_handler);
     #endif
     SetConsoleCtrlHandler(console_sighandler, TRUE);
-    init_sleep();
     #ifdef __MINGW32__
     putenv("PRINTF_EXPONENT_DIGITS=2");
     #elif _MSC_VER < 1900
@@ -67,5 +65,4 @@ void init() {
 
 void deinit() {
     SetConsoleCtrlHandler(console_sighandler, FALSE);
-    deinit_sleep();
 }

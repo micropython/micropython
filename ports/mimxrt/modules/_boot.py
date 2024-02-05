@@ -16,6 +16,7 @@ except:
 os.mount(vfs, "/flash")
 os.chdir("/flash")
 sys.path.append("/flash")
+sys.path.append("/flash/lib")
 
 # do not mount the SD card if SKIPSD exists.
 try:

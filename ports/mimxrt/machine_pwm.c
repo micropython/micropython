@@ -25,9 +25,10 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_pwm.c via MICROPY_PY_MACHINE_PWM_INCLUDEFILE.
+
 #include "py/mphal.h"
-#include "modmachine.h"
 #include "pin.h"
 #include "fsl_clock.h"
 #include "fsl_iomuxc.h"
@@ -39,6 +40,7 @@
 
 #define PWM_CHANNEL1     (1)
 #define PWM_CHANNEL2     (2)
+#define VALUE_NOT_SET    (-1)
 
 typedef struct _machine_pwm_obj_t {
     mp_obj_base_t base;
@@ -51,10 +53,10 @@ typedef struct _machine_pwm_obj_t {
     uint8_t channel2;
     uint8_t invert;
     bool sync;
-    uint32_t freq;
+    int32_t freq;
     int16_t prescale;
-    uint16_t duty_u16;
-    uint32_t duty_ns;
+    int32_t duty_u16;
+    int32_t duty_ns;
     uint16_t center;
     uint32_t deadtime;
     bool output_enable_1;
@@ -68,7 +70,7 @@ static char *ERRMSG_FREQ = "PWM frequency too low";
 static char *ERRMSG_INIT = "PWM set-up failed";
 static char *ERRMSG_VALUE = "value larger than period";
 
-STATIC void machine_pwm_start(machine_pwm_obj_t *self);
+STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self);
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -79,31 +81,31 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         } else {
             mp_printf(print, "channel=%c", channel_char[self->channel1]);
         }
-        if (self->duty_ns != 0) {
-            mp_printf(print, " duty_ns=%u", self->duty_ns);
+        if (self->duty_ns != VALUE_NOT_SET) {
+            mp_printf(print, " duty_ns=%d", self->duty_ns);
         } else {
-            mp_printf(print, " duty_u16=%u", self->duty_u16);
+            mp_printf(print, " duty_u16=%d", self->duty_u16);
         }
-        mp_printf(print, " freq=%u center=%u, deadtime=%u, sync=%u>",
+        mp_printf(print, " freq=%d center=%u, deadtime=%u, sync=%u>",
             self->freq, self->center, self->deadtime, self->sync);
     #ifdef FSL_FEATURE_SOC_TMR_COUNT
     } else {
-        mp_printf(print, "<QTMR_PWM module=%u channel=%u freq1=%u ",
+        mp_printf(print, "<QTMR_PWM module=%u channel=%u freq=%u ",
             self->module, self->channel1, self->freq);
-        if (self->duty_ns != 0) {
-            mp_printf(print, "duty_ns=%u>", self->duty_ns);
+        if (self->duty_ns != VALUE_NOT_SET) {
+            mp_printf(print, "duty_ns=%d>", self->duty_ns);
         } else {
-            mp_printf(print, "duty_u16=%u>", self->duty_u16);
+            mp_printf(print, "duty_u16=%d>", self->duty_u16);
         }
     #endif
     }
 }
 
-// Utility functions for decoding and convertings
+// Utility functions for decoding and converting
 //
 STATIC uint32_t duty_ns_to_duty_u16(uint32_t freq, uint32_t duty_ns) {
     uint64_t duty = (uint64_t)duty_ns * freq * PWM_FULL_SCALE / 1000000000ULL;
-    if (duty >= PWM_FULL_SCALE) {
+    if (duty > PWM_FULL_SCALE) {
         mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
     }
     return (uint32_t)duty;
@@ -137,7 +139,7 @@ STATIC uint8_t channel_decode(char channel) {
     }
 }
 
-// decode the AF objects module and Port numer. Returns NULL if it is not a FLEXPWM object
+// decode the AF objects module and Port number. Returns NULL if it is not a FLEXPWM object
 STATIC const machine_pin_af_obj_t *af_name_decode_flexpwm(const machine_pin_af_obj_t *af_obj,
     uint8_t *module, uint8_t *submodule, uint8_t *channel) {
     const char *str;
@@ -171,7 +173,7 @@ STATIC uint8_t qtmr_decode(char channel) {
     }
 }
 
-// decode the AF objects module and Port numer. Returns NULL if it is not a QTMR object
+// decode the AF objects module and Port number. Returns NULL if it is not a QTMR object
 STATIC const machine_pin_af_obj_t *af_name_decode_qtmr(const machine_pin_af_obj_t *af_obj, uint8_t *module, uint8_t *channel) {
     const char *str;
     size_t len;
@@ -189,8 +191,9 @@ STATIC const machine_pin_af_obj_t *af_name_decode_qtmr(const machine_pin_af_obj_
 #endif
 
 STATIC bool is_board_pin(const machine_pin_obj_t *pin) {
-    for (int i = 0; i < num_board_pins; i++) {
-        if (pin == machine_pin_board_pins[i]) {
+    const mp_map_t *board_map = &machine_pin_board_pins_locals_dict.map;
+    for (uint i = 0; i < board_map->alloc; i++) {
+        if (pin == MP_OBJ_TO_PTR(board_map->table[i].value)) {
             return true;
         }
     }
@@ -214,7 +217,11 @@ STATIC void configure_flexpwm(machine_pwm_obj_t *self) {
     pwm_signal_param_u16_t pwmSignal;
 
     // Initialize PWM module.
+    #if defined(MIMXRT117x_SERIES)
+    uint32_t pwmSourceClockInHz = CLOCK_GetRootClockFreq(kCLOCK_Root_Bus);
+    #else
     uint32_t pwmSourceClockInHz = CLOCK_GetFreq(kCLOCK_IpgClk);
+    #endif
 
     int prescale = calc_prescaler(pwmSourceClockInHz, self->freq);
     if (prescale < 0) {
@@ -296,10 +303,15 @@ STATIC void configure_flexpwm(machine_pwm_obj_t *self) {
 STATIC void configure_qtmr(machine_pwm_obj_t *self) {
     qtmr_config_t qtmrConfig;
     int prescale;
+    #if defined(MIMXRT117x_SERIES)
+    uint32_t pwmSourceClockInHz = CLOCK_GetRootClockFreq(kCLOCK_Root_Bus);
+    #else
+    uint32_t pwmSourceClockInHz = CLOCK_GetFreq(kCLOCK_IpgClk);
+    #endif
 
     TMR_Type *instance = (TMR_Type *)self->instance;
 
-    prescale = calc_prescaler(CLOCK_GetFreq(kCLOCK_IpgClk), self->freq);
+    prescale = calc_prescaler(pwmSourceClockInHz, self->freq);
     if (prescale < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_FREQ));
     }
@@ -311,7 +323,7 @@ STATIC void configure_qtmr(machine_pwm_obj_t *self) {
     }
     // Set up the PWM channel
     if (QTMR_SetupPwm_u16(instance, self->channel1, self->freq, self->duty_u16,
-        self->invert, CLOCK_GetFreq(kCLOCK_IpgClk) / (1 << prescale), self->is_init) == kStatus_Fail) {
+        self->invert, pwmSourceClockInHz / (1 << prescale), self->is_init) == kStatus_Fail) {
         mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_INIT));
     }
     // Start the output
@@ -325,19 +337,24 @@ STATIC void configure_pwm(machine_pwm_obj_t *self) {
     static bool set_frequency = true;
     // set the frequency only once
     if (set_frequency) {
+        #if !defined(MIMXRT117x_SERIES)
         CLOCK_SetDiv(kCLOCK_IpgDiv, 0x3); // Set IPG PODF to 3, divide by 4
+        #endif
         set_frequency = false;
     }
 
-    if (self->duty_ns != 0) {
-        self->duty_u16 = duty_ns_to_duty_u16(self->freq, self->duty_ns);
-    }
-    if (self->is_flexpwm) {
-        configure_flexpwm(self);
-    #ifdef FSL_FEATURE_SOC_TMR_COUNT
-    } else {
-        configure_qtmr(self);
-    #endif
+    // Enable the PWM only if both freq and duty value are set
+    if (self->freq != VALUE_NOT_SET && (self->duty_u16 != VALUE_NOT_SET || self->duty_ns != VALUE_NOT_SET)) {
+        if (self->duty_ns != VALUE_NOT_SET) {
+            self->duty_u16 = duty_ns_to_duty_u16(self->freq, self->duty_ns);
+        }
+        if (self->is_flexpwm) {
+            configure_flexpwm(self);
+        #ifdef FSL_FEATURE_SOC_TMR_COUNT
+        } else {
+            configure_qtmr(self);
+        #endif
+        }
     }
 }
 
@@ -348,9 +365,9 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_center, ARG_align,
            ARG_invert, ARG_sync, ARG_xor, ARG_deadtime };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_freq, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_duty_u16, MP_ARG_INT, {.u_int = 0} },
-        { MP_QSTR_duty_ns, MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_freq, MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
+        { MP_QSTR_duty_u16, MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
+        { MP_QSTR_duty_ns, MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_center, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_align, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
         { MP_QSTR_invert, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1}},
@@ -369,24 +386,24 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         }
 
         // Set duty_u16 cycle?
-        uint32_t duty = args[ARG_duty_u16].u_int;
-        if (duty != 0) {
-            if (duty >= PWM_FULL_SCALE) {
+        int32_t duty = args[ARG_duty_u16].u_int;
+        if (duty >= 0) {
+            if (duty > PWM_FULL_SCALE) {
                 mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
             }
             self->duty_u16 = duty;
-            self->duty_ns = 0;
+            self->duty_ns = VALUE_NOT_SET;
         }
         // Set duty_ns value?
         duty = args[ARG_duty_ns].u_int;
-        if (duty != 0) {
+        if (duty >= 0) {
             self->duty_ns = duty;
-            self->duty_u16 = duty_ns_to_duty_u16(self->freq, self->duty_ns);
+            self->duty_u16 = VALUE_NOT_SET;
         }
         // Set center value?
         int32_t center = args[ARG_center].u_int;
         if (center >= 0) {
-            if (center >= PWM_FULL_SCALE) {
+            if (center > PWM_FULL_SCALE) {
                 mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
             }
             self->center = center;
@@ -421,7 +438,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         configure_pwm(self);
         self->is_init = true;
     } else {
-        machine_pwm_start(self);
+        mp_machine_pwm_start(self);
     }
 
 }
@@ -468,6 +485,9 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
                 break;
             }
         }
+        if (af_obj2 == NULL) {
+            mp_raise_ValueError(MP_ERROR_TEXT("the second Pin doesn't support PWM"));
+        }
     }
     if (af_obj1 == NULL) {
         submodule1 = 0;
@@ -483,29 +503,28 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         }
         #endif
         if (af_obj1 == NULL) {
-            mp_raise_ValueError(MP_ERROR_TEXT("the requested Pin(s) does not support PWM"));
+            mp_raise_ValueError(MP_ERROR_TEXT("the first Pin doesn't support PWM"));
         }
     } else {
         // is flexpwm, check for instance match
         is_flexpwm = true;
-        if (pin2 != NULL && af_obj1->instance != af_obj2->instance && submodule1 != submodule2) {
+        if (pin2 != NULL && (af_obj1->instance != af_obj2->instance || submodule1 != submodule2)) {
             mp_raise_ValueError(MP_ERROR_TEXT("the pins must be a A/B pair of a submodule"));
         }
     }
 
     // Create and populate the PWM object.
-    machine_pwm_obj_t *self = m_new_obj(machine_pwm_obj_t);
-    self->base.type = &machine_pwm_type;
+    machine_pwm_obj_t *self = mp_obj_malloc(machine_pwm_obj_t, &machine_pwm_type);
     self->is_flexpwm = is_flexpwm;
     self->instance = af_obj1->instance;
     self->module = module;
     self->submodule = submodule1;
     self->channel1 = channel1;
     self->invert = 0;
-    self->freq = 1000;
+    self->freq = VALUE_NOT_SET;
     self->prescale = -1;
-    self->duty_u16 = 32768;
-    self->duty_ns = 0;
+    self->duty_u16 = VALUE_NOT_SET;
+    self->duty_ns = VALUE_NOT_SET;
     self->center = 32768;
     self->output_enable_1 = is_board_pin(pin1);
     self->sync = false;
@@ -518,7 +537,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     IOMUXC_SetPinMux(pin1->muxRegister, af_obj1->af_mode, af_obj1->input_register, af_obj1->input_daisy,
         pin1->configRegister, 0U);
     IOMUXC_SetPinConfig(pin1->muxRegister, af_obj1->af_mode, af_obj1->input_register, af_obj1->input_daisy,
-        pin1->configRegister, 0x10B0U);
+        pin1->configRegister, pin_generate_config(PIN_PULL_DISABLED, PIN_MODE_OUT, PIN_DRIVE_5, pin1->configRegister));
 
     // Settings for the second pin, if given.
     if (pin2 != NULL && pin2 != pin1) {
@@ -529,7 +548,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
         IOMUXC_SetPinMux(pin2->muxRegister, af_obj2->af_mode, af_obj2->input_register, af_obj2->input_daisy,
             pin2->configRegister, 0U);
         IOMUXC_SetPinConfig(pin2->muxRegister, af_obj2->af_mode, af_obj2->input_register, af_obj2->input_daisy,
-            pin2->configRegister, 0x10B0U);
+            pin2->configRegister, pin_generate_config(PIN_PULL_DISABLED, PIN_MODE_OUT, PIN_DRIVE_5, pin2->configRegister));
     } else {
         self->complementary = 0;
     }
@@ -548,7 +567,7 @@ void machine_pwm_deinit_all(void) {
 
     for (int i = 1; i < ARRAY_SIZE(pwm_bases); i++) {
         PWM_StopTimer(pwm_bases[i], 0x0f); // Stop all submodules
-        pwm_bases[i]->OUTEN = 0; // Disable ouput on all submodules, all channels
+        pwm_bases[i]->OUTEN = 0; // Disable output on all submodules, all channels
     }
 
     #ifdef FSL_FEATURE_SOC_TMR_COUNT
@@ -561,7 +580,7 @@ void machine_pwm_deinit_all(void) {
     #endif
 }
 
-STATIC void machine_pwm_start(machine_pwm_obj_t *self) {
+STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self) {
     if (self->is_flexpwm) {
         PWM_StartTimer(self->instance, 1 << self->submodule);
     #ifdef FSL_FEATURE_SOC_TMR_COUNT
@@ -596,23 +615,23 @@ mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 
 void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty) {
     if (duty >= 0) {
-        if (duty >= PWM_FULL_SCALE) {
+        if (duty > PWM_FULL_SCALE) {
             mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
         }
         self->duty_u16 = duty;
-        self->duty_ns = 0;
+        self->duty_ns = VALUE_NOT_SET;
         configure_pwm(self);
     }
 }
 
 mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(1000000000ULL / self->freq * self->duty_u16 / PWM_FULL_SCALE);
+    return MP_OBJ_NEW_SMALL_INT(self->duty_ns);
 }
 
 void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty) {
     if (duty >= 0) {
         self->duty_ns = duty;
-        self->duty_u16 = duty_ns_to_duty_u16(self->freq, self->duty_ns);
+        self->duty_u16 = VALUE_NOT_SET;
         configure_pwm(self);
     }
 }

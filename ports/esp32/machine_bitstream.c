@@ -28,6 +28,10 @@
 #include "py/mphal.h"
 #include "modesp32.h"
 
+#include "rom/gpio.h"
+#include "soc/gpio_reg.h"
+#include "soc/gpio_sig_map.h"
+
 #if MICROPY_PY_MACHINE_BITSTREAM
 
 /******************************************************************************/
@@ -52,7 +56,7 @@ STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, u
     }
 
     // Convert ns to cpu ticks [high_time_0, period_0, high_time_1, period_1].
-    uint32_t fcpu_mhz = ets_get_cpu_frequency();
+    uint32_t fcpu_mhz = esp_rom_get_cpu_ticks_per_us();
     for (size_t i = 0; i < 4; ++i) {
         timing_ns[i] = fcpu_mhz * timing_ns[i] / 1000;
         if (timing_ns[i] > NS_TICKS_OVERHEAD) {
@@ -90,27 +94,6 @@ STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, u
 // RMT implementation
 
 #include "driver/rmt.h"
-
-#if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-// This convenience macro was not available in earlier IDF versions.
-#define RMT_DEFAULT_CONFIG_TX(gpio, channel_id)      \
-    {                                                \
-        .rmt_mode = RMT_MODE_TX,                     \
-        .channel = channel_id,                       \
-        .clk_div = 80,                               \
-        .gpio_num = gpio,                            \
-        .mem_block_num = 1,                          \
-        .tx_config = {                               \
-            .loop_en = false,                        \
-            .carrier_freq_hz = 38000,                \
-            .carrier_duty_percent = 33,              \
-            .carrier_level = RMT_CARRIER_LEVEL_HIGH, \
-            .carrier_en = false,                     \
-            .idle_level = RMT_IDLE_LEVEL_LOW,        \
-            .idle_output_en = true,                  \
-        }                                            \
-    }
-#endif
 
 // Logical 0 and 1 values (encoded as a rmt_item32_t).
 // The duration fields will be set later.
@@ -163,13 +146,7 @@ STATIC void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
 
     // Get the tick rate in kHz (this will likely be 40000).
     uint32_t counter_clk_khz = 0;
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(4, 1, 0)
-    uint8_t div_cnt;
-    check_esp_err(rmt_get_clk_div(config.channel, &div_cnt));
-    counter_clk_khz = APB_CLK_FREQ / div_cnt;
-    #else
     check_esp_err(rmt_get_counter_clock(config.channel, &counter_clk_khz));
-    #endif
 
     counter_clk_khz /= 1000;
 
@@ -193,7 +170,7 @@ STATIC void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timin
     check_esp_err(rmt_driver_uninstall(config.channel));
 
     // Cancel RMT output to GPIO pin.
-    gpio_matrix_out(pin, SIG_GPIO_OUT_IDX, false, false);
+    esp_rom_gpio_connect_out_signal(pin, SIG_GPIO_OUT_IDX, false, false);
 }
 
 /******************************************************************************/

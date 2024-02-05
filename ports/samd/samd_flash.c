@@ -29,7 +29,8 @@
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "samd_soc.h"
-#include "hal_flash.h"
+
+#if MICROPY_HW_MCUFLASH
 
 // ASF 4
 #include "hal_flash.h"
@@ -53,25 +54,18 @@ typedef struct _samd_flash_obj_t {
     uint32_t flash_size;
 } samd_flash_obj_t;
 
+extern uint8_t _oflash_fs, _sflash_fs;
+
 // Build a Flash storage at top.
 STATIC samd_flash_obj_t samd_flash_obj = {
     .base = { &samd_flash_type },
-    .flash_base = MICROPY_HW_FLASH_STORAGE_BASE, // Board specific: mpconfigboard.h
-    .flash_size = MICROPY_HW_FLASH_STORAGE_BYTES, // Board specific: mpconfigboard.h
+    .flash_base = (uint32_t)&_oflash_fs, // Get from MCU-Specific loader script.
+    .flash_size = (uint32_t)&_sflash_fs, // Get from MCU-Specific loader script.
 };
-
-// FLASH stuff
-STATIC mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    // No args required. bdev=Flash(). Start Addr & Size defined in samd_flash_obj.
-    mp_arg_check_num(n_args, n_kw, 0,0, false);
-
-    // Return singleton object.
-    return MP_OBJ_FROM_PTR(&samd_flash_obj);
-}
 
 // Flash init (from cctpy)
 // Method is needed for when MP starts up in _boot.py
-STATIC mp_obj_t samd_flash_init(void) {
+STATIC void samd_flash_init(void) {
     #ifdef SAMD51
     hri_mclk_set_AHBMASK_NVMCTRL_bit(MCLK);
     #endif
@@ -80,9 +74,17 @@ STATIC mp_obj_t samd_flash_init(void) {
     #endif
 
     flash_init(&flash_desc, NVMCTRL);
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_init_obj, samd_flash_init);
+
+STATIC mp_obj_t samd_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    // No args required. bdev=Flash(). Start Addr & Size defined in samd_flash_obj.
+    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+
+    samd_flash_init();
+
+    // Return singleton object.
+    return MP_OBJ_FROM_PTR(&samd_flash_obj);
+}
 
 // Function for ioctl.
 STATIC mp_obj_t eraseblock(uint32_t sector_in) {
@@ -90,27 +92,15 @@ STATIC mp_obj_t eraseblock(uint32_t sector_in) {
     uint32_t DEST_ADDR = sector_in; // Number of pages to be erased.
     mp_int_t PAGE_SIZE = flash_get_page_size(&flash_desc); // adf4 API call
 
-    flash_erase(&flash_desc,DEST_ADDR,(BLOCK_SIZE / PAGE_SIZE));
+    flash_erase(&flash_desc, DEST_ADDR, (BLOCK_SIZE / PAGE_SIZE));
 
     return mp_const_none;
 }
 
 STATIC mp_obj_t samd_flash_version(void) {
-    printf("Flash Driver Version: %lu\n", flash_get_version());
-    return mp_const_none;
+    return MP_OBJ_NEW_SMALL_INT(flash_get_version());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_version_obj, samd_flash_version);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(samd_flash_version_static_obj, MP_ROM_PTR(&samd_flash_version_obj));
-
-STATIC mp_obj_t samd_flash_size(void) {
-    // ASF4 API calls
-    mp_int_t PAGES = flash_get_total_pages(&flash_desc);
-    mp_int_t PAGE_SIZE = flash_get_page_size(&flash_desc);
-    printf("Flash Size: %u Bytes\n",  PAGES * PAGE_SIZE);
-    return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(samd_flash_size_obj, samd_flash_size);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(samd_flash_size_static_obj, MP_ROM_PTR(&samd_flash_size_obj));
 
 STATIC mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = (mp_obj_get_int(args[1]) * BLOCK_SIZE) + samd_flash_obj.flash_base;
@@ -121,7 +111,7 @@ STATIC mp_obj_t samd_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     }
 
     // Read data to flash (adf4 API)
-    flash_read(&flash_desc,offset,bufinfo.buf,bufinfo.len);
+    flash_read(&flash_desc, offset, bufinfo.buf, bufinfo.len);
 
     return mp_const_none;
 }
@@ -138,7 +128,7 @@ STATIC mp_obj_t samd_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
         offset += mp_obj_get_int(args[3]);
     }
     // Write data to flash (adf4 API)
-    flash_write(&flash_desc,offset, bufinfo.buf, bufinfo.len);
+    flash_write(&flash_desc, offset, bufinfo.buf, bufinfo.len);
     // TODO check return value
     return mp_const_none;
 }
@@ -172,18 +162,19 @@ STATIC mp_obj_t samd_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(samd_flash_ioctl_obj, samd_flash_ioctl);
 
 STATIC const mp_rom_map_elem_t samd_flash_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_flash_version), MP_ROM_PTR(&samd_flash_version_static_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&samd_flash_size_static_obj) },
-    { MP_ROM_QSTR(MP_QSTR_flash_init), MP_ROM_PTR(&samd_flash_init_obj) },
+    { MP_ROM_QSTR(MP_QSTR_flash_version), MP_ROM_PTR(&samd_flash_version_obj) },
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&samd_flash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&samd_flash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&samd_flash_ioctl_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(samd_flash_locals_dict, samd_flash_locals_dict_table);
 
-const mp_obj_type_t samd_flash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-    .make_new = samd_flash_make_new,
-    .locals_dict = (mp_obj_dict_t *)&samd_flash_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    samd_flash_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    make_new, samd_flash_make_new,
+    locals_dict, &samd_flash_locals_dict
+    );
+
+#endif  // MICROPY_HW_MCUFLASH

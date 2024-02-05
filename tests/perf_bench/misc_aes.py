@@ -33,6 +33,7 @@ aes_s_box_table = bytes((
 ))
 # fmt: on
 
+
 # multiplication of polynomials modulo x^8 + x^4 + x^3 + x + 1 = 0x11b
 def aes_gf8_mul_2(x):
     if x & 0x80:
@@ -63,6 +64,7 @@ def aes_r_con(a):
 
 ##################################################################
 # basic AES algorithm; see FIPS-197
+
 
 # all inputs must be size 16
 def aes_add_round_key(state, w):

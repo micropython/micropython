@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "py/mpconfig.h"
+#include "py/runtime.h"
 
 // wrapper around everything in this file
 #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA || MICROPY_EMIT_XTENSAWIN
@@ -232,21 +232,33 @@ void asm_xtensa_mov_reg_pcrel(asm_xtensa_t *as, uint reg_dest, uint label) {
     asm_xtensa_op_add_n(as, reg_dest, reg_dest, ASM_XTENSA_REG_A0);
 }
 
-void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx) {
-    if (idx < 16) {
-        asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_FUN_TABLE, idx);
+void asm_xtensa_l32i_optimised(asm_xtensa_t *as, uint reg_dest, uint reg_base, uint word_offset) {
+    if (word_offset < 16) {
+        asm_xtensa_op_l32i_n(as, reg_dest, reg_base, word_offset);
+    } else if (word_offset < 256) {
+        asm_xtensa_op_l32i(as, reg_dest, reg_base, word_offset);
     } else {
-        asm_xtensa_op_l32i(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_FUN_TABLE, idx);
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("asm overflow"));
     }
+}
+
+void asm_xtensa_s32i_optimised(asm_xtensa_t *as, uint reg_src, uint reg_base, uint word_offset) {
+    if (word_offset < 16) {
+        asm_xtensa_op_s32i_n(as, reg_src, reg_base, word_offset);
+    } else if (word_offset < 256) {
+        asm_xtensa_op_s32i(as, reg_src, reg_base, word_offset);
+    } else {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("asm overflow"));
+    }
+}
+
+void asm_xtensa_call_ind(asm_xtensa_t *as, uint idx) {
+    asm_xtensa_l32i_optimised(as, ASM_XTENSA_REG_A0, ASM_XTENSA_REG_FUN_TABLE, idx);
     asm_xtensa_op_callx0(as, ASM_XTENSA_REG_A0);
 }
 
 void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx) {
-    if (idx < 16) {
-        asm_xtensa_op_l32i_n(as, ASM_XTENSA_REG_A8, ASM_XTENSA_REG_FUN_TABLE_WIN, idx);
-    } else {
-        asm_xtensa_op_l32i(as, ASM_XTENSA_REG_A8, ASM_XTENSA_REG_FUN_TABLE_WIN, idx);
-    }
+    asm_xtensa_l32i_optimised(as, ASM_XTENSA_REG_A8, ASM_XTENSA_REG_FUN_TABLE_WIN, idx);
     asm_xtensa_op_callx8(as, ASM_XTENSA_REG_A8);
 }
 

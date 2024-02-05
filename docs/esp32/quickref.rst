@@ -57,7 +57,6 @@ The :mod:`esp32` module::
 
     import esp32
 
-    esp32.hall_sensor()     # read the internal hall sensor
     esp32.raw_temperature() # read the internal temperature of the MCU, in Fahrenheit
     esp32.ULP()             # access to the Ultra-Low-Power Co-processor
 
@@ -68,6 +67,9 @@ by reading the temperature sensor immediately after waking up from sleep.
 Networking
 ----------
 
+WLAN
+^^^^
+
 The :mod:`network` module::
 
     import network
@@ -76,12 +78,12 @@ The :mod:`network` module::
     wlan.active(True)       # activate the interface
     wlan.scan()             # scan for access points
     wlan.isconnected()      # check if the station is connected to an AP
-    wlan.connect('essid', 'password') # connect to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
     wlan.config('mac')      # get the interface's MAC address
     wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
-    ap.config(essid='ESP-AP') # set the ESSID of the access point
+    ap.config(ssid='ESP-AP') # set the SSID of the access point
     ap.config(max_clients=10) # set how many clients can connect to the network
     ap.active(True)         # activate the interface
 
@@ -93,13 +95,13 @@ A useful function for connecting to your local WiFi network is::
         wlan.active(True)
         if not wlan.isconnected():
             print('connecting to network...')
-            wlan.connect('essid', 'password')
+            wlan.connect('ssid', 'key')
             while not wlan.isconnected():
                 pass
         print('network config:', wlan.ifconfig())
 
 Once the network is established the :mod:`socket <socket>` module can be used
-to create and use TCP/UDP sockets as usual, and the ``urequests`` module for
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
 convenient HTTP requests.
 
 After a call to ``wlan.connect()``, the device will by default retry to connect
@@ -109,6 +111,55 @@ connection succeeds or the interface gets disabled.  This can be changed by
 calling ``wlan.config(reconnects=n)``, where n are the number of desired reconnect
 attempts (0 means it won't retry, -1 will restore the default behaviour of trying
 to reconnect forever).
+
+LAN
+^^^
+
+To use the wired interfaces one has to specify the pins and mode ::
+
+    import network
+
+    lan = network.LAN(mdc=PIN_MDC, ...)   # Set the pin and mode configuration
+    lan.active(True)                      # activate the interface
+    lan.ifconfig()                        # get the interface's IP/netmask/gw/DNS addresses
+
+
+The keyword arguments for the constructor defining the PHY type and interface are:
+
+- mdc=pin-object    # set the mdc and mdio pins.
+- mdio=pin-object
+- power=pin-object  # set the pin which switches the power of the PHY device.
+- phy_type=<type>   # Select the PHY device type. Supported devices are PHY_LAN8710,
+  PHY_LAN8720, PH_IP101, PHY_RTL8201, PHY_DP83848 and PHY_KSZ8041
+- phy_addr=number   # The address number of the PHY device.
+- ref_clk_mode=mode # Defines, whether the ref_clk at the ESP32 is an input
+  or output. Suitable values are Pin.IN and Pin.OUT.
+- ref_clk=pin-object  # defines the Pin used for ref_clk.
+
+These are working configurations for LAN interfaces of popular boards::
+
+    # Olimex ESP32-GATEWAY: power controlled by Pin(5)
+    # Olimex ESP32 PoE and ESP32-PoE ISO: power controlled by Pin(12)
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18), power=machine.Pin(5),
+                      phy_type=network.PHY_LAN8720, phy_addr=0,
+                      ref_clk=machine.Pin(17), ref_clk_mode=machine.Pin.OUT)
+
+    # Wireless-Tag's WT32-ETH01
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
+                      phy_type=network.PHY_LAN8720, phy_addr=1, power=None)
+
+    # Wireless-Tag's WT32-ETH01 v1.4
+
+    lan = network.LAN(mdc=machine.Pin(23), mdio=machine.Pin(18),
+                      phy_type=network.PHY_LAN8720, phy_addr=1,
+                      power=machine.Pin(16))
+
+    # Espressif ESP32-Ethernet-Kit_A_V1.2
+
+    lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
+                      phy_type=network.PHY_IP101, phy_addr=1)
 
 Delay and timing
 ----------------
@@ -160,12 +211,30 @@ Use the :ref:`machine.Pin <machine.Pin>` class::
 
     p4 = Pin(4, Pin.IN, Pin.PULL_UP) # enable internal pull-up resistor
     p5 = Pin(5, Pin.OUT, value=1) # set pin high on creation
+    p6 = Pin(6, Pin.OUT, drive=Pin.DRIVE_3) # set maximum drive strength
 
 Available Pins are from the following ranges (inclusive): 0-19, 21-23, 25-27, 32-39.
 These correspond to the actual GPIO pin numbers of ESP32 chip.  Note that many
 end-user boards use their own adhoc pin numbering (marked e.g. D0, D1, ...).
 For mapping between board logical pins and physical chip pins consult your board
 documentation.
+
+Four drive strengths are supported, using the ``drive`` keyword argument to the
+``Pin()`` constructor or ``Pin.init()`` method, with different corresponding
+safe maximum source/sink currents and approximate internal driver resistances:
+
+ - ``Pin.DRIVE_0``: 5mA / 130 ohm
+ - ``Pin.DRIVE_1``: 10mA / 60 ohm
+ - ``Pin.DRIVE_2``: 20mA / 30 ohm (default strength if not configured)
+ - ``Pin.DRIVE_3``: 40mA / 15 ohm
+
+The ``hold=`` keyword argument to ``Pin()`` and ``Pin.init()`` will enable the
+ESP32 "pad hold" feature. When set to ``True``, the pin configuration
+(direction, pull resistors and output value) will be held and any further
+changes (including changing the output level) will not be applied. Setting
+``hold=False`` will immediately apply any outstanding pin configuration changes
+and release the pin. Using ``hold=True`` while a pin is already held will apply
+any configuration changes and then immediately reapply the hold.
 
 Notes:
 
@@ -176,8 +245,7 @@ Notes:
 
 * Pins 34-39 are input only, and also do not have internal pull-up resistors
 
-* The pull value of some pins can be set to ``Pin.PULL_HOLD`` to reduce power
-  consumption during deepsleep.
+* See :ref:`Deep_sleep_Mode` for a discussion of pin behaviour during sleep
 
 There's a higher-level abstraction :ref:`machine.Signal <machine.Signal>`
 which can be used to invert a pin. Useful for illuminating active-low LEDs
@@ -199,9 +267,10 @@ They each have default GPIO assigned to them, however depending on your
 ESP32 variant and board, these pins may conflict with embedded flash,
 onboard PSRAM or peripherals.
 
-Any GPIO can be used for hardware UARTs using the GPIO matrix, so to avoid
-conflicts simply provide ``tx`` and ``rx`` pins when constructing. The default
-pins listed below.
+Any GPIO can be used for hardware UARTs using the GPIO matrix, except for
+input-only pins 34-39 that can be used as ``rx``. To avoid conflicts simply
+provide ``tx`` and ``rx`` pins when constructing. The default pins listed
+below.
 
 =====  =====  =====  =====
 \      UART0  UART1  UART2
@@ -223,8 +292,8 @@ Use the :ref:`machine.PWM <machine.PWM>` class::
 
     from machine import Pin, PWM
 
-    pwm0 = PWM(Pin(0))         # create PWM object from a pin
-    freq = pwm0.freq()         # get current frequency (default 5kHz)
+    pwm0 = PWM(Pin(0), freq=5000, duty_u16=32768) # create PWM object from a pin
+    freq = pwm0.freq()         # get current frequency
     pwm0.freq(1000)            # set PWM frequency from 1Hz to 40MHz
 
     duty = pwm0.duty()         # get current duty cycle, range 0-1023 (default 512, 50%)
@@ -261,85 +330,106 @@ possible at the same frequency.
 
 See more examples in the :ref:`esp32_pwm` tutorial.
 
+DAC (digital to analog conversion)
+----------------------------------
+
+On the ESP32, DAC functionality is available on pins 25, 26.
+On the ESP32S2, DAC functionality is available on pins 17, 18.
+
+Use the DAC::
+
+    from machine import DAC, Pin
+
+    dac = DAC(Pin(25))  # create an DAC object acting on a pin
+    dac.write(128)      # set a raw analog value in the range 0-255, 50% now
+
 ADC (analog to digital conversion)
 ----------------------------------
 
-On the ESP32 ADC functionality is available on pins 32-39 (ADC block 1) and pins
-0, 2, 4, 12-15 and 25-27 (ADC block 2).
+On the ESP32, ADC functionality is available on pins 32-39 (ADC block 1) and
+pins 0, 2, 4, 12-15 and 25-27 (ADC block 2).
 
 Use the :ref:`machine.ADC <machine.ADC>` class::
 
     from machine import ADC
 
-    adc = ADC(Pin(32))          # create ADC object for pin 32
-    adc.read_u16()              # read raw value, 0-65535
+    adc = ADC(pin)        # create an ADC object acting on a pin
+    val = adc.read_u16()  # read a raw analog value in the range 0-65535
+    val = adc.read_uv()   # read an analog value in microvolts
 
-Note that the ESP32 uses an internal ADC reference voltage of 1.0v. To read
-voltages above this value, input attenuation can be applied with the optional
-``atten`` keyword argument to the constructor. Valid values are:
+ADC block 2 is also used by WiFi and so attempting to read analog values from
+block 2 pins when WiFi is active will raise an exception.
 
-  - ``ADC.ATTN_0DB``: No attenuation, this is the default
-  - ``ADC.ATTN_2_5DB``: 2.5dB attenuation, gives a maximum input voltage of
-    approximately 1.33v
-  - ``ADC.ATTN_6DB``: 6dB attenuation, gives a maximum input voltage of
-    approximately 2.00v
-  - ``ADC.ATTN_11DB``: 11dB attenuation, gives a maximum input voltage of
-    approximately 3.55v
-
-E.g.::
-
-    adc = ADC(Pin(25), atten=ADC.ATTEN_11DB)  # 0.0v - 3.55v range
-
-.. Warning::
-   Note that, although 11dB attenuation allows for a voltage range up to 3.55v,
-   the absolute maximum voltage rating for input pins is 3.6v, and so going
-   near this boundary risks damage to the IC!
+The internal ADC reference voltage is typically 1.1V, but varies slightly from
+package to package. The ADC is less linear close to the reference voltage
+(particularly at higher attenuations) and has a minimum measurement voltage
+around 100mV, voltages at or below this will read as 0. To read voltages
+accurately, it is recommended to use the ``read_uv()`` method (see below).
 
 ESP32-specific ADC class method reference:
 
-.. method:: ADC.init(*, atten)
+.. class:: ADC(pin, *, atten)
 
-    Re-initialize the ADC pin with a different input attenuation.
+    Return the ADC object for the specified pin. ESP32 does not support
+    different timings for ADC sampling and so the ``sample_ns`` keyword argument
+    is not supported.
+
+    To read voltages above the reference voltage, apply input attenuation with
+    the ``atten`` keyword argument. Valid values (and approximate linear
+    measurement ranges) are:
+
+      - ``ADC.ATTN_0DB``: No attenuation (100mV - 950mV)
+      - ``ADC.ATTN_2_5DB``: 2.5dB attenuation (100mV - 1250mV)
+      - ``ADC.ATTN_6DB``: 6dB attenuation (150mV - 1750mV)
+      - ``ADC.ATTN_11DB``: 11dB attenuation (150mV - 2450mV)
+
+.. Warning::
+   Note that the absolute maximum voltage rating for input pins is 3.6V. Going
+   near to this boundary risks damage to the IC!
 
 .. method:: ADC.read_uv()
 
-    This method uses internal per-package calibration values - set during
-    manufacture - to return the ADC input voltage in microvolts, taking into
-    account any input attenuation applied. Note that the calibration curves do
-    not guarantee that an input tied to ground will read as 0, and the returned
-    values have only millivolt resolution.
+    This method uses the known characteristics of the ADC and per-package eFuse
+    values - set during manufacture - to return a calibrated input voltage
+    (before attenuation) in microvolts. The returned value has only millivolt
+    resolution (i.e., will always be a multiple of 1000 microvolts).
 
-.. method:: ADC.block()
+    The calibration is only valid across the linear range of the ADC. In
+    particular, an input tied to ground will read as a value above 0 microvolts.
+    Within the linear range, however, more accurate and consistent results will
+    be obtained than using `read_u16()` and scaling the result with a constant.
 
-    Return the matching ``ADCBlock`` object.
+The ESP32 port also supports the :ref:`machine.ADC <machine.ADCBlock>` API:
 
 .. class:: ADCBlock(id, *, bits)
 
     Return the ADC block object with the given ``id`` (1 or 2) and initialize
-    it to the specified resolution (9 to 12-bits) or the default 12-bits.
+    it to the specified resolution (9 to 12-bits depending on the ESP32 series)
+    or the highest supported resolution if not specified.
 
-.. method:: ADCBlock.init(*, bits)
+.. method:: ADCBlock.connect(pin)
+            ADCBlock.connect(channel)
+            ADCBlock.connect(channel, pin)
 
-    Re-initialize the ADC block with a specific resolution.
+    Return the ``ADC`` object for the specified ADC pin or channel number.
+    Arbitrary connection of ADC channels to GPIO is not supported and so
+    specifying a pin that is not connected to this block, or specifying a
+    mismatched channel and pin, will raise an exception.
 
-.. method:: ADCBlock.connect(channel_or_pin)
-
-    Return the ``ADC`` object for the specified ADC channel number or Pin object.
-
-Legacy API methods:
+Legacy methods:
 
 .. method:: ADC.read()
 
     This method returns the raw ADC value ranged according to the resolution of
-    the ADC block, 0-4095 for the default 12-bit resolution.
+    the block, e.g., 0-4095 for 12-bit resolution.
 
-.. method:: ADC.atten(attenuation)
+.. method:: ADC.atten(atten)
 
-    Equivalent to ``ADC.init(atten=attenuation)``.
+    Equivalent to ``ADC.init(atten=atten)``.
 
-.. method:: ADC.width(width)
+.. method:: ADC.width(bits)
 
-    Equivalent to ``ADC.block().init(bits=width)``.
+    Equivalent to ``ADC.block().init(bits=bits)``.
 
 For compatibility, the ``ADC`` object also provides constants matching the
 supported ADC resolutions:
@@ -490,6 +580,8 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     wdt = WDT(timeout=5000)
     wdt.feed()
 
+.. _Deep_sleep_mode:
+
 Deep-sleep mode
 ---------------
 
@@ -509,15 +601,49 @@ Notes:
 * Calling ``deepsleep()`` without an argument will put the device to sleep
   indefinitely
 * A software reset does not change the reset cause
-* There may be some leakage current flowing through enabled internal pullups.
-  To further reduce power consumption it is possible to disable the internal pullups::
 
-    p1 = Pin(4, Pin.IN, Pin.PULL_HOLD)
+Some ESP32 pins (0, 2, 4, 12-15, 25-27, 32-39) are connected to the RTC during
+deep-sleep and can be used to wake the device with the ``wake_on_`` functions in
+the :mod:`esp32` module. The output-capable RTC pins (all except 34-39) will
+also retain their pull-up or pull-down resistor configuration when entering
+deep-sleep.
 
-  After leaving deepsleep it may be necessary to un-hold the pin explicitly (e.g. if
-  it is an output pin) via::
+If the pull resistors are not actively required during deep-sleep and are likely
+to cause current leakage (for example a pull-up resistor is connected to ground
+through a switch), then they should be disabled to save power before entering
+deep-sleep mode::
 
-    p1 = Pin(4, Pin.OUT, None)
+    from machine import Pin, deepsleep
+
+    # configure input RTC pin with pull-up on boot
+    pin = Pin(2, Pin.IN, Pin.PULL_UP)
+
+    # disable pull-up and put the device to sleep for 10 seconds
+    pin.init(pull=None)
+    machine.deepsleep(10000)
+
+Output-configured RTC pins will also retain their output direction and level in
+deep-sleep if pad hold is enabled with the ``hold=True`` argument to
+``Pin.init()``.
+
+Non-RTC GPIO pins will be disconnected by default on entering deep-sleep.
+Configuration of non-RTC pins - including output level - can be retained by
+enabling pad hold on the pin and enabling GPIO pad hold during deep-sleep::
+
+    from machine import Pin, deepsleep
+    import esp32
+
+    opin = Pin(19, Pin.OUT, value=1, hold=True) # hold output level
+    ipin = Pin(21, Pin.IN, Pin.PULL_UP, hold=True) # hold pull-up
+
+    # enable pad hold in deep-sleep for non-RTC GPIO
+    esp32.gpio_deep_sleep_hold(True)
+
+    # put the device to sleep for 10 seconds
+    deepsleep(10000)
+
+The pin configuration - including the pad hold - will be retained on wake from
+sleep. See :ref:`Pins_and_GPIO` above for a further discussion of pad holding.
 
 SD card
 -------
@@ -528,7 +654,7 @@ See :ref:`machine.SDCard <machine.SDCard>`. ::
 
     # Slot 2 uses pins sck=18, cs=5, miso=19, mosi=23
     sd = machine.SDCard(slot=2)
-    os.mount(sd, "/sd")  # mount
+    os.mount(sd, '/sd')  # mount
 
     os.listdir('/sd')    # list directory contents
 
@@ -599,18 +725,14 @@ The APA106 driver extends NeoPixel, but internally uses a different colour order
     ap = APA106(pin, 8)
     r, g, b = ap[0]
 
-For low-level driving of a NeoPixel::
-
-    import esp
-    esp.neopixel_write(pin, grb_buf, is800khz)
-
 .. Warning::
    By default ``NeoPixel`` is configured to control the more popular *800kHz*
    units. It is possible to use alternative timing to control other (typically
    400kHz) devices by passing ``timing=0`` when constructing the
    ``NeoPixel`` object.
 
-The low-level driver uses an RMT channel by default.  To configure this see
+For low-level driving of a NeoPixel see `machine.bitstream`.
+This low-level driver uses an RMT channel by default.  To configure this see
 `RMT.bitstream_channel`.
 
 APA102 (DotStar) uses a different driver as it has an additional clock pin.

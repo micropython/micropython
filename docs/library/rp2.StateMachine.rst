@@ -32,7 +32,7 @@ Methods
 
     The program is added to the instruction memory of this PIO instance. If the
     instruction memory already contains this program, then its offset is
-    re-used so as to save on instruction memory.
+    reused so as to save on instruction memory.
 
     - *freq* is the frequency in Hz to run the state machine at. Defaults to
       the system clock frequency.
@@ -55,8 +55,8 @@ Methods
       `PIO.SHIFT_LEFT` or `PIO.SHIFT_RIGHT`.
     - *push_thresh* is the threshold in bits before auto-push or conditional
       re-pushing is triggered.
-    - *pull_thresh* is the threshold in bits before auto-push or conditional
-      re-pushing is triggered.
+    - *pull_thresh* is the threshold in bits before auto-pull or conditional
+      re-pulling is triggered.
 
 .. method:: StateMachine.active([value])
 
@@ -82,10 +82,17 @@ Methods
 
 .. method:: StateMachine.exec(instr)
 
-    Execute a single PIO instruction. Uses `asm_pio_encode` to encode the
-    instruction from the given string *instr*.
+    Execute a single PIO instruction.
+
+    If *instr* is a string then uses `asm_pio_encode` to encode the instruction
+    from the given string.
 
     >>> sm.exec("set(0, 1)")
+
+    If *instr* is an integer then it is treated as an already encoded PIO
+    machine code instruction to be executed.
+
+    >>> sm.exec(rp2.asm_pio_encode("out(y, 8)", 0))
 
 .. method:: StateMachine.get(buf=None, shift=0)
 
@@ -99,13 +106,17 @@ Methods
 
 .. method:: StateMachine.put(value, shift=0)
 
-    Push a word onto the state machine's TX FIFO.
+    Push words onto the state machine's TX FIFO.
 
-    If the FIFO is full, it blocks until there is space (i.e. the state machine
-    pulls a word).
+    *value* can be an integer, an array of type ``B``, ``H`` or ``I``, or a
+    `bytearray`.
 
-    The value is first shifted left by *shift* bits, i.e. the state machine
-    receives ``value << shift``.
+    This method will block until all words have been written to the FIFO.  If
+    the FIFO is, or becomes, full, the method will block until the state machine
+    pulls enough words to complete the write.
+
+    Each word is first shifted left by *shift* bits, i.e. the state machine
+    receives ``word << shift``.
 
 .. method:: StateMachine.rx_fifo()
 

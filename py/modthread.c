@@ -54,8 +54,7 @@ typedef struct _mp_obj_thread_lock_t {
 } mp_obj_thread_lock_t;
 
 STATIC mp_obj_thread_lock_t *mp_obj_new_thread_lock(void) {
-    mp_obj_thread_lock_t *self = m_new_obj(mp_obj_thread_lock_t);
-    self->base.type = &mp_type_thread_lock;
+    mp_obj_thread_lock_t *self = mp_obj_malloc(mp_obj_thread_lock_t, &mp_type_thread_lock);
     mp_thread_mutex_init(&self->mutex);
     self->locked = false;
     return self;
@@ -117,11 +116,12 @@ STATIC const mp_rom_map_elem_t thread_lock_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(thread_lock_locals_dict, thread_lock_locals_dict_table);
 
-STATIC const mp_obj_type_t mp_type_thread_lock = {
-    { &mp_type_type },
-    .name = MP_QSTR_lock,
-    .locals_dict = (mp_obj_dict_t *)&thread_lock_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_thread_lock,
+    MP_QSTR_lock,
+    MP_TYPE_FLAG_NONE,
+    locals_dict, &thread_lock_locals_dict
+    );
 
 /****************************************************************/
 // _thread module
@@ -129,7 +129,7 @@ STATIC const mp_obj_type_t mp_type_thread_lock = {
 STATIC size_t thread_stack_size = 0;
 
 STATIC mp_obj_t mod_thread_get_ident(void) {
-    return mp_obj_new_int_from_uint((uintptr_t)mp_thread_get_state());
+    return mp_obj_new_int_from_uint(mp_thread_get_id());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_get_ident_obj, mod_thread_get_ident);
 
@@ -174,6 +174,7 @@ STATIC void *thread_entry(void *args_in) {
     // The GC starts off unlocked on this thread.
     ts.gc_lock_depth = 0;
 
+    ts.nlr_jump_callback_top = NULL;
     ts.mp_pending_exception = MP_OBJ_NULL;
 
     // set locals and globals from the calling context
@@ -234,7 +235,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     // check for keyword arguments
     if (n_args == 2) {
         // just position arguments
-        th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len);
+        th_args = m_new_obj_var(thread_entry_args_t, args, mp_obj_t, pos_args_len);
         th_args->n_kw = 0;
     } else {
         // positional and keyword arguments
@@ -242,7 +243,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
             mp_raise_TypeError(MP_ERROR_TEXT("expecting a dict for keyword args"));
         }
         mp_map_t *map = &((mp_obj_dict_t *)MP_OBJ_TO_PTR(args[2]))->map;
-        th_args = m_new_obj_var(thread_entry_args_t, mp_obj_t, pos_args_len + 2 * map->used);
+        th_args = m_new_obj_var(thread_entry_args_t, args, mp_obj_t, pos_args_len + 2 * map->used);
         th_args->n_kw = map->used;
         // copy across the keyword arguments
         for (size_t i = 0, n = pos_args_len; i < map->alloc; ++i) {
@@ -268,9 +269,7 @@ STATIC mp_obj_t mod_thread_start_new_thread(size_t n_args, const mp_obj_t *args)
     th_args->fun = args[0];
 
     // spawn the thread!
-    mp_thread_create(thread_entry, th_args, &th_args->stack_size);
-
-    return mp_const_none;
+    return mp_obj_new_int_from_uint(mp_thread_create(thread_entry, th_args, &th_args->stack_size));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_thread_start_new_thread_obj, 2, 3, mod_thread_start_new_thread);
 
@@ -300,5 +299,7 @@ const mp_obj_module_t mp_module_thread = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_thread_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR__thread, mp_module_thread);
 
 #endif // MICROPY_PY_THREAD

@@ -24,13 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_MACHINE
-
-#include "py/obj.h"
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_PIN_BASE
+
+#include "extmod/modmachine.h"
 #include "extmod/virtpin.h"
-#include "extmod/machine_pinbase.h"
 
 // PinBase class
 
@@ -77,11 +76,12 @@ STATIC const mp_pin_p_t pinbase_pin_p = {
     .ioctl = pinbase_ioctl,
 };
 
-const mp_obj_type_t machine_pinbase_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PinBase,
-    .make_new = pinbase_make_new,
-    .protocol = &pinbase_pin_p,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_pinbase_type,
+    MP_QSTR_PinBase,
+    MP_TYPE_FLAG_NONE,
+    make_new, pinbase_make_new,
+    protocol, &pinbase_pin_p
+    );
 
-#endif // MICROPY_PY_MACHINE
+#endif // MICROPY_PY_MACHINE_PIN_BASE

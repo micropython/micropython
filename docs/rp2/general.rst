@@ -11,7 +11,7 @@ Technical specifications and SoC datasheets
 -------------------------------------------
 
 For detailed technical specifications, please refer to the `datasheets
-<https://datasheets.raspberrypi.org/rp2040/rp2040-datasheet.pdf>`_
+<https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf>`_
 
 The RP2040 microcontroller is manufactured on a 40 nm silicon process in a 7x7mm
 QFN-56 SMD package. The key features include:
@@ -30,7 +30,7 @@ The peripherals include:
 
 * 2 UARTs
 * 2 SPI controllers
-* 2 I2C contollers
+* 2 I2C controllers
 * 16 PWM channels
 * USB 1.1 controller
 * 8 PIO state machines

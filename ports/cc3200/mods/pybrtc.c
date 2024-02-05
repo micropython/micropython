@@ -25,7 +25,7 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
+#include "py/mphal.h"
 #include "py/obj.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
@@ -76,7 +76,7 @@ STATIC void rtc_msec_add(uint16_t msecs_1, uint32_t *secs, uint16_t *msecs_2);
  ******************************************************************************/
 __attribute__ ((section (".boot")))
 void pyb_rtc_pre_init(void) {
-    // only if comming out of a power-on reset
+    // only if coming out of a power-on reset
     if (MAP_PRCMSysResetCauseGet() == PRCM_POWER_ON) {
         // Mark the RTC in use first
         MAP_PRCMRTCInUseSet();
@@ -118,7 +118,7 @@ void pyb_rtc_repeat_alarm (pyb_rtc_obj_t *self) {
 
         pyb_rtc_get_time(&c_seconds, &c_mseconds);
 
-        // substract the time elapsed between waking up and setting up the alarm again
+        // subtract the time elapsed between waking up and setting up the alarm again
         int32_t wake_ms = ((c_seconds * 1000) + c_mseconds) - ((self->alarm_time_s * 1000) + self->alarm_time_ms);
         int32_t next_alarm = self->alarm_ms - wake_ms;
         next_alarm = next_alarm > 0 ? next_alarm : PYB_RTC_MIN_ALARM_TIME_MS;
@@ -469,12 +469,13 @@ STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
-const mp_obj_type_t pyb_rtc_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_RTC,
-    .make_new = pyb_rtc_make_new,
-    .locals_dict = (mp_obj_t)&pyb_rtc_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    pyb_rtc_type,
+    MP_QSTR_RTC,
+    MP_TYPE_FLAG_NONE,
+    make_new, pyb_rtc_make_new,
+    locals_dict, &pyb_rtc_locals_dict
+    );
 
 STATIC const mp_irq_methods_t pyb_rtc_irq_methods = {
     .init = pyb_rtc_irq,

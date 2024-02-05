@@ -24,12 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/nlr.h"
 #include "py/runtime.h"
+#include "extmod/modmachine.h"
 #include "timer.h"
 #include "nrfx_timer.h"
 
-#if MICROPY_PY_MACHINE_TIMER
+#if MICROPY_PY_MACHINE_TIMER_NRF
 
 enum {
     TIMER_MODE_ONESHOT,
@@ -135,7 +135,7 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     }
 
     // Timer peripheral usage:
-    // Every timer instance has a numer of capture/compare (CC) registers.
+    // Every timer instance has a number of capture/compare (CC) registers.
     // These can store either the value to compare against (to trigger an
     // interrupt or a shortcut) or store a value returned from a
     // capture/compare event.
@@ -234,12 +234,13 @@ STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(machine_timer_locals_dict, machine_timer_locals_dict_table);
 
-const mp_obj_type_t machine_timer_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Timer,
-    .print = timer_print,
-    .make_new = machine_timer_make_new,
-    .locals_dict = (mp_obj_dict_t*)&machine_timer_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_timer_type,
+    MP_QSTR_Timer,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_timer_make_new,
+    print, timer_print,
+    locals_dict, &machine_timer_locals_dict
+    );
 
-#endif // MICROPY_PY_MACHINE_TIMER
+#endif // MICROPY_PY_MACHINE_TIMER_NRF

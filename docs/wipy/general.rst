@@ -345,7 +345,7 @@ Example::
 
    Create a server instance, see ``init`` for parameters of initialization.
 
-.. method:: server.init(\*, login=('micro', 'python'), timeout=300)
+.. method:: server.init(*, login=('micro', 'python'), timeout=300)
 
    Init (and effectively start the server). Optionally a new ``user``, ``password``
    and ``timeout`` (in seconds) can be passed.
@@ -368,7 +368,7 @@ Adhoc VFS-like support
 WiPy doesn't implement full MicroPython VFS support, instead following
 functions are defined in ``os`` module:
 
-.. function:: mount(block_device, mount_point, \*, readonly=False)
+.. function:: mount(block_device, mount_point, *, readonly=False)
 
    Mounts a block device (like an ``SD`` object) in the specified mount
    point. Example::

@@ -1,5 +1,5 @@
 try:
-    from utime import ticks_diff, ticks_add
+    from time import ticks_diff, ticks_add
 except ImportError:
     print("SKIP")
     raise SystemExit

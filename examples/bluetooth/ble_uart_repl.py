@@ -7,6 +7,7 @@ import bluetooth
 import io
 import os
 import micropython
+from micropython import const
 import machine
 
 from ble_uart_peripheral import BLEUART
@@ -19,6 +20,7 @@ if hasattr(machine, "Timer"):
     _timer = machine.Timer(-1)
 else:
     _timer = None
+
 
 # Batch writes into 50ms intervals.
 def schedule_in(handler, delay_ms):

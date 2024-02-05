@@ -1,7 +1,4 @@
-try:
-    import usocket as socket
-except:
-    import socket
+import socket
 
 
 def main(use_stream=False):

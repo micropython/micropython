@@ -36,6 +36,7 @@ def gen_pi_digits(n):
 # Benchmark interface
 
 bm_params = {
+    (32, 10): (1, 20),
     (50, 25): (1, 35),
     (100, 100): (1, 65),
     (1000, 1000): (2, 250),

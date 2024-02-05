@@ -24,11 +24,14 @@
  * THE SOFTWARE.
  */
 
+#include "py/mphal.h"
+
 #if MICROPY_PY_MACHINE_SDCARD
 
 #include "sdcard.h"
 #include "ticks.h"
 #include "fsl_iomuxc.h"
+#include "pin.h"
 
 #define SDCARD_VOLTAGE_WINDOW_SD                (0x80100000U)
 #define SDCARD_HIGH_CAPACITY                    (0x40000000U)
@@ -139,16 +142,6 @@ enum
 };
 
 // ---
-// SD Card transfer status
-// ---
-typedef enum
-{
-    SDCARD_TRANSFER_SUCCESS = 0,
-    SDCARD_TRANSFER_ERROR,
-    SDCARD_TRANSFER_PENDING
-} sdcard_transfer_status_t;
-
-// ---
 // SD Card type definitions
 // ---
 typedef struct _cid_t {
@@ -215,9 +208,6 @@ mimxrt_sdcard_obj_t mimxrt_sdcard_objs[] =
     #endif
 };
 
-volatile status_t sdcard_transfer_status;
-volatile bool sdcard_transfer_done;
-
 // ---
 // Local function declarations
 // ---
@@ -235,7 +225,7 @@ void sdcard_card_removed_callback(USDHC_Type *base, void *userData);
 void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData);
 void sdcard_dummy_callback(USDHC_Type *base, void *userData);
 
-// SD Card commmands
+// SD Card commands
 static bool sdcard_cmd_go_idle_state(mimxrt_sdcard_obj_t *card);
 static bool sdcard_cmd_oper_cond(mimxrt_sdcard_obj_t *card);
 static bool sdcard_cmd_app_cmd(mimxrt_sdcard_obj_t *card);
@@ -246,7 +236,7 @@ static bool sdcard_cmd_set_rel_add(mimxrt_sdcard_obj_t *card);
 static bool sdcard_cmd_send_csd(mimxrt_sdcard_obj_t *card, csd_t *csd);
 static bool sdcard_cmd_select_card(mimxrt_sdcard_obj_t *sdcard);
 static bool sdcard_cmd_set_blocklen(mimxrt_sdcard_obj_t *sdcard);
-static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *sdcard, uint8_t bus_width);
+static bool sdcard_cmd_set_bus_width(mimxrt_sdcard_obj_t *sdcard, usdhc_data_bus_width_t bus_width);
 
 void sdcard_card_inserted_callback(USDHC_Type *base, void *userData) {
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL
@@ -281,45 +271,58 @@ void sdcard_card_removed_callback(USDHC_Type *base, void *userData) {
     USDHC_ClearInterruptStatusFlags(base, kUSDHC_CardRemovalFlag);
 }
 
-void sdcard_transfer_complete_callback(USDHC_Type *base, usdhc_handle_t *handle, status_t status, void *userData) {
-    sdcard_transfer_status = status;
-    sdcard_transfer_done = true;
-    USDHC_ClearInterruptStatusFlags(base, kUSDHC_CommandCompleteFlag | kUSDHC_DataCompleteFlag);
-}
-
 void sdcard_dummy_callback(USDHC_Type *base, void *userData) {
     return;
 }
 
+static void sdcard_error_recovery(USDHC_Type *base) {
+    uint32_t status = 0U;
+    /* get host present status */
+    status = USDHC_GetPresentStatusFlags(base);
+    /* check command inhibit status flag */
+    if ((status & (uint32_t)kUSDHC_CommandInhibitFlag) != 0U) {
+        /* reset command line */
+        (void)USDHC_Reset(base, kUSDHC_ResetCommand, 100U);
+    }
+    /* check data inhibit status flag */
+    if (((status & (uint32_t)kUSDHC_DataInhibitFlag) != 0U) || (USDHC_GetAdmaErrorStatusFlags(base) != 0U)) {
+        /* reset data line */
+        (void)USDHC_Reset(base, kUSDHC_ResetData, 100U);
+    }
+}
+
 static status_t sdcard_transfer_blocking(USDHC_Type *base, usdhc_handle_t *handle, usdhc_transfer_t *transfer, uint32_t timeout_ms) {
-    uint32_t retry_ctr = 0UL;
     status_t status;
 
     usdhc_adma_config_t dma_config;
 
     (void)memset(&dma_config, 0, sizeof(usdhc_adma_config_t));
     dma_config.dmaMode = kUSDHC_DmaModeAdma2;
+
+    #if !(defined(FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN) && FSL_FEATURE_USDHC_HAS_NO_RW_BURST_LEN)
     dma_config.burstLen = kUSDHC_EnBurstLenForINCR;
+    #endif
+
     dma_config.admaTable = sdcard_adma_descriptor_table;
     dma_config.admaTableWords = DMA_DESCRIPTOR_BUFFER_SIZE;
 
-    do {
-        status = USDHC_TransferNonBlocking(base, handle, &dma_config, transfer);
-        retry_ctr++;
-    } while (!(status == kStatus_Success) && (retry_ctr < 1000000UL));
-
-    if (status == kStatus_Success) {
-        for (int i = 0; i < timeout_ms * 100; i++) {
-            if ((sdcard_transfer_done == true) && (sdcard_transfer_status == kStatus_Success)) {
-                sdcard_transfer_done = false;
-                return kStatus_Success;
+    // Wait while the card is busy before a transfer
+    status = kStatus_Timeout;
+    for (int i = 0; i < timeout_ms * 100; i++) {
+        // Wait until Data0 is low any more. Low indicates "Busy".
+        if (((transfer->data->txData == NULL) && (transfer->data->rxData == NULL)) ||
+            (USDHC_GetPresentStatusFlags(base) & (uint32_t)kUSDHC_Data0LineLevelFlag) != 0) {
+            // Not busy anymore or no TX-Data
+            status = USDHC_TransferBlocking(base, &dma_config, transfer);
+            if (status != kStatus_Success) {
+                sdcard_error_recovery(base);
             }
-            ticks_delay_us64(10);
+            break;
         }
-        return kStatus_Timeout;
-    } else {
-        return status;
+        ticks_delay_us64(10);
     }
+    return status;
+
 }
 
 static void sdcard_decode_csd(mimxrt_sdcard_obj_t *card, csd_t *csd) {
@@ -670,6 +673,22 @@ static bool sdcard_reset(mimxrt_sdcard_obj_t *card) {
 }
 
 void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
+    #ifdef MIMXRT117x_SERIES
+    clock_root_config_t rootCfg = {0};
+    /* SYS PLL2 528MHz. */
+    const clock_sys_pll2_config_t sysPll2Config = {
+        .ssEnable = false,
+    };
+
+    CLOCK_InitSysPll2(&sysPll2Config);
+    CLOCK_InitPfd(kCLOCK_PllSys2, kCLOCK_Pfd2, 24);
+
+    rootCfg.mux = 4;
+    rootCfg.div = 2;
+    CLOCK_SetRootClock(kCLOCK_Root_Usdhc1, &rootCfg);
+
+    #else
+
     // Configure PFD0 of PLL2 (system PLL) fractional divider to 24 resulting in:
     //  with PFD0_clk = PLL2_clk * 18 / N
     //       PFD0_clk = 528MHz   * 18 / 24 = 396MHz
@@ -686,6 +705,8 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
     CLOCK_SetDiv(kCLOCK_Usdhc2Div, 1U);  // USDHC_input_clk = PFD0_clk / 2 = 198MHZ
     CLOCK_SetMux(kCLOCK_Usdhc2Mux, 1U);  // Select PFD0 as clock input for USDHC
     #endif
+
+    #endif // MIMXRT117x_SERIES
 
     // Initialize USDHC
     const usdhc_config_t config = {
@@ -704,7 +725,6 @@ void sdcard_init(mimxrt_sdcard_obj_t *card, uint32_t base_clk) {
         .CardRemoved = sdcard_card_removed_callback,
         .SdioInterrupt = sdcard_dummy_callback,
         .BlockGap = sdcard_dummy_callback,
-        .TransferComplete = sdcard_transfer_complete_callback,
         .ReTuning = sdcard_dummy_callback,
     };
 
@@ -725,24 +745,18 @@ static inline void sdcard_init_pin(const machine_pin_obj_t *pin, uint8_t af_idx,
 
 void sdcard_init_pins(mimxrt_sdcard_obj_t *card) {
     // speed and strength optimized for clock frequency < 100MHz
-    uint32_t speed = 1U;
-    uint32_t strength = 7U;
     const mimxrt_sdcard_obj_pins_t *pins = card->pins;
 
-    uint32_t default_config = IOMUXC_SW_PAD_CTL_PAD_SPEED(speed) |
-        IOMUXC_SW_PAD_CTL_PAD_SRE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PKE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_HYS_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUS(1) |
-        IOMUXC_SW_PAD_CTL_PAD_DSE(strength);
-    uint32_t no_cd_config = IOMUXC_SW_PAD_CTL_PAD_SPEED(speed) |
-        IOMUXC_SW_PAD_CTL_PAD_SRE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PKE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUE_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_HYS_MASK |
-        IOMUXC_SW_PAD_CTL_PAD_PUS(0) |
-        IOMUXC_SW_PAD_CTL_PAD_DSE(strength);
+    uint32_t default_config = pin_generate_config(
+        PIN_PULL_UP_47K, PIN_MODE_SKIP, PIN_DRIVE_6, card->pins->clk.pin->configRegister);
+    #if USDHC_DATA3_PULL_DOWN_ON_BOARD
+    // Pull down on the board -> must not enable internal PD.
+    uint32_t no_cd_config = pin_generate_config(
+        PIN_PULL_DISABLED, PIN_MODE_SKIP, PIN_DRIVE_6, card->pins->data3.pin->configRegister);
+    #else
+    uint32_t no_cd_config = pin_generate_config(
+        PIN_PULL_DOWN_100K, PIN_MODE_SKIP, PIN_DRIVE_6, card->pins->data3.pin->configRegister);
+    #endif // USDHC_DATA3_PULL_DOWN_ON_BOARD
 
     sdcard_init_pin(card->pins->clk.pin, card->pins->clk.af_idx, default_config);  // USDHC1_CLK
     sdcard_init_pin(card->pins->cmd.pin, card->pins->cmd.af_idx, default_config);  // USDHC1_CMD
@@ -828,7 +842,7 @@ bool sdcard_write(mimxrt_sdcard_obj_t *card, uint8_t *buffer, uint32_t block_num
         .command = &command,
     };
 
-    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 500);
+    status_t status = sdcard_transfer_blocking(card->usdhc_inst, &card->handle, &transfer, 3000);
 
     if (status == kStatus_Success) {
         card->status = command.response[0];
@@ -1002,6 +1016,9 @@ bool sdcard_detect(mimxrt_sdcard_obj_t *card) {
         USDHC_CardDetectByData3(card->usdhc_inst, true);
         detect = (USDHC_GetPresentStatusFlags(card->usdhc_inst) & USDHC_PRES_STATE_DLSL(8)) != 0;
     }
+    /* enable card detect interrupt */
+    USDHC_EnableInterruptStatus(card->usdhc_inst, kUSDHC_CardInsertionFlag);
+    USDHC_EnableInterruptStatus(card->usdhc_inst, kUSDHC_CardRemovalFlag);
 
     // Update card state when detected via pin state
     #if defined MICROPY_USDHC1 && USDHC1_AVAIL

@@ -28,7 +28,7 @@
 #ifndef NRFX_CONFIG_H
 #define NRFX_CONFIG_H
 
-#include "mpconfigport.h"
+#include "py/mpconfig.h"
 #include "nrf.h"
 
 // Port specific defines
@@ -74,10 +74,16 @@
 #endif
 #endif
 
-#if defined(NRF51) || defined(NRF52_SERIES)
+#if defined(NRF51)
   #define NRFX_UART_ENABLED 1
   #define NRFX_UART0_ENABLED 1
   #define NRFX_UART1_ENABLED 1
+#elif defined(NRF52_SERIES)
+  #define NRFX_UARTE_ENABLED 1
+  #define NRFX_UARTE0_ENABLED 1
+  #if NRF52840 || NRF52840_XXAA
+  #define NRFX_UARTE1_ENABLED 1
+  #endif
 #else
   #define NRFX_UARTE_ENABLED 1
   #define NRFX_UARTE0_ENABLED 1
@@ -97,7 +103,7 @@
 #endif
 
 #if defined(NRF51) || defined(NRF52832)
-  #define NRFX_SPI_ENABLED (MICROPY_PY_MACHINE_HW_SPI)
+  #define NRFX_SPI_ENABLED (MICROPY_PY_MACHINE_SPI)
   #define NRFX_SPI0_ENABLED 1
   #define NRFX_SPI1_ENABLED 1
 
@@ -105,13 +111,13 @@
     #define NRFX_SPI2_ENABLED 1
   #endif
 #elif defined(NRF52840)
-  #define NRFX_SPIM_ENABLED (MICROPY_PY_MACHINE_HW_SPI)
+  #define NRFX_SPIM_ENABLED (MICROPY_PY_MACHINE_SPI)
   #define NRFX_SPIM0_ENABLED 1
   #define NRFX_SPIM1_ENABLED 1
   #define NRFX_SPIM2_ENABLED 1
   #define NRFX_SPIM3_ENABLED (NRF52840)
 #elif defined(NRF9160_XXAA)
-  #define NRFX_SPIM_ENABLED (MICROPY_PY_MACHINE_HW_SPI)
+  #define NRFX_SPIM_ENABLED (MICROPY_PY_MACHINE_SPI)
   #define NRFX_SPIM0_ENABLED 1
   #define NRFX_SPIM1_ENABLED 1
 
@@ -132,7 +138,7 @@
 #define NRFX_RTC1_ENABLED 1
 #define NRFX_RTC2_ENABLED (!NRF51) && (!NRF9160_XXAA)
 
-#define NRFX_TIMER_ENABLED (MICROPY_PY_MACHINE_TIMER)
+#define NRFX_TIMER_ENABLED (MICROPY_PY_MACHINE_TIMER_NRF)
 #define NRFX_TIMER0_ENABLED 1
 #define NRFX_TIMER1_ENABLED (!MICROPY_PY_MACHINE_SOFT_PWM)
 #define NRFX_TIMER2_ENABLED 1

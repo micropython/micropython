@@ -3,9 +3,9 @@ This directory shows the best practices for using MicroPython hardware API
 across various boards, with the aim to enable writing portable applications,
 which would work from a board to board, from a system to another systems.
 This is inherently a hard problem, because hardware is different from one
-board type to another, and even from examplar of board to another. For
+board type to another, and even from exemplar of board to another. For
 example, if your app requires an external LED, one user may connect it
-to one GPIO pin, while another user may find it much more convinient to
+to one GPIO pin, while another user may find it much more convenient to
 use another pin. This of course applies to relays, buzzers, sensors, etc.
 
 With complications above in mind, it's still possible to write portable
@@ -40,13 +40,13 @@ application of this idea would look like:
 `app.py`:
 
     from hwconfig import *
-    import utime
+    import time
 
     while True:
         LED.value(1)
-        utime.sleep_ms(500)
+        time.sleep_ms(500)
         LED.value(0)
-        utime.sleep_ms(500)
+        time.sleep_ms(500)
 
 
 To deploy this application to a particular board, a user will need:
@@ -116,7 +116,7 @@ For example, one may invent a "configuration manager" helper module which will
 try to detect current board (among well-known ones), and load appropriate
 `hwconfig_*.py` - this assumes that a user would lazily deploy them all
 (or that application will be automatically installed, e.g. using MicroPython's
-`upip` package manager). The key point in this case remains the same as
+`mip` package manager). The key point in this case remains the same as
 elaborated above - always assume there can, and will be a custom configuration,
 and it should be well supported. So, any automatic detection should be
 overridable by a user, and instructions how to do so are among the most

@@ -10,7 +10,6 @@ switch = pyb.Switch()
 
 # loop
 while True:
-
     # wait for interrupt
     # this reduces power consumption while waiting for switch press
     pyb.wfi()

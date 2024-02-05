@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "py/obj.h"
+#include "py/objfun.h"
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/gc.h"
@@ -105,11 +107,13 @@ STATIC const mp_stream_p_t fileio_stream_p = {
     .ioctl = stest_ioctl,
 };
 
-STATIC const mp_obj_type_t mp_type_stest_fileio = {
-    { &mp_type_type },
-    .protocol = &fileio_stream_p,
-    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stest_fileio,
+    MP_QSTR_stest_fileio,
+    MP_TYPE_FLAG_NONE,
+    protocol, &fileio_stream_p,
+    locals_dict, &rawfile_locals_dict
+    );
 
 // stream read returns non-blocking error
 STATIC mp_uint_t stest_read2(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
@@ -132,11 +136,13 @@ STATIC const mp_stream_p_t textio_stream_p2 = {
     .is_text = true,
 };
 
-STATIC const mp_obj_type_t mp_type_stest_textio2 = {
-    { &mp_type_type },
-    .protocol = &textio_stream_p2,
-    .locals_dict = (mp_obj_dict_t *)&rawfile_locals_dict2,
-};
+STATIC MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_stest_textio2,
+    MP_QSTR_stest_textio2,
+    MP_TYPE_FLAG_NONE,
+    protocol, &textio_stream_p2,
+    locals_dict, &rawfile_locals_dict2
+    );
 
 // str/bytes objects without a valid hash
 STATIC const mp_obj_str_t str_no_hash_obj = {{&mp_type_str}, 0, 10, (const byte *)"0123456789"};
@@ -219,6 +225,91 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "%p\n", gc_nbytes(NULL));
     }
 
+    // GC initialisation and allocation stress test, to check the logic behind ALLOC_TABLE_GAP_BYTE
+    // (the following test should fail when ALLOC_TABLE_GAP_BYTE=0)
+    {
+        mp_printf(&mp_plat_print, "# GC part 2\n");
+
+        // check the GC is unlocked and save its state
+        assert(MP_STATE_THREAD(gc_lock_depth) == 0);
+        mp_state_mem_t mp_state_mem_orig = mp_state_ctx.mem;
+
+        // perform the test
+        unsigned heap_size = 64 * MICROPY_BYTES_PER_GC_BLOCK;
+        for (unsigned j = 0; j < 256 * MP_BYTES_PER_OBJ_WORD; ++j) {
+            char *heap = calloc(heap_size, 1);
+            gc_init(heap, heap + heap_size);
+
+            m_malloc(MICROPY_BYTES_PER_GC_BLOCK);
+            void *o = gc_alloc(MICROPY_BYTES_PER_GC_BLOCK, GC_ALLOC_FLAG_HAS_FINALISER);
+            ((mp_obj_base_t *)o)->type = NULL; // ensure type is cleared so GC doesn't look for finaliser
+            for (unsigned i = 0; i < heap_size / MICROPY_BYTES_PER_GC_BLOCK; ++i) {
+                void *p = m_malloc_maybe(MICROPY_BYTES_PER_GC_BLOCK);
+                if (!p) {
+                    break;
+                }
+                *(void **)p = o;
+                o = p;
+            }
+            gc_collect();
+            free(heap);
+            heap_size += MICROPY_BYTES_PER_GC_BLOCK / 16;
+        }
+        mp_printf(&mp_plat_print, "pass\n");
+
+        // restore the GC state (the original heap)
+        mp_state_ctx.mem = mp_state_mem_orig;
+    }
+
+    // tracked allocation
+    {
+        #define NUM_PTRS (8)
+        #define NUM_BYTES (128)
+        #define FLIP_POINTER(p) ((uint8_t *)((uintptr_t)(p) ^ 0x0f))
+
+        mp_printf(&mp_plat_print, "# tracked allocation\n");
+        mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
+
+        uint8_t *ptrs[NUM_PTRS];
+
+        // allocate memory blocks
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            ptrs[i] = m_tracked_calloc(1, NUM_BYTES);
+            bool all_zero = true;
+            for (size_t j = 0; j < NUM_BYTES; ++j) {
+                if (ptrs[i][j] != 0) {
+                    all_zero = false;
+                    break;
+                }
+                ptrs[i][j] = j;
+            }
+            mp_printf(&mp_plat_print, "%d %d\n", i, all_zero);
+
+            // hide the pointer from the GC and collect
+            ptrs[i] = FLIP_POINTER(ptrs[i]);
+            gc_collect();
+        }
+
+        // check the memory blocks have the correct content
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            bool correct_contents = true;
+            for (size_t j = 0; j < NUM_BYTES; ++j) {
+                if (FLIP_POINTER(ptrs[i])[j] != j) {
+                    correct_contents = false;
+                    break;
+                }
+            }
+            mp_printf(&mp_plat_print, "%d %d\n", i, correct_contents);
+        }
+
+        // free the memory blocks
+        for (size_t i = 0; i < NUM_PTRS; ++i) {
+            m_tracked_free(FLIP_POINTER(ptrs[i]));
+        }
+
+        mp_printf(&mp_plat_print, "m_tracked_head = %p\n", MP_STATE_VM(m_tracked_head));
+    }
+
     // vstr
     {
         mp_printf(&mp_plat_print, "# vstr\n");
@@ -265,19 +356,19 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_printf(&mp_plat_print, "# repl\n");
 
         const char *str;
-        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str);
+        size_t len = mp_repl_autocomplete("__n", 3, &mp_plat_print, &str); // expect "ame__"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
 
-        len = mp_repl_autocomplete("i", 1,  &mp_plat_print, &str);
+        len = mp_repl_autocomplete("im", 2,  &mp_plat_print, &str); // expect "port"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str);
-        len = mp_repl_autocomplete("import ut", 9,  &mp_plat_print, &str);
+        mp_repl_autocomplete("import ", 7,  &mp_plat_print, &str); // expect the list of builtins
+        len = mp_repl_autocomplete("import ti", 9,  &mp_plat_print, &str); // expect "me"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
-        mp_repl_autocomplete("import utime", 12,  &mp_plat_print, &str);
+        mp_repl_autocomplete("import m", 8,  &mp_plat_print, &str); // expect "micropython machine math"
 
         mp_store_global(MP_QSTR_sys, mp_import_name(MP_QSTR_sys, mp_const_none, MP_OBJ_NEW_SMALL_INT(0)));
-        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str);
-        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str);
+        mp_repl_autocomplete("sys.", 4, &mp_plat_print, &str); // expect dir(sys)
+        len = mp_repl_autocomplete("sys.impl", 8, &mp_plat_print, &str); // expect "ementation"
         mp_printf(&mp_plat_print, "%.*s\n", (int)len, str);
     }
 
@@ -448,10 +539,13 @@ STATIC mp_obj_t extra_coverage(void) {
     {
         mp_printf(&mp_plat_print, "# VM\n");
 
-        // call mp_execute_bytecode with invalide bytecode (should raise NotImplementedError)
+        // call mp_execute_bytecode with invalid bytecode (should raise NotImplementedError)
+        mp_module_context_t context;
         mp_obj_fun_bc_t fun_bc;
+        fun_bc.context = &context;
+        fun_bc.child_table = NULL;
         fun_bc.bytecode = (const byte *)"\x01"; // just needed for n_state
-        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, mp_obj_t, 1);
+        mp_code_state_t *code_state = m_new_obj_var(mp_code_state_t, state, mp_obj_t, 1);
         code_state->fun_bc = &fun_bc;
         code_state->ip = (const byte *)"\x00"; // just needed for an invalid opcode
         code_state->sp = &code_state->state[0];
@@ -484,9 +578,10 @@ STATIC mp_obj_t extra_coverage(void) {
         mp_sched_unlock();
         mp_printf(&mp_plat_print, "unlocked\n");
 
-        // drain pending callbacks
+        // drain pending callbacks, and test mp_event_wait_indefinite(), mp_event_wait_ms()
+        mp_event_wait_indefinite(); // the unix port only waits 500us in this call
         while (mp_sched_num_pending()) {
-            mp_handle_pending(true);
+            mp_event_wait_ms(1);
         }
 
         // setting the keyboard interrupt and raising it during mp_handle_pending
@@ -635,14 +730,12 @@ STATIC mp_obj_t extra_coverage(void) {
 
     mp_printf(&mp_plat_print, "# end coverage.c\n");
 
-    mp_obj_streamtest_t *s = m_new_obj(mp_obj_streamtest_t);
-    s->base.type = &mp_type_stest_fileio;
+    mp_obj_streamtest_t *s = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_fileio);
     s->buf = NULL;
     s->len = 0;
     s->pos = 0;
     s->error_code = 0;
-    mp_obj_streamtest_t *s2 = m_new_obj(mp_obj_streamtest_t);
-    s2->base.type = &mp_type_stest_textio2;
+    mp_obj_streamtest_t *s2 = mp_obj_malloc(mp_obj_streamtest_t, &mp_type_stest_textio2);
 
     // return a tuple of data for testing on the Python side
     mp_obj_t items[] = {(mp_obj_t)&str_no_hash_obj, (mp_obj_t)&bytes_no_hash_obj, MP_OBJ_FROM_PTR(s), MP_OBJ_FROM_PTR(s2)};

@@ -48,22 +48,22 @@ STATIC mp_obj_t mp_obj_int_make_new(const mp_obj_type_t *type_in, size_t n_args,
         case 0:
             return MP_OBJ_NEW_SMALL_INT(0);
 
-        case 1:
-            if (mp_obj_is_int(args[0])) {
-                // already an int (small or long), just return it
-                return args[0];
-            } else if (mp_obj_is_str_or_bytes(args[0])) {
-                // a string, parse it
-                size_t l;
-                const char *s = mp_obj_str_get_data(args[0], &l);
-                return mp_parse_num_integer(s, l, 0, NULL);
+        case 1: {
+            mp_buffer_info_t bufinfo;
+            mp_obj_t o = mp_unary_op(MP_UNARY_OP_INT_MAYBE, args[0]);
+            if (o != MP_OBJ_NULL) {
+                return o;
+            } else if (mp_get_buffer(args[0], &bufinfo, MP_BUFFER_READ)) {
+                // a textual representation, parse it
+                return mp_parse_num_integer(bufinfo.buf, bufinfo.len, 0, NULL);
             #if MICROPY_PY_BUILTINS_FLOAT
             } else if (mp_obj_is_float(args[0])) {
                 return mp_obj_new_int_from_float(mp_obj_float_get(args[0]));
             #endif
             } else {
-                return mp_unary_op(MP_UNARY_OP_INT, args[0]);
+                mp_raise_TypeError_int_conversion(args[0]);
             }
+        }
 
         case 2:
         default: {
@@ -232,7 +232,7 @@ char *mp_obj_int_formatted(char **buf, size_t *buf_size, size_t *fmt_size, mp_co
         // A small int; get the integer value to format.
         num = MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
-        assert(mp_obj_is_type(self_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(self_in, &mp_type_int));
         // Not a small int.
         #if MICROPY_LONGINT_IMPL == MICROPY_LONGINT_IMPL_LONGLONG
         const mp_obj_int_t *self = self_in;
@@ -446,7 +446,7 @@ STATIC mp_obj_t int_to_bytes(size_t n_args, const mp_obj_t *args) {
         mp_binary_set_int(l, big_endian, data + (big_endian ? (len - l) : 0), val);
     }
 
-    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+    return mp_obj_new_bytes_from_vstr(&vstr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(int_to_bytes_obj, 3, 4, int_to_bytes);
 
@@ -457,12 +457,13 @@ STATIC const mp_rom_map_elem_t int_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(int_locals_dict, int_locals_dict_table);
 
-const mp_obj_type_t mp_type_int = {
-    { &mp_type_type },
-    .name = MP_QSTR_int,
-    .print = mp_obj_int_print,
-    .make_new = mp_obj_int_make_new,
-    .unary_op = mp_obj_int_unary_op,
-    .binary_op = mp_obj_int_binary_op,
-    .locals_dict = (mp_obj_dict_t *)&int_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_int,
+    MP_QSTR_int,
+    MP_TYPE_FLAG_NONE,
+    make_new, mp_obj_int_make_new,
+    print, mp_obj_int_print,
+    unary_op, mp_obj_int_unary_op,
+    binary_op, mp_obj_int_binary_op,
+    locals_dict, &int_locals_dict
+    );

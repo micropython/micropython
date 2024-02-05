@@ -1,25 +1,35 @@
-# Select the board to build for: if not given on the command line,
-# then default to PYBV10.
+# Select the board to build for:
+ifdef BOARD_DIR
+# Custom board path - remove trailing slash and get the final component of
+# the path as the board name.
+BOARD ?= $(notdir $(BOARD_DIR:/=))
+else
+# If not given on the command line, then default to PYBV10.
 BOARD ?= PYBV10
-
-# If the build directory is not given, make it reflect the board name.
-BUILD ?= build-$(BOARD)
-
 BOARD_DIR ?= boards/$(BOARD)
+endif
+
 ifeq ($(wildcard $(BOARD_DIR)/.),)
 $(error Invalid BOARD specified: $(BOARD_DIR))
+endif
+
+# If the build directory is not given, make it reflect the board name (and
+# optionally the board variant).
+ifneq ($(BOARD_VARIANT),)
+BUILD ?= build-$(BOARD)-$(BOARD_VARIANT)
+else
+BUILD ?= build-$(BOARD)
 endif
 
 include ../../py/mkenv.mk
 -include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 
-# Files that are generated and needed before the QSTR build.
-QSTR_GENERATED_HEADERS = $(BUILD)/pins_qstr.h $(BUILD)/modstm_qstr.h
-
 # qstr definitions (must come before including py.mk)
-QSTR_DEFS += qstrdefsport.h $(QSTR_GENERATED_HEADERS)
-QSTR_GLOBAL_DEPENDENCIES += mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h $(QSTR_GENERATED_HEADERS)
+QSTR_DEFS += qstrdefsport.h
+
+# Files that are generated and needed before the QSTR build.
+QSTR_GLOBAL_DEPENDENCIES += mpconfigboard_common.h $(BOARD_DIR)/mpconfigboard.h $(GEN_STMCONST_HDR)
 
 # MicroPython feature configurations
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
@@ -33,15 +43,11 @@ MBOOT_TEXT0_ADDR ?= 0x08000000
 
 # include py core make definitions
 include $(TOP)/py/py.mk
+include $(TOP)/extmod/extmod.mk
 
-GIT_SUBMODULES += lib/libhydrogen lib/lwip lib/mbedtls lib/stm32lib
-
-MCU_SERIES_UPPER = $(shell echo $(MCU_SERIES) | tr '[:lower:]' '[:upper:]')
-CMSIS_MCU_LOWER = $(shell echo $(CMSIS_MCU) | tr '[:upper:]' '[:lower:]')
+GIT_SUBMODULES += lib/libhydrogen lib/stm32lib
 
 LD_DIR=boards
-CMSIS_DIR=$(TOP)/lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Include
-HAL_DIR=lib/stm32lib/STM32$(MCU_SERIES_UPPER)xx_HAL_Driver
 USBDEV_DIR=usbdev
 #USBHOST_DIR=usbhost
 DFU=$(TOP)/tools/dfu.py
@@ -55,8 +61,32 @@ BOOTLOADER_DFU_USB_PID ?= 0xDF11
 STFLASH ?= st-flash
 OPENOCD ?= openocd
 OPENOCD_CONFIG ?= boards/openocd_stm32f4.cfg
-STARTUP_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/gcc/startup_$(CMSIS_MCU_LOWER).o
-SYSTEM_FILE ?= lib/stm32lib/CMSIS/STM32$(MCU_SERIES_UPPER)xx/Source/Templates/system_stm32$(MCU_SERIES)xx.o
+
+include stm32.mk
+
+PLLVALUES = boards/pllvalues.py
+PLLI2SVALUES = boards/plli2svalues.py
+MAKE_PINS = boards/make-pins.py
+BOARD_PINS = $(BOARD_DIR)/pins.csv
+PREFIX_FILE = boards/stm32f4xx_prefix.c
+GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
+GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
+GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
+GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
+
+INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
+FILE2H = $(TOP)/tools/file2h.py
+
+USB_IDS_FILE = mpconfigboard_common.h
+CDCINF_TEMPLATE = pybcdc.inf_template
+GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
+GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
+
+GEN_PLLFREQTABLE_HDR = $(HEADER_BUILD)/pllfreqtable.h
+GEN_PLLI2STABLE_HDR = $(HEADER_BUILD)/plli2stable.h
+GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
+GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
+CMSIS_MCU_HDR = $(STM32LIB_CMSIS_ABS)/Include/$(CMSIS_MCU_LOWER).h
 
 # Select the cross compile prefix
 CROSS_COMPILE ?= arm-none-eabi-
@@ -65,41 +95,13 @@ INC += -I.
 INC += -I$(TOP)
 INC += -I$(BUILD)
 INC += -I$(TOP)/lib/cmsis/inc
-INC += -I$(CMSIS_DIR)/
-INC += -I$(TOP)/$(HAL_DIR)/Inc
+INC += -I$(STM32LIB_CMSIS_ABS)/Include
+INC += -I$(STM32LIB_HAL_ABS)/Inc
 INC += -I$(USBDEV_DIR)/core/inc -I$(USBDEV_DIR)/class/inc
 #INC += -I$(USBHOST_DIR)
 INC += -Ilwip_inc
 
-# Basic Cortex-M flags
-CFLAGS_CORTEX_M = -mthumb
-
-# Select hardware floating-point support
-SUPPORTS_HARDWARE_FP_SINGLE = 0
-SUPPORTS_HARDWARE_FP_DOUBLE = 0
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32F765xx STM32F767xx STM32F769xx STM32H743xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
-CFLAGS_CORTEX_M += -mfpu=fpv5-d16 -mfloat-abi=hard
-SUPPORTS_HARDWARE_FP_SINGLE = 1
-SUPPORTS_HARDWARE_FP_DOUBLE = 1
-else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 l0))
-CFLAGS_CORTEX_M += -msoft-float
-else
-CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
-SUPPORTS_HARDWARE_FP_SINGLE = 1
-endif
-endif
-
-# Options for particular MCU series
-CFLAGS_MCU_f0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0 -mcpu=cortex-m0
-CFLAGS_MCU_f4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_f7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_l0 = $(CFLAGS_CORTEX_M) -mtune=cortex-m0plus -mcpu=cortex-m0plus
-CFLAGS_MCU_l4 = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-CFLAGS_MCU_h7 = $(CFLAGS_CORTEX_M) -mtune=cortex-m7 -mcpu=cortex-m7
-CFLAGS_MCU_wb = $(CFLAGS_CORTEX_M) -mtune=cortex-m4 -mcpu=cortex-m4
-
-CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_MOD) $(CFLAGS_EXTRA)
+CFLAGS += $(INC) -Wall -Wpointer-arith -Werror -Wdouble-promotion -Wfloat-conversion -std=gnu99 -nostdlib $(CFLAGS_EXTRA)
 CFLAGS += -D$(CMSIS_MCU) -DUSE_FULL_LL_DRIVER
 CFLAGS += $(CFLAGS_MCU_$(MCU_SERIES))
 CFLAGS += $(COPT)
@@ -107,6 +109,8 @@ CFLAGS += -I$(BOARD_DIR)
 CFLAGS += -DSTM32_HAL_H='<stm32$(MCU_SERIES)xx_hal.h>'
 CFLAGS += -DMBOOT_VTOR=$(MBOOT_TEXT0_ADDR)
 CFLAGS += -DMICROPY_HW_VTOR=$(TEXT0_ADDR)
+
+AFLAGS += $(filter -mcpu=%,$(CFLAGS_MCU_$(MCU_SERIES)))
 
 # Configure for nan-boxing object model if requested
 ifeq ($(NANBOX),1)
@@ -119,43 +123,54 @@ endif
 # Configure floating point support
 ifeq ($(MICROPY_FLOAT_IMPL),double)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_DOUBLE
-else
-ifeq ($(MICROPY_FLOAT_IMPL),none)
+else ifeq ($(MICROPY_FLOAT_IMPL),none)
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_NONE
 else
 CFLAGS += -DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT
 CFLAGS += -fsingle-precision-constant
 endif
-endif
 
-LDFLAGS = -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Map=$(@:.elf=.map) --cref
-LDFLAGS += --defsym=_estack_reserve=8
+LDFLAGS += -nostdlib -L $(LD_DIR) $(addprefix -T,$(LD_FILES)) -Wl,-Map=$(@:.elf=.map) -Wl,--cref
+LDFLAGS += -Wl,--defsym=_estack_reserve=8
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
 # Remove uncalled code from the final image.
 CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += --gc-sections
+LDFLAGS += -Wl,--gc-sections
+
+ifeq ($(LTO),1)
+CFLAGS += -flto=auto
+# LTO requires passing compiler flags to the linker as it will run the assembler.
+# To avoid risk of missing something relevant, pass all flags except for preprocessor args
+LDFLAGS += $(filter-out -I%,$(filter-out -D%,$(CFLAGS)))
+
+$(BUILD)/stm32_it.o $(BUILD)/pendsv.o: CFLAGS += -fno-lto
+endif
 
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
-COPT = -Og
+COPT ?= -Og
 # Disable text compression in debug builds
 MICROPY_ROM_TEXT_COMPRESSION = 0
 else
-COPT += -Os -DNDEBUG
+ifneq ($(LTO), 1)
+CFLAGS += -g  # always include debug info in the ELF, unless LTO is on
+endif
+COPT ?= -Os -DNDEBUG
 endif
 
 # Flags for optional C++ source code
 CXXFLAGS += $(filter-out -Wmissing-prototypes -Wold-style-definition -std=gnu99,$(CFLAGS))
-CXXFLAGS += $(CXXFLAGS_MOD)
-ifneq ($(SRC_CXX)$(SRC_MOD_CXX),)
+
+# TODO make this common -- shouldn't be using these "private" vars from py.mk
+ifneq ($(SRC_CXX)$(SRC_USERMOD_CXX)$(SRC_USERMOD_LIB_CXX),)
 LIBSTDCPP_FILE_NAME = "$(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)"
 LDFLAGS += -L"$(shell dirname $(LIBSTDCPP_FILE_NAME))"
 endif
 
 # Options for mpy-cross
-MPY_CROSS_FLAGS += -march=armv7m
+MPY_CROSS_FLAGS += -march=$(MPY_CROSS_MCU_ARCH_$(MCU_SERIES))
 
 SHARED_SRC_C += $(addprefix shared/,\
 	libc/string0.c \
@@ -167,109 +182,27 @@ SHARED_SRC_C += $(addprefix shared/,\
 	runtime/interrupt_char.c \
 	runtime/mpirq.c \
 	runtime/pyexec.c \
+	runtime/softtimer.c  \
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	timeutils/timeutils.c \
 	)
 
 ifeq ($(MICROPY_FLOAT_IMPL),double)
-LIBM_SRC_C += $(addprefix lib/libm_dbl/,\
-	__cos.c \
-	__expo2.c \
-	__fpclassify.c \
-	__rem_pio2.c \
-	__rem_pio2_large.c \
-	__signbit.c \
-	__sin.c \
-	__tan.c \
-	acos.c \
-	acosh.c \
-	asin.c \
-	asinh.c \
-	atan.c \
-	atan2.c \
-	atanh.c \
-	ceil.c \
-	cos.c \
-	cosh.c \
-	copysign.c \
-	erf.c \
-	exp.c \
-	expm1.c \
-	floor.c \
-	fmod.c \
-	frexp.c \
-	ldexp.c \
-	lgamma.c \
-	log.c \
-	log10.c \
-	log1p.c \
-	modf.c \
-	nearbyint.c \
-	pow.c \
-	rint.c \
-	round.c \
-	scalbn.c \
-	sin.c \
-	sinh.c \
-	tan.c \
-	tanh.c \
-	tgamma.c \
-	trunc.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_DOUBLE),1)
-LIBM_SRC_C += lib/libm_dbl/thumb_vfp_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm_dbl/sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_DBL_SQRT_SW_C)
 endif
 else
-LIBM_SRC_C += $(addprefix lib/libm/,\
-	math.c \
-	acoshf.c \
-	asinfacosf.c \
-	asinhf.c \
-	atan2f.c \
-	atanf.c \
-	atanhf.c \
-	ef_rem_pio2.c \
-	erf_lgamma.c \
-	fmodf.c \
-	kf_cos.c \
-	kf_rem_pio2.c \
-	kf_sin.c \
-	kf_tan.c \
-	log1pf.c \
-	nearbyintf.c \
-	roundf.c \
-	sf_cos.c \
-	sf_erf.c \
-	sf_frexp.c \
-	sf_ldexp.c \
-	sf_modf.c \
-	sf_sin.c \
-	sf_tan.c \
-	wf_lgamma.c \
-	wf_tgamma.c \
-	)
+LIBM_SRC_C += $(SRC_LIB_LIBM_C)
 ifeq ($(SUPPORTS_HARDWARE_FP_SINGLE),1)
-LIBM_SRC_C += lib/libm/thumb_vfp_sqrtf.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_HW_C)
 else
-LIBM_SRC_C += lib/libm/ef_sqrt.c
+LIBM_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 endif
 endif
-
-LIBM_O = $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
-
-# Too many warnings in libm_dbl, disable for now.
-ifeq ($(MICROPY_FLOAT_IMPL),double)
-$(LIBM_O): CFLAGS := $(filter-out -Wdouble-promotion -Wfloat-conversion, $(CFLAGS))
-endif
-
-EXTMOD_SRC_C += $(addprefix extmod/,\
-	modonewire.c \
-	modnetwork.c \
-	modusocket.c \
-	)
 
 DRIVERS_SRC_C += $(addprefix drivers/,\
 	bus/softspi.c \
@@ -293,7 +226,6 @@ SRC_C += \
 	irq.c \
 	pendsv.c \
 	systick.c  \
-	softtimer.c  \
 	powerctrl.c \
 	powerctrlboot.c \
 	rfcore.c \
@@ -311,27 +243,21 @@ SRC_C += \
 	spi.c \
 	pyb_spi.c \
 	qspi.c \
+	octospi.c \
 	uart.c \
+	ulpi.c \
 	can.c \
 	fdcan.c \
 	pyb_can.c \
 	usb.c \
-	wdt.c \
 	eth.c \
 	gccollect.c \
 	help.c \
-	machine_adc.c \
 	machine_bitstream.c \
 	machine_i2c.c \
-	machine_i2s.c \
 	machine_spi.c \
-	machine_timer.c \
-	machine_uart.c \
-	modmachine.c \
 	modpyb.c \
 	modstm.c \
-	moduos.c \
-	modutime.c \
 	network_lan.c \
 	extint.c \
 	usrsw.c \
@@ -349,34 +275,32 @@ SRC_C += \
 	servo.c \
 	dac.c \
 	adc.c \
+	sdio.c \
+	subghz.c \
 	$(wildcard $(BOARD_DIR)/*.c)
-
-SRC_CXX += \
-	$(SRC_MOD_CXX)
 
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
-
-ifeq ($(MCU_SERIES),f0)
-SRC_O += \
-	resethandler_m0.o \
-	shared/runtime/gchelper_m0.o
-else
-ifeq ($(MCU_SERIES),l0)
+    
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0))
 CSUPEROPT = -Os # save some code space
 SRC_O += \
 	resethandler_m0.o \
-	shared/runtime/gchelper_m0.o
+	shared/runtime/gchelper_thumb1.o
+else ifeq ($(MCU_SERIES),l1)
+CFLAGS += -DUSE_HAL_DRIVER
+SRC_O += \
+	resethandler_m3.o \
+	shared/runtime/gchelper_thumb2.o
 else
 SRC_O += \
 	system_stm32.o \
 	resethandler.o \
-	shared/runtime/gchelper_m3.o
-endif
+	shared/runtime/gchelper_thumb2.o
 endif
 
-HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal.c \
 	hal_adc.c \
 	hal_adc_ex.c \
@@ -386,8 +310,6 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_flash_ex.c \
 	hal_gpio.c \
 	hal_i2c.c \
-	hal_pcd.c \
-	hal_pcd_ex.c \
 	hal_pwr.c \
 	hal_pwr_ex.c \
 	hal_rcc.c \
@@ -398,17 +320,20 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_tim.c \
 	hal_tim_ex.c \
 	hal_uart.c \
+	ll_rcc.c \
 	ll_utils.c \
 	)
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l0 l4 wb))
-HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7 l0 l1 l4 wb))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_pcd.c \
+	hal_pcd_ex.c \
 	ll_usb.c \
 	)
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7 l4))
-HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h5 h7 l4))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_sd.c \
 	ll_sdmmc.c \
 	ll_fmc.c \
@@ -416,40 +341,51 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 h7))
-HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_mmc.c \
 	hal_sdram.c \
-	hal_dma_ex.c \
 	hal_dcmi.c \
 	)
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4))
 # HAL F4-1.16.0 has a bug with missing parentheses in HAL_MMC_Erase.
 # This function is unused so let the error go by as a warning.
-$(BUILD)/$(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno-error=parentheses
+$(BUILD)/$(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_hal_mmc.o: CFLAGS += -Wno-error=parentheses
 endif
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H750xx STM32H7A3xx STM32H7A3xxQ STM32H7B3xx STM32H7B3xxQ))
-    HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
-else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7))
-    HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
-else
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),l4))
-HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/Legacy/stm32$(MCU_SERIES)xx_, hal_can.c)
-$(BUILD)/$(HAL_DIR)/Src/Legacy/stm32$(MCU_SERIES)xx_hal_can.o: CFLAGS += -Wno-error=cpp
-endif
-endif
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4 f7 g0 g4 h5 h7))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_dma_ex.c \
+	)
 endif
 
-ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 l0))
-HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),h5))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
+	hal_icache.c \
+	)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_can.c)
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),g0 g4 h7))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
+else ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),l4))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/Legacy/stm32$(MCU_SERIES)xx_, hal_can.c)
+$(BUILD)/$(STM32LIB_HAL_BASE)/Src/Legacy/stm32$(MCU_SERIES)xx_hal_can.o: CFLAGS += -Wno-error=cpp
+endif
+
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H747xx))
+    HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_, hal_hsem.c)
+endif
+
+ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 g0 l0))
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_i2s.c \
 	)
 endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f4))
-HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
+HAL_SRC_C += $(addprefix $(STM32LIB_HAL_BASE)/Src/stm32$(MCU_SERIES)xx_,\
 	hal_i2s_ex.c \
 	)
 endif
@@ -463,110 +399,37 @@ USBDEV_SRC_C += $(addprefix $(USBDEV_DIR)/,\
 	class/src/usbd_msc_scsi.c \
 	)
 
-ifeq ($(MICROPY_PY_BLUETOOTH),1)
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH=1
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE=1
-endif
-
-ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
-CFLAGS_MOD += -DMICROPY_PY_NETWORK_CYW43=1
-SRC_C += sdio.c
-EXTMOD_SRC_C += extmod/network_cyw43.c
-DRIVERS_SRC_C += drivers/cyw43/cyw43_ctrl.c drivers/cyw43/cyw43_lwip.c
-LIBS += $(TOP)/drivers/cyw43/libcyw43.a
-endif
-
-ifneq ($(MICROPY_PY_WIZNET5K),0)
-WIZNET5K_DIR=drivers/wiznet5k
-INC += -I$(TOP)/$(WIZNET5K_DIR)
-CFLAGS_MOD += -DMICROPY_PY_WIZNET5K=$(MICROPY_PY_WIZNET5K) -D_WIZCHIP_=$(MICROPY_PY_WIZNET5K)
-ifeq ($(MICROPY_PY_LWIP),1)
-# When using MACRAW mode (with lwIP), maximum buffer space must be used for the raw socket
-CFLAGS_MOD += -DWIZCHIP_USE_MAX_BUFFER
-endif
-SRC_MOD += network_wiznet5k.c modnwwiznet5k.c
-SRC_MOD += $(addprefix $(WIZNET5K_DIR)/,\
-	ethernet/w$(MICROPY_PY_WIZNET5K)/w$(MICROPY_PY_WIZNET5K).c \
-	ethernet/wizchip_conf.c \
-	ethernet/socket.c \
-	internet/dns/dns.c \
-	)
-endif
-
-# for CC3000 module
-ifeq ($(MICROPY_PY_CC3K),1)
-CC3000_DIR=drivers/cc3000
-INC += -I$(TOP)/$(CC3000_DIR)/inc
-CFLAGS_MOD += -DMICROPY_PY_CC3K=1
-SRC_MOD += modnwcc3k.c
-SRC_MOD += $(addprefix $(CC3000_DIR)/src/,\
-	cc3000_common.c \
-	evnt_handler.c \
-	hci.c \
-	netapp.c \
-	nvmem.c \
-	security.c \
-	socket.c \
-	wlan.c \
-	ccspi.c \
-	inet_ntop.c \
-	inet_pton.c \
-	patch.c \
-	patch_prog.c \
-	)
-endif
-
 ifeq ($(MICROPY_SSL_MBEDTLS),1)
-CFLAGS_MOD += -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"'
-SRC_MOD += mbedtls/mbedtls_port.c
-# replace mbedtls' error.c by ours
-SRC_MOD := $(filter-out %/mbedtls/library/error.c, $(SRC_MOD))
-LIB_SRC_C += lib/mbedtls_errors/mp_mbedtls_errors.c
+LIB_SRC_C += mbedtls/mbedtls_port.c
 endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
-
 SRC_C += mpbthciport.c
 
 ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-$(error Cannot enable both NimBLE and BTstack at the same time)
-endif
-endif
-
-ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
-GIT_SUBMODULES += lib/mynewt-nimble
-CFLAGS_MOD += -DMICROPY_PY_BLUETOOTH_ENABLE_L2CAP_CHANNELS=1
-include $(TOP)/extmod/nimble/nimble.mk
 SRC_C += mpnimbleport.c
 endif
 
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-GIT_SUBMODULES += lib/btstack
-MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
-include $(TOP)/extmod/btstack/btstack.mk
 SRC_C += mpbtstackport.c
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
 
-ifeq ($(MICROPY_PY_NETWORK_CYW43),1)
-DRIVERS_SRC_C += drivers/cyw43/cywbt.c
-endif
+endif # MICROPY_PY_BLUETOOTH
 
-endif
-
+# SRC_O should be placed first to work around this LTO bug with binutils <2.35:
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=83967
+OBJ += $(addprefix $(BUILD)/, $(SRC_O))
 OBJ += $(PY_O)
 OBJ += $(addprefix $(BUILD)/, $(LIB_SRC_C:.c=.o))
-OBJ += $(LIBM_O)
+OBJ += $(addprefix $(BUILD)/, $(LIBM_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SHARED_SRC_C:.c=.o))
-OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(HAL_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(USBDEV_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
-OBJ += $(addprefix $(BUILD)/, $(SRC_O))
-OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
-OBJ += $(BUILD)/pins_$(BOARD).o
+OBJ += $(GEN_PINS_SRC:.c=.o)
 
 # This file contains performance critical functions so turn up the optimisation
 # level.  It doesn't add much to the code size and improves performance a bit.
@@ -596,17 +459,11 @@ $(TOP)/lib/stm32lib/README.md:
 	$(ECHO) "stm32lib submodule not found, fetching it now..."
 	(cd $(TOP) && git submodule update --init lib/stm32lib)
 
-ifneq ($(FROZEN_MANIFEST),)
-CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
-CFLAGS += -DMICROPY_MODULE_FROZEN_STR
-endif
-
 define RUN_DFU
 	$(ECHO) "Writing $(1) to the board"
 	$(if $(filter $(USE_PYDFU),1),\
 	$(Q)$(PYTHON) $(PYDFU) --vid $(BOOTLOADER_DFU_USB_VID) --pid $(BOOTLOADER_DFU_USB_PID) -u $(1),
-	$(Q)$(DFU_UTIL) -a 0 -d $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) -D $(1))
+	$(Q)$(DFU_UTIL) -a 0 -d $(BOOTLOADER_DFU_USB_VID):$(BOOTLOADER_DFU_USB_PID) -D $(1) -s :leave)
 endef
 
 define RUN_STLINK
@@ -621,7 +478,7 @@ endef
 
 define GENERATE_ELF
 	$(ECHO) "LINK $(1)"
-	$(Q)$(LD) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
+	$(Q)$(CC) $(LDFLAGS) -o $(1) $(2) $(LDFLAGS_MOD) $(LIBS)
 	$(Q)$(SIZE) $(1)
 	$(if $(filter-out $(TEXT0_ADDR),0x08000000), \
 		$(ECHO) "INFO: this build requires mboot to be installed first")
@@ -717,32 +574,10 @@ $(BUILD)/firmware.hex: $(BUILD)/firmware.elf
 $(BUILD)/firmware.elf: $(OBJ)
 	$(call GENERATE_ELF,$@,$^)
 
-PLLVALUES = boards/pllvalues.py
-MAKE_PINS = boards/make-pins.py
-BOARD_PINS = $(BOARD_DIR)/pins.csv
-PREFIX_FILE = boards/stm32f4xx_prefix.c
-GEN_PINS_SRC = $(BUILD)/pins_$(BOARD).c
-GEN_PINS_HDR = $(HEADER_BUILD)/pins.h
-GEN_PINS_QSTR = $(BUILD)/pins_qstr.h
-GEN_PINS_AF_CONST = $(HEADER_BUILD)/pins_af_const.h
-GEN_PINS_AF_DEFS = $(HEADER_BUILD)/pins_af_defs.h
-GEN_PINS_AF_PY = $(BUILD)/pins_af.py
-
-INSERT_USB_IDS = $(TOP)/tools/insert-usb-ids.py
-FILE2H = $(TOP)/tools/file2h.py
-
-USB_IDS_FILE = mpconfigboard_common.h
-CDCINF_TEMPLATE = pybcdc.inf_template
-GEN_CDCINF_FILE = $(HEADER_BUILD)/pybcdc.inf
-GEN_CDCINF_HEADER = $(HEADER_BUILD)/pybcdc_inf.h
-
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SRC_MOD) $(SHARED_SRC_C) $(EXTMOD_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in
-# SRC_QSTR
-SRC_QSTR_AUTO_DEPS += $(GEN_CDCINF_HEADER)
+SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
+# Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know
@@ -754,38 +589,32 @@ $(OBJ): | $(GEN_PINS_HDR)
 $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
 
 # main.c can't be even preprocessed without $(GEN_CDCINF_HEADER)
+# As main.c is in SRC_QSTR this will also ensure that GEN_CDCINF_HEADER
+# will be run before QSTR extraction.
 main.c: $(GEN_CDCINF_HEADER)
 
 # Use a pattern rule here so that make will only call make-pins.py once to make
 # both pins_$(BOARD).c and pins.h
-$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_BUILD)/%_af_defs.h $(BUILD)/%_qstr.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
+$(BUILD)/%_$(BOARD).c $(HEADER_BUILD)/%.h $(HEADER_BUILD)/%_af_const.h $(HEADER_BUILD)/%_af_defs.h: $(BOARD_DIR)/%.csv $(MAKE_PINS) $(AF_FILE) $(PREFIX_FILE) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(Q)$(PYTHON) $(MAKE_PINS) --board $(BOARD_PINS) --af $(AF_FILE) \
-		--prefix $(PREFIX_FILE) --hdr $(GEN_PINS_HDR) --hdr-obj-decls \
-		--qstr $(GEN_PINS_QSTR) --af-const $(GEN_PINS_AF_CONST) \
-		--af-defs $(GEN_PINS_AF_DEFS) --af-defs-cmp-strings \
-		--af-py $(GEN_PINS_AF_PY) > $(GEN_PINS_SRC)
+	$(Q)$(PYTHON) $(MAKE_PINS) --board-csv $(BOARD_PINS) --af-csv $(AF_FILE) --prefix $(PREFIX_FILE) \
+	    --output-source $(GEN_PINS_SRC) --output-header $(GEN_PINS_HDR) \
+		--output-af-const $(GEN_PINS_AF_CONST) --output-af-defs $(GEN_PINS_AF_DEFS)
 
-$(BUILD)/pins_$(BOARD).o: $(BUILD)/pins_$(BOARD).c
-	$(call compile_c)
-
-GEN_PLLFREQTABLE_HDR = $(HEADER_BUILD)/pllfreqtable.h
-GEN_STMCONST_HDR = $(HEADER_BUILD)/modstm_const.h
-GEN_STMCONST_QSTR = $(BUILD)/modstm_qstr.h
-GEN_STMCONST_MPZ = $(HEADER_BUILD)/modstm_mpz.h
-CMSIS_MCU_HDR = $(CMSIS_DIR)/$(CMSIS_MCU_LOWER).h
-
-modmachine.c: $(GEN_PLLFREQTABLE_HDR)
+powerctrl.c: $(GEN_PLLFREQTABLE_HDR)
 $(GEN_PLLFREQTABLE_HDR): $(PLLVALUES) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(Q)$(PYTHON) $(PLLVALUES) -c -m $(CMSIS_MCU_LOWER) file:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h > $@
 
+$(TOP)/extmod/machine_i2s.c: $(GEN_PLLI2STABLE_HDR)
+$(GEN_PLLI2STABLE_HDR): $(PLLI2SVALUES) | $(HEADER_BUILD)
+	$(ECHO) "GEN $@"
+	$(Q)$(PYTHON) $(PLLI2SVALUES) -c -m $(CMSIS_MCU_LOWER) hse:$(BOARD_DIR)/stm32$(MCU_SERIES)xx_hal_conf.h pllm:$(BOARD_DIR)/mpconfigboard.h > $@
+
 $(BUILD)/modstm.o: $(GEN_STMCONST_HDR)
-# Use a pattern rule here so that make will only call make-stmconst.py once to
-# make both modstm_const.h and modstm_qstr.h
-$(HEADER_BUILD)/%_const.h $(BUILD)/%_qstr.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
+$(HEADER_BUILD)/modstm_const.h: $(CMSIS_MCU_HDR) make-stmconst.py | $(HEADER_BUILD)
 	$(ECHO) "GEN stmconst $@"
-	$(Q)$(PYTHON) make-stmconst.py --qstr $(GEN_STMCONST_QSTR) --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
+	$(Q)$(PYTHON) make-stmconst.py --mpz $(GEN_STMCONST_MPZ) $(CMSIS_MCU_HDR) > $(GEN_STMCONST_HDR)
 
 $(GEN_CDCINF_HEADER): $(GEN_CDCINF_FILE) $(FILE2H) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"

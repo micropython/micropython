@@ -8,6 +8,8 @@
 #   - setting an irq handler for a StateMachine
 #   - instantiating 2x StateMachine's with the same program and different pins
 
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
+
 import time
 from machine import Pin
 import rp2

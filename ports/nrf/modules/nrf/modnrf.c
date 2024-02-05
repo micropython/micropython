@@ -95,4 +95,6 @@ const mp_obj_module_t nrf_module = {
     .globals = (mp_obj_dict_t *)&nrf_module_globals,
 };
 
+MP_REGISTER_MODULE(MP_QSTR_nrf, nrf_module);
+
 #endif // MICROPY_PY_NRF
