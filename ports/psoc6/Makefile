@@ -105,7 +105,7 @@ HEADER_BUILD := $(BUILD)/genhdr
 GEN_PINS_HDR := $(BUILD)/genhdr/pins.h
 GEN_PINS_QSTR := $(BUILD)/pins_qstr.h
 BOARD_PINS := pins.csv 
-BOARD_AF_PINS := pins_af.csv
+# BOARD_AF_PINS := pins_af.csv
 
 # Rule to generate pins.csv
 # $(BUILD)/pins_$(BOARD).c: 
@@ -113,11 +113,11 @@ BOARD_AF_PINS := pins_af.csv
 
 make_pins_csv: 
 	@echo "Generating $@"
-	$(PYTHON) boards/make-pins-csv.py --gen-pin-for $(PIN_PACKAGE_FILE) --save-pins-csv-at $(BOARD_PINS) --save-pins-af-csv-at $(BOARD_AF_PINS)
+	$(PYTHON) boards/make-pins-csv.py --gen-pin-for $(PIN_PACKAGE_FILE) --save-pins-csv-at $(BOARD_PINS)
 	$(MAKE) make_pins
 
 make_pins: $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR)
-$(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR): $(BOARD_PINS) $(BOARD_AF_PINS) | $(HEADER_BUILD)
+$(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR): $(BOARD_PINS) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
 	$(PYTHON) boards/make-pins.py --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
 
@@ -228,7 +228,7 @@ include mtb-libs/makefile_mtb.mk
 
 MPY_CROSS_FLAGS += -march=armv7m
 
-build: mtb_get_build_flags make_pins_csv $(MPY_PATH_TO_MAIN_MAKEFILE) $(BUILD)/firmware.hex
+build: mtb_get_build_flags make_pins_csv $(BUILD)/firmware.hex
 
 all: build
 
