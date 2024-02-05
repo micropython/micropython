@@ -218,3 +218,4 @@ print("master readinto() and transmitted from slave: ", master_read_data == b"\x
 
 # 7. Deinit runs without error
 i2c_master.deinit()
+i2c_slave.deinit()
