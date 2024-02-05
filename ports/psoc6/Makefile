@@ -13,19 +13,6 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
   $(error Invalid BOARD specified)
 endif
 
-# Supporting variables for make-pins.py script execution
-MAKE_PINS_CSV = ./boards/make-pins-csv.py
-MAKE_PINS = ./boards/make-pins.py
-
-#ToDo: Post adding af functionality, refactor to minimize dependent variables in py script if possible
-GEN_PINS_SRC := ./build/pins_$(BOARD).c
-HEADER_BUILD := ./build/genhdr
-GEN_PINS_HDR := ./build/genhdr/pins.h
-GEN_PINS_QSTR := ./build/pins_qstr.h
-BOARD_PINS := ./pins.csv 
-BOARD_AF_PINS := ./pins_af.csv
-PREFIX_FILE := ./psoc6_prefix.c
-
 # get path to this file
 MPY_PATH_TO_MAIN_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
 MPY_DIR_OF_MAIN_MAKEFILE  := $(dir $(MPY_PATH_TO_MAIN_MAKEFILE))
@@ -60,10 +47,10 @@ include $(TOP)/extmod/extmod.mk
 # get path to this file
 MPY_MAIN_BUILD_DIR := $(dir $(MPY_DIR_OF_MAIN_MAKEFILE))$(BUILD)
 
-# $(info MPY_PATH_TO_MAIN_MAKEFILE        : $(MPY_PATH_TO_MAIN_MAKEFILE))
-# $(info MPY_DIR_OF_MAIN_MAKEFILE         : $(MPY_DIR_OF_MAIN_MAKEFILE))
-# $(info MPY_MAIN_BUILD_DIR               : $(MPY_MAIN_BUILD_DIR))
-# $(info CONFIG                           : $(CONFIG))
+$(info MPY_PATH_TO_MAIN_MAKEFILE        : $(MPY_PATH_TO_MAIN_MAKEFILE))
+$(info MPY_DIR_OF_MAIN_MAKEFILE         : $(MPY_DIR_OF_MAIN_MAKEFILE))
+$(info MPY_MAIN_BUILD_DIR               : $(MPY_MAIN_BUILD_DIR))
+$(info CONFIG                           : $(CONFIG))
 
 
 INC += -I.
@@ -107,21 +94,36 @@ endif
 
 $(info Compiling in $(CONFIG) mode !)
 
+
+# Supporting variables for make-pins.py script execution
+MAKE_PINS_CSV = boards/make-pins-csv.py
+MAKE_PINS = boards/make-pins.py
+
+#ToDo: Post adding af functionality, refactor to minimize dependent variables in py script if possible
+GEN_PINS_SRC := $(BUILD)/pins_$(BOARD).c
+HEADER_BUILD := $(BUILD)/genhdr
+GEN_PINS_HDR := $(BUILD)/genhdr/pins.h
+GEN_PINS_QSTR := $(BUILD)/pins_qstr.h
+BOARD_PINS := pins.csv 
+BOARD_AF_PINS := pins_af.csv
+
 # Rule to generate pins.csv
-make_pins_csv:
+# $(BUILD)/pins_$(BOARD).c: 
+# 	$(MAKE) make_pins_csv
+
+make_pins_csv: 
 	@echo "Generating $@"
-	$(PYTHON) $(MAKE_PINS_CSV) --gen-pin-for $(PIN_PACKAGE_FILE) --save-pins-csv-at $(BOARD_PINS) --save-pins-af-csv-at $(BOARD_AF_PINS)
+	$(PYTHON) boards/make-pins-csv.py --gen-pin-for $(PIN_PACKAGE_FILE) --save-pins-csv-at $(BOARD_PINS) --save-pins-af-csv-at $(BOARD_AF_PINS)
 	$(MAKE) make_pins
 
 make_pins: $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR)
 $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR): $(BOARD_PINS) $(MAKE_PINS) $(BOARD_AF_PINS) | $(HEADER_BUILD)
 	$(ECHO) "GEN $@"
-	$(PYTHON) $(MAKE_PINS) --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
+	$(PYTHON) boards/make-pins.py --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
 
 clean_csv:
 	rm -rf $(BOARD_PINS) $(BOARD_AF_PINS)
 
-$(OBJ): | $(GEN_PINS_HDR)
 
 
 # Flags for optional C++ source code
@@ -186,7 +188,8 @@ endif
 SRC_C = help.c \
 		main.c \
 		mphalport.c \
-		frozen_content.c 
+		frozen_content.c \
+		$(BUILD)/pins_$(BOARD).c
 
 SRC_ASM += shared/runtime/gchelper_thumb1.s
 
@@ -199,7 +202,7 @@ OBJ += $(addprefix $(BUILD)/, $(MOD_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o)) 
 OBJ += $(addprefix $(BUILD)/, $(SRC_ASM:.s=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_CXX:.cpp=.o))
-OBJ += $(GEN_PINS_SRC:.c=.o)
+
 # switch for debug mode, also added to mpconfigport.h
 # TODO: keep the more suitable one, delete the other
 MP_LOGGER_DEBUG ?= 0
