@@ -635,7 +635,11 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
         }
     } else {
         // send and receive
-        if (len == 1 || query_irq() == IRQ_STATE_DISABLED) {
+        if (len == 1 || query_irq() == IRQ_STATE_DISABLED
+            #if defined(STM32F7)
+            || src == dest
+            #endif
+            ) {
             status = HAL_SPI_TransmitReceive(self->spi, (uint8_t *)src, dest, len, timeout);
         } else {
             DMA_HandleTypeDef tx_dma, rx_dma;
