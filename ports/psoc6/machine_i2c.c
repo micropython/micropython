@@ -228,6 +228,31 @@ STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
     }
 }
 
+STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+    .deinit = machine_i2c_deinit,
+    .transfer_single = machine_i2c_transfer,
+    .transfer = mp_machine_i2c_transfer_adaptor
+};
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    machine_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, machine_i2c_master_make_new,
+    print, machine_i2c_print,
+    protocol, &machine_i2c_p,
+    locals_dict, &mp_machine_i2c_locals_dict
+    );
+
+#if MICROPY_PY_MACHINE_I2C_SLAVE
+
+STATIC mp_obj_t machine_i2c_slave_deinit(mp_obj_t self_in) {
+    mp_obj_base_t *self = MP_OBJ_TO_PTR(self_in);
+    machine_i2c_deinit(self);
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_deinit_obj, machine_i2c_slave_deinit);
+
 STATIC mp_obj_t machine_i2c_slave_configure_receive_buffer(mp_obj_t self_in, mp_obj_t buf_in) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
@@ -285,30 +310,13 @@ STATIC mp_obj_t machine_i2c_slave_irq_disable(mp_obj_t self_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_irq_disable_obj, machine_i2c_slave_irq_disable);
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
-    .deinit = machine_i2c_deinit,
-    .transfer_single = machine_i2c_transfer,
-    .transfer = mp_machine_i2c_transfer_adaptor
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_i2c_type,
-    MP_QSTR_I2C,
-    MP_TYPE_FLAG_NONE,
-    make_new, machine_i2c_master_make_new,
-    print, machine_i2c_print,
-    protocol, &machine_i2c_p,
-    locals_dict, &mp_machine_i2c_locals_dict
-    );
-
-#if MICROPY_PY_MACHINE_I2C_SLAVE
-
 STATIC const mp_rom_map_elem_t machine_i2c_slave_locals_dict_table[] = {
     // Functions
     { MP_ROM_QSTR(MP_QSTR_conf_receive_buffer),         MP_ROM_PTR(&machine_i2c_slave_conf_rx_buffer_obj) },
     { MP_ROM_QSTR(MP_QSTR_conf_transmit_buffer),        MP_ROM_PTR(&machine_i2c_slave_conf_tx_buffer_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq),                         MP_ROM_PTR(&machine_i2c_slave_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq_disable),                 MP_ROM_PTR(&machine_i2c_slave_irq_disable_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),                      MP_ROM_PTR(&machine_i2c_slave_deinit_obj) },
 
     // Const
     { MP_ROM_QSTR(MP_QSTR_RD_EVENT),                     MP_ROM_INT(CYHAL_I2C_SLAVE_READ_EVENT) },
