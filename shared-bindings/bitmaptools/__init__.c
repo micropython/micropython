@@ -45,20 +45,11 @@
 
 // This assigns to [0] and [2] because the order is x1, y1, x2, y2
 STATIC void bitmaptools_validate_coord_range(int16_t out[3], const mp_arg_val_t in[3], int lim, const qstr what[2]) {
-    if (lim - 1 > 0) {
-        out[0] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[0].u_obj, what[0]), 0, lim - 1, what[0]);
-    } else {
-        out[0] = mp_arg_validate_type_int(in[0].u_obj, what[0]);
-    }
-
+    out[0] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[0].u_obj, what[0]), 0, lim, what[0]);
     if (in[2].u_obj == mp_const_none) {
         out[2] = lim;
     } else {
-        if (lim > out[0] + 1) {
-            out[2] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[2].u_obj, what[1]), out[0] + 1, lim, what[1]);
-        } else {
-            out[2] = mp_arg_validate_type_int(in[2].u_obj, what[1]);
-        }
+        out[2] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[2].u_obj, what[1]), out[0], lim, what[1]);
     }
 }
 
