@@ -213,19 +213,22 @@ initialized and configured to work in master mode. The maximum supported frequen
 ::
     
     from machine import I2C
-    i2c = I2C(0, scl='P6_0', sda='P6_1',freq=400000)
+    i2c = I2C(scl='P6_0', sda='P6_1', freq=400000)
 
-Here, ``id=0`` should be passed mandatorily which selects the ``master`` mode operation. The ``scl`` and ``sda`` pins are also required.
+The ``scl`` and ``sda`` pins are the only mandatory arguments. The frequency is optional, and if not passed will be set to 400KHz by default.
 
-::
-
-    from machine import I2C
-    i2c = I2C(0, scl='P6_0', sda='P6_1')  #I2C is initialized & configured with default frequency
+.. note::
+    The ``timeout`` option is currently not implemented in this port.
 
 ::
 
     from machine import I2C
-    i2c = I2C(0, scl='P9_0', sda='P9_1', freq=400000)  #I2C is initialised & configured with given scl,sda pins & frequency
+    i2c = I2C(scl='P6_0', sda='P6_1')  #I2C is initialized & configured with default frequency
+
+::
+
+    from machine import I2C
+    i2c = I2C(scl='P9_0', sda='P9_1', freq=400000)  #I2C is initialised & configured with given scl, sda pins & frequency
 
 Methods
 ^^^^^^^
@@ -234,6 +237,91 @@ All the methods(functions) given in :ref:`machine.I2C <machine.I2C>` class have 
 .. method:: I2C.init()
 
 All the initialization & configurations are handled by the constructor. Hence ``init()`` is not required.
+
+Hardware I2C bus slave
+----------------------
+
+The PSoC6™ port offers an additional class to implement an I2C slave device. An I2C master node connected to the slave can exchange data over I2C for the configured slave address and frequency.
+
+.. warning:: 
+    This is not part of the core MicroPython libraries. Therefore, not mapping any existing machine class API and neither supported by other ports.
+
+.. note:: 
+    | Part of the functionality of the I2C slave is based on hardware interrupts and callbacks. 
+    | As explained in this :ref:`section <isr_rules>`, writing interrupts handlers in MicroPython is subject to multiple considerations depending on the actual hardware capabilities and limitations, the specific port implementation, and the overall application design and implementation.
+    | These must kept in mind when implementing accurate timing and event synchronization between master and slave. 
+
+The constructor
+^^^^^^^^^^^^^^^
+
+.. class:: I2CSlave(scl, sda, addr, freq)
+
+    Constructs and returns a new I2C slave object using the following parameters.
+   
+    Required arguments: 
+      - *scl* should be a pin name supporting the SCL functionality.
+      - *sda* should be a pin name supporting the SDA functionality.
+      - *addr* should be an 8 bits unsigned integer. 
+
+    Optional arguments:
+      - *freq* should be an integer which sets the maximum frequency
+        for SCL. If not passed, by default is set to 400KHz.
+
+    Example:
+        ::
+            
+            from machine import I2CSlave
+            
+            i2c_slave = I2CSlave(scl="P6_4", sda="P6_5", addr=0x45)
+
+Methods
+^^^^^^^
+
+.. method:: I2CSlave.deinit()
+
+    Deinitialises the I2C slave.
+
+.. method:: I2CSlave.conf_receive_buffer(buf)
+
+    Configures the reception *buf* on an I2C slave. This is the buffer to which the master writes data to. 
+    The user needs to setup a new buffer every time the buffer has been used up.
+
+.. method:: I2CSlave.conf_transmit_buffer(buf)
+
+    Configures the transmission *buf* on an I2C slave. This is the buffer from which the master reads data from.
+    The user needs to setup a new buffer every time the buffer has been used up.
+
+.. method:: I2CSlave.irq(callback, events, priority)
+
+    Enables interrupts and the function handlers to be called upon different I2C bus events.
+
+    Required arguments: 
+      - *callback* should be a function handler that will be executed upon an interrupt event. The callback takes one argument which is the event causing the interrupt.
+      - *events* is the I2C bus events that will be triggering the interrupt. Multiple ones can be configured by ORing the following constants:
+
+        .. data:: I2CSlave.RD_EVENT
+                I2CSlave.WR_EVENT
+                I2CSlave.RD_BUF_IN_FIFO_EVENT
+                I2CSlave.RD_BUF_EMPTY_EVENT
+                I2CSlave.RD_CMPLT_EVENT
+                I2CSlave.WR_CMPLT_EVENT
+                I2CSlave.ERR_EVENT
+
+    Optional arguments:
+      - *priority* should be an unsigned integer with the priority of the interrupt.
+
+    Example:
+        ::
+
+            def cback(event):
+                if event == (event & I2CSlave.WR_EVENT):
+                    print("i2c wr event")
+
+            i2c_slave.irq(callback=cback, events=(I2CSlave.WR_EVENT | I2CSlave.WR_CMPLT_EVENT), priority=1)
+
+.. method:: I2CSlave.irq_disable()
+
+    Disables the I2C slave interrupts.
 
 
 Real time clock (RTC)
