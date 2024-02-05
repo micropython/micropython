@@ -45,7 +45,7 @@ include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
 
 # get path to this file
-# MPY_MAIN_BUILD_DIR := $(dir $(MPY_DIR_OF_MAIN_MAKEFILE))$(BUILD)
+MPY_MAIN_BUILD_DIR := $(dir $(MPY_DIR_OF_MAIN_MAKEFILE))$(BUILD)
 
 $(info MPY_PATH_TO_MAIN_MAKEFILE        : $(MPY_PATH_TO_MAIN_MAKEFILE))
 $(info MPY_DIR_OF_MAIN_MAKEFILE         : $(MPY_DIR_OF_MAIN_MAKEFILE))
@@ -94,35 +94,22 @@ endif
 
 $(info Compiling in $(CONFIG) mode !)
 
-
-# Supporting variables for make-pins.py script execution
-# MAKE_PINS_CSV = boards/make-pins-csv.py
-# MAKE_PINS = boards/make-pins.py
-
 #ToDo: Post adding af functionality, refactor to minimize dependent variables in py script if possible
 GEN_PINS_SRC := $(BUILD)/pins_$(BOARD).c
 HEADER_BUILD := $(BUILD)/genhdr
 GEN_PINS_HDR := $(BUILD)/genhdr/pins.h
 GEN_PINS_QSTR := $(BUILD)/pins_qstr.h
 BOARD_PINS := pins.csv 
-# BOARD_AF_PINS := pins_af.csv
+BOARD_AF_PINS := pins_af.csv
 
-# Rule to generate pins.csv
-# $(BUILD)/pins_$(BOARD).c: 
-# 	$(MAKE) make_pins_csv
+GENERATED_PINS = $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR)
 
-make_pins_csv: 
+$(GENERATED_PINS): 
 	@echo "Generating $@"
-	$(PYTHON) boards/make-pins-csv.py --gen-pin-for $(PIN_PACKAGE_FILE) --save-pins-csv-at $(BOARD_PINS)
-	$(MAKE) make_pins
-
-make_pins: $(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR)
-$(GEN_PINS_SRC) $(GEN_PINS_HDR) $(GEN_PINS_QSTR): $(BOARD_PINS) | $(HEADER_BUILD)
-	$(ECHO) "GEN $@"
+	$(PYTHON) boards/make-pins-csv.py --gen-pin-for $(PIN_PACKAGE_FILE) --save-pins-csv-at $(BOARD_PINS) --save-pins-af-csv-at $(BOARD_AF_PINS)
+	$(MKDIR) -p $(BUILD)/genhdr
 	$(PYTHON) boards/make-pins.py --hdr $(GEN_PINS_HDR) --qstr $(GEN_PINS_QSTR) > $(GEN_PINS_SRC)
-
-# clean_csv:
-# 	rm -rf $(BOARD_PINS) $(BOARD_AF_PINS)
+	rm -rf $(BOARD_PINS) $(BOARD_AF_PINS)
 
 
 # Flags for optional C++ source code
@@ -228,7 +215,7 @@ include mtb-libs/makefile_mtb.mk
 
 MPY_CROSS_FLAGS += -march=armv7m
 
-build: mtb_get_build_flags make_pins_csv $(BUILD)/firmware.hex
+build: mtb_get_build_flags $(GENERATED_PINS) $(BUILD)/firmware.hex
 
 all: build
 
@@ -319,7 +306,7 @@ help:
 	$(info - mtb_set_bsp             Set the board as active in the ModusToolbox project. ) 
 
 
-.PHONY: build test test_multi program_multi help make_pins_csv make_pins
+.PHONY: build test test_multi program_multi help
 
 # include py core make definitions
 include $(TOP)/py/mkrules.mk
