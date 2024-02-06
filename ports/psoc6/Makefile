@@ -13,10 +13,6 @@ ifeq ($(wildcard $(BOARD_DIR)/.),)
   $(error Invalid BOARD specified)
 endif
 
-# get path to this file
-MPY_PATH_TO_MAIN_MAKEFILE := $(abspath $(lastword $(MAKEFILE_LIST)))
-MPY_DIR_OF_MAIN_MAKEFILE  := $(dir $(MPY_PATH_TO_MAIN_MAKEFILE))
-
 # Files that are generated and needed before the QSTR build.
 QSTR_GENERATED_HEADERS = build/pins_qstr.h
 # qstr definitions (must come before including py.mk)
@@ -43,14 +39,6 @@ include mpconfigport.mk
 include $(BOARD_DIR)/mpconfigboard.mk
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
-
-# get path to this file
-MPY_MAIN_BUILD_DIR := $(dir $(MPY_DIR_OF_MAIN_MAKEFILE))$(BUILD)
-
-$(info MPY_PATH_TO_MAIN_MAKEFILE        : $(MPY_PATH_TO_MAIN_MAKEFILE))
-$(info MPY_DIR_OF_MAIN_MAKEFILE         : $(MPY_DIR_OF_MAIN_MAKEFILE))
-$(info MPY_MAIN_BUILD_DIR               : $(MPY_MAIN_BUILD_DIR))
-$(info CONFIG                           : $(CONFIG))
 
 
 INC += -I.
