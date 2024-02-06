@@ -492,7 +492,12 @@ grep -i 'FAIL ' ${resultsFile} > ${failResultsFile}
 
 echo "generating pass, skip and fail files done."
 
+if [ -n "$failResultsFile" ]; then
+    exit 1
+fi
 
 echo
 echo "executing $0 $* done."
+
+
 
