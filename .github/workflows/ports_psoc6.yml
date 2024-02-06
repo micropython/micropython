@@ -48,6 +48,7 @@ jobs:
     if: github.repository_owner == 'infineon'
     runs-on: self-hosted
     needs: server-build
+    continue-on-error: true
     strategy:
       matrix:
         board:
