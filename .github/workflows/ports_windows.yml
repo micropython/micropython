@@ -50,7 +50,7 @@ jobs:
         choco install visualstudio2017buildtools
         choco install visualstudio2017-workload-vctools
         choco install windows-sdk-8.1
-    - uses: microsoft/setup-msbuild@v1
+    - uses: microsoft/setup-msbuild@v2
       with:
         vs-version: ${{ matrix.vs_version }}
     - uses: actions/setup-python@v4
