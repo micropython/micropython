@@ -1,13 +1,27 @@
-# get active board from mtb-lib makefile
-# mtb-lib makefile set TARGET board by using
-# "mtb_set_bsp" target or targets depending on it
-# as "mtb_init".
+BOARD ?=
+
+# Check if the ModusToolbox setup has been initialized
+# If that is the case, get active board
 MTB_LIB_DIR = mtb-libs
-MTB_LIB_MAKEFILE = $(MTB_LIB_DIR)/Makefile
-BOARD ?= $(shell egrep '^ *TARGET' $(MTB_LIB_MAKEFILE) | sed 's/^.*= *//g' | sed 's/APP_//')
+MTB_LIBS_APP_INFO = $(MTB_LIB_DIR)/build/get_app_info.txt
+ifneq ($(wildcard $(MTB_LIBS_APP_INFO)),)
+	ACTIVE_BOARD = $(shell egrep '^ *MTB_TARGET' $(MTB_LIBS_APP_INFO) | sed 's/^.*= *//g' | sed 's/APP_//')
+endif
+
+# Get active board from mtb-lib previous runs
+# The board is set only after make mtb_init 
+# has been run. 
+ifeq ($(BOARD),)
+    ifeq ($(ACTIVE_BOARD),)
+        $(error ModusToolbox not initialized. Run "make mtb_init BOARD=<target-board>" to configure the environment. )
+    else
+        BOARD = $(ACTIVE_BOARD)
+    endif
+endif
+
 BOARD_DIR  = boards/$(BOARD)
 
-$(info Active PSoC6 board        : $(BOARD))
+$(info PSoC6 board        : $(BOARD))
 
 ifeq ($(wildcard $(BOARD_DIR)/.),)
   $(error Invalid BOARD specified)
@@ -78,7 +92,6 @@ else
   MPY_MTB_CONFIG  = Release
   MICROPY_ROM_TEXT_COMPRESSION ?= 1
 endif
-
 
 $(info Compiling in $(CONFIG) mode !)
 
@@ -163,7 +176,7 @@ SRC_C = help.c \
 		main.c \
 		mphalport.c \
 		frozen_content.c \
-		$(BUILD)/pins_$(BOARD).c
+		pins_$(BOARD).c
 
 SRC_ASM += shared/runtime/gchelper_thumb1.s
 

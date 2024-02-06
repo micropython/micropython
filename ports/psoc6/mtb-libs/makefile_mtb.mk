@@ -1,18 +1,17 @@
 # get variable definitions from main makefile
 MTB_LIBS_DIR       = mtb-libs
 MTB_MAIN_MAKEFILE := $(MTB_LIBS_DIR)/Makefile
-MTB_TARGET        := $(shell egrep '^ *TARGET' $(MTB_MAIN_MAKEFILE) | sed 's/^.*= *//g')
 MTB_CONFIG        ?= $(shell egrep '^ *CONFIG' $(MTB_MAIN_MAKEFILE) | sed 's/^.*= *//g')
 
 MTB_LIBS_BUILD_DIR       := $(MTB_LIBS_DIR)/$(BUILD)
-MTB_LIBS_BOARD_BUILD_DIR := $(MTB_LIBS_BUILD_DIR)/$(MTB_TARGET)/$(MPY_MTB_CONFIG)
+MTB_LIBS_BOARD_BUILD_DIR := $(MTB_LIBS_BUILD_DIR)/APP_$(BOARD)/$(MPY_MTB_CONFIG)
 
-MPY_MTB_LIB_NAME          = $(file < $(MTB_LIBS_BOARD_BUILD_DIR)/artifact.rsp)
+MTB_STATIC_LIB_NAME          = $(file < $(MTB_LIBS_BOARD_BUILD_DIR)/artifact.rsp)
 
 $(info MTB_MAIN_MAKEFILE                : $(MTB_MAIN_MAKEFILE))
-$(info MTB_TARGET                       : $(MTB_TARGET))
+$(info MTB_TARGET                       : APP_$(BOARD))
 $(info MTB_CONFIG                       : $(MTB_CONFIG))
-$(info MTB_LIB_NAME                     : $(MPY_MTB_LIB_NAME))
+$(info MTB_LIB_NAME                     : $(MTB_STATIC_LIB_NAME))
 
 $(info MTB_LIBS_BUILD_DIR               : $(MTB_LIBS_BUILD_DIR))
 $(info MTB_LIBS_BOARD_BUILD_DIR         : $(MTB_LIBS_BOARD_BUILD_DIR))
@@ -77,7 +76,7 @@ mtb_deinit: clean
 
 # Some of the configuration variables are passed to the ModusToolbox 
 # Makefile to include/exclude certain middleware libraries and components
-MPY_MTB_MAKE_VARS = MICROPY_PY_NETWORK=$(MICROPY_PY_NETWORK) MICROPY_PY_SSL=$(MICROPY_PY_SSL)
+MPY_MTB_MAKE_VARS = MICROPY_PY_NETWORK=$(MICROPY_PY_NETWORK) MICROPY_PY_SSL=$(MICROPY_PY_SSL) BOARD=$(BOARD)
 
 # build MTB project
 mtb_build:
@@ -96,7 +95,7 @@ mtb_get_build_flags: mtb_build
 	$(eval INC += $(subst -I,-I$(MTB_LIBS_DIR)/,$(MPY_MTB_INCLUDE_DIRS)))
 	$(eval INC += -I$(BOARD_DIR))
 	$(eval MPY_MTB_LIBRARIES = $(file < $(MTB_LIBS_BOARD_BUILD_DIR)/liblist.rsp))
-	$(eval LIBS += $(MTB_LIBS_BOARD_BUILD_DIR)/$(MPY_MTB_LIB_NAME))
+	$(eval LIBS += $(MTB_LIBS_BOARD_BUILD_DIR)/$(MTB_STATIC_LIB_NAME))
 	$(eval CFLAGS += $(shell $(PYTHON) $(MTB_LIBS_DIR)/mtb_build_info.py ccxxflags $(MTB_LIBS_BOARD_BUILD_DIR)/.cycompiler ))
 	$(eval CXXFLAGS += $(CFLAGS))
 	$(eval LDFLAGS += $(shell $(PYTHON) $(MTB_LIBS_DIR)/mtb_build_info.py ldflags $(MTB_LIBS_BOARD_BUILD_DIR)/.cylinker $(MTB_LIBS_DIR)))
@@ -123,7 +122,7 @@ attached_devs:
 	$(info List of attached targets : $(ATTACHED_TARGET_LIST))
 
 ifndef EXT_HEX_FILE
-HEX_FILE = $(MPY_DIR_OF_MAIN_MAKEFILE)/build/firmware.hex
+HEX_FILE = $(BUILD)/firmware.hex
 PROG_DEPS=build
 else
 HEX_FILE = $(EXT_HEX_FILE)

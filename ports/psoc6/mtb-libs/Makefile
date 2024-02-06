@@ -42,12 +42,7 @@ MTB_TYPE=COMBINED
 # configurations. If TARGET is manually edited, ensure TARGET_<BSP>.mtb with a
 # valid URL exists in the application, run 'make getlibs' to fetch BSP contents
 # and update or regenerate launch configurations for your IDE.
-TARGET=APP_CY8CPROTO-062-4343W
-
-# # Board dependencies
-# ifeq ($(TARGET),APP_CY8CPROTO-062-4343W)
-# NETWORK_ENABLE = 1
-# endif
+TARGET=APP_$(BOARD)
 
 # Name of application (used to derive name of final linked file).
 #
