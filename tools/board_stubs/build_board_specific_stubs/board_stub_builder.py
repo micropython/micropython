@@ -130,7 +130,7 @@ def create_board_stubs(board_id, records, mappings, board_filename):
         frozen_libraries = ", ".join(libraries["frozen_libraries"])
 
     with open(board_filename, "w") as boards_file:
-        boards_file.write("# SPDX-FileCopyrightText: 2024 Justin Myers for Adafruit Industries\n")
+        boards_file.write("# SPDX-FileCopyrightText: 2024 Justin Myers\n")
         boards_file.write("#\n")
         boards_file.write("# SPDX-License-Identifier: MIT\n")
         boards_file.write('"""\n')
