@@ -53,7 +53,7 @@ jobs:
     - uses: microsoft/setup-msbuild@v1
       with:
         vs-version: ${{ matrix.vs_version }}
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       if: matrix.runner == 'windows-2019'
       with:
         python-version: '3.9' 
