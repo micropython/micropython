@@ -45,7 +45,7 @@ def udevadm_get_kitprog3_attached_devs():
         # It is a kitprog probe is these matches
         # are found in the device attributes
         required_attr_match = [
-            'ATTRS{interface}=="KitProg\d USBUART"',
+            'ATTRS{interface}=="KitProg\d.*"',
             'ATTRS{product}==".*KitProg\d.*"',
         ]
 
