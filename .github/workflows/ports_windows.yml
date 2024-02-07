@@ -60,6 +60,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build mpy-cross.exe
       run: msbuild mpy-cross\mpy-cross.vcxproj -maxcpucount -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }}
+    - name: Update submodules
+      run: git submodule update --init lib/micropython-lib
     - name: Build micropython.exe
       run: msbuild ports\windows\micropython.vcxproj -maxcpucount -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }} -property:PyVariant=${{ matrix.variant }} 
     - name: Get micropython.exe path
