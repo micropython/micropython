@@ -70,7 +70,7 @@ STATIC cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty
 }
 
 STATIC inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
-    return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width * 1000);
+    return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width / 1000); // !# * --> /
 }
 
 STATIC inline cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj) {
@@ -99,12 +99,13 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     // self->active = 1;
 
     if ((args[ARG_freq].u_int != VALUE_NOT_SET)) {
-        pwm_freq_duty_set(&self->pwm_obj, args[ARG_freq].u_int, self->duty);
+        // pwm_freq_duty_set(&self->pwm_obj, args[ARG_freq].u_int, self->duty);
         self->fz = args[ARG_freq].u_int;
     }
 
     if ((args[ARG_duty_u16].u_int != VALUE_NOT_SET)) {
-        pwm_freq_duty_set(&self->pwm_obj, self->fz, args[ARG_duty_u16].u_int / 65535);
+        float val = (float)(args[ARG_duty_u16].u_int) / (float)65535;
+        pwm_freq_duty_set(&self->pwm_obj, self->fz, val);
         self->duty = args[ARG_duty_u16].u_int;
         self->duty_type = DUTY_U16;
     }
@@ -178,7 +179,7 @@ STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u
     // Check the value is more than the max value
     self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
     self->duty_type = DUTY_U16;
-    pwm_freq_duty_set(&self->pwm_obj, self->fz, (self->duty) / 65535); // conversion of duty_u16 into dutyu16/65535
+    pwm_freq_duty_set(&self->pwm_obj, self->fz, (float)(self->duty) / (float)65535); // s conversion of duty_u16 into dutyu16/65535
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
