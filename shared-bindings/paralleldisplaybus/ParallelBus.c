@@ -47,7 +47,7 @@
 //|         chip_select: microcontroller.Pin,
 //|         write: microcontroller.Pin,
 //|         data0: Optional[microcontroller.Pin] = None,
-//|         data_pins: Sequence[microcontroller.Pin] = None,
+//|         data_pins: Optional[Sequence[microcontroller.Pin]] = None,
 //|         read: Optional[microcontroller.Pin],
 //|         reset: Optional[microcontroller.Pin] = None,
 //|         frequency: int = 30_000_000,
