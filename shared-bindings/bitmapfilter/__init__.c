@@ -134,7 +134,7 @@ STATIC mp_obj_t bitmapfilter_morph(size_t n_args, const mp_obj_t *pos_args, mp_m
     mp_obj_t weights = args[ARG_weights].u_obj;
     mp_obj_t obj_len = mp_obj_len(weights);
     if (obj_len == MP_OBJ_NULL || !mp_obj_is_small_int(obj_len)) {
-        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_weights, MP_QSTR_Sequence, mp_obj_get_type(weights)->name);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be of type %q, not %q"), MP_QSTR_weights, MP_QSTR_Sequence, mp_obj_get_type_qstr(weights));
     }
 
     size_t n_weights = MP_OBJ_SMALL_INT_VALUE(obj_len);
@@ -608,8 +608,131 @@ STATIC mp_obj_t bitmapfilter_false_color(size_t n_args, const mp_obj_t *pos_args
     shared_module_bitmapfilter_false_color(bitmap, mask, palette->colors);
     return args[ARG_bitmap].u_obj;
 }
-
 MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_false_color_obj, 0, bitmapfilter_false_color);
+
+#define BLEND_TABLE_SIZE (4096)
+STATIC uint8_t *get_blend_table(mp_obj_t lookup, int mode) {
+    mp_buffer_info_t lookup_buf;
+    if (!mp_get_buffer(lookup, &lookup_buf, mode) || lookup_buf.len != BLEND_TABLE_SIZE) {
+        return NULL;
+    }
+    return lookup_buf.buf;
+}
+//|
+//| BlendFunction = Callable[[float, float], float]
+//| """A function used to blend two images"""
+//|
+//| BlendTable = bytearray
+//| """A precomputed blend table
+//|
+//| There is not actually a BlendTable type. The real type is actually any
+//| buffer 4096 bytes in length."""
+//|
+//| def blend_precompute(lookup: BlendFunction, table: BlendTable | None = None) -> BlendTable:
+//|     """Precompute a BlendTable from a BlendFunction
+//|
+//|     If the optional ``table`` argument is provided, an existing `BlendTable` is updated
+//|     with the new function values.
+//|
+//|     The function's two arguments will range from 0 to 1. The returned value should also range from 0 to 1.
+//|
+//|     A function to do a 33% blend of each source image could look like this:
+//|
+//|     .. code-block:: python
+//|
+//|         def blend_one_third(a, b):
+//|             return a * .33 + b * .67
+//|     """
+//|
+STATIC mp_obj_t blend_precompute(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_lookup, ARG_table };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_lookup, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_table, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_obj_t table = args[ARG_table].u_obj;
+    if (table == mp_const_none) {
+        table = mp_obj_new_bytearray_of_zeros(BLEND_TABLE_SIZE);
+    }
+    uint8_t *buf = get_blend_table(table, MP_BUFFER_WRITE);
+    if (!buf) {
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"),
+            MP_QSTR_table, MP_QSTR_NoneType, MP_QSTR_WritableBuffer,
+            mp_obj_get_type_qstr(table));
+    }
+    shared_module_bitmapfilter_blend_precompute(args[ARG_lookup].u_obj, buf);
+    return table;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_blend_precompute_obj, 0, blend_precompute);
+
+//|
+//| def blend(
+//|     dest: displayio.Bitmap,
+//|     src1: displayio.Bitmap,
+//|     src2: displayio.Bitmap,
+//|     lookup: BlendFunction | BlendTable,
+//|     mask: displayio.Bitmap | None = None,
+//| ) -> displayio.Bitmap:
+//|     """Blend the 'src1' and 'src2' images according to lookup function or table 'lookup'
+//|
+//|     If ``lookup`` is a function, it is converted to a `BlendTable` by
+//|     internally calling blend_precompute. If a blend function is used repeatedly
+//|     it can be more efficient to compute it once with `blend_precompute`.
+//|
+//|     If the mask is supplied, pixels from ``src1`` are taken unchanged in masked areas.
+//|
+//|     The source and destination bitmaps may be the same bitmap.
+//|
+//|     The destination bitmap is returned.
+//|     """
+//|
+
+STATIC mp_obj_t bitmapfilter_blend(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    enum { ARG_dest, ARG_src1, ARG_src2, ARG_lookup, ARG_mask };
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_dest, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_src1, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_src2, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_lookup, MP_ARG_REQUIRED | MP_ARG_OBJ, { .u_obj = MP_OBJ_NULL } },
+        { MP_QSTR_mask, MP_ARG_OBJ, { .u_obj = MP_ROM_NONE } },
+    };
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
+    mp_arg_validate_type(args[ARG_dest].u_obj, &displayio_bitmap_type, MP_QSTR_dest);
+    displayio_bitmap_t *dest = MP_OBJ_TO_PTR(args[ARG_dest].u_obj);
+
+    mp_arg_validate_type(args[ARG_src1].u_obj, &displayio_bitmap_type, MP_QSTR_src1);
+    displayio_bitmap_t *src1 = MP_OBJ_TO_PTR(args[ARG_src1].u_obj);
+
+    mp_arg_validate_type(args[ARG_src2].u_obj, &displayio_bitmap_type, MP_QSTR_src2);
+    displayio_bitmap_t *src2 = MP_OBJ_TO_PTR(args[ARG_src2].u_obj);
+
+    mp_obj_t lookup = args[ARG_lookup].u_obj;
+    if (mp_obj_is_callable(lookup)) {
+        lookup = mp_call_function_1(MP_OBJ_FROM_PTR(&bitmapfilter_blend_precompute_obj), lookup);
+    }
+    uint8_t *lookup_buf = get_blend_table(lookup, MP_BUFFER_READ);
+    if (!lookup_buf) {
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"),
+            MP_QSTR_lookup, MP_QSTR_callable, MP_QSTR_ReadableBuffer,
+            mp_obj_get_type_qstr(lookup));
+    }
+
+    displayio_bitmap_t *mask = NULL;
+    if (args[ARG_mask].u_obj != mp_const_none) {
+        mp_arg_validate_type(args[ARG_mask].u_obj, &displayio_bitmap_type, MP_QSTR_mask);
+        mask = MP_OBJ_TO_PTR(args[ARG_mask].u_obj);
+    }
+
+    shared_module_bitmapfilter_blend(dest, src1, src2, mask, lookup_buf);
+    return args[ARG_dest].u_obj;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(bitmapfilter_blend_obj, 0, bitmapfilter_blend);
+
 STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_bitmapfilter) },
     { MP_ROM_QSTR(MP_QSTR_morph), MP_ROM_PTR(&bitmapfilter_morph_obj) },
@@ -621,6 +744,8 @@ STATIC const mp_rom_map_elem_t bitmapfilter_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ChannelScaleOffset), MP_ROM_PTR(&bitmapfilter_channel_scale_offset_type) },
     { MP_ROM_QSTR(MP_QSTR_ChannelMixer), MP_ROM_PTR(&bitmapfilter_channel_mixer_type) },
     { MP_ROM_QSTR(MP_QSTR_ChannelMixerOffset), MP_ROM_PTR(&bitmapfilter_channel_mixer_offset_type) },
+    { MP_ROM_QSTR(MP_QSTR_blend), MP_ROM_PTR(&bitmapfilter_blend_obj) },
+    { MP_ROM_QSTR(MP_QSTR_blend_precompute), MP_ROM_PTR(&bitmapfilter_blend_precompute_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(bitmapfilter_module_globals, bitmapfilter_module_globals_table);
 

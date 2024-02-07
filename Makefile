@@ -271,6 +271,8 @@ stubs:
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst
 	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
+	@$(PYTHON) tools/board_stubs/build_board_specific_stubs/board_stub_builder.py
+	@cp -r tools/board_stubs/circuitpython_setboard circuitpython-stubs/circuitpython_setboard
 	@$(PYTHON) -m build circuitpython-stubs
 
 .PHONY: check-stubs
