@@ -147,6 +147,10 @@ STATIC void mp_map_rehash(mp_map_t *map) {
     m_del(mp_map_elem_t, old_table, old_alloc);
 }
 
+#ifndef MICROPY_WRAP_MP_MAP_LOOKUP
+#define MICROPY_WRAP_MP_MAP_LOOKUP(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f)
+#endif
+
 // MP_MAP_LOOKUP behaviour:
 //  - returns NULL if not found, else the slot it was found in with key,value non-null
 // MP_MAP_LOOKUP_ADD_IF_NOT_FOUND behaviour:

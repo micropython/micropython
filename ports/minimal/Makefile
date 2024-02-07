@@ -31,8 +31,6 @@ CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(
 LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
 
-CSUPEROPT = -Os # save some code space
-
 # Tune for Debugging or Optimization
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)

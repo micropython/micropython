@@ -107,7 +107,6 @@ void mpz_init_from_int(mpz_t *z, mp_int_t val);
 void mpz_init_fixed_from_int(mpz_t *z, mpz_dig_t *dig, size_t dig_alloc, mp_int_t val);
 void mpz_deinit(mpz_t *z);
 
-void mpz_set(mpz_t *dest, const mpz_t *src);
 void mpz_set_from_int(mpz_t *z, mp_int_t src);
 void mpz_set_from_ll(mpz_t *z, long long i, bool is_signed);
 #if MICROPY_PY_BUILTINS_FLOAT

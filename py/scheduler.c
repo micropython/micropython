@@ -29,6 +29,10 @@
 #include "py/mphal.h"
 #include "py/runtime.h"
 
+#ifndef MICROPY_WRAP_MP_SCHED_EXCEPTION
+#define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f)
+#endif
+
 // Schedules an exception on the main thread (for exceptions "thrown" by async
 // sources such as interrupts and UNIX signal handlers).
 void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
@@ -45,6 +49,10 @@ void MICROPY_WRAP_MP_SCHED_EXCEPTION(mp_sched_exception)(mp_obj_t exc) {
 }
 
 #if MICROPY_KBD_EXCEPTION
+#ifndef MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT
+#define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f)
+#endif
+
 // This function may be called asynchronously at any time so only do the bare minimum.
 void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void) {
     MP_STATE_VM(mp_kbd_exception).traceback_data = NULL;
@@ -53,6 +61,10 @@ void MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(mp_sched_keyboard_interrupt)(void)
 #endif
 
 #if MICROPY_ENABLE_VM_ABORT
+#ifndef MICROPY_WRAP_MP_SCHED_VM_ABORT
+#define MICROPY_WRAP_MP_SCHED_VM_ABORT(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f)
+#endif
+
 void MICROPY_WRAP_MP_SCHED_VM_ABORT(mp_sched_vm_abort)(void) {
     MP_STATE_VM(vm_abort) = true;
 }
@@ -155,6 +167,10 @@ void mp_sched_unlock(void) {
     }
     MICROPY_END_ATOMIC_SECTION(atomic_state);
 }
+
+#ifndef MICROPY_WRAP_MP_SCHED_SCHEDULE
+#define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f)
+#endif
 
 bool MICROPY_WRAP_MP_SCHED_SCHEDULE(mp_sched_schedule)(mp_obj_t function, mp_obj_t arg) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();

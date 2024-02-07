@@ -723,7 +723,12 @@ void gc_info(gc_info_t *info) {
     GC_EXIT();
 }
 
-void *gc_alloc(size_t n_bytes, unsigned int alloc_flags) {
+#ifndef MICROPY_WRAP_GC_ALLOC
+// Optimising gc for speed; 5ms down to 4ms on pybv2
+#define MICROPY_WRAP_GC_ALLOC(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_3(f)
+#endif
+
+void *MICROPY_WRAP_GC_ALLOC(gc_alloc)(size_t n_bytes, unsigned int alloc_flags) {
     bool has_finaliser = alloc_flags & GC_ALLOC_FLAG_HAS_FINALISER;
     size_t n_blocks = ((n_bytes + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1))) / BYTES_PER_BLOCK;
     DEBUG_printf("gc_alloc(" UINT_FMT " bytes -> " UINT_FMT " blocks)\n", n_bytes, n_blocks);
@@ -890,9 +895,13 @@ void *gc_alloc_with_finaliser(mp_uint_t n_bytes) {
 }
 */
 
+#ifndef MICROPY_WRAP_GC_FREE
+#define MICROPY_WRAP_GC_FREE(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_3(f)
+#endif
+
 // force the freeing of a piece of memory
 // TODO: freeing here does not call finaliser
-void gc_free(void *ptr) {
+void MICROPY_WRAP_GC_FREE(gc_free)(void *ptr) {
     if (MP_STATE_THREAD(gc_lock_depth) > 0) {
         // Cannot free while the GC is locked. However free is an optimisation
         // to reclaim the memory immediately, this means it will now be left
@@ -1021,7 +1030,11 @@ void *gc_realloc(void *ptr, mp_uint_t n_bytes) {
 
 #else // Alternative gc_realloc impl
 
-void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
+#ifndef MICROPY_WRAP_GC_REALLOC
+#define MICROPY_WRAP_GC_REALLOC(f) MICROPY_PERFORMANCE_CRITICAL_LEVEL_3(f)
+#endif
+
+void *MICROPY_WRAP_GC_REALLOC(gc_realloc)(void *ptr_in, size_t n_bytes, bool allow_move) {
     // check for pure allocation
     if (ptr_in == NULL) {
         return gc_alloc(n_bytes, false);

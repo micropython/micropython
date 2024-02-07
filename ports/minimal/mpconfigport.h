@@ -21,6 +21,9 @@
 // Use the minimum headroom in the chunk allocator for parse nodes.
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
 
+// Just use -Os for everything to generate the smallest possible binary.
+#define MICROPY_APPLY_COMPILER_EXTRA_OPTIMISATIONS(f) f
+
 // type definitions for the specific machine
 
 typedef intptr_t mp_int_t; // must be pointer size

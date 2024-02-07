@@ -1791,46 +1791,39 @@ typedef double mp_float_t;
 #endif
 
 /*****************************************************************************/
-/* Hooks for a port to wrap functions with attributes                        */
+/* Hooks for a port to wrap functions with performance-tuning attributes     */
 
-#ifndef MICROPY_WRAP_MP_BINARY_OP
-#define MICROPY_WRAP_MP_BINARY_OP(f) f
+#ifndef MICROPY_APPLY_COMPILER_OPTIMISATIONS
+#if defined(__GNUC__) && !defined(__clang__)
+// Enable -O3 optimisations.
+#define MICROPY_APPLY_COMPILER_OPTIMISATIONS(f) __attribute__((optimize("O2"))) f
+#else
+// Unsupported on other compilers, will use global optimisation setting (typically -Os).
+#define MICROPY_APPLY_COMPILER_OPTIMISATIONS(f) f
+#endif
 #endif
 
-#ifndef MICROPY_WRAP_MP_EXECUTE_BYTECODE
-#define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) f
+// Ideally apply full compiler optimisations and place in RAM.
+// Use this on small functions that need the highest possible performance.
+#ifndef MICROPY_PERFORMANCE_CRITICAL_LEVEL_1
+#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_1(f) MICROPY_APPLY_COMPILER_OPTIMISATIONS(f)
 #endif
 
-#ifndef MICROPY_WRAP_MP_LOAD_GLOBAL
-#define MICROPY_WRAP_MP_LOAD_GLOBAL(f) f
+// Ideally apply full compiler optimisations and optionally place in RAM (if IRAM available).
+// Use this on larger functions that should go in RAM if possible.
+#ifndef MICROPY_PERFORMANCE_CRITICAL_LEVEL_2
+#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_2(f) MICROPY_APPLY_COMPILER_OPTIMISATIONS(f)
 #endif
 
-#ifndef MICROPY_WRAP_MP_LOAD_NAME
-#define MICROPY_WRAP_MP_LOAD_NAME(f) f
+// Ideally apply full compiler optimisation if flash available.
+// Use this on functions that are not important enough to place in RAM.
+#ifndef MICROPY_PERFORMANCE_CRITICAL_LEVEL_3
+#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_3(f) MICROPY_APPLY_COMPILER_OPTIMISATIONS(f)
 #endif
 
-#ifndef MICROPY_WRAP_MP_MAP_LOOKUP
-#define MICROPY_WRAP_MP_MAP_LOOKUP(f) f
-#endif
-
-#ifndef MICROPY_WRAP_MP_OBJ_GET_TYPE
-#define MICROPY_WRAP_MP_OBJ_GET_TYPE(f) f
-#endif
-
-#ifndef MICROPY_WRAP_MP_SCHED_EXCEPTION
-#define MICROPY_WRAP_MP_SCHED_EXCEPTION(f) f
-#endif
-
-#ifndef MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT
-#define MICROPY_WRAP_MP_SCHED_KEYBOARD_INTERRUPT(f) f
-#endif
-
-#ifndef MICROPY_WRAP_MP_SCHED_SCHEDULE
-#define MICROPY_WRAP_MP_SCHED_SCHEDULE(f) f
-#endif
-
-#ifndef MICROPY_WRAP_MP_SCHED_VM_ABORT
-#define MICROPY_WRAP_MP_SCHED_VM_ABORT(f) f
+// Ideally apply full compiler optimisation if flash available (but lower priority than level 3).
+#ifndef MICROPY_PERFORMANCE_CRITICAL_LEVEL_4
+#define MICROPY_PERFORMANCE_CRITICAL_LEVEL_4(f) f
 #endif
 
 /*****************************************************************************/
