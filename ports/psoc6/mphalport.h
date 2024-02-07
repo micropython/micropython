@@ -58,7 +58,7 @@ uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags);
 int mp_hal_stdin_rx_chr(void);
 
 static inline mp_uint_t mp_hal_get_cpu_freq(void) {
-     return Cy_SysClk_ClkFastGetFrequency();
+    return Cy_SysClk_ClkFastGetFrequency();
 }
 
 static inline void mp_hal_pin_config(mp_hal_pin_obj_t pin, uint32_t mode, uint32_t pull, uint32_t alt) {
