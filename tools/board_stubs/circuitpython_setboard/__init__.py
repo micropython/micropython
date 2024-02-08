@@ -15,8 +15,8 @@ def set_board():
     chosen_board = sys.argv[1]
     print(f"setting board: {chosen_board}")
 
-    board_stubs_file = resources.files('board-stubs').joinpath("__init__.pyi")
-    board_definitions_path = resources.files('board_definitions').joinpath(chosen_board)
+    board_stubs_file = resources.files("board-stubs").joinpath("__init__.pyi")
+    board_definitions_path = resources.files("board_definitions").joinpath(chosen_board)
     board_definitions_file = board_definitions_path.joinpath("__init__.pyi")
 
     if not board_definitions_file.is_file():
