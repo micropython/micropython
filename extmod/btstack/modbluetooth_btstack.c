@@ -490,11 +490,12 @@ STATIC void btstack_packet_handler_write_with_response(uint8_t packet_type, uint
         if (!conn) {
             return;
         }
-        mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE, conn_handle, conn->pending_value_handle, status);
+        uint16_t value_handle = conn->pending_value_handle;
         conn->pending_value_handle = 0xffff;
         m_del(uint8_t, conn->pending_write_value, conn->pending_write_value_len);
         conn->pending_write_value = NULL;
         conn->pending_write_value_len = 0;
+        mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_WRITE_DONE, conn_handle, value_handle, status);
     }
 }
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
