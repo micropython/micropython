@@ -27,12 +27,16 @@
 #pragma once
 
 #include "common-hal/digitalio/DigitalInOut.h"
-#include "i2s_lcd_driver.h"
+
+#include "esp-idf/components/esp_lcd/include/esp_lcd_panel_io.h"
 
 typedef struct {
     mp_obj_base_t base;
+    gpio_num_t cs_pin_number;
     gpio_num_t read_pin_number;
     gpio_num_t reset_pin_number;
-    i2s_lcd_config_t config;
-    i2s_lcd_handle_t handle;
+    esp_lcd_i80_bus_config_t config;
+    esp_lcd_i80_bus_handle_t bus_handle;
+    esp_lcd_panel_io_handle_t panel_io_handle;
+    bool transfer_done;
 } paralleldisplaybus_parallelbus_obj_t;
