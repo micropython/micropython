@@ -2,10 +2,11 @@
 rm -rf test-stubs
 python3 -m venv test-stubs
 . test-stubs/bin/activate
-pip install mypy isort black adafruit-circuitpython-typing wheel build
+pip install mypy isort black pip install adafruit-circuitpython-typing@git+https://github.com/justmobilize/Adafruit_CircuitPython_Typing@typing-fixes wheel build
 rm -rf circuitpython-stubs .mypy_cache
 make stubs
 pip install --force-reinstall circuitpython-stubs/dist/circuitpython-stubs-*.tar.gz
+export MYPYPATH=circuitpython-stubs/
 mypy -c 'import busio; b: busio.I2C; b.writeto(0x30, b"")'
 ! mypy -c 'import busio; b: busio.I2C; b.readfrom_into(0x30, b"")'
 ! mypy -c 'import busio; b: busio.I2C; b.write(0x30, b"")'
