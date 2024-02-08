@@ -95,6 +95,17 @@ Note: The ``opt`` keyword argument can be set on the various functions, this con
 the optimisation level used by the cross-compiler.
 See :func:`micropython.opt_level`.
 
+.. function:: add_library(library, library_path, prepend=False)
+
+    Register the path to an external named *library*.
+
+    The path *library_path* will be automatically searched when using `require`.
+    By default the added library is added to the end of the list of libraries to
+    search.  Pass ``True`` to *prepend* to add it to the start of the list.
+
+    Additionally, the added library can be explicitly requested by using
+    ``require("name", library="library")``.
+
 .. function:: package(package_path, files=None, base_path=".", opt=None)
 
     This is equivalent to copying the "package_path" directory to the device
@@ -138,11 +149,13 @@ See :func:`micropython.opt_level`.
 
     You can use the variables above, such as ``$(PORT_DIR)`` in ``base_path``.
 
-.. function:: require(name, unix_ffi=False)
+.. function:: require(name, library=None)
 
     Require a package by name (and its dependencies) from :term:`micropython-lib`.
 
-    Optionally specify unix_ffi=True to use a module from the unix-ffi directory.
+    Optionally specify *library* (a string) to reference a package from a
+    library that has been previously registered with `add_library`. Otherwise
+    the list of library paths will be used.
 
 .. function:: include(manifest_path)
 
