@@ -40,8 +40,7 @@
 #include "lwip/dhcp.h"
 #include "netif/ethernet.h"
 
-// ETH PHY register definitions (for LAN8742)
-
+// ETH PHY register definitions (for LAN8742 and LAN8720/LAN8710)
 #undef PHY_BCR
 #define PHY_BCR                 (0x0000)
 #define PHY_BCR_SOFT_RESET      (0x8000)
@@ -137,6 +136,7 @@ typedef struct _eth_t {
     uint32_t trace_flags;
     struct netif netif;
     struct dhcp dhcp_struct;
+    uint32_t phy_addr;
 } eth_t;
 
 static eth_dma_t eth_dma __attribute__((aligned(16384)));
@@ -146,11 +146,13 @@ eth_t eth_instance;
 static void eth_mac_deinit(eth_t *self);
 static void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf);
 
-static void eth_phy_write(uint32_t reg, uint32_t val) {
+static void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val) {
     #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
     uint32_t ar = ETH->MACMDIOAR;
+    ar &= ~ETH_MACMDIOAR_PA_Msk;
+    ar |= (phy_addr << ETH_MACMDIOAR_PA_Pos);
     ar &= ~ETH_MACMDIOAR_RDA_Msk;
     ar |= reg << ETH_MACMDIOAR_RDA_Pos;
     ar &= ~ETH_MACMDIOAR_MOC_Msk;
@@ -165,18 +167,20 @@ static void eth_phy_write(uint32_t reg, uint32_t val) {
     }
     ETH->MACMIIDR = val;
     uint32_t ar = ETH->MACMIIAR;
-    ar = reg << ETH_MACMIIAR_MR_Pos | (ar & ETH_MACMIIAR_CR_Msk) | ETH_MACMIIAR_MW | ETH_MACMIIAR_MB;
+    ar = (phy_addr << ETH_MACMIIAR_PA_Pos) | (reg << ETH_MACMIIAR_MR_Pos) | (ar & ETH_MACMIIAR_CR_Msk) | ETH_MACMIIAR_MW | ETH_MACMIIAR_MB;
     ETH->MACMIIAR = ar;
     while (ETH->MACMIIAR & ETH_MACMIIAR_MB) {
     }
     #endif
 }
 
-static uint32_t eth_phy_read(uint32_t reg) {
+static uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg) {
     #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
     uint32_t ar = ETH->MACMDIOAR;
+    ar &= ~ETH_MACMDIOAR_PA_Msk;
+    ar |= (phy_addr << ETH_MACMDIOAR_PA_Pos);
     ar &= ~ETH_MACMDIOAR_RDA_Msk;
     ar |= reg << ETH_MACMDIOAR_RDA_Pos;
     ar &= ~ETH_MACMDIOAR_MOC_Msk;
@@ -190,7 +194,7 @@ static uint32_t eth_phy_read(uint32_t reg) {
     while (ETH->MACMIIAR & ETH_MACMIIAR_MB) {
     }
     uint32_t ar = ETH->MACMIIAR;
-    ar = reg << ETH_MACMIIAR_MR_Pos | (ar & ETH_MACMIIAR_CR_Msk) | ETH_MACMIIAR_MB;
+    ar = (phy_addr << ETH_MACMIIAR_PA_Pos) | (reg << ETH_MACMIIAR_MR_Pos) | (ar & ETH_MACMIIAR_CR_Msk) | ETH_MACMIIAR_MB;
     ETH->MACMIIAR = ar;
     while (ETH->MACMIIAR & ETH_MACMIIAR_MB) {
     }
@@ -198,9 +202,10 @@ static uint32_t eth_phy_read(uint32_t reg) {
     #endif
 }
 
-void eth_init(eth_t *self, int mac_idx) {
+void eth_init(eth_t *self, int mac_idx, uint32_t phy_addr) {
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
+    self->phy_addr = phy_addr;
 
     // Configure GPIO
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_MDC, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_MDC);
@@ -362,7 +367,7 @@ static int eth_mac_init(eth_t *self) {
     #endif
 
     // Reset the PHY
-    eth_phy_write(PHY_BCR, PHY_BCR_SOFT_RESET);
+    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_SOFT_RESET);
     mp_hal_delay_ms(50);
 
     // Wait for the PHY link to be established
@@ -373,8 +378,8 @@ static int eth_mac_init(eth_t *self) {
             eth_mac_deinit(self);
             return -MP_ETIMEDOUT;
         }
-        uint16_t bcr = eth_phy_read(0);
-        uint16_t bsr = eth_phy_read(1);
+        uint16_t bcr = eth_phy_read(self->phy_addr, PHY_BCR);
+        uint16_t bsr = eth_phy_read(self->phy_addr, PHY_BSR);
         switch (phy_state) {
             case 0:
                 if (!(bcr & PHY_BCR_SOFT_RESET)) {
@@ -383,7 +388,7 @@ static int eth_mac_init(eth_t *self) {
                 break;
             case 1:
                 if (bsr & PHY_BSR_LINK_STATUS) {
-                    eth_phy_write(PHY_BCR, PHY_BCR_AUTONEG_EN);
+                    eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_AUTONEG_EN);
                     phy_state = 2;
                 }
                 break;
@@ -398,7 +403,7 @@ static int eth_mac_init(eth_t *self) {
     }
 
     // Get register with link status
-    uint16_t phy_scsr = eth_phy_read(PHY_SCSR);
+    uint16_t phy_scsr = eth_phy_read(self->phy_addr, PHY_SCSR);
 
     // Burst mode configuration
     #if defined(STM32H5) || defined(STM32H7)
@@ -845,7 +850,7 @@ int eth_link_status(eth_t *self) {
             return 2; // link no-ip;
         }
     } else {
-        if (eth_phy_read(PHY_BSR) & PHY_BSR_LINK_STATUS) {
+        if (eth_phy_read(self->phy_addr, PHY_BSR) & PHY_BSR_LINK_STATUS) {
             return 1; // link up
         } else {
             return 0; // link down
@@ -883,10 +888,10 @@ void eth_low_power_mode(eth_t *self, bool enable) {
     __HAL_RCC_ETH_CLK_ENABLE();
     #endif
 
-    uint16_t bcr = eth_phy_read(PHY_BCR);
+    uint16_t bcr = eth_phy_read(self->phy_addr, PHY_BCR);
     if (enable) {
         // Enable low-power mode.
-        eth_phy_write(PHY_BCR, bcr | PHY_BCR_POWER_DOWN);
+        eth_phy_write(self->phy_addr, PHY_BCR, bcr | PHY_BCR_POWER_DOWN);
         // Disable eth clock.
         #if defined(STM32H7)
         __HAL_RCC_ETH1MAC_CLK_DISABLE();
@@ -895,7 +900,7 @@ void eth_low_power_mode(eth_t *self, bool enable) {
         #endif
     } else {
         // Disable low-power mode.
-        eth_phy_write(PHY_BCR, bcr & (~PHY_BCR_POWER_DOWN));
+        eth_phy_write(self->phy_addr, PHY_BCR, bcr & (~PHY_BCR_POWER_DOWN));
     }
 }
 #endif // defined(MICROPY_HW_ETH_MDC)

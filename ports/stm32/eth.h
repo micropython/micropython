@@ -29,7 +29,7 @@
 typedef struct _eth_t eth_t;
 extern eth_t eth_instance;
 
-void eth_init(eth_t *self, int mac_idx);
+void eth_init(eth_t *self, int mac_idx, uint32_t phy_addr);
 void eth_set_trace(eth_t *self, uint32_t value);
 struct netif *eth_netif(eth_t *self);
 int eth_link_status(eth_t *self);

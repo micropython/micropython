@@ -53,10 +53,17 @@ static void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         );
 }
 
-static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    mp_arg_check_num(n_args, n_kw, 0, 0, false);
+static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    enum { ARG_phy_addr};
+    static const mp_arg_t allowed_args[] = {
+        { MP_QSTR_phy_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+    };
+    // Parse args.
+    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
+    mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
+
     const network_lan_obj_t *self = &network_lan_eth0;
-    eth_init(self->eth, MP_HAL_MAC_ETH0);
+    eth_init(self->eth, MP_HAL_MAC_ETH0, args[ARG_phy_addr].u_int);
     return MP_OBJ_FROM_PTR(self);
 }
 
