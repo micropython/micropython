@@ -126,6 +126,7 @@ MP_PERSISTENT_OBJ_FLOAT = 8
 MP_PERSISTENT_OBJ_COMPLEX = 9
 MP_PERSISTENT_OBJ_TUPLE = 10
 
+MP_SCOPE_FLAG_GENERATOR = 0x01
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
@@ -912,7 +913,7 @@ class RawCode(object):
             raw_code_type = "mp_raw_code_truncated_t"
         print("static const %s raw_code_%s = {" % (raw_code_type, self.escaped_name))
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
-        print("    .scope_flags = 0x%02x," % self.scope_flags)
+        print("    .is_generator = %d," % bool(self.scope_flags & MP_SCOPE_FLAG_GENERATOR))
         print("    .fun_data = fun_data_%s," % self.escaped_name)
         if len(self.children):
             print("    .children = (void *)&children_%s," % self.escaped_name)
