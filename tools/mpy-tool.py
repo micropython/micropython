@@ -909,21 +909,24 @@ class RawCode(object):
         print("static const mp_raw_code_t raw_code_%s = {" % self.escaped_name)
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
         print("    .scope_flags = 0x%02x," % self.scope_flags)
-        print("    .n_pos_args = %u," % self.n_pos_args)
         print("    .fun_data = fun_data_%s," % self.escaped_name)
-        print("    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS")
-        print("    .fun_data_len = %u," % len(self.fun_data))
-        print("    #endif")
         if len(self.children):
             print("    .children = (void *)&children_%s," % self.escaped_name)
         elif prelude_ptr:
             print("    .children = (void *)%s," % prelude_ptr)
         else:
             print("    .children = NULL,")
+        print("    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS")
+        print("    .fun_data_len = %u," % len(self.fun_data))
+        print("    #endif")
         print("    #if MICROPY_PERSISTENT_CODE_SAVE")
         print("    .n_children = %u," % len(self.children))
+        print("    #if MICROPY_EMIT_MACHINE_CODE")
+        print("    .prelude_offset = %u," % self.prelude_offset)
+        print("    #endif")
         if self.code_kind == MP_CODE_BYTECODE:
             print("    #if MICROPY_PY_SYS_SETTRACE")
+            print("    .line_of_definition = %u," % 0)  # TODO
             print("    .prelude = {")
             print("        .n_state = %u," % self.prelude_signature[0])
             print("        .n_exc_stack = %u," % self.prelude_signature[1])
@@ -944,14 +947,11 @@ class RawCode(object):
                 "        .opcodes = fun_data_%s + %u," % (self.escaped_name, self.offset_opcodes)
             )
             print("    },")
-            print("    .line_of_definition = %u," % 0)  # TODO
             print("    #endif")
-        print("    #if MICROPY_EMIT_MACHINE_CODE")
-        print("    .prelude_offset = %u," % self.prelude_offset)
         print("    #endif")
-        print("    #endif")
-        print("    #if MICROPY_EMIT_MACHINE_CODE")
-        print("    .type_sig = %u," % type_sig)
+        print("    #if MICROPY_EMIT_INLINE_ASM")
+        print("    .asm_n_pos_args = %u," % self.n_pos_args)
+        print("    .asm_type_sig = %u," % type_sig)
         print("    #endif")
         print("};")
 

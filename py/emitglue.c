@@ -66,9 +66,9 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     #endif
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
-    size_t n_children,
+    uint16_t n_children,
     #endif
-    mp_uint_t scope_flags) {
+    uint16_t scope_flags) {
 
     rc->kind = MP_CODE_BYTECODE;
     rc->scope_flags = scope_flags;
@@ -99,10 +99,11 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
-    size_t n_children,
+    uint16_t n_children,
     uint16_t prelude_offset,
     #endif
-    mp_uint_t scope_flags, mp_uint_t n_pos_args, mp_uint_t type_sig) {
+    uint16_t scope_flags, uint32_t asm_n_pos_args, uint32_t asm_type_sig
+    ) {
 
     assert(kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER || kind == MP_CODE_NATIVE_ASM);
 
@@ -145,9 +146,11 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->prelude_offset = prelude_offset;
     #endif
 
+    #if MICROPY_EMIT_INLINE_ASM
     // These two entries are only needed for MP_CODE_NATIVE_ASM.
-    rc->n_pos_args = n_pos_args;
-    rc->type_sig = type_sig;
+    rc->asm_n_pos_args = asm_n_pos_args;
+    rc->asm_type_sig = asm_type_sig;
+    #endif
 
     #if DEBUG_PRINT
     DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
@@ -195,7 +198,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
         #endif
         #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
-            fun = mp_obj_new_fun_asm(rc->n_pos_args, rc->fun_data, rc->type_sig);
+            fun = mp_obj_new_fun_asm(rc->asm_n_pos_args, rc->fun_data, rc->asm_type_sig);
             break;
         #endif
         default:
