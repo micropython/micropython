@@ -84,6 +84,29 @@ typedef struct _mp_raw_code_t {
     #endif
 } mp_raw_code_t;
 
+// Version of mp_raw_code_t but without the asm_n_pos_args/asm_type_sig entries, which are
+// only needed when the kind is MP_CODE_NATIVE_ASM.  So this struct can be used when the
+// kind is MP_CODE_BYTECODE, MP_CODE_NATIVE_PY or MP_CODE_NATIVE_VIPER, to reduce its size.
+typedef struct _mp_raw_code_truncated_t {
+    uint32_t kind : 3;
+    uint32_t scope_flags : 7;
+    const void *fun_data;
+    struct _mp_raw_code_t **children;
+    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+    uint32_t fun_data_len;
+    #endif
+    #if MICROPY_PERSISTENT_CODE_SAVE
+    uint16_t n_children;
+    #if MICROPY_EMIT_MACHINE_CODE
+    uint16_t prelude_offset;
+    #endif
+    #if MICROPY_PY_SYS_SETTRACE
+    uint32_t line_of_definition;
+    mp_bytecode_prelude_t prelude;
+    #endif
+    #endif
+} mp_raw_code_truncated_t;
+
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,

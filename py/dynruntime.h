@@ -207,7 +207,7 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
 
 #define MP_DYNRUNTIME_INIT_ENTRY \
     mp_obj_t old_globals = mp_fun_table.swap_globals(self->context->module.globals); \
-    mp_raw_code_t rc; \
+    mp_raw_code_truncated_t rc; \
     rc.kind = MP_CODE_NATIVE_VIPER; \
     rc.scope_flags = 0; \
     (void)rc;
@@ -217,7 +217,7 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
     return mp_const_none;
 
 #define MP_DYNRUNTIME_MAKE_FUNCTION(f) \
-    (mp_make_function_from_raw_code((rc.fun_data = (f), &rc), self->context, NULL))
+    (mp_make_function_from_raw_code((rc.fun_data = (f), (const mp_raw_code_t *)&rc), self->context, NULL))
 
 #define mp_import_name(name, fromlist, level) \
     (mp_fun_table.import_name((name), (fromlist), (level)))
