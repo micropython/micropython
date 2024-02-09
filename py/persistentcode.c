@@ -578,10 +578,12 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
     } else if (rc->kind == MP_CODE_NATIVE_VIPER || rc->kind == MP_CODE_NATIVE_ASM) {
         // Save basic scope info for viper and asm
         mp_print_uint(print, rc->scope_flags & MP_SCOPE_FLAG_ALL_SIG);
+        #if MICROPY_EMIT_INLINE_ASM
         if (rc->kind == MP_CODE_NATIVE_ASM) {
-            mp_print_uint(print, rc->n_pos_args);
-            mp_print_uint(print, rc->type_sig);
+            mp_print_uint(print, rc->asm_n_pos_args);
+            mp_print_uint(print, rc->asm_type_sig);
         }
+        #endif
     }
     #endif
 
