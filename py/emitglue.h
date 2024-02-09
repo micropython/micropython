@@ -31,6 +31,11 @@
 
 // These variables and functions glue the code emitters to the runtime.
 
+// Used with mp_raw_code_t::proto_fun_indicator to detect if a mp_proto_fun_t is a
+// mp_raw_code_t struct or a direct pointer to bytecode.
+#define MP_PROTO_FUN_INDICATOR_RAW_CODE_0 (0)
+#define MP_PROTO_FUN_INDICATOR_RAW_CODE_1 (0)
+
 // These must fit in 8 bits; see scope.h
 enum {
     MP_EMIT_OPT_NONE,
@@ -49,14 +54,25 @@ typedef enum {
     MP_CODE_NATIVE_ASM,
 } mp_raw_code_kind_t;
 
-// This mp_raw_code_t struct holds static information about a non-instantiated function.
+// An mp_proto_fun_t points to static information about a non-instantiated function.
 // A function object is created from this information, and that object can then be executed.
-//
-// This struct appears in the following places:
+// It points either to bytecode, or an mp_raw_code_t struct.
+typedef const void *mp_proto_fun_t;
+
+// Bytecode is distinguished from an mp_raw_code_t struct by the first two bytes: bytecode
+// is guaranteed to have either its first or second byte non-zero.  So if both bytes are
+// zero then the mp_proto_fun_t pointer must be an mp_raw_code_t.
+static inline bool mp_proto_fun_is_bytecode(mp_proto_fun_t proto_fun) {
+    const uint8_t *header = proto_fun;
+    return (header[0] | (header[1] << 8)) != (MP_PROTO_FUN_INDICATOR_RAW_CODE_0 | (MP_PROTO_FUN_INDICATOR_RAW_CODE_1 << 8));
+}
+
+// The mp_raw_code_t struct appears in the following places:
 // compiled bytecode: instance in RAM, referenced by outer scope, usually freed after first (and only) use
 // mpy file: instance in RAM, created when .mpy file is loaded (same comments as above)
 // frozen: instance in ROM
 typedef struct _mp_raw_code_t {
+    uint8_t proto_fun_indicator[2];
     uint8_t kind; // of type mp_raw_code_kind_t; only 3 bits used
     bool is_generator;
     const void *fun_data;
@@ -88,6 +104,7 @@ typedef struct _mp_raw_code_t {
 // only needed when the kind is MP_CODE_NATIVE_ASM.  So this struct can be used when the
 // kind is MP_CODE_BYTECODE, MP_CODE_NATIVE_PY or MP_CODE_NATIVE_VIPER, to reduce its size.
 typedef struct _mp_raw_code_truncated_t {
+    uint8_t proto_fun_indicator[2];
     uint8_t kind;
     bool is_generator;
     const void *fun_data;
@@ -127,7 +144,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     #endif
     uint16_t scope_flags, uint32_t asm_n_pos_args, uint32_t asm_type_sig);
 
-mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module_context_t *context, const mp_obj_t *def_args);
-mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, const mp_module_context_t *context, mp_uint_t n_closed_over, const mp_obj_t *args);
+mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_module_context_t *context, const mp_obj_t *def_args);
+mp_obj_t mp_make_closure_from_proto_fun(mp_proto_fun_t proto_fun, const mp_module_context_t *context, mp_uint_t n_closed_over, const mp_obj_t *args);
 
 #endif // MICROPY_INCLUDED_PY_EMITGLUE_H

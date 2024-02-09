@@ -157,7 +157,7 @@ The most relevant method you should know about is this:
        mp_compile_to_raw_code(parse_tree, source_file, is_repl, &cm);
 
        // Create and return a function object that executes the outer module.
-       return mp_make_function_from_raw_code(cm.rc, cm.context, NULL);
+       return mp_make_function_from_proto_fun(cm.rc, cm.context, NULL);
    }
 
 The compiler compiles the code in four passes: scope, stack size, code size and emit.

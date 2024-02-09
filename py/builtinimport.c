@@ -165,7 +165,7 @@ STATIC void do_load_from_lexer(mp_module_context_t *context, mp_lexer_t *lex) {
 #endif
 
 #if (MICROPY_HAS_FILE_READER && MICROPY_PERSISTENT_CODE_LOAD) || MICROPY_MODULE_FROZEN_MPY
-STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw_code_t *rc, qstr source_name) {
+STATIC void do_execute_proto_fun(const mp_module_context_t *context, mp_proto_fun_t proto_fun, qstr source_name) {
     #if MICROPY_PY___FILE__
     mp_store_attr(MP_OBJ_FROM_PTR(&context->module), MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
     #else
@@ -188,7 +188,7 @@ STATIC void do_execute_raw_code(const mp_module_context_t *context, const mp_raw
     nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
     // make and execute the function
-    mp_obj_t module_fun = mp_make_function_from_raw_code(rc, context, NULL);
+    mp_obj_t module_fun = mp_make_function_from_proto_fun(proto_fun, context, NULL);
     mp_call_function_0(module_fun);
 
     // deregister exception handler and restore context
@@ -230,7 +230,7 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
             #else
             qstr frozen_file_qstr = MP_QSTRnull;
             #endif
-            do_execute_raw_code(module_obj, frozen->rc, frozen_file_qstr);
+            do_execute_proto_fun(module_obj, frozen->proto_fun, frozen_file_qstr);
             return;
         }
         #endif
@@ -247,7 +247,7 @@ STATIC void do_load(mp_module_context_t *module_obj, vstr_t *file) {
         mp_compiled_module_t cm;
         cm.context = module_obj;
         mp_raw_code_load_file(file_qstr, &cm);
-        do_execute_raw_code(cm.context, cm.rc, file_qstr);
+        do_execute_proto_fun(cm.context, cm.rc, file_qstr);
         return;
     }
     #endif

@@ -684,7 +684,7 @@ class CompiledModule:
         else:
             print("        .obj_table = NULL,")
         print("    },")
-        print("    .rc = (const mp_raw_code_t *)&raw_code_%s," % self.raw_code.escaped_name)
+        print("    .proto_fun = &proto_fun_%s," % self.raw_code.escaped_name)
         print("};")
 
     def freeze_constant_obj(self, obj_name, obj):
@@ -899,7 +899,7 @@ class RawCode(object):
                 print()
             print("static const mp_raw_code_t *const children_%s[] = {" % self.escaped_name)
             for rc in self.children:
-                print("    (const mp_raw_code_t *)&raw_code_%s," % rc.escaped_name)
+                print("    (const mp_raw_code_t *)&proto_fun_%s," % rc.escaped_name)
             if prelude_ptr:
                 print("    (void *)%s," % prelude_ptr)
             print("};")
@@ -911,7 +911,9 @@ class RawCode(object):
             raw_code_type = "mp_raw_code_t"
         else:
             raw_code_type = "mp_raw_code_truncated_t"
-        print("static const %s raw_code_%s = {" % (raw_code_type, self.escaped_name))
+        print("static const %s proto_fun_%s = {" % (raw_code_type, self.escaped_name))
+        print("    .proto_fun_indicator[0] = MP_PROTO_FUN_INDICATOR_RAW_CODE_0,")
+        print("    .proto_fun_indicator[1] = MP_PROTO_FUN_INDICATOR_RAW_CODE_1,")
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
         print("    .is_generator = %d," % bool(self.scope_flags & MP_SCOPE_FLAG_GENERATOR))
         print("    .fun_data = fun_data_%s," % self.escaped_name)
