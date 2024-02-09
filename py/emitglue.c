@@ -183,6 +183,18 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     // def_kw_args must be MP_OBJ_NULL or a dict
     assert(def_args == NULL || def_args[1] == MP_OBJ_NULL || mp_obj_is_type(def_args[1], &mp_type_dict));
 
+    #if MICROPY_MODULE_FROZEN_MPY
+    if (mp_proto_fun_is_bytecode(proto_fun)) {
+        const uint8_t *bc = proto_fun;
+        mp_obj_t fun = mp_obj_new_fun_bc(def_args, bc, context, NULL);
+        MP_BC_PRELUDE_SIG_DECODE(bc);
+        if (scope_flags & MP_SCOPE_FLAG_GENERATOR) {
+            ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
+        }
+        return fun;
+    }
+    #endif
+
     // the proto-function is a mp_raw_code_t
     const mp_raw_code_t *rc = proto_fun;
 
