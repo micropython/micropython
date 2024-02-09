@@ -23,17 +23,17 @@ if float("1e100") == float("inf"):
     raise SystemExit
 
 micropython.heap_lock()
-print(int("0x80000000"))
+print(int("0x80000000", 16))
 micropython.heap_unlock()
 
 # This is the most positive small integer.
 micropython.heap_lock()
-print(int("0x3fffffffffff"))
+print(int("0x3fffffffffff", 16))
 micropython.heap_unlock()
 
 # This is the most negative small integer.
 micropython.heap_lock()
-print(int("-0x3fffffffffff") - 1)
+print(int("-0x3fffffffffff", 16) - 1)
 micropython.heap_unlock()
 
 x = 1
