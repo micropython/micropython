@@ -281,7 +281,7 @@ const mp_fun_table_t mp_fun_table = {
     mp_obj_set_store,
     mp_obj_list_append,
     mp_obj_dict_store,
-    mp_make_function_from_raw_code,
+    mp_make_function_from_proto_fun,
     mp_native_call_function_n_kw,
     mp_call_method_n_kw,
     mp_call_method_n_kw_var,

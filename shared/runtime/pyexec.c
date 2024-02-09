@@ -88,7 +88,7 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
             mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
             ctx->module.globals = mp_globals_get();
             ctx->constants = frozen->constants;
-            module_fun = mp_make_function_from_raw_code(frozen->rc, ctx, NULL);
+            module_fun = mp_make_function_from_proto_fun(frozen->proto_fun, ctx, NULL);
         } else
         #endif
         {

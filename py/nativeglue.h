@@ -58,7 +58,7 @@ typedef enum {
     MP_F_STORE_SET,
     MP_F_LIST_APPEND,
     MP_F_STORE_MAP,
-    MP_F_MAKE_FUNCTION_FROM_RAW_CODE,
+    MP_F_MAKE_FUNCTION_FROM_PROTO_FUN,
     MP_F_NATIVE_CALL_FUNCTION_N_KW,
     MP_F_CALL_METHOD_N_KW,
     MP_F_CALL_METHOD_N_KW_VAR,
@@ -112,7 +112,7 @@ typedef struct _mp_fun_table_t {
     void (*set_store)(mp_obj_t self_in, mp_obj_t item);
     mp_obj_t (*list_append)(mp_obj_t self_in, mp_obj_t arg);
     mp_obj_t (*dict_store)(mp_obj_t self_in, mp_obj_t key, mp_obj_t value);
-    mp_obj_t (*make_function_from_raw_code)(const mp_raw_code_t *rc, const mp_module_context_t *cm, const mp_obj_t *def_args);
+    mp_obj_t (*make_function_from_proto_fun)(mp_proto_fun_t proto_fun, const mp_module_context_t *cm, const mp_obj_t *def_args);
     mp_obj_t (*call_function_n_kw)(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args);
     mp_obj_t (*call_method_n_kw)(size_t n_args, size_t n_kw, const mp_obj_t *args);
     mp_obj_t (*call_method_n_kw_var)(bool have_self, size_t n_args_n_kw, const mp_obj_t *args);

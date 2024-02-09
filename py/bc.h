@@ -44,11 +44,11 @@
 //  prelude size    : var uint
 //      contains two values interleaved bit-wise as: xIIIIIIC repeated
 //          x = extension           another byte follows
-//          I = n_info              number of bytes in source info section
+//          I = n_info              number of bytes in source info section (always > 0)
 //          C = n_cells             number of bytes/cells in closure section
 //
 //  source info section:
-//      simple_name : var qstr
+//      simple_name : var qstr      always exists
 //      argname0    : var qstr
 //      ...         : var qstr
 //      argnameN    : var qstr      N = num_pos_args + num_kwonly_args - 1
@@ -226,7 +226,7 @@ typedef struct _mp_compiled_module_t {
 // Outer level struct defining a frozen module.
 typedef struct _mp_frozen_module_t {
     const mp_module_constants_t constants;
-    const struct _mp_raw_code_t *rc;
+    const void *proto_fun;
 } mp_frozen_module_t;
 
 // State for an executing function.

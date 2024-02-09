@@ -69,7 +69,7 @@ void mp_embed_exec_mpy(const uint8_t *mpy, size_t len) {
         mp_compiled_module_t cm;
         cm.context = ctx;
         mp_raw_code_load_mem(mpy, len, &cm);
-        mp_obj_t f = mp_make_function_from_raw_code(cm.rc, ctx, MP_OBJ_NULL);
+        mp_obj_t f = mp_make_function_from_proto_fun(cm.rc, ctx, MP_OBJ_NULL);
         mp_call_function_0(f);
         nlr_pop();
     } else {

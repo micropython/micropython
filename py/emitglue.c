@@ -173,15 +173,18 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
 }
 #endif
 
-mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module_context_t *context, const mp_obj_t *def_args) {
-    DEBUG_OP_printf("make_function_from_raw_code %p\n", rc);
-    assert(rc != NULL);
+mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_module_context_t *context, const mp_obj_t *def_args) {
+    DEBUG_OP_printf("make_function_from_proto_fun %p\n", proto_fun);
+    assert(proto_fun != NULL);
 
     // def_args must be MP_OBJ_NULL or a tuple
     assert(def_args == NULL || def_args[0] == MP_OBJ_NULL || mp_obj_is_type(def_args[0], &mp_type_tuple));
 
     // def_kw_args must be MP_OBJ_NULL or a dict
     assert(def_args == NULL || def_args[1] == MP_OBJ_NULL || mp_obj_is_type(def_args[1], &mp_type_dict));
+
+    // the proto-function is a mp_raw_code_t
+    const mp_raw_code_t *rc = proto_fun;
 
     // make the function, depending on the raw code kind
     mp_obj_t fun;
@@ -221,16 +224,16 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
     return fun;
 }
 
-mp_obj_t mp_make_closure_from_raw_code(const mp_raw_code_t *rc, const mp_module_context_t *context, mp_uint_t n_closed_over, const mp_obj_t *args) {
-    DEBUG_OP_printf("make_closure_from_raw_code %p " UINT_FMT " %p\n", rc, n_closed_over, args);
+mp_obj_t mp_make_closure_from_proto_fun(mp_proto_fun_t proto_fun, const mp_module_context_t *context, mp_uint_t n_closed_over, const mp_obj_t *args) {
+    DEBUG_OP_printf("make_closure_from_proto_fun %p " UINT_FMT " %p\n", proto_fun, n_closed_over, args);
     // make function object
     mp_obj_t ffun;
     if (n_closed_over & 0x100) {
         // default positional and keyword args given
-        ffun = mp_make_function_from_raw_code(rc, context, args);
+        ffun = mp_make_function_from_proto_fun(proto_fun, context, args);
     } else {
         // default positional and keyword args not given
-        ffun = mp_make_function_from_raw_code(rc, context, NULL);
+        ffun = mp_make_function_from_proto_fun(proto_fun, context, NULL);
     }
     // wrap function in closure object
     return mp_obj_new_closure(ffun, n_closed_over & 0xff, args + ((n_closed_over >> 7) & 2));
