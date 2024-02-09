@@ -683,7 +683,7 @@ class CompiledModule:
         else:
             print("        .obj_table = NULL,")
         print("    },")
-        print("    .rc = &raw_code_%s," % self.raw_code.escaped_name)
+        print("    .rc = (const mp_raw_code_t *)&raw_code_%s," % self.raw_code.escaped_name)
         print("};")
 
     def freeze_constant_obj(self, obj_name, obj):
@@ -898,7 +898,7 @@ class RawCode(object):
                 print()
             print("static const mp_raw_code_t *const children_%s[] = {" % self.escaped_name)
             for rc in self.children:
-                print("    &raw_code_%s," % rc.escaped_name)
+                print("    (const mp_raw_code_t *)&raw_code_%s," % rc.escaped_name)
             if prelude_ptr:
                 print("    (void *)%s," % prelude_ptr)
             print("};")
@@ -906,7 +906,11 @@ class RawCode(object):
 
     def freeze_raw_code(self, prelude_ptr=None, type_sig=0):
         # Generate mp_raw_code_t.
-        print("static const mp_raw_code_t raw_code_%s = {" % self.escaped_name)
+        if self.code_kind == MP_CODE_NATIVE_ASM:
+            raw_code_type = "mp_raw_code_t"
+        else:
+            raw_code_type = "mp_raw_code_truncated_t"
+        print("static const %s raw_code_%s = {" % (raw_code_type, self.escaped_name))
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
         print("    .scope_flags = 0x%02x," % self.scope_flags)
         print("    .fun_data = fun_data_%s," % self.escaped_name)
@@ -949,10 +953,9 @@ class RawCode(object):
             print("    },")
             print("    #endif")
         print("    #endif")
-        print("    #if MICROPY_EMIT_INLINE_ASM")
-        print("    .asm_n_pos_args = %u," % self.n_pos_args)
-        print("    .asm_type_sig = %u," % type_sig)
-        print("    #endif")
+        if self.code_kind == MP_CODE_NATIVE_ASM:
+            print("    .asm_n_pos_args = %u," % self.n_pos_args)
+            print("    .asm_type_sig = %u," % type_sig)
         print("};")
 
         global raw_code_count, raw_code_content
