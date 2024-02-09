@@ -911,6 +911,13 @@ class RawCode(object):
             raw_code_type = "mp_raw_code_t"
         else:
             raw_code_type = "mp_raw_code_truncated_t"
+
+        empty_children = len(self.children) == 0 and prelude_ptr is None
+        generate_minimal = self.code_kind == MP_CODE_BYTECODE and empty_children
+
+        if generate_minimal:
+            print("#if MICROPY_PERSISTENT_CODE_SAVE")
+
         print("static const %s proto_fun_%s = {" % (raw_code_type, self.escaped_name))
         print("    .proto_fun_indicator[0] = MP_PROTO_FUN_INDICATOR_RAW_CODE_0,")
         print("    .proto_fun_indicator[1] = MP_PROTO_FUN_INDICATOR_RAW_CODE_1,")
@@ -960,6 +967,11 @@ class RawCode(object):
             print("    .asm_n_pos_args = %u," % self.n_pos_args)
             print("    .asm_type_sig = %u," % type_sig)
         print("};")
+
+        if generate_minimal:
+            print("#else")
+            print("#define proto_fun_%s fun_data_%s[0]" % (self.escaped_name, self.escaped_name))
+            print("#endif")
 
         global raw_code_count, raw_code_content
         raw_code_count += 1
