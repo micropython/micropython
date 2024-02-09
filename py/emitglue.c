@@ -71,7 +71,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     uint16_t scope_flags) {
 
     rc->kind = MP_CODE_BYTECODE;
-    rc->scope_flags = scope_flags;
+    rc->is_generator = (scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0;
     rc->fun_data = code;
     #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
     rc->fun_data_len = len;
@@ -133,7 +133,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     #endif
 
     rc->kind = kind;
-    rc->scope_flags = scope_flags;
+    rc->is_generator = (scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0;
     rc->fun_data = fun_data;
 
     #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
@@ -191,7 +191,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
         case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
             // Check for a generator function, and if so change the type of the object
-            if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
+            if (rc->is_generator) {
                 ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
             }
             break;
@@ -206,7 +206,7 @@ mp_obj_t mp_make_function_from_raw_code(const mp_raw_code_t *rc, const mp_module
             assert(rc->kind == MP_CODE_BYTECODE);
             fun = mp_obj_new_fun_bc(def_args, rc->fun_data, context, rc->children);
             // check for generator functions and if so change the type of the object
-            if ((rc->scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0) {
+            if (rc->is_generator) {
                 ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_gen_wrap;
             }
 

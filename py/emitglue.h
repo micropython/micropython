@@ -57,8 +57,8 @@ typedef enum {
 // mpy file: instance in RAM, created when .mpy file is loaded (same comments as above)
 // frozen: instance in ROM
 typedef struct _mp_raw_code_t {
-    uint32_t kind : 3; // of type mp_raw_code_kind_t
-    uint32_t scope_flags : 7;
+    uint8_t kind; // of type mp_raw_code_kind_t; only 3 bits used
+    bool is_generator;
     const void *fun_data;
     struct _mp_raw_code_t **children;
     #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
@@ -88,8 +88,8 @@ typedef struct _mp_raw_code_t {
 // only needed when the kind is MP_CODE_NATIVE_ASM.  So this struct can be used when the
 // kind is MP_CODE_BYTECODE, MP_CODE_NATIVE_PY or MP_CODE_NATIVE_VIPER, to reduce its size.
 typedef struct _mp_raw_code_truncated_t {
-    uint32_t kind : 3;
-    uint32_t scope_flags : 7;
+    uint8_t kind;
+    bool is_generator;
     const void *fun_data;
     struct _mp_raw_code_t **children;
     #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS

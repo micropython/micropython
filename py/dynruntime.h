@@ -209,7 +209,7 @@ static inline void *mp_obj_malloc_helper_dyn(size_t num_bytes, const mp_obj_type
     mp_obj_t old_globals = mp_fun_table.swap_globals(self->context->module.globals); \
     mp_raw_code_truncated_t rc; \
     rc.kind = MP_CODE_NATIVE_VIPER; \
-    rc.scope_flags = 0; \
+    rc.is_generator = 0; \
     (void)rc;
 
 #define MP_DYNRUNTIME_INIT_EXIT \
