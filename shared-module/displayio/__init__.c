@@ -27,6 +27,7 @@
 #include <string.h>
 
 #include "shared-module/displayio/__init__.h"
+#include "shared-bindings/displayio/__init__.h"
 
 #include "shared/runtime/interrupt_char.h"
 #include "py/runtime.h"
@@ -38,7 +39,6 @@
 #include "supervisor/shared/display.h"
 #include "supervisor/shared/reload.h"
 
-#include "supervisor/spi_flash_api.h"
 #include "py/mpconfig.h"
 
 #if CIRCUITPY_BUSDISPLAY
