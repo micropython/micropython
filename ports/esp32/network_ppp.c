@@ -43,6 +43,8 @@
 #include "lwip/dns.h"
 #include "netif/ppp/pppapi.h"
 
+#if defined(CONFIG_ESP_NETIF_TCPIP_LWIP) && defined(CONFIG_LWIP_PPP_SUPPORT)
+
 #define PPP_CLOSE_TIMEOUT_MS (4000)
 
 typedef struct _ppp_if_obj_t {
@@ -341,3 +343,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_NONE,
     locals_dict, &ppp_if_locals_dict
     );
+
+#endif
