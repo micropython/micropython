@@ -246,19 +246,12 @@ static int eth_mac_init(eth_t *self) {
     #endif
     mpu_config_end(irq_state);
 
-    // Enable peripheral clock
+    // Set MAC to reset state
     #if defined(STM32H5)
-    __HAL_RCC_ETH_CLK_ENABLE();
-    __HAL_RCC_ETHTX_CLK_ENABLE();
-    __HAL_RCC_ETHRX_CLK_ENABLE();
     __HAL_RCC_ETH_FORCE_RESET();
     #elif defined(STM32H7)
-    __HAL_RCC_ETH1MAC_CLK_ENABLE();
-    __HAL_RCC_ETH1TX_CLK_ENABLE();
-    __HAL_RCC_ETH1RX_CLK_ENABLE();
     __HAL_RCC_ETH1MAC_FORCE_RESET();
     #else
-    __HAL_RCC_ETH_CLK_ENABLE();
     __HAL_RCC_ETHMAC_FORCE_RESET();
     #endif
 
