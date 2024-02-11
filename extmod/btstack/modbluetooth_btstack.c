@@ -462,8 +462,9 @@ STATIC void btstack_packet_handler_read(uint8_t packet_type, uint16_t channel, u
         if (!conn) {
             return;
         }
-        mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, conn->pending_value_handle, status);
+        uint16_t value_handle = conn->pending_value_handle;
         conn->pending_value_handle = 0xffff;
+        mp_bluetooth_gattc_on_read_write_status(MP_BLUETOOTH_IRQ_GATTC_READ_DONE, conn_handle, value_handle, status);
     } else if (event_type == GATT_EVENT_CHARACTERISTIC_VALUE_QUERY_RESULT) {
         DEBUG_printf("  --> gatt characteristic value query result\n");
         uint16_t conn_handle = gatt_event_characteristic_value_query_result_get_handle(packet);
