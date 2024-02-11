@@ -65,8 +65,9 @@ class Central:
         self.done = False
         self._conn_handle = None
         self._service = None
-        self._characteristic = None
+        self._characteristic_handle = None
         self._cccd_handle = None
+        self._reads_remaining = None
         ble.active(1)
         ble.irq(self._ble_event_handler)
         ble.gap_connect(*BDADDR)
@@ -101,7 +102,8 @@ class Central:
             _, end_handle, value_handle, properties, uuid = data
             assert uuid == STATE_UUID
             print("characteristic found:", uuid)
-            self._characteristic = (end_handle, value_handle, properties)
+            assert self._characteristic_handle is None
+            self._characteristic_handle = value_handle
 
         elif event == _IRQ_GATTC_CHARACTERISTIC_DONE:
             start_handle, end_handle = self._service
@@ -128,17 +130,21 @@ class Central:
         elif event == _IRQ_GATTC_WRITE_DONE:
             conn_handle, _, result = data
             print("CCCD write result:", result)
-            _, state_handle, _ = self._characteristic
             print("issue gattc_read")
-            ble.gattc_read(self._conn_handle, state_handle)
+            self._reads_remaining = 2
+            ble.gattc_read(self._conn_handle, self._characteristic_handle)
 
         elif event == _IRQ_GATTC_READ_RESULT:
             _, _, char_data = data
             print("gattc_read result:", bytes(char_data))
 
         elif event == _IRQ_GATTC_READ_DONE:
-            self.done = True
-            ble.gap_disconnect(self._conn_handle)
+            self._reads_remaining -= 1
+            if self._reads_remaining > 0:
+                ble.gattc_read(self._conn_handle, self._characteristic_handle)
+            else:
+                self.done = True
+                ble.gap_disconnect(self._conn_handle)
 
 
 class Peripheral:
