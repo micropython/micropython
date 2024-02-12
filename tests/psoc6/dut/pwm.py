@@ -1,4 +1,7 @@
 # PWM test
+"""
+Setup: Connect pwm_pin to pin_in
+"""
 from machine import PWM, Pin
 import os
 import time
