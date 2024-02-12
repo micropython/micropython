@@ -4,6 +4,7 @@ description: JSON module does not throw exception when object is not serialisabl
 cause: Unknown
 workaround: Unknown
 """
+
 import json
 
 a = bytes(x for x in range(256))

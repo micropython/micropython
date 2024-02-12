@@ -48,6 +48,7 @@
 //|        rtc_slow_mem = memorymap.AddressRange(start=0x50000000, length=0x2000)
 //|        rtc_slow_mem[0:3] = b"\xcc\x10\x00"
 //|     """
+//|
 
 //|     def __init__(self, *, start, length) -> None:
 //|         """Constructs an address range starting at ``start`` and ending at
@@ -108,6 +109,7 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|         1, 2, 4 and 8 byte aligned reads will be done in one transaction.
 //|         All others may use multiple transactions."""
 //|         ...
+//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: ReadableBuffer) -> None: ...
 //|     @overload
