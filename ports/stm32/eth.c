@@ -223,10 +223,14 @@ void eth_init(eth_t *self, int mac_idx) {
     __HAL_RCC_ETH1TX_CLK_ENABLE();
     __HAL_RCC_ETH1RX_CLK_ENABLE();
     #elif defined(STM32F7)
+    #if MICROPY_HW_ETH_RMII_CLK_OUT
     HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLLCLK, RCC_MCODIV_4);
+    #endif
     __HAL_RCC_ETH_CLK_ENABLE();
     #else
+    #if MICROPY_HW_ETH_RMII_CLK_OUT
     HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_PLLCLK, RCC_MCODIV_3);
+    #endif
     __HAL_RCC_ETH_CLK_ENABLE();
     #endif
 }
