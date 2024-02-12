@@ -61,11 +61,9 @@ mp_raw_code_t *mp_emit_glue_new_raw_code(void) {
 }
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    size_t len,
-    #endif
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
+    size_t len,
     uint16_t n_children,
     #endif
     uint16_t scope_flags) {
@@ -73,12 +71,10 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     rc->kind = MP_CODE_BYTECODE;
     rc->is_generator = (scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0;
     rc->fun_data = code;
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    rc->fun_data_len = len;
-    #endif
     rc->children = children;
 
     #if MICROPY_PERSISTENT_CODE_SAVE
+    rc->fun_data_len = len;
     rc->n_children = n_children;
     #endif
 
@@ -88,7 +84,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
     #endif
 
     #if DEBUG_PRINT
-    #if !(MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS)
+    #if !MICROPY_PERSISTENT_CODE_SAVE
     const size_t len = 0;
     #endif
     DEBUG_printf("assign byte code: code=%p len=" UINT_FMT " flags=%x\n", code, len, (uint)scope_flags);
@@ -136,7 +132,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->is_generator = (scope_flags & MP_SCOPE_FLAG_GENERATOR) != 0;
     rc->fun_data = fun_data;
 
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
+    #if MICROPY_PERSISTENT_CODE_SAVE
     rc->fun_data_len = fun_len;
     #endif
     rc->children = children;
