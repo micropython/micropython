@@ -373,7 +373,7 @@ functions are defined in ``os`` module:
    Mounts a block device (like an ``SD`` object) in the specified mount
    point. Example::
 
-      os.mount(sd, '/sd')
+      vfs.mount(sd, '/sd')
 
 .. function:: unmount(path)
 

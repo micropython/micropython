@@ -232,20 +232,18 @@ STATIC void feed_dma(machine_i2s_obj_t *self, uint8_t *dma_buffer_p) {
 
 STATIC void irq_configure(machine_i2s_obj_t *self) {
     if (self->i2s_id == 0) {
-        irq_set_exclusive_handler(DMA_IRQ_0, dma_irq0_handler);
+        irq_add_shared_handler(DMA_IRQ_0, dma_irq0_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
         irq_set_enabled(DMA_IRQ_0, true);
     } else {
-        irq_set_exclusive_handler(DMA_IRQ_1, dma_irq1_handler);
+        irq_add_shared_handler(DMA_IRQ_1, dma_irq1_handler, PICO_SHARED_IRQ_HANDLER_DEFAULT_ORDER_PRIORITY);
         irq_set_enabled(DMA_IRQ_1, true);
     }
 }
 
 STATIC void irq_deinit(machine_i2s_obj_t *self) {
     if (self->i2s_id == 0) {
-        irq_set_enabled(DMA_IRQ_0, false);
         irq_remove_handler(DMA_IRQ_0, dma_irq0_handler);
     } else {
-        irq_set_enabled(DMA_IRQ_1, false);
         irq_remove_handler(DMA_IRQ_1, dma_irq1_handler);
     }
 }

@@ -104,6 +104,7 @@ the following libraries.
    neopixel.rst
    network.rst
    uctypes.rst
+   vfs.rst
 
 The following libraries provide drivers for hardware components.
 

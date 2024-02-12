@@ -86,6 +86,15 @@ ifneq ($(FROZEN_MANIFEST),)
 CFLAGS += -DMPZ_DIG_SIZE=16
 endif
 
+ifeq ($(shell $(CC) -dumpmachine),i686-w64-mingw32)
+# GCC disables the SSE instruction set by default on i366 targets and we have
+# to specify all three of these options to enable it.
+# https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html (see -mfpmath=unit section)
+# Enabling the SSE instruction set is necessary to get correct rounding of floating points.
+# https://lemire.me/blog/2020/06/26/gcc-not-nearest
+CFLAGS += -msse -mfpmath=sse -march=pentium4
+endif
+
 CXXFLAGS += $(filter-out -std=gnu99,$(CFLAGS))
 
 include $(TOP)/py/mkrules.mk

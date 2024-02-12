@@ -59,7 +59,6 @@
 #else
 #define MICROPY_CPYTHON_COMPAT                      (0)
 #endif
-#define MICROPY_QSTR_BYTES_IN_HASH                  (1)
 
 // fatfs configuration used in ffconf.h
 #define MICROPY_FATFS_ENABLE_LFN                    (2)
@@ -125,6 +124,7 @@
 #define MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME     (1)
 #define MICROPY_PY_TIME_TIME_TIME_NS                (1)
 #define MICROPY_PY_TIME_INCLUDEFILE                 "ports/cc3200/mods/modtime.c"
+#define MICROPY_PY_VFS                              (1)
 #define MICROPY_PY_MACHINE                          (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE              "ports/cc3200/mods/modmachine.c"
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS         (1)

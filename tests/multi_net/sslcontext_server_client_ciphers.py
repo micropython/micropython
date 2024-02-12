@@ -3,7 +3,7 @@
 try:
     import os
     import socket
-    import ssl
+    import tls
 except ImportError:
     print("SKIP")
     raise SystemExit
@@ -11,8 +11,12 @@ except ImportError:
 PORT = 8000
 
 # These are test certificates. See tests/README.md for details.
-cert = cafile = "rsa_cert.der"
-key = "rsa_key.der"
+cert = cafile = "ec_cert.der"
+key = "ec_key.der"
+with open(cafile, "rb") as f:
+    cadata = f.read()
+with open(key, "rb") as f:
+    keydata = f.read()
 
 try:
     os.stat(cafile)
@@ -31,8 +35,8 @@ def instance0():
     s.listen(1)
     multitest.next()
     s2, _ = s.accept()
-    server_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    server_ctx.load_cert_chain(cert, key)
+    server_ctx = tls.SSLContext(tls.PROTOCOL_TLS_SERVER)
+    server_ctx.load_cert_chain(cadata, keydata)
     s2 = server_ctx.wrap_socket(s2, server_side=True)
     assert isinstance(s2.cipher(), tuple)
     print(s2.read(16))
@@ -46,12 +50,12 @@ def instance1():
     multitest.next()
     s = socket.socket()
     s.connect(socket.getaddrinfo(IP, PORT)[0][-1])
-    client_ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    client_ctx = tls.SSLContext(tls.PROTOCOL_TLS_CLIENT)
     ciphers = client_ctx.get_ciphers()
-    assert "TLS-RSA-WITH-AES-256-CBC-SHA256" in ciphers
-    client_ctx.set_ciphers(["TLS-RSA-WITH-AES-256-CBC-SHA256"])
-    client_ctx.verify_mode = ssl.CERT_REQUIRED
-    client_ctx.load_verify_locations(cafile=cafile)
+    assert "TLS-ECDHE-ECDSA-WITH-AES-128-CBC-SHA256" in ciphers
+    client_ctx.set_ciphers(["TLS-ECDHE-ECDSA-WITH-AES-128-CBC-SHA256"])
+    client_ctx.verify_mode = tls.CERT_REQUIRED
+    client_ctx.load_verify_locations(cadata)
     s = client_ctx.wrap_socket(s, server_hostname="micropython.local")
     s.write(b"client to server")
     print(s.read(16))

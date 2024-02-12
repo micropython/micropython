@@ -219,6 +219,11 @@ def run_until_complete(main_task=None):
             elif t.state is None:
                 # Task is already finished and nothing await'ed on the task,
                 # so call the exception handler.
+
+                # Save exception raised by the coro for later use.
+                t.data = exc
+
+                # Create exception context and call the exception handler.
                 _exc_context["exception"] = exc
                 _exc_context["future"] = t
                 Loop.call_exception_handler(_exc_context)

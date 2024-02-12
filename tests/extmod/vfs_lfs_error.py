@@ -1,10 +1,10 @@
 # Test for VfsLittle using a RAM device, testing error handling
 
 try:
-    import os
+    import vfs
 
-    os.VfsLfs1
-    os.VfsLfs2
+    vfs.VfsLfs1
+    vfs.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -52,63 +52,63 @@ def test(bdev, vfs_class):
 
     # set up for following tests
     vfs_class.mkfs(bdev)
-    vfs = vfs_class(bdev)
-    with vfs.open("testfile", "w") as f:
+    fs = vfs_class(bdev)
+    with fs.open("testfile", "w") as f:
         f.write("test")
-    vfs.mkdir("testdir")
+    fs.mkdir("testdir")
 
     # ilistdir
     try:
-        vfs.ilistdir("noexist")
+        fs.ilistdir("noexist")
     except OSError:
         print("ilistdir OSError")
 
     # remove
     try:
-        vfs.remove("noexist")
+        fs.remove("noexist")
     except OSError:
         print("remove OSError")
 
     # rmdir
     try:
-        vfs.rmdir("noexist")
+        fs.rmdir("noexist")
     except OSError:
         print("rmdir OSError")
 
     # rename
     try:
-        vfs.rename("noexist", "somethingelse")
+        fs.rename("noexist", "somethingelse")
     except OSError:
         print("rename OSError")
 
     # mkdir
     try:
-        vfs.mkdir("testdir")
+        fs.mkdir("testdir")
     except OSError:
         print("mkdir OSError")
 
     # chdir to nonexistent
     try:
-        vfs.chdir("noexist")
+        fs.chdir("noexist")
     except OSError:
         print("chdir OSError")
-    print(vfs.getcwd())  # check still at root
+    print(fs.getcwd())  # check still at root
 
     # chdir to file
     try:
-        vfs.chdir("testfile")
+        fs.chdir("testfile")
     except OSError:
         print("chdir OSError")
-    print(vfs.getcwd())  # check still at root
+    print(fs.getcwd())  # check still at root
 
     # stat
     try:
-        vfs.stat("noexist")
+        fs.stat("noexist")
     except OSError:
         print("stat OSError")
 
     # error during seek
-    with vfs.open("testfile", "r") as f:
+    with fs.open("testfile", "r") as f:
         f.seek(1 << 30)  # SEEK_SET
         try:
             f.seek(1 << 30, 1)  # SEEK_CUR
@@ -117,5 +117,5 @@ def test(bdev, vfs_class):
 
 
 bdev = RAMBlockDevice(30)
-test(bdev, os.VfsLfs1)
-test(bdev, os.VfsLfs2)
+test(bdev, vfs.VfsLfs1)
+test(bdev, vfs.VfsLfs2)

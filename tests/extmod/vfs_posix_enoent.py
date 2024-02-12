@@ -1,10 +1,9 @@
 # Test for VfsPosix error conditions
 
 try:
-    import os
-    import sys
+    import os, sys, vfs
 
-    os.VfsPosix
+    vfs.VfsPosix
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -36,7 +35,7 @@ except OSError as e:
     print("getcwd():", repr(e))
 
 try:
-    print("VfsPosix():", os.VfsPosix("something"))
+    print("VfsPosix():", vfs.VfsPosix("something"))
 except OSError as e:
     # expecting ENOENT = 2
     print("VfsPosix():", repr(e))

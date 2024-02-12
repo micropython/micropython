@@ -45,9 +45,9 @@
 #define MBEDTLS_ECP_DP_SECP224K1_ENABLED
 #define MBEDTLS_ECP_DP_SECP256K1_ENABLED
 #define MBEDTLS_KEY_EXCHANGE_RSA_ENABLED
-// #define MBEDTLS_KEY_EXCHANGE_ECDHE_RSA_ENABLED // enabling this currently breaks ssl_data.py test
 #define MBEDTLS_KEY_EXCHANGE_ECDHE_ECDSA_ENABLED
-#define MBEDTLS_NO_PLATFORM_ENTROPY
+#define MBEDTLS_CAN_ECDH
+#define MBEDTLS_PK_CAN_ECDSA_SIGN
 #define MBEDTLS_PKCS1_V15
 #define MBEDTLS_SHA256_SMALLER
 #define MBEDTLS_SSL_PROTO_TLS1
@@ -81,12 +81,13 @@
 #define MBEDTLS_PLATFORM_C
 #define MBEDTLS_RSA_C
 #define MBEDTLS_SHA1_C
+#define MBEDTLS_SHA224_C
 #define MBEDTLS_SHA256_C
+#define MBEDTLS_SHA384_C
 #define MBEDTLS_SHA512_C
 #define MBEDTLS_SSL_CLI_C
 #define MBEDTLS_SSL_SRV_C
 #define MBEDTLS_SSL_TLS_C
-#define MBEDTLS_TLS_DEFAULT_ALLOW_SHA1_IN_KEY_EXCHANGE
 #define MBEDTLS_X509_CRT_PARSE_C
 #define MBEDTLS_X509_USE_C
 
@@ -97,6 +98,7 @@
 #define MBEDTLS_PLATFORM_MEMORY
 #define MBEDTLS_PLATFORM_NO_STD_FUNCTIONS
 #define MBEDTLS_ENTROPY_HARDWARE_ALT
+#define MBEDTLS_NO_PLATFORM_ENTROPY
 
 // Bare-metal memory allocation hooks.
 #include <stdlib.h>
@@ -108,8 +110,5 @@ void m_tracked_free(void *ptr);
 #define MBEDTLS_PLATFORM_SNPRINTF_MACRO snprintf
 
 #endif
-
-// Include mbedtls configuration checker.
-#include "mbedtls/check_config.h"
 
 #endif // MICROPY_INCLUDED_MBEDTLS_CONFIG_COMMON_H

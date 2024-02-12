@@ -1,11 +1,13 @@
-# https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 name: Python code lint and formatting with ruff
+
 on: [push, pull_request]
+
 jobs:
   ruff:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    # ruff version should be kept in sync with .pre-commit-config.yaml
     - run: pip install --user ruff==0.1.3
     - run: ruff check --output-format=github .
     - run: ruff format --diff .

@@ -4,12 +4,9 @@
 import sys
 
 try:
-    import io
+    import io, vfs
 
     io.IOBase
-    import os
-
-    os.mount
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -79,7 +76,7 @@ user_files = {
     "/usermod5.py": b"print('in usermod5')",
     "/usermod6.py": b"print('in usermod6')",
 }
-os.mount(UserFS(user_files), "/userfs")
+vfs.mount(UserFS(user_files), "/userfs")
 
 # open and read a file
 f = open("/userfs/data.txt")
@@ -110,5 +107,5 @@ UserFile.buffer_size = 1024
 import usermod6
 
 # unmount and undo path addition
-os.umount("/userfs")
+vfs.umount("/userfs")
 sys.path.pop()

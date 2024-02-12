@@ -1,12 +1,8 @@
 try:
-    import os
-except ImportError:
-    print("SKIP")
-    raise SystemExit
+    import os, vfs
 
-try:
-    os.VfsFat
-except AttributeError:
+    vfs.VfsFat
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
@@ -44,14 +40,14 @@ except MemoryError:
 
 # first we umount any existing mount points the target may have
 try:
-    os.umount("/")
+    vfs.umount("/")
 except OSError:
     pass
 for path in os.listdir("/"):
-    os.umount("/" + path)
+    vfs.umount("/" + path)
 
-os.VfsFat.mkfs(bdev)
-os.mount(bdev, "/")
+vfs.VfsFat.mkfs(bdev)
+vfs.mount(bdev, "/")
 
 print(os.getcwd())
 
@@ -94,8 +90,8 @@ for exist in ("", "/", "dir", "/dir", "dir/subdir"):
 os.chdir("/")
 print(os.stat("test5.txt")[:-3])
 
-os.VfsFat.mkfs(bdev2)
-os.mount(bdev2, "/sys")
+vfs.VfsFat.mkfs(bdev2)
+vfs.mount(bdev2, "/sys")
 print(os.listdir())
 print(os.listdir("sys"))
 print(os.listdir("/sys"))
@@ -104,7 +100,7 @@ os.rmdir("dir2")
 os.remove("test5.txt")
 print(os.listdir())
 
-os.umount("/")
+vfs.umount("/")
 print(os.getcwd())
 print(os.listdir())
 print(os.listdir("sys"))
