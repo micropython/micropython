@@ -73,9 +73,9 @@ STATIC inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint3
     return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width / 1000); // !# * --> /
 }
 
-STATIC inline cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj) {
+/*STATIC inline cy_rslt_t pwm_advanced_init(machine_pwm_obj_t *machine_pwm_obj) {
     return cyhal_pwm_init_adv(&machine_pwm_obj->pwm_obj, machine_pwm_obj->pin->addr, NC, CYHAL_PWM_LEFT_ALIGN, true, 0, true, NULL); // complimentary pin set as not connected
-}
+}*/
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -89,7 +89,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
         { MP_QSTR_freq,     MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_u16, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_ns,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
-        { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
+        // { MP_QSTR_invert,   MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
     };
 
     // Parse the arguments.
@@ -117,7 +117,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     }
 
     // inverts the respective output if the value is True
-    if (args[ARG_invert].u_int != VALUE_NOT_SET) {
+    /*if (args[ARG_invert].u_int != VALUE_NOT_SET) {
         self->invert = args[ARG_invert].u_int;
         if (self->invert == 1) {
             cyhal_pwm_free(&self->pwm_obj);
@@ -128,7 +128,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
             self->duty_type = DUTY_U16;
             self->duty = ((1) - ((self->duty) / 65535)) * 65535;
         }
-    }
+    }*/
     cyhal_pwm_start(&self->pwm_obj);
 }
 

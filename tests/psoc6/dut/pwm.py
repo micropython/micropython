@@ -1,8 +1,6 @@
+# PWM test
 from machine import PWM, Pin
-
 import os
-import time
-from machine import PWM, Pin
 import time
 
 # Allocate pin based on board
@@ -30,13 +28,13 @@ def _print_val(params_list, print_list=False):
             print(f"{params[0]} = {params[1]}")
 
 
-def measure_non_inverted_signal():
+def measure_signal():
     global start_time
     if input_pin.value() == 1:
         start_time = time.ticks_us()
         wait_for_low()
         return
-    measure_non_inverted_signal()
+    measure_signal()
 
 
 def wait_for_low():
@@ -54,7 +52,7 @@ def wait_for_high():
     high_signal_start_time = time.ticks_us()
 
 
-def validate_signal(exp_freq=0, exp_duty_u16=0, exp_duty_ns=0, exp_dutycycle=0, exp_invert=0):
+def validate_signal(exp_freq=0, exp_duty_u16=0, exp_duty_ns=0, exp_dutycycle=0):
     on_time = time.ticks_diff(low_signal_start_time, start_time)
     off_time = time.ticks_diff(high_signal_start_time, low_signal_start_time)
     time_period = on_time + off_time
@@ -88,7 +86,7 @@ def validate_signal(exp_freq=0, exp_duty_u16=0, exp_duty_ns=0, exp_dutycycle=0, 
 
 
 # T = 1sec (25% dc)
-pwm = PWM(pwm_pin, freq=1, duty_ns=250000000, invert=0)
+pwm = PWM(pwm_pin, freq=1, duty_ns=250000000)
 # Let the first pulse pass
 time.sleep(1)
 print(
@@ -97,10 +95,9 @@ print(
     ", duty_on(ns): ",
     pwm.duty_ns(),
     ", dutycycle(%): 25%",
-    ", invert_config: 0",
 )
-measure_non_inverted_signal()
-validate_signal(exp_freq=1, exp_duty_u16=0, exp_duty_ns=250000000, exp_dutycycle=25, exp_invert=0)
+measure_signal()
+validate_signal(exp_freq=1, exp_duty_u16=0, exp_duty_ns=250000000, exp_dutycycle=25)
 
 # T = 1sec (50% dc)
 pwm.duty_ns(500000000)
@@ -112,10 +109,9 @@ print(
     ", duty_on(ns): ",
     pwm.duty_ns(),
     ", dutycycle(%): 50%",
-    ", invert_config: 0",
 )
-measure_non_inverted_signal()
-validate_signal(exp_freq=1, exp_duty_u16=0, exp_duty_ns=500000000, exp_dutycycle=50, exp_invert=0)
+measure_signal()
+validate_signal(exp_freq=1, exp_duty_u16=0, exp_duty_ns=500000000, exp_dutycycle=50)
 
 # T = 1sec (75% dc)
 pwm.duty_u16(49151)
@@ -127,10 +123,9 @@ print(
     ", duty_u16(raw): ",
     pwm.duty_u16(),
     ", dutycycle(%): 75%",
-    ", invert_config: 0",
 )
-measure_non_inverted_signal()
-validate_signal(exp_freq=1, exp_duty_u16=49151, exp_duty_ns=0, exp_dutycycle=75, exp_invert=0)
+measure_signal()
+validate_signal(exp_freq=1, exp_duty_u16=49151, exp_duty_ns=0, exp_dutycycle=75)
 
 # Reconfigure frequency and dutycycle T = 1sec (50% dc)
 pwm.init(freq=2, duty_u16=32767)
@@ -142,9 +137,8 @@ print(
     ", duty_u16(raw): ",
     pwm.duty_u16(),
     ", dutycycle(%): 50%",
-    ", invert_config: 0",
 )
-measure_non_inverted_signal()
-validate_signal(exp_freq=2, exp_duty_u16=32767, exp_duty_ns=0, exp_dutycycle=50, exp_invert=0)
+measure_signal()
+validate_signal(exp_freq=2, exp_duty_u16=32767, exp_duty_ns=0, exp_dutycycle=50)
 
 pwm.deinit()
