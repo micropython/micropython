@@ -164,6 +164,10 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
     .out_report_lengths = { 0, },
 };
 
+usb_hid_interface_name_t usb_hid_interface_name_obj = {
+    .interface_name = USB_INTERFACE_NAME " HID",
+};
+
 STATIC size_t get_report_id_idx(usb_hid_device_obj_t *self, size_t report_id) {
     for (size_t i = 0; i < self->num_report_ids; i++) {
         if (report_id == self->report_ids[i]) {

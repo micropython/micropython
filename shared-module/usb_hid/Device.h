@@ -54,4 +54,10 @@ extern const usb_hid_device_obj_t usb_hid_device_consumer_control_obj;
 
 void usb_hid_device_create_report_buffers(usb_hid_device_obj_t *self);
 
+typedef struct {
+    char interface_name[128];
+} usb_hid_interface_name_t;
+
+extern usb_hid_interface_name_t usb_hid_interface_name_obj;
+
 #endif /* SHARED_MODULE_USB_HID_DEVICE_H */
