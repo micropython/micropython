@@ -1795,7 +1795,7 @@ def main():
     else:
         config.MICROPY_QSTR_BYTES_IN_LEN = 1
         config.MICROPY_QSTR_BYTES_IN_HASH = 1
-        firmware_qstr_idents = set(qstrutil.static_qstr_list)
+        firmware_qstr_idents = set(qstrutil.static_qstr_list_ident)
 
     # Create initial list of global qstrs.
     global_qstrs = GlobalQStrList()
