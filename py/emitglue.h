@@ -77,10 +77,8 @@ typedef struct _mp_raw_code_t {
     bool is_generator;
     const void *fun_data;
     struct _mp_raw_code_t **children;
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    uint32_t fun_data_len; // so mp_raw_code_save and mp_bytecode_print work
-    #endif
     #if MICROPY_PERSISTENT_CODE_SAVE
+    uint32_t fun_data_len; // for mp_raw_code_save
     uint16_t n_children;
     #if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
@@ -109,10 +107,8 @@ typedef struct _mp_raw_code_truncated_t {
     bool is_generator;
     const void *fun_data;
     struct _mp_raw_code_t **children;
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    uint32_t fun_data_len;
-    #endif
     #if MICROPY_PERSISTENT_CODE_SAVE
+    uint32_t fun_data_len;
     uint16_t n_children;
     #if MICROPY_EMIT_MACHINE_CODE
     uint16_t prelude_offset;
@@ -127,11 +123,9 @@ typedef struct _mp_raw_code_truncated_t {
 mp_raw_code_t *mp_emit_glue_new_raw_code(void);
 
 void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
-    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-    size_t len,
-    #endif
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
+    size_t len,
     uint16_t n_children,
     #endif
     uint16_t scope_flags);

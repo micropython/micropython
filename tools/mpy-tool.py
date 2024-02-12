@@ -930,10 +930,8 @@ class RawCode(object):
             print("    .children = (void *)%s," % prelude_ptr)
         else:
             print("    .children = NULL,")
-        print("    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS")
-        print("    .fun_data_len = %u," % len(self.fun_data))
-        print("    #endif")
         print("    #if MICROPY_PERSISTENT_CODE_SAVE")
+        print("    .fun_data_len = %u," % len(self.fun_data))
         print("    .n_children = %u," % len(self.children))
         print("    #if MICROPY_EMIT_MACHINE_CODE")
         print("    .prelude_offset = %u," % self.prelude_offset)
