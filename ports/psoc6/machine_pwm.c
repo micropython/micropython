@@ -168,7 +168,7 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->duty_type == DUTY_NS) {
         // duty_cycle = pulsewidth(ns)*freq(hz);
-        return mp_obj_new_float(((self->duty) * (self->fz) * 65535) / 1000000000);
+        return mp_obj_new_float(((self->duty) * (self->fz) * 65535) / 1000000000 - 1);
     } else {
         return mp_obj_new_float(self->duty);
     }
@@ -194,7 +194,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     self->duty = duty_ns;
     self->duty_type = DUTY_NS;
-    pwm_freq_duty_set(&self->pwm_obj, self->fz, duty_ns);
+    pwm_duty_set_ns(&self->pwm_obj, self->fz, duty_ns);
 }
 
 STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {

@@ -1,10 +1,5 @@
-### PWM - WIP
-""" Setup description: 
-    Connect pwm_pin to gpio_pin. PWM signal is generated at 50% duty cycle currently. Every time the level changes, the gpio_pin 
-    is triggered and elapsed tick is calculated. Based on values ton and toff, experimental duty cycle is calculated.
+from machine import PWM, Pin
 
-    *Known issue: This test will not work for any duty cycle except for 65535 or 0 values since there are fixes required in module.
-"""
 import os
 import time
 from machine import PWM, Pin
@@ -14,32 +9,142 @@ import time
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
     pwm_pin = "P12_0"
-    gpio_pin = "P13_6"
+    pin_in = "P13_6"
 
 elif "CY8CPROTO-063-BLE" in machine:
     pwm_pin = "P6_2"
-    gpio_pin = "P5_2"
+    pin_in = "P5_2"
 
-gpio_flag = 0
+input_pin = Pin(pin_in, Pin.IN)
 
-input_pin = Pin(gpio_pin, Pin.IN)
+start_time = 0
+low_signal_start_time = 0
+high_signal_start_time = 0
+tolerance = 3.0
+debug = False
 
-t0 = time.ticks_cpu()
 
-pwm = PWM(pwm_pin, freq=10, duty_u16=32768, invert=0)
+def _print_val(params_list, print_list=False):
+    if print_list:
+        for params in params_list:
+            print(f"{params[0]} = {params[1]}")
 
-while gpio_flag != 1:
+
+def measure_non_inverted_signal():
+    global start_time
     if input_pin.value() == 1:
-        gpio_flag = 1
-        t1 = time.ticks_cpu()
-        toff = t1 - t0
+        start_time = time.ticks_us()
+        wait_for_low()
+        return
+    measure_non_inverted_signal()
 
-while gpio_flag != 0:
-    if input_pin.value() == 0:
-        gpio_flag = 0
-        t2 = time.ticks_cpu()
-        ton = t2 - t1
 
-duty_cycle = (ton / (ton + toff)) * 100
+def wait_for_low():
+    global low_signal_start_time
+    while input_pin.value():
+        pass
+    low_signal_start_time = time.ticks_us()
+    wait_for_high()
 
-print("Experimental duty cycle(%) = ", duty_cycle)
+
+def wait_for_high():
+    global high_signal_start_time
+    while input_pin.value() < 1:
+        pass
+    high_signal_start_time = time.ticks_us()
+
+
+def validate_signal(exp_freq=0, exp_duty_u16=0, exp_duty_ns=0, exp_dutycycle=0, exp_invert=0):
+    on_time = time.ticks_diff(low_signal_start_time, start_time)
+    off_time = time.ticks_diff(high_signal_start_time, low_signal_start_time)
+    time_period = on_time + off_time
+    freq = 1000000 / (time_period)
+    dc = on_time / (time.ticks_diff(high_signal_start_time, start_time)) * 100
+
+    params = [
+        ["on_time(us)", on_time],
+        ["off_time(us)", off_time],
+        ["time_period(us)", time_period],
+        ["freq(Hz)", freq],
+        ["dc(%)", dc],
+    ]
+    _print_val(params, debug)
+
+    print(
+        "\nExpected freq(Hz) approx same as set freq(Hz) and experimentally calculated freq(Hz): ",
+        (exp_freq - tolerance) < pwm.freq() < (exp_freq + tolerance)
+        and (exp_freq - tolerance) < freq < (exp_freq + tolerance),
+    )
+
+    if exp_duty_ns:
+        print("Dutycycle(ns) value is same as set value: ", pwm.duty_ns() == exp_duty_ns)
+    if exp_duty_u16:
+        print("Dutycycle(raw) value is same as set value: ", pwm.duty_u16() == exp_duty_u16)
+
+    print(
+        "Expected duty cycle(%) approx same as experimental duty cycle(%): ",
+        (exp_dutycycle - tolerance) < dc < (exp_dutycycle + tolerance),
+    )
+
+
+# T = 1sec (25% dc)
+pwm = PWM(pwm_pin, freq=1, duty_ns=250000000, invert=0)
+# Let the first pulse pass
+time.sleep(1)
+print(
+    "\nTest Case 1: \n freq(Hz): ",
+    pwm.freq(),
+    ", duty_on(ns): ",
+    pwm.duty_ns(),
+    ", dutycycle(%): 25%",
+    ", invert_config: 0",
+)
+measure_non_inverted_signal()
+validate_signal(exp_freq=1, exp_duty_u16=0, exp_duty_ns=250000000, exp_dutycycle=25, exp_invert=0)
+
+# T = 1sec (50% dc)
+pwm.duty_ns(500000000)
+# Let the first pulse pass
+time.sleep(1)
+print(
+    "\nTest Case 2: \n freq(Hz): ",
+    pwm.freq(),
+    ", duty_on(ns): ",
+    pwm.duty_ns(),
+    ", dutycycle(%): 50%",
+    ", invert_config: 0",
+)
+measure_non_inverted_signal()
+validate_signal(exp_freq=1, exp_duty_u16=0, exp_duty_ns=500000000, exp_dutycycle=50, exp_invert=0)
+
+# T = 1sec (75% dc)
+pwm.duty_u16(49151)
+# Let the first pulse pass
+time.sleep(1)
+print(
+    "\nTest Case 3: \n freq(Hz): ",
+    pwm.freq(),
+    ", duty_u16(raw): ",
+    pwm.duty_u16(),
+    ", dutycycle(%): 75%",
+    ", invert_config: 0",
+)
+measure_non_inverted_signal()
+validate_signal(exp_freq=1, exp_duty_u16=49151, exp_duty_ns=0, exp_dutycycle=75, exp_invert=0)
+
+# Reconfigure frequency and dutycycle T = 1sec (50% dc)
+pwm.init(freq=2, duty_u16=32767)
+# Let the first 2 pulses pass
+time.sleep(1)
+print(
+    "\nTest Case 4: \n freq(Hz): ",
+    pwm.freq(),
+    ", duty_u16(raw): ",
+    pwm.duty_u16(),
+    ", dutycycle(%): 50%",
+    ", invert_config: 0",
+)
+measure_non_inverted_signal()
+validate_signal(exp_freq=2, exp_duty_u16=32767, exp_duty_ns=0, exp_dutycycle=50, exp_invert=0)
+
+pwm.deinit()
