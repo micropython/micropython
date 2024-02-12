@@ -201,6 +201,8 @@ ZeroDivisionError
 X
 '\x1b'
 b'\x00\xff'
+frzmpy4 1
+frzmpy4 2
 NULL
 uPy
 a long string that is not interned
