@@ -649,9 +649,11 @@ void gc_collect_end(void) {
     #if MICROPY_GC_SPLIT_HEAP
     MP_STATE_MEM(gc_last_free_area) = &MP_STATE_MEM(area);
     #endif
+    #if !MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area); area != NULL; area = NEXT_AREA(area)) {
         area->gc_last_free_atb_index = 0;
     }
+    #endif
     MP_STATE_THREAD(gc_lock_depth)--;
     GC_EXIT();
 }
@@ -838,6 +840,9 @@ found:
         #endif
         area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
     }
+    #if MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
+    area->gc_last_free_atb_index = (i + 1) / BLOCKS_PER_ATB;
+    #endif
 
     area->gc_last_used_block = MAX(area->gc_last_used_block, end_block);
 
@@ -966,10 +971,12 @@ void gc_free(void *ptr) {
     }
     #endif
 
+    #if !MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
     // set the last_free pointer to this block if it's earlier in the heap
     if (block / BLOCKS_PER_ATB < area->gc_last_free_atb_index) {
         area->gc_last_free_atb_index = block / BLOCKS_PER_ATB;
     }
+    #endif
 
     // free head and all of its tail blocks
     do {
@@ -1133,10 +1140,12 @@ void *gc_realloc(void *ptr_in, size_t n_bytes, bool allow_move) {
         }
         #endif
 
+        #if !MICROPY_DEBUG_VALGRIND_MAX_ADDRSPACE
         // set the last_free pointer to end of this block if it's earlier in the heap
         if ((block + new_blocks) / BLOCKS_PER_ATB < area->gc_last_free_atb_index) {
             area->gc_last_free_atb_index = (block + new_blocks) / BLOCKS_PER_ATB;
         }
+        #endif
 
         VALGRIND_MP_RESIZE_BLOCK(ptr, n_blocks, n_bytes);
 
