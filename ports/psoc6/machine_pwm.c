@@ -15,7 +15,7 @@ typedef struct _machine_pwm_obj_t {
     uint32_t fz;
     uint8_t duty_type;
     mp_int_t duty;
-    bool invert;
+    // bool invert;
 } machine_pwm_obj_t;
 
 static machine_pwm_obj_t *pwm_obj[MAX_PWM_OBJS] = { NULL };
@@ -79,12 +79,13 @@ STATIC inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint3
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "frequency=%u duty_cycle=%f invert=%u", self->fz, (double)self->duty, self->invert);
+    mp_printf(print, "frequency=%u duty_cycle=%f", self->fz, (double)self->duty);
 }
 
 STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
+    enum { ARG_freq, ARG_duty_u16, ARG_duty_ns};
+    // enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_freq,     MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
         { MP_QSTR_duty_u16, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = VALUE_NOT_SET} },
@@ -141,7 +142,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     pwm_pin_alloc(self, all_args[0]);
     self->duty_type = DUTY_NOT_SET;
     self->fz = -1;
-    self->invert = -1;
+    // self->invert = -1;
 
     // Initialize PWM
     cy_rslt_t result = cyhal_pwm_init(&self->pwm_obj, self->pin->addr, NULL);
