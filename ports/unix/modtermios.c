@@ -24,6 +24,8 @@
  * THE SOFTWARE.
  */
 
+#if MICROPY_PY_TERMIOS
+
 #include <sys/types.h>
 #include <termios.h>
 #include <unistd.h>
@@ -32,8 +34,6 @@
 #include "py/objlist.h"
 #include "py/runtime.h"
 #include "py/mphal.h"
-
-#if MICROPY_PY_TERMIOS
 
 STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     struct termios term;
