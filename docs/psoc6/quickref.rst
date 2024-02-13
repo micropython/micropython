@@ -451,8 +451,8 @@ The constructor can be called by passing the required arguments. All initializat
 
 ::  
 
-    pwm = PWM('P9_0', freq=50, duty_u16=8192, invert=0) # PWM is initialised for the given pin with respective frequency & duty cycle.
-    pwm1 = PWM('P9_1', freq=50, duty_ns=1000, invert=1)  # PWM is initialised for the given pin with respective frequency & pulse width & inverts the output.
+    pwm = PWM('P9_0', freq=50, duty_u16=8192) # PWM is initialised for the given pin with respective frequency & duty cycle given as raw value.
+    pwm1 = PWM('P9_1', freq=50, duty_ns=1000)  # PWM is initialised for the given pin with respective frequency & duty cycle given in nanoseconds.
 
     All four arguments has to be passed manadatorily to create PWM object. duty_u16 or duty_ns should be specified at a time.  
 
@@ -460,7 +460,7 @@ The constructor can be called by passing the required arguments. All initializat
 
     from machine import PWM
 
-    pwm = PWM('P9_0', freq=50, duty_u16=8192, invert=0) 
+    pwm = PWM('P9_0', freq=50, duty_u16=8192) 
     print(pwm)                                # view PWM settings
 
     pwm.freq()                                # get current frequency
@@ -472,8 +472,12 @@ The constructor can be called by passing the required arguments. All initializat
     pwm.duty_ns()                             # get current pulse width in ns
     pwm.duty_ns(1000)                         # set the current pulse width in ns from 0 to 1000000000/freq
 
-    pwm.init(freq=90,duty_us=100,invert=1)    # Modify the settings of PWM object
+    pwm.init(freq=90,duty_us=100)             # Modify the settings of PWM object
     pwm.deinit()                              # Deinitialisation of PWM pin
+
+
+.. note::
+    invert functionality is not enabled in this port.
 
 Software SPI bus
 ----------------
