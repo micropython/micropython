@@ -79,10 +79,13 @@ INC += \
 	-isystem esp-idf/components/driver/deprecated \
 	-isystem esp-idf/components/driver/dac/include \
 	-isystem esp-idf/components/driver/gpio/include \
+	-isystem esp-idf/components/driver/gptimer/include \
 	-isystem esp-idf/components/driver/i2c/include \
 	-isystem esp-idf/components/driver/i2s/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/driver/ledc/include \
+	-isystem esp-idf/components/driver/pcnt/include \
+	-isystem esp-idf/components/driver/rmt/include \
 	-isystem esp-idf/components/driver/spi/include \
 	-isystem esp-idf/components/driver/temperature_sensor/include \
 	-isystem esp-idf/components/driver/touch_sensor/include \
@@ -280,18 +283,12 @@ SRC_C += \
 	boards/$(BOARD)/pins.c \
 	shared/netutils/netutils.c \
 	peripherals/i2c.c \
-	peripherals/rmt.c \
-	peripherals/timer.c \
 	peripherals/$(IDF_TARGET)/pins.c
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 
 ifneq ($(CIRCUITPY_ESP_USB_SERIAL_JTAG),0)
 SRC_C += supervisor/usb_serial_jtag.c
-endif
-
-ifneq ($(CIRCUITPY_COUNTIO),0)
-SRC_C += peripherals/pcnt.c
 endif
 
 ifneq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),0)

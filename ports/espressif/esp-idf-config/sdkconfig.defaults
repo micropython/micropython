@@ -16,7 +16,8 @@ CONFIG_PARTITION_TABLE_CUSTOM=y
 #
 # GPTimer Configuration
 #
-CONFIG_GPTIMER_SUPPRESS_DEPRECATE_WARN=y
+CONFIG_GPTIMER_CTRL_FUNC_IN_IRAM=y
+CONFIG_GPTIMER_ISR_IRAM_SAFE=y
 # end of GPTimer Configuration
 
 # end of Driver Configurations

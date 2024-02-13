@@ -40,11 +40,16 @@
  * limitations under the License.
  */
 
+#include "shared-bindings/neopixel_write/__init__.h"
+
 #include "py/mphal.h"
 #include "py/runtime.h"
-#include "shared-bindings/neopixel_write/__init__.h"
+
+#include "bindings/espidf/__init__.h"
 #include "supervisor/port.h"
-#include "peripherals/rmt.h"
+
+#include "driver/gpio.h"
+#include "driver/rmt_tx.h"
 
 // Use closer to WS2812-style timings instead of WS2812B, to accommodate more varieties.
 #define WS2812_T0H_NS (316)
@@ -52,88 +57,81 @@
 #define WS2812_T1H_NS (700)
 #define WS2812_T1L_NS (564)
 
-static uint32_t ws2812_t0h_ticks = 0;
-static uint32_t ws2812_t1h_ticks = 0;
-static uint32_t ws2812_t0l_ticks = 0;
-static uint32_t ws2812_t1l_ticks = 0;
-
 static uint64_t next_start_raw_ticks = 0;
-
-static void IRAM_ATTR ws2812_rmt_adapter(const void *src, rmt_item32_t *dest, size_t src_size,
-    size_t wanted_num, size_t *translated_size, size_t *item_num) {
-    if (src == NULL || dest == NULL) {
-        *translated_size = 0;
-        *item_num = 0;
-        return;
-    }
-    const rmt_item32_t bit0 = {{{ ws2812_t0h_ticks, 1, ws2812_t0l_ticks, 0 }}}; // Logical 0
-    const rmt_item32_t bit1 = {{{ ws2812_t1h_ticks, 1, ws2812_t1l_ticks, 0 }}}; // Logical 1
-    size_t size = 0;
-    size_t num = 0;
-    uint8_t *psrc = (uint8_t *)src;
-    rmt_item32_t *pdest = dest;
-    while (size < src_size && num < wanted_num) {
-        for (int i = 0; i < 8; i++) {
-            // MSB first
-            if (*psrc & (1 << (7 - i))) {
-                pdest->val = bit1.val;
-            } else {
-                pdest->val = bit0.val;
-            }
-            num++;
-            pdest++;
-        }
-        size++;
-        psrc++;
-    }
-    *translated_size = size;
-    *item_num = num;
-}
 
 void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout, uint8_t *pixels, uint32_t numBytes) {
     // Reserve channel
-    uint8_t number = digitalinout->pin->number;
-    rmt_channel_t channel = peripherals_find_and_reserve_rmt(TRANSMIT_MODE);
-    if (channel == RMT_CHANNEL_MAX) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
-    }
+    rmt_tx_channel_config_t config = {
+        .gpio_num = digitalinout->pin->number,
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = 40000000,
+        .trans_queue_depth = 1,
+        .mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL,
+    };
+    rmt_channel_handle_t channel;
+    CHECK_ESP_RESULT(rmt_new_tx_channel(&config, &channel));
 
-    // Configure Channel
-    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(number, channel);
-    config.clk_div = 2; // set counter clock to 40MHz
-    rmt_config(&config);
-    rmt_driver_install(config.channel, 0, 0);
+    size_t ns_per_tick = 1e9 / 40000000;
+    uint16_t ws2812_t0h_ticks = WS2812_T0H_NS / ns_per_tick;
+    uint16_t ws2812_t0l_ticks = WS2812_T0L_NS / ns_per_tick;
+    uint16_t ws2812_t1h_ticks = WS2812_T1H_NS / ns_per_tick;
+    uint16_t ws2812_t1l_ticks = WS2812_T1L_NS / ns_per_tick;
 
-    // Convert NS timings to ticks
-    uint32_t counter_clk_hz = 0;
-    if (rmt_get_counter_clock(config.channel, &counter_clk_hz) != ESP_OK) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Could not retrieve clock"));
-    }
-    size_t ns_per_tick = 1e9 / counter_clk_hz;
-    ws2812_t0h_ticks = WS2812_T0H_NS / ns_per_tick;
-    ws2812_t0l_ticks = WS2812_T0L_NS / ns_per_tick;
-    ws2812_t1h_ticks = WS2812_T1H_NS / ns_per_tick;
-    ws2812_t1l_ticks = WS2812_T1L_NS / ns_per_tick;
-
-    // Initialize automatic timing translator
-    rmt_translator_init(config.channel, ws2812_rmt_adapter);
+    rmt_symbol_word_t bit0 = {
+        .duration0 = ws2812_t0h_ticks,
+        .level0 = 1,
+        .duration1 = ws2812_t0l_ticks,
+        .level1 = 0
+    };
+    rmt_symbol_word_t bit1 = {
+        .duration0 = ws2812_t1h_ticks,
+        .level0 = 1,
+        .duration1 = ws2812_t1l_ticks,
+        .level1 = 0
+    };
+    rmt_bytes_encoder_config_t encoder_config = {
+        .bit0 = bit0,
+        .bit1 = bit1,
+        .flags = {
+            .msb_first = true
+        }
+    };
+    rmt_encoder_handle_t encoder;
+    CHECK_ESP_RESULT(rmt_new_bytes_encoder(&encoder_config, &encoder));
 
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
     while (port_get_raw_ticks(NULL) < next_start_raw_ticks) {
     }
 
+    rmt_enable(channel);
+
     // Write and wait to finish
-    if (rmt_write_sample(config.channel, pixels, (size_t)numBytes, true) != ESP_OK) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Input/output error"));
+    rmt_transmit_config_t transmit_config = {
+        .loop_count = 0,
+        .flags.eot_level = 0
+    };
+    esp_err_t result = rmt_transmit(channel, encoder, pixels, (size_t)numBytes, &transmit_config);
+    if (result != ESP_OK) {
+        rmt_del_encoder(encoder);
+        rmt_disable(channel);
+        rmt_del_channel(channel);
+        raise_esp_error(result);
     }
-    rmt_wait_tx_done(config.channel, pdMS_TO_TICKS(100));
+    result = ESP_ERR_TIMEOUT;
+    while (result == ESP_ERR_TIMEOUT) {
+        RUN_BACKGROUND_TASKS;
+        result = rmt_tx_wait_all_done(channel, 0);
+    }
 
     // Update the next start to +2 ticks. It ensures that we've gone 300+ us.
     next_start_raw_ticks = port_get_raw_ticks(NULL) + 2;
 
     // Free channel again
-    peripherals_free_rmt(config.channel);
+    rmt_del_encoder(encoder);
+    rmt_disable(channel);
+    rmt_del_channel(channel);
+    CHECK_ESP_RESULT(result);
     // Swap pin back to GPIO mode
     gpio_set_direction(digitalinout->pin->number, GPIO_MODE_OUTPUT);
 }

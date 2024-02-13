@@ -19,14 +19,8 @@
 #
 # PCNT Configuration
 #
-CONFIG_PCNT_SUPPRESS_DEPRECATE_WARN=y
+CONFIG_PCNT_CTRL_FUNC_IN_IRAM=y
 # end of PCNT Configuration
-
-#
-# RMT Configuration
-#
-CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
-# end of RMT Configuration
 
 # end of Driver Configurations
 

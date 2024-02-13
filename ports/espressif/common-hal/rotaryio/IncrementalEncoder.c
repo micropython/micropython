@@ -24,17 +24,15 @@
  * THE SOFTWARE.
  */
 
-#include "common-hal/rotaryio/IncrementalEncoder.h"
 #include "shared-bindings/rotaryio/IncrementalEncoder.h"
+
+#include "bindings/espidf/__init__.h"
 #include "common-hal/microcontroller/Pin.h"
 
 #include "py/runtime.h"
 
 void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencoder_obj_t *self,
     const mcu_pin_obj_t *pin_a, const mcu_pin_obj_t *pin_b) {
-    claim_pin(pin_a);
-    claim_pin(pin_b);
-
     // This configuration counts on all edges of the quadrature signal: Channel 0
     // counts on rising and falling edges of channel A, with the direction set by the
     // polarity of channel B. Channel 1 does likewise, counting edges of channel B according
@@ -43,66 +41,74 @@ void common_hal_rotaryio_incrementalencoder_construct(rotaryio_incrementalencode
     //
     // These routines also implicitly configure the weak internal pull-ups, as expected
     // in CircuitPython.
-
-    // Prepare configuration for the PCNT unit
-    pcnt_config_t pcnt_config_channel_0 = {
-        // Set PCNT input signal and control GPIOs
-        .pulse_gpio_num = pin_a->number,
-        .ctrl_gpio_num = pin_b->number,
-        .channel = PCNT_CHANNEL_0,
-        // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_DEC,      // Count down on the positive edge
-        .neg_mode = PCNT_COUNT_INC,      // Count up on negative edge
-        // What to do when control input is low or high?
-        .lctrl_mode = PCNT_MODE_REVERSE, // Reverse counting direction if low
-        .hctrl_mode = PCNT_MODE_KEEP,    // Keep the primary counter mode if high
+    pcnt_unit_config_t unit_config = {
+        // Set counter limit
+        .low_limit = -INT16_MAX,
+        .high_limit = INT16_MAX
     };
+    // The pulse count driver automatically counts roll overs.
+    unit_config.flags.accum_count = true;
 
-    // Allocate and initialize PCNT unit, CHANNEL_0.
-    const int8_t unit = peripherals_pcnt_init(&pcnt_config_channel_0);
-    if (unit == -1) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
+    // initialize PCNT
+    CHECK_ESP_RESULT(pcnt_new_unit(&unit_config, &self->unit));
+
+    pcnt_chan_config_t channel_a_config = {
+        .edge_gpio_num = pin_a->number,
+        .level_gpio_num = pin_b->number
+    };
+    esp_err_t result = pcnt_new_channel(self->unit, &channel_a_config, &self->channel_a);
+    if (result != ESP_OK) {
+        pcnt_del_unit(self->unit);
+        self->unit = NULL;
+        raise_esp_error(result);
     }
+    pcnt_channel_set_edge_action(self->channel_a, PCNT_CHANNEL_EDGE_ACTION_DECREASE /* pos */, PCNT_CHANNEL_EDGE_ACTION_INCREASE /* neg */);
+    pcnt_channel_set_level_action(self->channel_a, PCNT_CHANNEL_LEVEL_ACTION_KEEP /* high */, /* low */ PCNT_CHANNEL_LEVEL_ACTION_INVERSE);
 
-    pcnt_config_t pcnt_config_channel_1 = {
-        // Set PCNT input signal and control GPIOs
-        .pulse_gpio_num = pin_b->number,  // Pins are reversed from above
-        .ctrl_gpio_num = pin_a->number,
-        .channel = PCNT_CHANNEL_1,
-        // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_DEC,      // Count down on the positive edge
-        .neg_mode = PCNT_COUNT_INC,      // Count up on negative edge
-        // What to do when control input is low or high?
-        .lctrl_mode = PCNT_MODE_KEEP,        // Keep the primary counter mode if low
-        .hctrl_mode = PCNT_MODE_REVERSE,     // Reverse counting direction if high
-        .unit = unit,
+    pcnt_chan_config_t channel_b_config = {
+        .edge_gpio_num = pin_b->number,
+        .level_gpio_num = pin_a->number
     };
-
-    // Reinitialize same unit, CHANNEL_1 with different parameters.
-    peripherals_pcnt_reinit(&pcnt_config_channel_1);
+    result = pcnt_new_channel(self->unit, &channel_b_config, &self->channel_b);
+    if (result != ESP_OK) {
+        pcnt_del_channel(self->channel_a);
+        pcnt_del_unit(self->unit);
+        self->unit = NULL;
+        raise_esp_error(result);
+    }
+    pcnt_channel_set_edge_action(self->channel_b, PCNT_CHANNEL_EDGE_ACTION_DECREASE /* pos */, PCNT_CHANNEL_EDGE_ACTION_INCREASE /* neg */);
+    pcnt_channel_set_level_action(self->channel_b, PCNT_CHANNEL_LEVEL_ACTION_INVERSE /* high */, /* low */ PCNT_CHANNEL_LEVEL_ACTION_KEEP);
 
     self->pin_a = pin_a->number;
     self->pin_b = pin_b->number;
-    self->unit = (pcnt_unit_t)unit;
+
+    claim_pin(pin_a);
+    claim_pin(pin_b);
+
+    pcnt_unit_enable(self->unit);
+    pcnt_unit_start(self->unit);
 }
 
 bool common_hal_rotaryio_incrementalencoder_deinited(rotaryio_incrementalencoder_obj_t *self) {
-    return self->unit == PCNT_UNIT_MAX;
+    return self->unit == NULL;
 }
 
 void common_hal_rotaryio_incrementalencoder_deinit(rotaryio_incrementalencoder_obj_t *self) {
     if (common_hal_rotaryio_incrementalencoder_deinited(self)) {
         return;
     }
+    pcnt_unit_disable(self->unit);
     reset_pin_number(self->pin_a);
     reset_pin_number(self->pin_b);
-    peripherals_pcnt_deinit(&self->unit);
-    self->unit = PCNT_UNIT_MAX;
+    pcnt_del_channel(self->channel_a);
+    pcnt_del_channel(self->channel_b);
+    pcnt_del_unit(self->unit);
+    self->unit = NULL;
 }
 
 mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementalencoder_obj_t *self) {
-    int16_t count;
-    pcnt_get_counter_value(self->unit, &count);
+    int count;
+    pcnt_unit_get_count(self->unit, &count);
 
     return (count + self->position) / self->divisor;
 }
@@ -110,7 +116,7 @@ mp_int_t common_hal_rotaryio_incrementalencoder_get_position(rotaryio_incrementa
 void common_hal_rotaryio_incrementalencoder_set_position(rotaryio_incrementalencoder_obj_t *self,
     mp_int_t new_position) {
     self->position = new_position * self->divisor;
-    pcnt_counter_clear(self->unit);
+    pcnt_unit_clear_count(self->unit);
 }
 
 mp_int_t common_hal_rotaryio_incrementalencoder_get_divisor(rotaryio_incrementalencoder_obj_t *self) {
