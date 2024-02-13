@@ -40,7 +40,7 @@
 #include "lwip/dhcp.h"
 #include "netif/ethernet.h"
 
-// ETH PHY register definitions (for LAN8742)
+// ETH PHY register definitions (for LAN87* series (LAN8720, LAN8740...))
 
 #undef PHY_BCR
 #define PHY_BCR                 (0x0000)
