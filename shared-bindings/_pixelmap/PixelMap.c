@@ -160,10 +160,12 @@ MP_DEFINE_CONST_FUN_OBJ_2(pixelmap_pixelmap_indices_obj, pixelmap_pixelmap_indic
 //|     def __getitem__(self, index: slice) -> PixelReturnSequence:
 //|         """Retrieve the value of the underlying pixels."""
 //|         ...
+//|
 //|     @overload
 //|     def __getitem__(self, index: int) -> PixelReturnType:
 //|         """Retrieve the value of one of the underlying pixels at 'index'."""
 //|         ...
+//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: PixelSequence) -> None: ...
 //|     @overload

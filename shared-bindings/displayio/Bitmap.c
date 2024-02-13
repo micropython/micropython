@@ -139,6 +139,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_bits_per_value_obj,
 //|
 //|           print(bitmap[0,1])"""
 //|         ...
+//|
 //|     def __setitem__(self, index: Union[Tuple[int, int], int], value: int) -> None:
 //|         """Sets the value at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.

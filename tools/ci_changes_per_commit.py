@@ -158,9 +158,11 @@ def get_commit_depth_and_check_suite(query_commits):
                         if check_suite["workflowRun"]["workflow"]["name"] == "Build CI":
                             return [
                                 {"sha": commit_sha, "depth": commit_depth},
-                                check_suite["id"]
-                                if check_suite["conclusion"] != "SUCCESS"
-                                else None,
+                                (
+                                    check_suite["id"]
+                                    if check_suite["conclusion"] != "SUCCESS"
+                                    else None
+                                ),
                             ]
         if not query_commits.paginate(commits["pageInfo"], "beforeCommit"):
             return [None, None]
