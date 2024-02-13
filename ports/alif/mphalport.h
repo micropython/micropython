@@ -85,6 +85,8 @@ typedef struct _machine_pin_obj_t {
     GPIO_Type *gpio;
     uint8_t port;
     uint8_t pin;
+    uint8_t adc12_periph : 2;
+    uint8_t adc12_channel : 3;
     qstr name;
 } machine_pin_obj_t;
 

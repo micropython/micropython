@@ -176,6 +176,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	Device/common/source/system_M55.c \
 	Device/common/source/system_utils.c \
 	Device/core/$(MCU_CORE)/source/startup_$(MCU_CORE).c \
+	drivers/source/adc.c \
 	drivers/source/mhu_driver.c \
 	drivers/source/mhu_receiver.c \
 	drivers/source/mhu_sender.c \
