@@ -31,7 +31,11 @@ QSTR_DEFS += qstrdefsport.h
 QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 
 # OS name, for simple autoconfig
+ifeq ($(VARIANT),wasi)
+UNAME_S := wasi
+else
 UNAME_S := $(shell uname -s)
+endif
 
 # include py core make definitions
 include $(TOP)/py/py.mk
@@ -111,7 +115,7 @@ CC = clang
 endif
 # Use clang syntax for map file
 LDFLAGS_ARCH = -Wl,-map,$@.map -Wl,-dead_strip
-else
+else ifeq ($(UNAME_S),Linux)
 # Use gcc syntax for map file
 LDFLAGS_ARCH = -Wl,-Map=$@.map,--cref -Wl,--gc-sections
 endif
@@ -317,6 +321,21 @@ $(BUILD)/lib/libffi/include/ffi.h: $(TOP)/lib/libffi/configure
 
 PREFIX = /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/bin
+
+ifeq ($(VARIANT),wasi)
+# LLVM still uses the older version of EH proposal. ("phase 3")
+# Convert to the latest version of EH proposal with exnref.
+$(BUILD)/$(PROG).spilled.exnref: $(BUILD)/$(PROG).spilled
+	$(WASM_OPT) --translate-to-exnref --enable-exception-handling \
+	-o $(BUILD)/$(PROG).spilled.exnref $(BUILD)/$(PROG).spilled
+
+# Unlike emscripten, WASI doesn't provide a way to scan GC roots
+# like WASM locals. Hopefully --spill-pointers can workaround it.
+$(BUILD)/$(PROG).spilled: $(BUILD)/$(PROG)
+	$(WASM_OPT) --spill-pointers -o $(BUILD)/$(PROG).spilled $(BUILD)/$(PROG)
+
+all: $(BUILD)/$(PROG).spilled.exnref
+endif
 
 install: $(BUILD)/$(PROG)
 	install -d $(BINDIR)
