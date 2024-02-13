@@ -50,8 +50,8 @@
 #define ISSI_FLASH_IS25WX256 (0x9d)
 #define ISSI_MODE_OCTAL_DDR_DQS (0xe7)
 
-// GPIO15_7
-#define OSPI_RESET (pin_GPIO15_7)
+// P15_7
+#define OSPI_RESET (pin_P15_7)
 
 #define OSPI1_D0_PORT                            PORT_9
 #define OSPI1_D0_PIN                             PIN_5

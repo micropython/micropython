@@ -12,31 +12,31 @@ NUM_PINS_PER_PORT = 8
 
 # Maps pad name to (adc12_periph, adc12_channel).
 ADC12_ANA_MAP = {
-    "GPIO0_0": (0, 0),
-    "GPIO0_1": (0, 1),
-    "GPIO0_2": (0, 2),
-    "GPIO0_3": (0, 3),
-    "GPIO0_4": (0, 4),
-    "GPIO0_5": (0, 5),
-    "GPIO0_6": (1, 0),
-    "GPIO0_7": (1, 1),
-    "GPIO1_0": (1, 2),
-    "GPIO1_1": (1, 3),
-    "GPIO1_2": (1, 4),
-    "GPIO1_3": (1, 5),
-    "GPIO1_4": (2, 0),
-    "GPIO1_5": (2, 1),
-    "GPIO1_6": (2, 2),
-    "GPIO1_7": (2, 3),
-    "GPIO2_0": (2, 4),
-    "GPIO2_1": (2, 5),
+    "P0_0": (0, 0),
+    "P0_1": (0, 1),
+    "P0_2": (0, 2),
+    "P0_3": (0, 3),
+    "P0_4": (0, 4),
+    "P0_5": (0, 5),
+    "P0_6": (1, 0),
+    "P0_7": (1, 1),
+    "P1_0": (1, 2),
+    "P1_1": (1, 3),
+    "P1_2": (1, 4),
+    "P1_3": (1, 5),
+    "P1_4": (2, 0),
+    "P1_5": (2, 1),
+    "P1_6": (2, 2),
+    "P1_7": (2, 3),
+    "P2_0": (2, 4),
+    "P2_1": (2, 5),
 }
 
 
 class AlifPin(boardgen.Pin):
     # Emit the struct which contains the pin instance.
     def definition(self):
-        port, pin = self.name()[4:].split("_")
+        port, pin = self.name()[1:].split("_")
         adc12_periph, adc12_channel = ADC12_ANA_MAP.get(self.name(), (3, 7))
         base = "LPGPIO_BASE" if port == "15" else "GPIO{}_BASE".format(port)
         return (
@@ -47,7 +47,7 @@ class AlifPin(boardgen.Pin):
             ".pin = PIN_{pin}, "
             ".adc12_periph = {adc12_periph}, "
             ".adc12_channel = {adc12_channel}, "
-            ".name = MP_QSTR_GPIO{port}_{pin} "
+            ".name = MP_QSTR_P{port}_{pin} "
             "}}".format(
                 port=port,
                 pin=pin,
@@ -57,14 +57,14 @@ class AlifPin(boardgen.Pin):
             )
         )
 
-    # Alif cpu names must be "GPIOn_m".
+    # Alif cpu names must be "Pn_m".
     @staticmethod
     def validate_cpu_pin_name(cpu_pin_name):
         boardgen.Pin.validate_cpu_pin_name(cpu_pin_name)
 
-        if not (m := re.match("GPIO([0-9]){1,2}_([0-9])", cpu_pin_name)):
+        if not (m := re.match("P([0-9]){1,2}_([0-9])", cpu_pin_name)):
             raise boardgen.PinGeneratorError(
-                "Invalid cpu pin name '{}', must be 'GPIOn_m'".format(cpu_pin_name)
+                "Invalid cpu pin name '{}', must be 'Pn_m'".format(cpu_pin_name)
             )
 
         port = int(m.group(1))
@@ -81,7 +81,7 @@ class AlifPinGenerator(boardgen.PinGenerator):
         # Pre-define the pins (i.e. don't require them to be listed in pins.csv).
         for i in range(NUM_PORTS):
             for j in range(NUM_PINS_PER_PORT):
-                self.add_cpu_pin("GPIO{}_{}".format(i, j))
+                self.add_cpu_pin("P{}_{}".format(i, j))
 
     # Only use pre-defined cpu pins (do not let board.csv create them).
     def find_pin_by_cpu_pin_name(self, cpu_pin_name, create=True):
