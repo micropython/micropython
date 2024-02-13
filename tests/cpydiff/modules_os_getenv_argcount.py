@@ -4,6 +4,7 @@ description: ``getenv`` only allows one argument
 cause: Unknown
 workaround: Test that the return value is ``None``
 """
+
 import os
 
 try:

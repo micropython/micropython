@@ -44,6 +44,7 @@
 //|         and attached to a Characteristic by calling `add_to_characteristic()`.
 //|         Remote Descriptor objects are created by `Connection.discover_remote_services()`
 //|         as part of remote Characteristics in the remote Services that are discovered."""
+//|
 //|     @classmethod
 //|     def add_to_characteristic(
 //|         cls,

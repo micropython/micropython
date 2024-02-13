@@ -59,7 +59,7 @@ static const mp_arg_t note_properties[] = {
 //|         filter: Optional[Biquad] = None,
 //|         ring_frequency: float = 0.0,
 //|         ring_bend: float = 0.0,
-//|         ring_waveform: Optional[ReadableBuffer] = 0.0,
+//|         ring_waveform: Optional[ReadableBuffer] = None,
 //|     ) -> None:
 //|         """Construct a Note object, with a frequency in Hz, and optional panning, waveform, envelope, tremolo (volume change) and bend (frequency change).
 //|

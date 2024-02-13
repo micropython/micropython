@@ -99,12 +99,14 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
+//|
 //|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int or None (on a non-blocking error)"""
 //|         ...
+//|
 //|     def readline(self) -> bytes:
 //|         """Read a line, ending in a newline character.
 //|

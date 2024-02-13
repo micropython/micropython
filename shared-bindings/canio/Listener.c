@@ -80,6 +80,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_i
 //|         This method exists so that `Listener` can be used as an
 //|         iterable"""
 //|         ...
+//|
 //|     def __next__(self) -> Union[RemoteTransmissionRequest, Message]:
 //|         """Reads a message, after waiting up to self.timeout seconds
 //|

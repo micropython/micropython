@@ -72,6 +72,7 @@ void bleio_connection_ensure_connected(bleio_connection_obj_t *self) {
 //|         Connections may also be made when another device initiates a connection. To use a Connection
 //|         created by a peer, read the `Adapter.connections` property."""
 //|         ...
+//|
 //|     def disconnect(self) -> None:
 //|         """Disconnects from the remote peripheral. Does nothing if already disconnected."""
 //|         ...

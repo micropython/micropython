@@ -100,6 +100,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(keypad_eventqueue_clear_obj, keypad_eventqueue_clear);
 //|         This is an easy way to check if the queue is empty.
 //|         """
 //|         ...
+//|
 //|     def __len__(self) -> int:
 //|         """Return the number of events currently in the queue. Used to implement ``len()``."""
 //|         ...
