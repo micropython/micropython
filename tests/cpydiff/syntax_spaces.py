@@ -4,7 +4,6 @@ description: uPy requires spaces between literal numbers and keywords, CPy doesn
 cause: Unknown
 workaround: Unknown
 """
-
 try:
     print(eval("1and 0"))
 except SyntaxError:

@@ -4,7 +4,6 @@ description: ``environ`` attribute is not implemented
 cause: Unknown
 workaround: Use ``getenv``, ``putenv`` and ``unsetenv``
 """
-
 import os
 
 try:

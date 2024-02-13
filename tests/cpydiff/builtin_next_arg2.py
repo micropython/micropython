@@ -9,5 +9,4 @@ workaround: Instead of ``val = next(it, deflt)`` use::
     except StopIteration:
         val = deflt
 """
-
 print(next(iter(range(0)), 42))
