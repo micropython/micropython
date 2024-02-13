@@ -154,8 +154,12 @@ typedef long mp_off_t;
 // Don't default sys.argv and sys.path because we do that in main.
 #define MICROPY_PY_SYS_PATH_ARGV_DEFAULTS (0)
 
+#if defined(__wasi__)
+#define MICROPY_PY_SYS_EXECUTABLE (0)
+#else
 // Enable sys.executable.
 #define MICROPY_PY_SYS_EXECUTABLE (1)
+#endif
 
 #define MICROPY_PY_SOCKET_LISTEN_BACKLOG_DEFAULT (SOMAXCONN < 128 ? SOMAXCONN : 128)
 
