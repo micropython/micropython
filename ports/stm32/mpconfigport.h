@@ -187,7 +187,9 @@ extern const struct _mp_obj_module_t stm_module;
 #if defined(MICROPY_HW_ETH_MDC)
 extern const struct _mp_obj_type_t network_lan_type;
 #define MICROPY_HW_NIC_ETH                  { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&network_lan_type) },
+#ifndef MICROPY_HW_ETH_RMII_CLK_OUT
 #define MICROPY_HW_ETH_RMII_CLK_OUT         (0)
+#endif
 #else
 #define MICROPY_HW_NIC_ETH
 #endif
