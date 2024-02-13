@@ -54,6 +54,10 @@
 #include "shared-module/sharpdisplay/SharpMemoryFramebuffer.h"
 #endif
 
+#ifdef BOARD_USE_INTERNAL_SPI
+#include "supervisor/spi_flash_api.h"
+#endif
+
 primary_display_bus_t display_buses[CIRCUITPY_DISPLAY_LIMIT];
 primary_display_t displays[CIRCUITPY_DISPLAY_LIMIT];
 
