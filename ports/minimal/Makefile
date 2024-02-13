@@ -26,9 +26,14 @@ CFLAGS_CORTEX_M4 = -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float -fsingl
 CFLAGS += $(INC) -Wall -Werror -std=c99 -nostdlib $(CFLAGS_CORTEX_M4) $(COPT)
 LDFLAGS += -nostdlib -T stm32f405.ld -Map=$@.map --cref --gc-sections
 else
+UNAME_S := $(shell uname -s)
 LD = $(CC)
 CFLAGS += $(INC) -Wall -Werror -Wdouble-promotion -Wfloat-conversion -std=c99 $(COPT)
+ifeq ($(UNAME_S),Linux)
 LDFLAGS += -Wl,-Map=$@.map,--cref -Wl,--gc-sections
+else ifeq ($(UNAME_S),Darwin)
+LDFLAGS += -Wl,-map,$@.map -Wl,-dead_strip
+endif
 endif
 
 CSUPEROPT = -Os # save some code space

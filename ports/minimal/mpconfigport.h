@@ -33,7 +33,7 @@ typedef long mp_off_t;
 #define MICROPY_HW_BOARD_NAME "minimal"
 #define MICROPY_HW_MCU_NAME "unknown-cpu"
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #define MICROPY_MIN_USE_STDOUT (1)
 #define MICROPY_HEAP_SIZE      (25600) // heap size 25 kilobytes
 #endif
