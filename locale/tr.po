@@ -484,12 +484,6 @@ msgstr "Tüm CAN çevre birimleri kullanımda"
 msgid "All I2C peripherals are in use"
 msgstr "Tüm I2C çevre birimleri kullanımda"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "Tüm PCNT birimleri kullanımda"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -537,10 +531,6 @@ msgstr "Bu pin için tüm zamanlayıcılar kullanımda"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -745,7 +735,7 @@ msgstr ""
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#: shared-bindings/uvc/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "USB aygıtları şu an değiştirilemez"
 
@@ -836,10 +826,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
-msgstr ""
-
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -1149,7 +1135,7 @@ msgstr "Giriş buffer uzunluğu (%d) strand sayımının (%d) katı olmalıdır"
 msgid "Input taking too long"
 msgstr "Giriş çok uzun sürüyor"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Giriş/çıkış hatası"
 
@@ -4360,6 +4346,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "Tüm PCNT birimleri kullanımda"
 
 #~ msgid "Cannot reset into bootloader because no bootloader is present"
 #~ msgstr "Hiçbir bootloader bulunmadığından bootloader sıfırlanamıyor"

@@ -495,12 +495,6 @@ msgstr "Tous les périphériques CAN sont utilisés"
 msgid "All I2C peripherals are in use"
 msgstr "Tous les périphériques I2C sont utilisés"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "Toutes les unités PCNT sont utilisées"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -548,10 +542,6 @@ msgstr "Tous les minuteurs pour cette broche sont utilisés"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -760,7 +750,7 @@ msgstr "Impossible de définir CCCD sur une caractéristique locale"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#: shared-bindings/uvc/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "Impossible de changer de périphérique USB maintenant"
 
@@ -860,10 +850,6 @@ msgstr "Les tableaux de coordonnées sont de longueur différentes"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr "Les types des matrices de coordonnées sont de longueur différentes"
-
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "Impossible d'obtenir l'horloge"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -1182,7 +1168,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "L'entrée prend trop de temps"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Erreur d'entrée/sortie"
 
@@ -4450,6 +4436,12 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "Toutes les unités PCNT sont utilisées"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "Impossible d'obtenir l'horloge"
 
 #~ msgid "Cannot reset into bootloader because no bootloader is present"
 #~ msgstr ""
