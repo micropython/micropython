@@ -167,6 +167,7 @@ ALIF_SRC_C += $(addprefix $(ALIF_DFP_REL_TOP)/,\
 	ospi_xip/source/ospi/ospi_drv.c \
 	se_services/source/services_host_application.c \
 	se_services/source/services_host_boot.c \
+	se_services/source/services_host_clocks.c \
 	se_services/source/services_host_cryptocell.c \
 	se_services/source/services_host_handler.c \
 	se_services/source/services_host_system.c \
