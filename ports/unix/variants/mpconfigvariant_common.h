@@ -91,7 +91,11 @@
 #define MICROPY_PY_OS_ERRNO            (1)
 #define MICROPY_PY_OS_GETENV_PUTENV_UNSETENV (1)
 #define MICROPY_PY_OS_SEP              (1)
+#if defined(__wasi__)
+#define MICROPY_PY_OS_SYSTEM           (0)
+#else
 #define MICROPY_PY_OS_SYSTEM           (1)
+#endif
 #define MICROPY_PY_OS_URANDOM          (1)
 
 // Enable the unix-specific "time" module.
