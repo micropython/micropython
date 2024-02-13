@@ -10,11 +10,34 @@ import boardgen
 NUM_PORTS = 16
 NUM_PINS_PER_PORT = 8
 
+# Maps pad name to (adc12_periph, adc12_channel).
+ADC12_ANA_MAP = {
+    "P0_0": (0, 0),
+    "P0_1": (0, 1),
+    "P0_2": (0, 2),
+    "P0_3": (0, 3),
+    "P0_4": (0, 4),
+    "P0_5": (0, 5),
+    "P0_6": (1, 0),
+    "P0_7": (1, 1),
+    "P1_0": (1, 2),
+    "P1_1": (1, 3),
+    "P1_2": (1, 4),
+    "P1_3": (1, 5),
+    "P1_4": (2, 0),
+    "P1_5": (2, 1),
+    "P1_6": (2, 2),
+    "P1_7": (2, 3),
+    "P2_0": (2, 4),
+    "P2_1": (2, 5),
+}
+
 
 class AlifPin(boardgen.Pin):
     # Emit the struct which contains the pin instance.
     def definition(self):
         port, pin = self.name()[1:].split("_")
+        adc12_periph, adc12_channel = ADC12_ANA_MAP.get(self.name(), (3, 7))
         base = "LPGPIO_BASE" if port == "15" else "GPIO{}_BASE".format(port)
         return (
             "{{ "
@@ -22,8 +45,16 @@ class AlifPin(boardgen.Pin):
             ".gpio = (GPIO_Type *){base}, "
             ".port = PORT_{port}, "
             ".pin = PIN_{pin}, "
+            ".adc12_periph = {adc12_periph}, "
+            ".adc12_channel = {adc12_channel}, "
             ".name = MP_QSTR_P{port}_{pin} "
-            "}}".format(port=port, pin=pin, base=base)
+            "}}".format(
+                port=port,
+                pin=pin,
+                base=base,
+                adc12_periph=adc12_periph,
+                adc12_channel=adc12_channel,
+            )
         )
 
     # Alif cpu names must be "Pn_m".
