@@ -31,17 +31,6 @@ function ci_c_code_formatting_run {
 }
 
 ########################################################################################
-# code spelling
-
-function ci_code_spell_setup {
-    pip3 install codespell tomli
-}
-
-function ci_code_spell_run {
-    codespell
-}
-
-########################################################################################
 # commit formatting
 
 function ci_commit_formatting_run {
@@ -415,7 +404,7 @@ function ci_unix_build_helper {
 }
 
 function ci_unix_build_ffi_lib_helper {
-    $1 $2 -shared -o tests/unix/ffi_lib.so tests/unix/ffi_lib.c
+    $1 $2 -shared -o tests/ports/unix/ffi_lib.so tests/ports/unix/ffi_lib.c
 }
 
 function ci_unix_run_tests_helper {

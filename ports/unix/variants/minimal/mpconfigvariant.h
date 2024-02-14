@@ -64,6 +64,3 @@
 // Enable just the sys and os built-in modules.
 #define MICROPY_PY_SYS (1)
 #define MICROPY_PY_OS (1)
-
-// The minimum sets this to 1 to save flash.
-#define MICROPY_QSTR_BYTES_IN_HASH (2)

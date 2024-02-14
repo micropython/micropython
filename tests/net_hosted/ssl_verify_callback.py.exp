@@ -1,0 +1,5 @@
+verify_callback: <class 'bytes'> True 2
+verify_callback: <class 'bytes'> True 1
+verify_callback: <class 'bytes'> True 0
+verify_callback_fail: <class 'bytes'> True 2
+MBEDTLS_ERR_ERROR_GENERIC_ERROR

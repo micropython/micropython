@@ -3,17 +3,18 @@
 # Note: the flash requires the programming size to be aligned to 256 bytes.
 
 import os
+import vfs
 import sys
 import mimxrt
 from machine import Pin
 
 bdev = mimxrt.Flash()
 try:
-    vfs = os.VfsLfs2(bdev, progsize=256)
+    fs = vfs.VfsLfs2(bdev, progsize=256)
 except:
-    os.VfsLfs2.mkfs(bdev, progsize=256)
-    vfs = os.VfsLfs2(bdev, progsize=256)
-os.mount(vfs, "/flash")
+    vfs.VfsLfs2.mkfs(bdev, progsize=256)
+    fs = vfs.VfsLfs2(bdev, progsize=256)
+vfs.mount(fs, "/flash")
 os.chdir("/flash")
 sys.path.append("/flash")
 sys.path.append("/flash/lib")
@@ -27,8 +28,8 @@ except:
 
         sdcard = SDCard(1)
 
-        fat = os.VfsFat(sdcard)
-        os.mount(fat, "/sdcard")
+        fat = vfs.VfsFat(sdcard)
+        vfs.mount(fat, "/sdcard")
         os.chdir("/sdcard")
         sys.path.append("/sdcard")
     except:

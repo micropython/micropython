@@ -28,7 +28,7 @@
 // peripheral config
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
-#define MICROPY_HW_RTC_SOURCE       (1)
+#define MICROPY_HW_RTC_SOURCE       (0)
 #define MICROPY_HW_ENABLE_ADC       (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 #define MICROPY_HW_ENABLE_USBDEV    (1)

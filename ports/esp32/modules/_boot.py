@@ -1,13 +1,13 @@
 import gc
-import os
+import vfs
 from flashbdev import bdev
 
 try:
     if bdev:
-        os.mount(bdev, "/")
+        vfs.mount(bdev, "/")
 except OSError:
     import inisetup
 
-    vfs = inisetup.setup()
+    inisetup.setup()
 
 gc.collect()

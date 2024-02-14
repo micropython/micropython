@@ -189,7 +189,7 @@ In this case CN is: micropython.local
 
 Convert them to DER format:
 ```
-$ openssl rsa -in rsa_key.pem -out rsa_key.der -outform DER
+$ openssl pkey -in rsa_key.pem -out rsa_key.der -outform DER
 $ openssl x509 -in rsa_cert.pem -out rsa_cert.der -outform DER
 ```
 
