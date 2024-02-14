@@ -65,7 +65,7 @@
 //|
 STATIC mp_obj_t time_monotonic(void) {
     uint64_t ticks_ms = common_hal_time_monotonic_ms();
-    return mp_obj_new_float(uint64_to_float(ticks_ms) / 1000.0f);
+    return mp_obj_new_float(uint64_to_float(ticks_ms) / MICROPY_FLOAT_CONST(1000.0));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 
@@ -78,7 +78,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(time_monotonic_obj, time_monotonic);
 STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #if MICROPY_PY_BUILTINS_FLOAT
     mp_float_t seconds = mp_obj_get_float(seconds_o);
-    mp_float_t msecs = 1000.0f * seconds + 0.5f;
+    mp_float_t msecs = MICROPY_FLOAT_CONST(1000.0) * seconds + MICROPY_FLOAT_CONST(0.5);
     #else
     mp_int_t seconds = mp_obj_get_int(seconds_o);
     mp_int_t msecs = 1000 * seconds;

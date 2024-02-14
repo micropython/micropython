@@ -92,6 +92,7 @@
 
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
+#include "shared-bindings/displayio/__init__.h"
 #endif
 
 #if CIRCUITPY_EPAPERDISPLAY
