@@ -490,12 +490,6 @@ msgstr "All CAN-kringutrustning används"
 msgid "All I2C peripherals are in use"
 msgstr "All I2C-kringutrustning används"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "Alla PCNT-enheter används"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -543,10 +537,6 @@ msgstr "Alla timers för denna pinne är i bruk"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -752,7 +742,7 @@ msgstr "Kan inte ställa in CCCD på lokal karaktäristik"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#: shared-bindings/uvc/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "Kan inte ändra USB-enheter nu"
 
@@ -846,10 +836,6 @@ msgstr "Arrayer för koordinater har olika längd"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr "Arrayer för koordinater har olika storlek"
-
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "Kunde inte hämta klocka"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -1161,7 +1147,7 @@ msgstr "indatabuffertlängd (%d) måste vara en multipel av antal strand (%d)"
 msgid "Input taking too long"
 msgstr "Indata tar för lång tid"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Indata-/utdatafel"
 
@@ -4394,6 +4380,12 @@ msgstr "zi måste vara av typ float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi måste vara i formen (n_section, 2)"
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "Alla PCNT-enheter används"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "Kunde inte hämta klocka"
 
 #~ msgid "Cannot reset into bootloader because no bootloader is present"
 #~ msgstr "Kan inte återställa till bootloader eftersom ingen bootloader finns"

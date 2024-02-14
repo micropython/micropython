@@ -509,13 +509,6 @@ msgstr "모든 CAN 주변 기기가 사용 중입니다"
 msgid "All I2C peripherals are in use"
 msgstr "사용 중인 모든 I2C주변 기기"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-#, fuzzy
-msgid "All PCNT units in use"
-msgstr "모든 PCNT 장치가 사용 중입니다"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -567,10 +560,6 @@ msgstr "핀의 모든 타이머가 사용 중입니다"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -781,7 +770,7 @@ msgstr "로컬 특성에 CCCD를 설정할 수 없습니다"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#: shared-bindings/uvc/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "현재 USB 디바이스를 변경할 수 없습니다"
 
@@ -874,10 +863,6 @@ msgstr "좌표 배열의 길이가 다릅니다"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr "좌표 배열 유형은 크기가 다릅니다"
-
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "시계를 불러올 수 없습니다"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -1189,7 +1174,7 @@ msgstr "입력 버퍼 길이 (%d) 는 스트랜드 수 (%d)의 배수여야 한�
 msgid "Input taking too long"
 msgstr "입력이 너무 오래 걸린다"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "입력/출력 오류"
 
@@ -4422,6 +4407,13 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#, fuzzy
+#~ msgid "All PCNT units in use"
+#~ msgstr "모든 PCNT 장치가 사용 중입니다"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "시계를 불러올 수 없습니다"
 
 #~ msgid "Cannot reset into bootloader because no bootloader is present"
 #~ msgstr "부트로더가 없기 때문에 부트로더로 재시작할 수 없습니다"

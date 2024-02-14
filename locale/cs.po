@@ -487,12 +487,6 @@ msgstr "Všechny CAN periferie jsou používány"
 msgid "All I2C peripherals are in use"
 msgstr "Všechny I2C periferie jsou používány"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "Všechny PCNT jednotky jsou používány"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -540,10 +534,6 @@ msgstr "Všechny časovače pro tento pin jsou používány"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -751,7 +741,7 @@ msgstr "Nelze nastavit CCCD na místní charakteristiku"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#: shared-bindings/uvc/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "Nelze změnit USB zařízení"
 
@@ -843,10 +833,6 @@ msgstr "Pole souřadnic mají různé délky"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
-
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "Nelze načíst hodiny"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -1154,7 +1140,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "Vstup trval příliš dlouho"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Chyba vstupu/výstupu"
 
@@ -4372,6 +4358,12 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "Všechny PCNT jednotky jsou používány"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "Nelze načíst hodiny"
 
 #~ msgid "Cannot reset into bootloader because no bootloader is present"
 #~ msgstr ""

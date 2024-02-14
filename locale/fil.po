@@ -478,12 +478,6 @@ msgstr ""
 msgid "All I2C peripherals are in use"
 msgstr "Lahat ng I2C peripherals ginagamit"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -532,10 +526,6 @@ msgstr "Lahat ng timers para sa pin na ito ay ginagamit"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -741,7 +731,7 @@ msgstr ""
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#: shared-bindings/uvc/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr ""
 
@@ -832,10 +822,6 @@ msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
-msgstr ""
-
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
 msgstr ""
 
 #: shared-bindings/_bleio/Adapter.c
@@ -1144,7 +1130,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr ""
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "May mali sa Input/Output"
 

@@ -491,12 +491,6 @@ msgstr "Todos os periféricos CAN estão em uso"
 msgid "All I2C peripherals are in use"
 msgstr "Todos os periféricos I2C estão em uso"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "Todas as unidades PCNT estão em uso"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -544,10 +538,6 @@ msgstr "Todos os temporizadores para este pino estão em uso"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
@@ -755,7 +745,7 @@ msgstr "Não é possível definir o CCCD com a característica local"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
-#: shared-bindings/uvc/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "Agora não é possível alternar os dispositivos USB"
 
@@ -849,10 +839,6 @@ msgstr "As coordenadas das matrizes possuem comprimentos diferentes"
 #: shared-bindings/bitmaptools/__init__.c
 msgid "Coordinate arrays types have different sizes"
 msgstr "Os tipos das coordenadas das matrizes possuem tamanhos diferentes"
-
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "Não foi possível recuperar o clock"
 
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
@@ -1169,7 +1155,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "A entrada está demorando demais"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Erro de entrada/saída"
 
@@ -4355,8 +4341,8 @@ msgid ""
 "weights must be a sequence with an odd square number of elements (usually 9 "
 "or 25)"
 msgstr ""
-"os pesos devem ser uma sequência com um número quadrado ímpar de elementos ("
-"geralmente 9 ou 25)"
+"os pesos devem ser uma sequência com um número quadrado ímpar de elementos "
+"(geralmente 9 ou 25)"
 
 #: shared-bindings/bitmapfilter/__init__.c
 msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
@@ -4432,6 +4418,12 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "Todas as unidades PCNT estão em uso"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "Não foi possível recuperar o clock"
 
 #~ msgid "Cannot reset into bootloader because no bootloader is present"
 #~ msgstr ""
