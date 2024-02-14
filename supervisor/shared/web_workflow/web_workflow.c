@@ -258,7 +258,7 @@ void supervisor_web_workflow_status(void) {
 }
 #endif
 
-bool supervisor_start_web_workflow(bool reload) {
+bool supervisor_start_web_workflow(void) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
 
     char ssid[33];
@@ -310,7 +310,7 @@ bool supervisor_start_web_workflow(bool reload) {
 
     bool initialized = pool.base.type == &socketpool_socketpool_type;
 
-    if (!initialized && !reload) {
+    if (!initialized) {
         result = common_hal_os_getenv_str("CIRCUITPY_WEB_INSTANCE_NAME", web_instance_name, sizeof(web_instance_name));
         if (result != GETENV_OK || web_instance_name[0] == '\0') {
             strcpy(web_instance_name, MICROPY_HW_BOARD_NAME);
