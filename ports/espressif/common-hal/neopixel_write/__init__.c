@@ -73,7 +73,8 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
     // give it all back once we're done.
     rmt_channel_handle_t channel;
     esp_err_t result = ESP_ERR_NOT_FOUND;
-    config.mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL * SOC_RMT_TX_CANDIDATES_PER_GROUP;
+    // If no other channels are in use, we can use all of the RMT RAM including the RX channels.
+    config.mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL * SOC_RMT_CHANNELS_PER_GROUP;
     while (result == ESP_ERR_NOT_FOUND && config.mem_block_symbols > 0) {
         result = rmt_new_tx_channel(&config, &channel);
         config.mem_block_symbols -= SOC_RMT_MEM_WORDS_PER_CHANNEL;
