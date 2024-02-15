@@ -32,6 +32,6 @@
 #define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
 #define DEFAULT_I2C_BUS_SCL (&pin_GPIO1)
 #define DEFAULT_I2C_BUS_SDA (&pin_GPIO2)
-#define DEFAULT_SPI_BUS_SCK (&pin_GPIO36)
-#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO35)
-#define DEFAULT_SPI_BUS_MISO (&pin_GPIO34)
+#define CIRCUITPY_BOARD_SPI         (2)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO36, .mosi = &pin_GPIO35}, \
+                                     {.clock = &pin_GPIO40, .mosi = &pin_GPIO14, .miso = &pin_GPIO39}}
