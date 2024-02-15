@@ -37,36 +37,23 @@ fourwire_fourwire_obj_t board_display_obj;
 
 #define DELAY 0x80
 
-// display init sequence according to LilyGO example app
 uint8_t display_init_sequence[] = {
-    // sw reset
-    0x01, 0 | DELAY, 150,
-    // sleep out
-    0x11, 0 | DELAY, 255,
-    // normal display mode on
-    0x13, 0,
-    // display and color format settings
-    0x36, 1, 0x68,
-    0xB6, 2, 0x0A, 0x82,
-    0x3A, 1 | DELAY,  0x55, 10,
-    // ST7789V frame rate setting
-    0xB2, 5, 0x0C, 0x0C, 0x00, 0x33, 0x33,
-    // voltages: VGH / VGL
-    0xB7, 1, 0x35,
-    // ST7789V power setting
-    0xBB, 1, 0x28,
-    0xC0, 1, 0x0C,
-    0xC2, 2, 0x01, 0xFF,
-    0xC3, 1, 0x10,
-    0xC4, 1, 0x20,
-    0xC6, 1, 0x0F,
-    0xD0, 2, 0xA4, 0xA1,
-    // ST7789V gamma setting
-    0xE0, 14, 0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x32, 0x44, 0x42, 0x06, 0x0E, 0x12, 0x14, 0x17,
-    0xE1, 14, 0xD0, 0x00, 0x02, 0x07, 0x0A, 0x28, 0x31, 0x54, 0x47, 0x0E, 0x1C, 0x17, 0x1B, 0x1E,
+    // SWRESET and Delay 140ms
+    0x01, 0 | DELAY, 140,
+    // SLPOUT and Delay 10ms
+    0x11, 0 | DELAY, 10,
+    // COLMOD 65k colors and 16 bit 5-6-5
+    0x3A, 1, 0x55,
+    // INVON Iiversion on
     0x21, 0,
-    // display on
-    0x29, 0 | DELAY, 255,
+    // NORON normal operation (full update)
+    0x13, 0,
+    // MADCTL columns RTL, page/column reverse order
+    0x36, 1, 0x60,
+    // RAMCTRL color word little endian
+    0xB0, 2, 0x00, 0xF8,
+    // DIPON display on
+    0x29, 0,
 };
 
 
@@ -102,7 +89,7 @@ void board_init(void) {
         false,          // pixels in a byte share a row. Only valid for depths < 8
         1,              // bytes per cell. Only valid for depths < 8
         false,          // reverse_pixels_in_byte. Only valid for depths < 8
-        true,           // reverse_pixels_in_word
+        false,          // reverse_pixels_in_word
         MIPI_COMMAND_SET_COLUMN_ADDRESS, // set column command
         MIPI_COMMAND_SET_PAGE_ADDRESS,   // set row command
         MIPI_COMMAND_WRITE_MEMORY_START, // write memory command
@@ -117,20 +104,10 @@ void board_init(void) {
         60,             // native_frames_per_second
         true,           // backlight_on_high
         false,          // SH1107_addressing
-        50000           // backlight pwm frequency
+        350             // backlight pwm frequency
         );
 }
 
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    // Override the I2C/TFT power pin reset to prevent resetting the display.
-    if (pin_number == 21) {
-        // Turn on TFT and I2C
-        gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
-        gpio_set_level(21, true);
-        return true;
-    }
-    return false;
-}
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
 
