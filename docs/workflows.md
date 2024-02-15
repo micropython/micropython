@@ -71,8 +71,7 @@ Read-only characteristic that returns the UTF-8 encoded version string.
 If the keys `CIRCUITPY_WIFI_SSID` and `CIRCUITPY_WIFI_PASSWORD` are set in `settings.toml`,
 CircuitPython will automatically connect to the given Wi-Fi network on boot and upon reload.
 
-If `CIRCUITPY_WEB_API_PASSWORD` is also set, the web workflow will also start.
-The web workflow will only be enabled if the Wi-Fi connection succeeds upon boot.
+If `CIRCUITPY_WEB_API_PASSWORD` is set, MDNS and the http server for the web workflow will also start.
 
 The webserver is on port 80 unless overridden by `CIRCUITPY_WEB_API_PORT`. It also enables MDNS.
 The name of the board as advertised to the network can be overridden by `CIRCUITPY_WEB_INSTANCE_NAME`.
@@ -84,7 +83,7 @@ Here is an example `/settings.toml`:
 CIRCUITPY_WIFI_SSID="scottswifi"
 CIRCUITPY_WIFI_PASSWORD="secretpassword"
 
-# To enable the the webserver. Change this too!
+# To enable the web workflow. Change this too!
 # Leave the User field blank in the browser.
 CIRCUITPY_WEB_API_PASSWORD="passw0rd"
 

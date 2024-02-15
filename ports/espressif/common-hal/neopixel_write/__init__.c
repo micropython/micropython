@@ -66,10 +66,20 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         .clk_src = RMT_CLK_SRC_DEFAULT,
         .resolution_hz = 40000000,
         .trans_queue_depth = 1,
-        .mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL,
     };
+
+    // Greedily try and grab as much RMT memory as we can. The more we get, the
+    // smoother the output will be because we'll trigger fewer interrupts. We'll
+    // give it all back once we're done.
     rmt_channel_handle_t channel;
-    CHECK_ESP_RESULT(rmt_new_tx_channel(&config, &channel));
+    esp_err_t result = ESP_ERR_NOT_FOUND;
+    // If no other channels are in use, we can use all of the RMT RAM including the RX channels.
+    config.mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL * SOC_RMT_CHANNELS_PER_GROUP;
+    while (result == ESP_ERR_NOT_FOUND && config.mem_block_symbols > 0) {
+        result = rmt_new_tx_channel(&config, &channel);
+        config.mem_block_symbols -= SOC_RMT_MEM_WORDS_PER_CHANNEL;
+    }
+    CHECK_ESP_RESULT(result);
 
     size_t ns_per_tick = 1e9 / 40000000;
     uint16_t ws2812_t0h_ticks = WS2812_T0H_NS / ns_per_tick;
@@ -97,7 +107,11 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         }
     };
     rmt_encoder_handle_t encoder;
-    CHECK_ESP_RESULT(rmt_new_bytes_encoder(&encoder_config, &encoder));
+    result = rmt_new_bytes_encoder(&encoder_config, &encoder);
+    if (result != ESP_OK) {
+        rmt_del_channel(channel);
+        return;
+    }
 
     // Wait to make sure we don't append onto the last transmission. This should only be a tick or
     // two.
@@ -111,7 +125,7 @@ void common_hal_neopixel_write(const digitalio_digitalinout_obj_t *digitalinout,
         .loop_count = 0,
         .flags.eot_level = 0
     };
-    esp_err_t result = rmt_transmit(channel, encoder, pixels, (size_t)numBytes, &transmit_config);
+    result = rmt_transmit(channel, encoder, pixels, (size_t)numBytes, &transmit_config);
     if (result != ESP_OK) {
         rmt_del_encoder(encoder);
         rmt_disable(channel);
