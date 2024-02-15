@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  * Copyright (c) 2022 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,30 +25,15 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "shared-module/ssl/__init__.h"
+#include "shared-bindings/ssl/__init__.h"
+#include "shared-bindings/ssl/SSLContext.h"
+#include "lib/mbedtls_config/crt_bundle.h"
 
-#include "py/obj.h"
+void common_hal_ssl_create_default_context(ssl_sslcontext_obj_t *self) {
+    common_hal_ssl_sslcontext_construct(self);
+}
 
-#include "common-hal/ssl/SSLContext.h"
-#include "common-hal/socketpool/Socket.h"
-
-#include "mbedtls/platform.h"
-#include "mbedtls/ssl.h"
-#include "mbedtls/x509_crt.h"
-#include "mbedtls/pk.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-
-typedef struct {
-    mp_obj_base_t base;
-    socketpool_socket_obj_t *sock;
-    ssl_sslcontext_obj_t *ssl_context;
-    mbedtls_entropy_context entropy;
-    mbedtls_ctr_drbg_context ctr_drbg;
-    mbedtls_ssl_context ssl;
-    mbedtls_ssl_config conf;
-    mbedtls_x509_crt cacert;
-    mbedtls_x509_crt cert;
-    mbedtls_pk_context pkey;
-    bool closed;
-} ssl_sslsocket_obj_t;
+void ssl_reset(void) {
+    crt_bundle_detach(NULL);
+}

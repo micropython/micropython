@@ -58,3 +58,6 @@ CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY = 1
 
 # Usually lots of flash space available
 CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1
+
+# (ssl is selectively enabled but it's always the mbedtls implementation)
+CIRCUITPY_SSL_MBEDTLS = 1

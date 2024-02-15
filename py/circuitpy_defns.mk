@@ -516,9 +516,6 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/__init__.c \
 	socketpool/SocketPool.c \
 	socketpool/Socket.c \
-	ssl/__init__.c \
-	ssl/SSLContext.c \
-	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	usb_host/__init__.c \
@@ -728,6 +725,18 @@ else
 SRC_SHARED_MODULE_ALL += \
 	touchio/TouchIn.c \
 	touchio/__init__.c
+endif
+
+ifeq ($(CIRCUITPY_SSL_MBEDTLS),0)
+SRC_COMMON_HAL_ALL += \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
+	ssl/SSLSocket.c
+else
+SRC_SHARED_MODULE_ALL += \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
+	ssl/SSLSocket.c
 endif
 
 # If supporting _bleio via HCI, make devices/ble_hci/common-hal/_bleio be includable,
