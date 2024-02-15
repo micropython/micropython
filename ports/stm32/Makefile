@@ -251,6 +251,7 @@ SRC_C += \
 	pyb_can.c \
 	usb.c \
 	eth.c \
+	eth_phy.c \
 	gccollect.c \
 	help.c \
 	machine_bitstream.c \

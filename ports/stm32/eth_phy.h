@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2024 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +24,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_ETH_H
-#define MICROPY_INCLUDED_STM32_ETH_H
 
-enum {
-    ETH_PHY_LAN8742 = 0,
-    ETH_PHY_LAN8720,
-    ETH_PHY_DP83848,
-    ETH_PHY_DP83825
-};
+#ifndef MICROPY_INCLUDED_STM32_PHY_H
+#define MICROPY_INCLUDED_STM32_PYH_H
 
-typedef struct _eth_t eth_t;
-extern eth_t eth_instance;
+#if defined(MICROPY_HW_ETH_MDC)
 
-int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type);
-void eth_set_trace(eth_t *self, uint32_t value);
-struct netif *eth_netif(eth_t *self);
-int eth_link_status(eth_t *self);
-int eth_start(eth_t *self);
-int eth_stop(eth_t *self);
-void eth_low_power_mode(eth_t *self, bool enable);
+// Common ETH PHY register definitions
+#undef PHY_BCR
+#define PHY_BCR                 (0x0000)
+#define PHY_BCR_SOFT_RESET      (0x8000)
+#define PHY_BCR_AUTONEG_EN      (0x1000)
+#define PHY_BCR_POWER_DOWN      (0x0800U)
 
-#endif // MICROPY_INCLUDED_STM32_ETH_H
+#undef PHY_BSR
+#define PHY_BSR                 (0x0001)
+#define PHY_BSR_LINK_STATUS     (0x0004)
+#define PHY_BSR_AUTONEG_DONE    (0x0020)
+
+#undef PHY_ANAR
+#define PHY_ANAR                (0x0004)
+#define PHY_ANAR_SPEED_10HALF   (0x0020)
+#define PHY_ANAR_SPEED_10FULL   (0x0040)
+#define PHY_ANAR_SPEED_100HALF  (0x0080)
+#define PHY_ANAR_SPEED_100FULL  (0x0100)
+#define PHY_ANAR_IEEE802_3      (0x0001)
+
+#define PHY_SPEED_10HALF   (1)
+#define PHY_SPEED_10FULL   (5)
+#define PHY_SPEED_100HALF  (2)
+#define PHY_SPEED_100FULL  (6)
+#define PHY_DUPLEX         (4)
+
+uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg);
+void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val);
+
+int16_t eth_phy_lan87xx_get_link_status(uint32_t phy_addr);
+int16_t eth_phy_dp838xx_get_link_status(uint32_t phy_addr);
+
+#endif
+
+#endif  // MICROPY_INCLUDED_STM32_PHY_H
