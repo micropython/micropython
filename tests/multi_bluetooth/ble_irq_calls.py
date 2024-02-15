@@ -60,6 +60,22 @@ STATE_CHARACTERISTIC = (
 ACCESSORY_SERVICE = (ACCESSORY_UUID, (STATE_CHARACTERISTIC,))
 
 
+def recursive_function():
+    recursive_function()
+
+
+def test_deep_calls(n):
+    if n > 0:
+        # Test that a few nested calls will succeed.
+        test_deep_calls(n - 1)
+    else:
+        # Test that a Python stack overflow is detected.
+        try:
+            recursive_function()
+        except RuntimeError:
+            print("test_deep_calls finished")
+
+
 class Central:
     def __init__(self):
         self.done = False
@@ -79,6 +95,8 @@ class Central:
             conn_handle, _, _ = data
             self._conn_handle = conn_handle
             ble.gattc_discover_services(self._conn_handle, ACCESSORY_UUID)
+            # Test deep Python calls from within this BLE IRQ handler.
+            test_deep_calls(5)
 
         elif event == _IRQ_PERIPHERAL_DISCONNECT:
             conn_handle, _, addr = data

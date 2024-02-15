@@ -8,6 +8,7 @@ _IRQ_CENTRAL_DISCONNECT
 --- instance1 ---
 central start
 _IRQ_PERIPHERAL_CONNECT
+test_deep_calls finished
 _IRQ_GATTC_SERVICE_RESULT
 service found: 3 UUID('a5a5a5a5-ffff-9999-1111-5a5a5a5a5a5a')
 _IRQ_GATTC_SERVICE_DONE
