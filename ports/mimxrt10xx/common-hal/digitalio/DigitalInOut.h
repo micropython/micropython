@@ -25,8 +25,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/digitalio/Pull.h"
@@ -41,5 +40,3 @@ typedef struct {
 } digitalio_digitalinout_obj_t;
 
 void pin_config(const mcu_pin_obj_t *pin, bool open_drain, digitalio_pull_t pull);
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_DIGITALIO_DIGITALINOUT_H
