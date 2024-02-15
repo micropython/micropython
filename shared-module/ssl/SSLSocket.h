@@ -39,7 +39,7 @@
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 
-typedef struct {
+typedef struct ssl_sslsocket_obj {
     mp_obj_base_t base;
     socketpool_socket_obj_t *sock;
     ssl_sslcontext_obj_t *ssl_context;

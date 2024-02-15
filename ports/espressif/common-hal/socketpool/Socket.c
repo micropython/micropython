@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 #include "shared-bindings/ssl/SSLSocket.h"
-#include "common-hal/ssl/SSLSocket.h"
+#include "shared-module/ssl/SSLSocket.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
