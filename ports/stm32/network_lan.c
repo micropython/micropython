@@ -54,16 +54,19 @@ static void network_lan_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 }
 
 static mp_obj_t network_lan_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    enum { ARG_phy_addr};
+    enum { ARG_phy_addr, ARG_phy_type};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_phy_addr, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
+        { MP_QSTR_phy_type, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = ETH_PHY_LAN8742} },
     };
     // Parse args.
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     const network_lan_obj_t *self = &network_lan_eth0;
-    eth_init(self->eth, MP_HAL_MAC_ETH0, args[ARG_phy_addr].u_int);
+    if (eth_init(self->eth, MP_HAL_MAC_ETH0, args[ARG_phy_addr].u_int, args[ARG_phy_type].u_int) != 0) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid phy_type"));
+    }
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -162,6 +165,11 @@ static const mp_rom_map_elem_t network_lan_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&network_lan_ifconfig_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&network_lan_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&network_lan_config_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8742), MP_ROM_INT(ETH_PHY_LAN8742) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(ETH_PHY_LAN8720) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_DP83848), MP_ROM_INT(ETH_PHY_DP83848) },
+    { MP_ROM_QSTR(MP_QSTR_PHY_DP83825), MP_ROM_INT(ETH_PHY_DP83825) },
 };
 static MP_DEFINE_CONST_DICT(network_lan_locals_dict, network_lan_locals_dict_table);
 

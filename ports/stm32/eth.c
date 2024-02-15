@@ -32,6 +32,7 @@
 #include "extmod/modnetwork.h"
 #include "mpu.h"
 #include "eth.h"
+#include "eth_phy.h"
 
 #if defined(MICROPY_HW_ETH_MDC)
 
@@ -39,26 +40,6 @@
 #include "lwip/dns.h"
 #include "lwip/dhcp.h"
 #include "netif/ethernet.h"
-
-// ETH PHY register definitions (for LAN8742 and LAN8720/LAN8710)
-#undef PHY_BCR
-#define PHY_BCR                 (0x0000)
-#define PHY_BCR_SOFT_RESET      (0x8000)
-#define PHY_BCR_AUTONEG_EN      (0x1000)
-#define PHY_BCR_POWER_DOWN      (0x0800U)
-
-#undef PHY_BSR
-#define PHY_BSR                 (0x0001)
-#define PHY_BSR_LINK_STATUS     (0x0004)
-#define PHY_BSR_AUTONEG_DONE    (0x0020)
-
-#define PHY_SCSR                (0x001f)
-#define PHY_SCSR_SPEED_Pos      (2)
-#define PHY_SCSR_SPEED_Msk      (7 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_10HALF   (1 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_10FULL   (5 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_100HALF  (2 << PHY_SCSR_SPEED_Pos)
-#define PHY_SCSR_SPEED_100FULL  (6 << PHY_SCSR_SPEED_Pos)
 
 // ETH DMA RX and TX descriptor definitions
 #if defined(STM32H5)
@@ -137,6 +118,7 @@ typedef struct _eth_t {
     struct netif netif;
     struct dhcp dhcp_struct;
     uint32_t phy_addr;
+    int16_t (*phy_get_link_status)(uint32_t phy_addr);
 } eth_t;
 
 static eth_dma_t eth_dma __attribute__((aligned(16384)));
@@ -146,7 +128,7 @@ eth_t eth_instance;
 static void eth_mac_deinit(eth_t *self);
 static void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf);
 
-static void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val) {
+void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val) {
     #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
@@ -174,7 +156,7 @@ static void eth_phy_write(uint32_t phy_addr, uint32_t reg, uint32_t val) {
     #endif
 }
 
-static uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg) {
+uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg) {
     #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
@@ -202,10 +184,17 @@ static uint32_t eth_phy_read(uint32_t phy_addr, uint32_t reg) {
     #endif
 }
 
-void eth_init(eth_t *self, int mac_idx, uint32_t phy_addr) {
+int eth_init(eth_t *self, int mac_idx, uint32_t phy_addr, int phy_type) {
     mp_hal_get_mac(mac_idx, &self->netif.hwaddr[0]);
     self->netif.hwaddr_len = 6;
     self->phy_addr = phy_addr;
+    if (phy_type == ETH_PHY_DP83825 || phy_type == ETH_PHY_DP83848) {
+        self->phy_get_link_status = eth_phy_dp838xx_get_link_status;
+    } else if (phy_type == ETH_PHY_LAN8720 || phy_type == ETH_PHY_LAN8742) {
+        self->phy_get_link_status = eth_phy_lan87xx_get_link_status;
+    } else {
+        return -1;
+    }
 
     // Configure GPIO
     mp_hal_pin_config_alt_static(MICROPY_HW_ETH_MDC, MP_HAL_PIN_MODE_ALT, MP_HAL_PIN_PULL_NONE, STATIC_AF_ETH_MDC);
@@ -230,6 +219,7 @@ void eth_init(eth_t *self, int mac_idx, uint32_t phy_addr) {
     #else
     __HAL_RCC_ETH_CLK_ENABLE();
     #endif
+    return 0;
 }
 
 void eth_set_trace(eth_t *self, uint32_t value) {
@@ -381,6 +371,14 @@ static int eth_mac_init(eth_t *self) {
                 break;
             case 1:
                 if (bsr & PHY_BSR_LINK_STATUS) {
+                    // Announce all modes
+                    eth_phy_write(self->phy_addr, PHY_ANAR,
+                        PHY_ANAR_SPEED_10HALF |
+                        PHY_ANAR_SPEED_10FULL |
+                        PHY_ANAR_SPEED_100HALF |
+                        PHY_ANAR_SPEED_100FULL |
+                        PHY_ANAR_IEEE802_3);
+                    // Start autonegotiate.
                     eth_phy_write(self->phy_addr, PHY_BCR, PHY_BCR_AUTONEG_EN);
                     phy_state = 2;
                 }
@@ -396,7 +394,7 @@ static int eth_mac_init(eth_t *self) {
     }
 
     // Get register with link status
-    uint16_t phy_scsr = eth_phy_read(self->phy_addr, PHY_SCSR);
+    uint16_t phy_scsr = self->phy_get_link_status(self->phy_addr);
 
     // Burst mode configuration
     #if defined(STM32H5) || defined(STM32H7)
@@ -505,9 +503,9 @@ static int eth_mac_init(eth_t *self) {
 
     // Set main MAC control register
     ETH->MACCR =
-        (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_10FULL ? ETH_MACCR_DM
-        : (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_100HALF ? ETH_MACCR_FES
-        : (phy_scsr & PHY_SCSR_SPEED_Msk) == PHY_SCSR_SPEED_100FULL ? (ETH_MACCR_FES | ETH_MACCR_DM)
+        phy_scsr == PHY_SPEED_10FULL ? ETH_MACCR_DM
+        : phy_scsr == PHY_SPEED_100HALF ? ETH_MACCR_FES
+        : phy_scsr == PHY_SPEED_100FULL ? (ETH_MACCR_FES | ETH_MACCR_DM)
         : 0
     ;
     mp_hal_delay_ms(2);
