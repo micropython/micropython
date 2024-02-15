@@ -108,16 +108,6 @@ void board_init(void) {
         );
 }
 
-bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
-    // Override the I2C/TFT power pin reset to prevent resetting the display.
-    if (pin_number == 21) {
-        // Turn on TFT and I2C
-        gpio_set_direction(21, GPIO_MODE_DEF_OUTPUT);
-        gpio_set_level(21, true);
-        return true;
-    }
-    return false;
-}
 
 // Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
 
