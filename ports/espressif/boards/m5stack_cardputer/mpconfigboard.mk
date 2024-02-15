@@ -1,6 +1,6 @@
 USB_VID = 0x303A
 USB_PID = 0x81DA
-USB_PRODUCT = "M5STACK CoreS3 - CircuitPython"
+USB_PRODUCT = "M5STACK Cardputer - CircuitPython"
 USB_MANUFACTURER = "M5STACK"
 
 IDF_TARGET = esp32s3
