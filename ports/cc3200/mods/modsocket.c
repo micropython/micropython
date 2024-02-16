@@ -436,8 +436,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
     // create socket object
-    mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
-    s->base.type = (mp_obj_t)&socket_type;
+    mod_network_socket_obj_t *s = mp_obj_malloc_with_finaliser(mod_network_socket_obj_t, &socket_type);
     s->sock_base.u_param.domain = SL_AF_INET;
     s->sock_base.u_param.type = SL_SOCK_STREAM;
     s->sock_base.u_param.proto = SL_IPPROTO_TCP;
@@ -508,7 +507,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
     mod_network_socket_obj_t *self = self_in;
 
     // create new socket object
-    mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
+    mod_network_socket_obj_t *socket2 = mp_obj_malloc_with_finaliser(mod_network_socket_obj_t, self->base.type);
     // the new socket inherits all properties from its parent
     memcpy (socket2, self, sizeof(mod_network_socket_obj_t));
 

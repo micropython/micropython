@@ -270,8 +270,7 @@ STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp
 STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
-    socket_obj_t *sock = m_new_obj_with_finaliser(socket_obj_t);
-    sock->base.type = type_in;
+    socket_obj_t *sock = mp_obj_malloc_with_finaliser(socket_obj_t, type_in);
     sock->domain = AF_INET;
     sock->type = SOCK_STREAM;
     sock->proto = 0;
@@ -364,8 +363,7 @@ STATIC mp_obj_t socket_accept(const mp_obj_t arg0) {
     }
 
     // create new socket object
-    socket_obj_t *sock = m_new_obj_with_finaliser(socket_obj_t);
-    sock->base.type = self->base.type;
+    socket_obj_t *sock = mp_obj_malloc_with_finaliser(socket_obj_t, self->base.type);
     sock->fd = new_fd;
     sock->domain = self->domain;
     sock->type = self->type;

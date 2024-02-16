@@ -228,8 +228,7 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
         }
     }
 
-    pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
-    o->base.type = type;
+    pyb_file_obj_t *o = mp_obj_malloc_with_finaliser(pyb_file_obj_t, type);
 
     const char *fname = mp_obj_str_get_str(path_in);
     FRESULT res = f_open(&self->fatfs, &o->fp, fname, mode);
