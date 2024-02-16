@@ -1281,6 +1281,8 @@ def read_raw_code(reader, parent_name, qstr_table, obj_table, segments):
         native_scope_flags = 0
         native_n_pos_args = 0
         native_type_sig = 0
+        if kind in (MP_CODE_NATIVE_PY, MP_CODE_NATIVE_VIPER):
+            simple_name = reader.read_uint()
         if kind == MP_CODE_NATIVE_PY:
             prelude_offset = reader.read_uint()
         else:

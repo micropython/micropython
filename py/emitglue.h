@@ -92,9 +92,17 @@ typedef struct _mp_raw_code_t {
     mp_bytecode_prelude_t prelude;
     #endif
     #endif
-    #if MICROPY_EMIT_INLINE_ASM
+    #if MICROPY_EMIT_MACHINE_CODE || MICROPY_EMIT_INLINE_ASM
+    union {
+        struct {
+            uint16_t simple_name;
+            uint16_t prelude_ptr_index;
+        } u_native;
+        struct {
     uint32_t asm_n_pos_args : 8;
     uint32_t asm_type_sig : 24; // compressed as 2-bit types; ret is MSB, then arg0, arg1, etc
+        } u_asm;
+    } u;
     #endif
 } mp_raw_code_t;
 
@@ -132,6 +140,8 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
     mp_raw_code_t **children,
+    uint16_t simple_name,
+    uint16_t prelude_ptr_index,
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t n_children,
     uint16_t prelude_offset,

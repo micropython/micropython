@@ -43,6 +43,22 @@ typedef struct _mp_obj_fun_bc_t {
     mp_obj_t extra_args[];
 } mp_obj_fun_bc_t;
 
+typedef struct _mp_obj_fun_native_t {
+    mp_obj_base_t base;
+    const mp_module_context_t *context;         // context within which this function was defined
+    struct _mp_raw_code_t *const *child_table;  // table of children
+    const void *machine_code;                   // bytecode for the function
+    uint16_t simple_name;
+    uint16_t prelude_ptr_index;
+    #if MICROPY_PY_SYS_SETTRACE
+    const struct _mp_raw_code_t *rc;
+    #endif
+    // the following extra_args array is allocated space to take (in order):
+    //  - values of positional default args (if any)
+    //  - a single slot for default kw args dict (if it has them)
+    mp_obj_t extra_args[];
+} mp_obj_fun_native_t;
+
 typedef struct _mp_obj_fun_asm_t {
     mp_obj_base_t base;
     size_t n_args;
@@ -51,14 +67,49 @@ typedef struct _mp_obj_fun_asm_t {
 } mp_obj_fun_asm_t;
 
 mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_module_context_t *cm, struct _mp_raw_code_t *const *raw_code_table);
+mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table, uint16_t simple_name, uint16_t prelude_ptr_index);
 void mp_obj_fun_bc_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
 
 #if MICROPY_EMIT_NATIVE
-static inline mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
+static inline mp_obj_t mp_obj_new_fun_nativex(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
     mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(mp_obj_new_fun_bc(def_args, (const byte *)fun_data, mc, child_table));
     o->base.type = &mp_type_fun_native;
     return MP_OBJ_FROM_PTR(o);
 }
+
+static inline uint16_t mp_obj_fun_native_get_simple_name(const mp_obj_fun_native_t *fun_native) {
+    // Obtain a pointer to the start of the function prelude, based on prelude_ptr_index.
+    return fun_native->simple_name;
+}
+
+static inline const uint8_t *mp_obj_fun_native_get_prelude_ptr(const mp_obj_fun_native_t *fun_native) {
+    // Obtain a pointer to the start of the function prelude, based on prelude_ptr_index.
+    uintptr_t prelude_ptr_index = fun_native->prelude_ptr_index;
+    const uint8_t *prelude_ptr;
+    if (prelude_ptr_index == 0) {
+        prelude_ptr = (const uint8_t *)fun_native->child_table;
+    } else {
+        prelude_ptr = (const uint8_t *)fun_native->child_table[prelude_ptr_index];
+    }
+    return prelude_ptr;
+}
+
+static inline void *mp_obj_fun_native_get_function_start(const mp_obj_fun_native_t *fun_native) {
+    // Obtain a pointer to the start of the function executable machine code.
+    return MICROPY_MAKE_POINTER_CALLABLE((void *)fun_native->machine_code);
+}
+
+static inline void *mp_obj_fun_native_get_generator_start(const mp_obj_fun_native_t *fun_native) {
+    // Obtain a pointer to the start of the generator executable machine code.
+    uintptr_t start_offset = ((uintptr_t *)fun_native->machine_code)[0];
+    return MICROPY_MAKE_POINTER_CALLABLE((void *)((uintptr_t)fun_native->machine_code + start_offset));
+}
+
+static inline void *mp_obj_fun_native_get_generator_resume(const mp_obj_fun_native_t *fun_native) {
+    // Obtain a pointer to the start of the resumable generator executable machine code.
+    return MICROPY_MAKE_POINTER_CALLABLE((void *)((uintptr_t)fun_native->machine_code + sizeof(uintptr_t)));
+}
+
 #endif
 
 #if MICROPY_EMIT_INLINE_ASM

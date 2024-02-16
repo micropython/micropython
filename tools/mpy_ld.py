@@ -929,6 +929,8 @@ def build_mpy(env, entry_offset, fmpy, native_qstr_vals):
     # MPY: machine code
     out.write_bytes(env.full_text)
 
+    out.write_uint(0) # simple_name
+
     # MPY: scope_flags
     scope_flags = MP_SCOPE_FLAG_VIPERRELOC
     if len(env.full_rodata):

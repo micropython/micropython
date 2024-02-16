@@ -94,6 +94,8 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 #if MICROPY_EMIT_MACHINE_CODE
 void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
     mp_raw_code_t **children,
+    uint16_t simple_name,
+    uint16_t prelude_ptr_index,
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t n_children,
     uint16_t prelude_offset,
@@ -142,10 +144,19 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     rc->prelude_offset = prelude_offset;
     #endif
 
+    #if MICROPY_EMIT_MACHINE_CODE
+    if (kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER) {
+    rc->u.u_native.simple_name = simple_name;
+    rc->u.u_native.prelude_ptr_index = prelude_ptr_index;
+    }
+    #endif
+
     #if MICROPY_EMIT_INLINE_ASM
     // These two entries are only needed for MP_CODE_NATIVE_ASM.
-    rc->asm_n_pos_args = asm_n_pos_args;
-    rc->asm_type_sig = asm_type_sig;
+    if (kind == MP_CODE_NATIVE_ASM) {
+    rc->u.u_asm.asm_n_pos_args = asm_n_pos_args;
+    rc->u.u_asm.asm_type_sig = asm_type_sig;
+    }
     #endif
 
     #if DEBUG_PRINT
@@ -200,7 +211,7 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
         case MP_CODE_NATIVE_VIPER:
-            fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
+            fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children, rc->u.u_native.simple_name, rc->u.u_native.prelude_ptr_index);
             // Check for a generator function, and if so change the type of the object
             if (rc->is_generator) {
                 ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
@@ -209,7 +220,7 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
         #endif
         #if MICROPY_EMIT_INLINE_ASM
         case MP_CODE_NATIVE_ASM:
-            fun = mp_obj_new_fun_asm(rc->asm_n_pos_args, rc->fun_data, rc->asm_type_sig);
+            fun = mp_obj_new_fun_asm(rc->u.u_asm.asm_n_pos_args, rc->fun_data, rc->u.u_asm.asm_type_sig);
             break;
         #endif
         default:

@@ -256,7 +256,7 @@ typedef struct _mp_code_state_t {
 
 // State for an executing native function (based on mp_code_state_t).
 typedef struct _mp_code_state_native_t {
-    struct _mp_obj_fun_bc_t *fun_bc;
+    struct _mp_obj_fun_native_t *fun_bc;
     const byte *ip;
     mp_obj_t *sp;
     uint16_t n_state;

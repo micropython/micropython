@@ -75,6 +75,7 @@ user_files = {
 
             b'\x42' # 8 bytes, no children, viper code
                 b'\x00\x00\x00\x00\x00\x00\x00\x00' # dummy machine code
+                b'\x00' # simple_name
                 b'\x00' # scope_flags
 
             b'\x43' # 8 bytes, no children, asm code
@@ -100,6 +101,7 @@ user_files = {
 
             b'\x22' # 4 bytes, no children, viper code
                 b'\x00\x00\x00\x00' # dummy machine code
+                b'\x00' # simple_name
                 b'\x70' # scope_flags: VIPERBSS | VIPERRODATA | VIPERRELOC
                 b'\x06\x04' # rodata=6 bytes, bss=4 bytes
                 b'rodata' # rodata content

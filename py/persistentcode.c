@@ -236,6 +236,7 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
 
     uint8_t *fun_data = NULL;
     #if MICROPY_EMIT_MACHINE_CODE
+    uint16_t simple_name = 0;
     size_t prelude_offset = 0;
     mp_uint_t native_scope_flags = 0;
     mp_uint_t native_n_pos_args = 0;
@@ -255,6 +256,9 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         MP_PLAT_ALLOC_EXEC(fun_data_len, (void **)&fun_data, &fun_alloc);
         read_bytes(reader, fun_data, fun_data_len);
 
+        if (kind == MP_CODE_NATIVE_PY || kind == MP_CODE_NATIVE_VIPER) {
+            simple_name = read_uint(reader);
+        }
         if (kind == MP_CODE_NATIVE_PY) {
             // Read prelude offset within fun_data, and extract scope flags.
             prelude_offset = read_uint(reader);
@@ -382,6 +386,8 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         mp_emit_glue_assign_native(rc, kind,
             fun_data, fun_data_len,
             children,
+            simple_name,
+            n_children, // prelude_ptr_index
             #if MICROPY_PERSISTENT_CODE_SAVE
             n_children,
             prelude_offset,
@@ -570,6 +576,9 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
     mp_print_bytes(print, rc->fun_data, rc->fun_data_len);
 
     #if MICROPY_EMIT_MACHINE_CODE
+    if (rc->kind == MP_CODE_NATIVE_PY || rc->kind == MP_CODE_NATIVE_VIPER) {
+        mp_print_uint(print, rc->u.u_native.simple_name);
+    }
     if (rc->kind == MP_CODE_NATIVE_PY) {
         // Save prelude size
         mp_print_uint(print, rc->prelude_offset);
@@ -580,8 +589,8 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
         mp_print_uint(print, 0);
         #if MICROPY_EMIT_INLINE_ASM
         if (rc->kind == MP_CODE_NATIVE_ASM) {
-            mp_print_uint(print, rc->asm_n_pos_args);
-            mp_print_uint(print, rc->asm_type_sig);
+            mp_print_uint(print, rc->u.u_asm.asm_n_pos_args);
+            mp_print_uint(print, rc->u.u_asm.asm_type_sig);
         }
         #endif
     }

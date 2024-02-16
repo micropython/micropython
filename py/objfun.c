@@ -400,8 +400,8 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
 
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
-    mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
+    mp_obj_fun_native_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_call_fun_t fun = mp_obj_fun_native_get_function_start(self);
     return fun(self_in, n_args, n_kw, args);
 }
 
@@ -424,6 +424,37 @@ MP_DEFINE_CONST_OBJ_TYPE(
     FUN_BC_TYPE_ATTR
     call, fun_native_call
     );
+
+mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table, uint16_t simple_name, uint16_t prelude_ptr_index) {
+    size_t n_def_args = 0;
+    size_t n_extra_args = 0;
+    mp_obj_tuple_t *def_pos_args = NULL;
+    mp_obj_t def_kw_args = MP_OBJ_NULL;
+    if (def_args != NULL && def_args[0] != MP_OBJ_NULL) {
+        assert(mp_obj_is_type(def_args[0], &mp_type_tuple));
+        def_pos_args = MP_OBJ_TO_PTR(def_args[0]);
+        n_def_args = def_pos_args->len;
+        n_extra_args = def_pos_args->len;
+    }
+    if (def_args != NULL && def_args[1] != MP_OBJ_NULL) {
+        assert(mp_obj_is_type(def_args[1], &mp_type_dict));
+        def_kw_args = def_args[1];
+        n_extra_args += 1;
+    }
+    mp_obj_fun_native_t *o = mp_obj_malloc_var(mp_obj_fun_native_t, mp_obj_t, n_extra_args, &mp_type_fun_native);
+    o->machine_code = fun_data;
+    o->context = mc;
+    o->child_table = child_table;
+    o->simple_name = simple_name;
+    o->prelude_ptr_index = prelude_ptr_index;
+    if (def_pos_args != NULL) {
+        memcpy(o->extra_args, def_pos_args->items, n_def_args * sizeof(mp_obj_t));
+    }
+    if (def_kw_args != MP_OBJ_NULL) {
+        o->extra_args[n_def_args] = def_kw_args;
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
 
 #endif // MICROPY_EMIT_NATIVE
 
