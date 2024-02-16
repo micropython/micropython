@@ -160,9 +160,7 @@ def create_pr(changes, updated, git_info, user):
     create_branch = {"ref": "refs/heads/" + branch_name, "sha": commit_sha}
     response = github.post("/repos/{}/circuitpython-org/git/refs".format(user), json=create_branch)
     if not response.ok and response.json()["message"] != "Reference already exists":
-        print("unable to create branch")
-        print(response.text)
-        return
+        raise SystemExit(f"unable to create branch: {response.text}")
 
     update_file = {
         "message": message,
@@ -175,9 +173,7 @@ def create_pr(changes, updated, git_info, user):
         "/repos/{}/circuitpython-org/contents/_data/files.json".format(user), json=update_file
     )
     if not response.ok:
-        print("unable to post new file")
-        print(response.text)
-        return
+        raise SystemExit(f"unable to post new file: {response.text}")
     pr_info = {
         "title": pr_title,
         "head": user + ":" + branch_name,
@@ -187,9 +183,7 @@ def create_pr(changes, updated, git_info, user):
     }
     response = github.post("/repos/adafruit/circuitpython-org/pulls", json=pr_info)
     if not response.ok:
-        print("unable to create pr")
-        print(response.text)
-        return
+        raise SystemExit(f"unable to create pr: {response.text}")
     print(changes)
     print(pr_info)
 
