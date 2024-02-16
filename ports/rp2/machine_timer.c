@@ -105,8 +105,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
 }
 
 STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
-    machine_timer_obj_t *self = m_new_obj_with_finaliser(machine_timer_obj_t);
-    self->base.type = &machine_timer_type;
+    machine_timer_obj_t *self = mp_obj_malloc_with_finaliser(machine_timer_obj_t, &machine_timer_type);
     self->pool = alarm_pool_get_default();
     self->alarm_id = ALARM_ID_INVALID;
 

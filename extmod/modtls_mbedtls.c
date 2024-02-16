@@ -209,12 +209,7 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mp_int_t endpoint = mp_obj_get_int(args[0]);
 
     // Create SSLContext object.
-    #if MICROPY_PY_SSL_FINALISER
-    mp_obj_ssl_context_t *self = m_new_obj_with_finaliser(mp_obj_ssl_context_t);
-    #else
-    mp_obj_ssl_context_t *self = m_new_obj(mp_obj_ssl_context_t);
-    #endif
-    self->base.type = type_in;
+    mp_obj_ssl_context_t *self = mp_obj_malloc_with_finaliser(mp_obj_ssl_context_t, type_in);
 
     // Initialise mbedTLS state.
     mbedtls_ssl_config_init(&self->conf);
@@ -487,12 +482,7 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     // Verify the socket object has the full stream protocol
     mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
 
-    #if MICROPY_PY_SSL_FINALISER
-    mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
-    #else
-    mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
-    #endif
-    o->base.type = &ssl_socket_type;
+    mp_obj_ssl_socket_t *o = mp_obj_malloc_with_finaliser(mp_obj_ssl_socket_t, &ssl_socket_type);
     o->ssl_context = ssl_context;
     o->sock = sock;
     o->poll_mask = 0;
