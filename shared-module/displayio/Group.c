@@ -35,7 +35,7 @@
 #endif
 
 static void check_rom(displayio_group_t *self) {
-    if (self->in_rom) {
+    if (self->readonly) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("Read-only"));
     }
 }
@@ -383,7 +383,7 @@ void displayio_group_construct(displayio_group_t *self, mp_obj_list_t *members, 
     self->item_removed = false;
     self->scale = scale;
     self->in_group = false;
-    self->in_rom = false;
+    self->readonly = false;
 }
 
 bool displayio_group_fill_area(displayio_group_t *self, const _displayio_colorspace_t *colorspace, const displayio_area_t *area, uint32_t *mask, uint32_t *buffer) {

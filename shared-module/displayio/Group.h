@@ -47,7 +47,7 @@ typedef struct {
     bool in_group : 1;
     bool hidden : 1;
     bool hidden_by_parent : 1;
-    bool in_rom : 1;
+    bool readonly : 1;
     uint8_t padding : 3;
 } displayio_group_t;
 
