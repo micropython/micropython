@@ -336,9 +336,9 @@ void mp_setup_code_state(mp_code_state_t *code_state, size_t n_args, size_t n_kw
 // On entry code_state should be allocated somewhere (stack/heap) and
 // contain the following valid entries:
 //    - code_state->fun_bc should contain a pointer to the function object
-//    - code_state->ip should contain a pointer to the beginning of the prelude
 //    - code_state->n_state should be the number of objects in the local state
 void mp_setup_code_state_native(mp_code_state_native_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    code_state->ip = mp_obj_fun_native_get_prelude_ptr(code_state->fun_bc);
     code_state->sp = &code_state->state[0] - 1;
     mp_setup_code_state_helper((mp_code_state_t *)code_state, n_args, n_kw, args);
 }

@@ -101,13 +101,7 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     mp_obj_fun_bc_t *self_fun = MP_OBJ_TO_PTR(self_in);
 
     // Determine start of prelude.
-    uintptr_t prelude_ptr_index = ((uintptr_t *)self_fun->bytecode)[0];
-    const uint8_t *prelude_ptr;
-    if (prelude_ptr_index == 0) {
-        prelude_ptr = (void *)self_fun->child_table;
-    } else {
-        prelude_ptr = (void *)self_fun->child_table[prelude_ptr_index];
-    }
+    const uint8_t *prelude_ptr = mp_obj_fun_native_get_prelude_ptr(self_fun);
 
     // Extract n_state from the prelude.
     const uint8_t *ip = prelude_ptr;
@@ -119,17 +113,14 @@ STATIC mp_obj_t native_gen_wrap_call(mp_obj_t self_in, size_t n_args, size_t n_k
     // Parse the input arguments and set up the code state
     o->pend_exc = mp_const_none;
     o->code_state.fun_bc = self_fun;
-    o->code_state.ip = prelude_ptr;
     o->code_state.n_state = n_state;
-    o->code_state.sp = &o->code_state.state[0] - 1;
     mp_setup_code_state_native(&o->code_state, n_args, n_kw, args);
 
     // Indicate we are a native function, which doesn't use this variable
     o->code_state.exc_sp_idx = MP_CODE_STATE_EXC_SP_IDX_SENTINEL;
 
     // Prepare the generator instance for execution
-    uintptr_t start_offset = ((uintptr_t *)self_fun->bytecode)[1];
-    o->code_state.ip = MICROPY_MAKE_POINTER_CALLABLE((void *)(self_fun->bytecode + start_offset));
+    o->code_state.ip = mp_obj_fun_native_get_generator_start(self_fun);
 
     return MP_OBJ_FROM_PTR(o);
 }
@@ -208,9 +199,9 @@ mp_vm_return_kind_t mp_obj_gen_resume(mp_obj_t self_in, mp_obj_t send_value, mp_
 
     #if MICROPY_EMIT_NATIVE
     if (self->code_state.exc_sp_idx == MP_CODE_STATE_EXC_SP_IDX_SENTINEL) {
-        // A native generator, with entry point 2 words into the "bytecode" pointer
+        // A native generator.
         typedef uintptr_t (*mp_fun_native_gen_t)(void *, mp_obj_t);
-        mp_fun_native_gen_t fun = MICROPY_MAKE_POINTER_CALLABLE((const void *)(self->code_state.fun_bc->bytecode + 2 * sizeof(uintptr_t)));
+        mp_fun_native_gen_t fun = mp_obj_fun_native_get_generator_resume(self->code_state.fun_bc);
         ret_kind = fun((void *)&self->code_state, throw_value);
     } else
     #endif
