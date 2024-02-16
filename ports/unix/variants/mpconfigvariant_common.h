@@ -111,11 +111,7 @@
 #endif
 
 // The "select" module is enabled by default, but disable select.select().
-#if defined(__wasi__)
-#define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (0)
-#else
 #define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (1)
-#endif
 #define MICROPY_PY_SELECT_SELECT       (0)
 
 // Enable the "websocket" module.
