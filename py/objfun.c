@@ -428,6 +428,27 @@ MP_DEFINE_CONST_OBJ_TYPE(
 #endif // MICROPY_EMIT_NATIVE
 
 /******************************************************************************/
+/* viper functions                                                           */
+
+#if MICROPY_EMIT_NATIVE
+
+STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    MP_STACK_CHECK();
+    mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
+    return fun(self_in, n_args, n_kw, args);
+}
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_viper,
+    MP_QSTR_function,
+    MP_TYPE_FLAG_BINDS_SELF,
+    call, fun_viper_call
+    );
+
+#endif // MICROPY_EMIT_NATIVE
+
+/******************************************************************************/
 /* inline assembler functions                                                 */
 
 #if MICROPY_EMIT_INLINE_ASM
