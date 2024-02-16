@@ -73,6 +73,11 @@ void never_reset_pin_number(uint8_t pin_number) {
     never_reset_pins |= 1 << pin_number;
 }
 
+// By default, all pins get reset in the same way
+MP_WEAK bool board_reset_pin_number(uint8_t pin_number) {
+    return false;
+}
+
 void reset_pin_number(uint8_t pin_number) {
     if (pin_number >= NUM_BANK0_GPIOS) {
         return;
@@ -80,6 +85,11 @@ void reset_pin_number(uint8_t pin_number) {
 
     gpio_bank0_pin_claimed &= ~(1 << pin_number);
     never_reset_pins &= ~(1 << pin_number);
+
+    // Allow the board to override the reset state of any pin
+    if (board_reset_pin_number(pin_number)) {
+        return;
+    }
 
     // We are very aggressive in shutting down the pad fully. Both pulls are
     // disabled and both buffers are as well.
