@@ -199,12 +199,14 @@ mp_obj_t mp_make_function_from_proto_fun(mp_proto_fun_t proto_fun, const mp_modu
     switch (rc->kind) {
         #if MICROPY_EMIT_NATIVE
         case MP_CODE_NATIVE_PY:
-        case MP_CODE_NATIVE_VIPER:
             fun = mp_obj_new_fun_native(def_args, rc->fun_data, context, rc->children);
             // Check for a generator function, and if so change the type of the object
             if (rc->is_generator) {
                 ((mp_obj_base_t *)MP_OBJ_TO_PTR(fun))->type = &mp_type_native_gen_wrap;
             }
+            break;
+        case MP_CODE_NATIVE_VIPER:
+            fun = mp_obj_new_fun_viper(rc->fun_data, context, rc->children);
             break;
         #endif
         #if MICROPY_EMIT_INLINE_ASM
