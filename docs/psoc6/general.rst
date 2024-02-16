@@ -17,23 +17,18 @@ Supported boards
 Following are the boards supported in this port:
 
 .. list-table::
-   :widths: 20 50
+   :widths: 20 20 50
    :header-rows: 1
 
    * - Board name
-     - Distinguishing feature 
+     - Connectivity
+     - Special feature 
    * - CY8CPROTO-062-4343W
-     - Dual-core Arm Cortex-M4 and Cortex-M0+ MCU with versatile peripherals on board like:
-        - Industry-leading CAPSENSE™ for touch buttons and slider
-        - Networking capabilities
-        - microSD card interface
-        - 512-Mb Quad-SPI NOR flash
+     - WiFi, BT
+     - microSD card slot, external flash memory, thermistor, user button
    * - CY8CPROTO-063-BLE
-     - Dual-core Arm Cortex-M4 and Cortex-M0+ MCU with:
-        - Versatile peripherals
-        - Networking capabilities
-        - Bluetooth Low Energy (BLE) connectivity compatible with Bluetooth 5.0 
-        - Snap-away form-factor
+     - BLE
+     - user button, compact form-factor
 
 For more hardware related details, check the following sections.
 
