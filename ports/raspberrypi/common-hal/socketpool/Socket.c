@@ -865,7 +865,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     return MP_OBJ_FROM_PTR(accepted);
 }
 
-bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
+size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     const char *host, size_t hostlen, uint32_t port) {
 
     // get address
@@ -876,7 +876,6 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     } else {
         bind_addr_ptr = IP_ANY_TYPE;
     }
-    ip_set_option(socket->pcb.ip, SOF_REUSEADDR);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
@@ -891,10 +890,10 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     }
 
     if (err != ERR_OK) {
-        mp_raise_OSError(error_lookup_table[-err]);
+        return error_lookup_table[-err];
     }
 
-    return mp_const_none;
+    return 0;
 }
 
 STATIC err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {
