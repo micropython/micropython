@@ -24,15 +24,7 @@
  * THE SOFTWARE.
  */
 
-// Machine is the HAL for low-level, hardware accelerated functions. It is not
-// meant to simplify APIs, its only meant to unify them so that other modules
-// do not require port specific logic.
-//
-// This file includes externs for all functions a port should implement to
-// support the machine module.
-
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_H
+#pragma once
 
 #include "py/obj.h"
 
@@ -74,5 +66,3 @@ uint8_t common_hal_busio_i2c_write_read(busio_i2c_obj_t *self, uint16_t address,
 
 // This is used by the supervisor to claim I2C devices indefinitely.
 extern void common_hal_busio_i2c_never_reset(busio_i2c_obj_t *self);
-
-#endif // MICROPY_INCLUDED_SHARED_BINDINGS_BUSIO_I2C_H

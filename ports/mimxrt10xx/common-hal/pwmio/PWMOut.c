@@ -213,7 +213,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 
         /*
          * pwmConfig.enableDebugMode = false;
-         * pwmConfig.enableWait = false;
          * pwmConfig.reloadSelect = kPWM_LocalReload;
          * pwmConfig.faultFilterCount = 0;
          * pwmConfig.faultFilterPeriod = 0;
@@ -228,7 +227,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         PWM_GetDefaultConfig(&pwmConfig);
 
         pwmConfig.reloadLogic = kPWM_ReloadPwmFullCycle;
-        pwmConfig.enableWait = true;
         pwmConfig.enableDebugMode = true;
 
         pwmConfig.prescale = self->prescaler;

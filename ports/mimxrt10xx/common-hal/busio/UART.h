@@ -25,8 +25,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -43,7 +42,6 @@ typedef struct {
     uint8_t *ringbuf;
     uint32_t baudrate;
     uint32_t timeout_ms;
-    bool rx_ongoing;
     uint8_t character_bits;
     uint8_t index;
     const mcu_pin_obj_t *rx;
@@ -54,6 +52,3 @@ typedef struct {
     bool rs485_invert;
 
 } busio_uart_obj_t;
-
-void uart_reset(void);
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_UART_H
