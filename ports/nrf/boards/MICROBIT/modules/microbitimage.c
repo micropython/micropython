@@ -113,7 +113,7 @@ mp_int_t imageHeight(microbit_image_obj_t * p_image) {
 }
 
 STATIC greyscale_t *greyscale_new(mp_int_t w, mp_int_t h) {
-    greyscale_t *result = mp_obj_malloc_var(greyscale_t, uint8_t, (w*h+1)>>1, &microbit_image_type);
+    greyscale_t *result = mp_obj_malloc_var(greyscale_t, byte_data, uint8_t, (w*h+1)>>1, &microbit_image_type);
     result->five = 0;
     result->width = w;
     result->height = h;

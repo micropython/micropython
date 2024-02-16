@@ -913,7 +913,7 @@ extern const struct _mp_obj_exception_t mp_const_GeneratorExit_obj;
 // Helper versions of m_new_obj when you need to immediately set base.type.
 // Implementing this as a call rather than inline saves 8 bytes per usage.
 #define mp_obj_malloc(struct_type, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type), obj_type))
-#define mp_obj_malloc_var(struct_type, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
+#define mp_obj_malloc_var(struct_type, var_field, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_helper(offsetof(struct_type, var_field) + sizeof(var_type) * (var_num), obj_type))
 void *mp_obj_malloc_helper(size_t num_bytes, const mp_obj_type_t *type);
 
 // These macros are derived from more primitive ones and are used to
