@@ -275,30 +275,38 @@ STATIC const mp_rom_map_elem_t storage_module_globals_table[] = {
 //|         larger filesystems, but you will need to format the filesystem on another device.
 //|         """
 //|         ...
+//|
 //|     def open(self, path: str, mode: str) -> None:
 //|         """Like builtin ``open()``"""
 //|         ...
+//|
 //|     def ilistdir(
 //|         self, path: str
 //|     ) -> Iterator[Union[Tuple[AnyStr, int, int, int], Tuple[AnyStr, int, int]]]:
 //|         """Return an iterator whose values describe files and folders within
 //|         ``path``"""
 //|         ...
+//|
 //|     def mkdir(self, path: str) -> None:
 //|         """Like `os.mkdir`"""
 //|         ...
+//|
 //|     def rmdir(self, path: str) -> None:
 //|         """Like `os.rmdir`"""
 //|         ...
+//|
 //|     def stat(self, path: str) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.stat`"""
 //|         ...
+//|
 //|     def statvfs(self, path: int) -> Tuple[int, int, int, int, int, int, int, int, int, int]:
 //|         """Like `os.statvfs`"""
 //|         ...
+//|
 //|     def mount(self, readonly: bool, mkfs: VfsFat) -> None:
 //|         """Don't call this directly, call `storage.mount`."""
 //|         ...
+//|
 //|     def umount(self) -> None:
 //|         """Don't call this directly, call `storage.umount`."""
 //|         ...

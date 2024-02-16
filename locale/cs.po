@@ -218,7 +218,8 @@ msgid "%q must be multiple of 8."
 msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
-#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-bindings/bitmapfilter/__init__.c shared-bindings/canio/CAN.c
+#: shared-bindings/digitalio/Pull.c shared-bindings/supervisor/__init__.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q musí být typu %q nebo %q, ne %q"
@@ -227,7 +228,8 @@ msgstr "%q musí být typu %q nebo %q, ne %q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/runtime.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q musí být typu %q, ne %q"
 
@@ -244,7 +246,7 @@ msgstr "%q je mimo hranice"
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
-#: shared-bindings/canio/Match.c
+#: shared-bindings/canio/Match.c shared-bindings/time/__init__.c
 msgid "%q out of range"
 msgstr "%q je mimo rozsah"
 
@@ -485,12 +487,6 @@ msgstr "Všechny CAN periferie jsou používány"
 msgid "All I2C peripherals are in use"
 msgstr "Všechny I2C periferie jsou používány"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "Všechny PCNT jednotky jsou používány"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -508,7 +504,6 @@ msgstr "Všechny UART periferie jsou používány"
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr "Všechny kanály jsou používány"
 
@@ -531,24 +526,18 @@ msgid "All sync event channels in use"
 msgstr ""
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Všechny časovače pro tento pin jsou používány"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
+#: ports/stm/peripherals/timers.c
 msgid "All timers in use"
 msgstr "Všechny časovače jsou používány"
 
@@ -752,6 +741,7 @@ msgstr "Nelze nastavit CCCD na místní charakteristiku"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "Nelze změnit USB zařízení"
 
@@ -792,13 +782,6 @@ msgstr "Nelze nahrávat do souboru"
 msgid "Cannot remount '/' when visible via USB."
 msgstr "Není možné znovu připojit '/', pokud je viditelné pomocí USB."
 
-#: ports/atmel-samd/common-hal/microcontroller/__init__.c
-#: ports/cxd56/common-hal/microcontroller/__init__.c
-#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
-msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr ""
-"Reset do bootloaderu není možný, protože žádný bootloader není přítomen"
-
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
 msgstr "Nelze nastavit možnosti socketu"
@@ -815,10 +798,6 @@ msgstr "Nelze určit RTS nebo CTS v režimu RS485"
 #: py/objslice.c
 msgid "Cannot subclass slice"
 msgstr "Nelze použít řez podtřídy"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Cannot vary frequency on a timer that is already in use"
-msgstr "Nelze měnit frekvenci časovače, který je již používán"
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
@@ -855,17 +834,9 @@ msgstr "Pole souřadnic mají různé délky"
 msgid "Coordinate arrays types have different sizes"
 msgstr ""
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "Nelze načíst hodiny"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
 msgstr "Není možné nastavit adresu"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Could not start PWM"
-msgstr "Nelze spustit PWM"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
@@ -915,10 +886,6 @@ msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 "Piny pro hluboký spánek musí používat náběžnou hranu s pulldown rezistorem"
 
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Cílová kapacita je menší než destination_length."
@@ -962,16 +929,6 @@ msgstr "ECB operuje najednou pouze 16 bajtů"
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF alokace paměti selhala"
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/ps2io/Ps2.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-msgid "EXTINT channel already in use"
-msgstr "EXTINT kanál se již používá"
 
 #: extmod/modre.c
 msgid "Error in regex"
@@ -1107,10 +1064,6 @@ msgstr ""
 "Frekvence musí být 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 nebo 1008 "
 "Mhz"
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Frequency must match existing PWMOut using this timer"
-msgstr ""
-
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
@@ -1144,12 +1097,6 @@ msgstr "Hardware je používán, zkuste alternativní piny"
 #: supervisor/shared/safe_mode.c
 msgid "Heap allocation when VM not running."
 msgstr "Alokace heapu při neběžícím VM."
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Heap was corrupted because the stack was too small. Increase stack size."
-msgstr ""
-"Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1193,7 +1140,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "Vstup trval příliš dlouho"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Chyba vstupu/výstupu"
 
@@ -1226,7 +1173,7 @@ msgid "Internal define error"
 msgstr ""
 
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
-#: shared-module/os/getenv.c
+#: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "Interní chyba"
 
@@ -1234,6 +1181,16 @@ msgstr "Interní chyba"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Vnitřní chyba #%d"
+
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
+msgid "Internal resource(s) in use"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
@@ -1252,7 +1209,7 @@ msgstr ""
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/epaperdisplay/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid %q"
 msgstr "Špatný %s"
 
@@ -1400,6 +1357,10 @@ msgstr "Chybí first_set_pin. %q[%u] nastavuje pin(y)"
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
 msgstr "Chybí jmp_pin. %q[%u] skáče na pin"
 
+#: shared-module/storage/__init__.c
+msgid "Mount point directory missing"
+msgstr ""
+
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Musí být podtřída %q."
@@ -1484,9 +1445,11 @@ msgstr "Žádné I2C zařízení na adrese: 0x%x"
 msgid "No IP"
 msgstr "Není IP"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "No available clocks"
-msgstr "Žádné dostupné hodiny"
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c
+#: ports/cxd56/common-hal/microcontroller/__init__.c
+#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
+msgid "No bootloader present"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
@@ -1504,14 +1467,11 @@ msgstr "Žádné připojení: nelze určit délku"
 msgid "No default %q bus"
 msgstr "Žádná výchozí sběrnice %q"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Žádné volné GCLK"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "No free GLCKs"
-msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1714,11 +1674,6 @@ msgstr "Došly sockety"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr ""
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid ""
-"PWM frequency not writable when variable_frequency is False on construction."
-msgstr ""
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "PWM restart"
 msgstr "Restart PWM"
@@ -1763,11 +1718,6 @@ msgstr "Pin je pouze vstupní"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
 msgstr "Pin musí být na PWM kanálu B"
-
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Pin must support hardware interrupts"
-msgstr ""
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -2001,13 +1951,9 @@ msgstr "Zdrojové a cílové buffery musí být stejné délky"
 msgid "Specify exactly one of data0 or data_pins"
 msgstr "Specifikuj přesně jeden z data0 nebo data_pins"
 
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo left must be on PWM channel A"
-msgstr "Levý stereo kanál musí být na PWM kanálu A"
-
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo right must be on PWM channel B"
-msgstr "Pravý stereo kanál musí být na PWM kanálu B"
+#: supervisor/shared/safe_mode.c
+msgid "Stack overflow. Increase stack size."
+msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2114,10 +2060,6 @@ msgstr "Touch alarmy nejsou dostupné"
 
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
-msgstr ""
-
-#: shared-bindings/time/__init__.c
-msgid "Tuple or struct_time argument required"
 msgstr ""
 
 #: ports/stm/common-hal/busio/UART.c
@@ -2478,10 +2420,6 @@ msgstr ""
 msgid "argsort is not implemented for flattened arrays"
 msgstr "argsort není implementován pro zploštěná pole"
 
-#: py/runtime.c shared-bindings/supervisor/__init__.c
-msgid "argument has wrong type"
-msgstr ""
-
 #: py/compile.c
 msgid "argument name reused"
 msgstr "jméno argumentu znovupoužito"
@@ -2489,10 +2427,6 @@ msgstr "jméno argumentu znovupoužito"
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
-msgstr ""
-
-#: py/runtime.c
-msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/numpy/transform.c
@@ -2570,6 +2504,10 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
+msgstr ""
+
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -2675,7 +2613,7 @@ msgstr "nelze převést %s na complex"
 msgid "can't convert %s to float"
 msgstr "nelze převést %s na float"
 
-#: py/runtime.c
+#: py/objint.c py/runtime.c
 #, c-format
 msgid "can't convert %s to int"
 msgstr ""
@@ -2684,17 +2622,9 @@ msgstr ""
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
-#: py/objint.c
-msgid "can't convert NaN to int"
-msgstr ""
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
 msgstr "nelze převést complex na float"
-
-#: py/objint.c
-msgid "can't convert inf to int"
-msgstr ""
 
 #: py/obj.c
 msgid "can't convert to complex"
@@ -3181,10 +3111,6 @@ msgstr "funkci chybí požadovaný argument na pozici #%d"
 #: py/argcheck.c py/bc.c py/objnamedtuple.c shared-bindings/time/__init__.c
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
-msgstr ""
-
-#: shared-bindings/time/__init__.c
-msgid "function takes exactly 9 arguments"
 msgstr ""
 
 #: py/objgenerator.c
@@ -3912,10 +3838,6 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4039,10 +3961,6 @@ msgstr ""
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
-msgstr ""
-
-#: shared-bindings/time/__init__.c
-msgid "sleep length must be non-negative"
 msgstr ""
 
 #: py/nativeglue.c
@@ -4310,6 +4228,10 @@ msgstr ""
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr ""
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr ""
@@ -4354,6 +4276,16 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4426,6 +4358,39 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "Všechny PCNT jednotky jsou používány"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "Nelze načíst hodiny"
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present"
+#~ msgstr ""
+#~ "Reset do bootloaderu není možný, protože žádný bootloader není přítomen"
+
+#~ msgid "Cannot vary frequency on a timer that is already in use"
+#~ msgstr "Nelze měnit frekvenci časovače, který je již používán"
+
+#~ msgid "Could not start PWM"
+#~ msgstr "Nelze spustit PWM"
+
+#~ msgid "EXTINT channel already in use"
+#~ msgstr "EXTINT kanál se již používá"
+
+#~ msgid ""
+#~ "Heap was corrupted because the stack was too small. Increase stack size."
+#~ msgstr ""
+#~ "Heap byl poškozen, protože je stack příliš malý. Navyš velikost stacku."
+
+#~ msgid "No available clocks"
+#~ msgstr "Žádné dostupné hodiny"
+
+#~ msgid "Stereo left must be on PWM channel A"
+#~ msgstr "Levý stereo kanál musí být na PWM kanálu A"
+
+#~ msgid "Stereo right must be on PWM channel B"
+#~ msgstr "Pravý stereo kanál musí být na PWM kanálu B"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Kanál hardwarového přerušení je již používán"

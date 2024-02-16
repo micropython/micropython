@@ -235,7 +235,7 @@ static void pinalarm_set_alarms_light(size_t n_alarms, const mp_obj_t *alarms) {
         case PINALARM_ERR_NOEXTINT:
             raise_ValueError_invalid_pin();
         case PINALARM_ERR_NOCHANNEL:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("EXTINT channel already in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
         default:
             mp_raise_RuntimeError(MP_ERROR_TEXT("Unknown reason."));
     }

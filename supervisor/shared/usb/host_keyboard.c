@@ -78,6 +78,48 @@ struct keycode_mapper {
 #define CURSOR_INS "\e[2~"
 #define CURSOR_DEL "\e[3~"
 
+// https://learn.microsoft.com/ru-ru/windows/console/console-virtual-terminal-sequences
+// https://aperiodic.net/phil/archives/Geekery/term-function-keys/
+// https://www.microfocus.com/documentation/rumba/desktop951/RumbaSystemAdminGuide/GUID-5F92BA7F-107A-4101-B4E7-E0FC73F0CD99.html
+// showkey -a
+#define F1      "\eOP"
+#define F2      "\eOQ"
+#define F3      "\eOR"
+#define F4      "\eOS"
+#define F5      "\e[15~"
+#define F6      "\e[17~"
+#define F7      "\e[18~"
+#define F8      "\e[19~"
+#define F9      "\e[20~"
+#define F10     "\e[21~"
+#define F11     "\e[23~"
+#define F12     "\e[24~"
+
+#define PRINT_SCREEN     "\e[i"
+#define CTRL_UP "\e[1;5A"
+#define CTRL_DOWN "\e[1;5B"
+#define CTRL_RIGHT "\e[1;5C"
+#define CTRL_LEFT "\e[1;5D"
+#define CTRL_PGUP "\e[5;5~"
+#define CTRL_PGDN "\e[6;5~"
+#define CTRL_HOME "\e[1;5H"
+#define CTRL_END "\e[1;5F"
+#define CTRL_INS "\e[2;5~"
+#define CTRL_DEL "\e[3;5~"
+#define CTRL_F1      "\e[1;5P"
+#define CTRL_F2      "\e[1;5Q"
+#define CTRL_F3      "\e[1;5R"
+#define CTRL_F4      "\e[1;5S"
+#define CTRL_F5      "\e[15;5~"
+#define CTRL_F6      "\e[17;5~"
+#define CTRL_F7      "\e[18;5~"
+#define CTRL_F8      "\e[19;5~"
+#define CTRL_F9      "\e[20;5~"
+#define CTRL_F10     "\e[21;5~"
+#define CTRL_F11     "\e[23;5~"
+#define CTRL_F12     "\e[24;5~"
+
+
 STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_A, HID_KEY_Z, 'a', 0, NULL},
 
@@ -90,13 +132,17 @@ STATIC struct keycode_mapper keycode_to_ascii[] = {
     { HID_KEY_ENTER, HID_KEY_SLASH, 0, FLAG_SHIFT, "\n\x1b\177\t _+{}|~:\"~<>?" },
     { HID_KEY_ENTER, HID_KEY_SLASH, 0, 0, "\r\x1b\10\t -=[]\\#;'`,./" },
 
-    { HID_KEY_F1, HID_KEY_F1, 0x1e, 0, }, // help key on xerox 820 kbd
-
     { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, FLAG_NUMLOCK | FLAG_STRING,
-      "/\0" "*\0" "-\0" "+\0" "\n\0" CURSOR_END SEP CURSOR_DOWN SEP CURSOR_PGDN SEP CURSOR_LEFT SEP NOTHING SEP CURSOR_RIGHT SEP CURSOR_HOME SEP CURSOR_UP SEP CURSOR_PGDN SEP CURSOR_INS SEP CURSOR_DEL},
+      "/\0" "*\0" "-\0" "+\0" "\n\0" CURSOR_END SEP CURSOR_DOWN SEP CURSOR_PGDN SEP CURSOR_LEFT SEP NOTHING SEP CURSOR_RIGHT SEP CURSOR_HOME SEP CURSOR_UP SEP CURSOR_PGUP SEP CURSOR_INS SEP CURSOR_DEL},
     { HID_KEY_KEYPAD_DIVIDE, HID_KEY_KEYPAD_DECIMAL, 0, 0, "/*-+\n1234567890." },
 
-    { HID_KEY_ARROW_RIGHT, HID_KEY_ARROW_UP, 0, FLAG_STRING, CURSOR_RIGHT SEP CURSOR_LEFT SEP CURSOR_DOWN SEP CURSOR_UP },
+    { HID_KEY_INSERT, HID_KEY_ARROW_UP, 0, FLAG_STRING | FLAG_CTRL, CTRL_INS SEP CTRL_HOME SEP CTRL_PGUP SEP CTRL_DEL SEP CTRL_END SEP CTRL_PGDN SEP CTRL_RIGHT SEP CTRL_LEFT SEP CTRL_DOWN SEP CTRL_UP},
+    { HID_KEY_INSERT, HID_KEY_ARROW_UP, 0, FLAG_STRING, CURSOR_INS SEP CURSOR_HOME SEP CURSOR_PGUP SEP CURSOR_DEL SEP CURSOR_END SEP CURSOR_PGDN SEP CURSOR_RIGHT SEP CURSOR_LEFT SEP CURSOR_DOWN SEP CURSOR_UP},
+    { HID_KEY_F1, HID_KEY_F12, 0, FLAG_STRING | FLAG_CTRL, CTRL_F1 SEP CTRL_F2 SEP CTRL_F3 SEP CTRL_F4 SEP CTRL_F5 SEP CTRL_F6 SEP CTRL_F7 SEP CTRL_F8 SEP CTRL_F9 SEP CTRL_F10 SEP CTRL_F11 SEP CTRL_F12},
+    { HID_KEY_F1, HID_KEY_F12, 0, FLAG_STRING, F1 SEP F2 SEP F3 SEP F4 SEP F5 SEP F6 SEP F7 SEP F8 SEP F9 SEP F10 SEP F11 SEP F12},
+
+    { HID_KEY_PAUSE, HID_KEY_PAUSE, 0x1a, 0, },
+    { HID_KEY_PRINT_SCREEN, HID_KEY_PRINT_SCREEN, 0, FLAG_STRING, PRINT_SCREEN},
 
 };
 

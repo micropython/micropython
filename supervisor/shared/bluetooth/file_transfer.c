@@ -151,6 +151,7 @@ STATIC uint64_t truncate_time(uint64_t input_time, DWORD *fattime) {
 
 // Used by read and write.
 STATIC FIL active_file;
+STATIC fs_user_mount_t *active_mount;
 STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
     struct read_command *command = (struct read_command *)raw_buf;
     size_t header_size = sizeof(struct read_command);
@@ -170,11 +171,19 @@ STATIC uint8_t _process_read(const uint8_t *raw_buf, size_t command_len) {
         return THIS_COMMAND;
     }
 
-    char *path = (char *)((uint8_t *)command) + header_size;
-    path[command->path_length] = '\0';
+    char *full_path = (char *)((uint8_t *)command) + header_size;
+    full_path[command->path_length] = '\0';
 
-    FATFS *fs = filesystem_circuitpy();
-    FRESULT result = f_open(fs, &active_file, path, FA_READ);
+    const char *mount_path;
+    active_mount = filesystem_for_path(full_path, &mount_path);
+    if (active_mount == NULL || !filesystem_native_fatfs(active_mount)) {
+        response.status = STATUS_ERROR;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, response_size, NULL, 0);
+        return ANY_COMMAND;
+    }
+
+    FATFS *fs = &active_mount->fatfs;
+    FRESULT result = f_open(fs, &active_file, mount_path, FA_READ);
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, response_size, NULL, 0);
@@ -250,22 +259,6 @@ STATIC uint8_t _process_read_pacing(const uint8_t *raw_buf, size_t command_len) 
 STATIC size_t total_write_length;
 STATIC uint64_t _truncated_time;
 
-// Returns true if usb is active and replies with an error if so. If not, it grabs
-// the USB mass storage lock and returns false. Make sure to release the lock with
-// usb_msc_unlock() when the transaction is complete.
-STATIC bool _usb_active(void *response, size_t response_size) {
-    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
-    if (storage_usb_enabled() && !usb_msc_lock()) {
-        // Status is always the second byte of the response.
-        ((uint8_t *)response)[1] = STATUS_ERROR_READONLY;
-        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)response, response_size, NULL, 0);
-        return true;
-    }
-    #endif
-    return false;
-}
-
 STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     struct write_command *command = (struct write_command *)raw_buf;
     size_t header_size = sizeof(struct write_command);
@@ -284,23 +277,31 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
     }
     total_write_length = command->total_length;
 
-    char *path = (char *)command->path;
-    path[command->path_length] = '\0';
-    if (_usb_active(&response, sizeof(struct write_pacing))) {
+    char *full_path = (char *)command->path;
+    full_path[command->path_length] = '\0';
+
+    const char *mount_path;
+    active_mount = filesystem_for_path(full_path, &mount_path);
+    if (active_mount == NULL || !filesystem_native_fatfs(active_mount)) {
+        response.status = STATUS_ERROR;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
+        return ANY_COMMAND;
+    }
+    if (!filesystem_lock(active_mount)) {
+        response.status = STATUS_ERROR_READONLY;
+        common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
         return ANY_COMMAND;
     }
 
-    FATFS *fs = filesystem_circuitpy();
+    FATFS *fs = &active_mount->fatfs;
     DWORD fattime;
     _truncated_time = truncate_time(command->modification_time, &fattime);
     override_fattime(fattime);
-    FRESULT result = f_open(fs, &active_file, path, FA_WRITE | FA_OPEN_ALWAYS);
+    FRESULT result = f_open(fs, &active_file, mount_path, FA_WRITE | FA_OPEN_ALWAYS);
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
+        filesystem_unlock(active_mount);
         override_fattime(0);
         return ANY_COMMAND;
     }
@@ -315,9 +316,7 @@ STATIC uint8_t _process_write(const uint8_t *raw_buf, size_t command_len) {
         f_truncate(&active_file);
         f_close(&active_file);
         override_fattime(0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
+        filesystem_unlock(active_mount);
     }
     response.offset = offset;
     response.free_space = chunk_size;
@@ -342,9 +341,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         // TODO: throw away any more packets of path.
         response.status = STATUS_ERROR;
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
+        filesystem_unlock(active_mount);
         override_fattime(0);
         return ANY_COMMAND;
     }
@@ -360,9 +357,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         // TODO: throw away any more packets of path.
         response.status = STATUS_ERROR;
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct write_pacing), NULL, 0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
+        filesystem_unlock(active_mount);
         override_fattime(0);
         return ANY_COMMAND;
     }
@@ -377,9 +372,7 @@ STATIC uint8_t _process_write_data(const uint8_t *raw_buf, size_t command_len) {
         f_truncate(&active_file);
         f_close(&active_file);
         override_fattime(0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
+        filesystem_unlock(active_mount);
         // Don't reload until everything is written out of the packet buffer.
         common_hal_bleio_packet_buffer_flush(&_transfer_packet_buffer);
         return ANY_COMMAND;
@@ -399,29 +392,19 @@ STATIC uint8_t _process_delete(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct delete_status), NULL, 0);
         return ANY_COMMAND;
     }
-    if (_usb_active(&response, sizeof(struct delete_status))) {
-        return ANY_COMMAND;
-    }
     // We need to receive another packet to have the full path.
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = filesystem_circuitpy();
-    char *path = (char *)((uint8_t *)command) + header_size;
-    path[command->path_length] = '\0';
-    FILINFO file;
-    FRESULT result = f_stat(fs, path, &file);
-    if (result == FR_OK) {
-        if ((file.fattrib & AM_DIR) != 0) {
-            result = supervisor_workflow_delete_directory_contents(fs, path);
-        }
-        if (result == FR_OK) {
-            result = f_unlink(fs, path);
-        }
+
+    char *full_path = (char *)((uint8_t *)command) + header_size;
+    full_path[command->path_length] = '\0';
+
+    FRESULT result = supervisor_workflow_delete_recursive(full_path);
+
+    if (result == FR_WRITE_PROTECTED) {
+        response.status = STATUS_ERROR_READONLY;
     }
-    #if CIRCUITPY_USB_MSC
-    usb_msc_unlock();
-    #endif
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
@@ -456,25 +439,16 @@ STATIC uint8_t _process_mkdir(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct mkdir_status), NULL, 0);
         return ANY_COMMAND;
     }
-    if (_usb_active(&response, sizeof(struct mkdir_status))) {
-        return ANY_COMMAND;
-    }
     // We need to receive another packet to have the full path.
     if (command_len < header_size + command->path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = filesystem_circuitpy();
-    char *path = (char *)command->path;
-    _terminate_path(path, command->path_length);
+    char *full_path = (char *)command->path;
+    _terminate_path(full_path, command->path_length);
 
     DWORD fattime;
     response.truncated_time = truncate_time(command->modification_time, &fattime);
-    override_fattime(fattime);
-    FRESULT result = supervisor_workflow_mkdir_parents(fs, path);
-    override_fattime(0);
-    #if CIRCUITPY_USB_MSC
-    usb_msc_unlock();
-    #endif
+    FRESULT result = supervisor_workflow_mkdir(fattime, full_path);
     if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
@@ -520,12 +494,21 @@ STATIC uint8_t _process_listdir(uint8_t *raw_buf, size_t command_len) {
         return THIS_COMMAND;
     }
 
-    FATFS *fs = filesystem_circuitpy();
-    char *path = (char *)&command->path;
-    _terminate_path(path, command->path_length);
-    // mp_printf(&mp_plat_print, "list %s\n", path);
+    char *full_path = (char *)&command->path;
+    _terminate_path(full_path, command->path_length);
+
+    const char *mount_path;
+    active_mount = filesystem_for_path(full_path, &mount_path);
+    if (active_mount == NULL || !filesystem_native_fatfs(active_mount)) {
+        entry->command = LISTDIR_ENTRY;
+        entry->status = STATUS_ERROR_NO_FILE;
+        send_listdir_entry_header(entry, max_packet_size);
+        return ANY_COMMAND;
+    }
+    FATFS *fs = &active_mount->fatfs;
+
     FF_DIR dir;
-    FRESULT res = f_opendir(fs, &dir, path);
+    FRESULT res = f_opendir(fs, &dir, mount_path);
 
     entry->command = LISTDIR_ENTRY;
     entry->status = STATUS_OK;
@@ -601,27 +584,21 @@ STATIC uint8_t _process_move(const uint8_t *raw_buf, size_t command_len) {
         common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct move_status), NULL, 0);
         return ANY_COMMAND;
     }
-    if (_usb_active(&response, sizeof(struct move_status))) {
-        return ANY_COMMAND;
-    }
     // We need to receive another packet to have the full path.
     if (command_len < header_size + total_path_length) {
         return THIS_COMMAND;
     }
-    FATFS *fs = filesystem_circuitpy();
+
     char *old_path = (char *)command->paths;
     old_path[command->old_path_length] = '\0';
 
     char *new_path = old_path + command->old_path_length + 1;
     new_path[command->new_path_length] = '\0';
 
-    // mp_printf(&mp_plat_print, "move %s to %s\n", old_path, new_path);
-
-    FRESULT result = f_rename(fs, old_path, new_path);
-    #if CIRCUITPY_USB_MSC
-    usb_msc_unlock();
-    #endif
-    if (result != FR_OK) {
+    FRESULT result = supervisor_workflow_move(old_path, new_path);
+    if (result == FR_WRITE_PROTECTED) {
+        response.status = STATUS_ERROR_READONLY;
+    } else if (result != FR_OK) {
         response.status = STATUS_ERROR;
     }
     common_hal_bleio_packet_buffer_write(&_transfer_packet_buffer, (const uint8_t *)&response, sizeof(struct move_status), NULL, 0);

@@ -16,7 +16,7 @@ runs:
       id: download-mpy-cross
       if: inputs.download == 'true'
       continue-on-error: true
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: mpy-cross
         path: mpy-cross/build
@@ -28,7 +28,7 @@ runs:
 
     - name: Build mpy-cross
       if: inputs.download == 'false' || steps.download-mpy-cross.outcome == 'failure'
-      run: make -C mpy-cross -j2
+      run: make -C mpy-cross -j4
       shell: bash
       env:
         CP_VERSION: ${{ inputs.cp-version }}
@@ -36,7 +36,7 @@ runs:
     - name: Upload mpy-cross
       if: inputs.download == 'false' || steps.download-mpy-cross.outcome == 'failure'
       continue-on-error: true
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mpy-cross
         path: mpy-cross/build/mpy-cross

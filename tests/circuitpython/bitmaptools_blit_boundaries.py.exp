@@ -1,0 +1,9 @@
+blit 1 successful
+blit 2 successful
+blit 3 successful
+Error: x must be 0-10
+Error: y must be 0-10
+Error: x2 must be 0-10
+Error: x2 must be 3-10
+Error: y2 must be 3-10
+Error: y2 must be 3-10

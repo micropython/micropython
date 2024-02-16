@@ -229,12 +229,16 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
         RUN_BACKGROUND_TASKS;
     }
 
-    if (!tud_hid_ready()) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB busy"));
-    }
+    if (!tud_suspended()) {
+        if (!tud_hid_ready()) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB busy"));
+        }
 
-    if (!tud_hid_report(report_id, report, len)) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB error"));
+        if (!tud_hid_report(report_id, report, len)) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB error"));
+        }
+    } else {
+        tud_remote_wakeup();
     }
 }
 

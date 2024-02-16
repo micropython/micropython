@@ -46,23 +46,17 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
             mp_arg_error_invalid(MP_QSTR_frequency);
             break;
         case PWMOUT_INVALID_FREQUENCY_ON_PIN:
-            mp_raise_ValueError(MP_ERROR_TEXT("Frequency must match existing PWMOut using this timer"));
+            mp_arg_error_invalid(MP_QSTR_frequency);
             break;
         case PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE:
-            mp_raise_ValueError(MP_ERROR_TEXT("Cannot vary frequency on a timer that is already in use"));
+            mp_arg_error_invalid(MP_QSTR_variable_frequency);
             break;
-        case PWMOUT_ALL_TIMERS_ON_PIN_IN_USE:
-            mp_raise_ValueError(MP_ERROR_TEXT("All timers for this pin are in use"));
-            break;
-        case PWMOUT_ALL_TIMERS_IN_USE:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
-            break;
-        case PWMOUT_ALL_CHANNELS_IN_USE:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
+        case PWMOUT_INTERNAL_RESOURCES_IN_USE:
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
             break;
         default:
         case PWMOUT_INITIALIZATION_ERROR:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("Could not start PWM"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal error"));
             break;
     }
 }
@@ -268,8 +262,7 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (!common_hal_pwmio_pwmout_get_variable_frequency(self)) {
-        mp_raise_AttributeError(MP_ERROR_TEXT(
-            "PWM frequency not writable when variable_frequency is False on construction."));
+        mp_raise_msg_varg(&mp_type_AttributeError, MP_ERROR_TEXT("Invalid %q"), MP_QSTR_variable_frequency);
     }
     mp_int_t freq = mp_obj_get_int(frequency);
     if (freq == 0) {

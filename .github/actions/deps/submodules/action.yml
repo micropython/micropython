@@ -48,7 +48,7 @@ runs:
 
     - name: Cache submodules
       if: ${{ inputs.action == 'cache' }}
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}
@@ -56,7 +56,7 @@ runs:
 
     - name: Restore submodules
       if: ${{ inputs.action == 'restore' }}
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: ".git/modules/\n${{ join(fromJSON(steps.create-submodule-status.outputs.submodules), '\n') }}"
         key: submodules-common-${{ hashFiles('submodule_status') }}

@@ -28,6 +28,8 @@
 #include "shared-bindings/countio/Counter.h"
 #include "common-hal/microcontroller/Pin.h"
 
+#include "bindings/espidf/__init__.h"
+
 #include "py/runtime.h"
 
 #include "driver/gpio.h"
@@ -36,25 +38,26 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
     const mcu_pin_obj_t *pin, countio_edge_t edge, digitalio_pull_t pull) {
     claim_pin(pin);
 
-    // Prepare configuration for the PCNT unit
-    pcnt_config_t pcnt_config = {
-        // Set PCNT input signal and control GPIOs
-        .pulse_gpio_num = pin->number,
-        .ctrl_gpio_num = PCNT_PIN_NOT_USED,
-        .channel = PCNT_CHANNEL_0,
-        // What to do on the rising / falling edge of pulse input?
-        // If EDGE_RISE_AND_FALL, both modeswill do PCNT_COUNT_INC.
-        .pos_mode = (edge == EDGE_FALL) ? PCNT_COUNT_DIS : PCNT_COUNT_INC, // Count up unless only fall
-        .neg_mode = (edge == EDGE_RISE) ? PCNT_COUNT_DIS : PCNT_COUNT_INC, // Count up unless only rise
+    pcnt_unit_config_t unit_config = {
+        // Set counter limit
+        .low_limit = -1,
+        .high_limit = INT16_MAX
     };
+    // The pulse count driver automatically counts roll overs.
+    unit_config.flags.accum_count = true;
 
-    // Initialize PCNT unit
-    const int8_t unit = peripherals_pcnt_init(&pcnt_config);
-    if (unit == -1) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
-    }
+    // initialize PCNT
+    CHECK_ESP_RESULT(pcnt_new_unit(&unit_config, &self->unit));
 
     self->pin = pin->number;
+    pcnt_chan_config_t channel_config = {
+        .edge_gpio_num = self->pin,
+        .level_gpio_num = -1
+    };
+    CHECK_ESP_RESULT(pcnt_new_channel(self->unit, &channel_config, &self->channel));
+    pcnt_channel_edge_action_t pos = (edge == EDGE_RISE || edge == EDGE_RISE_AND_FALL) ? PCNT_CHANNEL_EDGE_ACTION_INCREASE : PCNT_CHANNEL_EDGE_ACTION_HOLD;
+    pcnt_channel_edge_action_t neg = (edge == EDGE_FALL || edge == EDGE_RISE_AND_FALL) ? PCNT_CHANNEL_EDGE_ACTION_INCREASE : PCNT_CHANNEL_EDGE_ACTION_HOLD;
+    pcnt_channel_set_edge_action(self->channel, pos, neg);
 
     gpio_pullup_dis(pin->number);
     gpio_pulldown_dis(pin->number);
@@ -64,29 +67,34 @@ void common_hal_countio_counter_construct(countio_counter_obj_t *self,
         gpio_pulldown_en(pin->number);
     }
 
-    self->unit = (pcnt_unit_t)unit;
+
+    pcnt_unit_enable(self->unit);
+    pcnt_unit_start(self->unit);
 }
 
 bool common_hal_countio_counter_deinited(countio_counter_obj_t *self) {
-    return self->unit == PCNT_UNIT_MAX;
+    return self->unit == NULL;
 }
 
 void common_hal_countio_counter_deinit(countio_counter_obj_t *self) {
     if (common_hal_countio_counter_deinited(self)) {
         return;
     }
+    pcnt_unit_disable(self->unit);
+    pcnt_del_channel(self->channel);
     reset_pin_number(self->pin);
-    peripherals_pcnt_deinit(&self->unit);
+    pcnt_del_unit(self->unit);
+    self->unit = NULL;
 }
 
 mp_int_t common_hal_countio_counter_get_count(countio_counter_obj_t *self) {
-    int16_t count;
-    pcnt_get_counter_value(self->unit, &count);
+    int count;
+    pcnt_unit_get_count(self->unit, &count);
     return count + self->count;
 }
 
 void common_hal_countio_counter_set_count(countio_counter_obj_t *self,
     mp_int_t new_count) {
     self->count = new_count;
-    pcnt_counter_clear(self->unit);
+    pcnt_unit_clear_count(self->unit);
 }

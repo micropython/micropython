@@ -25,8 +25,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "fsl_common.h"
@@ -44,5 +43,3 @@ typedef struct {
 } busio_spi_obj_t;
 
 void spi_reset(void);
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_BUSIO_SPI_H

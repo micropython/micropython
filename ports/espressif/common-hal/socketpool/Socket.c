@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 #include "shared-bindings/ssl/SSLSocket.h"
-#include "common-hal/ssl/SSLSocket.h"
+#include "shared-module/ssl/SSLSocket.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
@@ -307,6 +307,7 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         accepted->num = newsoc;
         accepted->pool = self->pool;
         accepted->connected = true;
+        accepted->type = self->type;
     }
 
     return newsoc;
@@ -324,6 +325,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         sock->num = newsoc;
         sock->pool = self->pool;
         sock->connected = true;
+        sock->type = self->type;
 
         return sock;
     } else {

@@ -92,6 +92,7 @@
 
 #if CIRCUITPY_DISPLAYIO
 #include "shared-module/displayio/__init__.h"
+#include "shared-bindings/displayio/__init__.h"
 #endif
 
 #if CIRCUITPY_EPAPERDISPLAY
@@ -1099,7 +1100,7 @@ int __attribute__((used)) main(void) {
             exit_code = run_repl(get_safe_mode());
             supervisor_set_run_reason(RUN_REASON_REPL_RELOAD);
         }
-        if (exit_code == PYEXEC_FORCED_EXIT) {
+        if (exit_code & (PYEXEC_FORCED_EXIT | PYEXEC_RELOAD)) {
             if (!simulate_reset) {
                 serial_write_compressed(MP_ERROR_TEXT("soft reboot\n"));
             }

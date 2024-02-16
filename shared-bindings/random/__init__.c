@@ -65,8 +65,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(random_seed_obj, random_seed);
 //|     ...
 //|
 STATIC mp_obj_t random_getrandbits(mp_obj_t num_in) {
-    int n = mp_obj_get_int(num_in);
-    if (n > 32 || n == 0) {
+    mp_int_t n = mp_obj_get_int(num_in);
+    if (n > 32 || n < 0) {
         mp_raise_ValueError(NULL);
     }
     return mp_obj_new_int_from_uint(shared_modules_random_getrandbits((uint8_t)n));

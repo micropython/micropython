@@ -87,7 +87,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
     buf[15] = num_blocks >> 24;
 }
 
-static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+static mp_uint_t flash_read_blocks(mp_obj_t self, uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         // fake the MBR so we can decide on our own partition table
 
@@ -117,7 +117,7 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
 
 static volatile bool filesystem_dirty = false;
 
-static mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+static mp_uint_t flash_write_blocks(mp_obj_t self, const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         if (num_blocks > 1) {
             return 1; // error
@@ -150,7 +150,7 @@ void PLACE_IN_ITCM(supervisor_flash_flush)(void) {
 STATIC mp_obj_t supervisor_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
+    mp_uint_t ret = flash_read_blocks(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_readblocks_obj, supervisor_flash_obj_readblocks);
@@ -158,13 +158,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_readblocks_obj, supervisor
 STATIC mp_obj_t supervisor_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
+    mp_uint_t ret = flash_write_blocks(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_writeblocks_obj, supervisor_flash_obj_writeblocks);
 
-static bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
-    *out_value = 0;
+STATIC bool flash_ioctl(mp_obj_t self_in, size_t cmd, size_t arg, mp_int_t *out_value) {
+    if (out_value != NULL) {
+        *out_value = 0;
+    }
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT:
             supervisor_flash_init();
@@ -189,8 +191,9 @@ static bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
 
 STATIC mp_obj_t supervisor_flash_obj_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
+    mp_int_t arg = mp_obj_get_int(arg_in);
     mp_int_t out_value;
-    if (flash_ioctl(cmd, &out_value)) {
+    if (flash_ioctl(self, cmd, arg, &out_value)) {
         return MP_OBJ_NEW_SMALL_INT(out_value);
     }
     return mp_const_none;

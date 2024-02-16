@@ -26,179 +26,195 @@
 
 #include "shared-bindings/frequencyio/FrequencyIn.h"
 
+#include "bindings/espidf/__init__.h"
 #include "py/runtime.h"
 
+#include "driver/pulse_cnt.h"
 #include "driver/gpio.h"
-#include "driver/timer.h"
+#include "driver/gptimer.h"
 #include "soc/timer_group_struct.h"
+#include "esp_heap_caps.h"
 
-static void IRAM_ATTR pcnt_overflow_handler(void *self_in) {
-    frequencyio_frequencyin_obj_t *self = self_in;
-    // reset counter
-    pcnt_counter_clear(self->unit);
-
-    // increase multiplier
-    self->multiplier++;
-
-    // reset interrupt
-    PCNT.int_clr.val = BIT(self->unit);
-}
-
-static void IRAM_ATTR timer_interrupt_handler(void *self_in) {
-    frequencyio_frequencyin_obj_t *self = self_in;
+// All gptimer handlers are in RAM so that protomatter can run during flash writes.
+static IRAM_ATTR bool timer_interrupt_handler(gptimer_handle_t timer,
+    const gptimer_alarm_event_data_t *edata, void *internal_data_ptr) {
+    _internal_data_t *internal_data = (_internal_data_t *)internal_data_ptr;
     // get counter value
-    int16_t count;
-    pcnt_get_counter_value(self->unit, &count);
-    self->frequency = ((count / 2.0) + (self->multiplier * INT16_MAX / 4.0)) / (self->capture_period);
-
-    // reset multiplier
-    self->multiplier = 0;
+    pcnt_unit_get_count(internal_data->unit, &internal_data->pulse_count);
 
     // reset counter
-    pcnt_counter_clear(self->unit);
-
-    // reset interrupt
-    timg_dev_t *device = self->timer.group ? &(TIMERG1) : &(TIMERG0);
-
-    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP > 1
-    if (self->timer.idx) {
-        device->int_clr_timers.t1_int_clr = 1;
-    } else {
-    #endif
-    device->int_clr_timers.t0_int_clr = 1;
-    #if SOC_TIMER_GROUP_TIMERS_PER_GROUP > 1
-}
-    #endif
-
-    #if defined(CONFIG_IDF_TARGET_ESP32S3)
-    device->hw_timer[self->timer.idx].config.tn_alarm_en = 1;
-    #else
-    device->hw_timer[self->timer.idx].config.tx_alarm_en = 1;
-    #endif
+    pcnt_unit_clear_count(internal_data->unit);
+    return false;
 }
 
-static void init_pcnt(frequencyio_frequencyin_obj_t *self) {
-    // Prepare configuration for the PCNT unit
-    pcnt_config_t pcnt_config = {
-        // Set PCNT input signal and control GPIOs
-        .pulse_gpio_num = self->pin,
-        .ctrl_gpio_num = PCNT_PIN_NOT_USED,
-        .channel = PCNT_CHANNEL_0,
-        // What to do on the positive / negative edge of pulse input?
-        .pos_mode = PCNT_COUNT_INC,  // count both rising and falling edges
-        .neg_mode = PCNT_COUNT_INC,
+static esp_err_t init_pcnt(frequencyio_frequencyin_obj_t *self) {
+    pcnt_unit_config_t unit_config = {
         // Set counter limit
-        .counter_h_lim = INT16_MAX,
-        .counter_l_lim = 0,
+        .low_limit = -INT16_MAX + 1,
+        .high_limit = INT16_MAX
     };
+    // The pulse count driver automatically counts roll overs.
+    unit_config.flags.accum_count = true;
 
     // initialize PCNT
-    const int8_t unit = peripherals_pcnt_init(&pcnt_config);
-    if (unit == -1) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("All PCNT units in use"));
+    esp_err_t result = pcnt_new_unit(&unit_config, &self->internal_data->unit);
+    if (result != ESP_OK) {
+        return result;
     }
+
+    pcnt_chan_config_t channel_config = {
+        .edge_gpio_num = self->pin,
+        .level_gpio_num = -1
+    };
+    result = pcnt_new_channel(self->internal_data->unit, &channel_config, &self->channel);
+    if (result != ESP_OK) {
+        pcnt_del_unit(self->internal_data->unit);
+        return result;
+    }
+    // Count both edges of the signal.
+    pcnt_channel_set_edge_action(self->channel, PCNT_CHANNEL_EDGE_ACTION_INCREASE, PCNT_CHANNEL_EDGE_ACTION_INCREASE);
+
+    pcnt_unit_enable(self->internal_data->unit);
+    pcnt_unit_start(self->internal_data->unit);
 
     // set the GPIO back to high-impedance, as pcnt_unit_config sets it as pull-up
     gpio_set_pull_mode(self->pin, GPIO_FLOATING);
-
-    self->unit = (pcnt_unit_t)unit;
-
-    // enable pcnt interrupt
-    pcnt_event_enable(self->unit, PCNT_EVT_H_LIM);
-    pcnt_isr_register(pcnt_overflow_handler, (void *)self, ESP_INTR_FLAG_IRAM, &self->handle);
-    pcnt_intr_enable(self->unit);
+    return ESP_OK;
 }
 
-static void init_timer(frequencyio_frequencyin_obj_t *self) {
-    // Prepare configuration for the timer module
-    const timer_config_t config = {
-        .alarm_en = true,
-        .counter_en = false,
-        .intr_type = TIMER_INTR_LEVEL,
-        .counter_dir = TIMER_COUNT_UP,
-        .auto_reload = true,
-        .divider = 80            // 1 us per tick
+static esp_err_t init_timer(frequencyio_frequencyin_obj_t *self) {
+    gptimer_config_t config = {
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+        .direction = GPTIMER_COUNT_UP,
+        .resolution_hz = 1000 * 1000, // 1,000 counts per millisecond.
+        .flags = {
+            .intr_shared = true
+        }
     };
 
     // initialize Timer
-    peripherals_timer_init(&config, &self->timer);
-    if (self->timer.idx == TIMER_MAX || self->timer.group == TIMER_GROUP_MAX) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
+    CHECK_ESP_RESULT(gptimer_new_timer(&config, &self->timer));
+
+    gptimer_alarm_config_t alarm_config = {
+        .reload_count = 0, // counter will reload with 0 on alarm event
+        .alarm_count = self->capture_period_ms * 1000, // period in ms
+        .flags.auto_reload_on_alarm = true, // enable auto-reload
+    };
+    esp_err_t result = gptimer_set_alarm_action(self->timer, &alarm_config);
+    if (result != ESP_OK) {
+        gptimer_del_timer(self->timer);
+        return result;
     }
 
-    timer_idx_t idx = self->timer.idx;
-    timer_group_t group = self->timer.group;
-
-    // enable timer interrupt
-    timer_set_alarm_value(group, idx, self->capture_period * 1000000);
-    timer_isr_register(group, idx, timer_interrupt_handler, (void *)self, ESP_INTR_FLAG_IRAM, &self->handle);
-    timer_enable_intr(group, idx);
-
-    // start timer
-    timer_start(self->timer.group, self->timer.idx);
+    gptimer_event_callbacks_t cbs = {
+        .on_alarm = timer_interrupt_handler, // register user callback
+    };
+    result = gptimer_register_event_callbacks(self->timer, &cbs, self->internal_data);
+    if (result != ESP_OK) {
+        gptimer_del_timer(self->timer);
+        return result;
+    }
+    result = gptimer_enable(self->timer);
+    if (result != ESP_OK) {
+        gptimer_del_timer(self->timer);
+        return result;
+    }
+    result = gptimer_start(self->timer);
+    if (result != ESP_OK) {
+        gptimer_del_timer(self->timer);
+        return result;
+    }
+    return ESP_OK;
 }
 
 void common_hal_frequencyio_frequencyin_construct(frequencyio_frequencyin_obj_t *self,
-    const mcu_pin_obj_t *pin, const uint16_t capture_period) {
-    mp_arg_validate_int_range(capture_period, 1, 500, MP_QSTR_capture_period);
+    const mcu_pin_obj_t *pin, const uint16_t capture_period_ms) {
+    mp_arg_validate_int_range(capture_period_ms, 1, 500, MP_QSTR_capture_period);
 
     self->pin = pin->number;
-    self->handle = NULL;
-    self->multiplier = 0;
-    self->capture_period = capture_period;
+    self->capture_period_ms = capture_period_ms;
+    self->internal_data = heap_caps_malloc(MALLOC_CAP_8BIT | MALLOC_CAP_INTERNAL, sizeof(_internal_data_t));
+    if (self->internal_data == NULL) {
+        raise_esp_error(ESP_ERR_NO_MEM);
+    }
+    self->internal_data->pulse_count = 0;
 
     // initialize pcnt and timer
-    init_pcnt(self);
-    init_timer(self);
+    esp_err_t result = init_pcnt(self);
+    if (result != ESP_OK) {
+        heap_caps_free(self->internal_data);
+        self->internal_data = NULL;
+        raise_esp_error(result);
+    }
+    result = init_timer(self);
+    if (result != ESP_OK) {
+        pcnt_del_channel(self->channel);
+        pcnt_del_unit(self->internal_data->unit);
+        heap_caps_free(self->internal_data);
+        self->internal_data = NULL;
+        raise_esp_error(result);
+    }
 
     claim_pin(pin);
 }
 
 bool common_hal_frequencyio_frequencyin_deinited(frequencyio_frequencyin_obj_t *self) {
-    return self->unit == PCNT_UNIT_MAX;
+    return self->internal_data == NULL;
 }
 
 void common_hal_frequencyio_frequencyin_deinit(frequencyio_frequencyin_obj_t *self) {
     if (common_hal_frequencyio_frequencyin_deinited(self)) {
         return;
     }
+    gptimer_stop(self->timer);
+    gptimer_disable(self->timer);
+    gptimer_del_timer(self->timer);
+    pcnt_unit_disable(self->internal_data->unit);
+    pcnt_del_channel(self->channel);
     reset_pin_number(self->pin);
-    peripherals_pcnt_deinit(&self->unit);
-    peripherals_timer_deinit(&self->timer);
-    if (self->handle) {
-        esp_intr_free(self->handle);
-        self->handle = NULL;
-    }
+    pcnt_del_unit(self->internal_data->unit);
+    self->internal_data->unit = NULL;
+    heap_caps_free(self->internal_data);
+    self->internal_data = NULL;
 }
 
 uint32_t common_hal_frequencyio_frequencyin_get_item(frequencyio_frequencyin_obj_t *self) {
-    return self->frequency;
+    // pulse_count / capture_period_ms is pulses per ms. * 1000 is pulses per second.
+    // We have two pulse counts (one for each edge) per cycle so / 2. Combine to do
+    // * 500 instead of * 1000 / 2.
+    return self->internal_data->pulse_count * 500 / self->capture_period_ms;
 }
 
 void common_hal_frequencyio_frequencyin_pause(frequencyio_frequencyin_obj_t *self) {
-    pcnt_counter_pause(self->unit);
-    timer_pause(self->timer.group, self->timer.idx);
+    pcnt_unit_stop(self->internal_data->unit);
+    gptimer_stop(self->timer);
 }
 
 void common_hal_frequencyio_frequencyin_resume(frequencyio_frequencyin_obj_t *self) {
-    pcnt_counter_resume(self->unit);
-    timer_start(self->timer.group, self->timer.idx);
+    pcnt_unit_start(self->internal_data->unit);
+    gptimer_start(self->timer);
 }
 
 void common_hal_frequencyio_frequencyin_clear(frequencyio_frequencyin_obj_t *self) {
-    self->frequency = 0;
-    pcnt_counter_clear(self->unit);
-    timer_set_counter_value(self->timer.group, self->timer.idx, 0);
+    self->internal_data->pulse_count = 0;
+    pcnt_unit_clear_count(self->internal_data->unit);
+    gptimer_set_raw_count(self->timer, 0);
 }
 
 uint16_t common_hal_frequencyio_frequencyin_get_capture_period(frequencyio_frequencyin_obj_t *self) {
-    return self->capture_period;
+    return self->capture_period_ms;
 }
 
-void common_hal_frequencyio_frequencyin_set_capture_period(frequencyio_frequencyin_obj_t *self, uint16_t capture_period) {
-    mp_arg_validate_int_range(capture_period, 1, 500, MP_QSTR_capture_period);
+void common_hal_frequencyio_frequencyin_set_capture_period(frequencyio_frequencyin_obj_t *self, uint16_t capture_period_ms) {
+    mp_arg_validate_int_range(capture_period_ms, 1, 500, MP_QSTR_capture_period);
 
-    self->capture_period = capture_period;
     common_hal_frequencyio_frequencyin_clear(self);
-    timer_set_alarm_value(self->timer.group, self->timer.idx, capture_period * 1000000);
+
+    self->capture_period_ms = capture_period_ms;
+    gptimer_alarm_config_t alarm_config = {
+        .alarm_count = capture_period_ms * 1000,
+        .reload_count = 0, // counter will reload with 0 on alarm event
+        .flags.auto_reload_on_alarm = true, // enable auto-reload
+    };
+    gptimer_set_alarm_action(self->timer, &alarm_config);
 }

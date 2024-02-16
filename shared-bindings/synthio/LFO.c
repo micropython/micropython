@@ -62,7 +62,7 @@ STATIC const uint16_t triangle[] = {0, 32767, 0, -32767};
 //|
 //|     def __init__(
 //|         self,
-//|         waveform: ReadableBuffer = None,
+//|         waveform: Optional[ReadableBuffer] = None,
 //|         *,
 //|         rate: BlockInput = 1.0,
 //|         scale: BlockInput = 1.0,

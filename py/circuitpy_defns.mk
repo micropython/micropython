@@ -144,6 +144,9 @@ endif
 ifeq ($(CIRCUITPY_BITMAPTOOLS),1)
 SRC_PATTERNS += bitmaptools/%
 endif
+ifeq ($(CIRCUITPY_BITMAPFILTER),1)
+SRC_PATTERNS += bitmapfilter/%
+endif
 ifeq ($(CIRCUITPY_BITOPS),1)
 SRC_PATTERNS += bitops/%
 endif
@@ -390,6 +393,9 @@ endif
 ifeq ($(CIRCUITPY_USB_HID),1)
 SRC_PATTERNS += usb_hid/%
 endif
+ifeq ($(CIRCUITPY_USB_VIDEO),1)
+SRC_PATTERNS += usb_video/%
+endif
 ifeq ($(CIRCUITPY_USB_HOST),1)
 SRC_PATTERNS += usb_host/% usb/%
 endif
@@ -510,9 +516,6 @@ SRC_COMMON_HAL_ALL = \
 	socketpool/__init__.c \
 	socketpool/SocketPool.c \
 	socketpool/Socket.c \
-	ssl/__init__.c \
-	ssl/SSLContext.c \
-	ssl/SSLSocket.c \
 	supervisor/Runtime.c \
 	supervisor/__init__.c \
 	usb_host/__init__.c \
@@ -609,6 +612,7 @@ SRC_SHARED_MODULE_ALL = \
 	bitbangio/SPI.c \
 	bitbangio/__init__.c \
 	bitmaptools/__init__.c \
+	bitmapfilter/__init__.c \
 	bitops/__init__.c \
 	board/__init__.c \
 	adafruit_bus_device/__init__.c \
@@ -721,6 +725,18 @@ else
 SRC_SHARED_MODULE_ALL += \
 	touchio/TouchIn.c \
 	touchio/__init__.c
+endif
+
+ifeq ($(CIRCUITPY_SSL_MBEDTLS),0)
+SRC_COMMON_HAL_ALL += \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
+	ssl/SSLSocket.c
+else
+SRC_SHARED_MODULE_ALL += \
+	ssl/__init__.c \
+	ssl/SSLContext.c \
+	ssl/SSLSocket.c
 endif
 
 # If supporting _bleio via HCI, make devices/ble_hci/common-hal/_bleio be includable,

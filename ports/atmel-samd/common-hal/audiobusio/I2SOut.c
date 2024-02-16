@@ -243,7 +243,7 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
     // Find a free GCLK to generate the MCLK signal.
     uint8_t gclk = find_free_gclk(divisor);
     if (gclk > GCLK_GEN_NUM) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("No free GLCKs"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No free GCLKs"));
     }
     self->gclk = gclk;
 

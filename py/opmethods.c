@@ -27,22 +27,26 @@
 #include "py/obj.h"
 #include "py/builtin.h"
 
+// CIRCUITPY-CHANGE: These three functions are used by dict only. In CP, we hard
+// code the type to dict so that subclassed types still use the native dict
+// subscr. MP doesn't have this problem because it passes the native instance
+// in. CP passes the subclass instance.
 STATIC mp_obj_t op_getitem(mp_obj_t self_in, mp_obj_t key_in) {
-    const mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = &mp_type_dict;
     // Note: assumes type must have subscr (only used by dict).
     return MP_OBJ_TYPE_GET_SLOT(type, subscr)(self_in, key_in, MP_OBJ_SENTINEL);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_op_getitem_obj, op_getitem);
 
 STATIC mp_obj_t op_setitem(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
-    const mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = &mp_type_dict;
     // Note: assumes type must have subscr (only used by dict).
     return MP_OBJ_TYPE_GET_SLOT(type, subscr)(self_in, key_in, value_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_3(mp_op_setitem_obj, op_setitem);
 
 STATIC mp_obj_t op_delitem(mp_obj_t self_in, mp_obj_t key_in) {
-    const mp_obj_type_t *type = mp_obj_get_type(self_in);
+    const mp_obj_type_t *type = &mp_type_dict;
     // Note: assumes type must have subscr (only used by dict).
     return MP_OBJ_TYPE_GET_SLOT(type, subscr)(self_in, key_in, MP_OBJ_NULL);
 }

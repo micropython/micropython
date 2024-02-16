@@ -117,6 +117,13 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
                 }
                 // source is a lexer, parse and compile the script
                 qstr source_name = lex->source_name;
+                // CIRCUITPY-CHANGE
+                #if MICROPY_PY___FILE__
+                if (input_kind == MP_PARSE_FILE_INPUT) {
+                    mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+                }
+                #endif
+
                 mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
                 module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
                 #else
@@ -602,7 +609,7 @@ raw_repl_reset:
         }
 
         int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
-        if (ret & PYEXEC_FORCED_EXIT) {
+        if (ret & (PYEXEC_FORCED_EXIT | PYEXEC_RELOAD)) {
             return ret;
         }
     }
@@ -739,7 +746,7 @@ friendly_repl_reset:
         }
 
         ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
-        if (ret & PYEXEC_FORCED_EXIT) {
+        if (ret & (PYEXEC_FORCED_EXIT | PYEXEC_RELOAD)) {
             return ret;
         }
     }

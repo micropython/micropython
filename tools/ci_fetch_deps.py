@@ -96,7 +96,7 @@ PORT_DEPS = {
         "lib/tinyusb/",
         "lib/tlsf",
         "data/nvm.toml/",
-    ]
+    ],
     # omit unix which is part of the "test" target below
 }
 

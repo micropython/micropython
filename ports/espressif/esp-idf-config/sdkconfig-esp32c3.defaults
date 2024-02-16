@@ -33,17 +33,6 @@ CONFIG_BT_NIMBLE_EXT_ADV=y
 # end of Bluetooth
 
 #
-# Driver Configurations
-#
-#
-# RMT Configuration
-#
-CONFIG_RMT_SUPPRESS_DEPRECATE_WARN=y
-# end of RMT Configuration
-
-# end of Driver Configurations
-
-#
 # Wi-Fi
 #
 CONFIG_ESP_WIFI_STATIC_RX_BUFFER_NUM=4
