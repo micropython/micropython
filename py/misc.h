@@ -82,9 +82,14 @@ typedef unsigned int uint;
 #if MICROPY_ENABLE_FINALISER
 #define m_new_obj_with_finaliser(type) ((type *)(m_malloc_with_finaliser(sizeof(type))))
 #define m_new_obj_var_with_finaliser(type, var_field, var_type, var_num) ((type *)m_malloc_with_finaliser(offsetof(type, var_field) + sizeof(var_type) * (var_num)))
+#define mp_obj_malloc_with_finaliser(struct_type, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type), obj_type))
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_field, var_type, var_num, obj_type) ((struct_type *)mp_obj_malloc_with_finaliser_helper(sizeof(struct_type) + sizeof(var_type) * (var_num), obj_type))
 #else
 #define m_new_obj_with_finaliser(type) m_new_obj(type)
 #define m_new_obj_var_with_finaliser(type, var_field, var_type, var_num) m_new_obj_var(type, var_field, var_type, var_num)
+#define mp_obj_malloc_with_finaliser(struct_type, obj_type) mp_obj_malloc(struct_type, obj_type)
+#define mp_obj_malloc_var_with_finaliser(struct_type, var_field, var_type, var_num, obj_type) mp_obj_malloc_var(struct_type, var_type, var_num, obj_type)
+
 #endif
 #if MICROPY_MALLOC_USES_ALLOCATED_SIZE
 #define m_renew(type, ptr, old_num, new_num) ((type *)(m_realloc((ptr), sizeof(type) * (old_num), sizeof(type) * (new_num))))
