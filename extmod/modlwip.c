@@ -831,8 +831,7 @@ STATIC void lwip_socket_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
 STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 4, false);
 
-    lwip_socket_obj_t *socket = m_new_obj_with_finaliser(lwip_socket_obj_t);
-    socket->base.type = &lwip_socket_type;
+    lwip_socket_obj_t *socket = mp_obj_malloc_with_finaliser(lwip_socket_obj_t, &lwip_socket_type);
     socket->timeout = -1;
     socket->recv_offset = 0;
     socket->domain = MOD_NETWORK_AF_INET;
@@ -994,8 +993,7 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
 
     // Create new socket object, do it here because we must not raise an out-of-memory
     // exception when the LWIP concurrency lock is held
-    lwip_socket_obj_t *socket2 = m_new_obj_with_finaliser(lwip_socket_obj_t);
-    socket2->base.type = &lwip_socket_type;
+    lwip_socket_obj_t *socket2 = mp_obj_malloc_with_finaliser(lwip_socket_obj_t, &lwip_socket_type);
 
     MICROPY_PY_LWIP_ENTER
 

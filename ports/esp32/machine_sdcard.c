@@ -224,8 +224,7 @@ STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args
 
     DEBUG_printf("  Setting up host configuration");
 
-    sdcard_card_obj_t *self = m_new_obj_with_finaliser(sdcard_card_obj_t);
-    self->base.type = &machine_sdcard_type;
+    sdcard_card_obj_t *self = mp_obj_malloc_with_finaliser(sdcard_card_obj_t, &machine_sdcard_type);
     self->flags = 0;
     // Note that these defaults are macros that expand to structure
     // constants so we can't directly assign them to fields.

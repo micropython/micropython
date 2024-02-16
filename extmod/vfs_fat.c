@@ -188,8 +188,7 @@ STATIC mp_obj_t fat_vfs_ilistdir_func(size_t n_args, const mp_obj_t *args) {
     }
 
     // Create a new iterator object to list the dir
-    mp_vfs_fat_ilistdir_it_t *iter = m_new_obj_with_finaliser(mp_vfs_fat_ilistdir_it_t);
-    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
+    mp_vfs_fat_ilistdir_it_t *iter = mp_obj_malloc_with_finaliser(mp_vfs_fat_ilistdir_it_t, &mp_type_polymorph_iter_with_finaliser);
     iter->iternext = mp_vfs_fat_ilistdir_it_iternext;
     iter->finaliser = mp_vfs_fat_ilistdir_it_del;
     iter->is_str = is_str_type;

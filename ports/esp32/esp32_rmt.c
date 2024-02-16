@@ -131,8 +131,7 @@ STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, siz
         mp_raise_ValueError(MP_ERROR_TEXT("clock_div must be between 1 and 255"));
     }
 
-    esp32_rmt_obj_t *self = m_new_obj_with_finaliser(esp32_rmt_obj_t);
-    self->base.type = &esp32_rmt_type;
+    esp32_rmt_obj_t *self = mp_obj_malloc_with_finaliser(esp32_rmt_obj_t, &esp32_rmt_type);
     self->channel_id = channel_id;
     self->pin = pin_id;
     self->clock_div = clock_div;

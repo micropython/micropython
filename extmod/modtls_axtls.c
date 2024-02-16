@@ -145,11 +145,10 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
 
     // Create SSLContext object.
     #if MICROPY_PY_SSL_FINALISER
-    mp_obj_ssl_context_t *self = m_new_obj_with_finaliser(mp_obj_ssl_context_t);
+    mp_obj_ssl_context_t *self = mp_obj_malloc_with_finaliser(mp_obj_ssl_context_t, type_in);
     #else
-    mp_obj_ssl_context_t *self = m_new_obj(mp_obj_ssl_context_t);
+    mp_obj_ssl_context_t *self = mp_obj_malloc(mp_obj_ssl_context_t, type_in);
     #endif
-    self->base.type = type_in;
     self->key = mp_const_none;
     self->cert = mp_const_none;
 
@@ -210,11 +209,10 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname) {
 
     #if MICROPY_PY_SSL_FINALISER
-    mp_obj_ssl_socket_t *o = m_new_obj_with_finaliser(mp_obj_ssl_socket_t);
+    mp_obj_ssl_socket_t *o = mp_obj_malloc_with_finaliser(mp_obj_ssl_socket_t, &ssl_socket_type);
     #else
-    mp_obj_ssl_socket_t *o = m_new_obj(mp_obj_ssl_socket_t);
+    mp_obj_ssl_socket_t *o = mp_obj_malloc(mp_obj_ssl_socket_t, &ssl_socket_type);
     #endif
-    o->base.type = &ssl_socket_type;
     o->buf = NULL;
     o->bytes_left = 0;
     o->sock = MP_OBJ_NULL;
