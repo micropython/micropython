@@ -155,7 +155,6 @@ STATIC mp_obj_t psoc6_qspi_flash_readblocks(size_t n_args, const mp_obj_t *args)
     if (n_args == 4) {
         offset += mp_obj_get_int(args[3]);
     }
-    mplogger_print("Address in hex:%04X, Length:%u\n", self->flash_base + offset, bufinfo.len);
 
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
     cy_rslt_t result = cy_serial_flash_qspi_read(self->flash_base + offset, bufinfo.len, bufinfo.buf);
@@ -182,7 +181,6 @@ STATIC mp_obj_t psoc6_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *args
         uint32_t numSectors = bufinfo.len / EXT_FLASH_SECTOR_SIZE;
 
         for (uint32_t i = 0; i <= numSectors; ++i) {
-            mplogger_print("Address in hex:%04X\n", self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE);
             cy_rslt_t result = cy_serial_flash_qspi_erase(self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE, cy_serial_flash_qspi_get_erase_size(self->flash_base + offset + i * EXT_FLASH_SECTOR_SIZE));
             // the cy_serial_flash_qspi_get_erase_size() function call is necessary to keep the erase at sector boundary, else it throws errors.
 
@@ -214,7 +212,6 @@ STATIC mp_obj_t psoc6_qspi_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj
     mplogger_print("QSPI flash ioctrl called\n");
     psoc6_qspi_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
-    mplogger_print("option:%u\n", cmd);
 
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT:

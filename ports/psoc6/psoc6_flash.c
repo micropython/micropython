@@ -33,6 +33,7 @@
 #include "py/runtime.h"
 #include "extmod/vfs.h"
 #include "modpsoc6.h"
+#include "mplogger.h"
 #include "mphalport.h"
 
 
@@ -83,10 +84,29 @@ STATIC psoc6_flash_obj_t psoc6_flash_obj = {
 };
 
 cyhal_flash_t cyhal_flash_obj;
+cyhal_flash_info_t flash_info;
 
+// Helper function to get external flash configurations
+void get_flash_info(void) {
+    mplogger_print("\nRetrieving internal flash info...\n");
+    cyhal_flash_get_info(&cyhal_flash_obj, &flash_info);
+    // mplogger_print("\nTotal flash size (MB): %d\n", cy_serial_flash_qspi_get_size() / (1024 * 1024));
+    // mplogger_print("\nSize of erase sector (bytes): %d\n", cy_serial_flash_qspi_get_erase_size(0x00) / (1024));
+    // mplogger_print("\nPage size (bytes): %d\n", cy_serial_flash_qspi_get_prog_size(0x00));
+}
 
 STATIC mp_obj_t psoc6_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    cyhal_flash_init(&cyhal_flash_obj);
+    mplogger_print("\nFlash constructor invoked\n");
+    get_flash_info();
+
+    cy_rslt_t result = CY_RSLT_SUCCESS;
+
+    result = cyhal_flash_init(&cyhal_flash_obj);
+    if (CY_RSLT_SUCCESS != result) {
+        mplogger_print("psoc6_flash_make_new() failed while initializing flash with error code : %u\n", CY_RSLT_GET_CODE(result));
+        mp_raise_msg(&mp_type_Exception, MP_ERROR_TEXT("psoc6_flash_make_new() - QSPI flash init failed !\n"));
+    }
+
     // Parse arguments
     enum { ARG_start, ARG_len };
 
@@ -128,6 +148,8 @@ STATIC mp_obj_t psoc6_flash_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 STATIC mp_obj_t psoc6_flash_readblocks(size_t n_args, const mp_obj_t *args) {
+    mplogger_print("\nFlash readblocks called\n");
+
     psoc6_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
@@ -138,9 +160,9 @@ STATIC mp_obj_t psoc6_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     }
 
     cy_rslt_t result = cyhal_flash_read(&cyhal_flash_obj, self->flash_base + offset, bufinfo.buf, bufinfo.len);
-
     if (CY_RSLT_SUCCESS != result) {
-        mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_read failed !"));
+        mplogger_print("psoc6_flash_readblocks() failed while reading the flash with error code: %u\n", CY_RSLT_GET_CODE(result));
+        mp_raise_ValueError(MP_ERROR_TEXT("psoc6_flash_readblocks() - Flash Read failed !"));
     }
 
     // TODO: or simply do it like this ?
@@ -151,28 +173,25 @@ STATIC mp_obj_t psoc6_flash_readblocks(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc6_flash_readblocks_obj, 3, 4, psoc6_flash_readblocks);
 
 STATIC mp_obj_t psoc6_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
-
+    mplogger_print("\nFlash writeblocks called\n");
     psoc6_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
 
     if (n_args == 3) {
-        // Flash erase/program must run in an atomic section.
         mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
-
         uint32_t numSectors = bufinfo.len / FLASH_SECTOR_SIZE;
 
         for (uint32_t i = 0; i <= numSectors; ++i) {
             cy_rslt_t result = cyhal_flash_erase(&cyhal_flash_obj, self->flash_base + offset + i * FLASH_SECTOR_SIZE);
 
             if (CY_RSLT_SUCCESS != result) {
-                mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_read failed !"));
+                mplogger_print("\npsoc6_flash_writeblocks() failed while erasing the flash with error code: %u\n", CY_RSLT_GET_CODE(result));
+                mp_raise_ValueError(MP_ERROR_TEXT("psoc6_flash_writeblocks() - Flash Erase failed !"));
             }
         }
-
         MICROPY_END_ATOMIC_SECTION(atomic_state);
-        // TODO: check return value
     } else {
         offset += mp_obj_get_int(args[3]);
     }
@@ -182,22 +201,22 @@ STATIC mp_obj_t psoc6_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
 
     uint32_t numPages = bufinfo.len / FLASH_SECTOR_SIZE; // TODO: should be page size
-
     for (uint32_t i = 0; i <= numPages; ++i) {
         cy_rslt_t result = cyhal_flash_program(&cyhal_flash_obj, self->flash_base + offset + i * FLASH_SECTOR_SIZE, bufinfo.buf + i * FLASH_SECTOR_SIZE);
 
         if (CY_RSLT_SUCCESS != result) {
-            mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_read failed !"));
+            mplogger_print("\npsoc6_flash_writeblocks() failed while writing with error code: %u\n", CY_RSLT_GET_CODE(result));
+            mp_raise_ValueError(MP_ERROR_TEXT("\npsoc6_flash_writeblocks() - Flash Program failed!"));
         }
     }
 
     MICROPY_END_ATOMIC_SECTION(atomic_state);
-    // TODO: check return value
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc6_flash_writeblocks_obj, 3, 4, psoc6_flash_writeblocks);
 
 STATIC mp_obj_t psoc6_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+    mplogger_print("QSPI flash ioctrl called\n");
     psoc6_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
@@ -219,11 +238,11 @@ STATIC mp_obj_t psoc6_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t ar
             cy_rslt_t result = cyhal_flash_erase(&cyhal_flash_obj, self->flash_base + offset);
 
             if (CY_RSLT_SUCCESS != result) {
-                mp_raise_ValueError(MP_ERROR_TEXT("cyhal_rtc_read failed !"));
+                mplogger_print("psoc6_flash_ioctl() failed while erasing block with error code: %u\n", CY_RSLT_GET_CODE(result));
+                mp_raise_ValueError(MP_ERROR_TEXT("psoc6_flash_ioctl() - Flash erase failed !"));
             }
 
             MICROPY_END_ATOMIC_SECTION(atomic_state);
-            // TODO: check return value
             return MP_OBJ_NEW_SMALL_INT(0);
         }
         default:
