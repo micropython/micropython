@@ -354,7 +354,7 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         x509write_csr.c \
         xtea.c \
 	)
-SRC_C += $(SRC_MBEDTLS) $(TOP)/lib/mbedtls_config/mbedtls_port.c $(TOP)/lib/mbedtls_config/crt_bundle.c
+SRC_C += $(SRC_MBEDTLS) lib/mbedtls_config/mbedtls_port.c lib/mbedtls_config/crt_bundle.c
 CFLAGS += \
 	  -isystem $(TOP)/lib/mbedtls/include \
 	  -DMBEDTLS_CONFIG_FILE='"$(TOP)/lib/mbedtls_config/mbedtls_config.h"' \

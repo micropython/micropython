@@ -13,6 +13,9 @@ CIRCUITPY_ESP_PSRAM_SIZE ?= 0
 # Enable more features
 CIRCUITPY_FULL_BUILD ?= 1
 
+# If SSL is enabled, it's mbedtls
+CIRCUITPY_SSL_MBEDTLS = 1
+
 # These modules are implemented in ports/<port>/common-hal:
 CIRCUITPY_ALARM ?= 1
 CIRCUITPY_ANALOGBUFIO ?= 1

@@ -97,6 +97,10 @@
 #include "esp32/rom/efuse.h"
 #endif
 
+#if CIRCUITPY_SSL
+#include "shared-module/ssl/__init__.h"
+#endif
+
 #include "esp_log.h"
 #define TAG "port"
 
@@ -345,6 +349,10 @@ void reset_port(void) {
     // TODO deinit for esp32-camera
     #if CIRCUITPY_ESPCAMERA
     esp_camera_deinit();
+    #endif
+
+    #if CIRCUITPY_SSL
+    ssl_reset();
     #endif
 
     reset_all_pins();

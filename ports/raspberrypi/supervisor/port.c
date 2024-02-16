@@ -42,7 +42,7 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 
 #if CIRCUITPY_SSL
-#include "common-hal/ssl/__init__.h"
+#include "shared-module/ssl/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI

@@ -4,6 +4,7 @@
  * The MIT License (MIT)
  *
  * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2022 Jeff Epler for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +25,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SSL___INIT___H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SSL___INIT___H
+#include "shared-module/ssl/__init__.h"
+#include "shared-bindings/ssl/__init__.h"
+#include "shared-bindings/ssl/SSLContext.h"
+#include "lib/mbedtls_config/crt_bundle.h"
 
+void common_hal_ssl_create_default_context(ssl_sslcontext_obj_t *self) {
+    common_hal_ssl_sslcontext_construct(self);
+}
 
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_SSL___INIT___H
+void ssl_reset(void) {
+    crt_bundle_detach(NULL);
+}

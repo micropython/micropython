@@ -119,7 +119,7 @@ def make_version_header(repo_path, filename):
 #define MICROPY_VERSION_STRING "%s"
 // Combined version as a 32-bit number for convenience
 #define MICROPY_VERSION (MICROPY_VERSION_MAJOR << 16 | MICROPY_VERSION_MINOR << 8 | MICROPY_VERSION_MICRO)
-#define MICROPY_FULL_VERSION_INFO "Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_HW_BOARD_NAME " with " MICROPY_HW_MCU_NAME
+#define MICROPY_FULL_VERSION_INFO "Adafruit CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE "; " MICROPY_BANNER_MACHINE
 """ % (
         git_tag,
         git_hash,

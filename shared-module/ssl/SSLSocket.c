@@ -40,8 +40,14 @@
 #include "py/stream.h"
 #include "supervisor/shared/tick.h"
 
+#include "mbedtls/version.h"
+
 #if defined(MBEDTLS_ERROR_C)
 #include "../../lib/mbedtls_errors/mp_mbedtls_errors.c"
+#endif
+
+#if MBEDTLS_VERSION_MAJOR >= 3
+#include "shared-bindings/os/__init__.h"
 #endif
 
 #ifdef MBEDTLS_DEBUG_C
@@ -132,6 +138,15 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
 }
 
 
+#if MBEDTLS_VERSION_MAJOR >= 3
+static int urandom_adapter(void *unused, unsigned char *buf, size_t n) {
+    int result = common_hal_os_urandom(buf, n);
+    if (result) {
+        return 0;
+    }
+    return MBEDTLS_ERR_SSL_INTERNAL_ERROR;
+}
+#endif
 
 ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t *self,
     socketpool_socket_obj_t *socket, bool server_side, const char *server_hostname) {
@@ -205,7 +220,11 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     mbedtls_ssl_set_bio(&o->ssl, &o->sock, _mbedtls_ssl_send, _mbedtls_ssl_recv, NULL);
 
     if (self->cert_buf.buf != NULL) {
+        #if MBEDTLS_VERSION_MAJOR >= 3
+        ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0, urandom_adapter, NULL);
+        #else
         ret = mbedtls_pk_parse_key(&o->pkey, self->key_buf.buf, self->key_buf.len + 1, NULL, 0);
+        #endif
         if (ret != 0) {
             goto cleanup;
         }
@@ -360,5 +379,5 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self, 
 }
 
 void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms) {
-    self->sock->timeout = timeout_ms;
+    common_hal_socketpool_socket_settimeout(self->sock, timeout_ms);
 }
