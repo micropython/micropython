@@ -139,14 +139,18 @@ STATIC qstr mp_obj_code_get_name(const mp_obj_fun_bc_t *fun, const byte *code_in
 
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
+    const byte *bc = fun->bytecode;
+
     #if MICROPY_EMIT_NATIVE
     if (fun->base.type == &mp_type_fun_native || fun->base.type == &mp_type_native_gen_wrap) {
-        // TODO native functions don't have name stored
-        return MP_QSTR_;
+        uint16_t name = mp_obj_fun_native_get_simple_name((const mp_obj_fun_native_t *)fun);
+        #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+        name = fun->context->constants.qstr_table[name];
+        #endif
+        return name;
     }
     #endif
 
-    const byte *bc = fun->bytecode;
     MP_BC_PRELUDE_SIG_DECODE(bc);
     return mp_obj_code_get_name(fun, bc);
 }
