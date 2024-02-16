@@ -1,4 +1,4 @@
-# This is the default variant when you `make` the Unix port.
+# Build for WASI
 
 FROZEN_MANIFEST ?= $(VARIANT_DIR)/manifest.py
 
