@@ -384,7 +384,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
         def_kw_args = def_args[1];
         n_extra_args += 1;
     }
-    mp_obj_fun_bc_t *o = mp_obj_malloc_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args, &mp_type_fun_bc);
+    mp_obj_fun_bc_t *o = mp_obj_malloc_var(mp_obj_fun_bc_t, extra_args, mp_obj_t, n_extra_args, &mp_type_fun_bc);
     o->bytecode = code;
     o->context = context;
     o->child_table = child_table;

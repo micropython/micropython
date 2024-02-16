@@ -87,6 +87,7 @@ typedef struct _mp_obj_aes_t {
 #define AES_KEYTYPE_ENC  1
 #define AES_KEYTYPE_DEC  2
     uint8_t key_type : 2;
+    struct ctr_params ctr_params[]; // optional
 } mp_obj_aes_t;
 
 static inline bool is_ctr_mode(int block_mode) {
@@ -98,8 +99,7 @@ static inline bool is_ctr_mode(int block_mode) {
 }
 
 static inline struct ctr_params *ctr_params_from_aes(mp_obj_aes_t *o) {
-    // ctr_params follows aes object struct
-    return (struct ctr_params *)&o[1];
+    return &o->ctr_params[0];
 }
 
 #if MICROPY_SSL_AXTLS
@@ -228,7 +228,7 @@ STATIC mp_obj_t cryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args,
             mp_raise_ValueError(MP_ERROR_TEXT("mode"));
     }
 
-    mp_obj_aes_t *o = mp_obj_malloc_var(mp_obj_aes_t, struct ctr_params, !!is_ctr_mode(block_mode), type);
+    mp_obj_aes_t *o = mp_obj_malloc_var(mp_obj_aes_t, ctr_params, struct ctr_params, !!is_ctr_mode(block_mode), type);
 
     o->block_mode = block_mode;
     o->key_type = AES_KEYTYPE_NONE;
