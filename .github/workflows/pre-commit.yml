@@ -35,7 +35,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gettext uncrustify
     - name: Run pre-commit
-      uses: pre-commit/action@v3.0.0
+      uses: pre-commit/action@v3.0.1
     - name: Make patch
       if: failure()
       run: git diff > ~/pre-commit.patch
