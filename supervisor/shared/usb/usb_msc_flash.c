@@ -159,6 +159,13 @@ int32_t tud_msc_read10_cb(uint8_t lun, uint32_t lba, uint32_t offset, void *buff
     const uint32_t block_count = bufsize / MSC_FLASH_BLOCK_SIZE;
 
     fs_user_mount_t *vfs = get_vfs(lun);
+    uint32_t disk_block_count;
+    disk_ioctl(vfs, GET_SECTOR_COUNT, &disk_block_count);
+
+    if (lba + block_count > disk_block_count) {
+        return -1;
+    }
+
     disk_read(vfs, buffer, lba, block_count);
 
     return block_count * MSC_FLASH_BLOCK_SIZE;
