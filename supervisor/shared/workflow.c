@@ -58,7 +58,7 @@ void supervisor_workflow_reset(void) {
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW
-    bool result = supervisor_start_web_workflow(true);
+    bool result = supervisor_start_web_workflow();
     if (workflow_background_cb.fun) {
         if (result) {
             supervisor_workflow_request_background();
@@ -108,7 +108,7 @@ void supervisor_workflow_start(void) {
     #endif
 
     #if CIRCUITPY_WEB_WORKFLOW
-    if (supervisor_start_web_workflow(false)) {
+    if (supervisor_start_web_workflow()) {
         // Enable background callbacks if web_workflow startup successful
         memset(&workflow_background_cb, 0, sizeof(workflow_background_cb));
         workflow_background_cb.fun = supervisor_web_workflow_background;

@@ -146,6 +146,7 @@ CFLAGS += \
 	-DHAVE_CONFIG_H \
 	-DESP_PLATFORM=1 \
 	-DMBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\" \
+	-DMBEDTLS_PADLOCK_FILE=\"ports/espressif/esp-idf/components/mbedtls/mbedtls/library/padlock.h\" \
 	-DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
 
 # Make our canary value match FreeRTOS's
@@ -284,6 +285,8 @@ SRC_C += \
 	shared/netutils/netutils.c \
 	peripherals/i2c.c \
 	peripherals/$(IDF_TARGET)/pins.c
+
+SRC_C += lib/mbedtls_config/crt_bundle.c
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 
