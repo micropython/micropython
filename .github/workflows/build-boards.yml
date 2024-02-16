@@ -31,18 +31,22 @@ jobs:
         submodules: false
         show-progress: false
         fetch-depth: 1
+
     - name: Set up python
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
+
     - name: Set up port
       id: set-up-port
       uses: ./.github/actions/deps/ports
       with:
         board: ${{ matrix.board }}
+
     - name: Set up submodules
       id: set-up-submodules
       uses: ./.github/actions/deps/submodules
+
     - name: Set up external
       uses: ./.github/actions/deps/external
       with:
@@ -68,18 +72,21 @@ jobs:
 
     - name: Set up build failure matcher
       run: echo "::add-matcher::$GITHUB_WORKSPACE/.github/workflows/match-build-fail.json"
+
     - name: Build board
       run: python3 -u build_release_files.py
       working-directory: tools
       env:
         BOARDS: ${{ matrix.board }}
         PULL: ${{ github.event.number }}
+        HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.board }}
         path: bin/${{ matrix.board }}
+
     - name: Upload to S3
       uses: ./.github/actions/upload_aws
       with:

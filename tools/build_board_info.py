@@ -6,6 +6,7 @@
 
 import json
 import os
+import re
 import requests
 import subprocess
 import sys
@@ -76,19 +77,34 @@ def get_version_info():
 
     if not version:
         # Get branch we are PR'ing into, if any.
-        branch = os.environ.get("GITHUB_BASE_REF", "").strip().replace("/", "_")
+        # Works for pull_request actions.
+        branch = os.environ.get("GITHUB_BASE_REF", "")
+        if not branch:
+            # Works for push actions (usually a PR merge).
+            branch = os.environ.get("GITHUB_REF_NAME", "")
         if not branch:
             branch = "no-branch"
+        # replace slashes with underscores to prevent path subdirs.
+        branch = branch.strip().replace("/", "_")
 
         # Get PR number, if any
-        pull_request_maybe = os.environ.get("PULL", "")
-        if pull_request_maybe:
-            pull_request_maybe = f"-PR{pull_request_maybe}"
+        # PR jobs put the PR number in PULL.
+        pull_request = os.environ.get("PULL", "")
+        if not pull_request:
+            # PR merge jobs put a commit message that includes the PR number in HEAD_COMMIT_MESSAGE.
+            head_commit_message = os.environ.get("HEAD_COMMIT_MESSAGE", "")
+            if head_commit_message:
+                match = re.match(r"Merge pull request #(\d+) from", head_commit_message)
+                if match:
+                    pull_request = match.group(1)
+
+        if pull_request:
+            pull_request = f"-PR{pull_request}"
 
         date_stamp = date.today().strftime("%Y%m%d")
         short_sha = sha[:7]
         # Example: 20231121-8.2.x-PR9876-123abcd
-        version = f"{date_stamp}-{branch}{pull_request_maybe}-{short_sha}"
+        version = f"{date_stamp}-{branch}{pull_request}-{short_sha}"
 
     return sha, version
 
