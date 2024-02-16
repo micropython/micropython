@@ -30,5 +30,8 @@
 // WASI has different values for POLL constants.
 #define MICROPY_PY_SELECT_POSIX_OPTIMISATIONS (0)
 
+// WASI doesn't have executable or process.
+#define MICROPY_PY_OS_SYSTEM (0)
+
 // Enable extra Unix features.
 #include "../mpconfigvariant_common.h"
