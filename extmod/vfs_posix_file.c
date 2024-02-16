@@ -92,6 +92,7 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
     }
 
     mp_obj_vfs_posix_file_t *o = mp_obj_malloc_with_finaliser(mp_obj_vfs_posix_file_t, type);
+    o->fd = -1; // In case open() fails below, initialise this as a "closed" file object.
 
     mp_obj_t fid = file_in;
 
