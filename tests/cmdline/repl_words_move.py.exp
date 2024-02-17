@@ -1,4 +1,4 @@
-MicroPython \.\+ version
+CircuitPython \.\+ version
 Use \.\+
 >>> # word movement
 >>> # backward-word, start in word
