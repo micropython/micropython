@@ -57,9 +57,9 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
     (void)level;
     mp_printf(&mp_plat_print, "DBG:%s:%04d: %s\n", file, line, str);
 }
-#define DEBUG(fmt, ...) mp_printf(&mp_plat_print, "DBG:%s:%04d: " fmt "\n", __FILE__, __LINE__,##__VA_ARGS__)
+#define DEBUG_PRINT(fmt, ...) mp_printf(&mp_plat_print, "DBG:%s:%04d: " fmt "\n", __FILE__, __LINE__,##__VA_ARGS__)
 #else
-#define DEBUG(...) do {} while (0)
+#define DEBUG_PRINT(...) do {} while (0)
 #endif
 
 STATIC NORETURN void mbedtls_raise_error(int err) {
@@ -107,10 +107,10 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
 
     // mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
     mp_int_t out_sz = socketpool_socket_send(sock, buf, len);
-    DEBUG("socket_send() -> %d", out_sz);
+    DEBUG_PRINT("socket_send() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
-        DEBUG("sock_stream->write() -> %d nonblocking? %d", out_sz, mp_is_nonblocking_error(err));
+        DEBUG_PRINT("sock_stream->write() -> %d nonblocking? %d", out_sz, mp_is_nonblocking_error(err));
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
         }
@@ -125,7 +125,7 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
     mp_int_t out_sz = socketpool_socket_recv_into(sock, buf, len);
-    DEBUG("socket_recv() -> %d", out_sz);
+    DEBUG_PRINT("socket_recv() -> %d", out_sz);
     if (out_sz < 0) {
         int err = -out_sz;
         if (mp_is_nonblocking_error(err)) {
@@ -261,14 +261,14 @@ cleanup:
 
 mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len) {
     int ret = mbedtls_ssl_read(&self->ssl, buf, len);
-    DEBUG("recv_into mbedtls_ssl_read() -> %d\n", ret);
+    DEBUG_PRINT("recv_into mbedtls_ssl_read() -> %d\n", ret);
     if (ret == MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY) {
-        DEBUG("returning %d\n", 0);
+        DEBUG_PRINT("returning %d\n", 0);
         // end of stream
         return 0;
     }
     if (ret >= 0) {
-        DEBUG("returning %d\n", ret);
+        DEBUG_PRINT("returning %d\n", ret);
         return ret;
     }
     if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
@@ -279,15 +279,15 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t 
         // renegotiation.
         ret = MP_EWOULDBLOCK;
     }
-    DEBUG("raising errno [error case] %d\n", ret);
+    DEBUG_PRINT("raising errno [error case] %d\n", ret);
     mp_raise_OSError(ret);
 }
 
 mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
     int ret = mbedtls_ssl_write(&self->ssl, buf, len);
-    DEBUG("send mbedtls_ssl_write() -> %d\n", ret);
+    DEBUG_PRINT("send mbedtls_ssl_write() -> %d\n", ret);
     if (ret >= 0) {
-        DEBUG("returning %d\n", ret);
+        DEBUG_PRINT("returning %d\n", ret);
         return ret;
     }
     if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -298,7 +298,7 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
         // renegotiation.
         ret = MP_EWOULDBLOCK;
     }
-    DEBUG("raising errno [error case] %d\n", ret);
+    DEBUG_PRINT("raising errno [error case] %d\n", ret);
     mp_raise_OSError(ret);
 }
 
