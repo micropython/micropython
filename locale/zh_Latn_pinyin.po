@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-01-09 03:06+0000\n"
+"PO-Revision-Date: 2024-02-19 11:01+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.4\n"
 
 #: main.c
 msgid ""
@@ -1203,7 +1203,7 @@ msgstr "nèi bù cuò wù #%d"
 #: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
 msgid "Internal resource(s) in use"
-msgstr ""
+msgstr "zhèngzài shǐyòng de nèibù zīyuán"
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
@@ -1372,7 +1372,7 @@ msgstr "quēshǎo jmp_pin. %q[%u] tiàodào yǐn jiǎoshàng"
 
 #: shared-module/storage/__init__.c
 msgid "Mount point directory missing"
-msgstr ""
+msgstr "quēshǎo guàzǎi diǎn mùlù"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1462,7 +1462,7 @@ msgstr "wú IP"
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
-msgstr ""
+msgstr "bù cúnzài yǐndǎo jiāzǎi chéngxù"
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
@@ -1971,7 +1971,7 @@ msgstr "zhǐ dìng data0 huò data_pins zhōng de yí gè"
 
 #: supervisor/shared/safe_mode.c
 msgid "Stack overflow. Increase stack size."
-msgstr ""
+msgstr "duīzhàn yìchū. zēngjiā duīzhàn dàxiǎo."
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2529,7 +2529,7 @@ msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "bitmap size and depth must match"
-msgstr ""
+msgstr "wèitú dà xiǎohé shēndù bìxū pǐpèi"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
@@ -4261,7 +4261,7 @@ msgstr "bù zhīchí de Xtensa zhǐlìng '%s', shǐyòng %d cānshù"
 
 #: shared-module/bitmapfilter/__init__.c
 msgid "unsupported bitmap depth"
-msgstr ""
+msgstr "bù zhīchí de wèitú shēndù"
 
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
@@ -4314,10 +4314,13 @@ msgid ""
 "weights must be a sequence with an odd square number of elements (usually 9 "
 "or 25)"
 msgstr ""
+"quánzhòng bìxū shì yuán sùshù wéiqí píngfāng shù (tōng chángwéi 9huò25) de "
+"xùliè"
 
 #: shared-bindings/bitmapfilter/__init__.c
 msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
+"quánzhòng bìxū shì lèixíng wéi %q, %q, %q, huò %q de duìxiàng, érbùshì %q "
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
