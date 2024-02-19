@@ -48,6 +48,14 @@ The :mod:`machine` module::
     import machine
 
     machine.freq()          # get the current frequency of the CPU
+
+::
+    from machine import Bitstream
+    timing = [1000, 7000, 5000, 2500]          #timing (high_time_0, low_time_0, high_time_1, low_time_1)in ns
+    buf = bytearray([0xAB])                    #buffer data 
+    bitstream('P13_6', 0, timing, buf)         # bitstrem buffer data with timing through pin P13_6
+
+Here the accuracy of the timing is +/- 400ns. So this bitstream works better from the timing range greater than 1000ns. 
     
 ..
     TODO: add more machine module examples when implemented.    
@@ -675,4 +683,3 @@ Supported sample rates are 8KHz, 16KHz, 32KHz, 48KHz, 22.05KHz, 44.1KHz.
 PSoC6 supports only STEREO Mode. 
 
 .. note:: I2S Blocking mode is only supported 
-
