@@ -168,7 +168,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         #if CIRCUITPY_STORAGE_EXTEND
         multi_partition_rw(_cache, sector_offset, SECTOR_SIZE, OP_WRITE);
         #else
-        single_partition_rw(_partition[0], _cache, sector_offset, SECTOR_SIZE, OP_READ);
+        single_partition_rw(_partition[0], _cache, sector_offset, SECTOR_SIZE, OP_WRITE);
         #endif
     }
     return 0; // success
