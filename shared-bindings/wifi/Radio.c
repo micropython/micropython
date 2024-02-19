@@ -661,6 +661,34 @@ STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_info_obj, wifi_radio_get_ap_info);
 
+//|     stations_ap: None
+//|     """In AP mode, returns list of objects (read-only)
+//|      mac: bytearray
+//|      rssi: int
+//|      ipv4_address: ipv4_address  (0.0.0.0 if station connected but no address assigned yet or self-assigned address)
+//|
+//|         .. note::
+//|
+//|             The raspberrypi port (RP2040 CYW43) does not report rssi, so the value will be None"""
+STATIC mp_obj_t wifi_radio_get_stations_ap(mp_obj_t self) {
+    return common_hal_wifi_radio_get_stations_ap(self);
+}
+
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_stations_ap_obj, wifi_radio_get_stations_ap);
+
+MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
+    (mp_obj_t)&wifi_radio_get_stations_ap_obj);
+
+//|     max_stations_ap: Optional[Network]
+//|     """In AP mode, returns the maximum possible number of connected stations (read-only)"""
+STATIC mp_obj_t wifi_radio_get_max_stations_ap(mp_obj_t self) {
+    return common_hal_wifi_radio_get_max_stations_ap(self);
+}
+MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_max_stations_ap_obj, wifi_radio_get_max_stations_ap);
+
+MP_PROPERTY_GETTER(wifi_radio_max_stations_ap_obj,
+    (mp_obj_t)&wifi_radio_get_max_stations_ap_obj);
+
 //|     def start_dhcp(self) -> None:
 //|         """Starts the station DHCP client."""
 //|         ...
@@ -750,6 +778,8 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_start_ap),    MP_ROM_PTR(&wifi_radio_start_ap_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_ap),    MP_ROM_PTR(&wifi_radio_stop_ap_obj) },
     { MP_ROM_QSTR(MP_QSTR_ap_active),   MP_ROM_PTR(&wifi_radio_ap_active_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stations_ap),   MP_ROM_PTR(&wifi_radio_stations_ap_obj) },
+    { MP_ROM_QSTR(MP_QSTR_max_stations_ap),   MP_ROM_PTR(&wifi_radio_max_stations_ap_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_start_dhcp),    MP_ROM_PTR(&wifi_radio_start_dhcp_client_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_dhcp),    MP_ROM_PTR(&wifi_radio_stop_dhcp_client_obj) },
@@ -783,3 +813,13 @@ MP_DEFINE_CONST_OBJ_TYPE(
     MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
     locals_dict, &wifi_radio_locals_dict
     );
+
+const mp_obj_namedtuple_type_t wifi_radio_station_type = {
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS(MP_QSTR_WifiRadioStation),
+    .n_fields = 3,
+    .fields = {
+        MP_QSTR_mac_address,
+        MP_QSTR_rssi,
+        MP_QSTR_ipv4_address,
+    },
+};

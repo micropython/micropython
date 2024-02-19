@@ -32,8 +32,10 @@
 #include "common-hal/wifi/Radio.h"
 
 #include "py/objstr.h"
+#include "py/objnamedtuple.h"
 
 extern const mp_obj_type_t wifi_radio_type;
+extern const mp_obj_namedtuple_type_t wifi_radio_station_type;
 
 typedef enum {
     // 0 is circuitpython-specific; 1-53 are IEEE; 200+ are Espressif
@@ -96,6 +98,8 @@ extern void common_hal_wifi_radio_stop_station(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, uint32_t authmode, uint8_t max_connections);
 extern void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self);
 extern bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self);
+extern mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self);
+extern mp_obj_t common_hal_wifi_radio_get_max_stations_ap(wifi_radio_obj_t *self);
 
 extern void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self);
