@@ -62,8 +62,6 @@ static void usb_init(void) {
     PORT->Group[0].PMUX[12].reg = alt << 4 | alt;
     PORT->Group[0].PINCFG[24].reg = PORT_PINCFG_PMUXEN;
     PORT->Group[0].PINCFG[25].reg = PORT_PINCFG_PMUXEN;
-
-    tusb_init();
 }
 
 // Initialize the µs counter on TC 0/1 or TC4/5

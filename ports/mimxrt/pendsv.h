@@ -23,8 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_PENDSV_H
-#define MICROPY_INCLUDED_STM32_PENDSV_H
+#ifndef MICROPY_INCLUDED_MIMXRT_PENDSV_H
+#define MICROPY_INCLUDED_MIMXRT_PENDSV_H
 
 enum {
     PENDSV_DISPATCH_SOFT_TIMER,  // For later & for having at least one entry
@@ -45,4 +45,4 @@ typedef void (*pendsv_dispatch_t)(void);
 void pendsv_init(void);
 void pendsv_schedule_dispatch(size_t slot, pendsv_dispatch_t f);
 
-#endif // MICROPY_INCLUDED_STM32_PENDSV_H
+#endif // MICROPY_INCLUDED_MIMXRT_PENDSV_H

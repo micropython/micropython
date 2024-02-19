@@ -305,11 +305,11 @@ STATIC err_t wiznet5k_netif_init(struct netif *netif) {
 
 STATIC void wiznet5k_lwip_init(wiznet5k_obj_t *self) {
     ip_addr_t ipconfig[4];
-    ipconfig[0].addr = 0;
-    ipconfig[1].addr = 0;
-    ipconfig[2].addr = 0;
-    ipconfig[3].addr = 0;
-    netif_add(&self->netif, &ipconfig[0], &ipconfig[1], &ipconfig[2], self, wiznet5k_netif_init, ethernet_input);
+    IP_ADDR4(&ipconfig[0], 0, 0, 0, 0);
+    IP_ADDR4(&ipconfig[1], 0, 0, 0, 0);
+    IP_ADDR4(&ipconfig[2], 0, 0, 0, 0);
+    IP_ADDR4(&ipconfig[3], 0, 0, 0, 0);
+    netif_add(&self->netif, ip_2_ip4(&ipconfig[0]), ip_2_ip4(&ipconfig[1]), ip_2_ip4(&ipconfig[2]), self, wiznet5k_netif_init, ethernet_input);
     self->netif.name[0] = 'e';
     self->netif.name[1] = '0';
     netif_set_default(&self->netif);
@@ -802,7 +802,7 @@ STATIC mp_obj_t wiznet5k_isconnected(mp_obj_t self_in) {
         wizphy_getphylink() == PHY_LINK_ON
         && IS_ACTIVE(self)
         #if WIZNET5K_WITH_LWIP_STACK
-        && self->netif.ip_addr.addr != 0
+        && ip_2_ip4(&self->netif.ip_addr)->addr != 0
         #endif
         );
 }

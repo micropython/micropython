@@ -29,7 +29,6 @@
 
 #if MICROPY_HW_USB_CDC
 
-#include "tusb.h"
 #include "nrfx.h"
 #include "nrfx_power.h"
 #include "nrfx_uart.h"
@@ -37,6 +36,7 @@
 #include "py/stream.h"
 #include "py/runtime.h"
 #include "shared/runtime/interrupt_char.h"
+#include "shared/tinyusb/mp_usbd.h"
 
 #ifdef BLUETOOTH_SD
 #include "nrf_sdm.h"
@@ -186,7 +186,7 @@ int usb_cdc_init(void)
     tx_ringbuf.iget = 0;
     tx_ringbuf.iput = 0;
 
-    tusb_init();
+    mp_usbd_init();
 
     return 0;
 }

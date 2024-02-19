@@ -387,15 +387,15 @@ SDCard
 The frozen sdcard driver (drivers/sdcard/sdcard.py) is available by connecting microSD card device to hardware SPI0 pins.::
 
     from machine import Pin, SPI
-    import os, sdcard
+    import os, vfs, sdcard
 
     spi = SPI(0, baudrate=500000)
     cs = Pin.cpu.P103
     sd = sdcard.SDCard(spi, cs)
-    os.mount(sd, '/sd')
+    vfs.mount(sd, '/sd')
     os.listdir('/')
     os.chdir('/sd')
-    os.umount('/sd')
+    vfs.umount('/sd')
 
 OneWire driver
 --------------

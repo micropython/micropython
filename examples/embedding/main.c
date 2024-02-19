@@ -31,7 +31,14 @@ static char heap[8 * 1024];
 
 int main() {
     // Initialise MicroPython.
-    mp_embed_init(&heap[0], sizeof(heap));
+    //
+    // Note: &stack_top below should be good enough for many cases.
+    // However, depending on environment, there might be more appropriate
+    // ways to get the stack top value.
+    // eg. pthread_get_stackaddr_np, pthread_getattr_np,
+    // __builtin_frame_address/__builtin_stack_address, etc.
+    int stack_top;
+    mp_embed_init(&heap[0], sizeof(heap), &stack_top);
 
     // Run the example scripts (they will be compiled first).
     mp_embed_exec_str(example_1);

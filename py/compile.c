@@ -3625,7 +3625,7 @@ void mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, bool 
             for (scope_t *s = comp->scope_head; s != NULL; s = s->next) {
                 mp_raw_code_t *rc = s->raw_code;
                 if (rc->kind == MP_CODE_BYTECODE) {
-                    mp_bytecode_print(&mp_plat_print, rc, &cm->context->constants);
+                    mp_bytecode_print(&mp_plat_print, rc, s->raw_code_data_len, &cm->context->constants);
                 }
             }
         }
@@ -3667,7 +3667,7 @@ mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, bool is_repl)
     cm.context->module.globals = mp_globals_get();
     mp_compile_to_raw_code(parse_tree, source_file, is_repl, &cm);
     // return function that executes the outer module
-    return mp_make_function_from_raw_code(cm.rc, cm.context, NULL);
+    return mp_make_function_from_proto_fun(cm.rc, cm.context, NULL);
 }
 
 #endif // MICROPY_ENABLE_COMPILER

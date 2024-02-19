@@ -3,7 +3,7 @@ os module test for the CC3200 based boards
 """
 
 from machine import SD
-import os
+import os, vfs
 
 mch = os.uname().machine
 if "LaunchPad" in mch:
@@ -15,7 +15,7 @@ else:
 
 sd = SD(pins=sd_pins)
 
-os.mount(sd, "/sd")
+vfs.mount(sd, "/sd")
 os.mkfs("/sd")
 os.chdir("/flash")
 print(os.listdir())
@@ -88,7 +88,7 @@ print(os.listdir("/"))
 os.unmount("/sd")
 print(os.listdir("/"))
 os.mkfs(sd)
-os.mount(sd, "/sd")
+vfs.mount(sd, "/sd")
 print(os.listdir("/"))
 os.chdir("/flash")
 
@@ -104,12 +104,12 @@ sd.init()
 print(os.listdir("/sd"))
 
 try:
-    os.mount(sd, "/sd")
+    vfs.mount(sd, "/sd")
 except:
     print("Exception")
 
 try:
-    os.mount(sd, "/sd2")
+    vfs.mount(sd, "/sd2")
 except:
     print("Exception")
 
@@ -159,6 +159,6 @@ try:
 except:
     print("Exception")
 
-os.mount(sd, "/sd")
+vfs.mount(sd, "/sd")
 print(os.listdir("/"))
 os.unmount("/sd")

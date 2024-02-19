@@ -1,13 +1,8 @@
 try:
-    import errno
-    import os
-except ImportError:
-    print("SKIP")
-    raise SystemExit
+    import errno, os, vfs
 
-try:
-    os.VfsFat
-except AttributeError:
+    vfs.VfsFat
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
@@ -38,7 +33,7 @@ class RAMFS:
 
 try:
     bdev = RAMFS(50)
-    os.VfsFat.mkfs(bdev)
+    vfs.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
@@ -46,50 +41,50 @@ except MemoryError:
 print(b"FOO_FILETXT" not in bdev.data)
 print(b"hello!" not in bdev.data)
 
-vfs = os.VfsFat(bdev)
-os.mount(vfs, "/ramdisk")
+fs = vfs.VfsFat(bdev)
+vfs.mount(fs, "/ramdisk")
 
-print("statvfs:", vfs.statvfs("/ramdisk"))
-print("getcwd:", vfs.getcwd())
+print("statvfs:", fs.statvfs("/ramdisk"))
+print("getcwd:", fs.getcwd())
 
 try:
-    vfs.stat("no_file.txt")
+    fs.stat("no_file.txt")
 except OSError as e:
     print(e.errno == errno.ENOENT)
 
-with vfs.open("foo_file.txt", "w") as f:
+with fs.open("foo_file.txt", "w") as f:
     f.write("hello!")
-print(list(vfs.ilistdir()))
+print(list(fs.ilistdir()))
 
-print("stat root:", vfs.stat("/")[:-3])  # timestamps differ across runs
-print("stat file:", vfs.stat("foo_file.txt")[:-3])  # timestamps differ across runs
+print("stat root:", fs.stat("/")[:-3])  # timestamps differ across runs
+print("stat file:", fs.stat("foo_file.txt")[:-3])  # timestamps differ across runs
 
 print(b"FOO_FILETXT" in bdev.data)
 print(b"hello!" in bdev.data)
 
-vfs.mkdir("foo_dir")
-vfs.chdir("foo_dir")
-print("getcwd:", vfs.getcwd())
-print(list(vfs.ilistdir()))
+fs.mkdir("foo_dir")
+fs.chdir("foo_dir")
+print("getcwd:", fs.getcwd())
+print(list(fs.ilistdir()))
 
-with vfs.open("sub_file.txt", "w") as f:
+with fs.open("sub_file.txt", "w") as f:
     f.write("subdir file")
 
 try:
-    vfs.chdir("sub_file.txt")
+    fs.chdir("sub_file.txt")
 except OSError as e:
     print(e.errno == errno.ENOENT)
 
-vfs.chdir("..")
-print("getcwd:", vfs.getcwd())
+fs.chdir("..")
+print("getcwd:", fs.getcwd())
 
-os.umount(vfs)
+vfs.umount(fs)
 
-vfs = os.VfsFat(bdev)
-print(list(vfs.ilistdir(b"")))
+fs = vfs.VfsFat(bdev)
+print(list(fs.ilistdir(b"")))
 
 # list a non-existent directory
 try:
-    vfs.ilistdir(b"no_exist")
+    fs.ilistdir(b"no_exist")
 except OSError as e:
     print("ENOENT:", e.errno == errno.ENOENT)

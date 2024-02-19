@@ -29,6 +29,8 @@
 #include "bufhelper.h"
 #include "spi.h"
 
+#if MICROPY_PY_PYB
+
 /******************************************************************************/
 // MicroPython bindings for legacy pyb API
 
@@ -362,3 +364,5 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &pyb_spi_p,
     locals_dict, &pyb_spi_locals_dict
     );
+
+#endif // MICROPY_PY_PYB

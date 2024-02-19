@@ -29,7 +29,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void mp_embed_init(void *gc_heap, size_t gc_heap_size);
+void mp_embed_init(void *gc_heap, size_t gc_heap_size, void *stack_top);
 void mp_embed_deinit(void);
 
 // Only available if MICROPY_ENABLE_COMPILER is enabled.

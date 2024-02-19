@@ -353,6 +353,26 @@ STATIC void lwip_socket_free_incoming(lwip_socket_obj_t *socket) {
     }
 }
 
+mp_obj_t lwip_format_inet_addr(const ip_addr_t *ip, mp_uint_t port) {
+    char *ipstr = ipaddr_ntoa(ip);
+    mp_obj_t tuple[2] = {
+        tuple[0] = mp_obj_new_str(ipstr, strlen(ipstr)),
+        tuple[1] = mp_obj_new_int(port),
+    };
+    return mp_obj_new_tuple(2, tuple);
+}
+
+mp_uint_t lwip_parse_inet_addr(mp_obj_t addr_in, ip_addr_t *out_ip) {
+    mp_obj_t *addr_items;
+    mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
+    size_t addr_len;
+    const char *addr_str = mp_obj_str_get_data(addr_items[0], &addr_len);
+    if (!ipaddr_aton(addr_str, out_ip)) {
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
+    }
+    return mp_obj_get_int(addr_items[1]);
+}
+
 /*******************************************************************************/
 // Callback functions for the lwIP raw API.
 
@@ -538,7 +558,7 @@ STATIC err_t _lwip_tcp_recv(void *arg, struct tcp_pcb *tcpb, struct pbuf *p, err
 // these to do the work.
 
 // Helper function for send/sendto to handle raw/UDP packets.
-STATIC mp_uint_t lwip_raw_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno) {
+STATIC mp_uint_t lwip_raw_udp_send(lwip_socket_obj_t *socket, const byte *buf, mp_uint_t len, ip_addr_t *ip, mp_uint_t port, int *_errno) {
     if (len > 0xffff) {
         // Any packet that big is probably going to fail the pbuf_alloc anyway, but may as well try
         len = 0xffff;
@@ -567,15 +587,13 @@ STATIC mp_uint_t lwip_raw_udp_send(lwip_socket_obj_t *socket, const byte *buf, m
             err = udp_send(socket->pcb.udp, p);
         }
     } else {
-        ip_addr_t dest;
-        IP4_ADDR(&dest, ip[0], ip[1], ip[2], ip[3]);
         #if MICROPY_PY_LWIP_SOCK_RAW
         if (socket->type == MOD_NETWORK_SOCK_RAW) {
-            err = raw_sendto(socket->pcb.raw, p, &dest);
+            err = raw_sendto(socket->pcb.raw, p, ip);
         } else
         #endif
         {
-            err = udp_sendto(socket->pcb.udp, p, &dest, port);
+            err = udp_sendto(socket->pcb.udp, p, ip, port);
         }
     }
 
@@ -885,11 +903,8 @@ STATIC mp_obj_t lwip_socket_make_new(const mp_obj_type_t *type, size_t n_args, s
 STATIC mp_obj_t lwip_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(self_in);
 
-    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
-
     ip_addr_t bind_addr;
-    IP4_ADDR(&bind_addr, ip[0], ip[1], ip[2], ip[3]);
+    mp_uint_t port = lwip_parse_inet_addr(addr_in, &bind_addr);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
@@ -926,6 +941,12 @@ STATIC mp_obj_t lwip_socket_listen(size_t n_args, const mp_obj_t *args) {
     if (socket->type != MOD_NETWORK_SOCK_STREAM) {
         mp_raise_OSError(MP_EOPNOTSUPP);
     }
+    #if LWIP_IPV6
+    if (ip_addr_cmp(&socket->pcb.tcp->local_ip, IP6_ADDR_ANY)) {
+        IP_SET_TYPE_VAL(socket->pcb.tcp->local_ip,  IPADDR_TYPE_ANY);
+        IP_SET_TYPE_VAL(socket->pcb.tcp->remote_ip, IPADDR_TYPE_ANY);
+    }
+    #endif
 
     struct tcp_pcb *new_pcb;
     #if LWIP_VERSION_MACRO < 0x02000100
@@ -1043,12 +1064,10 @@ STATIC mp_obj_t lwip_socket_accept(mp_obj_t self_in) {
     MICROPY_PY_LWIP_EXIT
 
     // make the return value
-    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    memcpy(ip, &(socket2->pcb.tcp->remote_ip), sizeof(ip));
     mp_uint_t port = (mp_uint_t)socket2->pcb.tcp->remote_port;
     mp_obj_tuple_t *client = MP_OBJ_TO_PTR(mp_obj_new_tuple(2, NULL));
     client->items[0] = MP_OBJ_FROM_PTR(socket2);
-    client->items[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
+    client->items[1] = lwip_format_inet_addr(&socket2->pcb.tcp->remote_ip, port);
 
     return MP_OBJ_FROM_PTR(client);
 }
@@ -1062,11 +1081,8 @@ STATIC mp_obj_t lwip_socket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     }
 
     // get address
-    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
-
     ip_addr_t dest;
-    IP4_ADDR(&dest, ip[0], ip[1], ip[2], ip[3]);
+    mp_uint_t port = lwip_parse_inet_addr(addr_in, &dest);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
@@ -1219,8 +1235,8 @@ STATIC mp_obj_t lwip_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(data_in, &bufinfo, MP_BUFFER_READ);
 
-    uint8_t ip[NETUTILS_IPV4ADDR_BUFSIZE];
-    mp_uint_t port = netutils_parse_inet_addr(addr_in, ip, NETUTILS_BIG);
+    ip_addr_t ip;
+    mp_uint_t port = lwip_parse_inet_addr(addr_in, &ip);
 
     mp_uint_t ret = 0;
     switch (socket->type) {
@@ -1232,7 +1248,7 @@ STATIC mp_obj_t lwip_socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t 
         #if MICROPY_PY_LWIP_SOCK_RAW
         case MOD_NETWORK_SOCK_RAW:
         #endif
-            ret = lwip_raw_udp_send(socket, bufinfo.buf, bufinfo.len, ip, port, &_errno);
+            ret = lwip_raw_udp_send(socket, bufinfo.buf, bufinfo.len, &ip, port, &_errno);
             break;
     }
     if (ret == -1) {
@@ -1357,6 +1373,12 @@ STATIC mp_obj_t lwip_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(lwip_socket_setblocking_obj, lwip_socket_setblocking);
 
+#if LWIP_VERSION_MAJOR < 2
+#define MP_IGMP_IP_ADDR_TYPE ip_addr_t
+#else
+#define MP_IGMP_IP_ADDR_TYPE ip4_addr_t
+#endif
+
 STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     (void)n_args; // always 4
     lwip_socket_obj_t *socket = MP_OBJ_TO_PTR(args[0]);
@@ -1397,9 +1419,9 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             // POSIX setsockopt has order: group addr, if addr, lwIP has it vice-versa
             err_t err;
             if (opt == IP_ADD_MEMBERSHIP) {
-                err = igmp_joingroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+                err = igmp_joingroup((MP_IGMP_IP_ADDR_TYPE *)bufinfo.buf + 1, bufinfo.buf);
             } else {
-                err = igmp_leavegroup((ip_addr_t *)bufinfo.buf + 1, bufinfo.buf);
+                err = igmp_leavegroup((MP_IGMP_IP_ADDR_TYPE *)bufinfo.buf + 1, bufinfo.buf);
             }
             if (err != ERR_OK) {
                 mp_raise_OSError(error_lookup_table[-err]);
@@ -1412,6 +1434,9 @@ STATIC mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
+
+#undef MP_IGMP_IP_ADDR_TYPE
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_socket_setsockopt_obj, 4, 4, lwip_socket_setsockopt);
 
 STATIC mp_obj_t lwip_socket_makefile(size_t n_args, const mp_obj_t *args) {
@@ -1742,12 +1767,13 @@ STATIC mp_obj_t lwip_getaddrinfo(size_t n_args, const mp_obj_t *args) {
         mp_raise_OSError(state.status);
     }
 
+    ip_addr_t ipcopy = state.ipaddr;
     mp_obj_tuple_t *tuple = MP_OBJ_TO_PTR(mp_obj_new_tuple(5, NULL));
     tuple->items[0] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_AF_INET);
     tuple->items[1] = MP_OBJ_NEW_SMALL_INT(MOD_NETWORK_SOCK_STREAM);
     tuple->items[2] = MP_OBJ_NEW_SMALL_INT(0);
     tuple->items[3] = MP_OBJ_NEW_QSTR(MP_QSTR_);
-    tuple->items[4] = netutils_format_inet_addr((uint8_t *)&state.ipaddr, port, NETUTILS_BIG);
+    tuple->items[4] = lwip_format_inet_addr(&ipcopy, port);
     return mp_obj_new_list(1, (mp_obj_t *)&tuple);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lwip_getaddrinfo_obj, 2, 6, lwip_getaddrinfo);

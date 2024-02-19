@@ -29,6 +29,9 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+
+#if MICROPY_PY_MACHINE_PULSE
+
 #include "extmod/modmachine.h"
 #include "drivers/dht/dht.h"
 
@@ -92,3 +95,5 @@ timeout:
     mp_raise_OSError(MP_ETIMEDOUT);
 }
 MP_DEFINE_CONST_FUN_OBJ_2(dht_readinto_obj, dht_readinto);
+
+#endif // MICROPY_PY_MACHINE_PULSE

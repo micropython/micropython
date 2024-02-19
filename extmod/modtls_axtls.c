@@ -161,6 +161,14 @@ STATIC void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, m
     self->cert = cert_obj;
 }
 
+// SSLContext.load_cert_chain(certfile, keyfile)
+STATIC mp_obj_t ssl_context_load_cert_chain(mp_obj_t self_in, mp_obj_t cert, mp_obj_t pkey) {
+    mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
+    ssl_context_load_key(self, pkey, cert);
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_load_cert_chain);
+
 STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname };
     static const mp_arg_t allowed_args[] = {
@@ -182,6 +190,7 @@ STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args,
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_context_wrap_socket_obj, 2, ssl_context_wrap_socket);
 
 STATIC const mp_rom_map_elem_t ssl_context_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_context_load_cert_chain_obj)},
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_context_wrap_socket_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_table);
@@ -413,48 +422,8 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 // ssl module.
 
-STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    enum {
-        ARG_key,
-        ARG_cert,
-        ARG_server_side,
-        ARG_server_hostname,
-        ARG_do_handshake,
-    };
-    static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
-        { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
-    };
-
-    // Parse arguments.
-    mp_obj_t sock = pos_args[0];
-    mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
-    mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-
-    // Create SSLContext.
-    mp_int_t protocol = args[ARG_server_side].u_bool ? PROTOCOL_TLS_SERVER : PROTOCOL_TLS_CLIENT;
-    mp_obj_t ssl_context_args[1] = { MP_OBJ_NEW_SMALL_INT(protocol) };
-    mp_obj_ssl_context_t *ssl_context = MP_OBJ_TO_PTR(ssl_context_make_new(&ssl_context_type, 1, 0, ssl_context_args));
-
-    // Load key and cert if given.
-    if (args[ARG_key].u_obj != mp_const_none) {
-        ssl_context_load_key(ssl_context, args[ARG_key].u_obj, args[ARG_cert].u_obj);
-    }
-
-    // Create and return the new SSLSocket object.
-    return ssl_socket_make_new(ssl_context, sock, args[ARG_server_side].u_bool,
-        args[ARG_do_handshake].u_bool, args[ARG_server_hostname].u_obj);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
-
-STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ssl) },
-
-    // Functions.
-    { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
+STATIC const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_tls) },
 
     // Classes.
     { MP_ROM_QSTR(MP_QSTR_SSLContext), MP_ROM_PTR(&ssl_context_type) },
@@ -463,13 +432,13 @@ STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_CLIENT), MP_ROM_INT(PROTOCOL_TLS_CLIENT) },
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_SERVER), MP_ROM_INT(PROTOCOL_TLS_SERVER) },
 };
-STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
+STATIC MP_DEFINE_CONST_DICT(mp_module_tls_globals, mp_module_tls_globals_table);
 
-const mp_obj_module_t mp_module_ssl = {
+const mp_obj_module_t mp_module_tls = {
     .base = { &mp_type_module },
-    .globals = (mp_obj_dict_t *)&mp_module_ssl_globals,
+    .globals = (mp_obj_dict_t *)&mp_module_tls_globals,
 };
 
-MP_REGISTER_EXTENSIBLE_MODULE(MP_QSTR_ssl, mp_module_ssl);
+MP_REGISTER_MODULE(MP_QSTR_tls, mp_module_tls);
 
 #endif // MICROPY_PY_SSL && MICROPY_SSL_AXTLS

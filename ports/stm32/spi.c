@@ -735,6 +735,8 @@ void spi_print(const mp_print_t *print, const spi_t *spi_obj, bool legacy) {
     mp_print_str(print, ")");
 }
 
+#if MICROPY_PY_MACHINE_SPI
+
 const spi_t *spi_from_mp_obj(mp_obj_t o) {
     if (mp_obj_is_type(o, &pyb_spi_type)) {
         pyb_spi_obj_t *self = MP_OBJ_TO_PTR(o);
@@ -760,6 +762,8 @@ mp_obj_base_t *mp_hal_get_spi_obj(mp_obj_t o) {
         mp_raise_TypeError(MP_ERROR_TEXT("expecting an SPI object"));
     }
 }
+
+#endif
 
 /******************************************************************************/
 // Implementation of low-level SPI C protocol

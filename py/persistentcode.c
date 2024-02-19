@@ -324,11 +324,9 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *co
         MP_BC_PRELUDE_SIG_DECODE(ip);
         // Assign bytecode to raw code object
         mp_emit_glue_assign_bytecode(rc, fun_data,
-            #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS
-            fun_data_len,
-            #endif
             children,
             #if MICROPY_PERSISTENT_CODE_SAVE
+            fun_data_len,
             n_children,
             #endif
             scope_flags);
@@ -577,11 +575,15 @@ STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
         mp_print_uint(print, rc->prelude_offset);
     } else if (rc->kind == MP_CODE_NATIVE_VIPER || rc->kind == MP_CODE_NATIVE_ASM) {
         // Save basic scope info for viper and asm
-        mp_print_uint(print, rc->scope_flags & MP_SCOPE_FLAG_ALL_SIG);
+        // Viper/asm functions don't support generator, variable args, or default keyword args
+        // so (scope_flags & MP_SCOPE_FLAG_ALL_SIG) for these functions is always 0.
+        mp_print_uint(print, 0);
+        #if MICROPY_EMIT_INLINE_ASM
         if (rc->kind == MP_CODE_NATIVE_ASM) {
-            mp_print_uint(print, rc->n_pos_args);
-            mp_print_uint(print, rc->type_sig);
+            mp_print_uint(print, rc->asm_n_pos_args);
+            mp_print_uint(print, rc->asm_type_sig);
         }
+        #endif
     }
     #endif
 

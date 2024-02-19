@@ -9,7 +9,7 @@
 
 #include "ppp_set_auth.h"
 
-#ifdef CONFIG_ESP_NETIF_TCPIP_LWIP
+#if defined(CONFIG_ESP_NETIF_TCPIP_LWIP) && defined(CONFIG_LWIP_PPP_SUPPORT)
 
 #include "netif/ppp/pppapi.h"
 

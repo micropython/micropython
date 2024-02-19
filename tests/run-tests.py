@@ -59,7 +59,7 @@ os.environ["PYTHONIOENCODING"] = "utf-8"
 
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\
-import sys, os, io
+import sys, os, io, vfs
 class __File(io.IOBase):
   def __init__(self):
     self.off = 0
@@ -83,7 +83,7 @@ class __FS:
       raise OSError(-2) # ENOENT
   def open(self, path, mode):
     return __File()
-os.mount(__FS(), '/__vfstest')
+vfs.mount(__FS(), '/__vfstest')
 os.chdir('/__vfstest')
 __import__('__injected_test')
 """
@@ -531,6 +531,14 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     # Some tests shouldn't be run on GitHub Actions
     if os.getenv("GITHUB_ACTIONS") == "true":
         skip_tests.add("thread/stress_schedule.py")  # has reliability issues
+
+        if os.getenv("RUNNER_OS") == "Windows":
+            # fails with stack overflow on Debug builds
+            skip_tests.add("misc/sys_settrace_features.py")
+
+            if os.getenv("MSYSTEM") is not None:
+                # fails due to wrong path separator
+                skip_tests.add("import/import_file.py")
 
     if upy_float_precision == 0:
         skip_tests.add("extmod/uctypes_le_float.py")

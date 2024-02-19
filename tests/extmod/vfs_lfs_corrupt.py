@@ -1,10 +1,10 @@
 # Test for VfsLittle using a RAM device, testing error handling from corrupt block device
 
 try:
-    import os
+    import vfs
 
-    os.VfsLfs1
-    os.VfsLfs2
+    vfs.VfsLfs1
+    vfs.VfsLfs2
 except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
@@ -47,28 +47,28 @@ def corrupt(bdev, block):
 def create_vfs(bdev, vfs_class):
     bdev.ret = 0
     vfs_class.mkfs(bdev)
-    vfs = vfs_class(bdev)
-    with vfs.open("f", "w") as f:
+    fs = vfs_class(bdev)
+    with fs.open("f", "w") as f:
         for i in range(100):
             f.write("test")
-    return vfs
+    return fs
 
 
 def test(bdev, vfs_class):
     print("test", vfs_class)
 
     # statvfs
-    vfs = create_vfs(bdev, vfs_class)
+    fs = create_vfs(bdev, vfs_class)
     corrupt(bdev, 0)
     corrupt(bdev, 1)
     try:
-        print(vfs.statvfs(""))
+        print(fs.statvfs(""))
     except OSError:
         print("statvfs OSError")
 
     # error during read
-    vfs = create_vfs(bdev, vfs_class)
-    f = vfs.open("f", "r")
+    fs = create_vfs(bdev, vfs_class)
+    f = fs.open("f", "r")
     bdev.ret = -5  # EIO
     try:
         f.read(10)
@@ -76,8 +76,8 @@ def test(bdev, vfs_class):
         print("read OSError")
 
     # error during write
-    vfs = create_vfs(bdev, vfs_class)
-    f = vfs.open("f", "a")
+    fs = create_vfs(bdev, vfs_class)
+    f = fs.open("f", "a")
     bdev.ret = -5  # EIO
     try:
         f.write("test")
@@ -85,8 +85,8 @@ def test(bdev, vfs_class):
         print("write OSError")
 
     # error during close
-    vfs = create_vfs(bdev, vfs_class)
-    f = vfs.open("f", "w")
+    fs = create_vfs(bdev, vfs_class)
+    f = fs.open("f", "w")
     f.write("test")
     bdev.ret = -5  # EIO
     try:
@@ -95,8 +95,8 @@ def test(bdev, vfs_class):
         print("close OSError")
 
     # error during flush
-    vfs = create_vfs(bdev, vfs_class)
-    f = vfs.open("f", "w")
+    fs = create_vfs(bdev, vfs_class)
+    f = fs.open("f", "w")
     f.write("test")
     bdev.ret = -5  # EIO
     try:
@@ -108,5 +108,5 @@ def test(bdev, vfs_class):
 
 
 bdev = RAMBlockDevice(30)
-test(bdev, os.VfsLfs1)
-test(bdev, os.VfsLfs2)
+test(bdev, vfs.VfsLfs1)
+test(bdev, vfs.VfsLfs2)

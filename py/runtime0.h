@@ -26,8 +26,11 @@
 #ifndef MICROPY_INCLUDED_PY_RUNTIME0_H
 #define MICROPY_INCLUDED_PY_RUNTIME0_H
 
-// The first four must fit in 8 bits, see emitbc.c
-// The remaining must fit in 16 bits, see scope.h
+// These constants are used by:
+// - mp_raw_code_t::is_generator (only MP_SCOPE_FLAG_GENERATOR)
+// - scope_t::scope_flags (16 bits)
+// - MP_BC_PRELUDE_SIG_ENCODE macro, masked by MP_SCOPE_FLAG_ALL_SIG (4 bits)
+// - tools/mpy_ld.py, when generating mpy files (maximum 7 bits)
 #define MP_SCOPE_FLAG_ALL_SIG      (0x0f)
 #define MP_SCOPE_FLAG_GENERATOR    (0x01)
 #define MP_SCOPE_FLAG_VARKEYWORDS  (0x02)

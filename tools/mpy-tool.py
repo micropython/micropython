@@ -126,6 +126,7 @@ MP_PERSISTENT_OBJ_FLOAT = 8
 MP_PERSISTENT_OBJ_COMPLEX = 9
 MP_PERSISTENT_OBJ_TUPLE = 10
 
+MP_SCOPE_FLAG_GENERATOR = 0x01
 MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
@@ -683,7 +684,7 @@ class CompiledModule:
         else:
             print("        .obj_table = NULL,")
         print("    },")
-        print("    .rc = &raw_code_%s," % self.raw_code.escaped_name)
+        print("    .proto_fun = &proto_fun_%s," % self.raw_code.escaped_name)
         print("};")
 
     def freeze_constant_obj(self, obj_name, obj):
@@ -898,7 +899,7 @@ class RawCode(object):
                 print()
             print("static const mp_raw_code_t *const children_%s[] = {" % self.escaped_name)
             for rc in self.children:
-                print("    &raw_code_%s," % rc.escaped_name)
+                print("    (const mp_raw_code_t *)&proto_fun_%s," % rc.escaped_name)
             if prelude_ptr:
                 print("    (void *)%s," % prelude_ptr)
             print("};")
@@ -906,14 +907,23 @@ class RawCode(object):
 
     def freeze_raw_code(self, prelude_ptr=None, type_sig=0):
         # Generate mp_raw_code_t.
-        print("static const mp_raw_code_t raw_code_%s = {" % self.escaped_name)
+        if self.code_kind == MP_CODE_NATIVE_ASM:
+            raw_code_type = "mp_raw_code_t"
+        else:
+            raw_code_type = "mp_raw_code_truncated_t"
+
+        empty_children = len(self.children) == 0 and prelude_ptr is None
+        generate_minimal = self.code_kind == MP_CODE_BYTECODE and empty_children
+
+        if generate_minimal:
+            print("#if MICROPY_PERSISTENT_CODE_SAVE")
+
+        print("static const %s proto_fun_%s = {" % (raw_code_type, self.escaped_name))
+        print("    .proto_fun_indicator[0] = MP_PROTO_FUN_INDICATOR_RAW_CODE_0,")
+        print("    .proto_fun_indicator[1] = MP_PROTO_FUN_INDICATOR_RAW_CODE_1,")
         print("    .kind = %s," % RawCode.code_kind_str[self.code_kind])
-        print("    .scope_flags = 0x%02x," % self.scope_flags)
-        print("    .n_pos_args = %u," % self.n_pos_args)
+        print("    .is_generator = %d," % bool(self.scope_flags & MP_SCOPE_FLAG_GENERATOR))
         print("    .fun_data = fun_data_%s," % self.escaped_name)
-        print("    #if MICROPY_PERSISTENT_CODE_SAVE || MICROPY_DEBUG_PRINTERS")
-        print("    .fun_data_len = %u," % len(self.fun_data))
-        print("    #endif")
         if len(self.children):
             print("    .children = (void *)&children_%s," % self.escaped_name)
         elif prelude_ptr:
@@ -921,9 +931,14 @@ class RawCode(object):
         else:
             print("    .children = NULL,")
         print("    #if MICROPY_PERSISTENT_CODE_SAVE")
+        print("    .fun_data_len = %u," % len(self.fun_data))
         print("    .n_children = %u," % len(self.children))
+        print("    #if MICROPY_EMIT_MACHINE_CODE")
+        print("    .prelude_offset = %u," % self.prelude_offset)
+        print("    #endif")
         if self.code_kind == MP_CODE_BYTECODE:
             print("    #if MICROPY_PY_SYS_SETTRACE")
+            print("    .line_of_definition = %u," % 0)  # TODO
             print("    .prelude = {")
             print("        .n_state = %u," % self.prelude_signature[0])
             print("        .n_exc_stack = %u," % self.prelude_signature[1])
@@ -944,16 +959,17 @@ class RawCode(object):
                 "        .opcodes = fun_data_%s + %u," % (self.escaped_name, self.offset_opcodes)
             )
             print("    },")
-            print("    .line_of_definition = %u," % 0)  # TODO
             print("    #endif")
-        print("    #if MICROPY_EMIT_MACHINE_CODE")
-        print("    .prelude_offset = %u," % self.prelude_offset)
         print("    #endif")
-        print("    #endif")
-        print("    #if MICROPY_EMIT_MACHINE_CODE")
-        print("    .type_sig = %u," % type_sig)
-        print("    #endif")
+        if self.code_kind == MP_CODE_NATIVE_ASM:
+            print("    .asm_n_pos_args = %u," % self.n_pos_args)
+            print("    .asm_type_sig = %u," % type_sig)
         print("};")
+
+        if generate_minimal:
+            print("#else")
+            print("#define proto_fun_%s fun_data_%s[0]" % (self.escaped_name, self.escaped_name))
+            print("#endif")
 
         global raw_code_count, raw_code_content
         raw_code_count += 1
@@ -1795,7 +1811,7 @@ def main():
     else:
         config.MICROPY_QSTR_BYTES_IN_LEN = 1
         config.MICROPY_QSTR_BYTES_IN_HASH = 1
-        firmware_qstr_idents = set(qstrutil.static_qstr_list)
+        firmware_qstr_idents = set(qstrutil.static_qstr_list_ident)
 
     # Create initial list of global qstrs.
     global_qstrs = GlobalQStrList()

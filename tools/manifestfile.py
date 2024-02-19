@@ -62,6 +62,9 @@ FILE_TYPE_LOCAL = 1
 # URL to file. (TODO)
 FILE_TYPE_HTTP = 2
 
+# Default list of libraries in micropython-lib to search for library packages.
+BASE_LIBRARY_NAMES = ("micropython", "python-stdlib", "python-ecosys")
+
 
 class ManifestFileError(Exception):
     pass
@@ -196,6 +199,12 @@ class ManifestFile:
         self._metadata = [ManifestPackageMetadata()]
         # Registered external libraries.
         self._libraries = {}
+        # List of directories to search for packages.
+        self._library_dirs = []
+        # Add default micropython-lib libraries if $(MPY_LIB_DIR) has been specified.
+        if self._path_vars["MPY_LIB_DIR"]:
+            for lib in BASE_LIBRARY_NAMES:
+                self.add_library(lib, os.path.join("$(MPY_LIB_DIR)", lib))
 
     def _resolve_path(self, path):
         # Convert path to an absolute path, applying variable substitutions.
@@ -398,18 +407,16 @@ class ManifestFile:
                 return True
         return False
 
-    def require(self, name, version=None, unix_ffi=False, pypi=None, library=None, **kwargs):
+    def require(self, name, version=None, pypi=None, library=None, **kwargs):
         """
         Require a package by name from micropython-lib.
-
-        Optionally specify unix_ffi=True to use a module from the unix-ffi directory.
 
         Optionally specify pipy="package-name" to indicate that this should
         use the named package from PyPI when building for CPython.
 
         Optionally specify library="name" to reference a package from a
         library that has been previously registered with add_library(). Otherwise
-        micropython-lib will be used.
+        the list of library paths will be used.
         """
         self._metadata[-1].check_initialised(self._mode)
 
@@ -426,39 +433,35 @@ class ManifestFile:
                 raise ValueError("Unknown library '{}' for require('{}').".format(library, name))
             library_path = self._libraries[library]
             # Search for {library_path}/**/{name}/manifest.py.
-            if not self._require_from_path(library_path, name, version, kwargs):
-                raise ValueError(
-                    "Package '{}' not found in external library '{}' ({}).".format(
-                        name, library, library_path
-                    )
+            if self._require_from_path(library_path, name, version, kwargs):
+                return
+            raise ValueError(
+                "Package '{}' not found in external library '{}' ({}).".format(
+                    name, library, library_path
                 )
-        elif self._path_vars["MPY_LIB_DIR"]:
-            # Find package in micropython-lib, in one of the three top-level directories.
-            lib_dirs = ["micropython", "python-stdlib", "python-ecosys"]
-            if unix_ffi:
-                # Additionally search unix-ffi only if unix_ffi=True, and make unix-ffi modules
-                # take precedence.
-                lib_dirs = ["unix-ffi"] + lib_dirs
+            )
 
-            for lib_dir in lib_dirs:
-                # Search for {lib_dir}/**/{name}/manifest.py.
-                if self._require_from_path(
-                    os.path.join(self._path_vars["MPY_LIB_DIR"], lib_dir), name, version, kwargs
-                ):
-                    return
+        for lib_dir in self._library_dirs:
+            # Search for {lib_dir}/**/{name}/manifest.py.
+            if self._require_from_path(lib_dir, name, version, kwargs):
+                return
 
-            raise ValueError("Package '{}' not found in local micropython-lib.".format(name))
-        else:
-            # TODO: HTTP request to obtain URLs from manifest.json.
-            raise ValueError("micropython-lib not available for require('{}').", name)
+        raise ValueError("Package '{}' not found in any known library.".format(name))
 
-    def add_library(self, library, library_path):
+    def add_library(self, library, library_path, prepend=False):
         """
         Register the path to an external named library.
 
-        This allows require("name", library="library") to find packages in that library.
+        The path will be automatically searched when using require().  By default the
+        added library is added to the end of the list of libraries to search.  Pass
+        `prepend=True` to add it to the start of the list.
+
+        Additionally, the added library can be explicitly requested by using
+        `require("name", library="library")`.
         """
-        self._libraries[library] = self._resolve_path(library_path)
+        library_path = self._resolve_path(library_path)
+        self._libraries[library] = library_path
+        self._library_dirs.insert(0 if prepend else len(self._library_dirs), library_path)
 
     def package(self, package_path, files=None, base_path=".", opt=None):
         """
@@ -600,6 +603,9 @@ def main():
         default=os.path.join(os.path.dirname(__file__), "../lib/micropython-lib"),
         help="path to micropython-lib repo",
     )
+    cmd_parser.add_argument(
+        "--unix-ffi", action="store_true", help="prepend unix-ffi to the library path"
+    )
     cmd_parser.add_argument("--port", default=None, help="path to port dir")
     cmd_parser.add_argument("--board", default=None, help="path to board dir")
     cmd_parser.add_argument(
@@ -629,6 +635,8 @@ def main():
         exit(1)
 
     m = ManifestFile(mode, path_vars)
+    if args.unix_ffi:
+        m.add_library("unix-ffi", os.path.join("$(MPY_LIB_DIR)", "unix-ffi"), prepend=True)
     for manifest_file in args.files:
         try:
             m.execute(manifest_file)

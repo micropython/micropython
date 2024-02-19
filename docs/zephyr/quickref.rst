@@ -109,12 +109,12 @@ Disk Access
 
 Use the :ref:`zephyr.DiskAccess <zephyr.DiskAccess>` class to support filesystem::
 
-    import os
+    import vfs
     from zephyr import DiskAccess
 
     block_dev = DiskAccess('SDHC')      # create a block device object for an SD card
-    os.VfsFat.mkfs(block_dev)           # create FAT filesystem object using the disk storage block
-    os.mount(block_dev, '/sd')          # mount the filesystem at the SD card subdirectory
+    vfs.VfsFat.mkfs(block_dev)          # create FAT filesystem object using the disk storage block
+    vfs.mount(block_dev, '/sd')         # mount the filesystem at the SD card subdirectory
 
     # with the filesystem mounted, files can be manipulated as normal
     with open('/sd/hello.txt','w') as f:     # open a new file in the directory
@@ -126,12 +126,12 @@ Flash Area
 
 Use the :ref:`zephyr.FlashArea <zephyr.FlashArea>` class to support filesystem::
 
-    import os
+    import vfs
     from zephyr import FlashArea
 
     block_dev = FlashArea(4, 4096)      # creates a block device object in the frdm-k64f flash scratch partition
-    os.VfsLfs2.mkfs(block_dev)          # create filesystem in lfs2 format using the flash block device
-    os.mount(block_dev, '/flash')       # mount the filesystem at the flash subdirectory
+    vfs.VfsLfs2.mkfs(block_dev)         # create filesystem in lfs2 format using the flash block device
+    vfs.mount(block_dev, '/flash')      # mount the filesystem at the flash subdirectory
 
     # with the filesystem mounted, files can be manipulated as normal
     with open('/flash/hello.txt','w') as f:     # open a new file in the directory

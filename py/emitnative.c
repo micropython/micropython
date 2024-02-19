@@ -2657,7 +2657,7 @@ STATIC void emit_native_make_function(emit_t *emit, scope_t *scope, mp_uint_t n_
         need_reg_all(emit);
     }
     emit_load_reg_with_child(emit, REG_ARG_1, scope->raw_code);
-    ASM_CALL_IND(emit->as, MP_F_MAKE_FUNCTION_FROM_RAW_CODE);
+    ASM_CALL_IND(emit->as, MP_F_MAKE_FUNCTION_FROM_PROTO_FUN);
     emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
 }
 
@@ -2675,7 +2675,7 @@ STATIC void emit_native_make_closure(emit_t *emit, scope_t *scope, mp_uint_t n_c
         need_reg_all(emit);
     }
     emit_load_reg_with_child(emit, REG_ARG_1, scope->raw_code);
-    ASM_CALL_IND(emit->as, MP_F_MAKE_FUNCTION_FROM_RAW_CODE);
+    ASM_CALL_IND(emit->as, MP_F_MAKE_FUNCTION_FROM_PROTO_FUN);
 
     // make closure
     #if REG_ARG_1 != REG_RET

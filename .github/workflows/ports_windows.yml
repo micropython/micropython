@@ -18,7 +18,134 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-vs:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [x86, x64]
+        configuration: [Debug, Release]
+        variant: [dev, standard]
+        visualstudio: ['2017', '2019', '2022']
+        include:
+        - visualstudio: '2017'
+          runner: windows-latest
+          vs_version: '[15, 16)'
+        - visualstudio: '2019'
+          runner: windows-2019
+          vs_version: '[16, 17)'
+        - visualstudio: '2022'
+          runner: windows-2022
+          vs_version: '[17, 18)'
+        # trim down the number of jobs in the matrix
+        exclude:
+        - variant: standard
+          configuration: Debug
+        - visualstudio: '2019'
+          configuration: Debug
+    runs-on: ${{ matrix.runner }}
+    steps:
+    - name: Install Visual Studio 2017
+      if: matrix.visualstudio == '2017'
+      run: |
+        choco install visualstudio2017buildtools
+        choco install visualstudio2017-workload-vctools
+        choco install windows-sdk-8.1
+    - uses: microsoft/setup-msbuild@v2
+      with:
+        vs-version: ${{ matrix.vs_version }}
+    - uses: actions/setup-python@v5
+      if: matrix.runner == 'windows-2019'
+      with:
+        python-version: '3.9' 
+    - uses: actions/checkout@v4
+    - name: Build mpy-cross.exe
+      run: msbuild mpy-cross\mpy-cross.vcxproj -maxcpucount -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }}
+    - name: Update submodules
+      run: git submodule update --init lib/micropython-lib
+    - name: Build micropython.exe
+      run: msbuild ports\windows\micropython.vcxproj -maxcpucount -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }} -property:PyVariant=${{ matrix.variant }} 
+    - name: Get micropython.exe path
+      id: get_path
+      run: |
+        $exePath="$(msbuild ports\windows\micropython.vcxproj -nologo -v:m -t:ShowTargetPath -property:Configuration=${{ matrix.configuration }} -property:Platform=${{ matrix.platform }} -property:PyVariant=${{ matrix.variant }})"
+        echo ("micropython=" + $exePath.Trim()) >> $env:GITHUB_OUTPUT
+    - name: Run tests
+      id: test
+      env:
+        MICROPY_MICROPYTHON: ${{ steps.get_path.outputs.micropython }}
+      working-directory: tests
+      run: python run-tests.py
+    - name: Print failures
+      if: failure() && steps.test.conclusion == 'failure'
+      working-directory: tests
+      run: python run-tests.py --print-failures
+    - name: Run mpy tests
+      id: test_mpy
+      env:
+        MICROPY_MICROPYTHON: ${{ steps.get_path.outputs.micropython }}
+      working-directory: tests
+      run: python run-tests.py --via-mpy -d basics float micropython
+    - name: Print mpy failures
+      if: failure() && steps.test_mpy.conclusion == 'failure'
+      working-directory: tests
+      run: python run-tests.py --print-failures
+
+  build-mingw:
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [dev, standard]
+        sys: [mingw32, mingw64]
+        include:
+          - sys: mingw32
+            env: i686
+          - sys: mingw64
+            env: x86_64
+    runs-on: windows-2022
+    env:
+      CHERE_INVOKING: enabled_from_arguments
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - name: Get Python path
+      id: python_path
+      shell: python
+      run: |
+        import os
+        import sys
+        output = f"python={os.fspath(sys.executable)}"
+        print(output)
+        with open(os.environ["GITHUB_OUTPUT"], "w") as f:
+            f.write(output)
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: true
+        install: >-
+          make 
+          mingw-w64-${{ matrix.env }}-gcc
+          pkg-config
+          python3
+          git
+          diffutils
+    - uses: actions/checkout@v4
+    - name: Build mpy-cross.exe
+      run: make -C mpy-cross -j2
+    - name: Update submodules
+      run: make -C ports/windows VARIANT=${{ matrix.variant }} submodules
+    - name: Build micropython.exe
+      run: make -C ports/windows -j2 VARIANT=${{ matrix.variant }}
+    - name: Run tests
+      id: test
+      # msys python breaks tests so we need to use "real" windows python
+      run: MICROPY_CPYTHON3=$(cygpath "${{ steps.python_path.outputs.python }}") make -C ports/windows test_full VARIANT=${{ matrix.variant }}
+    - name: Print failures
+      if: failure() && steps.test.conclusion == 'failure'
+      working-directory: tests
+      run: python run-tests.py --print-failures
+
+  cross-build-on-linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4

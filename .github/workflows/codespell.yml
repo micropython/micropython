@@ -1,0 +1,13 @@
+name: Check spelling with codespell
+
+on: [push, pull_request]
+
+jobs:
+  codespell:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    # codespell version should be kept in sync with .pre-commit-config.yml
+    - run: pip install --user codespell==2.2.6 tomli
+    - run: codespell
+

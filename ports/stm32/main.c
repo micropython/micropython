@@ -424,7 +424,9 @@ void stm32_main(uint32_t reset_mode) {
     #if MICROPY_HW_HAS_SWITCH
     switch_init0();
     #endif
+    #if MICROPY_PY_MACHINE
     machine_init();
+    #endif
     #if MICROPY_HW_ENABLE_RTC
     rtc_init_start(false);
     #endif
@@ -670,7 +672,9 @@ soft_reset_exit:
     #if MICROPY_HW_ENABLE_DAC
     dac_deinit_all();
     #endif
+    #if MICROPY_PY_MACHINE
     machine_deinit();
+    #endif
 
     #if MICROPY_PY_THREAD
     pyb_thread_deinit();

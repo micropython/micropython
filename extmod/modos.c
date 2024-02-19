@@ -195,6 +195,10 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
 
     #if MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
+    #endif
+
+    // The following MicroPython extensions are deprecated.  Use the `vfs` module instead.
+    #if !MICROPY_PREVIEW_VERSION_2 && MICROPY_VFS
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
     #if MICROPY_VFS_FAT

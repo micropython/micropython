@@ -57,9 +57,9 @@ deflate         errno           example_package
 ffi             framebuf        gc              hashlib
 heapq           io              json            machine
 math            os              platform        random
-re              select          socket          ssl
-struct          sys             termios         time
-uctypes         websocket
+re              select          socket          struct
+sys             termios         time            tls
+uctypes         vfs             websocket
 me
 
 micropython     machine         math
@@ -201,6 +201,8 @@ ZeroDivisionError
 X
 '\x1b'
 b'\x00\xff'
+frzmpy4 1
+frzmpy4 2
 NULL
 uPy
 a long string that is not interned

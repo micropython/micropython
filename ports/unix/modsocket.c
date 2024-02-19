@@ -25,6 +25,10 @@
  * THE SOFTWARE.
  */
 
+#include "py/mpconfig.h"
+
+#if MICROPY_PY_SOCKET
+
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
@@ -48,8 +52,6 @@
 #include "py/mpthread.h"
 #include "extmod/vfs.h"
 #include <poll.h>
-
-#if MICROPY_PY_SOCKET
 
 /*
   The idea of this module is to implement reasonable minimum of

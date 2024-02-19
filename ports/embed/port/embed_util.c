@@ -34,8 +34,8 @@
 #include "port/micropython_embed.h"
 
 // Initialise the runtime.
-void mp_embed_init(void *gc_heap, size_t gc_heap_size) {
-    mp_stack_ctrl_init();
+void mp_embed_init(void *gc_heap, size_t gc_heap_size, void *stack_top) {
+    mp_stack_set_top(stack_top);
     gc_init(gc_heap, (uint8_t *)gc_heap + gc_heap_size);
     mp_init();
 }
@@ -69,7 +69,7 @@ void mp_embed_exec_mpy(const uint8_t *mpy, size_t len) {
         mp_compiled_module_t cm;
         cm.context = ctx;
         mp_raw_code_load_mem(mpy, len, &cm);
-        mp_obj_t f = mp_make_function_from_raw_code(cm.rc, ctx, MP_OBJ_NULL);
+        mp_obj_t f = mp_make_function_from_proto_fun(cm.rc, ctx, MP_OBJ_NULL);
         mp_call_function_0(f);
         nlr_pop();
     } else {

@@ -1,8 +1,8 @@
 # Test performance of importing an .mpy file many times.
 
-import sys, io, os
+import sys, io, vfs
 
-if not (hasattr(io, "IOBase") and hasattr(os, "mount")):
+if not hasattr(io, "IOBase"):
     print("SKIP")
     raise SystemExit
 
@@ -57,7 +57,7 @@ class FS:
 
 
 def mount():
-    os.mount(FS(), "/__remote")
+    vfs.mount(FS(), "/__remote")
     sys.path.insert(0, "/__remote")
 
 
