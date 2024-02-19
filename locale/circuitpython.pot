@@ -1141,11 +1141,6 @@ msgid "Insufficient stream input buffer"
 msgstr ""
 
 #: ports/espressif/common-hal/wifi/Radio.c
-#: ports/raspberrypi/common-hal/wifi/Radio.c
-msgid "Interface must be in access point mode"
-msgstr ""
-
-#: ports/espressif/common-hal/wifi/Radio.c
 msgid "Interface must be started"
 msgstr ""
 
