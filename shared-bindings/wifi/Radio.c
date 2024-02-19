@@ -662,14 +662,10 @@ STATIC mp_obj_t wifi_radio_get_ap_info(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_ap_info_obj, wifi_radio_get_ap_info);
 
 //|     stations_ap: None
-//|     """In AP mode, returns list of objects (read-only)
-//|      mac: bytearray
-//|      rssi: int
-//|      ipv4_address: ipv4_address  (0.0.0.0 if station connected but no address assigned yet or self-assigned address)
-//|
-//|         .. note::
-//|
-//|             The raspberrypi port (RP2040 CYW43) does not report rssi, so the value will be None"""
+//|     """In AP mode, returns list of named tuples, each of which contains:
+//|      mac: bytearray (read-only)
+//|      rssi: int (read-only, None on Raspberry Pi Pico W)
+//|      ipv4_address: ipv4_address  (read-only, None if station connected but no address assigned yet or self-assigned address)"""
 STATIC mp_obj_t wifi_radio_get_stations_ap(mp_obj_t self) {
     return common_hal_wifi_radio_get_stations_ap(self);
 }
