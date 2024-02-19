@@ -1,4 +1,4 @@
-MicroPython \.\+ version
+CircuitPython \.\+ version
 Use \.\+
 >>> # REPL tests of GNU-ish readline navigation
 >>> # history buffer navigation

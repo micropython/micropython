@@ -106,9 +106,9 @@ STATIC mp_obj_t socketpool_socket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
         mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
     }
 
-    bool ok = common_hal_socketpool_socket_bind(self, host, hostlen, (uint32_t)port);
-    if (!ok) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Error: Failure to bind"));
+    size_t error = common_hal_socketpool_socket_bind(self, host, hostlen, (uint32_t)port);
+    if (error != 0) {
+        mp_raise_OSError(error);
     }
 
     return mp_const_none;

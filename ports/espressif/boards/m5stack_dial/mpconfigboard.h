@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Scott Shawcroft for Adafruit Industries
+ * Copyright (c) 2024 CDarius
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,30 +24,18 @@
  * THE SOFTWARE.
  */
 
-#include "supervisor/board.h"
+// Micropython setup
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
-#include "shared-bindings/usb_host/Port.h"
-#include "hardware/gpio.h"
+#define MICROPY_HW_BOARD_NAME       "M5Stack Dial"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO21)
 
-digitalio_digitalinout_obj_t _host_power;
+#define CIRCUITPY_BOARD_I2C         (2)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO12, .sda = &pin_GPIO11}, \
+                                     {.scl = &pin_GPIO15, .sda = &pin_GPIO13}}
 
-bool board_reset_pin_number(uint8_t pin_number) {
-    if (pin_number == 18) {
-        // doing this (rather than gpio_init) in this specific order ensures no
-        // glitch if pin was already configured as a high output. gpio_init() temporarily
-        // configures the pin as an input, so the power enable value would potentially
-        // glitch.
-        gpio_put(pin_number, 1);
-        gpio_set_dir(pin_number, GPIO_OUT);
-        gpio_set_function(pin_number, GPIO_FUNC_SIO);
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO6, .mosi = &pin_GPIO5}}
 
-        return true;
-    }
-    return false;
-}
-void board_init(void) {
-    common_hal_usb_host_port_construct(&pin_GPIO16, &pin_GPIO17);
-}
+#define CIRCUITPY_I2C_ALLOW_INTERNAL_PULL_UP (1)
