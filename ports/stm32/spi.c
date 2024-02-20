@@ -571,6 +571,8 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
     // Note: DMA transfers are limited to 65535 bytes at a time.
 
     HAL_StatusTypeDef status;
+    void *odest = dest; // Original values of dest & len
+    size_t olen = len;
 
     if (dest == NULL) {
         // send only
@@ -613,7 +615,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             }
             dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
-            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            dma_protect_rx_region(dest, len);
             uint32_t t_start = HAL_GetTick();
             do {
                 uint32_t l = MIN(len, 65535);
@@ -632,6 +634,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
                 dma_deinit(self->tx_dma_descr);
             }
             dma_deinit(self->rx_dma_descr);
+            dma_unprotect_rx_region(odest, olen);
         }
     } else {
         // send and receive
@@ -644,7 +647,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             dma_init(&rx_dma, self->rx_dma_descr, DMA_PERIPH_TO_MEMORY, self->spi);
             self->spi->hdmarx = &rx_dma;
             MP_HAL_CLEAN_DCACHE(src, len);
-            MP_HAL_CLEANINVALIDATE_DCACHE(dest, len);
+            dma_protect_rx_region(dest, len);
             uint32_t t_start = HAL_GetTick();
             do {
                 uint32_t l = MIN(len, 65535);
@@ -662,6 +665,7 @@ void spi_transfer(const spi_t *self, size_t len, const uint8_t *src, uint8_t *de
             } while (len);
             dma_deinit(self->tx_dma_descr);
             dma_deinit(self->rx_dma_descr);
+            dma_unprotect_rx_region(odest, olen);
         }
     }
 
