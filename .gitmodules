@@ -62,3 +62,6 @@
 [submodule "lib/open-amp"]
 	path = lib/open-amp
 	url = https://github.com/OpenAMP/open-amp.git
+[submodule "lib/libmetal"]
+	path = lib/libmetal
+	url = https://github.com/OpenAMP/libmetal.git
