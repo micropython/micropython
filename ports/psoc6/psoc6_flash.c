@@ -200,14 +200,10 @@ STATIC mp_obj_t psoc6_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     // Flash erase/program must run in an atomic section.
     mp_uint_t atomic_state = MICROPY_BEGIN_ATOMIC_SECTION();
 
-    uint32_t numPages = bufinfo.len / FLASH_SECTOR_SIZE; // TODO: should be page size
-    for (uint32_t i = 0; i <= numPages; ++i) {
-        cy_rslt_t result = cyhal_flash_program(&cyhal_flash_obj, self->flash_base + offset + i * FLASH_SECTOR_SIZE, bufinfo.buf + i * FLASH_SECTOR_SIZE);
-
-        if (CY_RSLT_SUCCESS != result) {
-            mplogger_print("\npsoc6_flash_writeblocks() failed while writing with error code: %u\n", CY_RSLT_GET_CODE(result));
-            mp_raise_ValueError(MP_ERROR_TEXT("\npsoc6_flash_writeblocks() - Flash Program failed!"));
-        }
+    cy_rslt_t result = cyhal_flash_write(&cyhal_flash_obj, self->flash_base + offset, bufinfo.buf);
+    if (CY_RSLT_SUCCESS != result) {
+        mplogger_print("psoc6_qspi_flash_writeblocks() failed while writing with error code: %u\n", CY_RSLT_GET_CODE(result));
+        mp_raise_ValueError(MP_ERROR_TEXT("psoc6_qspi_flash_writeblocks() - QSPI Flash Write failed!"));
     }
 
     MICROPY_END_ATOMIC_SECTION(atomic_state);

@@ -24,6 +24,6 @@ except:
     vfs = os.VfsLfs2(bdev, progsize=write_size, readsize=read_size)
     os.mount(vfs, "/")
 
-print("LFS2 filesystem mounted at /\n")
+print("Internal LFS2 filesystem mounted at /\n")
 
 del machine, os, psoc6, bdev, vfs, read_size, write_size
