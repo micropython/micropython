@@ -1,10 +1,6 @@
 import os, psoc6
 
 machine = os.uname().machine
-if "CY8CPROTO-063-BLE" in machine:
-    # TODO: Not working for this board. Neither the timer timing is correct
-    print("SKIP")
-    raise SystemExit
 
 # Try to mount the filesystem, and format the flash if it doesn't exist.
 # create block device object based on whichever flash is active
