@@ -50,52 +50,8 @@
 #define ISSI_FLASH_IS25WX256 (0x9d)
 #define ISSI_MODE_OCTAL_DDR_DQS (0xe7)
 
-// P15_7
-#define OSPI_RESET (pin_P15_7)
-
-#define OSPI1_D0_PORT                            PORT_9
-#define OSPI1_D0_PIN                             PIN_5
-#define OSPI1_D0_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_D1_PORT                            PORT_9
-#define OSPI1_D1_PIN                             PIN_6
-#define OSPI1_D1_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_D2_PORT                            PORT_9
-#define OSPI1_D2_PIN                             PIN_7
-#define OSPI1_D2_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_D3_PORT                            PORT_10
-#define OSPI1_D3_PIN                             PIN_0
-#define OSPI1_D3_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_D4_PORT                            PORT_10
-#define OSPI1_D4_PIN                             PIN_1
-#define OSPI1_D4_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_D5_PORT                            PORT_10
-#define OSPI1_D5_PIN                             PIN_2
-#define OSPI1_D5_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_D6_PORT                            PORT_10
-#define OSPI1_D6_PIN                             PIN_3
-#define OSPI1_D6_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_D7_PORT                            PORT_10
-#define OSPI1_D7_PIN                             PIN_4
-#define OSPI1_D7_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_RXDS_PORT                          PORT_10
-#define OSPI1_RXDS_PIN                           PIN_7
-#define OSPI1_RXDS_PIN_FUNCTION                  PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_SCLK_PORT                          PORT_5
-#define OSPI1_SCLK_PIN                           PIN_5
-#define OSPI1_SCLK_PIN_FUNCTION                  PINMUX_ALTERNATE_FUNCTION_1
-
-#define OSPI1_CS_PORT                            PORT_5
-#define OSPI1_CS_PIN                             PIN_7
-#define OSPI1_CS_PIN_FUNCTION                    PINMUX_ALTERNATE_FUNCTION_1
+// All OSPI1 pins use the same alternate function.
+#define OSPI1_PIN_FUNCTION PINMUX_ALTERNATE_FUNCTION_1
 
 typedef struct _mp_spiflash_t {
     ospi_flash_cfg_t cfg;
@@ -182,26 +138,34 @@ int ospi_flash_init(void) {
 
     uint32_t pad_ctrl = PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST | PADCTRL_READ_ENABLE;
 
-    pinconf_set(OSPI1_D0_PORT, OSPI1_D0_PIN, OSPI1_D0_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_D1_PORT, OSPI1_D1_PIN, OSPI1_D1_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_D2_PORT, OSPI1_D2_PIN, OSPI1_D2_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_D3_PORT, OSPI1_D3_PIN, OSPI1_D3_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_D4_PORT, OSPI1_D4_PIN, OSPI1_D4_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_D5_PORT, OSPI1_D5_PIN, OSPI1_D5_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_D6_PORT, OSPI1_D6_PIN, OSPI1_D6_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_D7_PORT, OSPI1_D7_PIN, OSPI1_D7_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_RXDS_PORT, OSPI1_RXDS_PIN, OSPI1_RXDS_PIN_FUNCTION, pad_ctrl);
-    pinconf_set(OSPI1_SCLK_PORT, OSPI1_SCLK_PIN, OSPI1_SCLK_PIN_FUNCTION, PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST);
-    pinconf_set(OSPI1_CS_PORT, OSPI1_CS_PIN, OSPI1_CS_PIN_FUNCTION, PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA);
+    pinconf_set(pin_OSPI1_CS->port, pin_OSPI1_CS->pin, OSPI1_PIN_FUNCTION, PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA);
+    pinconf_set(pin_OSPI1_SCLK->port, pin_OSPI1_SCLK->pin, OSPI1_PIN_FUNCTION, PADCTRL_OUTPUT_DRIVE_STRENGTH_12MA | PADCTRL_SLEW_RATE_FAST);
+    pinconf_set(pin_OSPI1_D0->port, pin_OSPI1_D0->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    pinconf_set(pin_OSPI1_D1->port, pin_OSPI1_D1->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    pinconf_set(pin_OSPI1_D2->port, pin_OSPI1_D2->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    pinconf_set(pin_OSPI1_D3->port, pin_OSPI1_D3->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    #if defined(pin_OSPI1_D4)
+    pinconf_set(pin_OSPI1_D4->port, pin_OSPI1_D4->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    pinconf_set(pin_OSPI1_D5->port, pin_OSPI1_D5->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    pinconf_set(pin_OSPI1_D6->port, pin_OSPI1_D6->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    pinconf_set(pin_OSPI1_D7->port, pin_OSPI1_D7->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    #endif
+    #if defined(pin_OSPI1_RXDS)
+    pinconf_set(pin_OSPI1_RXDS->port, pin_OSPI1_RXDS->pin, OSPI1_PIN_FUNCTION, pad_ctrl);
+    #endif
 
-    // Alif: P5_6 is needed to support proper alt function selection of P10_7.
-    pinconf_set(PORT_5, PIN_6, OSPI1_RXDS_PIN_FUNCTION, pad_ctrl);
+    #if defined(pin_OSPI1_RXDS)
+    if (pin_OSPI1_RXDS->port == PORT_10 && pin_OSPI1_RXDS->pin == PIN_7) {
+        // Alif: P5_6 is needed to support proper alt function selection of P10_7.
+        pinconf_set(PORT_5, PIN_6, OSPI1_PIN_FUNCTION, pad_ctrl);
+    }
+    #endif
 
     // Reset the SPI flash.
-    mp_hal_pin_output(OSPI_RESET);
-    mp_hal_pin_low(OSPI_RESET);
+    mp_hal_pin_output(pin_OSPI1_RESET);
+    mp_hal_pin_low(pin_OSPI1_RESET);
     mp_hal_delay_us(30);
-    mp_hal_pin_high(OSPI_RESET);
+    mp_hal_pin_high(pin_OSPI1_RESET);
 
     // Configure the OSPI peripheral.
     self->cfg.regs = (ssi_regs_t *)OSPI1_BASE;
