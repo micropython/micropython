@@ -99,7 +99,6 @@ extern void common_hal_wifi_radio_start_ap(wifi_radio_obj_t *self, uint8_t *ssid
 extern void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self);
 extern bool common_hal_wifi_radio_get_ap_active(wifi_radio_obj_t *self);
 extern mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self);
-extern mp_obj_t common_hal_wifi_radio_get_max_stations_ap(wifi_radio_obj_t *self);
 
 extern void common_hal_wifi_radio_start_dhcp_client(wifi_radio_obj_t *self);
 extern void common_hal_wifi_radio_stop_dhcp_client(wifi_radio_obj_t *self);

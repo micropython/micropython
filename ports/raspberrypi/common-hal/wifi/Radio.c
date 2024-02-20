@@ -289,14 +289,6 @@ mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
     return mp_sta_list;
 }
 
-mp_obj_t common_hal_wifi_radio_get_max_stations_ap(wifi_radio_obj_t *self) {
-    int max_stas;
-
-    cyw43_wifi_ap_get_max_stas(&cyw43_state, &max_stas);
-
-    return MP_OBJ_NEW_SMALL_INT(max_stas);
-}
-
 static bool connection_unchanged(wifi_radio_obj_t *self, const uint8_t *ssid, size_t ssid_len) {
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
         return false;

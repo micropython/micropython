@@ -287,10 +287,6 @@ mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
     return mp_sta_list;
 }
 
-mp_obj_t common_hal_wifi_radio_get_max_stations_ap(wifi_radio_obj_t *self) {
-    return MP_OBJ_NEW_SMALL_INT(ESP_WIFI_MAX_CONN_NUM);
-}
-
 wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t *ssid, size_t ssid_len, uint8_t *password, size_t password_len, uint8_t channel, mp_float_t timeout, uint8_t *bssid, size_t bssid_len) {
     if (!common_hal_wifi_radio_get_enabled(self)) {
         mp_raise_RuntimeError(MP_ERROR_TEXT("wifi is not enabled"));

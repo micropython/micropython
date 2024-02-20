@@ -675,16 +675,6 @@ MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_stations_ap_obj, wifi_radio_get_station
 MP_PROPERTY_GETTER(wifi_radio_stations_ap_obj,
     (mp_obj_t)&wifi_radio_get_stations_ap_obj);
 
-//|     max_stations_ap: Optional[Network]
-//|     """In AP mode, returns the maximum possible number of connected stations (read-only)"""
-STATIC mp_obj_t wifi_radio_get_max_stations_ap(mp_obj_t self) {
-    return common_hal_wifi_radio_get_max_stations_ap(self);
-}
-MP_DEFINE_CONST_FUN_OBJ_1(wifi_radio_get_max_stations_ap_obj, wifi_radio_get_max_stations_ap);
-
-MP_PROPERTY_GETTER(wifi_radio_max_stations_ap_obj,
-    (mp_obj_t)&wifi_radio_get_max_stations_ap_obj);
-
 //|     def start_dhcp(self) -> None:
 //|         """Starts the station DHCP client."""
 //|         ...
@@ -775,7 +765,6 @@ STATIC const mp_rom_map_elem_t wifi_radio_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_stop_ap),    MP_ROM_PTR(&wifi_radio_stop_ap_obj) },
     { MP_ROM_QSTR(MP_QSTR_ap_active),   MP_ROM_PTR(&wifi_radio_ap_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_stations_ap),   MP_ROM_PTR(&wifi_radio_stations_ap_obj) },
-    { MP_ROM_QSTR(MP_QSTR_max_stations_ap),   MP_ROM_PTR(&wifi_radio_max_stations_ap_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_start_dhcp),    MP_ROM_PTR(&wifi_radio_start_dhcp_client_obj) },
     { MP_ROM_QSTR(MP_QSTR_stop_dhcp),    MP_ROM_PTR(&wifi_radio_stop_dhcp_client_obj) },
