@@ -32,6 +32,8 @@ SRC_EXTMOD_C += \
 	extmod/modnetwork.c \
 	extmod/modonewire.c \
 	extmod/modopenamp.c \
+	extmod/modopenamp_remoteproc.c \
+	extmod/modopenamp_remoteproc_store.c \
 	extmod/modos.c \
 	extmod/modplatform.c\
 	extmod/modrandom.c \
@@ -529,6 +531,10 @@ include $(TOP)/extmod/libmetal/libmetal.mk
 INC += -I$(TOP)/$(OPENAMP_DIR)
 CFLAGS += -DMICROPY_PY_OPENAMP=1
 
+ifeq ($(MICROPY_PY_OPENAMP_REMOTEPROC),1)
+CFLAGS += -DMICROPY_PY_OPENAMP_REMOTEPROC=1
+endif
+
 CFLAGS_THIRDPARTY += \
     -I$(BUILD)/openamp \
     -I$(TOP)/$(OPENAMP_DIR) \
@@ -546,6 +552,16 @@ SRC_OPENAMP_C += $(addprefix $(OPENAMP_DIR)/lib/,\
 	virtio/virtqueue.c \
 	virtio_mmio/virtio_mmio_drv.c \
 	)
+
+# OpenAMP's remoteproc source files.
+ifeq ($(MICROPY_PY_OPENAMP_REMOTEPROC),1)
+SRC_OPENAMP_C += $(addprefix $(OPENAMP_DIR)/lib/remoteproc/,\
+	elf_loader.c \
+	remoteproc.c \
+	remoteproc_virtio.c \
+	rsc_table_parser.c \
+	)
+endif # MICROPY_PY_OPENAMP_REMOTEPROC
 
 # Disable compiler warnings in OpenAMP (variables used only for assert).
 $(BUILD)/$(OPENAMP_DIR)/lib/rpmsg/rpmsg_virtio.o: CFLAGS += -Wno-unused-but-set-variable

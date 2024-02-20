@@ -47,6 +47,18 @@
 #define MICROPY_PY_OPENAMP_TRACE_BUF_ENABLE (1)
 #endif
 
+// For ports that don't define a custom image store, this enables a generic
+// VFS-based image store that supports loading elf files from storage.
+#ifndef MICROPY_PY_OPENAMP_REMOTEPROC_STORE_ENABLE
+#define MICROPY_PY_OPENAMP_REMOTEPROC_STORE_ENABLE (1)
+#endif
+
+// Enable or disable support for loading elf files. This option saves
+// around 7KBs when disabled.
+#ifndef MICROPY_PY_OPENAMP_REMOTEPROC_ELFLD_ENABLE
+#define MICROPY_PY_OPENAMP_REMOTEPROC_ELFLD_ENABLE (1)
+#endif
+
 // The resource table is used for sharing the configuration of the virtio
 // device, vrings and other resources, between the host and remote cores.
 // The layout and address the table structure must match the one used in
