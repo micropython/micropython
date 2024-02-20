@@ -202,6 +202,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         #if MICROPY_HW_UART_RTSCTS
         ", rts=%q, cts=%q"
         #endif
+        ", irq=%d"
         ")",
         self->id, self->baudrate, self->bits, _parity_name[self->parity],
         self->stop + 1, self->timeout, self->timeout_char, self->read_buffer.size - 1
@@ -212,6 +213,7 @@ static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         , self->rts != 0xff ? pin_find_by_id(self->rts)->name : MP_QSTR_None
         , self->cts != 0xff ? pin_find_by_id(self->cts)->name : MP_QSTR_None
         #endif
+        , self->mp_irq_trigger
         );
 }
 
