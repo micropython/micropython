@@ -149,7 +149,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     #endif
 
     #if DEBUG_PRINT
-    DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " n_pos_args=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, n_pos_args, (uint)scope_flags);
+    DEBUG_printf("assign native: kind=%d fun=%p len=" UINT_FMT " flags=%x\n", kind, fun_data, fun_len, (uint)scope_flags);
     for (mp_uint_t i = 0; i < fun_len; i++) {
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");
