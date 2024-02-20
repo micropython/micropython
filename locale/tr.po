@@ -680,10 +680,6 @@ msgstr "Buffer bitten %d daha az"
 msgid "Buffer too small"
 msgstr ""
 
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Buffers must be same size"
-msgstr "Arabellek boyutları aynı olmalı"
-
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
@@ -776,10 +772,6 @@ msgstr "Dosyaya kayıt yapılamıyor"
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
 msgstr "'/' USB ile görünür olduğunda, yeniden bağlanamaz."
-
-#: ports/espressif/common-hal/socketpool/Socket.c
-msgid "Cannot set socket options"
-msgstr "Soket seçenekleri ayarlanamıyor"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -931,7 +923,7 @@ msgstr "regex'te hata"
 msgid "Error in safemode.py."
 msgstr ""
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "Hata: Bağlanamadı"
 
@@ -951,10 +943,6 @@ msgstr "FFT sadece ndarrays'te tanımlandı"
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT yalnızca doğrusal diziler için uygulanır"
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-msgid "Failed SSL handshake"
-msgstr "SSL el sıkışma hatası"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1167,7 +1155,6 @@ msgstr "Dahili ses arabelleği çok küçük"
 msgid "Internal define error"
 msgstr "Dahili tanımlama hatası"
 
-#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "Dahili hata"
@@ -1271,8 +1258,7 @@ msgstr "Geçersiz multicast MAC adresi"
 msgid "Invalid size"
 msgstr "Geçersiz boyut"
 
-#: ports/espressif/common-hal/ssl/SSLContext.c
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "TLS için geçersiz soket"
 
@@ -1445,10 +1431,6 @@ msgstr "IP yok"
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
-msgstr ""
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "No capture in progress"
 msgstr ""
 
 #: shared-module/usb/core/Device.c
@@ -1820,7 +1802,7 @@ msgstr ""
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
-#: shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c shared-module/displayio/Group.c
 msgid "Read-only"
 msgstr ""
 
@@ -2162,11 +2144,6 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr ""
 
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-#, c-format
-msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
@@ -2342,6 +2319,10 @@ msgstr ""
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
+msgstr ""
+
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the boot button at start up."
 msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
@@ -3290,7 +3271,7 @@ msgstr ""
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr ""
 
@@ -3316,7 +3297,7 @@ msgstr ""
 msgid "invalid hostname"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr ""
 
@@ -4346,6 +4327,15 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Buffers must be same size"
+#~ msgstr "Arabellek boyutları aynı olmalı"
+
+#~ msgid "Cannot set socket options"
+#~ msgstr "Soket seçenekleri ayarlanamıyor"
+
+#~ msgid "Failed SSL handshake"
+#~ msgstr "SSL el sıkışma hatası"
 
 #~ msgid "All PCNT units in use"
 #~ msgstr "Tüm PCNT birimleri kullanımda"

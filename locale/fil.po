@@ -675,10 +675,6 @@ msgstr ""
 msgid "Buffer too small"
 msgstr ""
 
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Buffers must be same size"
-msgstr ""
-
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
@@ -771,10 +767,6 @@ msgstr "Hindi ma-record sa isang file"
 
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
-msgstr ""
-
-#: ports/espressif/common-hal/socketpool/Socket.c
-msgid "Cannot set socket options"
 msgstr ""
 
 #: shared-bindings/digitalio/DigitalInOut.c
@@ -930,7 +922,7 @@ msgstr "May pagkakamali sa REGEX"
 msgid "Error in safemode.py."
 msgstr ""
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr ""
 
@@ -949,10 +941,6 @@ msgstr ""
 
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
-msgstr ""
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-msgid "Failed SSL handshake"
 msgstr ""
 
 #: shared-bindings/ps2io/Ps2.c
@@ -1162,7 +1150,6 @@ msgstr ""
 msgid "Internal define error"
 msgstr ""
 
-#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr ""
@@ -1265,8 +1252,7 @@ msgstr ""
 msgid "Invalid size"
 msgstr ""
 
-#: ports/espressif/common-hal/ssl/SSLContext.c
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr ""
 
@@ -1439,10 +1425,6 @@ msgstr ""
 #: ports/cxd56/common-hal/microcontroller/__init__.c
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
-msgstr ""
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "No capture in progress"
 msgstr ""
 
 #: shared-module/usb/core/Device.c
@@ -1814,7 +1796,7 @@ msgstr ""
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
-#: shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c shared-module/displayio/Group.c
 msgid "Read-only"
 msgstr "Basahin-lamang"
 
@@ -2157,11 +2139,6 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr "hindi inaasahang indent"
 
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-#, c-format
-msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
@@ -2338,6 +2315,10 @@ msgstr ""
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
+msgstr ""
+
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the boot button at start up."
 msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
@@ -3297,7 +3278,7 @@ msgstr ""
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr "mali ang cert"
 
@@ -3323,7 +3304,7 @@ msgstr "mali ang format specifier"
 msgid "invalid hostname"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr "mali ang key"
 
