@@ -224,6 +224,7 @@ int main(int argc, char **argv) {
         #endif
         machine_pwm_deinit_all();
         machine_pin_deinit();
+        machine_uart_deinit_all();
         #if MICROPY_PY_THREAD
         mp_thread_deinit();
         #endif

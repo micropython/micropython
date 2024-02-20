@@ -146,6 +146,7 @@
 #define MICROPY_PY_MACHINE_UART                 (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE     "ports/rp2/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
+#define MICROPY_PY_MACHINE_UART_IRQ             (1)
 #define MICROPY_PY_MACHINE_WDT                  (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/rp2/machine_wdt.c"
 #define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX    (2)
