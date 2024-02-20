@@ -43,7 +43,6 @@
 #define CIRCUITPY_BOARD_UART        (1)
 #define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO20, .rx = &pin_GPIO8}}
 
-// For entering safe mode, use SW38 button
 #define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO35)
 
 // Explanation of how a user got into safe mode
