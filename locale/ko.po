@@ -714,10 +714,6 @@ msgstr "버퍼가 %d 바이트로 너무 짧습니다"
 msgid "Buffer too small"
 msgstr "버퍼가 너무 작습니다"
 
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Buffers must be same size"
-msgstr "버퍼의 크기는 같아야 합니다"
-
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
@@ -810,10 +806,6 @@ msgstr "파일에 녹음 할 수 없습니다"
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
 msgstr "USB를 통해 표시될 때 '/'은 다시 마운트할 수 없습니다."
-
-#: ports/espressif/common-hal/socketpool/Socket.c
-msgid "Cannot set socket options"
-msgstr "소켓 옵션을 설정할 수 없습니다"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -968,7 +960,7 @@ msgstr "Regex에 오류가 있습니다."
 msgid "Error in safemode.py."
 msgstr "safemode.py에 오류가 있습니다."
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "오류: 바인드에 실패했습니다"
 
@@ -989,10 +981,6 @@ msgstr "FFT는 ndarrays에 대해서만 정의됩니다"
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT는 선형 배열에 대해서만 구현됩니다"
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-msgid "Failed SSL handshake"
-msgstr "SSL 핸드셰이크에 실패했습니다"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1206,7 +1194,6 @@ msgstr "내부 오디오 버퍼가 너무 작습니다"
 msgid "Internal define error"
 msgstr "내부 정의 오류"
 
-#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "내부 오류"
@@ -1309,8 +1296,7 @@ msgstr "잘못된 멀티캐스트 MAC 주소"
 msgid "Invalid size"
 msgstr "잘못된 크기"
 
-#: ports/espressif/common-hal/ssl/SSLContext.c
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "TLS에 대한 잘못된 소켓"
 
@@ -1488,10 +1474,6 @@ msgstr "IP가 없습니다"
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
 msgstr ""
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "No capture in progress"
-msgstr "진행 중인 캡처가 없습니다"
 
 #: shared-module/usb/core/Device.c
 #, fuzzy
@@ -1880,7 +1862,7 @@ msgstr "난수 생성 오류"
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
-#: shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c shared-module/displayio/Group.c
 msgid "Read-only"
 msgstr "읽기 전용"
 
@@ -2223,11 +2205,6 @@ msgstr ""
 msgid "Unexpected nrfx uuid type"
 msgstr ""
 
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-#, c-format
-msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr ""
-
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
@@ -2403,6 +2380,10 @@ msgstr ""
 
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
+msgstr ""
+
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the boot button at start up."
 msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
@@ -3351,7 +3332,7 @@ msgstr ""
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr "cert가 유효하지 않습니다"
 
@@ -3377,7 +3358,7 @@ msgstr "형식 지정자(format specifier)가 유효하지 않습니다"
 msgid "invalid hostname"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr "키가 유효하지 않습니다"
 
@@ -4407,6 +4388,18 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Buffers must be same size"
+#~ msgstr "버퍼의 크기는 같아야 합니다"
+
+#~ msgid "Cannot set socket options"
+#~ msgstr "소켓 옵션을 설정할 수 없습니다"
+
+#~ msgid "Failed SSL handshake"
+#~ msgstr "SSL 핸드셰이크에 실패했습니다"
+
+#~ msgid "No capture in progress"
+#~ msgstr "진행 중인 캡처가 없습니다"
 
 #, fuzzy
 #~ msgid "All PCNT units in use"
