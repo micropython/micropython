@@ -57,9 +57,13 @@ STATIC mp_obj_t code_execute(mp_obj_code_t *self, mp_obj_dict_t *globals, mp_obj
     // set exception handler to restore context if an exception is raised
     nlr_push_jump_callback(&ctx.callback, mp_globals_locals_set_from_nlr_jump_callback);
 
-    // a bit of a hack: fun_bc will re-set globals, so need to make sure it's
-    // the correct one
-    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)) {
+    // The call to mp_parse_compile_execute() in mp_builtin_compile() below passes
+    // NULL for the globals, so repopulate that entry now with the correct globals.
+    if (mp_obj_is_type(self->module_fun, &mp_type_fun_bc)
+        #if MICROPY_EMIT_NATIVE
+        || mp_obj_is_type(self->module_fun, &mp_type_fun_native)
+        #endif
+        ) {
         mp_obj_fun_bc_t *fun_bc = MP_OBJ_TO_PTR(self->module_fun);
         ((mp_module_context_t *)fun_bc->context)->module.globals = globals;
     }
