@@ -73,15 +73,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket___exit___obj, 4, 4, ssl
 //|         Returns a tuple of (new_socket, remote_address)"""
 STATIC mp_obj_t ssl_sslsocket_accept(mp_obj_t self_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    uint8_t ip[4];
-    uint32_t port;
-
-    ssl_sslsocket_obj_t *sslsock = common_hal_ssl_sslsocket_accept(self, ip, &port);
-
-    mp_obj_t tuple_contents[2];
-    tuple_contents[0] = MP_OBJ_FROM_PTR(sslsock);
-    tuple_contents[1] = netutils_format_inet_addr(ip, port, NETUTILS_BIG);
-    return mp_obj_new_tuple(2, tuple_contents);
+    return common_hal_ssl_sslsocket_accept(self);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_accept_obj, ssl_sslsocket_accept);
 
@@ -96,14 +88,7 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
-    size_t hostlen;
-    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
-    mp_int_t port = mp_obj_get_int(addr_items[1]);
-    if (port < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
-    }
-
-    size_t error = common_hal_ssl_sslsocket_bind(self, host, hostlen, (uint32_t)port);
+    size_t error = common_hal_ssl_sslsocket_bind(self, addr_in);
     if (error != 0) {
         mp_raise_OSError(error);
     }
@@ -128,18 +113,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(ssl_sslsocket_close_obj, ssl_sslsocket_close);
 //|         ...
 STATIC mp_obj_t ssl_sslsocket_connect(mp_obj_t self_in, mp_obj_t addr_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    mp_obj_t *addr_items;
-    mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
-
-    size_t hostlen;
-    const char *host = mp_obj_str_get_data(addr_items[0], &hostlen);
-    mp_int_t port = mp_obj_get_int(addr_items[1]);
-    if (port < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("port must be >= 0"));
-    }
-
-    common_hal_ssl_sslsocket_connect(self, host, hostlen, (uint32_t)port);
+    common_hal_ssl_sslsocket_connect(self, addr_in);
 
     return mp_const_none;
 }

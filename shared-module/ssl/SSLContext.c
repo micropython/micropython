@@ -26,7 +26,6 @@
 
 #include "shared-bindings/ssl/SSLContext.h"
 #include "shared-bindings/ssl/SSLSocket.h"
-#include "shared-bindings/socketpool/SocketPool.h"
 
 #include "py/runtime.h"
 #include "py/stream.h"
