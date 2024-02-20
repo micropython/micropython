@@ -415,9 +415,6 @@ extern const struct _mp_obj_module_t nvm_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-// From supervisor/memory.c
-struct _supervisor_allocation_node;
-
 void background_callback_run_all(void);
 #define RUN_BACKGROUND_TASKS (background_callback_run_all())
 
