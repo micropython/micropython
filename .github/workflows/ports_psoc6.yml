@@ -67,7 +67,6 @@ jobs:
         cp mpy-psoc6_${{ matrix.board }}_${{ needs.server-build.outputs.commit_sha }}/firmware.hex .
         source tools/ci.sh && ci_psoc6_flash_multiple_devices ${{ matrix.board }} firmware.hex tools/psoc6/${{ runner.name }}-devs.yml
     - name: Run psoc6 filesystem test
-      if: matrix.board == 'CY8CPROTO-062-4343W'
       run: | 
         devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml))
         cd tests
