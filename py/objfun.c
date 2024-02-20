@@ -128,15 +128,6 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 /* byte code functions                                                        */
 
-STATIC qstr mp_obj_code_get_name(const mp_obj_fun_bc_t *fun, const byte *code_info) {
-    MP_BC_PRELUDE_SIZE_DECODE(code_info);
-    mp_uint_t name = mp_decode_uint_value(code_info);
-    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
-    name = fun->context->constants.qstr_table[name];
-    #endif
-    return name;
-}
-
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
     const byte *bc = fun->bytecode;
@@ -148,7 +139,14 @@ qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     #endif
 
     MP_BC_PRELUDE_SIG_DECODE(bc);
-    return mp_obj_code_get_name(fun, bc);
+    MP_BC_PRELUDE_SIZE_DECODE(bc);
+
+    mp_uint_t name = mp_decode_uint_value(bc);
+    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+    name = fun->context->constants.qstr_table[name];
+    #endif
+
+    return name;
 }
 
 #if MICROPY_CPYTHON_COMPAT
