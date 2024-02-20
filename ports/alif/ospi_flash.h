@@ -26,7 +26,23 @@
 #ifndef MICROPY_INCLUDED_ALIF_OSPI_FLASH_H
 #define MICROPY_INCLUDED_ALIF_OSPI_FLASH_H
 
+#include <stdbool.h>
 #include <stdint.h>
+
+typedef struct _ospi_flash_settings_t {
+    uint32_t jedec_id;
+    uint32_t freq_mhz;
+    bool is_quad : 1;
+    bool is_oct : 1;
+    bool is_ddr : 1;
+    uint8_t read_id_dummy_cycles;
+    uint8_t read_dummy_cycles;
+    uint8_t read_command;
+    uint8_t write_command;
+} ospi_flash_settings_t;
+
+// Provided by the board when it enables OSPI1.
+extern const ospi_flash_settings_t ospi_flash_settings;
 
 int ospi_flash_init(void);
 int ospi_flash_erase_sector(uint32_t addr);

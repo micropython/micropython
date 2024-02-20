@@ -33,13 +33,10 @@
 
 #define CMD_RDSR        (0x05)
 #define CMD_WREN        (0x06)
-#define CMD_SEC_ERASE   (0x20)
+#define CMD_SEC_ERASE_32ADDR (0x21) // 4kiB sector erase with 32-bit address
 #define CMD_WRVOL       (0x81)
 #define CMD_RD_DEVID    (0x9f)
-#define CMD_OCTAL_DDR_WRITE (0xc2)
-#define CMD_OCTAL_DDR_READ (0xfd)
 
-#define WAIT_CYC        (16)
 #define WAIT_SR_TIMEOUT (1000000)
 
 // maximum bytes we can write in one SPI transfer
@@ -47,7 +44,6 @@
 // need to use DMA to make this 256
 #define PAGE_SIZE       (128)
 
-#define ISSI_FLASH_IS25WX256 (0x9d)
 #define ISSI_MODE_OCTAL_DDR_DQS (0xe7)
 
 // All OSPI1 pins use the same alternate function.
@@ -116,11 +112,11 @@ static int mp_spiflash_wait_wip0(mp_spiflash_t *self) {
     return mp_spiflash_wait_sr(self, 1, 0, WAIT_SR_TIMEOUT);
 }
 
-static uint8_t ospi_flash_read_id(mp_spiflash_t *self) {
+static uint32_t ospi_flash_read_id(mp_spiflash_t *self) {
     uint8_t buf[8];
-    ospi_setup_read(&self->cfg, 0, 2, 8);
+    ospi_setup_read(&self->cfg, 0, 3, ospi_flash_settings.read_id_dummy_cycles);
     ospi_recv_blocking2(&self->cfg, CMD_RD_DEVID, buf);
-    return buf[0];
+    return buf[0] | buf[1] << 8 | buf[2] << 16;
 }
 
 static void ospi_flash_write_reg_sdr(mp_spiflash_t *self, uint8_t cmd, uint8_t addr, uint8_t value) {
@@ -173,17 +169,19 @@ int ospi_flash_init(void) {
     self->cfg.xip_base = (volatile void *)OSPI1_XIP_BASE;
     self->cfg.ser = 1;
     self->cfg.addrlen = 8; // 32-bit address length
-    self->cfg.ospi_clock = 100000000;
+    self->cfg.ospi_clock = ospi_flash_settings.freq_mhz;
     self->cfg.ddr_en = 0;
-    self->cfg.wait_cycles = WAIT_CYC;
+    self->cfg.wait_cycles = 0; // used only for ospi_xip_exit
     ospi_init(&self->cfg);
 
-    // Switch SPI flash to Octal DDR mode.
-    ospi_flash_write_reg_sdr(self, CMD_WRVOL, 0x00, ISSI_MODE_OCTAL_DDR_DQS);
-    self->cfg.ddr_en = 1;
+    if (ospi_flash_settings.is_oct && ospi_flash_settings.is_ddr) {
+        // Switch SPI flash to Octal DDR mode.
+        ospi_flash_write_reg_sdr(self, CMD_WRVOL, 0x00, ISSI_MODE_OCTAL_DDR_DQS);
+        self->cfg.ddr_en = 1;
+    }
 
     // Check the device ID.
-    if (ospi_flash_read_id(self) != ISSI_FLASH_IS25WX256) {
+    if (ospi_flash_read_id(self) != ospi_flash_settings.jedec_id) {
         return -1;
     }
 
@@ -200,7 +198,7 @@ int ospi_flash_erase_sector(uint32_t addr) {
     }
 
     ospi_setup_write(&self->cfg, 8 /* 32-bit addr len*/);
-    ospi_push(&self->cfg, CMD_SEC_ERASE);
+    ospi_push(&self->cfg, CMD_SEC_ERASE_32ADDR);
     ospi_send_blocking(&self->cfg, addr);
 
     return mp_spiflash_wait_wip0(self);
@@ -215,8 +213,8 @@ int ospi_flash_read(uint32_t addr, uint32_t len, uint8_t *dest) {
         if (l > 256) {
             l = 256;
         }
-        ospi_setup_read(&self->cfg, 8 /* 32-bit addr len*/, l, WAIT_CYC);
-        ospi_push(&self->cfg, CMD_OCTAL_DDR_READ);
+        ospi_setup_read(&self->cfg, 8 /* 32-bit addr len*/, l, ospi_flash_settings.read_dummy_cycles);
+        ospi_push(&self->cfg, ospi_flash_settings.read_command);
         ospi_recv_blocking2(&self->cfg, addr, dest);
         addr += l;
         len -= l;
@@ -236,7 +234,7 @@ static int ospi_flash_write_page(uint32_t addr, uint32_t len, const uint8_t *src
     }
 
     ospi_setup_write(&self->cfg, 8 /* 32-bit addr len*/);
-    ospi_push(&self->cfg, CMD_OCTAL_DDR_WRITE);
+    ospi_push(&self->cfg, ospi_flash_settings.write_command);
     ospi_push(&self->cfg, addr);
     while (--len) {
         ospi_push(&self->cfg, *src++);

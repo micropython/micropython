@@ -108,6 +108,7 @@ SRC_C = \
 	system_tick.c \
 	se_services.c \
 	usbd.c \
+	$(wildcard $(BOARD_DIR)/*.c)
 
 ifeq ($(MICROPY_FLOAT_IMPL),float)
 LIBM_SRC_C += $(SRC_LIB_LIBM_C)
