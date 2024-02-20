@@ -1,4 +1,4 @@
-MicroPython \.\+ version
+CircuitPython \.\+ version
 Use \.\+
 >>> # test changing ps1/ps2
 >>> import sys

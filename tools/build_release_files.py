@@ -19,10 +19,6 @@ from shared_bindings_matrix import get_settings_from_makefile
 for port in build_info.SUPPORTED_PORTS:
     result = subprocess.run("rm -rf ../ports/{port}/build*".format(port=port), shell=True)
 
-PARALLEL = "-j 4"
-if "GITHUB_ACTION" in os.environ:
-    PARALLEL = "-j 2"
-
 all_boards = build_info.get_board_mapping()
 build_boards = list(all_boards.keys())
 if "BOARDS" in os.environ:

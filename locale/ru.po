@@ -224,7 +224,8 @@ msgid "%q must be multiple of 8."
 msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
-#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-bindings/bitmapfilter/__init__.c shared-bindings/canio/CAN.c
+#: shared-bindings/digitalio/Pull.c shared-bindings/supervisor/__init__.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q должно быть типа%q или%q, а не%q"
@@ -233,7 +234,8 @@ msgstr "%q должно быть типа%q или%q, а не%q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/runtime.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q должно быть типа %q, а не %q"
 
@@ -250,7 +252,7 @@ msgstr "%q за пределом"
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
-#: shared-bindings/canio/Match.c
+#: shared-bindings/canio/Match.c shared-bindings/time/__init__.c
 msgid "%q out of range"
 msgstr "%q вне диапазона"
 
@@ -493,12 +495,6 @@ msgstr "Все периферийные устройства CAN уже испо
 msgid "All I2C peripherals are in use"
 msgstr "Все периферийные устройства I2C уже используются"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "Все блоки PCNT уже используются"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -516,7 +512,6 @@ msgstr "Все периферийные устройства UART уже исп�
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr "Все каналы уже используются"
 
@@ -539,24 +534,18 @@ msgid "All sync event channels in use"
 msgstr "Все каналы событий синхронизации уже используются"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "Все таймеры для этого пина уже используются"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
+#: ports/stm/peripherals/timers.c
 msgid "All timers in use"
 msgstr "Все таймеры уже используются"
 
@@ -761,6 +750,7 @@ msgstr "Невозможно установить CCCD для локальной
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "Невозможно изменить USB устройство сейчас"
 
@@ -803,12 +793,6 @@ msgstr "Невозможно записать в файл"
 msgid "Cannot remount '/' when visible via USB."
 msgstr "Невозможно перемонтировать '/' пока он виден через USB."
 
-#: ports/atmel-samd/common-hal/microcontroller/__init__.c
-#: ports/cxd56/common-hal/microcontroller/__init__.c
-#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
-msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr "Не удалось перезагрузится в загрузчик так как загрузчик отсутствует"
-
 #: ports/espressif/common-hal/socketpool/Socket.c
 msgid "Cannot set socket options"
 msgstr "Невозможно установить параметры сокета"
@@ -825,10 +809,6 @@ msgstr "Невозможно указать RTS или CTS в режиме RS485
 #: py/objslice.c
 msgid "Cannot subclass slice"
 msgstr "Невозможно создать подкласс среза"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Cannot vary frequency on a timer that is already in use"
-msgstr "Невозможно изменить частоту на таймере который уже используется"
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
@@ -867,17 +847,9 @@ msgstr "Координатные массивы имеют разные длин
 msgid "Coordinate arrays types have different sizes"
 msgstr "Типы массивов координат имеют разные размеры"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "Не удалось извлечь тактирование"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
 msgstr "Не удалось задать адрес"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Could not start PWM"
-msgstr "Не удалось запустить PWM"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
@@ -928,10 +900,6 @@ msgstr ""
 "Выводы глубокого сна должны использовать сигнал по возрастанию с подтяжкой к "
 "земле"
 
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr ""
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Емкость места назначения меньше длины места назначения."
@@ -976,16 +944,6 @@ msgstr "ECB работает только с 16 байтами за раз"
 #: ports/espressif/common-hal/canio/CAN.c
 msgid "ESP-IDF memory allocation failed"
 msgstr "Ошибка выделения памяти ESP-IDF"
-
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/ps2io/Ps2.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-msgid "EXTINT channel already in use"
-msgstr "Канал EXTINT уже используется"
 
 #: extmod/modre.c
 msgid "Error in regex"
@@ -1128,12 +1086,6 @@ msgstr ""
 "Частота должна быть 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 или 1008 "
 "МГц"
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Frequency must match existing PWMOut using this timer"
-msgstr ""
-"Частота должна соответствовать существующему выходу PWM с использованием "
-"этого таймера"
-
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
@@ -1167,13 +1119,6 @@ msgstr "Оборудование используется, попробуйте 
 #: supervisor/shared/safe_mode.c
 msgid "Heap allocation when VM not running."
 msgstr "Выделение кучи, когда виртуальная машина не запущена."
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Heap was corrupted because the stack was too small. Increase stack size."
-msgstr ""
-"Куча была повреждена, потому что стек был слишком маленьким. Увеличьте "
-"размер стека."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1221,7 +1166,7 @@ msgstr "Длина входного буфера (%d) должна быть кр
 msgid "Input taking too long"
 msgstr "Ввод занимает слишком много времени"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Ошибка ввода/вывода"
 
@@ -1254,7 +1199,7 @@ msgid "Internal define error"
 msgstr "Внутренняя ошибка определения"
 
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
-#: shared-module/os/getenv.c
+#: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "Внутренняя ошибка"
 
@@ -1262,6 +1207,16 @@ msgstr "Внутренняя ошибка"
 #, c-format
 msgid "Internal error #%d"
 msgstr "Внутренняя ошибка #%d"
+
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
+msgid "Internal resource(s) in use"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
@@ -1280,7 +1235,7 @@ msgstr ""
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/epaperdisplay/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid %q"
 msgstr "Недопустимый %q"
 
@@ -1428,6 +1383,10 @@ msgstr "Отсутствует first_set_pin. %q[%u] устанавливает 
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
 msgstr "Не хватает jmp_pin.%q [%u] прыгает на пин"
 
+#: shared-module/storage/__init__.c
+msgid "Mount point directory missing"
+msgstr ""
+
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
 msgstr "Должен быть субклассом %q."
@@ -1514,9 +1473,11 @@ msgstr "Нет устройства I2C по адресу: %x"
 msgid "No IP"
 msgstr "Нет IP"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "No available clocks"
-msgstr "Нет доступных часов"
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c
+#: ports/cxd56/common-hal/microcontroller/__init__.c
+#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
+msgid "No bootloader present"
+msgstr ""
 
 #: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
 msgid "No capture in progress"
@@ -1534,14 +1495,11 @@ msgstr "Нет соединения: длина не может быть опр�
 msgid "No default %q bus"
 msgstr "Нет шины %q по умолчанию"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Свободные GCLK отсутствуют"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "No free GLCKs"
-msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1747,13 +1705,6 @@ msgstr "Вне розеток"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "Элементы вне буфера должны иметь длину <= 4 байта"
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid ""
-"PWM frequency not writable when variable_frequency is False on construction."
-msgstr ""
-"Частота PWM не записывается, если variable_frequency имеет значение False "
-"при построении."
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "PWM restart"
 msgstr "PWM перезагрузка"
@@ -1798,11 +1749,6 @@ msgstr "Пин является только входом"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
 msgstr "Пин должен быть на канале ШИМ B"
-
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Pin must support hardware interrupts"
-msgstr "Пин должен поддерживать аппаратные прерывания"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -2040,13 +1986,9 @@ msgstr "Исходный и конечный буферы должны имет�
 msgid "Specify exactly one of data0 or data_pins"
 msgstr "Укажите точно один из data0 или data_pins"
 
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo left must be on PWM channel A"
-msgstr "Стерео слева должно быть на PWM-канале A"
-
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo right must be on PWM channel B"
-msgstr "Стерео справа должно быть на PWM-канале B"
+#: supervisor/shared/safe_mode.c
+msgid "Stack overflow. Increase stack size."
+msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2158,10 +2100,6 @@ msgstr "Сенсорные сигналы недоступны"
 #: py/obj.c
 msgid "Traceback (most recent call last):\n"
 msgstr "Трассировка (последний вызов):\n"
-
-#: shared-bindings/time/__init__.c
-msgid "Tuple or struct_time argument required"
-msgstr "Требуется кортеж или struct_time аргумент"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART de-init"
@@ -2527,10 +2465,6 @@ msgstr "аргумент сортировки должен быть аргуме
 msgid "argsort is not implemented for flattened arrays"
 msgstr "сортировка arg не реализована для сглаженных массивов"
 
-#: py/runtime.c shared-bindings/supervisor/__init__.c
-msgid "argument has wrong type"
-msgstr "аргумент имеет неправильный тип"
-
 #: py/compile.c
 msgid "argument name reused"
 msgstr "Повторное использование имени аргумента"
@@ -2539,10 +2473,6 @@ msgstr "Повторное использование имени аргумен�
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "Аргумент Несоответствие числа/типов"
-
-#: py/runtime.c
-msgid "argument should be a '%q' not a '%q'"
-msgstr "аргумент должен быть '%q', а не '%q'"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/numpy/transform.c
 msgid "arguments must be ndarrays"
@@ -2626,6 +2556,10 @@ msgstr "Неверный шрифт"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "двоичная операция %q не реализована"
+
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
@@ -2731,7 +2665,7 @@ msgstr "не может преобразовать %s в сложный"
 msgid "can't convert %s to float"
 msgstr "не могу преобразовать %s в число с плавающей запятой"
 
-#: py/runtime.c
+#: py/objint.c py/runtime.c
 #, fuzzy, c-format
 msgid "can't convert %s to int"
 msgstr "не может конвертировать %s в int"
@@ -2740,19 +2674,9 @@ msgstr "не может конвертировать %s в int"
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "не может конвертировать «%q» в% q косвенно"
 
-#: py/objint.c
-#, fuzzy
-msgid "can't convert NaN to int"
-msgstr "не может превратить NaN в int"
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
 msgstr "Не может преобразовать сложный в плавающий"
-
-#: py/objint.c
-#, fuzzy
-msgid "can't convert inf to int"
-msgstr "не может конвертировать inf в int"
 
 #: py/obj.c
 msgid "can't convert to complex"
@@ -3256,10 +3180,6 @@ msgstr "В функции отсутствует обязательный поз
 #, c-format
 msgid "function takes %d positional arguments but %d were given"
 msgstr "функция принимает %d позиционные аргументы, но %d были заданы"
-
-#: shared-bindings/time/__init__.c
-msgid "function takes exactly 9 arguments"
-msgstr "функция принимает ровно 9 аргументов"
 
 #: py/objgenerator.c
 msgid "generator already executing"
@@ -4000,10 +3920,6 @@ msgstr "Параметры должны быть регистрами в пос�
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "Параметры должны быть регистрами в последовательности от r0 до r3"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "пиксельные координаты за пределами границ"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "Опрос в файле недоступен в Win32"
@@ -4128,10 +4044,6 @@ msgstr "Знак не разрешен со спецификатором цел�
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr "размер определен только для массива ndarrays"
-
-#: shared-bindings/time/__init__.c
-msgid "sleep length must be non-negative"
-msgstr "Продолжительность сна должна быть неотрицательной"
 
 #: py/nativeglue.c
 msgid "slice unsupported"
@@ -4404,6 +4316,10 @@ msgstr "неподдерживаемая инструкция Thumb '%s' с ар
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "неподдерживаемая инструкция Xtensa '%s' с аргументами %d"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "неподдерживаемое цветовое пространство для GifWriter"
@@ -4451,6 +4367,16 @@ msgstr "Величина выходящая за пределы диапазон
 #, fuzzy
 msgid "wbits"
 msgstr "wbits"
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
+msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4522,6 +4448,80 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "Все блоки PCNT уже используются"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "Не удалось извлечь тактирование"
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present"
+#~ msgstr "Не удалось перезагрузится в загрузчик так как загрузчик отсутствует"
+
+#~ msgid "Cannot vary frequency on a timer that is already in use"
+#~ msgstr "Невозможно изменить частоту на таймере который уже используется"
+
+#~ msgid "Could not start PWM"
+#~ msgstr "Не удалось запустить PWM"
+
+#~ msgid "EXTINT channel already in use"
+#~ msgstr "Канал EXTINT уже используется"
+
+#~ msgid "Frequency must match existing PWMOut using this timer"
+#~ msgstr ""
+#~ "Частота должна соответствовать существующему выходу PWM с использованием "
+#~ "этого таймера"
+
+#~ msgid ""
+#~ "Heap was corrupted because the stack was too small. Increase stack size."
+#~ msgstr ""
+#~ "Куча была повреждена, потому что стек был слишком маленьким. Увеличьте "
+#~ "размер стека."
+
+#~ msgid "No available clocks"
+#~ msgstr "Нет доступных часов"
+
+#~ msgid ""
+#~ "PWM frequency not writable when variable_frequency is False on "
+#~ "construction."
+#~ msgstr ""
+#~ "Частота PWM не записывается, если variable_frequency имеет значение False "
+#~ "при построении."
+
+#~ msgid "Pin must support hardware interrupts"
+#~ msgstr "Пин должен поддерживать аппаратные прерывания"
+
+#~ msgid "Stereo left must be on PWM channel A"
+#~ msgstr "Стерео слева должно быть на PWM-канале A"
+
+#~ msgid "Stereo right must be on PWM channel B"
+#~ msgstr "Стерео справа должно быть на PWM-канале B"
+
+#~ msgid "Tuple or struct_time argument required"
+#~ msgstr "Требуется кортеж или struct_time аргумент"
+
+#~ msgid "argument has wrong type"
+#~ msgstr "аргумент имеет неправильный тип"
+
+#~ msgid "argument should be a '%q' not a '%q'"
+#~ msgstr "аргумент должен быть '%q', а не '%q'"
+
+#, fuzzy
+#~ msgid "can't convert NaN to int"
+#~ msgstr "не может превратить NaN в int"
+
+#, fuzzy
+#~ msgid "can't convert inf to int"
+#~ msgstr "не может конвертировать inf в int"
+
+#~ msgid "function takes exactly 9 arguments"
+#~ msgstr "функция принимает ровно 9 аргументов"
+
+#~ msgid "sleep length must be non-negative"
+#~ msgstr "Продолжительность сна должна быть неотрицательной"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "пиксельные координаты за пределами границ"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Канал аппаратного прерывания уже используется"

@@ -48,6 +48,10 @@
 #include "shared-bindings/storage/__init__.h"
 #endif
 
+#if CIRCUITPY_USB_VIDEO
+#include "shared-module/usb_video/__init__.h"
+#endif
+
 #include "shared-bindings/microcontroller/Processor.h"
 
 
@@ -105,7 +109,7 @@ static const uint8_t configuration_descriptor_template[] = {
 #define CONFIG_NUM_INTERFACES_INDEX (4)
     0x01,        // 5 bConfigurationValue
     0x00,        // 6 iConfiguration (String Index)
-    0x80,        // 7 bmAttributes
+    0x80 | TUSB_DESC_CONFIG_ATT_REMOTE_WAKEUP,        // 7 bmAttributes
     0x32,        // 8 bMaxPower 100mA
 };
 
@@ -176,6 +180,11 @@ static bool usb_build_configuration_descriptor(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_VIDEO
+    if (usb_video_enabled()) {
+        total_descriptor_length += usb_video_descriptor_length();
+    }
+    #endif
 
     // Now we know how big the configuration descriptor will be, so we can allocate space for it.
     configuration_descriptor =
@@ -256,6 +265,12 @@ static bool usb_build_configuration_descriptor(void) {
     }
     #endif
 
+    #if CIRCUITPY_USB_VIDEO
+    if (usb_video_enabled()) {
+        descriptor_buf_remaining += usb_video_add_descriptor(
+            descriptor_buf_remaining, &descriptor_counts, &current_interface_string);
+    }
+    #endif
     // Now we know how many interfaces have been used.
     configuration_descriptor[CONFIG_NUM_INTERFACES_INDEX] = descriptor_counts.current_interface;
 

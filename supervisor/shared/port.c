@@ -62,8 +62,8 @@ MP_WEAK void port_free(void *ptr) {
     tlsf_free(heap, ptr);
 }
 
-MP_WEAK void port_realloc(void *ptr, size_t size) {
-    tlsf_realloc(heap, ptr, size);
+MP_WEAK void *port_realloc(void *ptr, size_t size) {
+    return tlsf_realloc(heap, ptr, size);
 }
 
 static void max_size_walker(void *ptr, size_t size, int used, void *user) {

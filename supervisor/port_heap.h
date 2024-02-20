@@ -44,6 +44,6 @@ void *port_malloc(size_t size, bool dma_capable);
 
 void port_free(void *ptr);
 
-void port_realloc(void *ptr, size_t size);
+void *port_realloc(void *ptr, size_t size);
 
 size_t port_heap_get_largest_free_size(void);

@@ -179,7 +179,7 @@ STATIC mp_obj_t pulseio_pulsein_obj_clear(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(pulseio_pulsein_clear_obj, pulseio_pulsein_obj_clear);
 
 //|     def popleft(self) -> int:
-//|         """Removes and returns the oldest read pulse."""
+//|         """Removes and returns the oldest read pulse duration in microseconds."""
 //|         ...
 STATIC mp_obj_t pulseio_pulsein_obj_popleft(mp_obj_t self_in) {
     pulseio_pulsein_obj_t *self = MP_OBJ_TO_PTR(self_in);

@@ -55,6 +55,7 @@
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
+//|
 //|     def readinto(self, buf: WriteableBuffer, nbytes: Optional[int] = None) -> Optional[bytes]:
 //|         """Read bytes into the ``buf``.  If ``nbytes`` is specified then read at most
 //|         that many bytes.  Otherwise, read at most ``len(buf)`` bytes.

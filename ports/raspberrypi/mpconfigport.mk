@@ -23,6 +23,7 @@ CIRCUITPY_ROTARYIO ?= 1
 CIRCUITPY_ROTARYIO_SOFTENCODER = 1
 CIRCUITPY_SYNTHIO_MAX_CHANNELS = 12
 CIRCUITPY_USB_HOST ?= 1
+CIRCUITPY_USB_VIDEO ?= 1
 
 # Things that need to be implemented.
 CIRCUITPY_FREQUENCYIO = 0
@@ -57,3 +58,6 @@ CIRCUITPY_SETTABLE_PROCESSOR_FREQUENCY = 1
 
 # Usually lots of flash space available
 CIRCUITPY_MESSAGE_COMPRESSION_LEVEL ?= 1
+
+# (ssl is selectively enabled but it's always the mbedtls implementation)
+CIRCUITPY_SSL_MBEDTLS = 1

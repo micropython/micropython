@@ -65,7 +65,7 @@ static const mp_arg_t note_properties[] = {
 //|         filter: Optional[Biquad] = None,
 //|         ring_frequency: float = 0.0,
 //|         ring_bend: float = 0.0,
-//|         ring_waveform: Optional[ReadableBuffer] = 0.0,
+//|         ring_waveform: Optional[ReadableBuffer] = None,
 //|         ring_waveform_loop_start: int = 0,
 //|         ring_waveform_loop_end: int = waveform_max_length,
 //|     ) -> None:

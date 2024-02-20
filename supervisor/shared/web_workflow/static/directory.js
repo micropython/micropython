@@ -4,7 +4,28 @@ let dirs = document.getElementById("dirs");
 
 var url_base = window.location;
 var current_path;
-var editable = undefined;
+
+// From: https://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable-string
+function humanFileSize(bytes) {
+  const thresh = 1000;
+
+  if (Math.abs(bytes) < thresh) {
+    return bytes + ' B';
+  }
+
+  const units = ['kB', 'MB', 'GB', 'TB'];
+  let u = -1;
+  const r = 10;
+
+  do {
+    bytes /= thresh;
+    ++u;
+  } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
+
+
+  return bytes.toFixed(1) + ' ' + units[u];
+}
+
 
 function compareValues(a, b) {
     if (a.directory == b.directory && a.name.toLowerCase() === b.name.toLowerCase()) {
@@ -42,21 +63,20 @@ async function refresh_list() {
     var path = document.querySelector("#path");
     path.textContent = current_path;
     var template = document.querySelector('#row');
+    var disk_usage = document.querySelector('#usage');
 
-    if (editable === undefined) {
-        const status = await fetch(new URL("/fs/", url_base),
-            {
-                method: "OPTIONS",
-                credentials: "include"
-            }
-        );
-        editable = status.headers.get("Access-Control-Allow-Methods").includes("DELETE");
-        new_directory_name.disabled = !editable;
-        set_upload_enabled(editable);
-        if (!editable) {
-            let usbwarning = document.querySelector("#usbwarning");
-            usbwarning.style.display = "block";
-        }
+    let used = humanFileSize((data.total - data.free) * data.block_size);
+    let total = humanFileSize(data.total * data.block_size);
+    disk_usage.textContent = `${used} out of ${total}`;
+
+    let editable = data.writable;
+    new_directory_name.disabled = !editable;
+    set_upload_enabled(editable);
+    let usbwarning = document.querySelector("#usbwarning");
+    if (!editable) {
+        usbwarning.style.display = "block";
+    } else {
+        usbwarning.style.display = "none";
     }
 
     if (current_path != "/") {
@@ -74,9 +94,9 @@ async function refresh_list() {
         new_children.push(clone);
     }
 
-    data.sort(compareValues);
+    data.files.sort(compareValues);
 
-    for (const f of data) {
+    for (const f of data.files) {
         // Clone the new row and insert it into the table
         var clone = template.content.cloneNode(true);
         var td = clone.querySelectorAll("td");
@@ -106,7 +126,7 @@ async function refresh_list() {
             text_file = true;
         }
         td[0].textContent = icon;
-        td[1].textContent = f.file_size;
+        td[1].textContent = humanFileSize(f.file_size);
         var path = clone.querySelector("a.path");
         path.href = file_path;
         path.textContent = f.name;
@@ -173,10 +193,13 @@ async function mkdir(e) {
 
 async function upload(e) {
     set_upload_enabled(false);
-    let progress = document.querySelector("progress");
+    let progress = document.querySelector("#progress");
     let made_dirs = new Set();
-    progress.max = files.files.length + dirs.files.length;
-    progress.value = 0;
+    let total = files.files.length + dirs.files.length;
+
+    var uploaded = 0;
+    var failed = 0;
+    progress.textContent = `Uploaded ${uploaded} out of ${total} files`;
     for (const file of [...files.files, ...dirs.files]) {
         let file_name = file.name;
         if (file.webkitRelativePath) {
@@ -203,12 +226,21 @@ async function upload(e) {
         )
         if (response.ok) {
             refresh_list();
+            uploaded += 1;
+        } else {
+            failed += 1;
         }
-        progress.value += 1;
+        progress.textContent = `Uploaded ${uploaded} out of ${total} files`;
+    }
+    var s = "";
+    if (failed > 0) {
+        if (failed > 1) {
+            s = "s";
+        }
+        progress.textContent = `${failed} upload${s} failed`;
     }
     files.value = "";
     dirs.value = "";
-    progress.value = 0;
     set_upload_enabled(true);
 }
 

@@ -155,6 +155,8 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 5, 9, MP_QSTR_bits);
 
+    uint16_t buffer_size = (uint16_t)mp_arg_validate_int_range(args[ARG_receiver_buffer_size].u_int, 1, 0xffff, MP_QSTR_receiver_buffer_size);
+
     busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == MP_OBJ_FROM_PTR(&busio_uart_parity_even_obj)) {
         parity = BUSIO_UART_PARITY_EVEN;
@@ -174,7 +176,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
         args[ARG_baudrate].u_int, bits, parity, stop, timeout,
-        args[ARG_receiver_buffer_size].u_int, NULL, false);
+        buffer_size, NULL, false);
     return (mp_obj_t)self;
     #else
     mp_raise_NotImplementedError(NULL);

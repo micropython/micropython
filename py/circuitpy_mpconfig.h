@@ -87,7 +87,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_TRACKED_ALLOC            (CIRCUITPY_SSL_MBEDTLS)
 #define MICROPY_ENABLE_SOURCE_LINE       (1)
 #define MICROPY_EPOCH_IS_1970            (1)
-#define MICROPY_ERROR_REPORTING          (MICROPY_ERROR_REPORTING_NORMAL)
+#define MICROPY_ERROR_REPORTING          (CIRCUITPY_FULL_BUILD ? MICROPY_ERROR_REPORTING_NORMAL : MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH  (0)
 #define MICROPY_FLOAT_IMPL               (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_GC_ALLOC_THRESHOLD       (0)
@@ -414,9 +414,6 @@ extern const struct _mp_obj_module_t nvm_module;
 #include <alloca.h>
 
 #define MP_STATE_PORT MP_STATE_VM
-
-// From supervisor/memory.c
-struct _supervisor_allocation_node;
 
 void background_callback_run_all(void);
 #define RUN_BACKGROUND_TASKS (background_callback_run_all())

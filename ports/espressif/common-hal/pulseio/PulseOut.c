@@ -27,61 +27,90 @@
 #include "common-hal/pulseio/PulseOut.h"
 #include "shared-bindings/pulseio/PulseOut.h"
 
+#include "bindings/espidf/__init__.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "py/runtime.h"
 
-// Requires rmt.c void peripherals_reset_all(void) to reset
+#include "driver/rmt_tx.h"
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,
     uint16_t duty_cycle) {
 
-    rmt_channel_t channel = peripherals_find_and_reserve_rmt(TRANSMIT_MODE);
-    if (channel == RMT_CHANNEL_MAX) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
+    // Reserve channel
+    rmt_tx_channel_config_t config = {
+        .gpio_num = pin->number,
+        .clk_src = RMT_CLK_SRC_DEFAULT,
+        .resolution_hz = 1000000,
+        .trans_queue_depth = 1,
+        .mem_block_symbols = SOC_RMT_MEM_WORDS_PER_CHANNEL,
+    };
+    CHECK_ESP_RESULT(rmt_new_tx_channel(&config, &self->channel));
+
+    rmt_copy_encoder_config_t encoder_config = {};
+    esp_err_t result = rmt_new_copy_encoder(&encoder_config, &self->encoder);
+    if (result != ESP_OK) {
+        rmt_del_channel(self->channel);
+        self->channel = NULL;
+        raise_esp_error(result);
     }
 
-    // Configure Channel
-    rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin->number, channel);
-    config.tx_config.carrier_en = true;
-    config.tx_config.carrier_duty_percent = (duty_cycle * 100) / (1 << 16);
-    config.tx_config.carrier_freq_hz = frequency;
-    config.clk_div = 80;
+    if (duty_cycle != 0xffff) {
+        rmt_carrier_config_t tx_carrier_cfg = {
+            .duty_cycle = (duty_cycle * 1.0) / (1 << 16), // duty cycle as a float 0-1
+            .frequency_hz = frequency,
+            .flags.polarity_active_low = false, // carrier should be modulated to high level
+        };
+        // modulate carrier to TX channel
+        ESP_ERROR_CHECK(rmt_apply_carrier(self->channel, &tx_carrier_cfg));
+    }
 
-    rmt_config(&config);
-    rmt_driver_install(channel, 0, 0);
-
-    self->channel = channel;
+    rmt_enable(self->channel);
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
-    return self->channel == RMT_CHANNEL_MAX;
+    return self->channel == NULL;
 }
 
 void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
-    peripherals_free_rmt(self->channel);
-    self->channel = RMT_CHANNEL_MAX;
-
+    rmt_disable(self->channel);
+    rmt_del_encoder(self->encoder);
+    rmt_del_channel(self->channel);
+    self->channel = NULL;
 }
 
 void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pulses, uint16_t length) {
-    rmt_item32_t items[length];
+    rmt_symbol_word_t symbols[length];
 
     // Circuitpython allows 16 bit pulse values, while ESP32 only allows 15 bits
     // Thus, we use entire items for one pulse, rather than switching inside each item
     for (size_t i = 0; i < length; i++) {
         // Setting the RMT duration to 0 has undefined behavior, so avoid that pre-emptively.
         if (pulses[i] == 0) {
-            pulses[i] = 1;
+            continue;
         }
         uint32_t level = (i % 2) ? 0 : 1;
-        const rmt_item32_t item = {{{ (pulses[i] & 0x8000 ? 0x7FFF : 1), level, (pulses[i] & 0x7FFF), level}}};
-        items[i] = item;
+        rmt_symbol_word_t symbol = {
+            .duration0 = (pulses[i] & 0x8000 ? 0x7FFF : 1),
+            .level0 = level,
+            .duration1 = (pulses[i] & 0x7FFF),
+            .level1 = level
+        };
+        symbols[i] = symbol;
     }
 
-    rmt_write_items(self->channel, items, length, true);
-    while (rmt_wait_tx_done(self->channel, 0) != ESP_OK) {
+    // Write and wait to finish
+    rmt_transmit_config_t transmit_config = {
+        .loop_count = 0,
+        .flags.eot_level = 0
+    };
+    CHECK_ESP_RESULT(rmt_transmit(self->channel, self->encoder, symbols, length * sizeof(rmt_symbol_word_t), &transmit_config));
+
+    esp_err_t result = ESP_ERR_TIMEOUT;
+    while (result == ESP_ERR_TIMEOUT) {
         RUN_BACKGROUND_TASKS;
+        result = rmt_tx_wait_all_done(self->channel, 0);
     }
+    CHECK_ESP_RESULT(result);
 }

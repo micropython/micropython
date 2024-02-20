@@ -79,10 +79,13 @@ INC += \
 	-isystem esp-idf/components/driver/deprecated \
 	-isystem esp-idf/components/driver/dac/include \
 	-isystem esp-idf/components/driver/gpio/include \
+	-isystem esp-idf/components/driver/gptimer/include \
 	-isystem esp-idf/components/driver/i2c/include \
 	-isystem esp-idf/components/driver/i2s/include \
 	-isystem esp-idf/components/driver/$(IDF_TARGET)/include \
 	-isystem esp-idf/components/driver/ledc/include \
+	-isystem esp-idf/components/driver/pcnt/include \
+	-isystem esp-idf/components/driver/rmt/include \
 	-isystem esp-idf/components/driver/spi/include \
 	-isystem esp-idf/components/driver/temperature_sensor/include \
 	-isystem esp-idf/components/driver/touch_sensor/include \
@@ -143,6 +146,7 @@ CFLAGS += \
 	-DHAVE_CONFIG_H \
 	-DESP_PLATFORM=1 \
 	-DMBEDTLS_CONFIG_FILE=\"mbedtls/esp_config.h\" \
+	-DMBEDTLS_PADLOCK_FILE=\"ports/espressif/esp-idf/components/mbedtls/mbedtls/library/padlock.h\" \
 	-DUNITY_INCLUDE_CONFIG_H -DWITH_POSIX
 
 # Make our canary value match FreeRTOS's
@@ -280,18 +284,14 @@ SRC_C += \
 	boards/$(BOARD)/pins.c \
 	shared/netutils/netutils.c \
 	peripherals/i2c.c \
-	peripherals/rmt.c \
-	peripherals/timer.c \
 	peripherals/$(IDF_TARGET)/pins.c
+
+SRC_C += lib/mbedtls_config/crt_bundle.c
 
 SRC_C += $(wildcard common-hal/espidf/*.c)
 
 ifneq ($(CIRCUITPY_ESP_USB_SERIAL_JTAG),0)
 SRC_C += supervisor/usb_serial_jtag.c
-endif
-
-ifneq ($(CIRCUITPY_COUNTIO),0)
-SRC_C += peripherals/pcnt.c
 endif
 
 ifneq ($(CIRCUITPY_TOUCHIO_USE_NATIVE),0)
@@ -417,7 +417,12 @@ endif
 do-sdkconfig: $(BUILD)/esp-idf/config/sdkconfig.h
 QSTR_GLOBAL_REQUIREMENTS += $(BUILD)/esp-idf/config/sdkconfig.h
 $(BUILD)/esp-idf/config/sdkconfig.h: boards/$(BOARD)/sdkconfig boards/$(BOARD)/mpconfigboard.mk CMakeLists.txt | $(BUILD)/esp-idf
-	IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
+	$(STEPECHO) "LINK $@"
+	$(Q)env IDF_PATH=$(IDF_PATH) cmake -S . -B $(BUILD)/esp-idf -DSDKCONFIG=$(BUILD)/esp-idf/sdkconfig -DSDKCONFIG_DEFAULTS="$(SDKCONFIGS)" -DCMAKE_TOOLCHAIN_FILE=$(IDF_PATH)/tools/cmake/toolchain-$(IDF_TARGET).cmake -DIDF_TARGET=$(IDF_TARGET) -GNinja
+	$(Q)$(PYTHON) tools/check-sdkconfig.py \
+		CIRCUITPY_DUALBANK=$(CIRCUITPY_DUALBANK) \
+		CIRCUITPY_STORAGE_EXTEND=$(CIRCUITPY_STORAGE_EXTEND) \
+		$@
 
 # build a lib
 # Adding -d explain -j 1 -v to the ninja line will output debug info
@@ -488,6 +493,9 @@ ifneq ($(CIRCUITPY_ESP_PSRAM_SIZE),0)
 	ESP_IDF_COMPONENTS_LINK += esp_psram
 endif
 ifneq ($(CIRCUITPY_DOTCLOCKFRAMEBUFFER),0)
+	ESP_IDF_COMPONENTS_LINK += esp_lcd
+endif
+ifneq ($(CIRCUITPY_PARALLELDISPLAYBUS),0)
 	ESP_IDF_COMPONENTS_LINK += esp_lcd
 endif
 

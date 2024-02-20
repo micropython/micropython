@@ -58,6 +58,14 @@ typedef enum {
 } socketpool_socketpool_tcpopt_t;
 
 typedef enum {
+    SOCKETPOOL_SOL_SOCKET = 0xfff,
+} socketpool_socketpool_optlevel_t;
+
+typedef enum {
+    SOCKETPOOL_SO_REUSEADDR = 0x0004,
+} socketpool_socketpool_socketopt_t;
+
+typedef enum {
     SOCKETPOOL_IP_MULTICAST_TTL = 5,
 } socketpool_socketpool_ipopt_t;
 

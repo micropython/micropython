@@ -83,7 +83,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     }
 
     if (self->tim == NULL) {
-        return PWMOUT_ALL_TIMERS_ON_PIN_IN_USE;
+        return PWMOUT_INTERNAL_RESOURCES_IN_USE;
     }
 
     self->duty_cycle = duty;

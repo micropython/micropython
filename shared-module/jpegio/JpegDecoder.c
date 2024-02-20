@@ -88,8 +88,8 @@ static mp_obj_t common_hal_jpegio_jpegdecoder_decode_common(jpegio_jpegdecoder_o
     }
     check_jresult(result);
     mp_obj_t elems[] = {
-        MP_OBJ_NEW_SMALL_INT(self->decoder.height),
-        MP_OBJ_NEW_SMALL_INT(self->decoder.width)
+        MP_OBJ_NEW_SMALL_INT(self->decoder.width),
+        MP_OBJ_NEW_SMALL_INT(self->decoder.height)
     };
     return mp_obj_new_tuple(MP_ARRAY_SIZE(elems), elems);
 }

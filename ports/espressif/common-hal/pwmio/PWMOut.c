@@ -103,7 +103,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     }
     if (timer_index == INDEX_EMPTY) {
         // Running out of timers isn't pin related on ESP32S2.
-        return PWMOUT_ALL_TIMERS_IN_USE;
+        return PWMOUT_INTERNAL_RESOURCES_IN_USE;
     }
 
     // Find a viable channel
@@ -114,7 +114,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         }
     }
     if (channel_index == INDEX_EMPTY) {
-        return PWMOUT_ALL_CHANNELS_IN_USE;
+        return PWMOUT_INTERNAL_RESOURCES_IN_USE;
     }
 
     // Run configuration

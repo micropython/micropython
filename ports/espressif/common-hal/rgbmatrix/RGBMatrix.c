@@ -28,57 +28,42 @@
 
 #include "common-hal/rgbmatrix/RGBMatrix.h"
 
-#include "peripherals/timer.h"
+#include "bindings/espidf/__init__.h"
+
+#include "driver/gptimer.h"
 
 void *common_hal_rgbmatrix_timer_allocate(rgbmatrix_rgbmatrix_obj_t *self) {
-    static const timer_config_t config = {
-        .alarm_en = false,
-        .counter_en = false,
-        .intr_type = TIMER_INTR_LEVEL,
-        .counter_dir = TIMER_COUNT_UP,
-        .auto_reload = true,
-        .divider = 2 // 40MHz
+    gptimer_config_t config = {
+        .clk_src = GPTIMER_CLK_SRC_DEFAULT,
+        .direction = GPTIMER_COUNT_UP,
+        .resolution_hz = 40000000,
+        .flags = {
+            .intr_shared = true
+        }
     };
+    gptimer_handle_t timer;
 
-    timer_index_t *timer = malloc(sizeof(timer_index_t));
-    bool res = peripherals_timer_init(&config, timer);
-    if (!res) {
-        free(timer);
-        return NULL;
-    }
-    peripherals_timer_never_reset(timer);
+    CHECK_ESP_RESULT(gptimer_new_timer(&config, &timer));
     return timer;
 }
 
-extern bool _PM_esp32timerCallback(void *arg);
-
 void common_hal_rgbmatrix_timer_enable(void *ptr) {
-    timer_index_t *timer = (timer_index_t *)ptr;
-    if (timer->idx == TIMER_MAX) {
-        return;
-    }
-    timer_start(timer->group, timer->idx);
+    // protomatter does this.
 }
 
 void common_hal_rgbmatrix_timer_disable(void *ptr) {
     if (ptr == NULL) {
         return;
     }
-    timer_index_t *timer = (timer_index_t *)ptr;
-    if (timer->idx == TIMER_MAX) {
-        return;
-    }
-    timer_pause(timer->group, timer->idx);
+    gptimer_handle_t timer = (gptimer_handle_t)ptr;
+    gptimer_stop(timer);
 }
 
 void common_hal_rgbmatrix_timer_free(void *ptr) {
-    timer_index_t *timer = (timer_index_t *)ptr;
-    if (timer->idx == TIMER_MAX) {
+    if (ptr == NULL) {
         return;
     }
-    common_hal_rgbmatrix_timer_disable(ptr);
-    timer_disable_intr(timer->group, timer->idx);
-    timer_isr_callback_remove(timer->group, timer->idx);
-    peripherals_timer_deinit(timer);
-    free(timer);
+    gptimer_handle_t timer = (gptimer_handle_t)ptr;
+    gptimer_disable(timer);
+    gptimer_del_timer(timer);
 }

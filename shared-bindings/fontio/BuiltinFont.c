@@ -47,6 +47,7 @@
 //|         The two element version is ``(width, height)``, in which
 //|         ``x_offset`` and ``y_offset`` are assumed to be zero."""
 //|         pass
+//|
 //|     def get_glyph(self, codepoint: int) -> Optional[Glyph]:
 //|         """Retrieve the Glyph for a given code point
 //|

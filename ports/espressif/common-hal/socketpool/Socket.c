@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 #include "shared-bindings/ssl/SSLSocket.h"
-#include "common-hal/ssl/SSLSocket.h"
+#include "shared-module/ssl/SSLSocket.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
@@ -307,6 +307,7 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         accepted->num = newsoc;
         accepted->pool = self->pool;
         accepted->connected = true;
+        accepted->type = self->type;
     }
 
     return newsoc;
@@ -324,6 +325,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         sock->num = newsoc;
         sock->pool = self->pool;
         sock->connected = true;
+        sock->type = self->type;
 
         return sock;
     } else {
@@ -332,7 +334,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     }
 }
 
-bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
+size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
     const char *broadcast = "<broadcast>";
@@ -349,13 +351,11 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     bind_addr.sin_family = AF_INET;
     bind_addr.sin_port = htons(port);
 
-    int opt = 1;
-    int err = lwip_setsockopt(self->num, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    if (err != 0) {
-        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot set socket options"));
-    }
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
-    return result == 0;
+    if (result == 0) {
+        return 0;
+    }
+    return errno;
 }
 
 void socketpool_socket_close(socketpool_socket_obj_t *self) {

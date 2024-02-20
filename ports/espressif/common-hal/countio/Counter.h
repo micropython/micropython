@@ -24,17 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_COUNTIO_COUNTER_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_COUNTIO_COUNTER_H
+#pragma once
 
 #include "py/obj.h"
-#include "peripherals/pcnt.h"
+#include "driver/pulse_cnt.h"
 
 typedef struct {
     mp_obj_base_t base;
-    uint8_t pin;
+    pcnt_unit_handle_t unit;
+    pcnt_channel_handle_t channel;
     mp_int_t count;
-    pcnt_unit_t unit;
+    uint8_t pin;
 } countio_counter_obj_t;
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_COUNTIO_COUNT_H

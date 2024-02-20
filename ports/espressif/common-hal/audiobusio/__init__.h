@@ -36,8 +36,8 @@ typedef struct {
     mp_obj_t *sample;
     bool left_justified;
     bool loop;
-    bool paused;
-    bool playing;
+    bool paused; // True when the I2S channel is configured but disabled.
+    bool playing; // True when the I2S channel is configured.
     bool stopping;
     bool samples_signed;
     int8_t bytes_per_sample;
