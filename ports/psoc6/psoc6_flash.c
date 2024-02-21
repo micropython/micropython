@@ -86,18 +86,38 @@ STATIC psoc6_flash_obj_t psoc6_flash_obj = {
 cyhal_flash_t cyhal_flash_obj;
 cyhal_flash_info_t flash_info;
 
-// Helper function to get external flash configurations
+// Helper function to get internal flash configurations
 void get_flash_info(void) {
     mplogger_print("\nRetrieving internal flash info...\n");
     cyhal_flash_get_info(&cyhal_flash_obj, &flash_info);
-    // mplogger_print("\nTotal flash size (MB): %d\n", cy_serial_flash_qspi_get_size() / (1024 * 1024));
-    // mplogger_print("\nSize of erase sector (bytes): %d\n", cy_serial_flash_qspi_get_erase_size(0x00) / (1024));
-    // mplogger_print("\nPage size (bytes): %d\n", cy_serial_flash_qspi_get_prog_size(0x00));
+    /* Wait for 100ms for the flash write to complete */
+    uint32_t timeout = 100;
+    /* Wait for the command to finish execution */
+    while ((true != cyhal_flash_is_operation_complete(&cyhal_flash_obj)) && (0 < timeout)) {
+        timeout--;
+        cyhal_system_delay_ms(1); /* delay one millisecond each iteration */
+    }
+    uint32_t total_flash_size = 0;
+    uint32_t page_size = 0;
+    if (0 != timeout) {
+        for (int index = 0; index < flash_info.block_count; index++)
+        {
+            const cyhal_flash_block_info_t *block_info = flash_info.blocks;
+            total_flash_size += block_info->size;
+            page_size = block_info->page_size;
+        }
+    }
+
+    mplogger_print("\nTotal flash size (MB): %ld\n", total_flash_size / (1024 * 1024));
+    mplogger_print("\nTotal no. of blocks: %d\n", flash_info.block_count);
+    mplogger_print("\nPage size (bytes): %ld\n", page_size);
 }
 
 STATIC mp_obj_t psoc6_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mplogger_print("\nFlash constructor invoked\n");
+    #if MICROPY_LOGGER_DEBUG
     get_flash_info();
+    #endif
 
     cy_rslt_t result = CY_RSLT_SUCCESS;
 

@@ -259,48 +259,19 @@ if [ ${fs} -eq 1 ]; then
   echo
   echo "  done."
   echo
+  
+  chmod 777 ./psoc6/test_scripts/fs.py
 
-  echo " attempting to save different test files in flash  "
-  echo
-  echo " saving test_fs_small_file.txt to FS - (size : 10KB) "
-
-  command_output=$( ../tools/mpremote/mpremote.py connect ${device0} cp ./psoc6/test_inputs/test_fs_small_file.txt :/)
-  exp_output="cp ./psoc6/test_inputs/test_fs_small_file.txt :/"
-  if [ "$command_output" != "$exp_output" ]; then
-    echo "Error: Cannot save small file."
-    exit 1
-  fi
+  python3 ./psoc6/test_scripts/fs.py ${device0} 0
 
   # On device file saving tests for medium and large size takes considerable amount of time. Hence only when needed, this should be triggered.
   if [ ${afs} -eq 1 ]; then
-
-    echo " saving test_fs_medium_file.txt to FS - (size : 500KB) "
-    command_output=$(../tools/mpremote/mpremote.py connect ${device0} cp ./psoc6/test_inputs/test_fs_medium_file.txt :/)
-    exp_output="cp ./psoc6/test_inputs/test_fs_medium_file.txt :/"
-    if [ "$command_output" != "$exp_output" ]; then
-    echo "Error: Cannot save medium file."
-    exit 1
-    fi
-
-    echo " saving test_fs_large_file.txt to FS - (size : 1MB) "
-    command_output=$(../tools/mpremote/mpremote.py connect ${device0} cp ./psoc6/test_inputs/test_fs_large_file.txt :/)
-    exp_output="cp ./psoc6/test_inputs/test_fs_large_file.txt :/"
-    if [ "$command_output" != "$exp_output" ]; then
-    echo "Error: Cannot save large file."
-    exit 1
-    fi
-  
+    python3 ./psoc6/test_scripts/fs.py ${device0} 1  
   fi
-
-  echo
-  echo "  done."
-  echo
 
 fi
 
-
 if [ ${implemented} -eq 1 ]; then
-
 
   echo "  running implemented tests ..."
   echo

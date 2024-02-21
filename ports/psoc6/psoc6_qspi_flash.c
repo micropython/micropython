@@ -89,7 +89,9 @@ void get_ext_flash_info(void) {
 
 STATIC mp_obj_t psoc6_qspi_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mplogger_print("\nQSPI flash constructor invoked\n");
+    #if MICROPY_LOGGER_DEBUG
     get_ext_flash_info();
+    #endif
 
     cy_rslt_t result = CY_RSLT_SUCCESS;
 

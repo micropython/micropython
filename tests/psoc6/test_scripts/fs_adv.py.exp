@@ -1,0 +1,3 @@
+cp ./psoc6/test_inputs/test_fs_small_file.txt :/
+cp ./psoc6/test_inputs/test_fs_medium_file.txt :/
+cp ./psoc6/test_inputs/test_fs_large_file.txt :/
