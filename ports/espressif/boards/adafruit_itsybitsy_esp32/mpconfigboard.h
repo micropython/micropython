@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2022 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,30 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+// Micropython setup
 
-#if CIRCUITPY_SSL_MBEDTLS
-#include "shared-module/ssl/SSLSocket.h"
-#else
-#include "common-hal/ssl/SSLSocket.h"
-#endif
+#define MICROPY_HW_BOARD_NAME       "Adafruit ItsyBitsy ESP32"
+#define MICROPY_HW_MCU_NAME         "ESP32"
 
-extern const mp_obj_type_t ssl_sslsocket_type;
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO0)
+#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO2)
 
-ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self, uint8_t *ip, uint32_t *port);
-size_t common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
-void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
-bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self);
-bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self);
-bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog);
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len);
-mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len);
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms);
+#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
+
+#define CIRCUITPY_BOARD_I2C         (1)
+#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO27, .sda = &pin_GPIO15}}
+
+#define CIRCUITPY_BOARD_SPI         (1)
+#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO19, .mosi = &pin_GPIO21, .miso = &pin_GPIO22}}
+
+#define CIRCUITPY_BOARD_UART        (1)
+#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO20, .rx = &pin_GPIO8}}
+
+#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO35)
+
+// Explanation of how a user got into safe mode
+#define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("You pressed the boot button at start up.")
+
+// UART pins attached to the USB-serial converter chip
+#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
+#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)

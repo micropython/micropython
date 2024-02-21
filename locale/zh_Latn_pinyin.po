@@ -687,10 +687,6 @@ msgstr "Huǎnchōngqū tàiduǎn , mùqián zhǐyǒu %d zìjié"
 msgid "Buffer too small"
 msgstr "huǎnchōngqū tàixiǎo"
 
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Buffers must be same size"
-msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
-
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
@@ -785,10 +781,6 @@ msgstr "Wúfǎ jìlù dào wénjiàn"
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
 msgstr "tōngguò USB kějiàn shí wúfǎ chóngxīn ānzhuāng '/'."
-
-#: ports/espressif/common-hal/socketpool/Socket.c
-msgid "Cannot set socket options"
-msgstr "wúfǎ shèzhì tàojiēzì xuǎnxiàng"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -942,7 +934,7 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 msgid "Error in safemode.py."
 msgstr "safemode.py cuò wù."
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "cuò wù: bǎng dìng shī bài"
 
@@ -962,10 +954,6 @@ msgstr "FFT jǐn wéi ndarrays dìng yì"
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT jǐn shì yòng yú yī wéi shù zǔ"
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-msgid "Failed SSL handshake"
-msgstr "SSL wòshǒu shībài"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1185,7 +1173,6 @@ msgstr "nèi bù yīn pín huǎn chōng qì tài xiǎo"
 msgid "Internal define error"
 msgstr "Nèibù dìngyì cuòwù"
 
-#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "nèi bù cuò wù"
@@ -1288,8 +1275,7 @@ msgstr "wú xiào de duō bō MAC dì zhǐ"
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
 
-#: ports/espressif/common-hal/ssl/SSLContext.c
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "TLS de chā zuò wú xiào"
 
@@ -1463,10 +1449,6 @@ msgstr "wú IP"
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
 msgstr "bù cúnzài yǐndǎo jiāzǎi chéngxù"
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "No capture in progress"
-msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
 
 #: shared-module/usb/core/Device.c
 msgid "No configuration set"
@@ -1844,7 +1826,7 @@ msgstr "Suíjī shù shēngchéng cuòwù"
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
-#: shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c shared-module/displayio/Group.c
 msgid "Read-only"
 msgstr "Zhǐ dú"
 
@@ -2188,11 +2170,6 @@ msgstr "wú fǎ xiě rù sleep_memory."
 msgid "Unexpected nrfx uuid type"
 msgstr "Yìwài de nrfx uuid lèixíng"
 
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-#, c-format
-msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
-
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
@@ -2376,6 +2353,10 @@ msgstr "nín zài qǐ dòng shí àn xià le SW38 àn niǔ."
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr "nín zài qǐ dòng shí àn xià le yīn liàng àn niǔ."
+
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the boot button at start up."
+msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
@@ -3329,7 +3310,7 @@ msgstr "wúxiàode cúndàng"
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 2, 4, 8, 16, 24, huò 32"
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr "zhèngshū wúxiào"
 
@@ -3355,7 +3336,7 @@ msgstr "wúxiào de géshì biāozhù"
 msgid "invalid hostname"
 msgstr "wú xiào zhǔ jī míng"
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr "wúxiào de mì yào"
 
@@ -4392,6 +4373,22 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Buffers must be same size"
+#~ msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
+
+#~ msgid "Cannot set socket options"
+#~ msgstr "wúfǎ shèzhì tàojiēzì xuǎnxiàng"
+
+#~ msgid "Failed SSL handshake"
+#~ msgstr "SSL wòshǒu shībài"
+
+#~ msgid "No capture in progress"
+#~ msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
+
+#, c-format
+#~ msgid "Unhandled ESP TLS error %d %d %x %d"
+#~ msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
 
 #~ msgid "All PCNT units in use"
 #~ msgstr "suǒyǒu PCNT dānyuán dōu zài shǐyòng zhōng"

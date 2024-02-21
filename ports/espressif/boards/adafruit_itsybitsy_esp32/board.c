@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Lucian Copeland for Adafruit Industries
+ * Copyright (c) 2020 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,23 +24,22 @@
  * THE SOFTWARE.
  */
 
-#pragma once
+#include "supervisor/board.h"
+#include "mpconfigboard.h"
+#include "shared-bindings/microcontroller/Pin.h"
+#include "components/driver/gpio/include/driver/gpio.h"
+#include "components/hal/include/hal/gpio_hal.h"
+#include "common-hal/microcontroller/Pin.h"
 
-#if CIRCUITPY_SSL_MBEDTLS
-#include "shared-module/ssl/SSLSocket.h"
-#else
-#include "common-hal/ssl/SSLSocket.h"
-#endif
+bool espressif_board_reset_pin_number(gpio_num_t pin_number) {
+    if (pin_number == 2) {
+        // Turn on NeoPixel and I2C power by default.
+        gpio_set_direction(pin_number, GPIO_MODE_DEF_OUTPUT);
+        gpio_set_level(pin_number, true);
+        return true;
+    }
 
-extern const mp_obj_type_t ssl_sslsocket_type;
+    return false;
+}
 
-ssl_sslsocket_obj_t *common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self, uint8_t *ip, uint32_t *port);
-size_t common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
-void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self);
-void common_hal_ssl_sslsocket_connect(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port);
-bool common_hal_ssl_sslsocket_get_closed(ssl_sslsocket_obj_t *self);
-bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self);
-bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog);
-mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len);
-mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len);
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms);
+// Use the MP_WEAK supervisor/shared/board.c versions of routines not defined here.

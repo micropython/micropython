@@ -683,10 +683,6 @@ msgstr "Puffer um %d Bytes zu kurz"
 msgid "Buffer too small"
 msgstr "Puffer ist zu klein"
 
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Buffers must be same size"
-msgstr "Buffers müssen gleiche Größe haben"
-
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
@@ -781,10 +777,6 @@ msgstr "Aufnahme in eine Datei nicht möglich"
 #: shared-module/storage/__init__.c
 msgid "Cannot remount '/' when visible via USB."
 msgstr "'/' kann nicht wiedereingehängt werden, wenn per USB sichtbar."
-
-#: ports/espressif/common-hal/socketpool/Socket.c
-msgid "Cannot set socket options"
-msgstr "Socket-Optionen können nicht gesetzt werden"
 
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
@@ -940,7 +932,7 @@ msgstr "Fehler in regex"
 msgid "Error in safemode.py."
 msgstr "Fehler in safemode.py."
 
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
+#: shared-bindings/ssl/SSLSocket.c
 msgid "Error: Failure to bind"
 msgstr "Error: Bind Fehler"
 
@@ -961,10 +953,6 @@ msgstr "FFT ist nur für ndarrays definiert"
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT ist nur für lineare Arrays implementiert"
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-msgid "Failed SSL handshake"
-msgstr "SSL Handshake fehlgeschlagen"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1179,7 +1167,6 @@ msgstr "Interner Audio-Buffer zu klein"
 msgid "Internal define error"
 msgstr "Interner Definitionsfehler"
 
-#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "Interner Fehler"
@@ -1282,8 +1269,7 @@ msgstr "Ungültige Multicast-MAC-Adresse"
 msgid "Invalid size"
 msgstr "Ungültige Größe"
 
-#: ports/espressif/common-hal/ssl/SSLContext.c
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "Ungültiges Socket für TLS"
 
@@ -1457,10 +1443,6 @@ msgstr "Keine IP"
 #: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
 msgid "No bootloader present"
 msgstr ""
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "No capture in progress"
-msgstr "Kein laufende Aufzeichnung"
 
 #: shared-module/usb/core/Device.c
 msgid "No configuration set"
@@ -1840,7 +1822,7 @@ msgstr "Fehler bei der Erzeugung von Zufallszahlen"
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
-#: shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c shared-module/displayio/Group.c
 msgid "Read-only"
 msgstr "Nur lesen möglich, da Schreibgeschützt"
 
@@ -2189,11 +2171,6 @@ msgstr "Schreiben in sleep_memory nicht möglich."
 msgid "Unexpected nrfx uuid type"
 msgstr "Unerwarteter nrfx uuid-Typ"
 
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-#, c-format
-msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr "Unbehandelter ESP-TLS-Fehler %d %d %x %d"
-
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown BLE error at %s:%d: %d"
@@ -2382,6 +2359,10 @@ msgstr "Der SW38-Knopf wurde beim Starten gedrückt."
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr "Der VOLUME-Knopf wurde beim Starten gedrückt."
+
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the boot button at start up."
+msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
@@ -3343,7 +3324,7 @@ msgstr ""
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr "ungültige Bits_pro_Pixel %d, muss 1, 2, 4, 8, 16, 24 oder 32 sein"
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr "ungültiges cert"
 
@@ -3369,7 +3350,7 @@ msgstr "ungültiger Formatbezeichner"
 msgid "invalid hostname"
 msgstr "ungültiger Hostname"
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr "ungültiger Schlüssel"
 
@@ -4411,6 +4392,22 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "Buffers must be same size"
+#~ msgstr "Buffers müssen gleiche Größe haben"
+
+#~ msgid "Cannot set socket options"
+#~ msgstr "Socket-Optionen können nicht gesetzt werden"
+
+#~ msgid "Failed SSL handshake"
+#~ msgstr "SSL Handshake fehlgeschlagen"
+
+#~ msgid "No capture in progress"
+#~ msgstr "Kein laufende Aufzeichnung"
+
+#, c-format
+#~ msgid "Unhandled ESP TLS error %d %d %x %d"
+#~ msgstr "Unbehandelter ESP-TLS-Fehler %d %d %x %d"
 
 #~ msgid "All PCNT units in use"
 #~ msgstr "Alle PCNT-Einheiten sind in Benutzung"
