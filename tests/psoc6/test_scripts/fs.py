@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import os
 
 device = sys.argv[1]
 test_type = sys.argv[2]
@@ -11,8 +12,8 @@ local_large_file_path = "./psoc6/test_inputs/test_fs_large_file.txt"
 remote_directory_path = "/"
 
 # out and exp file paths
-basic_test_op_fp = "./psoc6/test_scripts/results/fs_basic.py.out"
-adv_test_op_fp = "./psoc6/test_scripts/results/fs_adv.py.out"
+basic_test_op_fp = "./psoc6/test_scripts/fs_basic.py.out"
+adv_test_op_fp = "./psoc6/test_scripts/fs_adv.py.out"
 exp_basic_op_fp = "./psoc6/test_scripts/fs_basic.py.exp"
 exp_adv_op_fp = "./psoc6/test_scripts/fs_adv.py.exp"
 
@@ -33,7 +34,6 @@ def exec(cmd, op_file_path="null"):
         if output.returncode == 0:
             subprocess.run(f"{cmd} {op_file_path}", shell=True, capture_output=False)
     else:
-        print(op_file_path)
         with open(op_file_path, "a") as file:
             subprocess.call(cmd, shell=True, stdout=file)
 
@@ -58,6 +58,7 @@ def fs_basic_test():
     exec(mpr_rm, "test_fs_small_file.txt")
     exec(mpr_small_file_cp, basic_test_op_fp)
     validate_test(basic_test_op_fp, exp_basic_op_fp)
+    os.remove(basic_test_op_fp)
 
 
 def fs_adv_test():
@@ -72,6 +73,7 @@ def fs_adv_test():
     exec(mpr_rm, "test_fs_large_file.txt")
     exec(mpr_large_file_cp, adv_test_op_fp)
     validate_test(adv_test_op_fp, exp_adv_op_fp)
+    os.remove(adv_test_op_fp_test_op_fp)
 
 
 if test_type == "0":
