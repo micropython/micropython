@@ -608,6 +608,7 @@ static mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
         #else
         uint32_t num_bytes_written = copy_appbuf_to_dma(self, &appbuf);
         #endif
+
         return num_bytes_written;
     }
 }
@@ -632,16 +633,8 @@ static mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 ret |= MP_STREAM_POLL_RD;
             }
             #else
-            // check event queue to determine if a DMA buffer has been filled
-            // (which is an indication that at least one DMA buffer is available to be read)
-            // note:  timeout = 0 so the call is non-blocking
-            i2s_event_t i2s_event;
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_RX_DONE) {
-                    // getting here means that at least one DMA buffer is now full
-                    // indicating that audio samples can be read from the I2S object
-                    ret |= MP_STREAM_POLL_RD;
-                }
+            if (self->dma_buffer_status == DMA_MEMORY_NOT_EMPTY) {
+                ret |= MP_STREAM_POLL_RD;
             }
             #endif
         }
@@ -657,16 +650,8 @@ static mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 ret |= MP_STREAM_POLL_WR;
             }
             #else
-            // check event queue to determine if a DMA buffer has been emptied
-            // (which is an indication that at least one DMA buffer is available to be written)
-            // note:  timeout = 0 so the call is non-blocking
-            i2s_event_t i2s_event;
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_TX_DONE) {
-                    // getting here means that at least one DMA buffer is now empty
-                    // indicating that audio samples can be written to the I2S object
-                    ret |= MP_STREAM_POLL_WR;
-                }
+            if (self->dma_buffer_status == DMA_MEMORY_NOT_FULL) {
+                ret |= MP_STREAM_POLL_WR;
             }
             #endif
         }
