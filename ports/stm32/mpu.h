@@ -37,7 +37,12 @@
 #define MPU_REGION_SDRAM1   (MPU_REGION_NUMBER4)
 #define MPU_REGION_SDRAM2   (MPU_REGION_NUMBER5)
 
-#define MPU_CONFIG_DISABLE(srd, size) ( \
+// Attribute value to disable a region entirely, remove it from the MPU
+// (i.e. the MPU_REGION_ENABLE bit is unset.)
+#define MPU_CONFIG_DISABLE 0
+
+// Configure a region with all access disabled. Can also set a Subregion Disable mask.
+#define MPU_CONFIG_NOACCESS(srd, size) ( \
     MPU_INSTRUCTION_ACCESS_DISABLE << MPU_RASR_XN_Pos \
         | MPU_REGION_NO_ACCESS << MPU_RASR_AP_Pos \
         | MPU_TEX_LEVEL0 << MPU_RASR_TEX_Pos \
