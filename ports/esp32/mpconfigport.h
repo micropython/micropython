@@ -9,7 +9,7 @@
 #include "esp_random.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
-#include "driver/i2s.h"
+#include "driver/i2s_std.h"
 #include "esp_wifi_types.h"
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
@@ -147,8 +147,8 @@
 #endif
 #define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/esp32/machine_i2s.c"
 #define MICROPY_PY_MACHINE_I2S_FINALISER    (1)
-#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (I2S_MODE_MASTER | I2S_MODE_RX)
-#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (I2S_MODE_MASTER | I2S_MODE_TX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (I2S_DIR_RX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (I2S_DIR_TX)
 #define MICROPY_PY_MACHINE_UART             (1)
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
 #define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
