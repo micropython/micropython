@@ -35,17 +35,17 @@ def exec(cmd, op_file_path="null"):
             subprocess.run(f"{cmd} {op_file_path}", shell=True, capture_output=False)
     else:
         with open(op_file_path, "a") as file:
-            subprocess.call(cmd, shell=True, stdout=file)
+            subprocess.check_call(cmd, shell=True, stdout=file)
 
 
 def validate_test(op, exp_op):
     with open(op, "r") as output_file:
-        output = output_file.read()
+        output = [line.strip() for line in output_file]
 
     with open(exp_op, "r") as exp_output_file:
-        exp_output = exp_output_file.read()
+        exp_output = [line.strip() for line in exp_output_file]
 
-    if output == exp_output:
+    if output != exp_output:
         print("Operation failed!")
         sys.exit(1)
     else:
@@ -73,7 +73,7 @@ def fs_adv_test():
     exec(mpr_rm, "test_fs_large_file.txt")
     exec(mpr_large_file_cp, adv_test_op_fp)
     validate_test(adv_test_op_fp, exp_adv_op_fp)
-    os.remove(adv_test_op_fp_test_op_fp)
+    os.remove(adv_test_op_fp)
 
 
 if test_type == "0":
