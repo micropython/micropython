@@ -170,7 +170,12 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     DEBUG_printf("mp_bluetooth_hci_uart_init (stm32)\n");
 
     // bits (8), stop (1), parity (none) and flow (rts/cts) are assumed to match MYNEWT_VAL_BLE_HCI_UART_ constants in syscfg.h.
+    #if MICROPY_PY_MACHINE_UART
     mp_bluetooth_hci_uart_obj.base.type = &machine_uart_type;
+    #else
+    // With machine.UART disabled this object is not user-accessible so doesn't need a type.
+    mp_bluetooth_hci_uart_obj.base.type = NULL;
+    #endif
     mp_bluetooth_hci_uart_obj.uart_id = port;
     mp_bluetooth_hci_uart_obj.is_static = true;
     // We don't want to block indefinitely, but expect flow control is doing its job.
