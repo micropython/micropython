@@ -263,10 +263,18 @@ if [ ${fs} -eq 1 ]; then
   chmod 777 ./psoc6/test_scripts/fs.py
 
   python3 ./psoc6/test_scripts/fs.py ${device0} 0
+  if [ $? -ne 0 ]; then
+    echo "FS test failed"
+    exit 1
+  fi
 
   # On device file saving tests for medium and large size takes considerable amount of time. Hence only when needed, this should be triggered.
   if [ ${afs} -eq 1 ]; then
-    python3 ./psoc6/test_scripts/fs.py ${device0} 1  
+    python3 ./psoc6/test_scripts/fs.py ${device0} 1
+    if [ $? -ne 0 ]; then
+      echo "FS test failed"
+      exit 1
+  fi  
   fi
 
 fi
