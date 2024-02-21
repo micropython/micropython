@@ -43,6 +43,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/pulseio/PulseIn.h"
+#include "supervisor/samd_prevent_sleep.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/port.h"
 
@@ -232,7 +233,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     // Set config will enable the EIC.
     pulsein_set_config(self, true);
     #ifdef SAMD21
-    rtc_start_pulse();
+    samd_prevent_sleep();
     #endif
 }
 
@@ -245,7 +246,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
         return;
     }
     #ifdef SAMD21
-    rtc_end_pulse();
+    samd_allow_sleep();
     #endif
     set_eic_handler(self->channel, EIC_HANDLER_NO_INTERRUPT);
     turn_off_eic_channel(self->channel);
@@ -263,7 +264,7 @@ void common_hal_pulseio_pulsein_pause(pulseio_pulsein_obj_t *self) {
     uint32_t mask = 1 << self->channel;
     EIC->INTENCLR.reg = mask << EIC_INTENSET_EXTINT_Pos;
     #ifdef SAMD21
-    rtc_end_pulse();
+    samd_allow_sleep();
     #endif
 }
 
@@ -293,7 +294,7 @@ void common_hal_pulseio_pulsein_resume(pulseio_pulsein_obj_t *self,
     EIC->INTENSET.reg = mask << EIC_INTENSET_EXTINT_Pos;
 
     #ifdef SAMD21
-    rtc_start_pulse();
+    samd_prevent_sleep();
     #endif
     pulsein_set_config(self, true);
 }
