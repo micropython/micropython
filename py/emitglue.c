@@ -92,7 +92,7 @@ void mp_emit_glue_assign_bytecode(mp_raw_code_t *rc, const byte *code,
 }
 
 #if MICROPY_EMIT_MACHINE_CODE
-void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void *fun_data, mp_uint_t fun_len,
+void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, const void *fun_data, mp_uint_t fun_len,
     mp_raw_code_t **children,
     #if MICROPY_PERSISTENT_CODE_SAVE
     uint16_t n_children,
@@ -115,7 +115,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
     #endif
     #elif MICROPY_EMIT_ARM
     #if (defined(__linux__) && defined(__GNUC__)) || __ARM_ARCH == 7
-    __builtin___clear_cache(fun_data, (uint8_t *)fun_data + fun_len);
+    __builtin___clear_cache((void *)fun_data, (uint8_t *)fun_data + fun_len);
     #elif defined(__arm__)
     // Flush I-cache and D-cache.
     asm volatile (
@@ -154,7 +154,7 @@ void mp_emit_glue_assign_native(mp_raw_code_t *rc, mp_raw_code_kind_t kind, void
         if (i > 0 && i % 16 == 0) {
             DEBUG_printf("\n");
         }
-        DEBUG_printf(" %02x", ((byte *)fun_data)[i]);
+        DEBUG_printf(" %02x", ((const byte *)fun_data)[i]);
     }
     DEBUG_printf("\n");
 
