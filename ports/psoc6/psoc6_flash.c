@@ -222,8 +222,8 @@ STATIC mp_obj_t psoc6_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
 
     cy_rslt_t result = cyhal_flash_write(&cyhal_flash_obj, self->flash_base + offset, bufinfo.buf);
     if (CY_RSLT_SUCCESS != result) {
-        mplogger_print("psoc6_qspi_flash_writeblocks() failed while writing with error code: %u\n", CY_RSLT_GET_CODE(result));
-        mp_raise_ValueError(MP_ERROR_TEXT("psoc6_qspi_flash_writeblocks() - QSPI Flash Write failed!"));
+        mplogger_print("psoc6_flash_writeblocks() failed while writing with error code: %u\n", CY_RSLT_GET_CODE(result));
+        mp_raise_ValueError(MP_ERROR_TEXT("psoc6_flash_writeblocks() - Flash Write failed!"));
     }
 
     MICROPY_END_ATOMIC_SECTION(atomic_state);
@@ -232,7 +232,7 @@ STATIC mp_obj_t psoc6_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc6_flash_writeblocks_obj, 3, 4, psoc6_flash_writeblocks);
 
 STATIC mp_obj_t psoc6_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
-    mplogger_print("QSPI flash ioctrl called\n");
+    mplogger_print("Flash ioctrl called\n");
     psoc6_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
 
