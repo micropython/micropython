@@ -46,8 +46,6 @@ typedef struct {
     volatile bool errored_too_fast;
 } pulseio_pulsein_obj_t;
 
-void pulsein_reset(void);
-
 void pulsein_interrupt_handler(uint8_t channel);
 void pulsein_timer_interrupt_handler(uint8_t index);
 #ifdef SAMD21

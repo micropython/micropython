@@ -97,21 +97,6 @@ STATIC void reset_single_pwmout(uint8_t i) {
     }
 }
 
-void pwmout_reset(void) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
-        for (size_t c = 0; c < CHANNELS_PER_PWM; c++) {
-            if ((never_reset_pwm[i] & (1 << c)) != 0) {
-                continue;
-            }
-            pwms[i]->PSEL.OUT[c] = 0xFFFFFFFF;
-        }
-        if (never_reset_pwm[i] != 0) {
-            continue;
-        }
-        reset_single_pwmout(i);
-    }
-}
-
 // Find the smallest prescaler value that will allow the divisor to be in range.
 // This allows the most accuracy.
 STATIC bool convert_frequency(uint32_t frequency, uint16_t *countertop, nrf_pwm_clk_t *base_clock) {

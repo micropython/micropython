@@ -92,15 +92,6 @@ void pulseout_interrupt_handler(uint8_t index) {
     tc->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
 }
 
-void pulseout_reset() {
-    refcount = 0;
-    pulseout_tc_index = 0xff;
-    active_pincfg = NULL;
-    #ifdef SAMD21
-    rtc_end_pulse();
-    #endif
-}
-
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,

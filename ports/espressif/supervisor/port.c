@@ -49,8 +49,6 @@
 #include "common-hal/busio/UART.h"
 #include "common-hal/dualbank/__init__.h"
 #include "common-hal/ps2io/Ps2.h"
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/watchdog/WatchDogTimer.h"
 #include "common-hal/socketpool/Socket.h"
 #include "common-hal/wifi/__init__.h"
@@ -381,10 +379,6 @@ void reset_port(void) {
 
     #if CIRCUITPY_PS2IO
     ps2_reset();
-    #endif
-
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
     #endif
 
     #if CIRCUITPY_RTC

@@ -77,15 +77,6 @@
 
 #include "common-hal/microcontroller/Pin.h"
 
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseIn.h"
-#include "common-hal/pulseio/PulseOut.h"
-#endif
-
-#if CIRCUITPY_PWMIO
-#include "common-hal/pwmio/PWMOut.h"
-#endif
-
 #if CIRCUITPY_PS2IO
 #include "common-hal/ps2io/Ps2.h"
 #endif
@@ -111,9 +102,7 @@
 #include "samd/dma.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "shared_timers.h"
 #include "reset.h"
-#include "common-hal/pulseio/PulseIn.h"
 
 #include "supervisor/background_callback.h"
 #include "supervisor/shared/safe_mode.h"
@@ -411,19 +400,6 @@ void reset_port(void) {
     #endif
 
     eic_reset();
-
-    #if CIRCUITPY_PULSEIO
-    pulsein_reset();
-    pulseout_reset();
-    #endif
-
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
-    #endif
-
-    #if CIRCUITPY_PWMIO || CIRCUITPY_AUDIOIO || CIRCUITPY_FREQUENCYIO
-    reset_timers();
-    #endif
 
     #if CIRCUITPY_ANALOGIO
     analogin_reset();

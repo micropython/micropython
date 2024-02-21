@@ -83,15 +83,6 @@ STATIC void deactivate_audiopwmout_obj(audiopwmio_pwmaudioout_obj_t *self) {
     }
 }
 
-void audiopwmout_reset() {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(active_audio); i++) {
-        if (active_audio[i]) {
-            supervisor_disable_tick();
-        }
-        active_audio[i] = NULL;
-    }
-}
-
 STATIC void fill_buffers(audiopwmio_pwmaudioout_obj_t *self, int buf) {
     uint16_t *dev_buffer = self->buffers[buf];
     uint8_t *buffer;

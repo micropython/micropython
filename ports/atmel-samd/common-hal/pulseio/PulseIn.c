@@ -140,15 +140,6 @@ void pulsein_interrupt_handler(uint8_t channel) {
     common_hal_mcu_enable_interrupts();
 }
 
-void pulsein_reset() {
-    #ifdef SAMD21
-    rtc_end_pulse();
-    #endif
-    refcount = 0;
-    pulsein_tc_index = 0xff;
-    overflow_count = 0;
-}
-
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
     if (!pin->has_extint) {
@@ -243,7 +234,6 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self,
     #ifdef SAMD21
     rtc_start_pulse();
     #endif
-
 }
 
 bool common_hal_pulseio_pulsein_deinited(pulseio_pulsein_obj_t *self) {
