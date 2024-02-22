@@ -244,6 +244,51 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
     bindings_cyw43_wifi_enforce_pm();
 }
 
+// There's no published API for the DHCP server to retrieve lease information
+// This code depends on undocumented internal structures and is likely to break in the future
+static uint32_t cyw43_dhcps_get_ip_addr(dhcp_server_t *dhcp_server, uint8_t *mac_address) {
+    for (int i = 0; i < DHCPS_MAX_IP; i++) {
+        if (memcmp(dhcp_server->lease[i].mac, mac_address, MAC_ADDRESS_LENGTH) == 0) {
+            return (dhcp_server->ip.addr & 0x00FFFFFF) + ((DHCPS_BASE_IP + i) << 24);
+        }
+    }
+
+    return 0;
+}
+
+mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
+    int max_stas;
+    int num_stas;
+
+    if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_AP) != CYW43_LINK_UP) {
+        return mp_const_none;
+    }
+
+    cyw43_wifi_ap_get_max_stas(&cyw43_state, &max_stas);
+
+    uint8_t macs[max_stas * MAC_ADDRESS_LENGTH];
+
+    cyw43_wifi_ap_get_stas(&cyw43_state, &num_stas, macs);
+
+    mp_obj_t mp_sta_list = mp_obj_new_list(0, NULL);
+    for (int i = 0; i < num_stas; i++) {
+        mp_obj_t elems[3] = {
+            mp_obj_new_bytes(&macs[i * MAC_ADDRESS_LENGTH], MAC_ADDRESS_LENGTH),
+            mp_const_none,
+            mp_const_none
+        };
+
+        uint32_t ipv4_addr = cyw43_dhcps_get_ip_addr(&cyw43_state.dhcp_server, &macs[i * MAC_ADDRESS_LENGTH]);
+        if (ipv4_addr) {
+            elems[2] = common_hal_ipaddress_new_ipv4address(ipv4_addr);
+        }
+
+        mp_obj_list_append(mp_sta_list, namedtuple_make_new((const mp_obj_type_t *)&wifi_radio_station_type, 3, 0, elems));
+    }
+
+    return mp_sta_list;
+}
+
 static bool connection_unchanged(wifi_radio_obj_t *self, const uint8_t *ssid, size_t ssid_len) {
     if (cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) != CYW43_LINK_UP) {
         return false;
