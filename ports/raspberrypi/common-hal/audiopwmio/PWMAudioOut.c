@@ -101,12 +101,6 @@ static uint32_t limit_denominator(uint32_t max_denominator, uint32_t num_in, uin
     return bound1_num;
 }
 
-void audiopwmout_reset() {
-    for (size_t i = 0; i < NUM_DMA_TIMERS; i++) {
-        dma_hw->timer[i] = 0;
-    }
-}
-
 // Caller validates that pins are free.
 void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *self,
     const mcu_pin_obj_t *left_channel, const mcu_pin_obj_t *right_channel, uint16_t quiescent_value) {

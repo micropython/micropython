@@ -41,7 +41,6 @@
 #endif
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
@@ -462,12 +461,6 @@ void reset_port(void) {
 
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
-    #endif
-
-//    eic_reset();
-
-    #if CIRCUITPY_PWMIO
-    reset_all_flexpwm();
     #endif
 
     #if CIRCUITPY_RTC

@@ -31,7 +31,6 @@
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/Processor.h"
-#include "shared_timers.h"
 #include "timer_handler.h"
 
 #include "atmel_start_pins.h"
@@ -61,23 +60,7 @@ uint8_t tcc_channels[5];   // Set by pwmout_reset() to {0xc0, 0xf0, 0xf8, 0xfc, 
 
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    timer_never_reset(self->timer->index, self->timer->is_tc);
-
     never_reset_pin_number(self->pin->number);
-}
-
-void pwmout_reset(void) {
-    // Reset all timers
-    for (int i = 0; i < TCC_INST_NUM; i++) {
-        target_tcc_frequencies[i] = 0;
-        tcc_refcount[i] = 0;
-    }
-    for (int i = 0; i < TCC_INST_NUM; i++) {
-        if (!timer_ok_to_reset(i, false)) {
-            continue;
-        }
-        tcc_channels[i] = 0xff << tcc_cc_num[i];
-    }
 }
 
 static uint8_t tcc_channel(const pin_timer_t *t) {
@@ -97,7 +80,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     uint16_t duty,
     uint32_t frequency,
     bool variable_frequency) {
-    self->pin = pin;
     self->variable_frequency = variable_frequency;
     self->duty_cycle = duty;
 
@@ -242,6 +224,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     }
 
     self->timer = timer;
+    self->pin = pin;
 
     gpio_set_pin_function(pin->number, GPIO_PIN_FUNCTION_E + mux_position);
 
@@ -257,7 +240,6 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
     if (common_hal_pwmio_pwmout_deinited(self)) {
         return;
     }
-    timer_reset_ok(self->timer->index, self->timer->is_tc);
     const pin_timer_t *t = self->timer;
     if (t->is_tc) {
         Tc *tc = tc_insts[t->index];

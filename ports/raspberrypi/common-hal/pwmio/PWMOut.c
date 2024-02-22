@@ -83,35 +83,8 @@ void pwmio_release_slice_ab_channels(uint8_t slice) {
     channel_use &= ~channel_mask;
 }
 
-void pwmout_never_reset(uint8_t slice, uint8_t ab_channel) {
-    never_reset_channel |= _mask(slice, ab_channel);
-}
-
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    pwmout_never_reset(self->slice, self->ab_channel);
-
     never_reset_pin_number(self->pin->number);
-}
-
-void pwmout_reset(void) {
-    // Reset all slices
-    for (size_t slice = 0; slice < NUM_PWM_SLICES; slice++) {
-        bool reset = true;
-        for (size_t ab_channel = 0; ab_channel < AB_CHANNELS_PER_SLICE; ab_channel++) {
-            uint32_t channel_use_mask = _mask(slice, ab_channel);
-            if ((never_reset_channel & channel_use_mask) != 0) {
-                reset = false;
-                continue;
-            }
-            channel_use &= ~channel_use_mask;
-        }
-        if (!reset) {
-            continue;
-        }
-        pwm_set_enabled(slice, false);
-        target_slice_frequencies[slice] = 0;
-        slice_variable_frequency &= ~(1 << slice);
-    }
 }
 
 pwmout_result_t pwmout_allocate(uint8_t slice, uint8_t ab_channel, bool variable_frequency, uint32_t frequency) {

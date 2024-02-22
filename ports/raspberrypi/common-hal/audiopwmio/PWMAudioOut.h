@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
-#define MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H
+#pragma once
 
 #include "common-hal/pwmio/PWMOut.h"
 
@@ -42,8 +41,4 @@ typedef struct {
     bool swap_channel;
 } audiopwmio_pwmaudioout_obj_t;
 
-void audiopwmout_reset(void);
-
 void audiopwmout_background(void);
-
-#endif  // MICROPY_INCLUDED_RASPBERRYPI_COMMON_HAL_AUDIOPWMIO_PWMAUDIOOUT_H

@@ -169,7 +169,8 @@ STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, 
     bool variable_frequency = parsed_args[ARG_variable_frequency].u_bool;
 
     // create PWM object from the given pin
-    pwmio_pwmout_obj_t *self = mp_obj_malloc(pwmio_pwmout_obj_t, &pwmio_pwmout_type);
+    pwmio_pwmout_obj_t *self = m_new_obj_with_finaliser(pwmio_pwmout_obj_t);
+    self->base.type = &pwmio_pwmout_type;
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
     common_hal_pwmio_pwmout_raise_error(result);
 
@@ -280,6 +281,7 @@ MP_PROPERTY_GETSET(pwmio_pwmout_frequency_obj,
 STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pwmio_pwmout_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pwmio_pwmout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pwmio_pwmout___exit___obj) },
 

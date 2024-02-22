@@ -96,13 +96,6 @@ static void pulseout_event_handler(nrf_timer_event_t event_type, void *p_context
     start_timer();
 }
 
-void pulseout_reset() {
-    if (timer != NULL) {
-        nrf_peripherals_free_timer(timer);
-    }
-    refcount = 0;
-}
-
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin,
     uint32_t frequency,

@@ -36,8 +36,6 @@
 STATIC uint32_t reserved_timer_freq[LEDC_TIMER_MAX];
 STATIC bool varfreq_timers[LEDC_TIMER_MAX];
 STATIC uint8_t reserved_channels[LEDC_CHANNEL_MAX] = { [0 ... LEDC_CHANNEL_MAX - 1] = INDEX_EMPTY};
-STATIC bool never_reset_tim[LEDC_TIMER_MAX];
-STATIC bool never_reset_chan[LEDC_CHANNEL_MAX];
 
 STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
     uint32_t duty_bits = 0;
@@ -52,22 +50,6 @@ STATIC uint32_t calculate_duty_cycle(uint32_t frequency) {
         duty_bits = LEDC_TIMER_13_BIT;
     }
     return duty_bits;
-}
-
-void pwmout_reset(void) {
-    for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
-        if (reserved_channels[i] != INDEX_EMPTY && !never_reset_chan[i]) {
-            ledc_stop(LEDC_LOW_SPEED_MODE, i, 0);
-            reserved_channels[i] = INDEX_EMPTY;
-        }
-    }
-    for (size_t i = 0; i < LEDC_TIMER_MAX; i++) {
-        if (reserved_timer_freq[i] && !never_reset_tim[i]) {
-            ledc_timer_rst(LEDC_LOW_SPEED_MODE, i);
-            reserved_timer_freq[i] = 0;
-            varfreq_timers[i] = false;
-        }
-    }
 }
 
 pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
@@ -159,9 +141,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
 }
 
 void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
-    never_reset_tim[self->tim_handle.timer_num] = true;
-    never_reset_chan[self->chan_handle.channel] = true;
-
     never_reset_pin_number(self->pin->number);
 }
 
@@ -178,21 +157,14 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         ledc_stop(LEDC_LOW_SPEED_MODE, self->chan_handle.channel, 0);
     }
     reserved_channels[self->chan_handle.channel] = INDEX_EMPTY;
-    never_reset_chan[self->chan_handle.channel] = false;
 
     // Search if any other channel is using the timer
     bool taken = false;
-    bool other_never_reset = false;
     for (size_t i = 0; i < LEDC_CHANNEL_MAX; i++) {
         if (reserved_channels[i] == self->tim_handle.timer_num) {
             taken = true;
-            other_never_reset = never_reset_chan[i];
             break;
         }
-    }
-    // Clear the timer's never reset if the other channel isn't never reset.
-    if (!other_never_reset) {
-        never_reset_tim[self->tim_handle.timer_num] = false;
     }
     // Variable frequency means there's only one channel on the timer
     if (!taken || self->variable_frequency) {
@@ -200,7 +172,6 @@ void common_hal_pwmio_pwmout_deinit(pwmio_pwmout_obj_t *self) {
         reserved_timer_freq[self->tim_handle.timer_num] = 0;
         // if timer isn't varfreq this will be off already
         varfreq_timers[self->tim_handle.timer_num] = false;
-        never_reset_tim[self->tim_handle.timer_num] = false;
     }
     common_hal_reset_pin(self->pin);
     self->deinited = true;

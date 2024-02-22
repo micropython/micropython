@@ -36,6 +36,7 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 #include "shared-bindings/pulseio/PulseOut.h"
+#include "supervisor/samd_prevent_sleep.h"
 #include "timer_handler.h"
 
 // This timer is shared amongst all PulseOut objects under the assumption that
@@ -90,15 +91,6 @@ void pulseout_interrupt_handler(uint8_t index) {
 
     // Clear the interrupt bit.
     tc->COUNT16.INTFLAG.reg = TC_INTFLAG_MC0;
-}
-
-void pulseout_reset() {
-    refcount = 0;
-    pulseout_tc_index = 0xff;
-    active_pincfg = NULL;
-    #ifdef SAMD21
-    rtc_end_pulse();
-    #endif
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
@@ -168,9 +160,8 @@ void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     // Turn off the pinmux which should connect the port output.
     turn_off(self->pincfg);
     #ifdef SAMD21
-    rtc_start_pulse();
+    samd_prevent_sleep();
     #endif
-
 }
 
 bool common_hal_pulseio_pulseout_deinited(pulseio_pulseout_obj_t *self) {
@@ -194,7 +185,7 @@ void common_hal_pulseio_pulseout_deinit(pulseio_pulseout_obj_t *self) {
     self->pin = NO_PIN;
     common_hal_pwmio_pwmout_deinit(&self->pwmout);
     #ifdef SAMD21
-    rtc_end_pulse();
+    samd_allow_sleep();
     #endif
 }
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2018 Scott Shawcroft for Adafruit Industries
+ * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_SHARED_TIMERS_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_SHARED_TIMERS_H
+#pragma once
 
 #include <stdbool.h>
 
-void timer_never_reset(int index, bool is_tc);
-void timer_reset_ok(int index, bool is_tc);
-bool timer_ok_to_reset(int index, bool is_tc);
-void reset_timers(void);
-
-#endif  // MICROPY_INCLUDED_ATMEL_SAMD_SHARED_TIMERS_H
+// Sleeping causes interrupt delay to increase. These allow common-hal code to
+// temporarily disable sleep as-needed.
+#ifdef SAMD21
+void samd_prevent_sleep(void);
+void samd_allow_sleep(void);
+#endif

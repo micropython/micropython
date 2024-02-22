@@ -101,11 +101,6 @@ STATIC void pulseout_event_handler(void) {
     }
 }
 
-void pulseout_reset() {
-    stm_peripherals_timer_free(tim_handle.Instance);
-    refcount = 0;
-}
-
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin, uint32_t frequency, uint16_t duty_cycle) {
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(

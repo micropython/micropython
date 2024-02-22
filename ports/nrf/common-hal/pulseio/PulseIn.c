@@ -111,15 +111,6 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     self->last_count = current_count;
 }
 
-void pulsein_reset(void) {
-    if (timer != NULL) {
-        nrf_peripherals_free_timer(timer);
-    }
-    refcount = 0;
-
-    memset(_objs, 0, sizeof(_objs));
-}
-
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
     int idx = _find_pulsein_obj(NULL);
     if (idx < 0) {
