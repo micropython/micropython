@@ -95,6 +95,12 @@ static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     if (!set_sys_clock_khz(freq / 1000, false)) {
         mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
     }
+    // Option: Set PERI clock to system clock again
+    // clock_configure(clk_peri,
+    //                 0,
+    //                 CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS,
+    //                 SYS_CLK_KHZ * KHZ,
+    //                 SYS_CLK_KHZ * KHZ);
     #if MICROPY_HW_ENABLE_UART_REPL
     setup_default_uart();
     mp_uart_init();
