@@ -1746,7 +1746,7 @@ typedef double mp_float_t;
 
 // Whether to provide the "vfs" module
 #ifndef MICROPY_PY_VFS
-#define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES && MICROPY_VFS)
+#define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES && MICROPY_VFS)
 #endif
 
 #ifndef MICROPY_PY_WEBSOCKET
