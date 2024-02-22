@@ -31,12 +31,25 @@ The MicroPython REPL is accessed via the USB serial port. Tab-completion is usef
 find out what methods an object has. Paste mode (ctrl-E) is useful to paste a
 large slab of Python code into the REPL.
 
-The :mod:`machine` module::
+The :mod:`machine` module:
+
+machine.freq() allows to change the MCU frequency and control the peripheral
+frequency for UART and SPI. Usage::
+
+    machine.freq(MCU_frequency[, peripheral_frequency=48_000_000])
+
+The MCU frequency can be set in a range from less than 48 MHz to about 250MHz.
+The default at boot time is 125 MHz. The peripheral frequency must be either
+48 MHz or identical to the MCU frequency, with 48 MHz as the default.
+If the peripheral frequency is changed, any already existing instance of
+UART and SPI will change it's baud rate and may have to be re-configured::
 
     import machine
 
     machine.freq()          # get the current frequency of the CPU
-    machine.freq(240000000) # set the CPU frequency to 240 MHz
+    machine.freq(240000000) # set the CPU frequency to 240 MHz and keep
+                            # the UART frequency at 48MHz
+    machine.freq(125000000, 125000000) # set the CPU and UART frequency to 125 MHz
 
 The :mod:`rp2` module::
 
