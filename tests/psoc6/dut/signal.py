@@ -9,8 +9,8 @@ if "CY8CPROTO-062-4343W" in machine:
     pin1_name = "P13_7"
     pin2_name = "P13_6"
 elif "CY8CPROTO-063-BLE" in machine:
-    pin1_name = "P6_3"
-    pin2_name = "P6_2"
+    pin1_name = "P12_6"
+    pin2_name = "P12_7"
 
 # Pin out and pin in must be connected
 # together in the board

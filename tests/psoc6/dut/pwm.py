@@ -9,12 +9,12 @@ import time
 # Allocate pin based on board
 machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
-    pwm_pin = "P12_0"
+    pwm_pin = "P13_7"
     pin_in = "P13_6"
 
 elif "CY8CPROTO-063-BLE" in machine:
-    pwm_pin = "P6_2"
-    pin_in = "P5_2"
+    pwm_pin = "P12_6"
+    pin_in = "P12_7"
 
 input_pin = Pin(pin_in, Pin.IN)
 

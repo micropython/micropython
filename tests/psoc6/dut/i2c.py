@@ -20,8 +20,8 @@ if "CY8CPROTO-062-4343W" in machine:
 elif "CY8CPROTO-063-BLE" in machine:
     scl_master_pin = "P6_4"
     sda_master_pin = "P6_5"
-    scl_master_soft_pin = "P5_2"
-    sda_master_soft_pin = "P5_3"
+    scl_master_soft_pin = "P7_2"
+    sda_master_soft_pin = "P0_5"
     scl_slave_pin = "P10_0"
     sda_slave_pin = "P10_1"
 

@@ -13,6 +13,19 @@ if "CY8CPROTO-062-4343W" in machine:
     sck_rx_pin = "P5_4"
     ws_rx_pin = "P5_5"
     sd_rx_pin = "P5_6"
+elif "CY8CPROTO-063-BLE" in machine:
+    # This would be the right pins for this test, but unfortunately
+    # the P5_1 is allocated for the UART serial comm terminal communication.
+    # So this tests is not currently possible for this board.
+    # sck_tx_pin = "P5_1"
+    # ws_tx_pin = "P5_2"
+    # sd_tx_pin = "P5_3"
+    # sck_rx_pin = "P5_4"
+    # ws_rx_pin = "P5_5"
+    # sd_rx_pin = "P5_6"
+    print("SKIP")
+    raise SystemExit
+
 
 audio_out = I2S(
     0,

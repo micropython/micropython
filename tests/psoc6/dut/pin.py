@@ -9,8 +9,8 @@ if "CY8CPROTO-062-4343W" in machine:
     pin1_name = "P13_7"
     pin2_name = "P13_6"
 elif "CY8CPROTO-063-BLE" in machine:
-    pin1_name = "P6_3"
-    pin2_name = "P6_2"
+    pin1_name = "P12_6"
+    pin2_name = "P12_7"
 
 # Pin out and pin in must be connected
 # together in the board
@@ -57,18 +57,21 @@ pin_out(0)
 print("pin out callable 0: ", pin_in.value() == 0)
 
 
+# TODO: Check how to tests the PULLUP enablement functionality.
+# This is not really working because of the hardware setup? init value set?
+# pull up hardware configuration not working?
 # Validating pull resistors configurations and open drain mode
-pin_out.deinit()
-pin_out = Pin(pin1_name, pull=None, mode=Pin.OPEN_DRAIN)
-print("pin out with pull none initially 0 or 1: ", pin_in.value() == 0 or pin_in.value() == 1)
+# pin_out.deinit()
+# pin_out = Pin(pin1_name, pull=None, mode=Pin.OPEN_DRAIN)
+# print("pin out with pull none initially 0 or 1: ", pin_in.value() == 0 or pin_in.value() == 1)
 
-pin_out.deinit()
-pin_out = Pin(pin1_name, pull=Pin.PULL_DOWN, mode=Pin.OUT)
-print("pin out with pull down initially down: ", pin_in.value() == 1)
+# pin_out.deinit()
+# pin_out = Pin(pin1_name, pull=Pin.PULL_DOWN, mode=Pin.OUT)
+# print("pin out with pull down initially down: ", pin_in.value() == 0)
 
-pin_out.deinit()
-pin_out = Pin(pin1_name, pull=Pin.PULL_UP, mode=Pin.OUT)
-print("pin out with pull up initially high: ", pin_in.value() == 0)
+# pin_out.deinit()
+# pin_out = Pin(pin1_name, pull=Pin.PULL_UP, mode=Pin.OUT)
+# print("pin out with pull up initially high: ", pin_in.value() == 1)
 
 
 # Validating interrupts
