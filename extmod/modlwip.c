@@ -367,8 +367,16 @@ mp_uint_t lwip_parse_inet_addr(mp_obj_t addr_in, ip_addr_t *out_ip) {
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
     size_t addr_len;
     const char *addr_str = mp_obj_str_get_data(addr_items[0], &addr_len);
-    if (!ipaddr_aton(addr_str, out_ip)) {
-        mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
+    if (*addr_str == 0) {
+        #if LWIP_IPV6
+        *out_ip = *IP6_ADDR_ANY;
+        #else
+        *out_ip = *IP_ADDR_ANY;
+        #endif
+    } else {
+        if (!ipaddr_aton(addr_str, out_ip)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments"));
+        }
     }
     return mp_obj_get_int(addr_items[1]);
 }
