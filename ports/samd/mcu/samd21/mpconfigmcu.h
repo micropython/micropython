@@ -51,6 +51,7 @@ unsigned long trng_random_u32(int delay);
 #ifndef MICROPY_HW_UART_RTSCTS
 #define MICROPY_HW_UART_RTSCTS          (SAMD21_EXTRA_FEATURES)
 #endif
+#define MICROPY_PY_MACHINE_UART_IRQ     (SAMD21_EXTRA_FEATURES)
 
 // selected extensions of the extra features set
 #define MICROPY_PY_OS_URANDOM           (1)
