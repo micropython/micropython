@@ -252,18 +252,20 @@ void common_hal_wifi_radio_stop_ap(wifi_radio_obj_t *self) {
 
 mp_obj_t common_hal_wifi_radio_get_stations_ap(wifi_radio_obj_t *self) {
     wifi_sta_list_t esp_sta_list;
-    esp_netif_pair_mac_ip_t mac_ip_pair[ESP_WIFI_MAX_CONN_NUM];
     esp_err_t result;
 
     result = esp_wifi_ap_get_sta_list(&esp_sta_list);
-    if (result == ESP_OK) {
-        for (int i = 0; i < esp_sta_list.num; i++) {
-            memcpy(mac_ip_pair[i].mac, esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH);
-            mac_ip_pair[i].ip.addr = 0;
-        }
-
-        result = esp_netif_dhcps_get_clients_by_mac(self->ap_netif, esp_sta_list.num, mac_ip_pair);
+    if (result != ESP_OK) {
+        return mp_const_none;
     }
+    
+    esp_netif_pair_mac_ip_t mac_ip_pair[esp_sta_list.num];
+    for (int i = 0; i < esp_sta_list.num; i++) {
+        memcpy(mac_ip_pair[i].mac, esp_sta_list.sta[i].mac, MAC_ADDRESS_LENGTH);
+        mac_ip_pair[i].ip.addr = 0;
+    }
+
+    result = esp_netif_dhcps_get_clients_by_mac(self->ap_netif, esp_sta_list.num, mac_ip_pair);
 
     if (!self->ap_mode || result != ESP_OK) {
         return mp_const_none;
