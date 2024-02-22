@@ -148,6 +148,7 @@
 #define MICROPY_PY_MACHINE_UART_SENDBREAK       (1)
 #define MICROPY_PY_MACHINE_WDT                  (1)
 #define MICROPY_PY_MACHINE_WDT_INCLUDEFILE      "ports/rp2/machine_wdt.c"
+#define MICROPY_PY_MACHINE_FREQ_NUM_ARGS_MAX    (2)
 #define MICROPY_PY_ONEWIRE                      (1)
 #define MICROPY_VFS                             (1)
 #define MICROPY_VFS_LFS2                        (1)
