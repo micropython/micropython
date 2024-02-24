@@ -110,7 +110,7 @@ STATIC mp_obj_t namedtuple_make_new(const mp_obj_type_t *type_in, size_t n_args,
 
     // Create a namedtuple with explicit malloc. Calling mp_obj_new_tuple
     // with num_fields=0 returns a read-only object.
-    mp_obj_tuple_t *tuple = mp_obj_malloc_var(mp_obj_tuple_t, mp_obj_t, num_fields, type_in);
+    mp_obj_tuple_t *tuple = mp_obj_malloc_var(mp_obj_tuple_t, items, mp_obj_t, num_fields, type_in);
     tuple->len = num_fields;
 
     // Copy the positional args into the first slots of the namedtuple

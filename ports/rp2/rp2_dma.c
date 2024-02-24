@@ -145,8 +145,7 @@ STATIC mp_obj_t rp2_dma_make_new(const mp_obj_type_t *type, size_t n_args, size_
         mp_raise_OSError(MP_EBUSY);
     }
 
-    rp2_dma_obj_t *self = m_new_obj_with_finaliser(rp2_dma_obj_t);
-    self->base.type = &rp2_dma_type;
+    rp2_dma_obj_t *self = mp_obj_malloc_with_finaliser(rp2_dma_obj_t, &rp2_dma_type);
     self->channel = dma_channel;
 
     // Return the DMA object.

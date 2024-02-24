@@ -278,8 +278,7 @@ STATIC mp_obj_t vfs_posix_ilistdir_it_del(mp_obj_t self_in) {
 
 STATIC mp_obj_t vfs_posix_ilistdir(mp_obj_t self_in, mp_obj_t path_in) {
     mp_obj_vfs_posix_t *self = MP_OBJ_TO_PTR(self_in);
-    vfs_posix_ilistdir_it_t *iter = m_new_obj_with_finaliser(vfs_posix_ilistdir_it_t);
-    iter->base.type = &mp_type_polymorph_iter_with_finaliser;
+    vfs_posix_ilistdir_it_t *iter = mp_obj_malloc_with_finaliser(vfs_posix_ilistdir_it_t, &mp_type_polymorph_iter_with_finaliser);
     iter->iternext = vfs_posix_ilistdir_it_iternext;
     iter->finaliser = vfs_posix_ilistdir_it_del;
     iter->is_str = mp_obj_get_type(path_in) == &mp_type_str;

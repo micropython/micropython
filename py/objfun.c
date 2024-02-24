@@ -128,31 +128,25 @@ MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 /* byte code functions                                                        */
 
-STATIC qstr mp_obj_code_get_name(const mp_obj_fun_bc_t *fun, const byte *code_info) {
-    MP_BC_PRELUDE_SIZE_DECODE(code_info);
-    mp_uint_t name = mp_decode_uint_value(code_info);
-    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
-    name = fun->context->constants.qstr_table[name];
-    #endif
-    return name;
-}
-
-#if MICROPY_EMIT_NATIVE
-STATIC const mp_obj_type_t mp_type_fun_native;
-#endif
-
 qstr mp_obj_fun_get_name(mp_const_obj_t fun_in) {
     const mp_obj_fun_bc_t *fun = MP_OBJ_TO_PTR(fun_in);
+    const byte *bc = fun->bytecode;
+
     #if MICROPY_EMIT_NATIVE
     if (fun->base.type == &mp_type_fun_native || fun->base.type == &mp_type_native_gen_wrap) {
-        // TODO native functions don't have name stored
-        return MP_QSTR_;
+        bc = mp_obj_fun_native_get_prelude_ptr(fun);
     }
     #endif
 
-    const byte *bc = fun->bytecode;
     MP_BC_PRELUDE_SIG_DECODE(bc);
-    return mp_obj_code_get_name(fun, bc);
+    MP_BC_PRELUDE_SIZE_DECODE(bc);
+
+    mp_uint_t name = mp_decode_uint_value(bc);
+    #if MICROPY_EMIT_BYTECODE_USES_QSTR_TABLE
+    name = fun->context->constants.qstr_table[name];
+    #endif
+
+    return name;
 }
 
 #if MICROPY_CPYTHON_COMPAT
@@ -384,7 +378,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
         def_kw_args = def_args[1];
         n_extra_args += 1;
     }
-    mp_obj_fun_bc_t *o = mp_obj_malloc_var(mp_obj_fun_bc_t, mp_obj_t, n_extra_args, &mp_type_fun_bc);
+    mp_obj_fun_bc_t *o = mp_obj_malloc_var(mp_obj_fun_bc_t, extra_args, mp_obj_t, n_extra_args, &mp_type_fun_bc);
     o->bytecode = code;
     o->context = context;
     o->child_table = child_table;
@@ -405,7 +399,7 @@ mp_obj_t mp_obj_new_fun_bc(const mp_obj_t *def_args, const byte *code, const mp_
 STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     MP_STACK_CHECK();
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
+    mp_call_fun_t fun = mp_obj_fun_native_get_function_start(self);
     return fun(self_in, n_args, n_kw, args);
 }
 
@@ -420,7 +414,7 @@ STATIC mp_obj_t fun_native_call(mp_obj_t self_in, size_t n_args, size_t n_kw, co
 #define FUN_BC_TYPE_ATTR
 #endif
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_native,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
@@ -429,11 +423,26 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     call, fun_native_call
     );
 
-mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, const mp_module_context_t *mc, struct _mp_raw_code_t *const *child_table) {
-    mp_obj_fun_bc_t *o = MP_OBJ_TO_PTR(mp_obj_new_fun_bc(def_args, (const byte *)fun_data, mc, child_table));
-    o->base.type = &mp_type_fun_native;
-    return MP_OBJ_FROM_PTR(o);
+#endif // MICROPY_EMIT_NATIVE
+
+/******************************************************************************/
+/* viper functions                                                           */
+
+#if MICROPY_EMIT_NATIVE
+
+STATIC mp_obj_t fun_viper_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+    MP_STACK_CHECK();
+    mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_call_fun_t fun = MICROPY_MAKE_POINTER_CALLABLE((void *)self->bytecode);
+    return fun(self_in, n_args, n_kw, args);
 }
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_fun_viper,
+    MP_QSTR_function,
+    MP_TYPE_FLAG_BINDS_SELF,
+    call, fun_viper_call
+    );
 
 #endif // MICROPY_EMIT_NATIVE
 
@@ -441,13 +450,6 @@ mp_obj_t mp_obj_new_fun_native(const mp_obj_t *def_args, const void *fun_data, c
 /* inline assembler functions                                                 */
 
 #if MICROPY_EMIT_INLINE_ASM
-
-typedef struct _mp_obj_fun_asm_t {
-    mp_obj_base_t base;
-    size_t n_args;
-    const void *fun_data; // GC must be able to trace this pointer
-    mp_uint_t type_sig;
-} mp_obj_fun_asm_t;
 
 typedef mp_uint_t (*inline_asm_fun_0_t)(void);
 typedef mp_uint_t (*inline_asm_fun_1_t)(mp_uint_t);
@@ -529,19 +531,11 @@ STATIC mp_obj_t fun_asm_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const
     return mp_native_to_obj(ret, self->type_sig);
 }
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_fun_asm,
     MP_QSTR_function,
     MP_TYPE_FLAG_BINDS_SELF,
     call, fun_asm_call
     );
-
-mp_obj_t mp_obj_new_fun_asm(size_t n_args, const void *fun_data, mp_uint_t type_sig) {
-    mp_obj_fun_asm_t *o = mp_obj_malloc(mp_obj_fun_asm_t, &mp_type_fun_asm);
-    o->n_args = n_args;
-    o->fun_data = fun_data;
-    o->type_sig = type_sig;
-    return MP_OBJ_FROM_PTR(o);
-}
 
 #endif // MICROPY_EMIT_INLINE_ASM

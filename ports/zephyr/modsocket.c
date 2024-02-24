@@ -107,8 +107,7 @@ STATIC mp_obj_t format_inet_addr(struct sockaddr *addr, mp_obj_t port) {
 }
 
 socket_obj_t *socket_new(void) {
-    socket_obj_t *socket = m_new_obj_with_finaliser(socket_obj_t);
-    socket->base.type = (mp_obj_t)&socket_type;
+    socket_obj_t *socket = mp_obj_malloc_with_finaliser(socket_obj_t, &socket_type);
     socket->state = STATE_NEW;
     return socket;
 }

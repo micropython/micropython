@@ -227,7 +227,7 @@ STATIC mp_obj_t make_func(mp_obj_t rettype_in, void *func, mp_obj_t argtypes_in)
     const char *argtypes = mp_obj_str_get_str(argtypes_in);
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(argtypes_in));
-    mp_obj_ffifunc_t *o = mp_obj_malloc_var(mp_obj_ffifunc_t, ffi_type *, nparams, &ffifunc_type);
+    mp_obj_ffifunc_t *o = mp_obj_malloc_var(mp_obj_ffifunc_t, params, ffi_type *, nparams, &ffifunc_type);
 
     o->func = func;
     o->rettype = *rettype;
@@ -334,7 +334,7 @@ STATIC mp_obj_t mod_ffi_callback(size_t n_args, const mp_obj_t *pos_args, mp_map
     const char *rettype = mp_obj_str_get_str(rettype_in);
 
     mp_int_t nparams = MP_OBJ_SMALL_INT_VALUE(mp_obj_len_maybe(paramtypes_in));
-    mp_obj_fficallback_t *o = mp_obj_malloc_var(mp_obj_fficallback_t, ffi_type *, nparams, &fficallback_type);
+    mp_obj_fficallback_t *o = mp_obj_malloc_var(mp_obj_fficallback_t, params, ffi_type *, nparams, &fficallback_type);
 
     o->clo = ffi_closure_alloc(sizeof(ffi_closure), &o->func);
 

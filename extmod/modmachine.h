@@ -30,9 +30,9 @@
 #include "py/mphal.h"
 #include "py/obj.h"
 
-#if MICROPY_PY_MACHINE
-
+#if MICROPY_PY_MACHINE_SPI || MICROPY_PY_MACHINE_SOFTSPI
 #include "drivers/bus/spi.h"
+#endif
 
 // Whether to enable the ADC.init() method.
 // Requires a port to implement mp_machine_adc_init_helper().
@@ -263,7 +263,5 @@ MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(mp_machine_spi_readinto_obj);
 MP_DECLARE_CONST_FUN_OBJ_2(mp_machine_spi_write_obj);
 MP_DECLARE_CONST_FUN_OBJ_3(mp_machine_spi_write_readinto_obj);
 #endif
-
-#endif // MICROPY_PY_MACHINE
 
 #endif // MICROPY_INCLUDED_EXTMOD_MODMACHINE_H

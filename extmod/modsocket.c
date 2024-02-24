@@ -54,8 +54,7 @@ STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
     // create socket object (not bound to any NIC yet)
-    mod_network_socket_obj_t *s = m_new_obj_with_finaliser(mod_network_socket_obj_t);
-    s->base.type = &socket_type;
+    mod_network_socket_obj_t *s = mp_obj_malloc_with_finaliser(mod_network_socket_obj_t, &socket_type);
     s->nic = MP_OBJ_NULL;
     s->nic_protocol = NULL;
     s->domain = MOD_NETWORK_AF_INET;
@@ -163,8 +162,7 @@ STATIC mp_obj_t socket_accept(mp_obj_t self_in) {
 
     // create new socket object
     // starts with empty NIC so that finaliser doesn't run close() method if accept() fails
-    mod_network_socket_obj_t *socket2 = m_new_obj_with_finaliser(mod_network_socket_obj_t);
-    socket2->base.type = &socket_type;
+    mod_network_socket_obj_t *socket2 = mp_obj_malloc_with_finaliser(mod_network_socket_obj_t, &socket_type);
     socket2->nic = MP_OBJ_NULL;
     socket2->nic_protocol = NULL;
 

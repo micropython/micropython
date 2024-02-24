@@ -405,8 +405,7 @@ STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
 
     machine_i2s_obj_t *self;
     if (MP_STATE_PORT(machine_i2s_obj)[i2s_id] == NULL) {
-        self = m_new_obj_with_finaliser(machine_i2s_obj_t);
-        self->base.type = &machine_i2s_type;
+        self = mp_obj_malloc_with_finaliser(machine_i2s_obj_t, &machine_i2s_type);
         MP_STATE_PORT(machine_i2s_obj)[i2s_id] = self;
         self->i2s_id = i2s_id;
     } else {

@@ -29,6 +29,9 @@ def test():
     exec(compile("print(10 + 2)", "file", "single"))
     print(eval(compile("10 + 3", "file", "eval")))
 
+    # test accessing a function's globals from within a compile
+    exec(compile("def func():pass\nprint('x', func.__globals__['x'])", "file", "exec"))
+
     # bad mode
     try:
         compile('1', 'file', '')

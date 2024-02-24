@@ -63,7 +63,6 @@ STATIC void vfs_posix_file_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 }
 
 mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_obj_t mode_in) {
-    mp_obj_vfs_posix_file_t *o = m_new_obj_with_finaliser(mp_obj_vfs_posix_file_t);
     const char *mode_s = mp_obj_str_get_str(mode_in);
 
     int mode_rw = 0, mode_x = 0;
@@ -92,7 +91,8 @@ mp_obj_t mp_vfs_posix_file_open(const mp_obj_type_t *type, mp_obj_t file_in, mp_
         }
     }
 
-    o->base.type = type;
+    mp_obj_vfs_posix_file_t *o = mp_obj_malloc_with_finaliser(mp_obj_vfs_posix_file_t, type);
+    o->fd = -1; // In case open() fails below, initialise this as a "closed" file object.
 
     mp_obj_t fid = file_in;
 

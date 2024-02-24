@@ -41,8 +41,6 @@
 
 #if MICROPY_ENABLE_COMPILER
 
-// TODO need to mangle __attr names
-
 #define INVALID_LABEL (0xffff)
 
 typedef enum {

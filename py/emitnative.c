@@ -253,7 +253,6 @@ struct _emit_t {
     int pass;
 
     bool do_viper_types;
-    bool prelude_offset_uses_u16_encoding;
 
     mp_uint_t local_vtype_alloc;
     vtype_kind_t *local_vtype;
@@ -519,8 +518,11 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
         // work out size of state (locals plus stack)
         emit->n_state = scope->num_locals + scope->stack_size;
 
+        // Store in the first machine-word an index used to the function's prelude.
+        // This is used at runtime by mp_obj_fun_native_get_prelude_ptr().
+        mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_ptr_index);
+
         if (emit->scope->scope_flags & MP_SCOPE_FLAG_GENERATOR) {
-            mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->prelude_ptr_index);
             mp_asm_base_data(&emit->as->base, ASM_WORD_SIZE, (uintptr_t)emit->start_offset);
             ASM_ENTRY(emit->as, emit->code_state_start);
 
@@ -575,15 +577,6 @@ STATIC void emit_native_start_pass(emit_t *emit, pass_kind_t pass, scope_t *scop
 
             // Set code_state.fun_bc
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_FUN_OBJ(emit), REG_PARENT_ARG_1);
-
-            // Set code_state.ip, a pointer to the beginning of the prelude.  This pointer is found
-            // either directly in mp_obj_fun_bc_t.child_table (if there are no children), or in
-            // mp_obj_fun_bc_t.child_table[num_children] (if num_children > 0).
-            ASM_LOAD_REG_REG_OFFSET(emit->as, REG_PARENT_ARG_1, REG_PARENT_ARG_1, OFFSETOF_OBJ_FUN_BC_CHILD_TABLE);
-            if (emit->prelude_ptr_index != 0) {
-                ASM_LOAD_REG_REG_OFFSET(emit->as, REG_PARENT_ARG_1, REG_PARENT_ARG_1, emit->prelude_ptr_index);
-            }
-            emit_native_mov_state_reg(emit, emit->code_state_start + OFFSETOF_CODE_STATE_IP, REG_PARENT_ARG_1);
 
             // Set code_state.n_state (only works on little endian targets due to n_state being uint16_t)
             emit_native_mov_state_imm_via(emit, emit->code_state_start + OFFSETOF_CODE_STATE_N_STATE, emit->n_state, REG_ARG_1);
