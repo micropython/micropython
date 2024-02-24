@@ -1,0 +1,3 @@
+led,GPIO25
+key,GPIO24
+neopixel,GPIO23
