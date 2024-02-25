@@ -19,4 +19,15 @@ async def main():
     print(t is result[0])
 
 
+try:
+    print(asyncio.current_task())
+except RuntimeError:
+    print("RuntimeError")
+
+
 asyncio.run(main())
+
+try:
+    print(asyncio.current_task())
+except RuntimeError:
+    print("RuntimeError")
