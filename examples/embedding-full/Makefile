@@ -12,6 +12,7 @@ PROG = embed
 CFLAGS += -I.
 CFLAGS += -I$(EMBED_DIR)
 CFLAGS += -I$(EMBED_DIR)/port
+CFLAGS += -I$(EMBED_DIR)/lib/littlefs
 CFLAGS += -Wall -Og -fno-common
 
 SRC += main.c mphal.c modules/c_hello/modc_hello.c

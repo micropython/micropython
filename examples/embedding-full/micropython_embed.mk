@@ -19,6 +19,9 @@ EMBED_EXTRA += \
 EMBED_EXTRA += \
 	shared/runtime/sys_stdio_mphal.c
 
+# Include library sources for littlefs 2 in the output.
+EMBED_EXTRA += littlefs2
+
 # Freeze Python modules.
 FROZEN_MANIFEST ?= manifest.py
 

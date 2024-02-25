@@ -19,6 +19,12 @@
 #define MICROPY_HW_BOARD_NAME                   "embedded"
 #define MICROPY_HW_MCU_NAME                     "C"
 
+// Enable the VFS subsystem, littlefs, importing from VFS, and the vfs module.
+#define MICROPY_VFS                             (1)
+#define MICROPY_VFS_LFS2                        (1)
+#define MICROPY_READER_VFS                      (1)
+#define MICROPY_PY_VFS                          (1)
+
 // Enable floating point numbers and the math module.
 #define MICROPY_FLOAT_IMPL                      (MICROPY_FLOAT_IMPL_FLOAT)
 

@@ -52,12 +52,21 @@ static const char *example_2 =
     "import c_hello\n"
     "help(c_hello)\n"
     "print('c_hello.hello():', c_hello.hello())\n"
+    "import fsimage, vfs\n"
+    "vfs.mount(fsimage.BlockDev(), '/lfs', readonly=True)\n"
+    "print('os.listdir(\\'/lfs\\'):', os.listdir('/lfs'))\n"
+    "with open('/lfs/lfshello.py', 'rb') as f:\n"
+    "    print('lfshello.py:', f.read())\n"
+    "sys.path.append('/lfs')\n"
+    "import lfshello\n"
+    "help(lfshello)\n"
+    "print('lfshello.hello():', lfshello.hello())\n"
     "\n"
     "print('finish')\n"
     ;
 
 // This array is the MicroPython GC heap.
-static char heap[10 * 1024];
+static char heap[12 * 1024];
 
 int main() {
 #if MICROPY_STACK_CHECK

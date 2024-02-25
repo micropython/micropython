@@ -17,7 +17,7 @@ include $(TOP)/extmod/extmod.mk
 endif
 
 # The parts of EMBED_EXTRA that name literal files and don't need special handling.
-EMBED_EXTRA_FILES = $(filter-out extmod,$(EMBED_EXTRA))
+EMBED_EXTRA_FILES = $(filter-out extmod littlefs1 littlefs2,$(EMBED_EXTRA))
 
 # Extra files need to be searched for QSTRs.
 SRC_QSTR += $(addprefix $(TOP)/,$(EMBED_EXTRA_FILES))
@@ -60,6 +60,9 @@ PACKAGE_DIR_LIST = $(addprefix $(PACKAGE_DIR)/,py extmod shared/runtime genhdr p
 ifeq ($(filter extmod,$(EMBED_EXTRA)),extmod)
 PACKAGE_DIR_LIST += $(addprefix $(PACKAGE_DIR)/,lib/uzlib lib/crypto-algorithms lib/re1.5)
 endif
+ifneq ($(filter littlefs1 littlefs2,$(EMBED_EXTRA)),)
+PACKAGE_DIR_LIST += $(addprefix $(PACKAGE_DIR)/,lib/littlefs libsrc/littlefs)
+endif
 ifneq ($(FROZEN_MANIFEST),)
 PACKAGE_DIR_LIST += $(addprefix $(PACKAGE_DIR)/,frozen)
 endif
@@ -83,6 +86,17 @@ ifeq ($(filter extmod,$(EMBED_EXTRA)),extmod)
 	$(Q)$(CP) $(TOP)/lib/re1.5/*.[ch] $(PACKAGE_DIR)/lib/re1.5
 else
 	$(Q)$(CP) $(TOP)/extmod/modplatform.h $(PACKAGE_DIR)/extmod
+endif
+ifneq ($(filter littlefs1 littlefs2,$(EMBED_EXTRA)),)
+	$(ECHO) "- libsrc"
+ifeq ($(filter littlefs1,$(EMBED_EXTRA)),littlefs1)
+	$(Q)$(CP) $(TOP)/lib/littlefs/lfs1*.h $(PACKAGE_DIR)/lib/littlefs
+	$(Q)$(CP) $(TOP)/lib/littlefs/lfs1*.c $(PACKAGE_DIR)/libsrc/littlefs
+endif
+ifeq ($(filter littlefs2,$(EMBED_EXTRA)),littlefs2)
+	$(Q)$(CP) $(TOP)/lib/littlefs/lfs2*.h $(PACKAGE_DIR)/lib/littlefs
+	$(Q)$(CP) $(TOP)/lib/littlefs/lfs2*.c $(PACKAGE_DIR)/libsrc/littlefs
+endif
 endif
 	$(ECHO) "- shared"
 	$(Q)$(CP) $(TOP)/shared/runtime/gchelper.h $(PACKAGE_DIR)/shared/runtime
