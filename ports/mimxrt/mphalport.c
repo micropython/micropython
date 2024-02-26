@@ -34,7 +34,7 @@
 #include "ticks.h"
 #include "tusb.h"
 #include "fsl_snvs_lp.h"
-
+#include "led.h"
 #ifndef MICROPY_HW_STDIN_BUFFER_LEN
 #define MICROPY_HW_STDIN_BUFFER_LEN 512
 #endif
@@ -109,6 +109,24 @@ int mp_hal_stdin_rx_chr(void) {
         }
         #endif
         MICROPY_EVENT_POLL_HOOK
+    }
+}
+
+NORETURN void boardctrl_fatal_error(const char *msg) {
+    for (volatile uint delay = 0; delay < 10000000; delay++) {
+    }
+    led_state(1, 1);
+
+    mp_hal_stdout_tx_strn("\nFATAL ERROR:\n", 14);
+    mp_hal_stdout_tx_strn(msg, strlen(msg));
+    for (uint i = 0;;) {
+        led_toggle(1);
+        for (volatile uint delay = 0; delay < 10000000; delay++) {
+        }
+        if (i >= 16) {
+            // to conserve power
+            __WFI();
+        }
     }
 }
 
