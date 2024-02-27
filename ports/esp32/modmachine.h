@@ -18,6 +18,9 @@ void machine_deinit(void);
 void machine_pins_init(void);
 void machine_pins_deinit(void);
 void machine_pwm_deinit_all(void);
+#if MICROPY_PY_MACHINE_DAC
+void machine_dac_deinit_all(void);
+#endif
 // TODO: void machine_rmt_deinit_all(void);
 void machine_timer_deinit_all(void);
 void machine_i2s_init0();
