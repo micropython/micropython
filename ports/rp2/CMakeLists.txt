@@ -530,15 +530,14 @@ endforeach()
 # Include the main MicroPython cmake rules.
 include(${MICROPY_DIR}/py/mkrules.cmake)
 
-set(MICROPY_BOARDS_DIR "${MICROPY_PORT_DIR}/boards")
-set(GEN_PINS_AF_CSV "${MICROPY_BOARDS_DIR}/rp2_af.csv")
-set(GEN_PINS_PREFIX "${MICROPY_BOARDS_DIR}/rp2_prefix.c")
-set(GEN_PINS_MKPINS "${MICROPY_BOARDS_DIR}/make-pins.py")
+set(GEN_PINS_AF_CSV "${MICROPY_PORT_DIR}/boards/rp2_af.csv")
+set(GEN_PINS_PREFIX "${MICROPY_PORT_DIR}/boards/rp2_prefix.c")
+set(GEN_PINS_MKPINS "${MICROPY_PORT_DIR}/boards/make-pins.py")
 set(GEN_PINS_SRC "${CMAKE_BINARY_DIR}/pins_${MICROPY_BOARD}.c")
 set(GEN_PINS_HDR "${MICROPY_GENHDR_DIR}/pins.h")
 
-if(EXISTS "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
-    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARDS_DIR}/${MICROPY_BOARD}/pins.csv")
+if(EXISTS "${MICROPY_BOARD_DIR}/pins.csv")
+    set(GEN_PINS_BOARD_CSV "${MICROPY_BOARD_DIR}/pins.csv")
     set(GEN_PINS_CSV_ARG --board-csv "${GEN_PINS_BOARD_CSV}")
 endif()
 
