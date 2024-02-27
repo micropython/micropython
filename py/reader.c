@@ -39,7 +39,7 @@ typedef struct _mp_reader_mem_t {
     const byte *end;
 } mp_reader_mem_t;
 
-STATIC mp_uint_t mp_reader_mem_readbyte(void *data) {
+static mp_uint_t mp_reader_mem_readbyte(void *data) {
     mp_reader_mem_t *reader = (mp_reader_mem_t *)data;
     if (reader->cur < reader->end) {
         return *reader->cur++;
@@ -48,7 +48,7 @@ STATIC mp_uint_t mp_reader_mem_readbyte(void *data) {
     }
 }
 
-STATIC void mp_reader_mem_close(void *data) {
+static void mp_reader_mem_close(void *data) {
     mp_reader_mem_t *reader = (mp_reader_mem_t *)data;
     if (reader->free_len > 0) {
         m_del(char, (char *)reader->beg, reader->free_len);
@@ -81,7 +81,7 @@ typedef struct _mp_reader_posix_t {
     byte buf[20];
 } mp_reader_posix_t;
 
-STATIC mp_uint_t mp_reader_posix_readbyte(void *data) {
+static mp_uint_t mp_reader_posix_readbyte(void *data) {
     mp_reader_posix_t *reader = (mp_reader_posix_t *)data;
     if (reader->pos >= reader->len) {
         if (reader->len == 0) {
@@ -101,7 +101,7 @@ STATIC mp_uint_t mp_reader_posix_readbyte(void *data) {
     return reader->buf[reader->pos++];
 }
 
-STATIC void mp_reader_posix_close(void *data) {
+static void mp_reader_posix_close(void *data) {
     mp_reader_posix_t *reader = (mp_reader_posix_t *)data;
     if (reader->close_fd) {
         MP_THREAD_GIL_EXIT();

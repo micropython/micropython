@@ -60,7 +60,7 @@ typedef struct _pyb_servo_obj_t {
     uint16_t time_left;
 } pyb_servo_obj_t;
 
-STATIC pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
+static pyb_servo_obj_t pyb_servo_obj[PYB_SERVO_NUM];
 
 void servo_init(void) {
     // reset servo objects
@@ -123,7 +123,7 @@ void servo_timer_irq_callback(void) {
     }
 }
 
-STATIC void servo_init_channel(pyb_servo_obj_t *s) {
+static void servo_init_channel(pyb_servo_obj_t *s) {
     static const uint8_t channel_table[4] =
     {TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4};
     uint32_t channel = channel_table[s->pin->pin];
@@ -150,7 +150,7 @@ STATIC void servo_init_channel(pyb_servo_obj_t *s) {
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
+static mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
     int p = mp_obj_get_int(port);
     int v = mp_obj_get_int(value);
     if (v < 50) {
@@ -178,7 +178,7 @@ STATIC mp_obj_t pyb_servo_set(mp_obj_t port, mp_obj_t value) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_servo_set_obj, pyb_servo_set);
 
-STATIC mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
+static mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
     int pe = mp_obj_get_int(period);
     int pu = mp_obj_get_int(pulse);
     TIM5->ARR = pe;
@@ -188,14 +188,14 @@ STATIC mp_obj_t pyb_pwm_set(mp_obj_t period, mp_obj_t pulse) {
 
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_pwm_set_obj, pyb_pwm_set);
 
-STATIC void pyb_servo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pyb_servo_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_servo_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<Servo %u at %uus>", self - &pyb_servo_obj[0] + 1, 10 * self->pulse_cur);
 }
 
 /// \classmethod \constructor(id)
 /// Create a servo object.  `id` is 1-4.
-STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -218,7 +218,7 @@ STATIC mp_obj_t pyb_servo_make_new(const mp_obj_type_t *type, size_t n_args, siz
 
 /// \method pulse_width([value])
 /// Get or set the pulse width in milliseconds.
-STATIC mp_obj_t pyb_servo_pulse_width(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_servo_pulse_width(size_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get pulse width, in us
@@ -231,12 +231,12 @@ STATIC mp_obj_t pyb_servo_pulse_width(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_servo_pulse_width);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_pulse_width_obj, 1, 2, pyb_servo_pulse_width);
 
 /// \method calibration([pulse_min, pulse_max, pulse_centre, [pulse_angle_90, pulse_speed_100]])
 /// Get or set the calibration of the servo timing.
 // TODO should accept 1 arg, a 5-tuple of values to set
-STATIC mp_obj_t pyb_servo_calibration(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_servo_calibration(size_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get calibration values
@@ -264,14 +264,14 @@ STATIC mp_obj_t pyb_servo_calibration(size_t n_args, const mp_obj_t *args) {
     // bad number of arguments
     mp_raise_msg_varg(&mp_type_TypeError, MP_ERROR_TEXT("calibration expecting 1, 4 or 6 arguments, got %d"), n_args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_servo_calibration);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_calibration_obj, 1, 6, pyb_servo_calibration);
 
 /// \method angle([angle, time=0])
 /// Get or set the angle of the servo.
 ///
 ///   - `angle` is the angle to move to in degrees.
 ///   - `time` is the number of milliseconds to take to get to the specified angle.
-STATIC mp_obj_t pyb_servo_angle(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_servo_angle(size_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get angle
@@ -294,14 +294,14 @@ STATIC mp_obj_t pyb_servo_angle(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_angle);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_angle_obj, 1, 3, pyb_servo_angle);
 
 /// \method speed([speed, time=0])
 /// Get or set the speed of a continuous rotation servo.
 ///
 ///   - `speed` is the speed to move to change to, between -100 and 100.
 ///   - `time` is the number of milliseconds to take to get to the specified speed.
-STATIC mp_obj_t pyb_servo_speed(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_servo_speed(size_t n_args, const mp_obj_t *args) {
     pyb_servo_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         // get speed
@@ -325,16 +325,16 @@ STATIC mp_obj_t pyb_servo_speed(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_speed_obj, 1, 3, pyb_servo_speed);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_servo_speed_obj, 1, 3, pyb_servo_speed);
 
-STATIC const mp_rom_map_elem_t pyb_servo_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_servo_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_pulse_width), MP_ROM_PTR(&pyb_servo_pulse_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&pyb_servo_calibration_obj) },
     { MP_ROM_QSTR(MP_QSTR_angle), MP_ROM_PTR(&pyb_servo_angle_obj) },
     { MP_ROM_QSTR(MP_QSTR_speed), MP_ROM_PTR(&pyb_servo_speed_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_servo_locals_dict, pyb_servo_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_servo_locals_dict, pyb_servo_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_servo_type,

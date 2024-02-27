@@ -47,7 +47,7 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } machine_uart_obj_t;
 
-STATIC const char *_parity_name[] = {"None", "1", "0"};
+static const char *_parity_name[] = {"None", "1", "0"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
@@ -55,14 +55,14 @@ STATIC const char *_parity_name[] = {"None", "1", "0"};
 // The UART class doesn't have any constants for this port.
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
 
-STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, rxbuf=%u, timeout=%u, timeout_char=%u)",
         self->uart_id, self->baudrate, self->bits, _parity_name[self->parity],
         self->stop, uart0_get_rxbuf_len() - 1, self->timeout, self->timeout_char);
 }
 
-STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rxbuf, ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
@@ -190,7 +190,7 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     uart_setup(self->uart_id);
 }
 
-STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get uart id
@@ -217,19 +217,19 @@ STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     (void)self;
 }
 
-STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     return uart_rx_any(self->uart_id);
 }
 
-STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
     return uart_txdone(self->uart_id);
 }
 
-STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->uart_id == 1) {
@@ -258,7 +258,7 @@ STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     }
 }
 
-STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const byte *buf = buf_in;
 
@@ -279,7 +279,7 @@ STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {

@@ -41,23 +41,23 @@ struct pwm_param {
     uint16_t duty[PWM_CHANNEL];
 };
 
-STATIC const uint8_t pin_num[PWM_CHANNEL] = {0, 2, 4, 5, 12, 13, 14, 15};
+static const uint8_t pin_num[PWM_CHANNEL] = {0, 2, 4, 5, 12, 13, 14, 15};
 
-STATIC struct pwm_single_param pwm_single_toggle[2][PWM_CHANNEL + 1];
-STATIC struct pwm_single_param *pwm_single;
+static struct pwm_single_param pwm_single_toggle[2][PWM_CHANNEL + 1];
+static struct pwm_single_param *pwm_single;
 
-STATIC struct pwm_param pwm;
+static struct pwm_param pwm;
 
-STATIC int8_t pwm_out_io_num[PWM_CHANNEL] = {-1, -1, -1, -1, -1, -1, -1, -1};
+static int8_t pwm_out_io_num[PWM_CHANNEL] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
-STATIC uint8_t pwm_channel_toggle[2];
-STATIC uint8_t *pwm_channel;
-STATIC uint8_t pwm_toggle = 1;
-STATIC uint8_t pwm_timer_down = 1;
-STATIC uint8_t pwm_current_channel = 0;
-STATIC uint16_t pwm_gpio = 0;
-STATIC uint8_t pwm_channel_num = 0;
-STATIC volatile uint8_t pwm_toggle_request = 0;
+static uint8_t pwm_channel_toggle[2];
+static uint8_t *pwm_channel;
+static uint8_t pwm_toggle = 1;
+static uint8_t pwm_timer_down = 1;
+static uint8_t pwm_current_channel = 0;
+static uint16_t pwm_gpio = 0;
+static uint8_t pwm_channel_num = 0;
+static volatile uint8_t pwm_toggle_request = 0;
 
 // XXX: 0xffffffff/(80000000/16)=35A
 #define US_TO_RTC_TIMER_TICKS(t)          \
@@ -81,7 +81,7 @@ typedef enum {
     TM_EDGE_INT   = 0,
 } TIMER_INT_MODE;
 
-STATIC void ICACHE_FLASH_ATTR
+static void ICACHE_FLASH_ATTR
 pwm_insert_sort(struct pwm_single_param pwm[], uint8 n) {
     uint8 i;
 
@@ -106,7 +106,7 @@ pwm_insert_sort(struct pwm_single_param pwm[], uint8 n) {
     }
 }
 
-STATIC volatile uint8 critical = 0;
+static volatile uint8 critical = 0;
 
 #define LOCK_PWM(c)  do {                       \
         while ((c) == 1);                            \
@@ -298,7 +298,7 @@ pwm_get_freq(uint8 channel) {
  * Parameters   : NONE
  * Returns      : NONE
 *******************************************************************************/
-STATIC void ICACHE_RAM_ATTR
+static void ICACHE_RAM_ATTR
 pwm_tim1_intr_handler(void *dummy) {
     (void)dummy;
 

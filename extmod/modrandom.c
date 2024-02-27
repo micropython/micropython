@@ -46,16 +46,16 @@
 #if !MICROPY_ENABLE_DYNRUNTIME
 #if SEED_ON_IMPORT
 // If the state is seeded on import then keep these variables in the BSS.
-STATIC uint32_t yasmarang_pad, yasmarang_n, yasmarang_d;
-STATIC uint8_t yasmarang_dat;
+static uint32_t yasmarang_pad, yasmarang_n, yasmarang_d;
+static uint8_t yasmarang_dat;
 #else
 // Without seed-on-import these variables must be initialised via the data section.
-STATIC uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
-STATIC uint8_t yasmarang_dat = 0;
+static uint32_t yasmarang_pad = 0xeda4baba, yasmarang_n = 69, yasmarang_d = 233;
+static uint8_t yasmarang_dat = 0;
 #endif
 #endif
 
-STATIC uint32_t yasmarang(void) {
+static uint32_t yasmarang(void) {
     yasmarang_pad += yasmarang_dat + yasmarang_d * yasmarang_n;
     yasmarang_pad = (yasmarang_pad << 3) + (yasmarang_pad >> 29);
     yasmarang_n = yasmarang_pad | 2;
@@ -71,7 +71,7 @@ STATIC uint32_t yasmarang(void) {
 
 // returns an unsigned integer below the given argument
 // n must not be zero
-STATIC uint32_t yasmarang_randbelow(uint32_t n) {
+static uint32_t yasmarang_randbelow(uint32_t n) {
     uint32_t mask = 1;
     while ((n & mask) < n) {
         mask = (mask << 1) | 1;
@@ -85,7 +85,7 @@ STATIC uint32_t yasmarang_randbelow(uint32_t n) {
 
 #endif
 
-STATIC mp_obj_t mod_random_getrandbits(mp_obj_t num_in) {
+static mp_obj_t mod_random_getrandbits(mp_obj_t num_in) {
     mp_int_t n = mp_obj_get_int(num_in);
     if (n > 32 || n < 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("bits must be 32 or less"));
@@ -98,9 +98,9 @@ STATIC mp_obj_t mod_random_getrandbits(mp_obj_t num_in) {
     mask >>= (32 - n);
     return mp_obj_new_int_from_uint(yasmarang() & mask);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_random_getrandbits_obj, mod_random_getrandbits);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_random_getrandbits_obj, mod_random_getrandbits);
 
-STATIC mp_obj_t mod_random_seed(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mod_random_seed(size_t n_args, const mp_obj_t *args) {
     mp_uint_t seed;
     if (n_args == 0 || args[0] == mp_const_none) {
         #ifdef MICROPY_PY_RANDOM_SEED_INIT_FUNC
@@ -117,11 +117,11 @@ STATIC mp_obj_t mod_random_seed(size_t n_args, const mp_obj_t *args) {
     yasmarang_dat = 0;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_random_seed_obj, 0, 1, mod_random_seed);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_random_seed_obj, 0, 1, mod_random_seed);
 
 #if MICROPY_PY_RANDOM_EXTRA_FUNCS
 
-STATIC mp_obj_t mod_random_randrange(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mod_random_randrange(size_t n_args, const mp_obj_t *args) {
     mp_int_t start = mp_obj_get_int(args[0]);
     if (n_args == 1) {
         // range(stop)
@@ -161,9 +161,9 @@ STATIC mp_obj_t mod_random_randrange(size_t n_args, const mp_obj_t *args) {
 error:
     mp_raise_ValueError(NULL);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_random_randrange_obj, 1, 3, mod_random_randrange);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_random_randrange_obj, 1, 3, mod_random_randrange);
 
-STATIC mp_obj_t mod_random_randint(mp_obj_t a_in, mp_obj_t b_in) {
+static mp_obj_t mod_random_randint(mp_obj_t a_in, mp_obj_t b_in) {
     mp_int_t a = mp_obj_get_int(a_in);
     mp_int_t b = mp_obj_get_int(b_in);
     if (a <= b) {
@@ -172,9 +172,9 @@ STATIC mp_obj_t mod_random_randint(mp_obj_t a_in, mp_obj_t b_in) {
         mp_raise_ValueError(NULL);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_random_randint_obj, mod_random_randint);
+static MP_DEFINE_CONST_FUN_OBJ_2(mod_random_randint_obj, mod_random_randint);
 
-STATIC mp_obj_t mod_random_choice(mp_obj_t seq) {
+static mp_obj_t mod_random_choice(mp_obj_t seq) {
     mp_int_t len = mp_obj_get_int(mp_obj_len(seq));
     if (len > 0) {
         return mp_obj_subscr(seq, mp_obj_new_int(yasmarang_randbelow((uint32_t)len)), MP_OBJ_SENTINEL);
@@ -182,12 +182,12 @@ STATIC mp_obj_t mod_random_choice(mp_obj_t seq) {
         mp_raise_type(&mp_type_IndexError);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_random_choice_obj, mod_random_choice);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_random_choice_obj, mod_random_choice);
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
 // returns a number in the range [0..1) using Yasmarang to fill in the fraction bits
-STATIC mp_float_t yasmarang_float(void) {
+static mp_float_t yasmarang_float(void) {
     mp_float_union_t u;
     u.p.sgn = 0;
     u.p.exp = (1 << (MP_FLOAT_EXP_BITS - 1)) - 1;
@@ -199,24 +199,24 @@ STATIC mp_float_t yasmarang_float(void) {
     return u.f - 1;
 }
 
-STATIC mp_obj_t mod_random_random(void) {
+static mp_obj_t mod_random_random(void) {
     return mp_obj_new_float(yasmarang_float());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_random_random_obj, mod_random_random);
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_random_random_obj, mod_random_random);
 
-STATIC mp_obj_t mod_random_uniform(mp_obj_t a_in, mp_obj_t b_in) {
+static mp_obj_t mod_random_uniform(mp_obj_t a_in, mp_obj_t b_in) {
     mp_float_t a = mp_obj_get_float(a_in);
     mp_float_t b = mp_obj_get_float(b_in);
     return mp_obj_new_float(a + (b - a) * yasmarang_float());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_random_uniform_obj, mod_random_uniform);
+static MP_DEFINE_CONST_FUN_OBJ_2(mod_random_uniform_obj, mod_random_uniform);
 
 #endif
 
 #endif // MICROPY_PY_RANDOM_EXTRA_FUNCS
 
 #if SEED_ON_IMPORT
-STATIC mp_obj_t mod_random___init__(void) {
+static mp_obj_t mod_random___init__(void) {
     // This module may be imported by more than one name so need to ensure
     // that it's only ever seeded once.
     static bool seeded = false;
@@ -226,11 +226,11 @@ STATIC mp_obj_t mod_random___init__(void) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_random___init___obj, mod_random___init__);
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_random___init___obj, mod_random___init__);
 #endif
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t mp_module_random_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_random_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_random) },
     #if SEED_ON_IMPORT
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&mod_random___init___obj) },
@@ -248,7 +248,7 @@ STATIC const mp_rom_map_elem_t mp_module_random_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_random_globals, mp_module_random_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_random_globals, mp_module_random_globals_table);
 
 const mp_obj_module_t mp_module_random = {
     .base = { &mp_type_module },

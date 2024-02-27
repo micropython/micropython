@@ -69,12 +69,12 @@ typedef struct _machine_uart_obj_t {
     #endif
 } machine_uart_obj_t;
 
-STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
+static const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
 
 // Irq handler
 
 // take all bytes from the fifo and store them in the buffer
-STATIC void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
+static void uart_drain_rx_fifo(machine_uart_obj_t *self, Sercom *uart) {
     while (uart->USART.INTFLAG.bit.RXC != 0) {
         if (ringbuf_free(&self->read_buffer) > 0) {
             // get a byte from uart and put into the buffer
@@ -114,7 +114,7 @@ void common_uart_irq_handler(int uart_id) {
 }
 
 // Configure the Sercom device
-STATIC void machine_sercom_configure(machine_uart_obj_t *self) {
+static void machine_sercom_configure(machine_uart_obj_t *self) {
     Sercom *uart = sercom_instance[self->id];
 
     // Reset (clear) the peripheral registers.
@@ -192,7 +192,7 @@ void machine_uart_set_baudrate(mp_obj_t self_in, uint32_t baudrate) {
     machine_sercom_configure(self);
 }
 
-STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, "
         "timeout=%u, timeout_char=%u, rxbuf=%d"
@@ -215,7 +215,7 @@ STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         );
 }
 
-STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx,
            ARG_timeout, ARG_timeout_char, ARG_rxbuf, ARG_txbuf, ARG_rts, ARG_cts };
     static const mp_arg_t allowed_args[] = {
@@ -363,7 +363,7 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
 }
 
-STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
@@ -396,7 +396,7 @@ STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     // Check if it is the active object.
     if (MP_STATE_PORT(sercom_table)[self->id] == self) {
         Sercom *uart = sercom_instance[self->id];
@@ -409,11 +409,11 @@ STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     }
 }
 
-STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     return ringbuf_avail(&self->read_buffer);
 }
 
-STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
     Sercom *uart = sercom_instance[self->id];
 
     return uart->USART.INTFLAG.bit.DRE
@@ -423,7 +423,7 @@ STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
            && uart->USART.INTFLAG.bit.TXC;
 }
 
-STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
+static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     uint32_t break_time_us = 13 * 1000000 / self->baudrate;
 
     // Wait for the tx buffer to drain.
@@ -445,7 +445,7 @@ STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     mp_hal_set_pin_mux(self->tx, self->tx_pad_config.alt_fct);
 }
 
-STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     Sercom *uart = sercom_instance[self->id];
     uint64_t t = mp_hal_ticks_ms_64() + self->timeout;
@@ -475,7 +475,7 @@ STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     size_t i = 0;
     const uint8_t *src = buf_in;
@@ -514,7 +514,7 @@ STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     Sercom *uart = sercom_instance[self->id];

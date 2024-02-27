@@ -85,7 +85,7 @@ static uint8_t resolution[] = {
 
 extern mp_int_t log2i(mp_int_t num);
 
-STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -94,7 +94,7 @@ STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_p
         self->adc_config.channel, self->bits, 1 << self->avg, self->vref);
 }
 
-STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_bits, ARG_average, ARG_vref };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -138,7 +138,7 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
 }
 
 // read_u16()
-STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     Adc *adc = adc_bases[self->adc_config.device];
     // Set the reference voltage. Default: external AREFA.
     adc->REFCTRL.reg = adc_vref_table[self->vref];
@@ -156,7 +156,7 @@ STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
 }
 
 // deinit() : release the ADC channel
-STATIC void mp_machine_adc_deinit(machine_adc_obj_t *self) {
+static void mp_machine_adc_deinit(machine_adc_obj_t *self) {
     busy_flags &= ~((1 << (self->adc_config.device * 16 + self->adc_config.channel)));
 }
 

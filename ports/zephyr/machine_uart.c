@@ -43,12 +43,12 @@ typedef struct _machine_uart_obj_t {
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
 } machine_uart_obj_t;
 
-STATIC const char *_parity_name[] = {"None", "Odd", "Even", "Mark", "Space"};
-STATIC const char *_stop_bits_name[] = {"0.5", "1", "1.5", "2"};
-STATIC const char *_data_bits_name[] = {"5", "6", "7", "8", "9"};
-STATIC const char *_flow_control_name[] = {"None", "RTS/CTS", "DTR/DSR"};
+static const char *_parity_name[] = {"None", "Odd", "Even", "Mark", "Space"};
+static const char *_stop_bits_name[] = {"0.5", "1", "1.5", "2"};
+static const char *_data_bits_name[] = {"5", "6", "7", "8", "9"};
+static const char *_flow_control_name[] = {"None", "RTS/CTS", "DTR/DSR"};
 
-STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     struct uart_config config;
     uart_config_get(self->dev, &config);
@@ -58,7 +58,7 @@ STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         self->timeout, self->timeout_char);
 }
 
-STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_timeout, ARG_timeout_char };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_timeout, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -71,7 +71,7 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     self->timeout_char = args[ARG_timeout_char].u_int;
 }
 
-STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     machine_uart_obj_t *self = mp_obj_malloc(machine_uart_obj_t, &machine_uart_type);
@@ -87,21 +87,21 @@ STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     (void)self;
 }
 
-STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
-    (void)self;
-    mp_raise_NotImplementedError(NULL); // TODO
-}
-
-STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     (void)self;
     mp_raise_NotImplementedError(NULL); // TODO
 }
 
-STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    (void)self;
+    mp_raise_NotImplementedError(NULL); // TODO
+}
+
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t *buffer = (uint8_t *)buf_in;
     uint8_t data;
@@ -122,7 +122,7 @@ STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     return bytes_read;
 }
 
-STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t *buffer = (uint8_t *)buf_in;
 
@@ -133,7 +133,7 @@ STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_uint_t ret;
 
     if (request == MP_STREAM_POLL) {

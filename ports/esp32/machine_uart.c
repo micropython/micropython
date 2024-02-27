@@ -68,7 +68,7 @@ typedef struct _machine_uart_obj_t {
     uint32_t invert;        // lines to invert
 } machine_uart_obj_t;
 
-STATIC const char *_parity_name[] = {"None", "1", "0"};
+static const char *_parity_name[] = {"None", "1", "0"};
 
 /******************************************************************************/
 // MicroPython bindings for UART
@@ -81,7 +81,7 @@ STATIC const char *_parity_name[] = {"None", "1", "0"};
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HW_FLOWCTRL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HW_FLOWCTRL_CTS) }, \
 
-STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint32_t baudrate;
     check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
@@ -133,7 +133,7 @@ STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
     mp_printf(print, ")");
 }
 
-STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_tx, ARG_rx, ARG_rts, ARG_cts, ARG_txbuf, ARG_rxbuf, ARG_timeout, ARG_timeout_char, ARG_invert, ARG_flow };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 0} },
@@ -309,7 +309,7 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4));
 }
 
-STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // get uart id
@@ -386,21 +386,21 @@ STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     check_esp_err(uart_driver_delete(self->uart_num));
 }
 
-STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     size_t rxbufsize;
     check_esp_err(uart_get_buffered_data_len(self->uart_num, &rxbufsize));
     return rxbufsize;
 }
 
-STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
     return uart_wait_tx_done(self->uart_num, 0) == ESP_OK;
 }
 
-STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
+static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     // Save settings
     uint32_t baudrate;
     check_esp_err(uart_get_baudrate(self->uart_num, &baudrate));
@@ -417,7 +417,7 @@ STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     check_esp_err(uart_set_baudrate(self->uart_num, baudrate));
 }
 
-STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     // make sure we want at least 1 char
@@ -451,7 +451,7 @@ STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     return bytes_read;
 }
 
-STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     int bytes_written = uart_write_bytes(self->uart_num, buf_in, size);
@@ -465,7 +465,7 @@ STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     return bytes_written;
 }
 
-STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {

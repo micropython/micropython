@@ -103,7 +103,7 @@ typedef struct _machine_hard_spi_obj_t {
     nrfx_spi_config_t  * p_config; // pointer to volatile part
 } machine_hard_spi_obj_t;
 
-STATIC const nrfx_spi_t machine_spi_instances[] = {
+static const nrfx_spi_t machine_spi_instances[] = {
     NRFX_SPI_INSTANCE(0),
     NRFX_SPI_INSTANCE(1),
 #if defined(NRF52_SERIES)
@@ -114,9 +114,9 @@ STATIC const nrfx_spi_t machine_spi_instances[] = {
 #endif // NRF52_SERIES
 };
 
-STATIC nrfx_spi_config_t configs[MP_ARRAY_SIZE(machine_spi_instances)];
+static nrfx_spi_config_t configs[MP_ARRAY_SIZE(machine_spi_instances)];
 
-STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
+static const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_spi_type}, .p_spi = &machine_spi_instances[0], .p_config = &configs[0]},
     {{&machine_spi_type}, .p_spi = &machine_spi_instances[1], .p_config = &configs[1]},
 #if defined(NRF52_SERIES)
@@ -130,7 +130,7 @@ STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
 void spi_init0(void) {
 }
 
-STATIC int spi_find(mp_obj_t id) {
+static int spi_find(mp_obj_t id) {
     if (mp_obj_is_str(id)) {
         // given a string id
         const char *port = mp_obj_str_get_str(id);
@@ -187,14 +187,14 @@ enum {
     ARG_INIT_firstbit
 };
 
-STATIC void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_arg_val_t *args);
+static void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_arg_val_t *args);
 
-STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = self_in;
     mp_printf(print, "SPI(%u)", self->p_spi->drv_inst_idx);
 }
 
-STATIC mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,       MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1)} },
         { MP_QSTR_baudrate, MP_ARG_INT, {.u_int = 1000000} },
@@ -243,7 +243,7 @@ STATIC mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_arg_val_t *args) {
+static void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_arg_val_t *args) {
     int baudrate = args[ARG_INIT_baudrate].u_int;
 
     if (baudrate <= 125000) {
@@ -304,7 +304,7 @@ STATIC void machine_hard_spi_init_helper(const machine_hard_spi_obj_t *self, mp_
     }
 }
 
-STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1000000} },
         { MP_QSTR_polarity, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -321,17 +321,17 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
     machine_hard_spi_init_helper(self, args);
 }
 
-STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
+static void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
     const machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     nrfx_spi_uninit(self->p_spi);
 }
 
-STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     const machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t*)self_in;
     spi_transfer(self, len, src, dest);
 }
 
-STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
+static const mp_machine_spi_p_t machine_hard_spi_p = {
     .init = machine_hard_spi_init,
     .deinit = machine_hard_spi_deinit,
     .transfer = machine_hard_spi_transfer,

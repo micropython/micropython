@@ -69,8 +69,8 @@ typedef struct _bytecode_prelude_t {
 
 #include "py/parsenum.h"
 
-STATIC int read_byte(mp_reader_t *reader);
-STATIC size_t read_uint(mp_reader_t *reader);
+static int read_byte(mp_reader_t *reader);
+static size_t read_uint(mp_reader_t *reader);
 
 #if MICROPY_EMIT_MACHINE_CODE
 
@@ -138,17 +138,17 @@ void mp_native_relocate(void *ri_in, uint8_t *text, uintptr_t reloc_text) {
 
 #endif
 
-STATIC int read_byte(mp_reader_t *reader) {
+static int read_byte(mp_reader_t *reader) {
     return reader->readbyte(reader->data);
 }
 
-STATIC void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
+static void read_bytes(mp_reader_t *reader, byte *buf, size_t len) {
     while (len-- > 0) {
         *buf++ = reader->readbyte(reader->data);
     }
 }
 
-STATIC size_t read_uint(mp_reader_t *reader) {
+static size_t read_uint(mp_reader_t *reader) {
     size_t unum = 0;
     for (;;) {
         byte b = reader->readbyte(reader->data);
@@ -160,7 +160,7 @@ STATIC size_t read_uint(mp_reader_t *reader) {
     return unum;
 }
 
-STATIC qstr load_qstr(mp_reader_t *reader) {
+static qstr load_qstr(mp_reader_t *reader) {
     size_t len = read_uint(reader);
     if (len & 1) {
         // static qstr
@@ -175,7 +175,7 @@ STATIC qstr load_qstr(mp_reader_t *reader) {
     return qst;
 }
 
-STATIC mp_obj_t load_obj(mp_reader_t *reader) {
+static mp_obj_t load_obj(mp_reader_t *reader) {
     byte obj_type = read_byte(reader);
     #if MICROPY_EMIT_MACHINE_CODE
     if (obj_type == MP_PERSISTENT_OBJ_FUN_TABLE) {
@@ -221,7 +221,7 @@ STATIC mp_obj_t load_obj(mp_reader_t *reader) {
     }
 }
 
-STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *context) {
+static mp_raw_code_t *load_raw_code(mp_reader_t *reader, mp_module_context_t *context) {
     // Load function kind and data length
     size_t kind_len = read_uint(reader);
     int kind = (kind_len & 3) + MP_CODE_BYTECODE;
@@ -468,12 +468,12 @@ void mp_raw_code_load_file(qstr filename, mp_compiled_module_t *context) {
 
 #include "py/objstr.h"
 
-STATIC void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
+static void mp_print_bytes(mp_print_t *print, const byte *data, size_t len) {
     print->print_strn(print->data, (const char *)data, len);
 }
 
 #define BYTES_FOR_INT ((MP_BYTES_PER_OBJ_WORD * 8 + 6) / 7)
-STATIC void mp_print_uint(mp_print_t *print, size_t n) {
+static void mp_print_uint(mp_print_t *print, size_t n) {
     byte buf[BYTES_FOR_INT];
     byte *p = buf + sizeof(buf);
     *--p = n & 0x7f;
@@ -484,7 +484,7 @@ STATIC void mp_print_uint(mp_print_t *print, size_t n) {
     print->print_strn(print->data, (char *)p, buf + sizeof(buf) - p);
 }
 
-STATIC void save_qstr(mp_print_t *print, qstr qst) {
+static void save_qstr(mp_print_t *print, qstr qst) {
     if (qst <= QSTR_LAST_STATIC) {
         // encode static qstr
         mp_print_uint(print, qst << 1 | 1);
@@ -496,7 +496,7 @@ STATIC void save_qstr(mp_print_t *print, qstr qst) {
     mp_print_bytes(print, str, len + 1); // +1 to store null terminator
 }
 
-STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
+static void save_obj(mp_print_t *print, mp_obj_t o) {
     #if MICROPY_EMIT_MACHINE_CODE
     if (o == MP_OBJ_FROM_PTR(&mp_fun_table)) {
         byte obj_type = MP_PERSISTENT_OBJ_FUN_TABLE;
@@ -562,7 +562,7 @@ STATIC void save_obj(mp_print_t *print, mp_obj_t o) {
     }
 }
 
-STATIC void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
+static void save_raw_code(mp_print_t *print, const mp_raw_code_t *rc) {
     // Save function kind and data length
     mp_print_uint(print, (rc->fun_data_len << 3) | ((rc->n_children != 0) << 2) | (rc->kind - MP_CODE_BYTECODE));
 
@@ -637,7 +637,7 @@ void mp_raw_code_save(mp_compiled_module_t *cm, mp_print_t *print) {
 #include <sys/stat.h>
 #include <fcntl.h>
 
-STATIC void fd_print_strn(void *env, const char *str, size_t len) {
+static void fd_print_strn(void *env, const char *str, size_t len) {
     int fd = (intptr_t)env;
     MP_THREAD_GIL_EXIT();
     ssize_t ret = write(fd, str, len);

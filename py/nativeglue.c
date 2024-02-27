@@ -139,7 +139,7 @@ mp_obj_t mp_obj_new_slice(mp_obj_t ostart, mp_obj_t ostop, mp_obj_t ostep) {
 }
 #endif
 
-STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
+static mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
     if (new_globals == NULL) {
         // Globals were the originally the same so don't restore them
         return NULL;
@@ -155,20 +155,20 @@ STATIC mp_obj_dict_t *mp_native_swap_globals(mp_obj_dict_t *new_globals) {
 
 // wrapper that accepts n_args and n_kw in one argument
 // (native emitter can only pass at most 3 arguments to a function)
-STATIC mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
+static mp_obj_t mp_native_call_function_n_kw(mp_obj_t fun_in, size_t n_args_kw, const mp_obj_t *args) {
     return mp_call_function_n_kw(fun_in, n_args_kw & 0xff, (n_args_kw >> 8) & 0xff, args);
 }
 
 // wrapper that makes raise obj and raises it
 // END_FINALLY opcode requires that we don't raise if o==None
-STATIC void mp_native_raise(mp_obj_t o) {
+static void mp_native_raise(mp_obj_t o) {
     if (o != MP_OBJ_NULL && o != mp_const_none) {
         nlr_raise(mp_make_raise_obj(o));
     }
 }
 
 // wrapper that handles iterator buffer
-STATIC mp_obj_t mp_native_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter) {
+static mp_obj_t mp_native_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter) {
     if (iter == NULL) {
         return mp_getiter(obj, NULL);
     } else {
@@ -183,7 +183,7 @@ STATIC mp_obj_t mp_native_getiter(mp_obj_t obj, mp_obj_iter_buf_t *iter) {
 }
 
 // wrapper that handles iterator buffer
-STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
+static mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
     mp_obj_t obj;
     if (iter->base.type == MP_OBJ_NULL) {
         obj = iter->buf[0];
@@ -193,7 +193,7 @@ STATIC mp_obj_t mp_native_iternext(mp_obj_iter_buf_t *iter) {
     return mp_iternext(obj);
 }
 
-STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value) {
+static bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *ret_value) {
     mp_vm_return_kind_t ret_kind;
     nlr_buf_t nlr_buf;
     mp_obj_t throw_value = *ret_value;
@@ -231,22 +231,22 @@ STATIC bool mp_native_yield_from(mp_obj_t gen, mp_obj_t send_value, mp_obj_t *re
 
 #if !MICROPY_PY_BUILTINS_FLOAT
 
-STATIC mp_obj_t mp_obj_new_float_from_f(float f) {
+static mp_obj_t mp_obj_new_float_from_f(float f) {
     (void)f;
     mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
-STATIC mp_obj_t mp_obj_new_float_from_d(double d) {
+static mp_obj_t mp_obj_new_float_from_d(double d) {
     (void)d;
     mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
-STATIC float mp_obj_get_float_to_f(mp_obj_t o) {
+static float mp_obj_get_float_to_f(mp_obj_t o) {
     (void)o;
     mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }
 
-STATIC double mp_obj_get_float_to_d(mp_obj_t o) {
+static double mp_obj_get_float_to_d(mp_obj_t o) {
     (void)o;
     mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("float unsupported"));
 }

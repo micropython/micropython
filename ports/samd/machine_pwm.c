@@ -105,21 +105,21 @@ static uint8_t device_status[TCC_INST_NUM];
 static uint8_t output_active[TCC_INST_NUM];
 const uint16_t prescaler_table[] = {1, 2, 4, 8, 16, 64, 256, 1024};
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
-STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self);
-STATIC void mp_machine_pwm_stop(machine_pwm_obj_t *self);
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
+static void mp_machine_pwm_start(machine_pwm_obj_t *self);
+static void mp_machine_pwm_stop(machine_pwm_obj_t *self);
 
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "PWM(%q, device=%u, channel=%u, output=%u)",
         pin_find_by_id(self->pin_id)->name, self->device, self->channel, self->output);
 }
 
 // called by the constructor and init()
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert, ARG_device };
     static const mp_arg_t allowed_args[] = {
@@ -225,7 +225,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
 }
 
 // PWM(pin)
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
 
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
@@ -245,7 +245,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_pwm_stop(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_stop(machine_pwm_obj_t *self) {
     Tcc *tcc = tcc_instance[self->device];
     tcc->CTRLA.bit.ENABLE = 0;
     while (tcc->SYNCBUSY.reg & TCC_SYNCBUSY_ENABLE) {
@@ -271,7 +271,7 @@ void pwm_deinit_all(void) {
 // switch off that device.
 // This stops all channels, but keeps the configuration
 // Calling pwm.freq(n), pwm.duty_x() or pwm.init() will start it again.
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     mp_hal_clr_pin_mux(self->pin_id); // Switch the output off
     output_active[self->device] &= ~(1 << self->output);  // clear output flasg
     // Stop the device, if no output is active.
@@ -280,7 +280,7 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void wait_for_register_update(Tcc *tcc) {
+static void wait_for_register_update(Tcc *tcc) {
     // Wait for a period's end (may be long) to have the change settled
     // Each loop cycle takes at least 1 ms, giving an implicit timeout.
     for (int i = 0; i < PWM_UPDATE_TIMEOUT; i++) {
@@ -293,7 +293,7 @@ STATIC void wait_for_register_update(Tcc *tcc) {
     tcc->INTFLAG.reg = TCC_INTFLAG_OVF;
 }
 
-STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_start(machine_pwm_obj_t *self) {
     // Start the PWM. The period counter is 24 bit or 16 bit with a pre-scaling
     // of up to 1024, allowing a range from 24 MHz down to 1 Hz.
     static const uint32_t max_period[5] = {1 << 24, 1 << 24, 1 << 16, 1 << 16, 1 << 16};
@@ -357,16 +357,16 @@ STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self) {
     tcc->CTRLBCLR.reg = TCC_CTRLBCLR_LUPD;
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT(self->freq);
 }
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     self->freq = freq;
     mp_machine_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (duty_type_flags[self->device] & (1 << self->channel)) {
         return MP_OBJ_NEW_SMALL_INT(get_duty_value(self->device, self->channel));
     } else {
@@ -374,13 +374,13 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     put_duty_value(self->device, self->channel, duty_u16);
     duty_type_flags[self->device] |= 1 << self->channel;
     mp_machine_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     if (!(duty_type_flags[self->device] & (1 << self->channel))) {
         return MP_OBJ_NEW_SMALL_INT(get_duty_value(self->device, self->channel));
     } else {
@@ -388,7 +388,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     put_duty_value(self->device, self->channel, duty_ns);
     duty_type_flags[self->device] &= ~(1 << self->channel);
     mp_machine_pwm_start(self);

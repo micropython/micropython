@@ -86,7 +86,7 @@ const nrfx_rtc_config_t rtc_config_time_ticks = {
     #endif
 };
 
-STATIC void rtc_irq_time(nrfx_rtc_int_type_t event) {
+static void rtc_irq_time(nrfx_rtc_int_type_t event) {
     // irq handler for overflow
     if (event == NRFX_RTC_INT_OVERFLOW) {
         rtc_overflows += 1;

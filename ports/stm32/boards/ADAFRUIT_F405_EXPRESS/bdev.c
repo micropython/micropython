@@ -4,7 +4,7 @@
 
 #if !MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 
-STATIC const spi_proto_cfg_t spi_bus = {
+static const spi_proto_cfg_t spi_bus = {
     .spi = &spi_obj[0], // SPI1
     .baudrate = 25000000,
     .polarity = 0,
@@ -13,7 +13,7 @@ STATIC const spi_proto_cfg_t spi_bus = {
     .firstbit = SPI_FIRSTBIT_MSB,
 };
 
-STATIC mp_spiflash_cache_t spi_bdev_cache;
+static mp_spiflash_cache_t spi_bdev_cache;
 
 const mp_spiflash_config_t spiflash_config = {
     .bus_kind = MP_SPIFLASH_BUS_SPI,

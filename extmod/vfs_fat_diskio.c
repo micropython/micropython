@@ -44,7 +44,7 @@
 #include "extmod/vfs_fat.h"
 
 typedef void *bdev_t;
-STATIC fs_user_mount_t *disk_get_device(void *bdev) {
+static fs_user_mount_t *disk_get_device(void *bdev) {
     return (fs_user_mount_t *)bdev;
 }
 

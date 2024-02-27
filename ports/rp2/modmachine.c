@@ -55,20 +55,20 @@
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(RP2_RESET_PWRON) }, \
     { MP_ROM_QSTR(MP_QSTR_WDT_RESET),           MP_ROM_INT(RP2_RESET_WDT) }, \
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     pico_unique_board_id_t id;
     pico_get_unique_board_id(&id);
     return mp_obj_new_bytes(id.id, sizeof(id.id));
 }
 
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     watchdog_reboot(0, SRAM_END, 0);
     for (;;) {
         __wfi();
     }
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     int reset_cause;
     if (watchdog_caused_reboot()) {
         reset_cause = RP2_RESET_WDT;
@@ -86,11 +86,11 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_int_t freq = mp_obj_get_int(args[0]);
     if (!set_sys_clock_khz(freq / 1000, false)) {
         mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
@@ -101,11 +101,11 @@ STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     #endif
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     __wfe();
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_int_t delay_ms = 0;
     bool use_timer_alarm = false;
 
@@ -189,7 +189,7 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     restore_interrupts(my_interrupts);
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);
     mp_machine_reset();
 }

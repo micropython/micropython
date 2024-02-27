@@ -1862,12 +1862,6 @@ typedef double mp_float_t;
 #endif
 #endif
 
-// Allow to override static modifier for global objects, e.g. to use with
-// object code analysis tools which don't support static symbols.
-#ifndef STATIC
-#define STATIC static
-#endif
-
 // Number of bytes in an object word: mp_obj_t, mp_uint_t, mp_uint_t
 #ifndef MP_BYTES_PER_OBJ_WORD
 #define MP_BYTES_PER_OBJ_WORD (sizeof(mp_uint_t))

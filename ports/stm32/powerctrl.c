@@ -162,14 +162,14 @@ typedef struct _sysclk_scaling_table_entry_t {
 } sysclk_scaling_table_entry_t;
 
 #if defined(STM32F7)
-STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+static const sysclk_scaling_table_entry_t volt_scale_table[] = {
     { 151, PWR_REGULATOR_VOLTAGE_SCALE3 },
     { 180, PWR_REGULATOR_VOLTAGE_SCALE2 },
     // Above 180MHz uses default PWR_REGULATOR_VOLTAGE_SCALE1
 };
 #elif defined(STM32H7A3xx) || defined(STM32H7A3xxQ) || \
     defined(STM32H7B3xx) || defined(STM32H7B3xxQ)
-STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+static const sysclk_scaling_table_entry_t volt_scale_table[] = {
     // See table 15 "FLASH recommended number of wait states and programming delay" of RM0455.
     {88, PWR_REGULATOR_VOLTAGE_SCALE3},
     {160, PWR_REGULATOR_VOLTAGE_SCALE2},
@@ -177,7 +177,7 @@ STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
     {280, PWR_REGULATOR_VOLTAGE_SCALE0},
 };
 #elif defined(STM32H7)
-STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
+static const sysclk_scaling_table_entry_t volt_scale_table[] = {
     // See table 55 "Kernel clock distribution overview" of RM0433.
     {200, PWR_REGULATOR_VOLTAGE_SCALE3},
     {300, PWR_REGULATOR_VOLTAGE_SCALE2},
@@ -186,7 +186,7 @@ STATIC const sysclk_scaling_table_entry_t volt_scale_table[] = {
 };
 #endif
 
-STATIC int powerctrl_config_vos(uint32_t sysclk_mhz) {
+static int powerctrl_config_vos(uint32_t sysclk_mhz) {
     #if defined(STM32F7) || defined(STM32H7)
     uint32_t volt_scale = PWR_REGULATOR_VOLTAGE_SCALE1;
     for (int i = 0; i < MP_ARRAY_SIZE(volt_scale_table); ++i) {
@@ -291,7 +291,7 @@ int powerctrl_rcc_clock_config_pll(RCC_ClkInitTypeDef *rcc_init, uint32_t sysclk
 
 #if !defined(STM32F0) && !defined(STM32G0) && !defined(STM32L0) && !defined(STM32L1) && !defined(STM32L4)
 
-STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
+static uint32_t calc_ahb_div(uint32_t wanted_div) {
     #if defined(STM32H7)
     if (wanted_div <= 1) {
         return RCC_HCLK_DIV1;
@@ -335,7 +335,7 @@ STATIC uint32_t calc_ahb_div(uint32_t wanted_div) {
     #endif
 }
 
-STATIC uint32_t calc_apb1_div(uint32_t wanted_div) {
+static uint32_t calc_apb1_div(uint32_t wanted_div) {
     #if defined(STM32H7)
     if (wanted_div <= 1) {
         return RCC_APB1_DIV1;
@@ -363,7 +363,7 @@ STATIC uint32_t calc_apb1_div(uint32_t wanted_div) {
     #endif
 }
 
-STATIC uint32_t calc_apb2_div(uint32_t wanted_div) {
+static uint32_t calc_apb2_div(uint32_t wanted_div) {
     #if defined(STM32H7)
     if (wanted_div <= 1) {
         return RCC_APB2_DIV1;

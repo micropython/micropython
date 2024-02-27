@@ -65,7 +65,7 @@
 extern bool EIC_occured;
 extern uint32_t _dbl_tap_addr;
 
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     *DBL_TAP_ADDR = DBL_TAP_MAGIC_RESET;
     #ifdef DBL_TAP_ADDR_ALT
     *DBL_TAP_ADDR_ALT = DBL_TAP_MAGIC_RESET;
@@ -81,28 +81,28 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     NVIC_SystemReset();
 }
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return MP_OBJ_NEW_SMALL_INT(get_cpu_freq());
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     uint32_t freq = mp_obj_get_int(args[0]);
     if (freq >= 1000000 && freq <= MAX_CPU_FREQ) {
         set_cpu_freq(freq);
     }
 }
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     samd_unique_id_t id;
     samd_get_unique_id(&id);
     return mp_obj_new_bytes((byte *)&id.bytes, sizeof(id.bytes));
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     #if defined(MCU_SAMD21)
     return PM->RCAUSE.reg;
     #elif defined(MCU_SAMD51)
@@ -112,7 +112,7 @@ STATIC mp_int_t mp_machine_reset_cause(void) {
     #endif
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     int32_t duration = -1;
     uint32_t freq = get_cpu_freq();
     if (n_args > 0) {
@@ -164,7 +164,7 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     set_cpu_freq(freq);
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_lightsleep(n_args, args);
     mp_machine_reset();
 }

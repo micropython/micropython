@@ -38,7 +38,7 @@
 
 #include "genhdr/modstm_mpz.h"
 
-STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
+static const mp_rom_map_elem_t stm_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_stm) },
 
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
@@ -62,7 +62,7 @@ STATIC const mp_rom_map_elem_t stm_module_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
+static MP_DEFINE_CONST_DICT(stm_module_globals, stm_module_globals_table);
 
 const mp_obj_module_t stm_module = {
     .base = { &mp_type_module },

@@ -70,14 +70,14 @@ typedef struct _machine_adc_obj_t {
     uint32_t sample_time;
 } machine_adc_obj_t;
 
-STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t resolution = (uint8_t)ra_adc_get_resolution();
     mp_printf(print, "<ADC%u channel=%u>", resolution, self->channel);
 }
 
 // ADC(id)
-STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -110,11 +110,11 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_int_t mp_machine_adc_read(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read(machine_adc_obj_t *self) {
     return ra_adc_read((uint32_t)(self->pin));
 }
 
-STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     mp_uint_t raw = (mp_uint_t)ra_adc_read((uint32_t)(self->pin));
     mp_int_t bits = (mp_int_t)ra_adc_get_resolution();
     // Scale raw reading to 16 bit value using a Taylor expansion (for 8 <= bits <= 16)

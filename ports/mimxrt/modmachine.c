@@ -76,20 +76,20 @@ typedef enum {
     MP_SOFT_RESET
 } reset_reason_t;
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     unsigned char id[8];
     mp_hal_get_unique_id(id);
     return mp_obj_new_bytes(id, sizeof(id));
 }
 
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     WDOG_TriggerSystemSoftwareReset(WDOG1);
     while (true) {
         ;
     }
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     #ifdef MIMXRT117x_SERIES
     uint32_t user_reset_flag = kSRC_M7CoreIppUserResetFlag;
     #else
@@ -110,23 +110,23 @@ STATIC mp_int_t mp_machine_reset_cause(void) {
     return reset_cause;
 }
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_get_cpu_freq());
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(NULL);
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(NULL);
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_int_t seconds = mp_obj_get_int(args[0]) / 1000;
         if (seconds > 0) {

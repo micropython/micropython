@@ -43,11 +43,11 @@ struct _emit_inline_asm_t {
     qstr *label_lookup;
 };
 
-STATIC void emit_inline_xtensa_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
+static void emit_inline_xtensa_error_msg(emit_inline_asm_t *emit, mp_rom_error_text_t msg) {
     *emit->error_slot = mp_obj_new_exception_msg(&mp_type_SyntaxError, msg);
 }
 
-STATIC void emit_inline_xtensa_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
+static void emit_inline_xtensa_error_exc(emit_inline_asm_t *emit, mp_obj_t exc) {
     *emit->error_slot = exc;
 }
 
@@ -66,7 +66,7 @@ void emit_inline_xtensa_free(emit_inline_asm_t *emit) {
     m_del_obj(emit_inline_asm_t, emit);
 }
 
-STATIC void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot) {
+static void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t pass, mp_obj_t *error_slot) {
     emit->pass = pass;
     emit->error_slot = error_slot;
     if (emit->pass == MP_PASS_CODE_SIZE) {
@@ -76,12 +76,12 @@ STATIC void emit_inline_xtensa_start_pass(emit_inline_asm_t *emit, pass_kind_t p
     asm_xtensa_entry(&emit->as, 0);
 }
 
-STATIC void emit_inline_xtensa_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
+static void emit_inline_xtensa_end_pass(emit_inline_asm_t *emit, mp_uint_t type_sig) {
     asm_xtensa_exit(&emit->as);
     asm_xtensa_end_pass(&emit->as);
 }
 
-STATIC mp_uint_t emit_inline_xtensa_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
+static mp_uint_t emit_inline_xtensa_count_params(emit_inline_asm_t *emit, mp_uint_t n_params, mp_parse_node_t *pn_params) {
     if (n_params > 4) {
         emit_inline_xtensa_error_msg(emit, MP_ERROR_TEXT("can only have up to 4 parameters to Xtensa assembly"));
         return 0;
@@ -100,7 +100,7 @@ STATIC mp_uint_t emit_inline_xtensa_count_params(emit_inline_asm_t *emit, mp_uin
     return n_params;
 }
 
-STATIC bool emit_inline_xtensa_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
+static bool emit_inline_xtensa_label(emit_inline_asm_t *emit, mp_uint_t label_num, qstr label_id) {
     assert(label_num < emit->max_num_labels);
     if (emit->pass == MP_PASS_CODE_SIZE) {
         // check for duplicate label on first pass
@@ -118,7 +118,7 @@ STATIC bool emit_inline_xtensa_label(emit_inline_asm_t *emit, mp_uint_t label_nu
 typedef struct _reg_name_t { byte reg;
                              byte name[3];
 } reg_name_t;
-STATIC const reg_name_t reg_name_table[] = {
+static const reg_name_t reg_name_table[] = {
     {0, "a0\0"},
     {1, "a1\0"},
     {2, "a2\0"},
@@ -139,7 +139,7 @@ STATIC const reg_name_t reg_name_table[] = {
 
 // return empty string in case of error, so we can attempt to parse the string
 // without a special check if it was in fact a string
-STATIC const char *get_arg_str(mp_parse_node_t pn) {
+static const char *get_arg_str(mp_parse_node_t pn) {
     if (MP_PARSE_NODE_IS_ID(pn)) {
         qstr qst = MP_PARSE_NODE_LEAF_ARG(pn);
         return qstr_str(qst);
@@ -148,7 +148,7 @@ STATIC const char *get_arg_str(mp_parse_node_t pn) {
     }
 }
 
-STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+static mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     const char *reg_str = get_arg_str(pn);
     for (mp_uint_t i = 0; i < MP_ARRAY_SIZE(reg_name_table); i++) {
         const reg_name_t *r = &reg_name_table[i];
@@ -165,7 +165,7 @@ STATIC mp_uint_t get_arg_reg(emit_inline_asm_t *emit, const char *op, mp_parse_n
     return 0;
 }
 
-STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, int min, int max) {
+static uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn, int min, int max) {
     mp_obj_t o;
     if (!mp_parse_node_get_int_maybe(pn, &o)) {
         emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects an integer"), op));
@@ -179,7 +179,7 @@ STATIC uint32_t get_arg_i(emit_inline_asm_t *emit, const char *op, mp_parse_node
     return i;
 }
 
-STATIC int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
+static int get_arg_label(emit_inline_asm_t *emit, const char *op, mp_parse_node_t pn) {
     if (!MP_PARSE_NODE_IS_ID(pn)) {
         emit_inline_xtensa_error_exc(emit, mp_obj_new_exception_msg_varg(&mp_type_SyntaxError, MP_ERROR_TEXT("'%s' expects a label"), op));
         return 0;
@@ -208,7 +208,7 @@ typedef struct _opcode_table_3arg_t {
     uint8_t a1 : 4;
 } opcode_table_3arg_t;
 
-STATIC const opcode_table_3arg_t opcode_table_3arg[] = {
+static const opcode_table_3arg_t opcode_table_3arg[] = {
     // arithmetic opcodes: reg, reg, reg
     {MP_QSTR_and_, RRR, 0, 1},
     {MP_QSTR_or_, RRR, 0, 2},
@@ -242,7 +242,7 @@ STATIC const opcode_table_3arg_t opcode_table_3arg[] = {
     {MP_QSTR_bnone, RRI8_B, ASM_XTENSA_CC_NONE, 0},
 };
 
-STATIC void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
+static void emit_inline_xtensa_op(emit_inline_asm_t *emit, qstr op, mp_uint_t n_args, mp_parse_node_t *pn_args) {
     size_t op_len;
     const char *op_str = (const char *)qstr_data(op, &op_len);
 

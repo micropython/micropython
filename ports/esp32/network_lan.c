@@ -61,8 +61,8 @@ typedef struct _lan_if_obj_t {
 } lan_if_obj_t;
 
 const mp_obj_type_t lan_if_type;
-STATIC lan_if_obj_t lan_obj = {{{&lan_if_type}, ESP_IF_ETH, NULL}, false, false};
-STATIC uint8_t eth_status = 0;
+static lan_if_obj_t lan_obj = {{{&lan_if_type}, ESP_IF_ETH, NULL}, false, false};
+static uint8_t eth_status = 0;
 
 static void eth_event_handler(void *arg, esp_event_base_t event_base,
     int32_t event_id, void *event_data) {
@@ -92,7 +92,7 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base,
     }
 }
 
-STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     lan_if_obj_t *self = &lan_obj;
 
     if (self->initialized) {
@@ -298,7 +298,7 @@ STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(esp_network_get_lan_obj, 0, get_lan);
 
-STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (n_args > 1) {
@@ -318,20 +318,20 @@ STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {
 
     return mp_obj_new_bool(self->base.active);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lan_active_obj, 1, 2, lan_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(lan_active_obj, 1, 2, lan_active);
 
-STATIC mp_obj_t lan_status(mp_obj_t self_in) {
+static mp_obj_t lan_status(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(eth_status);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_status_obj, lan_status);
+static MP_DEFINE_CONST_FUN_OBJ_1(lan_status_obj, lan_status);
 
-STATIC mp_obj_t lan_isconnected(mp_obj_t self_in) {
+static mp_obj_t lan_isconnected(mp_obj_t self_in) {
     lan_if_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_bool(self->base.active && (eth_status == ETH_GOT_IP));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(lan_isconnected_obj, lan_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(lan_isconnected_obj, lan_isconnected);
 
-STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     if (n_args != 1 && kwargs->used != 0) {
         mp_raise_TypeError(MP_ERROR_TEXT("either pos or kw args are allowed"));
     }
@@ -386,9 +386,9 @@ STATIC mp_obj_t lan_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
 
     return val;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(lan_config_obj, 1, lan_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(lan_config_obj, 1, lan_config);
 
-STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
+static const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&lan_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&lan_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&lan_status_obj) },
@@ -396,7 +396,7 @@ STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&esp_network_ifconfig_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(lan_if_locals_dict, lan_if_locals_dict_table);
+static MP_DEFINE_CONST_DICT(lan_if_locals_dict, lan_if_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     lan_if_type,

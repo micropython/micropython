@@ -68,15 +68,15 @@ typedef struct _pyb_spi_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC pyb_spi_obj_t pyb_spi_obj = {.baudrate = 0};
+static pyb_spi_obj_t pyb_spi_obj = {.baudrate = 0};
 
-STATIC const mp_obj_t pyb_spi_def_pin[3] = {&pin_GP14, &pin_GP16, &pin_GP30};
+static const mp_obj_t pyb_spi_def_pin[3] = {&pin_GP14, &pin_GP16, &pin_GP30};
 
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
 // only master mode is available for the moment
-STATIC void pybspi_init (const pyb_spi_obj_t *self) {
+static void pybspi_init (const pyb_spi_obj_t *self) {
     // enable the peripheral clock
     MAP_PRCMPeripheralClkEnable(PRCM_GSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
     MAP_PRCMPeripheralReset(PRCM_GSPI);
@@ -90,7 +90,7 @@ STATIC void pybspi_init (const pyb_spi_obj_t *self) {
     MAP_SPIEnable(GSPI_BASE);
 }
 
-STATIC void pybspi_tx (pyb_spi_obj_t *self, const void *data) {
+static void pybspi_tx (pyb_spi_obj_t *self, const void *data) {
     uint32_t txdata;
     switch (self->wlen) {
     case 1:
@@ -108,7 +108,7 @@ STATIC void pybspi_tx (pyb_spi_obj_t *self, const void *data) {
     MAP_SPIDataPut (GSPI_BASE, txdata);
 }
 
-STATIC void pybspi_rx (pyb_spi_obj_t *self, void *data) {
+static void pybspi_rx (pyb_spi_obj_t *self, void *data) {
     uint32_t rxdata;
     MAP_SPIDataGet (GSPI_BASE, &rxdata);
     if (data) {
@@ -128,7 +128,7 @@ STATIC void pybspi_rx (pyb_spi_obj_t *self, void *data) {
     }
 }
 
-STATIC void pybspi_transfer (pyb_spi_obj_t *self, const char *txdata, char *rxdata, uint32_t len, uint32_t *txchar) {
+static void pybspi_transfer (pyb_spi_obj_t *self, const char *txdata, char *rxdata, uint32_t len, uint32_t *txchar) {
     if (!self->baudrate) {
         mp_raise_OSError(MP_EPERM);
     }
@@ -144,7 +144,7 @@ STATIC void pybspi_transfer (pyb_spi_obj_t *self, const char *txdata, char *rxda
 /******************************************************************************/
 /* MicroPython bindings                                                      */
 /******************************************************************************/
-STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pyb_spi_obj_t *self = self_in;
     if (self->baudrate > 0) {
         mp_printf(print, "SPI(0, baudrate=%u, bits=%u, polarity=%u, phase=%u, firstbit=SPI.MSB)",
@@ -154,7 +154,7 @@ STATIC void pyb_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_ki
     }
 }
 
-STATIC mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *args) {
+static mp_obj_t pyb_spi_init_helper(pyb_spi_obj_t *self, const mp_arg_val_t *args) {
     uint bits;
     switch (args[1].u_int) {
     case 8:
@@ -224,7 +224,7 @@ static const mp_arg_t pyb_spi_init_args[] = {
     { MP_QSTR_firstbit,     MP_ARG_KW_ONLY  | MP_ARG_INT,  {.u_int = PYBSPI_FIRST_BIT_MSB} },
     { MP_QSTR_pins,         MP_ARG_KW_ONLY  | MP_ARG_OBJ,  {.u_obj = MP_OBJ_NULL} },
 };
-STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // parse args
     mp_map_t kw_args;
     mp_map_init_fixed_table(&kw_args, n_kw, all_args + n_args);
@@ -246,17 +246,17 @@ STATIC mp_obj_t pyb_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return self;
 }
 
-STATIC mp_obj_t pyb_spi_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_spi_init(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[MP_ARRAY_SIZE(pyb_spi_init_args) - 1];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(args), &pyb_spi_init_args[1], args);
     return pyb_spi_init_helper(pos_args[0], args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_init_obj, 1, pyb_spi_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_init_obj, 1, pyb_spi_init);
 
 /// \method deinit()
 /// Turn off the spi bus.
-STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
+static mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
     // disable the peripheral
     MAP_SPIDisable(GSPI_BASE);
     MAP_PRCMPeripheralClkDisable(PRCM_GSPI, PRCM_RUN_MODE_CLK | PRCM_SLP_MODE_CLK);
@@ -266,9 +266,9 @@ STATIC mp_obj_t pyb_spi_deinit(mp_obj_t self_in) {
     pyb_sleep_remove((const mp_obj_t)self_in);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_spi_deinit_obj, pyb_spi_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_spi_deinit_obj, pyb_spi_deinit);
 
-STATIC mp_obj_t pyb_spi_write (mp_obj_t self_in, mp_obj_t buf) {
+static mp_obj_t pyb_spi_write (mp_obj_t self_in, mp_obj_t buf) {
     // parse args
     pyb_spi_obj_t *self = self_in;
 
@@ -283,9 +283,9 @@ STATIC mp_obj_t pyb_spi_write (mp_obj_t self_in, mp_obj_t buf) {
     // return the number of bytes written
     return mp_obj_new_int(bufinfo.len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_write_obj, pyb_spi_write);
+static MP_DEFINE_CONST_FUN_OBJ_2(pyb_spi_write_obj, pyb_spi_write);
 
-STATIC mp_obj_t pyb_spi_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_spi_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_nbytes,    MP_ARG_REQUIRED | MP_ARG_OBJ, },
         { MP_QSTR_write,     MP_ARG_INT, {.u_int = 0x00} },
@@ -307,9 +307,9 @@ STATIC mp_obj_t pyb_spi_read(size_t n_args, const mp_obj_t *pos_args, mp_map_t *
     // return the received data
     return mp_obj_new_bytes_from_vstr(&vstr);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_read_obj, 1, pyb_spi_read);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_read_obj, 1, pyb_spi_read);
 
-STATIC mp_obj_t pyb_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buf,       MP_ARG_REQUIRED | MP_ARG_OBJ, },
         { MP_QSTR_write,     MP_ARG_INT, {.u_int = 0x00} },
@@ -331,9 +331,9 @@ STATIC mp_obj_t pyb_spi_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map
     // return the number of bytes received
     return mp_obj_new_int(vstr.len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_readinto_obj, 1, pyb_spi_readinto);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_spi_readinto_obj, 1, pyb_spi_readinto);
 
-STATIC mp_obj_t pyb_spi_write_readinto (mp_obj_t self, mp_obj_t writebuf, mp_obj_t readbuf) {
+static mp_obj_t pyb_spi_write_readinto (mp_obj_t self, mp_obj_t writebuf, mp_obj_t readbuf) {
     // get buffers to write from/read to
     mp_buffer_info_t bufinfo_write;
     uint8_t data_send[1];
@@ -360,9 +360,9 @@ STATIC mp_obj_t pyb_spi_write_readinto (mp_obj_t self, mp_obj_t writebuf, mp_obj
     // return the number of transferred bytes
     return mp_obj_new_int(bufinfo_write.len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_spi_write_readinto_obj, pyb_spi_write_readinto);
+static MP_DEFINE_CONST_FUN_OBJ_3(pyb_spi_write_readinto_obj, pyb_spi_write_readinto);
 
-STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),                MP_ROM_PTR(&pyb_spi_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&pyb_spi_deinit_obj) },
@@ -375,7 +375,7 @@ STATIC const mp_rom_map_elem_t pyb_spi_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MSB),                 MP_ROM_INT(PYBSPI_FIRST_BIT_MSB) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_spi_locals_dict, pyb_spi_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_spi_type,

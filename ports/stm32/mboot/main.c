@@ -1051,7 +1051,7 @@ typedef struct _pyb_usbdd_obj_t {
 #define MSFT100_VENDOR_CODE (0x42)
 
 #if !MICROPY_HW_USB_IS_MULTI_OTG
-STATIC const uint8_t usbd_fifo_size[USBD_PMA_NUM_FIFO] = {
+static const uint8_t usbd_fifo_size[USBD_PMA_NUM_FIFO] = {
     32, 32, // EP0(out), EP0(in)
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 14x unused
 };

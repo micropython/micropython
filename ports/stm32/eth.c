@@ -143,10 +143,10 @@ static eth_dma_t eth_dma __attribute__((aligned(16384)));
 
 eth_t eth_instance;
 
-STATIC void eth_mac_deinit(eth_t *self);
-STATIC void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf);
+static void eth_mac_deinit(eth_t *self);
+static void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf);
 
-STATIC void eth_phy_write(uint32_t reg, uint32_t val) {
+static void eth_phy_write(uint32_t reg, uint32_t val) {
     #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
@@ -172,7 +172,7 @@ STATIC void eth_phy_write(uint32_t reg, uint32_t val) {
     #endif
 }
 
-STATIC uint32_t eth_phy_read(uint32_t reg) {
+static uint32_t eth_phy_read(uint32_t reg) {
     #if defined(STM32H5) || defined(STM32H7)
     while (ETH->MACMDIOAR & ETH_MACMDIOAR_MB) {
     }
@@ -231,7 +231,7 @@ void eth_set_trace(eth_t *self, uint32_t value) {
     self->trace_flags = value;
 }
 
-STATIC int eth_mac_init(eth_t *self) {
+static int eth_mac_init(eth_t *self) {
     // Configure MPU
     uint32_t irq_state = mpu_config_start();
     #if defined(STM32H5)
@@ -540,7 +540,7 @@ STATIC int eth_mac_init(eth_t *self) {
     return 0;
 }
 
-STATIC void eth_mac_deinit(eth_t *self) {
+static void eth_mac_deinit(eth_t *self) {
     (void)self;
     HAL_NVIC_DisableIRQ(ETH_IRQn);
     #if defined(STM32H5)
@@ -558,7 +558,7 @@ STATIC void eth_mac_deinit(eth_t *self) {
     #endif
 }
 
-STATIC int eth_tx_buf_get(size_t len, uint8_t **buf) {
+static int eth_tx_buf_get(size_t len, uint8_t **buf) {
     if (len > TX_BUF_SIZE) {
         return -MP_EINVAL;
     }
@@ -597,7 +597,7 @@ STATIC int eth_tx_buf_get(size_t len, uint8_t **buf) {
     return 0;
 }
 
-STATIC int eth_tx_buf_send(void) {
+static int eth_tx_buf_send(void) {
     // Get TX descriptor and move to next one
     eth_dma_tx_descr_t *tx_descr = &eth_dma.tx_descr[eth_dma.tx_descr_idx];
     eth_dma.tx_descr_idx = (eth_dma.tx_descr_idx + 1) % TX_BUF_NUM;
@@ -637,7 +637,7 @@ STATIC int eth_tx_buf_send(void) {
     return 0;
 }
 
-STATIC void eth_dma_rx_free(void) {
+static void eth_dma_rx_free(void) {
     // Get RX descriptor, RX buffer and move to next one
     eth_dma_rx_descr_t *rx_descr = &eth_dma.rx_descr[eth_dma.rx_descr_idx];
     uint8_t *buf = &eth_dma.rx_buf[eth_dma.rx_descr_idx * RX_BUF_SIZE];
@@ -727,7 +727,7 @@ void ETH_IRQHandler(void) {
 #define TRACE_ETH_RX (0x0004)
 #define TRACE_ETH_FULL (0x0008)
 
-STATIC void eth_trace(eth_t *self, size_t len, const void *data, unsigned int flags) {
+static void eth_trace(eth_t *self, size_t len, const void *data, unsigned int flags) {
     if (((flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_TX))
         || (!(flags & NETUTILS_TRACE_IS_TX) && (self->trace_flags & TRACE_ETH_RX))) {
         const uint8_t *buf;
@@ -747,7 +747,7 @@ STATIC void eth_trace(eth_t *self, size_t len, const void *data, unsigned int fl
     }
 }
 
-STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
+static err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
     // This function should always be called from a context where PendSV-level IRQs are disabled
 
     LINK_STATS_INC(link.xmit);
@@ -763,7 +763,7 @@ STATIC err_t eth_netif_output(struct netif *netif, struct pbuf *p) {
     return ret ? ERR_BUF : ERR_OK;
 }
 
-STATIC err_t eth_netif_init(struct netif *netif) {
+static err_t eth_netif_init(struct netif *netif) {
     netif->linkoutput = eth_netif_output;
     netif->output = etharp_output;
     netif->mtu = 1500;
@@ -778,7 +778,7 @@ STATIC err_t eth_netif_init(struct netif *netif) {
     return ERR_OK;
 }
 
-STATIC void eth_lwip_init(eth_t *self) {
+static void eth_lwip_init(eth_t *self) {
     ip_addr_t ipconfig[4];
     IP4_ADDR(&ipconfig[0], 0, 0, 0, 0);
     IP4_ADDR(&ipconfig[2], 192, 168, 0, 1);
@@ -804,7 +804,7 @@ STATIC void eth_lwip_init(eth_t *self) {
     MICROPY_PY_LWIP_EXIT
 }
 
-STATIC void eth_lwip_deinit(eth_t *self) {
+static void eth_lwip_deinit(eth_t *self) {
     MICROPY_PY_LWIP_ENTER
     for (struct netif *netif = netif_list; netif != NULL; netif = netif->next) {
         if (netif == &self->netif) {
@@ -816,7 +816,7 @@ STATIC void eth_lwip_deinit(eth_t *self) {
     MICROPY_PY_LWIP_EXIT
 }
 
-STATIC void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf) {
+static void eth_process_frame(eth_t *self, size_t len, const uint8_t *buf) {
     eth_trace(self, len, buf, NETUTILS_TRACE_NEWLINE);
 
     struct netif *netif = &self->netif;

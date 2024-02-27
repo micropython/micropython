@@ -51,7 +51,7 @@ extern uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 // Provided by the port.
 extern machine_uart_obj_t mp_bluetooth_hci_uart_obj;
 
-STATIC void cywbt_wait_cts_low(void) {
+static void cywbt_wait_cts_low(void) {
     mp_hal_pin_config(CYW43_PIN_BT_CTS, MP_HAL_PIN_MODE_INPUT, MP_HAL_PIN_PULL_UP, 0);
     for (int i = 0; i < 200; ++i) {
         if (mp_hal_pin_read(CYW43_PIN_BT_CTS) == 0) {
@@ -64,7 +64,7 @@ STATIC void cywbt_wait_cts_low(void) {
 }
 #endif
 
-STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
+static int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
     mp_bluetooth_hci_uart_write((void *)buf, len);
     for (int c, i = 0; i < 6; ++i) {
         while ((c = mp_bluetooth_hci_uart_readchar()) == -1) {
@@ -96,7 +96,7 @@ STATIC int cywbt_hci_cmd_raw(size_t len, uint8_t *buf) {
     return 0;
 }
 
-STATIC int cywbt_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_buf) {
+static int cywbt_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *param_buf) {
     uint8_t *buf = mp_bluetooth_hci_cmd_buf;
     buf[0] = 0x01;
     buf[1] = ocf;
@@ -108,19 +108,19 @@ STATIC int cywbt_hci_cmd(int ogf, int ocf, size_t param_len, const uint8_t *para
     return cywbt_hci_cmd_raw(4 + param_len, buf);
 }
 
-STATIC void put_le16(uint8_t *buf, uint16_t val) {
+static void put_le16(uint8_t *buf, uint16_t val) {
     buf[0] = val;
     buf[1] = val >> 8;
 }
 
-STATIC void put_le32(uint8_t *buf, uint32_t val) {
+static void put_le32(uint8_t *buf, uint32_t val) {
     buf[0] = val;
     buf[1] = val >> 8;
     buf[2] = val >> 16;
     buf[3] = val >> 24;
 }
 
-STATIC int cywbt_set_baudrate(uint32_t baudrate) {
+static int cywbt_set_baudrate(uint32_t baudrate) {
     uint8_t buf[6];
     put_le16(buf, 0);
     put_le32(buf + 2, baudrate);
@@ -128,7 +128,7 @@ STATIC int cywbt_set_baudrate(uint32_t baudrate) {
 }
 
 // download firmware
-STATIC int cywbt_download_firmware(const uint8_t *firmware) {
+static int cywbt_download_firmware(const uint8_t *firmware) {
     cywbt_hci_cmd(0x3f, 0x2e, 0, NULL);
 
     bool last_packet = false;
@@ -255,7 +255,7 @@ int mp_bluetooth_hci_controller_deinit(void) {
 }
 
 #ifdef CYW43_PIN_BT_DEV_WAKE
-STATIC uint32_t bt_sleep_ticks;
+static uint32_t bt_sleep_ticks;
 #endif
 
 int mp_bluetooth_hci_controller_sleep_maybe(void) {

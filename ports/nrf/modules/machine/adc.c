@@ -44,7 +44,7 @@ typedef struct _machine_adc_obj_t {
 #endif
 } machine_adc_obj_t;
 
-STATIC const machine_adc_obj_t machine_adc_obj[] = {
+static const machine_adc_obj_t machine_adc_obj[] = {
 #if NRF51
     {{&machine_adc_type}, .id = 0, .ain = NRF_ADC_CONFIG_INPUT_0},
     {{&machine_adc_type}, .id = 1, .ain = NRF_ADC_CONFIG_INPUT_1},
@@ -73,7 +73,7 @@ void adc_init0(void) {
 #endif
 }
 
-STATIC int adc_find(mp_obj_t id) {
+static int adc_find(mp_obj_t id) {
     int adc_idx;
     if (mp_obj_is_int(id)) {
         // Given an integer id
@@ -104,14 +104,14 @@ STATIC int adc_find(mp_obj_t id) {
     { MP_ROM_QSTR(MP_QSTR_battery_level), MP_ROM_PTR(&mp_machine_adc_battery_level_obj) }, /* class method */ \
 
 // Return a string describing the ADC object.
-STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     machine_adc_obj_t *self = o;
 
     mp_printf(print, "ADC(%u)", self->id);
 }
 
 // for make_new
-STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_OBJ, {.u_obj = MP_OBJ_NEW_SMALL_INT(-1) } },
@@ -171,7 +171,7 @@ int16_t machine_adc_value_read(machine_adc_obj_t * adc_obj) {
 }
 
 // read_u16()
-STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     int16_t raw = machine_adc_value_read(self);
     #if defined(NRF52_SERIES)
     // raw is signed but the channel is in single-ended mode and this method cannot return negative values
@@ -192,7 +192,7 @@ mp_obj_t machine_adc_value(mp_obj_t self_in) {
 
     return MP_OBJ_NEW_SMALL_INT(value);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_value_obj, machine_adc_value);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_machine_adc_value_obj, machine_adc_value);
 
 #if NRF51
 
@@ -278,4 +278,4 @@ mp_obj_t machine_adc_battery_level(void) {
 
     return MP_OBJ_NEW_SMALL_INT(batt_in_percent);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_adc_battery_level_obj, machine_adc_battery_level);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_machine_adc_battery_level_obj, machine_adc_battery_level);

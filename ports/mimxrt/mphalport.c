@@ -41,7 +41,7 @@
 
 #include CPU_HEADER_H
 
-STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
+static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 
 uint8_t cdc_itf_pending; // keep track of cdc interfaces which need attention to poll

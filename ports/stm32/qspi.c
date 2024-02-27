@@ -172,7 +172,7 @@ void qspi_memory_map(void) {
     qspi_mpu_enable_mapped();
 }
 
-STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
+static int qspi_ioctl(void *self_in, uint32_t cmd) {
     (void)self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
@@ -196,7 +196,7 @@ STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
     return 0; // success
 }
 
-STATIC int qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
+static int qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t data) {
     (void)self_in;
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
@@ -252,7 +252,7 @@ STATIC int qspi_write_cmd_data(void *self_in, uint8_t cmd, size_t len, uint32_t 
     return 0;
 }
 
-STATIC int qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
+static int qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src) {
     (void)self_in;
 
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
@@ -316,7 +316,7 @@ STATIC int qspi_write_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, s
     return 0;
 }
 
-STATIC int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
+static int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest) {
     (void)self_in;
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
@@ -350,7 +350,7 @@ STATIC int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest)
     return 0;
 }
 
-STATIC int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+static int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
     (void)self_in;
 
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;

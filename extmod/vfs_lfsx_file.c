@@ -35,13 +35,13 @@
 #include "py/mperrno.h"
 #include "extmod/vfs.h"
 
-STATIC void MP_VFS_LFSx(check_open)(MP_OBJ_VFS_LFSx_FILE * self) {
+static void MP_VFS_LFSx(check_open)(MP_OBJ_VFS_LFSx_FILE * self) {
     if (self->vfs == NULL) {
         mp_raise_ValueError(NULL);
     }
 }
 
-STATIC void MP_VFS_LFSx(file_print)(const mp_print_t * print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void MP_VFS_LFSx(file_print)(const mp_print_t * print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)self_in;
     (void)kind;
     mp_printf(print, "<io.%s>", mp_obj_get_type_str(self_in));
@@ -122,7 +122,7 @@ mp_obj_t MP_VFS_LFSx(file_open)(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mod
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_uint_t MP_VFS_LFSx(file_read)(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t MP_VFS_LFSx(file_read)(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     MP_OBJ_VFS_LFSx_FILE *self = MP_OBJ_TO_PTR(self_in);
     MP_VFS_LFSx(check_open)(self);
     LFSx_API(ssize_t) sz = LFSx_API(file_read)(&self->vfs->lfs, &self->file, buf, size);
@@ -133,7 +133,7 @@ STATIC mp_uint_t MP_VFS_LFSx(file_read)(mp_obj_t self_in, void *buf, mp_uint_t s
     return sz;
 }
 
-STATIC mp_uint_t MP_VFS_LFSx(file_write)(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t MP_VFS_LFSx(file_write)(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     MP_OBJ_VFS_LFSx_FILE *self = MP_OBJ_TO_PTR(self_in);
     MP_VFS_LFSx(check_open)(self);
     #if LFS_BUILD_VERSION == 2
@@ -149,7 +149,7 @@ STATIC mp_uint_t MP_VFS_LFSx(file_write)(mp_obj_t self_in, const void *buf, mp_u
     return sz;
 }
 
-STATIC mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     MP_OBJ_VFS_LFSx_FILE *self = MP_OBJ_TO_PTR(self_in);
 
     if (request != MP_STREAM_CLOSE) {
@@ -194,7 +194,7 @@ STATIC mp_uint_t MP_VFS_LFSx(file_ioctl)(mp_obj_t self_in, mp_uint_t request, ui
     }
 }
 
-STATIC const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
+static const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
@@ -208,9 +208,9 @@ STATIC const mp_rom_map_elem_t MP_VFS_LFSx(file_locals_dict_table)[] = {
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&mp_identity_obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&mp_stream___exit___obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(MP_VFS_LFSx(file_locals_dict), MP_VFS_LFSx(file_locals_dict_table));
+static MP_DEFINE_CONST_DICT(MP_VFS_LFSx(file_locals_dict), MP_VFS_LFSx(file_locals_dict_table));
 
-STATIC const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
+static const mp_stream_p_t MP_VFS_LFSx(fileio_stream_p) = {
     .read = MP_VFS_LFSx(file_read),
     .write = MP_VFS_LFSx(file_write),
     .ioctl = MP_VFS_LFSx(file_ioctl),
@@ -225,7 +225,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &MP_VFS_LFSx(file_locals_dict)
     );
 
-STATIC const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
+static const mp_stream_p_t MP_VFS_LFSx(textio_stream_p) = {
     .read = MP_VFS_LFSx(file_read),
     .write = MP_VFS_LFSx(file_write),
     .ioctl = MP_VFS_LFSx(file_ioctl),

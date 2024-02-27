@@ -61,13 +61,13 @@ typedef struct _mp_obj_hash_t {
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC void hash_update_internal(mp_obj_t self_in, mp_obj_t data, bool digest);
-STATIC mp_obj_t hash_read (mp_obj_t self_in);
+static void hash_update_internal(mp_obj_t self_in, mp_obj_t data, bool digest);
+static mp_obj_t hash_read (mp_obj_t self_in);
 
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC void hash_update_internal(mp_obj_t self_in, mp_obj_t data, bool digest) {
+static void hash_update_internal(mp_obj_t self_in, mp_obj_t data, bool digest) {
     mp_obj_hash_t *self = self_in;
     mp_buffer_info_t bufinfo;
 
@@ -95,7 +95,7 @@ STATIC void hash_update_internal(mp_obj_t self_in, mp_obj_t data, bool digest) {
     }
 }
 
-STATIC mp_obj_t hash_read (mp_obj_t self_in) {
+static mp_obj_t hash_read (mp_obj_t self_in) {
     mp_obj_hash_t *self = self_in;
 
     if (!self->fixedlen) {
@@ -119,7 +119,7 @@ STATIC mp_obj_t hash_read (mp_obj_t self_in) {
 
 /// \classmethod \constructor([data[, block_size]])
 /// initial data must be given if block_size wants to be passed
-STATIC mp_obj_t hash_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t hash_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 2, false);
     mp_obj_hash_t *self = m_new0(mp_obj_hash_t, 1);
     self->base.type = type_in;
@@ -151,24 +151,24 @@ STATIC mp_obj_t hash_make_new(mp_obj_t type_in, size_t n_args, size_t n_kw, cons
     return self;
 }
 
-STATIC mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg) {
+static mp_obj_t hash_update(mp_obj_t self_in, mp_obj_t arg) {
     mp_obj_hash_t *self = self_in;
     hash_update_internal(self, arg, false);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(hash_update_obj, hash_update);
 
-STATIC mp_obj_t hash_digest(mp_obj_t self_in) {
+static mp_obj_t hash_digest(mp_obj_t self_in) {
     return hash_read(self_in);
 }
 MP_DEFINE_CONST_FUN_OBJ_1(hash_digest_obj, hash_digest);
 
-STATIC const mp_rom_map_elem_t hash_locals_dict_table[] = {
+static const mp_rom_map_elem_t hash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_update),    MP_ROM_PTR(&hash_update_obj) },
     { MP_ROM_QSTR(MP_QSTR_digest),    MP_ROM_PTR(&hash_digest_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(hash_locals_dict, hash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(hash_locals_dict, hash_locals_dict_table);
 
 //STATIC const mp_obj_type_t md5_type = {
 //    { &mp_type_type },
@@ -177,7 +177,7 @@ STATIC MP_DEFINE_CONST_DICT(hash_locals_dict, hash_locals_dict_table);
 //    .locals_dict = (mp_obj_t)&hash_locals_dict,
 //};
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     sha1_type,
     MP_QSTR_sha1,
     MP_TYPE_FLAG_NONE,
@@ -185,7 +185,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &hash_locals_dict
     );
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     sha256_type,
     MP_QSTR_sha256,
     MP_TYPE_FLAG_NONE,
@@ -193,14 +193,14 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &hash_locals_dict
     );
 
-STATIC const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_hashlib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),    MP_ROM_QSTR(MP_QSTR_hashlib) },
     //{ MP_ROM_QSTR(MP_QSTR_md5),         MP_ROM_PTR(&md5_type) },
     { MP_ROM_QSTR(MP_QSTR_sha1),        MP_ROM_PTR(&sha1_type) },
     { MP_ROM_QSTR(MP_QSTR_sha256),      MP_ROM_PTR(&sha256_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_hashlib_globals, mp_module_hashlib_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_hashlib_globals, mp_module_hashlib_globals_table);
 
 const mp_obj_module_t mp_module_hashlib = {
     .base = { &mp_type_module },

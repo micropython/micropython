@@ -40,7 +40,7 @@
 #define mp_hal_pin_od_high_dht mp_hal_pin_od_high
 #endif
 
-STATIC mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
+static mp_obj_t dht_readinto(mp_obj_t pin_in, mp_obj_t buf_in) {
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(pin_in);
     mp_hal_pin_open_drain(pin);
 

@@ -44,14 +44,14 @@
 
 extern void mod_network_poll_events(void);
 
-STATIC mp_obj_t esp_hosted_pin_irq_callback(mp_obj_t self_in) {
+static mp_obj_t esp_hosted_pin_irq_callback(mp_obj_t self_in) {
     #ifdef MICROPY_HW_WIFI_LED
     led_toggle(MICROPY_HW_WIFI_LED);
     #endif
     mod_network_poll_events();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_hosted_pin_irq_callback_obj, esp_hosted_pin_irq_callback);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_hosted_pin_irq_callback_obj, esp_hosted_pin_irq_callback);
 
 MP_WEAK int esp_hosted_hal_init(uint32_t mode) {
     // Perform a hard reset and set pins to their defaults.

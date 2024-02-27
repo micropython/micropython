@@ -55,10 +55,10 @@ typedef struct _mp_obj_websocket_t {
     byte last_flags;
 } mp_obj_websocket_t;
 
-STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode);
-STATIC mp_uint_t websocket_write_raw(mp_obj_t self_in, const byte *header, int hdr_sz, const void *buf, mp_uint_t size, int *errcode);
+static mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode);
+static mp_uint_t websocket_write_raw(mp_obj_t self_in, const byte *header, int hdr_sz, const void *buf, mp_uint_t size, int *errcode);
 
-STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 2, false);
     mp_get_stream_raise(args[0], MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
     mp_obj_websocket_t *o = mp_obj_malloc(mp_obj_websocket_t, type);
@@ -74,7 +74,7 @@ STATIC mp_obj_t websocket_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(o);
 }
 
-STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
     const mp_stream_p_t *stream_p = mp_get_stream(self->sock);
     while (1) {
@@ -216,7 +216,7 @@ STATIC mp_uint_t websocket_read(mp_obj_t self_in, void *buf, mp_uint_t size, int
     }
 }
 
-STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
     assert(size < 0x10000);
     byte header[4] = {0x80 | (self->opts & FRAME_OPCODE_MASK)};
@@ -233,7 +233,7 @@ STATIC mp_uint_t websocket_write(mp_obj_t self_in, const void *buf, mp_uint_t si
 
     return websocket_write_raw(self_in, header, hdr_sz, buf, size, errcode);
 }
-STATIC mp_uint_t websocket_write_raw(mp_obj_t self_in, const byte *header, int hdr_sz, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t websocket_write_raw(mp_obj_t self_in, const byte *header, int hdr_sz, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_obj_t dest[3];
@@ -259,7 +259,7 @@ STATIC mp_uint_t websocket_write_raw(mp_obj_t self_in, const byte *header, int h
     return out_sz;
 }
 
-STATIC mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_websocket_t *self = MP_OBJ_TO_PTR(self_in);
     switch (request) {
         case MP_STREAM_CLOSE:
@@ -280,7 +280,7 @@ STATIC mp_uint_t websocket_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t 
     }
 }
 
-STATIC const mp_rom_map_elem_t websocket_locals_dict_table[] = {
+static const mp_rom_map_elem_t websocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
@@ -288,15 +288,15 @@ STATIC const mp_rom_map_elem_t websocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mp_stream_ioctl_obj) },
     { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mp_stream_close_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(websocket_locals_dict, websocket_locals_dict_table);
+static MP_DEFINE_CONST_DICT(websocket_locals_dict, websocket_locals_dict_table);
 
-STATIC const mp_stream_p_t websocket_stream_p = {
+static const mp_stream_p_t websocket_stream_p = {
     .read = websocket_read,
     .write = websocket_write,
     .ioctl = websocket_ioctl,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     websocket_type,
     MP_QSTR_websocket,
     MP_TYPE_FLAG_NONE,
@@ -305,12 +305,12 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &websocket_locals_dict
     );
 
-STATIC const mp_rom_map_elem_t websocket_module_globals_table[] = {
+static const mp_rom_map_elem_t websocket_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_websocket) },
     { MP_ROM_QSTR(MP_QSTR_websocket), MP_ROM_PTR(&websocket_type) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(websocket_module_globals, websocket_module_globals_table);
+static MP_DEFINE_CONST_DICT(websocket_module_globals, websocket_module_globals_table);
 
 const mp_obj_module_t mp_module_websocket = {
     .base = { &mp_type_module },

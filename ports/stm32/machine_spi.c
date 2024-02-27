@@ -33,7 +33,7 @@
 /******************************************************************************/
 // Implementation of hard SPI for machine module
 
-STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
+static const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_spi_type}, &spi_obj[0]},
     {{&machine_spi_type}, &spi_obj[1]},
     {{&machine_spi_type}, &spi_obj[2]},
@@ -42,7 +42,7 @@ STATIC const machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     {{&machine_spi_type}, &spi_obj[5]},
 };
 
-STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     spi_print(print, self->spi, false);
 }
@@ -101,7 +101,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
 
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
@@ -127,17 +127,17 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
     }
 }
 
-STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
+static void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
     spi_deinit(self->spi);
 }
 
-STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
     spi_transfer(self->spi, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
-STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
+static const mp_machine_spi_p_t machine_hard_spi_p = {
     .init = machine_hard_spi_init,
     .deinit = machine_hard_spi_deinit,
     .transfer = machine_hard_spi_transfer,

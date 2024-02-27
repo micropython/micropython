@@ -79,7 +79,7 @@
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP) }, \
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(PYB_RESET_SOFT) }, \
 
-STATIC uint32_t reset_cause;
+static uint32_t reset_cause;
 
 void get_unique_id(uint8_t *id) {
     uint32_t *p = (uint32_t *)id;
@@ -100,7 +100,7 @@ void machine_deinit(void) {
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
-STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     // get and print unique id; 128 bits
     {
         uint8_t id[16];
@@ -177,14 +177,14 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 // Returns a string of 16 bytes (128 bits), which is the unique ID for the MCU.
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     uint8_t id[16];
     get_unique_id((uint8_t *)&id);
     return mp_obj_new_bytes(id, 16);
 }
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     powerctrl_mcu_reset();
 }
 
@@ -209,22 +209,22 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 }
 
 // get or set the MCU frequencies
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return mp_obj_new_int(SystemCoreClock);
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
 }
 
 // idle()
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     __WFI();
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         machine_rtc_wakeup(2, args2);
@@ -232,7 +232,7 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     powerctrl_enter_stop_mode();
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         machine_rtc_wakeup(2, args2);
@@ -240,6 +240,6 @@ NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     powerctrl_enter_standby_mode();
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     return reset_cause;
 }

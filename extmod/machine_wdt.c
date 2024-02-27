@@ -31,16 +31,16 @@
 #include "extmod/modmachine.h"
 
 // The port must provide implementations of these low-level WDT functions.
-STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms);
-STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self);
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms);
+static void mp_machine_wdt_feed(machine_wdt_obj_t *self);
 #if MICROPY_PY_MACHINE_WDT_TIMEOUT_MS
-STATIC void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self_in, mp_int_t timeout_ms);
+static void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self_in, mp_int_t timeout_ms);
 #endif
 
 // The port provides implementations of the above in this file.
 #include MICROPY_PY_MACHINE_WDT_INCLUDEFILE
 
-STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum { ARG_id, ARG_timeout };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id, MP_ARG_INT, {.u_int = 0} },
@@ -58,31 +58,31 @@ STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 // WDT.feed()
-STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
+static mp_obj_t machine_wdt_feed(mp_obj_t self_in) {
     machine_wdt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_machine_wdt_feed(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_wdt_feed_obj, machine_wdt_feed);
 
 #if MICROPY_PY_MACHINE_WDT_TIMEOUT_MS
 // WDT.timeout_ms(timeout)
-STATIC mp_obj_t machine_wdt_timeout_ms(mp_obj_t self_in, mp_obj_t timeout_in) {
+static mp_obj_t machine_wdt_timeout_ms(mp_obj_t self_in, mp_obj_t timeout_in) {
     machine_wdt_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t timeout_ms = mp_obj_get_int(timeout_in);
     mp_machine_wdt_timeout_ms_set(self, timeout_ms);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_wdt_timeout_ms_obj, machine_wdt_timeout_ms);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_wdt_timeout_ms_obj, machine_wdt_timeout_ms);
 #endif
 
-STATIC const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_feed), MP_ROM_PTR(&machine_wdt_feed_obj) },
     #if MICROPY_PY_MACHINE_WDT_TIMEOUT_MS
     { MP_ROM_QSTR(MP_QSTR_timeout_ms), MP_ROM_PTR(&machine_wdt_timeout_ms_obj) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(machine_wdt_locals_dict, machine_wdt_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_wdt_locals_dict, machine_wdt_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_wdt_type,

@@ -43,7 +43,7 @@ typedef struct _machine_hard_i2c_obj_t {
     mp_hal_pin_obj_t sda;
 } machine_hard_i2c_obj_t;
 
-STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
+static const machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
     #if defined(MICROPY_HW_I2C1_SCL)
     [0] = {{&machine_i2c_type}, I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
     #endif
@@ -58,7 +58,7 @@ STATIC const machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
     #endif
 };
 
-STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     #if defined(STM32F4) || defined(STM32L1)
@@ -134,7 +134,7 @@ int machine_hard_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, m
 
 typedef mp_machine_soft_i2c_obj_t machine_hard_i2c_obj_t;
 
-STATIC machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
+static machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
     #if defined(MICROPY_HW_I2C1_SCL)
     [0] = {{&machine_i2c_type}, 1, I2C_POLL_DEFAULT_TIMEOUT_US, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA},
     #endif
@@ -149,14 +149,14 @@ STATIC machine_hard_i2c_obj_t machine_hard_i2c_obj[MICROPY_HW_MAX_I2C] = {
     #endif
 };
 
-STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, scl=%q, sda=%q, freq=%u, timeout=%u)",
         self - &machine_hard_i2c_obj[0] + 1,
         self->scl->name, self->sda->name, 500000 / self->us_delay, self->us_timeout);
 }
 
-STATIC void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
+static void machine_hard_i2c_init(machine_hard_i2c_obj_t *self, uint32_t freq, uint32_t timeout) {
     // set parameters
     if (freq >= 1000000) {
         // allow fastest possible bit-bang rate
@@ -228,7 +228,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
+static const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer = machine_hard_i2c_transfer,
 };
 
