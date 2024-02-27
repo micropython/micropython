@@ -45,6 +45,7 @@ STATIC void assure_stdin_handle() {
     }
 }
 
+#if !MICROPY_HAL_HAS_VT100
 STATIC void assure_conout_handle() {
     if (!con_out) {
         con_out = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE,
@@ -53,6 +54,7 @@ STATIC void assure_conout_handle() {
         assert(con_out != INVALID_HANDLE_VALUE);
     }
 }
+#endif
 
 void mp_hal_stdio_mode_raw(void) {
     assure_stdin_handle();
@@ -61,6 +63,9 @@ void mp_hal_stdio_mode_raw(void) {
     mode &= ~ENABLE_ECHO_INPUT;
     mode &= ~ENABLE_LINE_INPUT;
     mode &= ~ENABLE_PROCESSED_INPUT;
+    #if MICROPY_HAL_HAS_VT100
+    mode |= ENABLE_VIRTUAL_TERMINAL_INPUT;
+    #endif
     SetConsoleMode(std_in, mode);
 }
 
@@ -106,6 +111,7 @@ void mp_hal_set_interrupt_char(char c) {
     }
 }
 
+#if !MICROPY_HAL_HAS_VT100
 void mp_hal_move_cursor_back(uint pos) {
     if (!pos) {
         return;
@@ -185,8 +191,24 @@ STATIC int esc_seq_chr() {
     }
     return 0;
 }
+#endif
 
 int mp_hal_stdin_rx_chr(void) {
+    #if MICROPY_HAL_HAS_VT100
+    assure_stdin_handle();
+    BOOL read_ok;
+    DWORD num_read;
+    char inchar;
+    LPVOID buf = &inchar;
+    for (;;) {
+        read_ok = ReadFile(std_in, buf, 1, &num_read, NULL);
+        if (!read_ok || !num_read) {
+            continue;
+        } else {
+            return inchar;
+        }
+    }
+    #else
     // currently processing escape seq?
     const int ret = esc_seq_chr();
     if (ret) {
@@ -219,6 +241,7 @@ int mp_hal_stdin_rx_chr(void) {
             return c;
         }
     }
+    #endif
 }
 
 mp_uint_t mp_hal_stdout_tx_strn(const char *str, size_t len) {
