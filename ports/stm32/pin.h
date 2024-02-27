@@ -56,6 +56,7 @@ typedef struct {
 } machine_pin_obj_t;
 
 extern const mp_obj_type_t pin_type;
+extern const mp_obj_type_t pin_analog_type;
 extern const mp_obj_type_t pin_af_type;
 
 // Include all of the individual pin objects
