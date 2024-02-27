@@ -14,6 +14,8 @@ else
 JLINK_CONNECTION_SETTINGS = -USB
 endif
 
+CFLAGS += -DMICROPY_PY_THREAD=0
+
 deploy_jlink: $(BUILD)/firmware.hex
 	$(Q)$(TOUCH) $(JLINK_COMMANDER_SCRIPT)
 	$(ECHO) "ExitOnError 1" > $(JLINK_COMMANDER_SCRIPT)

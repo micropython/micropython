@@ -7,6 +7,7 @@ MICROPY_HW_FLASH_SIZE = 0x200000  # 2MB
 MICROPY_HW_FLASH_RESERVED ?= 0x1000  # 4KB
 
 CFLAGS += -DMICROPY_HW_FLASH_DQS=kFlexSPIReadSampleClk_LoopbackInternally
+CFLAGS += -DMICROPY_PY_THREAD=0
 
 SRC_C += \
 	hal/flexspi_nor_flash.c \
