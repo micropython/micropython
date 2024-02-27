@@ -74,6 +74,42 @@ Methods
       - ``handler`` is the function to be called when the callback is triggered.
       - ``wake`` specifies the sleep mode from where this interrupt can wake
         up the system.
+        
+.. method:: RTC.memory([data])
+
+   Stores ``data`` (byte literal) into RTC memory, which is kept stored in deep sleep mode of the ESP8266 or ESP32.
+   The data is stored together with a magic word to detect that the RTC memory is valid.
+   An uninitialized or cleared RTC memory has no magic word and will deliver ``b''``.
+   Without ``data`` the method delivers the RTC memory content.
+   In the ESP8266 are max. 492 bytes and in the ESP32 are max. 2048 Bytes storeable by this method. 
+
+   Example::
+
+      import machine
+      rtc = machine.RTC()
+      writedata = b'test'
+      rtc.memory(writedata) # this command writes writedata into the RTC memory
+      readdata = rtc.memory() # this command puts the RTC memory into readdata
+      print(readdata)
+
+   Availability: ESP8266, ESP32
+
+.. method:: RTC.memory(idx, len, [data])
+
+   Same as `RTC.memory([data])` but allows slot wise access to the memory.
+   On the ESP8266, 122 slots with 4bytes each are available.
+   The memory stays compatible with the block read/write functionality.
+
+   Example::
+
+      import machine
+      rtc = machine.RTC()
+      writedata = b'\x20\x30\x40\x50'
+      rtc.memory(0, 1, writedata) # this command writes writedata into the first slot of the RTC memory
+      readdata = rtc.memory(0, 1) # this command puts the content of SLot 0 of the RTC memory into readdata
+      print(readdata)
+
+   Availability: ESP8266
 
 Constants
 ---------
