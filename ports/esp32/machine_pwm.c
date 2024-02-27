@@ -118,6 +118,7 @@ typedef struct _machine_pwm_obj_t {
     int duty_u10; // stored values from previous duty setters
     int duty_u16; // - / -
     int duty_ns; // - / -
+    int channel_duty; // What we actually want to write, in esp32 units.
 } machine_pwm_obj_t;
 
 STATIC bool is_timer_in_use(int current_channel_idx, int timer_idx);
@@ -196,7 +197,7 @@ void machine_pwm_deinit_all(void) {
 STATIC void configure_channel(machine_pwm_obj_t *self) {
     ledc_channel_config_t cfg = {
         .channel = self->channel,
-        .duty = (1 << (timers[TIMER_IDX(self->mode, self->timer)].duty_resolution)) / 2,
+        .duty = self->channel_duty,
         .gpio_num = self->pin,
         .intr_type = LEDC_INTR_DISABLE,
         .speed_mode = self->mode,
@@ -321,26 +322,28 @@ STATIC uint32_t get_duty_ns(machine_pwm_obj_t *self) {
     return duty_to_ns(self, get_duty_u16(self));
 }
 
-STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
+STATIC void set_duty_apply(machine_pwm_obj_t *self) {
     pwm_is_active(self);
+    check_esp_err(ledc_set_duty(self->mode, self->channel, self->channel_duty));
+    check_esp_err(ledc_update_duty(self->mode, self->channel));
+}
+
+STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
     if ((duty < 0) || (duty > UI_MAX_DUTY)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_u16 must be from 0 to %d"), UI_MAX_DUTY);
     }
     ledc_timer_config_t timer = timers[TIMER_IDX(self->mode, self->timer)];
-    int channel_duty;
     if (timer.duty_resolution <= UI_RES_16_BIT) {
-        channel_duty = duty >> (UI_RES_16_BIT - timer.duty_resolution);
+        self->channel_duty = duty >> (UI_RES_16_BIT - timer.duty_resolution);
     } else {
-        channel_duty = duty << (timer.duty_resolution - UI_RES_16_BIT);
+        self->channel_duty = duty << (timer.duty_resolution - UI_RES_16_BIT);
     }
     int max_duty = (1 << timer.duty_resolution) - 1;
-    if (channel_duty < 0) {
-        channel_duty = 0;
-    } else if (channel_duty > max_duty) {
-        channel_duty = max_duty;
+    if (self->channel_duty < 0) {
+        self->channel_duty = 0;
+    } else if (self->channel_duty > max_duty) {
+        self->channel_duty = max_duty;
     }
-    check_esp_err(ledc_set_duty(self->mode, self->channel, channel_duty));
-    check_esp_err(ledc_update_duty(self->mode, self->channel));
 
     /*
     // Bug: Sometimes duty is not set right now.
@@ -361,7 +364,6 @@ STATIC void set_duty_u16(machine_pwm_obj_t *self, int duty) {
 }
 
 STATIC void set_duty_u10(machine_pwm_obj_t *self, int duty) {
-    pwm_is_active(self);
     if ((duty < 0) || (duty > MAX_DUTY_U10)) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty must be from 0 to %u"), MAX_DUTY_U10);
     }
@@ -371,7 +373,6 @@ STATIC void set_duty_u10(machine_pwm_obj_t *self, int duty) {
 }
 
 STATIC void set_duty_ns(machine_pwm_obj_t *self, int ns) {
-    pwm_is_active(self);
     if ((ns < 0) || (ns > duty_to_ns(self, UI_MAX_DUTY))) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("duty_ns must be from 0 to %d ns"), duty_to_ns(self, UI_MAX_DUTY));
     }
@@ -539,6 +540,17 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     self->timer = TIMER_IDX_TO_TIMER(timer_idx);
     self->channel = CHANNEL_IDX_TO_CHANNEL(channel_idx);
 
+    // Note: doesn't set, just calculates...
+    if (duty_u16 != -1) {
+        set_duty_u16(self, duty_u16);
+    } else if (duty_ns != -1) {
+        set_duty_ns(self, duty_ns);
+    } else if (duty != -1) {
+        set_duty_u10(self, duty);
+    } else if (self->duty_x == 0) {
+        set_duty_u10(self, (1 << PWM_RES_10_BIT) / 2); // 50%
+    }
+
     // New PWM assignment
     if ((chans[channel_idx].pin == -1) || (chans[channel_idx].timer_idx != timer_idx)) {
         configure_channel(self);
@@ -549,17 +561,9 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
 
     // Set timer frequency
     set_freq(self, freq, &timers[timer_idx]);
+    // This will _re-apply_ duty, if it's a new channel, but that's ok....
+    set_duty_apply(self);
 
-    // Set duty cycle?
-    if (duty_u16 != -1) {
-        set_duty_u16(self, duty_u16);
-    } else if (duty_ns != -1) {
-        set_duty_ns(self, duty_ns);
-    } else if (duty != -1) {
-        set_duty_u10(self, duty);
-    } else if (self->duty_x == 0) {
-        set_duty_u10(self, (1 << PWM_RES_10_BIT) / 2); // 50%
-    }
 }
 
 // This called from PWM() constructor
@@ -664,6 +668,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
 
 STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
     set_duty_u10(self, duty);
+    set_duty_apply(self);
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
@@ -672,6 +677,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 
 STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     set_duty_u16(self, duty_u16);
+    set_duty_apply(self);
 }
 
 STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
@@ -680,4 +686,5 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 
 STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     set_duty_ns(self, duty_ns);
+    set_duty_apply(self);
 }
