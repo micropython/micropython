@@ -89,8 +89,8 @@ def udevadm_get_kitprog3_attached_devs():
     return kitprog_devs
 
 
-def get_devices_serial_num(board=None, devs_yml=None):
-    sn_list = []
+def get_devices(serch_param, board=None, devs_yml=None):
+    dev_list = []
     port_sn_map = udevadm_get_kitprog3_attached_devs()
 
     if board is not None and devs_yml is not None:
@@ -100,33 +100,55 @@ def get_devices_serial_num(board=None, devs_yml=None):
             for listed_board in board_sn_map:
                 if board == listed_board["board"]:
                     if dev["sn"] in listed_board["sn"]:
-                        sn_list.append(dev["sn"])
+                        dev_list.append(dev[serch_param])
                         break
     else:
         for dev in port_sn_map:
-            sn_list.append(dev["sn"])
+            dev_list.append(dev[serch_param])
 
-    return sn_list
+    return dev_list
+
+
+def get_devices_serial_num(board=None, devs_yml=None):
+    return get_devices("sn", board, devs_yml)
+    # sn_list = []
+    # port_sn_map = udevadm_get_kitprog3_attached_devs()
+
+    # if board is not None and devs_yml is not None:
+    #     board_sn_map = get_devs_from_yml(devs_yml)
+
+    #     for dev in port_sn_map:
+    #         for listed_board in board_sn_map:
+    #             if board == listed_board["board"]:
+    #                 if dev["sn"] in listed_board["sn"]:
+    #                     sn_list.append(dev["sn"])
+    #                     break
+    # else:
+    #     for dev in port_sn_map:
+    #         sn_list.append(dev["sn"])
+
+    # return sn_list
 
 
 def get_devices_port(board=None, devs_yml=None):
-    port_list = []
-    port_sn_map = udevadm_get_kitprog3_attached_devs()
+    return get_devices("port", board, devs_yml)
+    # port_list = []
+    # port_sn_map = udevadm_get_kitprog3_attached_devs()
 
-    if board is not None and devs_yml is not None:
-        board_sn_map = get_devs_from_yml(devs_yml)
+    # if board is not None and devs_yml is not None:
+    #     board_sn_map = get_devs_from_yml(devs_yml)
 
-        for dev in port_sn_map:
-            for listed_board in board_sn_map:
-                if board == listed_board["board"]:
-                    if dev["sn"] in listed_board["sn"]:
-                        port_list.append(dev["port"])
-                        break
-    else:
-        for dev in port_sn_map:
-            port_list.append(dev["port"])
+    #     for dev in port_sn_map:
+    #         for listed_board in board_sn_map:
+    #             if board == listed_board["board"]:
+    #                 if dev["sn"] in listed_board["sn"]:
+    #                     port_list.append(dev["port"])
+    #                     break
+    # else:
+    #     for dev in port_sn_map:
+    #         port_list.append(dev["port"])
 
-    return port_list
+    # return port_list
 
 
 def parser():
@@ -141,12 +163,12 @@ def parser():
 
     def parser_get_devices_serial_num(args):
         parse_validate_opt_arg_mutual_required(args)
-        devs_serial = get_devices_serial_num(args.board, args.devs_yml)
+        devs_serial = get_devices_serial_num(args.board, args.devs_yml, args.hw_ext)
         print(*devs_serial)
 
     def parser_get_devices_port(args):
         parse_validate_opt_arg_mutual_required(args)
-        devs_port = get_devices_port(args.board, args.devs_yml)
+        devs_port = get_devices_port(args.board, args.devs_yml, args.hw_ext)
         print(*devs_port)
 
     parser = argparse.ArgumentParser(description="Get kitprog3 device utility")
@@ -162,6 +184,7 @@ def parser():
     parser_sn.add_argument(
         "-y", "--devs-yml", type=str, help="Device list yml with board - serial number map"
     )
+    parser_sn.add_argument("--hw-ext", type=str, help="Required external hardware configuration")
     parser_sn.set_defaults(func=parser_get_devices_serial_num)
 
     # Get devices port
@@ -170,6 +193,7 @@ def parser():
     parser_port.add_argument(
         "-y", "--devs-yml", type=str, help="Device list yml with board - serial number map"
     )
+    parser_sn.add_argument("--hw-ext", type=str, help="Required external hardware configuration")
     parser_port.set_defaults(func=parser_get_devices_port)
 
     # Parser call
