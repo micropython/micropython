@@ -103,7 +103,11 @@ const machine_pin_obj_t *pin_find(mp_obj_t user_obj) {
     const machine_pin_obj_t *pin_obj;
 
     // If a pin was provided, then use it
-    if (mp_obj_is_type(user_obj, &pin_type)) {
+    if (mp_obj_is_type(user_obj, &pin_type)
+        #if MICROPY_HW_ENABLE_ANALOG_ONLY_PINS
+        || mp_obj_is_type(user_obj, &pin_analog_type)
+        #endif
+        ) {
         pin_obj = MP_OBJ_TO_PTR(user_obj);
         if (pin_class_debug) {
             mp_printf(print, "Pin map passed pin ");
@@ -600,6 +604,44 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &pin_pin_p,
     locals_dict, &pin_locals_dict
     );
+
+/******************************************************************************/
+// Special analog-only pin.
+
+#if MICROPY_HW_ENABLE_ANALOG_ONLY_PINS
+
+// When both normal and _C pins are defined in pins.csv, force the corresponding
+// analog switch to be open.  The macro code below will produce a compiler warning
+// if the board defines the switch as closed.
+#if defined(pin_A0) && defined(pin_A0_C)
+#define MICROPY_HW_ANALOG_SWITCH_PA0 (SYSCFG_SWITCH_PA0_OPEN)
+#endif
+#if defined(pin_A1) && defined(pin_A1_C)
+#define MICROPY_HW_ANALOG_SWITCH_PA1 (SYSCFG_SWITCH_PA1_OPEN)
+#endif
+#if defined(pin_C2) && defined(pin_C2_C)
+#define MICROPY_HW_ANALOG_SWITCH_PC2 (SYSCFG_SWITCH_PC2_OPEN)
+#endif
+#if defined(pin_C3) && defined(pin_C3_C)
+#define MICROPY_HW_ANALOG_SWITCH_PC3 (SYSCFG_SWITCH_PC3_OPEN)
+#endif
+
+static void pin_analog_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+    machine_pin_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    mp_printf(print, "Pin(Pin.cpu.%q, mode=Pin.ANALOG)", self->name);
+}
+
+MP_DEFINE_CONST_OBJ_TYPE(
+    pin_analog_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    print, pin_analog_print
+    );
+
+#endif
+
+/******************************************************************************/
+// PinAF class
 
 /// \moduleref pyb
 /// \class PinAF - Pin Alternate Functions

@@ -390,6 +390,15 @@
 #define MICROPY_HW_MAX_UART (8)
 #define MICROPY_HW_MAX_LPUART (1)
 
+#if defined(MICROPY_HW_ANALOG_SWITCH_PA0) \
+    || defined(MICROPY_HW_ANALOG_SWITCH_PA1) \
+    || defined(MICROPY_HW_ANALOG_SWITCH_PC2) \
+    || defined(MICROPY_HW_ANALOG_SWITCH_PC3)
+#define MICROPY_HW_ENABLE_ANALOG_ONLY_PINS (1)
+#else
+#define MICROPY_HW_ENABLE_ANALOG_ONLY_PINS (0)
+#endif
+
 // Configuration for STM32L0 series
 #elif defined(STM32L0)
 
