@@ -185,10 +185,14 @@ MP_NOINLINE STATIC bool init_flash_fs(uint reset_mode) {
 
     if (len != -1) {
         // Detected a littlefs filesystem so create correct block device for it
-        mp_obj_t args[] = { MP_OBJ_NEW_QSTR(MP_QSTR_len), MP_OBJ_NEW_SMALL_INT(len) };
-        bdev = MP_OBJ_TYPE_GET_SLOT(&pyb_flash_type, make_new)(&pyb_flash_type, 0, 1, args);
+        mp_obj_t lfs_bdev = pyb_flash_new_obj(0, len);
+        if (lfs_bdev == mp_const_none) {
+            // Uncaught exception; len must be an invalid length.
+            mp_printf(&mp_plat_print, "MPY: corrupted filesystem\n");
+        } else {
+            bdev = lfs_bdev;
+        }
     }
-
     #endif
 
     // Try to mount the flash on "/flash" and chdir to it for the boot-up directory.
