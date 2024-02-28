@@ -34,7 +34,6 @@
 #include "py/objarray.h"
 #include "py/qstr.h"
 #include "py/runtime.h"
-#include "py/stackctrl.h"
 #include "extmod/modbluetooth.h"
 #include <string.h>
 
@@ -1272,14 +1271,7 @@ STATIC mp_obj_t invoke_irq_handler(uint16_t event,
 
     mp_state_thread_t ts;
     if (ts_orig == NULL) {
-        mp_thread_set_state(&ts);
-        mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
-        mp_stack_set_limit(MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE);
-        ts.gc_lock_depth = 0;
-        ts.nlr_jump_callback_top = NULL;
-        ts.mp_pending_exception = MP_OBJ_NULL;
-        mp_locals_set(mp_state_ctx.thread.dict_locals); // set from the outer context
-        mp_globals_set(mp_state_ctx.thread.dict_globals); // set from the outer context
+        mp_thread_init_state(&ts, MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE, NULL, NULL);
         MP_THREAD_GIL_ENTER();
     }
 
