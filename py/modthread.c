@@ -160,26 +160,13 @@ STATIC void *thread_entry(void *args_in) {
     thread_entry_args_t *args = (thread_entry_args_t *)args_in;
 
     mp_state_thread_t ts;
-    mp_thread_set_state(&ts);
-
-    mp_stack_set_top(&ts + 1); // need to include ts in root-pointer scan
-    mp_stack_set_limit(args->stack_size);
+    mp_thread_init_state(&ts, args->stack_size, args->dict_locals, args->dict_globals);
 
     #if MICROPY_ENABLE_PYSTACK
     // TODO threading and pystack is not fully supported, for now just make a small stack
     mp_obj_t mini_pystack[128];
     mp_pystack_init(mini_pystack, &mini_pystack[128]);
     #endif
-
-    // The GC starts off unlocked on this thread.
-    ts.gc_lock_depth = 0;
-
-    ts.nlr_jump_callback_top = NULL;
-    ts.mp_pending_exception = MP_OBJ_NULL;
-
-    // set locals and globals from the calling context
-    mp_locals_set(args->dict_locals);
-    mp_globals_set(args->dict_globals);
 
     MP_THREAD_GIL_ENTER();
 
