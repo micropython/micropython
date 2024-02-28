@@ -82,6 +82,9 @@ Functions and types
       In MicroPython, `byteorder` parameter must be positional (this is
       compatible with CPython).
 
+      .. note:: The optional ``signed`` kwarg from CPython is not supported.
+                MicroPython currently behaves as if ``signed=True``.
+
 .. function:: isinstance()
 
 .. function:: issubclass()
