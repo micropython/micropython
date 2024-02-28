@@ -65,10 +65,10 @@ void board_sleep(int value);
 #define MICROPY_HW_RTC_USE_CALOUT   (1)
 
 // SPI flash #1, for R/W storage
+#define MICROPY_HW_SPIFLASH_DEVICES AT25SF161B
 #define MICROPY_HW_SOFTQSPI_SCK_LOW(self) (GPIOE->BSRR = (0x10000 << 11))
 #define MICROPY_HW_SOFTQSPI_SCK_HIGH(self) (GPIOE->BSRR = (1 << 11))
 #define MICROPY_HW_SOFTQSPI_NIBBLE_READ(self) ((GPIOE->IDR >> 7) & 0xf)
-#define MICROPY_HW_SPIFLASH_SIZE_BITS (16 * 1024 * 1024)
 #define MICROPY_HW_SPIFLASH_CS      (pyb_pin_QSPI1_CS)
 #define MICROPY_HW_SPIFLASH_SCK     (pyb_pin_QSPI1_CLK)
 #define MICROPY_HW_SPIFLASH_IO0     (pyb_pin_QSPI1_D0)
@@ -84,7 +84,6 @@ extern struct _spi_bdev_t spi_bdev;
 #endif
 #define MICROPY_HW_BDEV_SPIFLASH    (&spi_bdev)
 #define MICROPY_HW_BDEV_SPIFLASH_CONFIG (&spiflash_config)
-#define MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES (MICROPY_HW_SPIFLASH_SIZE_BITS / 8)
 #define MICROPY_HW_BDEV_SPIFLASH_EXTENDED (&spi_bdev) // for extended block protocol
 
 // SPI flash #2, to be memory mapped

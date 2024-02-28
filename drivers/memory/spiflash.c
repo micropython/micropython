@@ -30,17 +30,19 @@
 #include "py/mperrno.h"
 #include "py/mphal.h"
 #include "drivers/memory/spiflash.h"
+#include "drivers/memory/external_flash_device.h"
 
-#define QSPI_QE_MASK (0x02)
 #define USE_WR_DELAY (1)
 
 #define CMD_WRSR        (0x01)
+#define CMD_WRCR        (0x31)
 #define CMD_WRITE       (0x02)
 #define CMD_READ        (0x03)
 #define CMD_RDSR        (0x05)
 #define CMD_WREN        (0x06)
 #define CMD_SEC_ERASE   (0x20)
 #define CMD_RDCR        (0x35)
+#define CMD_RD_SFDP     (0x5a)
 #define CMD_RD_DEVID    (0x9f)
 #define CMD_CHIP_ERASE  (0xc7)
 #define CMD_C4READ      (0xeb)
@@ -56,17 +58,36 @@
 #define PAGE_SIZE (256) // maximum bytes we can write in one SPI transfer
 #define SECTOR_SIZE MP_SPIFLASH_ERASE_BLOCK_SIZE
 
+#ifndef MICROPY_HW_SPIFLASH_DEVICES
+#define MICROPY_HW_SPIFLASH_DEVICES
+#endif
+
+#if !BUILDING_MBOOT
+#define diag_printf(...) mp_printf(MICROPY_ERROR_PRINTER, __VA_ARGS__)
+#else
+#define diag_printf(...)
+#endif
+
+// List of all possible flash devices used by device.
+// MICROPY_HW_SPIFLASH_DEVICES can be set to a comma separated list in mpconfigboard.h
+static const external_flash_device possible_devices[] = {
+    MICROPY_HW_SPIFLASH_DEVICES
+};
+#define EXTERNAL_FLASH_DEVICE_COUNT MP_ARRAY_SIZE(possible_devices)
+static external_flash_device generic_config = GENERIC;
+
+
 STATIC void mp_spiflash_acquire_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_ACQUIRE, 0);
     }
 }
 
 STATIC void mp_spiflash_release_bus(mp_spiflash_t *self) {
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE);
+        c->bus.u_qspi.proto->ioctl(c->bus.u_qspi.data, MP_QSPI_IOCTL_BUS_RELEASE, 0);
     }
 }
 
@@ -84,14 +105,15 @@ STATIC int mp_spiflash_write_cmd_data(mp_spiflash_t *self, uint8_t cmd, size_t l
     return ret;
 }
 
-STATIC int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src, uint8_t *dest) {
+STATIC int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, uint32_t addr, size_t len, const uint8_t *src, uint8_t *dest, uint8_t mode) {
     int ret = 0;
     const mp_spiflash_config_t *c = self->config;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
-        uint8_t buf[5] = {cmd, 0};
+        uint8_t buf[6] = {cmd, 0};
         uint8_t buff_len = 1 + mp_spi_set_addr_buff(&buf[1], addr);
+        uint8_t dummy = (cmd == CMD_RD_SFDP)? 1 : 0;
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, buff_len, buf, NULL);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, buff_len + dummy, buf, NULL);
         if (len && (src != NULL)) {
             c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, src, NULL);
         } else if (len && (dest != NULL)) {
@@ -101,7 +123,7 @@ STATIC int mp_spiflash_transfer_cmd_addr_data(mp_spiflash_t *self, uint8_t cmd, 
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
     } else {
         if (dest != NULL) {
-            ret = c->bus.u_qspi.proto->read_cmd_qaddr_qdata(c->bus.u_qspi.data, cmd, addr, len, dest);
+            ret = c->bus.u_qspi.proto->read_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, dest, mode);
         } else {
             ret = c->bus.u_qspi.proto->write_cmd_addr_data(c->bus.u_qspi.data, cmd, addr, len, src);
         }
@@ -114,7 +136,7 @@ STATIC int mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len, ui
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
         mp_hal_pin_write(c->bus.u_spi.cs, 0);
         c->bus.u_spi.proto->transfer(c->bus.u_spi.data, 1, &cmd, NULL);
-        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void*)dest, (void*)dest);
+        c->bus.u_spi.proto->transfer(c->bus.u_spi.data, len, (void *)dest, (void *)dest);
         mp_hal_pin_write(c->bus.u_spi.cs, 1);
         return 0;
     } else {
@@ -125,12 +147,15 @@ STATIC int mp_spiflash_read_cmd(mp_spiflash_t *self, uint8_t cmd, size_t len, ui
 STATIC int mp_spiflash_read_data(mp_spiflash_t *self, uint32_t addr, size_t len, uint8_t *dest) {
     const mp_spiflash_config_t *c = self->config;
     uint8_t cmd;
+    uint8_t mode;
     if (c->bus_kind == MP_SPIFLASH_BUS_SPI) {
         cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_READ_32 : CMD_READ;
+        mode = MP_QSPI_TRANSFER_CMD_ADDR_DATA;
     } else {
         cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_C4READ_32 : CMD_C4READ;
+        mode = MP_QSPI_TRANSFER_CMD_QADDR_QDATA;
     }
-    return mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, NULL, dest);
+    return mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, NULL, dest, mode);
 }
 
 STATIC int mp_spiflash_write_cmd(mp_spiflash_t *self, uint8_t cmd) {
@@ -164,7 +189,8 @@ static inline void mp_spiflash_deepsleep_internal(mp_spiflash_t *self, int value
     mp_spiflash_write_cmd(self, value ? 0xb9 : 0xab); // sleep/wake
 }
 
-void mp_spiflash_init(mp_spiflash_t *self) {
+int mp_spiflash_init(mp_spiflash_t *self) {
+    int ret = 0;
     self->flags = 0;
 
     if (self->config->bus_kind == MP_SPIFLASH_BUS_SPI) {
@@ -172,7 +198,7 @@ void mp_spiflash_init(mp_spiflash_t *self) {
         mp_hal_pin_output(self->config->bus.u_spi.cs);
         self->config->bus.u_spi.proto->ioctl(self->config->bus.u_spi.data, MP_SPI_IOCTL_INIT);
     } else {
-        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT);
+        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_INIT, 0);
     }
 
     mp_spiflash_acquire_bus(self);
@@ -183,30 +209,130 @@ void mp_spiflash_init(mp_spiflash_t *self) {
     #if defined(CHECK_DEVID)
     // Validate device id
     uint32_t devid;
-    int ret = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3, &devid);
+    ret = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3, &devid);
     if (ret != 0 || devid != CHECK_DEVID) {
         mp_spiflash_release_bus(self);
-        return;
+        return -2;
     }
     #endif
 
-    if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
-        // Set QE bit
-        uint32_t sr = 0, cr = 0;
-        int ret = mp_spiflash_read_cmd(self, CMD_RDSR, 1, &sr);
-        if (ret == 0) {
-            ret = mp_spiflash_read_cmd(self, CMD_RDCR, 1, &cr);
+    // Start with generic configuration, update with exact if found.
+    self->device = &generic_config;
+
+    uint8_t jedec_ids[3];
+    ret = mp_spiflash_read_cmd(self, CMD_RD_DEVID, 3, (uint32_t *)jedec_ids);
+    if (ret != 0) {
+        mp_spiflash_release_bus(self);
+        return -2;
+    }
+    for (uint8_t i = 0; i < EXTERNAL_FLASH_DEVICE_COUNT; i++) {
+        const external_flash_device *possible_device = &possible_devices[i];
+        if (jedec_ids[0] == possible_device->manufacturer_id &&
+            jedec_ids[1] == possible_device->memory_type &&
+            jedec_ids[2] == possible_device->capacity) {
+            self->device = possible_device;
+            break;
         }
-        uint32_t data = (sr & 0xff) | (cr & 0xff) << 8;
-        if (ret == 0 && !(data & (QSPI_QE_MASK << 8))) {
-            data |= QSPI_QE_MASK << 8;
-            mp_spiflash_write_cmd(self, CMD_WREN);
-            mp_spiflash_write_cmd_data(self, CMD_WRSR, 2, data);
-            mp_spiflash_wait_wip0(self);
+    }
+    // If the flash device is not known, try to autodetect suitable settings.
+    if (self->device == &generic_config) {
+        if (jedec_ids[0] == 0xc2) { // Macronix devices
+            generic_config.quad_enable_bit_mask = 0x04;
+            generic_config.single_status_byte = true;
+        }
+        #if MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES
+        generic_config.total_size = MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES;
+        #else
+        // Try to read "Serial Flash Discoverable Parameters"
+        // JEDEC Standard No. 216, 9 x 32bit dwords of data.
+        // Start be reading the headers to confirm sfdp is supported and find the parameter table address.
+        uint32_t sfdp[4] = {0};
+        ret = mp_spiflash_transfer_cmd_addr_data(self, CMD_RD_SFDP, 0, sizeof(sfdp), NULL, (uint8_t *)sfdp, MP_QSPI_TRANSFER_CMD_ADDR_DATA);
+        const char sfdp_header[] = {'S', 'F', 'D', 'P'};
+        if (ret != 0 || sfdp[0] != *(uint32_t *)sfdp_header) {
+            diag_printf("mp_spiflash: sfdp not supported\n");
+            diag_printf("Set MICROPY_HW_SPIFLASH_DEVICES or MICROPY_HW_BDEV_SPIFLASH_SIZE_BYTES");
+            diag_printf("jedec ids: 0x%x 0x%x 0x%x\n", jedec_ids[0], jedec_ids[1], jedec_ids[2]);
+            mp_spiflash_release_bus(self);
+            return -2;
+        } else {
+            // Read the first few SFDP parameter tables.
+            uint32_t sfdp_param_table_addr = sfdp[3] & 0xFFFFFF;
+            ret = mp_spiflash_transfer_cmd_addr_data(self, CMD_RD_SFDP, sfdp_param_table_addr, sizeof(sfdp), NULL, (uint8_t *)sfdp, MP_QSPI_TRANSFER_CMD_ADDR_DATA);
+            // Flash Memory Density
+            uint32_t size = sfdp[1] & ~(1 << 31);
+            if (size != 0) {
+                if (sfdp[1] & (1 << 31)) {
+                    // When bit-31 is set to 1, the total bits is 2^size.
+                    generic_config.total_size = 1 << size;
+                } else {
+                    // When bit-31 is set to 0, the total bits is size + 1.
+                    generic_config.total_size = (size + 1) / 8;
+                }
+            }
+            uint8_t opcode_sec_erase = (sfdp[0] >> 8 & 0xFF);
+            if (opcode_sec_erase != 0x20) {
+                diag_printf("mp_spiflash_sec_erase: opcode not supported\n");
+            }
+            if (sfdp[0] & (1 << 21)) {
+                // Supports (1-4-4) Fast Read: Device supports single line opcode,
+                // quad line address, and quad output Fast Read.
+                generic_config.supports_fast_read = true;
+                generic_config.supports_qspi = true;
+            }
+        }
+        #endif
+    }
+
+    if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+        // Set quad enable (QE) bit.
+        uint32_t sr = 0, cr = 0;
+        ret = mp_spiflash_read_cmd(self, CMD_RDSR, 1, &sr);
+
+        if (ret == 0 && self->device->single_status_byte) {
+            // QE bit is in status byte 1
+            if ((sr & self->device->quad_enable_bit_mask) == 0) {
+                mp_spiflash_write_cmd(self, CMD_WREN);
+                sr |= self->device->quad_enable_bit_mask;
+                mp_spiflash_write_cmd_data(self, CMD_WRSR, 1, sr);
+            }
+            // Verify it's written correctly
+            ret = mp_spiflash_read_cmd(self, CMD_RDSR, 1, &sr);
+            if (ret == 0 && (sr & self->device->quad_enable_bit_mask) == 0) {
+                // QE bit could not be set
+                ret = -1;
+            }
+        }
+        if (ret == 0 && (!self->device->single_status_byte)) {
+            // QE bit is in command register / status byte 2
+            ret = mp_spiflash_read_cmd(self, CMD_RDCR, 1, &cr);
+            if ((cr & self->device->quad_enable_bit_mask) == 0) {
+                mp_spiflash_write_cmd(self, CMD_WREN);
+                cr |= self->device->quad_enable_bit_mask;
+                if (self->device->write_status_register_split) {
+                    // Some devices have a separate command to write CR
+                    mp_spiflash_write_cmd_data(self, CMD_WRCR, 1, cr);
+                } else {
+                    // Other devices expect both SR and CR to be written in one operation
+                    uint32_t data = (sr & 0xff) | (cr & 0xff) << 8;
+                    mp_spiflash_write_cmd_data(self, CMD_WRSR, 2, data);
+                }
+            }
+            // Verify it's written correctly
+            ret = mp_spiflash_read_cmd(self, CMD_RDCR, 1, &cr);
+            if (ret == 0 && (cr & self->device->quad_enable_bit_mask) == 0) {
+                // QE bit could not be set
+                ret = -1;
+            }
         }
     }
 
+    if (self->config->bus_kind == MP_SPIFLASH_BUS_QSPI) {
+        self->config->bus.u_qspi.proto->ioctl(self->config->bus.u_qspi.data, MP_QSPI_IOCTL_FLASH_SIZE, self->device->total_size);
+    }
+
     mp_spiflash_release_bus(self);
+    return ret;
 }
 
 void mp_spiflash_deepsleep(mp_spiflash_t *self, int value) {
@@ -235,7 +361,7 @@ STATIC int mp_spiflash_erase_block_internal(mp_spiflash_t *self, uint32_t addr) 
 
     // erase the sector
     uint8_t cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_SEC_ERASE_32 : CMD_SEC_ERASE;
-    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, 0, NULL, NULL);
+    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, 0, NULL, NULL, 0);
     if (ret != 0) {
         return ret;
     }
@@ -260,7 +386,7 @@ STATIC int mp_spiflash_write_page(mp_spiflash_t *self, uint32_t addr, size_t len
 
     // write the page
     uint8_t cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? CMD_WRITE_32 : CMD_WRITE;
-    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, src, NULL);
+    ret = mp_spiflash_transfer_cmd_addr_data(self, cmd, addr, len, src, NULL, 0);
     if (ret != 0) {
         return ret;
     }
@@ -404,7 +530,7 @@ STATIC int mp_spiflash_cached_write_part(mp_spiflash_t *self, uint32_t addr, siz
 
     // Restriction for now, so we don't need to erase multiple pages
     if (offset + len > SECTOR_SIZE) {
-        printf("mp_spiflash_cached_write_part: len is too large\n");
+        diag_printf("mp_spiflash_cached_write_part: len is too large\n");
         return -MP_EIO;
     }
 

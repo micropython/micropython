@@ -56,7 +56,7 @@ STATIC void nibble_write(mp_soft_qspi_obj_t *self, uint8_t v) {
     mp_hal_pin_write(self->io3, (v >> 3) & 1);
 }
 
-STATIC int mp_soft_qspi_ioctl(void *self_in, uint32_t cmd) {
+STATIC int mp_soft_qspi_ioctl(void *self_in, uint32_t cmd, uint32_t arg) {
     mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
 
     switch (cmd) {
@@ -188,16 +188,28 @@ STATIC int mp_soft_qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_
     return 0;
 }
 
-STATIC int mp_soft_qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+STATIC int mp_soft_qspi_read_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest, uint8_t mode) {
+    int ret = 0;
     mp_soft_qspi_obj_t *self = (mp_soft_qspi_obj_t*)self_in;
     uint8_t cmd_buf[7] = {cmd};
     uint8_t addr_len = mp_spi_set_addr_buff(&cmd_buf[1], addr);
     CS_LOW(self);
     mp_soft_qspi_transfer(self, 1, cmd_buf, NULL);
-    mp_soft_qspi_qwrite(self, addr_len + 3, &cmd_buf[1]); // 3/4 addr bytes, 1 extra byte (0), 2 dummy bytes (4 dummy cycles)
-    mp_soft_qspi_qread(self, len, dest);
+    if (mode == MP_QSPI_TRANSFER_CMD_ADDR_DATA) {
+        // cmd, address and data on 1 line.
+        // 3 addr bytes, 1 dummy byte (8 dummy cycles x 1 line)
+        mp_soft_qspi_transfer(self, addr_len + 1, &cmd_buf[1], NULL);
+        mp_soft_qspi_transfer(self, len, NULL, dest);
+    } else if (mode == MP_QSPI_TRANSFER_CMD_QADDR_QDATA) {
+        // cmd 1 line, address and data on 4 lines.
+        // 3/4 addr bytes, 1 extra byte (mode: 0), 2 dummy bytes (4 dummy cycles x 4 lines)
+        mp_soft_qspi_qwrite(self, addr_len + 3, &cmd_buf[1]);
+        mp_soft_qspi_qread(self, len, dest);
+    } else {
+        ret = -1;
+    }
     CS_HIGH(self);
-    return 0;
+    return ret;
 }
 
 const mp_qspi_proto_t mp_soft_qspi_proto = {
@@ -205,5 +217,5 @@ const mp_qspi_proto_t mp_soft_qspi_proto = {
     .write_cmd_data = mp_soft_qspi_write_cmd_data,
     .write_cmd_addr_data = mp_soft_qspi_write_cmd_addr_data,
     .read_cmd = mp_soft_qspi_read_cmd,
-    .read_cmd_qaddr_qdata = mp_soft_qspi_read_cmd_qaddr_qdata,
+    .read_cmd_addr_data = mp_soft_qspi_read_cmd_addr_data,
 };

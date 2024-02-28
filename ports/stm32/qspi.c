@@ -32,7 +32,7 @@
 #include "qspi.h"
 #include "pin_static_af.h"
 
-#if defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
+#if MICROPY_HW_ENABLE_QSPI || defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)
 
 #define QSPI_MAP_ADDR (0x90000000)
 
@@ -52,17 +52,18 @@
 #define MICROPY_HW_QSPI_CS_HIGH_CYCLES  2  // nCS stays high for 2 cycles
 #endif
 
-#ifndef MICROPY_HW_QSPI_MPU_REGION_SIZE
-#define MICROPY_HW_QSPI_MPU_REGION_SIZE ((1 << (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3)) >> 20)
+#ifndef MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2
 #endif
 
-#if (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) >= 24
-#define QSPI_CMD 0xec
-#define QSPI_ADSIZE 3
-#else
-#define QSPI_CMD 0xeb
-#define QSPI_ADSIZE 2
-#endif
+// Fast Read command in 32bit and 24bit addressing.
+#define QSPI_FAST_READ_A4_CMD 0xec
+#define QSPI_FAST_READ_A3_CMD 0xeb
+
+// this formula computes the log2 of "m"
+#define BITS_TO_LOG2(m) ((m) - 1) / (((m) - 1) % 255 + 1) / 255 % 255 * 8 + 7 - 86 / (((m) - 1) % 255 + 12)
+
+#define MBytes (1024 * 1024)
+static size_t qspi_memory_size_bytes = 0;
 
 static inline void qspi_mpu_disable_all(void) {
     // Configure MPU to disable access to entire QSPI region, to prevent CPU
@@ -72,7 +73,48 @@ static inline void qspi_mpu_disable_all(void) {
     mpu_config_end(irq_state);
 }
 
-static inline void qspi_mpu_enable_mapped(void) {
+#if 1
+
+static inline void qspi_mpu_enable_mapped() {
+    // Configure MPU to allow access to only the valid part of external SPI flash.
+    // The memory accesses to the mapped QSPI are faster if the MPU is not used
+    // unprivileged or the background region is disabled, the MPU issues a fault.
+    uint32_t irq_state = mpu_config_start();
+
+    if (qspi_memory_size_bytes > (128 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0xFF, MPU_REGION_SIZE_256MB));
+    } else if (qspi_memory_size_bytes > (64 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_256MB));
+    } else if (qspi_memory_size_bytes > (32 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_256MB));
+    } else if (qspi_memory_size_bytes > (16 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+    } else if (qspi_memory_size_bytes > (8 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
+    } else if (qspi_memory_size_bytes > (4 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_32MB));
+    } else if (qspi_memory_size_bytes > (2 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
+    } else if (qspi_memory_size_bytes > (1 * MBytes)) {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
+        mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_16MB));
+    } else {
+        mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
+        mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
+        mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_4MB));
+    }
+    mpu_config_end(irq_state);
+}
+
+#else
+
+// This variant of the function is harder to read, but 76 bytes smaller.
+
+static inline void qspi_mpu_enable_mapped() {
     // Configure MPU to allow access to only the valid part of external SPI flash.
     // The memory accesses to the mapped QSPI are faster if the MPU is not used
     // for the memory-mapped region, so 3 MPU regions are used to disable access
@@ -83,36 +125,61 @@ static inline void qspi_mpu_enable_mapped(void) {
     // other enabled region overlaps the disabled subregion, and the access is
     // unprivileged or the background region is disabled, the MPU issues a fault.
     uint32_t irq_state = mpu_config_start();
-    #if MICROPY_HW_QSPI_MPU_REGION_SIZE > 128
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0xFF, MPU_REGION_SIZE_256MB));
-    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 64
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_256MB));
-    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 32
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_256MB));
-    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 16
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 8
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
-    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 4
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_32MB));
-    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 2
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
-    #elif MICROPY_HW_QSPI_MPU_REGION_SIZE > 1
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x0F, MPU_REGION_SIZE_32MB));
-    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_16MB));
-    #else
-    mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_256MB));
-    mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x01, MPU_REGION_SIZE_32MB));
-    mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, MPU_CONFIG_DISABLE(0x03, MPU_REGION_SIZE_4MB));
-    #endif
+
+    static const uint8_t region_definitions[][7] = {
+        // Each row per MB region total size, specifying region srd and size for MPU_REGION_QSPI1, 2 and 3.
+        {128, 0xFF, MPU_REGION_SIZE_256MB, 0, 0, 0, 0},
+        { 64, 0x0F, MPU_REGION_SIZE_256MB, 0, 0, 0, 0},
+        { 32, 0x03, MPU_REGION_SIZE_256MB, 0, 0, 0, 0},
+        { 16, 0x01, MPU_REGION_SIZE_256MB, 0, 0, 0, 0},
+        {  8, 0x01, MPU_REGION_SIZE_256MB,
+           0x0F, MPU_REGION_SIZE_32MB, 0, 0},
+        {  4, 0x01, MPU_REGION_SIZE_256MB,
+           0x03, MPU_REGION_SIZE_32MB, 0, 0},
+        {  2, 0x01, MPU_REGION_SIZE_256MB,
+           0x01, MPU_REGION_SIZE_32MB, 0, 0},
+        {  1, 0x01, MPU_REGION_SIZE_256MB,
+           0x0F, MPU_REGION_SIZE_32MB,
+           0x01, MPU_REGION_SIZE_16MB},
+        {  0, 0x01, MPU_REGION_SIZE_256MB,
+           0x01, MPU_REGION_SIZE_32MB,
+           0x03, MPU_REGION_SIZE_4MB},
+    };
+    size_t qspi_memory_size_mbytes = qspi_memory_size_bytes / 1024 / 1024;
+
+    for (uint8_t i = 0; i < 9; ++i) {
+        if (qspi_memory_size_mbytes > region_definitions[i][0]) {
+            uint32_t attr_size_1 = MPU_CONFIG_DISABLE(region_definitions[i][1], region_definitions[i][2]);
+            mpu_config_region(MPU_REGION_QSPI1, QSPI_MAP_ADDR, attr_size_1);
+            if (region_definitions[i][3] > 0) {
+                uint32_t attr_size_2 = MPU_CONFIG_DISABLE(region_definitions[i][3], region_definitions[i][4]);
+                mpu_config_region(MPU_REGION_QSPI2, QSPI_MAP_ADDR, attr_size_2);
+            }
+            if (region_definitions[i][5] > 0) {
+                uint32_t attr_size_3 = MPU_CONFIG_DISABLE(region_definitions[i][5], region_definitions[i][6]);
+                mpu_config_region(MPU_REGION_QSPI3, QSPI_MAP_ADDR, attr_size_3);
+            }
+            break;
+        }
+    }
     mpu_config_end(irq_state);
 }
 
-void qspi_init(void) {
+#endif
+
+void qspi_set_memory_size(size_t memory_size_bytes) {
+    qspi_memory_size_bytes = memory_size_bytes;
+    size_t QSPIFLASH_SIZE_BITS_LOG2 = BITS_TO_LOG2(qspi_memory_size_bytes * 8);
+    QUADSPI->DCR =
+        (QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) << QUADSPI_DCR_FSIZE_Pos
+            | (MICROPY_HW_QSPI_CS_HIGH_CYCLES - 1) << QUADSPI_DCR_CSHT_Pos
+            | 0 << QUADSPI_DCR_CKMODE_Pos // CLK idles at low state
+    ;
+}
+
+void qspi_init(size_t memory_size_bytes) {
+    qspi_memory_size_bytes = memory_size_bytes;
+
     qspi_mpu_disable_all();
 
     // Configure pins
@@ -143,15 +210,20 @@ void qspi_init(void) {
             | 1 << QUADSPI_CR_EN_Pos // enable the peripheral
     ;
 
-    QUADSPI->DCR =
-        (MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2 - 3 - 1) << QUADSPI_DCR_FSIZE_Pos
-            | (MICROPY_HW_QSPI_CS_HIGH_CYCLES - 1) << QUADSPI_DCR_CSHT_Pos
-            | 0 << QUADSPI_DCR_CKMODE_Pos // CLK idles at low state
-    ;
+    if (qspi_memory_size_bytes) {
+        qspi_set_memory_size(qspi_memory_size_bytes);
+    }
 }
 
-void qspi_memory_map(void) {
+void qspi_memory_map() {
     // Enable memory-mapped mode
+    uint8_t cmd = QSPI_FAST_READ_A3_CMD;
+    uint8_t adsize = 2;
+    if (qspi_memory_size_bytes > (16 * MBytes)) {
+        // Flash chips over 16MB require 32bit addressing.
+        cmd = QSPI_FAST_READ_A4_CMD;
+        adsize = 3;
+    }
 
     QUADSPI->ABR = 0; // disable continuous read mode
 
@@ -163,20 +235,20 @@ void qspi_memory_map(void) {
             | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
             | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
             | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
-            | QSPI_ADSIZE << QUADSPI_CCR_ADSIZE_Pos
+            | adsize << QUADSPI_CCR_ADSIZE_Pos
             | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
             | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
-            | QSPI_CMD << QUADSPI_CCR_INSTRUCTION_Pos
+            | cmd << QUADSPI_CCR_INSTRUCTION_Pos
     ;
 
     qspi_mpu_enable_mapped();
 }
 
-STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
+STATIC int qspi_ioctl(void *self_in, uint32_t cmd, uint32_t arg) {
     (void)self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
-            qspi_init();
+            qspi_init(0);
             break;
         case MP_QSPI_IOCTL_BUS_ACQUIRE:
             // Disable memory-mapped region during bus access
@@ -192,6 +264,11 @@ STATIC int qspi_ioctl(void *self_in, uint32_t cmd) {
             // Switch to memory-map mode when bus is idle
             qspi_memory_map();
             break;
+        case MP_QSPI_IOCTL_FLASH_SIZE:
+            if (arg > 0) {
+                qspi_set_memory_size(arg);
+            }
+            return qspi_memory_size_bytes;
     }
     return 0; // success
 }
@@ -350,10 +427,28 @@ STATIC int qspi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *dest)
     return 0;
 }
 
-STATIC int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+STATIC int qspi_read_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest, uint8_t mode) {
     (void)self_in;
-
     uint8_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
+
+    uint32_t dmode = 0;
+    uint32_t admode = 0;
+    uint32_t dcyc = 0;
+    uint32_t abmode = 0;
+
+    if (mode == MP_QSPI_TRANSFER_CMD_QADDR_QDATA) {
+        dmode = 3; // 4 data lines used
+        admode = 3; // 4 address lines used
+        dcyc = 4; // 4 dummy cycles (2  bytes)
+        abmode = 3; // alternate-byte bytes sent on 4 lines
+    } else if (mode == MP_QSPI_TRANSFER_CMD_ADDR_DATA) {
+        dmode = 1; // 1 data lines used
+        admode = 1; // 1 address lines used
+        dcyc = 8; // 8 dummy cycles (1 byte)
+        abmode = 0; // No alternate-byte bytes sent
+    } else {
+        return -1;
+    }
 
     QUADSPI->FCR = QUADSPI_FCR_CTCF; // clear TC flag
 
@@ -363,12 +458,12 @@ STATIC int qspi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, 
         0 << QUADSPI_CCR_DDRM_Pos // DDR mode disabled
             | 0 << QUADSPI_CCR_SIOO_Pos // send instruction every transaction
             | 1 << QUADSPI_CCR_FMODE_Pos // indirect read mode
-            | 3 << QUADSPI_CCR_DMODE_Pos // data on 4 lines
-            | 4 << QUADSPI_CCR_DCYC_Pos // 4 dummy cycles
+            | dmode << QUADSPI_CCR_DMODE_Pos // data lines
+            | dcyc << QUADSPI_CCR_DCYC_Pos // dummy cycles
             | 0 << QUADSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
-            | 3 << QUADSPI_CCR_ABMODE_Pos // alternate byte on 4 lines
+            | abmode << QUADSPI_CCR_ABMODE_Pos // alternate byte count / lines
             | adsize << QUADSPI_CCR_ADSIZE_Pos // 32 or 24-bit address size
-            | 3 << QUADSPI_CCR_ADMODE_Pos // address on 4 lines
+            | admode << QUADSPI_CCR_ADMODE_Pos // address lines
             | 1 << QUADSPI_CCR_IMODE_Pos // instruction on 1 line
             | cmd << QUADSPI_CCR_INSTRUCTION_Pos // quad read opcode
     ;
@@ -419,7 +514,7 @@ const mp_qspi_proto_t qspi_proto = {
     .write_cmd_data = qspi_write_cmd_data,
     .write_cmd_addr_data = qspi_write_cmd_addr_data,
     .read_cmd = qspi_read_cmd,
-    .read_cmd_qaddr_qdata = qspi_read_cmd_qaddr_qdata,
+    .read_cmd_addr_data = qspi_read_cmd_addr_data,
 };
 
 #endif // defined(MICROPY_HW_QSPIFLASH_SIZE_BITS_LOG2)

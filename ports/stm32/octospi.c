@@ -92,7 +92,7 @@ void octospi_init(void) {
     OCTOSPI1->CR |= OCTOSPI_CR_EN;
 }
 
-STATIC int octospi_ioctl(void *self_in, uint32_t cmd) {
+STATIC int octospi_ioctl(void *self_in, uint32_t cmd, uint32_t arg) {
     (void)self_in;
     switch (cmd) {
         case MP_QSPI_IOCTL_INIT:
@@ -269,37 +269,59 @@ STATIC int octospi_read_cmd(void *self_in, uint8_t cmd, size_t len, uint32_t *de
     return 0;
 }
 
-STATIC int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest) {
+STATIC int octospi_read_cmd_addr_data(void *self_in, uint8_t cmd, uint32_t addr, size_t len, uint8_t *dest, uint8_t mode) {
+    // Note this only support use with 1 or 4 line commands.
+    // Full 8-line mode support is not included.
+    // Some commands will auto-downgrade to support 2-line mode if needed by hardware.
     (void)self_in;
 
-    #if defined(MICROPY_HW_OSPIFLASH_IO1) && !defined(MICROPY_HW_OSPIFLASH_IO2) && !defined(MICROPY_HW_OSPIFLASH_IO4)
+    uint32_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
+
+    uint32_t dmode = 0;
+    uint32_t admode = 0;
+    uint32_t dcyc = 0;
+    uint32_t abmode = 0;
+
+    if (mode == MP_QSPI_TRANSFER_CMD_QADDR_QDATA) {
+        dmode = 3; // 4 data lines used
+        admode = 3; // 4 address lines used
+        dcyc = 4; // 4 dummy cycles (2  bytes)
+        abmode = 3; // alternate-byte bytes sent on 4 lines
+    } else if (mode == MP_QSPI_TRANSFER_CMD_ADDR_DATA) {
+        dmode = 1; // 1 data lines used
+        admode = 1; // 1 address lines used
+        dcyc = 8; // 8 dummy cycles (1 byte)
+        abmode = 0; // No alternate-byte bytes sent
+    } else {
+        return -1;
+    }
+
+    #if !defined(MICROPY_HW_OSPIFLASH_IO2) && !defined(MICROPY_HW_OSPIFLASH_IO4)
 
     // Use 2-line address, 2-line data.
 
-    uint32_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
-    uint32_t dmode = 2; // data on 2-lines
-    uint32_t admode = 2; // address on 2-lines
-    uint32_t dcyc = 4; // 4 dummy cycles
+    dmode = 2; // data on 2-lines
+    admode = 2; // address on 2-lines
+    dcyc = 4; // 4 dummy cycles
 
     if (cmd == 0xeb || cmd == 0xec) {
         // Convert to 2-line command.
         cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 0xbc : 0xbb;
     }
+    #endif
 
-    #else
+    #if !defined(MICROPY_HW_OSPIFLASH_IO1)
 
     // Fallback to use 1-line address, 1-line data.
 
-    uint32_t adsize = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 3 : 2;
-    uint32_t dmode = 1; // data on 1-line
-    uint32_t admode = 1; // address on 1-line
-    uint32_t dcyc = 0; // 0 dummy cycles
+    dmode = 1; // data on 1-line
+    admode = 1; // address on 1-line
+    dcyc = 0; // 0 dummy cycles
 
     if (cmd == 0xeb || cmd == 0xec) {
         // Convert to 1-line command.
         cmd = MICROPY_HW_SPI_ADDR_IS_32BIT(addr) ? 0x13 : 0x03;
     }
-
     #endif
 
     OCTOSPI1->FCR = OCTOSPI_FCR_CTCF; // clear TC flag
@@ -311,7 +333,7 @@ STATIC int octospi_read_cmd_qaddr_qdata(void *self_in, uint8_t cmd, uint32_t add
             | 0 << OCTOSPI_CCR_SIOO_Pos // send instruction every transaction
             | dmode << OCTOSPI_CCR_DMODE_Pos // data on n lines
             | 0 << OCTOSPI_CCR_ABSIZE_Pos // 8-bit alternate byte
-            | 0 << OCTOSPI_CCR_ABMODE_Pos // no alternate byte
+            | abmode << OCTOSPI_CCR_ABMODE_Pos // alternate byte
             | adsize << OCTOSPI_CCR_ADSIZE_Pos // 32 or 24-bit address size
             | admode << OCTOSPI_CCR_ADMODE_Pos // address on n lines
             | 1 << OCTOSPI_CCR_IMODE_Pos // instruction on 1 line
@@ -357,7 +379,7 @@ const mp_qspi_proto_t octospi_proto = {
     .write_cmd_data = octospi_write_cmd_data,
     .write_cmd_addr_data = octospi_write_cmd_addr_data,
     .read_cmd = octospi_read_cmd,
-    .read_cmd_qaddr_qdata = octospi_read_cmd_qaddr_qdata,
+    .read_cmd_addr_data = octospi_read_cmd_addr_data,
 };
 
 #endif // defined(MICROPY_HW_OSPIFLASH_SIZE_BITS_LOG2)
