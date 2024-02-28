@@ -397,9 +397,11 @@ void eth_init_0(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     enet_config.txAccelerConfig = kENET_TxAccelIpCheckEnabled | kENET_TxAccelProtoCheckEnabled;
     // Set interrupt
     enet_config.interrupt |= ENET_TX_INTERRUPT | ENET_RX_INTERRUPT;
+    // Set callback
+    enet_config.callback = eth_irq_handler;
+    enet_config.userData = (void *)self;
 
     ENET_Init(ENET, &g_handle, &enet_config, &buffConfig[0], hw_addr, source_clock);
-    ENET_SetCallback(&g_handle, eth_irq_handler, (void *)self);
     NVIC_SetPriority(ENET_IRQn, IRQ_PRI_PENDSV);
     ENET_EnableInterrupts(ENET, ENET_RX_INTERRUPT);
     ENET_ClearInterruptStatus(ENET, ENET_TX_INTERRUPT | ENET_RX_INTERRUPT | ENET_ERR_INTERRUPT);
@@ -461,9 +463,11 @@ void eth_init_1(eth_t *self, int eth_id, const phy_operations_t *phy_ops, int ph
     enet_config.txAccelerConfig = kENET_TxAccelIpCheckEnabled | kENET_TxAccelProtoCheckEnabled;
     // Set interrupt
     enet_config.interrupt = ENET_TX_INTERRUPT | ENET_RX_INTERRUPT;
+    // Set callback
+    enet_config.callback = eth_irq_handler;
+    enet_config.userData = (void *)self;
 
     ENET_Init(ENET_1, &g_handle_1, &enet_config, &buffConfig_1[0], hw_addr_1, source_clock);
-    ENET_SetCallback(&g_handle_1, eth_irq_handler, (void *)self);
     ENET_ClearInterruptStatus(ENET_1, ENET_TX_INTERRUPT | ENET_RX_INTERRUPT | ENET_ERR_INTERRUPT);
     ENET_EnableInterrupts(ENET_1, ENET_RX_INTERRUPT);
     ENET_ActiveRead(ENET_1);
