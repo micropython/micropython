@@ -55,8 +55,9 @@ The :mod:`machine` module::
     buf = bytearray([0xAB])                    #buffer data 
     bitstream('P13_6', 0, timing, buf)         # bitstrem buffer data with timing through pin P13_6
 
-Here the accuracy of the timing is +/- 400ns. So this bitstream works better from the timing range greater than 1000ns. 
-    
+All timings greater than 1500 ns works and the accuracy of the timing is +/- 400ns. 
+Supported timing_ns ranges below 1500 ns is [500, 1125, 800, 750]
+
 ..
     TODO: add more machine module examples when implemented.    
     machine.freq(240000000) # set the CPU frequency to 240 MHz

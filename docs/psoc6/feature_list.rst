@@ -102,7 +102,7 @@ Table :ref:`configuration details <table_mpy_configuration>` below lists specifi
 |                 |                                                                                                                      |
 |                 | Constants not yet implemented : *WLAN_WAKE*, *PIN_WAKE*, *RTC_WAKE*, *IDLE*, *SLEEP*, *DEEPSLEEP*.                   |
 |                 |                                                                                                                      |
-|                 | Submodules/classes not yet implemented: *bitstream*, *mem*, *Signal*, *SD*, *SDCard*, *SoftSPI*, *SPI*,              |
+|                 | Submodules/classes not yet implemented: *mem*, *Signal*, *SD*, *SDCard*, *SoftSPI*, *SPI*,                           |
 |                 | *Timer*, *UART*, *WDT*.                                                                                              |
 +-----------------+----------------------------------------------------------------------------------------------------------------------+
 | machine.Pin     | Functions not yet implemented: *drive()*, *mode()*, *pull()*.                                                        |
