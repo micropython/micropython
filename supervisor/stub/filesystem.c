@@ -55,11 +55,6 @@ void filesystem_set_writable_by_usb(fs_user_mount_t *vfs, bool usb_writable) {
     return;
 }
 
-bool filesystem_is_writable_by_python(fs_user_mount_t *vfs) {
-    (void)vfs;
-    return true;
-}
-
 bool filesystem_is_writable_by_usb(fs_user_mount_t *vfs) {
     return true;
 }
@@ -77,4 +72,33 @@ void filesystem_set_concurrent_write_protection(fs_user_mount_t *vfs, bool concu
 
 bool filesystem_present(void) {
     return false;
+}
+
+bool filesystem_lock(fs_user_mount_t *fs_mount) {
+    if (fs_mount->lock_count == 0 && !blockdev_lock(fs_mount)) {
+        return false;
+    }
+    fs_mount->lock_count += 1;
+    return true;
+}
+
+void filesystem_unlock(fs_user_mount_t *fs_mount) {
+    assert(fs_mount->lock_count > 0);
+    fs_mount->lock_count -= 1;
+    if (fs_mount->lock_count == 0) {
+        blockdev_unlock(fs_mount);
+    }
+}
+
+bool blockdev_lock(fs_user_mount_t *fs_mount) {
+    if ((fs_mount->blockdev.flags & MP_BLOCKDEV_FLAG_LOCKED) != 0) {
+        return false;
+    }
+    fs_mount->blockdev.flags |= MP_BLOCKDEV_FLAG_LOCKED;
+    return true;
+}
+
+void blockdev_unlock(fs_user_mount_t *fs_mount) {
+    assert(fs_mount->blockdev.flags & MP_BLOCKDEV_FLAG_LOCKED);
+    fs_mount->blockdev.flags &= ~MP_BLOCKDEV_FLAG_LOCKED;
 }
