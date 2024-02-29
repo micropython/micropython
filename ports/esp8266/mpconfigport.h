@@ -93,9 +93,6 @@
 #define MICROPY_PY_NETWORK_MODULE_GLOBALS_INCLUDEFILE "ports/esp8266/modnetwork_globals.h"
 #define MICROPY_PY_WEBSOCKET        (1)
 #define MICROPY_PY_ONEWIRE          (1)
-#define MICROPY_PY_WEBREPL          (1)
-#define MICROPY_PY_WEBREPL_DELAY    (20)
-#define MICROPY_PY_WEBREPL_STATIC_FILEBUF (1)
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/esp8266/modos.c"
 #define MICROPY_PY_OS_DUPTERM       (2)
 #define MICROPY_PY_OS_DUPTERM_NOTIFY (1)

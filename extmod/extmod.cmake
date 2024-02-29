@@ -44,7 +44,6 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/modtime.c
     ${MICROPY_EXTMOD_DIR}/modvfs.c
     ${MICROPY_EXTMOD_DIR}/modwebsocket.c
-    ${MICROPY_EXTMOD_DIR}/modwebrepl.c
     ${MICROPY_EXTMOD_DIR}/network_cyw43.c
     ${MICROPY_EXTMOD_DIR}/network_lwip.c
     ${MICROPY_EXTMOD_DIR}/network_ninaw10.c

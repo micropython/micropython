@@ -192,9 +192,6 @@
 #ifndef MICROPY_PY_UWEBSOCKET
 #define MICROPY_PY_UWEBSOCKET           (1)
 #endif
-#ifndef MICROPY_PY_WEBREPL
-#define MICROPY_PY_WEBREPL              (1)
-#endif
 #endif
 
 #if MICROPY_PY_MACHINE

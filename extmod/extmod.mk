@@ -41,7 +41,6 @@ SRC_EXTMOD_C += \
 	extmod/modtime.c \
 	extmod/moductypes.c \
 	extmod/modvfs.c \
-	extmod/modwebrepl.c \
 	extmod/modwebsocket.c \
 	extmod/network_cyw43.c \
 	extmod/network_esp_hosted.c \
