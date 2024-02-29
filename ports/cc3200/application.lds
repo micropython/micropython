@@ -36,7 +36,7 @@ MEMORY
 ENTRY(ResetISR)
 
 SECTIONS
-{  
+{
     /* place the FreeRTOS heap (the MicroPython stack will live here) */
     .rtos_heap (NOLOAD) :
     {
@@ -92,7 +92,7 @@ SECTIONS
         . = ALIGN(8);
         _eboot = .;
     } > SRAM
-     
+
     /* allocate the MicroPython heap */
     .heap :
     {

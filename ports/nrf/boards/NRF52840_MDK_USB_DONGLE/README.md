@@ -45,4 +45,4 @@ built, the target can be deployed to the device as described in
 An alternative way to deploy to the device, is to open `firmware.hex` using
 *nRF Connect* and select *Write*. Detailed instructions can be found on the
 [developer
-wiki](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/programming/). 
+wiki](https://wiki.makerdiary.com/nrf52840-mdk-usb-dongle/programming/).

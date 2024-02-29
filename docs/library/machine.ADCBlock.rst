@@ -26,7 +26,7 @@ Constructors
 
    Access the ADC peripheral identified by *id*, which may be an integer
    or string.
-   
+
    The *bits* argument, if given, sets the resolution in bits of the
    conversion process.  If not specified then the previous or default
    resolution is used.

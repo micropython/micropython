@@ -309,7 +309,7 @@ rates (up to 30Mhz).  Hardware SPI is accessed via the
 For the assignment of Pins to SPI signals, refer to
 :ref:`Hardware SPI pinout <mimxrt_spi_pinout>`.
 The keyword option cs=n can be used to enable the cs pin 0 or 1 for an automatic cs signal. The
-default is cs=-1. Using cs=-1 the automatic cs signal is not created. 
+default is cs=-1. Using cs=-1 the automatic cs signal is not created.
 In that case, cs has to be set by the script. Clearing that assignment requires a power cycle.
 
 Notes:
