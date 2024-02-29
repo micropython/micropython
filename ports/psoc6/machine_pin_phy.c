@@ -43,12 +43,13 @@ mp_obj_t pin_name_by_addr(mp_obj_t pin) {
     }
 }
 
-// helper function to translate pin_name(string) into machine_pin_io_obj_t->pin_addr
+// helper function to translate pin_name(string) into machine_pin_io_obj_t->pin_addr or pin_obj to machine_pin_io_obj_t->pin_addr
 int pin_addr_by_name(mp_obj_t pin) {
     if (mp_obj_is_str(pin)) {
         return machine_pin_phy_obj[pin_find(pin)].addr;
+        printf("pinphybit %lu\n\r", machine_pin_phy_obj[pin_find(pin)].addr);
     } else {
-        return -1; // expecting a str as input
+        return pin_fetch_address(pin);
     }
 }
 

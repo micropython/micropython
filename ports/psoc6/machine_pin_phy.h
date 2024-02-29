@@ -31,6 +31,8 @@ void pin_phy_free(machine_pin_phy_obj_t *obj);
 
 void mod_pin_phy_deinit(void);
 
+int pin_fetch_address(mp_obj_t pin); // function to support the bitstream class (obj to pin address)
+
 // Function Prototypes to support interaction between c<->py
 int pin_find(mp_obj_t obj);
 mp_obj_t pin_name_by_addr(mp_obj_t pin);

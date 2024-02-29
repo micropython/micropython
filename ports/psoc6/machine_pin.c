@@ -29,6 +29,12 @@ typedef struct _machine_pin_io_obj_t {
 
 machine_pin_io_obj_t *pin_io[MAX_IO_PINS] = {NULL};
 
+// helper function used by mphalport
+int pin_fetch_address(mp_obj_t pin) {
+    machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(pin);
+    return self->pin_phy->addr;
+}
+
 static inline machine_pin_io_obj_t *pin_io_allocate(mp_obj_t pin_name) {
     machine_pin_phy_obj_t *pin_phy = pin_phy_realloc(pin_name, PIN_PHY_FUNC_DIO);
     uint16_t i;
