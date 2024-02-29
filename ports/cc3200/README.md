@@ -61,7 +61,7 @@ below).
 
 Flashing process using TI Uniflash:
 
-- Open CCS_Uniflash and connect to the board (by default on port 22). 
+- Open CCS_Uniflash and connect to the board (by default on port 22).
 - Format the serial flash (select 1MB size in case of the CC3200-LAUNCHXL, 2MB in case of the WiPy, leave the rest unchecked).
 - Mark the following files for erasing: `/cert/ca.pem`, `/cert/client.pem`, `/cert/private.key` and `/tmp/pac.bin`.
 - Add a new file with the name of /sys/mcuimg.bin, and select the URL to point to cc3200\bootmgr\build\<BOARD_NAME>\bootloader.bin.
@@ -94,7 +94,7 @@ Once the software is running, you have two options to access the MicroPython REP
     in boot.py, so you can override it at runtime regardless of MICROPY_STDIO_UART
     setting).
 
-The board has a small file system of 192K (WiPy) or 64K (Launchpad) located in the serial flash connected to the CC3200. 
+The board has a small file system of 192K (WiPy) or 64K (Launchpad) located in the serial flash connected to the CC3200.
 SD cards are also supported, you can connect any SD card and configure the pinout using the SD class API.
 
 ## Uploading scripts:
@@ -142,7 +142,7 @@ there. Make sure to use a **v4.1 (or higher) LAUNCHXL board** when trying this p
 
 ### Note regarding FileZilla
 
-Do not use the quick connect button, instead, open the site manager and create a new configuration. In the "General" tab make 
-sure that encryption is set to: "Only use plain FTP (insecure)". In the Transfer Settings tab limit the max number of connections 
-to one, otherwise FileZilla will try to open a second command connection when retrieving and saving files, and for simplicity and 
+Do not use the quick connect button, instead, open the site manager and create a new configuration. In the "General" tab make
+sure that encryption is set to: "Only use plain FTP (insecure)". In the Transfer Settings tab limit the max number of connections
+to one, otherwise FileZilla will try to open a second command connection when retrieving and saving files, and for simplicity and
 to reduce code size, only one command and one data connections are possible.

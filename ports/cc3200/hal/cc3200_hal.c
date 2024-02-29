@@ -96,7 +96,7 @@ void HAL_SystemInit (void) {
 
 void HAL_SystemDeInit (void) {
 }
- 
+
 void HAL_IncrementTick(void) {
     HAL_tickCount++;
 }

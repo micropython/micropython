@@ -282,7 +282,7 @@ SRC_C += \
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
-    
+
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0))
 CSUPEROPT = -Os # save some code space
 SRC_O += \

@@ -53,7 +53,7 @@ BOOT_SL_SRC_C = $(addprefix simplelink/,\
 
 BOOT_UTIL_SRC_C = $(addprefix util/,\
 	cryptohash.c \
-	) 
+	)
 
 BOOT_MAIN_SRC_C = \
 	bootmgr/main.c
@@ -114,7 +114,7 @@ $(BUILD)/bootmgr.axf: $(OBJ) $(LINKER_SCRIPT)
 	$(ECHO) "LINK $@"
 	$(Q)$(CC) -o $@ $(LDFLAGS) $(OBJ) $(LIBS)
 	$(Q)$(SIZE) $@
-	
+
 $(BUILD)/bootmgr.bin: $(BUILD)/bootmgr.axf
 	$(ECHO) "Create $@"
 	$(Q)$(OBJCOPY) -O binary $< $@
