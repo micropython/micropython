@@ -83,10 +83,9 @@ jobs:
         ./psoc6/run_psoc6_tests.sh -c --psoc6 --dev0 ${devs[0]} 
     - name: Run psoc6 hardware extended tests
       run: | 
-        devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml)) --hw-ext 0.1.0
+        devs=($(python tools/psoc6/get-devs.py port -b ${{ matrix.board }} -y tools/psoc6/${{ runner.name }}-devs.yml --hw-ext 0.1.0))
         cd tests
-        echo ${devs[0]} 
-    #    ./psoc6/run_psoc6_tests.sh -c --psoc6-hwext --dev0 ${devs[0]} 
+        ./psoc6/run_psoc6_tests.sh -c --psoc6-hwext --dev0 ${devs[0]} 
     # TODO: Enable when HIL is upgraded 
     # - name: Run all implemented tests
     #   if:  github.event_name == 'pull_request'
