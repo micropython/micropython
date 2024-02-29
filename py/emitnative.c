@@ -1459,6 +1459,7 @@ static void emit_native_load_attr(emit_t *emit, qstr qst) {
 }
 
 static void emit_native_load_method(emit_t *emit, qstr qst, bool is_super) {
+    DEBUG_printf("load_method(%s, %d)\n", qstr_str(qst), is_super);
     if (is_super) {
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_2, 3); // arg2 = dest ptr
         emit_get_stack_pointer_to_reg_for_push(emit, REG_ARG_2, 2); // arg2 = dest ptr
@@ -2149,6 +2150,7 @@ static void emit_native_setup_with(emit_t *emit, mp_uint_t label) {
 }
 
 static void emit_native_setup_block(emit_t *emit, mp_uint_t label, int kind) {
+    DEBUG_printf("setup_block(%d, %d)\n", (int)label, kind);
     if (kind == MP_EMIT_SETUP_BLOCK_WITH) {
         emit_native_setup_with(emit, label);
     } else {
@@ -2233,6 +2235,8 @@ static void emit_native_end_finally(emit_t *emit) {
     //   if exc == None: pass
     //   else: raise exc
     // the check if exc is None is done in the MP_F_NATIVE_RAISE stub
+    DEBUG_printf("end_finally\n");
+
     emit_native_pre(emit);
     ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
     emit_call(emit, MP_F_NATIVE_RAISE);
@@ -2256,6 +2260,8 @@ static void emit_native_end_finally(emit_t *emit) {
 static void emit_native_get_iter(emit_t *emit, bool use_stack) {
     // perhaps the difficult one, as we want to rewrite for loops using native code
     // in cases where we iterate over a Python object, can we use normal runtime calls?
+
+    DEBUG_printf("get_iter(%d)\n", use_stack);
 
     vtype_kind_t vtype;
     emit_pre_pop_reg(emit, &vtype, REG_ARG_1);
@@ -2838,6 +2844,7 @@ static void emit_native_call_function(emit_t *emit, mp_uint_t n_positional, mp_u
 }
 
 static void emit_native_call_method(emit_t *emit, mp_uint_t n_positional, mp_uint_t n_keyword, mp_uint_t star_flags) {
+    DEBUG_printf("call_method(%d, %d, %d)\n", n_positional, n_keyword, star_flags);
     if (star_flags) {
         emit_get_stack_pointer_to_reg_for_pop(emit, REG_ARG_3, n_positional + 2 * n_keyword + 3); // pointer to args
         emit_call_with_2_imm_args(emit, MP_F_CALL_METHOD_N_KW_VAR, 1, REG_ARG_1, n_positional | (n_keyword << 8), REG_ARG_2);
@@ -2904,6 +2911,7 @@ static void emit_native_return_value(emit_t *emit) {
 }
 
 static void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
+    DEBUG_printf("raise_varargs(%d)\n", n_args);
     (void)n_args;
     assert(n_args == 1);
     vtype_kind_t vtype_exc;
@@ -2918,6 +2926,8 @@ static void emit_native_raise_varargs(emit_t *emit, mp_uint_t n_args) {
 
 static void emit_native_yield(emit_t *emit, int kind) {
     // Note: 1 (yield) or 3 (yield from) labels are reserved for this function, starting at *emit->label_slot
+
+    DEBUG_printf("yield(%d)\n", kind);
 
     if (emit->do_viper_types) {
         mp_raise_NotImplementedError(MP_ERROR_TEXT("native yield"));
