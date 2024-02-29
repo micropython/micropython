@@ -718,9 +718,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     if args.emit == "native":
         skip_tests.add("basics/gen_yield_from_close.py")  # require raise_varargs
         skip_tests.update(
-            {"basics/async_%s.py" % t for t in "with with2 with_break with_return".split()}
-        )  # require async_with
-        skip_tests.update(
             {"basics/%s.py" % t for t in "try_reraise try_reraise2".split()}
         )  # require raise_varargs
         skip_tests.add("basics/annotate_var.py")  # requires checking for unbound local
@@ -731,7 +728,6 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         skip_tests.add("basics/sys_tracebacklimit.py")  # requires traceback info
         skip_tests.add("basics/try_finally_return2.py")  # requires raise_varargs
         skip_tests.add("basics/unboundlocal.py")  # requires checking for unbound local
-        skip_tests.add("extmod/asyncio_lock.py")  # requires async with
         skip_tests.add("misc/features.py")  # requires raise_varargs
         skip_tests.add(
             "misc/print_exception.py"
