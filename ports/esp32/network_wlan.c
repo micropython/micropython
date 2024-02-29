@@ -113,6 +113,20 @@ static void network_wlan_wifi_event_handler(void *event_handler_arg, esp_event_b
                     // AP may not exist, or it may have momentarily dropped out; try to reconnect.
                     message = "no AP found";
                     break;
+                #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+                case WIFI_REASON_NO_AP_FOUND_IN_RSSI_THRESHOLD:
+                    // No AP with RSSI within given threshold exists, or it may have momentarily dropped out; try to reconnect.
+                    message = "no AP with RSSI within threshold found";
+                    break;
+                case WIFI_REASON_NO_AP_FOUND_IN_AUTHMODE_THRESHOLD:
+                    // No AP with authmode within given threshold exists, or it may have momentarily dropped out; try to reconnect.
+                    message = "no AP with authmode within threshold found";
+                    break;
+                case WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY:
+                    // No AP with compatible security exists, or it may have momentarily dropped out; try to reconnect.
+                    message = "no AP with compatible security found";
+                    break;
+                #endif
                 case WIFI_REASON_AUTH_FAIL:
                     // Password may be wrong, or it just failed to connect; try to reconnect.
                     message = "authentication failed";
@@ -353,6 +367,14 @@ static mp_obj_t network_wlan_status(size_t n_args, const mp_obj_t *args) {
                 return MP_OBJ_NEW_SMALL_INT(STAT_GOT_IP);
             } else if (wifi_sta_disconn_reason == WIFI_REASON_NO_AP_FOUND) {
                 return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_NO_AP_FOUND);
+            #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+            } else if (wifi_sta_disconn_reason == WIFI_REASON_NO_AP_FOUND_IN_RSSI_THRESHOLD) {
+                return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_NO_AP_FOUND_IN_RSSI_THRESHOLD);
+            } else if (wifi_sta_disconn_reason == WIFI_REASON_NO_AP_FOUND_IN_AUTHMODE_THRESHOLD) {
+                return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_NO_AP_FOUND_IN_AUTHMODE_THRESHOLD);
+            } else if (wifi_sta_disconn_reason == WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY) {
+                return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_NO_AP_FOUND_W_COMPATIBLE_SECURITY);
+            #endif
             } else if ((wifi_sta_disconn_reason == WIFI_REASON_AUTH_FAIL) || (wifi_sta_disconn_reason == WIFI_REASON_CONNECTION_FAIL)) {
                 // wrong password
                 return MP_OBJ_NEW_SMALL_INT(WIFI_REASON_AUTH_FAIL);

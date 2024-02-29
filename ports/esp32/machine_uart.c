@@ -306,7 +306,12 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
         }
         self->flowcontrol = args[ARG_flow].u_int;
     }
-    check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, UART_FIFO_LEN - UART_FIFO_LEN / 4));
+    #if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(5, 2, 0)
+    uint8_t uart_fifo_len = UART_HW_FIFO_LEN(self->uart_num);
+    #else
+    uint8_t uart_fifo_len = UART_FIFO_LEN;
+    #endif
+    check_esp_err(uart_set_hw_flow_ctrl(self->uart_num, self->flowcontrol, uart_fifo_len - uart_fifo_len / 4));
 }
 
 static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {

@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include "driver/uart.h" // For uart_get_sclk_freq()
 #include "hal/uart_hal.h"
+#include "soc/uart_periph.h"
 
 static void uart_irq_handler(void *arg);
 
@@ -50,7 +51,7 @@ static void uart_irq_handler(void *arg);
 
 void uart_stdout_init(void) {
     uart_hal_context_t repl_hal = REPL_HAL_DEFN();
-    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 3, 0)
+    #if ESP_IDF_VERSION < ESP_IDF_VERSION_VAL(5, 2, 0)
     uart_sclk_t sclk;
     #else
     soc_module_clk_t sclk;
