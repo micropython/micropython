@@ -93,12 +93,12 @@ CFLAGS_CORTEX_M = -mthumb
 SUPPORTS_HARDWARE_FP_SINGLE = 0
 SUPPORTS_HARDWARE_FP_DOUBLE = 0
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),m4))
-CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard 
+CFLAGS_CORTEX_M += -mfpu=fpv4-sp-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 endif
 
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),m33))
-CFLAGS_CORTEX_M += -mfpu=fpv5-sp-d16 -mfloat-abi=hard 
+CFLAGS_CORTEX_M += -mfpu=fpv5-sp-d16 -mfloat-abi=hard
 SUPPORTS_HARDWARE_FP_SINGLE = 1
 endif
 

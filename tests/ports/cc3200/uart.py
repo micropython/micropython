@@ -1,5 +1,5 @@
 """
-UART test for the CC3200 based boards. 
+UART test for the CC3200 based boards.
 UART0 and UART1 must be connected together for this test to pass.
 """
 
