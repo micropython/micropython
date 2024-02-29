@@ -448,7 +448,6 @@ void mp_emit_bc_label_assign(emit_t *emit, mp_uint_t l) {
     // should be emitted (until another unconditional flow control).
     emit->suppress = false;
 
-    mp_emit_bc_adjust_stack_size(emit, 0);
     if (emit->pass == MP_PASS_SCOPE) {
         return;
     }
