@@ -33,6 +33,11 @@
 
 #if MICROPY_HELPER_REPL
 
+// CIRCUITPY-CHANGE: Disable warnings during autocomplete.
+#if CIRCUITPY_WARNINGS
+#include "shared-bindings/warnings/__init__.h"
+#endif
+
 #if MICROPY_PY_SYS_PS1_PS2
 const char *mp_repl_get_psx(unsigned int entry) {
     if (mp_obj_is_str(MP_STATE_VM(sys_mutable)[entry])) {
@@ -158,7 +163,21 @@ STATIC bool test_qstr(mp_obj_t obj, qstr name) {
     if (obj) {
         // try object member
         mp_obj_t dest[2];
+
+        // CIRCUITPY-CHANGE: Disable warnings during autocomplete. test_qstr()
+        // pretends to load every qstr from a module and it can trigger warnings
+        // meant to happen when user code imports them. So, save warning state and
+        // restore it once we've found matching completions.
+        #if CIRCUITPY_WARNINGS
+        warnings_action_t current_action = MP_STATE_THREAD(warnings_action);
+        MP_STATE_THREAD(warnings_action) = WARNINGS_IGNORE;
+        #endif
+
         mp_load_method_protected(obj, name, dest, true);
+
+        #if CIRCUITPY_WARNINGS
+        MP_STATE_THREAD(warnings_action) = current_action;
+        #endif
         return dest[0] != MP_OBJ_NULL;
     } else {
         // try builtin module
