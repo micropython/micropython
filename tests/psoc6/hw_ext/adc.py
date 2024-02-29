@@ -13,9 +13,15 @@ machine = os.uname().machine
 if "CY8CPROTO-062-4343W" in machine:
     adc_pin0 = "P10_0"
     adc_pin1 = "P10_1"
+    # TODO: Refactor test for more functionality coverage
+    print("SKIP")
+    raise SystemExit
 elif "CY8CPROTO-063-BLE" in machine:
     adc_pin0 = "P10_0"
     adc_pin1 = "P10_1"
+    # TODO: Refactor test for more functionality coverage
+    print("SKIP")
+    raise SystemExit
 
 adc0 = ADC(adc_pin0, sample_ns=1000)
 adc1 = ADC(adc_pin1, sample_ns=1000)

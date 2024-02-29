@@ -21,6 +21,7 @@ usage() {
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
   echo "  --psoc6       run only psoc6 port related tests"
+  echo "  --psoc6-hwext run only psoc6 port hardware extended related tests"
   echo "  --psoc6-multi run only psoc6 port multi tests (requires 2 instances)"
   exit 1;
 }
@@ -33,11 +34,12 @@ for arg in "$@"; do
     '--dev1')         set -- "$@" '-e'   ;;
     '--psoc6')        set -- "$@" '-p'   ;;
     '--psoc6-multi')  set -- "$@" '-m'   ;;
+    '--psoc6-hwext')  set -- "$@" '-t'   ;;
     *)                set -- "$@" "$arg" ;;
   esac
 done
 
-while getopts "acd:e:fhimnpwvx" o; do
+while getopts "acd:e:fhimnptwvx" o; do
   case "${o}" in
     a)
        all=1
@@ -77,6 +79,9 @@ while getopts "acd:e:fhimnpwvx" o; do
        ;;
     x)
        afs=1
+       ;;
+    t)
+       hwext=1
        ;;
     *)
        usage
@@ -137,6 +142,11 @@ fi
 if [ -z "${psoc6Only}" ]; then
   psoc6Only=0
 fi
+
+if [ -z "${hwext}" ]; then
+  hwext=0
+fi
+
 
 resultsFile="psoc6_test_results.log"
 passResultsFile="psoc6_test_passed.log"
@@ -398,6 +408,20 @@ if [ ${psoc6OnlyMulti} -eq 1 ]; then
   multi_tests=$(find ./psoc6/multi/ -type f -name "*.py")
 
   ./run-multitests.py -i pyb:${device0} -i pyb:${device1} ${multi_tests} \
+    | tee -a ${resultsFile}
+  
+  echo
+  echo "  done."
+  echo
+
+fi
+
+if [ ${hwext} -eq 1 ]; then
+
+  echo "  running only psoc6 hardware extended tests ..."
+  echo
+
+  ./run-tests.py --target psoc6 --device ${device0} -d psoc6/hw_ext \
     | tee -a ${resultsFile}
   
   echo
