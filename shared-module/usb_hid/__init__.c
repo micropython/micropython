@@ -165,6 +165,8 @@ size_t usb_hid_descriptor_length(void) {
 
 // This is the interface descriptor, not the report descriptor.
 size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *descriptor_counts, uint8_t *current_interface_string, uint16_t report_descriptor_length, uint8_t boot_device) {
+    const char *usb_hid_interface_name;
+
     memcpy(descriptor_buf, usb_hid_descriptor_template, sizeof(usb_hid_descriptor_template));
 
     descriptor_buf[HID_DESCRIPTOR_INTERFACE_INDEX] = descriptor_counts->current_interface;
@@ -175,7 +177,12 @@ size_t usb_hid_add_descriptor(uint8_t *descriptor_buf, descriptor_counts_t *desc
         descriptor_buf[HID_DESCRIPTOR_INTERFACE_PROTOCOL_INDEX] = boot_device; // 1: keyboard, 2: mouse
     }
 
-    usb_add_interface_string(*current_interface_string, usb_hid_interface_name_obj.interface_name);
+    if (custom_usb_hid_interface_name == NULL) {
+        usb_hid_interface_name = USB_INTERFACE_NAME " HID";
+    } else {
+        usb_hid_interface_name = custom_usb_hid_interface_name;
+    }
+    usb_add_interface_string(*current_interface_string, usb_hid_interface_name);
     descriptor_buf[HID_DESCRIPTOR_INTERFACE_STRING_INDEX] = *current_interface_string;
     (*current_interface_string)++;
 
