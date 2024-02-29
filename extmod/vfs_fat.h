@@ -50,6 +50,8 @@ MP_DECLARE_CONST_FUN_OBJ_3(fat_vfs_open_obj);
 typedef struct _pyb_file_obj_t {
     mp_obj_base_t base;
     FIL fp;
+    // CIRCUITPY-CHANGE: We need to unlock the fs on file close.
+    fs_user_mount_t *fs_mount;
 } pyb_file_obj_t;
 
 #endif  // MICROPY_INCLUDED_EXTMOD_VFS_FAT_H
