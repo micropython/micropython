@@ -144,6 +144,9 @@ typedef struct _emit_method_table_t {
     void (*unwind_jump)(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
     void (*setup_block)(emit_t *emit, mp_uint_t label, int kind);
     void (*with_cleanup)(emit_t *emit, mp_uint_t label);
+    #if MICROPY_PY_ASYNC_AWAIT
+    void (*async_with_setup_finally)(emit_t *emit, mp_uint_t label_aexit_no_exc, mp_uint_t label_finally_block, mp_uint_t label_ret_unwind_jump);
+    #endif
     void (*end_finally)(emit_t *emit);
     void (*get_iter)(emit_t *emit, bool use_stack);
     void (*for_iter)(emit_t *emit, mp_uint_t label);
@@ -264,6 +267,9 @@ void mp_emit_bc_jump_if_or_pop(emit_t *emit, bool cond, mp_uint_t label);
 void mp_emit_bc_unwind_jump(emit_t *emit, mp_uint_t label, mp_uint_t except_depth);
 void mp_emit_bc_setup_block(emit_t *emit, mp_uint_t label, int kind);
 void mp_emit_bc_with_cleanup(emit_t *emit, mp_uint_t label);
+#if MICROPY_PY_ASYNC_AWAIT
+void mp_emit_bc_async_with_setup_finally(emit_t *emit, mp_uint_t label_aexit_no_exc, mp_uint_t label_finally_block, mp_uint_t label_ret_unwind_jump);
+#endif
 void mp_emit_bc_end_finally(emit_t *emit);
 void mp_emit_bc_get_iter(emit_t *emit, bool use_stack);
 void mp_emit_bc_for_iter(emit_t *emit, mp_uint_t label);

@@ -1145,7 +1145,7 @@ static void emit_native_label_assign(emit_t *emit, mp_uint_t l) {
     if (is_finally) {
         // Label is at start of finally handler: store TOS into exception slot
         vtype_kind_t vtype;
-        emit_pre_pop_reg(emit, &vtype, REG_TEMP0);
+        emit_access_stack(emit, 1, &vtype, REG_TEMP0);
         ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
     }
 
@@ -1200,6 +1200,10 @@ static void emit_native_global_exc_entry(emit_t *emit) {
             // Clear the unwind state
             ASM_XOR_REG_REG(emit->as, REG_TEMP0, REG_TEMP0);
             ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_HANDLER_UNWIND(emit), REG_TEMP0);
+
+            // clear nlr.ret_val, because it's passed to mp_native_raise regardless
+            // of whether there was an exception or not
+            ASM_MOV_LOCAL_REG(emit->as, LOCAL_IDX_EXC_VAL(emit), REG_TEMP0);
 
             // Put PC of start code block into REG_LOCAL_1
             ASM_MOV_REG_PCREL(emit->as, REG_LOCAL_1, start_label);
@@ -2235,7 +2239,33 @@ static void emit_native_with_cleanup(emit_t *emit, mp_uint_t label) {
     emit_native_label_assign(emit, *emit->label_slot + 1);
 
     // Exception is in nlr_buf.ret_val slot
+    adjust_stack(emit, 1);
 }
+
+#if MICROPY_PY_ASYNC_AWAIT
+static void emit_native_async_with_setup_finally(emit_t *emit, mp_uint_t label_aexit_no_exc, mp_uint_t label_finally_block, mp_uint_t label_ret_unwind_jump) {
+    // The async-with body has executed and no exception was raised, the execution fell through to this point.
+    // Stack: (..., ctx_mgr)
+
+    // Insert a dummy value into the stack so the stack has the same layout to execute the code starting at label_aexit_no_exc
+    emit_native_adjust_stack_size(emit, 1); // push dummy value, it won't ever be used
+    emit_native_rot_two(emit);
+    emit_native_load_const_tok(emit, MP_TOKEN_KW_NONE); // to tell end_finally there's no exception
+    emit_native_rot_two(emit);
+    // Stack: (..., <dummy>, None, ctx_mgr)
+    emit_native_jump(emit, label_aexit_no_exc); // jump to code to call __aexit__
+    emit_native_adjust_stack_size(emit, -1);
+
+    // Start of "finally" block which is entered via one of: an exception propagating out, a return, an unwind jump.
+    emit_native_label_assign(emit, label_finally_block);
+
+    // Detect which case we have by the local exception slot holding an exception or not.
+    emit_pre_pop_discard(emit);
+    ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit)); // get exception
+    emit_post_push_reg(emit, VTYPE_PYOBJ, REG_ARG_1);
+    ASM_JUMP_IF_REG_ZERO(emit->as, REG_ARG_1, label_ret_unwind_jump, false); // if not an exception then we have return or unwind jump.
+}
+#endif
 
 static void emit_native_end_finally(emit_t *emit) {
     // logic:
@@ -2245,7 +2275,7 @@ static void emit_native_end_finally(emit_t *emit) {
     // the check if exc is None is done in the MP_F_NATIVE_RAISE stub
     DEBUG_printf("end_finally\n");
 
-    emit_native_pre(emit);
+    emit_pre_pop_discard(emit);
     ASM_MOV_REG_LOCAL(emit->as, REG_ARG_1, LOCAL_IDX_EXC_VAL(emit));
     emit_call(emit, MP_F_NATIVE_RAISE);
 
@@ -3033,7 +3063,6 @@ static void emit_native_start_except_handler(emit_t *emit) {
 }
 
 static void emit_native_end_except_handler(emit_t *emit) {
-    adjust_stack(emit, -1); // pop the exception (end_finally didn't use it)
 }
 
 const emit_method_table_t EXPORT_FUN(method_table) = {
@@ -3082,6 +3111,9 @@ const emit_method_table_t EXPORT_FUN(method_table) = {
     emit_native_unwind_jump,
     emit_native_setup_block,
     emit_native_with_cleanup,
+    #if MICROPY_PY_ASYNC_AWAIT
+    emit_native_async_with_setup_finally,
+    #endif
     emit_native_end_finally,
     emit_native_get_iter,
     emit_native_for_iter,
