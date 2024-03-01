@@ -52,7 +52,7 @@ fs_user_mount_t *filesystem_for_path(const char *path_in, const char **path_unde
 bool filesystem_native_fatfs(fs_user_mount_t *fs_mount);
 
 // We have two levels of locking. filesystem_* calls grab a shared blockdev lock to allow
-// CircuitPython's fatfs code edit the blocks. blockdev_* class grab a lock to mutate blocks
+// CircuitPython's fatfs code to edit the blocks. blockdev_* class grab a lock to mutate blocks
 // directly, excluding any filesystem_* locks.
 
 bool filesystem_lock(fs_user_mount_t *fs_mount);

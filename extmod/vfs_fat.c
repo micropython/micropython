@@ -98,7 +98,7 @@ STATIC mp_obj_t fat_vfs_make_new(const mp_obj_type_t *type, size_t n_args, size_
     return MP_OBJ_FROM_PTR(vfs);
 }
 
-STATIC void verify_fs_writable(fs_user_mount_t *vfs) {
+STATIC void filesystem_lock_raise(fs_user_mount_t *vfs) {
     if (!filesystem_lock(vfs)) {
         mp_raise_OSError(MP_EROFS);
     }
@@ -229,7 +229,7 @@ STATIC mp_obj_t fat_vfs_remove_internal(mp_obj_t vfs_in, mp_obj_t path_in, mp_in
 
     // check if path is a file or directory
     if ((fno.fattrib & AM_DIR) == attr) {
-        verify_fs_writable(self);
+        filesystem_lock_raise(self);
         res = f_unlink(&self->fatfs, path);
         filesystem_unlock(self);
 
@@ -257,7 +257,7 @@ STATIC mp_obj_t fat_vfs_rename(mp_obj_t vfs_in, mp_obj_t path_in, mp_obj_t path_
     const char *old_path = mp_obj_str_get_str(path_in);
     const char *new_path = mp_obj_str_get_str(path_out);
 
-    verify_fs_writable(self);
+    filesystem_lock_raise(self);
     FRESULT res = f_rename(&self->fatfs, old_path, new_path);
     if (res == FR_EXIST) {
         // if new_path exists then try removing it (but only if it's a file)
@@ -278,7 +278,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(fat_vfs_rename_obj, fat_vfs_rename);
 STATIC mp_obj_t fat_vfs_mkdir(mp_obj_t vfs_in, mp_obj_t path_o) {
     mp_obj_fat_vfs_t *self = MP_OBJ_TO_PTR(vfs_in);
     const char *path = mp_obj_str_get_str(path_o);
-    verify_fs_writable(self);
+    filesystem_lock_raise(self);
     FRESULT res = f_mkdir(&self->fatfs, path);
     filesystem_unlock(self);
     if (res == FR_OK) {
@@ -495,7 +495,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(fat_vfs_getlabel_obj, vfs_fat_getlabel);
 STATIC mp_obj_t vfs_fat_setlabel(mp_obj_t self_in, mp_obj_t label_in) {
     fs_user_mount_t *self = MP_OBJ_TO_PTR(self_in);
     const char *label_str = mp_obj_str_get_str(label_in);
-    verify_fs_writable(self);
+    filesystem_lock_raise(self);
     FRESULT res = f_setlabel(&self->fatfs, label_str);
     filesystem_unlock(self);
     if (res != FR_OK) {
