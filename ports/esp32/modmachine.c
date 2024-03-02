@@ -220,6 +220,14 @@ static mp_int_t mp_machine_reset_cause(void) {
     }
 }
 
+#if MICROPY_ESP32_USE_BOOTLOADER_RTC
+#include "soc/rtc_cntl_reg.h"
+NORETURN static void machine_bootloader_rtc(void) {
+    REG_WRITE(RTC_CNTL_OPTION1_REG, RTC_CNTL_FORCE_DOWNLOAD_BOOT);
+    esp_restart();
+}
+#endif
+
 #ifdef MICROPY_BOARD_ENTER_BOOTLOADER
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
