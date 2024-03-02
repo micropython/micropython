@@ -115,7 +115,6 @@
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/esp32/modmachine.c"
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
-#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
 #define MICROPY_PY_MACHINE_ADC              (1)
 #define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
@@ -269,8 +268,10 @@ typedef long mp_off_t;
 #define MICROPY_HW_ENABLE_MDNS_RESPONDER    (1)
 #endif
 
-#ifndef MICROPY_BOARD_ENTER_BOOTLOADER
-#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+#ifdef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#else
+#define MICROPY_PY_MACHINE_BOOTLOADER       (0)
 #endif
 
 #ifndef MICROPY_BOARD_STARTUP

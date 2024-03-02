@@ -220,11 +220,13 @@ static mp_int_t mp_machine_reset_cause(void) {
     }
 }
 
+#ifdef MICROPY_BOARD_ENTER_BOOTLOADER
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     MICROPY_BOARD_ENTER_BOOTLOADER(n_args, args);
     for (;;) {
     }
 }
+#endif
 
 void machine_init(void) {
     is_soft_reset = 0;
