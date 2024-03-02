@@ -161,7 +161,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(usb_hid_get_boot_device_obj, usb_hid_get_boot_device);
 //| ) -> None:
 //|     """Override HID interface name in the USB Interface Descriptor.
 //|
-//|     `interface_name` must be ASCII string (or buffers) of at most 126.
+//|     `interface_name` must be an ASCII string (or buffer) of at most 126.
 //|
 //|     This method must be called in boot.py to have any effect.
 //|
