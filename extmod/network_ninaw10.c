@@ -860,11 +860,17 @@ static const mp_rom_map_elem_t nina_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_status),              MP_ROM_PTR(&network_ninaw10_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl),               MP_ROM_PTR(&network_ninaw10_ioctl_obj) },
 
-    // Network is not secured.
+    // Class constants.
+    { MP_ROM_QSTR(MP_QSTR_IF_STA),              MP_ROM_INT(MOD_NETWORK_STA_IF) },
+    { MP_ROM_QSTR(MP_QSTR_IF_AP),               MP_ROM_INT(MOD_NETWORK_AP_IF) },
+
+    { MP_ROM_QSTR(MP_QSTR_SEC_OPEN),            MP_ROM_INT(NINA_SEC_OPEN) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WEP),             MP_ROM_INT(NINA_SEC_WEP) },
+    { MP_ROM_QSTR(MP_QSTR_SEC_WPA_WPA2),        MP_ROM_INT(NINA_SEC_WPA_PSK) },
+
+    // For backwards compatibility.
     { MP_ROM_QSTR(MP_QSTR_OPEN),                MP_ROM_INT(NINA_SEC_OPEN) },
-    // Security type WEP (40 or 104).
     { MP_ROM_QSTR(MP_QSTR_WEP),                 MP_ROM_INT(NINA_SEC_WEP) },
-    // Network secured with WPA/WPA2 personal(PSK).
     { MP_ROM_QSTR(MP_QSTR_WPA_PSK),             MP_ROM_INT(NINA_SEC_WPA_PSK) },
 };
 
