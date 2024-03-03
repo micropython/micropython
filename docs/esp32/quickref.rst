@@ -128,6 +128,7 @@ The keyword arguments for the constructor defining the PHY type and interface ar
 
 - mdc=pin-object    # set the mdc and mdio pins.
 - mdio=pin-object
+- reset=pin-object  # set the reset pin of the PHY device.
 - power=pin-object  # set the pin which switches the power of the PHY device.
 - phy_type=<type>   # Select the PHY device type. Supported devices are PHY_LAN8710,
   PHY_LAN8720, PH_IP101, PHY_RTL8201, PHY_DP83848 and PHY_KSZ8041

@@ -51,6 +51,7 @@ typedef struct _lan_if_obj_t {
     bool initialized;
     int8_t mdc_pin;
     int8_t mdio_pin;
+    int8_t phy_reset_pin;
     int8_t phy_power_pin;
     int8_t phy_cs_pin;
     int8_t phy_int_pin;
@@ -99,12 +100,13 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
         return MP_OBJ_FROM_PTR(&lan_obj);
     }
 
-    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_power, ARG_phy_addr, ARG_phy_type,
+    enum { ARG_id, ARG_mdc, ARG_mdio, ARG_reset, ARG_power, ARG_phy_addr, ARG_phy_type,
            ARG_spi, ARG_cs, ARG_int, ARG_ref_clk_mode, ARG_ref_clk };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,           MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdc,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_mdio,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
+        { MP_QSTR_reset,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_power,        MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_phy_addr,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
         { MP_QSTR_phy_type,     MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
@@ -128,6 +130,7 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     self->mdc_pin = GET_PIN(ARG_mdc);
     self->mdio_pin = GET_PIN(ARG_mdio);
+    self->phy_reset_pin = GET_PIN(ARG_reset);
     self->phy_power_pin = GET_PIN(ARG_power);
     self->phy_cs_pin = GET_PIN(ARG_cs);
     self->phy_int_pin = GET_PIN(ARG_int);
@@ -179,8 +182,15 @@ static mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
     phy_config.phy_addr = self->phy_addr;
-    phy_config.reset_gpio_num = self->phy_power_pin;
+    phy_config.reset_gpio_num = self->phy_reset_pin;
     self->phy = NULL;
+    // Switch on the power before PHY is reset
+    if (self->phy_power_pin >= 0) {
+        mp_hal_pin_output(self->phy_power_pin);
+        mp_hal_pin_write(self->phy_power_pin, 1);
+        // let the power settle
+        mp_hal_delay_ms(100);
+    }
     #if CONFIG_ETH_USE_SPI_ETHERNET
     spi_device_interface_config_t devcfg = {
         .mode = 0,
