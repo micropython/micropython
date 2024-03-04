@@ -134,5 +134,11 @@ typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef intptr_t mp_off_t;
 
+// Board configuration settings.
+
+#ifndef MICROPY_BOARD_STARTUP
+#define MICROPY_BOARD_STARTUP()
+#endif
+
 // Needed for MICROPY_PY_RANDOM_SEED_INIT_FUNC.
 uint64_t se_services_rand64(void);

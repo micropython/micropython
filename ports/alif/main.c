@@ -56,12 +56,11 @@ NORETURN void panic(const char *msg) {
 
 void _start(void) {
     system_tick_init();
+
+    MICROPY_BOARD_STARTUP();
+
     pendsv_init();
     se_services_init();
-
-    *(volatile uint32_t *)0x4900C004 |= 9; // 12_0 + 12_3 as output (blue + red LED)
-
-    *(volatile uint32_t *)0x4900C000 ^= 1; // turn on blue LED
 
     #if MICROPY_HW_ENABLE_UART_REPL
     mp_uart_init();
