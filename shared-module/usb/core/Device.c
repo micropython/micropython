@@ -62,6 +62,7 @@ bool common_hal_usb_core_device_construct(usb_core_device_obj_t *self, uint8_t d
         return false;
     }
     self->device_number = device_number;
+    self->first_langid = 0;
     _xfer_result = 0xff;
     return true;
 }
@@ -108,9 +109,23 @@ STATIC mp_obj_t _get_string(const uint16_t *temp_buf) {
     return utf16le_to_string(temp_buf + 1, utf16_len);
 }
 
+STATIC void _get_langid(usb_core_device_obj_t *self) {
+    if (self->first_langid != 0) {
+        return;
+    }
+    // Two control bytes and one uint16_t language code.
+    uint16_t temp_buf[2];
+    if (!tuh_descriptor_get_string(self->device_number, 0, 0, temp_buf, sizeof(temp_buf), _transfer_done_cb, 0) ||
+        !_wait_for_callback()) {
+        return;
+    }
+    self->first_langid = temp_buf[1];
+}
+
 mp_obj_t common_hal_usb_core_device_get_serial_number(usb_core_device_obj_t *self) {
     uint16_t temp_buf[127];
-    if (!tuh_descriptor_get_serial_string(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb, 0) ||
+    _get_langid(self);
+    if (!tuh_descriptor_get_serial_string(self->device_number, self->first_langid, temp_buf, sizeof(temp_buf), _transfer_done_cb, 0) ||
         !_wait_for_callback()) {
         return mp_const_none;
     }
@@ -119,7 +134,8 @@ mp_obj_t common_hal_usb_core_device_get_serial_number(usb_core_device_obj_t *sel
 
 mp_obj_t common_hal_usb_core_device_get_product(usb_core_device_obj_t *self) {
     uint16_t temp_buf[127];
-    if (!tuh_descriptor_get_product_string(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb, 0) ||
+    _get_langid(self);
+    if (!tuh_descriptor_get_product_string(self->device_number, self->first_langid, temp_buf, sizeof(temp_buf), _transfer_done_cb, 0) ||
         !_wait_for_callback()) {
         return mp_const_none;
     }
@@ -128,7 +144,8 @@ mp_obj_t common_hal_usb_core_device_get_product(usb_core_device_obj_t *self) {
 
 mp_obj_t common_hal_usb_core_device_get_manufacturer(usb_core_device_obj_t *self) {
     uint16_t temp_buf[127];
-    if (!tuh_descriptor_get_manufacturer_string(self->device_number, 0, temp_buf, MP_ARRAY_SIZE(temp_buf), _transfer_done_cb, 0) ||
+    _get_langid(self);
+    if (!tuh_descriptor_get_manufacturer_string(self->device_number, self->first_langid, temp_buf, sizeof(temp_buf), _transfer_done_cb, 0) ||
         !_wait_for_callback()) {
         return mp_const_none;
     }
