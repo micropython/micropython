@@ -171,6 +171,9 @@ void usb_background(void) {
         #if CIRCUITPY_USB_HOST
         tuh_task();
         #endif
+        #else
+        // Yield to the RTOS in case TinyUSB runs in a separate task.
+        port_yield();
         #endif
         // No need to flush if there's no REPL.
         #if CIRCUITPY_USB_CDC
