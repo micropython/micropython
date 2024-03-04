@@ -1,0 +1,10 @@
+==========
+Expecting task to not be cancelled because it is not done: False
+==========
+Expecting Task to be Cancelled: True
+==========
+Expecting Task to be Cancelled: True
+==========
+Expecting Task to be Cancelled: True
+==========
+Expecting task to not be Cancelled: False

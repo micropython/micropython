@@ -1,0 +1,10 @@
+==========
+Returns 0 when no done callback has been set: 0
+==========
+Returns 1 when a callback matches and is removed: 1
+Returns 0 on second attempt to remove the callback: 0
+==========
+Returns 0 when done callbacks don't match: 0
+==========
+Waiting for task to complete
+Task completed

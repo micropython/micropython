@@ -175,3 +175,76 @@ class Task:
             core._task_queue.push(self)
         self.data = core.CancelledError
         return True
+
+    def add_done_callback(self, callback):
+        if not self.state:
+            callback(self, self.data)
+
+        if self.state is not True:
+            raise RuntimeError("Tasks only support one done callback.")
+
+        self.state = callback
+
+    def remove_done_callback(self, callback):
+        if self.state is not callback:
+            return 0
+
+        self.state = True
+        return 1
+
+    def result(self):
+        """
+        Return the result of the Task.
+        If the Task is done, the result of the wrapped coroutine is returned (or if the coroutine raised an exception, that exception is re-raised.)
+        If the Task has been cancelled, this method raises a CancelledError exception.
+        If the Task’s result isn’t yet available, this method raises a InvalidStateError exception.
+        """
+        if not self.done():
+            raise core.InvalidStateError()
+
+        exception = self.exception()
+
+        if exception is not None:
+            raise exception
+
+        if not isinstance(self.data, StopIteration):
+            # If this isn't the case then we're in an odd state.
+            return None
+
+        return self.data.value
+
+    def exception(self):
+        """
+        Return the exception that was set on this Task.
+        The exception (or None if no exception was set) is returned only if the Task is done.
+        If the Task has been cancelled, this method raises a CancelledError exception.
+        If the Task isn’t done yet, this method raises an InvalidStateError exception.
+        """
+        if not self.done():
+            raise core.InvalidStateError()
+
+        if isinstance(self.data, core.CancelledError):
+            raise self.data
+
+        if isinstance(self.data, StopIteration):
+            # If the data is a stop iteration we can assume this
+            # was a successful run rather than any possible exception
+            return None
+
+        if not isinstance(self.data, BaseException):
+            # If the data is not any type of exception we can treat it as
+            # something else we don't understand but not an exception.
+            return None
+
+        return self.data
+
+    def cancelled(self) -> bool:
+        """
+        Return True if the Task is cancelled.
+        The Task is cancelled when the cancellation was requested with cancel() and
+        the wrapped coroutine propagated the CancelledError exception thrown into it.
+        """
+        if not self.done():
+            return False
+
+        return isinstance(self.data, core.CancelledError)
