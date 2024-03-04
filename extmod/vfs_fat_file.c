@@ -127,9 +127,6 @@ STATIC mp_uint_t file_obj_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg,
     } else if (request == MP_STREAM_CLOSE) {
         // if fs==NULL then the file is closed and in that case this method is a no-op
         if (self->fp.obj.fs != NULL) {
-            if (self->fp.flag & FA_WRITE) {
-                filesystem_unlock(self->fs_mount);
-            }
             FRESULT res = f_close(&self->fp);
             if (res != FR_OK) {
                 *errcode = fresult_to_errno_table[res];
@@ -246,14 +243,13 @@ STATIC mp_obj_t fat_vfs_open(mp_obj_t self_in, mp_obj_t path_in, mp_obj_t mode_i
     }
 
     assert(self != NULL);
-    if ((mode & FA_WRITE) != 0 && !filesystem_lock(self)) {
+    if ((mode & FA_WRITE) != 0 && !filesystem_is_writable_by_python(self)) {
         mp_raise_OSError(MP_EROFS);
     }
 
 
     pyb_file_obj_t *o = m_new_obj_with_finaliser(pyb_file_obj_t);
     o->base.type = type;
-    o->fs_mount = self;
 
     const char *fname = mp_obj_str_get_str(path_in);
     FRESULT res = f_open(&self->fatfs, &o->fp, fname, mode);
