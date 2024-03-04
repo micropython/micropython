@@ -260,7 +260,7 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_ssid,     MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_key,      MP_ARG_OBJ, {.u_obj = mp_const_none} },
-        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = NINA_SEC_WPA_PSK} },
+        { MP_QSTR_security, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
         { MP_QSTR_channel,  MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
 
@@ -276,15 +276,21 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SSID can't be empty!"));
     }
 
-    // get key and sec
+    // get encryption key
     const char *key = NULL;
-    mp_uint_t security = NINA_SEC_OPEN;
-
     if (args[ARG_key].u_obj != mp_const_none) {
         key = mp_obj_str_get_str(args[ARG_key].u_obj);
-        security = args[ARG_security].u_int;
     }
 
+    // get security mode
+    mp_uint_t security = args[ARG_security].u_int;
+    if (security == -1 && self->itf == MOD_NETWORK_STA_IF) {
+        security = NINA_SEC_WPA_PSK;
+    } else if (security == -1 && self->itf == MOD_NETWORK_AP_IF) {
+        security = NINA_SEC_WEP;
+    }
+
+    // Ensure that the key is not empty if a security mode is used.
     if (security != NINA_SEC_OPEN && strlen(key) == 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Key can't be empty!"));
     }
@@ -316,7 +322,7 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         mp_uint_t channel = args[ARG_channel].u_int;
 
         if (security != NINA_SEC_OPEN && security != NINA_SEC_WEP) {
-            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode supports WEP security only."));
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("AP mode only supports WEP or OPEN security modes"));
         }
 
         // Initialize WiFi in AP mode.
