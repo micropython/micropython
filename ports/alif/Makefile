@@ -197,7 +197,7 @@ OBJ += $(GEN_PINS_SRC:.c=.o)
 
 .DELETE_ON_ERROR:
 
-all: $(BUILD)/firmware.toc
+all: $(BUILD)/firmware_toc.bin
 
 $(BUILD)/ensemble.ld: $(LD_FILE)
 	$(ECHO) "Preprocess linker script $@"
@@ -211,14 +211,14 @@ $(BUILD)/firmware.elf: $(OBJ) $(BUILD)/ensemble.ld
 $(BUILD)/firmware.bin: $(BUILD)/firmware.elf
 	$(Q)$(OBJCOPY) -Obinary $^ $(BUILD)/firmware.bin
 
-$(BUILD)/firmware.toc: $(BUILD)/firmware.bin
+$(BUILD)/firmware_toc.bin: $(BUILD)/firmware.bin
 	$(Q)$(MKDIR) -p $(ALIF_SDK)/tools/build/images/
 	$(Q)$(MKDIR) -p $(ALIF_SDK)/tools/build/logs/
 	$(Q)cp $(BUILD)/firmware.bin $(ALIF_SDK)/tools/build/images/
 	$(Q)cd $(ALIF_SDK)/tools && python app-gen-toc.py -f $(abspath $(ALIF_CONFIG))
-	$(Q)cp $(ALIF_SDK)/tools/build/AppTocPackage.bin $(BUILD)/firmware.toc
+	$(Q)cp $(ALIF_SDK)/tools/build/AppTocPackage.bin $(BUILD)/firmware_toc.bin
 
-deploy: $(BUILD)/firmware.toc
+deploy: $(BUILD)/firmware_toc.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)cd $(ALIF_SDK)/tools && python app-write-mram.py -p
 
