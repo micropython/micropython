@@ -193,8 +193,7 @@ static mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
     nina_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 2) {
         bool active = mp_obj_is_true(args[1]);
-        network_ninaw10_deinit();
-        if (active) {
+        if (active && !self->active) {
             int error = 0;
             if ((error = nina_init()) != 0) {
                 mp_raise_msg_varg(&mp_type_OSError,
@@ -223,7 +222,8 @@ static mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
                     semver[NINA_FW_VER_MINOR_OFFS] - 48, semver[NINA_FW_VER_PATCH_OFFS] - 48);
             }
             soft_timer_static_init(&mp_wifi_poll_timer, SOFT_TIMER_MODE_ONE_SHOT, 0, network_ninaw10_timer_callback);
-        } else {
+        } else if (!active && self->active) {
+            network_ninaw10_deinit();
             nina_deinit();
         }
         self->active = active;
@@ -287,6 +287,11 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
 
     if (security != NINA_SEC_OPEN && strlen(key) == 0) {
         mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Key can't be empty!"));
+    }
+
+    // Activate the interface if not active.
+    if (!self->active) {
+        network_ninaw10_active(2, (mp_obj_t [2]) { pos_args[0], mp_const_true });
     }
 
     // Disconnect active connections first.
