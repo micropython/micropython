@@ -170,3 +170,10 @@ usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp,
 
     return self;
 }
+
+// Not used, but we must define to put this hook into SRAM
+void __not_in_flash_func(tuh_event_hook_cb)(uint8_t rhport, uint32_t eventid, bool in_isr) {
+    (void)rhport;
+    (void)eventid;
+    (void)in_isr;
+}
