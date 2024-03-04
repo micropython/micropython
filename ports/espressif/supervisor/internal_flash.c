@@ -151,7 +151,7 @@ mp_uint_t supervisor_flash_write_blocks(const uint8_t *src, uint32_t lba, uint32
         uint32_t block_address = lba + block;
         uint32_t sector_offset = block_address / blocks_per_sector * SECTOR_SIZE;
         uint8_t block_offset = block_address % blocks_per_sector;
-        if (_cache_lba != block_address) {
+        if (_cache_lba != sector_offset) {
             supervisor_flash_read_blocks(_cache, sector_offset / FILESYSTEM_BLOCK_SIZE, blocks_per_sector);
             _cache_lba = sector_offset;
         }

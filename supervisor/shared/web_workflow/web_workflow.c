@@ -698,7 +698,11 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
     uint32_t total_clusters = fatfs->n_fatent - 2;
 
     const char *writable = "false";
-    if (filesystem_is_writable_by_python(fs_mount)) {
+    // Test to see if we can grab the write lock. USB will grab the underlying
+    // blockdev lock once it says it is writable. Unlock immediately since we
+    // aren't actually writing.
+    if (filesystem_lock(fs_mount)) {
+        filesystem_unlock(fs_mount);
         writable = "true";
     }
     mp_printf(&_socket_print,
@@ -920,7 +924,8 @@ static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request 
         size_t total_size = fatfs->n_fatent - 2;
 
         const char *writable = "false";
-        if (filesystem_is_writable_by_python(fs)) {
+        if (filesystem_lock(fs)) {
+            filesystem_unlock(fs);
             writable = "true";
         }
         mp_printf(&_socket_print,
