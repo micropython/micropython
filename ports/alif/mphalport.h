@@ -73,6 +73,7 @@ extern ringbuf_t stdin_ringbuf;
 #define MP_HAL_PIN_FMT                          "%q"
 #define MP_HAL_PIN_MODE_INPUT                   (0)
 #define MP_HAL_PIN_MODE_OUTPUT                  (1)
+#define MP_HAL_PIN_MODE_OPEN_DRAIN              (2)
 #define MP_HAL_PIN_PULL_NONE                    (0)
 #define MP_HAL_PIN_PULL_UP                      (1)
 #define MP_HAL_PIN_PULL_DOWN                    (2)
@@ -103,12 +104,11 @@ static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {
     gpio_set_direction_output(pin->gpio, pin->pin);
 }
 
-static inline void mp_hal_pin_open_drain_with_value(mp_hal_pin_obj_t pin, int v) {
-    // TODO
-}
-
 static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {
-    mp_hal_pin_open_drain_with_value(pin, 1);
+    uint8_t alt_func = PINMUX_ALTERNATE_FUNCTION_0;
+    uint8_t pad_ctrl = PADCTRL_DRIVER_OPEN_DRAIN | PADCTRL_READ_ENABLE;
+    pinconf_set(pin->port, pin->pin, alt_func, pad_ctrl);
+    gpio_set_direction_output(pin->gpio, pin->pin);
 }
 
 static inline void mp_hal_pin_low(mp_hal_pin_obj_t pin) {

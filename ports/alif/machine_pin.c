@@ -68,26 +68,26 @@ const machine_pin_obj_t *machine_pin_find(mp_obj_t pin) {
 
 static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pin_obj_t *self = self_in;
+
+    uint8_t alt_func, pad_ctrl;
+    pinconf_get(self->port, self->pin, &alt_func, &pad_ctrl);
+
     qstr mode_qst;
     if (gpio_get_direction(self->gpio, self->pin) == GPIO_PIN_DIR_INPUT) {
         mode_qst = MP_QSTR_IN;
     } else {
-        mode_qst = MP_QSTR_OUT;
+        if (pad_ctrl & PADCTRL_DRIVER_OPEN_DRAIN) {
+            mode_qst = MP_QSTR_OPEN_DRAIN;
+        } else {
+            mode_qst = MP_QSTR_OUT;
+        }
     }
     mp_printf(print, "Pin(%q, mode=%q", self->name, mode_qst);
-    bool pull_up = false;
-    uint8_t alt_func, pad_ctrl;
-    pinconf_get(self->port, self->pin, &alt_func, &pad_ctrl);
-    if (pad_ctrl & PADCTRL_DRIVER_DISABLED_PULL_UP) {
+    uint8_t pad_ctrl_pull = pad_ctrl & (PADCTRL_DRIVER_DISABLED_PULL_DOWN | PADCTRL_DRIVER_DISABLED_PULL_UP);
+    if (pad_ctrl_pull == PADCTRL_DRIVER_DISABLED_PULL_UP) {
         mp_printf(print, ", pull=%q", MP_QSTR_PULL_UP);
-        pull_up = true;
-    }
-    if (pad_ctrl & PADCTRL_DRIVER_DISABLED_PULL_DOWN) {
-        if (pull_up) {
-            mp_printf(print, "|%q", MP_QSTR_PULL_DOWN);
-        } else {
-            mp_printf(print, ", pull=%q", MP_QSTR_PULL_DOWN);
-        }
+    } else if (pad_ctrl_pull == PADCTRL_DRIVER_DISABLED_PULL_DOWN) {
+        mp_printf(print, ", pull=%q", MP_QSTR_PULL_DOWN);
     }
     if (alt_func != PINMUX_ALTERNATE_FUNCTION_0) {
         mp_printf(print, ", alt=%u", alt_func);
@@ -128,6 +128,12 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
                 mp_hal_pin_write(self, value);
             }
             mp_hal_pin_output(self);
+        } else if (mode == MP_HAL_PIN_MODE_OPEN_DRAIN) {
+            if (value != -1) {
+                // set initial output value before configuring mode
+                mp_hal_pin_write(self, value);
+            }
+            mp_hal_pin_open_drain(self);
         }
     }
 
@@ -136,8 +142,12 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     if (args[ARG_pull].u_obj != mp_const_none) {
         pull = mp_obj_get_int(args[ARG_pull].u_obj);
     }
-    uint8_t alt_func = PINMUX_ALTERNATE_FUNCTION_0;
-    uint8_t pad_ctrl = PADCTRL_READ_ENABLE;
+    uint8_t alt_func;
+    uint8_t pad_ctrl;
+    pinconf_get(self->port, self->pin, &alt_func, &pad_ctrl);
+    alt_func = PINMUX_ALTERNATE_FUNCTION_0;
+    pad_ctrl |= PADCTRL_READ_ENABLE;
+    pad_ctrl &= ~(PADCTRL_DRIVER_DISABLED_PULL_DOWN | PADCTRL_DRIVER_DISABLED_PULL_UP);
     if (pull & MP_HAL_PIN_PULL_UP) {
         pad_ctrl |= PADCTRL_DRIVER_DISABLED_PULL_UP;
     }
@@ -246,6 +256,7 @@ static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // class constants
     { MP_ROM_QSTR(MP_QSTR_IN), MP_ROM_INT(MP_HAL_PIN_MODE_INPUT) },
     { MP_ROM_QSTR(MP_QSTR_OUT), MP_ROM_INT(MP_HAL_PIN_MODE_OUTPUT) },
+    { MP_ROM_QSTR(MP_QSTR_OPEN_DRAIN), MP_ROM_INT(MP_HAL_PIN_MODE_OPEN_DRAIN) },
     { MP_ROM_QSTR(MP_QSTR_PULL_UP), MP_ROM_INT(MP_HAL_PIN_PULL_UP) },
     { MP_ROM_QSTR(MP_QSTR_PULL_DOWN), MP_ROM_INT(MP_HAL_PIN_PULL_DOWN) },
 };
