@@ -88,6 +88,19 @@ endif
 
 LIBS += "$(shell $(CC) $(CFLAGS) -print-libgcc-file-name)"
 
+JLINK_CMD = '\
+ExitOnError 1\n\
+Device $(JLINK_DEV)\n\
+SelectInterface SWD\n\
+Speed auto\n\
+Connect\n\
+Reset\n\
+ShowHWStatus\n\
+LoadFile "$(BUILD)/firmware_toc.bin",0x8057f1c0\n\
+LoadFile "$(BUILD)/firmware.bin",0x80000000\n\
+Reset\n\
+Exit'
+
 ################################################################################
 # Source files and libraries
 
@@ -221,6 +234,9 @@ $(BUILD)/firmware_toc.bin: $(BUILD)/firmware.bin
 deploy: $(BUILD)/firmware_toc.bin
 	$(ECHO) "Writing $< to the board"
 	$(Q)cd $(ALIF_SDK)/tools && python app-write-mram.py -p
+
+deploy-jlink: $(BUILD)/firmware_toc.bin
+	$(Q)echo -e $(JLINK_CMD) | $(JLINK_EXE)
 
 ################################################################################
 # Remaining make rules
