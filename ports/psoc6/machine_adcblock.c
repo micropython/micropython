@@ -146,6 +146,20 @@ static void _adc_block_obj_init(machine_adcblock_obj_t *adc_block, uint16_t adc_
     if (status != CY_RSLT_SUCCESS) {
         mp_raise_TypeError(MP_ERROR_TEXT("ADC Initialization failed!"));
     }
+    const cyhal_adc_config_t adc_config = {
+        .continuous_scanning = false, // Continuous Scanning is disabled
+        .average_count = 1,           // Average count disabled
+        .vref = CYHAL_ADC_REF_VDDA,   // VREF for Single ended channel set to VDDA
+        .vneg = CYHAL_ADC_VNEG_VSSA,  // VNEG for Single ended channel set to VSSA
+        .resolution = 12u,          // 12-bit resolution
+        .ext_vref = NC,             // No connection
+        .bypass_pin = NC
+    };                              // No connection
+
+    status = cyhal_adc_configure(&(adc_block->adc_obj), &adc_config);
+    if (status != CY_RSLT_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("ADC configuration update failed. Error: %ld ! \n"), status);
+    }
 
     adc_block->id = adc_block_id;
     adc_block->bits = bits;

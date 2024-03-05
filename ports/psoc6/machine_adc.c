@@ -63,6 +63,12 @@ machine_adc_obj_t *machine_adc_make_init(uint32_t sampling_time, mp_obj_t pin_na
     return adc;
 }
 
+// Helper function to get resolution
+uint8_t adc_get_resolution(machine_adc_obj_t *adc) {
+    printf("ADC bits: %d", adc->block->bits);
+    return adc->block->bits;
+}
+
 // machine_adc_print()
 STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
@@ -111,7 +117,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_block_obj, machine_adc_block);
 // read_u16()
 STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(cyhal_adc_read_u16(&(self->adc_chan_obj)));
+    return MP_OBJ_NEW_SMALL_INT(cyhal_adc_read(&(self->adc_chan_obj)));
+    // !ToDo:This currently return value scaled from 0-2047, while it should be 0-4096.
+    // Acc to MPY Docs, this should be mapped to range of 0-65535 (using taylow series?) as below.
+    // mp_int_t bits = (mp_int_t)adc_get_resolution(self);
+    // mp_uint_t u16 = adc_raw_result << (16 - bits) | adc_raw_result >> (2 * bits - 16);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 
@@ -121,6 +131,7 @@ STATIC mp_obj_t machine_adc_read_uv(mp_obj_t self_in) {
     return MP_OBJ_NEW_SMALL_INT(cyhal_adc_read_uv(&(self->adc_chan_obj)));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_uv_obj, machine_adc_read_uv);
+
 
 STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_adc_deinit_obj) },
