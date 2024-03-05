@@ -150,6 +150,27 @@ export async function loadMicroPython(options) {
             );
             return proxy_convert_mp_to_js_obj_jsside_with_free(value);
         },
+        replInit() {
+            Module.ccall("mp_js_repl_init", "null", ["null"]);
+        },
+        replProcessChar(chr) {
+            return Module.ccall(
+                "mp_js_repl_process_char",
+                "number",
+                ["number"],
+                [chr],
+            );
+        },
+        // Needed if the GC/asyncify is enabled.
+        async replProcessCharWithAsyncify(chr) {
+            return Module.ccall(
+                "mp_js_repl_process_char",
+                "number",
+                ["number"],
+                [chr],
+                { async: true },
+            );
+        },
     };
 }
 
@@ -191,11 +212,11 @@ async function runCLI() {
     });
 
     if (repl) {
-        mp_js_init_repl();
+        mp.replInit();
         process.stdin.setRawMode(true);
         process.stdin.on("data", (data) => {
             for (let i = 0; i < data.length; i++) {
-                mp_js_process_char(data[i]).then((result) => {
+                mp.replProcessCharWithAsyncify(data[i]).then((result) => {
                     if (result) {
                         process.exit();
                     }

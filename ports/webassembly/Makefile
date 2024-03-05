@@ -34,6 +34,7 @@ include $(TOP)/extmod/extmod.mk
 
 CC = emcc
 LD = emcc
+NODE ?= node
 TERSER ?= npx terser
 
 INC += -I.
@@ -76,9 +77,8 @@ JSFLAGS += -s EXPORTED_FUNCTIONS="\
 	_free,\
 	_malloc,\
 	_mp_js_init,\
-	_mp_js_init_repl,\
-	_mp_js_do_str,\
-	_mp_js_process_char,\
+	_mp_js_repl_init,\
+	_mp_js_repl_process_char,\
 	_mp_hal_get_interrupt_char,\
 	_mp_sched_keyboard_interrupt$(EXPORTED_FUNCTIONS_EXTRA)"
 JSFLAGS += -s EXPORTED_RUNTIME_METHODS="\
@@ -124,7 +124,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_C:.c=.o))
 ################################################################################
 # Main targets.
 
-.PHONY: all min test test_min
+.PHONY: all repl min test test_min
 
 all: $(BUILD)/micropython.mjs
 
@@ -135,6 +135,9 @@ $(BUILD)/micropython.mjs: $(OBJ) library.js $(SRC_JS)
 
 $(BUILD)/micropython.min.mjs: $(BUILD)/micropython.mjs
 	$(TERSER) $< --compress --module -o $@
+
+repl: $(BUILD)/micropython.mjs
+	$(NODE) $<
 
 min: $(BUILD)/micropython.min.mjs
 
