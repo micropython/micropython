@@ -71,6 +71,10 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
         mp_raise_OSError(-err);
     }
 
+    if (err == MBEDTLS_ERR_SSL_WANT_WRITE || err == MBEDTLS_ERR_SSL_WANT_READ) {
+        mp_raise_OSError(MP_EWOULDBLOCK);
+    }
+
     #if defined(MBEDTLS_ERROR_C)
     // Including mbedtls_strerror takes about 1.5KB due to the error strings.
     // MBEDTLS_ERROR_C is the define used by mbedtls to conditionally include mbedtls_strerror.
@@ -271,16 +275,8 @@ mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t 
         DEBUG_PRINT("returning %d\n", ret);
         return ret;
     }
-    if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
-        ret = MP_EWOULDBLOCK;
-    } else if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
-        // If handshake is not finished, read attempt may end up in protocol
-        // wanting to write next handshake message. The same may happen with
-        // renegotiation.
-        ret = MP_EWOULDBLOCK;
-    }
     DEBUG_PRINT("raising errno [error case] %d\n", ret);
-    mp_raise_OSError(ret);
+    mbedtls_raise_error(ret);
 }
 
 mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len) {
@@ -290,16 +286,8 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
         DEBUG_PRINT("returning %d\n", ret);
         return ret;
     }
-    if (ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
-        ret = MP_EWOULDBLOCK;
-    } else if (ret == MBEDTLS_ERR_SSL_WANT_READ) {
-        // If handshake is not finished, write attempt may end up in protocol
-        // wanting to read next handshake message. The same may happen with
-        // renegotiation.
-        ret = MP_EWOULDBLOCK;
-    }
     DEBUG_PRINT("raising errno [error case] %d\n", ret);
-    mp_raise_OSError(ret);
+    mbedtls_raise_error(ret);
 }
 
 size_t common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, const char *host, size_t hostlen, uint32_t port) {
