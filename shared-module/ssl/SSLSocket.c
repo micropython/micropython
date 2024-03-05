@@ -40,6 +40,8 @@
 #include "py/stream.h"
 #include "supervisor/shared/tick.h"
 
+#include "shared-bindings/socketpool/enum.h"
+
 #include "mbedtls/version.h"
 
 #if defined(MBEDTLS_ERROR_C)
