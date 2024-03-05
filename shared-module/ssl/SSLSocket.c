@@ -154,9 +154,9 @@ static int ssl_socket_close(ssl_sslsocket_obj_t *self) {
     return call_method_errno(0, self->close_args);
 }
 
-static int ssl_socket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
+static void ssl_socket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
     self->settimeout_args[2] = timeout_obj;
-    return call_method_errno(1, self->settimeout_args);
+    return mp_call_method_n_kw(1, 0, self->settimeout_args);
 }
 
 static int ssl_socket_listen(ssl_sslsocket_obj_t *self, mp_int_t backlog) {
