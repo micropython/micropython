@@ -354,7 +354,8 @@
 	url = https://github.com/adafruit/certificates
 [submodule "lib/tlsf"]
 	path = lib/tlsf
-	url = https://github.com/espressif/tlsf.git
+	url = https://github.com/adafruit/tlsf.git
+	branch = circuitpython
 [submodule "frozen/CircuitPython_AXP313A"]
 	path = frozen/CircuitPython_AXP313A
 	url = https://github.com/bill88t/CircuitPython_AXP313A
