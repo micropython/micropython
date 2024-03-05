@@ -154,8 +154,8 @@ static int ssl_socket_close(ssl_sslsocket_obj_t *self) {
     return call_method_errno(0, self->close_args);
 }
 
-static int ssl_socket_settimeout(ssl_sslsocket_obj_t *self, mp_int_t timeout_ms) {
-    self->settimeout_args[2] = mp_obj_new_float(timeout_ms * MICROPY_FLOAT_CONST(1e-3));
+static int ssl_socket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
+    self->settimeout_args[2] = timeout_obj;
     return call_method_errno(1, self->settimeout_args);
 }
 
@@ -442,6 +442,6 @@ mp_obj_t common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self) {
     return mp_obj_new_tuple(2, tuple_contents);
 }
 
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms) {
-    ssl_socket_settimeout(self, timeout_ms);
+void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
+    ssl_socket_settimeout(self, timeout_obj);
 }

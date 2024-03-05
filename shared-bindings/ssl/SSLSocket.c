@@ -220,17 +220,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
 //|         ...
 STATIC mp_obj_t ssl_sslsocket_settimeout(mp_obj_t self_in, mp_obj_t timeout_in) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_uint_t timeout_ms;
-    if (timeout_in == mp_const_none) {
-        timeout_ms = -1;
-    } else {
-        #if MICROPY_PY_BUILTINS_FLOAT
-        timeout_ms = 1000 * mp_obj_get_float(timeout_in);
-        #else
-        timeout_ms = 1000 * mp_obj_get_int(timeout_in);
-        #endif
-    }
-    common_hal_ssl_sslsocket_settimeout(self, timeout_ms);
+    common_hal_ssl_sslsocket_settimeout(self, timeout_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_settimeout);
@@ -245,9 +235,9 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_settimeout_obj, ssl_sslsocket_set
 STATIC mp_obj_t ssl_sslsocket_setblocking(mp_obj_t self_in, mp_obj_t blocking) {
     ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (mp_obj_is_true(blocking)) {
-        common_hal_ssl_sslsocket_settimeout(self, -1);
+        common_hal_ssl_sslsocket_settimeout(self, mp_const_none);
     } else {
-        common_hal_ssl_sslsocket_settimeout(self, 0);
+        common_hal_ssl_sslsocket_settimeout(self, MP_OBJ_NEW_SMALL_INT(0));
     }
     return mp_const_none;
 }

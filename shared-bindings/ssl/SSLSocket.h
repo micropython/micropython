@@ -43,4 +43,4 @@ bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self);
 bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog);
 mp_uint_t common_hal_ssl_sslsocket_recv_into(ssl_sslsocket_obj_t *self, uint8_t *buf, uint32_t len);
 mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t *buf, uint32_t len);
-void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, uint32_t timeout_ms);
+void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj);
