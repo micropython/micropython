@@ -54,6 +54,10 @@
 #include "shared-bindings/hashlib/Hash.h"
 #include "lib/oofatfs/diskio.h"
 
+#if CIRCUITPY_FOURWIRE
+#include "shared-module/displayio/__init__.h"
+#endif
+
 #if CIRCUITPY_MDNS
 #include "shared-bindings/mdns/RemoteService.h"
 #include "shared-bindings/mdns/Server.h"
@@ -1564,9 +1568,32 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     }
 }
 
+static bool supervisor_filesystem_access_could_block(void) {
+    #if CIRCUITPY_FOURWIRE
+    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+    if (!vfs->next) {
+        // Assume that the CIRCUITPY root is not sharing a SPI bus with the display SPI bus
+        return false;
+    }
+    // Check display 0 to see if it's on a fourwire (SPI) bus. If it is, blocking is possible
+    // in theory other displays could block but also in reality there's generally 0 or 1 displays
+    for (size_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (display_buses[i].bus_base.type != &fourwire_fourwire_type) {
+            continue;
+        }
+        if (!common_hal_fourwire_fourwire_bus_free(MP_OBJ_FROM_PTR(&display_buses[i].bus_base))) {
+            return true;
+        }
+    }
+    #endif
+    return false;
+}
 
 void supervisor_web_workflow_background(void *data) {
-    while (true) {
+    // If "/sd" is mounted AND shared with a display, access could block.
+    // We don't have a good way to defer a filesystem action way down inside _process_request
+    // when this happens, so just postpone if there's a chance of blocking. (#8980)
+    while (!supervisor_filesystem_access_could_block()) {
         // If we have a request in progress, continue working on it. Do this first
         // so that we can accept another socket after finishing this request.
         if (common_hal_socketpool_socket_get_connected(&active)) {
