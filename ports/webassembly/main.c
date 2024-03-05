@@ -44,46 +44,6 @@
 #include "library.h"
 #include "proxy_c.h"
 
-#if MICROPY_ENABLE_COMPILER
-int do_str(const char *src, mp_parse_input_kind_t input_kind) {
-    int ret = 0;
-    nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(MP_QSTR__lt_stdin_gt_, src, strlen(src), 0);
-        qstr source_name = lex->source_name;
-        mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
-        mp_obj_t module_fun = mp_compile(&parse_tree, source_name, false);
-        mp_call_function_0(module_fun);
-        nlr_pop();
-    } else {
-        // uncaught exception
-        if (mp_obj_is_subclass_fast(mp_obj_get_type((mp_obj_t)nlr.ret_val), &mp_type_SystemExit)) {
-            mp_obj_t exit_val = mp_obj_exception_get_value(MP_OBJ_FROM_PTR(nlr.ret_val));
-            if (exit_val != mp_const_none) {
-                mp_int_t int_val;
-                if (mp_obj_get_int_maybe(exit_val, &int_val)) {
-                    ret = int_val & 255;
-                } else {
-                    ret = 1;
-                }
-            }
-        } else {
-            mp_obj_print_exception(&mp_plat_print, (mp_obj_t)nlr.ret_val);
-            ret = 1;
-        }
-    }
-    return ret;
-}
-#endif
-
-int mp_js_do_str(const char *code) {
-    return do_str(code, MP_PARSE_FILE_INPUT);
-}
-
-int mp_js_process_char(int c) {
-    return pyexec_event_repl_process_char(c);
-}
-
 void mp_js_init(int heap_size) {
     #if MICROPY_ENABLE_GC
     char *heap = (char *)malloc(heap_size * sizeof(char));
@@ -109,10 +69,6 @@ void mp_js_init(int heap_size) {
     }
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));
     #endif
-}
-
-void mp_js_init_repl() {
-    pyexec_event_repl_init();
 }
 
 void mp_js_register_js_module(const char *name, uint32_t *value) {
@@ -173,6 +129,14 @@ void mp_js_do_exec_async(const char *src, uint32_t *out) {
     mp_compile_allow_top_level_await = true;
     mp_js_do_exec(src, out);
     mp_compile_allow_top_level_await = false;
+}
+
+void mp_js_repl_init(void) {
+    pyexec_event_repl_init();
+}
+
+int mp_js_repl_process_char(int c) {
+    return pyexec_event_repl_process_char(c);
 }
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
