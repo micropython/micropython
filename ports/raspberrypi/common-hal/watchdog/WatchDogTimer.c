@@ -33,8 +33,6 @@
 
 #include "hardware/watchdog.h"
 
-#define WATCHDOG_ENABLE watchdog_enable(self->timeout * 1000, false)
-
 void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
     watchdog_update();
 }
@@ -52,16 +50,12 @@ mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
 }
 
 void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_float_t new_timeout) {
-    if (!(self->timeout < new_timeout || self->timeout > new_timeout)) {
-        return;
-    }
-
     // max timeout is 8.388607 sec, this is rounded down to 8 sec
     mp_arg_validate_int_max(new_timeout, 8, MP_QSTR_timeout);
     self->timeout = new_timeout;
 
     if (self->mode == WATCHDOGMODE_RESET) {
-        WATCHDOG_ENABLE;
+        watchdog_enable(self->timeout * 1000, false);
     }
 }
 
@@ -82,7 +76,7 @@ void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_w
             mp_raise_NotImplementedError(NULL);
             break;
         case WATCHDOGMODE_RESET:
-            WATCHDOG_ENABLE;
+            watchdog_enable(self->timeout * 1000, false);
             break;
         default:
             return;

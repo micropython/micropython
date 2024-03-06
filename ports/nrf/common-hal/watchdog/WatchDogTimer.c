@@ -121,6 +121,8 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_floa
         }
         nrfx_timer_clear(timer);
         nrfx_timer_compare(timer, NRF_TIMER_CC_CHANNEL0, ticks, true);
+    } else if (self->mode == WATCHDOGMODE_RESET) {
+        mp_raise_RuntimeError_varg(MP_ERROR_TEXT("%q cannot be changed once mode is set to %q"), MP_QSTR_timeout, MP_QSTR_RESET);
     }
 
     self->timeout = timeout;
