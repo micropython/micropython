@@ -20,11 +20,16 @@ if "CY8CPROTO-062-4343W" in machine:
     adc_pin_mid = "P10_3"
     adc_pin_max = "P10_0"
     adc_wrong_pin_name = "P13_7"
+    # Enable after DUT setup
+    print("SKIP")
+    raise SystemExit
 elif "CY8CPROTO-063-BLE" in machine:
     adc_pin_gnd = "P10_1"
     adc_pin_mid = "P10_3"
     adc_pin_max = "P10_0"
     adc_wrong_pin_name = "P13_7"
+    print("SKIP")
+    raise SystemExit
 
 # 0.35V
 tolerance_uv = 350000
