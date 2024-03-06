@@ -270,7 +270,7 @@ safe_mode_t port_init(void) {
     #endif
 
     #ifndef ENABLE_JTAG
-    #define ENABLE_JTAG (defined(DEBUG) && DEBUG)
+    #define ENABLE_JTAG (0)
     #endif
 
     #if ENABLE_JTAG
