@@ -244,7 +244,7 @@ STATIC mp_obj_t machine_adcblock_make_new(const mp_obj_type_t *type, size_t n_po
     mp_arg_parse_all(n_pos_args - 1, all_args + 1, &kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
     uint8_t bits = args[ARG_bits].u_int;
     if (bits != DEFAULT_ADC_BITS) {
-        mp_raise_TypeError(MP_ERROR_TEXT("Invalid bits. Current ADC configuration supports only 12 bits resolution!"));
+        mp_raise_TypeError(MP_ERROR_TEXT("Invalid bits. Current ADC configuration supports only 11 bits resolution!"));
     }
 
     return MP_OBJ_FROM_PTR(machine_adcblock_make_init(adc_id, bits));
@@ -299,7 +299,7 @@ STATIC mp_obj_t machine_adcblock_connect(size_t n_pos_args, const mp_obj_t *pos_
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_adcblock_connect_obj, 2, machine_adcblock_connect);
 
 STATIC const mp_rom_map_elem_t machine_adcblock_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_adcblock_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&machine_adcblock_deinit_obj)},
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&machine_adcblock_connect_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(machine_adcblock_locals_dict, machine_adcblock_locals_dict_table);

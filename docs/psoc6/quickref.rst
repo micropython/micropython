@@ -619,10 +619,6 @@ PSoC6 supports only 1 12-bit SAR ADC with the following channel to pin mapping a
 
 .. 
     TODO: This is only applicable to the CY8CPROTO-062-4343W. This does not belong here. 
-    TODO: Define approach on how the user gets to know the pinout diagram, alternate function of each board
-    - From board manual? 
-    - From datasheet?
-    - To create a pinout diagram? 
 
 .. note::
     Arbitrary connection of ADC channels to GPIO is not supported. Specifying a pin that is not connected to this block, 
@@ -633,9 +629,16 @@ To use the APIs:
     
     from machine import ADCBlock
 
-    adcBlock = ADCBlock(0, bits=12)             # create an ADCBlock 0 object
+    adcBlock = ADCBlock(0, bits=11)             # create an ADCBlock 0 object
     adc = adcBlock.connect(0, "P10_0")          # connect channel 0 to pin P10_0
     val = adc.read_uv()                         # read an analog value in micro volts
+
+.. note::
+    The ADC block supports only 11 bits resolution. If bits are not passed, by default 11 bits is considered.
+
+.. warning::
+    When the input to ADC pin is connected to GND, it may not return value 0 as digitized output. This is a known issue and 
+    needs fix in low-level API's.
 
 I2S bus
 -------

@@ -117,11 +117,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_block_obj, machine_adc_block);
 // read_u16()
 STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    return MP_OBJ_NEW_SMALL_INT(cyhal_adc_read(&(self->adc_chan_obj)));
-    // !ToDo:This currently return value scaled from 0-2047, while it should be 0-4096.
-    // Acc to MPY Docs, this should be mapped to range of 0-65535 (using taylow series?) as below.
-    // mp_int_t bits = (mp_int_t)adc_get_resolution(self);
-    // mp_uint_t u16 = adc_raw_result << (16 - bits) | adc_raw_result >> (2 * bits - 16);
+    int32_t adc_raw_result = cyhal_adc_read(&(self->adc_chan_obj));
+    mp_int_t bits = (mp_int_t)adc_get_resolution(self);
+    mp_uint_t u16 = adc_raw_result << (16 - bits);
+    return MP_OBJ_NEW_SMALL_INT(u16);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 

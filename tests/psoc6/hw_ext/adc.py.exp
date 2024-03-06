@@ -1,4 +1,27 @@
-Voltage (in microvolts) on pin P10_0 is max:  True
-Voltage (raw count) on pin P10_0 is max:  True
-Voltage (in microvolts) on pin P10_1 is max:  True
-Voltage (raw count) on pin P10_1 is max:  True
+Invalid ADC Pin
+
+<ADC Pin=81, ADCBlock_id=0, sampling_time_ns=1000>
+
+ADCBlock.connect(channel):  <ADC Pin=83, ADCBlock_id=0, sampling_time_ns=1000>
+ADCBlock.deinit():  ADCBlock(0, bits=12)
+ADCBlock.connect(source):  <ADC Pin=83, ADCBlock_id=0, sampling_time_ns=1000>
+ADCBlock.deinit():  ADCBlock(0, bits=12)
+ADCBlock.connect(channel,source) <ADC Pin=83, ADCBlock_id=0, sampling_time_ns=1000>
+
+ <ADC Pin=80, ADCBlock_id=0, sampling_time_ns=1000>
+
+Expected voltage -  0 (uV) on pin  P10_1 is approx same as obtained voltage(uV):  True
+
+Expected voltage -  0 (raw) on pin  P10_1 is approx same as obtained voltage(raw):  True
+
+Expected voltage -  1650000 (uV) on pin  P10_3 is approx same as obtained voltage(uV):  True
+
+Expected voltage -  16385 (raw) on pin  P10_3 is approx same as obtained voltage(raw):  True
+
+Expected voltage -  3300000 (uV) on pin  P10_0 is approx same as obtained voltage(uV):  True
+
+Expected voltage -  32767 (raw) on pin  P10_0 is approx same as obtained voltage(raw):  True
+
+ <ADC Pin=81, ADCBlock_id=0, sampling_time_ns=1000>
+<ADC Pin=83, ADCBlock_id=0, sampling_time_ns=1000>
+<ADC Pin=80, ADCBlock_id=0, sampling_time_ns=1000>
