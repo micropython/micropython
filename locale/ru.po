@@ -105,6 +105,10 @@ msgstr "%q и %q должны быть разными"
 msgid "%q and %q must share a clock unit"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q содержит пины дупликаты"
@@ -944,10 +948,6 @@ msgstr "Ошибка в регулярном выражении"
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "Ошибка в сейфе. py."
-
-#: shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "Ошибка: Сбой привязки"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -4429,6 +4429,9 @@ msgstr "zi должно быть типа float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi должен иметь форму (n_section, 2)"
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "Ошибка: Сбой привязки"
 
 #~ msgid "Buffers must be same size"
 #~ msgstr "Буферы должны быть одинакового размера"

@@ -104,6 +104,10 @@ msgstr "%q hé %q bìxū bùtóng"
 msgid "%q and %q must share a clock unit"
 msgstr "%q hé %q bìxū gòngxiǎng yígè shízhōng dānyuán"
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q bāo hán chóng fù de yǐn jiǎo"
@@ -933,10 +937,6 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "safemode.py cuò wù."
-
-#: shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "cuò wù: bǎng dìng shī bài"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -4373,6 +4373,9 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "cuò wù: bǎng dìng shī bài"
 
 #~ msgid "Buffers must be same size"
 #~ msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
