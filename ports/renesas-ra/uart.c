@@ -71,14 +71,18 @@ static void uart_rx_cb(uint32_t ch, int d) {
         // even disable the IRQ.  This should never happen.
         return;
     }
-    #if MICROPY_KBD_EXCEPTION
-    if (keyex_cb[ch]) {
-        (*keyex_cb[ch])(d);
-    }
-    #endif
+    #if defined(MICROPY_HW_UART_REPL)
+    if (ch == MICROPY_HW_UART_REPL) {
+        #if MICROPY_KBD_EXCEPTION
+        if (keyex_cb[ch]) {
+            (*keyex_cb[ch])(d);
+        }
+        #endif
 
-    #if MICROPY_HW_ENABLE_UART_REPL
-    ringbuf_put(&stdin_ringbuf, d);
+        #if MICROPY_HW_ENABLE_UART_REPL
+        ringbuf_put(&stdin_ringbuf, d);
+        #endif
+    }
     #endif
 
     // Check the flags to see if the user handler should be called

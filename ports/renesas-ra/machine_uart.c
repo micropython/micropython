@@ -41,6 +41,7 @@
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(0x10) }, \
 
 static const char *_parity_name[] = {"None", "ODD", "EVEN"};
 
