@@ -912,10 +912,6 @@ msgstr ""
 msgid "Error in safemode.py."
 msgstr ""
 
-#: shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr ""
-
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
 msgstr ""
@@ -1238,6 +1234,10 @@ msgstr ""
 msgid "Invalid multicast MAC address"
 msgstr ""
 
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Invalid parameters"
+msgstr ""
+
 #: ports/espressif/common-hal/espidf/__init__.c
 msgid "Invalid size"
 msgstr ""
@@ -1276,6 +1276,10 @@ msgstr ""
 
 #: shared-module/displayio/Group.c
 msgid "Layer must be a Group or TileGrid subclass"
+msgstr ""
+
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Load binary failed"
 msgstr ""
 
 #: ports/espressif/common-hal/espidf/__init__.c
@@ -1821,6 +1825,10 @@ msgstr ""
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Right format but not supported"
+msgstr ""
+
+#: ports/espressif/common-hal/espulp/ULP.c
+msgid "Run binary failed"
 msgstr ""
 
 #: main.c

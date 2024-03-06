@@ -46,6 +46,13 @@
 // To-do idf v5.0: remove following include
 #include "soc/rtc_cntl_reg.h"
 
+#ifndef CONFIG_ULP_COPROC_TYPE_FSM
+#warning "Have no FSM"
+#endif
+// #ifndef CONFIG_ULP_COPROC_TYPE_RISCV
+// #warning "Have no RISCV"
+// #endif
+
 STATIC bool ulp_used = false;
 STATIC uint32_t pins_used = 0;
 
@@ -54,7 +61,14 @@ void espulp_reset(void) {
     ulp_used = false;
 }
 
-void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t pin_mask) {
+void common_hal_espulp_ulp_set_wakeup_period(espulp_ulp_obj_t *self, size_t period_index, uint32_t period_us) {
+    int _errno = ulp_set_wakeup_period(period_index, period_us);
+    if (_errno != ESP_OK) {
+        mp_raise_ValueError(MP_ERROR_TEXT("Invalid parameters"));
+    }
+}
+
+void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t entry_point, uint32_t pin_mask) {
     if (length > CONFIG_ULP_COPROC_RESERVE_MEM) {
         mp_raise_ValueError(MP_ERROR_TEXT("Program too long"));
     }
@@ -87,13 +101,18 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
     }
     pins_used = pin_mask;
 
-    ulp_set_wakeup_period(0, 20000);
-
+    int _errno;
     switch (self->arch) {
         #ifdef CONFIG_ULP_COPROC_TYPE_FSM
         case FSM:
-            ulp_load_binary(0, (const uint8_t *)program, length);
-            ulp_run(0);
+            _errno = ulp_load_binary(0, (const uint8_t *)program, length / sizeof(uint32_t));
+            if (_errno != ESP_OK) {
+                mp_raise_RuntimeError(MP_ERROR_TEXT("Load binary failed"));
+            }
+            _errno = ulp_run(entry_point / sizeof(uint32_t));
+            if (_errno != ESP_OK) {
+                mp_raise_RuntimeError(MP_ERROR_TEXT("Run binary failed"));
+            }
             break;
         #endif
         #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
@@ -109,23 +128,13 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
 }
 
 void common_hal_espulp_ulp_halt(espulp_ulp_obj_t *self) {
-    switch (self->arch) {
-        /*
-        #ifdef CONFIG_ULP_COPROC_TYPE_FSM
-        case FSM:
-            break;
-        #endif
-        */
-        #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
-        case RISCV:
-            ulp_riscv_timer_stop();
-            ulp_riscv_halt();
-            break;
-        #endif
-        default:
-            mp_raise_NotImplementedError(NULL);
-            break;
+    #ifdef CONFIG_ULP_COPROC_TYPE_RISCV
+    if (self->arch == RISCV) {
+        ulp_riscv_timer_stop();
+        ulp_riscv_halt();
     }
+    #endif
+    CLEAR_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN);
 
     // Release pins we were using.
     for (uint8_t i = 0; i < 32; i++) {

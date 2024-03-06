@@ -90,11 +90,29 @@ STATIC mp_obj_t espulp_ulp_obj___exit__(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espulp_ulp___exit___obj, 4, 4, espulp_ulp_obj___exit__);
 
+//|     def set_wakeup_period(self, period_index: int, period_us: int) -> None:
+//|         """Sets the wakeup period for the ULP."""
+//|         ...
+STATIC mp_obj_t espulp_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_index, mp_obj_t period_us) {
+    espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    check_for_deinit(self);
+
+    // period_index should be between 0 and 4 but bounds checking happens in esp-idf, so no need to do that here
+    common_hal_espulp_ulp_set_wakeup_period(self, mp_obj_get_int(period_index), mp_obj_get_int(period_us));
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(espulp_ulp_set_wakeup_period_obj, espulp_ulp_set_wakeup_period);
+
 //|     def run(
-//|         self, program: ReadableBuffer, *, pins: Sequence[microcontroller.Pin] = ()
+//|         self,
+//|         program: ReadableBuffer,
+//|         *,
+//|         entrypoint: int,
+//|         pins: Sequence[microcontroller.Pin] = ()
 //|     ) -> None:
-//|         """Loads the program into ULP memory and then runs the program. The given pins are
-//|            claimed and not reset until `halt()` is called.
+//|         """Loads the program into ULP memory and then runs the program, starting at entry_point.
+//|            The given pins are claimed and not reset until `halt()` is called.
 //|
 //|         The program will continue to run even when the running Python is halted."""
 //|         ...
@@ -102,9 +120,10 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     espulp_ulp_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
 
-    enum { ARG_program, ARG_pins };
+    enum { ARG_program, ARG_entrypoint, ARG_pins };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_program, MP_ARG_REQUIRED | MP_ARG_OBJ},
+        { MP_QSTR_entrypoint, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0}},
         { MP_QSTR_pins, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_empty_tuple} },
     };
 
@@ -113,6 +132,8 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
 
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[ARG_program].u_obj, &bufinfo, MP_BUFFER_READ);
+
+    mp_uint_t entrypoint = args[ARG_entrypoint].u_int;
 
     mp_obj_t pins_in = args[ARG_pins].u_obj;
     const size_t num_pins = (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(pins_in));
@@ -131,7 +152,7 @@ STATIC mp_obj_t espulp_ulp_run(size_t n_args, const mp_obj_t *pos_args, mp_map_t
         pin_mask |= 1 << pin->number;
     }
 
-    common_hal_espulp_ulp_run(self, bufinfo.buf, bufinfo.len, pin_mask);
+    common_hal_espulp_ulp_run(self, bufinfo.buf, bufinfo.len, entrypoint, pin_mask);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espulp_ulp_run_obj, 2, espulp_ulp_run);
@@ -163,12 +184,13 @@ MP_PROPERTY_GETTER(espulp_ulp_arch_obj,
     (mp_obj_t)&espulp_ulp_get_arch_obj);
 
 STATIC const mp_rom_map_elem_t espulp_ulp_locals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit),      MP_ROM_PTR(&espulp_ulp_deinit_obj) },
-    { MP_ROM_QSTR(MP_QSTR___enter__),   MP_ROM_PTR(&mp_identity_obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__),    MP_ROM_PTR(&espulp_ulp___exit___obj) },
-    { MP_ROM_QSTR(MP_QSTR_run),         MP_ROM_PTR(&espulp_ulp_run_obj) },
-    { MP_ROM_QSTR(MP_QSTR_halt),        MP_ROM_PTR(&espulp_ulp_halt_obj) },
-    { MP_ROM_QSTR(MP_QSTR_arch),        MP_ROM_PTR(&espulp_ulp_arch_obj) },
+    { MP_ROM_QSTR(MP_QSTR_deinit),              MP_ROM_PTR(&espulp_ulp_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___enter__),           MP_ROM_PTR(&mp_identity_obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),            MP_ROM_PTR(&espulp_ulp___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_wakeup_period),   MP_ROM_PTR(&espulp_ulp_set_wakeup_period_obj)},
+    { MP_ROM_QSTR(MP_QSTR_run),                 MP_ROM_PTR(&espulp_ulp_run_obj) },
+    { MP_ROM_QSTR(MP_QSTR_halt),                MP_ROM_PTR(&espulp_ulp_halt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_arch),                MP_ROM_PTR(&espulp_ulp_arch_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(espulp_ulp_locals_dict, espulp_ulp_locals_table);
 
