@@ -101,6 +101,10 @@ msgstr "%q a %q musí být rozdílné"
 msgid "%q and %q must share a clock unit"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q obsahuje duplicitní piny"
@@ -929,10 +933,6 @@ msgstr "Chyba v regulárním výrazu"
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "Chyba v safemode.py."
-
-#: shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "Chyba: nepodařilo se nabindovat port"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -4339,6 +4339,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "Chyba: nepodařilo se nabindovat port"
 
 #~ msgid "Buffers must be same size"
 #~ msgstr "Buffery musí mít stejnou velikost"

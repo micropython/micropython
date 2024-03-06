@@ -103,6 +103,10 @@ msgstr "%q와 %q는 달라야 합니다"
 msgid "%q and %q must share a clock unit"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q에 중복된 핀이 포함"
@@ -959,10 +963,6 @@ msgstr "Regex에 오류가 있습니다."
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "safemode.py에 오류가 있습니다."
-
-#: shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "오류: 바인드에 실패했습니다"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -4388,6 +4388,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "오류: 바인드에 실패했습니다"
 
 #~ msgid "Buffers must be same size"
 #~ msgstr "버퍼의 크기는 같아야 합니다"

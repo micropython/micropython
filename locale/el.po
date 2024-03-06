@@ -105,6 +105,10 @@ msgstr "%q και %q πρεπει να είναι διαφορετικά"
 msgid "%q and %q must share a clock unit"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q περιέχει διπλότυπα pins"
@@ -937,10 +941,6 @@ msgstr "Σφάλμα σε regex"
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "Σφάλμα στο safemode.py."
-
-#: shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "Σφάλμα: Αποτυχία δέσμευσης"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -4336,6 +4336,9 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "Σφάλμα: Αποτυχία δέσμευσης"
 
 #~ msgid "Buffers must be same size"
 #~ msgstr "Τα Buffers πρέπει να είναι του ιδίου μεγέθους"

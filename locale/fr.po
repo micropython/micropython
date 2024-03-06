@@ -106,6 +106,10 @@ msgstr "%q et %q doivent être différents"
 msgid "%q and %q must share a clock unit"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q contient des broches en double"
@@ -947,10 +951,6 @@ msgstr "Erreur dans l'expression régulière"
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "Erreur dans safemode.py."
-
-#: shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "Erreur : Impossible de lier"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -4417,6 +4417,9 @@ msgstr "zi doit être de type float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi doit être de forme (n_section, 2)"
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "Erreur : Impossible de lier"
 
 #~ msgid "Buffers must be same size"
 #~ msgstr "Les tampons doivent avoir la même taille"
