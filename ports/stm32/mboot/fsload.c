@@ -39,7 +39,7 @@
 
 #if MBOOT_FSLOAD
 
-#if !(MBOOT_VFS_FAT || MBOOT_VFS_LFS1 || MBOOT_VFS_LFS2)
+#if !(MBOOT_VFS_FAT || MBOOT_VFS_LFS1 || MBOOT_VFS_LFS2 || MBOOT_VFS_RAW)
 #error Must enable at least one VFS component
 #endif
 
@@ -234,28 +234,51 @@ int fsload_process(void) {
             // End of elements.
             return -MBOOT_ERRNO_FSLOAD_NO_MOUNT;
         }
+
+        // Extract element arguments based on the element length:
+        // - 10 bytes: mount_point fs_type uint32_t uint32_t
+        // - 14 bytes: mount_point fs_type uint32_t uint32_t uint32_t
+        // - 18 bytes: mount_point fs_type uint32_t uint32_t uint32_t uint32_t
+        // - 22 bytes: mount_point fs_type uint64_t uint64_t uint32_t
+        // - 34 bytes: mount_point fs_type uint64_t uint64_t uint64_t uint64_t
         mboot_addr_t base_addr;
         mboot_addr_t byte_len;
-        uint32_t block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
-        if (elem[-1] == 10 || elem[-1] == 14) {
+        mboot_addr_t arg2 = 0;
+        mboot_addr_t arg3 = 0;
+        (void)arg2;
+        (void)arg3;
+        uint8_t elem_len = elem[-1];
+        if (elem_len == 10 || elem_len == 14 || elem_len == 18) {
             // 32-bit base and length given, extract them.
             base_addr = get_le32(&elem[2]);
             byte_len = get_le32(&elem[6]);
-            if (elem[-1] == 14) {
-                // Block size given, extract it.
-                block_size = get_le32(&elem[10]);
+            if (elem_len >= 14) {
+                // Argument 2 given, extract it.
+                arg2 = get_le32(&elem[10]);
+                if (elem_len == 18) {
+                    // Argument 3 given, extract it.
+                    arg3 = get_le32(&elem[14]);
+                }
             }
         #if MBOOT_ADDRESS_SPACE_64BIT
-        } else if (elem[-1] == 22) {
-            // 64-bit base and length given, and block size, so extract them.
+        } else if (elem_len == 22 || elem_len == 34) {
+            // 64-bit base and length given, so extract them.
             base_addr = get_le64(&elem[2]);
             byte_len = get_le64(&elem[10]);
-            block_size = get_le32(&elem[18]);
+            if (elem_len == 22) {
+                // 32-bit argument 2 given, extract it.
+                arg2 = get_le32(&elem[18]);
+            } else {
+                // 64-bit argument 2 and 3 given, extract them.
+                arg2 = get_le64(&elem[18]);
+                arg3 = get_le64(&elem[26]);
+            }
         #endif
         } else {
             // Invalid MOUNT element.
             return -MBOOT_ERRNO_FSLOAD_INVALID_MOUNT;
         }
+
         if (elem[0] == mount_point) {
             int ret;
             union {
@@ -268,25 +291,41 @@ int fsload_process(void) {
                 #if MBOOT_VFS_LFS2
                 vfs_lfs2_context_t lfs2;
                 #endif
+                #if MBOOT_VFS_RAW
+                vfs_raw_context_t raw;
+                #endif
             } ctx;
             const stream_methods_t *methods;
             #if MBOOT_VFS_FAT
             if (elem[1] == ELEM_MOUNT_FAT) {
-                (void)block_size;
                 ret = vfs_fat_mount(&ctx.fat, base_addr, byte_len);
                 methods = &vfs_fat_stream_methods;
             } else
             #endif
             #if MBOOT_VFS_LFS1
             if (elem[1] == ELEM_MOUNT_LFS1) {
+                uint32_t block_size = arg2;
+                if (block_size == 0) {
+                    block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
+                }
                 ret = vfs_lfs1_mount(&ctx.lfs1, base_addr, byte_len, block_size);
                 methods = &vfs_lfs1_stream_methods;
             } else
             #endif
             #if MBOOT_VFS_LFS2
             if (elem[1] == ELEM_MOUNT_LFS2) {
+                uint32_t block_size = arg2;
+                if (block_size == 0) {
+                    block_size = MBOOT_FSLOAD_DEFAULT_BLOCK_SIZE;
+                }
                 ret = vfs_lfs2_mount(&ctx.lfs2, base_addr, byte_len, block_size);
                 methods = &vfs_lfs2_stream_methods;
+            } else
+            #endif
+            #if MBOOT_VFS_RAW
+            if (elem[1] == ELEM_MOUNT_RAW) {
+                ret = vfs_raw_mount(&ctx.raw, base_addr, byte_len, arg2, arg3);
+                methods = &vfs_raw_stream_methods;
             } else
             #endif
             {
