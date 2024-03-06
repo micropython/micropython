@@ -71,13 +71,23 @@ How to use
     #define MBOOT_FSLOAD (1)
 
    and then enable one or more of the following depending on what filesystem
-   support is required in Mboot (note that the FAT driver is read-only and
-   quite compact, but littlefs supports both read and write so is rather
-   large):
+   support is required in Mboot:
 
     #define MBOOT_VFS_FAT (1)
     #define MBOOT_VFS_LFS1 (1)
     #define MBOOT_VFS_LFS2 (1)
+    #define MBOOT_VFS_RAW (1)
+
+   Note that the FAT and LFS2 drivers are read-only and quite compact, but
+   LFS1 supports both read and write so is rather large.
+
+   The raw filesystem type is enabled by default and is a flat section of
+   storage containing a single file without any metadata.  The raw filesystem
+   can either be one regoin, or split over two separate, contiguous regions.
+   The latter is useful for wear levelling: given a chunk of flash, write the
+   firmware starting at a random block within that chunk and wrap around to
+   the beginning of the chunk when the end is reached.  Then use a split
+   raw filesystem to inform mboot of this wrapping.
 
 2. Build the board's main application firmware as usual.
 
