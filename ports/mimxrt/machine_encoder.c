@@ -79,7 +79,7 @@ typedef struct _encoder_xbar_signal_t {
 #define MODE_ENCODER               (0)
 #define MODE_COUNTER               (1)
 
-STATIC void encoder_deinit_single(machine_encoder_obj_t *self);
+static void encoder_deinit_single(machine_encoder_obj_t *self);
 
 #if defined MIMXRT117x_SERIES
 
@@ -212,7 +212,7 @@ __attribute__((section(".ram_functions"))) void ENC4_IRQHandler(void) {
 #endif
 #endif
 
-STATIC void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print,
         self->is_signed ? "%s %d cpc=%lu match=%ld filter=%luns>\n" : "%s %d cpc=%lu match=%lu filter=%luns>\n",
@@ -223,13 +223,13 @@ STATIC void mp_machine_encoder_print(const mp_print_t *print, mp_obj_t self_in, 
 // Utility functions
 //
 
-STATIC void encoder_set_iomux(const machine_pin_obj_t *pin, const machine_pin_af_obj_t *af) {
+static void encoder_set_iomux(const machine_pin_obj_t *pin, const machine_pin_af_obj_t *af) {
     IOMUXC_SetPinMux(pin->muxRegister, af->af_mode, af->input_register, af->input_daisy, pin->configRegister, 0U);
     IOMUXC_SetPinConfig(pin->muxRegister, af->af_mode, af->input_register, af->input_daisy, pin->configRegister, 0x10B0U);
 }
 
 // decode the AF objects module and Port numer. Returns NULL if it is not a XBAR object
-STATIC const machine_pin_af_obj_t *af_name_decode_xbar(const machine_pin_af_obj_t *af_obj,
+static const machine_pin_af_obj_t *af_name_decode_xbar(const machine_pin_af_obj_t *af_obj,
     xbar_input_signal_t *io_number) {
     const char *str;
     size_t len;
@@ -244,7 +244,7 @@ STATIC const machine_pin_af_obj_t *af_name_decode_xbar(const machine_pin_af_obj_
     return af_obj;
 }
 
-STATIC const machine_pin_af_obj_t *find_xbar_af(const machine_pin_obj_t *pin, xbar_input_signal_t *io_number) {
+static const machine_pin_af_obj_t *find_xbar_af(const machine_pin_obj_t *pin, xbar_input_signal_t *io_number) {
     const machine_pin_af_obj_t *af = NULL;
     for (int i = 0; i < pin->af_list_len; ++i) {
         af = af_name_decode_xbar(&(pin->af_list[i]), io_number);
@@ -255,7 +255,7 @@ STATIC const machine_pin_af_obj_t *find_xbar_af(const machine_pin_obj_t *pin, xb
     mp_raise_ValueError(MP_ERROR_TEXT("invalid input Pin"));
 }
 
-STATIC uint8_t connect_pin_to_encoder(mp_obj_t desc, xbar_output_signal_t encoder_signal, uint8_t direction) {
+static uint8_t connect_pin_to_encoder(mp_obj_t desc, xbar_output_signal_t encoder_signal, uint8_t direction) {
     xbar_input_signal_t xbar_pin;
     const machine_pin_obj_t *pin = pin_find(desc);
     const machine_pin_af_obj_t *af = find_xbar_af(pin,  &xbar_pin);
@@ -288,7 +288,7 @@ STATIC uint8_t connect_pin_to_encoder(mp_obj_t desc, xbar_output_signal_t encode
     return xbar_pin;
 }
 
-STATIC void clear_encoder_registers(machine_encoder_obj_t *self) {
+static void clear_encoder_registers(machine_encoder_obj_t *self) {
     // Create a High pulse on the Trigger input, clearing Position, Revolution and Hold registers.
     XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicHigh, xbar_signal_table[self->id].enc_trigger);
     XBARA_SetSignalsConnection(XBARA1, kXBARA1_InputLogicLow, xbar_signal_table[self->id].enc_trigger);
@@ -300,7 +300,7 @@ STATIC void clear_encoder_registers(machine_encoder_obj_t *self) {
 // Calculate the filter parameters based on a filter_ns value, telling the shortest
 // pulse that will be detected.
 //
-STATIC uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *period) {
+static uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *period) {
 
     #if defined MIMXRT117x_SERIES
     uint32_t freq_khz = CLOCK_GetRootClockFreq(kCLOCK_Root_Bus) / 1000;
@@ -334,7 +334,7 @@ STATIC uint32_t calc_filter(uint32_t filter_ns, uint16_t *count, uint16_t *perio
 
 // Micropython API functions
 //
-STATIC void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
+static void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     mp_arg_val_t args[], enc_config_t *enc_config) {
 
     enum { ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed, ARG_index };
@@ -400,7 +400,7 @@ STATIC void mp_machine_encoder_init_helper_common(machine_encoder_obj_t *self,
     self->active = true;
 }
 
-STATIC void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
+static void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_phase_a, ARG_phase_b, ARG_home,
            ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed, ARG_index};
@@ -449,7 +449,7 @@ STATIC void mp_machine_encoder_init_helper(machine_encoder_obj_t *self,
 }
 
 // Qencoder(id, input_a, input_b, [args])
-STATIC mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -496,7 +496,7 @@ STATIC mp_obj_t mp_machine_encoder_make_new(const mp_obj_type_t *type, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void encoder_deinit_single(machine_encoder_obj_t *self) {
+static void encoder_deinit_single(machine_encoder_obj_t *self) {
     if (self->active) {
         if (self->irq && self->irq->handler) {
             DisableIRQ(enc_irqn[self->id + 1]);
@@ -530,21 +530,21 @@ void machine_encoder_deinit_all(void) {
 }
 
 // encoder.deinit()
-STATIC mp_obj_t machine_encoder_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_encoder_deinit(mp_obj_t self_in) {
     encoder_deinit_single(MP_OBJ_TO_PTR(self_in));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_deinit_obj, machine_encoder_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_deinit_obj, machine_encoder_deinit);
 
 // encoder.status()
 mp_obj_t machine_encoder_status(mp_obj_t self_in) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->status & (self->requested_irq | kENC_LastCountDirectionFlag));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_status_obj, machine_encoder_status);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_status_obj, machine_encoder_status);
 
 // encoder.value([value])
-STATIC mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (!self->active) {
         mp_raise_ValueError(MP_ERROR_TEXT("device stopped"));
@@ -567,10 +567,10 @@ STATIC mp_obj_t machine_encoder_value(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_int_from_uint(actual_value);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_value_obj, 1, 2, machine_encoder_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_value_obj, 1, 2, machine_encoder_value);
 
 // encoder.cycles([value])
-STATIC mp_obj_t machine_encoder_cycles(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_encoder_cycles(size_t n_args, const mp_obj_t *args) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (!self->active) {
         mp_raise_ValueError(MP_ERROR_TEXT("device stopped"));
@@ -583,10 +583,10 @@ STATIC mp_obj_t machine_encoder_cycles(size_t n_args, const mp_obj_t *args) {
     }
     return MP_OBJ_NEW_SMALL_INT(cycles);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_cycles_obj, 1, 2, machine_encoder_cycles);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_encoder_cycles_obj, 1, 2, machine_encoder_cycles);
 
 // encoder.irq(trigger=ENCODER.IRQ_MATCH, value=nnn, handler=None, hard=False)
-STATIC mp_obj_t machine_encoder_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_encoder_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger, ARG_value, ARG_handler, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -638,20 +638,20 @@ STATIC mp_obj_t machine_encoder_irq(size_t n_args, const mp_obj_t *pos_args, mp_
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_encoder_irq_obj, 1, machine_encoder_irq);
 
 // encoder.init([kwargs])
-STATIC mp_obj_t machine_encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_encoder_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_machine_encoder_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_encoder_init_obj, 1, machine_encoder_init);
 
 // encoder.id()
-STATIC mp_obj_t machine_encoder_id(mp_obj_t self_in) {
+static mp_obj_t machine_encoder_id(mp_obj_t self_in) {
     machine_encoder_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->id);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_id_obj, machine_encoder_id);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_encoder_id_obj, machine_encoder_id);
 
-STATIC const mp_rom_map_elem_t machine_encoder_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_encoder_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_encoder_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_encoder_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_encoder_irq_obj) },
@@ -664,7 +664,7 @@ STATIC const mp_rom_map_elem_t machine_encoder_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_UNDER), MP_ROM_INT(ENCODER_TRIGGER_ROLL_UNDER) },
     { MP_ROM_QSTR(MP_QSTR_IRQ_ROLL_OVER), MP_ROM_INT(ENCODER_TRIGGER_ROLL_OVER) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_encoder_locals_dict, machine_encoder_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_encoder_locals_dict, machine_encoder_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_encoder_type,
@@ -678,7 +678,7 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 // --- Counter class code ----------
 
-STATIC void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
+static void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_src, ARG_direction, ARG_match_pin, ARG_filter_ns, ARG_cpc, ARG_signed,  ARG_index };
     static const mp_arg_t allowed_args[] = {
@@ -718,7 +718,7 @@ STATIC void mp_machine_counter_init_helper(machine_encoder_obj_t *self,
 }
 
 // Counter(id, input, [args])
-STATIC mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -770,13 +770,13 @@ STATIC mp_obj_t mp_machine_counter_make_new(const mp_obj_type_t *type, size_t n_
 }
 
 // counter.init([kwargs])
-STATIC mp_obj_t machine_counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_counter_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     mp_machine_counter_init_helper(args[0], n_args - 1, args + 1, kw_args);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_counter_init_obj, 1, machine_counter_init);
 
-STATIC const mp_rom_map_elem_t machine_counter_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_encoder_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&machine_encoder_value_obj) },
     { MP_ROM_QSTR(MP_QSTR_cycles), MP_ROM_PTR(&machine_encoder_cycles_obj) },
@@ -791,7 +791,7 @@ STATIC const mp_rom_map_elem_t machine_counter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_UP), MP_ROM_INT(COUNTER_UP) },
     { MP_ROM_QSTR(MP_QSTR_DOWN), MP_ROM_INT(COUNTER_DOWN) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_counter_locals_dict, machine_counter_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_counter_locals_dict, machine_counter_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_counter_type,
