@@ -1210,7 +1210,7 @@ void ra_sci_tx_ch(uint32_t ch, int c) {
         if ((scr & 0xa0) != 0) {
             sci_regs[idx]->SCR &= ~0xa0;
         }
-        sci_regs[idx]->SCR |= 0xa0; /* TIE and TE enable */
+        sci_regs[idx]->SCR |= 0xa0; /* TIE- and TE-interrupt enable */
     }
     ra_enable_irq(state);
 }
@@ -1412,28 +1412,28 @@ void ra_sci_deinit(uint32_t ch) {
     }
 }
 
-/* rx interrupt */
+/* rx-interrupt */
 void sci_uart_rxi_isr(void) {
     IRQn_Type irq = R_FSP_CurrentIrqGet();
     uint32_t ch = irq_to_ch[(uint32_t)irq];
     ra_sci_isr_rx(ch);
 }
 
-/* tx interrupt */
+/* tx-interrupt */
 void sci_uart_txi_isr(void) {
     IRQn_Type irq = R_FSP_CurrentIrqGet();
     uint32_t ch = irq_to_ch[(uint32_t)irq];
     ra_sci_isr_tx(ch);
 }
 
-/* er interrupt */
+/* er-interrupt */
 void sci_uart_eri_isr(void) {
     IRQn_Type irq = R_FSP_CurrentIrqGet();
     uint32_t ch = irq_to_ch[(uint32_t)irq];
     ra_sci_isr_er(ch);
 }
 
-/* te interrupt */
+/* te-interrupt */
 void sci_uart_tei_isr(void) {
     IRQn_Type irq = R_FSP_CurrentIrqGet();
     uint32_t ch = irq_to_ch[(uint32_t)irq];

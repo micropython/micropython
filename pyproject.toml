@@ -14,7 +14,6 @@ skip = """
 ./ports/cc3200/simplelink,\
 ./ports/cc3200/telnet,\
 ./ports/nrf/drivers/bluetooth/s1*,\
-./ports/renesas-ra,\
 ./ports/stm32/usbhost,\
 ./tests,\
 ACKNOWLEDGEMENTS,\

@@ -484,7 +484,7 @@ FILE2H = $(TOP)/tools/file2h.py
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 
-# Making OBJ use an order-only depenedency on the generated pins.h file
+# Making OBJ use an order-only dependency on the generated pins.h file
 # has the side effect of making the pins.h file before we actually compile
 # any of the objects. The normal dependency generation will deal with the
 # case when pins.h is modified. But when it doesn't exist, we don't know

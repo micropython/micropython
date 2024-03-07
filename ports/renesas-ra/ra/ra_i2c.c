@@ -625,7 +625,7 @@ static void ra_i2c_ictei_isr(R_IIC0_Type *i2c_inst) {
             action->m_status = RA_I2C_STATUS_DataSendCompleted;
             i2c_inst->ICCR2_b.SP = 1;
         } else {
-            action->m_status = RA_I2C_STATUS_Stopped; // set Stopped status insted STOP condition
+            action->m_status = RA_I2C_STATUS_Stopped; // set Stopped status instead STOP condition
         }
     } else {
         ra_i2c_xaction_start(i2c_inst, action, true);
