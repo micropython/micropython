@@ -135,7 +135,7 @@ static void smartconfig_init(void) {
 
 // get/set smartconfig protocol type
 // smartconfig.type([type])
-STATIC mp_obj_t smartconfig_type(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t smartconfig_type(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         return mp_obj_new_int(type);
     } else {
@@ -154,15 +154,15 @@ STATIC mp_obj_t smartconfig_type(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(smartconfig_type_obj, 0, 1, smartconfig_type);
 
-STATIC mp_obj_t smartconfig_start(void) {
+static mp_obj_t smartconfig_start(void) {
     smartconfig_stop();
     smartconfig_init();
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_start_obj, smartconfig_start);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_start_obj, smartconfig_start);
 
-STATIC mp_obj_t smartconfig_stop(void) {
+static mp_obj_t smartconfig_stop(void) {
     esp_smartconfig_stop();
 
     check_esp_err(esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, &event_handler));
@@ -171,17 +171,17 @@ STATIC mp_obj_t smartconfig_stop(void) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_stop_obj, smartconfig_stop);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_stop_obj, smartconfig_stop);
 
-STATIC mp_obj_t smartconfig_done(void) {
+static mp_obj_t smartconfig_done(void) {
     return mp_obj_new_bool(smartconfig_process_done);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_done_obj, smartconfig_done);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_done_obj, smartconfig_done);
 
 // get smartconfig info
 // return: tuple(ssid, password, bssid, type[, rvd_data])
 //         rvd_data - EspTouch V2 reserved data
-STATIC mp_obj_t smartconfig_info(void) {
+static mp_obj_t smartconfig_info(void) {
     mp_obj_t info[] = {
         mp_obj_new_str((const char *)ssid, strlen((const char *)ssid)),
         mp_obj_new_str((const char *)password, strlen((const char *)password)),
@@ -196,33 +196,33 @@ STATIC mp_obj_t smartconfig_info(void) {
 
     return mp_obj_new_tuple(5, info);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_info_obj, smartconfig_info);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_info_obj, smartconfig_info);
 
 // get ssid string
-STATIC mp_obj_t smartconfig_ssid(void) {
+static mp_obj_t smartconfig_ssid(void) {
     return mp_obj_new_str((const char *)ssid, strlen((const char *)ssid));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_ssid_obj, smartconfig_ssid);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_ssid_obj, smartconfig_ssid);
 
 // get password string
-STATIC mp_obj_t smartconfig_password(void) {
+static mp_obj_t smartconfig_password(void) {
     return mp_obj_new_str((const char *)password, strlen((const char *)password));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_password_obj, smartconfig_password);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_password_obj, smartconfig_password);
 
 // get bssid bytes
-STATIC mp_obj_t smartconfig_bssid(void) {
+static mp_obj_t smartconfig_bssid(void) {
     return mp_obj_new_bytes(bssid, sizeof(bssid));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_bssid_obj, smartconfig_bssid);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_bssid_obj, smartconfig_bssid);
 
 // get rvd_data bytes
-STATIC mp_obj_t smartconfig_rvd_data(void) {
+static mp_obj_t smartconfig_rvd_data(void) {
     return mp_obj_new_bytes(rvd_data, strlen((const char *)rvd_data));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_rvd_data_obj, smartconfig_rvd_data);
+static MP_DEFINE_CONST_FUN_OBJ_0(smartconfig_rvd_data_obj, smartconfig_rvd_data);
 
-STATIC const mp_rom_map_elem_t smartconfig_module_globals_table[] = {
+static const mp_rom_map_elem_t smartconfig_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR___name__),                 MP_ROM_QSTR(MP_QSTR_smartconfig)},
     {MP_ROM_QSTR(MP_QSTR_type),                     MP_ROM_PTR(&smartconfig_type_obj)},
     {MP_ROM_QSTR(MP_QSTR_start),                    MP_ROM_PTR(&smartconfig_start_obj)},
@@ -238,7 +238,7 @@ STATIC const mp_rom_map_elem_t smartconfig_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR_TYPE_ESPTOUCH_AIRKISS),    MP_ROM_INT(SC_TYPE_ESPTOUCH_AIRKISS)},
     {MP_ROM_QSTR(MP_QSTR_TYPE_ESPTOUCH_V2),         MP_ROM_INT(SC_TYPE_ESPTOUCH_V2)},
 };
-STATIC MP_DEFINE_CONST_DICT(smartconfig_module_globals, smartconfig_module_globals_table);
+static MP_DEFINE_CONST_DICT(smartconfig_module_globals, smartconfig_module_globals_table);
 
 const mp_obj_module_t smartconfig_user_cmodule = {
     .base = {&mp_type_module},
