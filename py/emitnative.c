@@ -59,7 +59,7 @@
 #endif
 
 // wrapper around everything in this file
-#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32
+#if N_X64 || N_X86 || N_THUMB || N_ARM || N_XTENSA || N_XTENSAWIN || N_RV32 || N_DEBUG
 
 // C stack layout for native functions:
 //  0:                          nlr_buf_t [optional]
@@ -348,6 +348,8 @@ static void emit_native_mov_reg_state_addr(emit_t *emit, int reg_dest, int local
 static void emit_native_mov_reg_qstr(emit_t *emit, int arg_reg, qstr qst) {
     #if MICROPY_PERSISTENT_CODE_SAVE
     ASM_LOAD16_REG_REG_OFFSET(emit->as, arg_reg, REG_QSTR_TABLE, mp_emit_common_use_qstr(emit->emit_common, qst));
+    #elif defined(ASM_MOV_REG_QSTR)
+    ASM_MOV_REG_QSTR(emit->as, arg_reg, qst);
     #else
     ASM_MOV_REG_IMM(emit->as, arg_reg, qst);
     #endif
@@ -2604,6 +2606,8 @@ static void emit_native_binary_op(emit_t *emit, mp_binary_op_t op) {
                 default:
                     break;
             }
+            #elif N_DEBUG
+            asm_debug_setcc_reg_reg_reg(emit->as, op_idx, REG_RET, REG_ARG_2, reg_rhs);
             #else
             #error not implemented
             #endif
