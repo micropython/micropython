@@ -136,7 +136,7 @@ STATIC machine_pwm_obj_t machine_pwm_obj[] = {
 
 STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM(GTIOC %d%c[#%d], runing=%u, freq=%u, duty=%u)", self->ch, self->id, self->pwm->pin, self->active, self->freq, self->duty);
+    mp_printf(print, "PWM(GTIOC %d%c[#%d], active=%u, freq=%u, duty=%u)", self->ch, self->id, self->pwm->pin, self->active, self->freq, self->duty);
 }
 
 STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {

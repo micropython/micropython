@@ -54,7 +54,7 @@ STATIC machine_dac_obj_t machine_dac_obj[] = {
 
 STATIC void machine_dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_dac_obj_t *self = MP_OBJ_TO_PTR(self_in);     // const char *qstr_str(qstr q);
-    mp_printf(print, "DAC(DA%d [#%d], runing=%u, out=%u mV)", self->ch, self->dac->pin, self->active, self->mv);
+    mp_printf(print, "DAC(DA%d [#%d], active=%u, out=%u mV)", self->ch, self->dac->pin, self->active, self->mv);
 }
 
 STATIC mp_obj_t machine_dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
