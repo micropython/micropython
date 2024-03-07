@@ -26,6 +26,7 @@ set(MICROPY_SOURCE_PY
     ${MICROPY_PY_DIR}/emitinlinethumb.c
     ${MICROPY_PY_DIR}/emitinlinextensa.c
     ${MICROPY_PY_DIR}/emitnarm.c
+    ${MICROPY_PY_DIR}/emitndebug.c
     ${MICROPY_PY_DIR}/emitnrv32.c
     ${MICROPY_PY_DIR}/emitnthumb.c
     ${MICROPY_PY_DIR}/emitnx64.c
