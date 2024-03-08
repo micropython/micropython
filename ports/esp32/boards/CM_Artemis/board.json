@@ -1,0 +1,18 @@
+{
+    "vendor": "CircuitMess",
+    "product": "Artemis",
+    "thumbnail": "",
+    "url": "https://circuitmess.com/",
+    "images": [],
+
+    "docs": "",
+    "mcu": "esp32s3",
+    "features": [
+        "USB-C",
+        "BLE",
+        "WiFi"
+    ],
+    "deploy": [
+        "../deploy.md"
+    ]
+}
