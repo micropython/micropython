@@ -56,6 +56,11 @@
 #include "shared-module/usb_midi/__init__.h"
 #endif
 
+
+#if CIRCUITPY_USB_VIDEO
+#include "shared-module/usb_video/__init__.h"
+#endif
+
 #include "tusb.h"
 
 #if CIRCUITPY_USB_VENDOR
@@ -166,6 +171,10 @@ void usb_background(void) {
         #if CIRCUITPY_USB_HOST
         tuh_task();
         #endif
+        #elif CFG_TUSB_OS == OPT_OS_FREERTOS
+        // Yield to FreeRTOS in case TinyUSB runs in a separate task. Don't use
+        // port_yield() because it has a longer delay.
+        vTaskDelay(0);
         #endif
         // No need to flush if there's no REPL.
         #if CIRCUITPY_USB_CDC
@@ -173,6 +182,9 @@ void usb_background(void) {
             // Console will always be itf 0.
             tud_cdc_write_flush();
         }
+        #endif
+        #if CIRCUITPY_USB_VIDEO
+        usb_video_task();
         #endif
     }
 }
@@ -309,13 +321,20 @@ bool tud_vendor_control_xfer_cb(uint8_t rhport, uint8_t stage, tusb_control_requ
 
 #if MICROPY_KBD_EXCEPTION && CIRCUITPY_USB_CDC
 
+// The CDC RX buffer impacts monitoring for ctrl-c. TinyUSB will only ask for
+// more from CDC if the free space in the buffer is greater than the endpoint
+// size. Setting CFG_TUD_CDC_RX_BUFSIZE to the endpoint size and then sending
+// any character will prevent ctrl-c from working. Require at least a 64
+// character buffer.
+#if CFG_TUD_CDC_RX_BUFSIZE < CFG_TUD_CDC_EP_BUFSIZE + 64
+#error "CFG_TUD_CDC_RX_BUFSIZE must be 64 bytes bigger than endpoint size."
+#endif
+
 /**
  * Callback invoked when received an "wanted" char.
  * @param itf           Interface index (for multiple cdc interfaces)
  * @param wanted_char   The wanted char (set previously)
  */
-
-// Only called when console is enabled.
 void tud_cdc_rx_wanted_cb(uint8_t itf, char wanted_char) {
     // Workaround for using shared/runtime/interrupt_char.c
     // Compare mp_interrupt_char with wanted_char and ignore if not matched

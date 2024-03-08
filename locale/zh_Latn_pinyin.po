@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: circuitpython-cn\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-01-09 03:06+0000\n"
+"PO-Revision-Date: 2024-02-19 11:01+0000\n"
 "Last-Translator: hexthat <hexthat@gmail.com>\n"
 "Language-Team: Chinese Hanyu Pinyin\n"
 "Language: zh_Latn_pinyin\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.4\n"
 
 #: main.c
 msgid ""
@@ -103,6 +103,10 @@ msgstr "%q hé %q bìxū bùtóng"
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "%q and %q must share a clock unit"
 msgstr "%q hé %q bìxū gòngxiǎng yígè shízhōng dānyuán"
+
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -222,7 +226,8 @@ msgid "%q must be multiple of 8."
 msgstr "%q bìxū shì 8 debèishù."
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
-#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-bindings/bitmapfilter/__init__.c shared-bindings/canio/CAN.c
+#: shared-bindings/digitalio/Pull.c shared-bindings/supervisor/__init__.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q de lèi xíng bì xū shì %q huò %q, ér bù shì %q"
@@ -231,7 +236,8 @@ msgstr "%q de lèi xíng bì xū shì %q huò %q, ér bù shì %q"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr "%q bìxūshì %q, %q huò %q lèixíng, érbùshì %q"
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/runtime.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q de lèi xíng bì xū shì %q, ér bù shì %q"
 
@@ -248,7 +254,7 @@ msgstr "%q chāo chū jiè xiàn"
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
-#: shared-bindings/canio/Match.c
+#: shared-bindings/canio/Match.c shared-bindings/time/__init__.c
 msgid "%q out of range"
 msgstr "%q chāochū fànwéi"
 
@@ -489,12 +495,6 @@ msgstr "suǒyǒu CAN wàishè dōu zài shǐyòng zhōng"
 msgid "All I2C peripherals are in use"
 msgstr "suǒyǒu I2C wàishè dōu zài shǐyòng zhōng"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-msgid "All PCNT units in use"
-msgstr "suǒyǒu PCNT dānyuán dōu zài shǐyòng zhōng"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -512,7 +512,6 @@ msgstr "suǒyǒu UART wàishè dōu zài shǐyòng zhōng"
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr "suǒyǒu píndào dōu zài shǐyòng zhōng"
 
@@ -535,24 +534,18 @@ msgid "All sync event channels in use"
 msgstr "suǒyǒu tóngbù shìjiàn píndào dōu zài shǐyòng zhōng"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "cǐ yǐnjiǎo de suǒyǒu jìshíqì dōu zài shǐyòng zhōng"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
+#: ports/stm/peripherals/timers.c
 msgid "All timers in use"
 msgstr "suǒyǒu jìshí qì dōu zài shǐyòng zhōng"
 
@@ -698,10 +691,6 @@ msgstr "Huǎnchōngqū tàiduǎn , mùqián zhǐyǒu %d zìjié"
 msgid "Buffer too small"
 msgstr "huǎnchōngqū tàixiǎo"
 
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Buffers must be same size"
-msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
-
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
@@ -756,6 +745,7 @@ msgstr "Wúfǎ jiāng CCCD shèzhì wéi běndì tèzhēng"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "xiànzài wúfǎ gēnggǎi USB shèbèi"
 
@@ -796,16 +786,6 @@ msgstr "Wúfǎ jìlù dào wénjiàn"
 msgid "Cannot remount '/' when visible via USB."
 msgstr "tōngguò USB kějiàn shí wúfǎ chóngxīn ānzhuāng '/'."
 
-#: ports/atmel-samd/common-hal/microcontroller/__init__.c
-#: ports/cxd56/common-hal/microcontroller/__init__.c
-#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
-msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr "wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài"
-
-#: ports/espressif/common-hal/socketpool/Socket.c
-msgid "Cannot set socket options"
-msgstr "wúfǎ shèzhì tàojiēzì xuǎnxiàng"
-
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "Dāng fāngxiàng wéi shūrù shí, bùnéng shèzhì zhí."
@@ -818,10 +798,6 @@ msgstr "wúfǎ zài RS485 móshì xià zhǐdìng RTS huò CTS"
 #: py/objslice.c
 msgid "Cannot subclass slice"
 msgstr "bùnéng zǐlèihuà qiēpiàn"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Cannot vary frequency on a timer that is already in use"
-msgstr "Wúfǎ zài shǐyòng zhōng de jìshí qì shàng gēnggǎi pínlǜ"
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
@@ -857,17 +833,9 @@ msgstr "zuòbiāo shùzǔ jùyǒu bùtóng de chángdù"
 msgid "Coordinate arrays types have different sizes"
 msgstr "zuòbiāo shùzǔ lèixíng jùyǒu bùtóng de dàxiǎo"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "wúfǎ jiǎnsuǒ shízhōng"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
 msgstr "wúfǎ shèzhì dìzhǐ"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Could not start PWM"
-msgstr "Wúfǎ qǐdòng PWM"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
@@ -917,10 +885,6 @@ msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr ""
 "shēn dù shuì mián bié zhēn bì xū shǐ yòng xià lā shàng shēng de biān yuán"
 
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr "mùbiāo wèitú tàixiǎo, wúfǎ bāohán túxiàng"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "Mùbiāo róngliàng xiǎoyú mùdì de_chángdù."
@@ -966,16 +930,6 @@ msgstr "ECB yí cì zhǐ shǐ yòng 16 gè zì jié"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF nèicún fēnpèi shībài"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/ps2io/Ps2.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-msgid "EXTINT channel already in use"
-msgstr "EXTINT píndào yǐjīng shǐyòng"
-
 #: extmod/modre.c
 msgid "Error in regex"
 msgstr "Zhèngzé biǎodá shì cuòwù"
@@ -983,10 +937,6 @@ msgstr "Zhèngzé biǎodá shì cuòwù"
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "safemode.py cuò wù."
-
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "cuò wù: bǎng dìng shī bài"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -1004,10 +954,6 @@ msgstr "FFT jǐn wéi ndarrays dìng yì"
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT jǐn shì yòng yú yī wéi shù zǔ"
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-msgid "Failed SSL handshake"
-msgstr "SSL wòshǒu shībài"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1114,10 +1060,6 @@ msgid ""
 msgstr ""
 "pín lǜ bì xū wéi 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 huò 1008 Mhz"
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Frequency must match existing PWMOut using this timer"
-msgstr "Pínlǜ bìxū yǔ shǐyòng cǐ jìshí qì de xiàn yǒu PWMOut xiāng pǐpèi"
-
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
@@ -1151,11 +1093,6 @@ msgstr "Shǐyòng de yìngjiàn, qǐng chángshì qítā yǐn jiǎo"
 #: supervisor/shared/safe_mode.c
 msgid "Heap allocation when VM not running."
 msgstr "VM wèi yùn xíng shí de duī fēn pèi."
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Heap was corrupted because the stack was too small. Increase stack size."
-msgstr "duī yǐ sǔn huài, yīn wéi duī zhàn tài xiǎo. zēng jiā duī zhàn dà xiǎo."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1204,7 +1141,7 @@ msgstr ""
 msgid "Input taking too long"
 msgstr "Shūrù shíjiānguò zhǎng"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "Shūrù/shūchū cuòwù"
 
@@ -1236,8 +1173,7 @@ msgstr "nèi bù yīn pín huǎn chōng qì tài xiǎo"
 msgid "Internal define error"
 msgstr "Nèibù dìngyì cuòwù"
 
-#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
-#: shared-module/os/getenv.c
+#: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "nèi bù cuò wù"
 
@@ -1245,6 +1181,16 @@ msgstr "nèi bù cuò wù"
 #, c-format
 msgid "Internal error #%d"
 msgstr "nèi bù cuò wù #%d"
+
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
+msgid "Internal resource(s) in use"
+msgstr "zhèngzài shǐyòng de nèibù zīyuán"
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
@@ -1263,7 +1209,7 @@ msgstr "bèi shūchū gōngnéng zhōngduàn"
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/epaperdisplay/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid %q"
 msgstr "wú xiào %q"
 
@@ -1329,8 +1275,7 @@ msgstr "wú xiào de duō bō MAC dì zhǐ"
 msgid "Invalid size"
 msgstr "dà xiǎo wú xiào"
 
-#: ports/espressif/common-hal/ssl/SSLContext.c
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "TLS de chā zuò wú xiào"
 
@@ -1410,6 +1355,10 @@ msgstr "quēshǎo first_set_pin. %q[%u] shèzhì yǐnjiǎo"
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
 msgstr "quēshǎo jmp_pin. %q[%u] tiàodào yǐn jiǎoshàng"
+
+#: shared-module/storage/__init__.c
+msgid "Mount point directory missing"
+msgstr "quēshǎo guàzǎi diǎn mùlù"
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1495,13 +1444,11 @@ msgstr "dì zhǐ: 0x%x shí méi yǒu I2C qì jiàn"
 msgid "No IP"
 msgstr "wú IP"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "No available clocks"
-msgstr "Méiyǒu kěyòng de shízhōng"
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "No capture in progress"
-msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c
+#: ports/cxd56/common-hal/microcontroller/__init__.c
+#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
+msgid "No bootloader present"
+msgstr "bù cúnzài yǐndǎo jiāzǎi chéngxù"
 
 #: shared-module/usb/core/Device.c
 msgid "No configuration set"
@@ -1515,14 +1462,11 @@ msgstr "Wú liánjiē: Wúfǎ quèdìng chángdù"
 msgid "No default %q bus"
 msgstr "wú mòrèn %q zǒngxiàn"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "Méiyǒu miǎnfèi de GCLKs"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "No free GLCKs"
-msgstr "méiyǒu miǎnfèide GLCK"
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1727,11 +1671,6 @@ msgstr "tào jiē zì wài"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "huǎn chōng wài yuán sù bì xū <= 4 zì jié cháng"
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid ""
-"PWM frequency not writable when variable_frequency is False on construction."
-msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bùkě xiě."
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 msgid "PWM restart"
 msgstr "PWM chóngqǐ"
@@ -1776,11 +1715,6 @@ msgstr "Yǐn jiǎo jǐn shūrù"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
 msgstr "yǐn jiǎo bì xū zài Pwm pín dào B shàng"
-
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Pin must support hardware interrupts"
-msgstr "Yǐn jiǎo bìxū zhīchí yìngjiàn zhōngduàn"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1892,7 +1826,7 @@ msgstr "Suíjī shù shēngchéng cuòwù"
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
-#: shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c shared-module/displayio/Group.c
 msgid "Read-only"
 msgstr "Zhǐ dú"
 
@@ -2017,13 +1951,9 @@ msgstr "Yuán huǎnchōng qū hé mùbiāo huǎnchōng qū de chángdù bìxū x
 msgid "Specify exactly one of data0 or data_pins"
 msgstr "zhǐ dìng data0 huò data_pins zhōng de yí gè"
 
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo left must be on PWM channel A"
-msgstr "lì tǐ shēng zuǒ bì xū shì zài PWM tōng dào A"
-
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo right must be on PWM channel B"
-msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
+#: supervisor/shared/safe_mode.c
+msgid "Stack overflow. Increase stack size."
+msgstr "duīzhàn yìchū. zēngjiā duīzhàn dàxiǎo."
 
 #: shared-bindings/alarm/time/TimeAlarm.c
 msgid "Supply one of monotonic_time or epoch_time"
@@ -2133,10 +2063,6 @@ msgstr "bù kě yòng chù mō bào jǐng qì"
 msgid "Traceback (most recent call last):\n"
 msgstr "Traceback (Zuìjìn yīcì diàoyòng zhǐlìng):\n"
 
-#: shared-bindings/time/__init__.c
-msgid "Tuple or struct_time argument required"
-msgstr "Xūyào Tuple huò struct_time cānshù"
-
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART de-init"
 msgstr "UART qù chūshǐhuà"
@@ -2243,11 +2169,6 @@ msgstr "wú fǎ xiě rù sleep_memory."
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Yìwài de nrfx uuid lèixíng"
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-#, c-format
-msgid "Unhandled ESP TLS error %d %d %x %d"
-msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
 #, c-format
@@ -2433,6 +2354,10 @@ msgstr "nín zài qǐ dòng shí àn xià le SW38 àn niǔ."
 msgid "You pressed the VOLUME button at start up."
 msgstr "nín zài qǐ dòng shí àn xià le yīn liàng àn niǔ."
 
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the boot button at start up."
+msgstr ""
+
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
@@ -2497,10 +2422,6 @@ msgstr "argsort cānshù bìxū shì ndarray"
 msgid "argsort is not implemented for flattened arrays"
 msgstr "wèi wéi pīn hé shù zǔ shí xiàn argsort"
 
-#: py/runtime.c shared-bindings/supervisor/__init__.c
-msgid "argument has wrong type"
-msgstr "cānshù lèixíng cuòwù"
-
 #: py/compile.c
 msgid "argument name reused"
 msgstr "chóng fù shǐ yòng de cān shù míng chēng"
@@ -2509,10 +2430,6 @@ msgstr "chóng fù shǐ yòng de cān shù míng chēng"
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
 msgstr "cānshù biānhào/lèixíng bù pǐpèi"
-
-#: py/runtime.c
-msgid "argument should be a '%q' not a '%q'"
-msgstr "cānshù yīnggāi shì '%q', 'bùshì '%q'"
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/numpy/transform.c
 msgid "arguments must be ndarrays"
@@ -2590,6 +2507,10 @@ msgstr "cuòwù de dàimǎ lèixíng"
 #: py/emitnative.c
 msgid "binary op %q not implemented"
 msgstr "èrjìnzhì bǎn qián bǎn %q wèi zhíxíng"
+
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
+msgstr "wèitú dà xiǎohé shēndù bìxū pǐpèi"
 
 #: shared-bindings/bitmaptools/__init__.c
 msgid "bitmap sizes must match"
@@ -2694,7 +2615,7 @@ msgstr "wúfǎ zhuǎnhuàn%s dào fùzá"
 msgid "can't convert %s to float"
 msgstr "wúfǎ zhuǎnhuàn %s dào fú diǎn xíng biànliàng"
 
-#: py/runtime.c
+#: py/objint.c py/runtime.c
 #, c-format
 msgid "can't convert %s to int"
 msgstr "wúfǎ zhuǎnhuàn%s dào int"
@@ -2703,17 +2624,9 @@ msgstr "wúfǎ zhuǎnhuàn%s dào int"
 msgid "can't convert '%q' object to %q implicitly"
 msgstr "wúfǎ jiāng '%q' duìxiàng zhuǎnhuàn wèi %q yǐn hán"
 
-#: py/objint.c
-msgid "can't convert NaN to int"
-msgstr "wúfǎ jiāng dǎoháng zhuǎnhuàn wèi int"
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
 msgstr "wú fǎ jiāng fù zá zhuǎn huàn wéi fú dòng"
-
-#: py/objint.c
-msgid "can't convert inf to int"
-msgstr "bùnéng jiāng inf zhuǎnhuàn wèi int"
 
 #: py/obj.c
 msgid "can't convert to complex"
@@ -3208,10 +3121,6 @@ msgstr "hánshù quēshǎo suǒ xū de wèizhì cānshù #%d"
 msgid "function takes %d positional arguments but %d were given"
 msgstr "hánshù xūyào %d gè wèizhì cānshù, dàn %d bèi gěi chū"
 
-#: shared-bindings/time/__init__.c
-msgid "function takes exactly 9 arguments"
-msgstr "hánshù xūyào wánquán 9 zhǒng cānshù"
-
 #: py/objgenerator.c
 msgid "generator already executing"
 msgstr "shēngchéng qì yǐjīng zhíxíng"
@@ -3401,7 +3310,7 @@ msgstr "wúxiàode cúndàng"
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr "wú xiào bits_per_pixel %d, bì xū shì, 1, 2, 4, 8, 16, 24, huò 32"
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr "zhèngshū wúxiào"
 
@@ -3427,7 +3336,7 @@ msgstr "wúxiào de géshì biāozhù"
 msgid "invalid hostname"
 msgstr "wú xiào zhǔ jī míng"
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr "wúxiào de mì yào"
 
@@ -3938,10 +3847,6 @@ msgstr "cānshù bìxū shì xùliè a2 zhì a5 de dēngjì shù"
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr "cānshù bìxū shì xùliè r0 zhì r3 de dēngjì qì"
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr "xiàngsù zuòbiāo chāochū biānjiè"
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr "zài win32 shàng bù tí gōng wén jiàn tóu piào"
@@ -4066,10 +3971,6 @@ msgstr "zhěngshù géshì shuōmíng fú 'c' bù yǔnxǔ shǐyòng fúhào"
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
 msgstr "dàxiǎo jǐn wèi ndarrays dìngyì"
-
-#: shared-bindings/time/__init__.c
-msgid "sleep length must be non-negative"
-msgstr "shuìmián chángdù bìxū shìfēi fùshù"
 
 #: py/nativeglue.c
 msgid "slice unsupported"
@@ -4339,6 +4240,10 @@ msgstr "bù zhīchí de Thumb zhǐshì '%s', shǐyòng %d cānshù"
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr "bù zhīchí de Xtensa zhǐlìng '%s', shǐyòng %d cānshù"
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr "bù zhīchí de wèitú shēndù"
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr "GifWriter bú zhī chí cǐ sè cǎi kōng jiān"
@@ -4384,6 +4289,19 @@ msgstr "zhí fàn wéi wài de mù biāo"
 #: extmod/moddeflate.c
 msgid "wbits"
 msgstr "fànwéi"
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+"quánzhòng bìxū shì yuán sùshù wéiqí píngfāng shù (tōng chángwéi 9huò25) de "
+"xùliè"
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
+msgstr ""
+"quánzhòng bìxū shì lèixíng wéi %q, %q, %q, huò %q de duìxiàng, érbùshì %q "
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
 msgid "width must be greater than zero"
@@ -4455,6 +4373,99 @@ msgstr "zi bìxū wèi fú diǎn xíng"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi bìxū jùyǒu xíngzhuàng (n_section,2)"
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "cuò wù: bǎng dìng shī bài"
+
+#~ msgid "Buffers must be same size"
+#~ msgstr "huǎnchōng qū bìxū dàxiǎo xiāngtóng"
+
+#~ msgid "Cannot set socket options"
+#~ msgstr "wúfǎ shèzhì tàojiēzì xuǎnxiàng"
+
+#~ msgid "Failed SSL handshake"
+#~ msgstr "SSL wòshǒu shībài"
+
+#~ msgid "No capture in progress"
+#~ msgstr "zhèng zài jìn xíng zhōng de wèi bǔ huò"
+
+#, c-format
+#~ msgid "Unhandled ESP TLS error %d %d %x %d"
+#~ msgstr "Wèi chǔlǐ de ESP TLS cuòwù %d %d %x %d"
+
+#~ msgid "All PCNT units in use"
+#~ msgstr "suǒyǒu PCNT dānyuán dōu zài shǐyòng zhōng"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "wúfǎ jiǎnsuǒ shízhōng"
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present"
+#~ msgstr ""
+#~ "wúfǎ chóngxīn qǐdòng dào yǐdǎo chéngxù, yīnwéi yǐdǎo chéngxù bù cúnzài"
+
+#~ msgid "Cannot vary frequency on a timer that is already in use"
+#~ msgstr "Wúfǎ zài shǐyòng zhōng de jìshí qì shàng gēnggǎi pínlǜ"
+
+#~ msgid "Could not start PWM"
+#~ msgstr "Wúfǎ qǐdòng PWM"
+
+#~ msgid "EXTINT channel already in use"
+#~ msgstr "EXTINT píndào yǐjīng shǐyòng"
+
+#~ msgid "Frequency must match existing PWMOut using this timer"
+#~ msgstr "Pínlǜ bìxū yǔ shǐyòng cǐ jìshí qì de xiàn yǒu PWMOut xiāng pǐpèi"
+
+#~ msgid ""
+#~ "Heap was corrupted because the stack was too small. Increase stack size."
+#~ msgstr ""
+#~ "duī yǐ sǔn huài, yīn wéi duī zhàn tài xiǎo. zēng jiā duī zhàn dà xiǎo."
+
+#~ msgid "No available clocks"
+#~ msgstr "Méiyǒu kěyòng de shízhōng"
+
+#~ msgid "No free GLCKs"
+#~ msgstr "méiyǒu miǎnfèide GLCK"
+
+#~ msgid ""
+#~ "PWM frequency not writable when variable_frequency is False on "
+#~ "construction."
+#~ msgstr "Dāng biànliàng_pínlǜ shì False zài jiànzhú shí PWM pínlǜ bùkě xiě."
+
+#~ msgid "Pin must support hardware interrupts"
+#~ msgstr "Yǐn jiǎo bìxū zhīchí yìngjiàn zhōngduàn"
+
+#~ msgid "Stereo left must be on PWM channel A"
+#~ msgstr "lì tǐ shēng zuǒ bì xū shì zài PWM tōng dào A"
+
+#~ msgid "Stereo right must be on PWM channel B"
+#~ msgstr "lì tǐ shēng yòu cè bì xū zài PWM tōng dào B shàng"
+
+#~ msgid "Tuple or struct_time argument required"
+#~ msgstr "Xūyào Tuple huò struct_time cānshù"
+
+#~ msgid "argument has wrong type"
+#~ msgstr "cānshù lèixíng cuòwù"
+
+#~ msgid "argument should be a '%q' not a '%q'"
+#~ msgstr "cānshù yīnggāi shì '%q', 'bùshì '%q'"
+
+#~ msgid "can't convert NaN to int"
+#~ msgstr "wúfǎ jiāng dǎoháng zhuǎnhuàn wèi int"
+
+#~ msgid "can't convert inf to int"
+#~ msgstr "bùnéng jiāng inf zhuǎnhuàn wèi int"
+
+#~ msgid "function takes exactly 9 arguments"
+#~ msgstr "hánshù xūyào wánquán 9 zhǒng cānshù"
+
+#~ msgid "sleep length must be non-negative"
+#~ msgstr "shuìmián chángdù bìxū shìfēi fùshù"
+
+#~ msgid "Destination bitmap too small to contain image"
+#~ msgstr "mùbiāo wèitú tàixiǎo, wúfǎ bāohán túxiàng"
+
+#~ msgid "pixel coordinates out of bounds"
+#~ msgstr "xiàngsù zuòbiāo chāochū biānjiè"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "Yìngjiàn zhōngduàn tōngdào yǐ zài shǐyòng zhōng"

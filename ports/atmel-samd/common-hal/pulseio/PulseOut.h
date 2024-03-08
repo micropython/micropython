@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -41,9 +40,3 @@ typedef struct {
 
 void pulseout_reset(void);
 void pulseout_interrupt_handler(uint8_t index);
-#ifdef SAMD21
-void rtc_start_pulse(void);
-void rtc_end_pulse(void);
-#endif
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H

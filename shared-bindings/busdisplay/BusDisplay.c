@@ -87,7 +87,7 @@
 //|         backlight_on_high: bool = True,
 //|         SH1107_addressing: bool = False
 //|     ) -> None:
-//|         r"""Create a Display object on the given display bus (`FourWire`, `ParallelBus` or `I2CDisplayBus`).
+//|         r"""Create a Display object on the given display bus (`FourWire`, `paralleldisplaybus.ParallelBus` or `I2CDisplayBus`).
 //|
 //|         The ``init_sequence`` is bitpacked to minimize the ram impact. Every command begins with a
 //|         command byte followed by a byte to determine the parameter count and delay. When the top bit

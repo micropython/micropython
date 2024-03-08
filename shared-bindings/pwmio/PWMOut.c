@@ -46,23 +46,17 @@ void common_hal_pwmio_pwmout_raise_error(pwmout_result_t result) {
             mp_arg_error_invalid(MP_QSTR_frequency);
             break;
         case PWMOUT_INVALID_FREQUENCY_ON_PIN:
-            mp_raise_ValueError(MP_ERROR_TEXT("Frequency must match existing PWMOut using this timer"));
+            mp_arg_error_invalid(MP_QSTR_frequency);
             break;
         case PWMOUT_VARIABLE_FREQUENCY_NOT_AVAILABLE:
-            mp_raise_ValueError(MP_ERROR_TEXT("Cannot vary frequency on a timer that is already in use"));
+            mp_arg_error_invalid(MP_QSTR_variable_frequency);
             break;
-        case PWMOUT_ALL_TIMERS_ON_PIN_IN_USE:
-            mp_raise_ValueError(MP_ERROR_TEXT("All timers for this pin are in use"));
-            break;
-        case PWMOUT_ALL_TIMERS_IN_USE:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
-            break;
-        case PWMOUT_ALL_CHANNELS_IN_USE:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
+        case PWMOUT_INTERNAL_RESOURCES_IN_USE:
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal resource(s) in use"));
             break;
         default:
         case PWMOUT_INITIALIZATION_ERROR:
-            mp_raise_RuntimeError(MP_ERROR_TEXT("Could not start PWM"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal error"));
             break;
     }
 }
@@ -175,7 +169,8 @@ STATIC mp_obj_t pwmio_pwmout_make_new(const mp_obj_type_t *type, size_t n_args, 
     bool variable_frequency = parsed_args[ARG_variable_frequency].u_bool;
 
     // create PWM object from the given pin
-    pwmio_pwmout_obj_t *self = mp_obj_malloc(pwmio_pwmout_obj_t, &pwmio_pwmout_type);
+    pwmio_pwmout_obj_t *self = m_new_obj_with_finaliser(pwmio_pwmout_obj_t);
+    self->base.type = &pwmio_pwmout_type;
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(self, pin, duty_cycle, frequency, variable_frequency);
     common_hal_pwmio_pwmout_raise_error(result);
 
@@ -268,8 +263,7 @@ STATIC mp_obj_t pwmio_pwmout_obj_set_frequency(mp_obj_t self_in, mp_obj_t freque
     pwmio_pwmout_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
     if (!common_hal_pwmio_pwmout_get_variable_frequency(self)) {
-        mp_raise_AttributeError(MP_ERROR_TEXT(
-            "PWM frequency not writable when variable_frequency is False on construction."));
+        mp_raise_msg_varg(&mp_type_AttributeError, MP_ERROR_TEXT("Invalid %q"), MP_QSTR_variable_frequency);
     }
     mp_int_t freq = mp_obj_get_int(frequency);
     if (freq == 0) {
@@ -287,6 +281,7 @@ MP_PROPERTY_GETSET(pwmio_pwmout_frequency_obj,
 STATIC const mp_rom_map_elem_t pwmio_pwmout_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&pwmio_pwmout_deinit_obj) },
+    { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&pwmio_pwmout_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__), MP_ROM_PTR(&default___enter___obj) },
     { MP_ROM_QSTR(MP_QSTR___exit__), MP_ROM_PTR(&pwmio_pwmout___exit___obj) },
 

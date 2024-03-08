@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "common-hal/pwmio/PWMOut.h"
@@ -46,7 +45,4 @@ typedef struct {
     volatile uint16_t pulse_index;
 } pulseio_pulseout_obj_t;
 
-void pulseout_reset(void);
 int64_t pulseout_interrupt_handler(alarm_id_t id, void *user_data);
-
-#endif // MICROPY_INCLUDED_ATMEL SAMD_COMMON_HAL_PULSEIO_PULSEOUT_H

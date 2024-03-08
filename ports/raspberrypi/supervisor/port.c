@@ -33,16 +33,18 @@
 
 #include "bindings/rp2pio/StateMachine.h"
 #include "genhdr/mpversion.h"
-#include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/busio/I2C.h"
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/countio/Counter.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/rtc/__init__.h"
-#include "shared-bindings/pwmio/PWMOut.h"
+
+#if CIRCUITPY_AUDIOCORE
+#include "audio_dma.h"
+#endif
 
 #if CIRCUITPY_SSL
-#include "common-hal/ssl/__init__.h"
+#include "shared-module/ssl/__init__.h"
 #endif
 
 #if CIRCUITPY_WIFI
@@ -184,10 +186,6 @@ void reset_port(void) {
     reset_countio();
     #endif
 
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
-    #endif
-
     #if CIRCUITPY_RP2PIO
     reset_rp2pio_statemachine();
     #endif
@@ -196,9 +194,6 @@ void reset_port(void) {
     rtc_reset();
     #endif
 
-    #if CIRCUITPY_AUDIOPWMIO
-    audiopwmout_reset();
-    #endif
     #if CIRCUITPY_AUDIOCORE
     audio_dma_reset();
     #endif

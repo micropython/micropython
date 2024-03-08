@@ -55,7 +55,7 @@ PATHS = [
     "ports/**/*.py",
     "py/**/*.py",
     "tools/**/*.py",
-    "tests/**/*.py",
+    "tests/circuitpython-*/**/*.py",
 ]
 
 EXCLUSIONS = [
@@ -65,8 +65,6 @@ EXCLUSIONS = [
     "ports/unix/*.py",
     # not real python files
     "tests/**/repl_*.py",
-    # needs careful attention before applying automatic formatting
-    "tests/basics/*.py",
     # don't reindent this third-party code we vendored in
     "ports/raspberrypi/lwip_src",
 ]

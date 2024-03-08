@@ -34,6 +34,9 @@
 typedef struct {
     nrfx_twim_t twim;
     bool in_use;
+    volatile bool transferring;
+    nrfx_twim_evt_type_t last_event_type;
+    uint32_t timeout;
 } twim_peripheral_t;
 
 typedef struct {

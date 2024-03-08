@@ -103,6 +103,10 @@ msgstr "%q와 %q는 달라야 합니다"
 msgid "%q and %q must share a clock unit"
 msgstr ""
 
+#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+msgid "%q cannot be changed once mode is set to %q"
+msgstr ""
+
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
 msgstr "%q에 중복된 핀이 포함"
@@ -226,7 +230,8 @@ msgid "%q must be multiple of 8."
 msgstr ""
 
 #: ports/raspberrypi/bindings/cyw43/__init__.c py/argcheck.c py/objexcept.c
-#: shared-bindings/canio/CAN.c shared-bindings/digitalio/Pull.c
+#: shared-bindings/bitmapfilter/__init__.c shared-bindings/canio/CAN.c
+#: shared-bindings/digitalio/Pull.c shared-bindings/supervisor/__init__.c
 #: shared-module/synthio/Synthesizer.c
 msgid "%q must be of type %q or %q, not %q"
 msgstr "%q는 %q가 아닌 %q 또는 %q 유형이어야 합니다"
@@ -235,7 +240,8 @@ msgstr "%q는 %q가 아닌 %q 또는 %q 유형이어야 합니다"
 msgid "%q must be of type %q, %q, or %q, not %q"
 msgstr ""
 
-#: py/argcheck.c shared-module/synthio/__init__.c
+#: py/argcheck.c py/runtime.c shared-bindings/bitmapfilter/__init__.c
+#: shared-module/synthio/__init__.c
 msgid "%q must be of type %q, not %q"
 msgstr "%q는 %q가 아니라 %q 유형이어야 합니다"
 
@@ -253,7 +259,7 @@ msgstr "%q가 경계를 벗어남"
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
-#: shared-bindings/canio/Match.c
+#: shared-bindings/canio/Match.c shared-bindings/time/__init__.c
 #, fuzzy
 msgid "%q out of range"
 msgstr "%q가 범위를 벗어남"
@@ -507,13 +513,6 @@ msgstr "모든 CAN 주변 기기가 사용 중입니다"
 msgid "All I2C peripherals are in use"
 msgstr "사용 중인 모든 I2C주변 기기"
 
-#: ports/espressif/common-hal/countio/Counter.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/rotaryio/IncrementalEncoder.c
-#, fuzzy
-msgid "All PCNT units in use"
-msgstr "모든 PCNT 장치가 사용 중입니다"
-
 #: ports/atmel-samd/common-hal/canio/Listener.c
 #: ports/espressif/common-hal/canio/Listener.c
 #: ports/stm/common-hal/canio/Listener.c
@@ -532,7 +531,6 @@ msgstr "사용중인 모든 UART주변 기기"
 #: ports/nrf/common-hal/countio/Counter.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c
 #: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All channels in use"
 msgstr "모든 채널이 사용중입니다"
 
@@ -558,24 +556,18 @@ msgid "All sync event channels in use"
 msgstr "모든 동기화 이벤트 채널이 사용 중입니다"
 
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c
-#: shared-bindings/pwmio/PWMOut.c
 msgid "All timers for this pin are in use"
 msgstr "핀의 모든 타이머가 사용 중입니다"
 
 #: ports/atmel-samd/common-hal/_pew/PewPew.c
 #: ports/atmel-samd/common-hal/audioio/AudioOut.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/espressif/common-hal/frequencyio/FrequencyIn.c
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-#: ports/espressif/common-hal/pulseio/PulseIn.c
-#: ports/espressif/common-hal/pulseio/PulseOut.c
 #: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/stm/peripherals/timers.c shared-bindings/pwmio/PWMOut.c
+#: ports/stm/peripherals/timers.c
 msgid "All timers in use"
 msgstr "모든 타이머가 사용 중입니다"
 
@@ -726,10 +718,6 @@ msgstr "버퍼가 %d 바이트로 너무 짧습니다"
 msgid "Buffer too small"
 msgstr "버퍼가 너무 작습니다"
 
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "Buffers must be same size"
-msgstr "버퍼의 크기는 같아야 합니다"
-
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
@@ -782,6 +770,7 @@ msgstr "로컬 특성에 CCCD를 설정할 수 없습니다"
 
 #: shared-bindings/storage/__init__.c shared-bindings/usb_cdc/__init__.c
 #: shared-bindings/usb_hid/__init__.c shared-bindings/usb_midi/__init__.c
+#: shared-bindings/usb_video/__init__.c
 msgid "Cannot change USB devices now"
 msgstr "현재 USB 디바이스를 변경할 수 없습니다"
 
@@ -822,16 +811,6 @@ msgstr "파일에 녹음 할 수 없습니다"
 msgid "Cannot remount '/' when visible via USB."
 msgstr "USB를 통해 표시될 때 '/'은 다시 마운트할 수 없습니다."
 
-#: ports/atmel-samd/common-hal/microcontroller/__init__.c
-#: ports/cxd56/common-hal/microcontroller/__init__.c
-#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
-msgid "Cannot reset into bootloader because no bootloader is present"
-msgstr "부트로더가 없기 때문에 부트로더로 재시작할 수 없습니다"
-
-#: ports/espressif/common-hal/socketpool/Socket.c
-msgid "Cannot set socket options"
-msgstr "소켓 옵션을 설정할 수 없습니다"
-
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "Cannot set value when direction is input."
 msgstr "방향이 입력되면 값을 설정할 수 없습니다."
@@ -844,10 +823,6 @@ msgstr "RS485 모드에서는 RTS 또는 CTS를 지정할 수 없습니다"
 #: py/objslice.c
 msgid "Cannot subclass slice"
 msgstr ""
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Cannot vary frequency on a timer that is already in use"
-msgstr "이미 사용 중인 타이머의 주파수를 변경할 수 없습니다"
 
 #: ports/nrf/common-hal/alarm/pin/PinAlarm.c
 #, fuzzy
@@ -885,17 +860,9 @@ msgstr "좌표 배열의 길이가 다릅니다"
 msgid "Coordinate arrays types have different sizes"
 msgstr "좌표 배열 유형은 크기가 다릅니다"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c
-msgid "Could not retrieve clock"
-msgstr "시계를 불러올 수 없습니다"
-
 #: shared-bindings/_bleio/Adapter.c
 msgid "Could not set address"
 msgstr "주소를 설정할 수 없습니다"
-
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Could not start PWM"
-msgstr "PWM을 시작할 수 없습니다"
 
 #: ports/stm/common-hal/busio/UART.c
 msgid "Could not start interrupt, RX busy"
@@ -945,10 +912,6 @@ msgstr "광고 (브로드 캐스트) 패킷에 대한 데이터가 너무 큽니
 msgid "Deep sleep pins must use a rising edge with pulldown"
 msgstr "딥 슬립 핀은 풀다운이 있는 상승 에지를 사용해야 합니다"
 
-#: shared-module/jpegio/JpegDecoder.c
-msgid "Destination bitmap too small to contain image"
-msgstr "대상 비트맵이 이미지를 포함하기에는 너무 작습니다"
-
 #: shared-bindings/audiobusio/PDMIn.c
 msgid "Destination capacity is smaller than destination_length."
 msgstr "대상 용량이 destination_length보다 작습니다."
@@ -993,16 +956,6 @@ msgstr "ECB는 한 번에 16 바이트에서만 작동합니다"
 msgid "ESP-IDF memory allocation failed"
 msgstr "ESP-IDF 메모리 할당에 실패하였습니다"
 
-#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-#: ports/atmel-samd/common-hal/ps2io/Ps2.c
-#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-#: ports/cxd56/common-hal/pulseio/PulseIn.c
-msgid "EXTINT channel already in use"
-msgstr "EXTINT 채널은 이미 사용 중입니다"
-
 #: extmod/modre.c
 msgid "Error in regex"
 msgstr "Regex에 오류가 있습니다."
@@ -1010,10 +963,6 @@ msgstr "Regex에 오류가 있습니다."
 #: supervisor/shared/safe_mode.c
 msgid "Error in safemode.py."
 msgstr "safemode.py에 오류가 있습니다."
-
-#: shared-bindings/socketpool/Socket.c shared-bindings/ssl/SSLSocket.c
-msgid "Error: Failure to bind"
-msgstr "오류: 바인드에 실패했습니다"
 
 #: shared-bindings/alarm/__init__.c
 msgid "Expected a kind of %q"
@@ -1032,10 +981,6 @@ msgstr "FFT는 ndarrays에 대해서만 정의됩니다"
 #: extmod/ulab/code/numpy/fft/fft_tools.c
 msgid "FFT is implemented for linear arrays only"
 msgstr "FFT는 선형 배열에 대해서만 구현됩니다"
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-msgid "Failed SSL handshake"
-msgstr "SSL 핸드셰이크에 실패했습니다"
 
 #: shared-bindings/ps2io/Ps2.c
 msgid "Failed sending command."
@@ -1141,10 +1086,6 @@ msgstr ""
 "주파수는 24, 150, 396, 450, 528, 600, 720, 816, 912, 960 또는 1008 Mhz 여야 "
 "합니다"
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid "Frequency must match existing PWMOut using this timer"
-msgstr "이 타이머를 사용하는 기존 PWMOut와 주파수를 일치시켜야 한다"
-
 #: shared-bindings/bitbangio/I2C.c shared-bindings/bitbangio/SPI.c
 #: shared-bindings/busio/I2C.c shared-bindings/busio/SPI.c
 msgid "Function requires lock"
@@ -1178,11 +1119,6 @@ msgstr "하드웨어가 사용 중입니다, 대체 핀을 사용해보십시오
 #: supervisor/shared/safe_mode.c
 msgid "Heap allocation when VM not running."
 msgstr "VM이 작동하지 않을 때 힙이 할당됩니다."
-
-#: supervisor/shared/safe_mode.c
-msgid ""
-"Heap was corrupted because the stack was too small. Increase stack size."
-msgstr "스택이 너무 작아서 힙이 손상되었습니다. 스택 크기를 증가시켜 주십시오."
 
 #: extmod/vfs_posix_file.c py/objstringio.c
 msgid "I/O operation on closed file"
@@ -1226,7 +1162,7 @@ msgstr "입력 버퍼 길이 (%d) 는 스트랜드 수 (%d)의 배수여야 한�
 msgid "Input taking too long"
 msgstr "입력이 너무 오래 걸린다"
 
-#: ports/espressif/common-hal/neopixel_write/__init__.c py/moderrno.c
+#: py/moderrno.c
 msgid "Input/output error"
 msgstr "입력/출력 오류"
 
@@ -1258,8 +1194,7 @@ msgstr "내부 오디오 버퍼가 너무 작습니다"
 msgid "Internal define error"
 msgstr "내부 정의 오류"
 
-#: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
-#: shared-module/os/getenv.c
+#: shared-bindings/pwmio/PWMOut.c shared-module/os/getenv.c
 msgid "Internal error"
 msgstr "내부 오류"
 
@@ -1267,6 +1202,16 @@ msgstr "내부 오류"
 #, c-format
 msgid "Internal error #%d"
 msgstr "내부 오류 #%d"
+
+#: ports/atmel-samd/common-hal/alarm/pin/PinAlarm.c
+#: ports/atmel-samd/common-hal/countio/Counter.c
+#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
+#: ports/atmel-samd/common-hal/ps2io/Ps2.c
+#: ports/atmel-samd/common-hal/pulseio/PulseIn.c
+#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/cxd56/common-hal/pulseio/PulseIn.c shared-bindings/pwmio/PWMOut.c
+msgid "Internal resource(s) in use"
+msgstr ""
 
 #: supervisor/shared/safe_mode.c
 msgid "Internal watchdog timer expired."
@@ -1285,7 +1230,7 @@ msgstr "출력 함수로 인해 종료되었다"
 #: ports/raspberrypi/bindings/picodvi/Framebuffer.c
 #: ports/raspberrypi/common-hal/picodvi/Framebuffer.c py/argcheck.c
 #: shared-bindings/digitalio/DigitalInOut.c
-#: shared-bindings/epaperdisplay/EPaperDisplay.c
+#: shared-bindings/epaperdisplay/EPaperDisplay.c shared-bindings/pwmio/PWMOut.c
 msgid "Invalid %q"
 msgstr "잘못된 %q"
 
@@ -1351,8 +1296,7 @@ msgstr "잘못된 멀티캐스트 MAC 주소"
 msgid "Invalid size"
 msgstr "잘못된 크기"
 
-#: ports/espressif/common-hal/ssl/SSLContext.c
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "Invalid socket for TLS"
 msgstr "TLS에 대한 잘못된 소켓"
 
@@ -1435,6 +1379,10 @@ msgstr "first_set_pin이 누락되었습니다. %q[%u]는 pin(s)을 설정합니
 #, fuzzy
 msgid "Missing jmp_pin. %q[%u] jumps on pin"
 msgstr "jmp_pin이 누락되었습니다. %q[%u] 핀으로 점프합니다"
+
+#: shared-module/storage/__init__.c
+msgid "Mount point directory missing"
+msgstr ""
 
 #: shared-bindings/busio/UART.c shared-bindings/displayio/Group.c
 msgid "Must be a %q subclass."
@@ -1521,13 +1469,11 @@ msgstr "주소에 I2C 장치가 없습니다: 0x%x"
 msgid "No IP"
 msgstr "IP가 없습니다"
 
-#: ports/atmel-samd/common-hal/frequencyio/FrequencyIn.c
-msgid "No available clocks"
-msgstr "사용 가능한 시계가 없습니다"
-
-#: ports/espressif/common-hal/imagecapture/ParallelImageCapture.c
-msgid "No capture in progress"
-msgstr "진행 중인 캡처가 없습니다"
+#: ports/atmel-samd/common-hal/microcontroller/__init__.c
+#: ports/cxd56/common-hal/microcontroller/__init__.c
+#: ports/mimxrt10xx/common-hal/microcontroller/__init__.c
+msgid "No bootloader present"
+msgstr ""
 
 #: shared-module/usb/core/Device.c
 #, fuzzy
@@ -1542,14 +1488,11 @@ msgstr "연결이 없습니다: 길이를 결정할 수 없습니다"
 msgid "No default %q bus"
 msgstr "기본 버스 %q가 없습니다"
 
+#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 #: ports/atmel-samd/common-hal/audiobusio/PDMIn.c
 #: ports/atmel-samd/common-hal/touchio/TouchIn.c
 msgid "No free GCLKs"
 msgstr "무료 GCLKs가 없습니다"
-
-#: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
-msgid "No free GLCKs"
-msgstr ""
 
 #: shared-bindings/os/__init__.c
 msgid "No hardware random available"
@@ -1761,11 +1704,6 @@ msgstr "소켓 부족"
 msgid "Out-buffer elements must be <= 4 bytes long"
 msgstr "출력 버퍼 요소의 길이는 <= 4 바이트 여야 합니다"
 
-#: shared-bindings/pwmio/PWMOut.c
-msgid ""
-"PWM frequency not writable when variable_frequency is False on construction."
-msgstr "생성 시 variable_frequency가 false인 경우 PWM 주파수는 쓸 수 없습니다."
-
 #: ports/stm/common-hal/pwmio/PWMOut.c
 #, fuzzy
 msgid "PWM restart"
@@ -1816,11 +1754,6 @@ msgstr "핀은 입력 전용입니다"
 #: ports/raspberrypi/common-hal/countio/Counter.c
 msgid "Pin must be on PWM Channel B"
 msgstr "핀은 PWM 채널 B에 있어야 합니다"
-
-#: ports/atmel-samd/common-hal/countio/Counter.c
-#: ports/atmel-samd/common-hal/rotaryio/IncrementalEncoder.c
-msgid "Pin must support hardware interrupts"
-msgstr "핀은 하드웨어 인터럽트를 지원해야 합니다"
 
 #: shared-bindings/rgbmatrix/RGBMatrix.c
 #, c-format
@@ -1929,7 +1862,7 @@ msgstr "난수 생성 오류"
 #: shared-bindings/_bleio/__init__.c
 #: shared-bindings/memorymonitor/AllocationSize.c
 #: shared-bindings/pulseio/PulseIn.c shared-module/bitmaptools/__init__.c
-#: shared-module/displayio/Bitmap.c
+#: shared-module/displayio/Bitmap.c shared-module/displayio/Group.c
 msgid "Read-only"
 msgstr "읽기 전용"
 
@@ -2054,12 +1987,8 @@ msgstr ""
 msgid "Specify exactly one of data0 or data_pins"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo left must be on PWM channel A"
-msgstr ""
-
-#: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
-msgid "Stereo right must be on PWM channel B"
+#: supervisor/shared/safe_mode.c
+msgid "Stack overflow. Increase stack size."
 msgstr ""
 
 #: shared-bindings/alarm/time/TimeAlarm.c
@@ -2168,10 +2097,6 @@ msgstr ""
 msgid "Traceback (most recent call last):\n"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
-msgid "Tuple or struct_time argument required"
-msgstr ""
-
 #: ports/stm/common-hal/busio/UART.c
 msgid "UART de-init"
 msgstr ""
@@ -2278,11 +2203,6 @@ msgstr ""
 
 #: ports/nrf/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
-msgstr ""
-
-#: ports/espressif/common-hal/ssl/SSLSocket.c
-#, c-format
-msgid "Unhandled ESP TLS error %d %d %x %d"
 msgstr ""
 
 #: ports/espressif/common-hal/_bleio/__init__.c
@@ -2462,6 +2382,10 @@ msgstr ""
 msgid "You pressed the VOLUME button at start up."
 msgstr ""
 
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the boot button at start up."
+msgstr ""
+
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_matrix/mpconfigboard.h
@@ -2526,10 +2450,6 @@ msgstr ""
 msgid "argsort is not implemented for flattened arrays"
 msgstr ""
 
-#: py/runtime.c shared-bindings/supervisor/__init__.c
-msgid "argument has wrong type"
-msgstr ""
-
 #: py/compile.c
 msgid "argument name reused"
 msgstr ""
@@ -2537,10 +2457,6 @@ msgstr ""
 #: py/argcheck.c shared-bindings/_stage/__init__.c
 #: shared-bindings/digitalio/DigitalInOut.c
 msgid "argument num/types mismatch"
-msgstr ""
-
-#: py/runtime.c
-msgid "argument should be a '%q' not a '%q'"
 msgstr ""
 
 #: extmod/ulab/code/numpy/numerical.c extmod/ulab/code/numpy/transform.c
@@ -2618,6 +2534,10 @@ msgstr ""
 
 #: py/emitnative.c
 msgid "binary op %q not implemented"
+msgstr ""
+
+#: shared-module/bitmapfilter/__init__.c
+msgid "bitmap size and depth must match"
 msgstr ""
 
 #: shared-bindings/bitmaptools/__init__.c
@@ -2723,7 +2643,7 @@ msgstr "%s 를 복합어로 변환할 수 없습니다"
 msgid "can't convert %s to float"
 msgstr ""
 
-#: py/runtime.c
+#: py/objint.c py/runtime.c
 #, c-format
 msgid "can't convert %s to int"
 msgstr ""
@@ -2732,16 +2652,8 @@ msgstr ""
 msgid "can't convert '%q' object to %q implicitly"
 msgstr ""
 
-#: py/objint.c
-msgid "can't convert NaN to int"
-msgstr ""
-
 #: extmod/ulab/code/numpy/vector.c
 msgid "can't convert complex to float"
-msgstr ""
-
-#: py/objint.c
-msgid "can't convert inf to int"
 msgstr ""
 
 #: py/obj.c
@@ -3231,10 +3143,6 @@ msgstr ""
 msgid "function takes %d positional arguments but %d were given"
 msgstr ""
 
-#: shared-bindings/time/__init__.c
-msgid "function takes exactly 9 arguments"
-msgstr ""
-
 #: py/objgenerator.c
 msgid "generator already executing"
 msgstr ""
@@ -3424,7 +3332,7 @@ msgstr ""
 msgid "invalid bits_per_pixel %d, must be, 1, 2, 4, 8, 16, 24, or 32"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid cert"
 msgstr "cert가 유효하지 않습니다"
 
@@ -3450,7 +3358,7 @@ msgstr "형식 지정자(format specifier)가 유효하지 않습니다"
 msgid "invalid hostname"
 msgstr ""
 
-#: ports/raspberrypi/common-hal/ssl/SSLSocket.c
+#: shared-module/ssl/SSLSocket.c
 msgid "invalid key"
 msgstr "키가 유효하지 않습니다"
 
@@ -3960,10 +3868,6 @@ msgstr ""
 msgid "parameters must be registers in sequence r0 to r3"
 msgstr ""
 
-#: shared-bindings/bitmaptools/__init__.c
-msgid "pixel coordinates out of bounds"
-msgstr ""
-
 #: extmod/vfs_posix_file.c
 msgid "poll on file not available on win32"
 msgstr ""
@@ -4087,10 +3991,6 @@ msgstr ""
 
 #: extmod/ulab/code/ulab_tools.c
 msgid "size is defined for ndarrays only"
-msgstr ""
-
-#: shared-bindings/time/__init__.c
-msgid "sleep length must be non-negative"
 msgstr ""
 
 #: py/nativeglue.c
@@ -4358,6 +4258,10 @@ msgstr ""
 msgid "unsupported Xtensa instruction '%s' with %d arguments"
 msgstr ""
 
+#: shared-module/bitmapfilter/__init__.c
+msgid "unsupported bitmap depth"
+msgstr ""
+
 #: shared-module/gifio/GifWriter.c
 msgid "unsupported colorspace for GifWriter"
 msgstr ""
@@ -4402,6 +4306,16 @@ msgstr ""
 
 #: extmod/moddeflate.c
 msgid "wbits"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid ""
+"weights must be a sequence with an odd square number of elements (usually 9 "
+"or 25)"
+msgstr ""
+
+#: shared-bindings/bitmapfilter/__init__.c
+msgid "weights must be an object of type %q, %q, %q, or %q, not %q "
 msgstr ""
 
 #: shared-bindings/is31fl3741/FrameBuffer.c
@@ -4474,6 +4388,63 @@ msgstr ""
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr ""
+
+#~ msgid "Error: Failure to bind"
+#~ msgstr "오류: 바인드에 실패했습니다"
+
+#~ msgid "Buffers must be same size"
+#~ msgstr "버퍼의 크기는 같아야 합니다"
+
+#~ msgid "Cannot set socket options"
+#~ msgstr "소켓 옵션을 설정할 수 없습니다"
+
+#~ msgid "Failed SSL handshake"
+#~ msgstr "SSL 핸드셰이크에 실패했습니다"
+
+#~ msgid "No capture in progress"
+#~ msgstr "진행 중인 캡처가 없습니다"
+
+#, fuzzy
+#~ msgid "All PCNT units in use"
+#~ msgstr "모든 PCNT 장치가 사용 중입니다"
+
+#~ msgid "Could not retrieve clock"
+#~ msgstr "시계를 불러올 수 없습니다"
+
+#~ msgid "Cannot reset into bootloader because no bootloader is present"
+#~ msgstr "부트로더가 없기 때문에 부트로더로 재시작할 수 없습니다"
+
+#~ msgid "Cannot vary frequency on a timer that is already in use"
+#~ msgstr "이미 사용 중인 타이머의 주파수를 변경할 수 없습니다"
+
+#~ msgid "Could not start PWM"
+#~ msgstr "PWM을 시작할 수 없습니다"
+
+#~ msgid "EXTINT channel already in use"
+#~ msgstr "EXTINT 채널은 이미 사용 중입니다"
+
+#~ msgid "Frequency must match existing PWMOut using this timer"
+#~ msgstr "이 타이머를 사용하는 기존 PWMOut와 주파수를 일치시켜야 한다"
+
+#~ msgid ""
+#~ "Heap was corrupted because the stack was too small. Increase stack size."
+#~ msgstr ""
+#~ "스택이 너무 작아서 힙이 손상되었습니다. 스택 크기를 증가시켜 주십시오."
+
+#~ msgid "No available clocks"
+#~ msgstr "사용 가능한 시계가 없습니다"
+
+#~ msgid ""
+#~ "PWM frequency not writable when variable_frequency is False on "
+#~ "construction."
+#~ msgstr ""
+#~ "생성 시 variable_frequency가 false인 경우 PWM 주파수는 쓸 수 없습니다."
+
+#~ msgid "Pin must support hardware interrupts"
+#~ msgstr "핀은 하드웨어 인터럽트를 지원해야 합니다"
+
+#~ msgid "Destination bitmap too small to contain image"
+#~ msgstr "대상 비트맵이 이미지를 포함하기에는 너무 작습니다"
 
 #~ msgid "A hardware interrupt channel is already in use"
 #~ msgstr "하드웨어 인터럽트 채널이 이미 사용 중입니다"

@@ -30,6 +30,7 @@
 #include "shared-bindings/microcontroller/__init__.h"
 
 #include "common-hal/watchdog/WatchDogTimer.h"
+#include "bindings/espidf/__init__.h"
 
 #include "esp_task_wdt.h"
 
@@ -66,18 +67,19 @@ void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
     }
 }
 
-static void wdt_config(uint32_t timeout, watchdog_watchdogmode_t mode) {
-    // enable panic hanler in WATCHDOGMODE_RESET mode
+static void wdt_config(uint32_t timeout_ms, watchdog_watchdogmode_t mode) {
+    // enable panic handler in WATCHDOGMODE_RESET mode
     // initialize Task Watchdog Timer (TWDT)
     esp_task_wdt_config_t twdt_config = {
-        .timeout_ms = timeout,
-        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,    // Bitmask of all cores
+        .timeout_ms = timeout_ms,
+        .idle_core_mask = 0, // Don't monitor idle tasks just the ones we add.
         .trigger_panic = (mode == WATCHDOGMODE_RESET),
     };
+    // Reconfigure if we are already running.
     if (esp_task_wdt_init(&twdt_config) != ESP_OK) {
-        mp_raise_msg(&mp_type_MemoryError, NULL);
+        CHECK_ESP_RESULT(esp_task_wdt_reconfigure(&twdt_config));
     }
-    esp_task_wdt_add(NULL);
+    CHECK_ESP_RESULT(esp_task_wdt_add(NULL));
 }
 
 mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
@@ -85,17 +87,15 @@ mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
 }
 
 void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_float_t new_timeout) {
-    if (!(self->timeout < new_timeout || self->timeout > new_timeout)) {
-        return;
-    }
+    uint64_t new_timeout_ms = new_timeout * 1000;
 
-    if ((uint64_t)new_timeout > UINT32_MAX) {
-        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be <= %u"), MP_QSTR_timeout, UINT32_MAX);
+    if (new_timeout_ms > UINT32_MAX) {
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be <= %u"), MP_QSTR_timeout, UINT32_MAX / 1000);
     }
     self->timeout = new_timeout;
 
     if (self->mode != WATCHDOGMODE_NONE) {
-        wdt_config(new_timeout, self->mode);
+        wdt_config(new_timeout_ms, self->mode);
     }
 }
 
@@ -114,7 +114,7 @@ void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self, watchdog_w
             break;
         case WATCHDOGMODE_RAISE:
         case WATCHDOGMODE_RESET:
-            wdt_config(self->timeout, new_mode);
+            wdt_config(self->timeout * 1000, new_mode);
             break;
         default:
             return;

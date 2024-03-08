@@ -309,12 +309,6 @@ $(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
 
 $(BUILD)/lib/tinyusb/src/portable/microchip/samd/dcd_samd.o: CFLAGS += -Wno-missing-prototypes
 
-# This is an OR because it filters to any 1s and then checks to see if it is not
-# empty.
-ifneq (,$(filter 1,$(CIRCUITPY_PWMIO) $(CIRCUITPY_AUDIOIO) $(CIRCUITPY_RGBMATRIX)))
-SRC_C += shared_timers.c
-endif
-
 ifeq ($(CIRCUITPY_SAMD),1)
 SRC_C += bindings/samd/Clock.c bindings/samd/__init__.c
 endif

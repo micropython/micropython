@@ -254,9 +254,6 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
     }
     self->pwm_slice = slice;
 
-    pwmout_never_reset(self->pwm_slice, 0);
-    pwmout_never_reset(self->pwm_slice, 1);
-
     for (size_t i = 0; i < 4; i++) {
         never_reset_pin_number(self->pin_pair[i]);
         never_reset_pin_number(self->pin_pair[i] + 1);

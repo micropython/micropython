@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PWMIO_PWMOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "components/driver/ledc/include/driver/ledc.h"
@@ -39,7 +38,3 @@ typedef struct {
     bool variable_frequency : 1;
     bool deinited : 1;
 } pwmio_pwmout_obj_t;
-
-void pwmout_reset(void);
-
-#endif // MICROPY_INCLUDED_ESPRESSIF_COMMON_HAL_PWMIO_PWMOUT_H

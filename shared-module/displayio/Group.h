@@ -47,7 +47,8 @@ typedef struct {
     bool in_group : 1;
     bool hidden : 1;
     bool hidden_by_parent : 1;
-    uint8_t padding : 4;
+    bool readonly : 1;
+    uint8_t padding : 3;
 } displayio_group_t;
 
 void displayio_group_construct(displayio_group_t *self, mp_obj_list_t *members, uint32_t scale, mp_int_t x, mp_int_t y);

@@ -45,11 +45,11 @@
 
 // This assigns to [0] and [2] because the order is x1, y1, x2, y2
 STATIC void bitmaptools_validate_coord_range(int16_t out[3], const mp_arg_val_t in[3], int lim, const qstr what[2]) {
-    out[0] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[0].u_obj, what[0]), 0, lim - 1, what[0]);
+    out[0] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[0].u_obj, what[0]), 0, lim, what[0]);
     if (in[2].u_obj == mp_const_none) {
         out[2] = lim;
     } else {
-        out[2] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[2].u_obj, what[1]), out[0] + 1, lim, what[1]);
+        out[2] = mp_arg_validate_int_range(mp_arg_validate_type_int(in[2].u_obj, what[1]), out[0], lim, what[1]);
     }
 }
 
@@ -1063,9 +1063,9 @@ STATIC mp_obj_t bitmaptools_obj_blit(size_t n_args, const mp_obj_t *pos_args, mp
     uint16_t x = mp_arg_validate_int_range(args[ARG_x].u_int, 0, destination->width, MP_QSTR_x);
     uint16_t y = mp_arg_validate_int_range(args[ARG_y].u_int, 0, destination->height, MP_QSTR_y);
 
-    bitmaptools_rect_t lim = bitmaptools_validate_coord_range_pair(&args[ARG_x1], destination->width, destination->height);
-
     displayio_bitmap_t *source = mp_arg_validate_type(args[ARG_source].u_obj, &displayio_bitmap_type, MP_QSTR_source_bitmap);
+
+    bitmaptools_rect_t lim = bitmaptools_validate_coord_range_pair(&args[ARG_x1], source->width, source->height);
 
 
     // ensure that the target bitmap (self) has at least as many `bits_per_value` as the source

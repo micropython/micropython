@@ -126,11 +126,3 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
 
     pulse_buffer = NULL;
 }
-
-void pulseout_reset(void) {
-    ioctl(pulse_fd, TCIOC_STOP, 0);
-    close(pulse_fd);
-    pulse_fd = -1;
-
-    pulse_buffer = NULL;
-}

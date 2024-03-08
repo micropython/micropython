@@ -44,7 +44,11 @@
 #error Unknown CONFIG_IDF_TARGET_xxx
 #endif
 
-void mp_hal_delay_us(mp_uint_t delay) {
+#include "esp_attr.h"
+
+// This is used by ProtoMatter's interrupt so make sure it is available when
+// flash isn't.
+void IRAM_ATTR mp_hal_delay_us(mp_uint_t delay) {
     ets_delay_us(delay);
 }
 

@@ -47,7 +47,7 @@
 //|
 //|         decoder = JpegDecoder()
 //|         width, height = decoder.open("/sd/example.jpg")
-//|         bitmap = Bitmap(width, height)
+//|         bitmap = Bitmap(width, height, 65535)
 //|         decoder.decode(bitmap)
 //|         # .. do something with bitmap
 //|     """

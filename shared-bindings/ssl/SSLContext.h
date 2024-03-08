@@ -27,7 +27,11 @@
 #ifndef MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
 #define MICROPY_INCLUDED_SHARED_BINDINGS_SSL_SSLCONTEXT_H
 
+#if CIRCUITPY_SSL_MBEDTLS
+#include "shared-module/ssl/SSLContext.h"
+#else
 #include "common-hal/ssl/SSLContext.h"
+#endif
 
 #include "shared-bindings/socketpool/Socket.h"
 #include "shared-bindings/ssl/SSLSocket.h"

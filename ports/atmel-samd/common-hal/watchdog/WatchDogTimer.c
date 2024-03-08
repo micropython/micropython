@@ -85,10 +85,6 @@ mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
 }
 
 void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self, mp_float_t new_timeout) {
-    if (!(self->timeout < new_timeout || self->timeout > new_timeout)) {
-        return;
-    }
-
     mp_arg_validate_int_max(new_timeout, 16, MP_QSTR_timeout);
     self->timeout = new_timeout;
 

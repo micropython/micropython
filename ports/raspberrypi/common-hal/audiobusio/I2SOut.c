@@ -202,7 +202,8 @@ void common_hal_audiobusio_i2sout_play(audiobusio_i2sout_obj_t *self,
         true,  // output signed
         bits_per_sample,
         (uint32_t)&self->state_machine.pio->txf[self->state_machine.state_machine],  // output register
-        self->state_machine.tx_dreq); // data request line
+        self->state_machine.tx_dreq, // data request line
+        false); // swap channel
 
     if (result == AUDIO_DMA_DMA_BUSY) {
         common_hal_audiobusio_i2sout_stop(self);

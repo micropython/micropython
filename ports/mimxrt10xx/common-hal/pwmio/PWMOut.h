@@ -25,8 +25,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PWMIO_PWMOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "periph.h"
@@ -42,7 +41,3 @@ typedef struct {
     uint16_t duty_cycle;
     uint16_t pulse_count;
 } pwmio_pwmout_obj_t;
-
-void reset_all_flexpwm(void);
-
-#endif // MICROPY_INCLUDED_MIMXRT10XX_COMMON_HAL_PWMIO_PWMOUT_H

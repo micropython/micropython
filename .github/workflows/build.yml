@@ -28,12 +28,13 @@ jobs:
       env:
         GITHUB_CONTEXT: ${{ toJson(github) }}
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Duplicate USB VID/PID check
@@ -108,12 +109,13 @@ jobs:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up submodules
@@ -124,21 +126,21 @@ jobs:
         python3 --version
         msgfmt --version
     - name: Build mpy-cross
-      run: make -C mpy-cross -j2
-    - uses: actions/upload-artifact@v3
+      run: make -C mpy-cross -j4
+    - uses: actions/upload-artifact@v4
       with:
         name: mpy-cross-macos-11-x64
         path: mpy-cross/build/mpy-cross
     - name: Build mpy-cross (arm64)
-      run: make -C mpy-cross -j2 -f Makefile.m1 V=2
-    - uses: actions/upload-artifact@v3
+      run: make -C mpy-cross -j4 -f Makefile.m1 V=2
+    - uses: actions/upload-artifact@v4
       with:
         name: mpy-cross-macos-11-arm64
         path: mpy-cross/build-arm64/mpy-cross-arm64
     - name: Make universal binary
       run: lipo -create -output mpy-cross-macos-universal mpy-cross/build/mpy-cross mpy-cross/build-arm64/mpy-cross-arm64
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: mpy-cross-macos-11-universal
         path: mpy-cross-macos-universal
@@ -163,12 +165,13 @@ jobs:
       CP_VERSION: ${{ needs.scheduler.outputs.cp-version }}
     steps:
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up submodules
@@ -179,23 +182,23 @@ jobs:
         sudo apt-get install -y latexmk librsvg2-bin texlive-fonts-recommended texlive-latex-recommended texlive-latex-extra
         pip install -r requirements-doc.txt
     - name: Build and Validate Stubs
-      run: make check-stubs -j2
-    - uses: actions/upload-artifact@v3
+      run: make check-stubs -j4
+    - uses: actions/upload-artifact@v4
       with:
         name: stubs
         path: circuitpython-stubs/dist/*
     - name: Test Documentation Build (HTML)
       run: sphinx-build -E -W -b html -D version=${{ env.CP_VERSION }} -D release=${{ env.CP_VERSION }} . _build/html
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
-        name: docs
+        name: docs-html
         path: _build/html
     - name: Test Documentation Build (LaTeX/PDF)
       run: |
         make latexpdf
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
-        name: docs
+        name: docs-latexpdf
         path: _build/latex
     - name: Upload to S3
       uses: ./.github/actions/upload_aws
@@ -260,24 +263,25 @@ jobs:
         which python; python --version; python -c "import cascadetoml"
         which python3; python3 --version; python3 -c "import cascadetoml"
     - name: Set up repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: false
+        show-progress: false
         fetch-depth: 1
     - name: Set up submodules
       uses: ./.github/actions/deps/submodules
     - name: build mpy-cross
-      run: make -j2 -C mpy-cross
+      run: make -j4 -C mpy-cross
     - name: build rp2040
-      run: make -j2 -C ports/raspberrypi BOARD=adafruit_feather_rp2040 TRANSLATION=de_DE
+      run: make -j4 -C ports/raspberrypi BOARD=adafruit_feather_rp2040 TRANSLATION=de_DE
     - name: build samd21
-      run: make -j2 -C ports/atmel-samd BOARD=feather_m0_express TRANSLATION=zh_Latn_pinyin
+      run: make -j4 -C ports/atmel-samd BOARD=feather_m0_express TRANSLATION=zh_Latn_pinyin
     - name: build samd51
-      run: make -j2 -C ports/atmel-samd BOARD=feather_m4_express TRANSLATION=es
+      run: make -j4 -C ports/atmel-samd BOARD=feather_m4_express TRANSLATION=es
     - name: build nrf
-      run: make -j2 -C ports/nrf BOARD=feather_nrf52840_express TRANSLATION=fr
+      run: make -j4 -C ports/nrf BOARD=feather_nrf52840_express TRANSLATION=fr
     - name: build stm
-      run: make -j2 -C ports/stm BOARD=feather_stm32f405_express TRANSLATION=pt_BR
+      run: make -j4 -C ports/stm BOARD=feather_stm32f405_express TRANSLATION=pt_BR
     # I gave up trying to do esp builds on windows when I saw
     # ERROR: Platform MINGW64_NT-10.0-17763-x86_64 appears to be unsupported
     # https://github.com/espressif/esp-idf/issues/7062

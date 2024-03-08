@@ -96,22 +96,6 @@ STATIC void pulsein_exti_event_handler(uint8_t num) {
     self->last_overflow = current_overflow;
 }
 
-void pulsein_reset(void) {
-    // Disable all active interrupts and clear array
-    for (uint i = 0; i < STM32_GPIO_PORT_SIZE; i++) {
-        if (callback_obj_ref[i] != NULL) {
-            stm_peripherals_exti_disable(callback_obj_ref[i]->pin->number);
-        }
-    }
-    memset(callback_obj_ref, 0, sizeof(callback_obj_ref));
-
-    HAL_TIM_Base_DeInit(&tim_handle);
-    // tim_clock_disable() takes a bitmask of timers.
-    tim_clock_disable(1 << stm_peripherals_timer_get_index(tim_handle.Instance));
-    memset(&tim_handle, 0, sizeof(tim_handle));
-    refcount = 0;
-}
-
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin,
     uint16_t maxlen, bool idle_state) {
     // STM32 has one shared EXTI for each pin number, 0-15
@@ -201,6 +185,7 @@ void common_hal_pulseio_pulsein_deinit(pulseio_pulsein_obj_t *self) {
     refcount--;
     if (refcount == 0) {
         stm_peripherals_timer_free(tim_handle.Instance);
+        memset(&tim_handle, 0, sizeof(tim_handle));
     }
 }
 

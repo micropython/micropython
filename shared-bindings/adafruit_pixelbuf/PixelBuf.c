@@ -268,12 +268,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(pixelbuf_pixelbuf_fill_obj, pixelbuf_pixelbuf_f
 //|         between 0 and 255.  When in PWM (DotStar) mode, the 4th tuple value is a float of the pixel
 //|         intensity from 0-1.0."""
 //|         ...
+//|
 //|     @overload
 //|     def __getitem__(self, index: int) -> PixelReturnType:
 //|         """Returns the pixel value at the given index as a tuple of (Red, Green, Blue[, White]) values
 //|         between 0 and 255.  When in PWM (DotStar) mode, the 4th tuple value is a float of the pixel
 //|         intensity from 0-1.0."""
 //|         ...
+//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: PixelSequence) -> None: ...
 //|     @overload

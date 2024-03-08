@@ -211,12 +211,6 @@ STATIC void pwmaudioout_event_handler(void) {
     }
 }
 
-void audiopwmout_reset() {
-    if (active_audio) {
-        common_hal_audiopwmio_pwmaudioout_stop(active_audio);
-    }
-}
-
 // Caller validates that pins are free.
 void common_hal_audiopwmio_pwmaudioout_construct(audiopwmio_pwmaudioout_obj_t *self,
     const mcu_pin_obj_t *left_channel, const mcu_pin_obj_t *right_channel, uint16_t quiescent_value) {

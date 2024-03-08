@@ -136,18 +136,6 @@ void common_hal_pwmio_pwmout_never_reset(pwmio_pwmout_obj_t *self) {
     pwmout_dev[self->number].reset = false;
 }
 
-void pwmout_reset(void) {
-    for (int i = 0; i < MP_ARRAY_SIZE(pwmout_dev); i++) {
-        if (pwmout_dev[i].fd >= 0 && pwmout_dev[i].reset) {
-            ioctl(pwmout_dev[i].fd, PWMIOC_STOP, 0);
-            close(pwmout_dev[i].fd);
-            pwmout_dev[i].fd = -1;
-
-            reset_pin_number(pwmout_dev[i].pin->number);
-        }
-    }
-}
-
 void pwmout_start(uint8_t pwm_num) {
     ioctl(pwmout_dev[pwm_num].fd, PWMIOC_START, 0);
 }

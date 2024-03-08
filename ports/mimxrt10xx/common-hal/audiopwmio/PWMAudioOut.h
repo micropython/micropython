@@ -26,7 +26,10 @@
 
 #pragma once
 
-#if CIRCUITPY_AUDIOBUSIO_I2SOUT
+#if !CIRCUITPY_AUDIOBUSIO_I2SOUT
+#error "audiopwmio requires CIRCUITPY_AUDIOBUSIO_I2SOUT"
+#endif
+
 #include "supervisor/background_callback.h"
 #include "common-hal/microcontroller/Pin.h"
 
@@ -37,5 +40,3 @@ typedef struct {
     i2s_t i2s;
     const mcu_pin_obj_t *left_channel, *right_channel;
 } audiopwmio_pwmaudioout_obj_t;
-
-#endif
