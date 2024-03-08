@@ -303,5 +303,4 @@ STATIC void mp_machine_idle(void) {
     { MP_ROM_QSTR(MP_QSTR_ADCBlock),            MP_ROM_PTR(&machine_adcblock_type) }, \
     { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) }, \
 
-
 #endif // MICROPY_PY_MACHINE

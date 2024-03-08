@@ -47,7 +47,6 @@ mp_obj_t pin_name_by_addr(mp_obj_t pin) {
 int pin_addr_by_name(mp_obj_t pin) {
     if (mp_obj_is_str(pin)) {
         return machine_pin_phy_obj[pin_find(pin)].addr;
-        printf("pinphybit %lu\n\r", machine_pin_phy_obj[pin_find(pin)].addr);
     } else {
         return pin_fetch_address(pin);
     }
