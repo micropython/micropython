@@ -263,7 +263,7 @@ static void sdram_init_seq(SDRAM_HandleTypeDef
        then enable access/caching for the size used
     */
     uint32_t irq_state = mpu_config_start();
-    mpu_config_region(MPU_REGION_SDRAM1, SDRAM_START_ADDRESS, MPU_CONFIG_DISABLE(0x00, MPU_REGION_SIZE_512MB));
+    mpu_config_region(MPU_REGION_SDRAM1, SDRAM_START_ADDRESS, MPU_CONFIG_NOACCESS(0x00, MPU_REGION_SIZE_512MB));
     mpu_config_region(MPU_REGION_SDRAM2, SDRAM_START_ADDRESS, MPU_CONFIG_SDRAM(SDRAM_MPU_REGION_SIZE));
     mpu_config_end(irq_state);
     #endif
