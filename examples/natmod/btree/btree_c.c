@@ -39,6 +39,10 @@ void abort_(void) {
     nlr_raise(mp_obj_new_exception(mp_load_global(MP_QSTR_RuntimeError)));
 }
 
+int puts(const char *s) {
+    return mp_printf(&mp_plat_print, "%s\n", s);
+}
+
 int native_errno;
 #if defined(__linux__)
 int *__errno_location (void)
