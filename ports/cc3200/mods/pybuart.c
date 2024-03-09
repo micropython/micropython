@@ -590,6 +590,7 @@ static const mp_rom_map_elem_t pyb_uart_locals_dict_table[] = {
 
     // class constants
     { MP_ROM_QSTR(MP_QSTR_RX_ANY),      MP_ROM_INT(UART_TRIGGER_RX_ANY) },
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX),      MP_ROM_INT(UART_TRIGGER_RX_ANY) },
 };
 
 static MP_DEFINE_CONST_DICT(pyb_uart_locals_dict, pyb_uart_locals_dict_table);
