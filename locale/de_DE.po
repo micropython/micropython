@@ -7,7 +7,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
 "PO-Revision-Date: 2024-03-11 09:56+0000\n"
-"Last-Translator: Xfox20 <136956349+Xfox20@users.noreply.github.com>\n"
+"Last-Translator: Sokromatrix <kroschewski1971@gmail.com>\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -37,6 +37,9 @@ msgid ""
 "Please file an issue with your program at github.com/adafruit/circuitpython/"
 "issues."
 msgstr ""
+"\n"
+"Reiche bitte ein Problem mit deinem Programm bei github.com/adafruit/"
+"circuitpython/issues ein."
 
 #: supervisor/shared/safe_mode.c
 msgid ""
@@ -97,7 +100,7 @@ msgstr "%q und %q müssen unterschiedlich sein"
 
 #: ports/atmel-samd/common-hal/audiobusio/I2SOut.c
 msgid "%q and %q must share a clock unit"
-msgstr ""
+msgstr "%q und %q müssen eine Uhreneinheit teilen"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "%q cannot be changed once mode is set to %q"
@@ -867,7 +870,7 @@ msgstr "Dem fmt Block muss ein Datenblock folgen"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Data format error (may be broken data)"
-msgstr ""
+msgstr "Datenformatfehler (Möglicherweise beschädigte Daten)"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
 #: ports/nrf/common-hal/_bleio/Adapter.c
@@ -1150,7 +1153,7 @@ msgstr "Unzureichende Verschlüsselung"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient memory pool for the image"
-msgstr ""
+msgstr "Unzureichender Speicherpool für das Bild"
 
 #: shared-module/jpegio/JpegDecoder.c
 msgid "Insufficient stream input buffer"
