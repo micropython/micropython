@@ -36,7 +36,6 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/os/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| """functions that an OS normally provides
 //|
@@ -268,7 +267,7 @@ STATIC mp_obj_t os_urandom(mp_obj_t size_in) {
     mp_int_t size = mp_obj_get_int(size_in);
     mp_obj_str_t *result = MP_OBJ_TO_PTR(mp_obj_new_bytes_of_zeros(size));
     if (!common_hal_os_urandom((uint8_t *)result->data, size)) {
-        mp_raise_NotImplementedError(translate("No hardware random available"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("No hardware random available"));
     }
     return result;
 }

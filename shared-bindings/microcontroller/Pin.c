@@ -31,7 +31,6 @@
 #include "py/nlr.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Pin:
 //|     """Identifies an IO pin on the microcontroller."""
@@ -46,7 +45,9 @@
 //|         """Returns a hash for the Pin."""
 //|         ...
 //|
-// Provided by mp_generic_unary_op().
+// Provided inherently.
+// See https://github.com/micropython/micropython/pull/10348.
+
 
 static void get_pin_name(const mcu_pin_obj_t *self, qstr *package, qstr *module, qstr *name) {
     const mp_map_t *board_map = &board_module_globals.map;
@@ -83,15 +84,12 @@ void shared_bindings_microcontroller_pin_print(const mp_print_t *print, mp_obj_t
     }
 }
 
-const mp_obj_type_t mcu_pin_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Pin,
-    .print = shared_bindings_microcontroller_pin_print,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = mp_generic_unary_op,
-        )
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mcu_pin_type,
+    MP_QSTR_Pin,
+    MP_TYPE_FLAG_NONE,
+    print, shared_bindings_microcontroller_pin_print
+    );
 
 const mcu_pin_obj_t *validate_obj_is_pin(mp_obj_t obj, qstr arg_name) {
     return MP_OBJ_TO_PTR(mp_arg_validate_type(obj, &mcu_pin_type, arg_name));
@@ -127,7 +125,7 @@ void validate_no_duplicate_pins(mp_obj_t seq, qstr arg_name) {
             mp_obj_t pin2_obj = mp_obj_subscr(seq, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
             const mcu_pin_obj_t *pin2 = validate_obj_is_pin_in(pin2_obj, arg_name);
             if (pin1 == pin2) {
-                mp_raise_TypeError_varg(translate("%q contains duplicate pins"), arg_name);
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q contains duplicate pins"), arg_name);
             }
         }
     }
@@ -148,7 +146,7 @@ void validate_no_duplicate_pins_2(mp_obj_t seq1, mp_obj_t seq2, qstr arg_name1, 
             mp_obj_t pin2_obj = mp_obj_subscr(seq2, MP_OBJ_NEW_SMALL_INT(pin_cnt_2), MP_OBJ_SENTINEL);
             const mcu_pin_obj_t *pin2 = validate_obj_is_pin_in(pin2_obj, arg_name2);
             if (pin1 == pin2) {
-                mp_raise_TypeError_varg(translate("%q and %q contain duplicate pins"), arg_name1, arg_name2);
+                mp_raise_TypeError_varg(MP_ERROR_TEXT("%q and %q contain duplicate pins"), arg_name1, arg_name2);
             }
         }
     }
@@ -183,7 +181,7 @@ void assert_pin_free(const mcu_pin_obj_t *pin) {
         qstr name = MP_QSTR_Pin;
 
         get_pin_name(pin, &package, &module, &name);
-        mp_raise_ValueError_varg(translate("%q in use"), name);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), name);
     }
 }
 
@@ -204,5 +202,5 @@ NORETURN void raise_ValueError_invalid_pins(void) {
 }
 
 NORETURN void raise_ValueError_invalid_pin_name(qstr pin_name) {
-    mp_raise_ValueError_varg(translate("Invalid %q pin"), pin_name);
+    mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q pin"), pin_name);
 }

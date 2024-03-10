@@ -6,4 +6,4 @@ PROG=mpy-cross.fuzz
 BUILD=build-static
 STATIC_BUILD=1
 CC=afl-clang-fast
-include mpy-cross.mk
+include Makefile

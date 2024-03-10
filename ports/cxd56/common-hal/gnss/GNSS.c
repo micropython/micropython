@@ -56,7 +56,7 @@ void common_hal_gnss_construct(gnss_obj_t *self, unsigned long selection) {
     if (gnss_dev.fd < 0) {
         gnss_dev.fd = open(gnss_dev.devpath, O_RDONLY);
         if (gnss_dev.fd < 0) {
-            mp_raise_RuntimeError(translate("GNSS init"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("GNSS init"));
         }
     }
 

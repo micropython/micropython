@@ -28,7 +28,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/analogio/AnalogOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "common-hal/microcontroller/Pin.h"
 #include "em_vdac.h"
 
@@ -64,7 +63,7 @@ void common_hal_analogio_analogout_construct(analogio_analogout_obj_t *self,
     }
 
     if (self->dac == NULL) {
-        mp_raise_ValueError(translate("DAC Device Init Error"));
+        mp_raise_ValueError(MP_ERROR_TEXT("DAC Device Init Error"));
     }
 
     // Use default settings

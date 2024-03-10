@@ -51,7 +51,7 @@ bool set_characteristic_value_on_ble_evt(uint8_t conn_handle,
     bleio_connection_internal_t *connection =
         bleio_conn_handle_to_connection(conn_handle);
     if (NULL == connection) {
-        mp_raise_bleio_BluetoothError(translate("Get connection fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Get connection fail."));
         return false;
     }
     for (serv_index = 0; serv_index < connection->remote_service_list->len; serv_index++) {
@@ -88,7 +88,7 @@ STATIC bool get_characteristic_value(uint8_t conn_handle,
     bleio_connection_internal_t *connection = bleio_conn_handle_to_connection(conn_handle);
 
     if (NULL == connection) {
-        mp_raise_bleio_BluetoothError(translate("Get connection fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Get connection fail."));
         return false;
     }
     for (serv_index = 0; serv_index < connection->remote_service_list->len; serv_index++) {
@@ -234,7 +234,7 @@ size_t common_hal_bleio_characteristic_get_value(
             (uint8_t *)buf);
         if (SL_STATUS_OK != sc) {
             mp_raise_bleio_BluetoothError(
-                translate("Read_attribute_value fail!"));
+                MP_ERROR_TEXT("Read_attribute_value fail!"));
         }
         return len;
     }
@@ -273,14 +273,15 @@ void common_hal_bleio_characteristic_set_value(bleio_characteristic_obj_t *self,
                 bufinfo->buf);
         }
     } else {
-        if (self->props & BT_GATT_CHRC_READ) {
+        if (self->props & BT_GATT_CHRC_READ || self->props & BT_GATT_CHRC_WRITE
+            || self->props & BT_GATT_CHRC_WRITE_WITHOUT_RESP) {
             sc = sl_bt_gatt_server_write_attribute_value(self->handle,
                 0,
                 bufinfo->len,
                 (uint8_t *)bufinfo->buf);
             if (SL_STATUS_OK != sc) {
                 mp_raise_bleio_BluetoothError(
-                    translate("Write_attribute_value fail!"));
+                    MP_ERROR_TEXT("Write_attribute_value fail!"));
             }
         }
 
@@ -320,15 +321,17 @@ void common_hal_bleio_characteristic_add_descriptor(
     bleio_descriptor_obj_t *descriptor) {
 
     sl_status_t sc = SL_STATUS_FAIL;
-    const uint8_t value;
     uuid_128 bt_uuid_128;
     sl_bt_uuid_16_t bt_uuid_16;
     uint16_t gattdb_session;
+    mp_buffer_info_t desc_value_bufinfo;
+
+    mp_get_buffer_raise(descriptor->initial_value, &desc_value_bufinfo, MP_BUFFER_READ);
 
     sc = sl_bt_gattdb_new_session(&gattdb_session);
 
     if (SL_STATUS_OK != sc && SL_STATUS_ALREADY_EXISTS != sc) {
-        mp_raise_bleio_BluetoothError(translate("Create new session fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Create new session fail."));
         return;
     }
 
@@ -336,33 +339,40 @@ void common_hal_bleio_characteristic_add_descriptor(
         bt_uuid_16.data[0] = descriptor->uuid->efr_ble_uuid.uuid16.value & 0xff;
         bt_uuid_16.data[1] = descriptor->uuid->efr_ble_uuid.uuid16.value >> 8;
 
-        sl_bt_gattdb_add_uuid16_descriptor(self->session,
+        sl_bt_gattdb_add_uuid16_descriptor(gattdb_session,
             self->handle,
-            descriptor->handle,
+            SL_BT_GATTDB_DESCRIPTOR_READ | SL_BT_GATTDB_DESCRIPTOR_WRITE,
             0,
             bt_uuid_16,
-            sl_bt_gattdb_user_managed_value,
+            sl_bt_gattdb_variable_length_value,
             descriptor->max_length,
-            2,
-            &value,
+            desc_value_bufinfo.len,
+            desc_value_bufinfo.buf,
             &descriptor->handle);
     } else {
         memcpy(bt_uuid_128.data, descriptor->uuid->efr_ble_uuid.uuid128.value, 16);
         sl_bt_gattdb_add_uuid128_descriptor(self->session,
             self->handle,
-            descriptor->handle,
+            SL_BT_GATTDB_DESCRIPTOR_READ | SL_BT_GATTDB_DESCRIPTOR_WRITE,
             0,
             bt_uuid_128,
-            sl_bt_gattdb_user_managed_value,
+            sl_bt_gattdb_variable_length_value,
             descriptor->max_length,
-            2,
-            &value,
+            desc_value_bufinfo.len,
+            desc_value_bufinfo.buf,
             &descriptor->handle);
+    }
+
+    // This indicates the new added descriptor shall be started.
+    sc = sl_bt_gattdb_start_characteristic(gattdb_session, self->handle);
+    if (SL_STATUS_OK != sc) {
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Start charateristic fail."));
+        return;
     }
 
     sc = sl_bt_gattdb_commit(gattdb_session);
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Commit descriptor fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Commit descriptor fail."));
         return;
     }
 
@@ -385,7 +395,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self,
         sc = sl_bt_gatt_set_characteristic_notification(conn_handle,
             self->handle, sl_bt_gatt_notification);
         if (SL_STATUS_OK != sc) {
-            mp_raise_bleio_BluetoothError(translate("Notify fail"));
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Notify fail"));
         }
     }
 
@@ -393,7 +403,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self,
         sc = sl_bt_gatt_set_characteristic_notification(conn_handle,
             self->handle, sl_bt_gatt_indication);
         if (SL_STATUS_OK != sc) {
-            mp_raise_bleio_BluetoothError(translate("Indicate fail"));
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Indicate fail"));
         }
     }
 
@@ -401,7 +411,7 @@ void common_hal_bleio_characteristic_set_cccd(bleio_characteristic_obj_t *self,
         sc = sl_bt_gatt_set_characteristic_notification(conn_handle,
             self->handle, sl_bt_gatt_disable);
         if (SL_STATUS_OK != sc) {
-            mp_raise_bleio_BluetoothError(translate("Indicate fail"));
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Indicate fail"));
         }
     }
 }

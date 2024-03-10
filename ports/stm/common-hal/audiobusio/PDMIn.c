@@ -29,7 +29,6 @@
 #include "shared-bindings/audiobusio/PDMIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "supervisor/memory.h"
 #include "MEMS_Audio_ll_stm32l4.h"
 
 
@@ -55,16 +54,16 @@ void common_hal_audiobusio_pdmin_construct(audiobusio_pdmin_obj_t *self,
 
 
     if (!mono) {
-        mp_raise_ValueError(translate("only mono is supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("only mono is supported"));
     }
     if (sample_rate != 16000) {
-        mp_raise_ValueError(translate("only sample_rate=16000 is supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("only sample_rate=16000 is supported"));
     }
     if (bit_depth != 16) {
-        mp_raise_ValueError(translate("only bit_depth=16 is supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("only bit_depth=16 is supported"));
     }
     if (oversample != 64) {
-        mp_raise_ValueError(translate("only oversample=64 is supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("only oversample=64 is supported"));
     }
 
     // wait for the previous instance to finish.

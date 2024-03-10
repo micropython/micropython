@@ -226,8 +226,11 @@ pseudoxml:
 .PHONY: all-source
 all-source:
 
+TRANSLATE_CHECK_SUBMODULES=if ! [ -f extmod/ulab/README.md ]; then python tools/ci_fetch_deps.py translate; fi
+TRANSLATE_COMMAND=find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -x locale/synthetic.pot -f- -L C -s --add-location=file --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d'
 locale/circuitpython.pot: all-source
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o - | sed -e '/"POT-Creation-Date: /d' > $@
+	$(TRANSLATE_CHECK_SUBMODULES)
+	$(TRANSLATE_COMMAND) > $@
 
 # Historically, `make translate` updated the .pot file and ran msgmerge.
 # However, this was a frequent source of merge conflicts.  Weblate can perform
@@ -252,7 +255,8 @@ merge-translate:
 
 .PHONY: check-translate
 check-translate:
-	find $(TRANSLATE_SOURCES) -type d \( $(TRANSLATE_SOURCES_EXC) \) -prune -o -type f \( -iname "*.c" -o -iname "*.h" \) -print | (LC_ALL=C sort) | xgettext -f- -L C -s --add-location=file --keyword=translate --keyword=MP_ERROR_TEXT -o circuitpython.pot.tmp -p locale
+	$(TRANSLATE_CHECK_SUBMODULES)
+	$(TRANSLATE_COMMAND) > locale/circuitpython.pot.tmp
 	$(PYTHON) tools/check_translations.py locale/circuitpython.pot.tmp locale/circuitpython.pot; status=$$?; rm -f locale/circuitpython.pot.tmp; exit $$status
 
 .PHONY: stubs
@@ -267,6 +271,8 @@ stubs:
 	@cp setup.py-stubs circuitpython-stubs/setup.py
 	@cp README.rst-stubs circuitpython-stubs/README.rst
 	@cp MANIFEST.in-stubs circuitpython-stubs/MANIFEST.in
+	@$(PYTHON) tools/board_stubs/build_board_specific_stubs/board_stub_builder.py
+	@cp -r tools/board_stubs/circuitpython_setboard circuitpython-stubs/circuitpython_setboard
 	@$(PYTHON) -m build circuitpython-stubs
 
 .PHONY: check-stubs
@@ -324,10 +330,15 @@ clean-nrf:
 clean-stm:
 	$(MAKE) -C ports/stm BOARD=feather_stm32f405_express clean
 
+extmod/ulab/README.md: fetch-translate-submodules
+
+.PHONY: fetch-translate-submodules
+fetch-translate-submodules:
+	$(PYTHON) tools/ci_fetch_deps.py translate
 
 .PHONY: fetch-all-submodules
 fetch-all-submodules:
-	tools/fetch-submodules.sh
+	$(PYTHON) tools/ci_fetch_deps.py all
 
 .PHONY: remove-all-submodules
 remove-all-submodules:

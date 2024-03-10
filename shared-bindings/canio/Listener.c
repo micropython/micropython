@@ -80,6 +80,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(canio_listener_in_waiting_obj, canio_listener_i
 //|         This method exists so that `Listener` can be used as an
 //|         iterable"""
 //|         ...
+//|
 //|     def __next__(self) -> Union[RemoteTransmissionRequest, Message]:
 //|         """Reads a message, after waiting up to self.timeout seconds
 //|
@@ -166,13 +167,10 @@ STATIC const mp_rom_map_elem_t canio_listener_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(canio_listener_locals_dict, canio_listener_locals_dict_table);
 
-const mp_obj_type_t canio_listener_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Listener,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .locals_dict = (mp_obj_dict_t *)&canio_listener_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = canio_iternext,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    canio_listener_type,
+    MP_QSTR_Listener,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &canio_listener_locals_dict,
+    iter, canio_iternext
+    );

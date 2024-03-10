@@ -1,13 +1,10 @@
 # test using an OrderedDict as the locals to construct a class
 
 try:
-    from ucollections import OrderedDict
+    from collections import OrderedDict
 except ImportError:
-    try:
-        from collections import OrderedDict
-    except ImportError:
-        print("SKIP")
-        raise SystemExit
+    print("SKIP")
+    raise SystemExit
 
 if not hasattr(int, "__dict__"):
     print("SKIP")

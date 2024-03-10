@@ -2,7 +2,7 @@
 # The first import of a module will intern strings that don't already exist, and
 # this test should be representative of what happens in a real application.
 
-import io, os
+import io, os, sys
 
 if not (hasattr(io, "IOBase") and hasattr(os, "mount")):
     print("SKIP")
@@ -102,7 +102,7 @@ class FS:
         pass
 
     def stat(self, path):
-        if path == "__injected.mpy":
+        if path == "/__injected.mpy":
             return tuple(0 for _ in range(10))
         else:
             raise OSError(-2)  # ENOENT
@@ -113,7 +113,7 @@ class FS:
 
 def mount():
     os.mount(FS(), "/__remote")
-    os.chdir("/__remote")
+    sys.path.insert(0, "/__remote")
 
 
 def test():

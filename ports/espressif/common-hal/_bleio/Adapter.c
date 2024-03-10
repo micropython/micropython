@@ -219,7 +219,7 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
-            mp_raise_bleio_BluetoothError(translate("Scan already in progress. Stop with stop_scan."));
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Scan already in progress. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }
@@ -284,15 +284,21 @@ STATIC void _new_connection(uint16_t conn_handle) {
     esp_ble_tx_power_set(conn_handle, ESP_PWR_LVL_N0);
 
 
-    // Find an empty connection. One must always be available because the SD has the same
+    // Find an empty connection. One should always be available because the SD has the same
     // total connection limit.
-    bleio_connection_internal_t *connection;
+    bleio_connection_internal_t *connection = NULL;
     for (size_t i = 0; i < BLEIO_TOTAL_CONNECTION_COUNT; i++) {
         connection = &bleio_connections[i];
         if (connection->conn_handle == BLEIO_HANDLE_INVALID) {
             break;
         }
     }
+
+    // Shouldn't happen, but just return if no connection available.
+    if (!connection) {
+        return;
+    }
+
     connection->conn_handle = conn_handle;
     connection->connection_obj = mp_const_none;
     connection->pair_status = PAIR_NOT_PAIRED;
@@ -389,7 +395,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
         }
     }
 
-    mp_raise_bleio_BluetoothError(translate("Failed to connect: internal error"));
+    mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Failed to connect: internal error"));
 
     return mp_const_none;
 }
@@ -535,7 +541,7 @@ uint32_t _common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self,
 STATIC void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > MYNEWT_VAL(BLE_EXT_ADV_MAX_SIZE) ||
         (connectable && data_len > MYNEWT_VAL(BLE_EXT_ADV_MAX_SIZE))) {
-        mp_raise_ValueError(translate("Data too large for advertisement packet"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Data too large for advertisement packet"));
     }
 }
 
@@ -544,7 +550,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo,
     mp_int_t tx_power, const bleio_address_obj_t *directed_to) {
     if (self->user_advertising) {
-        mp_raise_bleio_BluetoothError(translate("Already advertising."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Already advertising."));
     } else {
         // If the user isn't advertising, then the background is. So, stop the
         // background advertising so the user can.
@@ -556,12 +562,12 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     check_data_fit(scan_response_data_bufinfo->len, connectable);
 
     if (advertising_data_bufinfo->len > 31 && scan_response_data_bufinfo->len > 0) {
-        mp_raise_bleio_BluetoothError(translate("Extended advertisements with scan response not supported."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Extended advertisements with scan response not supported."));
     }
 
 
     if (advertising_data_bufinfo->len > 0 && directed_to != NULL) {
-        mp_raise_bleio_BluetoothError(translate("Data not supported with directed advertising"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Data not supported with directed advertising"));
     }
 
     if (anonymous) {
@@ -571,7 +577,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     if (!timeout) {
         timeout = BLE_HS_FOREVER;
     } else if (timeout > INT32_MAX) {
-        mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Timeout is too long: Maximum timeout length is %d seconds"),
             INT32_MAX / 1000);
     }
 

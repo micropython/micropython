@@ -38,7 +38,6 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "supervisor/port.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
 static uint8_t never_reset_uart_mask = 0;
@@ -118,10 +117,10 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // Filter for sane settings for RS485
     if (have_rs485_dir) {
         if (have_rts || have_cts) {
-            mp_raise_ValueError(translate("Cannot specify RTS or CTS in RS485 mode"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Cannot specify RTS or CTS in RS485 mode"));
         }
     } else if (rs485_invert) {
-        mp_raise_ValueError(translate("RS485 inversion specified when not in RS485 mode"));
+        mp_raise_ValueError(MP_ERROR_TEXT("RS485 inversion specified when not in RS485 mode"));
     }
 
     self->timeout_ms = timeout * 1000;
@@ -133,7 +132,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         }
     }
     if (self->uart_num == UART_NUM_MAX) {
-        mp_raise_ValueError(translate("All UART peripherals are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All UART peripherals are in use"));
     }
 
     uart_mode_t mode = UART_MODE_UART;
@@ -160,7 +159,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     // Install the driver before we change the settings.
     if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 20, &self->event_queue, 0) != ESP_OK ||
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
-        mp_raise_RuntimeError(translate("UART init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
     }
 
     // On the console uart, enable pattern detection to look for CTRL+C
@@ -234,7 +233,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     // config all in one?
     if (uart_param_config(self->uart_num, &uart_config) != ESP_OK) {
-        mp_raise_RuntimeError(translate("UART init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
     }
 
     self->tx_pin = NULL;
@@ -304,7 +303,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx_pin == NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_rx);
     }
     if (len == 0) {
         // Nothing to read.
@@ -357,7 +356,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx_pin == NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_tx);
     }
 
     size_t left_to_write = len;

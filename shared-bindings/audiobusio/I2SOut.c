@@ -33,7 +33,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class I2SOut:
 //|     """Output an I2S audio signal"""
@@ -99,7 +98,7 @@
 //|         ...
 STATIC mp_obj_t audiobusio_i2sout_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     #if !CIRCUITPY_AUDIOBUSIO_I2SOUT
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_I2SOut);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_I2SOut);
     return NULL;                // Not reachable.
     #else
     enum { ARG_bit_clock, ARG_word_select, ARG_data, ARG_main_clock, ARG_left_justified };
@@ -218,7 +217,7 @@ STATIC mp_obj_t audiobusio_i2sout_obj_pause(mp_obj_t self_in) {
     check_for_deinit(self);
 
     if (!common_hal_audiobusio_i2sout_get_playing(self)) {
-        mp_raise_RuntimeError(translate("Not playing"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Not playing"));
     }
     common_hal_audiobusio_i2sout_pause(self);
     return mp_const_none;
@@ -273,9 +272,10 @@ STATIC const mp_rom_map_elem_t audiobusio_i2sout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiobusio_i2sout_locals_dict, audiobusio_i2sout_locals_dict_table);
 
-const mp_obj_type_t audiobusio_i2sout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2SOut,
-    .make_new = audiobusio_i2sout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiobusio_i2sout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiobusio_i2sout_type,
+    MP_QSTR_I2SOut,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audiobusio_i2sout_make_new,
+    locals_dict, &audiobusio_i2sout_locals_dict
+    );

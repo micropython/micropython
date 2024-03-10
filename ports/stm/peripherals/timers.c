@@ -28,7 +28,6 @@
 #include "py/mpconfig.h"
 #include "py/obj.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/microcontroller/Pin.h"
@@ -217,18 +216,6 @@ size_t stm_peripherals_timer_get_irqnum(TIM_TypeDef *instance) {
     return irq_map[tim_id];
 }
 
-void timers_reset(void) {
-    uint16_t never_reset_mask = 0x00;
-    for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
-        if (!stm_timer_never_reset[i]) {
-            stm_timer_reserved[i] = false;
-        } else {
-            never_reset_mask |= 1 << i;
-        }
-    }
-    tim_clock_disable(ALL_CLOCKS & ~(never_reset_mask));
-}
-
 TIM_TypeDef *stm_peripherals_find_timer(void) {
     // Check for timers on pins outside the package size
     for (size_t i = 0; i < MP_ARRAY_SIZE(mcu_tim_banks); i++) {
@@ -260,7 +247,7 @@ TIM_TypeDef *stm_peripherals_find_timer(void) {
             return mcu_tim_banks[i];
         }
     }
-    mp_raise_RuntimeError(translate("All timers in use"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
     return NULL;
 }
 

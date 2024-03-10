@@ -60,15 +60,12 @@ STATIC mp_obj_t filter_iternext(mp_obj_t self_in) {
     return MP_OBJ_STOP_ITERATION;
 }
 
-const mp_obj_type_t mp_type_filter = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_filter,
-    .make_new = filter_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = filter_iternext,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mp_type_filter,
+    MP_QSTR_filter,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT,
+    make_new, filter_make_new,
+    iter, filter_iternext
+    );
 
 #endif // MICROPY_PY_BUILTINS_FILTER

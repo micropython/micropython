@@ -24,12 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SUPERVISOR_PORT_H
-#define MICROPY_INCLUDED_SUPERVISOR_PORT_H
+#pragma once
 
-#include "py/mpconfig.h"
+#include <stdbool.h>
+#include <stddef.h>
 
-#include "supervisor/memory.h"
 #include "supervisor/shared/safe_mode.h"
 
 // Provided by the linker;
@@ -42,11 +41,6 @@ extern uint32_t _estack;
 extern uint32_t _ebss;
 
 safe_mode_t port_init(void);
-
-// If the port does not initialize the heap during port_init(), it must provide
-// this function which is called after CIRCUITPY is mounted.
-// If not required, a default (weak) implementation that does nothing is used.
-safe_mode_t port_heap_init(safe_mode_t);
 
 // Reset the microcontroller completely.
 void reset_cpu(void) NORETURN;
@@ -62,9 +56,6 @@ uint32_t *port_stack_get_limit(void);
 
 // Get stack top address
 uint32_t *port_stack_get_top(void);
-
-// True if stack is not located inside heap (at the top)
-bool port_has_fixed_stack(void);
 
 // Get heap bottom address
 uint32_t *port_heap_get_bottom(void);
@@ -137,5 +128,3 @@ void port_boot_info(void);
 // Some ports want to mark additional pointers as gc roots.
 // A default weak implementation is provided that does nothing.
 void port_gc_collect(void);
-
-#endif  // MICROPY_INCLUDED_SUPERVISOR_PORT_H

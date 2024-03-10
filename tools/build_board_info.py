@@ -6,6 +6,7 @@
 
 import json
 import os
+import re
 import requests
 import subprocess
 import sys
@@ -75,7 +76,35 @@ def get_version_info():
         sha = os.environ["GITHUB_SHA"]
 
     if not version:
-        version = "{}-{}".format(date.today().strftime("%Y%m%d"), sha[:7])
+        # Get branch we are PR'ing into, if any.
+        # Works for pull_request actions.
+        branch = os.environ.get("GITHUB_BASE_REF", "")
+        if not branch:
+            # Works for push actions (usually a PR merge).
+            branch = os.environ.get("GITHUB_REF_NAME", "")
+        if not branch:
+            branch = "no-branch"
+        # replace slashes with underscores to prevent path subdirs.
+        branch = branch.strip().replace("/", "_")
+
+        # Get PR number, if any
+        # PR jobs put the PR number in PULL.
+        pull_request = os.environ.get("PULL", "")
+        if not pull_request:
+            # PR merge jobs put a commit message that includes the PR number in HEAD_COMMIT_MESSAGE.
+            head_commit_message = os.environ.get("HEAD_COMMIT_MESSAGE", "")
+            if head_commit_message:
+                match = re.match(r"Merge pull request #(\d+) from", head_commit_message)
+                if match:
+                    pull_request = match.group(1)
+
+        if pull_request:
+            pull_request = f"-PR{pull_request}"
+
+        date_stamp = date.today().strftime("%Y%m%d")
+        short_sha = sha[:7]
+        # Example: 20231121-8.2.x-PR9876-123abcd
+        version = f"{date_stamp}-{branch}{pull_request}-{short_sha}"
 
     return sha, version
 
@@ -147,9 +176,7 @@ def create_pr(changes, updated, git_info, user):
     create_branch = {"ref": "refs/heads/" + branch_name, "sha": commit_sha}
     response = github.post("/repos/{}/circuitpython-org/git/refs".format(user), json=create_branch)
     if not response.ok and response.json()["message"] != "Reference already exists":
-        print("unable to create branch")
-        print(response.text)
-        return
+        raise SystemExit(f"unable to create branch: {response.text}")
 
     update_file = {
         "message": message,
@@ -162,9 +189,7 @@ def create_pr(changes, updated, git_info, user):
         "/repos/{}/circuitpython-org/contents/_data/files.json".format(user), json=update_file
     )
     if not response.ok:
-        print("unable to post new file")
-        print(response.text)
-        return
+        raise SystemExit(f"unable to post new file: {response.text}")
     pr_info = {
         "title": pr_title,
         "head": user + ":" + branch_name,
@@ -174,9 +199,7 @@ def create_pr(changes, updated, git_info, user):
     }
     response = github.post("/repos/adafruit/circuitpython-org/pulls", json=pr_info)
     if not response.ok:
-        print("unable to create pr")
-        print(response.text)
-        return
+        raise SystemExit(f"unable to create pr: {response.text}")
     print(changes)
     print(pr_info)
 

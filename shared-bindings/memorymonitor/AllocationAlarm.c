@@ -31,7 +31,6 @@
 #include "py/runtime0.h"
 #include "shared-bindings/memorymonitor/AllocationAlarm.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AllocationAlarm:
 //|     def __init__(self, *, minimum_block_count: int = 1) -> None:
@@ -124,9 +123,10 @@ STATIC const mp_rom_map_elem_t memorymonitor_allocationalarm_locals_dict_table[]
 };
 STATIC MP_DEFINE_CONST_DICT(memorymonitor_allocationalarm_locals_dict, memorymonitor_allocationalarm_locals_dict_table);
 
-const mp_obj_type_t memorymonitor_allocationalarm_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_AllocationAlarm,
-    .make_new = memorymonitor_allocationalarm_make_new,
-    .locals_dict = (mp_obj_dict_t *)&memorymonitor_allocationalarm_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    memorymonitor_allocationalarm_type,
+    MP_QSTR_AllocationAlarm,
+    MP_TYPE_FLAG_NONE,
+    make_new, memorymonitor_allocationalarm_make_new,
+    locals_dict, &memorymonitor_allocationalarm_locals_dict
+    );

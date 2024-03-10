@@ -1,4 +1,4 @@
-# CircuitPython port to Spresense #
+# CXD56 (Spresense) #
 
 This directory contains the port of CircuitPython to Spresense. It is a compact
 development board based on Sony’s power-efficient multicore microcontroller

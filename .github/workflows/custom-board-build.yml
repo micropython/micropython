@@ -42,7 +42,7 @@ jobs:
       run: |
         > custom-build && git add custom-build
     - name: Set up python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Set up port
@@ -65,6 +65,7 @@ jobs:
       if: steps.set-up-submodules.outputs.frozen == 'True'
       uses: ./.github/actions/mpy_cross
       with:
+        cp-version: ${{ steps.set-up-submodules.outputs.version }}
         download: false
     - name: Versions
       run: |
@@ -80,10 +81,10 @@ jobs:
         riscv64-unknown-elf-gcc --version || true
         mkfs.fat --version || true
     - name: Build board
-      run: make -j2 ${{ inputs.flags }} BOARD=${{ inputs.board }} DEBUG=${{ inputs.debug && '1' || '0' }} TRANSLATION=${{ inputs.language }}
+      run: make -j4 ${{ inputs.flags }} BOARD=${{ inputs.board }} DEBUG=${{ inputs.debug && '1' || '0' }} TRANSLATION=${{ inputs.language }}
       working-directory: ports/${{ steps.set-up-port.outputs.port }}
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.board }}-${{ inputs.language }}-${{ inputs.version }}${{ inputs.flags != '' && '-custom' || '' }}${{ inputs.debug && '-debug' || '' }}
         path: ports/${{ steps.set-up-port.outputs.port }}/build-${{ inputs.board }}/firmware.*

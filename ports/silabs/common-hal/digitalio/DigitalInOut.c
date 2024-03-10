@@ -27,7 +27,6 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 // Never reset pin when reload
 void common_hal_digitalio_digitalinout_never_reset(

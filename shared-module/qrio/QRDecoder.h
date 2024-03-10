@@ -43,3 +43,4 @@ int shared_module_qrio_qrdecoder_get_width(qrdecoder_qrdecoder_obj_t *);
 void shared_module_qrio_qrdecoder_set_height(qrdecoder_qrdecoder_obj_t *, int height);
 void shared_module_qrio_qrdecoder_set_width(qrdecoder_qrdecoder_obj_t *, int width);
 mp_obj_t shared_module_qrio_qrdecoder_decode(qrdecoder_qrdecoder_obj_t *, const mp_buffer_info_t *bufinfo, qrio_pixel_policy_t policy);
+mp_obj_t shared_module_qrio_qrdecoder_find(qrdecoder_qrdecoder_obj_t *, const mp_buffer_info_t *bufinfo, qrio_pixel_policy_t policy);

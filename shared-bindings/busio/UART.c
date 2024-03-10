@@ -38,7 +38,6 @@
 #include "py/objtype.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define STREAM_DEBUG(...) (void)0
 // #define STREAM_DEBUG(...) mp_printf(&mp_plat_print __VA_OPT__(,) __VA_ARGS__)
@@ -143,7 +142,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     const mcu_pin_obj_t *cts = validate_obj_is_free_pin_or_none(args[ARG_cts].u_obj, MP_QSTR_cts);
     const mcu_pin_obj_t *rs485_dir = validate_obj_is_free_pin_or_none(args[ARG_rs485_dir].u_obj, MP_QSTR_rs485_dir);
     if ((tx == NULL) && (rx == NULL)) {
-        mp_raise_ValueError(translate("tx and rx cannot both be None"));
+        mp_raise_ValueError(MP_ERROR_TEXT("tx and rx cannot both be None"));
     }
 
     // Pins must be distinct.
@@ -155,6 +154,8 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
     }
 
     uint8_t bits = (uint8_t)mp_arg_validate_int_range(args[ARG_bits].u_int, 5, 9, MP_QSTR_bits);
+
+    uint16_t buffer_size = (uint16_t)mp_arg_validate_int_range(args[ARG_receiver_buffer_size].u_int, 1, 0xffff, MP_QSTR_receiver_buffer_size);
 
     busio_uart_parity_t parity = BUSIO_UART_PARITY_NONE;
     if (args[ARG_parity].u_obj == MP_OBJ_FROM_PTR(&busio_uart_parity_even_obj)) {
@@ -175,7 +176,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 
     common_hal_busio_uart_construct(self, tx, rx, rts, cts, rs485_dir, rs485_invert,
         args[ARG_baudrate].u_int, bits, parity, stop, timeout,
-        args[ARG_receiver_buffer_size].u_int, NULL, false);
+        buffer_size, NULL, false);
     return (mp_obj_t)self;
     #else
     mp_raise_NotImplementedError(NULL);
@@ -188,7 +189,7 @@ STATIC mp_obj_t busio_uart_make_new(const mp_obj_type_t *type, size_t n_args, si
 STATIC busio_uart_obj_t *native_uart(mp_obj_t uart_obj) {
     mp_obj_t native_uart = mp_obj_cast_to_native_base(uart_obj, MP_OBJ_FROM_PTR(&busio_uart_type));
     if (native_uart == MP_OBJ_NULL) {
-        mp_raise_ValueError_varg(translate("Must be a %q subclass."), MP_QSTR_UART);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Must be a %q subclass."), MP_QSTR_UART);
     }
     mp_obj_assert_native_inited(native_uart);
     return MP_OBJ_TO_PTR(native_uart);
@@ -418,12 +419,13 @@ STATIC void busio_uart_parity_print(const mp_print_t *print, mp_obj_t self_in, m
     mp_printf(print, "%q.%q.%q.%q", MP_QSTR_busio, MP_QSTR_UART, MP_QSTR_Parity, parity);
 }
 
-const mp_obj_type_t busio_uart_parity_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Parity,
-    .print = busio_uart_parity_print,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_parity_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_parity_type,
+    MP_QSTR_Parity,
+    MP_TYPE_FLAG_NONE,
+    print, busio_uart_parity_print,
+    locals_dict, &busio_uart_parity_locals_dict
+    );
 
 STATIC const mp_rom_map_elem_t busio_uart_locals_dict_table[] = {
     #if CIRCUITPY_BUSIO_UART
@@ -453,7 +455,6 @@ STATIC MP_DEFINE_CONST_DICT(busio_uart_locals_dict, busio_uart_locals_dict_table
 
 #if CIRCUITPY_BUSIO_UART
 STATIC const mp_stream_p_t uart_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = busio_uart_read,
     .write = busio_uart_write,
     .ioctl = busio_uart_ioctl,
@@ -462,23 +463,21 @@ STATIC const mp_stream_p_t uart_stream_p = {
     .pyserial_readinto_compatibility = true,
 };
 
-const mp_obj_type_t busio_uart_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_UART,
-    .make_new = busio_uart_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &uart_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, busio_uart_make_new,
+    locals_dict, &busio_uart_locals_dict,
+    iter, mp_stream_unbuffered_iter,
+    protocol, &uart_stream_p
+    );
 #else
-const mp_obj_type_t busio_uart_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_UART,
-    .make_new = busio_uart_make_new,
-    .locals_dict = (mp_obj_dict_t *)&busio_uart_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    busio_uart_type,
+    MP_QSTR_UART,
+    MP_TYPE_FLAG_NONE,
+    make_new, busio_uart_make_new,
+    locals_dict, &busio_uart_locals_dict
+    );
 #endif  // CIRCUITPY_BUSIO_UART

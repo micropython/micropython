@@ -56,7 +56,7 @@ void espulp_reset(void) {
 
 void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t length, uint32_t pin_mask) {
     if (length > CONFIG_ULP_COPROC_RESERVE_MEM) {
-        mp_raise_ValueError(translate("Program too long"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Program too long"));
     }
 
     if (
@@ -66,7 +66,7 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
         GET_PERI_REG_MASK(RTC_CNTL_ULP_CP_TIMER_REG, RTC_CNTL_ULP_CP_SLP_TIMER_EN)
         #endif
         ) {
-        mp_raise_RuntimeError(translate("Already running"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Already running"));
     }
 
     if (pin_mask >= (1 << 22)) {
@@ -75,7 +75,7 @@ void common_hal_espulp_ulp_run(espulp_ulp_obj_t *self, uint32_t *program, size_t
 
     for (uint8_t i = 0; i < 32; i++) {
         if ((pin_mask & (1 << i)) != 0 && !pin_number_is_free(i)) {
-            mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_Pin);
+            mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), MP_QSTR_Pin);
         }
     }
 
@@ -140,7 +140,7 @@ void common_hal_espulp_ulp_construct(espulp_ulp_obj_t *self, espulp_architecture
     // use a running ULP. This is only to prevent multiple portions of user code
     // from using the ULP concurrently.
     if (ulp_used) {
-        mp_raise_ValueError_varg(translate("%q in use"), MP_QSTR_ULP);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q in use"), MP_QSTR_ULP);
     }
 
     switch (arch) {

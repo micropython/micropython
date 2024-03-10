@@ -28,6 +28,8 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent / "tools/huffman"))
 
 import huffman
 from html.entities import codepoint2name
+import math
+
 
 codepoint2name[ord("-")] = "hyphen"
 
@@ -90,7 +92,10 @@ def translate(translation_file, i18ns):
             unescaped = original
             for s in C_ESCAPES:
                 unescaped = unescaped.replace(C_ESCAPES[s], s)
-            translation = table.gettext(unescaped)
+            if original == "en_US":
+                translation = table.info()["language"]
+            else:
+                translation = table.gettext(unescaped)
             # Add in carriage returns to work in terminals
             translation = translation.replace("\n", "\r\n")
             translations.append((original, translation))
@@ -174,7 +179,7 @@ class EncodingTable:
     qstrs_inv: object
 
 
-def compute_huffman_coding(qstrs, translation_name, translations, f):
+def compute_huffman_coding(qstrs, translation_name, translations, f, compression_level):
     # possible future improvement: some languages are better when consider len(k) > 2. try both?
     qstrs = dict((k, v) for k, v in qstrs.items() if len(k) > 3)
     qstr_strs = list(qstrs.keys())
@@ -209,6 +214,8 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
             if 0x80 <= ord_c < 0xFF:
                 end_unused = min(ord_c, end_unused)
     max_words = end_unused - 0x80
+    if compression_level < 5:
+        max_words = 0
 
     bits_per_codepoint = 16 if max_ord > 255 else 8
     values_type = "uint16_t" if max_ord > 255 else "uint8_t"
@@ -217,6 +224,15 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
         raise ValueError(
             f"Translation {translation_name} expected to fit in 8 bits but required 16 bits"
         )
+
+    # Prune the qstrs to only those that appear in the texts
+    qstr_counters = collections.Counter()
+    qstr_extractor = TextSplitter(qstr_strs)
+    for t in texts:
+        for qstr in qstr_extractor.iter(t):
+            if qstr in qstr_strs:
+                qstr_counters[qstr] += 1
+    qstr_strs = list(qstr_counters.keys())
 
     while len(words) < max_words:
         # Until the dictionary is filled to capacity, use a heuristic to find
@@ -285,9 +301,15 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
         # to the codeword length the dictionary entry would get, times
         # the number of occurrences, less the ovehead of the entries in the
         # words[] array.
+        #
+        # The set of candidates is pruned by estimating their relative value and
+        # picking to top 100 scores.
 
+        counter = sorted(counter.items(), key=lambda x: math.log(x[1]) * len(x[0]), reverse=True)[
+            :100
+        ]
         scores = sorted(
-            ((s, -est_net_savings(s, occ)) for (s, occ) in counter.items() if occ > 1),
+            ((s, -est_net_savings(s, occ)) for (s, occ) in counter if occ > 1),
             key=lambda x: x[1],
         )
 
@@ -298,8 +320,12 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
         word = scores[0][0]
         words.append(word)
 
+    splitters = words[:]
+    if compression_level > 3:
+        splitters.extend(qstr_strs)
+
     words.sort(key=len)
-    extractor = TextSplitter(words + qstr_strs)
+    extractor = TextSplitter(splitters)
     counter = collections.Counter()
     used_qstr = 0
     for t in texts:
@@ -356,8 +382,8 @@ def compute_huffman_coding(qstrs, translation_name, translations, f):
         len(translation.encode("utf-8")) for (original, translation) in translations
     )
 
-    maxlen = len(words[-1])
-    minlen = len(words[0])
+    maxlen = len(words[-1]) if words else 0
+    minlen = len(words[0]) if words else 0
     wlencount = [len([None for w in words if len(w) == l]) for l in range(minlen, maxlen + 1)]
 
     translation_qstr_bits = used_qstr.bit_length()
@@ -572,7 +598,7 @@ def output_translation_data(encoding_table, i18ns, out):
             decompressed = decompressed.replace(c, C_ESCAPES[c])
         formatted = ["{:d}".format(x) for x in compressed]
         out.write(
-            "const compressed_string_t translation{} = {{ .data = {}, .tail = {{ {} }} }}; // {}\n".format(
+            "const struct compressed_string translation{} = {{ .data = {}, .tail = {{ {} }} }}; // {}\n".format(
                 i, formatted[0], ", ".join(formatted[1:]), original, decompressed
             )
         )
@@ -597,6 +623,12 @@ if __name__ == "__main__":
         "--translation", default=None, type=str, help="translations for i18n() items"
     )
     parser.add_argument(
+        "--compression_level",
+        type=int,
+        default=9,
+        help="degree of compression (>5: construct dictionary; >3: use qstrs)",
+    )
+    parser.add_argument(
         "--compression_filename",
         type=argparse.FileType("w", encoding="UTF-8"),
         help="header for compression info",
@@ -619,6 +651,6 @@ if __name__ == "__main__":
     i18ns = sorted(i18ns)
     translations = translate(args.translation, i18ns)
     encoding_table = compute_huffman_coding(
-        qstrs, args.translation, translations, args.compression_filename
+        qstrs, args.translation, translations, args.compression_filename, args.compression_level
     )
     output_translation_data(encoding_table, translations, args.translation_filename)

@@ -72,7 +72,8 @@ STATIC void sighandler(int signum) {
 }
 #endif
 
-void mp_hal_set_interrupt_char(char c) {
+// CIRCUITPY-CHANGE: mp_hal_set_interrupt_char(int) instead of char
+void mp_hal_set_interrupt_char(int c) {
     // configure terminal settings to (not) let ctrl-C through
     if (c == CHAR_CTRL_C) {
         #ifndef _WIN32
@@ -95,7 +96,7 @@ void mp_hal_set_interrupt_char(char c) {
     }
 }
 
-// CIRCUITPY
+// CIRCUITPY-CHANGE
 bool mp_hal_is_interrupted(void) {
     return false;
 }
@@ -192,8 +193,9 @@ main_term:;
 void mp_hal_stdout_tx_strn(const char *str, size_t len) {
     ssize_t ret;
     MP_HAL_RETRY_SYSCALL(ret, write(STDOUT_FILENO, str, len), {});
+    // CIRCUITPY-CHANGE: need to conditionalize MICROPY_PY_OS_DUPTERM
     #if MICROPY_PY_OS_DUPTERM
-    mp_uos_dupterm_tx_strn(str, len);
+    mp_os_dupterm_tx_strn(str, len);
     #endif
 }
 
@@ -206,6 +208,7 @@ void mp_hal_stdout_tx_str(const char *str) {
     mp_hal_stdout_tx_strn(str, strlen(str));
 }
 
+#ifndef mp_hal_ticks_ms
 mp_uint_t mp_hal_ticks_ms(void) {
     #if (defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0) && defined(_POSIX_MONOTONIC_CLOCK)
     struct timespec tv;
@@ -217,7 +220,9 @@ mp_uint_t mp_hal_ticks_ms(void) {
     return tv.tv_sec * 1000 + tv.tv_usec / 1000;
     #endif
 }
+#endif
 
+#ifndef mp_hal_ticks_us
 mp_uint_t mp_hal_ticks_us(void) {
     #if (defined(_POSIX_TIMERS) && _POSIX_TIMERS > 0) && defined(_POSIX_MONOTONIC_CLOCK)
     struct timespec tv;
@@ -229,18 +234,22 @@ mp_uint_t mp_hal_ticks_us(void) {
     return tv.tv_sec * 1000000 + tv.tv_usec;
     #endif
 }
+#endif
 
+#ifndef mp_hal_time_ns
 uint64_t mp_hal_time_ns(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
     return (uint64_t)tv.tv_sec * 1000000000ULL + (uint64_t)tv.tv_usec * 1000ULL;
 }
+#endif
 
+#ifndef mp_hal_delay_ms
 void mp_hal_delay_ms(mp_uint_t ms) {
     #ifdef MICROPY_EVENT_POLL_HOOK
     mp_uint_t start = mp_hal_ticks_ms();
     while (mp_hal_ticks_ms() - start < ms) {
-        // MICROPY_EVENT_POLL_HOOK does mp_hal_delay_us(500) (i.e. usleep(500)).
+        // MICROPY_EVENT_POLL_HOOK does usleep(500).
         MICROPY_EVENT_POLL_HOOK
     }
     #else
@@ -249,12 +258,13 @@ void mp_hal_delay_ms(mp_uint_t ms) {
     usleep(ms * 1000);
     #endif
 }
+#endif
 
 void mp_hal_get_random(size_t n, void *buf) {
     #ifdef _HAVE_GETRANDOM
     RAISE_ERRNO(getrandom(buf, n, 0), errno);
     #else
-    int fd = open("/dev/urandom", O_RDONLY);
+    int fd = open("/dev/random", O_RDONLY);
     RAISE_ERRNO(fd, errno);
     RAISE_ERRNO(read(fd, buf, n), errno);
     close(fd);

@@ -14,7 +14,7 @@ void common_hal_vectorio_rectangle_construct(vectorio_rectangle_t *self, uint32_
 
 void common_hal_vectorio_rectangle_set_on_dirty(vectorio_rectangle_t *self, vectorio_event_t on_dirty) {
     if (self->on_dirty.obj != NULL) {
-        mp_raise_TypeError(translate("can only have one parent"));
+        mp_raise_TypeError(MP_ERROR_TEXT("can only have one parent"));
     }
     self->on_dirty = on_dirty;
 }

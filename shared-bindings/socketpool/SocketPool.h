@@ -46,12 +46,24 @@ typedef enum {
 
 typedef enum {
     SOCKETPOOL_IPPROTO_IP = 0,
+    SOCKETPOOL_IPPROTO_ICMP = 1,
     SOCKETPOOL_IPPROTO_TCP = 6,
+    SOCKETPOOL_IPPROTO_UDP = 17,
+    SOCKETPOOL_IPPROTO_IPV6 = 41,
+    SOCKETPOOL_IPPROTO_RAW = 255,
 } socketpool_socketpool_ipproto_t;
 
 typedef enum {
     SOCKETPOOL_TCP_NODELAY = 1,
 } socketpool_socketpool_tcpopt_t;
+
+typedef enum {
+    SOCKETPOOL_SOL_SOCKET = 0xfff,
+} socketpool_socketpool_optlevel_t;
+
+typedef enum {
+    SOCKETPOOL_SO_REUSEADDR = 0x0004,
+} socketpool_socketpool_socketopt_t;
 
 typedef enum {
     SOCKETPOOL_IP_MULTICAST_TTL = 5,
@@ -64,7 +76,7 @@ typedef enum {
 void common_hal_socketpool_socketpool_construct(socketpool_socketpool_obj_t *self, mp_obj_t radio);
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type);
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto);
 
 mp_obj_t common_hal_socketpool_socketpool_gethostbyname(socketpool_socketpool_obj_t *self,
     const char *host);
@@ -76,7 +88,7 @@ mp_obj_t common_hal_socketpool_socketpool_gethostbyname_raise(socketpool_socketp
 // closed automatically.
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
-    socketpool_socket_obj_t *sock);
+    int proto, socketpool_socket_obj_t *sock);
 
 NORETURN void common_hal_socketpool_socketpool_raise_gaierror_noname(void);
 

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013-2023 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,3 +49,40 @@ void nlr_pop(void) {
     nlr_buf_t **top = &MP_STATE_THREAD(nlr_top);
     *top = (*top)->prev;
 }
+
+void nlr_push_jump_callback(nlr_jump_callback_node_t *node, nlr_jump_callback_fun_t fun) {
+    nlr_jump_callback_node_t **top = &MP_STATE_THREAD(nlr_jump_callback_top);
+    node->prev = *top;
+    node->fun = fun;
+    *top = node;
+}
+
+void nlr_pop_jump_callback(bool run_callback) {
+    nlr_jump_callback_node_t **top = &MP_STATE_THREAD(nlr_jump_callback_top);
+    nlr_jump_callback_node_t *cur = *top;
+    *top = (*top)->prev;
+    if (run_callback) {
+        cur->fun(cur);
+    }
+}
+
+// This function pops and runs all callbacks that were registered after `nlr`
+// was pushed (via nlr_push).  It assumes:
+//  - a descending C stack,
+//  - that all nlr_jump_callback_node_t's in the linked-list pointed to by
+//    nlr_jump_callback_top are on the C stack
+// It works by popping each node in turn until the next node is NULL or above
+// the `nlr` pointer on the C stack (and so pushed before `nlr` was pushed).
+void nlr_call_jump_callbacks(nlr_buf_t *nlr) {
+    nlr_jump_callback_node_t **top = &MP_STATE_THREAD(nlr_jump_callback_top);
+    while (*top != NULL && (void *)*top < (void *)nlr) {
+        nlr_pop_jump_callback(true);
+    }
+}
+
+#if MICROPY_ENABLE_VM_ABORT
+NORETURN void nlr_jump_abort(void) {
+    MP_STATE_THREAD(nlr_top) = MP_STATE_VM(nlr_abort);
+    nlr_jump(NULL);
+}
+#endif

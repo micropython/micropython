@@ -54,6 +54,10 @@
 #include "shared-bindings/hashlib/Hash.h"
 #include "lib/oofatfs/diskio.h"
 
+#if CIRCUITPY_FOURWIRE
+#include "shared-module/displayio/__init__.h"
+#endif
+
 #if CIRCUITPY_MDNS
 #include "shared-bindings/mdns/RemoteService.h"
 #include "shared-bindings/mdns/Server.h"
@@ -238,27 +242,27 @@ void supervisor_web_workflow_status(void) {
             // TODO: Use these unicode to show signal strength: ▂▄▆█
             return;
         }
-        serial_write_compressed(translate("Wi-Fi: "));
+        serial_write_compressed(MP_ERROR_TEXT("Wi-Fi: "));
         _last_wifi_status = _wifi_status;
         if (_wifi_status == WIFI_RADIO_ERROR_AUTH_EXPIRE ||
             _wifi_status == WIFI_RADIO_ERROR_AUTH_FAIL) {
-            serial_write_compressed(translate("Authentication failure"));
+            serial_write_compressed(MP_ERROR_TEXT("Authentication failure"));
         } else if (_wifi_status != WIFI_RADIO_ERROR_NONE) {
             mp_printf(&mp_plat_print, "%d", _wifi_status);
         } else if (ipv4_address == 0) {
             _last_ip = 0;
-            serial_write_compressed(translate("No IP"));
+            serial_write_compressed(MP_ERROR_TEXT("No IP"));
         } else {
         }
     } else {
         // Keep Wi-Fi print separate so its data can be matched with the one above.
-        serial_write_compressed(translate("Wi-Fi: "));
-        serial_write_compressed(translate("off"));
+        serial_write_compressed(MP_ERROR_TEXT("Wi-Fi: "));
+        serial_write_compressed(MP_ERROR_TEXT("off"));
     }
 }
 #endif
 
-bool supervisor_start_web_workflow(bool reload) {
+bool supervisor_start_web_workflow(void) {
     #if CIRCUITPY_WEB_WORKFLOW && CIRCUITPY_WIFI && CIRCUITPY_OS_GETENV
 
     char ssid[33];
@@ -310,7 +314,7 @@ bool supervisor_start_web_workflow(bool reload) {
 
     bool initialized = pool.base.type == &socketpool_socketpool_type;
 
-    if (!initialized && !reload) {
+    if (!initialized) {
         result = common_hal_os_getenv_str("CIRCUITPY_WEB_INSTANCE_NAME", web_instance_name, sizeof(web_instance_name));
         if (result != GETENV_OK || web_instance_name[0] == '\0') {
             strcpy(web_instance_name, MICROPY_HW_BOARD_NAME);
@@ -339,7 +343,7 @@ bool supervisor_start_web_workflow(bool reload) {
 
     initialized = pool.base.type == &socketpool_socketpool_type;
 
-    if (initialized){
+    if (initialized) {
         if (!common_hal_socketpool_socket_get_closed(&active)) {
             common_hal_socketpool_socket_close(&active);
         }
@@ -355,12 +359,12 @@ bool supervisor_start_web_workflow(bool reload) {
             }
         }
         if (!common_hal_mdns_server_deinited(&mdns)) {
-            common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port);
+            common_hal_mdns_server_advertise_service(&mdns, "_circuitpython", "_tcp", web_api_port, NULL, 0);
         }
         #endif
 
         if (common_hal_socketpool_socket_get_closed(&listening)) {
-            socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, &listening);
+            socketpool_socket(&pool, SOCKETPOOL_AF_INET, SOCKETPOOL_SOCK_STREAM, 0, &listening);
             common_hal_socketpool_socket_settimeout(&listening, 0);
             // Bind to any ip. (Not checking for failures)
             common_hal_socketpool_socket_bind(&listening, "", 0, web_api_port);
@@ -368,15 +372,22 @@ bool supervisor_start_web_workflow(bool reload) {
         }
         // Wake polling thread (maybe)
         socketpool_socket_poll_resume();
-        #endif
         return true;
     }
+    #endif
     return false;
 }
 
-void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, int len) {
+void web_workflow_send_raw(socketpool_socket_obj_t *socket, bool flush, const uint8_t *buf, int len) {
     int total_sent = 0;
     int sent = -MP_EAGAIN;
+    int nodelay_ok = -1;
+    // When flushing, disable Nagle's combining algorithm so that buf is sent immediately.
+    if (flush) {
+        int nodelay = 1;
+        nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
+    }
+
     while ((sent == -MP_EAGAIN || (sent > 0 && total_sent < len)) &&
            common_hal_socketpool_socket_get_connected(socket)) {
         sent = socketpool_socket_send(socket, buf + total_sent, len - total_sent);
@@ -388,14 +399,28 @@ void web_workflow_send_raw(socketpool_socket_obj_t *socket, const uint8_t *buf, 
             }
         }
     }
+
+    // Re-enable Nagle's algorithm when done sending.
+    if (nodelay_ok == 0) {
+        int nodelay = 0;
+        nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
+    }
 }
 
 STATIC void _print_raw(void *env, const char *str, size_t len) {
-    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, (size_t)len);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, (size_t)len);
 }
 
 static void _send_str(socketpool_socket_obj_t *socket, const char *str) {
-    web_workflow_send_raw(socket, (const uint8_t *)str, strlen(str));
+    web_workflow_send_raw(socket, false, (const uint8_t *)str, strlen(str));
+}
+
+static void _send_str_maybe_flush(socketpool_socket_obj_t *socket, bool flush, const char *str) {
+    web_workflow_send_raw(socket, flush, (const uint8_t *)str, strlen(str));
+}
+
+static void _send_final_str(socketpool_socket_obj_t *socket, const char *str) {
+    web_workflow_send_raw(socket, true, (const uint8_t *)str, strlen(str));
 }
 
 // The last argument must be NULL! Otherwise, it won't stop.
@@ -404,9 +429,13 @@ static __attribute__((sentinel)) void _send_strs(socketpool_socket_obj_t *socket
     va_start(ap, socket);
 
     const char *str = va_arg(ap, const char *);
-    while (str != NULL) {
-        _send_str(socket, str);
-        str = va_arg(ap, const char *);
+    const char *next_str = va_arg(ap, const char *);
+    assert(str != NULL);
+    _send_str(socket, str);
+    while (next_str != NULL) {
+        str = next_str;
+        next_str = va_arg(ap, const char *);
+        _send_str_maybe_flush(socket, next_str == NULL, str);
     }
     va_end(ap);
 }
@@ -414,15 +443,15 @@ static __attribute__((sentinel)) void _send_strs(socketpool_socket_obj_t *socket
 static void _send_chunk(socketpool_socket_obj_t *socket, const char *chunk) {
     mp_print_t _socket_print = {socket, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", strlen(chunk));
-    web_workflow_send_raw(socket, (const uint8_t *)chunk, strlen(chunk));
-    web_workflow_send_raw(socket, (const uint8_t *)"\r\n", 2);
+    web_workflow_send_raw(socket, false, (const uint8_t *)chunk, strlen(chunk));
+    web_workflow_send_raw(socket, strlen(chunk) == 0, (const uint8_t *)"\r\n", 2);
 }
 
 STATIC void _print_chunk(void *env, const char *str, size_t len) {
     mp_print_t _socket_print = {env, _print_raw};
     mp_printf(&_socket_print, "%X\r\n", len);
-    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)str, len);
-    web_workflow_send_raw((socketpool_socket_obj_t *)env, (const uint8_t *)"\r\n", 2);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, false, (const uint8_t *)str, len);
+    web_workflow_send_raw((socketpool_socket_obj_t *)env, true, (const uint8_t *)"\r\n", 2);
 }
 
 // A bit of a misnomer because it sends all arguments as one chunk.
@@ -500,17 +529,6 @@ static bool _origin_ok(_request *request) {
     return false;
 }
 
-STATIC bool _usb_active(void) {
-    // Check to see if USB has already been mounted. If not, then we "eject" from USB until we're done.
-    #if CIRCUITPY_USB && CIRCUITPY_USB_MSC
-    if (storage_usb_enabled() && !usb_msc_lock()) {
-        return true;
-    }
-    #endif
-    return false;
-}
-
-
 static const char *OK_JSON = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/json\r\n";
 
 static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
@@ -524,7 +542,7 @@ static void _cors_header(socketpool_socket_obj_t *socket, _request *request) {
 static void _reply_continue(socketpool_socket_obj_t *socket, _request *request) {
     _send_str(socket, "HTTP/1.1 100 Continue\r\n");
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_created(socketpool_socket_obj_t *socket, _request *request) {
@@ -532,7 +550,7 @@ static void _reply_created(socketpool_socket_obj_t *socket, _request *request) {
         "HTTP/1.1 201 Created\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_no_content(socketpool_socket_obj_t *socket, _request *request) {
@@ -540,7 +558,7 @@ static void _reply_no_content(socketpool_socket_obj_t *socket, _request *request
         "HTTP/1.1 204 No Content\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_access_control(socketpool_socket_obj_t *socket, _request *request) {
@@ -549,16 +567,10 @@ static void _reply_access_control(socketpool_socket_obj_t *socket, _request *req
         "Content-Length: 0\r\n",
         "Access-Control-Expose-Headers: Access-Control-Allow-Methods\r\n",
         "Access-Control-Allow-Headers: X-Timestamp, X-Destination, Content-Type, Authorization\r\n",
-        "Access-Control-Allow-Methods:GET, OPTIONS", NULL);
-    if (!_usb_active()) {
-        _send_str(socket, ", PUT, DELETE, MOVE");
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
-    }
+        "Access-Control-Allow-Methods:GET, OPTIONS, PUT, DELETE, MOVE", NULL);
     _send_str(socket, "\r\n");
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_missing(socketpool_socket_obj_t *socket, _request *request) {
@@ -566,7 +578,7 @@ static void _reply_missing(socketpool_socket_obj_t *socket, _request *request) {
         "HTTP/1.1 404 Not Found\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_method_not_allowed(socketpool_socket_obj_t *socket, _request *request) {
@@ -574,7 +586,7 @@ static void _reply_method_not_allowed(socketpool_socket_obj_t *socket, _request 
         "HTTP/1.1 405 Method Not Allowed\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_forbidden(socketpool_socket_obj_t *socket, _request *request) {
@@ -582,7 +594,7 @@ static void _reply_forbidden(socketpool_socket_obj_t *socket, _request *request)
         "HTTP/1.1 403 Forbidden\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_conflict(socketpool_socket_obj_t *socket, _request *request) {
@@ -590,7 +602,7 @@ static void _reply_conflict(socketpool_socket_obj_t *socket, _request *request) 
         "HTTP/1.1 409 Conflict\r\n",
         "Content-Length: 19\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\nUSB storage active.");
+    _send_final_str(socket, "\r\nUSB storage active.");
 }
 
 
@@ -599,7 +611,7 @@ static void _reply_precondition_failed(socketpool_socket_obj_t *socket, _request
         "HTTP/1.1 412 Precondition Failed\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_payload_too_large(socketpool_socket_obj_t *socket, _request *request) {
@@ -607,7 +619,7 @@ static void _reply_payload_too_large(socketpool_socket_obj_t *socket, _request *
         "HTTP/1.1 413 Payload Too Large\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_expectation_failed(socketpool_socket_obj_t *socket, _request *request) {
@@ -615,7 +627,7 @@ static void _reply_expectation_failed(socketpool_socket_obj_t *socket, _request 
         "HTTP/1.1 417 Expectation Failed\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_unauthorized(socketpool_socket_obj_t *socket, _request *request) {
@@ -624,7 +636,7 @@ static void _reply_unauthorized(socketpool_socket_obj_t *socket, _request *reque
         "Content-Length: 0\r\n",
         "WWW-Authenticate: Basic realm=\"CircuitPython\"\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 static void _reply_server_error(socketpool_socket_obj_t *socket, _request *request) {
@@ -632,7 +644,7 @@ static void _reply_server_error(socketpool_socket_obj_t *socket, _request *reque
         "HTTP/1.1 500 Internal Server Error\r\n",
         "Content-Length: 0\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 
 #if CIRCUITPY_MDNS
@@ -658,21 +670,55 @@ static void _reply_redirect(socketpool_socket_obj_t *socket, _request *request, 
     }
     _send_strs(socket, path, "\r\n", NULL);
     _cors_header(socket, request);
-    _send_str(socket, "\r\n");
+    _send_final_str(socket, "\r\n");
 }
 #endif
 
-static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *request, FF_DIR *dir, const char *request_path, const char *path) {
+static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *request, fs_user_mount_t *fs_mount, FF_DIR *dir, const char *request_path, const char *path) {
+    FILINFO file_info;
+    char *fn = file_info.fname;
+    FRESULT res = f_readdir(dir, &file_info);
+    if (res != FR_OK) {
+        _reply_missing(socket, request);
+        return;
+    }
+
     socketpool_socket_send(socket, (const uint8_t *)OK_JSON, strlen(OK_JSON));
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
     mp_print_t _socket_print = {socket, _print_chunk};
-    _send_chunk(socket, "[");
+
+    // Send mount info.
+    DWORD free_clusters = 0;
+    FATFS *fatfs = &fs_mount->fatfs;
+    f_getfree(fatfs, &free_clusters);
+    size_t ssize;
+    #if FF_MAX_SS != FF_MIN_SS
+    ssize = fatfs->ssize;
+    #else
+    ssize = FF_MIN_SS;
+    #endif
+    uint32_t cluster_size = fatfs->csize * ssize;
+    uint32_t total_clusters = fatfs->n_fatent - 2;
+
+    const char *writable = "false";
+    // Test to see if we can grab the write lock. USB will grab the underlying
+    // blockdev lock once it says it is writable. Unlock immediately since we
+    // aren't actually writing.
+    if (filesystem_lock(fs_mount)) {
+        filesystem_unlock(fs_mount);
+        writable = "true";
+    }
+    mp_printf(&_socket_print,
+        "{\"free\": %u, "
+        "\"total\": %u, "
+        "\"block_size\": %u, "
+        "\"writable\": %s, ", free_clusters, total_clusters, cluster_size, writable);
+
+    // Send file list
+    _send_chunk(socket, "\"files\": [");
     bool first = true;
 
-    FILINFO file_info;
-    char *fn = file_info.fname;
-    FRESULT res = f_readdir(dir, &file_info);
     while (res == FR_OK && fn[0] != 0) {
         if (!first) {
             _send_chunk(socket, ",");
@@ -708,7 +754,7 @@ static void _reply_directory_json(socketpool_socket_obj_t *socket, _request *req
         first = false;
         res = f_readdir(dir, &file_info);
     }
-    _send_chunk(socket, "]");
+    _send_chunk(socket, "]}");
     _send_chunk(socket, "");
 }
 
@@ -734,11 +780,19 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     _send_str(socket, "\r\n");
 
     uint32_t total_read = 0;
+    int nodelay_ok = -1;
     while (total_read < total_length) {
         uint8_t data_buffer[64];
         size_t quantity_read;
         f_read(active_file, data_buffer, 64, &quantity_read);
         total_read += quantity_read;
+        // When getting near the end of the file, disable Nagle's combining algorithm so that
+        // data is sent immediately.
+        if (total_length - total_read < 64) {
+            int nodelay = 1;
+            // Returns 0 when it works.
+            nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
+        }
         uint32_t send_offset = 0;
         while (send_offset < quantity_read) {
             int sent = socketpool_socket_send(socket, data_buffer + send_offset, quantity_read - send_offset);
@@ -754,6 +808,12 @@ static void _reply_with_file(socketpool_socket_obj_t *socket, _request *request,
     }
     if (total_read < total_length) {
         socketpool_socket_close(socket);
+    }
+
+    // Re-enable Nagle's algorithm when done sending.
+    if (nodelay_ok == 0) {
+        int nodelay = 0;
+        nodelay_ok = common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
     }
 }
 
@@ -812,7 +872,7 @@ static void _reply_with_version_json(socketpool_socket_obj_t *socket, _request *
     _update_encoded_ip();
     // Note: this leverages the fact that C concats consecutive string literals together.
     mp_printf(&_socket_print,
-        "{\"web_api_version\": 2, "
+        "{\"web_api_version\": 4, "
         "\"version\": \"" MICROPY_GIT_TAG "\", "
         "\"build_date\": \"" MICROPY_BUILD_DATE "\", "
         "\"board_name\": \"%s\", "
@@ -841,21 +901,47 @@ static void _reply_with_diskinfo_json(socketpool_socket_obj_t *socket, _request 
     _cors_header(socket, request);
     _send_str(socket, "\r\n");
     mp_print_t _socket_print = {socket, _print_chunk};
+    _send_chunk(socket, "[");
 
-    DWORD free_clusters;
-    FATFS *fs = filesystem_circuitpy();
-    FRESULT blk_result = f_getfree(fs, &free_clusters);
-    uint16_t block_size;
-    if (blk_result == FR_OK) {
-        disk_ioctl(fs, GET_SECTOR_SIZE, &block_size);
+    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+    size_t i = 0;
+    while (vfs != NULL) {
+        if (i > 0) {
+            _send_chunk(socket, ",");
+        }
+        fs_user_mount_t *fs = MP_OBJ_TO_PTR(vfs->obj);
+        // Skip non-fat and non-native block file systems.
+        if (fs->base.type != &mp_fat_vfs_type || (fs->blockdev.flags & MP_BLOCKDEV_FLAG_NATIVE) == 0) {
+            vfs = vfs->next;
+            continue;
+        }
+        DWORD free_clusters = 0;
+        FATFS *fatfs = &fs->fatfs;
+        f_getfree(fatfs, &free_clusters);
+        size_t ssize;
+        #if FF_MAX_SS != FF_MIN_SS
+        ssize = fatfs->ssize;
+        #else
+        ssize = FF_MIN_SS;
+        #endif
+        size_t block_size = fatfs->csize * ssize;
+        size_t total_size = fatfs->n_fatent - 2;
+
+        const char *writable = "false";
+        if (filesystem_lock(fs)) {
+            filesystem_unlock(fs);
+            writable = "true";
+        }
+        mp_printf(&_socket_print,
+            "{\"root\": \"%s\", "
+            "\"free\": %u, "
+            "\"total\": %u, "
+            "\"block_size\": %u, "
+            "\"writable\": %s}", vfs->str, free_clusters, total_size, block_size, writable);
+        i++;
+        vfs = vfs->next;
     }
-
-    uint16_t total_size = fs->n_fatent - 2;
-
-    mp_printf(&_socket_print,
-        "{\"free\": %d, "
-        "\"block_size\": %d, "
-        "\"total\": %d}", free_clusters * block_size, block_size, total_size * block_size);
+    _send_chunk(socket, "]");
 
     // Empty chunk signals the end of the response.
     _send_chunk(socket, "");
@@ -883,16 +969,19 @@ STATIC void _discard_incoming(socketpool_socket_obj_t *socket, size_t amount) {
         size_t read_len = MIN(sizeof(bytes), amount - discarded);
         int len = socketpool_socket_recv_into(socket, bytes, read_len);
         if (len < 0) {
+            if (len == -MP_EAGAIN) {
+                continue;
+            }
             break;
         }
-        discarded += read_len;
+        discarded += len;
     }
 }
 
-static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *request, FATFS *fs, const TCHAR *path) {
+static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *request, fs_user_mount_t *fs_mount, const TCHAR *path) {
     FIL active_file;
 
-    if (_usb_active()) {
+    if (!filesystem_lock(fs_mount)) {
         _discard_incoming(socket, request->content_length);
         _reply_conflict(socket, request);
         return;
@@ -903,51 +992,57 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
         override_fattime(fattime);
     }
 
+    FATFS *fs = &fs_mount->fatfs;
     FRESULT result = f_open(fs, &active_file, path, FA_WRITE);
     bool new_file = false;
+    size_t old_length = 0;
     if (result == FR_NO_FILE) {
         new_file = true;
         result = f_open(fs, &active_file, path, FA_WRITE | FA_OPEN_ALWAYS);
+    } else {
+        old_length = f_size(&active_file);
     }
 
     if (result == FR_NO_PATH) {
         override_fattime(0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
+        filesystem_unlock(fs_mount);
         _discard_incoming(socket, request->content_length);
         _reply_missing(socket, request);
         return;
     }
     if (result != FR_OK) {
         override_fattime(0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
+        filesystem_unlock(fs_mount);
         _discard_incoming(socket, request->content_length);
         _reply_server_error(socket, request);
         return;
-    } else if (request->expect) {
-        _reply_continue(socket, request);
     }
 
     // Change the file size to start.
     f_lseek(&active_file, request->content_length);
     if (f_tell(&active_file) < request->content_length) {
+        if (!new_file) {
+            // Truncate the file back to the old length.
+            f_lseek(&active_file, old_length);
+            f_truncate(&active_file);
+        }
         f_close(&active_file);
+
+        if (new_file) {
+            f_unlink(fs, path);
+        }
         override_fattime(0);
-        #if CIRCUITPY_USB_MSC
-        usb_msc_unlock();
-        #endif
-        _discard_incoming(socket, request->content_length);
+        filesystem_unlock(fs_mount);
         // Too large.
         if (request->expect) {
             _reply_expectation_failed(socket, request);
         } else {
+            _discard_incoming(socket, request->content_length);
             _reply_payload_too_large(socket, request);
         }
-
         return;
+    } else if (request->expect) {
+        _reply_continue(socket, request);
     }
     f_truncate(&active_file);
     f_rewind(&active_file);
@@ -975,9 +1070,7 @@ static void _write_file_and_reply(socketpool_socket_obj_t *socket, _request *req
     }
 
     f_close(&active_file);
-    #if CIRCUITPY_USB_MSC
-    usb_msc_unlock();
-    #endif
+    filesystem_unlock(fs_mount);
 
     override_fattime(0);
     if (error) {
@@ -1015,7 +1108,7 @@ static void _reply_static(socketpool_socket_obj_t *socket, _request *request, co
         "Content-Length: ", encoded_len, "\r\n",
         "Content-Type: ", content_type, "\r\n",
         "\r\n", NULL);
-    web_workflow_send_raw(socket, response, response_len);
+    web_workflow_send_raw(socket, true, response, response_len);
 }
 
 #define _REPLY_STATIC(socket, request, filename) _reply_static(socket, request, filename, filename##_length, filename##_content_type)
@@ -1106,7 +1199,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
 
             char *path = request->path + 3;
             size_t pathlen = strlen(path);
-            FATFS *fs = filesystem_circuitpy();
             // Trailing / is a directory.
             bool directory = false;
             if (path[pathlen - 1] == '/') {
@@ -1116,29 +1208,16 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                 }
                 directory = true;
             }
+
+            // These manipulations work on the full path so do them first.
+
             // Delete is almost identical for files and directories so share the
             // implementation.
             if (strcasecmp(request->method, "DELETE") == 0) {
-                if (_usb_active()) {
+                FRESULT result = supervisor_workflow_delete_recursive(path);
+                if (result == FR_WRITE_PROTECTED) {
                     _reply_conflict(socket, request);
-                    return false;
-                }
-
-                FILINFO file;
-                FRESULT result = f_stat(fs, path, &file);
-                if (result == FR_OK) {
-                    if ((file.fattrib & AM_DIR) != 0) {
-                        result = supervisor_workflow_delete_directory_contents(fs, path);
-                    }
-                    if (result == FR_OK) {
-                        result = f_unlink(fs, path);
-                    }
-                }
-
-                #if CIRCUITPY_USB_MSC
-                usb_msc_unlock();
-                #endif
-                if (result == FR_NO_PATH || result == FR_NO_FILE) {
+                } else if (result == FR_NO_PATH || result == FR_NO_FILE) {
                     _reply_missing(socket, request);
                 } else if (result != FR_OK) {
                     _reply_server_error(socket, request);
@@ -1146,12 +1225,8 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     _reply_no_content(socket, request);
                     return true;
                 }
+                return false;
             } else if (strcasecmp(request->method, "MOVE") == 0) {
-                if (_usb_active()) {
-                    _reply_conflict(socket, request);
-                    return false;
-                }
-
                 _decode_percents(request->destination);
                 char *destination = request->destination + 3;
                 size_t destinationlen = strlen(destination);
@@ -1159,11 +1234,10 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     destination[destinationlen - 1] = '\0';
                 }
 
-                FRESULT result = f_rename(fs, path, destination);
-                #if CIRCUITPY_USB_MSC
-                usb_msc_unlock();
-                #endif
-                if (result == FR_EXIST) { // File exists and won't be overwritten.
+                FRESULT result = supervisor_workflow_move(path, destination);
+                if (result == FR_WRITE_PROTECTED) {
+                    _reply_conflict(socket, request);
+                } else if (result == FR_EXIST) { // File exists and won't be overwritten.
                     _reply_precondition_failed(socket, request);
                 } else if (result == FR_NO_PATH || result == FR_NO_FILE) { // Missing higher directories or target file.
                     _reply_missing(socket, request);
@@ -1173,7 +1247,51 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     _reply_created(socket, request);
                     return true;
                 }
-            } else if (directory) {
+                return false;
+            } else if (directory && strcasecmp(request->method, "PUT") == 0) {
+                DWORD fattime = 0;
+                if (request->timestamp_ms > 0) {
+                    truncate_time(request->timestamp_ms * 1000000, &fattime);
+                }
+                FRESULT result = supervisor_workflow_mkdir_parents(fattime, path);
+                if (result == FR_WRITE_PROTECTED) {
+                    _reply_conflict(socket, request);
+                } else if (result == FR_EXIST) {
+                    _reply_no_content(socket, request);
+                } else if (result == FR_NO_PATH) {
+                    _reply_missing(socket, request);
+                } else if (result != FR_OK) {
+                    _reply_server_error(socket, request);
+                } else {
+                    _reply_created(socket, request);
+                    return true;
+                }
+                return false;
+            }
+
+            // These responses don't use helpers because they stream data in and
+            // out. So, share the mount lookup code.
+            const char *path_out = NULL;
+            mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path, &path_out);
+            if (vfs == MP_VFS_NONE) {
+                _reply_missing(socket, request);
+                return false;
+            }
+            fs_user_mount_t *fs_mount;
+            if (vfs == MP_VFS_ROOT) {
+                fs_mount = filesystem_circuitpy();
+            } else {
+                fs_mount = MP_OBJ_TO_PTR(vfs->obj);
+                // Skip non-fat and non-native block file systems.
+                if (!filesystem_native_fatfs(fs_mount)) {
+                    _reply_missing(socket, request);
+                    return false;
+                }
+                path += strlen(vfs->str);
+                pathlen = strlen(path);
+            }
+            FATFS *fs = &fs_mount->fatfs;
+            if (directory) {
                 if (strcasecmp(request->method, "GET") == 0) {
                     FF_DIR dir;
                     FRESULT res = f_opendir(fs, &dir, path);
@@ -1186,7 +1304,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                         return false;
                     }
                     if (request->json) {
-                        _reply_directory_json(socket, request, &dir, request->path, path);
+                        _reply_directory_json(socket, request, fs_mount, &dir, request->path, path);
                     } else if (pathlen == 1) {
                         _REPLY_STATIC(socket, request, directory_html);
                     } else {
@@ -1194,32 +1312,6 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
                     }
 
                     f_closedir(&dir);
-                } else if (strcasecmp(request->method, "PUT") == 0) {
-                    if (_usb_active()) {
-                        _reply_conflict(socket, request);
-                        return false;
-                    }
-
-                    if (request->timestamp_ms > 0) {
-                        DWORD fattime;
-                        truncate_time(request->timestamp_ms * 1000000, &fattime);
-                        override_fattime(fattime);
-                    }
-                    FRESULT result = supervisor_workflow_mkdir_parents(fs, path);
-                    override_fattime(0);
-                    #if CIRCUITPY_USB_MSC
-                    usb_msc_unlock();
-                    #endif
-                    if (result == FR_EXIST) {
-                        _reply_no_content(socket, request);
-                    } else if (result == FR_NO_PATH) {
-                        _reply_missing(socket, request);
-                    } else if (result != FR_OK) {
-                        _reply_server_error(socket, request);
-                    } else {
-                        _reply_created(socket, request);
-                        return true;
-                    }
                 }
             } else { // Dealing with a file.
                 if (strcasecmp(request->method, "GET") == 0) {
@@ -1234,7 +1326,7 @@ static bool _reply(socketpool_socket_obj_t *socket, _request *request) {
 
                     f_close(&active_file);
                 } else if (strcasecmp(request->method, "PUT") == 0) {
-                    _write_file_and_reply(socket, request, fs, path);
+                    _write_file_and_reply(socket, request, fs_mount, path);
                     return true;
                 }
             }
@@ -1462,6 +1554,7 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
         int nodelay = 1;
         common_hal_socketpool_socket_setsockopt(socket, SOCKETPOOL_IPPROTO_TCP, SOCKETPOOL_TCP_NODELAY, &nodelay, sizeof(nodelay));
         socketpool_socket_send(socket, (const uint8_t *)error_response, strlen(error_response));
+        request->done = true;
     }
     if (!request->done) {
         return;
@@ -1475,9 +1568,32 @@ static void _process_request(socketpool_socket_obj_t *socket, _request *request)
     }
 }
 
+static bool supervisor_filesystem_access_could_block(void) {
+    #if CIRCUITPY_FOURWIRE
+    mp_vfs_mount_t *vfs = MP_STATE_VM(vfs_mount_table);
+    if (!vfs->next) {
+        // Assume that the CIRCUITPY root is not sharing a SPI bus with the display SPI bus
+        return false;
+    }
+    // Check display 0 to see if it's on a fourwire (SPI) bus. If it is, blocking is possible
+    // in theory other displays could block but also in reality there's generally 0 or 1 displays
+    for (size_t i = 0; i < CIRCUITPY_DISPLAY_LIMIT; i++) {
+        if (display_buses[i].bus_base.type != &fourwire_fourwire_type) {
+            continue;
+        }
+        if (!common_hal_fourwire_fourwire_bus_free(MP_OBJ_FROM_PTR(&display_buses[i].bus_base))) {
+            return true;
+        }
+    }
+    #endif
+    return false;
+}
 
 void supervisor_web_workflow_background(void *data) {
-    while (true) {
+    // If "/sd" is mounted AND shared with a display, access could block.
+    // We don't have a good way to defer a filesystem action way down inside _process_request
+    // when this happens, so just postpone if there's a chance of blocking. (#8980)
+    while (!supervisor_filesystem_access_could_block()) {
         // If we have a request in progress, continue working on it. Do this first
         // so that we can accept another socket after finishing this request.
         if (common_hal_socketpool_socket_get_connected(&active)) {
@@ -1515,9 +1631,11 @@ void supervisor_web_workflow_background(void *data) {
             }
             break;
         }
-        websocket_background();
-        break;
     }
+
+    // Let the websocket code run.
+    websocket_background();
+
     // Resume polling
     socketpool_socket_poll_resume();
 

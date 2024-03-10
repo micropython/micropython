@@ -17,6 +17,10 @@ You can also type a regular expression as a filter.
 
     <p id="support-matrix-filter-block"><input placeholder="Filter the boards by available modules" id="support-matrix-filter" type="text"/><span id="support-matrix-filter-num">(all)</span></p>
 
+.. raw:: latex
+
+    \begin{landscape}
+
 .. rst-class:: support-matrix-table
 .. list-table::
    :header-rows: 1
@@ -26,8 +30,10 @@ You can also type a regular expression as a filter.
      - Modules Available
 
    {% for key, value in support_matrix|dictsort %}
-       {{ '.. _' ~ key|replace(" ", "-") ~ ':' }}
    * - {{ key }}
+
+       {{ '.. _' ~ key|replace(" ", "-") ~ ':' }}
+
      - {{ ':py:mod:`' ~ value.modules|join("`, :py:mod:`") ~ '`' }}
 
        {% for module in value.frozen_libraries %}\
@@ -39,3 +45,7 @@ You can also type a regular expression as a filter.
        {% endfor %}
 
    {% endfor %}
+
+.. raw:: latex
+
+    \end{landscape}

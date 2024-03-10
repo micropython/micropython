@@ -25,6 +25,7 @@ OPT_SETTINGS = [
     "CONFIG_HAL_DEFAULT_ASSERTION_LEVEL",
     "CONFIG_BOOTLOADER_LOG_LEVEL",
     "LOG_DEFAULT_LEVEL",
+    "CONFIG_ESP_PANIC_HANDLER_IRAM",
 ]
 
 TARGET_SETTINGS = [
@@ -198,9 +199,9 @@ def update(debug, board, update_all):
             ble_enabled = not (value == "0")
 
     os.environ["IDF_TARGET"] = target
-    os.environ[
-        "COMPONENT_KCONFIGS_PROJBUILD_SOURCE_FILE"
-    ] = f"build-{board}/esp-idf/kconfigs_projbuild.in"
+    os.environ["COMPONENT_KCONFIGS_PROJBUILD_SOURCE_FILE"] = (
+        f"build-{board}/esp-idf/kconfigs_projbuild.in"
+    )
     os.environ["COMPONENT_KCONFIGS_SOURCE_FILE"] = f"build-{board}/esp-idf/kconfigs.in"
 
     kconfig_path = pathlib.Path(f"build-{board}/esp-idf/kconfigs.in")

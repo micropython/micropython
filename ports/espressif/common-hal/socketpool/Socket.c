@@ -32,7 +32,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/socketpool/SocketPool.h"
 #include "shared-bindings/ssl/SSLSocket.h"
-#include "common-hal/ssl/SSLSocket.h"
+#include "shared-module/ssl/SSLSocket.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
 #include "supervisor/workflow.h"
@@ -182,9 +182,11 @@ STATIC void mark_user_socket(int fd, socketpool_socket_obj_t *obj) {
 
 STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    int proto,
     socketpool_socket_obj_t *sock) {
     int addr_family;
     int ipproto;
+
     if (family == SOCKETPOOL_AF_INET) {
         addr_family = AF_INET;
         ipproto = IPPROTO_IP;
@@ -202,6 +204,7 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
         socket_type = SOCK_DGRAM;
     } else { // SOCKETPOOL_SOCK_RAW
         socket_type = SOCK_RAW;
+        ipproto = proto;
     }
     sock->type = socket_type;
     sock->family = addr_family;
@@ -226,9 +229,9 @@ STATIC bool _socketpool_socket(socketpool_socketpool_obj_t *self,
 // special entry for workflow listener (register system socket)
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
-    socketpool_socket_obj_t *sock) {
+    int proto, socketpool_socket_obj_t *sock) {
 
-    if (!_socketpool_socket(self, family, type, sock)) {
+    if (!_socketpool_socket(self, family, type, proto, sock)) {
         return false;
     }
 
@@ -241,16 +244,16 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
     if (family != SOCKETPOOL_AF_INET) {
-        mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
     }
 
     socketpool_socket_obj_t *sock = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     sock->base.type = &socketpool_socket_type;
 
-    if (!_socketpool_socket(self, family, type, sock)) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
+    if (!_socketpool_socket(self, family, type, proto, sock)) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
     }
     mark_user_socket(sock->num, sock);
     return sock;
@@ -304,6 +307,7 @@ int socketpool_socket_accept(socketpool_socket_obj_t *self, uint8_t *ip, uint32_
         accepted->num = newsoc;
         accepted->pool = self->pool;
         accepted->connected = true;
+        accepted->type = self->type;
     }
 
     return newsoc;
@@ -321,6 +325,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         sock->num = newsoc;
         sock->pool = self->pool;
         sock->connected = true;
+        sock->type = self->type;
 
         return sock;
     } else {
@@ -329,7 +334,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     }
 }
 
-bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
+size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     const char *host, size_t hostlen, uint32_t port) {
     struct sockaddr_in bind_addr;
     const char *broadcast = "<broadcast>";
@@ -346,13 +351,11 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *self,
     bind_addr.sin_family = AF_INET;
     bind_addr.sin_port = htons(port);
 
-    int opt = 1;
-    int err = lwip_setsockopt(self->num, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    if (err != 0) {
-        mp_raise_RuntimeError(translate("Cannot set socket options"));
-    }
     int result = lwip_bind(self->num, (struct sockaddr *)&bind_addr, sizeof(bind_addr));
-    return result == 0;
+    if (result == 0) {
+        return 0;
+    }
+    return errno;
 }
 
 void socketpool_socket_close(socketpool_socket_obj_t *self) {

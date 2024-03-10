@@ -32,6 +32,8 @@
 
 // Saving all ABI non-vol registers here
 
+#ifdef __LP64__
+
 unsigned int nlr_push(nlr_buf_t *nlr) {
 
     __asm__ volatile (
@@ -117,5 +119,96 @@ NORETURN void nlr_jump(void *val) {
 
     MP_UNREACHABLE;
 }
+
+#else
+// Saving all ABI non-vol registers here
+
+unsigned int nlr_push(nlr_buf_t *nlr) {
+
+    __asm__ volatile (
+        "li     4, 0x4eed ; "  // Store canary
+        "stw    4,  0x00(%0) ;"
+        "stw    0,  0x04(%0) ;"
+        "stw    1,  0x08(%0) ;"
+        "stw    2,  0x0c(%0) ;"
+        "stw    14, 0x10(%0) ;"
+        "stw    15, 0x14(%0) ;"
+        "stw    16, 0x18(%0) ;"
+        "stw    17, 0x1c(%0) ;"
+        "stw    18, 0x20(%0) ;"
+        "stw    19, 0x24(%0) ;"
+        "stw    20, 0x28(%0) ;"
+        "stw    21, 0x2c(%0) ;"
+        "stw    22, 0x30(%0) ;"
+        "stw    23, 0x34(%0) ;"
+        "stw    24, 0x38(%0) ;"
+        "stw    25, 0x3c(%0) ;"
+        "stw    26, 0x40(%0) ;"
+        "stw    27, 0x44(%0) ;"
+        "stw    28, 0x48(%0) ;"
+        "stw    29, 0x4c(%0) ;"
+        "stw    30, 0x50(%0) ;"
+        "stw    31, 0x54(%0) ;"
+
+        "mfcr   4 ; "
+        "stw    4, 0x58(%0) ;"
+        "mflr   4 ;"
+        "stw    4, 0x5c(%0) ;"
+        "li     4, nlr_push_tail@l ;"
+        "oris   4, 4, nlr_push_tail@h ;"
+        "mtctr  4 ;"
+        "mr    3, %1 ; "
+        "bctr  ;"
+        :
+        : "r" (&nlr->regs), "r" (nlr)
+        :
+        );
+
+    return 0;
+}
+
+NORETURN void nlr_jump(void *val) {
+    MP_NLR_JUMP_HEAD(val, top)
+
+    __asm__ volatile (
+        "l    3, 0x0(%0) ;"
+        "cmpdi 3, 0x4eed ; " // Check canary
+        "bne   . ; "
+        "l    0,  0x04(%0) ;"
+        "l    1,  0x08(%0) ;"
+        "l    2,  0x0c(%0) ;"
+        "l    14, 0x10(%0) ;"
+        "l    15, 0x14(%0) ;"
+        "l    16, 0x18(%0) ;"
+        "l    17, 0x1c(%0) ;"
+        "l    18, 0x20(%0) ;"
+        "l    19, 0x24(%0) ;"
+        "l    20, 0x28(%0) ;"
+        "l    21, 0x2c(%0) ;"
+        "l    22, 0x30(%0) ;"
+        "l    23, 0x34(%0) ;"
+        "l    24, 0x38(%0) ;"
+        "l    25, 0x3c(%0) ;"
+        "l    26, 0x40(%0) ;"
+        "l    27, 0x44(%0) ;"
+        "l    28, 0x48(%0) ;"
+        "l    29, 0x4c(%0) ;"
+        "l    30, 0x50(%0) ;"
+        "l    31, 0x54(%0) ;"
+        "l    3,  0x58(%0) ;"
+        "mtcr  3 ;"
+        "l    3, 0x5c(%0) ;"
+        "mtlr  3 ; "
+        "li    3, 1;"
+        "blr ;"
+        :
+        : "r" (&top->regs)
+        :
+        );
+
+    MP_UNREACHABLE;
+}
+
+#endif // __LP64__
 
 #endif // MICROPY_NLR_POWERPC

@@ -28,7 +28,6 @@
 #include "supervisor/shared/stack.h"
 
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nvm3_default.h"
 #include "nvm3_default_config.h"
@@ -74,7 +73,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
     err = nvm3_read(self);
 
     if (err != ECODE_NVM3_OK) {
-        mp_raise_RuntimeError(translate("NVM3 read false"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("NVM3 read false"));
     }
     // Set bytes in buffer
     memmove(nvm_array + start_index, values, len);
@@ -83,7 +82,7 @@ bool common_hal_nvm_bytearray_set_bytes(nvm_bytearray_obj_t *self,
         NVM_BYTEARRAY_BUFFER_SIZE);
 
     if (err != ECODE_NVM3_OK) {
-        mp_raise_RuntimeError(translate("NVM3 write false"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("NVM3 write false"));
     }
 
     return true;

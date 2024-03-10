@@ -39,7 +39,6 @@
 #include "shared-bindings/audiobusio/I2SOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
 // Where required we use identifier names that are required by NXP's

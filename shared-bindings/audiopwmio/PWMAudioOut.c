@@ -34,7 +34,6 @@
 #include "shared-bindings/audiopwmio/PWMAudioOut.h"
 #include "shared-bindings/audiocore/RawSample.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class PWMAudioOut:
 //|     """Output an analog audio signal by varying the PWM duty cycle."""
@@ -217,7 +216,7 @@ STATIC mp_obj_t audiopwmio_pwmaudioout_obj_pause(mp_obj_t self_in) {
     check_for_deinit(self);
 
     if (!common_hal_audiopwmio_pwmaudioout_get_playing(self)) {
-        mp_raise_RuntimeError(translate("Not playing"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Not playing"));
     }
     common_hal_audiopwmio_pwmaudioout_pause(self);
     return mp_const_none;
@@ -269,9 +268,10 @@ STATIC const mp_rom_map_elem_t audiopwmio_pwmaudioout_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(audiopwmio_pwmaudioout_locals_dict, audiopwmio_pwmaudioout_locals_dict_table);
 
-const mp_obj_type_t audiopwmio_pwmaudioout_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_PWMAudioOut,
-    .make_new = audiopwmio_pwmaudioout_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audiopwmio_pwmaudioout_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audiopwmio_pwmaudioout_type,
+    MP_QSTR_PWMAudioOut,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audiopwmio_pwmaudioout_make_new,
+    locals_dict, &audiopwmio_pwmaudioout_locals_dict
+    );

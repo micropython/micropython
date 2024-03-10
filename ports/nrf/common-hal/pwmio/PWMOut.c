@@ -30,7 +30,6 @@
 #include "py/runtime.h"
 #include "common-hal/pwmio/PWMOut.h"
 #include "shared-bindings/pwmio/PWMOut.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrf_gpio.h"
 
@@ -95,21 +94,6 @@ STATIC void reset_single_pwmout(uint8_t i) {
     for (int ch = 0; ch < CHANNELS_PER_PWM; ch++) {
         pwm_seq[i][ch] = (1 << 15); // polarity = 0
         pwm->PSEL.OUT[ch] = 0xFFFFFFFF; // disconnect from I/O
-    }
-}
-
-void pwmout_reset(void) {
-    for (size_t i = 0; i < MP_ARRAY_SIZE(pwms); i++) {
-        for (size_t c = 0; c < CHANNELS_PER_PWM; c++) {
-            if ((never_reset_pwm[i] & (1 << c)) != 0) {
-                continue;
-            }
-            pwms[i]->PSEL.OUT[c] = 0xFFFFFFFF;
-        }
-        if (never_reset_pwm[i] != 0) {
-            continue;
-        }
-        reset_single_pwmout(i);
     }
 }
 
@@ -221,7 +205,7 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         &channel, &pwm_already_in_use, NULL);
 
     if (self->pwm == NULL) {
-        return PWMOUT_ALL_TIMERS_IN_USE;
+        return PWMOUT_INTERNAL_RESOURCES_IN_USE;
     }
 
     self->channel = channel;

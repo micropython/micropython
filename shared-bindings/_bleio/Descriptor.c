@@ -44,6 +44,7 @@
 //|         and attached to a Characteristic by calling `add_to_characteristic()`.
 //|         Remote Descriptor objects are created by `Connection.discover_remote_services()`
 //|         as part of remote Characteristics in the remote Services that are discovered."""
+//|
 //|     @classmethod
 //|     def add_to_characteristic(
 //|         cls,
@@ -119,7 +120,7 @@ STATIC mp_obj_t bleio_descriptor_add_to_characteristic(size_t n_args, const mp_o
     mp_get_buffer_raise(initial_value, &initial_value_bufinfo, MP_BUFFER_READ);
     if (initial_value_bufinfo.len > max_length ||
         (fixed_length && initial_value_bufinfo.len != max_length)) {
-        mp_raise_ValueError(translate("initial_value length is wrong"));
+        mp_raise_ValueError(MP_ERROR_TEXT("initial_value length is wrong"));
     }
 
     bleio_descriptor_obj_t *descriptor = mp_obj_malloc(bleio_descriptor_obj_t, &bleio_descriptor_type);
@@ -211,9 +212,10 @@ STATIC void bleio_descriptor_print(const mp_print_t *print, mp_obj_t self_in, mp
     }
 }
 
-const mp_obj_type_t bleio_descriptor_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Descriptor,
-    .print = bleio_descriptor_print,
-    .locals_dict = (mp_obj_dict_t *)&bleio_descriptor_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_descriptor_type,
+    MP_QSTR_Descriptor,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    print, bleio_descriptor_print,
+    locals_dict, &bleio_descriptor_locals_dict
+    );

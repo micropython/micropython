@@ -528,7 +528,7 @@ STATIC bool scan_on_ble_evt(ble_evt_t *ble_evt, void *scan_results_in) {
 mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t *prefixes, size_t prefix_length, bool extended, mp_int_t buffer_size, mp_float_t timeout, mp_float_t interval, mp_float_t window, mp_int_t minimum_rssi, bool active) {
     if (self->scan_results != NULL) {
         if (!shared_module_bleio_scanresults_get_done(self->scan_results)) {
-            mp_raise_bleio_BluetoothError(translate("Scan already in progress. Stop with stop_scan."));
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Scan already in progress. Stop with stop_scan."));
         }
         self->scan_results = NULL;
     }
@@ -560,11 +560,11 @@ mp_obj_t common_hal_bleio_adapter_start_scan(bleio_adapter_obj_t *self, uint8_t 
     uint32_t nrf_timeout = SEC_TO_UNITS(timeout, UNIT_10_MS) + 0.5f;
     if (nrf_timeout > UINT16_MAX) {
         // 0xffff / 100
-        mp_raise_ValueError(translate("timeout must be < 655.35 secs"));
+        mp_raise_ValueError(MP_ERROR_TEXT("timeout must be < 655.35 secs"));
     }
     if (nrf_timeout == 0 && timeout > 0.0f) {
         // Make sure converted timeout is > 0 if original timeout is > 0.
-        mp_raise_ValueError(translate("non-zero timeout must be > 0.01"));
+        mp_raise_ValueError(MP_ERROR_TEXT("non-zero timeout must be > 0.01"));
     }
 
     if (nrf_timeout == 0) {
@@ -674,7 +674,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
 
     uint16_t conn_handle = event_info.conn_handle;
     if (conn_handle == BLE_CONN_HANDLE_INVALID) {
-        mp_raise_bleio_BluetoothError(translate("Failed to connect: timeout"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Failed to connect: timeout"));
     }
     // If we have keys, then try and encrypt the connection.
     const ble_gap_enc_key_t *encryption_key = bonding_load_peer_encryption_key(true, &addr);
@@ -708,7 +708,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
         }
     }
 
-    mp_raise_bleio_BluetoothError(translate("Failed to connect: internal error"));
+    mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Failed to connect: internal error"));
 
     return mp_const_none;
 }
@@ -717,7 +717,7 @@ mp_obj_t common_hal_bleio_adapter_connect(bleio_adapter_obj_t *self, bleio_addre
 STATIC void check_data_fit(size_t data_len, bool connectable) {
     if (data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_MAX_SUPPORTED ||
         (connectable && data_len > BLE_GAP_ADV_SET_DATA_SIZE_EXTENDED_CONNECTABLE_MAX_SUPPORTED)) {
-        mp_raise_ValueError(translate("Data too large for advertisement packet"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Data too large for advertisement packet"));
     }
 }
 
@@ -868,7 +868,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     mp_buffer_info_t *advertising_data_bufinfo, mp_buffer_info_t *scan_response_data_bufinfo,
     mp_int_t tx_power, const bleio_address_obj_t *directed_to) {
     if (self->user_advertising) {
-        mp_raise_bleio_BluetoothError(translate("Already advertising."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Already advertising."));
     } else if (self->current_advertising_data != NULL) {
         // If the user isn't advertising, then the background is. So, stop the
         // background advertising so the user can.
@@ -880,12 +880,12 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
     check_data_fit(scan_response_data_bufinfo->len, connectable);
 
     if (advertising_data_bufinfo->len > 31 && scan_response_data_bufinfo->len > 0) {
-        mp_raise_bleio_BluetoothError(translate("Extended advertisements with scan response not supported."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Extended advertisements with scan response not supported."));
     }
 
 
     if (advertising_data_bufinfo->len > 0 && directed_to != NULL) {
-        mp_raise_bleio_BluetoothError(translate("Data not supported with directed advertising"));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Data not supported with directed advertising"));
     }
 
     // Anonymous mode requires a timeout so that we don't continue to broadcast
@@ -902,7 +902,7 @@ void common_hal_bleio_adapter_start_advertising(bleio_adapter_obj_t *self, bool 
         }
     } else {
         if (SEC_TO_UNITS(timeout, UNIT_10_MS) > BLE_GAP_ADV_TIMEOUT_LIMITED_MAX) {
-            mp_raise_bleio_BluetoothError(translate("Timeout is too long: Maximum timeout length is %d seconds"),
+            mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Timeout is too long: Maximum timeout length is %d seconds"),
                 UNITS_TO_SEC(BLE_GAP_ADV_TIMEOUT_LIMITED_MAX, UNIT_10_MS));
         }
     }

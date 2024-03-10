@@ -33,8 +33,7 @@
 #include "py/gc.h"
 #include "py/runtime.h"
 
-#include "supervisor/linker.h"
-#include "supervisor/shared/translate/translate.h"
+// CIRCUITPY-CHANGE: changes for TRANSLATION
 
 // NOTE: we are using linear arrays to store and search for qstr's (unique strings, interned strings)
 // ultimately we will replace this with a static hash table of some kind
@@ -63,9 +62,9 @@
 #define MICROPY_ALLOC_QSTR_ENTRIES_INIT (10)
 
 // this must match the equivalent function in makeqstrdata.py
-mp_uint_t qstr_compute_hash(const byte *data, size_t len) {
+size_t qstr_compute_hash(const byte *data, size_t len) {
     // djb2 algorithm; see http://www.cse.yorku.ca/~oz/hash.html
-    mp_uint_t hash = 5381;
+    size_t hash = 5381;
     for (const byte *top = data + len; data < top; data++) {
         hash = ((hash << 5) + hash) ^ (*data); // hash * 33 ^ data
     }
@@ -122,9 +121,14 @@ extern const qstr_pool_t MICROPY_QSTR_EXTRA_POOL;
 #define CONST_POOL mp_qstr_const_pool
 #endif
 
-void qstr_init(void) {
+// CIRCUITPY-CHANGE
+void qstr_reset(void) {
     MP_STATE_VM(last_pool) = (qstr_pool_t *)&CONST_POOL; // we won't modify the const_pool since it has no allocated room left
     MP_STATE_VM(qstr_last_chunk) = NULL;
+}
+
+void qstr_init(void) {
+    qstr_reset();
 
     #if MICROPY_PY_THREAD && !MICROPY_PY_THREAD_GIL
     mp_thread_mutex_init(&MP_STATE_VM(qstr_mutex));
@@ -190,7 +194,7 @@ STATIC qstr qstr_add(mp_uint_t hash, mp_uint_t len, const char *q_ptr) {
 
 qstr qstr_find_strn(const char *str, size_t str_len) {
     // work out hash of str
-    mp_uint_t str_hash = qstr_compute_hash((const byte *)str, str_len);
+    size_t str_hash = qstr_compute_hash((const byte *)str, str_len);
 
     // search pools for the data
     for (const qstr_pool_t *pool = MP_STATE_VM(last_pool); pool != NULL; pool = pool->prev) {
@@ -263,7 +267,7 @@ qstr qstr_from_strn(const char *str, size_t len) {
         MP_STATE_VM(qstr_last_used) += n_bytes;
 
         // store the interned strings' data
-        mp_uint_t hash = qstr_compute_hash((const byte *)str, len);
+        size_t hash = qstr_compute_hash((const byte *)str, len);
         memcpy(q_ptr, str, len);
         q_ptr[len] = '\0';
         q = qstr_add(hash, len, q_ptr);
@@ -366,7 +370,7 @@ STATIC const byte *find_uncompressed_string(uint8_t n) {
 
 // Given a compressed string in src, decompresses it into dst.
 // dst must be large enough (use MP_MAX_UNCOMPRESSED_TEXT_LEN+1).
-void mp_decompress_rom_string(byte *dst, const mp_rom_error_text_t src_chr) {
+void mp_decompress_rom_string(byte *dst, mp_rom_error_text_t src_chr) {
     // Skip past the 0xff marker.
     const byte *src = (byte *)src_chr + 1;
     // Need to add spaces around compressed words, except for the first (i.e. transition from 1<->2).

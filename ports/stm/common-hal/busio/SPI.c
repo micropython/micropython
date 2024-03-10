@@ -30,7 +30,6 @@
 #include "shared-bindings/busio/SPI.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/microcontroller/Pin.h"
 
 // Note that any bugs introduced in this file can cause crashes at startup
@@ -160,7 +159,7 @@ STATIC int check_pins(busio_spi_obj_t *self,
     }
 
     if (spi_taken) {
-        mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
     } else {
         raise_ValueError_invalid_pin();
     }
@@ -225,7 +224,7 @@ void common_hal_busio_spi_construct(busio_spi_obj_t *self,
     self->handle.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
     self->handle.Init.CRCPolynomial = 10;
     if (HAL_SPI_Init(&self->handle) != HAL_OK) {
-        mp_raise_ValueError(translate("SPI init error"));
+        mp_raise_ValueError(MP_ERROR_TEXT("SPI init error"));
     }
     self->baudrate = default_baudrate;
     // self->prescaler = 16; // Initialised above by stm32_baud_to_spi_div
@@ -307,7 +306,7 @@ bool common_hal_busio_spi_configure(busio_spi_obj_t *self,
         get_busclock(self->handle.Instance));
 
     if (HAL_SPI_Init(&self->handle) != HAL_OK) {
-        mp_raise_RuntimeError(translate("SPI re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("SPI re-init"));
     }
 
     self->baudrate = baudrate;
@@ -347,7 +346,7 @@ void common_hal_busio_spi_unlock(busio_spi_obj_t *self) {
 bool common_hal_busio_spi_write(busio_spi_obj_t *self,
     const uint8_t *data, size_t len) {
     if (self->mosi == NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_mosi);
     }
     HAL_StatusTypeDef result = HAL_SPI_Transmit(&self->handle, (uint8_t *)data, (uint16_t)len, HAL_MAX_DELAY);
     return result == HAL_OK;
@@ -356,9 +355,9 @@ bool common_hal_busio_spi_write(busio_spi_obj_t *self,
 bool common_hal_busio_spi_read(busio_spi_obj_t *self,
     uint8_t *data, size_t len, uint8_t write_value) {
     if (self->miso == NULL && !self->half_duplex) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_miso);
     } else if (self->half_duplex && self->mosi == NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_mosi);
     }
     HAL_StatusTypeDef result = HAL_OK;
     if ((!self->half_duplex && self->mosi == NULL) || (self->half_duplex && self->mosi != NULL && self->miso == NULL)) {
@@ -373,10 +372,10 @@ bool common_hal_busio_spi_read(busio_spi_obj_t *self,
 bool common_hal_busio_spi_transfer(busio_spi_obj_t *self,
     const uint8_t *data_out, uint8_t *data_in, size_t len) {
     if (self->mosi == NULL && data_out != NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_mosi);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_mosi);
     }
     if (self->miso == NULL && data_in != NULL) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_miso);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_miso);
     }
     HAL_StatusTypeDef result = HAL_SPI_TransmitReceive(&self->handle,
         (uint8_t *)data_out, data_in, (uint16_t)len, HAL_MAX_DELAY);

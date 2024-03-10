@@ -27,7 +27,6 @@
 
 #include "common-hal/analogio/AnalogIn.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
 
@@ -65,7 +64,7 @@ void common_hal_analogio_analogin_construct(analogio_analogin_obj_t *self,
         LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_ADC3);
         #endif
     } else {
-        mp_raise_RuntimeError(translate("Invalid ADC Unit value"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid ADC Unit value"));
     }
     common_hal_mcu_pin_claim(pin);
     self->pin = pin;
@@ -147,7 +146,7 @@ uint16_t common_hal_analogio_analogin_get_value(analogio_analogin_obj_t *self) {
         ADCx = ADC3;
         #endif
     } else {
-        mp_raise_RuntimeError(translate("Invalid ADC Unit value"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Invalid ADC Unit value"));
     }
 
     LL_GPIO_SetPinMode(pin_port(self->pin->port), (uint32_t)pin_mask(self->pin->number), LL_GPIO_MODE_ANALOG);

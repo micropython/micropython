@@ -27,7 +27,6 @@
 #include "py/objproperty.h"
 #include "shared-bindings/usb_hid/Device.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Device:
 //|     """HID Device specification"""
@@ -73,6 +72,9 @@
 //|                 in_report_lengths=(5, 2),
 //|                 out_report_lengths=(6, 0),
 //|             )
+//|
+//|         The HID device is able to wake up a suspended (sleeping) host computer.
+//|         See `send_report()` for details.
 //|         """
 //|         ...
 //|     KEYBOARD: Device
@@ -126,7 +128,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 
     if ((size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(in_report_lengths)) != report_ids_count ||
         (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(out_report_lengths)) != report_ids_count) {
-        mp_raise_ValueError_varg(translate("%q, %q, and %q must all be the same length"),
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q, %q, and %q must all be the same length"),
             MP_QSTR_report_ids, MP_QSTR_in_report_lengths, MP_QSTR_out_report_lengths);
     }
 
@@ -154,7 +156,7 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
     }
 
     if (report_ids_array[0] == 0 && report_ids_count > 1) {
-        mp_raise_ValueError_varg(translate("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q length must be %d"), MP_QSTR_report_id_space_0, 1);
     }
 
     common_hal_usb_hid_device_construct(
@@ -167,6 +169,16 @@ STATIC mp_obj_t usb_hid_device_make_new(const mp_obj_type_t *type, size_t n_args
 //|         """Send an HID report. If the device descriptor specifies zero or one report id's,
 //|         you can supply `None` (the default) as the value of ``report_id``.
 //|         Otherwise you must specify which report id to use when sending the report.
+//|
+//|         If the USB host is suspended (sleeping), then `send_report()` will request that the host wake up.
+//|         The ``report`` itself will be discarded, to prevent unwanted extraneous characters,
+//|         mouse clicks, etc.
+//|
+//|         Note: Host operating systems allow enabling and disabling specific devices
+//|         and kinds of devices to do wakeup.
+//|         The defaults are different for different operating systems.
+//|         For instance, on Linux, only the primary keyboard may be enabled.
+//|         In addition, there may be USB wakeup settings in the host computer BIOS/UEFI.
 //|         """
 //|         ...
 STATIC mp_obj_t usb_hid_device_send_report(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
@@ -264,9 +276,10 @@ STATIC const mp_rom_map_elem_t usb_hid_device_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(usb_hid_device_locals_dict, usb_hid_device_locals_dict_table);
 
-const mp_obj_type_t usb_hid_device_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Device,
-    .make_new = usb_hid_device_make_new,
-    .locals_dict = (mp_obj_t)&usb_hid_device_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_hid_device_type,
+    MP_QSTR_Device,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, usb_hid_device_make_new,
+    locals_dict, &usb_hid_device_locals_dict
+    );

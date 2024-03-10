@@ -7,4 +7,4 @@ BUILD=build-static-aarch64
 STATIC_BUILD=1
 
 CROSS_COMPILE = aarch64-linux-gnu-
-include mpy-cross.mk
+include Makefile

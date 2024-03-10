@@ -83,9 +83,10 @@ STATIC void camera_imageformat_print(const mp_print_t *print, mp_obj_t self_in, 
     mp_printf(print, "%q.%q.%q", MP_QSTR_camera, MP_QSTR_ImageSize, format);
 }
 
-const mp_obj_type_t camera_imageformat_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ImageFormat,
-    .print = camera_imageformat_print,
-    .locals_dict = (mp_obj_t)&camera_imageformat_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    camera_imageformat_type,
+    MP_QSTR_ImageFormat,
+    MP_TYPE_FLAG_NONE,
+    print, camera_imageformat_print,
+    locals_dict, &camera_imageformat_locals_dict
+    );

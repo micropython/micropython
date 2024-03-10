@@ -77,10 +77,6 @@ void common_hal_espcamera_camera_construct(
     mp_int_t framebuffer_count,
     camera_grab_mode_t grab_mode) {
 
-    if (common_hal_espidf_get_reserved_psram() == 0) {
-        mp_raise_msg(&mp_type_MemoryError, translate(
-            "espcamera.Camera requires reserved PSRAM to be configured. See the documentation for instructions."));
-    }
     for (int i = 0; i < 8; i++) {
         claim_pin_number(data_pins[i]);
     }
@@ -197,7 +193,7 @@ camera_fb_t *common_hal_espcamera_camera_take(espcamera_camera_obj_t *self, int 
         sensor_t *sensor = esp_camera_sensor_get(); \
         i2c_unlock(self); \
         if (!sensor->setter_function_name) { \
-            mp_raise_AttributeError(translate("no such attribute")); \
+            mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute")); \
         } \
         return sensor->status_field_name; \
     }
@@ -208,10 +204,10 @@ camera_fb_t *common_hal_espcamera_camera_take(espcamera_camera_obj_t *self, int 
         sensor_t *sensor = esp_camera_sensor_get(); \
         i2c_unlock(self); \
         if (!sensor->setter_function_name) { \
-            mp_raise_AttributeError(translate("no such attribute")); \
+            mp_raise_AttributeError(MP_ERROR_TEXT("no such attribute")); \
         } \
         if (sensor->setter_function_name(sensor, value) < 0) { \
-            mp_raise_ValueError(translate("invalid setting")); \
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid setting")); \
         } \
     }
 

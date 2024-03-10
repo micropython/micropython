@@ -33,7 +33,6 @@
 #include "shared-bindings/pwmio/PWMOut.h"
 #include "shared-bindings/microcontroller/__init__.h"
 #include "common-hal/pwmio/PWMOut.h"
-#include "supervisor/shared/translate/translate.h"
 #include "src/rp2040/hardware_structs/include/hardware/structs/pwm.h"
 #include "src/rp2_common/hardware_gpio/include/hardware/gpio.h"
 #include "src/rp2_common/hardware_pwm/include/hardware/pwm.h"
@@ -69,9 +68,6 @@ static void pulse_finish(pulseio_pulseout_obj_t *self) {
 int64_t pulseout_interrupt_handler(alarm_id_t id, void *user_data) {
     pulse_finish(user_data);
     return 0;
-}
-
-void pulseout_reset() {
 }
 
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,

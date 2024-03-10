@@ -39,8 +39,6 @@
 
 #include "shared-bindings/zlib/__init__.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 //| """zlib decompression functionality
 //|
 //| The `zlib` module allows limited functionality similar to the CPython zlib library.

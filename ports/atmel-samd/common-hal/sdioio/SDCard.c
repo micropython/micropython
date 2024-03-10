@@ -32,7 +32,6 @@
 #include "shared-bindings/sdioio/SDCard.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "genhdr/sdiodata.h"
 
@@ -149,7 +148,7 @@ CLK PA21 PCC_D? (D32)  BROWN
             }
             reset_pin_number(functions[i]->obj->number);
         }
-        mp_raise_OSError_msg_varg(translate("%q failure: %d"), MP_QSTR_sd_mmc_check, (int)result);
+        mp_raise_OSError_msg_varg(MP_ERROR_TEXT("%q failure: %d"), MP_QSTR_sd_mmc_check, (int)result);
     }
     // sd_mmc_get_capacity() is in KiB, but our "capacity" is in 512-byte blocks
     self->capacity = sd_mmc_get_capacity(0) * 2;
@@ -174,7 +173,7 @@ STATIC void check_for_deinit(sdioio_sdcard_obj_t *self) {
 
 STATIC void check_whole_block(mp_buffer_info_t *bufinfo) {
     if (bufinfo->len % 512) {
-        mp_raise_ValueError(translate("Buffer length must be a multiple of 512"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer length must be a multiple of 512"));
     }
 }
 

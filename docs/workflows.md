@@ -71,8 +71,7 @@ Read-only characteristic that returns the UTF-8 encoded version string.
 If the keys `CIRCUITPY_WIFI_SSID` and `CIRCUITPY_WIFI_PASSWORD` are set in `settings.toml`,
 CircuitPython will automatically connect to the given Wi-Fi network on boot and upon reload.
 
-If `CIRCUITPY_WEB_API_PASSWORD` is also set, the web workflow will also start.
-The web workflow will only be enabled if the Wi-Fi connection succeeds upon boot.
+If `CIRCUITPY_WEB_API_PASSWORD` is set, MDNS and the http server for the web workflow will also start.
 
 The webserver is on port 80 unless overridden by `CIRCUITPY_WEB_API_PORT`. It also enables MDNS.
 The name of the board as advertised to the network can be overridden by `CIRCUITPY_WEB_INSTANCE_NAME`.
@@ -84,7 +83,7 @@ Here is an example `/settings.toml`:
 CIRCUITPY_WIFI_SSID="scottswifi"
 CIRCUITPY_WIFI_PASSWORD="secretpassword"
 
-# To enable the the webserver. Change this too!
+# To enable the web workflow. Change this too!
 # Leave the User field blank in the browser.
 CIRCUITPY_WEB_API_PASSWORD="passw0rd"
 
@@ -165,6 +164,13 @@ Returns a JSON representation of the directory.
 * `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
 * `404 Not Found` - Missing directory
 
+Returns directory information:
+* `free`: Count of free blocks on the disk holding this directory.
+* `total`: Total blocks that make up the disk holding this directory.
+* `block_size`: Size of a block in bytes.
+* `writable`: True when CircuitPython and the web workflow can write to the disk. USB may claim a disk instead.
+* `files`: Array of objects. One for each file.
+
 Returns information about each file in the directory:
 
 * `name` - File name. No trailing `/` on directory names
@@ -179,14 +185,20 @@ curl -v -u :passw0rd -H "Accept: application/json" -L --location-trusted http://
 ```
 
 ```json
-[
-	{
-		"name": "world.txt",
-		"directory": false,
-		"modified_ns": 946934328000000000,
-		"file_size": 12
-	}
-]
+{
+	"free": 451623,
+	"total": 973344,
+	"block_size": 32768,
+	"writable": true,
+	"files": [
+		{
+			"name": "world.txt",
+			"directory": false,
+			"modified_ns": 946934328000000000,
+			"file_size": 12
+		}
+	]
+}
 ```
 
 ##### PUT
@@ -196,7 +208,7 @@ time resolution) used for the directories modification time. The RTC time will u
 
 Returns:
 
-* `204 No Content` - Directory exists
+* `204 No Content` - Directory or file exists
 * `201 Created` - Directory created
 * `401 Unauthorized` - Incorrect password
 * `403 Forbidden` - No `CIRCUITPY_WEB_API_PASSWORD` set
@@ -368,6 +380,31 @@ curl -v -L http://circuitpython.local/cp/devices.json
 }
 ```
 
+#### `/cp/diskinfo.json`
+
+Returns information about the attached disk(s). A list of objects, one per disk.
+
+* `root`: Filesystem path to the root of the disk.
+* `free`: Count of free blocks on the disk.
+* `total`: Total blocks that make up the disk.
+* `block_size`: Size of a block in bytes.
+* `writable`: True when CircuitPython and the web workflow can write to the disk. USB may claim a disk instead.
+
+Example:
+```sh
+curl -v -L http://circuitpython.local/cp/diskinfo.json
+```
+
+```json
+[{
+	"root": "/",
+	"free": 2964992,
+	"block_size": 512,
+	"writable": true,
+	"total": 2967552
+}]
+```
+
 #### `/cp/serial/`
 
 
@@ -380,7 +417,7 @@ This is an authenticated endpoint in both modes.
 
 Returns information about the device.
 
-* `web_api_version`: Always `1`. This versions the rest of the API and new versions may not be backwards compatible.
+* `web_api_version`: Between `1` and `4`. This versions the rest of the API and new versions may not be backwards compatible. See below for more info.
 * `version`: CircuitPython build version.
 * `build_date`: CircuitPython build date.
 * `board_name`: Human readable name of the board.
@@ -436,3 +473,11 @@ CircuitPython is expected to be masked UTF-8, as the spec requires. Data from Ci
 client is unmasked. It is also unbuffered so the client will get a variety of frame sizes.
 
 Only one WebSocket at a time is supported.
+
+### Versions
+
+* `1` - Initial version.
+* `2` - Added `/cp/diskinfo.json`.
+* `3` - Changed `/cp/diskinfo.json` to return a list in preparation for multi-disk support.
+* `4` - Changed directory json to an object with additional data. File list is under `files` and is
+  the same as the old format.

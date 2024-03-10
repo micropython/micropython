@@ -1,4 +1,4 @@
-# CircuitPython on EFR32 #
+# Silicon Labs EFR32 #
 
 ![GitHub](https://img.shields.io/badge/Technology-Bluetooth_BLE-green)
 ![GitHub](https://img.shields.io/badge/CircuitPython-8.1.0--beta.0-green)
@@ -33,6 +33,8 @@ Install necessary packages
 
     sudo apt install default-jre gcc-arm-none-eabi wget python3 python3-pip git git-lfs gettext uncrustify
     sudo python -m pip install --upgrade pip
+
+**Note** that this uses git lfs and will not link without it. The error is something like "Unknown file format" because git lfs has a text placeholder file.
 
 ## Supported boards ##
 
@@ -71,15 +73,22 @@ Clean the project by using:
 
     make BOARD=explorerkit_xg24_brd2703a clean
 
+## Flashing CircuitPython
+
+Flash the project by using [Simplicity Commander](https://community.silabs.com/s/article/simplicity-commander?language=en_US):
+
+    make BOARD=explorerkit_xg24_brd2703a flash
+
+
 ## Running CircuitPython ##
 
 ### Connecting to the Serial Console ###
 
-Connect the devkit to the PC via the USB cable. The board uses serial for REPL access and debugging because the EFR32 chips has no USB support.
+Connect the devkit to the PC via the USB cable. The board uses serial for REPL access and debugging because the EFR32 chips has no USB support.
 
 #### Windows ####
 
-On Windows, we need to install a serial console e.g., PuTTY, MobaXterm. The JLink CDC UART Port can be found in the Device Manager.
+On Windows, we need to install a serial console e.g., PuTTY, MobaXterm. The JLink CDC UART Port can be found in the Device Manager.
 
 #### Linux ####
 
@@ -87,17 +96,17 @@ Open a terminal and issue the following command:
 
     ls /dev/ttyACM*
 
-Then note down the correct name and substitute com-port-name in the following command with it:
+Then note down the correct name and substitute `com-port-name` in the following command with it:
 
     screen /dev/'com-port-name'
 
 ### Using the REPL prompt ###
 
-After flashing the firmware to the board, at your first connecting to the board, you might see a blank screen. Press enter and you should be presented with a Circuitpython prompt, >>>. If not, try to reset the board (see instructions below).
+After flashing the firmware to the board, at your first connecting to the board, you might see a blank screen. Press enter and you should be presented with a Circuitpython prompt,`>>>`. If not, try to reset the board (see instructions below).
 
 You can now type in simple commands such as:
 
-    >>> print("Hello world!") 
+    >>> print("Hello world!")
     Hello world!
 
 If something goes wrong with the board, you can reset it. Pressing CTRL+D when the prompt is open performs a soft reset.
@@ -110,13 +119,13 @@ Config serial: Tools > Options > Interpreter > Select MicroPython > Select Port 
 
 ### Running CircuitPython scripts ###
 
-At the boot stage, two scripts will be run (if not booting in safe mode). First, the file  boot.py  will be executed. The file **boot.py** can be used to perform the initial setup. Then, after boot.py has been completed, the file **code.py** will be executed.  
+At the boot stage, two scripts will be run (if not booting in safe mode). First, the file `boot.py` will be executed. The file `boot.py` can be used to perform the initial setup. Then, after `boot.py` has been completed, the file `code.py` will be executed.
 
-After code.py has finished executing, a REPL prompt will be presented on the serial port. Other files can also be executed by using the **Thonny** editors or using **Ampy** tool.
+After code.py has finished executing, a REPL prompt will be presented on the serial port. Other files can also be executed by using the **Thonny** editors or using **Ampy** tool.
 
 ![Thonny](./res/Thonny.png)
 
-With the boards which support USB mass storage, we can drag the files to the board file system. However, because the EFR32 boards don’t support USB mass storage, we need to use a tool like **Ampy** to copy the file to the board. You can use the latest version of **Ampy** and its  command to copy the module directories to the board.
+With the boards which support USB mass storage, we can drag the files to the board file system. However, because the EFR32 boards don’t support USB mass storage, we need to use a tool like **Ampy** to copy the file to the board. You can use the latest version of **Ampy** and its  command to copy the module directories to the board.
 
 Refer to the guide below for installing the **Ampy** tool:
 

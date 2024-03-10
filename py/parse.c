@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013-2017 Damien P. George
+ * Copyright (c) 2013-2017 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,6 @@
 #include "py/objstr.h"
 #include "py/builtin.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_ENABLE_COMPILER
 
 #define RULE_ACT_ARG_MASK       (0x0f)
@@ -63,7 +61,7 @@ enum {
 // define rules with a compile function
 #define DEF_RULE(rule, comp, kind, ...) RULE_##rule,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     RULE_const_object, // special node for a constant, generic Python object
@@ -71,7 +69,7 @@ enum {
 // define rules without a compile function
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_##rule,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -88,7 +86,7 @@ STATIC const uint8_t rule_act_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...) kind,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -96,7 +94,7 @@ STATIC const uint8_t rule_act_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) kind,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -117,13 +115,13 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 
 #define DEF_RULE(rule, comp, kind, ...) __VA_ARGS__,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...)  __VA_ARGS__,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 
@@ -143,12 +141,12 @@ STATIC const uint16_t rule_arg_combined_table[] = {
 enum {
 #define DEF_RULE(rule, comp, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_PADDING(rule, __VA_ARGS__)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -166,13 +164,13 @@ enum {
 STATIC const uint8_t rule_arg_offset_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     0, // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) RULE_ARG_OFFSET(rule, __VA_ARGS__) & 0xff,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -189,20 +187,20 @@ static const size_t FIRST_RULE_WITH_OFFSET_ABOVE_255 =
 #include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
-    0;
+0;
 
 #if MICROPY_DEBUG_PARSE_RULE_NAME
 // Define an array of rule names corresponding to each rule
 STATIC const char *const rule_name_table[] = {
 #define DEF_RULE(rule, comp, kind, ...) #rule,
 #define DEF_RULE_NC(rule, kind, ...)
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
     "", // RULE_const_object
 #define DEF_RULE(rule, comp, kind, ...)
 #define DEF_RULE_NC(rule, kind, ...) #rule,
-    #include "py/grammar.h"
+#include "py/grammar.h"
 #undef DEF_RULE
 #undef DEF_RULE_NC
 };
@@ -244,6 +242,8 @@ typedef struct _parser_t {
     #endif
 } parser_t;
 
+STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
+
 STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     size_t off = rule_arg_offset_table[r_id];
     if (r_id >= FIRST_RULE_WITH_OFFSET_ABOVE_255) {
@@ -252,6 +252,7 @@ STATIC const uint16_t *get_rule_arg(uint8_t r_id) {
     return &rule_arg_combined_table[off];
 }
 
+// CIRCUITPY-CHANGE: ignore compiler warning
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 
@@ -340,16 +341,6 @@ STATIC uint8_t peek_rule(parser_t *parser, size_t n) {
 }
 #endif
 
-bool mp_parse_node_is_const_false(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_FALSE)
-           || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) == 0);
-}
-
-bool mp_parse_node_is_const_true(mp_parse_node_t pn) {
-    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, MP_TOKEN_KW_TRUE)
-           || (MP_PARSE_NODE_IS_SMALL_INT(pn) && MP_PARSE_NODE_LEAF_SMALL_INT(pn) != 0);
-}
-
 bool mp_parse_node_get_int_maybe(mp_parse_node_t pn, mp_obj_t *o) {
     if (MP_PARSE_NODE_IS_SMALL_INT(pn)) {
         *o = MP_OBJ_NEW_SMALL_INT(MP_PARSE_NODE_LEAF_SMALL_INT(pn));
@@ -432,6 +423,24 @@ STATIC mp_obj_t mp_parse_node_convert_to_obj(mp_parse_node_t pn) {
     }
 }
 #endif
+
+STATIC bool parse_node_is_const_bool(mp_parse_node_t pn, bool value) {
+    // Returns true if 'pn' is a constant whose boolean value is equivalent to 'value'
+    #if MICROPY_COMP_CONST_TUPLE || MICROPY_COMP_CONST
+    return mp_parse_node_is_const(pn) && mp_obj_is_true(mp_parse_node_convert_to_obj(pn)) == value;
+    #else
+    return MP_PARSE_NODE_IS_TOKEN_KIND(pn, value ? MP_TOKEN_KW_TRUE : MP_TOKEN_KW_FALSE)
+           || (MP_PARSE_NODE_IS_SMALL_INT(pn) && !!MP_PARSE_NODE_LEAF_SMALL_INT(pn) == value);
+    #endif
+}
+
+bool mp_parse_node_is_const_false(mp_parse_node_t pn) {
+    return parse_node_is_const_bool(pn, false);
+}
+
+bool mp_parse_node_is_const_true(mp_parse_node_t pn) {
+    return parse_node_is_const_bool(pn, true);
+}
 
 size_t mp_parse_node_extract_list(mp_parse_node_t *pn, size_t pn_kind, mp_parse_node_t **nodes) {
     if (MP_PARSE_NODE_IS_NULL(*pn)) {
@@ -597,7 +606,7 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
         mp_obj_t o = mp_parse_num_integer(lex->vstr.buf, lex->vstr.len, 0, lex);
         pn = make_node_const_object_optimised(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_FLOAT_OR_IMAG) {
-        mp_obj_t o = mp_parse_num_decimal(lex->vstr.buf, lex->vstr.len, true, false, lex);
+        mp_obj_t o = mp_parse_num_float(lex->vstr.buf, lex->vstr.len, true, lex);
         pn = make_node_const_object(parser, lex->tok_line, o);
     } else if (lex->tok_kind == MP_TOKEN_STRING) {
         // Don't automatically intern all strings.  Doc strings (which are usually large)
@@ -628,10 +637,12 @@ STATIC void push_result_token(parser_t *parser, uint8_t rule_id) {
     push_result_node(parser, pn);
 }
 
+#if MICROPY_COMP_CONST_FOLDING
+
 #if MICROPY_COMP_MODULE_CONST
 STATIC const mp_rom_map_elem_t mp_constants_table[] = {
-    #if MICROPY_PY_UERRNO
-    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_uerrno) },
+    #if MICROPY_PY_ERRNO
+    { MP_ROM_QSTR(MP_QSTR_errno), MP_ROM_PTR(&mp_module_errno) },
     #endif
     #if MICROPY_PY_UCTYPES
     { MP_ROM_QSTR(MP_QSTR_uctypes), MP_ROM_PTR(&mp_module_uctypes) },
@@ -642,20 +653,11 @@ STATIC const mp_rom_map_elem_t mp_constants_table[] = {
 STATIC MP_DEFINE_CONST_MAP(mp_constants_map, mp_constants_table);
 #endif
 
-STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id, size_t num_args);
-
-#if MICROPY_COMP_CONST_FOLDING
-// CIRCUITPY: The compilers mentioned below are esp-2020r3. We are using minimum esp-2021r3 (ESP-IDF v4.4).
-// See https://github.com/micropython/micropython/commit/f63b4f85aae1e0ade7a7c9f908debb5905cc144d
-// and https://github.com/espressif/esp-idf/issues/9130
-// So disable this for CircuitPython.
-/*
-#if MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND
+#if defined(MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND) && MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND
 // Some versions of the xtensa-esp32-elf-gcc compiler generate wrong code if this
 // function is static, so provide a hook for them to work around this problem.
 MP_NOINLINE
 #endif
-*/
 STATIC bool fold_logical_constants(parser_t *parser, uint8_t rule_id, size_t *num_args) {
     if (rule_id == RULE_or_test
         || rule_id == RULE_and_test) {
@@ -893,7 +895,8 @@ STATIC bool fold_constants(parser_t *parser, uint8_t rule_id, size_t num_args) {
 
     return true;
 }
-#endif
+
+#endif // MICROPY_COMP_CONST_FOLDING
 
 #if MICROPY_COMP_CONST_TUPLE
 STATIC bool build_tuple_from_stack(parser_t *parser, size_t src_line, size_t num_args) {
@@ -1006,7 +1009,7 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 
     #if MICROPY_COMP_CONST_TUPLE
     if (build_tuple(parser, src_line, rule_id, num_args)) {
-        // we built a tuple from this rule so return straight away
+        // we built a tuple from this rule so return straightaway
         return;
     }
     #endif
@@ -1025,6 +1028,9 @@ STATIC void push_result_rule(parser_t *parser, size_t src_line, uint8_t rule_id,
 }
 
 mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
+    // Set exception handler to free the lexer if an exception is raised.
+    MP_DEFINE_NLR_JUMP_CALLBACK_FUNCTION_1(ctx, mp_lexer_free, lex);
+    nlr_push_jump_callback(&ctx.callback, mp_call_function_1_from_nlr_jump_callback);
 
     // initialise parser and allocate memory for its stacks
 
@@ -1032,6 +1038,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
 
     parser.rule_stack_alloc = MICROPY_ALLOC_PARSE_RULE_INIT;
     parser.rule_stack_top = 0;
+    // CIRCUITPY-CHANGE: make parsing more memory flexible
+    // https://github.com/adafruit/circuitpython/pull/552
     parser.rule_stack = NULL;
     while (parser.rule_stack_alloc > 1) {
         parser.rule_stack = m_new_maybe(rule_stack_t, parser.rule_stack_alloc);
@@ -1115,7 +1123,6 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
                     backtrack = false;
                 }
                 for (; i < n; ++i) {
-                    // printf("--> inside for @L924\n");
                     uint16_t kind = rule_arg[i] & RULE_ARG_KIND_MASK;
                     if (kind == RULE_ARG_TOK) {
                         if (lex->tok_kind == (rule_arg[i] & RULE_ARG_ARG_MASK)) {
@@ -1392,8 +1399,8 @@ mp_parse_tree_t mp_parse(mp_lexer_t *lex, mp_parse_input_kind_t input_kind) {
     m_del(rule_stack_t, parser.rule_stack, parser.rule_stack_alloc);
     m_del(mp_parse_node_t, parser.result_stack, parser.result_stack_alloc);
 
-    // we also free the lexer on behalf of the caller
-    mp_lexer_free(lex);
+    // Deregister exception handler and free the lexer.
+    nlr_pop_jump_callback(true);
 
     return parser.tree;
 }

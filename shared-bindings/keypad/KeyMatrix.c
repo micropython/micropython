@@ -130,7 +130,7 @@ STATIC mp_obj_t keypad_keymatrix_make_new(const mp_obj_type_t *type, size_t n_ar
     common_hal_keypad_keymatrix_construct(self, num_row_pins, row_pins_array, num_column_pins, column_pins_array, args[ARG_columns_to_anodes].u_bool, interval, max_events);
     return MP_OBJ_FROM_PTR(self);
     #else
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_KeyMatrix);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_KeyMatrix);
 
     #endif
 }
@@ -250,11 +250,12 @@ STATIC MP_DEFINE_CONST_DICT(keypad_keymatrix_locals_dict, keypad_keymatrix_local
 
 #endif
 
-const mp_obj_type_t keypad_keymatrix_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_KeyMatrix,
-    .make_new = keypad_keymatrix_make_new,
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_keymatrix_type,
+    MP_QSTR_KeyMatrix,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, keypad_keymatrix_make_new
     #if CIRCUITPY_KEYPAD_KEYMATRIX
-    .locals_dict = (mp_obj_t)&keypad_keymatrix_locals_dict,
+    , locals_dict, &keypad_keymatrix_locals_dict
     #endif
-};
+    );

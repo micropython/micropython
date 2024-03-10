@@ -39,6 +39,7 @@
 enum {
     #ifndef NO_QSTR
 #define QDEF(id, hash, len, str) id,
+// CIRCUITPY-CHANGE
 #define TRANSLATION(english_id, number)
     #include "genhdr/qstrdefs.generated.h"
 #undef QDEF
@@ -78,9 +79,10 @@ typedef struct _qstr_pool_t {
 
 #define QSTR_TOTAL() (MP_STATE_VM(last_pool)->total_prev_len + MP_STATE_VM(last_pool)->len)
 
+void qstr_reset(void);
 void qstr_init(void);
 
-mp_uint_t qstr_compute_hash(const byte *data, size_t len);
+size_t qstr_compute_hash(const byte *data, size_t len);
 qstr qstr_find_strn(const char *str, size_t str_len); // returns MP_QSTRnull if not found
 
 qstr qstr_from_str(const char *str);

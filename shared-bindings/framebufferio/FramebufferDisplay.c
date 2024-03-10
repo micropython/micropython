@@ -38,7 +38,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 #include "shared-module/displayio/__init__.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class FramebufferDisplay:
 //|     """Manage updating a display with framebuffer in RAM
@@ -76,7 +75,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_make_new(const mp_obj_type_t *t
 
     mp_int_t rotation = args[ARG_rotation].u_int;
     if (rotation % 90 != 0) {
-        mp_raise_ValueError(translate("Display rotation must be in 90 degree increments"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Display rotation must be in 90 degree increments"));
     }
 
     primary_display_t *disp = allocate_display_or_raise();
@@ -99,61 +98,63 @@ static framebufferio_framebufferdisplay_obj_t *native_display(mp_obj_t display_o
     return MP_OBJ_TO_PTR(native_display);
 }
 
-//|     def show(self, group: displayio.Group) -> None:
-//|         """Switches to displaying the given group of layers. When group is None, the default
-//|         CircuitPython terminal will be shown.
-//|
-//|         :param Group group: The group to show."""
-//|         ...
+// Undocumented show() implementation with a friendly error message.
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_show(mp_obj_t self_in, mp_obj_t group_in) {
-    framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
-    displayio_group_t *group = NULL;
-    if (group_in != mp_const_none) {
-        group = MP_OBJ_TO_PTR(native_group(group_in));
-    }
-
-    bool ok = common_hal_framebufferio_framebufferdisplay_show(self, group);
-    if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
-    }
+    mp_raise_AttributeError(MP_ERROR_TEXT(".show(x) removed. Use .root_group = x"));
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_2(framebufferio_framebufferdisplay_show_obj, framebufferio_framebufferdisplay_obj_show);
 
 //|     def refresh(
-//|         self, *, target_frames_per_second: int = 60, minimum_frames_per_second: int = 1
+//|         self,
+//|         *,
+//|         target_frames_per_second: Optional[int] = None,
+//|         minimum_frames_per_second: int = 0
 //|     ) -> bool:
-//|         """When auto refresh is off, waits for the target frame rate and then refreshes the display,
-//|         returning True. If the call has taken too long since the last refresh call for the given
-//|         target frame rate, then the refresh returns False immediately without updating the screen to
+//|         """When auto_refresh is off, and :py:attr:`target_frames_per_second` is not `None` this waits
+//|         for the target frame rate and then refreshes the display,
+//|         returning `True`. If the call has taken too long since the last refresh call for the given
+//|         target frame rate, then the refresh returns `False` immediately without updating the screen to
 //|         hopefully help getting caught up.
 //|
 //|         If the time since the last successful refresh is below the minimum frame rate, then an
-//|         exception will be raised. Set minimum_frames_per_second to 0 to disable.
+//|         exception will be raised. The default :py:attr:`minimum_frames_per_second` of 0 disables this behavior.
 //|
-//|         When auto refresh is on, updates the display immediately. (The display will also update
+//|         When auto_refresh is off, and :py:attr:`target_frames_per_second` is `None` this
+//|         will update the display immediately.
+//|
+//|         When auto_refresh is on, updates the display immediately. (The display will also update
 //|         without calls to this.)
 //|
-//|         :param int target_frames_per_second: How many times a second `refresh` should be called and the screen updated.
+//|         :param Optional[int] target_frames_per_second: The target frame rate that :py:func:`refresh` should try to
+//|             achieve. Set to `None` for immediate refresh.
 //|         :param int minimum_frames_per_second: The minimum number of times the screen should be updated per second.
 //|         """
 //|         ...
 STATIC mp_obj_t framebufferio_framebufferdisplay_obj_refresh(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_target_frames_per_second, ARG_minimum_frames_per_second };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_target_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 60} },
-        { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
+        { MP_QSTR_target_frames_per_second, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none} },
+        { MP_QSTR_minimum_frames_per_second, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
     };
+
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     framebufferio_framebufferdisplay_obj_t *self = native_display(pos_args[0]);
-    uint32_t maximum_ms_per_real_frame = 0xffffffff;
+    uint32_t maximum_ms_per_real_frame = NO_FPS_LIMIT;
     mp_int_t minimum_frames_per_second = args[ARG_minimum_frames_per_second].u_int;
     if (minimum_frames_per_second > 0) {
         maximum_ms_per_real_frame = 1000 / minimum_frames_per_second;
     }
-    return mp_obj_new_bool(common_hal_framebufferio_framebufferdisplay_refresh(self, 1000 / args[ARG_target_frames_per_second].u_int, maximum_ms_per_real_frame));
+
+    uint32_t target_ms_per_frame;
+    if (args[ARG_target_frames_per_second].u_obj == mp_const_none) {
+        target_ms_per_frame = NO_FPS_LIMIT;
+    } else {
+        target_ms_per_frame = 1000 / mp_obj_get_int(args[ARG_target_frames_per_second].u_obj);
+    }
+    return mp_obj_new_bool(common_hal_framebufferio_framebufferdisplay_refresh(self, target_ms_per_frame, maximum_ms_per_real_frame));
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_refresh_obj, 1, framebufferio_framebufferdisplay_obj_refresh);
 
@@ -184,7 +185,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_get_brightness(mp_obj_t sel
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = common_hal_framebufferio_framebufferdisplay_get_brightness(self);
     if (brightness < 0) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Brightness not adjustable"));
     }
     return mp_obj_new_float(brightness);
 }
@@ -194,11 +195,11 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_brightness(mp_obj_t sel
     framebufferio_framebufferdisplay_obj_t *self = native_display(self_in);
     mp_float_t brightness = mp_obj_get_float(brightness_obj);
     if (brightness < 0.0f || brightness > 1.0f) {
-        mp_raise_ValueError_varg(translate("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_brightness, 0, 1);
     }
     bool ok = common_hal_framebufferio_framebufferdisplay_set_brightness(self, brightness);
     if (!ok) {
-        mp_raise_RuntimeError(translate("Brightness not adjustable"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Brightness not adjustable"));
     }
     return mp_const_none;
 }
@@ -284,10 +285,10 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
     mp_get_buffer_raise(result, &bufinfo, MP_BUFFER_WRITE);
 
     if (bufinfo.typecode != BYTEARRAY_TYPECODE) {
-        mp_raise_ValueError(translate("Buffer is not a bytearray."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer is not a bytearray."));
     }
     if (self->core.colorspace.depth != 16) {
-        mp_raise_ValueError(translate("Display must have a 16 bit colorspace."));
+        mp_raise_ValueError(MP_ERROR_TEXT("Display must have a 16 bit colorspace."));
     }
 
     displayio_area_t area = {
@@ -317,7 +318,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_fill_row(size_t n_args, con
         displayio_display_core_fill_area(&self->core, &area, mask, result_buffer);
         return result;
     } else {
-        mp_raise_ValueError(translate("Buffer too small"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Buffer too small"));
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(framebufferio_framebufferdisplay_fill_row_obj, 1, framebufferio_framebufferdisplay_obj_fill_row);
@@ -343,7 +344,7 @@ STATIC mp_obj_t framebufferio_framebufferdisplay_obj_set_root_group(mp_obj_t sel
 
     bool ok = common_hal_framebufferio_framebufferdisplay_set_root_group(self, group);
     if (!ok) {
-        mp_raise_ValueError(translate("Group already used"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Group already used"));
     }
     return mp_const_none;
 }
@@ -370,9 +371,10 @@ STATIC const mp_rom_map_elem_t framebufferio_framebufferdisplay_locals_dict_tabl
 };
 STATIC MP_DEFINE_CONST_DICT(framebufferio_framebufferdisplay_locals_dict, framebufferio_framebufferdisplay_locals_dict_table);
 
-const mp_obj_type_t framebufferio_framebufferdisplay_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_FramebufferDisplay,
-    .make_new = framebufferio_framebufferdisplay_make_new,
-    .locals_dict = (mp_obj_dict_t *)&framebufferio_framebufferdisplay_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    framebufferio_framebufferdisplay_type,
+    MP_QSTR_FramebufferDisplay,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, framebufferio_framebufferdisplay_make_new,
+    locals_dict, &framebufferio_framebufferdisplay_locals_dict
+    );

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Dan Halbertfor Adafruit Industries
+ * Copyright (c) 2021 Dan Halbert for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,6 @@
 
 #include "shared-bindings/usb_cdc/__init__.h"
 #include "shared-bindings/usb_cdc/Serial.h"
-#include "supervisor/shared/translate/translate.h"
-
-#include "py/runtime.h"
 
 //| """USB CDC Serial streams
 //|
@@ -72,7 +69,7 @@
 //|
 STATIC mp_obj_t usb_cdc_disable(void) {
     if (!common_hal_usb_cdc_disable()) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }
@@ -103,7 +100,7 @@ STATIC mp_obj_t usb_cdc_enable(size_t n_args, const mp_obj_t *pos_args, mp_map_t
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
 
     if (!common_hal_usb_cdc_enable(args[ARG_console].u_bool, args[ARG_data].u_bool)) {
-        mp_raise_RuntimeError(translate("Cannot change USB devices now"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Cannot change USB devices now"));
     }
     return mp_const_none;
 }

@@ -175,7 +175,7 @@ STATIC mp_obj_t keypad_shiftregisterkeys_make_new(const mp_obj_type_t *type, siz
     return MP_OBJ_FROM_PTR(self);
 
     #else
-    mp_raise_NotImplementedError_varg(translate("%q"), MP_QSTR_ShiftRegisterKeys);
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_ShiftRegisterKeys);
     #endif
 }
 
@@ -236,11 +236,12 @@ STATIC const mp_rom_map_elem_t keypad_shiftregisterkeys_locals_dict_table[] = {
 STATIC MP_DEFINE_CONST_DICT(keypad_shiftregisterkeys_locals_dict, keypad_shiftregisterkeys_locals_dict_table);
 #endif
 
-const mp_obj_type_t keypad_shiftregisterkeys_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ShiftRegisterKeys,
-    .make_new = keypad_shiftregisterkeys_make_new,
+MP_DEFINE_CONST_OBJ_TYPE(
+    keypad_shiftregisterkeys_type,
+    MP_QSTR_ShiftRegisterKeys,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, keypad_shiftregisterkeys_make_new
     #if CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS
-    .locals_dict = (mp_obj_t)&keypad_shiftregisterkeys_locals_dict,
+    , locals_dict, &keypad_shiftregisterkeys_locals_dict
     #endif
-};
+    );

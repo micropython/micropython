@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -38,7 +37,3 @@ typedef struct {
     bool variable_frequency;
     uint16_t duty_cycle;
 } pwmio_pwmout_obj_t;
-
-void pwmout_reset(void);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PWMIO_PWMOUT_H

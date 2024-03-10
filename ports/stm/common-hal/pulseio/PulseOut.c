@@ -101,11 +101,6 @@ STATIC void pulseout_event_handler(void) {
     }
 }
 
-void pulseout_reset() {
-    stm_peripherals_timer_free(tim_handle.Instance);
-    refcount = 0;
-}
-
 void common_hal_pulseio_pulseout_construct(pulseio_pulseout_obj_t *self,
     const mcu_pin_obj_t *pin, uint32_t frequency, uint16_t duty_cycle) {
     pwmout_result_t result = common_hal_pwmio_pwmout_construct(
@@ -176,7 +171,7 @@ void common_hal_pulseio_pulseout_send(pulseio_pulseout_obj_t *self, uint16_t *pu
 
         // // Use when debugging, or issues are irrecoverable
         // if ((supervisor_ticks_ms64() - starttime ) > timeout ) {
-        //    mp_raise_RuntimeError(translate("Error: Send Timeout"));
+        //    mp_raise_RuntimeError(MP_ERROR_TEXT("Error: Send Timeout"));
         // }
     }
     // turn off timer counter.

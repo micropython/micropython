@@ -55,7 +55,7 @@ static bool audio_dma_allocated[AUDIO_DMA_CHANNEL_COUNT];
 uint8_t find_sync_event_channel_raise() {
     uint8_t event_channel = find_sync_event_channel();
     if (event_channel >= EVSYS_SYNCH_NUM) {
-        mp_raise_RuntimeError(translate("All sync event channels in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All sync event channels in use"));
     }
     return event_channel;
 }
@@ -109,7 +109,7 @@ static void audio_dma_convert_samples(
         *output_spacing = 1;
 
         if (*output_length > available_output_buffer_length) {
-            mp_raise_RuntimeError(translate("Internal audio buffer too small"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Internal audio buffer too small"));
         }
 
         uint32_t out_i = 0;
@@ -431,5 +431,7 @@ void audio_dma_evsys_handler(void) {
         background_callback_add(&dma->callback, dma_callback_fun, (void *)dma);
     }
 }
+
+MP_REGISTER_ROOT_POINTER(mp_obj_t playing_audio[AUDIO_DMA_CHANNEL_COUNT]);
 
 #endif

@@ -64,26 +64,30 @@ inline void filesystem_tick(void) {
 }
 
 
+__attribute__((unused)) // this function MAY be unused
 static void make_empty_file(FATFS *fatfs, const char *path) {
     FIL fp;
     f_open(fatfs, &fp, path, FA_WRITE | FA_CREATE_ALWAYS);
     f_close(&fp);
 }
 
+#if CIRCUITPY_FULL_BUILD
+#define MAKE_FILE_WITH_OPTIONAL_CONTENTS(fatfs, filename, string_literal) do { \
+        const byte buffer[] = string_literal; \
+        make_file_with_contents(fatfs, filename, buffer, sizeof(buffer) - 1); \
+} while (0)
 
-static void make_sample_code_file(FATFS *fatfs) {
-    #if CIRCUITPY_FULL_BUILD
+static void make_file_with_contents(FATFS *fatfs, const char *filename, const byte *content, UINT size) {
     FIL fs;
-    UINT char_written = 0;
-    const byte buffer[] = "print(\"Hello World!\")\n";
     // Create or modify existing code.py file
-    f_open(fatfs, &fs, "/code.py", FA_WRITE | FA_CREATE_ALWAYS);
-    f_write(&fs, buffer, sizeof(buffer) - 1, &char_written);
+    f_open(fatfs, &fs, filename, FA_WRITE | FA_CREATE_ALWAYS);
+    f_write(&fs, content, size, &size);
     f_close(&fs);
-    #else
-    make_empty_file(fatfs, "/code.py");
-    #endif
 }
+#else
+#define MAKE_FILE_WITH_OPTIONAL_CONTENTS(fatfs, filename, string_literal) \
+    make_empty_file(fatfs, filename)
+#endif
 
 // we don't make this function static because it needs a lot of stack and we
 // want it to be executed without using stack within main() function
@@ -137,11 +141,20 @@ bool filesystem_init(bool create_allowed, bool force_create) {
         // https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
         #endif
 
+        #if CIRCUITPY_SDCARDIO || CIRCUITPY_SDIOIO
+        res = f_mkdir(&vfs_fat->fatfs, "/sd");
+        #if CIRCUITPY_FULL_BUILD
+        MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/sd/placeholder.txt",
+            "SD cards mounted at /sd will hide this file from Python."
+            " SD cards are not visible via USB CIRCUITPY.\n");
+        #endif
+        #endif
+
         #if CIRCUITPY_OS_GETENV
         make_empty_file(&vfs_fat->fatfs, "/settings.toml");
         #endif
         // make a sample code.py file
-        make_sample_code_file(&vfs_fat->fatfs);
+        MAKE_FILE_WITH_OPTIONAL_CONTENTS(&vfs_fat->fatfs, "/code.py", "print(\"Hello World!\")\n");
 
         // create empty lib directory
         res = f_mkdir(&vfs_fat->fatfs, "/lib");
@@ -221,9 +234,56 @@ bool filesystem_present(void) {
     return _mp_vfs.len > 0;
 }
 
-FATFS *filesystem_circuitpy(void) {
+fs_user_mount_t *filesystem_circuitpy(void) {
     if (!filesystem_present()) {
         return NULL;
     }
-    return &_internal_vfs.fatfs;
+    return &_internal_vfs;
+}
+
+fs_user_mount_t *filesystem_for_path(const char *path_in, const char **path_under_mount) {
+    mp_vfs_mount_t *vfs = mp_vfs_lookup_path(path_in, path_under_mount);
+    if (vfs == MP_VFS_NONE) {
+        return NULL;
+    }
+    fs_user_mount_t *fs_mount;
+    *path_under_mount = path_in;
+    if (vfs == MP_VFS_ROOT) {
+        fs_mount = filesystem_circuitpy();
+    } else {
+        fs_mount = MP_OBJ_TO_PTR(vfs->obj);
+        *path_under_mount += strlen(vfs->str);
+    }
+    return fs_mount;
+}
+
+bool filesystem_native_fatfs(fs_user_mount_t *fs_mount) {
+    return fs_mount->base.type == &mp_fat_vfs_type && (fs_mount->blockdev.flags & MP_BLOCKDEV_FLAG_NATIVE) != 0;
+}
+
+bool filesystem_lock(fs_user_mount_t *fs_mount) {
+    if (fs_mount->lock_count == 0 && !blockdev_lock(fs_mount)) {
+        return false;
+    }
+    fs_mount->lock_count += 1;
+    return true;
+}
+
+void filesystem_unlock(fs_user_mount_t *fs_mount) {
+    fs_mount->lock_count -= 1;
+    if (fs_mount->lock_count == 0) {
+        blockdev_unlock(fs_mount);
+    }
+}
+
+bool blockdev_lock(fs_user_mount_t *fs_mount) {
+    if ((fs_mount->blockdev.flags & MP_BLOCKDEV_FLAG_LOCKED) != 0) {
+        return false;
+    }
+    fs_mount->blockdev.flags |= MP_BLOCKDEV_FLAG_LOCKED;
+    return true;
+}
+
+void blockdev_unlock(fs_user_mount_t *fs_mount) {
+    fs_mount->blockdev.flags &= ~MP_BLOCKDEV_FLAG_LOCKED;
 }

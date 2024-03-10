@@ -1,5 +1,5 @@
 USB_VID = 0x2341
-USB_PID = 0x0070
+USB_PID = 0x056B
 
 USB_PRODUCT = "Arduino Nano ESP32"
 USB_MANUFACTURER = "Arduino"
@@ -9,7 +9,7 @@ IDF_TARGET = esp32s3
 # This has a u-blox® NORA-W106-10B module.
 
 # This flash lives outside the module.
-CIRCUITPY_ESP_FLASH_MODE = dio
+CIRCUITPY_ESP_FLASH_MODE = qio
 CIRCUITPY_ESP_FLASH_FREQ = 80m
 CIRCUITPY_ESP_FLASH_SIZE = 16MB
 

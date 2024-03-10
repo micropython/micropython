@@ -111,15 +111,6 @@ static void _pulsein_handler(nrfx_gpiote_pin_t pin, nrf_gpiote_polarity_t action
     self->last_count = current_count;
 }
 
-void pulsein_reset(void) {
-    if (timer != NULL) {
-        nrf_peripherals_free_timer(timer);
-    }
-    refcount = 0;
-
-    memset(_objs, 0, sizeof(_objs));
-}
-
 void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu_pin_obj_t *pin, uint16_t maxlen, bool idle_state) {
     int idx = _find_pulsein_obj(NULL);
     if (idx < 0) {
@@ -135,7 +126,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     if (refcount == 0) {
         timer = nrf_peripherals_allocate_timer();
         if (timer == NULL) {
-            mp_raise_RuntimeError(translate("All timers in use"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("All timers in use"));
         }
         overflow_count = 0;
 
@@ -175,7 +166,7 @@ void common_hal_pulseio_pulsein_construct(pulseio_pulsein_obj_t *self, const mcu
     };
     nrfx_err_t err = nrfx_gpiote_in_init(self->pin, &cfg, _pulsein_handler);
     if (err != NRFX_SUCCESS) {
-        mp_raise_RuntimeError(translate("All channels in use"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("All channels in use"));
     }
     nrfx_gpiote_in_event_enable(self->pin, true);
 }
@@ -271,7 +262,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
         if (!self->paused) {
             nrfx_gpiote_in_event_enable(self->pin, true);
         }
-        mp_raise_IndexError_varg(translate("%q out of range"), MP_QSTR_index);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("%q out of range"), MP_QSTR_index);
     }
     uint16_t value = self->buffer[(self->start + index) % self->maxlen];
 
@@ -284,7 +275,7 @@ uint16_t common_hal_pulseio_pulsein_get_item(pulseio_pulsein_obj_t *self, int16_
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_PulseIn);
     }
 
     if (!self->paused) {

@@ -1,4 +1,13 @@
-#all: Reformat remaining C code that doesn't have a space after a comma.
+# all: Fix various spelling mistakes found by codespell 2.2.6.
+cf490a70917a1b2d38ba9b58e763e0837d0f7ca7
+
+# all: Fix spelling mistakes based on codespell check.
+b1229efbd1509654dec6053865ab828d769e29db
+
+# top: Update Python formatting to black "2023 stable style".
+8b2748269244304854b3462cb8902952b4dcb892
+
+# all: Reformat remaining C code that doesn't have a space after a comma.
 5b700b0af90591d6b1a2c087bb8de6b7f1bfdd2d
 
 # ports: Reformat more C and Python source code.

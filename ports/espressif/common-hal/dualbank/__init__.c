@@ -47,7 +47,7 @@ void dualbank_reset(void) {
 
 static void __attribute__((noreturn)) task_fatal_error(void) {
     ESP_LOGE(TAG, "Exiting task due to fatal error...");
-    mp_raise_RuntimeError(translate("Update Failed"));
+    mp_raise_RuntimeError(MP_ERROR_TEXT("Update Failed"));
 }
 
 void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t offset) {
@@ -86,14 +86,14 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
             // check new version with running version
             if (memcmp(new_app_info.version, running_app_info.version, sizeof(new_app_info.version)) == 0) {
                 ESP_LOGW(TAG, "New version is the same as running version.");
-                mp_raise_RuntimeError(translate("Firmware is duplicate"));
+                mp_raise_RuntimeError(MP_ERROR_TEXT("Firmware is duplicate"));
             }
 
             // check new version with last invalid partition
             if (last_invalid != NULL) {
                 if (memcmp(new_app_info.version, invalid_app_info.version, sizeof(new_app_info.version)) == 0) {
                     ESP_LOGW(TAG, "New version is the same as invalid version.");
-                    mp_raise_RuntimeError(translate("Firmware is invalid"));
+                    mp_raise_RuntimeError(MP_ERROR_TEXT("Firmware is invalid"));
                 }
             }
 
@@ -104,7 +104,7 @@ void common_hal_dualbank_flash(const void *buf, const size_t len, const size_t o
             }
         } else {
             ESP_LOGE(TAG, "received package is not fit len");
-            mp_raise_RuntimeError(translate("Firmware is too big"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Firmware is too big"));
         }
     }
 
@@ -128,7 +128,7 @@ void common_hal_dualbank_switch(void) {
     if (err != ESP_OK) {
         if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
             ESP_LOGE(TAG, "Image validation failed, image is corrupted");
-            mp_raise_RuntimeError(translate("Firmware is invalid"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Firmware is invalid"));
         }
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
         task_fatal_error();

@@ -39,7 +39,7 @@
 #include "py/mpprint.h"
 #include "supervisor/serial.h"
 
-void serial_write_compressed(const compressed_string_t *compressed) {
+void serial_write_compressed(mp_rom_error_text_t compressed) {
     mp_printf(MP_PYTHON_PRINTER, "%S", compressed);
 }
 
@@ -57,40 +57,26 @@ STATIC void get_word(int n, const mchar_t **pos, const mchar_t **end) {
     *end = *pos + len;
 }
 
-STATIC int put_utf8(char *buf, int u) {
+STATIC void put_utf8(vstr_t *vstr, int u) {
     if (u >= translation_offstart) {
         u += translation_offset;
     }
-    if (u <= 0x7f) {
-        *buf = u;
-        return 1;
-    } else if (word_start <= u && u <= word_end) {
+    if (word_start <= u && u <= word_end) {
         uint n = (u - word_start);
         const mchar_t *pos, *end;
         get_word(n, &pos, &end);
-        int ret = 0;
         // note that at present, entries in the words table are
         // guaranteed not to represent words themselves, so this adds
         // at most 1 level of recursive call
         for (; pos < end; pos++) {
-            int len = put_utf8(buf, *pos);
-            buf += len;
-            ret += len;
+            put_utf8(vstr, *pos);
         }
-        return ret;
-    } else if (u <= 0x07ff) {
-        *buf++ = 0b11000000 | (u >> 6);
-        *buf = 0b10000000 | (u & 0b00111111);
-        return 2;
-    } else { // u <= 0xffff
-        *buf++ = 0b11100000 | (u >> 12);
-        *buf++ = 0b10000000 | ((u >> 6) & 0b00111111);
-        *buf = 0b10000000 | (u & 0b00111111);
-        return 3;
+        return;
     }
+    vstr_add_char(vstr, u);
 }
 
-uint16_t decompress_length(const compressed_string_t *compressed) {
+uint16_t decompress_length(mp_rom_error_text_t compressed) {
     #ifndef NO_QSTR
     #if (compress_max_length_bits <= 8)
     return 1 + (compressed->data >> (8 - compress_max_length_bits));
@@ -123,15 +109,16 @@ static int get_nbits(bitstream_state_t *st, int n) {
     return r;
 }
 
-char *decompress(const compressed_string_t *compressed, char *decompressed) {
+// note: the vstr must be a fixed-buffer vstr that matches the decompressed length of the string
+static void decompress_vstr(mp_rom_error_text_t compressed, vstr_t *decompressed) {
     bitstream_state_t b = {
         .ptr = &(compressed->data) + (compress_max_length_bits >> 3),
         .bit = 1 << (7 - ((compress_max_length_bits) & 0x7)),
     };
-    uint16_t length = decompress_length(compressed);
 
+    size_t alloc = decompressed->alloc - 1;
     // Stop one early because the last byte is always NULL.
-    for (uint16_t i = 0; i < length - 1;) {
+    for (; decompressed->len < alloc;) {
         uint32_t bits = 0;
         uint8_t bit_length = 0;
         uint32_t max_code = lengths[0];
@@ -148,16 +135,19 @@ char *decompress(const compressed_string_t *compressed, char *decompressed) {
         int v = values[searched_length + bits - max_code];
         if (v == 1) {
             qstr q = get_nbits(&b, translation_qstr_bits) + 1; // honestly no idea why "+1"...
-            for (const char *qc = qstr_str(q); *qc;) {
-                decompressed[i++] = *qc++;
-            }
+            vstr_add_str(decompressed, qstr_str(q));
         } else {
-            i += put_utf8(decompressed + i, v);
+            put_utf8(decompressed, v);
         }
     }
+}
 
-    decompressed[length - 1] = '\0';
-    return decompressed;
+
+char *decompress(mp_rom_error_text_t compressed, char *decompressed) {
+    vstr_t vstr;
+    vstr_init_fixed_buf(&vstr, decompress_length(compressed), decompressed);
+    decompress_vstr(compressed, &vstr);
+    return vstr_null_terminated_str(&vstr);
 }
 
 #if CIRCUITPY_TRANSLATE_OBJECT == 1

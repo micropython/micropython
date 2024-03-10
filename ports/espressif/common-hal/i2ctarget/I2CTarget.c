@@ -44,7 +44,7 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     }
 
     if (num_addresses > 1) {
-        mp_raise_ValueError(translate("Only one address is allowed"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Only one address is allowed"));
     }
     self->addresses = addresses;
     self->num_addresses = num_addresses;
@@ -54,7 +54,7 @@ void common_hal_i2ctarget_i2c_target_construct(i2ctarget_i2c_target_obj_t *self,
     self->i2c_num = peripherals_i2c_get_free_num();
 
     if (self->i2c_num == I2C_NUM_MAX) {
-        mp_raise_ValueError(translate("All I2C peripherals are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All I2C peripherals are in use"));
     }
 
     const i2c_config_t i2c_conf = {

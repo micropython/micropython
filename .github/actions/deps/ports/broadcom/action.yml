@@ -16,7 +16,7 @@ runs:
         tar -xaf dosfstools-4.2.tar.gz
         cd dosfstools-4.2
         ./configure
-        make -j 2
+        make -j4
         cd src
         echo >> $GITHUB_PATH $(pwd)
       shell: bash

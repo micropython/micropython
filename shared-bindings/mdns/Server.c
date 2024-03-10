@@ -27,7 +27,9 @@
 
 #include <string.h>
 
+#include "py/obj.h"
 #include "py/objproperty.h"
+#include "py/objstr.h"
 #include "py/runtime.h"
 #include "shared-bindings/mdns/__init__.h"
 #include "shared-bindings/mdns/Server.h"
@@ -173,20 +175,26 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mdns_server_find_obj, 1, _mdns_server_find);
 //|
 //|         If web workflow is active, the port it uses can't also be used to advertise a service.
 //|
+//|         **Limitations**: Publishing up to 32 TXT records is only supported on the RP2040 Pico W board at
+//|         this time.
+//|
 //|         :param str service_type: The service type such as "_http"
 //|         :param str protocol: The service protocol such as "_tcp"
-//|         :param int port: The port used by the service"""
+//|         :param int port: The port used by the service
+//|         :param Sequence[str] txt_records: An optional sequence of strings to serve as TXT records along with the service
+//|         """
 //|         ...
 //|
 STATIC mp_obj_t mdns_server_advertise_service(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mdns_server_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     check_for_deinit(self);
 
-    enum { ARG_service_type, ARG_protocol, ARG_port };
+    enum { ARG_service_type, ARG_protocol, ARG_port, ARG_txt_records };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_service_type, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_protocol, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_port, MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_INT },
+        { MP_QSTR_txt_records, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
     };
 
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
@@ -195,7 +203,21 @@ STATIC mp_obj_t mdns_server_advertise_service(mp_uint_t n_args, const mp_obj_t *
     const char *service_type = mp_obj_str_get_str(args[ARG_service_type].u_obj);
     const char *protocol = mp_obj_str_get_str(args[ARG_protocol].u_obj);
 
-    common_hal_mdns_server_advertise_service(self, service_type, protocol, args[ARG_port].u_int);
+    const mp_obj_t txt_records = args[ARG_txt_records].u_obj;
+    const size_t num_txt_records = txt_records == mp_const_none
+        ? 0
+        : (size_t)MP_OBJ_SMALL_INT_VALUE(mp_obj_len(txt_records));
+
+    const char *txt_records_array[num_txt_records];
+    for (size_t i = 0; i < num_txt_records; i++) {
+        mp_obj_t txt_record = mp_obj_subscr(txt_records, MP_OBJ_NEW_SMALL_INT(i), MP_OBJ_SENTINEL);
+        if (!mp_obj_is_str_or_bytes(txt_record)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("Failed to add service TXT record; non-string or bytes found in txt_records"));
+        }
+        txt_records_array[i] = mp_obj_str_get_str(txt_record);
+    }
+
+    common_hal_mdns_server_advertise_service(self, service_type, protocol, args[ARG_port].u_int, txt_records_array, num_txt_records);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mdns_server_advertise_service_obj, 1, mdns_server_advertise_service);
@@ -213,9 +235,10 @@ STATIC const mp_rom_map_elem_t mdns_server_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(mdns_server_locals_dict, mdns_server_locals_dict_table);
 
-const mp_obj_type_t mdns_server_type = {
-    .base = { &mp_type_type },
-    .name = MP_QSTR_Server,
-    .make_new = mdns_server_make_new,
-    .locals_dict = (mp_obj_t)&mdns_server_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    mdns_server_type,
+    MP_QSTR_Server,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, mdns_server_make_new,
+    locals_dict, &mdns_server_locals_dict
+    );

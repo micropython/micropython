@@ -146,50 +146,50 @@ void print_safe_mode_message(safe_mode_t reason) {
         return;
     }
 
-    serial_write_compressed(translate("\nYou are in safe mode because:\n"));
+    serial_write_compressed(MP_ERROR_TEXT("\nYou are in safe mode because:\n"));
 
-    const compressed_string_t *message = NULL;
+    mp_rom_error_text_t message = NULL;
 
     // First check for safe mode reasons that do not necessarily reflect bugs.
 
     switch (reason) {
         case SAFE_MODE_BROWNOUT:
-            message = translate("Power dipped. Make sure you are providing enough power.");
+            message = MP_ERROR_TEXT("Power dipped. Make sure you are providing enough power.");
             break;
         case SAFE_MODE_USER:
             #if defined(BOARD_USER_SAFE_MODE_ACTION)
             message = BOARD_USER_SAFE_MODE_ACTION;
             #elif defined(CIRCUITPY_BOOT_BUTTON)
-            message = translate("You pressed the BOOT button at start up");
+            message = MP_ERROR_TEXT("You pressed the BOOT button at start up");
             #else
-            message = translate("You pressed the reset button during boot.");
+            message = MP_ERROR_TEXT("You pressed the reset button during boot.");
             #endif
             break;
         case SAFE_MODE_NO_CIRCUITPY:
-            message = translate("CIRCUITPY drive could not be found or created.");
+            message = MP_ERROR_TEXT("CIRCUITPY drive could not be found or created.");
             break;
         case SAFE_MODE_PROGRAMMATIC:
-            message = translate("The `microcontroller` module was used to boot into safe mode.");
+            message = MP_ERROR_TEXT("The `microcontroller` module was used to boot into safe mode.");
             break;
         #if CIRCUITPY_SAFEMODE_PY
         case SAFE_MODE_SAFEMODE_PY_ERROR:
-            message = translate("Error in safemode.py.");
+            message = MP_ERROR_TEXT("Error in safemode.py.");
             break;
         #endif
         case SAFE_MODE_STACK_OVERFLOW:
-            message = translate("Heap was corrupted because the stack was too small. Increase stack size.");
+            message = MP_ERROR_TEXT("Stack overflow. Increase stack size.");
             break;
         case SAFE_MODE_USB_TOO_MANY_ENDPOINTS:
-            message = translate("USB devices need more endpoints than are available.");
+            message = MP_ERROR_TEXT("USB devices need more endpoints than are available.");
             break;
         case SAFE_MODE_USB_TOO_MANY_INTERFACE_NAMES:
-            message = translate("USB devices specify too many interface names.");
+            message = MP_ERROR_TEXT("USB devices specify too many interface names.");
             break;
         case SAFE_MODE_USB_BOOT_DEVICE_NOT_INTERFACE_ZERO:
-            message = translate("Boot device must be first (interface #0).");
+            message = MP_ERROR_TEXT("Boot device must be first (interface #0).");
             break;
         case SAFE_MODE_WATCHDOG:
-            message = translate("Internal watchdog timer expired.");
+            message = MP_ERROR_TEXT("Internal watchdog timer expired.");
             break;
         default:
             break;
@@ -200,37 +200,37 @@ void print_safe_mode_message(safe_mode_t reason) {
         serial_write_compressed(message);
     } else {
         // Something worse happened.
-        serial_write_compressed(translate("CircuitPython core code crashed hard. Whoops!\n"));
+        serial_write_compressed(MP_ERROR_TEXT("CircuitPython core code crashed hard. Whoops!\n"));
         switch (reason) {
             case SAFE_MODE_GC_ALLOC_OUTSIDE_VM:
-                message = translate("Heap allocation when VM not running.");
+                message = MP_ERROR_TEXT("Heap allocation when VM not running.");
                 break;
             case SAFE_MODE_FLASH_WRITE_FAIL:
-                message = translate("Failed to write internal flash.");
+                message = MP_ERROR_TEXT("Failed to write internal flash.");
                 break;
             case SAFE_MODE_HARD_FAULT:
-                message = translate("Hard fault: memory access or instruction error.");
+                message = MP_ERROR_TEXT("Hard fault: memory access or instruction error.");
                 break;
             case SAFE_MODE_INTERRUPT_ERROR:
-                message = translate("Interrupt error.");
+                message = MP_ERROR_TEXT("Interrupt error.");
                 break;
             case SAFE_MODE_NLR_JUMP_FAIL:
-                message = translate("NLR jump failed. Likely memory corruption.");
+                message = MP_ERROR_TEXT("NLR jump failed. Likely memory corruption.");
                 break;
             case SAFE_MODE_NO_HEAP:
-                message = translate("Unable to allocate the heap.");
+                message = MP_ERROR_TEXT("Unable to allocate to the heap.");
                 break;
             case SAFE_MODE_SDK_FATAL_ERROR:
-                message = translate("Third-party firmware fatal error.");
+                message = MP_ERROR_TEXT("Third-party firmware fatal error.");
                 break;
             default:
-                message = translate("Unknown reason.");
+                message = MP_ERROR_TEXT("Unknown reason.");
                 break;
         }
         serial_write_compressed(message);
-        serial_write_compressed(translate("\nPlease file an issue with your program at github.com/adafruit/circuitpython/issues."));
+        serial_write_compressed(MP_ERROR_TEXT("\nPlease file an issue with your program at github.com/adafruit/circuitpython/issues."));
     }
 
     // Always tell user how to get out of safe mode.
-    serial_write_compressed(translate("\nPress reset to exit safe mode.\n"));
+    serial_write_compressed(MP_ERROR_TEXT("\nPress reset to exit safe mode.\n"));
 }

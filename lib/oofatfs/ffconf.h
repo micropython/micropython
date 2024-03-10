@@ -72,8 +72,8 @@
 #define FF_USE_MKFS     1
 /* This option switches f_mkfs() function. (0:Disable or 1:Enable) */
 
-#ifdef MICROPY_FF_MKFS_FAT32
-#define FF_MKFS_FAT32   MICROPY_FF_MKFS_FAT32
+#ifdef MICROPY_FATFS_MKFS_FAT32
+#define FF_MKFS_FAT32   MICROPY_FATFS_MKFS_FAT32
 #else
 #define FF_MKFS_FAT32   0
 #endif

@@ -1,4 +1,4 @@
-# test ustruct and endian specific things
+# test struct and endian specific things
 
 try:
     import struct

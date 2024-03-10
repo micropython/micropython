@@ -27,11 +27,10 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 // If so, deinit() has already been called on the object, so complain.
 void raise_deinited_error(void) {
-    mp_raise_ValueError(translate("Object has been deinitialized and can no longer be used. Create a new object."));
+    mp_raise_ValueError(MP_ERROR_TEXT("Object has been deinitialized and can no longer be used. Create a new object."));
 }
 
 void properties_print_helper(const mp_print_t *print, mp_obj_t self_in, const mp_arg_t *properties, size_t n_properties) {

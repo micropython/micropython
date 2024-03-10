@@ -31,7 +31,6 @@
 #include "py/runtime.h"
 #include "shared-bindings/audiocore/WaveFile.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 #include "extmod/vfs_posix.h"
 
 //| class WaveFile:
@@ -80,8 +79,8 @@ STATIC mp_obj_t audioio_wavefile_make_new(const mp_obj_type_t *type, size_t n_ar
     }
 
     audioio_wavefile_obj_t *self = mp_obj_malloc(audioio_wavefile_obj_t, &audioio_wavefile_type);
-    if (!mp_obj_is_type(arg, &mp_type_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+    if (!mp_obj_is_type(arg, &mp_type_vfs_fat_fileio)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     uint8_t *buffer = NULL;
     size_t buffer_size = 0;
@@ -201,13 +200,11 @@ STATIC const audiosample_p_t audioio_wavefile_proto = {
 };
 
 
-const mp_obj_type_t audioio_wavefile_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_WaveFile,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = audioio_wavefile_make_new,
-    .locals_dict = (mp_obj_dict_t *)&audioio_wavefile_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &audioio_wavefile_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    audioio_wavefile_type,
+    MP_QSTR_WaveFile,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, audioio_wavefile_make_new,
+    locals_dict, &audioio_wavefile_locals_dict,
+    protocol, &audioio_wavefile_proto
+    );

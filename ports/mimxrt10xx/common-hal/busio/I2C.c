@@ -117,7 +117,7 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     if (!GPIO_PinRead(sda->gpio, sda->number) || !GPIO_PinRead(scl->gpio, scl->number)) {
         common_hal_reset_pin(sda);
         common_hal_reset_pin(scl);
-        mp_raise_RuntimeError(translate("No pull up found on SDA or SCL; check your wiring"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("No pull up found on SDA or SCL; check your wiring"));
     }
     #endif
 
@@ -138,6 +138,10 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
                 continue;
             }
 
+            if (reserved_i2c[mcu_i2c_scl_list[j].bank_idx - 1]) {
+                continue;
+            }
+
             self->sda = &mcu_i2c_sda_list[i];
             self->scl = &mcu_i2c_scl_list[j];
 
@@ -150,6 +154,9 @@ void common_hal_busio_i2c_construct(busio_i2c_obj_t *self,
     } else {
         self->i2c = mcu_i2c_banks[self->sda->bank_idx - 1];
     }
+
+
+    reserved_i2c[self->sda->bank_idx - 1] = true;
 
     config_periph_pin(self->sda);
     config_periph_pin(self->scl);

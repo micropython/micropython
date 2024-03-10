@@ -74,7 +74,7 @@ STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     espnow_obj_t *self = MP_STATE_PORT(espnow_singleton);
 
     if (!common_hal_espnow_deinited(self)) {
-        mp_raise_RuntimeError(translate("Already running"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Already running"));
     }
 
     // Allocate a new object
@@ -332,7 +332,6 @@ STATIC mp_uint_t espnow_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintpt
 }
 
 STATIC const mp_stream_p_t espnow_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .ioctl = espnow_stream_ioctl,
 };
 
@@ -341,6 +340,7 @@ STATIC const mp_stream_p_t espnow_stream_p = {
 //|         This is an easy way to check if the buffer is empty.
 //|         """
 //|         ...
+//|
 //|     def __len__(self) -> int:
 //|         """Return the number of `bytes` available to read. Used to implement ``len()``."""
 //|         ...
@@ -359,14 +359,14 @@ STATIC mp_obj_t espnow_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-const mp_obj_type_t espnow_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ESPNow,
-    .make_new = espnow_make_new,
-    .locals_dict = (mp_obj_t)&espnow_locals_dict,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    MP_TYPE_EXTENDED_FIELDS(
-        .protocol = &espnow_stream_p,
-        .unary_op = &espnow_unary_op
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    espnow_type,
+    MP_QSTR_ESPNow,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, espnow_make_new,
+    locals_dict, &espnow_locals_dict,
+    protocol, &espnow_stream_p,
+    unary_op, &espnow_unary_op
+    );
+
+MP_REGISTER_ROOT_POINTER(struct _espnow_obj_t *espnow_singleton);

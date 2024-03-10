@@ -41,8 +41,8 @@
 #endif
 
 #include "common-hal/microcontroller/Pin.h"
-#include "common-hal/pwmio/PWMOut.h"
 #include "common-hal/rtc/RTC.h"
+#include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
@@ -447,6 +447,7 @@ safe_mode_t port_init(void) {
 
 void reset_port(void) {
     #if CIRCUITPY_BUSIO
+    i2c_reset();
     spi_reset();
     #endif
 
@@ -460,12 +461,6 @@ void reset_port(void) {
 
     #if CIRCUITPY_TOUCHIO && CIRCUITPY_TOUCHIO_USE_NATIVE
     touchin_reset();
-    #endif
-
-//    eic_reset();
-
-    #if CIRCUITPY_PWMIO
-    reset_all_flexpwm();
     #endif
 
     #if CIRCUITPY_RTC
@@ -497,10 +492,6 @@ uint32_t *port_stack_get_limit(void) {
 
 uint32_t *port_stack_get_top(void) {
     return &_ld_stack_top;
-}
-
-bool port_has_fixed_stack(void) {
-    return true;
 }
 
 uint32_t *port_heap_get_bottom(void) {

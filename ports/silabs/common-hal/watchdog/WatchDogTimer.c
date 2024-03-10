@@ -33,16 +33,17 @@
 #include "em_wdog.h"
 #include "em_cmu.h"
 
+static bool _wdt_init = false;
+
 void common_hal_watchdog_feed(watchdog_watchdogtimer_obj_t *self) {
     WDOGn_Feed(DEFAULT_WDOG);
 }
 
 void common_hal_watchdog_deinit(watchdog_watchdogtimer_obj_t *self) {
+    if (!_wdt_init) {
+        return;
+    }
     WDOG_Enable(false);
-}
-
-void watchdog_reset(void) {
-    common_hal_watchdog_deinit(&common_hal_mcu_watchdogtimer_obj);
 }
 
 mp_float_t common_hal_watchdog_get_timeout(watchdog_watchdogtimer_obj_t *self) {
@@ -56,60 +57,63 @@ void common_hal_watchdog_set_timeout(watchdog_watchdogtimer_obj_t *self,
     uint64_t timeout = new_timeout * 1000;
     mp_arg_validate_int_max(timeout, 256000, MP_QSTR_WatchDogTimeout);
 
-    if ((uint32_t)self->timeout != (uint32_t)new_timeout) {
-
-        // Watchdog Initialize settings
-        WDOG_Init_TypeDef wdogInit = WDOG_INIT_DEFAULT;
-
-        switch ((uint32_t)new_timeout)
-        {
-            case 1:
-                wdogInit.perSel = wdogPeriod_1k;
-                break;
-            case 2:
-                wdogInit.perSel = wdogPeriod_2k;
-                break;
-            case 4:
-                wdogInit.perSel = wdogPeriod_4k;
-                break;
-            case 8:
-                wdogInit.perSel = wdogPeriod_8k;
-                break;
-            case 16:
-                wdogInit.perSel = wdogPeriod_16k;
-                break;
-            case 32:
-                wdogInit.perSel = wdogPeriod_32k;
-                break;
-            case 64:
-                wdogInit.perSel = wdogPeriod_64k;
-                break;
-            case 128:
-                wdogInit.perSel = wdogPeriod_128k;
-                break;
-            case 256:
-                wdogInit.perSel = wdogPeriod_256k;
-                break;
-            default:
-                mp_raise_ValueError(
-                    translate("Timeout value supported: 1,2,4,8,16,32,64,128,256"));
-
-        }
-
-        self->timeout = new_timeout;
-        // Enable clock for the WDOG module; has no effect on xG21
-        CMU_ClockEnable(cmuClock_WDOG0, true);
-
-        // ULFRCO as clock source
-        CMU_ClockSelectSet(cmuClock_WDOG0, cmuSelect_ULFRCO);
-
-        wdogInit.em1Run = true;
-        wdogInit.em2Run = true;
-        wdogInit.em3Run = true;
-
-        // Initializing watchdog with chosen settings
-        WDOGn_Init(DEFAULT_WDOG, &wdogInit);
+    // Only reset the watchdog to update the timer if mode has already been set.
+    if (self->mode != WATCHDOGMODE_RESET) {
+        return;
     }
+    // Watchdog Initialize settings
+    WDOG_Init_TypeDef wdogInit = WDOG_INIT_DEFAULT;
+
+    switch ((uint32_t)new_timeout)
+    {
+        case 1:
+            wdogInit.perSel = wdogPeriod_1k;
+            break;
+        case 2:
+            wdogInit.perSel = wdogPeriod_2k;
+            break;
+        case 4:
+            wdogInit.perSel = wdogPeriod_4k;
+            break;
+        case 8:
+            wdogInit.perSel = wdogPeriod_8k;
+            break;
+        case 16:
+            wdogInit.perSel = wdogPeriod_16k;
+            break;
+        case 32:
+            wdogInit.perSel = wdogPeriod_32k;
+            break;
+        case 64:
+            wdogInit.perSel = wdogPeriod_64k;
+            break;
+        case 128:
+            wdogInit.perSel = wdogPeriod_128k;
+            break;
+        case 256:
+            wdogInit.perSel = wdogPeriod_256k;
+            break;
+        default:
+            mp_raise_ValueError(
+                MP_ERROR_TEXT("Timeout value supported: 1,2,4,8,16,32,64,128,256"));
+
+    }
+
+    self->timeout = new_timeout;
+    // Enable clock for the WDOG module; has no effect on xG21
+    CMU_ClockEnable(cmuClock_WDOG0, true);
+
+    // ULFRCO as clock source
+    CMU_ClockSelectSet(cmuClock_WDOG0, cmuSelect_ULFRCO);
+
+    wdogInit.em1Run = true;
+    wdogInit.em2Run = true;
+    wdogInit.em3Run = true;
+
+    // Initializing watchdog with chosen settings
+    WDOGn_Init(DEFAULT_WDOG, &wdogInit);
+
+    _wdt_init = true;
 }
 
 watchdog_watchdogmode_t common_hal_watchdog_get_mode
@@ -122,7 +126,7 @@ void common_hal_watchdog_set_mode(watchdog_watchdogtimer_obj_t *self,
     if (self->mode != new_mode) {
         if (new_mode == WATCHDOGMODE_RAISE) {
             mp_raise_NotImplementedError(
-                translate("RAISE mode is not implemented"));
+                MP_ERROR_TEXT("RAISE mode is not implemented"));
         } else if (new_mode == WATCHDOGMODE_NONE) {
             self->mode = WATCHDOGMODE_NONE;
             common_hal_watchdog_deinit(self);

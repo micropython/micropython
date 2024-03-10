@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #define likely(x) __builtin_expect((x), 1)
 #endif
 
+// CIRCUITPY-CHANGE: avoid compiler warnings
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
 void *memcpy(void *dst, const void *src, size_t n) {
@@ -74,6 +75,7 @@ void *memcpy(void *dst, const void *src, size_t n) {
     return dst;
 }
 
+// CIRCUITPY-CHANGE: extern
 extern void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen);
 void *__memcpy_chk(void *dest, const void *src, size_t len, size_t slen) {
     if (len > slen) {

@@ -54,6 +54,8 @@
 #include "lwip/timeouts.h"
 #include "lwip/udp.h"
 
+#include "sdk/src/rp2_common/pico_cyw43_arch/include/pico/cyw43_arch.h"
+
 #define MICROPY_PY_LWIP_SOCK_RAW (1)
 
 #if 0 // print debugging info
@@ -661,6 +663,7 @@ STATIC void mark_user_socket(socketpool_socket_obj_t *obj) {
 
 bool socketpool_socket(socketpool_socketpool_obj_t *self,
     socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type,
+    int proto,
     socketpool_socket_obj_t *socket) {
 
     if (!register_open_socket(socket)) {
@@ -690,7 +693,7 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
             break;
         #if MICROPY_PY_LWIP_SOCK_RAW
         case SOCKETPOOL_SOCK_RAW: {
-            socket->pcb.raw = raw_new(0);
+            socket->pcb.raw = raw_new(proto);
             break;
         }
         #endif
@@ -728,16 +731,16 @@ bool socketpool_socket(socketpool_socketpool_obj_t *self,
 }
 
 socketpool_socket_obj_t *common_hal_socketpool_socket(socketpool_socketpool_obj_t *self,
-    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type) {
+    socketpool_socketpool_addressfamily_t family, socketpool_socketpool_sock_t type, int proto) {
     if (family != SOCKETPOOL_AF_INET) {
-        mp_raise_NotImplementedError(translate("Only IPv4 sockets supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Only IPv4 sockets supported"));
     }
 
     socketpool_socket_obj_t *socket = m_new_obj_with_finaliser(socketpool_socket_obj_t);
     socket->base.type = &socketpool_socket_type;
 
-    if (!socketpool_socket(self, family, type, socket)) {
-        mp_raise_RuntimeError(translate("Out of sockets"));
+    if (!socketpool_socket(self, family, type, proto, socket)) {
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
     }
     mark_user_socket(socket);
     return socket;
@@ -854,7 +857,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
         DEBUG_printf("collecting garbage to open socket\n");
         gc_collect();
         if (!register_open_socket(accepted)) {
-            mp_raise_RuntimeError(translate("Out of sockets"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("Out of sockets"));
         }
     }
     mark_user_socket(accepted);
@@ -862,7 +865,7 @@ socketpool_socket_obj_t *common_hal_socketpool_socket_accept(socketpool_socket_o
     return MP_OBJ_FROM_PTR(accepted);
 }
 
-bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
+size_t common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     const char *host, size_t hostlen, uint32_t port) {
 
     // get address
@@ -873,7 +876,6 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     } else {
         bind_addr_ptr = IP_ANY_TYPE;
     }
-    ip_set_option(socket->pcb.ip, SOF_REUSEADDR);
 
     err_t err = ERR_ARG;
     switch (socket->type) {
@@ -888,10 +890,10 @@ bool common_hal_socketpool_socket_bind(socketpool_socket_obj_t *socket,
     }
 
     if (err != ERR_OK) {
-        mp_raise_OSError(error_lookup_table[-err]);
+        return error_lookup_table[-err];
     }
 
-    return mp_const_none;
+    return 0;
 }
 
 STATIC err_t _lwip_tcp_close_poll(void *arg, struct tcp_pcb *pcb) {

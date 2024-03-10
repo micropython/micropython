@@ -86,7 +86,7 @@ size_t mp_emit_common_use_const_obj(mp_emit_common_t *emit, mp_obj_t const_obj) 
     return emit->const_obj_list.len - 1;
 }
 
-void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
+id_info_t *mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
     // name adding/lookup
     id_info_t *id = scope_find_or_add_id(scope, qst, ID_INFO_KIND_GLOBAL_IMPLICIT);
     if (id->kind == ID_INFO_KIND_GLOBAL_IMPLICIT) {
@@ -98,6 +98,7 @@ void mp_emit_common_get_id_for_modification(scope_t *scope, qstr qst) {
             id->kind = ID_INFO_KIND_GLOBAL_IMPLICIT_ASSIGNED;
         }
     }
+    return id;
 }
 
 void mp_emit_common_id_op(emit_t *emit, const mp_emit_method_table_id_ops_t *emit_method_table, scope_t *scope, qstr qst) {

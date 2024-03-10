@@ -32,7 +32,6 @@
 #include "shared-bindings/microcontroller/__init__.h"
 #include "shared-bindings/pulseio/PulseIn.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "bindings/rp2pio/StateMachine.h"
 #include "common-hal/pulseio/PulseIn.h"
 
@@ -172,11 +171,13 @@ void common_hal_pulseio_pulsein_clear(pulseio_pulsein_obj_t *self) {
 
 uint16_t common_hal_pulseio_pulsein_popleft(pulseio_pulsein_obj_t *self) {
     if (self->len == 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_PulseIn);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_PulseIn);
     }
     uint16_t value = self->buffer[self->start];
+    common_hal_mcu_disable_interrupts();
     self->start = (self->start + 1) % self->maxlen;
     self->len--;
+    common_hal_mcu_enable_interrupts();
     return value;
 }
 

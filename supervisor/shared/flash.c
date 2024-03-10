@@ -87,7 +87,7 @@ static void build_partition(uint8_t *buf, int boot, int type, uint32_t start_blo
     buf[15] = num_blocks >> 24;
 }
 
-static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
+static mp_uint_t flash_read_blocks(mp_obj_t self, uint8_t *dest, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         // fake the MBR so we can decide on our own partition table
 
@@ -95,7 +95,8 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
             dest[i] = 0;
         }
 
-        build_partition(dest + 446, 0, 0x01 /* FAT12 */, PART1_START_BLOCK, supervisor_flash_get_block_count());
+        // Specifying "Big FAT12/16 CHS" allows mounting by Android
+        build_partition(dest + 446, 0, 0x06 /* Big FAT12/16 CHS */, PART1_START_BLOCK, supervisor_flash_get_block_count());
         build_partition(dest + 462, 0, 0, 0, 0);
         build_partition(dest + 478, 0, 0, 0, 0);
         build_partition(dest + 494, 0, 0, 0, 0);
@@ -105,6 +106,7 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
         if (num_blocks > 1) {
             dest += 512;
             num_blocks -= 1;
+            block_num += 1;
             // Fall through and do a read from flash.
         } else {
             return 0; // Done and ok.
@@ -115,7 +117,7 @@ static mp_uint_t flash_read_blocks(uint8_t *dest, uint32_t block_num, uint32_t n
 
 static volatile bool filesystem_dirty = false;
 
-static mp_uint_t flash_write_blocks(const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
+static mp_uint_t flash_write_blocks(mp_obj_t self, const uint8_t *src, uint32_t block_num, uint32_t num_blocks) {
     if (block_num == 0) {
         if (num_blocks > 1) {
             return 1; // error
@@ -148,7 +150,7 @@ void PLACE_IN_ITCM(supervisor_flash_flush)(void) {
 STATIC mp_obj_t supervisor_flash_obj_readblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_WRITE);
-    mp_uint_t ret = flash_read_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
+    mp_uint_t ret = flash_read_blocks(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_readblocks_obj, supervisor_flash_obj_readblocks);
@@ -156,13 +158,15 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_readblocks_obj, supervisor
 STATIC mp_obj_t supervisor_flash_obj_writeblocks(mp_obj_t self, mp_obj_t block_num, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-    mp_uint_t ret = flash_write_blocks(bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
+    mp_uint_t ret = flash_write_blocks(self, bufinfo.buf, mp_obj_get_int(block_num), bufinfo.len / FILESYSTEM_BLOCK_SIZE);
     return MP_OBJ_NEW_SMALL_INT(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(supervisor_flash_obj_writeblocks_obj, supervisor_flash_obj_writeblocks);
 
-static bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
-    *out_value = 0;
+STATIC bool flash_ioctl(mp_obj_t self_in, size_t cmd, size_t arg, mp_int_t *out_value) {
+    if (out_value != NULL) {
+        *out_value = 0;
+    }
     switch (cmd) {
         case MP_BLOCKDEV_IOCTL_INIT:
             supervisor_flash_init();
@@ -187,8 +191,9 @@ static bool flash_ioctl(size_t cmd, mp_int_t *out_value) {
 
 STATIC mp_obj_t supervisor_flash_obj_ioctl(mp_obj_t self, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mp_int_t cmd = mp_obj_get_int(cmd_in);
+    mp_int_t arg = mp_obj_get_int(arg_in);
     mp_int_t out_value;
-    if (flash_ioctl(cmd, &out_value)) {
+    if (flash_ioctl(self, cmd, arg, &out_value)) {
         return MP_OBJ_NEW_SMALL_INT(out_value);
     }
     return mp_const_none;
@@ -203,12 +208,13 @@ STATIC const mp_rom_map_elem_t supervisor_flash_obj_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(supervisor_flash_obj_locals_dict, supervisor_flash_obj_locals_dict_table);
 
-const mp_obj_type_t supervisor_flash_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Flash,
-    .make_new = supervisor_flash_obj_make_new,
-    .locals_dict = (struct _mp_obj_dict_t *)&supervisor_flash_obj_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    supervisor_flash_type,
+    MP_QSTR_Flash,
+    MP_TYPE_FLAG_NONE,
+    make_new, supervisor_flash_obj_make_new,
+    locals_dict, &supervisor_flash_obj_locals_dict
+    );
 
 void supervisor_flash_init_vfs(fs_user_mount_t *vfs) {
     vfs->base.type = &mp_fat_vfs_type;

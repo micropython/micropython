@@ -51,6 +51,7 @@ typedef struct {
     bool unsigned_to_signed;
     bool output_signed;
     bool playing_in_progress;
+    bool swap_channel;
 } audio_dma_t;
 
 typedef enum {
@@ -81,7 +82,8 @@ audio_dma_result audio_dma_setup_playback(audio_dma_t *dma,
     bool output_signed,
     uint8_t output_resolution,
     uint32_t output_register_address,
-    uint8_t dma_trigger_source);
+    uint8_t dma_trigger_source,
+    bool swap_channel);
 
 void audio_dma_stop(audio_dma_t *dma);
 bool audio_dma_get_playing(audio_dma_t *dma);

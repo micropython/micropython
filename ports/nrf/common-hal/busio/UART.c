@@ -33,7 +33,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "nrfx_uarte.h"
 #include "nrf_gpio.h"
@@ -44,7 +43,7 @@
     do { \
         uint32_t _err = (_exp); \
         if (NRFX_SUCCESS != _err) { \
-            mp_raise_msg_varg(&mp_type_RuntimeError, translate("error = 0x%08lX"), _err); \
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("error = 0x%08lX"), _err); \
         } \
     } while (0)
 
@@ -167,7 +166,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_arg_validate_int(bits, 8, MP_QSTR_bits);
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_NotImplementedError(translate("RS485"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
     }
 
     // Find a free UART peripheral.
@@ -180,7 +179,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     }
 
     if (self->uarte == NULL) {
-        mp_raise_ValueError(translate("All UART peripherals are in use"));
+        mp_raise_ValueError(MP_ERROR_TEXT("All UART peripherals are in use"));
     }
 
     // shared-bindings checks that TX and RX are not both None, so we don't need to check here.
@@ -188,7 +187,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     mp_arg_validate_int_min(receiver_buffer_size, 1, MP_QSTR_receiver_buffer_size);
 
     if (parity == BUSIO_UART_PARITY_ODD) {
-        mp_raise_ValueError(translate("Odd parity is not supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Odd parity is not supported"));
     }
 
     bool hwfc = rts != NULL || cts != NULL;
@@ -284,7 +283,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (nrf_uarte_rx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_rx);
     }
 
     uint64_t start_ticks = supervisor_ticks_ms64();
@@ -292,7 +291,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
     // check removed to reduce code size
     /*
     if (len > ringbuf_size(&self->ringbuf)) {
-        mp_raise_ValueError(translate("Reading >receiver_buffer_size bytes is not supported"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Reading >receiver_buffer_size bytes is not supported"));
     }
     */
 
@@ -334,7 +333,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (nrf_uarte_tx_pin_get(self->uarte->p_reg) == NRF_UARTE_PSEL_DISCONNECTED) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_tx);
     }
 
     if (len == 0) {

@@ -28,13 +28,11 @@
 #include <stdint.h>
 
 #include "shared/runtime/context_manager_helpers.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/ps2io/Ps2.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Ps2:
 //|     """Communicate with a PS/2 keyboard or mouse
@@ -128,7 +126,7 @@ STATIC mp_obj_t ps2io_ps2_obj_popleft(mp_obj_t self_in) {
 
     int b = common_hal_ps2io_ps2_popleft(self);
     if (b < 0) {
-        mp_raise_IndexError_varg(translate("pop from empty %q"), MP_QSTR_Ps2_space_buffer);
+        mp_raise_IndexError_varg(MP_ERROR_TEXT("pop from empty %q"), MP_QSTR_Ps2_space_buffer);
     }
     return MP_OBJ_NEW_SMALL_INT(b);
 }
@@ -152,7 +150,7 @@ STATIC mp_obj_t ps2io_ps2_obj_sendcmd(mp_obj_t self_in, mp_obj_t ob) {
     mp_int_t cmd = mp_obj_get_int(ob) & 0xff;
     int resp = common_hal_ps2io_ps2_sendcmd(self, cmd);
     if (resp < 0) {
-        mp_raise_RuntimeError(translate("Failed sending command."));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Failed sending command."));
     }
     return MP_OBJ_NEW_SMALL_INT(resp);
 }
@@ -226,13 +224,11 @@ STATIC const mp_rom_map_elem_t ps2io_ps2_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(ps2io_ps2_locals_dict, ps2io_ps2_locals_dict_table);
 
-const mp_obj_type_t ps2io_ps2_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Ps2,
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .make_new = ps2io_ps2_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .unary_op = ps2_unary_op,
-        ),
-    .locals_dict = (mp_obj_dict_t *)&ps2io_ps2_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    ps2io_ps2_type,
+    MP_QSTR_Ps2,
+    MP_TYPE_FLAG_NONE,
+    make_new, ps2io_ps2_make_new,
+    unary_op, ps2_unary_op,
+    locals_dict, &ps2io_ps2_locals_dict
+    );

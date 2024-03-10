@@ -31,13 +31,12 @@
 #include "py/runtime.h"
 #include "py/binary.h"
 #include "py/parsenum.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/struct/__init__.h"
 
 STATIC void struct_validate_format(char fmt) {
     #if MICROPY_NONSTANDARD_TYPECODES
     if (fmt == 'S' || fmt == 'O') {
-        mp_raise_RuntimeError(translate("'S' and 'O' are not supported format types"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("'S' and 'O' are not supported format types"));
     }
     #endif
 }
@@ -126,7 +125,7 @@ void shared_modules_struct_pack_into(mp_obj_t fmt_in, byte *p, byte *end_p, size
     const mp_uint_t total_sz = shared_modules_struct_calcsize(fmt_in);
 
     if (p + total_sz > end_p) {
-        mp_raise_RuntimeError(translate("Buffer too small"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Buffer too small"));
     }
 
     size_t i = 0;
@@ -182,11 +181,11 @@ mp_obj_tuple_t *shared_modules_struct_unpack_from(mp_obj_t fmt_in, byte *p, byte
     // Otherwise just make sure it's big enough.
     if (exact_size) {
         if (p + total_sz != end_p) {
-            mp_raise_RuntimeError(translate("buffer size must match format"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("buffer size must match format"));
         }
     } else {
         if (p + total_sz > end_p) {
-            mp_raise_RuntimeError(translate("buffer too small"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("buffer too small"));
         }
     }
 

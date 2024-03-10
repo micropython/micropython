@@ -48,7 +48,7 @@ INC += \
 CFLAGS += -ftree-vrp -DNDEBUG
 
 # TinyUSB defines
-CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_CDC_RX_BUFSIZE=512 -DCFG_TUD_CDC_TX_BUFSIZE=512
+CFLAGS += -DCFG_TUSB_MCU=OPT_MCU_MIMXRT10XX -DCFG_TUD_CDC_RX_BUFSIZE=640 -DCFG_TUD_CDC_TX_BUFSIZE=512
 ifeq ($(CHIP_FAMILY),$(filter $(CHIP_FAMILY),MIMXRT1011 MIMXRT1015))
 CFLAGS += -DCFG_TUD_MIDI_RX_BUFSIZE=512 -DCFG_TUD_MIDI_TX_BUFSIZE=64 -DCFG_TUD_MSC_BUFSIZE=512
 else
@@ -88,6 +88,8 @@ CFLAGS += $(OPTIMIZATION_FLAGS)
 ifeq ($(CIRCUITPY_SWO_TRACE), 1)
   CFLAGS += -finstrument-functions -finstrument-functions-exclude-file-list=tinyusb -finstrument-functions-exclude-function-list='USB_OTG1_IRQHandler,usb_irq_handler,nlr_push,CLOCK_EnableClock,CLOCK_SetDiv,CLOCK_SetMux,__DMB,__ISB,__DSB,SCB_EnableICache,SCB_EnableDCache,ARM_MPU_Disable,ARM_MPU_Enable,SCB_DisableDCache,SCB_DisableICache,__enable_irq,__disable_irq,__set_MSP,port_get_raw_ticks,supervisor_ticks_ms64'
 endif
+
+$(BUILD)/lib/tlsf/tlsf.o: CFLAGS += -Wno-cast-align
 
 LD_FILES = $(wildcard boards/$(BOARD)/*.ld) $(addprefix linking/, flash/$(FLASH).ld chip_family/$(CHIP_FAMILY).ld common.ld)
 
@@ -196,7 +198,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_S:.S=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 
 all: $(BUILD)/firmware.bin $(BUILD)/firmware.uf2 $(BUILD)/firmware.hex
 

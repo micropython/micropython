@@ -48,6 +48,14 @@ mp_uint_t mp_verbose_flag = 0;
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
+STATIC void stdout_print_strn(void *env, const char *str, size_t len) {
+    (void)env;
+    ssize_t dummy = write(STDOUT_FILENO, str, len);
+    (void)dummy;
+}
+
+STATIC const mp_print_t mp_stdout_print = {NULL, stdout_print_strn};
+
 STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t dummy = write(STDERR_FILENO, str, len);
@@ -59,7 +67,12 @@ STATIC const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 STATIC int compile_and_save(const char *file, const char *output_file, const char *source_file) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
-        mp_lexer_t *lex = mp_lexer_new_from_file(file);
+        mp_lexer_t *lex;
+        if (strcmp(file, "-") == 0) {
+            lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, STDIN_FILENO, false);
+        } else {
+            lex = mp_lexer_new_from_file(file);
+        }
 
         qstr source_name;
         if (source_file == NULL) {
@@ -73,20 +86,27 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
         #endif
 
         mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_module_context_t *ctx = m_new_obj(mp_module_context_t);
-        mp_compiled_module_t cm = mp_compile_to_raw_code(&parse_tree, source_name, false, ctx);
+        mp_compiled_module_t cm;
+        cm.context = m_new_obj(mp_module_context_t);
+        mp_compile_to_raw_code(&parse_tree, source_name, false, &cm);
 
-        vstr_t vstr;
-        vstr_init(&vstr, 16);
-        if (output_file == NULL) {
-            vstr_add_str(&vstr, file);
-            vstr_cut_tail_bytes(&vstr, 2);
-            vstr_add_str(&vstr, "mpy");
+        if ((output_file != NULL && strcmp(output_file, "-") == 0) ||
+            (output_file == NULL && strcmp(file, "-") == 0)) {
+            mp_raw_code_save(&cm, (mp_print_t *)&mp_stdout_print);
         } else {
-            vstr_add_str(&vstr, output_file);
+            vstr_t vstr;
+            vstr_init(&vstr, 16);
+            if (output_file == NULL) {
+                vstr_add_str(&vstr, file);
+                vstr_cut_tail_bytes(&vstr, 2);
+                vstr_add_str(&vstr, "mpy");
+            } else {
+                vstr_add_str(&vstr, output_file);
+            }
+
+            mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
+            vstr_clear(&vstr);
         }
-        mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
-        vstr_clear(&vstr);
 
         nlr_pop();
         return 0;
@@ -99,10 +119,10 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
 
 STATIC int usage(char **argv) {
     printf(
-        "usage: %s [<opts>] [-X <implopt>] <input filename>\n"
+        "usage: %s [<opts>] [-X <implopt>] [--] <input filename>\n"
         "Options:\n"
         "--version : show version information\n"
-        "-o : output file for compiled bytecode (defaults to input with .mpy extension)\n"
+        "-o : output file for compiled bytecode (defaults to input filename with .mpy extension, or stdout if input is stdin)\n"
         "-s : source filename to embed in the compiled bytecode (defaults to input file)\n"
         "-v : verbose (trace various operations); can be multiple\n"
         "-O[N] : apply bytecode optimizations of level N\n"
@@ -181,6 +201,15 @@ STATIC void pre_process_options(int argc, char **argv) {
     }
 }
 
+STATIC char *backslash_to_forwardslash(char *path) {
+    for (char *p = path; p != NULL && *p != '\0'; ++p) {
+        if (*p == '\\') {
+            *p = '/';
+        }
+    }
+    return path;
+}
+
 MP_NOINLINE int main_(int argc, char **argv) {
     mp_stack_set_limit(40000 * (sizeof(void *) / 4));
 
@@ -203,32 +232,23 @@ MP_NOINLINE int main_(int argc, char **argv) {
 
     // set default compiler configuration
     mp_dynamic_compiler.small_int_bits = 31;
-    #if defined(__i386__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
-    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
-    #elif defined(__x86_64__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
-    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
-    #elif defined(__arm__) && !defined(__thumb2__)
-    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
-    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
-    #else
+    // don't support native emitter unless -march is specified
     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_NONE;
     mp_dynamic_compiler.nlr_buf_num_regs = 0;
-    #endif
 
     const char *input_file = NULL;
     const char *output_file = NULL;
     const char *source_file = NULL;
+    bool option_parsing_active = true;
 
     // parse main options
     for (int a = 1; a < argc; a++) {
-        if (argv[a][0] == '-') {
+        if (option_parsing_active && argv[a][0] == '-' && argv[a][1] != '\0') {
             if (strcmp(argv[a], "-X") == 0) {
                 a += 1;
             } else if (strcmp(argv[a], "--version") == 0) {
                 printf("CircuitPython " MICROPY_GIT_TAG " on " MICROPY_BUILD_DATE
-                    "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "-CircuitPython\n");
+                    "; mpy-cross emitting mpy v" MP_STRINGIFY(MPY_VERSION) "." MP_STRINGIFY(MPY_SUB_VERSION) "\n");
                 return 0;
             } else if (strcmp(argv[a], "-v") == 0) {
                 mp_verbose_flag++;
@@ -251,7 +271,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                     exit(usage(argv));
                 }
                 a += 1;
-                source_file = argv[a];
+                source_file = backslash_to_forwardslash(argv[a]);
             } else if (strncmp(argv[a], "-msmall-int-bits=", sizeof("-msmall-int-bits=") - 1) == 0) {
                 char *end;
                 mp_dynamic_compiler.small_int_bits =
@@ -292,9 +312,25 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 } else if (strcmp(arch, "xtensawin") == 0) {
                     mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_XTENSAWIN;
                     mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_XTENSAWIN;
+                } else if (strcmp(arch, "host") == 0) {
+                    #if defined(__i386__) || defined(_M_IX86)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X86;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_X86;
+                    #elif defined(__x86_64__) || defined(_M_X64)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_X64;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MAX(MICROPY_NLR_NUM_REGS_X64, MICROPY_NLR_NUM_REGS_X64_WIN);
+                    #elif defined(__arm__) && !defined(__thumb2__)
+                    mp_dynamic_compiler.native_arch = MP_NATIVE_ARCH_ARMV6;
+                    mp_dynamic_compiler.nlr_buf_num_regs = MICROPY_NLR_NUM_REGS_ARM_THUMB_FP;
+                    #else
+                    mp_printf(&mp_stderr_print, "unable to determine host architecture for -march=host\n");
+                    exit(1);
+                    #endif
                 } else {
                     return usage(argv);
                 }
+            } else if (strcmp(argv[a], "--") == 0) {
+                option_parsing_active = false;
             } else {
                 return usage(argv);
             }
@@ -303,7 +339,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
                 mp_printf(&mp_stderr_print, "multiple input files\n");
                 exit(1);
             }
-            input_file = argv[a];
+            input_file = backslash_to_forwardslash(argv[a]);
         }
     }
 
@@ -338,8 +374,4 @@ mp_import_stat_t mp_import_stat(const char *path) {
 void nlr_jump_fail(void *val) {
     fprintf(stderr, "FATAL: uncaught NLR %p\n", val);
     exit(1);
-}
-
-void serial_write(const char *text) {
-    printf("%s", text);
 }

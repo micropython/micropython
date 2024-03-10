@@ -44,6 +44,7 @@
 //|     def __init__(self) -> None:
 //|         """Cannot be instantiated directly. Use `_bleio.Adapter.start_scan`."""
 //|         ...
+//|
 //|     def matches(self, prefixes: ScanEntry, *, match_all: bool = True) -> bool:
 //|         """Returns True if the ScanEntry matches all prefixes when ``match_all`` is True. This is stricter
 //|         than the scan filtering which accepts any advertisements that match any of the prefixes
@@ -136,8 +137,9 @@ STATIC const mp_rom_map_elem_t bleio_scanentry_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bleio_scanentry_locals_dict, bleio_scanentry_locals_dict_table);
 
-const mp_obj_type_t bleio_scanentry_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_ScanEntry,
-    .locals_dict = (mp_obj_dict_t *)&bleio_scanentry_locals_dict
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_scanentry_type,
+    MP_QSTR_ScanEntry,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &bleio_scanentry_locals_dict
+    );

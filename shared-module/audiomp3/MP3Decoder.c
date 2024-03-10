@@ -35,7 +35,6 @@
 #include "py/runtime.h"
 
 #include "shared-module/audiomp3/MP3Decoder.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/background_callback.h"
 #include "lib/mp3/src/mp3common.h"
 
@@ -199,7 +198,7 @@ void common_hal_audiomp3_mp3file_construct(audiomp3_mp3file_obj_t *self,
     if (self->decoder == NULL) {
         common_hal_audiomp3_mp3file_deinit(self);
         mp_raise_msg(&mp_type_MemoryError,
-            translate("Couldn't allocate decoder"));
+            MP_ERROR_TEXT("Couldn't allocate decoder"));
     }
 
     if ((intptr_t)buffer & 1) {
@@ -248,7 +247,7 @@ void common_hal_audiomp3_mp3file_set_file(audiomp3_mp3file_obj_t *self, pyb_file
     background_callback_end_critical_section();
     if (!result) {
         mp_raise_msg(&mp_type_RuntimeError,
-            translate("Failed to parse MP3 file"));
+            MP_ERROR_TEXT("Failed to parse MP3 file"));
     }
 
     self->sample_rate = fi.samprate;

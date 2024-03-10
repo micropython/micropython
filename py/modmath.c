@@ -27,8 +27,6 @@
 #include "py/builtin.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_PY_MATH
 
 #include <math.h>
@@ -56,7 +54,7 @@ STATIC mp_obj_t math_generic_2(mp_obj_t x_obj, mp_obj_t y_obj, mp_float_t (*f)(m
     mp_float_t x = mp_obj_get_float(x_obj);
     mp_float_t y = mp_obj_get_float(y_obj);
     mp_float_t ans = f(x, y);
-    if ((isnan(ans) && !isnan(x) && !isnan(y)) || (isinf(ans) && !isinf(x))) {
+    if ((isnan(ans) && !isnan(x) && !isnan(y)) || (isinf(ans) && !isinf(x) && !isinf(y))) {
         math_error();
     }
     return mp_obj_new_float(ans);
@@ -254,6 +252,7 @@ STATIC mp_obj_t mp_math_log(size_t n_args, const mp_obj_t *args) {
         if (base <= (mp_float_t)0.0) {
             math_error();
         } else if (base == (mp_float_t)1.0) {
+            // CIRCUITPY-CHANGE: remove redundant text error message
             mp_raise_ZeroDivisionError();
         }
         return mp_obj_new_float(l / MICROPY_FLOAT_C_FUN(log)(base));

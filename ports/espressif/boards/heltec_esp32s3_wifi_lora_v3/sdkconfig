@@ -1,0 +1,16 @@
+#
+# Espressif IoT Development Framework Configuration
+#
+#
+# Component config
+#
+#
+# LWIP
+#
+CONFIG_ESP_PHY_ENABLE_USB=n
+CONFIG_LWIP_LOCAL_HOSTNAME="HELTEC-ESP32S3-V3"
+# end of LWIP
+
+# end of Component config
+
+# end of Espressif IoT Development Framework Configuration

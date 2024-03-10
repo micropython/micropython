@@ -27,7 +27,6 @@
 
 #include "py/builtin.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 
@@ -47,7 +46,7 @@
 //| """
 
 STATIC NORETURN void math_error(void) {
-    mp_raise_ValueError(translate("math domain error"));
+    mp_raise_ValueError(MP_ERROR_TEXT("math domain error"));
 }
 
 #define MATH_FUN_1(py_name, c_name) \

@@ -72,6 +72,7 @@ CFLAGS += \
 	$(INC) \
 	-DCONFIG_WCHAR_BUILTIN \
 	-DCONFIG_HAVE_DOUBLE \
+	-DNDEBUG \
 	-Dmain=spresense_main \
 	-D_estack=__stack \
 	-DCIRCUITPY_BOARD_ID="\"$(BOARD)\"" \
@@ -155,7 +156,7 @@ OBJ += $(addprefix $(BUILD)/, $(SRC_CIRCUITPY_COMMON:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_MOD:.c=.o))
 
 # List of sources for qstr extraction
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 # Sources that only hold QSTRs after pre-processing.
 SRC_QSTR_PREPROCESSOR +=
 

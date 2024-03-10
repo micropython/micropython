@@ -32,7 +32,6 @@
 #include "py/objproperty.h"
 #include "shared/runtime/context_manager_helpers.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 #include "shared-bindings/gifio/OnDiskGif.h"
 
 //| class OnDiskGif:
@@ -138,7 +137,7 @@ STATIC mp_obj_t gifio_ondiskgif_make_new(const mp_obj_type_t *type, size_t n_arg
     }
 
     if (!mp_obj_is_type(filename, &mp_type_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
 
     gifio_ondiskgif_t *self = mp_obj_malloc(gifio_ondiskgif_t, &gifio_ondiskgif_type);
@@ -321,9 +320,10 @@ STATIC const mp_rom_map_elem_t gifio_ondiskgif_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(gifio_ondiskgif_locals_dict, gifio_ondiskgif_locals_dict_table);
 
-const mp_obj_type_t gifio_ondiskgif_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_OnDiskGif,
-    .make_new = gifio_ondiskgif_make_new,
-    .locals_dict = (mp_obj_dict_t *)&gifio_ondiskgif_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    gifio_ondiskgif_type,
+    MP_QSTR_OnDiskGif,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, gifio_ondiskgif_make_new,
+    locals_dict, &gifio_ondiskgif_locals_dict
+    );

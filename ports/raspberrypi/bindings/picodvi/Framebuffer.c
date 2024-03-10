@@ -122,7 +122,7 @@ STATIC mp_obj_t picodvi_framebuffer_make_new(const mp_obj_type_t *type, size_t n
     mp_uint_t height = (mp_uint_t)mp_arg_validate_int_min(args[ARG_height].u_int, 0, MP_QSTR_height);
     mp_uint_t color_depth = args[ARG_color_depth].u_int;
     if (color_depth != 1 && color_depth != 2 && color_depth != 8 && color_depth != 16) {
-        mp_raise_ValueError_varg(translate("Invalid %q"), MP_QSTR_color_depth);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q"), MP_QSTR_color_depth);
     }
     common_hal_picodvi_framebuffer_construct(self,
         width, height,
@@ -248,14 +248,12 @@ STATIC const framebuffer_p_t picodvi_framebuffer_proto = {
     .deinit = picodvi_framebuffer_deinit_proto,
 };
 
-const mp_obj_type_t picodvi_framebuffer_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Framebuffer,
-    .locals_dict = (mp_obj_dict_t *)&picodvi_framebuffer_locals_dict,
-    .make_new = picodvi_framebuffer_make_new,
-    MP_TYPE_EXTENDED_FIELDS(
-        .buffer_p = { .get_buffer = common_hal_picodvi_framebuffer_get_buffer, },
-        .protocol = &picodvi_framebuffer_proto,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    picodvi_framebuffer_type,
+    MP_QSTR_Framebuffer,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    locals_dict, &picodvi_framebuffer_locals_dict,
+    make_new, picodvi_framebuffer_make_new,
+    buffer, common_hal_picodvi_framebuffer_get_buffer,
+    protocol, &picodvi_framebuffer_proto
+    );

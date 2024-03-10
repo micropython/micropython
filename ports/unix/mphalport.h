@@ -31,7 +31,8 @@
 #define CHAR_CTRL_C (3)
 #endif
 
-void mp_hal_set_interrupt_char(char c);
+// CIRCUITPY-CHANGE: mp_hal_set_interrupt_char(int) instead of char
+void mp_hal_set_interrupt_char(int c);
 bool mp_hal_is_interrupted(void);
 
 #define mp_hal_stdio_poll unused // this is not implemented, nor needed

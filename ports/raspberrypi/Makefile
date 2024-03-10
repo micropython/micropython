@@ -39,7 +39,7 @@ INC_CYW43 := \
 	-isystem sdk/src/rp2_common/pico_lwip/include/ \
 	-isystem sdk/src/rp2_common/pico_rand/include/ \
 
-CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DIGNORE_GPIO24 -DCYW43_LOGIC_DEBUG=0 -DCYW43_NETUTILS=1 -DPICO_BUILD
+CFLAGS_CYW43 := -DCYW43_LWIP=1 -DPICO_CYW43_ARCH_THREADSAFE_BACKGROUND=1 -DCYW43_USE_SPI -DIGNORE_GPIO25 -DIGNORE_GPIO23 -DIGNORE_GPIO24 -DCYW43_LOGIC_DEBUG=0 -DCYW43_USE_STATS=0 -DPICO_BUILD -DCYW43_ENABLE_BLUETOOTH=0 -DPICO_CYW43_ARCH_POLL=0
 SRC_SDK_CYW43 := \
 	src/common/pico_sync/sem.c \
 	src/rp2_common/pico_async_context/async_context_base.c \
@@ -173,7 +173,7 @@ endif
 # Remove -Wno-stringop-overflow after we can test with CI's GCC 10. Mac's looks weird.
 DISABLE_WARNINGS = -Wno-stringop-overflow -Wno-cast-align
 
-CFLAGS += $(INC) -Wall -Werror -std=gnu11 -nostdlib -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes
+CFLAGS += $(INC) -Wall -Werror -std=gnu11 -fshort-enums $(BASE_CFLAGS) $(CFLAGS_MOD) $(COPT) $(DISABLE_WARNINGS) -Werror=missing-prototypes
 
 CFLAGS += \
 	-march=armv6-m \
@@ -298,6 +298,7 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         cipher.c \
         cipher_wrap.c \
         cmac.c \
+        constant_time.c \
         ctr_drbg.c \
         debug.c \
         des.c \
@@ -316,7 +317,6 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         md4.c \
         md5.c \
         md.c \
-        md_wrap.c \
         oid.c \
         padlock.c \
         pem.c \
@@ -340,6 +340,7 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         ssl_ciphersuites.c \
         ssl_cli.c \
         ssl_cookie.c \
+        ssl_msg.c \
         ssl_srv.c \
         ssl_ticket.c \
         ssl_tls.c \
@@ -353,10 +354,10 @@ SRC_MBEDTLS := $(addprefix lib/mbedtls/library/, \
         x509write_csr.c \
         xtea.c \
 	)
-SRC_C += $(SRC_MBEDTLS) mbedtls/mbedtls_port.c mbedtls/crt_bundle.c
+SRC_C += $(SRC_MBEDTLS) lib/mbedtls_config/mbedtls_port.c lib/mbedtls_config/crt_bundle.c
 CFLAGS += \
 	  -isystem $(TOP)/lib/mbedtls/include \
-	  -DMBEDTLS_CONFIG_FILE='"mbedtls/mbedtls_config.h"' \
+	  -DMBEDTLS_CONFIG_FILE='"$(TOP)/lib/mbedtls_config/mbedtls_config.h"' \
 
 $(BUILD)/x509_crt_bundle.S: $(TOP)/lib/certificates/data/roots.pem $(TOP)/tools/gen_crt_bundle.py
 	$(Q)$(PYTHON) $(TOP)/tools/gen_crt_bundle.py -i $< -o $@ --asm
@@ -436,7 +437,7 @@ $(BUILD)/boot2.elf: $(BUILD)/stage2.c
 	$(Q)$(CC) $(CFLAGS) $(BOOT2_S_CFLAGS) -Os -ggdb3 -I. -fPIC --specs=nosys.specs -nostartfiles -Wl,-T,boot_stage2.ld  -Wl,-Map=$@.map -o $@ $<
 	$(Q)$(SIZE) $@
 
-SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED)
+SRC_QSTR += $(SRC_C) $(SRC_SUPERVISOR) $(SRC_COMMON_HAL_EXPANDED) $(SRC_SHARED_MODULE_EXPANDED) $(SRC_CIRCUITPY_COMMON)
 
 all: $(BUILD)/firmware.uf2
 

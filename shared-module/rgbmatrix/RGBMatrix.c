@@ -60,7 +60,7 @@ void common_hal_rgbmatrix_rgbmatrix_construct(rgbmatrix_rgbmatrix_obj_t *self, i
 
     self->timer = timer ? timer : common_hal_rgbmatrix_timer_allocate(self);
     if (self->timer == NULL) {
-        mp_raise_ValueError(translate("No timer available"));
+        mp_raise_ValueError(MP_ERROR_TEXT("No timer available"));
     }
 
     self->width = width;
@@ -80,7 +80,10 @@ STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t 
         // verify that the matrix is big enough
         mp_get_index(mp_obj_get_type(self->framebuffer), self->bufinfo.len, MP_OBJ_NEW_SMALL_INT(self->bufsize - 1), false);
     } else {
-        self->bufinfo.buf = common_hal_rgbmatrix_allocator_impl(self->bufsize);
+        self->bufinfo.buf = port_malloc(self->bufsize, false);
+        if (self->bufinfo.buf == NULL) {
+            m_malloc_fail(self->bufsize);
+        }
         self->bufinfo.len = self->bufsize;
         self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
     }
@@ -119,11 +122,11 @@ STATIC void common_hal_rgbmatrix_rgbmatrix_construct1(rgbmatrix_rgbmatrix_obj_t 
                 mp_arg_error_invalid(MP_QSTR_args);
                 break;
             case PROTOMATTER_ERR_MALLOC:
-                mp_raise_msg_varg(&mp_type_MemoryError, translate("Failed to allocate %q buffer"), MP_QSTR_RGBMatrix);
+                mp_raise_msg_varg(&mp_type_MemoryError, MP_ERROR_TEXT("Failed to allocate %q buffer"), MP_QSTR_RGBMatrix);
                 break;
             default:
                 mp_raise_msg_varg(&mp_type_RuntimeError,
-                    translate("Internal error #%d"), (int)stat);
+                    MP_ERROR_TEXT("Internal error #%d"), (int)stat);
                 break;
         }
     }
@@ -160,11 +163,10 @@ STATIC void common_hal_rgbmatrix_rgbmatrix_deinit1(rgbmatrix_rgbmatrix_obj_t *se
 
     // If it was supervisor-allocated, it is supervisor-freed and the pointer
     // is zeroed, otherwise the pointer is just zeroed
-    if (self->bufinfo.buf) {
-        common_hal_rgbmatrix_free_impl(self->bufinfo.buf);
-        self->bufinfo.buf = NULL;
+    if (self->framebuffer == mp_const_none) {
+        port_free(self->bufinfo.buf);
     }
-
+    self->bufinfo.buf = NULL;
 
     // If a framebuffer was passed in to the constructor, clear the reference
     // here so that it will become GC'able
@@ -187,17 +189,20 @@ void common_hal_rgbmatrix_rgbmatrix_deinit(rgbmatrix_rgbmatrix_obj_t *self) {
     self->base.type = &mp_type_NoneType;
 }
 
+void common_hal_rgbmatrix_rgbmatrix_get_bufinfo(rgbmatrix_rgbmatrix_obj_t *self, mp_buffer_info_t *bufinfo) {
+    *bufinfo = self->bufinfo;
+}
+
 void common_hal_rgbmatrix_rgbmatrix_reconstruct(rgbmatrix_rgbmatrix_obj_t *self) {
+    common_hal_rgbmatrix_rgbmatrix_set_paused(self, true);
+    // Stop using any Python provided framebuffer.
     if (self->framebuffer != mp_const_none) {
         memset(&self->bufinfo, 0, sizeof(self->bufinfo));
-    }
-    #if CIRCUITPY_RGBMATRIX_USES_SUPERVISOR_ALLOCATION
-    common_hal_rgbmatrix_rgbmatrix_set_paused(self, true);
-    common_hal_rgbmatrix_rgbmatrix_deinit1(self);
-    common_hal_rgbmatrix_rgbmatrix_construct1(self, mp_const_none);
-    #endif
-    if (self->bufinfo.buf == NULL) {
-        self->bufinfo.buf = common_hal_rgbmatrix_allocator_impl(self->bufsize);
+        self->bufinfo.buf = port_malloc(self->bufsize, false);
+        if (self->bufinfo.buf == NULL) {
+            common_hal_rgbmatrix_rgbmatrix_deinit(self);
+            return;
+        }
         self->bufinfo.len = self->bufsize;
         self->bufinfo.typecode = 'H' | MP_OBJ_ARRAY_TYPECODE_FLAG_RW;
     }
@@ -238,13 +243,4 @@ int common_hal_rgbmatrix_rgbmatrix_get_width(rgbmatrix_rgbmatrix_obj_t *self) {
 int common_hal_rgbmatrix_rgbmatrix_get_height(rgbmatrix_rgbmatrix_obj_t *self) {
     int computed_height = (self->rgb_count / 3) * (1 << (self->addr_count)) * self->tile;
     return computed_height;
-}
-
-void *common_hal_rgbmatrix_allocator_impl(size_t sz) {
-    supervisor_allocation *allocation = allocate_memory(align32_size(sz), false, true);
-    return allocation ? allocation->ptr : NULL;
-}
-
-void common_hal_rgbmatrix_free_impl(void *ptr_in) {
-    free_memory(allocation_from_ptr(ptr_in));
 }

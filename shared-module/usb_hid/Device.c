@@ -32,7 +32,6 @@
 #include "shared-bindings/usb_hid/Device.h"
 #include "shared-module/usb_hid/__init__.h"
 #include "shared-module/usb_hid/Device.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 #include "tusb.h"
 
@@ -52,14 +51,14 @@ static const uint8_t keyboard_report_descriptor[] = {
     0x95, 0x01,        //   Report Count (1)
     0x75, 0x08,        //   Report Size (8)
     0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
-    0x95, 0x03,        //   Report Count (3)
+    0x95, 0x05,        //   Report Count (5)
     0x75, 0x01,        //   Report Size (1)
     0x05, 0x08,        //   Usage Page (LEDs)
     0x19, 0x01,        //   Usage Minimum (Num Lock)
     0x29, 0x05,        //   Usage Maximum (Kana)
     0x91, 0x02,        //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
     0x95, 0x01,        //   Report Count (1)
-    0x75, 0x05,        //   Report Size (5)
+    0x75, 0x03,        //   Report Size (3)
     0x91, 0x01,        //   Output (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
     0x95, 0x06,        //   Report Count (6)
     0x75, 0x08,        //   Report Size (8)
@@ -165,6 +164,8 @@ const usb_hid_device_obj_t usb_hid_device_consumer_control_obj = {
     .out_report_lengths = { 0, },
 };
 
+char *custom_usb_hid_interface_name;
+
 STATIC size_t get_report_id_idx(usb_hid_device_obj_t *self, size_t report_id) {
     for (size_t i = 0; i < self->num_report_ids; i++) {
         if (report_id == self->report_ids[i]) {
@@ -230,12 +231,16 @@ void common_hal_usb_hid_device_send_report(usb_hid_device_obj_t *self, uint8_t *
         RUN_BACKGROUND_TASKS;
     }
 
-    if (!tud_hid_ready()) {
-        mp_raise_msg(&mp_type_OSError, translate("USB busy"));
-    }
+    if (!tud_suspended()) {
+        if (!tud_hid_ready()) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB busy"));
+        }
 
-    if (!tud_hid_report(report_id, report, len)) {
-        mp_raise_msg(&mp_type_OSError, translate("USB error"));
+        if (!tud_hid_report(report_id, report, len)) {
+            mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("USB error"));
+        }
+    } else {
+        tud_remote_wakeup();
     }
 }
 

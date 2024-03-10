@@ -27,17 +27,21 @@
 #include "pins.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
+
+#if CIRCUITPY_CYW43
 #include "bindings/cyw43/__init__.h"
+
+#define CYW_PIN(p_number) \
+    const mcu_pin_obj_t pin_CYW##p_number = { \
+        { &cyw43_pin_type }, \
+        .number = p_number \
+    }
+#endif
 
 // This macro is used to simplify pin definition in boards/<board>/pins.c
 #define PIN(p_number) \
     const mcu_pin_obj_t pin_GPIO##p_number = { \
         { &mcu_pin_type }, \
-        .number = p_number \
-    }
-#define CYW_PIN(p_number) \
-    const mcu_pin_obj_t pin_CYW##p_number = { \
-        { &cyw43_pin_type }, \
         .number = p_number \
     }
 

@@ -1,3 +1,5 @@
+
+
 /*
  * This file is part of the Micro Python project, http://micropython.org/
  *
@@ -34,7 +36,6 @@
 #include "py/objproperty.h"
 #include "py/runtime.h"
 #include "shared-bindings/util.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class Bitmap:
 //|     """Stores values of a certain size in a 2D array
@@ -64,7 +65,7 @@ STATIC mp_obj_t displayio_bitmap_make_new(const mp_obj_type_t *type, size_t n_ar
     mp_arg_check_num(n_args, n_kw, 3, 3, false);
     uint32_t width = mp_arg_validate_int_range(mp_obj_get_int(all_args[0]), 0, 32767, MP_QSTR_width);
     uint32_t height = mp_arg_validate_int_range(mp_obj_get_int(all_args[1]), 0, 32767, MP_QSTR_height);
-    uint32_t value_count = mp_arg_validate_int_range(mp_obj_get_int(all_args[2]), 1, 65535, MP_QSTR_value_count);
+    uint32_t value_count = mp_arg_validate_int_range(mp_obj_get_int(all_args[2]), 1, 65536, MP_QSTR_value_count);
     uint32_t bits = 1;
 
     while ((value_count - 1) >> bits) {
@@ -138,6 +139,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_bits_per_value_obj,
 //|
 //|           print(bitmap[0,1])"""
 //|         ...
+//|
 //|     def __setitem__(self, index: Union[Tuple[int, int], int], value: int) -> None:
 //|         """Sets the value at the given index. The index can either be an x,y tuple or an int equal
 //|         to ``y * width + x``.
@@ -149,7 +151,7 @@ MP_PROPERTY_GETTER(displayio_bitmap_bits_per_value_obj,
 STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t value_obj) {
     if (value_obj == mp_const_none) {
         // delete item
-        mp_raise_AttributeError(translate("Cannot delete values"));
+        mp_raise_AttributeError(MP_ERROR_TEXT("Cannot delete values"));
         return mp_const_none;
     }
 
@@ -158,7 +160,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
 
     if (mp_obj_is_type(index_obj, &mp_type_slice)) {
         // TODO(tannewt): Implement subscr after slices support start, stop and step tuples.
-        mp_raise_NotImplementedError(translate("Slices not supported"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("Slices not supported"));
         return mp_const_none;
     }
 
@@ -168,7 +170,7 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
         mp_int_t i = MP_OBJ_SMALL_INT_VALUE(index_obj);
         int total_length = self->width * self->height;
         if (i < 0 || i >= total_length) {
-            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_index, 0, total_length - 1);
+            mp_raise_IndexError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_index, 0, total_length - 1);
         }
 
         x = i % self->width;
@@ -178,11 +180,11 @@ STATIC mp_obj_t bitmap_subscr(mp_obj_t self_in, mp_obj_t index_obj, mp_obj_t val
         mp_obj_get_array_fixed_n(index_obj, 2, &items);
         mp_int_t x_in = mp_obj_get_int(items[0]);
         if (x_in < 0 || x_in >= self->width) {
-            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_x, 0, self->width - 1);
+            mp_raise_IndexError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_x, 0, self->width - 1);
         }
         mp_int_t y_in = mp_obj_get_int(items[1]);
         if (y_in < 0 || y_in >= self->height) {
-            mp_raise_IndexError_varg(translate("%q must be %d-%d"), MP_QSTR_y, 0, self->height - 1);
+            mp_raise_IndexError_varg(MP_ERROR_TEXT("%q must be %d-%d"), MP_QSTR_y, 0, self->height - 1);
         }
         x = x_in;
         y = y_in;
@@ -287,14 +289,12 @@ STATIC mp_int_t bitmap_get_buffer(mp_obj_t self_in, mp_buffer_info_t *bufinfo, m
     return common_hal_displayio_bitmap_get_buffer(self, bufinfo, flags);
 }
 
-const mp_obj_type_t displayio_bitmap_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_Bitmap,
-    .make_new = displayio_bitmap_make_new,
-    .locals_dict = (mp_obj_dict_t *)&displayio_bitmap_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = bitmap_subscr,
-        .buffer_p = { .get_buffer = bitmap_get_buffer },
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    displayio_bitmap_type,
+    MP_QSTR_Bitmap,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, displayio_bitmap_make_new,
+    locals_dict, &displayio_bitmap_locals_dict,
+    subscr, bitmap_subscr,
+    buffer, bitmap_get_buffer
+    );

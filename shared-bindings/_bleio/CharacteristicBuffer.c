@@ -37,7 +37,7 @@
 
 STATIC void raise_error_if_not_connected(bleio_characteristic_buffer_obj_t *self) {
     if (!common_hal_bleio_characteristic_buffer_connected(self)) {
-        mp_raise_ConnectionError(translate("Not connected"));
+        mp_raise_ConnectionError(MP_ERROR_TEXT("Not connected"));
     }
 }
 
@@ -99,12 +99,14 @@ STATIC void check_for_deinit(bleio_characteristic_buffer_obj_t *self) {
 //|         :return: Data read
 //|         :rtype: bytes or None"""
 //|         ...
+//|
 //|     def readinto(self, buf: WriteableBuffer) -> Optional[int]:
 //|         """Read bytes into the ``buf``. Read at most ``len(buf)`` bytes.
 //|
 //|         :return: number of bytes read and stored into ``buf``
 //|         :rtype: int or None (on a non-blocking error)"""
 //|         ...
+//|
 //|     def readline(self) -> bytes:
 //|         """Read a line, ending in a newline character.
 //|
@@ -128,7 +130,7 @@ STATIC mp_uint_t bleio_characteristic_buffer_read(mp_obj_t self_in, void *buf_in
 }
 
 STATIC mp_uint_t bleio_characteristic_buffer_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
-    mp_raise_NotImplementedError(translate("CharacteristicBuffer writing not provided"));
+    mp_raise_NotImplementedError(MP_ERROR_TEXT("CharacteristicBuffer writing not provided"));
     return 0;
 }
 
@@ -212,7 +214,6 @@ STATIC const mp_rom_map_elem_t bleio_characteristic_buffer_locals_dict_table[] =
 STATIC MP_DEFINE_CONST_DICT(bleio_characteristic_buffer_locals_dict, bleio_characteristic_buffer_locals_dict_table);
 
 STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
-    MP_PROTO_IMPLEMENT(MP_QSTR_protocol_stream)
     .read = bleio_characteristic_buffer_read,
     .write = bleio_characteristic_buffer_write,
     .ioctl = bleio_characteristic_buffer_ioctl,
@@ -222,15 +223,12 @@ STATIC const mp_stream_p_t characteristic_buffer_stream_p = {
 };
 
 
-const mp_obj_type_t bleio_characteristic_buffer_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_CharacteristicBuffer,
-    .make_new = bleio_characteristic_buffer_make_new,
-    .locals_dict = (mp_obj_dict_t *)&bleio_characteristic_buffer_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .getiter = mp_identity_getiter,
-        .iternext = mp_stream_unbuffered_iter,
-        .protocol = &characteristic_buffer_stream_p,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bleio_characteristic_buffer_type,
+    MP_QSTR_CharacteristicBuffer,
+    MP_TYPE_FLAG_ITER_IS_ITERNEXT | MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, bleio_characteristic_buffer_make_new,
+    locals_dict, &bleio_characteristic_buffer_locals_dict,
+    iter, mp_stream_unbuffered_iter,
+    protocol, &characteristic_buffer_stream_p
+    );

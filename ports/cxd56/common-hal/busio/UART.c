@@ -66,7 +66,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     struct termios tio;
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_NotImplementedError(translate("RS485"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
     }
 
     mp_arg_validate_int(bits, 8, MP_QSTR_bits);
@@ -90,7 +90,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     if (busio_uart_dev[self->number].fd < 0) {
         busio_uart_dev[self->number].fd = open(busio_uart_dev[self->number].devpath, O_RDWR);
         if (busio_uart_dev[self->number].fd < 0) {
-            mp_raise_RuntimeError(translate("UART init"));
+            mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
         }
 
         // Wait to make sure the UART is ready

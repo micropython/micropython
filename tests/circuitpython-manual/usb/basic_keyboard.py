@@ -1,6 +1,7 @@
 import array
 import usb.core
 import sys
+import time
 
 # This is a WASD Code Keyboard with a generic controller in it.
 USB_VID = 0x04D9
@@ -8,9 +9,14 @@ USB_PID = 0x0169
 # This is ordered by bit position.
 MODIFIERS = []
 
-device = usb.core.find(idVendor=USB_VID, idProduct=USB_PID)
+device = None
+while device is None:
+    device = usb.core.find(idVendor=USB_VID, idProduct=USB_PID)
+    time.sleep(0.1)
 
-print(device.manufacturer, device.product)
+device.set_configuration()
+
+print(device.manufacturer, device.product, device.serial_number)
 
 # Test to see if the kernel is using the device and detach it.
 if device.is_kernel_driver_active(0):

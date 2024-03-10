@@ -25,7 +25,6 @@
  */
 
 #include "py/obj.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/objarray.h"
 
@@ -132,7 +131,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_deinit_obj, sdcardio_sdcard_deinit);
 //|
 //|         :return: None"""
 
-STATIC mp_obj_t sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
+STATIC mp_obj_t _sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
@@ -144,7 +143,7 @@ STATIC mp_obj_t sdcardio_sdcard_readblocks(mp_obj_t self_in, mp_obj_t start_bloc
     return mp_const_none;
 }
 
-MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_readblocks_obj, sdcardio_sdcard_readblocks);
+MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_readblocks_obj, _sdcardio_sdcard_readblocks);
 
 //|     def sync(self) -> None:
 //|         """Ensure all blocks written are actually committed to the SD card
@@ -172,7 +171,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(sdcardio_sdcard_sync_obj, sdcardio_sdcard_sync);
 //|         :return: None"""
 //|
 
-STATIC mp_obj_t sdcardio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
+STATIC mp_obj_t _sdcardio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_block_in, mp_obj_t buf_in) {
     uint32_t start_block = mp_obj_get_int(start_block_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -183,7 +182,7 @@ STATIC mp_obj_t sdcardio_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t start_blo
     }
     return mp_const_none;
 }
-MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_writeblocks_obj, sdcardio_sdcard_writeblocks);
+MP_DEFINE_CONST_FUN_OBJ_3(sdcardio_sdcard_writeblocks_obj, _sdcardio_sdcard_writeblocks);
 
 STATIC const mp_rom_map_elem_t sdcardio_sdcard_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_count), MP_ROM_PTR(&sdcardio_sdcard_count_obj) },
@@ -194,9 +193,10 @@ STATIC const mp_rom_map_elem_t sdcardio_sdcard_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(sdcardio_sdcard_locals_dict, sdcardio_sdcard_locals_dict_table);
 
-const mp_obj_type_t sdcardio_SDCard_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SDCard,
-    .make_new = sdcardio_sdcard_make_new,
-    .locals_dict = (mp_obj_dict_t *)&sdcardio_sdcard_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    sdcardio_SDCard_type,
+    MP_QSTR_SDCard,
+    MP_TYPE_FLAG_NONE,
+    make_new, sdcardio_sdcard_make_new,
+    locals_dict, &sdcardio_sdcard_locals_dict
+    );

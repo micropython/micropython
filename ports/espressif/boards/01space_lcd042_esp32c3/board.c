@@ -26,7 +26,7 @@
  */
 
 #include "shared-bindings/board/__init__.h"
-#include "shared-bindings/displayio/I2CDisplay.h"
+#include "shared-bindings/i2cdisplaybus/I2CDisplayBus.h"
 #include "shared-module/displayio/__init__.h"
 #include "shared-module/displayio/mipi_constants.h"
 #include "shared-bindings/busio/I2C.h"
@@ -59,17 +59,17 @@ void board_init(void) {
     // common_hal_busio_i2c_construct(i2c, &pin_GPIO23, &pin_GPIO22, 100000, 0);
     // common_hal_busio_i2c_never_reset(i2c);
 
-    displayio_i2cdisplay_obj_t *bus = &allocate_display_bus()->i2cdisplay_bus;
-    bus->base.type = &displayio_i2cdisplay_type;
-    common_hal_displayio_i2cdisplay_construct(bus,
+    i2cdisplaybus_i2cdisplaybus_obj_t *bus = &allocate_display_bus()->i2cdisplay_bus;
+    bus->base.type = &i2cdisplaybus_i2cdisplaybus_type;
+    common_hal_i2cdisplaybus_i2cdisplaybus_construct(bus,
         i2c,
         0x3c,
         NULL
         );
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(display,
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
+    common_hal_busdisplay_busdisplay_construct(display,
         bus,
         72, // Width
         40, // Height

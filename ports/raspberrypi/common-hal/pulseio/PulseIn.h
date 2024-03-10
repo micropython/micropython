@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H
-#define MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 #include "src/rp2_common/hardware_pio/include/hardware/pio.h"
@@ -47,7 +46,4 @@ typedef struct {
     rp2pio_statemachine_obj_t state_machine;
 } pulseio_pulsein_obj_t;
 
-void pulsein_reset(void);
 void common_hal_pulseio_pulsein_interrupt(void *);
-
-#endif // MICROPY_INCLUDED_ATMEL_SAMD_COMMON_HAL_PULSEIO_PULSEIN_H

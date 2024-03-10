@@ -35,7 +35,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 
 #define UARTDRV_USART_BUFFER_SIZE 6
 
@@ -54,7 +53,7 @@ volatile Ecode_t errflag; // Used to restart read halts
 void uart_reset(void) {
     if ((!never_reset) && in_used) {
         if (UARTDRV_DeInit(&uartdrv_usart_handle) != ECODE_EMDRV_UARTDRV_OK) {
-            mp_raise_ValueError(translate("UART Deinit fail"));
+            mp_raise_ValueError(MP_ERROR_TEXT("UART Deinit fail"));
         }
         in_used = false;
     }
@@ -79,7 +78,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
     if ((rts != NULL) || (cts != NULL) || (rs485_dir != NULL)
         || (rs485_invert == true)) {
-        mp_raise_NotImplementedError(translate("RS485"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
     }
 
     if ((tx != NULL) && (rx != NULL)) {
@@ -113,7 +112,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
 
             if (UARTDRV_InitUart(self->handle, &uartdrv_usart_init)
                 != ECODE_EMDRV_UARTDRV_OK) {
-                mp_raise_RuntimeError(translate("UART init"));
+                mp_raise_RuntimeError(MP_ERROR_TEXT("UART init"));
             }
             common_hal_mcu_pin_claim(tx);
             common_hal_mcu_pin_claim(rx);
@@ -131,7 +130,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
             context = self;
 
         } else {
-            mp_raise_ValueError(translate("Hardware in use, try alternative pins"));
+            mp_raise_ValueError(MP_ERROR_TEXT("Hardware in use, try alternative pins"));
         }
 
     } else {
@@ -159,7 +158,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
     }
 
     if (UARTDRV_DeInit(self->handle) != ECODE_EMDRV_UARTDRV_OK) {
-        mp_raise_RuntimeError(translate("UART de-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART de-init"));
     }
 
     common_hal_reset_pin(self->rx);
@@ -242,7 +241,7 @@ size_t common_hal_busio_uart_write(busio_uart_obj_t *self,
 
     Ecode_t ret = UARTDRV_TransmitB(self->handle, (uint8_t *)data, len);
     if (ret != ECODE_EMDRV_UARTDRV_OK) {
-        mp_raise_RuntimeError(translate("UART write"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART write"));
     }
     return len;
 }
@@ -263,7 +262,7 @@ void common_hal_busio_uart_set_baudrate(busio_uart_obj_t *self,
     uartdrv_usart_init.baudRate = baudrate;
     if (UARTDRV_InitUart(self->handle, &uartdrv_usart_init)
         != ECODE_EMDRV_UARTDRV_OK) {
-        mp_raise_RuntimeError(translate("UART re-init"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("UART re-init"));
     }
 }
 

@@ -69,7 +69,7 @@ void espulp_ulpalarm_set_alarm(const bool deep_sleep, const size_t n_alarms, con
     for (size_t i = 0; i < n_alarms; i++) {
         if (mp_obj_is_type(alarms[i], &espulp_ulpalarm_type)) {
             if (alarm != MP_OBJ_NULL) {
-                mp_raise_ValueError_varg(translate("Only one %q can be set."), MP_QSTR_ULPAlarm);
+                mp_raise_ValueError_varg(MP_ERROR_TEXT("Only one %q can be set."), MP_QSTR_ULPAlarm);
             }
             alarm = MP_OBJ_TO_PTR(alarms[i]);
         }

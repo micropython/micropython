@@ -123,10 +123,6 @@ void reset_cpu(void) {
     }
 }
 
-bool port_has_fixed_stack(void) {
-    return true;
-}
-
 // From the linker script
 extern uint32_t __bss_end;
 extern uint32_t _ld_ram_end;

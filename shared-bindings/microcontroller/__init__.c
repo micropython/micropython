@@ -39,8 +39,6 @@
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/Processor.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 //| """Pin references and cpu functionality
 //|
 //| The `microcontroller` module defines the pins and other bare-metal hardware

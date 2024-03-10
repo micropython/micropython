@@ -56,7 +56,7 @@ typedef struct _mp_print_ext_t {
     mp_print_t base;
     const char *item_separator;
     const char *key_separator;
-}mp_print_ext_t;
+} mp_print_ext_t;
 
 #define MP_PRINT_GET_EXT(print) ((mp_print_ext_t *)print)
 
@@ -79,6 +79,7 @@ int mp_printf(const mp_print_t *print, const char *fmt, ...);
 int mp_vprintf(const mp_print_t *print, const char *fmt, va_list args);
 #endif
 
+// CIRCUITPY-CHANGE
 struct compressed_string;
 int mp_cprintf(const mp_print_t *print, const struct compressed_string *compressed_fmt, ...);
 #ifdef va_start

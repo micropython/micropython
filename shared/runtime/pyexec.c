@@ -29,19 +29,22 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "py/mphal.h"
 #include "py/compile.h"
 #include "py/runtime.h"
 #include "py/repl.h"
 #include "py/gc.h"
 #include "py/frozenmod.h"
 #include "py/mphal.h"
-#if MICROPY_HW_ENABLE_USB
+#if defined(MICROPY_HW_ENABLE_USB) && MICROPY_HW_ENABLE_USB
 #include "irq.h"
 #include "usb.h"
 #endif
 #include "shared/readline/readline.h"
 #include "shared/runtime/pyexec.h"
 #include "genhdr/mpversion.h"
+
+// CIRCUITPY-CHANGE: multiple changes for atexit(), interrupts
 
 #if CIRCUITPY_ATEXIT
 #include "shared-module/atexit/__init__.h"
@@ -114,6 +117,13 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
                 }
                 // source is a lexer, parse and compile the script
                 qstr source_name = lex->source_name;
+                // CIRCUITPY-CHANGE
+                #if MICROPY_PY___FILE__
+                if (input_kind == MP_PARSE_FILE_INPUT) {
+                    mp_store_global(MP_QSTR___file__, MP_OBJ_NEW_QSTR(source_name));
+                }
+                #endif
+
                 mp_parse_tree_t parse_tree = mp_parse(lex, input_kind);
                 module_fun = mp_compile(&parse_tree, source_name, exec_flags & EXEC_FLAG_IS_REPL);
                 #else
@@ -542,6 +552,8 @@ int pyexec_event_repl_process_char(int c) {
     return res;
 }
 
+MP_REGISTER_ROOT_POINTER(vstr_t * repl_line);
+
 #else // MICROPY_REPL_EVENT_DRIVEN
 
 int pyexec_raw_repl(void) {
@@ -597,7 +609,7 @@ raw_repl_reset:
         }
 
         int ret = parse_compile_execute(&line, MP_PARSE_FILE_INPUT, EXEC_FLAG_PRINT_EOF | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
-        if (ret & PYEXEC_FORCED_EXIT) {
+        if (ret & (PYEXEC_FORCED_EXIT | PYEXEC_RELOAD)) {
             return ret;
         }
     }
@@ -634,7 +646,7 @@ friendly_repl_reset:
     for (;;) {
     input_restart:
 
-        #if MICROPY_HW_ENABLE_USB
+        #if defined(MICROPY_HW_ENABLE_USB) && MICROPY_HW_ENABLE_USB
         if (usb_vcp_is_enabled()) {
             // If the user gets to here and interrupts are disabled then
             // they'll never see the prompt, traceback etc. The USB REPL needs
@@ -734,7 +746,7 @@ friendly_repl_reset:
         }
 
         ret = parse_compile_execute(&line, parse_input_kind, EXEC_FLAG_ALLOW_DEBUGGING | EXEC_FLAG_IS_REPL | EXEC_FLAG_SOURCE_IS_VSTR, NULL);
-        if (ret & PYEXEC_FORCED_EXIT) {
+        if (ret & (PYEXEC_FORCED_EXIT | PYEXEC_RELOAD)) {
             return ret;
         }
     }

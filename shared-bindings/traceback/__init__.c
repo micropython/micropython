@@ -77,12 +77,12 @@ STATIC void traceback_exception_common(bool is_print_exception, mp_print_t *prin
         print->data = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
         print->print_strn = mp_stream_write_adaptor;
         #else
-        mp_raise_NotImplementedError(translate("file write is not available"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("file write is not available"));
         #endif
     }
 
     if (!mp_obj_is_exception_instance(value)) {
-        mp_raise_TypeError(translate("invalid exception"));
+        mp_raise_TypeError(MP_ERROR_TEXT("invalid exception"));
     }
 
     mp_int_t limit = 0;
@@ -158,7 +158,7 @@ STATIC mp_obj_t traceback_format_exception(size_t n_args, const mp_obj_t *pos_ar
     vstr_t vstr;
     vstr_init_print(&vstr, 0, &print);
     traceback_exception_common(false, &print, n_args, pos_args, kw_args);
-    mp_obj_t output = mp_obj_new_str_from_vstr(&mp_type_str, &vstr);
+    mp_obj_t output = mp_obj_new_str_from_vstr(&vstr);
     return mp_obj_new_list(1, &output);
 }
 

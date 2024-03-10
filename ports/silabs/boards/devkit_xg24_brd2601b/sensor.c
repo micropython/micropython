@@ -27,7 +27,6 @@
 #include "py/runtime.h"
 #include "common-hal/busio/I2C.h"
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 #include "em_i2c.h"
 #include "sl_i2cspm.h"
 #include "sl_i2cspm_sensor_config.h"
@@ -42,7 +41,7 @@ STATIC mp_obj_t sensor_init(mp_obj_t i2c_in) {
     sl_status_t sc;
 
     if (!common_hal_mcu_pin_is_free(&pin_PC9)) {
-        mp_raise_ValueError(translate("Pin PC9 is busy "));
+        mp_raise_ValueError(MP_ERROR_TEXT("Pin PC9 is busy "));
         return mp_const_false;
     }
 

@@ -36,7 +36,6 @@
 #include "shared/runtime/context_manager_helpers.h"
 #include "py/runtime.h"
 #include "py/smallint.h"
-#include "supervisor/shared/translate/translate.h"
 
 
 //| class I2CDevice:
@@ -285,9 +284,10 @@ STATIC const mp_rom_map_elem_t adafruit_bus_device_i2cdevice_locals_dict_table[]
 
 STATIC MP_DEFINE_CONST_DICT(adafruit_bus_device_i2cdevice_locals_dict, adafruit_bus_device_i2cdevice_locals_dict_table);
 
-const mp_obj_type_t adafruit_bus_device_i2cdevice_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2CDevice,
-    .make_new = adafruit_bus_device_i2cdevice_make_new,
-    .locals_dict = (mp_obj_dict_t *)&adafruit_bus_device_i2cdevice_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    adafruit_bus_device_i2cdevice_type,
+    MP_QSTR_I2CDevice,
+    MP_TYPE_FLAG_NONE,
+    make_new, adafruit_bus_device_i2cdevice_make_new,
+    locals_dict, &adafruit_bus_device_i2cdevice_locals_dict
+    );

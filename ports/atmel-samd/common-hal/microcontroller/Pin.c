@@ -27,7 +27,6 @@
 #include "py/runtime.h"
 
 #include "shared-bindings/microcontroller/Pin.h"
-#include "supervisor/shared/translate/translate.h"
 
 #include "atmel_start_pins.h"
 #include "hal/include/hal_gpio.h"
@@ -162,12 +161,11 @@ bool pin_number_is_free(uint8_t pin_number) {
             return false;
         }
         if (pin_number == PIN_PA30
-            #ifdef SAM_D5X_E5X
-            ) {
-            #endif
             #ifdef SAMD21
-            || pin_number == PIN_PA31) {
-            #endif) {
+            || pin_number == PIN_PA31
+            #endif
+            )
+            {
             return state->bit.PMUXEN == 1 && ((pmux->reg >> (4 * pin_index % 2)) & 0xf) == SWD_MUX;
         }
     }
@@ -211,5 +209,5 @@ mcu_pin_function_t *mcu_find_pin_function(mcu_pin_function_t *table, const mcu_p
             return table;
         }
     }
-    mp_raise_ValueError_varg(translate("Invalid %q pin"), name);
+    mp_raise_ValueError_varg(MP_ERROR_TEXT("Invalid %q pin"), name);
 }

@@ -69,9 +69,10 @@ STATIC const mp_rom_map_elem_t usb_host_port_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(usb_host_port_locals_dict, usb_host_port_locals_dict_table);
 
-const mp_obj_type_t usb_host_port_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_Port,
-    .make_new = usb_host_port_make_new,
-    .locals_dict = (mp_obj_t)&usb_host_port_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    usb_host_port_type,
+    MP_QSTR_Port,
+    MP_TYPE_FLAG_NONE,
+    make_new, usb_host_port_make_new,
+    locals_dict, &usb_host_port_locals_dict
+    );

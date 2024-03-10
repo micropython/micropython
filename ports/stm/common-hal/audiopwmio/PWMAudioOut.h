@@ -24,8 +24,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_STM_COMMON_HAL_AUDIOPWM_AUDIOOUT_H
-#define MICROPY_INCLUDED_STM_COMMON_HAL_AUDIOPWM_AUDIOOUT_H
+#pragma once
 
 #include "common-hal/microcontroller/Pin.h"
 
@@ -52,7 +51,3 @@ typedef struct {
     bool paused;
     bool loop;
 } audiopwmio_pwmaudioout_obj_t;
-
-void audiopwmout_reset(void);
-
-#endif

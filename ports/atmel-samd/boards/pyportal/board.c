@@ -61,9 +61,9 @@ uint8_t display_init_sequence[] = {
 };
 
 void board_init(void) {
-    paralleldisplay_parallelbus_obj_t *bus = &allocate_display_bus()->parallel_bus;
-    bus->base.type = &paralleldisplay_parallelbus_type;
-    common_hal_paralleldisplay_parallelbus_construct(bus,
+    paralleldisplaybus_parallelbus_obj_t *bus = &allocate_display_bus()->parallel_bus;
+    bus->base.type = &paralleldisplaybus_parallelbus_type;
+    common_hal_paralleldisplaybus_parallelbus_construct(bus,
         &pin_PA16, // Data0
         &pin_PB05, // Command or data
         &pin_PB06, // Chip select
@@ -72,9 +72,9 @@ void board_init(void) {
         &pin_PA00, // Reset
         0); // Frequency
 
-    displayio_display_obj_t *display = &allocate_display()->display;
-    display->base.type = &displayio_display_type;
-    common_hal_displayio_display_construct(display,
+    busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
+    display->base.type = &busdisplay_busdisplay_type;
+    common_hal_busdisplay_busdisplay_construct(display,
         bus,
         320, // Width
         240, // Height

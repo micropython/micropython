@@ -1,6 +1,6 @@
 def bm_run(N, M):
     try:
-        from utime import ticks_us, ticks_diff
+        from time import ticks_us, ticks_diff
     except ImportError:
         import time
 
@@ -15,7 +15,7 @@ def bm_run(N, M):
             cur_nm = nm
             param = p
     if param is None:
-        print(-1, -1, "no matching params")
+        print(-1, -1, "SKIP: no matching params")
         return
 
     # Run and time benchmark

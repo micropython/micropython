@@ -38,9 +38,9 @@ For SAMD21 debugging workflow tips check out [this learn guide](https://learn.ad
 Scott Shawcroft ([@tannewt](https://github.com/tannewt)) is the lead developer of CircuitPython
 and is sponsored by [Adafruit Industries LLC](https://adafruit.com). Scott is usually available
 during US West Coast working hours. Dan Halbert ([@dhalbert](https://github.com/dhalbert)) and
-Kattni Rembor ([@kattni](https://github.com/kattni)) are also sponsored by [Adafruit Industries
- LLC](https://adafruit.com) and are usually available during US East Coast daytime hours including
-some weekends.
+Jeff Epler ([@jepler](https://github.com/jepler)) are also sponsored by [Adafruit Industries
+LLC](https://adafruit.com) and are usually available during US daytime hours including some
+weekends.
 
 They are all reachable on [Discord](https://adafru.it/discord), GitHub issues and the [Adafruit
 support forum](https://forums.adafruit.com/viewforum.php?f=60).

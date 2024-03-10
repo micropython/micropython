@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * SPDX-FileCopyrightText: Copyright (c) 2013, 2014 Damien P. George
+ * Copyright (c) 2013, 2014 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,6 @@ typedef struct _mp_obj_instance_t {
     // TODO maybe cache __getattr__ and __setattr__ for efficient lookup of them
 } mp_obj_instance_t;
 
-void mp_obj_assert_native_inited(mp_obj_t native_object);
-
 #if MICROPY_CPYTHON_COMPAT
 // this is needed for object.__new__
 mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *cls, const mp_obj_type_t **native_base);
@@ -48,12 +46,13 @@ mp_obj_instance_t *mp_obj_new_instance(const mp_obj_type_t *cls, const mp_obj_ty
 bool mp_obj_instance_is_callable(mp_obj_t self_in);
 mp_obj_t mp_obj_instance_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
-#define mp_obj_is_instance_type(type) ((type)->make_new == mp_obj_instance_make_new)
-#define mp_obj_is_native_type(type) ((type)->make_new != mp_obj_instance_make_new)
-// this needs to be exposed for the above macros to work correctly
-mp_obj_t mp_obj_instance_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args);
+#define mp_obj_is_instance_type(type) ((type)->flags & MP_TYPE_FLAG_INSTANCE_TYPE)
+#define mp_obj_is_native_type(type) (!((type)->flags & MP_TYPE_FLAG_INSTANCE_TYPE))
 
 // this needs to be exposed for mp_getiter
 mp_obj_t mp_obj_instance_getiter(mp_obj_t self_in, mp_obj_iter_buf_t *iter_buf);
+
+// CIRCUITPY-CHANGE: addition
+void mp_obj_assert_native_inited(mp_obj_t native_object);
 
 #endif // MICROPY_INCLUDED_PY_OBJTYPE_H

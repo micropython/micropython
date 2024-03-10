@@ -4,7 +4,7 @@
     <title></title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="http://circuitpython.org/assets/css/webworkflow-8.css">
+    <link rel="stylesheet" href="http://circuitpython.org/assets/css/webworkflow-9.css">
 </head>
 <body>
     <h1><a href="/"><img src="/favicon.ico"/></a>&nbsp;<span id="path"></span></h1>
@@ -17,8 +17,9 @@
     <hr>
     <label>📄 <input type="file" id="files" multiple></label>
     <label for="dirs">📁 <input type="file" id="dirs" multiple webkitdirectory></label>
-    <label>Upload progress:<progress value="0"></progress></label>
+    <span id="progress"></span>
     <hr>
     +📁&nbsp;<input type="text" id="name"><button type="submit" id="mkdir">Create Directory</button>
+    <label>Disk usage:<span id="usage"></span></label>
     <script src="/directory.js" defer=true></script>
 </body></html>

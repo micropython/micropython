@@ -25,11 +25,9 @@
  */
 
 #include "py/binary.h"
-#include "py/objproperty.h"
 #include "py/runtime.h"
 #include "py/runtime0.h"
 #include "shared-bindings/memorymap/AddressRange.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class AddressRange:
 //|     r"""Presents a range of addresses as a bytearray.
@@ -74,6 +72,7 @@
 //|        # print GPIO16 pad drive strength
 //|        print(rp2040_get_pad_drive(16))
 //|     """
+//|
 
 //|     def __init__(self, *, start, length) -> None:
 //|         """Constructs an address range starting at ``start`` and ending at
@@ -94,17 +93,17 @@ STATIC mp_obj_t memorymap_addressrange_make_new(const mp_obj_type_t *type, size_
     size_t start;
     if (mp_obj_is_small_int(args[ARG_start].u_obj)) {
         start = MP_OBJ_SMALL_INT_VALUE(args[ARG_start].u_obj);
-    } else if (mp_obj_is_type(args[ARG_start].u_obj, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(args[ARG_start].u_obj, &mp_type_int)) {
         start = mp_obj_int_get_uint_checked(args[ARG_start].u_obj);
     } else {
-        mp_obj_t arg = mp_unary_op(MP_UNARY_OP_INT, args[ARG_start].u_obj);
+        mp_obj_t arg = mp_unary_op(MP_UNARY_OP_INT_MAYBE, args[ARG_start].u_obj);
         start = mp_obj_int_get_uint_checked(arg);
     }
     size_t length =
         mp_arg_validate_int_min(args[ARG_length].u_int, 1, MP_QSTR_length);
     // Check for address range wrap here as this can break port-specific code due to size_t overflow.
     if (start + length - 1 < start) {
-        mp_raise_ValueError(translate("Address range wraps around"));
+        mp_raise_ValueError(MP_ERROR_TEXT("Address range wraps around"));
     }
 
     memorymap_addressrange_obj_t *self = mp_obj_malloc(memorymap_addressrange_obj_t, &memorymap_addressrange_type);
@@ -146,6 +145,7 @@ STATIC MP_DEFINE_CONST_DICT(memorymap_addressrange_locals_dict, memorymap_addres
 //|         when possible.
 //|         All others may use multiple transactions."""
 //|         ...
+//|
 //|     @overload
 //|     def __setitem__(self, index: slice, value: ReadableBuffer) -> None: ...
 //|     @overload
@@ -169,7 +169,7 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
         } else if (mp_obj_is_type(index_in, &mp_type_slice)) {
             mp_bound_slice_t slice;
             if (!mp_seq_get_fast_slice_indexes(common_hal_memorymap_addressrange_get_length(self), index_in, &slice)) {
-                mp_raise_NotImplementedError(translate("only slices with step=1 (aka None) are supported"));
+                mp_raise_NotImplementedError(MP_ERROR_TEXT("only slices with step=1 (aka None) are supported"));
             }
             if (value != MP_OBJ_SENTINEL) {
                 #if MICROPY_PY_ARRAY_SLICE_ASSIGN
@@ -183,15 +183,15 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
                     mp_buffer_info_t bufinfo;
                     mp_get_buffer_raise(value, &bufinfo, MP_BUFFER_READ);
                     if (bufinfo.len != src_len) {
-                        mp_raise_ValueError(translate("Slice and value different lengths."));
+                        mp_raise_ValueError(MP_ERROR_TEXT("Slice and value different lengths."));
                     }
                     src_len = bufinfo.len;
                     src_items = bufinfo.buf;
                     if (1 != mp_binary_get_size('@', bufinfo.typecode, NULL)) {
-                        mp_raise_ValueError(translate("Array values should be single bytes."));
+                        mp_raise_ValueError(MP_ERROR_TEXT("Array values should be single bytes."));
                     }
                 } else {
-                    mp_raise_NotImplementedError(translate("array/bytes required on right side"));
+                    mp_raise_NotImplementedError(MP_ERROR_TEXT("array/bytes required on right side"));
                 }
 
                 common_hal_memorymap_addressrange_set_bytes(self, slice.start, src_items, src_len);
@@ -229,14 +229,12 @@ STATIC mp_obj_t memorymap_addressrange_subscr(mp_obj_t self_in, mp_obj_t index_i
     }
 }
 
-const mp_obj_type_t memorymap_addressrange_type = {
-    { &mp_type_type },
-    .flags = MP_TYPE_FLAG_EXTENDED,
-    .name = MP_QSTR_AddressRange,
-    .make_new = memorymap_addressrange_make_new,
-    .locals_dict = (mp_obj_t)&memorymap_addressrange_locals_dict,
-    MP_TYPE_EXTENDED_FIELDS(
-        .subscr = memorymap_addressrange_subscr,
-        .unary_op = memorymap_addressrange_unary_op,
-        ),
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    memorymap_addressrange_type,
+    MP_QSTR_AddressRange,
+    MP_TYPE_FLAG_NONE,
+    make_new, memorymap_addressrange_make_new,
+    locals_dict, (mp_obj_t)&memorymap_addressrange_locals_dict,
+    subscr, memorymap_addressrange_subscr,
+    unary_op, memorymap_addressrange_unary_op
+    );

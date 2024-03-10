@@ -35,7 +35,6 @@
 #include "py/mperrno.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-#include "supervisor/shared/translate/translate.h"
 #include "supervisor/shared/tick.h"
 
 #include "hpl_sercom_config.h"
@@ -84,7 +83,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     self->cts_pin = NO_PIN;
 
     if ((rs485_dir != NULL) || (rs485_invert)) {
-        mp_raise_NotImplementedError(translate("RS485"));
+        mp_raise_NotImplementedError(MP_ERROR_TEXT("RS485"));
     }
 
     mp_arg_validate_int_max(bits, 8, MP_QSTR_bits);
@@ -95,7 +94,7 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
     bool have_cts = cts != NULL;
 
     if (have_rx && receiver_buffer_size > 0 && (receiver_buffer_size & (receiver_buffer_size - 1)) != 0) {
-        mp_raise_ValueError_varg(translate("%q must be power of 2"), MP_QSTR_receiver_buffer_size);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("%q must be power of 2"), MP_QSTR_receiver_buffer_size);
     }
 
     self->baudrate = baudrate;
@@ -389,7 +388,7 @@ void common_hal_busio_uart_deinit(busio_uart_obj_t *self) {
 // Read characters.
 size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t len, int *errcode) {
     if (self->rx_pin == NO_PIN) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_rx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_rx);
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.
@@ -446,7 +445,7 @@ size_t common_hal_busio_uart_read(busio_uart_obj_t *self, uint8_t *data, size_t 
 // Write characters.
 size_t common_hal_busio_uart_write(busio_uart_obj_t *self, const uint8_t *data, size_t len, int *errcode) {
     if (self->tx_pin == NO_PIN) {
-        mp_raise_ValueError_varg(translate("No %q pin"), MP_QSTR_tx);
+        mp_raise_ValueError_varg(MP_ERROR_TEXT("No %q pin"), MP_QSTR_tx);
     }
 
     // This assignment is only here because the usart_async routines take a *const argument.

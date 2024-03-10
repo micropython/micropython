@@ -49,7 +49,7 @@ usb_host_port_obj_t *common_hal_usb_host_port_construct(const mcu_pin_obj_t *dp,
     usb_host_port_obj_t *self = &usb_host_instance;
     if (self->dp != NULL) {
         if (self->dp != dp || self->dm != dm) {
-            mp_raise_msg_varg(&mp_type_RuntimeError, translate("%q in use"), MP_QSTR_usb_host);
+            mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("%q in use"), MP_QSTR_usb_host);
         }
         return self;
     }

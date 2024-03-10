@@ -31,7 +31,6 @@
 #include "py/obj.h"
 #include "py/proto.h"
 
-#include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/displayio/Group.h"
 
 #include "shared-module/displayio/area.h"

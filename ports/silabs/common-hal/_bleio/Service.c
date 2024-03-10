@@ -62,7 +62,7 @@ uint32_t _common_hal_bleio_service_construct(
 
     sc = sl_bt_gattdb_new_session(&gattdb_session);
     if (SL_STATUS_OK != sc && SL_STATUS_ALREADY_EXISTS != sc) {
-        mp_raise_bleio_BluetoothError(translate("Create new session fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Create new session fail."));
         return sc;
     }
     if (BLE_UUID_TYPE_16 == self->uuid->efr_ble_uuid.uuid.type) {
@@ -81,18 +81,18 @@ uint32_t _common_hal_bleio_service_construct(
     }
 
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Create new session fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Create new session fail."));
         return sc;
     }
 
     sc = sl_bt_gattdb_start_service(gattdb_session, self->handle);
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Start service fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Start service fail."));
     }
 
     sc = sl_bt_gattdb_commit(gattdb_session);
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Commit service fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Commit service fail."));
     }
 
     bleio_service_list.data[bleio_service_list.len] = self;
@@ -165,7 +165,7 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     sc = sl_bt_gattdb_new_session(&gattdb_session);
 
     if (SL_STATUS_OK != sc && SL_STATUS_ALREADY_EXISTS != sc) {
-        mp_raise_bleio_BluetoothError(translate("Create new session fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Create new session fail."));
         return;
     }
     characteristic->props = (broadcast << 0) | (read << 1) |
@@ -207,19 +207,19 @@ void common_hal_bleio_service_add_characteristic(bleio_service_obj_t *self,
     }
 
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Add charateristic fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Add charateristic fail."));
     }
 
     sc = sl_bt_gattdb_start_characteristic(gattdb_session,
         characteristic->handle);
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Start charateristic fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Start charateristic fail."));
         return;
     }
 
     sc = sl_bt_gattdb_commit(gattdb_session);
     if (SL_STATUS_OK != sc) {
-        mp_raise_bleio_BluetoothError(translate("Commit charateristic fail."));
+        mp_raise_bleio_BluetoothError(MP_ERROR_TEXT("Commit charateristic fail."));
         return;
     }
     mp_obj_list_append(self->characteristic_list,

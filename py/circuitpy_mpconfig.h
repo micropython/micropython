@@ -87,15 +87,21 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_TRACKED_ALLOC            (CIRCUITPY_SSL_MBEDTLS)
 #define MICROPY_ENABLE_SOURCE_LINE       (1)
 #define MICROPY_EPOCH_IS_1970            (1)
-#define MICROPY_ERROR_REPORTING          (MICROPY_ERROR_REPORTING_NORMAL)
+#define MICROPY_ERROR_REPORTING          (CIRCUITPY_FULL_BUILD ? MICROPY_ERROR_REPORTING_NORMAL : MICROPY_ERROR_REPORTING_TERSE)
 #define MICROPY_FLOAT_HIGH_QUALITY_HASH  (0)
 #define MICROPY_FLOAT_IMPL               (MICROPY_FLOAT_IMPL_FLOAT)
 #define MICROPY_GC_ALLOC_THRESHOLD       (0)
+#define MICROPY_GC_SPLIT_HEAP            (1)
+#define MICROPY_GC_SPLIT_HEAP_AUTO       (1)
+#define MP_PLAT_ALLOC_HEAP(size) port_malloc(size, false)
+#define MP_PLAT_FREE_HEAP(ptr) port_free(ptr)
+#include "supervisor/port_heap.h"
 #define MICROPY_HELPER_LEXER_UNIX        (0)
 #define MICROPY_HELPER_REPL              (1)
 #define MICROPY_KBD_EXCEPTION            (1)
 #define MICROPY_MEM_STATS                (0)
 #define MICROPY_MODULE_BUILTIN_INIT      (1)
+#define MICROPY_MODULE_BUILTIN_SUBPACKAGES (1)
 #define MICROPY_NONSTANDARD_TYPECODES    (0)
 #define MICROPY_OPT_COMPUTED_GOTO        (1)
 #define MICROPY_OPT_COMPUTED_GOTO_SAVE_SPACE (CIRCUITPY_COMPUTED_GOTO_SAVE_SPACE)
@@ -108,6 +114,7 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN    (1)
 #define MICROPY_PY_ATTRTUPLE             (1)
 #define MICROPY_PY_BUILTINS_BYTEARRAY    (1)
+#define MICROPY_PY_BUILTINS_BYTES_HEX    (1)
 #define MICROPY_PY_BUILTINS_ENUMERATE    (1)
 #define MICROPY_PY_BUILTINS_FILTER       (1)
 #define MICROPY_PY_BUILTINS_HELP         (1)
@@ -124,37 +131,37 @@ extern void common_hal_mcu_enable_interrupts(void);
 #define MICROPY_PY_BUILTINS_SLICE_INDICES (1)
 #define MICROPY_PY_BUILTINS_STR_UNICODE  (1)
 
+#define MICROPY_PY_BINASCII             (CIRCUITPY_BINASCII)
+#define MICROPY_PY_BINASCII_CRC32       (CIRCUITPY_BINASCII && CIRCUITPY_ZLIB)
 #define MICROPY_PY_CMATH                 (0)
 #define MICROPY_PY_COLLECTIONS           (CIRCUITPY_COLLECTIONS)
 #define MICROPY_PY_DESCRIPTORS           (1)
-#define MICROPY_PY_IO_FILEIO             (1)
+// In extmod
+#define MICROPY_PY_ERRNO                (CIRCUITPY_ERRNO)
+// Uses about 80 bytes.
+#define MICROPY_PY_ERRNO_ERRORCODE      (CIRCUITPY_ERRNO)
 #define MICROPY_PY_GC                    (1)
 // Supplanted by shared-bindings/math
 #define MICROPY_PY_IO                    (CIRCUITPY_IO)
+#define MICROPY_PY_IO_IOBASE             (CIRCUITPY_IO_IOBASE)
+// In extmod
+#define MICROPY_PY_JSON                 (CIRCUITPY_JSON)
 #define MICROPY_PY_MATH                  (0)
 #define MICROPY_PY_MICROPYTHON_MEM_INFO  (0)
+// Supplanted by shared-bindings/random
+#define MICROPY_PY_RANDOM               (0)
+#define MICROPY_PY_RANDOM_EXTRA_FUNCS   (0)
+#define MICROPY_PY_RE                   (CIRCUITPY_RE)
 // Supplanted by shared-bindings/struct
 #define MICROPY_PY_STRUCT                (0)
 #define MICROPY_PY_SYS                   (CIRCUITPY_SYS)
 #define MICROPY_PY_SYS_MAXSIZE           (1)
 #define MICROPY_PY_SYS_STDFILES          (1)
-// In extmod
-#define MICROPY_PY_UBINASCII             (CIRCUITPY_BINASCII)
-#define MICROPY_PY_UERRNO                (CIRCUITPY_ERRNO)
-// Uses about 80 bytes.
-#define MICROPY_PY_UERRNO_ERRORCODE      (CIRCUITPY_ERRNO)
-// Supplanted by shared-bindings/random
-#define MICROPY_PY_URANDOM               (0)
-#define MICROPY_PY_URANDOM_EXTRA_FUNCS   (0)
-// In extmod
-#define MICROPY_PY_UJSON                 (CIRCUITPY_JSON)
-#define MICROPY_PY_URE                   (CIRCUITPY_RE)
 #define MICROPY_PY___FILE__              (1)
 
 #define MICROPY_QSTR_BYTES_IN_HASH       (1)
 #define MICROPY_REPL_AUTO_INDENT         (1)
 #define MICROPY_REPL_EVENT_DRIVEN        (0)
-#define CIRCUITPY_SETTABLE_PYSTACK       (1)
 #define MICROPY_STACK_CHECK              (1)
 #define MICROPY_STREAMS_NON_BLOCK        (1)
 #ifndef MICROPY_USE_INTERNAL_PRINTF
@@ -253,9 +260,9 @@ typedef long mp_off_t;
 #ifndef MICROPY_PY_COLLECTIONS_DEQUE
 #define MICROPY_PY_COLLECTIONS_DEQUE          (CIRCUITPY_FULL_BUILD)
 #endif
-#define MICROPY_PY_URE_MATCH_GROUPS           (CIRCUITPY_RE)
-#define MICROPY_PY_URE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
-#define MICROPY_PY_URE_SUB                    (CIRCUITPY_RE)
+#define MICROPY_PY_RE_MATCH_GROUPS           (CIRCUITPY_RE)
+#define MICROPY_PY_RE_MATCH_SPAN_START_END   (CIRCUITPY_RE)
+#define MICROPY_PY_RE_SUB                    (CIRCUITPY_RE)
 
 #define CIRCUITPY_MICROPYTHON_ADVANCED        (0)
 
@@ -263,8 +270,8 @@ typedef long mp_off_t;
 #define MICROPY_FATFS_EXFAT           (CIRCUITPY_FULL_BUILD)
 #endif
 
-#ifndef MICROPY_FF_MKFS_FAT32
-#define MICROPY_FF_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
+#ifndef MICROPY_FATFS_MKFS_FAT32
+#define MICROPY_FATFS_MKFS_FAT32           (CIRCUITPY_FULL_BUILD)
 #endif
 
 // LONGINT_IMPL_xxx are defined in the Makefile.
@@ -315,14 +322,11 @@ typedef long mp_off_t;
 #if defined(DEFAULT_UART_BUS_TX) && defined(DEFAULT_UART_BUS_RX)
 #define CIRCUITPY_BOARD_UART        (1)
 #define CIRCUITPY_BOARD_UART_PIN    {{.tx = DEFAULT_UART_BUS_TX, .rx = DEFAULT_UART_BUS_RX}}
-#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #else
 #define CIRCUITPY_BOARD_UART        (0)
-#define BOARD_UART_ROOT_POINTER
 #endif
-#else
-#define BOARD_UART_ROOT_POINTER     mp_obj_t board_uart_bus;
 #endif
+
 
 #if MICROPY_PY_ASYNC_AWAIT && !CIRCUITPY_TRACEBACK
 #error CIRCUITPY_ASYNCIO requires CIRCUITPY_TRACEBACK
@@ -358,19 +362,6 @@ typedef long mp_off_t;
 #define CIRCUITPY_DISPLAY_AREA_BUFFER_SIZE (0)
 #endif
 
-#if CIRCUITPY_KEYPAD
-#define KEYPAD_ROOT_POINTERS mp_obj_t keypad_scanners_linked_list;
-#else
-#define KEYPAD_ROOT_POINTERS
-#endif
-
-#if CIRCUITPY_MEMORYMONITOR
-#define MEMORYMONITOR_ROOT_POINTERS mp_obj_t active_allocationsizes; \
-    mp_obj_t active_allocationalarms;
-#else
-#define MEMORYMONITOR_ROOT_POINTERS
-#endif
-
 // This is not a top-level module; it's microcontroller.nvm.
 #if CIRCUITPY_NVM
 extern const struct _mp_obj_module_t nvm_module;
@@ -385,12 +376,6 @@ extern const struct _mp_obj_module_t nvm_module;
 #if defined(MICROPY_PY_REVERSE_SPECIAL_METHODS) && !MICROPY_PY_REVERSE_SPECIAL_METHODS
 #error "ulab requires MICROPY_PY_REVERSE_SPECIAL_METHODS"
 #endif
-#endif
-
-#if CIRCUITPY_WIFI
-#define WIFI_MONITOR_ROOT_POINTERS mp_obj_t wifi_monitor_singleton;
-#else
-#define WIFI_MONITOR_ROOT_POINTERS
 #endif
 
 // Define certain native modules with weak links so they can be replaced with Python
@@ -430,23 +415,6 @@ extern const struct _mp_obj_module_t nvm_module;
 
 #define MP_STATE_PORT MP_STATE_VM
 
-#include "supervisor/flash_root_pointers.h"
-
-// From supervisor/memory.c
-struct _supervisor_allocation_node;
-
-#define CIRCUITPY_COMMON_ROOT_POINTERS \
-    FLASH_ROOT_POINTERS \
-    KEYPAD_ROOT_POINTERS \
-    BOARD_UART_ROOT_POINTER \
-    WIFI_MONITOR_ROOT_POINTERS \
-    MEMORYMONITOR_ROOT_POINTERS \
-    vstr_t *repl_line; \
-    mp_obj_t pew_singleton; \
-    mp_obj_t rtc_time_source; \
-    const char *readline_hist[8]; \
-    struct _supervisor_allocation_node *first_embedded_allocation; \
-
 void background_callback_run_all(void);
 #define RUN_BACKGROUND_TASKS (background_callback_run_all())
 
@@ -464,6 +432,18 @@ void background_callback_run_all(void);
 
 #ifndef CIRCUITPY_PYSTACK_SIZE
 #define CIRCUITPY_PYSTACK_SIZE 1536
+#endif
+
+// The VM heap starts at this size and doubles in size as needed until it runs
+// out of memory in the outer heap. Once it can't double, it'll then grow into
+// the largest contiguous free area.
+#ifndef CIRCUITPY_HEAP_START_SIZE
+#define CIRCUITPY_HEAP_START_SIZE (8 * 1024)
+#endif
+
+// How much of the c stack we leave to ensure we can process exceptions.
+#ifndef CIRCUITPY_EXCEPTION_STACK_SIZE
+#define CIRCUITPY_EXCEPTION_STACK_SIZE 1024
 #endif
 
 // Wait this long before sleeping immediately after startup, to see if we are connected via USB or BLE.
@@ -489,7 +469,9 @@ void background_callback_run_all(void);
 #error "boot counter requires CIRCUITPY_NVM enabled"
 #endif
 
+#ifndef CIRCUITPY_VERBOSE_BLE
 #define CIRCUITPY_VERBOSE_BLE 0
+#endif
 
 // Display the Blinka logo in the REPL on displayio displays.
 #ifndef CIRCUITPY_REPL_LOGO
@@ -564,10 +546,6 @@ void background_callback_run_all(void);
 #error "CIRCUITPY_USB_HID_MAX_REPORT_IDS_PER_DESCRIPTOR must be at least 1"
 #endif
 
-#ifndef CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS
-#define CIRCUITPY_PORT_NUM_SUPERVISOR_ALLOCATIONS (0)
-#endif
-
 #ifndef USB_MIDI_EP_NUM_OUT
 #define USB_MIDI_EP_NUM_OUT (0)
 #endif
@@ -623,5 +601,9 @@ void background_callback_run_all(void);
 #define FF_FS_MAKE_VOLID (1)
 
 #define MICROPY_PY_OPTIMIZE_PROPERTY_FLASH_SIZE (CIRCUITPY_OPTIMIZE_PROPERTY_FLASH_SIZE)
+
+// Enable compiler functionality.
+#define MICROPY_ENABLE_COMPILER (1)
+#define MICROPY_PY_BUILTINS_COMPILE (1)
 
 #endif  // __INCLUDED_MPCONFIG_CIRCUITPY_H

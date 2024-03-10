@@ -32,24 +32,12 @@
 #include "common-hal/microcontroller/Pin.h"
 #include "shared-bindings/microcontroller/__init__.h"
 
-#if CIRCUITPY_AUDIOPWMIO
-#include "common-hal/audiopwmio/PWMAudioOut.h"
-#endif
 #if CIRCUITPY_BUSIO
 #include "common-hal/busio/I2C.h"
 #include "common-hal/busio/SPI.h"
 #include "common-hal/busio/UART.h"
 #endif
-#if CIRCUITPY_PULSEIO
-#include "common-hal/pulseio/PulseOut.h"
-#include "common-hal/pulseio/PulseIn.h"
-#endif
-#if CIRCUITPY_PWMIO
-#include "common-hal/pwmio/PWMOut.h"
-#endif
-#if CIRCUITPY_PULSEIO || CIRCUITPY_PWMIO
-#include "peripherals/timers.h"
-#endif
+
 #if CIRCUITPY_SDIOIO
 #include "common-hal/sdioio/SDCard.h"
 #endif
@@ -177,10 +165,6 @@ void reset_port(void) {
     uart_reset();
     #endif
 
-    #if CIRCUITPY_PWMIO
-    pwmout_reset();
-    #endif
-
     #if CIRCUITPY_ANALOGIO
     analogout_reset();
     #endif
@@ -191,6 +175,10 @@ void reset_port(void) {
 
     #if CIRCUITPY_RTC
     rtc_reset();
+    #endif
+
+    #if CIRCUITPY_WATCHDOG
+    watchdog_reset();
     #endif
 }
 
@@ -212,10 +200,6 @@ uint32_t *port_heap_get_bottom(void) {
 
 uint32_t *port_heap_get_top(void) {
     return heap + heap_size;
-}
-
-bool port_has_fixed_stack(void) {
-    return true;
 }
 
 uint32_t *port_stack_get_limit(void) {

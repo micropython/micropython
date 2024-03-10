@@ -32,8 +32,6 @@
 #include "py/objint.h"
 #include "py/runtime.h"
 
-#include "supervisor/shared/translate/translate.h"
-
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
 #endif
@@ -45,6 +43,7 @@
 const mp_obj_int_t mp_sys_maxsize_obj = {{&mp_type_int}, MP_SSIZE_MAX};
 #endif
 
+// CIRCUITPY-CHANGE
 mp_obj_t mp_obj_int_bit_length_impl(mp_obj_t self_in) {
     assert(mp_obj_is_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
@@ -71,7 +70,7 @@ mp_obj_t mp_obj_int_from_bytes_impl(bool big_endian, size_t len, const byte *buf
 }
 
 void mp_obj_int_to_bytes_impl(mp_obj_t self_in, bool big_endian, size_t len, byte *buf) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     long long val = self->val;
     if (big_endian) {
@@ -132,6 +131,8 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
             self->val = -self->val;
             return MP_OBJ_FROM_PTR(self);
         }
+        case MP_UNARY_OP_INT_MAYBE:
+            return o_in;
         default:
             return MP_OBJ_NULL;      // op not supported
     }
@@ -144,13 +145,13 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     if (mp_obj_is_small_int(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
     } else {
-        assert(mp_obj_is_type(lhs_in, &mp_type_int));
+        assert(mp_obj_is_exact_type(lhs_in, &mp_type_int));
         lhs_val = ((mp_obj_int_t *)lhs_in)->val;
     }
 
     if (mp_obj_is_small_int(rhs_in)) {
         rhs_val = MP_OBJ_SMALL_INT_VALUE(rhs_in);
-    } else if (mp_obj_is_type(rhs_in, &mp_type_int)) {
+    } else if (mp_obj_is_exact_type(rhs_in, &mp_type_int)) {
         rhs_val = ((mp_obj_int_t *)rhs_in)->val;
     } else {
         // delegate to generic function to check for extra cases
@@ -297,7 +298,7 @@ mp_int_t mp_obj_int_get_checked(mp_const_obj_t self_in) {
 
 #if MICROPY_PY_BUILTINS_FLOAT
 mp_float_t mp_obj_int_as_float_impl(mp_obj_t self_in) {
-    assert(mp_obj_is_type(self_in, &mp_type_int));
+    assert(mp_obj_is_exact_type(self_in, &mp_type_int));
     mp_obj_int_t *self = self_in;
     return self->val;
 }

@@ -80,7 +80,7 @@ STATIC mp_obj_t canio_can_make_new(const mp_obj_type_t *type, size_t n_args, siz
     const mcu_pin_obj_t *rx_pin = validate_obj_is_free_pin_or_none(args[ARG_rx].u_obj, MP_QSTR_rx);
     const mcu_pin_obj_t *tx_pin = validate_obj_is_free_pin_or_none(args[ARG_tx].u_obj, MP_QSTR_tx);
     if (!rx_pin && !tx_pin) {
-        mp_raise_ValueError(translate("tx and rx cannot both be None"));
+        mp_raise_ValueError(MP_ERROR_TEXT("tx and rx cannot both be None"));
     }
 
     canio_can_obj_t *self = mp_obj_malloc(canio_can_obj_t, &canio_can_type);
@@ -267,7 +267,7 @@ STATIC mp_obj_t canio_can_send(mp_obj_t self_in, mp_obj_t message_in) {
     common_hal_canio_can_check_for_deinit(self);
     const mp_obj_type_t *message_type = mp_obj_get_type(message_in);
     if (message_type != &canio_message_type && message_type != &canio_remote_transmission_request_type) {
-        mp_raise_TypeError_varg(translate("%q must be of type %q or %q, not %q"), MP_QSTR_message, MP_QSTR_Message, MP_QSTR_RemoteTransmissionRequest, message_type->name);
+        mp_raise_TypeError_varg(MP_ERROR_TEXT("%q must be of type %q or %q, not %q"), MP_QSTR_message, MP_QSTR_Message, MP_QSTR_RemoteTransmissionRequest, message_type->name);
     }
 
     canio_message_obj_t *message = message_in;
@@ -343,9 +343,10 @@ STATIC const mp_rom_map_elem_t canio_can_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(canio_can_locals_dict, canio_can_locals_dict_table);
 
-const mp_obj_type_t canio_can_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_CAN,
-    .make_new = canio_can_make_new,
-    .locals_dict = (mp_obj_t)&canio_can_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    canio_can_type,
+    MP_QSTR_CAN,
+    MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
+    make_new, canio_can_make_new,
+    locals_dict, &canio_can_locals_dict
+    );

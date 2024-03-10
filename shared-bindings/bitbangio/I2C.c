@@ -36,7 +36,6 @@
 #include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class I2C:
 //|     """Two wire serial protocol"""
@@ -119,7 +118,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_i2c_obj___exit___obj, 4, 4,
 
 static void check_lock(bitbangio_i2c_obj_t *self) {
     if (!shared_module_bitbangio_i2c_has_lock(self)) {
-        mp_raise_RuntimeError(translate("Function requires lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 
@@ -363,9 +362,10 @@ STATIC const mp_rom_map_elem_t bitbangio_i2c_locals_dict_table[] = {
 
 STATIC MP_DEFINE_CONST_DICT(bitbangio_i2c_locals_dict, bitbangio_i2c_locals_dict_table);
 
-const mp_obj_type_t bitbangio_i2c_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_I2C,
-    .make_new = bitbangio_i2c_make_new,
-    .locals_dict = (mp_obj_dict_t *)&bitbangio_i2c_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bitbangio_i2c_type,
+    MP_QSTR_I2C,
+    MP_TYPE_FLAG_NONE,
+    make_new, bitbangio_i2c_make_new,
+    locals_dict, &bitbangio_i2c_locals_dict
+    );

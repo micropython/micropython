@@ -38,7 +38,6 @@
 #include "py/binary.h"
 #include "py/mperrno.h"
 #include "py/runtime.h"
-#include "supervisor/shared/translate/translate.h"
 
 //| class SPI:
 //|     """A 3-4 wire serial protocol
@@ -129,7 +128,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(bitbangio_spi_obj___exit___obj, 4, 4,
 
 static void check_lock(bitbangio_spi_obj_t *self) {
     if (!shared_module_bitbangio_spi_has_lock(self)) {
-        mp_raise_RuntimeError(translate("Function requires lock"));
+        mp_raise_RuntimeError(MP_ERROR_TEXT("Function requires lock"));
     }
 }
 
@@ -378,7 +377,7 @@ STATIC mp_obj_t bitbangio_spi_write_readinto(size_t n_args, const mp_obj_t *pos_
     in_length *= in_stride_in_bytes;
 
     if (out_length != in_length) {
-        mp_raise_ValueError(translate("buffer slices must be of equal length"));
+        mp_raise_ValueError(MP_ERROR_TEXT("buffer slices must be of equal length"));
     }
 
     if (out_length == 0) {
@@ -411,9 +410,10 @@ STATIC const mp_rom_map_elem_t bitbangio_spi_locals_dict_table[] = {
 };
 STATIC MP_DEFINE_CONST_DICT(bitbangio_spi_locals_dict, bitbangio_spi_locals_dict_table);
 
-const mp_obj_type_t bitbangio_spi_type = {
-    { &mp_type_type },
-    .name = MP_QSTR_SPI,
-    .make_new = bitbangio_spi_make_new,
-    .locals_dict = (mp_obj_dict_t *)&bitbangio_spi_locals_dict,
-};
+MP_DEFINE_CONST_OBJ_TYPE(
+    bitbangio_spi_type,
+    MP_QSTR_SPI,
+    MP_TYPE_FLAG_NONE,
+    make_new, bitbangio_spi_make_new,
+    locals_dict, &bitbangio_spi_locals_dict
+    );

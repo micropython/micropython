@@ -171,23 +171,7 @@ STATIC mp_obj_t synthio_envelope_make_new(const mp_obj_type_t *type_in, size_t n
 };
 
 const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
-    .base = {
-        .base = {
-            .type = &mp_type_type
-        },
-        .flags = MP_TYPE_FLAG_EXTENDED,
-        .name = MP_QSTR_Envelope,
-        .print = namedtuple_print,
-        .parent = &mp_type_tuple,
-        .make_new = synthio_envelope_make_new,
-        .attr = namedtuple_attr,
-        MP_TYPE_EXTENDED_FIELDS(
-            .unary_op = mp_obj_tuple_unary_op,
-            .binary_op = mp_obj_tuple_binary_op,
-            .subscr = mp_obj_tuple_subscr,
-            .getiter = mp_obj_tuple_getiter,
-            ),
-    },
+    NAMEDTUPLE_TYPE_BASE_AND_SLOTS_MAKE_NEW(MP_QSTR_Envelope, synthio_envelope_make_new),
     .n_fields = 5,
     .fields = {
         MP_QSTR_attack_time,
@@ -233,15 +217,15 @@ const mp_obj_namedtuple_type_t synthio_envelope_type_obj = {
 STATIC mp_obj_t synthio_from_file(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_file, ARG_sample_rate, ARG_waveform, ARG_envelope };
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED },
+        { MP_QSTR_file, MP_ARG_OBJ | MP_ARG_REQUIRED, {} },
         { MP_QSTR_sample_rate, MP_ARG_INT | MP_ARG_KW_ONLY, {.u_int = 11025} },
         { MP_QSTR_waveform, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
         { MP_QSTR_envelope, MP_ARG_OBJ | MP_ARG_KW_ONLY, {.u_obj = mp_const_none } },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all(n_args, pos_args, kw_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
-    if (!mp_obj_is_type(args[ARG_file].u_obj, &mp_type_fileio)) {
-        mp_raise_TypeError(translate("file must be a file opened in byte mode"));
+    if (!mp_obj_is_type(args[ARG_file].u_obj, &mp_type_vfs_fat_fileio)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("file must be a file opened in byte mode"));
     }
     pyb_file_obj_t *file = MP_OBJ_TO_PTR(args[ARG_file].u_obj);
 
@@ -320,6 +304,11 @@ STATIC mp_obj_t voct_to_hz(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(synthio_voct_to_hz_obj, voct_to_hz);
 
+//|
+//| waveform_max_length: int
+//| """The maximum number of samples permitted in a waveform"""
+//|
+
 #if CIRCUITPY_AUDIOCORE_DEBUG
 STATIC mp_obj_t synthio_lfo_tick(size_t n, const mp_obj_t *args) {
     shared_bindings_synthio_lfo_tick(48000);
@@ -349,6 +338,7 @@ STATIC const mp_rom_map_elem_t synthio_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Envelope), MP_ROM_PTR(&synthio_envelope_type_obj) },
     { MP_ROM_QSTR(MP_QSTR_midi_to_hz), MP_ROM_PTR(&synthio_midi_to_hz_obj) },
     { MP_ROM_QSTR(MP_QSTR_voct_to_hz), MP_ROM_PTR(&synthio_voct_to_hz_obj) },
+    { MP_ROM_QSTR(MP_QSTR_waveform_max_length), MP_ROM_INT(SYNTHIO_WAVEFORM_SIZE) },
     #if CIRCUITPY_AUDIOCORE_DEBUG
     { MP_ROM_QSTR(MP_QSTR_lfo_tick), MP_ROM_PTR(&synthio_lfo_tick_obj) },
     #endif

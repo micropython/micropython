@@ -16,7 +16,7 @@ runs:
     - name: Cache python dependencies
       id: cache-python-deps
       if: inputs.action == 'cache'
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: .cp_tools
         key: ${{ runner.os }}-${{ env.pythonLocation }}-tools-cp-${{ hashFiles('requirements-dev.txt') }}
@@ -24,7 +24,7 @@ runs:
     - name: Restore python dependencies
       id: restore-python-deps
       if: inputs.action == 'restore'
-      uses: actions/cache/restore@v3
+      uses: actions/cache/restore@v4
       with:
         path: .cp_tools
         key: ${{ runner.os }}-${{ env.pythonLocation }}-tools-cp-${{ hashFiles('requirements-dev.txt') }}
