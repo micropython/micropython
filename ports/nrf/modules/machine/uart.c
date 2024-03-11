@@ -69,6 +69,7 @@ typedef struct _machine_uart_buf_t {
 #define NRF_UART_HWFC_DISABLED    NRF_UARTE_HWFC_DISABLED
 #define NRF_UART_PARITY_EXCLUDED  NRF_UARTE_PARITY_EXCLUDED
 #define NRFX_UART_EVT_RX_DONE     NRFX_UARTE_EVT_RX_DONE
+#define NRFX_UART_EVT_TX_DONE     NRFX_UARTE_EVT_TX_DONE
 #define NRFX_UART_EVT_ERROR       NRFX_UARTE_EVT_ERROR
 
 #define NRF_UART_BAUDRATE_1200    NRF_UARTE_BAUDRATE_1200
@@ -88,12 +89,24 @@ typedef struct _machine_uart_buf_t {
 
 #endif
 
+#if MICROPY_PY_MACHINE_UART_IRQ
+#define NRFX_UART_IRQ_RX (1 << NRFX_UART_EVT_RX_DONE)
+#define NRFX_UART_IRQ_TXIDLE (1 << NRFX_UART_EVT_TX_DONE)
+#define MP_UART_ALLOWED_FLAGS (NRFX_UART_IRQ_RX | NRFX_UART_IRQ_TXIDLE)
+#endif
+
+
 typedef struct _machine_uart_obj_t {
     mp_obj_base_t base;
     const nrfx_uart_t *p_uart;       // Driver instance
     machine_uart_buf_t buf;
     uint16_t timeout;       // timeout waiting for first char (in ms)
     uint16_t timeout_char;  // timeout waiting between chars (in ms)
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    uint16_t mp_irq_trigger;   // user IRQ trigger mask
+    uint16_t mp_irq_flags;     // user IRQ active IRQ flags
+    mp_irq_obj_t *mp_irq_obj;  // user IRQ object
+    #endif
 } machine_uart_obj_t;
 
 static const nrfx_uart_t instance0 = NRFX_UART_INSTANCE(0);
@@ -116,6 +129,9 @@ static int uart_find(mp_obj_t id) {
 
 static void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context) {
     machine_uart_obj_t *self = p_context;
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    self->mp_irq_flags = 0;
+    #endif
     if (p_event->type == NRFX_UART_EVT_RX_DONE) {
         nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
         int chr = self->buf.rx_buf[0];
@@ -129,10 +145,23 @@ static void uart_event_handler(nrfx_uart_event_t const *p_event, void *p_context
         {
             ringbuf_put((ringbuf_t *)&self->buf.rx_ringbuf, chr);
         }
+        #if MICROPY_PY_MACHINE_UART_IRQ
+        self->mp_irq_flags |= NRFX_UART_IRQ_RX;
+        #endif
     } else if (p_event->type == NRFX_UART_EVT_ERROR) {
         // Perform a read to unlock UART in case of an error
         nrfx_uart_rx(self->p_uart, &self->buf.rx_buf[0], 1);
+    } else if (p_event->type == NRFX_UART_EVT_TX_DONE) {
+        #if MICROPY_PY_MACHINE_UART_IRQ
+        self->mp_irq_flags |= NRFX_UART_IRQ_TXIDLE;
+        #endif
     }
+    #if MICROPY_PY_MACHINE_UART_IRQ
+    // Check the flags to see if the user handler should be called
+    if (self->mp_irq_trigger & self->mp_irq_flags) {
+        mp_irq_handler(self->mp_irq_obj);
+    }
+    #endif
 }
 
 bool uart_rx_any(machine_uart_obj_t *self) {
@@ -171,7 +200,14 @@ void uart_tx_strn_cooked(machine_uart_obj_t *uart_obj, const char *str, uint len
 /* MicroPython bindings                                                      */
 
 // The UART class doesn't have any constants for this port.
+#if MICROPY_PY_MACHINE_UART_IRQ
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_RX), MP_ROM_INT(NRFX_UART_IRQ_RX) }, \
+    { MP_ROM_QSTR(MP_QSTR_IRQ_TXIDLE), MP_ROM_INT(NRFX_UART_IRQ_TXIDLE) }, \
+
+#else
 #define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS
+#endif
 
 static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mp_printf(print, "UART(0)");
@@ -292,6 +328,57 @@ static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
 static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
     return !nrfx_uart_tx_in_progress(self->p_uart);
 }
+
+#if MICROPY_PY_MACHINE_UART_IRQ
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    self->mp_irq_trigger = new_trigger;
+    return 0;
+}
+
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (info_type == MP_IRQ_INFO_FLAGS) {
+        return self->mp_irq_flags;
+    } else if (info_type == MP_IRQ_INFO_TRIGGERS) {
+        return self->mp_irq_trigger;
+    }
+    return 0;
+}
+
+const mp_irq_methods_t uart_irq_methods = {
+    .trigger = uart_irq_trigger,
+    .info = uart_irq_info,
+};
+
+static mp_irq_obj_t *mp_machine_uart_irq(machine_uart_obj_t *self, bool any_args, mp_arg_val_t *args) {
+    if (self->mp_irq_obj == NULL) {
+        self->mp_irq_trigger = 0;
+        self->mp_irq_obj = mp_irq_new(&uart_irq_methods, MP_OBJ_FROM_PTR(self));
+    }
+
+    if (any_args) {
+        // Check the handler
+        mp_obj_t handler = args[MP_IRQ_ARG_INIT_handler].u_obj;
+        if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("handler must be None or callable"));
+        }
+
+        // Check the trigger
+        mp_uint_t trigger = args[MP_IRQ_ARG_INIT_trigger].u_int;
+        mp_uint_t not_supported = trigger & ~MP_UART_ALLOWED_FLAGS;
+        if (trigger != 0 && not_supported) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("trigger 0x%04x unsupported"), not_supported);
+        }
+
+        self->mp_irq_obj->handler = handler;
+        self->mp_irq_obj->ishard = args[MP_IRQ_ARG_INIT_hard].u_bool;
+        self->mp_irq_trigger = trigger;
+    }
+
+    return self->mp_irq_obj;
+}
+#endif
 
 static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = self_in;

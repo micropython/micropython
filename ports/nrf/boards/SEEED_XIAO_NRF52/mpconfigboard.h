@@ -40,6 +40,7 @@
 #define MICROPY_PY_MACHINE_I2C      (1)
 #define MICROPY_PY_MACHINE_ADC      (1)
 #define MICROPY_PY_MACHINE_TEMP     (1)
+#define MICROPY_PY_MACHINE_UART_IRQ (1)
 #define MICROPY_HW_HAS_FLASH        (1)
 
 #define MICROPY_HW_ENABLE_RNG       (1)
