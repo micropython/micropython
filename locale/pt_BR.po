@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-02-22 14:16+0000\n"
+"PO-Revision-Date: 2024-03-11 09:56+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -105,7 +105,7 @@ msgstr "%q e %q devem compartilhar uma unidade de clock"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "%q cannot be changed once mode is set to %q"
-msgstr ""
+msgstr "%q não pode ser alterado quando o modo é definido como %q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
