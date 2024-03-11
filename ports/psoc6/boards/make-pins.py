@@ -130,7 +130,7 @@ class Pins(object):
 
     def print_named(self, label, named_pins):
         print(
-            "STATIC const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{".format(label)
+            "static const mp_rom_map_elem_t pin_{:s}_pins_locals_dict_table[] = {{".format(label)
         )
         num_cpu_pins = 0
         for named_pin in named_pins:

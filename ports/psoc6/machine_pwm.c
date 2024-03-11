@@ -20,7 +20,7 @@ typedef struct _machine_pwm_obj_t {
 
 static machine_pwm_obj_t *pwm_obj[MAX_PWM_OBJS] = { NULL };
 
-STATIC inline machine_pwm_obj_t *pwm_obj_alloc() {
+static inline machine_pwm_obj_t *pwm_obj_alloc() {
     for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
     {
         if (pwm_obj[i] == NULL) {
@@ -32,7 +32,7 @@ STATIC inline machine_pwm_obj_t *pwm_obj_alloc() {
     return NULL;
 }
 
-STATIC inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
+static inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
     for (uint8_t i = 0; i < MAX_PWM_OBJS; i++)
     {
         if (pwm_obj[i] == pwm_obj_ptr) {
@@ -41,7 +41,7 @@ STATIC inline void pwm_obj_free(machine_pwm_obj_t *pwm_obj_ptr) {
     }
 }
 
-STATIC inline void pwm_pin_alloc(machine_pwm_obj_t *pwm_obj, mp_obj_t pin_name) {
+static inline void pwm_pin_alloc(machine_pwm_obj_t *pwm_obj, mp_obj_t pin_name) {
     machine_pin_phy_obj_t *pin = pin_phy_realloc(pin_name, PIN_PHY_FUNC_PWM);
 
     if (pin == NULL) {
@@ -52,7 +52,7 @@ STATIC inline void pwm_pin_alloc(machine_pwm_obj_t *pwm_obj, mp_obj_t pin_name) 
     pwm_obj->pin = pin;
 }
 
-STATIC inline void pwm_pin_free(machine_pwm_obj_t *pwm_obj) {
+static inline void pwm_pin_free(machine_pwm_obj_t *pwm_obj) {
     pin_phy_free(pwm_obj->pin);
 }
 
@@ -63,13 +63,13 @@ enum {
     DUTY_NS
 };
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
 
-STATIC cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
+static cy_rslt_t pwm_freq_duty_set(cyhal_pwm_t *pwm_obj, uint32_t fz, float duty_cycle) {
     return cyhal_pwm_set_duty_cycle(pwm_obj, duty_cycle * 100, fz); // duty_cycle in percentage
 }
 
-STATIC inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
+static inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint32_t pulse_width) {
     return cyhal_pwm_set_period(pwm_obj, 1000000 / fz, pulse_width / 1000); // !# * --> /
 }
 
@@ -77,12 +77,12 @@ STATIC inline cy_rslt_t pwm_duty_set_ns(cyhal_pwm_t *pwm_obj, uint32_t fz, uint3
     return cyhal_pwm_init_adv(&machine_pwm_obj->pwm_obj, machine_pwm_obj->pin->addr, NC, CYHAL_PWM_LEFT_ALIGN, true, 0, true, NULL); // complimentary pin set as not connected
 }*/
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "frequency=%u duty_cycle=%f", self->fz, (double)self->duty);
 }
 
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns};
     // enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
@@ -133,7 +133,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     cyhal_pwm_start(&self->pwm_obj);
 }
 
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -160,13 +160,13 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     cyhal_pwm_free(&self->pwm_obj);
     pwm_pin_free(self);
     pwm_obj_free(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->duty_type == DUTY_NS) {
         // duty_cycle = pulsewidth(ns)*freq(hz);
         return mp_obj_new_float(((self->duty) * (self->fz) * 65535) / 1000000000 - 1);
@@ -176,14 +176,14 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
 }
 
 // sets the duty cycle as a ratio duty_u16 / 65535.
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     // Check the value is more than the max value
     self->duty = duty_u16 > 65535 ? 65535 : duty_u16;
     self->duty_type = DUTY_U16;
     pwm_freq_duty_set(&self->pwm_obj, self->fz, (float)(self->duty) / (float)65535); // s conversion of duty_u16 into dutyu16/65535
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     if (self->duty_type == DUTY_U16) {
         return mp_obj_new_float(((self->duty) * 1000000000) / ((self->fz) * 65535));   // pw (ns) = duty_cycle*10^9/fz
     } else {
@@ -192,18 +192,18 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
 }
 
 // sets the pulse width in nanoseconds
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     self->duty = duty_ns;
     self->duty_type = DUTY_NS;
     pwm_duty_set_ns(&self->pwm_obj, self->fz, duty_ns);
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT(self->fz);
 
 }
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     self->fz = freq;
     pwm_freq_duty_set(&self->pwm_obj, freq, self->duty);
     if (self->duty_type == DUTY_NS) {

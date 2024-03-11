@@ -65,7 +65,7 @@ static inline void i2c_obj_free(machine_i2c_obj_t *i2c_obj_ptr) {
     }
 }
 
-STATIC void i2c_init(machine_i2c_obj_t *machine_i2c_obj, uint32_t freq_hz, int16_t slave_addr) {
+static void i2c_init(machine_i2c_obj_t *machine_i2c_obj, uint32_t freq_hz, int16_t slave_addr) {
     // Define the I2C master configuration structure
 
     // Set cgf frequency
@@ -88,7 +88,7 @@ STATIC void i2c_init(machine_i2c_obj_t *machine_i2c_obj, uint32_t freq_hz, int16
     i2c_assert_raise_val("I2C initialisation failed with return code %lx !", result);
 }
 
-STATIC inline void i2c_sda_alloc(machine_i2c_obj_t *i2c_obj, mp_obj_t pin_name) {
+static inline void i2c_sda_alloc(machine_i2c_obj_t *i2c_obj, mp_obj_t pin_name) {
     machine_pin_phy_obj_t *sda = pin_phy_realloc(pin_name, PIN_PHY_FUNC_I2C);
 
     if (sda == NULL) {
@@ -99,11 +99,11 @@ STATIC inline void i2c_sda_alloc(machine_i2c_obj_t *i2c_obj, mp_obj_t pin_name) 
     i2c_obj->sda = sda;
 }
 
-STATIC inline void i2c_sda_free(machine_i2c_obj_t *i2c_obj) {
+static inline void i2c_sda_free(machine_i2c_obj_t *i2c_obj) {
     pin_phy_free(i2c_obj->sda);
 }
 
-STATIC inline void i2c_scl_alloc(machine_i2c_obj_t *i2c_obj, mp_obj_t pin_name) {
+static inline void i2c_scl_alloc(machine_i2c_obj_t *i2c_obj, mp_obj_t pin_name) {
     machine_pin_phy_obj_t *scl = pin_phy_realloc(pin_name, PIN_PHY_FUNC_I2C);
 
     if (scl == NULL) {
@@ -114,11 +114,11 @@ STATIC inline void i2c_scl_alloc(machine_i2c_obj_t *i2c_obj, mp_obj_t pin_name) 
     i2c_obj->scl = scl;
 }
 
-STATIC inline void i2c_scl_free(machine_i2c_obj_t *i2c_obj) {
+static inline void i2c_scl_free(machine_i2c_obj_t *i2c_obj) {
     pin_phy_free(i2c_obj->scl);
 }
 
-STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(freq=%u, scl=%u, sda=%u, mode=%u, addr=%u)", self->cfg.frequencyhal_hz, self->scl->addr, self->sda->addr, self->cfg.is_slave, self->cfg.address);
 }
@@ -184,7 +184,7 @@ mp_obj_t machine_i2c_slave_make_new(const mp_obj_type_t *type, size_t n_args, si
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_i2c_deinit(mp_obj_base_t *self_in) {
+static void machine_i2c_deinit(mp_obj_base_t *self_in) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyhal_i2c_free(&(self->i2c_obj));
     i2c_sda_free(self);
@@ -192,7 +192,7 @@ STATIC void machine_i2c_deinit(mp_obj_base_t *self_in) {
     i2c_obj_free(self);
 }
 
-STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result = CY_RSLT_SUCCESS;
     bool send_stop = (flags & MP_MACHINE_I2C_FLAG_STOP) ? true : false;
@@ -228,7 +228,7 @@ STATIC int machine_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t le
     }
 }
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+static const mp_machine_i2c_p_t machine_i2c_p = {
     .deinit = machine_i2c_deinit,
     .transfer_single = machine_i2c_transfer,
     .transfer = mp_machine_i2c_transfer_adaptor
@@ -246,14 +246,14 @@ MP_DEFINE_CONST_OBJ_TYPE(
 
 #if MICROPY_PY_MACHINE_I2C_SLAVE
 
-STATIC mp_obj_t machine_i2c_slave_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_i2c_slave_deinit(mp_obj_t self_in) {
     mp_obj_base_t *self = MP_OBJ_TO_PTR(self_in);
     machine_i2c_deinit(self);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_deinit_obj, machine_i2c_slave_deinit);
 
-STATIC mp_obj_t machine_i2c_slave_configure_receive_buffer(mp_obj_t self_in, mp_obj_t buf_in) {
+static mp_obj_t machine_i2c_slave_configure_receive_buffer(mp_obj_t self_in, mp_obj_t buf_in) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -263,9 +263,9 @@ STATIC mp_obj_t machine_i2c_slave_configure_receive_buffer(mp_obj_t self_in, mp_
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2c_slave_conf_rx_buffer_obj, machine_i2c_slave_configure_receive_buffer);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_i2c_slave_conf_rx_buffer_obj, machine_i2c_slave_configure_receive_buffer);
 
-STATIC mp_obj_t machine_i2c_slave_configure_transmit_buffer(mp_obj_t self_in, mp_obj_t buf_in) {
+static mp_obj_t machine_i2c_slave_configure_transmit_buffer(mp_obj_t self_in, mp_obj_t buf_in) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -275,14 +275,14 @@ STATIC mp_obj_t machine_i2c_slave_configure_transmit_buffer(mp_obj_t self_in, mp
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2c_slave_conf_tx_buffer_obj, machine_i2c_slave_configure_transmit_buffer);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_i2c_slave_conf_tx_buffer_obj, machine_i2c_slave_configure_transmit_buffer);
 
 static void i2c_irq_handler(void *callback_arg, cyhal_i2c_event_t event) {
     machine_i2c_obj_t *self = callback_arg;
     mp_sched_schedule(self->callback, mp_obj_new_int(event));
 }
 
-STATIC mp_obj_t machine_i2c_slave_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_i2c_slave_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_callback, ARG_events, ARG_priority};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_callback, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -301,16 +301,16 @@ STATIC mp_obj_t machine_i2c_slave_irq(size_t n_args, const mp_obj_t *pos_args, m
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_slave_irq_obj, 1, machine_i2c_slave_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2c_slave_irq_obj, 1, machine_i2c_slave_irq);
 
-STATIC mp_obj_t machine_i2c_slave_irq_disable(mp_obj_t self_in) {
+static mp_obj_t machine_i2c_slave_irq_disable(mp_obj_t self_in) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyhal_i2c_enable_event(&self->i2c_obj, CYHAL_I2C_EVENT_NONE, 3, false);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_irq_disable_obj, machine_i2c_slave_irq_disable);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2c_slave_irq_disable_obj, machine_i2c_slave_irq_disable);
 
-STATIC const mp_rom_map_elem_t machine_i2c_slave_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_i2c_slave_locals_dict_table[] = {
     // Functions
     { MP_ROM_QSTR(MP_QSTR_conf_receive_buffer),         MP_ROM_PTR(&machine_i2c_slave_conf_rx_buffer_obj) },
     { MP_ROM_QSTR(MP_QSTR_conf_transmit_buffer),        MP_ROM_PTR(&machine_i2c_slave_conf_tx_buffer_obj) },
@@ -327,7 +327,7 @@ STATIC const mp_rom_map_elem_t machine_i2c_slave_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WR_CMPLT_EVENT),               MP_ROM_INT(CYHAL_I2C_SLAVE_WR_CMPLT_EVENT) },
     { MP_ROM_QSTR(MP_QSTR_ERR_EVENT),                    MP_ROM_INT(CYHAL_I2C_SLAVE_ERR_EVENT) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_i2c_slave_locals_dict, machine_i2c_slave_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_i2c_slave_locals_dict, machine_i2c_slave_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_i2c_slave_type,

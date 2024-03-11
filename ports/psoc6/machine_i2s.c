@@ -79,7 +79,7 @@ typedef struct _machine_i2s_obj_t {
 } machine_i2s_obj_t;
 
 
-STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
 
     enum {
         ARG_sck,
@@ -191,14 +191,14 @@ STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, 
 
 }
 
-STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyhal_i2s_free(&self->i2s_obj);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
 
-STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
+static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
 
     machine_i2s_obj_t *self;
     if (MP_STATE_PORT(machine_i2s_obj[i2s_id]) == NULL) {
@@ -214,7 +214,7 @@ STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id) {
 }
 
 
-STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2S(id=%u,\n"
         "sck="MP_HAL_PIN_FMT ",\n"
@@ -233,7 +233,7 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         );
 }
 
-STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
+static mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     mp_int_t i2s_id = mp_obj_get_int(args[0]);
@@ -250,16 +250,16 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_i2s_obj_t *self = pos_args[0];
     machine_i2s_deinit(self);
     machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
 
 // placeholder function not complete
-STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
+static mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
@@ -276,9 +276,9 @@ STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
     self->callback_for_non_blocking = handler;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
 
-STATIC mp_obj_t machine_i2s_stop(mp_obj_t self_in) {
+static mp_obj_t machine_i2s_stop(mp_obj_t self_in) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->mode == TX) {
         cyhal_i2s_stop_tx(&self->i2s_obj);
@@ -287,12 +287,12 @@ STATIC mp_obj_t machine_i2s_stop(mp_obj_t self_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_stop_obj, machine_i2s_stop);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_stop_obj, machine_i2s_stop);
 
 
 // Shift() is typically used as a volume control.
 // shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB
-STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buf, ARG_bits, ARG_shift};
     static const mp_arg_t allowed_args[] = {
         // { MP_QSTR_buf,    MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -349,8 +349,8 @@ STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
 
 void clock_init(void) {
     cyhal_clock_t clock_pll;
@@ -406,7 +406,7 @@ void clock_init(void) {
 }
 
 
-STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&machine_i2s_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
@@ -428,7 +428,7 @@ MP_DEFINE_CONST_DICT(machine_i2s_locals_dict, machine_i2s_locals_dict_table);
 
 
 
-STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result;
 
@@ -476,7 +476,7 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
 }
 
 
-STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cy_rslt_t result;
 
@@ -516,7 +516,7 @@ STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
 }
 
 
-STATIC const mp_stream_p_t i2s_stream_p = {
+static const mp_stream_p_t i2s_stream_p = {
     .read = machine_i2s_stream_read,
     .write = machine_i2s_stream_write,
     .ioctl = false,

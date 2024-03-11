@@ -63,7 +63,7 @@ static inline void spi_obj_free(machine_spi_obj_t *spi_obj_ptr) {
     }
 }
 
-STATIC inline void spi_sck_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name) {
+static inline void spi_sck_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name) {
     machine_pin_phy_obj_t *sck = pin_phy_realloc(pin_name, PIN_PHY_FUNC_SPI);
 
     if (sck == NULL) {
@@ -74,11 +74,11 @@ STATIC inline void spi_sck_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name) 
     spi_obj->sck = sck;
 }
 
-STATIC inline void spi_sck_free(machine_spi_obj_t *spi_obj) {
+static inline void spi_sck_free(machine_spi_obj_t *spi_obj) {
     pin_phy_free(spi_obj->sck);
 }
 
-STATIC inline void spi_mosi_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name) {
+static inline void spi_mosi_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name) {
     machine_pin_phy_obj_t *mosi = pin_phy_realloc(pin_name, PIN_PHY_FUNC_SPI);
 
     if (mosi == NULL) {
@@ -89,11 +89,11 @@ STATIC inline void spi_mosi_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name)
     spi_obj->mosi = mosi;
 }
 
-STATIC inline void spi_mosi_free(machine_spi_obj_t *spi_obj) {
+static inline void spi_mosi_free(machine_spi_obj_t *spi_obj) {
     pin_phy_free(spi_obj->mosi);
 }
 
-STATIC inline void spi_miso_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name) {
+static inline void spi_miso_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name) {
     machine_pin_phy_obj_t *miso = pin_phy_realloc(pin_name, PIN_PHY_FUNC_SPI);
 
     if (miso == NULL) {
@@ -104,12 +104,12 @@ STATIC inline void spi_miso_alloc(machine_spi_obj_t *spi_obj, mp_obj_t pin_name)
     spi_obj->miso = miso;
 }
 
-STATIC inline void spi_miso_free(machine_spi_obj_t *spi_obj) {
+static inline void spi_miso_free(machine_spi_obj_t *spi_obj) {
     pin_phy_free(spi_obj->miso);
 }
 
 // Function to select the mode
-STATIC cyhal_spi_mode_t mode_select(uint8_t firstbit, uint8_t polarity, uint8_t phase) {
+static cyhal_spi_mode_t mode_select(uint8_t firstbit, uint8_t polarity, uint8_t phase) {
 
     cyhal_spi_mode_t mode;
     if (firstbit == 1) {
@@ -144,7 +144,7 @@ STATIC cyhal_spi_mode_t mode_select(uint8_t firstbit, uint8_t polarity, uint8_t 
     return mode;
 }
 
-STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(id=%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%d, mosi=%d, miso=%d)",
         self->spi_id, self->baudrate, self->polarity,
@@ -238,7 +238,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_baudrate, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = -1} },
@@ -286,7 +286,7 @@ STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj
     }
 }
 
-STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     cy_rslt_t result;
 
@@ -315,7 +315,7 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 
 }
 
-STATIC void machine_spi_deinit(mp_obj_base_t *self_in) {
+static void machine_spi_deinit(mp_obj_base_t *self_in) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
     cyhal_spi_free(&self->spi_obj);
     spi_sck_free(self);
@@ -324,7 +324,7 @@ STATIC void machine_spi_deinit(mp_obj_base_t *self_in) {
     spi_obj_free(self);
 }
 
-STATIC const mp_machine_spi_p_t machine_spi_p = {
+static const mp_machine_spi_p_t machine_spi_p = {
     .init = machine_spi_init,
     .deinit = machine_spi_deinit,
     .transfer = machine_spi_transfer,

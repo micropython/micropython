@@ -32,7 +32,7 @@
 #include "modpsoc6.h"
 
 
-STATIC const mp_rom_map_elem_t psoc6_module_globals_table[] = {
+static const mp_rom_map_elem_t psoc6_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),            MP_ROM_QSTR(MP_QSTR_psoc6) },
     #if MICROPY_ENABLE_EXT_QSPI_FLASH
     { MP_ROM_QSTR(MP_QSTR_QSPI_Flash),          MP_ROM_PTR(&psoc6_qspi_flash_type) },
@@ -40,7 +40,7 @@ STATIC const mp_rom_map_elem_t psoc6_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_Flash),               MP_ROM_PTR(&psoc6_flash_type) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(psoc6_module_globals, psoc6_module_globals_table);
+static MP_DEFINE_CONST_DICT(psoc6_module_globals, psoc6_module_globals_table);
 
 
 const mp_obj_module_t mp_module_psoc6 = {

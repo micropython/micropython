@@ -65,7 +65,7 @@ typedef struct _psoc6_qspi_flash_obj_t {
     uint32_t flash_size;
 } psoc6_qspi_flash_obj_t;
 
-STATIC psoc6_qspi_flash_obj_t psoc6_qspi_flash_obj = {
+static psoc6_qspi_flash_obj_t psoc6_qspi_flash_obj = {
     .base = { &psoc6_qspi_flash_type },
     .flash_base = EXT_FLASH_BASE,
     .flash_size = EXT_FLASH_SIZE,
@@ -87,7 +87,7 @@ void get_ext_flash_info(void) {
     mplogger_print("\nPage size (bytes): %d\n", cy_serial_flash_qspi_get_prog_size(0x00));
 }
 
-STATIC mp_obj_t psoc6_qspi_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t psoc6_qspi_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mplogger_print("\nQSPI flash constructor invoked\n");
     #if MICROPY_LOGGER_DEBUG
     get_ext_flash_info();
@@ -146,7 +146,7 @@ STATIC mp_obj_t psoc6_qspi_flash_make_new(const mp_obj_type_t *type, size_t n_ar
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t psoc6_qspi_flash_readblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t psoc6_qspi_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     mplogger_print("\nQSPI flash readblocks called\n");
 
     psoc6_qspi_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
@@ -169,9 +169,9 @@ STATIC mp_obj_t psoc6_qspi_flash_readblocks(size_t n_args, const mp_obj_t *args)
     ;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc6_qspi_flash_readblocks_obj, 3, 4, psoc6_qspi_flash_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc6_qspi_flash_readblocks_obj, 3, 4, psoc6_qspi_flash_readblocks);
 
-STATIC mp_obj_t psoc6_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t psoc6_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     mplogger_print("\nQSPI flash writeblocks called\n");
     psoc6_qspi_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     uint32_t offset = mp_obj_get_int(args[1]) * EXT_FLASH_BLOCK_SIZE_BYTES;
@@ -208,9 +208,9 @@ STATIC mp_obj_t psoc6_qspi_flash_writeblocks(size_t n_args, const mp_obj_t *args
     MICROPY_END_ATOMIC_SECTION(atomic_state);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc6_qspi_flash_writeblocks_obj, 3, 4, psoc6_qspi_flash_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(psoc6_qspi_flash_writeblocks_obj, 3, 4, psoc6_qspi_flash_writeblocks);
 
-STATIC mp_obj_t psoc6_qspi_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t psoc6_qspi_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mplogger_print("QSPI flash ioctrl called\n");
     psoc6_qspi_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
@@ -250,14 +250,14 @@ STATIC mp_obj_t psoc6_qspi_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(psoc6_qspi_flash_ioctl_obj, psoc6_qspi_flash_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(psoc6_qspi_flash_ioctl_obj, psoc6_qspi_flash_ioctl);
 
-STATIC const mp_rom_map_elem_t psoc6_qspi_flash_locals_dict_table[] = {
+static const mp_rom_map_elem_t psoc6_qspi_flash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&psoc6_qspi_flash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&psoc6_qspi_flash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&psoc6_qspi_flash_ioctl_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(psoc6_qspi_flash_locals_dict, psoc6_qspi_flash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(psoc6_qspi_flash_locals_dict, psoc6_qspi_flash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     psoc6_qspi_flash_type,

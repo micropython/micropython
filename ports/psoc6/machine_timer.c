@@ -28,13 +28,13 @@ static void isr_timer(void *callback_arg, cyhal_timer_event_t event) {
 }
 
 
-STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     qstr mode = self->mode == TIMER_MODE_ONE_SHOT ? MP_QSTR_ONE_SHOT : MP_QSTR_PERIODIC;
     mp_printf(print, "Timer(mode=%q, period=%u, tick_hz=%u)", mode, self->period, self->freq);
 }
 
-STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_mode, ARG_callback, ARG_period, ARG_freq, };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_mode,         MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = TIMER_MODE_ONE_SHOT} },
@@ -93,7 +93,7 @@ STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, size_t n_ar
     return mp_const_none;
 }
 
-STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
     machine_timer_obj_t *self = mp_obj_malloc(machine_timer_obj_t, &machine_timer_type);
 
@@ -120,21 +120,21 @@ STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args,
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_timer_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     return machine_timer_init_helper(self, n_args - 1, args + 1, kw_args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_timer_init_obj, 1, machine_timer_init);
 
-STATIC mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_timer_deinit(mp_obj_t self_in) {
     machine_timer_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyhal_timer_free(&self->timer_obj);
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_timer_deinit_obj, machine_timer_deinit);
 
-STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&machine_timer_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_timer_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_timer_deinit_obj) },
@@ -143,7 +143,7 @@ STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PERIODIC), MP_ROM_INT(TIMER_MODE_PERIODIC) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(machine_timer_locals_dict, machine_timer_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_timer_locals_dict, machine_timer_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_timer_type,

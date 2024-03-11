@@ -26,13 +26,13 @@ enum {MACHINE_PWRON_RESET, MACHINE_HARD_RESET, MACHINE_WDT_RESET, MACHINE_DEEPSL
 
 // function to return 64-bit silicon ID of given PSoC microcontroller
 // A combined 64-bit unique ID. [63:57] - DIE_YEAR [56:56] - DIE_MINOR [55:48] - DIE_SORT [47:40] - DIE_Y [39:32] - DIE_X [31:24] - DIE_WAFER [23:16] - DIE_LOT[2] [15: 8] - DIE_LOT[1] [ 7: 0] - DIE_LOT[0]
-STATIC uint64_t system_get_unique_id(void) {
+static uint64_t system_get_unique_id(void) {
     return Cy_SysLib_GetUniqueId();
 }
 
 // using watchdog timer to count to minimum value (1ms) to trigger reset
 // thread-safe way as other methods might interfere with pending interrupts, threads etc.
-STATIC void system_reset(void) {
+static void system_reset(void) {
     cyhal_wdt_t wdt_obj;
     cyhal_wdt_init(&wdt_obj, 1); // min 1ms count time
     cyhal_wdt_start(&wdt_obj);
@@ -40,12 +40,12 @@ STATIC void system_reset(void) {
 
 // get reset cause of the last system reset
 // macros defined here: cy_syslib.h
-STATIC uint32_t system_reset_cause(void) {
+static uint32_t system_reset_cause(void) {
     return Cy_SysLib_GetResetReason();
 }
 
 // helper function to generate random alphanumeric hash
-STATIC uint8_t system_rand_hash(uint8_t length) {
+static uint8_t system_rand_hash(uint8_t length) {
     uint8_t hash_sum = 0;
     char charset[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}; // hash can be made stronger but
                                                                          // uint8_t can only hold <=255
@@ -66,7 +66,7 @@ static uint8_t system_irq_key;
 // function to disable global IRQs
 // returns alphanumeric hash to enable IRQs later
 // see: https://docs.zephyrproject.org/apidoc/latest/group__isr__apis.html#ga19fdde73c3b02fcca6cf1d1e67631228
-STATIC uint8_t system_disable_global_irq(void) {
+static uint8_t system_disable_global_irq(void) {
     uint8_t state = system_rand_hash(HASH_CHARS_NUM); // 10 chars long key gen;
     __disable_irq();
     system_irq_key = state;
@@ -75,7 +75,7 @@ STATIC uint8_t system_disable_global_irq(void) {
 
 // function to enable global IRQs
 // uses passed alphanumeric key to verify and enable IRQs
-STATIC bool system_enable_global_irq(uint8_t state) {
+static bool system_enable_global_irq(uint8_t state) {
     if (state == system_irq_key) {
         __enable_irq();
         return true;
@@ -85,14 +85,14 @@ STATIC bool system_enable_global_irq(uint8_t state) {
 }
 
 // API to return clock freq; Fast CLK (CM4) is the main sys clk
-STATIC uint32_t system_get_cpu_freq(void) {
+static uint32_t system_get_cpu_freq(void) {
 //    return Cy_SysClk_ClkPathMuxGetFrequency(Cy_SysClk_ClkPathGetSource(0UL));
     return Cy_SysClk_ClkFastGetFrequency();
 }
 
 // TODO: unused. Required ?
 // API to return clock freq divider for Fast CLK (CM4)
-// STATIC uint8_t system_get_cpu_freq_div(void) {
+// static uint8_t system_get_cpu_freq_div(void) {
 //     return Cy_SysClk_ClkFastGetDivider();
 // }
 
@@ -112,7 +112,7 @@ void machine_deinit(void) {
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
-STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     mp_printf(&mp_plat_print, "\nmachine info :\n");
 
     // qstr info
@@ -188,25 +188,25 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     mp_printf(&mp_plat_print, "System core freq (CM4): %d Hz\n", system_get_cpu_freq());
     return mp_const_none;
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(MP_ERROR_TEXT("Not implemented!!!\n"));
 }
 
 // machine.unique_id()
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     uint64_t id = system_get_unique_id();
     byte *id_addr = (byte *)&id;
     mplogger_print("ID_formatted:%02x%02x%02x%02x:%02x%02x%02x%02x\n", id_addr[0], id_addr[1], id_addr[2], id_addr[3], id_addr[4], id_addr[5], id_addr[6], id_addr[7]);
@@ -215,14 +215,14 @@ STATIC mp_obj_t mp_machine_unique_id(void) {
 }
 
 // machine.reset()
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     system_reset();
     while (true) {
     }
     ;
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     qstr mp_reset_qstr = MP_QSTR_None;
     uint8_t reset_cause_const = -1;
     uint32_t reset_cause = system_reset_cause();
@@ -249,7 +249,7 @@ STATIC mp_int_t mp_machine_reset_cause(void) {
 }
 
 // machine.disable_irq()
-STATIC mp_obj_t machine_disable_irq(void) {
+static mp_obj_t machine_disable_irq(void) {
     uint32_t state = system_disable_global_irq();
     mplogger_print("IRQ State: ");
     return mp_obj_new_int(state);
@@ -257,7 +257,7 @@ STATIC mp_obj_t machine_disable_irq(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 
 // machine.enable_irq()
-STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {
+static mp_obj_t machine_enable_irq(mp_obj_t state_in) {
     uint32_t state = mp_obj_get_int(state_in);
     bool result = system_enable_global_irq(state);
     if (result) {
@@ -273,7 +273,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(machine_enable_irq_obj, machine_enable_irq);
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.
 // see: https://www.infineon.com/dgdl/Infineon-AN219528_PSoC_6_MCU_low-power_modes_and_power_reduction_techniques-ApplicationNotes-v06_00-EN.pdf?fileId=8ac78c8c7cdc391c017d0d31efdc659f  pg.7
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     __WFI(); // standard ARM instruction
 }
 

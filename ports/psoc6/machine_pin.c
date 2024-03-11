@@ -59,7 +59,7 @@ static inline void pin_io_free(machine_pin_io_obj_t *pin) {
 }
 
 // Pin.print()
-STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     mplogger_print("machine pin print\n");
 
     machine_pin_io_obj_t *self = self_in;
@@ -208,7 +208,7 @@ static bool machine_pin_is_inited(machine_pin_io_obj_t *self) {
 }
 
 // helper function to parse given initial params and invoke HAL-level GPIO functions
-STATIC mp_obj_t machine_pin_obj_init_helper(machine_pin_io_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init_helper(machine_pin_io_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mplogger_print("init helper function called\n");
 
     enum {ARG_mode, ARG_pull, ARG_value};
@@ -277,7 +277,7 @@ mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, 
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
 
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     machine_pin_io_obj_t *self = self_in;
@@ -299,30 +299,30 @@ STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, mp_uint_t n_args, mp_uint_t n
 }
 
 // pin.value([value])
-STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {
     return machine_pin_call(args[0], n_args - 1, 0, args + 1);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_pin_value_obj, 1, 2, machine_pin_value);
 
 // instantiates obj of Pin class
 // Pin.init(mode,pull,value=value)
-STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return machine_pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_obj_init_obj, 1, machine_pin_obj_init);
 
 // Pin.deinit()
-STATIC mp_obj_t machine_pin_obj_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_pin_obj_deinit(mp_obj_t self_in) {
     machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(self_in);
     cyhal_gpio_free(self->pin_phy->addr);
     pin_io_free(self);
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_deinit_obj, machine_pin_obj_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_deinit_obj, machine_pin_obj_deinit);
 
 // Pin.toggle()
-STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
+static mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
     machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->mode != GPIO_MODE_IN) {
         cyhal_gpio_toggle(self->pin_phy->addr);
@@ -330,10 +330,10 @@ STATIC mp_obj_t machine_pin_toggle(mp_obj_t self_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_toggle_obj, machine_pin_toggle);
 
 // Pin.high()
-STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
+static mp_obj_t machine_pin_high(mp_obj_t self_in) {
     machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->mode != GPIO_MODE_IN) {
         cyhal_gpio_write(self->pin_phy->addr, true);
@@ -341,10 +341,10 @@ STATIC mp_obj_t machine_pin_high(mp_obj_t self_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_high_obj, machine_pin_high);
 
 // Pin.low()
-STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
+static mp_obj_t machine_pin_low(mp_obj_t self_in) {
     machine_pin_io_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->mode != GPIO_MODE_IN) {
         cyhal_gpio_write(self->pin_phy->addr, false);
@@ -352,10 +352,10 @@ STATIC mp_obj_t machine_pin_low(mp_obj_t self_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_pin_low_obj, machine_pin_low);
 
 // pin.irq(handler=None, trigger=IRQ_FALLING|IRQ_RISING)
-STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_handler, ARG_trigger};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_handler, MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
@@ -378,9 +378,9 @@ STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
     }
     return MP_OBJ_FROM_PTR(&(self->callback_data));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_pin_irq_obj, 1, machine_pin_irq);
 
-STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     // Instance methods
     { MP_ROM_QSTR(MP_QSTR___name__),                MP_ROM_QSTR(MP_QSTR_machine) },
     { MP_ROM_QSTR(MP_QSTR_init),                    MP_ROM_PTR(&machine_pin_obj_init_obj) },
@@ -404,7 +404,7 @@ STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_FALLING),             MP_ROM_INT(GPIO_IRQ_FALLING)},
     { MP_ROM_QSTR(MP_QSTR_IRQ_RISING),              MP_ROM_INT(GPIO_IRQ_RISING)},
 };
-STATIC MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_pin_locals_dict, machine_pin_locals_dict_table);
 
 void mod_pin_deinit() {
     for (uint8_t i = 0; i < machine_pin_num_of_cpu_pins; i++) {
@@ -414,7 +414,7 @@ void mod_pin_deinit() {
     }
 }
 
-STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     (void)errcode;
     machine_pin_io_obj_t *self = self_in;
     switch (request) {
@@ -429,7 +429,7 @@ STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, i
     return -1;
 }
 
-STATIC const mp_pin_p_t pin_pin_p = {
+static const mp_pin_p_t pin_pin_p = {
     .ioctl = pin_ioctl,
 };
 

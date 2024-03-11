@@ -96,8 +96,8 @@ typedef struct _network_ifx_wcm_obj_t {
 
 extern whd_interface_t whd_ifs[MAX_WHD_INTERFACE];
 
-STATIC network_ifx_wcm_obj_t network_ifx_wcm_wl_sta = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_STA };
-STATIC network_ifx_wcm_obj_t network_ifx_wcm_wl_ap = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_AP };
+static network_ifx_wcm_obj_t network_ifx_wcm_wl_sta = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_STA };
+static network_ifx_wcm_obj_t network_ifx_wcm_wl_ap = { { &mp_network_ifx_wcm_type }, CY_WCM_INTERFACE_TYPE_AP };
 
 #define wcm_get_ap_conf_ptr(net_obj) & (net_obj.itf_obj.ap_obj.ap_config)
 #define wcm_get_sta_conf_ptr(net_obj) & (net_obj.itf_obj.sta_obj)
@@ -127,7 +127,7 @@ void network_ap_init() {
     wcm_assert_raise("network ap ip setting error (code: %d)", ret);
 }
 
-STATIC void restart_ap(cy_wcm_ap_config_t *ap_conf) {
+static void restart_ap(cy_wcm_ap_config_t *ap_conf) {
     if (cy_wcm_is_ap_up()) {
         uint32_t ret = cy_wcm_stop_ap();
         wcm_assert_raise("network ap deactivate error (with code: %d)", ret);
@@ -154,7 +154,7 @@ void network_init(void) {
 }
 
 // Print after constructor invoked
-STATIC void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     const char *status_str;
@@ -188,7 +188,7 @@ STATIC void network_ifx_wcm_print(const mp_print_t *print, mp_obj_t self_in, mp_
         );
 }
 
-STATIC mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
 
     if (n_args == 0 || mp_obj_get_int(args[0]) == MOD_NETWORK_STA_IF) {
@@ -202,14 +202,14 @@ STATIC mp_obj_t network_ifx_wcm_make_new(const mp_obj_type_t *type, size_t n_arg
 /*******************************************************************************/
 // network API
 
-STATIC mp_obj_t network_ifx_wcm_deinit(mp_obj_t self_in) {
+static mp_obj_t network_ifx_wcm_deinit(mp_obj_t self_in) {
     network_deinit();
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_deinit_obj, network_ifx_wcm_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_deinit_obj, network_ifx_wcm_deinit);
 
-STATIC mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
     cy_rslt_t ret = CY_RSLT_SUCCESS;
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
@@ -234,7 +234,7 @@ STATIC mp_obj_t network_ifx_wcm_active(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, network_ifx_wcm_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_active_obj, 1, 2, network_ifx_wcm_active);
 
 typedef struct
 {
@@ -321,7 +321,7 @@ static void network_ifx_wcm_scan_cb(cy_wcm_scan_result_t *result_ptr, void *user
     scan_user_data->status = status;
 }
 
-STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     cy_rslt_t ret = CY_RSLT_SUCCESS;
@@ -389,9 +389,9 @@ STATIC mp_obj_t network_ifx_wcm_scan(size_t n_args, const mp_obj_t *args, mp_map
 
     return scan_user_params.scan_list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_scan_obj, 1, network_ifx_wcm_scan);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_scan_obj, 1, network_ifx_wcm_scan);
 
-STATIC mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
 
     enum { ARG_ssid, ARG_key, ARG_bssid };
@@ -451,9 +451,9 @@ STATIC mp_obj_t network_ifx_wcm_connect(size_t n_args, const mp_obj_t *pos_args,
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_connect_obj, 1, network_ifx_wcm_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_connect_obj, 1, network_ifx_wcm_connect);
 
-STATIC mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
+static mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->itf != CY_WCM_INTERFACE_TYPE_STA) {
@@ -463,9 +463,9 @@ STATIC mp_obj_t network_ifx_wcm_disconnect(mp_obj_t self_in) {
     wcm_assert_raise("network sta disconnect error (with code: %d)", ret);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_disconnect_obj, network_ifx_wcm_disconnect);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_disconnect_obj, network_ifx_wcm_disconnect);
 
-STATIC mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
+static mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->itf == CY_WCM_INTERFACE_TYPE_STA) {
@@ -487,9 +487,9 @@ STATIC mp_obj_t network_ifx_wcm_isconnected(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_isconnected_obj, network_ifx_wcm_isconnected);
+static MP_DEFINE_CONST_FUN_OBJ_1(network_ifx_wcm_isconnected_obj, network_ifx_wcm_isconnected);
 
-STATIC mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     if (n_args == 1) {
         const ip_addr_t *dns = dns_getserver(0);
@@ -535,7 +535,7 @@ STATIC mp_obj_t network_ifx_wcm_ifconfig(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_ifconfig_obj, 1, 2, network_ifx_wcm_ifconfig);
 
-STATIC mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     // one argument: return status based on query parameter
@@ -574,10 +574,10 @@ STATIC mp_obj_t network_ifx_wcm_status(size_t n_args, const mp_obj_t *args) {
 
     mp_raise_ValueError(MP_ERROR_TEXT("network status unknown param"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_status_obj, 1, 2, network_ifx_wcm_status);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(network_ifx_wcm_status_obj, 1, 2, network_ifx_wcm_status);
 
 
-STATIC mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr query_opt) {
+static mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr query_opt) {
     switch (query_opt) {
         case MP_QSTR_channel: {
             return MP_OBJ_NEW_SMALL_INT(ap_conf->channel);
@@ -621,7 +621,7 @@ STATIC mp_obj_t network_ap_get_config_param(cy_wcm_ap_config_t *ap_conf, qstr qu
     }
 }
 
-STATIC mp_obj_t network_sta_get_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr query_opt) {
+static mp_obj_t network_sta_get_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr query_opt) {
     switch (query_opt) {
         case MP_QSTR_channel: {
             cy_wcm_associated_ap_info_t ap_info;
@@ -691,7 +691,7 @@ cy_wcm_security_t get_wm_security_type(mp_obj_t mpy_sec) {
     }
 }
 
-STATIC void network_ap_set_config_param(cy_wcm_ap_config_t *ap_conf, qstr opt, mp_obj_t opt_value, bool hold) {
+static void network_ap_set_config_param(cy_wcm_ap_config_t *ap_conf, qstr opt, mp_obj_t opt_value, bool hold) {
 
     static bool required_ap_restart = false;
 
@@ -743,7 +743,7 @@ STATIC void network_ap_set_config_param(cy_wcm_ap_config_t *ap_conf, qstr opt, m
     }
 }
 
-STATIC void network_sta_set_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr opt, mp_obj_t opt_value) {
+static void network_sta_set_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qstr opt, mp_obj_t opt_value) {
     switch (opt) {
         case MP_QSTR_channel:
         case MP_QSTR_key:
@@ -764,7 +764,7 @@ STATIC void network_sta_set_config_param(network_ifx_wcm_sta_obj_t *sta_conf, qs
     }
 }
 
-STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+static mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
     network_ifx_wcm_obj_t *self = MP_OBJ_TO_PTR(args[0]);
 
     if (kwargs->used == 0) {
@@ -806,12 +806,12 @@ STATIC mp_obj_t network_ifx_wcm_config(size_t n_args, const mp_obj_t *args, mp_m
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_config_obj, 1, network_ifx_wcm_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(network_ifx_wcm_config_obj, 1, network_ifx_wcm_config);
 
 /*******************************************************************************/
 // class bindings
 
-STATIC const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
+static const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&network_ifx_wcm_deinit_obj) }, // shall this be part of the module ??
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&network_ifx_wcm_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&network_ifx_wcm_scan_obj) },
@@ -832,7 +832,7 @@ STATIC const mp_rom_map_elem_t network_ifx_wcm_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WPA2_WPA_PSK), MP_ROM_INT(NET_IFX_WCM_SEC_WPA_WPA2) },
     { MP_ROM_QSTR(MP_QSTR_SEC_UNKNOWN), MP_ROM_INT(NET_IFX_WCM_SEC_UNKNOWN) },
 };
-STATIC MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
+static MP_DEFINE_CONST_DICT(network_ifx_wcm_locals_dict, network_ifx_wcm_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_network_ifx_wcm_type,

@@ -67,7 +67,7 @@ typedef struct _machine_rtc_obj_t {
 
 
 // singleton RTC object
-STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
+static const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
 /* This function is run from main.c to init the RTC at boot time. This will set the RTC to PSoC default time: 1st Jan 2000*/
 void rtc_init(void) {
@@ -80,14 +80,14 @@ void rtc_init(void) {
 
 // Machine RTC methods - port-specific definitions
 // RTC constructor
-STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     // return constant object
     return (mp_obj_t)&machine_rtc_obj;
 }
 
 // Helper function to set/get datetime
-STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         struct tm current_date_time = {0};
         cy_rslt_t result = cyhal_rtc_read(&psoc6_rtc, &current_date_time);
@@ -132,13 +132,13 @@ STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *ar
 }
 
 // RTC.datetime([datetime])
-STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     return machine_rtc_datetime_helper(n_args, args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
 // RTC.init(datetime)
-STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
+static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
     // Check if RTC is correctly initialized already through main
     bool r = cyhal_rtc_is_enabled(&psoc6_rtc);
@@ -148,10 +148,10 @@ STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     machine_rtc_datetime_helper(2, args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
 // RTC.deinit()
-STATIC mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
     /* Resets RTC to 1st Jan' 2015 as mentioned in MPY guide*/
     struct tm reset_date_time = {
         .tm_year = RTC_INIT_YEAR - TM_YEAR_BASE,
@@ -169,21 +169,21 @@ STATIC mp_obj_t machine_rtc_deinit(mp_obj_t self_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_deinit_obj, machine_rtc_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_deinit_obj, machine_rtc_deinit);
 
 // RTC.now()
-STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
+static mp_obj_t machine_rtc_now(mp_obj_t self_in) {
     return machine_rtc_datetime_helper(1, NULL);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 
-STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_rtc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&machine_rtc_now_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_rtc_type,

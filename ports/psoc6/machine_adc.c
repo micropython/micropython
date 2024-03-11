@@ -70,13 +70,13 @@ uint8_t adc_get_resolution(machine_adc_obj_t *adc) {
 }
 
 // machine_adc_print()
-STATIC void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<ADC Pin=%u, ADCBlock_id=%d, sampling_time_ns=%ld>", self->pin_phy->addr, self->block->id, self->sample_ns);
 }
 
 // ADC(id)
-STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, 6, true);
     enum {ARG_sample_ns};
@@ -99,46 +99,46 @@ STATIC mp_obj_t machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, s
 }
 
 // deinit()
-STATIC mp_obj_t machine_adc_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_adc_deinit(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     adc_obj_deinit(self);
     adc_block_channel_free(self->block, self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_deinit_obj, machine_adc_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_deinit_obj, machine_adc_deinit);
 
 // block()
-STATIC mp_obj_t machine_adc_block(mp_obj_t self_in) {
+static mp_obj_t machine_adc_block(mp_obj_t self_in) {
     const machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(self->block);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_block_obj, machine_adc_block);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_block_obj, machine_adc_block);
 
 // read_u16()
-STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
+static mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     int32_t adc_raw_result = cyhal_adc_read(&(self->adc_chan_obj));
     mp_int_t bits = (mp_int_t)adc_get_resolution(self);
     mp_uint_t u16 = adc_raw_result << (16 - bits);
     return MP_OBJ_NEW_SMALL_INT(u16);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 
 // read_uv
-STATIC mp_obj_t machine_adc_read_uv(mp_obj_t self_in) {
+static mp_obj_t machine_adc_read_uv(mp_obj_t self_in) {
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(cyhal_adc_read_uv(&(self->adc_chan_obj)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_uv_obj, machine_adc_read_uv);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_uv_obj, machine_adc_read_uv);
 
 
-STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_adc_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_uv), MP_ROM_PTR(&machine_adc_read_uv_obj) },
     { MP_ROM_QSTR(MP_QSTR_block), MP_ROM_PTR(&machine_adc_block_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_adc_locals_dict, machine_adc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_adc_type,

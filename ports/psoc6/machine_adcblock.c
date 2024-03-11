@@ -220,13 +220,13 @@ machine_adc_obj_t *adc_block_channel_find(machine_adcblock_obj_t *adc_block, mp_
 }
 
 // machine_adcblock_print()
-STATIC void machine_adcblock_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_adcblock_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adcblock_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "ADCBlock(%u, bits=%u)", self->id, self->bits);
 }
 
 // ADCBlock constructor
-STATIC mp_obj_t machine_adcblock_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *all_args) {
+static mp_obj_t machine_adcblock_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *all_args) {
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     mp_map_t kw_args;
@@ -251,16 +251,16 @@ STATIC mp_obj_t machine_adcblock_make_new(const mp_obj_type_t *type, size_t n_po
 }
 
 // ADCBlock deinit()
-STATIC mp_obj_t machine_adcblock_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_adcblock_deinit(mp_obj_t self_in) {
     machine_adcblock_obj_t *self = MP_OBJ_TO_PTR(self_in);
     _adc_block_obj_deinit(self);
     _adc_block_obj_free(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_adcblock_deinit_obj, machine_adcblock_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_adcblock_deinit_obj, machine_adcblock_deinit);
 
 // ADCBlock connect()
-STATIC mp_obj_t machine_adcblock_connect(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_adcblock_connect(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_adcblock_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     uint8_t channel = -1;
     uint32_t pin = 0;
@@ -296,13 +296,13 @@ STATIC mp_obj_t machine_adcblock_connect(size_t n_pos_args, const mp_obj_t *pos_
 
     return adc;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_adcblock_connect_obj, 2, machine_adcblock_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_adcblock_connect_obj, 2, machine_adcblock_connect);
 
-STATIC const mp_rom_map_elem_t machine_adcblock_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_adcblock_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),  MP_ROM_PTR(&machine_adcblock_deinit_obj)},
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&machine_adcblock_connect_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_adcblock_locals_dict, machine_adcblock_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_adcblock_locals_dict, machine_adcblock_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_adcblock_type,
