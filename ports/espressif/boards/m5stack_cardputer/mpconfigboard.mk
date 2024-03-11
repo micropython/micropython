@@ -11,3 +11,6 @@ CIRCUITPY_ESP_FLASH_SIZE = 8MB
 CIRCUITPY_ESPCAMERA = 0
 
 CIRCUITPY_GIFIO = 1
+
+# Enable board-specific modules
+USER_C_MODULES = boards/m5stack_cardputer/usermods
