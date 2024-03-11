@@ -30,23 +30,33 @@ mergeInto(LibraryManager.library, {
 
     mp_js_ticks_ms: () => Date.now() - MP_JS_EPOCH,
 
-    mp_js_hook: function() {
+    mp_js_hook: () => {
         if (ENVIRONMENT_IS_NODE) {
-            var mp_interrupt_char = Module.ccall('mp_hal_get_interrupt_char', 'number', ['number'], ['null']);
-            var fs = require('fs');
+            const mp_interrupt_char = Module.ccall(
+                "mp_hal_get_interrupt_char",
+                "number",
+                ["number"],
+                ["null"],
+            );
+            const fs = require("fs");
 
-            var buf = Buffer.alloc(1);
+            const buf = Buffer.alloc(1);
             try {
-                var n = fs.readSync(process.stdin.fd, buf, 0, 1);
+                const n = fs.readSync(process.stdin.fd, buf, 0, 1);
                 if (n > 0) {
-                    if (buf[0] == mp_interrupt_char) {
-                        Module.ccall('mp_sched_keyboard_interrupt', 'null', ['null'], ['null']);
+                    if (buf[0] === mp_interrupt_char) {
+                        Module.ccall(
+                            "mp_sched_keyboard_interrupt",
+                            "null",
+                            ["null"],
+                            ["null"],
+                        );
                     } else {
                         process.stdout.write(String.fromCharCode(buf[0]));
                     }
                 }
             } catch (e) {
-                if (e.code === 'EAGAIN') {
+                if (e.code === "EAGAIN") {
                 } else {
                     throw e;
                 }
