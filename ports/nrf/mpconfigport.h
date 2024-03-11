@@ -230,6 +230,10 @@
 #define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/nrf/modules/machine/uart.c"
 #define MICROPY_PY_MACHINE_UART_READCHAR_WRITECHAR (1)
 
+#if defined(NRF52840)
+#define MICROPY_PY_MACHINE_UART_IRQ  (1)
+#endif
+
 #ifndef MICROPY_PY_MACHINE_TIMER_NRF
 #define MICROPY_PY_MACHINE_TIMER_NRF (1)
 #endif
