@@ -86,8 +86,8 @@ MP_DEFINE_CONST_FUN_OBJ_1(supervisor_runtime_get_serial_connected_obj, superviso
 MP_PROPERTY_GETTER(supervisor_runtime_serial_connected_obj,
     (mp_obj_t)&supervisor_runtime_get_serial_connected_obj);
 
-//|     serial_bytes_available: int
-//|     """Returns the whether any bytes are available to read
+//|     serial_bytes_available: bool
+//|     """Returns whether any bytes are available to read
 //|     on the USB serial input.  Allows for polling to see whether
 //|     to call the built-in input() or wait. (read-only)"""
 STATIC mp_obj_t supervisor_runtime_get_serial_bytes_available(mp_obj_t self) {
