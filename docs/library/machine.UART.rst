@@ -188,19 +188,59 @@ Methods
        triggers.  The handler must take exactly one argument which is the
        ``UART`` instance.
 
-     - *trigger* configures the event which can generate an interrupt.
-       Possible values are:
+     - *trigger* configures the event(s) which can generate an interrupt.
+        Possible values are a mask of one or more of the following:
 
        - ``UART.IRQ_RXIDLE`` interrupt after receiving at least one character
          and then the RX line goes idle.
+       - ``UART.IRQ_RX`` interrupt after each received character.
+       - ``UART.IRQ_TXIDLE`` interrupt after or while the last character(s) of
+         a message are or have been sent.
+       - ``UART.IRQ_BREAK`` interrupt when a break state is detected at RX
 
      - *hard* if true a hardware interrupt is used.  This reduces the delay
-       between the pin change and the handler being called.  Hard interrupt
+       between the pin change and the handler being called. Hard interrupt
        handlers may not allocate memory; see :ref:`isr_rules`.
 
    Returns an irq object.
 
-   Availability: renesas-ra, stm32.
+   Due to limitations of the hardware not all trigger events are available at all ports.
+
+   .. table:: Availability of triggers
+      :align: center 
+
+      ============== ========== ====== ========== =========
+      Port / Trigger IRQ_RXIDLE IRQ_RX IRQ_TXIDLE IRQ_BREAK
+      ============== ========== ====== ========== =========
+      STM32            yes        yes
+      ESP32            yes        yes                yes
+      RP2040           yes                yes        yes
+      MIMXRT           yes                yes
+      SAMD             yes        yes     yes
+      RENESAS-RA       yes        yes
+      NRF                         yes     yes
+      CC3200                      yes
+      ============== ========== ====== ========== =========
+
+
+   .. note::
+     - At the RP2040 port UART.IRQ_TXIDLE is only triggered when the message
+       is longer than 5 characters and the trigger happens when still 5 characters
+       are to be sent.
+
+     - At the SAMD port UART.IRQ_TXIDLE is triggered while the last character is sent.
+
+     - At the RP2040 port UART.IRQ_BREAK needs receiving valid characters for triggering
+       again.
+
+     - The ESP32 port does not support the option hard=True.
+
+     - At the STM32F4xx using the trigger UART.IRQ_RXIDLE the handler will be called once
+       after the first character and then after the end of the message, when the line is
+       idle.
+
+
+   Availability: renesas-ra, stm32, esp32, rp2040, mimxrt, samd, nrf, cc3200.
 
 Constants
 ---------
@@ -213,7 +253,10 @@ Constants
     Availability: esp32, mimxrt, renesas-ra, rp2, stm32.
 
 .. data:: UART.IRQ_RXIDLE
+          UART.IRQ_RX
+          UART.IRQ_TXIDLE
+          UART.IRQ_BREAK
 
     IRQ trigger sources.
 
-    Availability: stm32.
+    Availability: renesas-ra, stm32, esp32, rp2040, mimxrt, samd, cc3200.
