@@ -137,12 +137,12 @@ STATIC_ASSERT((sizeof(file_chunk) == CHUNK_SIZE));
 
 // From micro:bit memory.h
 static inline byte *rounddown(byte *addr, uint32_t align) {
-    return (byte*)(((uint32_t)addr)&(-align));
+    return (byte *)(((uint32_t)addr) & (-align));
 }
 
 // From micro:bit memory.h
 static inline byte *roundup(byte *addr, uint32_t align) {
-    return (byte*)((((uint32_t)addr)+align-1)&(-align));
+    return (byte *)((((uint32_t)addr) + align - 1) & (-align));
 }
 
 
@@ -241,7 +241,7 @@ static void filesystem_sweep(void) {
 
 
 static inline byte *seek_address(file_descriptor_obj *self) {
-    return (byte*)&(file_system_chunks[self->seek_chunk].data[self->seek_offset]);
+    return (byte *)&(file_system_chunks[self->seek_chunk].data[self->seek_offset]);
 }
 
 static uint8_t microbit_find_file(const char *name, int name_len) {
@@ -538,13 +538,13 @@ mp_import_stat_t os_mbfs_import_stat(const char *path) {
 }
 
 static mp_obj_t os_mbfs_file_name(mp_obj_t self) {
-    file_descriptor_obj *fd = (file_descriptor_obj*)self;
+    file_descriptor_obj *fd = (file_descriptor_obj *)self;
     return microbit_file_name(fd);
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(os_mbfs_file_name_obj, os_mbfs_file_name);
 
 static mp_obj_t os_mbfs_file_close(mp_obj_t self) {
-    file_descriptor_obj *fd = (file_descriptor_obj*)self;
+    file_descriptor_obj *fd = (file_descriptor_obj *)self;
     microbit_file_close(fd);
     return mp_const_none;
 }
