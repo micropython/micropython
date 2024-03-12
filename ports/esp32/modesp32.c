@@ -173,7 +173,7 @@ static MP_DEFINE_CONST_FUN_OBJ_0(esp32_raw_temperature_obj, esp32_raw_temperatur
 // now have calibrated temperature settings in 5 discrete ranges.
 #include "driver/temperature_sensor.h"
 
-STATIC mp_obj_t esp32_mcu_temperature(void) {
+static mp_obj_t esp32_mcu_temperature(void) {
     static temperature_sensor_handle_t temp_sensor = NULL;
     float tvalue;
     if (temp_sensor == NULL) {
@@ -185,7 +185,7 @@ STATIC mp_obj_t esp32_mcu_temperature(void) {
     ESP_ERROR_CHECK(temperature_sensor_disable(temp_sensor));
     return mp_obj_new_int((int)(tvalue + 0.5));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp32_mcu_temperature_obj, esp32_mcu_temperature);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp32_mcu_temperature_obj, esp32_mcu_temperature);
 
 #endif
 
