@@ -728,6 +728,9 @@ void mp_bluetooth_get_current_address(uint8_t *addr_type, uint8_t *addr) {
 }
 
 void mp_bluetooth_set_address_mode(uint8_t addr_mode) {
+    if (!mp_bluetooth_is_active()) {
+        mp_raise_OSError(ERRNO_BLUETOOTH_NOT_ACTIVE);
+    }
     switch (addr_mode) {
         case MP_BLUETOOTH_ADDRESS_MODE_PUBLIC:
             if (!has_public_address()) {
