@@ -2372,6 +2372,11 @@ msgstr "Vous avez appuyé sur le bouton DOWN au démarrage."
 msgid "You pressed the BOOT button at start up"
 msgstr "Vous avez appuyé le bouton BOOT au démarrage"
 
+#: ports/espressif/boards/adafruit_feather_esp32c6_4mbflash_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the BOOT button at start up."
+msgstr ""
+
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
 msgstr "Vous avez appuyé le bouton GPIO0 au démarrage."
@@ -2387,10 +2392,6 @@ msgstr "Vous avez appuyé le bouton SW38 au démarrage."
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr "Vous avez appuyé le bouton VOLUME au démarrage."
-
-#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
-msgid "You pressed the boot button at start up."
-msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h

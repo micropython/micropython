@@ -2332,6 +2332,11 @@ msgstr "Du tryckte ner knapp NER vid start."
 msgid "You pressed the BOOT button at start up"
 msgstr "Du tryckte ner BOOT-knappen vid start"
 
+#: ports/espressif/boards/adafruit_feather_esp32c6_4mbflash_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the BOOT button at start up."
+msgstr ""
+
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
 msgstr "Du tryckte på GPIO0-knappen vid start."
@@ -2347,10 +2352,6 @@ msgstr "Du tryckte ned SW38-knappen vid start."
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr "Du tryckte ned VOLYM-knappen vid start."
-
-#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
-msgid "You pressed the boot button at start up."
-msgstr ""
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h

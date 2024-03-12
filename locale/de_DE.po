@@ -2350,6 +2350,11 @@ msgstr "Der DOWN-Knopf wurde beim Starten gedrückt."
 msgid "You pressed the BOOT button at start up"
 msgstr "Der BOOT-Knopf wurde beim Starten gedrückt"
 
+#: ports/espressif/boards/adafruit_feather_esp32c6_4mbflash_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the BOOT button at start up."
+msgstr ""
+
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
 msgstr "Der GPIO0-Knopf wurde beim Starten gedrückt."
@@ -2365,10 +2370,6 @@ msgstr "Der SW38-Knopf wurde beim Starten gedrückt."
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr "Der VOLUME-Knopf wurde beim Starten gedrückt."
-
-#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
-msgid "You pressed the boot button at start up."
-msgstr "Der Boot-Knopf wurde beim Starten gedrückt."
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
@@ -4400,6 +4401,9 @@ msgstr "zi muss eine Gleitkommazahl sein"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi muss die Form (n_section, 2) haben"
+
+#~ msgid "You pressed the boot button at start up."
+#~ msgstr "Der Boot-Knopf wurde beim Starten gedrückt."
 
 #~ msgid "Error: Failure to bind"
 #~ msgstr "Error: Bind Fehler"
