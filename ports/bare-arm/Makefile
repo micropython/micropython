@@ -16,13 +16,14 @@ PYDFU ?= $(TOP)/tools/pydfu.py
 CFLAGS += -I. -I$(TOP) -I$(BUILD)
 CFLAGS += -Wall -Werror -std=c99 -nostdlib
 CFLAGS += -mthumb -mtune=cortex-m4 -mcpu=cortex-m4 -msoft-float
-CSUPEROPT = -Os # save some code space for performance-critical code
+CFLAGS += $(COPT)
+CSUPEROPT ?= -Os # save some code space for performance-critical code
 
 # Select debugging or optimisation build.
 ifeq ($(DEBUG), 1)
-CFLAGS += -Og
+COPT ?= -Og
 else
-CFLAGS += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 CFLAGS += -fdata-sections -ffunction-sections
 endif
 

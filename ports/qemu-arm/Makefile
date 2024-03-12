@@ -61,9 +61,9 @@ CFLAGS += $(CFLAGS_EXTRA)
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g
-COPT = -O0
+COPT ?= -O0
 else
-COPT += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 endif
 
 ## With CoudeSourcery it's actually a little different, you just need `-T generic-m-hosted.ld`.
