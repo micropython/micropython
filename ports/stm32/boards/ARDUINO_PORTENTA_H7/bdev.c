@@ -29,7 +29,7 @@
 
 #if MICROPY_HW_SPIFLASH_ENABLE_CACHE
 // Shared cache for first and second SPI block devices
-STATIC mp_spiflash_cache_t spi_bdev_cache;
+static mp_spiflash_cache_t spi_bdev_cache;
 #endif
 
 // First external SPI flash uses hardware QSPI interface

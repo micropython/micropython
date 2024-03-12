@@ -70,7 +70,7 @@ typedef struct _machine_i2c_obj_t {
     uint8_t *buf;
 } machine_i2c_obj_t;
 
-STATIC void i2c_send_command(Sercom *i2c, uint8_t command) {
+static void i2c_send_command(Sercom *i2c, uint8_t command) {
     i2c->I2CM.CTRLB.bit.CMD = command;
     while (i2c->I2CM.SYNCBUSY.bit.SYSOP) {
     }
@@ -117,7 +117,7 @@ void common_i2c_irq_handler(int i2c_id) {
     }
 }
 
-STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, freq=%u, scl=%u, sda=%u)",
         self->id, self->freq, self->scl, self->sda);
@@ -212,7 +212,7 @@ mp_obj_t machine_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
     Sercom *i2c = self->instance;
 
@@ -260,7 +260,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     return len;
 }
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+static const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
 };

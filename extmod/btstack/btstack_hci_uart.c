@@ -48,17 +48,17 @@
 // interface to an HCI UART provided by the port.
 
 // We pass the bytes directly to the UART during a send, but then notify btstack in the next poll.
-STATIC bool send_done;
-STATIC void (*send_handler)(void);
+static bool send_done;
+static void (*send_handler)(void);
 
 // btstack issues a read of len bytes, and gives us a buffer to asynchronously fill up.
-STATIC uint8_t *recv_buf;
-STATIC size_t recv_len;
-STATIC size_t recv_idx;
-STATIC void (*recv_handler)(void);
-STATIC bool init_success = false;
+static uint8_t *recv_buf;
+static size_t recv_len;
+static size_t recv_idx;
+static void (*recv_handler)(void);
+static bool init_success = false;
 
-STATIC int btstack_uart_init(const btstack_uart_config_t *uart_config) {
+static int btstack_uart_init(const btstack_uart_config_t *uart_config) {
     (void)uart_config;
 
     send_done = false;
@@ -81,45 +81,45 @@ STATIC int btstack_uart_init(const btstack_uart_config_t *uart_config) {
     return 0;
 }
 
-STATIC int btstack_uart_open(void) {
+static int btstack_uart_open(void) {
     return init_success ? 0 : 1;
 }
 
-STATIC int btstack_uart_close(void) {
+static int btstack_uart_close(void) {
     mp_bluetooth_hci_controller_deinit();
     mp_bluetooth_hci_uart_deinit();
     return 0;
 }
 
-STATIC void btstack_uart_set_block_received(void (*block_handler)(void)) {
+static void btstack_uart_set_block_received(void (*block_handler)(void)) {
     recv_handler = block_handler;
 }
 
-STATIC void btstack_uart_set_block_sent(void (*block_handler)(void)) {
+static void btstack_uart_set_block_sent(void (*block_handler)(void)) {
     send_handler = block_handler;
 }
 
-STATIC int btstack_uart_set_baudrate(uint32_t baudrate) {
+static int btstack_uart_set_baudrate(uint32_t baudrate) {
     mp_bluetooth_hci_uart_set_baudrate(baudrate);
     return 0;
 }
 
-STATIC int btstack_uart_set_parity(int parity) {
+static int btstack_uart_set_parity(int parity) {
     (void)parity;
     return 0;
 }
 
-STATIC int btstack_uart_set_flowcontrol(int flowcontrol) {
+static int btstack_uart_set_flowcontrol(int flowcontrol) {
     (void)flowcontrol;
     return 0;
 }
 
-STATIC void btstack_uart_receive_block(uint8_t *buf, uint16_t len) {
+static void btstack_uart_receive_block(uint8_t *buf, uint16_t len) {
     recv_buf = buf;
     recv_len = len;
 }
 
-STATIC void btstack_uart_send_block(const uint8_t *buf, uint16_t len) {
+static void btstack_uart_send_block(const uint8_t *buf, uint16_t len) {
     #if HCI_TRACE
     printf(COL_GREEN "< [% 8d] %02x", (int)mp_hal_ticks_ms(), buf[0]);
     for (size_t i = 1; i < len; ++i) {
@@ -136,16 +136,16 @@ STATIC void btstack_uart_send_block(const uint8_t *buf, uint16_t len) {
     mp_bluetooth_hci_poll_now();
 }
 
-STATIC int btstack_uart_get_supported_sleep_modes(void) {
+static int btstack_uart_get_supported_sleep_modes(void) {
     return 0;
 }
 
-STATIC void btstack_uart_set_sleep(btstack_uart_sleep_mode_t sleep_mode) {
+static void btstack_uart_set_sleep(btstack_uart_sleep_mode_t sleep_mode) {
     (void)sleep_mode;
     // printf("btstack_uart_set_sleep %u\n", sleep_mode);
 }
 
-STATIC void btstack_uart_set_wakeup_handler(void (*wakeup_handler)(void)) {
+static void btstack_uart_set_wakeup_handler(void (*wakeup_handler)(void)) {
     (void)wakeup_handler;
     // printf("btstack_uart_set_wakeup_handler\n");
 }

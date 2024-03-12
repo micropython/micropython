@@ -56,12 +56,12 @@ static uint32_t s_seed;
 /******************************************************************************
 * LOCAL FUNCTION DECLARATIONS
 ******************************************************************************/
-STATIC uint32_t lfsr (uint32_t input);
+static uint32_t lfsr (uint32_t input);
 
 /******************************************************************************
 * PRIVATE FUNCTIONS
 ******************************************************************************/
-STATIC uint32_t lfsr (uint32_t input) {
+static uint32_t lfsr (uint32_t input) {
     assert( input != 0 );
     return (input >> 1) ^ (-(input & 0x01) & 0x00E10000);
 }
@@ -69,7 +69,7 @@ STATIC uint32_t lfsr (uint32_t input) {
 /******************************************************************************/
 // MicroPython bindings;
 
-STATIC mp_obj_t machine_rng_get(void) {
+static mp_obj_t machine_rng_get(void) {
     return mp_obj_new_int(rng_get());
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_rng_get_obj, machine_rng_get);

@@ -50,7 +50,7 @@ typedef struct _pyb_led_obj_t {
     const machine_pin_obj_t *led_pin;
 } pyb_led_obj_t;
 
-STATIC const pyb_led_obj_t pyb_led_obj[] = {
+static const pyb_led_obj_t pyb_led_obj[] = {
     {{&pyb_led_type}, 1, MICROPY_HW_LED1},
     #if defined(MICROPY_HW_LED2)
     {{&pyb_led_type}, 2, MICROPY_HW_LED2},
@@ -125,7 +125,7 @@ typedef struct _led_pwm_config_t {
     uint8_t alt_func;
 } led_pwm_config_t;
 
-STATIC const led_pwm_config_t led_pwm_config[] = {
+static const led_pwm_config_t led_pwm_config[] = {
     MICROPY_HW_LED1_PWM,
     MICROPY_HW_LED2_PWM,
     MICROPY_HW_LED3_PWM,
@@ -134,15 +134,15 @@ STATIC const led_pwm_config_t led_pwm_config[] = {
     MICROPY_HW_LED6_PWM,
 };
 
-STATIC uint8_t led_pwm_state = 0;
+static uint8_t led_pwm_state = 0;
 
 static inline bool led_pwm_is_enabled(int led) {
     return (led_pwm_state & (1 << led)) != 0;
 }
 
 // this function has a large stack so it should not be inlined
-STATIC void led_pwm_init(int led) __attribute__((noinline));
-STATIC void led_pwm_init(int led) {
+static void led_pwm_init(int led) __attribute__((noinline));
+static void led_pwm_init(int led) {
     const machine_pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
     const led_pwm_config_t *pwm_cfg = &led_pwm_config[led - 1];
 
@@ -190,7 +190,7 @@ STATIC void led_pwm_init(int led) {
     led_pwm_state |= 1 << led;
 }
 
-STATIC void led_pwm_deinit(int led) {
+static void led_pwm_deinit(int led) {
     // make the LED's pin a standard GPIO output pin
     const machine_pin_obj_t *led_pin = pyb_led_obj[led - 1].led_pin;
     GPIO_TypeDef *g = led_pin->gpio;
@@ -312,7 +312,7 @@ void led_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t ki
 /// Create an LED object associated with the given LED:
 ///
 ///   - `id` is the LED number, 1-4.
-STATIC mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t led_obj_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -366,19 +366,19 @@ mp_obj_t led_obj_intensity(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_intensity_obj, 1, 2, led_obj_intensity);
+static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_on_obj, led_obj_on);
+static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_off_obj, led_obj_off);
+static MP_DEFINE_CONST_FUN_OBJ_1(led_obj_toggle_obj, led_obj_toggle);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(led_obj_intensity_obj, 1, 2, led_obj_intensity);
 
-STATIC const mp_rom_map_elem_t led_locals_dict_table[] = {
+static const mp_rom_map_elem_t led_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_on), MP_ROM_PTR(&led_obj_on_obj) },
     { MP_ROM_QSTR(MP_QSTR_off), MP_ROM_PTR(&led_obj_off_obj) },
     { MP_ROM_QSTR(MP_QSTR_toggle), MP_ROM_PTR(&led_obj_toggle_obj) },
     { MP_ROM_QSTR(MP_QSTR_intensity), MP_ROM_PTR(&led_obj_intensity_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
+static MP_DEFINE_CONST_DICT(led_locals_dict, led_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_led_type,

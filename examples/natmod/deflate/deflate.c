@@ -29,7 +29,7 @@ mp_obj_t mp_stream_close(mp_obj_t stream) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_stream_close_obj, mp_stream_close);
 
 // Re-implemented from py/stream.c, not yet available in dynruntime.h.
-STATIC mp_obj_t mp_stream___exit__(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_stream___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     return mp_stream_close(args[0]);
 }
@@ -42,7 +42,7 @@ mp_obj_t mp_identity(mp_obj_t self) {
 MP_DEFINE_CONST_FUN_OBJ_1(mp_identity_obj, mp_identity);
 
 mp_map_elem_t deflateio_locals_dict_table[7];
-STATIC MP_DEFINE_CONST_DICT(deflateio_locals_dict, deflateio_locals_dict_table);
+static MP_DEFINE_CONST_DICT(deflateio_locals_dict, deflateio_locals_dict_table);
 
 mp_obj_t mpy_init(mp_obj_fun_bc_t *self, size_t n_args, size_t n_kw, mp_obj_t *args) {
     MP_DYNRUNTIME_INIT_ENTRY

@@ -73,8 +73,8 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-STATIC const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
-STATIC LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
+static const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
+static LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
 static const iomux_table_t iomux_table_uart[] = {
     IOMUX_TABLE_UART
 };
@@ -82,9 +82,9 @@ static const iomux_table_t iomux_table_uart_cts_rts[] = {
     IOMUX_TABLE_UART_CTS_RTS
 };
 
-STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
-STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
-STATIC const char *_flow_name[] = {"None", "RTS", "CTS", "RTS|CTS"};
+static const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
+static const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
+static const char *_flow_name[] = {"None", "RTS", "CTS", "RTS|CTS"};
 
 #define RX (iomux_table_uart[index + 1])
 #define TX (iomux_table_uart[index])
@@ -171,7 +171,7 @@ void machine_uart_set_baudrate(mp_obj_t uart_in, uint32_t baudrate) {
     { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
     { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
 
-STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, flow=%s, "
         "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
@@ -182,7 +182,7 @@ STATIC void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_
         _invert_name[self->invert]);
 }
 
-STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_flow,
            ARG_timeout, ARG_timeout_char, ARG_invert, ARG_rxbuf, ARG_txbuf};
     static const mp_arg_t allowed_args[] = {
@@ -338,7 +338,7 @@ STATIC void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
     }
 }
 
-STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
@@ -372,21 +372,21 @@ STATIC mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_arg
 }
 
 // uart.deinit()
-STATIC void mp_machine_uart_deinit(machine_uart_obj_t *self) {
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     LPUART_SoftwareReset(self->lpuart);
 }
 
-STATIC mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     machine_uart_ensure_active(self);
     size_t count = LPUART_TransferGetRxRingBufferLength(self->lpuart, &self->handle);
     return count;
 }
 
-STATIC bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
     return self->tx_status == kStatus_LPUART_TxIdle;
 }
 
-STATIC void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
+static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     machine_uart_ensure_active(self);
     self->lpuart->CTRL |= 1 << LPUART_CTRL_SBK_SHIFT; // Set SBK bit
     self->lpuart->CTRL &= ~LPUART_CTRL_SBK_MASK; // Clear SBK bit
@@ -401,7 +401,7 @@ void machine_uart_deinit_all(void) {
     }
 }
 
-STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint64_t t = ticks_us64() + (uint64_t)self->timeout * 1000;
     uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
@@ -436,7 +436,7 @@ STATIC mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t 
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     lpuart_transfer_t xfer;
     uint64_t t;
@@ -496,7 +496,7 @@ STATIC mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_
     return size;
 }
 
-STATIC mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {

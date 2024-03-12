@@ -2,7 +2,7 @@
 def gen():
     yield 123
     yield 456
-        
+
 g = gen()
 print(next(g))
 try:
@@ -31,7 +31,7 @@ def gen():
     except GeneratorExit as e:
         print('GeneratorExit', repr(e.args))
     yield 456
-        
+
 # thrown a class
 g = gen()
 print(next(g))

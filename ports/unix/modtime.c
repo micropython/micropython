@@ -61,7 +61,7 @@ static inline int msec_sleep_tv(struct timeval *tv) {
 #error Unsupported clock() implementation
 #endif
 
-STATIC mp_obj_t mp_time_time_get(void) {
+static mp_obj_t mp_time_time_get(void) {
     #if MICROPY_PY_BUILTINS_FLOAT && MICROPY_FLOAT_IMPL == MICROPY_FLOAT_IMPL_DOUBLE
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -73,7 +73,7 @@ STATIC mp_obj_t mp_time_time_get(void) {
 }
 
 // Note: this is deprecated since CPy3.3, but pystone still uses it.
-STATIC mp_obj_t mod_time_clock(void) {
+static mp_obj_t mod_time_clock(void) {
     #if MICROPY_PY_BUILTINS_FLOAT
     // float cannot represent full range of int32 precisely, so we pre-divide
     // int to reduce resolution, and then actually do float division hoping
@@ -83,9 +83,9 @@ STATIC mp_obj_t mod_time_clock(void) {
     return mp_obj_new_int((mp_int_t)clock());
     #endif
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_time_clock_obj, mod_time_clock);
 
-STATIC mp_obj_t mp_time_sleep(mp_obj_t arg) {
+static mp_obj_t mp_time_sleep(mp_obj_t arg) {
     #if MICROPY_PY_BUILTINS_FLOAT
     struct timeval tv;
     mp_float_t val = mp_obj_get_float(arg);
@@ -125,7 +125,7 @@ STATIC mp_obj_t mp_time_sleep(mp_obj_t arg) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, struct tm *(*time_func)(const time_t *timep)) {
+static mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, struct tm *(*time_func)(const time_t *timep)) {
     time_t t;
     if (n_args == 0) {
         t = time(NULL);
@@ -159,17 +159,17 @@ STATIC mp_obj_t mod_time_gm_local_time(size_t n_args, const mp_obj_t *args, stru
     return ret;
 }
 
-STATIC mp_obj_t mod_time_gmtime(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mod_time_gmtime(size_t n_args, const mp_obj_t *args) {
     return mod_time_gm_local_time(n_args, args, gmtime);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_time_gmtime_obj, 0, 1, mod_time_gmtime);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_time_gmtime_obj, 0, 1, mod_time_gmtime);
 
-STATIC mp_obj_t mod_time_localtime(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mod_time_localtime(size_t n_args, const mp_obj_t *args) {
     return mod_time_gm_local_time(n_args, args, localtime);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_time_localtime_obj, 0, 1, mod_time_localtime);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_time_localtime_obj, 0, 1, mod_time_localtime);
 
-STATIC mp_obj_t mod_time_mktime(mp_obj_t tuple) {
+static mp_obj_t mod_time_mktime(mp_obj_t tuple) {
     size_t len;
     mp_obj_t *elem;
     mp_obj_get_array(tuple, &len, &elem);

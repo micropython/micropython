@@ -59,7 +59,7 @@ typedef struct _machine_wdt_obj_t {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC machine_wdt_obj_t machine_wdt_obj = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
+static machine_wdt_obj_t machine_wdt_obj = {.servers = false, .servers_sleeping = false, .simplelink = false, .running = false};
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -84,7 +84,7 @@ void pybwdt_sl_alive (void) {
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
     if (id != 0) {
         mp_raise_OSError(MP_ENODEV);
     }
@@ -119,7 +119,7 @@ STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t
     return &machine_wdt_obj;
 }
 
-STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
+static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     if ((self->servers || self->servers_sleeping) && self->simplelink && self->running) {
         self->servers = false;
         self->simplelink = false;

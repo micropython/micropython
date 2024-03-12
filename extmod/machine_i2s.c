@@ -108,21 +108,21 @@ typedef struct _non_blocking_descriptor_t {
     bool copy_in_progress;
 } non_blocking_descriptor_t;
 
-STATIC void ringbuf_init(ring_buf_t *rbuf, uint8_t *buffer, size_t size);
-STATIC bool ringbuf_push(ring_buf_t *rbuf, uint8_t data);
-STATIC bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data);
-STATIC size_t ringbuf_available_data(ring_buf_t *rbuf);
-STATIC size_t ringbuf_available_space(ring_buf_t *rbuf);
-STATIC void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self);
-STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self);
+static void ringbuf_init(ring_buf_t *rbuf, uint8_t *buffer, size_t size);
+static bool ringbuf_push(ring_buf_t *rbuf, uint8_t data);
+static bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data);
+static size_t ringbuf_available_data(ring_buf_t *rbuf);
+static size_t ringbuf_available_space(ring_buf_t *rbuf);
+static void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self);
+static void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self);
 
 #endif // MICROPY_PY_MACHINE_I2S_RING_BUF
 
 // The port must provide implementations of these low-level I2S functions.
-STATIC void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args);
-STATIC machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id);
-STATIC void mp_machine_i2s_deinit(machine_i2s_obj_t *self);
-STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self);
+static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args);
+static machine_i2s_obj_t *mp_machine_i2s_make_new_instance(mp_int_t i2s_id);
+static void mp_machine_i2s_deinit(machine_i2s_obj_t *self);
+static void mp_machine_i2s_irq_update(machine_i2s_obj_t *self);
 
 // The port provides implementations of the above in this file.
 #include MICROPY_PY_MACHINE_I2S_INCLUDEFILE
@@ -135,14 +135,14 @@ STATIC void mp_machine_i2s_irq_update(machine_i2s_obj_t *self);
 // - Sequential atomic operations
 // One byte of capacity is used to detect buffer empty/full
 
-STATIC void ringbuf_init(ring_buf_t *rbuf, uint8_t *buffer, size_t size) {
+static void ringbuf_init(ring_buf_t *rbuf, uint8_t *buffer, size_t size) {
     rbuf->buffer = buffer;
     rbuf->size = size;
     rbuf->head = 0;
     rbuf->tail = 0;
 }
 
-STATIC bool ringbuf_push(ring_buf_t *rbuf, uint8_t data) {
+static bool ringbuf_push(ring_buf_t *rbuf, uint8_t data) {
     size_t next_tail = (rbuf->tail + 1) % rbuf->size;
 
     if (next_tail != rbuf->head) {
@@ -155,7 +155,7 @@ STATIC bool ringbuf_push(ring_buf_t *rbuf, uint8_t data) {
     return false;
 }
 
-STATIC bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data) {
+static bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data) {
     if (rbuf->head == rbuf->tail) {
         // empty
         return false;
@@ -166,23 +166,23 @@ STATIC bool ringbuf_pop(ring_buf_t *rbuf, uint8_t *data) {
     return true;
 }
 
-STATIC bool ringbuf_is_empty(ring_buf_t *rbuf) {
+static bool ringbuf_is_empty(ring_buf_t *rbuf) {
     return rbuf->head == rbuf->tail;
 }
 
-STATIC bool ringbuf_is_full(ring_buf_t *rbuf) {
+static bool ringbuf_is_full(ring_buf_t *rbuf) {
     return ((rbuf->tail + 1) % rbuf->size) == rbuf->head;
 }
 
-STATIC size_t ringbuf_available_data(ring_buf_t *rbuf) {
+static size_t ringbuf_available_data(ring_buf_t *rbuf) {
     return (rbuf->tail - rbuf->head + rbuf->size) % rbuf->size;
 }
 
-STATIC size_t ringbuf_available_space(ring_buf_t *rbuf) {
+static size_t ringbuf_available_space(ring_buf_t *rbuf) {
     return rbuf->size - ringbuf_available_data(rbuf) - 1;
 }
 
-STATIC uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
+static uint32_t fill_appbuf_from_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
 
     // copy audio samples from the ring buffer to the app buffer
     // loop, copying samples until the app buffer is filled
@@ -247,7 +247,7 @@ exit:
 }
 
 // function is used in IRQ context
-STATIC void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self) {
+static void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self) {
 
     // attempt to copy a block of audio samples from the ring buffer to the supplied app buffer.
     // audio samples will be formatted as part of the copy operation
@@ -288,7 +288,7 @@ STATIC void fill_appbuf_from_ringbuf_non_blocking(machine_i2s_obj_t *self) {
     }
 }
 
-STATIC uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
+static uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t *appbuf) {
 
     // copy audio samples from the app buffer to the ring buffer
     // loop, reading samples until the app buffer is emptied
@@ -319,7 +319,7 @@ STATIC uint32_t copy_appbuf_to_ringbuf(machine_i2s_obj_t *self, mp_buffer_info_t
 }
 
 // function is used in IRQ context
-STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self) {
+static void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self) {
 
     // copy audio samples from app buffer into ring buffer
     uint32_t num_bytes_remaining_to_copy = self->non_blocking_descriptor.appbuf.len - self->non_blocking_descriptor.index;
@@ -341,7 +341,7 @@ STATIC void copy_appbuf_to_ringbuf_non_blocking(machine_i2s_obj_t *self) {
 
 #endif // MICROPY_PY_MACHINE_I2S_RING_BUF
 
-MP_NOINLINE STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+MP_NOINLINE static void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_sck,      MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_ws,       MP_ARG_KW_ONLY | MP_ARG_REQUIRED | MP_ARG_OBJ,   {.u_obj = MP_OBJ_NULL} },
@@ -362,7 +362,7 @@ MP_NOINLINE STATIC void machine_i2s_init_helper(machine_i2s_obj_t *self, size_t 
     mp_machine_i2s_init_helper(self, args);
 }
 
-STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2S(id=%u,\n"
         "sck="MP_HAL_PIN_FMT ",\n"
@@ -387,7 +387,7 @@ STATIC void machine_i2s_print(const mp_print_t *print, mp_obj_t self_in, mp_prin
         );
 }
 
-STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
+static mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
     mp_int_t i2s_id = mp_obj_get_int(args[0]);
 
@@ -401,24 +401,24 @@ STATIC mp_obj_t machine_i2s_make_new(const mp_obj_type_t *type, size_t n_pos_arg
 }
 
 // I2S.init(...)
-STATIC mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_i2s_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_machine_i2s_deinit(self);
     machine_i2s_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_init_obj, 1, machine_i2s_init);
 
 // I2S.deinit()
-STATIC mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
+static mp_obj_t machine_i2s_deinit(mp_obj_t self_in) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_machine_i2s_deinit(self);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_i2s_deinit_obj, machine_i2s_deinit);
 
 // I2S.irq(handler)
-STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
+static mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (handler != mp_const_none && !mp_obj_is_callable(handler)) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid callback"));
@@ -436,11 +436,11 @@ STATIC mp_obj_t machine_i2s_irq(mp_obj_t self_in, mp_obj_t handler) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_i2s_irq_obj, machine_i2s_irq);
 
 // Shift() is typically used as a volume control.
 // shift=1 increases volume by 6dB, shift=-1 decreases volume by 6dB
-STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_buf, ARG_bits, ARG_shift};
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buf,    MP_ARG_REQUIRED | MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -497,10 +497,10 @@ STATIC mp_obj_t machine_i2s_shift(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_i2s_shift_fun_obj, 0, machine_i2s_shift);
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(machine_i2s_shift_obj, MP_ROM_PTR(&machine_i2s_shift_fun_obj));
 
-STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
     // Methods
     { MP_ROM_QSTR(MP_QSTR_init),            MP_ROM_PTR(&machine_i2s_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto),        MP_ROM_PTR(&mp_stream_readinto_obj) },
@@ -522,7 +522,7 @@ STATIC const mp_rom_map_elem_t machine_i2s_locals_dict_table[] = {
 };
 MP_DEFINE_CONST_DICT(machine_i2s_locals_dict, machine_i2s_locals_dict_table);
 
-STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->mode != MICROPY_PY_MACHINE_I2S_CONSTANT_RX) {
@@ -570,7 +570,7 @@ STATIC mp_uint_t machine_i2s_stream_read(mp_obj_t self_in, void *buf_in, mp_uint
     }
 }
 
-STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->mode != MICROPY_PY_MACHINE_I2S_CONSTANT_TX) {
@@ -608,11 +608,12 @@ STATIC mp_uint_t machine_i2s_stream_write(mp_obj_t self_in, const void *buf_in, 
         #else
         uint32_t num_bytes_written = copy_appbuf_to_dma(self, &appbuf);
         #endif
+
         return num_bytes_written;
     }
 }
 
-STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_i2s_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_uint_t ret;
     uintptr_t flags = arg;
@@ -632,16 +633,8 @@ STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 ret |= MP_STREAM_POLL_RD;
             }
             #else
-            // check event queue to determine if a DMA buffer has been filled
-            // (which is an indication that at least one DMA buffer is available to be read)
-            // note:  timeout = 0 so the call is non-blocking
-            i2s_event_t i2s_event;
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_RX_DONE) {
-                    // getting here means that at least one DMA buffer is now full
-                    // indicating that audio samples can be read from the I2S object
-                    ret |= MP_STREAM_POLL_RD;
-                }
+            if (self->dma_buffer_status == DMA_MEMORY_NOT_EMPTY) {
+                ret |= MP_STREAM_POLL_RD;
             }
             #endif
         }
@@ -657,16 +650,8 @@ STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
                 ret |= MP_STREAM_POLL_WR;
             }
             #else
-            // check event queue to determine if a DMA buffer has been emptied
-            // (which is an indication that at least one DMA buffer is available to be written)
-            // note:  timeout = 0 so the call is non-blocking
-            i2s_event_t i2s_event;
-            if (xQueueReceive(self->i2s_event_queue, &i2s_event, 0)) {
-                if (i2s_event.type == I2S_EVENT_TX_DONE) {
-                    // getting here means that at least one DMA buffer is now empty
-                    // indicating that audio samples can be written to the I2S object
-                    ret |= MP_STREAM_POLL_WR;
-                }
+            if (self->dma_buffer_status == DMA_MEMORY_NOT_FULL) {
+                ret |= MP_STREAM_POLL_WR;
             }
             #endif
         }
@@ -678,7 +663,7 @@ STATIC mp_uint_t machine_i2s_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_
     return ret;
 }
 
-STATIC const mp_stream_p_t i2s_stream_p = {
+static const mp_stream_p_t i2s_stream_p = {
     .read = machine_i2s_stream_read,
     .write = machine_i2s_stream_write,
     .ioctl = machine_i2s_ioctl,

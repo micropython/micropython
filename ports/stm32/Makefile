@@ -251,6 +251,7 @@ SRC_C += \
 	pyb_can.c \
 	usb.c \
 	eth.c \
+	eth_phy.c \
 	gccollect.c \
 	help.c \
 	machine_bitstream.c \
@@ -282,7 +283,7 @@ SRC_C += \
 SRC_O += \
 	$(STARTUP_FILE) \
 	$(SYSTEM_FILE)
-    
+
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 g0 l0))
 CSUPEROPT = -Os # save some code space
 SRC_O += \

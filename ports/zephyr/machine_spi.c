@@ -52,7 +52,7 @@ typedef struct _machine_hard_spi_obj_t {
     struct spi_config config;
 } machine_hard_spi_obj_t;
 
-STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = self_in;
     mp_printf(print, "SPI(%s, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%s)",
         self->dev->name,
@@ -112,7 +112,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_hard_spi_init(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_hard_spi_init(mp_obj_base_t *obj, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit};
 
     static const mp_arg_t allowed_args[] = {
@@ -163,7 +163,7 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *obj, size_t n_args, const mp_ob
     self->config = cfg;
 }
 
-STATIC void machine_hard_spi_transfer(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_hard_spi_transfer(mp_obj_base_t *obj, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)obj;
 
     int ret;
@@ -191,7 +191,7 @@ STATIC void machine_hard_spi_transfer(mp_obj_base_t *obj, size_t len, const uint
     }
 }
 
-STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
+static const mp_machine_spi_p_t machine_hard_spi_p = {
     .init = machine_hard_spi_init,
     .transfer = machine_hard_spi_transfer,
 };

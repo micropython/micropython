@@ -26,6 +26,8 @@
 #ifndef MICROPY_INCLUDED_STM32_DMA_H
 #define MICROPY_INCLUDED_STM32_DMA_H
 
+#include "py/mpconfig.h"
+
 typedef struct _dma_descr_t dma_descr_t;
 
 #if defined(STM32H5)
@@ -163,5 +165,41 @@ void dma_nohal_start(const dma_descr_t *descr, uint32_t src_addr, uint32_t dst_a
 // - stream: should be 0 to N, corresponding to Stream0..StreamN, or Channel1..ChannelN
 void dma_external_acquire(uint32_t controller, uint32_t stream);
 void dma_external_release(uint32_t controller, uint32_t stream);
+
+#if __DCACHE_PRESENT
+// On chips with D-Cache, it's necessary to call this function before using DMA to read
+// into a user-supplied buffer. It does two things:
+//
+// 1) Cleans this region in the cache.
+//
+// 2) Temporarily disables caching for the first and last cache lines of the
+// buffer. This prevents cache coherency issues if the start or end of the
+// buffer don't align to a cache line. (For example, this can happen if the CPU
+// accesses unrelated memory adjacent to the buffer and in the same cache
+// line.)
+//
+// Only one region can be protected in this way at a time.
+void dma_protect_rx_region(void *dest, size_t len);
+
+// Release the region protected by dma_protect_rx_region().
+//
+// Call this after the DMA operation completes, before the CPU reads any of the
+// data that was written.
+//
+// As well as restoring data caching, this function invalidates D-cache for the
+// entire specified region.
+void dma_unprotect_rx_region(void *dest, size_t len);
+
+#else
+
+inline static void dma_protect_rx_region(uint8_t *dest, size_t len) {
+    // No-ops on targets without D-Cache.
+}
+
+inline static void dma_unprotect_rx_region(void *dest, size_t len) {
+
+}
+
+#endif // __DCACHE_PRESENT
 
 #endif // MICROPY_INCLUDED_STM32_DMA_H

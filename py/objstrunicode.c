@@ -34,12 +34,12 @@
 
 #if MICROPY_PY_BUILTINS_STR_UNICODE
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
+static mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf);
 
 /******************************************************************************/
 /* str                                                                        */
 
-STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint str_len) {
+static void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint str_len) {
     // this escapes characters, but it will be very slow to print (calling print many times)
     bool has_single_quote = false;
     bool has_double_quote = false;
@@ -83,7 +83,7 @@ STATIC void uni_print_quoted(const mp_print_t *print, const byte *str_data, uint
     mp_printf(print, "%c", quote_char);
 }
 
-STATIC void uni_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void uni_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     #if MICROPY_PY_JSON
     if (kind == PRINT_JSON) {
@@ -98,7 +98,7 @@ STATIC void uni_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     }
 }
 
-STATIC mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t uni_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     GET_STR_DATA_LEN(self_in, str_data, str_len);
     switch (op) {
         case MP_UNARY_OP_BOOL:
@@ -178,7 +178,7 @@ const byte *str_index_to_ptr(const mp_obj_type_t *type, const byte *self_data, s
     return s;
 }
 
-STATIC mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+static mp_obj_t str_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
     assert(type == &mp_type_str);
     GET_STR_DATA_LEN(self_in, self_data, self_len);
@@ -253,7 +253,7 @@ typedef struct _mp_obj_str_it_t {
     size_t cur;
 } mp_obj_str_it_t;
 
-STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
+static mp_obj_t str_it_iternext(mp_obj_t self_in) {
     mp_obj_str_it_t *self = MP_OBJ_TO_PTR(self_in);
     GET_STR_DATA_LEN(self->str, str, len);
     if (self->cur < len) {
@@ -267,7 +267,7 @@ STATIC mp_obj_t str_it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
+static mp_obj_t mp_obj_new_str_iterator(mp_obj_t str, mp_obj_iter_buf_t *iter_buf) {
     assert(sizeof(mp_obj_str_it_t) <= sizeof(mp_obj_iter_buf_t));
     mp_obj_str_it_t *o = (mp_obj_str_it_t *)iter_buf;
     o->base.type = &mp_type_polymorph_iter;

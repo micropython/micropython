@@ -32,7 +32,7 @@ typedef struct _pyb_switch_obj_t {
     mp_obj_base_t base;
 } pyb_switch_obj_t;
 
-STATIC const pyb_switch_obj_t pyb_switch_obj[] = {
+static const pyb_switch_obj_t pyb_switch_obj[] = {
     {{&pyb_switch_type}},
     {{&pyb_switch_type}},
 };
@@ -45,7 +45,7 @@ void pyb_switch_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     mp_printf(print, "Switch(%u)", SWITCH_ID(self));
 }
 
-STATIC mp_obj_t pyb_switch_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pyb_switch_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
     mp_int_t sw_id = mp_obj_get_int(args[0]);
     if (!(1 <= sw_id && sw_id <= NUM_SWITCH)) {
@@ -58,18 +58,18 @@ mp_obj_t pyb_switch_value(mp_obj_t self_in) {
     pyb_switch_obj_t *self = self_in;
     return switch_get(SWITCH_ID(self)) ? mp_const_true : mp_const_false;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_switch_value_obj, pyb_switch_value);
 
 mp_obj_t pyb_switch_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     return pyb_switch_value(self_in);
 }
 
-STATIC const mp_rom_map_elem_t pyb_switch_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_switch_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_value), MP_ROM_PTR(&pyb_switch_value_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_switch_locals_dict, pyb_switch_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_switch_type,

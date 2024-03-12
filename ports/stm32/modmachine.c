@@ -114,7 +114,7 @@
     { MP_ROM_QSTR(MP_QSTR_DEEPSLEEP_RESET),     MP_ROM_INT(PYB_RESET_DEEPSLEEP) }, \
     { MP_ROM_QSTR(MP_QSTR_SOFT_RESET),          MP_ROM_INT(PYB_RESET_SOFT) }, \
 
-STATIC uint32_t reset_cause;
+static uint32_t reset_cause;
 
 void machine_init(void) {
     #if defined(STM32F4)
@@ -186,7 +186,7 @@ void machine_deinit(void) {
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
-STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
     const mp_print_t *print = &mp_plat_print;
 
     // get and print unique id; 96 bits
@@ -277,13 +277,13 @@ STATIC mp_obj_t machine_info(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
 // Returns a string of 12 bytes (96 bits), which is the unique ID for the MCU.
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     byte *id = (byte *)MP_HAL_UNIQUE_ID_ADDRESS;
     return mp_obj_new_bytes(id, 12);
 }
 
 // Resets the pyboard in a manner similar to pushing the external RESET button.
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     powerctrl_mcu_reset();
 }
 
@@ -314,7 +314,7 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
 }
 
 // get or set the MCU frequencies
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     mp_obj_t tuple[] = {
         mp_obj_new_int(HAL_RCC_GetSysClockFreq()),
         mp_obj_new_int(HAL_RCC_GetHCLKFreq()),
@@ -326,7 +326,7 @@ STATIC mp_obj_t mp_machine_get_freq(void) {
     return mp_obj_new_tuple(MP_ARRAY_SIZE(tuple), tuple);
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     #if defined(STM32F0) || defined(STM32L0) || defined(STM32L1) || defined(STM32L4) || defined(STM32G0)
     mp_raise_NotImplementedError(MP_ERROR_TEXT("machine.freq set not supported yet"));
     #else
@@ -365,11 +365,11 @@ STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
 // idle()
 // This executies a wfi machine instruction which reduces power consumption
 // of the MCU until an interrupt occurs, at which point execution continues.
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     __WFI();
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         pyb_rtc_wakeup(2, args2);
@@ -377,7 +377,7 @@ STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     powerctrl_enter_stop_mode();
 }
 
-STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     if (n_args != 0) {
         mp_obj_t args2[2] = {MP_OBJ_NULL, args[0]};
         pyb_rtc_wakeup(2, args2);
@@ -385,6 +385,6 @@ STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     powerctrl_enter_standby_mode();
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     return reset_cause;
 }

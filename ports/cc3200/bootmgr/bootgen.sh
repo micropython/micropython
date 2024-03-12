@@ -37,7 +37,7 @@ echo "Generating bootloader..."
 # Generate an all 0 bin file
 dd if=/dev/zero of=__tmp.bin ibs=1 count=256 conv=notrunc >/dev/null 2>&1
 
-# Generate a 0 padded version of the relocator 
+# Generate a 0 padded version of the relocator
 dd if=$RELOCATOR/relocator.bin of=__tmp.bin ibs=1 conv=notrunc >/dev/null 2>&1
 
 # Concatenate the re-locator and the boot-manager

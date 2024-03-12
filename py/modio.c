@@ -39,11 +39,11 @@
 
 #if MICROPY_PY_IO_IOBASE
 
-STATIC const mp_obj_type_t mp_type_iobase;
+static const mp_obj_type_t mp_type_iobase;
 
-STATIC const mp_obj_base_t iobase_singleton = {&mp_type_iobase};
+static const mp_obj_base_t iobase_singleton = {&mp_type_iobase};
 
-STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type;
     (void)n_args;
     (void)n_kw;
@@ -51,7 +51,7 @@ STATIC mp_obj_t iobase_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(&iobase_singleton);
 }
 
-STATIC mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode, qstr qst) {
+static mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode, qstr qst) {
     mp_obj_t dest[3];
     mp_load_method(obj, qst, dest);
     mp_obj_array_t ar = {{&mp_type_bytearray}, BYTEARRAY_TYPECODE, 0, size, buf};
@@ -69,15 +69,15 @@ STATIC mp_uint_t iobase_read_write(mp_obj_t obj, void *buf, mp_uint_t size, int 
         return MP_STREAM_ERROR;
     }
 }
-STATIC mp_uint_t iobase_read(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t iobase_read(mp_obj_t obj, void *buf, mp_uint_t size, int *errcode) {
     return iobase_read_write(obj, buf, size, errcode, MP_QSTR_readinto);
 }
 
-STATIC mp_uint_t iobase_write(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t iobase_write(mp_obj_t obj, const void *buf, mp_uint_t size, int *errcode) {
     return iobase_read_write(obj, (void *)buf, size, errcode, MP_QSTR_write);
 }
 
-STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_t dest[4];
     mp_load_method(obj, MP_QSTR_ioctl, dest);
     dest[2] = mp_obj_new_int_from_uint(request);
@@ -91,13 +91,13 @@ STATIC mp_uint_t iobase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, in
     }
 }
 
-STATIC const mp_stream_p_t iobase_p = {
+static const mp_stream_p_t iobase_p = {
     .read = iobase_read,
     .write = iobase_write,
     .ioctl = iobase_ioctl,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_iobase,
     MP_QSTR_IOBase,
     MP_TYPE_FLAG_NONE,
@@ -116,7 +116,7 @@ typedef struct _mp_obj_bufwriter_t {
     byte buf[0];
 } mp_obj_bufwriter_t;
 
-STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 2, false);
     size_t alloc = mp_obj_get_int(args[1]);
     mp_obj_bufwriter_t *o = mp_obj_malloc_var(mp_obj_bufwriter_t, buf, byte, alloc, type);
@@ -126,7 +126,7 @@ STATIC mp_obj_t bufwriter_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return o;
 }
 
-STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_bufwriter_t *self = MP_OBJ_TO_PTR(self_in);
 
     mp_uint_t org_size = size;
@@ -162,7 +162,7 @@ STATIC mp_uint_t bufwriter_write(mp_obj_t self_in, const void *buf, mp_uint_t si
     return org_size;
 }
 
-STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
+static mp_obj_t bufwriter_flush(mp_obj_t self_in) {
     mp_obj_bufwriter_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->len != 0) {
@@ -180,19 +180,19 @@ STATIC mp_obj_t bufwriter_flush(mp_obj_t self_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(bufwriter_flush_obj, bufwriter_flush);
+static MP_DEFINE_CONST_FUN_OBJ_1(bufwriter_flush_obj, bufwriter_flush);
 
-STATIC const mp_rom_map_elem_t bufwriter_locals_dict_table[] = {
+static const mp_rom_map_elem_t bufwriter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
     { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&bufwriter_flush_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
+static MP_DEFINE_CONST_DICT(bufwriter_locals_dict, bufwriter_locals_dict_table);
 
-STATIC const mp_stream_p_t bufwriter_stream_p = {
+static const mp_stream_p_t bufwriter_stream_p = {
     .write = bufwriter_write,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_bufwriter,
     MP_QSTR_BufferedWriter,
     MP_TYPE_FLAG_NONE,
@@ -202,7 +202,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif // MICROPY_PY_IO_BUFFEREDWRITER
 
-STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_io) },
     // Note: mp_builtin_open_obj should be defined by port, it's not
     // part of the core.
@@ -219,7 +219,7 @@ STATIC const mp_rom_map_elem_t mp_module_io_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_io_globals, mp_module_io_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_io_globals, mp_module_io_globals_table);
 
 const mp_obj_module_t mp_module_io = {
     .base = { &mp_type_module },

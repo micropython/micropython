@@ -105,4 +105,4 @@ Changes to built-in modules:
 
 .. rubric:: Notes
 
-.. [#ftimenanosec] Only :func:`time.time_ns` is implemented. 
+.. [#ftimenanosec] Only :func:`time.time_ns` is implemented.

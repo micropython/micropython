@@ -93,7 +93,7 @@ extern OsiTaskHandle    xSimpleLinkSpawnTaskHndl;
 /******************************************************************************/
 // MicroPython bindings;
 
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     // disable wlan
     wlan_stop(SL_STOP_TIMEOUT_LONG);
     // reset the cpu and it's peripherals
@@ -103,7 +103,7 @@ NORETURN STATIC void mp_machine_reset(void) {
 }
 
 #ifdef DEBUG
-STATIC mp_obj_t machine_info(uint n_args, const mp_obj_t *args) {
+static mp_obj_t machine_info(uint n_args, const mp_obj_t *args) {
     // FreeRTOS info
     {
         printf("---------------------------------------------\n");
@@ -126,24 +126,24 @@ STATIC mp_obj_t machine_info(uint n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 #endif
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     return mp_obj_new_int(HAL_FCPU_HZ);
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(NULL);
 }
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     uint8_t mac[SL_BSSID_LENGTH];
     wlan_get_mac (mac);
     return mp_obj_new_bytes(mac, SL_BSSID_LENGTH);
 }
 
-STATIC mp_obj_t machine_main(mp_obj_t main) {
+static mp_obj_t machine_main(mp_obj_t main) {
     if (mp_obj_is_str(main)) {
         MP_STATE_PORT(machine_config_main) = main;
     } else {
@@ -153,27 +153,27 @@ STATIC mp_obj_t machine_main(mp_obj_t main) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_main_obj, machine_main);
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     __WFI();
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     pyb_sleep_sleep();
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     pyb_sleep_deepsleep();
     for (;;) {
     }
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     return pyb_sleep_get_reset_cause();
 }
 
-STATIC mp_obj_t machine_wake_reason (void) {
+static mp_obj_t machine_wake_reason (void) {
     return mp_obj_new_int(pyb_sleep_get_wake_reason());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_reason_obj, machine_wake_reason);
+static MP_DEFINE_CONST_FUN_OBJ_0(machine_wake_reason_obj, machine_wake_reason);
 
 MP_REGISTER_ROOT_POINTER(mp_obj_t machine_config_main);

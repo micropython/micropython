@@ -106,7 +106,7 @@ static const btstack_run_loop_t mp_btstack_runloop_stm32 = {
     &mp_btstack_runloop_get_time_ms,
 };
 
-STATIC const hci_transport_config_uart_t hci_transport_config_uart = {
+static const hci_transport_config_uart_t hci_transport_config_uart = {
     HCI_TRANSPORT_CONFIG_UART,
     MICROPY_HW_BLE_UART_BAUDRATE,
     MICROPY_HW_BLE_UART_BAUDRATE_SECONDARY,

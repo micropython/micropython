@@ -66,7 +66,7 @@ typedef struct _machine_hard_spi_obj_t {
 /******************************************************************************/
 // Implementation of hard SPI for machine module
 
-STATIC machine_hard_spi_obj_t machine_hard_spi_obj[] = {
+static machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     #if defined(MICROPY_HW_SPI0_RSPCK)
     {
         {&machine_spi_type}, 0,
@@ -85,7 +85,7 @@ STATIC machine_hard_spi_obj_t machine_hard_spi_obj[] = {
     #endif
 };
 
-STATIC void spi_init(machine_hard_spi_obj_t *self) {
+static void spi_init(machine_hard_spi_obj_t *self) {
     const machine_pin_obj_t *pins[4] = { NULL, NULL, NULL, NULL };
 
     if (0) {
@@ -126,7 +126,7 @@ STATIC void spi_init(machine_hard_spi_obj_t *self) {
     ra_spi_init(self->spi_id, pins[3]->pin, pins[2]->pin, pins[1]->pin, pins[0]->pin, self->baudrate, self->bits, self->polarity, self->phase, self->firstbit);
 }
 
-STATIC void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%q, mosi=%q, miso=%q)",
         self->spi_id, self->baudrate, self->polarity, self->phase, self->bits,
@@ -233,7 +233,7 @@ mp_obj_t machine_hard_spi_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
 
     enum { ARG_baudrate, ARG_polarity, ARG_phase, ARG_bits, ARG_firstbit, ARG_sck, ARG_mosi, ARG_miso };
@@ -315,17 +315,17 @@ STATIC void machine_hard_spi_init(mp_obj_base_t *self_in, size_t n_args, const m
     spi_init(self);
 }
 
-STATIC void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
+static void machine_hard_spi_deinit(mp_obj_base_t *self_in) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
     spi_deinit(self->spi_id);
 }
 
-STATIC void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_hard_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hard_spi_obj_t *self = (machine_hard_spi_obj_t *)self_in;
     spi_transfer(self->spi_id, self->bits, len, src, dest, SPI_TRANSFER_TIMEOUT(len));
 }
 
-STATIC const mp_machine_spi_p_t machine_hard_spi_p = {
+static const mp_machine_spi_p_t machine_hard_spi_p = {
     .init = machine_hard_spi_init,
     .deinit = machine_hard_spi_deinit,
     .transfer = machine_hard_spi_transfer,

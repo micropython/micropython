@@ -722,7 +722,7 @@ Pairing and bonding
     and ``_IRQ_SET_SECRET`` events.
 
     **Note:** This is currently only supported when using the NimBLE stack on
-    STM32 and Unix (not ESP32).
+    ESP32, STM32 and Unix.
 
 .. method:: BLE.gap_pair(conn_handle, /)
 

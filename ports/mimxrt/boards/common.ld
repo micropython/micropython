@@ -1,7 +1,7 @@
 /*
 ** ###################################################################
 ** Linker script inspired by NXP linker script for MIMXRT10xx
-** 
+**
 ** Copyright for original linker script:
 **     Copyright 2016 Freescale Semiconductor, Inc.
 **     Copyright 2016-2018 NXP
@@ -26,7 +26,7 @@ HEAP_SIZE  = DEFINED(__heap_size__)  ? __heap_size__  : 0x0400;
 STACK_SIZE = DEFINED(__stack_size__) ? __stack_size__ : 0x0400;
 
 /* Reserved Area
- * Users can create a reserved area at the end of the flash memory via 
+ * Users can create a reserved area at the end of the flash memory via
  * 'reserved_size' variable. The size of the reserved area should be a multiple
  * of the sector size of the flash memory!
  */
@@ -41,7 +41,7 @@ MEMORY
   m_text         (RX) : ORIGIN = text_start,            LENGTH = text_size
   m_vfs          (RX) : ORIGIN = vfs_start,             LENGTH = vfs_size
   /* Teensy uses the last bit of flash for recovery. */
-  m_reserved     (RX) : ORIGIN = (vfs_start + vfs_size), LENGTH = reserved_size  
+  m_reserved     (RX) : ORIGIN = (vfs_start + vfs_size), LENGTH = reserved_size
   m_itcm         (RX) : ORIGIN = itcm_start,            LENGTH = itcm_size
   m_dtcm         (RW) : ORIGIN = dtcm_start,            LENGTH = dtcm_size
   m_ocrm         (RW) : ORIGIN = ocrm_start,            LENGTH = ocrm_size
@@ -59,8 +59,8 @@ SECTIONS
   __sdram_start = sdram_start;
   #endif
   __vfs_start = ORIGIN(m_vfs);
-  __vfs_end = __vfs_start + LENGTH(m_vfs);  
-  
+  __vfs_end = __vfs_start + LENGTH(m_vfs);
+
   .flash_config :
   {
     . = ALIGN(4);
@@ -177,7 +177,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
   } > m_text
-  
+
   __etext = .;    /* define a global symbol at end of code */
   __DATA_ROM = .; /* Symbol is used by startup for data initialization */
 
@@ -206,7 +206,7 @@ SECTIONS
     *(.text*)
     . = ALIGN(4);
     __ram_function_end__ = .;
-  } > m_itcm  
+  } > m_itcm
 
   __NDATA_ROM = __RAM_FUNCTIONS_ROM + (__ram_function_end__ - __ram_function_start__);
   .ncache.init : AT(__NDATA_ROM)

@@ -33,20 +33,20 @@
 #include "extmod/modmachine.h"
 
 // The port must provide implementations of these low-level ADCBlock functions.
-STATIC void mp_machine_adc_block_print(const mp_print_t *print, machine_adc_block_obj_t *self);
-STATIC machine_adc_block_obj_t *mp_machine_adc_block_get(mp_int_t unit);
-STATIC void mp_machine_adc_block_bits_set(machine_adc_block_obj_t *self, mp_int_t bits);
-STATIC machine_adc_obj_t *mp_machine_adc_block_connect(machine_adc_block_obj_t *self, mp_int_t channel_id, mp_hal_pin_obj_t pin, mp_map_t *kw_args);
+static void mp_machine_adc_block_print(const mp_print_t *print, machine_adc_block_obj_t *self);
+static machine_adc_block_obj_t *mp_machine_adc_block_get(mp_int_t unit);
+static void mp_machine_adc_block_bits_set(machine_adc_block_obj_t *self, mp_int_t bits);
+static machine_adc_obj_t *mp_machine_adc_block_connect(machine_adc_block_obj_t *self, mp_int_t channel_id, mp_hal_pin_obj_t pin, mp_map_t *kw_args);
 
 // The port provides implementations of the above in this file.
 #include MICROPY_PY_MACHINE_ADC_BLOCK_INCLUDEFILE
 
-STATIC void machine_adc_block_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_adc_block_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_adc_block_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_machine_adc_block_print(print, self);
 }
 
-STATIC void machine_adc_block_init_helper(machine_adc_block_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_adc_block_init_helper(machine_adc_block_obj_t *self, size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum {
         ARG_bits,
     };
@@ -62,7 +62,7 @@ STATIC void machine_adc_block_init_helper(machine_adc_block_obj_t *self, size_t 
     mp_machine_adc_block_bits_set(self, bits);
 }
 
-STATIC mp_obj_t machine_adc_block_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
+static mp_obj_t machine_adc_block_make_new(const mp_obj_type_t *type, size_t n_pos_args, size_t n_kw_args, const mp_obj_t *args) {
     mp_arg_check_num(n_pos_args, n_kw_args, 1, MP_OBJ_FUN_ARGS_MAX, true);
     mp_int_t unit = mp_obj_get_int(args[0]);
     machine_adc_block_obj_t *self = mp_machine_adc_block_get(unit);
@@ -77,14 +77,14 @@ STATIC mp_obj_t machine_adc_block_make_new(const mp_obj_type_t *type, size_t n_p
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_adc_block_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_adc_block_init(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_adc_block_obj_t *self = pos_args[0];
     machine_adc_block_init_helper(self, n_pos_args - 1, pos_args + 1, kw_args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_adc_block_init_obj, 1, machine_adc_block_init);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_adc_block_init_obj, 1, machine_adc_block_init);
 
-STATIC mp_obj_t machine_adc_block_connect(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_adc_block_connect(size_t n_pos_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_adc_block_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_int_t channel_id = -1;
     mp_hal_pin_obj_t pin = -1;
@@ -108,13 +108,13 @@ STATIC mp_obj_t machine_adc_block_connect(size_t n_pos_args, const mp_obj_t *pos
 
     return MP_OBJ_FROM_PTR(adc);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_adc_block_connect_obj, 2, machine_adc_block_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_adc_block_connect_obj, 2, machine_adc_block_connect);
 
-STATIC const mp_rom_map_elem_t machine_adc_block_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_adc_block_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_adc_block_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&machine_adc_block_connect_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_adc_block_locals_dict, machine_adc_block_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_adc_block_locals_dict, machine_adc_block_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_adc_block_type,

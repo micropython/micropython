@@ -45,9 +45,9 @@ mp_int_t log2i(mp_int_t num) {
     return res;
 }
 
-STATIC const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
+static const machine_wdt_obj_t machine_wdt = {{&machine_wdt_type}};
 
-STATIC void set_timeout(uint32_t timeout) {
+static void set_timeout(uint32_t timeout) {
     // Set new timeout. Have to disable WDT first.
 
     // Confine to the valid range
@@ -76,7 +76,7 @@ STATIC void set_timeout(uint32_t timeout) {
     #endif
 }
 
-STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
+static machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t timeout_ms) {
     #if defined(MCU_SAMD51)
     // Verify the WDT id. SAMD51 only, saving a few bytes for SAMD21
     if (id != 0) {
@@ -105,12 +105,12 @@ STATIC machine_wdt_obj_t *mp_machine_wdt_make_new_instance(mp_int_t id, mp_int_t
     return (machine_wdt_obj_t *)&machine_wdt;
 }
 
-STATIC void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
+static void mp_machine_wdt_feed(machine_wdt_obj_t *self) {
     (void)self;
     WDT->CLEAR.reg = 0xa5;
 }
 
-STATIC void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self, mp_int_t timeout_ms) {
+static void mp_machine_wdt_timeout_ms_set(machine_wdt_obj_t *self, mp_int_t timeout_ms) {
     (void)self;
     set_timeout(timeout_ms);
 }

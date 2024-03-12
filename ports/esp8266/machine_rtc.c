@@ -45,14 +45,14 @@ typedef struct _pyb_rtc_obj_t {
 #define MEM_USER_MAXLEN     (512 - (MEM_USER_DATA_ADDR - MEM_DELTA_ADDR) * 4)
 
 // singleton RTC object
-STATIC const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
+static const pyb_rtc_obj_t pyb_rtc_obj = {{&pyb_rtc_type}};
 
 // ALARM0 state
 uint32_t pyb_rtc_alarm0_wake; // see MACHINE_WAKE_xxx constants
 uint64_t pyb_rtc_alarm0_expiry; // in microseconds
 
 // RTC overflow checking
-STATIC uint32_t rtc_last_ticks;
+static uint32_t rtc_last_ticks;
 
 void mp_hal_rtc_init(void) {
     uint32_t magic;
@@ -76,7 +76,7 @@ void mp_hal_rtc_init(void) {
     pyb_rtc_alarm0_expiry = 0;
 }
 
-STATIC mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pyb_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -124,7 +124,7 @@ void rtc_prepare_deepsleep(uint64_t sleep_us) {
     system_rtc_mem_write(MEM_DELTA_ADDR, &delta, sizeof(delta));
 }
 
-STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // Get time
         uint64_t msecs = pyb_rtc_get_us_since_epoch() / 1000;
@@ -161,9 +161,9 @@ STATIC mp_obj_t pyb_rtc_datetime(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_datetime_obj, 1, 2, pyb_rtc_datetime);
 
-STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
     uint8_t rtcram[MEM_USER_MAXLEN];
     uint32_t len;
 
@@ -198,9 +198,9 @@ STATIC mp_obj_t pyb_rtc_memory(size_t n_args, const mp_obj_t *args) {
     }
 
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_memory_obj, 1, 2, pyb_rtc_memory);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_memory_obj, 1, 2, pyb_rtc_memory);
 
-STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time_in) {
+static mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time_in) {
     (void)self_in; // unused
 
     // check we want alarm0
@@ -214,9 +214,9 @@ STATIC mp_obj_t pyb_rtc_alarm(mp_obj_t self_in, mp_obj_t alarm_id, mp_obj_t time
     return mp_const_none;
 
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(pyb_rtc_alarm_obj, pyb_rtc_alarm);
+static MP_DEFINE_CONST_FUN_OBJ_3(pyb_rtc_alarm_obj, pyb_rtc_alarm);
 
-STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     // check we want alarm0
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid alarm"));
@@ -229,9 +229,9 @@ STATIC mp_obj_t pyb_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_int((pyb_rtc_alarm0_expiry - now) / 1000);
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pyb_rtc_alarm_left_obj, 1, 2, pyb_rtc_alarm_left);
 
-STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger, ARG_wake };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -250,9 +250,9 @@ STATIC mp_obj_t pyb_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *k
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pyb_rtc_irq_obj, 1, pyb_rtc_irq);
 
-STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&pyb_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_memory), MP_ROM_PTR(&pyb_rtc_memory_obj) },
     { MP_ROM_QSTR(MP_QSTR_alarm), MP_ROM_PTR(&pyb_rtc_alarm_obj) },
@@ -260,7 +260,7 @@ STATIC const mp_rom_map_elem_t pyb_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&pyb_rtc_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_ALARM0), MP_ROM_INT(0) },
 };
-STATIC MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_rtc_locals_dict, pyb_rtc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_rtc_type,

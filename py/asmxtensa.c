@@ -117,7 +117,7 @@ void asm_xtensa_exit_win(asm_xtensa_t *as) {
     asm_xtensa_op_retw_n(as);
 }
 
-STATIC uint32_t get_label_dest(asm_xtensa_t *as, uint label) {
+static uint32_t get_label_dest(asm_xtensa_t *as, uint label) {
     assert(label < as->base.max_num_labels);
     return as->base.label_offsets[label];
 }

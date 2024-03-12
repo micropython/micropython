@@ -35,7 +35,7 @@
 #include "py/runtime.h"
 #include "py/mphal.h"
 
-STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
+static mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
 
@@ -65,9 +65,9 @@ STATIC mp_obj_t mod_termios_tcgetattr(mp_obj_t fd_in) {
     }
     return MP_OBJ_FROM_PTR(r);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_tcgetattr_obj, mod_termios_tcgetattr);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_tcgetattr_obj, mod_termios_tcgetattr);
 
-STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t attrs_in) {
+static mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t attrs_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
     int when = mp_obj_get_int(when_in);
@@ -105,9 +105,9 @@ STATIC mp_obj_t mod_termios_tcsetattr(mp_obj_t fd_in, mp_obj_t when_in, mp_obj_t
     RAISE_ERRNO(res, errno);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_termios_tcsetattr_obj, mod_termios_tcsetattr);
+static MP_DEFINE_CONST_FUN_OBJ_3(mod_termios_tcsetattr_obj, mod_termios_tcsetattr);
 
-STATIC mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
+static mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
     struct termios term;
     int fd = mp_obj_get_int(fd_in);
     int res = tcgetattr(fd, &term);
@@ -123,9 +123,9 @@ STATIC mp_obj_t mod_termios_setraw(mp_obj_t fd_in) {
     RAISE_ERRNO(res, errno);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_setraw_obj, mod_termios_setraw);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_termios_setraw_obj, mod_termios_setraw);
 
-STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_termios) },
     { MP_ROM_QSTR(MP_QSTR_tcgetattr), MP_ROM_PTR(&mod_termios_tcgetattr_obj) },
     { MP_ROM_QSTR(MP_QSTR_tcsetattr), MP_ROM_PTR(&mod_termios_tcsetattr_obj) },
@@ -144,7 +144,7 @@ STATIC const mp_rom_map_elem_t mp_module_termios_globals_table[] = {
 #undef C
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_termios_globals, mp_module_termios_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_termios_globals, mp_module_termios_globals_table);
 
 const mp_obj_module_t mp_module_termios = {
     .base = { &mp_type_module },

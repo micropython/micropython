@@ -102,7 +102,7 @@
     { MP_ROM_QSTR(MP_QSTR_DEBUG_IF_RESET),     MP_ROM_INT(PYB_RESET_DIF) }, \
     MICROPY_PY_MACHINE_NFC_RESET_ENTRY \
 
-STATIC uint32_t reset_cause;
+static uint32_t reset_cause;
 
 void machine_init(void) {
     uint32_t state = NRF_POWER->RESETREAS;
@@ -134,7 +134,7 @@ void machine_init(void) {
 
 // machine.info([dump_alloc_table])
 // Print out lots of information about the board.
-STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
     // to print info about memory
     {
         printf("_etext=%p\n", &_etext);
@@ -174,14 +174,14 @@ STATIC mp_obj_t machine_info(mp_uint_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj, 0, 1, machine_info);
 
-STATIC mp_obj_t mp_machine_unique_id(void) {
+static mp_obj_t mp_machine_unique_id(void) {
     return mp_const_empty_bytes;
 }
 
 // Resets the board in a manner similar to pushing the external RESET button.
-NORETURN STATIC void mp_machine_reset(void) {
+NORETURN static void mp_machine_reset(void) {
     NVIC_SystemReset();
 }
 
@@ -191,31 +191,31 @@ NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args) {
     }
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     MICROPY_EVENT_POLL_HOOK;
 }
 
-STATIC void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args) {
     __WFE();
 }
 
-NORETURN STATIC void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
+NORETURN static void mp_machine_deepsleep(size_t n_args, const mp_obj_t *args) {
     mp_machine_reset();
 }
 
-STATIC mp_int_t mp_machine_reset_cause(void) {
+static mp_int_t mp_machine_reset_cause(void) {
     return reset_cause;
 }
 
-STATIC mp_obj_t mp_machine_get_freq(void) {
+static mp_obj_t mp_machine_get_freq(void) {
     mp_raise_NotImplementedError(NULL);
 }
 
-STATIC void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
+static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args) {
     mp_raise_NotImplementedError(NULL);
 }
 
-STATIC mp_obj_t machine_enable_irq(void) {
+static mp_obj_t machine_enable_irq(void) {
 #ifndef BLUETOOTH_SD
     __enable_irq();
 #else
@@ -226,7 +226,7 @@ STATIC mp_obj_t machine_enable_irq(void) {
 MP_DEFINE_CONST_FUN_OBJ_0(machine_enable_irq_obj, machine_enable_irq);
 
 // Resets the board in a manner similar to pushing the external RESET button.
-STATIC mp_obj_t machine_disable_irq(void) {
+static mp_obj_t machine_disable_irq(void) {
 #ifndef BLUETOOTH_SD
     __disable_irq();
 #else

@@ -35,7 +35,7 @@
 #include "fsl_snvs_lp.h"
 #include "fsl_snvs_hp.h"
 
-STATIC mp_int_t timeout = 0;
+static mp_int_t timeout = 0;
 
 void machine_rtc_alarm_clear_en(void) {
     SNVS_LP_SRTC_DisableInterrupts(SNVS, SNVS_LPCR_LPTA_EN_MASK);
@@ -103,7 +103,7 @@ typedef struct _machine_rtc_irq_obj_t {
     mp_irq_obj_t base;
 } machine_rtc_irq_obj_t;
 
-STATIC mp_uint_t machine_rtc_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+static mp_uint_t machine_rtc_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     new_trigger /= 1000;
     if (!new_trigger) {
         machine_rtc_alarm_off(true);
@@ -113,11 +113,11 @@ STATIC mp_uint_t machine_rtc_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger
     return 0;
 }
 
-STATIC mp_uint_t machine_rtc_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+static mp_uint_t machine_rtc_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     return 0;
 }
 
-STATIC const mp_irq_methods_t machine_rtc_irq_methods = {
+static const mp_irq_methods_t machine_rtc_irq_methods = {
     .trigger = machine_rtc_irq_trigger,
     .info = machine_rtc_irq_info,
 };
@@ -148,7 +148,7 @@ typedef struct _machine_rtc_obj_t {
 } machine_rtc_obj_t;
 
 // Singleton RTC object.
-STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
+static const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
 // Start the RTC Timer.
 void machine_rtc_start(void) {
@@ -177,7 +177,7 @@ void machine_rtc_start(void) {
     }
 }
 
-STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // Check arguments.
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -185,7 +185,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
-STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args) {
     if (n_args == 1) {
         // Get date and time.
         snvs_lp_srtc_datetime_t srtc_date;
@@ -225,12 +225,12 @@ STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
     }
 }
 
-STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     return machine_rtc_datetime_helper(n_args, args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
-STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
+static mp_obj_t machine_rtc_now(mp_obj_t self_in) {
     // Get date and time in CPython order.
     snvs_lp_srtc_datetime_t srtc_date;
     SNVS_LP_SRTC_GetDatetime(SNVS, &srtc_date);
@@ -247,18 +247,18 @@ STATIC mp_obj_t machine_rtc_now(mp_obj_t self_in) {
     };
     return mp_obj_new_tuple(8, tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
+static MP_DEFINE_CONST_FUN_OBJ_1(machine_rtc_now_obj, machine_rtc_now);
 
-STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
+static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
     machine_rtc_datetime_helper(2, args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
 // calibration(cal)
 // When the argument is a number in the range [-16 to 15], set the calibration value.
-STATIC mp_obj_t machine_rtc_calibration(mp_obj_t self_in, mp_obj_t cal_in) {
+static mp_obj_t machine_rtc_calibration(mp_obj_t self_in, mp_obj_t cal_in) {
     mp_int_t cal = 0;
     snvs_lp_srtc_config_t snvsSrtcConfig;
     cal = mp_obj_get_int(cal_in);
@@ -271,10 +271,10 @@ STATIC mp_obj_t machine_rtc_calibration(mp_obj_t self_in, mp_obj_t cal_in) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_calibration_obj, machine_rtc_calibration);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_calibration_obj, machine_rtc_calibration);
 
-STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    STATIC const mp_arg_t allowed_args[] = {
+static mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    static const mp_arg_t allowed_args[] = {
         { MP_QSTR_id,                            MP_ARG_INT,  {.u_int = 0} },
         { MP_QSTR_time,                          MP_ARG_OBJ,  {.u_obj = mp_const_none} },
         { MP_QSTR_repeat,     MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -321,9 +321,9 @@ STATIC mp_obj_t machine_rtc_alarm(size_t n_args, const mp_obj_t *pos_args, mp_ma
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_alarm_obj, 1, machine_rtc_alarm);
 
-STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
         mp_raise_OSError(MP_ENODEV);
@@ -332,9 +332,9 @@ STATIC mp_obj_t machine_rtc_alarm_left(size_t n_args, const mp_obj_t *args) {
     uint32_t alarmSeconds = SNVS->LPTAR;
     return mp_obj_new_int((alarmSeconds >= seconds) ? ((alarmSeconds - seconds) * 1000) : 0);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_left_obj, 1, 2, machine_rtc_alarm_left);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_left_obj, 1, 2, machine_rtc_alarm_left);
 
-STATIC mp_obj_t machine_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
     // only alarm id 0 is available
     if (n_args > 1 && mp_obj_get_int(args[1]) != 0) {
         mp_raise_OSError(MP_ENODEV);
@@ -342,9 +342,9 @@ STATIC mp_obj_t machine_rtc_alarm_cancel(size_t n_args, const mp_obj_t *args) {
     machine_rtc_alarm_off(true);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_cancel_obj, 1, 2, machine_rtc_alarm_cancel);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_alarm_cancel_obj, 1, 2, machine_rtc_alarm_cancel);
 
-STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_trigger, ARG_handler, ARG_wake, ARG_hard };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_trigger, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 0} },
@@ -384,9 +384,9 @@ STATIC mp_obj_t machine_rtc_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_
 
     return MP_OBJ_FROM_PTR(irq);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(machine_rtc_irq_obj, 1, machine_rtc_irq);
 
-STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&machine_rtc_now_obj) },
@@ -398,7 +398,7 @@ STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq), MP_ROM_PTR(&machine_rtc_irq_obj) },
     { MP_ROM_QSTR(MP_QSTR_ALARM0), MP_ROM_INT(0) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_rtc_type,

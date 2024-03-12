@@ -111,7 +111,7 @@ typedef struct _machine_hw_spi_obj_t {
 } machine_hw_spi_obj_t;
 
 // Default pin mappings for the hardware SPI instances
-STATIC const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[MICROPY_HW_SPI_MAX] = {
+static const machine_hw_spi_default_pins_t machine_hw_spi_default_pins[MICROPY_HW_SPI_MAX] = {
     { .pins = { .sck = MICROPY_HW_SPI1_SCK, .mosi = MICROPY_HW_SPI1_MOSI, .miso = MICROPY_HW_SPI1_MISO }},
     #ifdef MICROPY_HW_SPI2_SCK
     { .pins = { .sck = MICROPY_HW_SPI2_SCK, .mosi = MICROPY_HW_SPI2_MOSI, .miso = MICROPY_HW_SPI2_MISO }},
@@ -133,9 +133,9 @@ static const mp_arg_t spi_allowed_args[] = {
 };
 
 // Static objects mapping to SPI2 (and SPI3 if available) hardware peripherals.
-STATIC machine_hw_spi_obj_t machine_hw_spi_obj[MICROPY_HW_SPI_MAX];
+static machine_hw_spi_obj_t machine_hw_spi_obj[MICROPY_HW_SPI_MAX];
 
-STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
+static void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
     switch (spi_bus_remove_device(self->spi)) {
         case ESP_ERR_INVALID_ARG:
             mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("invalid configuration"));
@@ -167,7 +167,7 @@ STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {
     }
 }
 
-STATIC void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_t args[]) {
+static void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_t args[]) {
 
     // if we're not initialized, then we're
     // implicitly 'changed', since this is the init routine
@@ -292,7 +292,7 @@ STATIC void machine_hw_spi_init_internal(machine_hw_spi_obj_t *self, mp_arg_val_
     self->state = MACHINE_HW_SPI_STATE_INIT;
 }
 
-STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
+static void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
     machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
     if (self->state == MACHINE_HW_SPI_STATE_INIT) {
         self->state = MACHINE_HW_SPI_STATE_DEINIT;
@@ -300,7 +300,7 @@ STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {
     }
 }
 
-STATIC mp_uint_t gcd(mp_uint_t x, mp_uint_t y) {
+static mp_uint_t gcd(mp_uint_t x, mp_uint_t y) {
     while (x != y) {
         if (x > y) {
             x -= y;
@@ -311,7 +311,7 @@ STATIC mp_uint_t gcd(mp_uint_t x, mp_uint_t y) {
     return x;
 }
 
-STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->state == MACHINE_HW_SPI_STATE_DEINIT) {
@@ -389,7 +389,7 @@ STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const ui
 /******************************************************************************/
 // MicroPython bindings for hw_spi
 
-STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hw_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "SPI(id=%u, baudrate=%u, polarity=%u, phase=%u, bits=%u, firstbit=%u, sck=%d, mosi=%d, miso=%d)",
         self->host, self->baudrate, self->polarity,
@@ -401,7 +401,7 @@ STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 // into all the u_int fields.
 // The behavior is slightly different for a new call vs an init method on an existing object.
 // Unspecified arguments for new will use defaults, for init they keep the existing value.
-STATIC void machine_hw_spi_argcheck(mp_arg_val_t args[], const machine_hw_spi_default_pins_t *default_pins) {
+static void machine_hw_spi_argcheck(mp_arg_val_t args[], const machine_hw_spi_default_pins_t *default_pins) {
 // A non-NULL default_pins argument will trigger the "use default" behavior.
     // Replace pin args with default/current values for new vs init call, respectively
     for (int i = ARG_sck; i <= ARG_miso; i++) {
@@ -415,7 +415,7 @@ STATIC void machine_hw_spi_argcheck(mp_arg_val_t args[], const machine_hw_spi_de
     }
 }
 
-STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_hw_spi_obj_t *self = (machine_hw_spi_obj_t *)self_in;
 
     mp_arg_val_t args[MP_ARRAY_SIZE(spi_allowed_args)];
@@ -465,7 +465,7 @@ spi_host_device_t machine_hw_spi_get_host(mp_obj_t in) {
     return self->host;
 }
 
-STATIC const mp_machine_spi_p_t machine_hw_spi_p = {
+static const mp_machine_spi_p_t machine_hw_spi_p = {
     .init = machine_hw_spi_init,
     .deinit = machine_hw_spi_deinit,
     .transfer = machine_hw_spi_transfer,

@@ -40,7 +40,7 @@ const monochrome_5by5_t microbit_blank_image = {
     { 0, 0, 0 }
 };
 
-STATIC void microbit_image_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void microbit_image_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     microbit_image_obj_t *self = (microbit_image_obj_t*)self_in;
     mp_printf(print, "Image(");
     if (kind == PRINT_STR)
@@ -112,7 +112,7 @@ mp_int_t imageHeight(microbit_image_obj_t * p_image) {
         return p_image->greyscale.height;
 }
 
-STATIC greyscale_t *greyscale_new(mp_int_t w, mp_int_t h) {
+static greyscale_t *greyscale_new(mp_int_t w, mp_int_t h) {
     greyscale_t *result = mp_obj_malloc_var(greyscale_t, byte_data, uint8_t, (w*h+1)>>1, &microbit_image_type);
     result->five = 0;
     result->width = w;
@@ -144,7 +144,7 @@ greyscale_t * imageInvert(microbit_image_obj_t * p_image) {
     return result;
 }
 
-STATIC microbit_image_obj_t *image_from_parsed_str(const char *s, mp_int_t len) {
+static microbit_image_obj_t *image_from_parsed_str(const char *s, mp_int_t len) {
     mp_int_t w = 0;
     mp_int_t h = 0;
     mp_int_t line_len = 0;
@@ -201,7 +201,7 @@ STATIC microbit_image_obj_t *image_from_parsed_str(const char *s, mp_int_t len) 
 }
 
 
-STATIC mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
+static mp_obj_t microbit_image_make_new(const mp_obj_type_t *type_in, mp_uint_t n_args, mp_uint_t n_kw, const mp_obj_t *args) {
     (void)type_in;
     mp_arg_check_num(n_args, n_kw, 0, 3, false);
 
@@ -270,7 +270,7 @@ static void clear_rect(greyscale_t *img, mp_int_t x0, mp_int_t y0,mp_int_t x1, m
     }
 }
 
-STATIC void image_blit(microbit_image_obj_t *src, greyscale_t *dest, mp_int_t x, mp_int_t y, mp_int_t w, mp_int_t h, mp_int_t xdest, mp_int_t ydest) {
+static void image_blit(microbit_image_obj_t *src, greyscale_t *dest, mp_int_t x, mp_int_t y, mp_int_t w, mp_int_t h, mp_int_t xdest, mp_int_t ydest) {
     if (w < 0)
         w = 0;
     if (h < 0)
@@ -323,7 +323,7 @@ greyscale_t *image_shift(microbit_image_obj_t *self, mp_int_t x, mp_int_t y) {
     return result;
 }
 
-STATIC microbit_image_obj_t *image_crop(microbit_image_obj_t *img, mp_int_t x, mp_int_t y, mp_int_t w, mp_int_t h) {
+static microbit_image_obj_t *image_crop(microbit_image_obj_t *img, mp_int_t x, mp_int_t y, mp_int_t w, mp_int_t h) {
     if (w < 0)
         w = 0;
     if (h < 0)
@@ -483,7 +483,7 @@ mp_obj_t microbit_image_invert(mp_obj_t self_in) {
 MP_DEFINE_CONST_FUN_OBJ_1(microbit_image_invert_obj, microbit_image_invert);
 
 
-STATIC const mp_rom_map_elem_t microbit_image_locals_dict_table[] = {
+static const mp_rom_map_elem_t microbit_image_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_width), MP_ROM_PTR(&microbit_image_width_obj) },
     { MP_ROM_QSTR(MP_QSTR_height), MP_ROM_PTR(&microbit_image_height_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_pixel), MP_ROM_PTR(&microbit_image_get_pixel_obj) },
@@ -565,14 +565,14 @@ STATIC const mp_rom_map_elem_t microbit_image_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_SNAKE), MP_ROM_PTR(&microbit_const_image_snake_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(microbit_image_locals_dict, microbit_image_locals_dict_table);
+static MP_DEFINE_CONST_DICT(microbit_image_locals_dict, microbit_image_locals_dict_table);
 
 #define THE_FONT font_pendolino3_5x5_pad3msb
 
 #define ASCII_START 32
 #define ASCII_END 126
 
-STATIC const unsigned char *get_font_data_from_char(char c) {
+static const unsigned char *get_font_data_from_char(char c) {
     if (c < ASCII_START || c > ASCII_END) {
         c = '?';
     }
@@ -580,7 +580,7 @@ STATIC const unsigned char *get_font_data_from_char(char c) {
     return THE_FONT + offset;
 }
 
-STATIC mp_int_t get_pixel_from_font_data(const unsigned char *data, int x, int y) {
+static mp_int_t get_pixel_from_font_data(const unsigned char *data, int x, int y) {
     /* The following logic belongs in MicroBitFont */
     return ((data[y]>>(4-x))&1);
 }
@@ -645,7 +645,7 @@ microbit_image_obj_t *microbit_image_sum(microbit_image_obj_t *lhs, microbit_ima
     return (microbit_image_obj_t *)result;
 }
 
-STATIC mp_obj_t image_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
+static mp_obj_t image_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     if (mp_obj_get_type(lhs_in) != &microbit_image_type) {
         return MP_OBJ_NULL; // op not supported
     }
@@ -724,7 +724,7 @@ mp_obj_t scrolling_string_image_iterable(const char* str, mp_uint_t len, mp_obj_
     return result;
 }
 
-STATIC int font_column_non_blank(const unsigned char *font_data, unsigned int col) {
+static int font_column_non_blank(const unsigned char *font_data, unsigned int col) {
     for (int y = 0; y < 5; ++y) {
         if (get_pixel_from_font_data(font_data, col, y)) {
             return 1;
@@ -734,7 +734,7 @@ STATIC int font_column_non_blank(const unsigned char *font_data, unsigned int co
 }
 
 /* Not strictly the rightmost non-blank column, but the rightmost in columns 2,3 or 4. */
-STATIC unsigned int rightmost_non_blank_column(const unsigned char *font_data) {
+static unsigned int rightmost_non_blank_column(const unsigned char *font_data) {
     if (font_column_non_blank(font_data, 4)) {
         return 4;
     }
@@ -760,7 +760,7 @@ static void restart(scrolling_string_iterator_t *iter) {
     }
 }
 
-STATIC mp_obj_t get_microbit_scrolling_string_iter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+static mp_obj_t get_microbit_scrolling_string_iter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     (void)iter_buf;
     scrolling_string_t *str = (scrolling_string_t *)o_in;
     scrolling_string_iterator_t *result = mp_obj_malloc(scrolling_string_iterator_t, &microbit_scrolling_string_iterator_type);
@@ -774,7 +774,7 @@ STATIC mp_obj_t get_microbit_scrolling_string_iter(mp_obj_t o_in, mp_obj_iter_bu
     return result;
 }
 
-STATIC mp_obj_t microbit_scrolling_string_iter_next(mp_obj_t o_in) {
+static mp_obj_t microbit_scrolling_string_iter_next(mp_obj_t o_in) {
     scrolling_string_iterator_t *iter = (scrolling_string_iterator_t *)o_in;
     if (iter->next_char == iter->end && iter->offset == 5) {
         if (iter->repeat) {

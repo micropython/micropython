@@ -213,7 +213,7 @@ def print_regs_as_submodules(reg_name, reg_defs, modules):
 
     print(
         """
-STATIC const mp_rom_map_elem_t stm_%s_globals_table[] = {
+static const mp_rom_map_elem_t stm_%s_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_%s) },
 """
         % (mod_name_lower, mod_name_upper)
@@ -228,7 +228,7 @@ STATIC const mp_rom_map_elem_t stm_%s_globals_table[] = {
     print(
         """};
 
-STATIC MP_DEFINE_CONST_DICT(stm_%s_globals, stm_%s_globals_table);
+static MP_DEFINE_CONST_DICT(stm_%s_globals, stm_%s_globals_table);
 
 const mp_obj_module_t stm_%s_obj = {
     .base = { &mp_type_module },
@@ -310,7 +310,7 @@ def main():
         for mpz in sorted(needed_mpzs):
             assert 0 <= mpz <= 0xFFFFFFFF
             print(
-                "STATIC const mp_obj_int_t mpz_%08x = {{&mp_type_int}, "
+                "static const mp_obj_int_t mpz_%08x = {{&mp_type_int}, "
                 "{.neg=0, .fixed_dig=1, .alloc=2, .len=2, "
                 ".dig=(uint16_t*)(const uint16_t[]){%#x, %#x}}};"
                 % (mpz, mpz & 0xFFFF, (mpz >> 16) & 0xFFFF),

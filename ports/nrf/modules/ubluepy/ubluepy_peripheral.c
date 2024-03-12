@@ -34,14 +34,14 @@
 
 #include "ble_drv.h"
 
-STATIC void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+static void ubluepy_peripheral_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_peripheral_obj_t * self = (ubluepy_peripheral_obj_t *)o;
     (void)self;
     mp_printf(print, "Peripheral(conn_handle: " HEX2_FMT ")",
               self->conn_handle);
 }
 
-STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
+static void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (event_id == 16) {                // connect event
@@ -68,7 +68,7 @@ STATIC void gap_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t conn
     (void)self;
 }
 
-STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
+static void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     if (self->conn_handler != mp_const_none) {
@@ -92,14 +92,14 @@ STATIC void gatts_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t at
 
 static volatile bool m_disc_evt_received;
 
-STATIC void gattc_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
+static void gattc_event_handler(mp_obj_t self_in, uint16_t event_id, uint16_t attr_handle, uint16_t length, uint8_t * data) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
     (void)self;
     m_disc_evt_received = true;
 }
 #endif
 
-STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     enum {
         ARG_NEW_DEVICE_ADDR,
         ARG_NEW_ADDR_TYPE
@@ -129,45 +129,45 @@ STATIC mp_obj_t ubluepy_peripheral_make_new(const mp_obj_type_t *type, size_t n_
 /// \method withDelegate(DefaultDelegate)
 /// Set delegate instance for handling Bluetooth LE events.
 ///
-STATIC mp_obj_t peripheral_with_delegate(mp_obj_t self_in, mp_obj_t delegate) {
+static mp_obj_t peripheral_with_delegate(mp_obj_t self_in, mp_obj_t delegate) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     self->delegate = delegate;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_with_delegate_obj, peripheral_with_delegate);
+static MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_with_delegate_obj, peripheral_with_delegate);
 
 /// \method setNotificationHandler(func)
 /// Set handler for Bluetooth LE notification events.
 ///
-STATIC mp_obj_t peripheral_set_notif_handler(mp_obj_t self_in, mp_obj_t func) {
+static mp_obj_t peripheral_set_notif_handler(mp_obj_t self_in, mp_obj_t func) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     self->notif_handler = func;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_notif_handler_obj, peripheral_set_notif_handler);
+static MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_notif_handler_obj, peripheral_set_notif_handler);
 
 /// \method setConnectionHandler(func)
 /// Set handler for Bluetooth LE connection events.
 ///
-STATIC mp_obj_t peripheral_set_conn_handler(mp_obj_t self_in, mp_obj_t func) {
+static mp_obj_t peripheral_set_conn_handler(mp_obj_t self_in, mp_obj_t func) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     self->conn_handler = func;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_conn_handler_obj, peripheral_set_conn_handler);
+static MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_set_conn_handler_obj, peripheral_set_conn_handler);
 
 #if MICROPY_PY_UBLUEPY_PERIPHERAL
 
 /// \method advertise(device_name, [service=[service1, service2, ...]], [data=bytearray], [connectable=True])
 /// Start advertising. Connectable advertisement type by default.
 ///
-STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_device_name, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_services,    MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = mp_const_none} },
@@ -231,12 +231,12 @@ STATIC mp_obj_t peripheral_advertise(mp_uint_t n_args, const mp_obj_t *pos_args,
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 0, peripheral_advertise);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_advertise_obj, 0, peripheral_advertise);
 
 /// \method advertise_stop()
 /// Stop advertisement if any onging advertisement.
 ///
-STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
+static mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     (void)self;
@@ -245,26 +245,26 @@ STATIC mp_obj_t peripheral_advertise_stop(mp_obj_t self_in) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_advertise_stop_obj, peripheral_advertise_stop);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_advertise_stop_obj, peripheral_advertise_stop);
 
 #endif // MICROPY_PY_UBLUEPY_PERIPHERAL
 
 /// \method disconnect()
 /// disconnect connection.
 ///
-STATIC mp_obj_t peripheral_disconnect(mp_obj_t self_in) {
+static mp_obj_t peripheral_disconnect(mp_obj_t self_in) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     (void)self;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_disconnect_obj, peripheral_disconnect);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_disconnect_obj, peripheral_disconnect);
 
 /// \method addService(Service)
 /// Add service to the Peripheral.
 ///
-STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
+static mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
     ubluepy_service_obj_t    * p_service = MP_OBJ_TO_PTR(service);
 
@@ -274,17 +274,17 @@ STATIC mp_obj_t peripheral_add_service(mp_obj_t self_in, mp_obj_t service) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_add_service_obj, peripheral_add_service);
+static MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_peripheral_add_service_obj, peripheral_add_service);
 
 /// \method getServices()
 /// Return list with all service registered in the Peripheral.
 ///
-STATIC mp_obj_t peripheral_get_services(mp_obj_t self_in) {
+static mp_obj_t peripheral_get_services(mp_obj_t self_in) {
     ubluepy_peripheral_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
     return self->service_list;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral_get_services);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_peripheral_get_services_obj, peripheral_get_services);
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
 
@@ -337,7 +337,7 @@ void static disc_add_char(mp_obj_t service_in, ble_drv_char_data_t * p_desc_data
 /// addr_type can be either ADDR_TYPE_PUBLIC (default) or
 /// ADDR_TYPE_RANDOM_STATIC.
 ///
-STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     ubluepy_peripheral_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_obj_t dev_addr              = pos_args[1];
 
@@ -439,11 +439,11 @@ STATIC mp_obj_t peripheral_connect(mp_uint_t n_args, const mp_obj_t *pos_args, m
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_connect_obj, 2, peripheral_connect);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_peripheral_connect_obj, 2, peripheral_connect);
 
 #endif
 
-STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
+static const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_withDelegate),           MP_ROM_PTR(&ubluepy_peripheral_with_delegate_obj) },
     { MP_ROM_QSTR(MP_QSTR_setNotificationHandler), MP_ROM_PTR(&ubluepy_peripheral_set_notif_handler_obj) },
     { MP_ROM_QSTR(MP_QSTR_setConnectionHandler),   MP_ROM_PTR(&ubluepy_peripheral_set_conn_handler_obj) },
@@ -480,7 +480,7 @@ STATIC const mp_rom_map_elem_t ubluepy_peripheral_locals_dict_table[] = {
 #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_peripheral_locals_dict, ubluepy_peripheral_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ubluepy_peripheral_locals_dict, ubluepy_peripheral_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_peripheral_type,

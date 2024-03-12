@@ -32,14 +32,14 @@
 #include "modubluepy.h"
 #include "ble_drv.h"
 
-STATIC void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+static void ubluepy_characteristic_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_characteristic_obj_t * self = (ubluepy_characteristic_obj_t *)o;
 
     mp_printf(print, "Characteristic(handle: 0x" HEX2_FMT ", conn_handle: " HEX2_FMT ")",
               self->handle, self->p_service->p_periph->conn_handle);
 }
 
-STATIC mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ubluepy_characteristic_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_uuid,  MP_ARG_REQUIRED| MP_ARG_OBJ, {.u_obj = mp_const_none} },
         { MP_QSTR_props, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = UBLUEPY_PROP_READ | UBLUEPY_PROP_WRITE} },
@@ -90,7 +90,7 @@ void char_data_callback(mp_obj_t self_in, uint16_t length, uint8_t * p_data) {
 /// \method read()
 /// Read Characteristic value.
 ///
-STATIC mp_obj_t char_read(mp_obj_t self_in) {
+static mp_obj_t char_read(mp_obj_t self_in) {
     ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
 
 #if MICROPY_PY_UBLUEPY_CENTRAL
@@ -107,12 +107,12 @@ STATIC mp_obj_t char_read(mp_obj_t self_in) {
     return mp_const_none;
 #endif
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_read_obj, char_read);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_read_obj, char_read);
 
 /// \method write(data, [with_response=False])
 /// Write Characteristic value.
 ///
-STATIC mp_obj_t char_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t char_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     ubluepy_characteristic_obj_t *self = MP_OBJ_TO_PTR(pos_args[0]);
     mp_obj_t data                      = pos_args[1];
 
@@ -155,28 +155,28 @@ STATIC mp_obj_t char_write(mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t 
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_characteristic_write_obj, 2, char_write);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ubluepy_characteristic_write_obj, 2, char_write);
 
 /// \method properties()
 /// Read Characteristic value properties.
 ///
-STATIC mp_obj_t char_properties(mp_obj_t self_in) {
+static mp_obj_t char_properties(mp_obj_t self_in) {
     ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_NEW_SMALL_INT(self->props);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_properties_obj, char_properties);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_properties_obj, char_properties);
 
 /// \method uuid()
 /// Get UUID instance of the characteristic.
 ///
-STATIC mp_obj_t char_uuid(mp_obj_t self_in) {
+static mp_obj_t char_uuid(mp_obj_t self_in) {
     ubluepy_characteristic_obj_t * self = MP_OBJ_TO_PTR(self_in);
     return MP_OBJ_FROM_PTR(self->p_uuid);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_uuid_obj, char_uuid);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_characteristic_get_uuid_obj, char_uuid);
 
 
-STATIC const mp_rom_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
+static const mp_rom_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read),                MP_ROM_PTR(&ubluepy_characteristic_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_write),               MP_ROM_PTR(&ubluepy_characteristic_write_obj) },
 #if 0
@@ -207,7 +207,7 @@ STATIC const mp_rom_map_elem_t ubluepy_characteristic_locals_dict_table[] = {
 #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_characteristic_locals_dict, ubluepy_characteristic_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ubluepy_characteristic_locals_dict, ubluepy_characteristic_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_characteristic_type,

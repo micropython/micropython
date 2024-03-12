@@ -65,14 +65,14 @@
 // The first set of sizes are chosen so the allocation fits exactly in a
 // 4-word GC block, and it's not so important for these small values to be
 // prime.  The latter sizes are prime and increase at an increasing rate.
-STATIC const uint16_t hash_allocation_sizes[] = {
+static const uint16_t hash_allocation_sizes[] = {
     0, 2, 4, 6, 8, 10, 12, // +2
     17, 23, 29, 37, 47, 59, 73, // *1.25
     97, 127, 167, 223, 293, 389, 521, 691, 919, 1223, 1627, 2161, // *1.33
     3229, 4831, 7243, 10861, 16273, 24407, 36607, 54907, // *1.5
 };
 
-STATIC size_t get_hash_alloc_greater_or_equal_to(size_t x) {
+static size_t get_hash_alloc_greater_or_equal_to(size_t x) {
     for (size_t i = 0; i < MP_ARRAY_SIZE(hash_allocation_sizes); i++) {
         if (hash_allocation_sizes[i] >= x) {
             return hash_allocation_sizes[i];
@@ -128,7 +128,7 @@ void mp_map_clear(mp_map_t *map) {
     map->table = NULL;
 }
 
-STATIC void mp_map_rehash(mp_map_t *map) {
+static void mp_map_rehash(mp_map_t *map) {
     size_t old_alloc = map->alloc;
     size_t new_alloc = get_hash_alloc_greater_or_equal_to(map->alloc + 1);
     DEBUG_printf("mp_map_rehash(%p): " UINT_FMT " -> " UINT_FMT "\n", map, old_alloc, new_alloc);
@@ -332,7 +332,7 @@ void mp_set_init(mp_set_t *set, size_t n) {
     set->table = m_new0(mp_obj_t, set->alloc);
 }
 
-STATIC void mp_set_rehash(mp_set_t *set) {
+static void mp_set_rehash(mp_set_t *set) {
     size_t old_alloc = set->alloc;
     mp_obj_t *old_table = set->table;
     set->alloc = get_hash_alloc_greater_or_equal_to(set->alloc + 1);

@@ -45,7 +45,7 @@ extern uint32_t _unused_flash_start;
 extern uint32_t _unused_flash_len;
 
 #if NRF_POWER_HAS_DCDCEN
-STATIC mp_obj_t dcdc(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t dcdc(size_t n_args, const mp_obj_t *args) {
     if (n_args > 0) {
         bool dcdc_state = mp_obj_is_true(args[0]);
         #if BLUETOOTH_SD
@@ -59,14 +59,14 @@ STATIC mp_obj_t dcdc(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(nrf_power_dcdcen_get(NRF_POWER));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dcdc_obj, 0, 1, dcdc);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(dcdc_obj, 0, 1, dcdc);
 #endif
 
 #if MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE
 mp_obj_t nrf_modnrf_freeflash_start_aligned(void) {
     return mp_obj_new_int_from_uint(FLASH_PAGE_ALIGN_UP((uint32_t)&_unused_flash_start));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(nrf_modnrf_freeflash_start_aligned_obj, nrf_modnrf_freeflash_start_aligned);
+static MP_DEFINE_CONST_FUN_OBJ_0(nrf_modnrf_freeflash_start_aligned_obj, nrf_modnrf_freeflash_start_aligned);
 
 mp_obj_t nrf_modnrf_freeflash_length_aligned(void) {
     uint32_t align_diff = FLASH_PAGE_ALIGN_UP((uint32_t)&_unused_flash_start) - ((uint32_t)&_unused_flash_start);
@@ -74,10 +74,10 @@ mp_obj_t nrf_modnrf_freeflash_length_aligned(void) {
     uint32_t len_page_aligned = (temp_len / FLASH_PAGESIZE) * FLASH_PAGESIZE;
     return mp_obj_new_int_from_uint(len_page_aligned);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(nrf_modnrf_freeflash_length_aligned_obj, nrf_modnrf_freeflash_length_aligned);
+static MP_DEFINE_CONST_FUN_OBJ_0(nrf_modnrf_freeflash_length_aligned_obj, nrf_modnrf_freeflash_length_aligned);
 #endif
 
-STATIC const mp_rom_map_elem_t nrf_module_globals_table[] = {
+static const mp_rom_map_elem_t nrf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_nrf) },
     #if NRF_POWER_HAS_DCDCEN
     { MP_ROM_QSTR(MP_QSTR_dcdc), MP_ROM_PTR(&dcdc_obj) },
@@ -88,7 +88,7 @@ STATIC const mp_rom_map_elem_t nrf_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unused_flash_length), MP_ROM_PTR(&nrf_modnrf_freeflash_length_aligned_obj) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(nrf_module_globals, nrf_module_globals_table);
+static MP_DEFINE_CONST_DICT(nrf_module_globals, nrf_module_globals_table);
 
 const mp_obj_module_t nrf_module = {
     .base = { &mp_type_module },

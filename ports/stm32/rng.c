@@ -57,7 +57,7 @@ uint32_t rng_get(void) {
 }
 
 // Return a 30-bit hardware generated random number.
-STATIC mp_obj_t pyb_rng_get(void) {
+static mp_obj_t pyb_rng_get(void) {
     return mp_obj_new_int(rng_get() >> 2);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
@@ -72,7 +72,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(pyb_rng_get_obj, pyb_rng_get);
 
 // Yasmarang random number generator by Ilya Levin
 // http://www.literatecode.com/yasmarang
-STATIC uint32_t pyb_rng_yasmarang(void) {
+static uint32_t pyb_rng_yasmarang(void) {
     static bool seeded = false;
     static uint32_t pad = 0, n = 0, d = 0;
     static uint8_t dat = 0;

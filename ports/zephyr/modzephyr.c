@@ -37,34 +37,34 @@
 #include "modzephyr.h"
 #include "py/runtime.h"
 
-STATIC mp_obj_t mod_is_preempt_thread(void) {
+static mp_obj_t mod_is_preempt_thread(void) {
     return mp_obj_new_bool(k_is_preempt_thread());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_is_preempt_thread_obj, mod_is_preempt_thread);
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_is_preempt_thread_obj, mod_is_preempt_thread);
 
-STATIC mp_obj_t mod_current_tid(void) {
+static mp_obj_t mod_current_tid(void) {
     return MP_OBJ_NEW_SMALL_INT(k_current_get());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_current_tid_obj, mod_current_tid);
 
 #ifdef CONFIG_THREAD_ANALYZER
-STATIC mp_obj_t mod_thread_analyze(void) {
+static mp_obj_t mod_thread_analyze(void) {
     thread_analyzer_print();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_analyze_obj, mod_thread_analyze);
+static MP_DEFINE_CONST_FUN_OBJ_0(mod_thread_analyze_obj, mod_thread_analyze);
 #endif
 
 #ifdef CONFIG_SHELL_BACKEND_SERIAL
-STATIC mp_obj_t mod_shell_exec(mp_obj_t cmd_in) {
+static mp_obj_t mod_shell_exec(mp_obj_t cmd_in) {
     const char *cmd = mp_obj_str_get_str(cmd_in);
     shell_execute_cmd(shell_backend_uart_get_ptr(), cmd);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_shell_exec_obj, mod_shell_exec);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_shell_exec_obj, mod_shell_exec);
 #endif // CONFIG_SHELL_BACKEND_SERIAL
 
-STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_zephyr) },
     { MP_ROM_QSTR(MP_QSTR_is_preempt_thread), MP_ROM_PTR(&mod_is_preempt_thread_obj) },
     { MP_ROM_QSTR(MP_QSTR_current_tid), MP_ROM_PTR(&mod_current_tid_obj) },
@@ -82,7 +82,7 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
 
 const mp_obj_module_t mp_module_zephyr = {
     .base = { &mp_type_module },

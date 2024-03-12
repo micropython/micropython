@@ -13,7 +13,7 @@ ULP_LD_SCRIPT := esp32.ulp.ld
 SRC_PATH := src
 BUILD_PATH := build
 
-include $(ESPIDF)/components/ulp/Makefile.projbuild 
+include $(ESPIDF)/components/ulp/Makefile.projbuild
 
 ULP_ELF := $(ULP_APP_NAME).elf
 ULP_MAP := $(ULP_ELF:.elf=.map)
@@ -29,7 +29,7 @@ ULP_LISTINGS := $(notdir $(ULP_S_SOURCES:.S=.ulp.lst))
 
 .PHONY: all clean
 
-all: $(BUILD_PATH) $(BUILD_PATH)/$(ULP_BIN) 
+all: $(BUILD_PATH) $(BUILD_PATH)/$(ULP_BIN)
 
 clean:
 	rm -rf $(BUILD_PATH)
@@ -42,7 +42,7 @@ $(BUILD_PATH)/$(ULP_APP_NAME).ld: $(SRC_PATH)/$(ULP_LD_SCRIPT)
 	cpp -P $< -o $@
 
 # Generate preprocessed assembly files.
-# To inspect these preprocessed files, add a ".PRECIOUS: %.ulp.pS" rule. 
+# To inspect these preprocessed files, add a ".PRECIOUS: %.ulp.pS" rule.
 $(BUILD_PATH)/%.ulp.pS: $(SRC_PATH)/%.S
 	cpp $< -o $@
 
@@ -58,7 +58,7 @@ $(BUILD_PATH)/$(ULP_ELF): $(BUILD_PATH)/$(ULP_OBJECTS) $(BUILD_PATH)/$(ULP_APP_N
 $(ULP_SYM): $(ULP_ELF)
 	$(ULP_NM) -g -f posix $< > $@
 
-# Dump the binary for inclusion into the project 
+# Dump the binary for inclusion into the project
 $(BUILD_PATH)/$(ULP_BIN): $(BUILD_PATH)/$(ULP_ELF)
 	$(ULP_OBJCOPY) -O binary $< $@
 ```
@@ -90,11 +90,11 @@ SECTIONS
         . = ALIGN(4);
         *(.bss)
     } >ram
-    
+
     .header : AT(0)
     {
         LONG(ULP_BIN_MAGIC)
-        SHORT(LOADADDR(.text)) 
+        SHORT(LOADADDR(.text))
         SHORT(SIZEOF(.text))
         SHORT(SIZEOF(.data))
         SHORT(SIZEOF(.bss))

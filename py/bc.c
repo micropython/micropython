@@ -88,7 +88,7 @@ const byte *mp_decode_uint_skip(const byte *ptr) {
     return ptr;
 }
 
-STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
+static NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, size_t given) {
     #if MICROPY_ERROR_REPORTING <= MICROPY_ERROR_REPORTING_TERSE
     // generic message, used also for other argument issues
     (void)f;
@@ -107,7 +107,7 @@ STATIC NORETURN void fun_pos_args_mismatch(mp_obj_fun_bc_t *f, size_t expected, 
 }
 
 #if DEBUG_PRINT
-STATIC void dump_args(const mp_obj_t *a, size_t sz) {
+static void dump_args(const mp_obj_t *a, size_t sz) {
     DEBUG_printf("%p: ", a);
     for (size_t i = 0; i < sz; i++) {
         DEBUG_printf("%p ", a[i]);
@@ -124,7 +124,7 @@ STATIC void dump_args(const mp_obj_t *a, size_t sz) {
 //    - code_state->ip should contain a pointer to the beginning of the prelude
 //    - code_state->sp should be: &code_state->state[0] - 1
 //    - code_state->n_state should be the number of objects in the local state
-STATIC void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static void mp_setup_code_state_helper(mp_code_state_t *code_state, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // This function is pretty complicated.  It's main aim is to be efficient in speed and RAM
     // usage for the common case of positional only args.
 

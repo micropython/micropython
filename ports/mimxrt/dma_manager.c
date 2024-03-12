@@ -42,7 +42,7 @@ static bool channel_list[FSL_FEATURE_DMAMUX_MODULE_CHANNEL] = {
     #endif
 };
 
-STATIC bool dma_initialized = false;
+static bool dma_initialized = false;
 
 // allocate_channel(): retrieve an available channel. Return the number or -1
 int allocate_dma_channel(void) {

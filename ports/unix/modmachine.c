@@ -70,7 +70,7 @@ uintptr_t mod_machine_mem_get_addr(mp_obj_t addr_o, uint align) {
     return addr;
 }
 
-STATIC void mp_machine_idle(void) {
+static void mp_machine_idle(void) {
     #ifdef MICROPY_UNIX_MACHINE_IDLE
     MICROPY_UNIX_MACHINE_IDLE
     #else

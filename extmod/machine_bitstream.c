@@ -36,7 +36,7 @@
 #define MICROPY_MACHINE_BITSTREAM_TYPE_HIGH_LOW (0)
 
 // machine.bitstream(pin, encoding, (timing), bytes)
-STATIC mp_obj_t machine_bitstream_(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_bitstream_(size_t n_args, const mp_obj_t *args) {
     mp_hal_pin_obj_t pin = mp_hal_get_pin_obj(args[0]);
     int encoding = mp_obj_get_int(args[1]);
 

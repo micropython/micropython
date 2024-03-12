@@ -46,7 +46,7 @@ typedef struct _machine_hard_i2c_obj_t {
     bool restart;
 } machine_hard_i2c_obj_t;
 
-STATIC void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_hard_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_hard_i2c_obj_t *self = self_in;
     mp_printf(print, "%s", self->dev->name);
 }
@@ -90,7 +90,7 @@ mp_obj_t machine_hard_i2c_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_hard_i2c_obj_t *self = (machine_hard_i2c_obj_t *)self_in;
     struct i2c_msg msg;
     int ret;
@@ -120,7 +120,7 @@ STATIC int machine_hard_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t add
     return (ret < 0) ? -MP_EIO : len;
 }
 
-STATIC const mp_machine_i2c_p_t machine_hard_i2c_p = {
+static const mp_machine_i2c_p_t machine_hard_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_hard_i2c_transfer_single,
 };

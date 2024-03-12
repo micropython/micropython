@@ -117,7 +117,7 @@ bool mp_obj_is_native_exception_instance(mp_obj_t self_in) {
     return MP_OBJ_TYPE_GET_SLOT_OR_NULL(mp_obj_get_type(self_in), make_new) == mp_obj_exception_make_new;
 }
 
-STATIC mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
+static mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
     assert(mp_obj_is_exception_instance(self_in));
     if (mp_obj_is_native_exception_instance(self_in)) {
         return MP_OBJ_TO_PTR(self_in);
@@ -126,7 +126,7 @@ STATIC mp_obj_exception_t *get_native_exception(mp_obj_t self_in) {
     }
 }
 
-STATIC void decompress_error_text_maybe(mp_obj_exception_t *o) {
+static void decompress_error_text_maybe(mp_obj_exception_t *o) {
     #if MICROPY_ROM_TEXT_COMPRESSION
     if (o->args->len == 1 && mp_obj_is_exact_type(o->args->items[0], &mp_type_str)) {
         mp_obj_str_t *o_str = MP_OBJ_TO_PTR(o->args->items[0]);
@@ -439,7 +439,7 @@ struct _exc_printer_t {
     byte *buf;
 };
 
-STATIC void exc_add_strn(void *data, const char *str, size_t len) {
+static void exc_add_strn(void *data, const char *str, size_t len) {
     struct _exc_printer_t *pr = data;
     if (pr->len + len >= pr->alloc) {
         // Not enough room for data plus a null byte so try to grow the buffer

@@ -39,7 +39,7 @@ typedef struct _mp_obj_polymorph_iter_t {
     mp_fun_1_t iternext;
 } mp_obj_polymorph_iter_t;
 
-STATIC mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
+static mp_obj_t polymorph_it_iternext(mp_obj_t self_in) {
     mp_obj_polymorph_iter_t *self = MP_OBJ_TO_PTR(self_in);
     // Redirect call to object instance's iternext method
     return self->iternext(self_in);
@@ -64,17 +64,17 @@ typedef struct _mp_obj_polymorph_iter_with_finaliser_t {
     mp_fun_1_t finaliser;
 } mp_obj_polymorph_with_finaliser_iter_t;
 
-STATIC mp_obj_t mp_obj_polymorph_iter_del(mp_obj_t self_in) {
+static mp_obj_t mp_obj_polymorph_iter_del(mp_obj_t self_in) {
     mp_obj_polymorph_with_finaliser_iter_t *self = MP_OBJ_TO_PTR(self_in);
     // Redirect call to object instance's finaliser method
     return self->finaliser(self_in);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_obj_polymorph_iter_del_obj, mp_obj_polymorph_iter_del);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_obj_polymorph_iter_del_obj, mp_obj_polymorph_iter_del);
 
-STATIC const mp_rom_map_elem_t mp_obj_polymorph_iter_locals_dict_table[] = {
+static const mp_rom_map_elem_t mp_obj_polymorph_iter_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_obj_polymorph_iter_del_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(mp_obj_polymorph_iter_locals_dict, mp_obj_polymorph_iter_locals_dict_table);
+static MP_DEFINE_CONST_DICT(mp_obj_polymorph_iter_locals_dict, mp_obj_polymorph_iter_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_polymorph_iter_with_finaliser,

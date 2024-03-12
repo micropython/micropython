@@ -13,7 +13,7 @@
 #define NLR_BUF_IDX_LOCAL_1 (5) // ebx
 
 // x86 needs a table to know how many args a given function has
-STATIC byte mp_f_n_args[MP_F_NUMBER_OF] = {
+static byte mp_f_n_args[MP_F_NUMBER_OF] = {
     [MP_F_CONVERT_OBJ_TO_NATIVE] = 2,
     [MP_F_CONVERT_NATIVE_TO_OBJ] = 2,
     [MP_F_NATIVE_SWAP_GLOBALS] = 1,

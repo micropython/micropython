@@ -31,14 +31,14 @@
 
 // the algorithm here is modelled on CPython's heapq.py
 
-STATIC mp_obj_list_t *heapq_get_heap(mp_obj_t heap_in) {
+static mp_obj_list_t *heapq_get_heap(mp_obj_t heap_in) {
     if (!mp_obj_is_type(heap_in, &mp_type_list)) {
         mp_raise_TypeError(MP_ERROR_TEXT("heap must be a list"));
     }
     return MP_OBJ_TO_PTR(heap_in);
 }
 
-STATIC void heapq_heap_siftdown(mp_obj_list_t *heap, mp_uint_t start_pos, mp_uint_t pos) {
+static void heapq_heap_siftdown(mp_obj_list_t *heap, mp_uint_t start_pos, mp_uint_t pos) {
     mp_obj_t item = heap->items[pos];
     while (pos > start_pos) {
         mp_uint_t parent_pos = (pos - 1) >> 1;
@@ -53,7 +53,7 @@ STATIC void heapq_heap_siftdown(mp_obj_list_t *heap, mp_uint_t start_pos, mp_uin
     heap->items[pos] = item;
 }
 
-STATIC void heapq_heap_siftup(mp_obj_list_t *heap, mp_uint_t pos) {
+static void heapq_heap_siftup(mp_obj_list_t *heap, mp_uint_t pos) {
     mp_uint_t start_pos = pos;
     mp_uint_t end_pos = heap->len;
     mp_obj_t item = heap->items[pos];
@@ -70,15 +70,15 @@ STATIC void heapq_heap_siftup(mp_obj_list_t *heap, mp_uint_t pos) {
     heapq_heap_siftdown(heap, start_pos, pos);
 }
 
-STATIC mp_obj_t mod_heapq_heappush(mp_obj_t heap_in, mp_obj_t item) {
+static mp_obj_t mod_heapq_heappush(mp_obj_t heap_in, mp_obj_t item) {
     mp_obj_list_t *heap = heapq_get_heap(heap_in);
     mp_obj_list_append(heap_in, item);
     heapq_heap_siftdown(heap, 0, heap->len - 1);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_heapq_heappush_obj, mod_heapq_heappush);
+static MP_DEFINE_CONST_FUN_OBJ_2(mod_heapq_heappush_obj, mod_heapq_heappush);
 
-STATIC mp_obj_t mod_heapq_heappop(mp_obj_t heap_in) {
+static mp_obj_t mod_heapq_heappop(mp_obj_t heap_in) {
     mp_obj_list_t *heap = heapq_get_heap(heap_in);
     if (heap->len == 0) {
         mp_raise_msg(&mp_type_IndexError, MP_ERROR_TEXT("empty heap"));
@@ -92,26 +92,26 @@ STATIC mp_obj_t mod_heapq_heappop(mp_obj_t heap_in) {
     }
     return item;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_heapq_heappop_obj, mod_heapq_heappop);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_heapq_heappop_obj, mod_heapq_heappop);
 
-STATIC mp_obj_t mod_heapq_heapify(mp_obj_t heap_in) {
+static mp_obj_t mod_heapq_heapify(mp_obj_t heap_in) {
     mp_obj_list_t *heap = heapq_get_heap(heap_in);
     for (mp_uint_t i = heap->len / 2; i > 0;) {
         heapq_heap_siftup(heap, --i);
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_heapq_heapify_obj, mod_heapq_heapify);
+static MP_DEFINE_CONST_FUN_OBJ_1(mod_heapq_heapify_obj, mod_heapq_heapify);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t mp_module_heapq_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_heapq_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_heapq) },
     { MP_ROM_QSTR(MP_QSTR_heappush), MP_ROM_PTR(&mod_heapq_heappush_obj) },
     { MP_ROM_QSTR(MP_QSTR_heappop), MP_ROM_PTR(&mod_heapq_heappop_obj) },
     { MP_ROM_QSTR(MP_QSTR_heapify), MP_ROM_PTR(&mod_heapq_heapify_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_heapq_globals, mp_module_heapq_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_heapq_globals, mp_module_heapq_globals_table);
 
 const mp_obj_module_t mp_module_heapq = {
     .base = { &mp_type_module },

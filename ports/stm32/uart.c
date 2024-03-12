@@ -122,7 +122,7 @@ typedef struct _machine_uart_irq_map_t {
     uint16_t flag;
 } machine_uart_irq_map_t;
 
-STATIC const machine_uart_irq_map_t mp_uart_irq_map[] = {
+static const machine_uart_irq_map_t mp_uart_irq_map[] = {
     { USART_CR1_IDLEIE, UART_FLAG_IDLE}, // RX idle
     { USART_CR1_PEIE,   UART_FLAG_PE},   // parity error
     #if defined(STM32G0) || defined(STM32WL)
@@ -1038,7 +1038,7 @@ bool uart_tx_wait(machine_uart_obj_t *self, uint32_t timeout) {
 
 // Waits at most timeout milliseconds for UART flag to be set.
 // Returns true if flag is/was set, false on timeout.
-STATIC bool uart_wait_flag_set(machine_uart_obj_t *self, uint32_t flag, uint32_t timeout) {
+static bool uart_wait_flag_set(machine_uart_obj_t *self, uint32_t flag, uint32_t timeout) {
     // Note: we don't use WFI to idle in this loop because UART tx doesn't generate
     // an interrupt and the flag can be set quickly if the baudrate is large.
     uint32_t start = HAL_GetTick();
@@ -1215,7 +1215,7 @@ void uart_irq_handler(mp_uint_t uart_id) {
     }
 }
 
-STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
+static mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uart_irq_config(self, false);
     self->mp_irq_trigger = new_trigger;
@@ -1223,7 +1223,7 @@ STATIC mp_uint_t uart_irq_trigger(mp_obj_t self_in, mp_uint_t new_trigger) {
     return 0;
 }
 
-STATIC mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
+static mp_uint_t uart_irq_info(mp_obj_t self_in, mp_uint_t info_type) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (info_type == MP_IRQ_INFO_FLAGS) {
         return self->mp_irq_flags;

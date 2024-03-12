@@ -1,40 +1,40 @@
 /*
  * user.h - CC31xx/CC32xx Host Driver Implementation
  *
- * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
- * 
- * 
- *  Redistribution and use in source and binary forms, with or without 
- *  modification, are permitted provided that the following conditions 
+ * Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
+ *
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
  *  are met:
  *
- *    Redistributions of source code must retain the above copyright 
+ *    Redistributions of source code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  *
  *    Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the   
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the
  *    distribution.
  *
  *    Neither the name of Texas Instruments Incorporated nor the names of
  *    its contributors may be used to endorse or promote products derived
  *    from this software without specific prior written permission.
  *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
- *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
- *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
- *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+ *  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
  *  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
  *  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- *  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+ *  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  *  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
 */
 
-    
+
 
 #ifndef __USER_H__
 #define __USER_H__
@@ -63,8 +63,8 @@ extern "C" {
 
  ******************************************************************************
  */
-  
-#include <string.h>  
+
+#include <string.h>
 #include "cc_pal.h"
 
 /*!
@@ -90,8 +90,8 @@ extern "C" {
 /*!
 	\def		CPU_FREQ_IN_MHZ
     \brief      Defines CPU frequency for Host side, for better accuracy of busy loops, if any
-    \sa             
-    \note       
+    \sa
+    \note
 
     \warning    If not set the default CPU frequency is set to 200MHz
                 This option will be deprecated in future release
@@ -330,7 +330,7 @@ extern "C" {
 
     The enable/disable API provide mechanism to enable/disable the network processor
 
-   
+
     PORTING ACTION:
         - None
     @{
@@ -568,9 +568,9 @@ extern "C" {
 */
 
 #define sl_IfUnMaskIntHdlr()								NwpUnMaskInterrupt()
-    
+
 /*!
-    \brief 		Write Handers for statistics debug on write 
+    \brief 		Write Handers for statistics debug on write
 
 	\param	 	interface handler	-	pointer to interrupt handler routine
 
@@ -583,7 +583,7 @@ extern "C" {
 
     \note       belongs to \ref ported_sec
 
-    \warning        
+    \warning
 */
 /* #define SL_START_WRITE_STAT */
 
@@ -921,7 +921,7 @@ typedef OsiLockObj_t                            _SlLockObj_t;
     \brief
     \sa
     \note           belongs to \ref ported_sec
-    \warning        
+    \warning
 */
 #define sl_Malloc(Size)                                 malloc(Size)
 
@@ -929,7 +929,7 @@ typedef OsiLockObj_t                            _SlLockObj_t;
     \brief
     \sa
     \note           belongs to \ref ported_sec
-    \warning        
+    \warning
 */
 #define sl_Free(pMem)                                   free(pMem)
 #endif
@@ -973,9 +973,9 @@ typedef OsiLockObj_t                            _SlLockObj_t;
 
 /*!
     \brief          An event handler for WLAN connection or disconnection indication
-                    This event handles async WLAN events. 
+                    This event handles async WLAN events.
                     Possible events are:
-                    SL_WLAN_CONNECT_EVENT - indicates WLAN is connected 
+                    SL_WLAN_CONNECT_EVENT - indicates WLAN is connected
                     SL_WLAN_DISCONNECT_EVENT - indicates WLAN is disconnected
     \sa
 

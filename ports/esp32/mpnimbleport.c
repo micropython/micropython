@@ -38,7 +38,7 @@
 
 #include "extmod/nimble/modbluetooth_nimble.h"
 
-STATIC void ble_host_task(void *param) {
+static void ble_host_task(void *param) {
     DEBUG_printf("ble_host_task\n");
     nimble_port_run(); // This function will return only when nimble_port_stop() is executed.
     nimble_port_freertos_deinit();

@@ -1746,7 +1746,7 @@ typedef double mp_float_t;
 
 // Whether to provide the "vfs" module
 #ifndef MICROPY_PY_VFS
-#define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_EXTRA_FEATURES && MICROPY_VFS)
+#define MICROPY_PY_VFS (MICROPY_CONFIG_ROM_LEVEL_AT_LEAST_CORE_FEATURES && MICROPY_VFS)
 #endif
 
 #ifndef MICROPY_PY_WEBSOCKET
@@ -1860,12 +1860,6 @@ typedef double mp_float_t;
 #else
 #define MICROPY_BANNER_MACHINE MICROPY_PY_SYS_PLATFORM " [" MICROPY_PLATFORM_COMPILER "] version"
 #endif
-#endif
-
-// Allow to override static modifier for global objects, e.g. to use with
-// object code analysis tools which don't support static symbols.
-#ifndef STATIC
-#define STATIC static
 #endif
 
 // Number of bytes in an object word: mp_obj_t, mp_uint_t, mp_uint_t

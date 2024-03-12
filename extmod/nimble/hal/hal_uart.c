@@ -93,7 +93,7 @@ int hal_uart_close(uint32_t port) {
     return 0; // success
 }
 
-STATIC void mp_bluetooth_hci_uart_char_cb(uint8_t chr) {
+static void mp_bluetooth_hci_uart_char_cb(uint8_t chr) {
     #if HCI_TRACE
     printf(COL_BLUE "> [% 8d] %02x" COL_OFF "\n", (int)mp_hal_ticks_ms(), chr);
     #endif

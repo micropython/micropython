@@ -91,8 +91,8 @@ typedef struct {
     mp_int_t irq_no;
 } extint_obj_t;
 
-STATIC uint8_t pyb_extint_mode[EXTI_NUM_VECTORS];
-STATIC bool pyb_extint_hard_irq[EXTI_NUM_VECTORS];
+static uint8_t pyb_extint_mode[EXTI_NUM_VECTORS];
+static bool pyb_extint_hard_irq[EXTI_NUM_VECTORS];
 
 // The callback arg is a small-int or a ROM Pin object, so no need to scan by GC
 mp_obj_t pyb_extint_callback_arg[EXTI_NUM_VECTORS];
@@ -270,7 +270,7 @@ void extint_trigger_mode(uint line, uint32_t mode) {
 
 /// \method irq_no()
 /// Return the irq_no number that the pin is mapped to.
-STATIC mp_obj_t extint_obj_irq_no(mp_obj_t self_in) {
+static mp_obj_t extint_obj_irq_no(mp_obj_t self_in) {
     extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint8_t irq_no;
     bool find = ra_icu_find_irq_no(self->pin_idx, &irq_no);
@@ -280,45 +280,45 @@ STATIC mp_obj_t extint_obj_irq_no(mp_obj_t self_in) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_irq_no_obj, extint_obj_irq_no);
+static MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_irq_no_obj, extint_obj_irq_no);
 
 /// \method enable()
 /// Enable a disabled interrupt.
-STATIC mp_obj_t extint_obj_enable(mp_obj_t self_in) {
+static mp_obj_t extint_obj_enable(mp_obj_t self_in) {
     extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ra_icu_enable_pin(self->pin_idx);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_enable_obj, extint_obj_enable);
+static MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_enable_obj, extint_obj_enable);
 
 /// \method disable()
 /// Disable the interrupt associated with the ExtInt object.
 /// This could be useful for debouncing.
-STATIC mp_obj_t extint_obj_disable(mp_obj_t self_in) {
+static mp_obj_t extint_obj_disable(mp_obj_t self_in) {
     extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ra_icu_disable_pin(self->pin_idx);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_disable_obj, extint_obj_disable);
+static MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_disable_obj, extint_obj_disable);
 
 /// \method swint()
 /// Trigger the callback from software.
-STATIC mp_obj_t extint_obj_swint(mp_obj_t self_in) {
+static mp_obj_t extint_obj_swint(mp_obj_t self_in) {
     extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     ra_icu_swint(self->irq_no);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
+static MP_DEFINE_CONST_FUN_OBJ_1(extint_obj_swint_obj,  extint_obj_swint);
 
 // TODO document as a staticmethod
 /// \classmethod regs()
 /// Dump the values of the EXTI registers.
-STATIC mp_obj_t extint_regs(void) {
+static mp_obj_t extint_regs(void) {
     printf("Not Implemented\n");
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(extint_regs_fun_obj, extint_regs);
-STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(extint_regs_obj, MP_ROM_PTR(&extint_regs_fun_obj));
+static MP_DEFINE_CONST_FUN_OBJ_0(extint_regs_fun_obj, extint_regs);
+static MP_DEFINE_CONST_STATICMETHOD_OBJ(extint_regs_obj, MP_ROM_PTR(&extint_regs_fun_obj));
 
 /// \classmethod \constructor(pin, mode, pull, callback)
 /// Create an ExtInt object:
@@ -335,7 +335,7 @@ STATIC MP_DEFINE_CONST_STATICMETHOD_OBJ(extint_regs_obj, MP_ROM_PTR(&extint_regs
 ///   - `callback` is the function to call when the interrupt triggers.  The
 ///   callback function must accept exactly 1 argument, which is the irq_no that
 ///   triggered the interrupt.
-STATIC const mp_arg_t pyb_extint_make_new_args[] = {
+static const mp_arg_t pyb_extint_make_new_args[] = {
     { MP_QSTR_pin,      MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_mode,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
     { MP_QSTR_pull,     MP_ARG_REQUIRED | MP_ARG_INT, {.u_int = 0} },
@@ -343,7 +343,7 @@ STATIC const mp_arg_t pyb_extint_make_new_args[] = {
 };
 #define PYB_EXTINT_MAKE_NEW_NUM_ARGS MP_ARRAY_SIZE(pyb_extint_make_new_args)
 
-STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // type_in == extint_obj_type
 
     // parse args
@@ -358,12 +358,12 @@ STATIC mp_obj_t extint_make_new(const mp_obj_type_t *type, size_t n_args, size_t
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void extint_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void extint_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     extint_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<ExtInt irq_no=%u>", self->irq_no);
 }
 
-STATIC const mp_rom_map_elem_t extint_locals_dict_table[] = {
+static const mp_rom_map_elem_t extint_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_irq_no),  MP_ROM_PTR(&extint_obj_irq_no_obj) },
     { MP_ROM_QSTR(MP_QSTR_line),  MP_ROM_PTR(&extint_obj_irq_no_obj) },
     { MP_ROM_QSTR(MP_QSTR_enable),  MP_ROM_PTR(&extint_obj_enable_obj) },
@@ -372,7 +372,7 @@ STATIC const mp_rom_map_elem_t extint_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_regs),    MP_ROM_PTR(&extint_regs_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(extint_locals_dict, extint_locals_dict_table);
+static MP_DEFINE_CONST_DICT(extint_locals_dict, extint_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     extint_type,

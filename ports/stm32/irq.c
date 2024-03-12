@@ -36,7 +36,7 @@ uint32_t irq_stats[IRQ_STATS_MAX] = {0};
 // disable_irq()
 // Disable interrupt requests.
 // Returns the previous IRQ state which can be passed to enable_irq.
-STATIC mp_obj_t machine_disable_irq(void) {
+static mp_obj_t machine_disable_irq(void) {
     return mp_obj_new_bool(disable_irq() == IRQ_STATE_ENABLED);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
@@ -44,7 +44,7 @@ MP_DEFINE_CONST_FUN_OBJ_0(machine_disable_irq_obj, machine_disable_irq);
 // enable_irq(state=True)
 // Enable interrupt requests, based on the argument, which is usually the
 // value returned by a previous call to disable_irq.
-STATIC mp_obj_t machine_enable_irq(uint n_args, const mp_obj_t *arg) {
+static mp_obj_t machine_enable_irq(uint n_args, const mp_obj_t *arg) {
     enable_irq((n_args == 0 || mp_obj_is_true(arg[0])) ? IRQ_STATE_ENABLED : IRQ_STATE_DISABLED);
     return mp_const_none;
 }
@@ -52,7 +52,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_enable_irq_obj, 0, 1, machine_enable
 
 #if IRQ_ENABLE_STATS
 // return a memoryview of the irq statistics array
-STATIC mp_obj_t pyb_irq_stats(void) {
+static mp_obj_t pyb_irq_stats(void) {
     return mp_obj_new_memoryview(0x80 | 'I', MP_ARRAY_SIZE(irq_stats), &irq_stats[0]);
 }
 MP_DEFINE_CONST_FUN_OBJ_0(pyb_irq_stats_obj, pyb_irq_stats);

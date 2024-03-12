@@ -40,7 +40,7 @@
 #define NS_TICKS_OVERHEAD (6)
 
 // This is a translation of the cycle counter implementation in ports/stm32/machine_bitstream.c.
-STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
+static void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len) {
     uint32_t pin_mask, gpio_reg_set, gpio_reg_clear;
     #if !CONFIG_IDF_TARGET_ESP32C3
     if (pin >= 32) {
@@ -97,13 +97,13 @@ STATIC void IRAM_ATTR machine_bitstream_high_low_bitbang(mp_hal_pin_obj_t pin, u
 
 // Logical 0 and 1 values (encoded as a rmt_item32_t).
 // The duration fields will be set later.
-STATIC rmt_item32_t bitstream_high_low_0 = {{{ 0, 1, 0, 0 }}};
-STATIC rmt_item32_t bitstream_high_low_1 = {{{ 0, 1, 0, 0 }}};
+static rmt_item32_t bitstream_high_low_0 = {{{ 0, 1, 0, 0 }}};
+static rmt_item32_t bitstream_high_low_1 = {{{ 0, 1, 0, 0 }}};
 
 // See https://github.com/espressif/esp-idf/blob/master/examples/common_components/led_strip/led_strip_rmt_ws2812.c
 // This is called automatically by the IDF during rmt_write_sample in order to
 // convert the byte stream to rmt_item32_t's.
-STATIC void IRAM_ATTR bitstream_high_low_rmt_adapter(const void *src, rmt_item32_t *dest, size_t src_size, size_t wanted_num, size_t *translated_size, size_t *item_num) {
+static void IRAM_ATTR bitstream_high_low_rmt_adapter(const void *src, rmt_item32_t *dest, size_t src_size, size_t wanted_num, size_t *translated_size, size_t *item_num) {
     if (src == NULL || dest == NULL) {
         *translated_size = 0;
         *item_num = 0;
@@ -134,7 +134,7 @@ STATIC void IRAM_ATTR bitstream_high_low_rmt_adapter(const void *src, rmt_item32
 }
 
 // Use the reserved RMT channel to stream high/low data on the specified pin.
-STATIC void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len, uint8_t channel_id) {
+static void machine_bitstream_high_low_rmt(mp_hal_pin_obj_t pin, uint32_t *timing_ns, const uint8_t *buf, size_t len, uint8_t channel_id) {
     rmt_config_t config = RMT_DEFAULT_CONFIG_TX(pin, channel_id);
 
     // Use 40MHz clock (although 2MHz would probably be sufficient).

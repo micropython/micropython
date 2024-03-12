@@ -50,7 +50,7 @@ enum {
     DUTY_NS
 };
 
-STATIC machine_pwm_obj_t machine_pwm_obj[] = {
+static machine_pwm_obj_t machine_pwm_obj[] = {
     {{&machine_pwm_type}, 0, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
     {{&machine_pwm_type}, 0, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
     {{&machine_pwm_type}, 1, PWM_CHAN_A, 0, DUTY_NOT_SET, 0 },
@@ -69,14 +69,14 @@ STATIC machine_pwm_obj_t machine_pwm_obj[] = {
     {{&machine_pwm_type}, 7, PWM_CHAN_B, 0, DUTY_NOT_SET, 0 },
 };
 
-STATIC bool defer_start;
-STATIC bool slice_freq_set[8];
+static bool defer_start;
+static bool slice_freq_set[8];
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq);
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16);
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns);
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<PWM slice=%u channel=%u invert=%u>",
         self->slice, self->channel, self->invert);
@@ -94,7 +94,7 @@ void machine_pwm_start(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_invert };
     static const mp_arg_t allowed_args[] = {
@@ -128,7 +128,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
 }
 
 // PWM(pin [, args])
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -161,7 +161,7 @@ void machine_pwm_deinit_all(void) {
     }
 }
 
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     pwm_set_enabled(self->slice, false);
 }
 
@@ -188,7 +188,7 @@ uint32_t get_slice_hz_ceil(uint32_t div16) {
     return get_slice_hz(div16 - 1, div16);
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     if (slice_freq_set[self->slice] == true) {
         uint32_t div16 = pwm_hw->slice[self->slice].div;
         uint32_t top = pwm_hw->slice[self->slice].top;
@@ -199,7 +199,7 @@ STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     // Set the frequency, making "top" as large as possible for maximum resolution.
     // Maximum "top" is set at 65534 to be able to achieve 100% duty with 65535.
     #define TOP_MAX 65534
@@ -248,7 +248,7 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     }
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     if (self->duty_type != DUTY_NOT_SET && slice_freq_set[self->slice] == true) {
         uint32_t top = pwm_hw->slice[self->slice].top;
         uint32_t cc = pwm_hw->slice[self->slice].cc;
@@ -262,7 +262,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     uint32_t top = pwm_hw->slice[self->slice].top;
 
     // Limit duty_u16 to 65535
@@ -277,7 +277,7 @@ STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u
     machine_pwm_start(self);
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     if (self->duty_type != DUTY_NOT_SET && slice_freq_set[self->slice] == true) {
         uint32_t slice_hz = get_slice_hz_round(pwm_hw->slice[self->slice].div);
         uint32_t cc = pwm_hw->slice[self->slice].cc;
@@ -288,7 +288,7 @@ STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     uint32_t slice_hz = get_slice_hz_round(pwm_hw->slice[self->slice].div);
     uint32_t cc = ((uint64_t)duty_ns * slice_hz + 500000000ULL) / 1000000000ULL;
     uint32_t top = pwm_hw->slice[self->slice].top;

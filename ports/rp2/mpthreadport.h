@@ -26,7 +26,6 @@
 #ifndef MICROPY_INCLUDED_RP2_MPTHREADPORT_H
 #define MICROPY_INCLUDED_RP2_MPTHREADPORT_H
 
-#include "py/mpthread.h"
 #include "pico/mutex.h"
 
 typedef struct mutex mp_thread_mutex_t;

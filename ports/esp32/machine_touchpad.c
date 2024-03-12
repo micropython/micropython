@@ -43,7 +43,7 @@ typedef struct _mtp_obj_t {
     touch_pad_t touchpad_id;
 } mtp_obj_t;
 
-STATIC const mtp_obj_t touchpad_obj[] = {
+static const mtp_obj_t touchpad_obj[] = {
     #if CONFIG_IDF_TARGET_ESP32
     {{&machine_touchpad_type}, GPIO_NUM_4, TOUCH_PAD_NUM0},
     {{&machine_touchpad_type}, GPIO_NUM_0, TOUCH_PAD_NUM1},
@@ -73,7 +73,7 @@ STATIC const mtp_obj_t touchpad_obj[] = {
     #endif
 };
 
-STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
+static mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, true);
     gpio_num_t pin_id = machine_pin_get_id(args[0]);
@@ -108,7 +108,7 @@ STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     mp_raise_ValueError(MP_ERROR_TEXT("Touch pad error"));
 }
 
-STATIC mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {
+static mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {
     mtp_obj_t *self = self_in;
     #if CONFIG_IDF_TARGET_ESP32
     uint16_t value = mp_obj_get_int(value_in);
@@ -123,7 +123,7 @@ STATIC mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mtp_config_obj, mtp_config);
 
-STATIC mp_obj_t mtp_read(mp_obj_t self_in) {
+static mp_obj_t mtp_read(mp_obj_t self_in) {
     mtp_obj_t *self = self_in;
     #if CONFIG_IDF_TARGET_ESP32
     uint16_t value;
@@ -139,13 +139,13 @@ STATIC mp_obj_t mtp_read(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mtp_read_obj, mtp_read);
 
-STATIC const mp_rom_map_elem_t mtp_locals_dict_table[] = {
+static const mp_rom_map_elem_t mtp_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&mtp_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mtp_read_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mtp_locals_dict, mtp_locals_dict_table);
+static MP_DEFINE_CONST_DICT(mtp_locals_dict, mtp_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_touchpad_type,

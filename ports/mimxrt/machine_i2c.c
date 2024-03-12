@@ -55,8 +55,8 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-STATIC const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
-STATIC LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
+static const uint8_t i2c_index_table[] = MICROPY_HW_I2C_INDEX;
+static LPI2C_Type *i2c_base_ptr_table[] = LPI2C_BASE_PTRS;
 static const iomux_table_t iomux_table[] = { IOMUX_TABLE_I2C };
 
 #define MICROPY_HW_I2C_NUM     ARRAY_SIZE(i2c_index_table)
@@ -80,7 +80,7 @@ bool lpi2c_set_iomux(int8_t hw_i2c, uint8_t drive) {
     }
 }
 
-STATIC void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_i2c_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "I2C(%u, freq=%u)",
         self->i2c_id, self->master_config->baudRate_Hz);
@@ -133,7 +133,7 @@ static void lpi2c_master_callback(LPI2C_Type *base, lpi2c_master_handle_t *handl
     self->transfer_status = status;
 }
 
-STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
+static int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, size_t len, uint8_t *buf, unsigned int flags) {
     machine_i2c_obj_t *self = (machine_i2c_obj_t *)self_in;
     status_t ret;
     lpi2c_master_handle_t g_master_handle;
@@ -185,7 +185,7 @@ STATIC int machine_i2c_transfer_single(mp_obj_base_t *self_in, uint16_t addr, si
     }
 }
 
-STATIC const mp_machine_i2c_p_t machine_i2c_p = {
+static const mp_machine_i2c_p_t machine_i2c_p = {
     .transfer = mp_machine_i2c_transfer_adaptor,
     .transfer_single = machine_i2c_transfer_single,
 };

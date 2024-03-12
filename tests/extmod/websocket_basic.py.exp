@@ -5,7 +5,7 @@ b'pingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpingpi
 b'\x81~\x00\x80pongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpongpong'
 b'\x00\x00\x00\x00'
 b''
-b'\x81\x02\x88\x00'
+b'\x88\x00'
 b'ping'
 b'pong'
 0

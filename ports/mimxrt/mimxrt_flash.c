@@ -42,11 +42,11 @@ typedef struct _mimxrt_flash_obj_t {
     uint32_t flash_size;
 } mimxrt_flash_obj_t;
 
-STATIC mimxrt_flash_obj_t mimxrt_flash_obj = {
+static mimxrt_flash_obj_t mimxrt_flash_obj = {
     .base = { &mimxrt_flash_type }
 };
 
-STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check args.
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -62,7 +62,7 @@ STATIC mp_obj_t mimxrt_flash_make_new(const mp_obj_type_t *type, size_t n_args, 
 
 // readblocks(block_num, buf, [offset])
 // read size of buffer number of bytes from block (with offset) into buffer
-STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_WRITE);
@@ -76,13 +76,13 @@ STATIC mp_obj_t mimxrt_flash_readblocks(size_t n_args, const mp_obj_t *args) {
     flash_read_block((self->flash_base + offset), (uint8_t *)bufinfo.buf, (uint32_t)bufinfo.len);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_readblocks_obj, 3, 4, mimxrt_flash_readblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_readblocks_obj, 3, 4, mimxrt_flash_readblocks);
 
 // writeblocks(block_num, buf, [offset])
 // Erase block based on block_num and write buffer size number of bytes from buffer into block. If additional offset
 // parameter is provided only write operation at block start + offset will be performed.
 // This requires a prior erase operation of the block!
-STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
     status_t status;
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(args[0]);
     mp_buffer_info_t bufinfo;
@@ -110,10 +110,10 @@ STATIC mp_obj_t mimxrt_flash_writeblocks(size_t n_args, const mp_obj_t *args) {
 
     return MP_OBJ_NEW_SMALL_INT(status != kStatus_Success);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_writeblocks_obj, 3, 4, mimxrt_flash_writeblocks);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mimxrt_flash_writeblocks_obj, 3, 4, mimxrt_flash_writeblocks);
 
 // ioctl(op, arg)
-STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
+static mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {
     mimxrt_flash_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t cmd = mp_obj_get_int(cmd_in);
     status_t status;
@@ -137,14 +137,14 @@ STATIC mp_obj_t mimxrt_flash_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t a
             return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(mimxrt_flash_ioctl_obj, mimxrt_flash_ioctl);
+static MP_DEFINE_CONST_FUN_OBJ_3(mimxrt_flash_ioctl_obj, mimxrt_flash_ioctl);
 
-STATIC const mp_rom_map_elem_t mimxrt_flash_locals_dict_table[] = {
+static const mp_rom_map_elem_t mimxrt_flash_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&mimxrt_flash_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&mimxrt_flash_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&mimxrt_flash_ioctl_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(mimxrt_flash_locals_dict, mimxrt_flash_locals_dict_table);
+static MP_DEFINE_CONST_DICT(mimxrt_flash_locals_dict, mimxrt_flash_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mimxrt_flash_type,

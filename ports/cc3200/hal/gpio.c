@@ -74,7 +74,7 @@ GPIOBaseValid(unsigned long ulPort)
     return((ulPort == GPIOA0_BASE) ||
            (ulPort == GPIOA1_BASE) ||
            (ulPort == GPIOA2_BASE) ||
-           (ulPort == GPIOA3_BASE) ||             
+           (ulPort == GPIOA3_BASE) ||
            (ulPort == GPIOA4_BASE));
 }
 #else

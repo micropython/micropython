@@ -66,7 +66,7 @@ extern uint8_t _micropy_hw_internal_flash_storage_end;
 #error "no internal flash storage support for this MCU"
 #endif
 
-STATIC byte flash_cache_mem[FLASH_SECTOR_SIZE_MAX] __attribute__((aligned(16)));
+static byte flash_cache_mem[FLASH_SECTOR_SIZE_MAX] __attribute__((aligned(16)));
 #define CACHE_MEM_START_ADDR (&flash_cache_mem[0])
 
 #if !defined(FLASH_MEM_SEG2_START_ADDR)

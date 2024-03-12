@@ -40,7 +40,7 @@
 
 extern volatile uint32_t ticks_us64_upper;
 
-STATIC uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
+static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0 };
 
 // Explicitly run the USB stack in case the scheduler is locked (eg we are in an

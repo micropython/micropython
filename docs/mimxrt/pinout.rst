@@ -319,7 +319,7 @@ MIXMXRT1050-EVKB   D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1060-EVK    D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1064-EVK    D10/-/D11/D12/D13 (*)            -                        -
 MIXMXRT1170-EVK    D10/-/D11/D12/D13          D28/-/D25/D24/D26        -/-/D14/D15/D24
-Adafruit Metro M7  -/-/MOSI/MISO/SCK                -                        -         
+Adafruit Metro M7  -/-/MOSI/MISO/SCK                -                        -
 Olimex RT1010Py             -                 CS0/-/SDO/SDI/SCK        SDCARD with CS1
 Seeed ARCH MIX     J4_12/-/J4_14/J4_13/J4_15  J3_09/J3_05/J3_08_J3_11
 =================  =========================  =======================  ===============
@@ -375,7 +375,7 @@ Teensy 4.0         2   33     4        3       2       -        -       5
 Teensy 4.1         1   23     26       27      7       21       20      8
 Teensy 4.1         2   33     4        3       2       -        -       5
 Seeed Arch MIX     1   J4_09  J4_14    J4_15   J14_13  J4_11    J4_10   J4_10
-Adafruit Metro M7  1   D8     D10      D9      D12     D14      D15     D13     
+Adafruit Metro M7  1   D8     D10      D9      D12     D14      D15     D13
 Olimex RT1010Py    1   D8     D6       D7      D4      D1       D2      D3
 Olimex RT1010Py    3   -      D10      D9      D11     -        -       -
 MIMXRT_DEV         1   "MCK"  "SCK_TX" "WS_TX" "SD_TX" "SCK_RX" "WS_RX" "SD_RX"

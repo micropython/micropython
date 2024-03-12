@@ -30,7 +30,7 @@
 
 // this helper function is used by collections.namedtuple
 #if !MICROPY_PY_COLLECTIONS
-STATIC
+static
 #endif
 void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, mp_obj_tuple_t *o) {
     mp_print_str(print, "(");
@@ -48,14 +48,14 @@ void mp_obj_attrtuple_print_helper(const mp_print_t *print, const qstr *fields, 
 
 #if MICROPY_PY_ATTRTUPLE
 
-STATIC void mp_obj_attrtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+static void mp_obj_attrtuple_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_tuple_t *o = MP_OBJ_TO_PTR(o_in);
     const qstr *fields = (const qstr *)MP_OBJ_TO_PTR(o->items[o->len]);
     mp_obj_attrtuple_print_helper(print, fields, o);
 }
 
-STATIC void mp_obj_attrtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+static void mp_obj_attrtuple_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] == MP_OBJ_NULL) {
         // load attribute
         mp_obj_tuple_t *self = MP_OBJ_TO_PTR(self_in);

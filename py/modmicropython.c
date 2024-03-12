@@ -38,7 +38,7 @@
 // living in micropython module
 
 #if MICROPY_ENABLE_COMPILER
-STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return MP_OBJ_NEW_SMALL_INT(MP_STATE_VM(mp_optimise_value));
     } else {
@@ -46,26 +46,26 @@ STATIC mp_obj_t mp_micropython_opt_level(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_opt_level_obj, 0, 1, mp_micropython_opt_level);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_opt_level_obj, 0, 1, mp_micropython_opt_level);
 #endif
 
 #if MICROPY_PY_MICROPYTHON_MEM_INFO
 
 #if MICROPY_MEM_STATS
-STATIC mp_obj_t mp_micropython_mem_total(void) {
+static mp_obj_t mp_micropython_mem_total(void) {
     return MP_OBJ_NEW_SMALL_INT(m_get_total_bytes_allocated());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_total_obj, mp_micropython_mem_total);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_total_obj, mp_micropython_mem_total);
 
-STATIC mp_obj_t mp_micropython_mem_current(void) {
+static mp_obj_t mp_micropython_mem_current(void) {
     return MP_OBJ_NEW_SMALL_INT(m_get_current_bytes_allocated());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_current_obj, mp_micropython_mem_current);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_current_obj, mp_micropython_mem_current);
 
-STATIC mp_obj_t mp_micropython_mem_peak(void) {
+static mp_obj_t mp_micropython_mem_peak(void) {
     return MP_OBJ_NEW_SMALL_INT(m_get_peak_bytes_allocated());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_peak_obj, mp_micropython_mem_peak);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_mem_peak_obj, mp_micropython_mem_peak);
 #endif
 
 mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args) {
@@ -91,9 +91,9 @@ mp_obj_t mp_micropython_mem_info(size_t n_args, const mp_obj_t *args) {
     #endif
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_mem_info_obj, 0, 1, mp_micropython_mem_info);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_mem_info_obj, 0, 1, mp_micropython_mem_info);
 
-STATIC mp_obj_t mp_micropython_qstr_info(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mp_micropython_qstr_info(size_t n_args, const mp_obj_t *args) {
     (void)args;
     size_t n_pool, n_qstr, n_str_data_bytes, n_total_bytes;
     qstr_pool_info(&n_pool, &n_qstr, &n_str_data_bytes, &n_total_bytes);
@@ -105,68 +105,68 @@ STATIC mp_obj_t mp_micropython_qstr_info(size_t n_args, const mp_obj_t *args) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_qstr_info_obj, 0, 1, mp_micropython_qstr_info);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_micropython_qstr_info_obj, 0, 1, mp_micropython_qstr_info);
 
 #endif // MICROPY_PY_MICROPYTHON_MEM_INFO
 
 #if MICROPY_PY_MICROPYTHON_STACK_USE
-STATIC mp_obj_t mp_micropython_stack_use(void) {
+static mp_obj_t mp_micropython_stack_use(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_stack_usage());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_stack_use_obj, mp_micropython_stack_use);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_stack_use_obj, mp_micropython_stack_use);
 #endif
 
 #if MICROPY_ENABLE_PYSTACK
-STATIC mp_obj_t mp_micropython_pystack_use(void) {
+static mp_obj_t mp_micropython_pystack_use(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_pystack_usage());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_pystack_use_obj, mp_micropython_pystack_use);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_pystack_use_obj, mp_micropython_pystack_use);
 #endif
 
 #if MICROPY_ENABLE_GC
-STATIC mp_obj_t mp_micropython_heap_lock(void) {
+static mp_obj_t mp_micropython_heap_lock(void) {
     gc_lock();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_lock_obj, mp_micropython_heap_lock);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_lock_obj, mp_micropython_heap_lock);
 
-STATIC mp_obj_t mp_micropython_heap_unlock(void) {
+static mp_obj_t mp_micropython_heap_unlock(void) {
     gc_unlock();
     return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(gc_lock_depth));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_unlock_obj, mp_micropython_heap_unlock);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_unlock_obj, mp_micropython_heap_unlock);
 
 #if MICROPY_PY_MICROPYTHON_HEAP_LOCKED
-STATIC mp_obj_t mp_micropython_heap_locked(void) {
+static mp_obj_t mp_micropython_heap_locked(void) {
     return MP_OBJ_NEW_SMALL_INT(MP_STATE_THREAD(gc_lock_depth));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_locked_obj, mp_micropython_heap_locked);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_micropython_heap_locked_obj, mp_micropython_heap_locked);
 #endif
 #endif
 
 #if MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF && (MICROPY_EMERGENCY_EXCEPTION_BUF_SIZE == 0)
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_emergency_exception_buf);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_alloc_emergency_exception_buf_obj, mp_alloc_emergency_exception_buf);
 #endif
 
 #if MICROPY_KBD_EXCEPTION
-STATIC mp_obj_t mp_micropython_kbd_intr(mp_obj_t int_chr_in) {
+static mp_obj_t mp_micropython_kbd_intr(mp_obj_t int_chr_in) {
     mp_hal_set_interrupt_char(mp_obj_get_int(int_chr_in));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd_intr);
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_micropython_kbd_intr_obj, mp_micropython_kbd_intr);
 #endif
 
 #if MICROPY_ENABLE_SCHEDULER
-STATIC mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
+static mp_obj_t mp_micropython_schedule(mp_obj_t function, mp_obj_t arg) {
     if (!mp_sched_schedule(function, arg)) {
         mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("schedule queue full"));
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
+static MP_DEFINE_CONST_FUN_OBJ_2(mp_micropython_schedule_obj, mp_micropython_schedule);
 #endif
 
-STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_micropython) },
     { MP_ROM_QSTR(MP_QSTR_const), MP_ROM_PTR(&mp_identity_obj) },
     #if MICROPY_ENABLE_COMPILER
@@ -205,7 +205,7 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_micropython_globals, mp_module_micropython_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_micropython_globals, mp_module_micropython_globals_table);
 
 const mp_obj_module_t mp_module_micropython = {
     .base = { &mp_type_module },

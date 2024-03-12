@@ -52,7 +52,7 @@
 // - second  is 0-59
 // - weekday is 0-6 for Mon-Sun
 // - yearday is 1-366
-STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0 || args[0] == mp_const_none) {
         // Get current date and time.
         return mp_time_localtime_get();
@@ -80,7 +80,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_time_localtime_obj, 0, 1, time_localtime)
 // This is the inverse function of localtime. Its argument is a full 8-tuple
 // which expresses a time as per localtime. It returns an integer which is
 // the number of seconds since the Epoch (eg 1st Jan 1970, or 1st Jan 2000).
-STATIC mp_obj_t time_mktime(mp_obj_t tuple) {
+static mp_obj_t time_mktime(mp_obj_t tuple) {
     size_t len;
     mp_obj_t *elem;
     mp_obj_get_array(tuple, &len, &elem);
@@ -102,21 +102,21 @@ MP_DEFINE_CONST_FUN_OBJ_1(mp_time_mktime_obj, time_mktime);
 
 // time()
 // Return the number of seconds since the Epoch.
-STATIC mp_obj_t time_time(void) {
+static mp_obj_t time_time(void) {
     return mp_time_time_get();
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mp_time_time_obj, time_time);
+static MP_DEFINE_CONST_FUN_OBJ_0(mp_time_time_obj, time_time);
 
 // time_ns()
 // Returns the number of nanoseconds since the Epoch, as an integer.
-STATIC mp_obj_t time_time_ns(void) {
+static mp_obj_t time_time_ns(void) {
     return mp_obj_new_int_from_ull(mp_hal_time_ns());
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_time_ns_obj, time_time_ns);
 
 #endif // MICROPY_PY_TIME_TIME_TIME_NS
 
-STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
+static mp_obj_t time_sleep(mp_obj_t seconds_o) {
     #ifdef MICROPY_PY_TIME_CUSTOM_SLEEP
     mp_time_sleep(seconds_o);
     #else
@@ -130,7 +130,7 @@ STATIC mp_obj_t time_sleep(mp_obj_t seconds_o) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_time_sleep_obj, time_sleep);
 
-STATIC mp_obj_t time_sleep_ms(mp_obj_t arg) {
+static mp_obj_t time_sleep_ms(mp_obj_t arg) {
     mp_int_t ms = mp_obj_get_int(arg);
     if (ms >= 0) {
         mp_hal_delay_ms(ms);
@@ -139,7 +139,7 @@ STATIC mp_obj_t time_sleep_ms(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_time_sleep_ms_obj, time_sleep_ms);
 
-STATIC mp_obj_t time_sleep_us(mp_obj_t arg) {
+static mp_obj_t time_sleep_us(mp_obj_t arg) {
     mp_int_t us = mp_obj_get_int(arg);
     if (us > 0) {
         mp_hal_delay_us(us);
@@ -148,22 +148,22 @@ STATIC mp_obj_t time_sleep_us(mp_obj_t arg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(mp_time_sleep_us_obj, time_sleep_us);
 
-STATIC mp_obj_t time_ticks_ms(void) {
+static mp_obj_t time_ticks_ms(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_ms() & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_ticks_ms_obj, time_ticks_ms);
 
-STATIC mp_obj_t time_ticks_us(void) {
+static mp_obj_t time_ticks_us(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_us() & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_ticks_us_obj, time_ticks_us);
 
-STATIC mp_obj_t time_ticks_cpu(void) {
+static mp_obj_t time_ticks_cpu(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_hal_ticks_cpu() & (MICROPY_PY_TIME_TICKS_PERIOD - 1));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(mp_time_ticks_cpu_obj, time_ticks_cpu);
 
-STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
+static mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
     // we assume that the arguments come from ticks_xx so are small ints
     mp_uint_t start = MP_OBJ_SMALL_INT_VALUE(start_in);
     mp_uint_t end = MP_OBJ_SMALL_INT_VALUE(end_in);
@@ -175,7 +175,7 @@ STATIC mp_obj_t time_ticks_diff(mp_obj_t end_in, mp_obj_t start_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_time_ticks_diff_obj, time_ticks_diff);
 
-STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
+static mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
     // we assume that first argument come from ticks_xx so is small int
     mp_uint_t ticks = MP_OBJ_SMALL_INT_VALUE(ticks_in);
     mp_uint_t delta = mp_obj_get_int(delta_in);
@@ -196,7 +196,7 @@ STATIC mp_obj_t time_ticks_add(mp_obj_t ticks_in, mp_obj_t delta_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(mp_time_ticks_add_obj, time_ticks_add);
 
-STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_time) },
 
     #if MICROPY_PY_TIME_GMTIME_LOCALTIME_MKTIME
@@ -224,7 +224,7 @@ STATIC const mp_rom_map_elem_t mp_module_time_globals_table[] = {
     MICROPY_PY_TIME_EXTRA_GLOBALS
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_time_globals, mp_module_time_globals_table);
 
 const mp_obj_module_t mp_module_time = {
     .base = { &mp_type_module },

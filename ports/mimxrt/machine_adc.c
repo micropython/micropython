@@ -49,9 +49,9 @@ typedef struct _machine_adc_obj_t {
     uint16_t resolution;
 } machine_adc_obj_t;
 
-STATIC ADC_Type *const adc_bases[] = ADC_BASE_PTRS;
+static ADC_Type *const adc_bases[] = ADC_BASE_PTRS;
 
-STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -64,7 +64,7 @@ STATIC void mp_machine_adc_print(const mp_print_t *print, mp_obj_t self_in, mp_p
     }
 }
 
-STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // Unpack and check parameter
@@ -99,7 +99,7 @@ STATIC mp_obj_t mp_machine_adc_make_new(const mp_obj_type_t *type, size_t n_args
 
 // read_u16()
 #if defined(MIMXRT117x_SERIES)
-STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     lpadc_conv_command_config_t adc_config;
     lpadc_conv_trigger_config_t trigger_config;
 
@@ -133,7 +133,7 @@ void machine_adc_init(void) {
 
 #else
 
-STATIC mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
+static mp_int_t mp_machine_adc_read_u16(machine_adc_obj_t *self) {
     // Initiate conversion
     adc_channel_config_t channel_config = {
         .channelNumber = self->channel,

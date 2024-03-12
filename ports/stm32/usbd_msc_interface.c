@@ -41,9 +41,9 @@
 
 #define FLAGS_READONLY (0x02)
 
-STATIC const void *usbd_msc_lu_data[USBD_MSC_MAX_LUN];
-STATIC uint8_t usbd_msc_lu_num;
-STATIC uint16_t usbd_msc_lu_flags;
+static const void *usbd_msc_lu_data[USBD_MSC_MAX_LUN];
+static uint8_t usbd_msc_lu_num;
+static uint16_t usbd_msc_lu_flags;
 
 static inline void lu_flag_set(uint8_t lun, uint8_t flag) {
     usbd_msc_lu_flags |= flag << (lun * 2);
@@ -75,7 +75,7 @@ const uint8_t USBD_MSC_Mode_Sense10_Data[8] = {
     0x00, 0x00, // block descriptor length
 };
 
-STATIC const uint8_t usbd_msc_vpd00[6] = {
+static const uint8_t usbd_msc_vpd00[6] = {
     0x00, // peripheral qualifier; peripheral device type
     0x00, // page code
     0x00, // reserved
@@ -84,13 +84,13 @@ STATIC const uint8_t usbd_msc_vpd00[6] = {
     0x83, // page 0x83 supported
 };
 
-STATIC const uint8_t usbd_msc_vpd83[4] = {
+static const uint8_t usbd_msc_vpd83[4] = {
     0x00, // peripheral qualifier; peripheral device type
     0x83, // page code
     0x00, 0x00, // page length (additional bytes beyond this entry)
 };
 
-STATIC const int8_t usbd_msc_inquiry_data[STANDARD_INQUIRY_DATA_LEN] = \
+static const int8_t usbd_msc_inquiry_data[STANDARD_INQUIRY_DATA_LEN] = \
     "\x00"          // peripheral qualifier; peripheral device type
     "\x80"          // 0x00 for a fixed drive, 0x80 for a removable drive
     "\x02"          // version
@@ -110,7 +110,7 @@ void usbd_msc_init_lu(size_t lu_n, const void *lu_data) {
 }
 
 // Helper function to perform an ioctl on a logical unit
-STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
+static int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
@@ -165,7 +165,7 @@ STATIC int lu_ioctl(uint8_t lun, int op, uint32_t *data) {
 }
 
 // Initialise all logical units (it's only ever called once, with lun_in=0)
-STATIC int8_t usbd_msc_Init(uint8_t lun_in) {
+static int8_t usbd_msc_Init(uint8_t lun_in) {
     if (lun_in != 0) {
         return 0;
     }
@@ -185,7 +185,7 @@ STATIC int8_t usbd_msc_Init(uint8_t lun_in) {
 }
 
 // Process SCSI INQUIRY command for the logical unit
-STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_out) {
+static int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_out) {
     if (params[1] & 1) {
         // EVPD set - return vital product data parameters
         uint8_t page_code = params[2];
@@ -234,7 +234,7 @@ STATIC int usbd_msc_Inquiry(uint8_t lun, const uint8_t *params, uint8_t *data_ou
 }
 
 // Get storage capacity of a logical unit
-STATIC int8_t usbd_msc_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
+static int8_t usbd_msc_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *block_size) {
     uint32_t block_size_u32 = 0;
     int res = lu_ioctl(lun, MP_BLOCKDEV_IOCTL_BLOCK_SIZE, &block_size_u32);
     if (res != 0) {
@@ -245,7 +245,7 @@ STATIC int8_t usbd_msc_GetCapacity(uint8_t lun, uint32_t *block_num, uint16_t *b
 }
 
 // Check if a logical unit is ready
-STATIC int8_t usbd_msc_IsReady(uint8_t lun) {
+static int8_t usbd_msc_IsReady(uint8_t lun) {
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
@@ -253,7 +253,7 @@ STATIC int8_t usbd_msc_IsReady(uint8_t lun) {
 }
 
 // Check if a logical unit is write protected
-STATIC int8_t usbd_msc_IsWriteProtected(uint8_t lun) {
+static int8_t usbd_msc_IsWriteProtected(uint8_t lun) {
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
@@ -261,7 +261,7 @@ STATIC int8_t usbd_msc_IsWriteProtected(uint8_t lun) {
 }
 
 // Start or stop a logical unit
-STATIC int8_t usbd_msc_StartStopUnit(uint8_t lun, uint8_t started) {
+static int8_t usbd_msc_StartStopUnit(uint8_t lun, uint8_t started) {
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
@@ -274,14 +274,14 @@ STATIC int8_t usbd_msc_StartStopUnit(uint8_t lun, uint8_t started) {
 }
 
 // Prepare a logical unit for possible removal
-STATIC int8_t usbd_msc_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
+static int8_t usbd_msc_PreventAllowMediumRemoval(uint8_t lun, uint8_t param) {
     uint32_t dummy;
     // Sync the logical unit so the device can be unplugged/turned off
     return lu_ioctl(lun, MP_BLOCKDEV_IOCTL_SYNC, &dummy);
 }
 
 // Read data from a logical unit
-STATIC int8_t usbd_msc_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
+static int8_t usbd_msc_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
@@ -305,7 +305,7 @@ STATIC int8_t usbd_msc_Read(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16
 }
 
 // Write data to a logical unit
-STATIC int8_t usbd_msc_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
+static int8_t usbd_msc_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint16_t blk_len) {
     if (lun >= usbd_msc_lu_num) {
         return -1;
     }
@@ -329,7 +329,7 @@ STATIC int8_t usbd_msc_Write(uint8_t lun, uint8_t *buf, uint32_t blk_addr, uint1
 }
 
 // Get the number of attached logical units
-STATIC int8_t usbd_msc_GetMaxLun(void) {
+static int8_t usbd_msc_GetMaxLun(void) {
     return usbd_msc_lu_num - 1;
 }
 

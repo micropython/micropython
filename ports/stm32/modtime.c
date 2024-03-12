@@ -29,7 +29,7 @@
 #include "rtc.h"
 
 // Return the localtime as an 8-tuple.
-STATIC mp_obj_t mp_time_localtime_get(void) {
+static mp_obj_t mp_time_localtime_get(void) {
     // get current date and time
     // note: need to call get time then get date to correctly access the registers
     rtc_init_finalise();
@@ -51,7 +51,7 @@ STATIC mp_obj_t mp_time_localtime_get(void) {
 }
 
 // Returns the number of seconds, as an integer, since 1/1/2000.
-STATIC mp_obj_t mp_time_time_get(void) {
+static mp_obj_t mp_time_time_get(void) {
     // get date and time
     // note: need to call get time then get date to correctly access the registers
     rtc_init_finalise();

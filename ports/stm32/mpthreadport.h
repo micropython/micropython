@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpthread.h"
 #include "pybthread.h"
 
 typedef pyb_mutex_t mp_thread_mutex_t;

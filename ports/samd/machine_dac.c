@@ -44,7 +44,7 @@ typedef struct _dac_obj_t {
     uint8_t vref;
 } dac_obj_t;
 
-STATIC dac_obj_t dac_obj[] = {
+static dac_obj_t dac_obj[] = {
     #if defined(MCU_SAMD21)
     {{&machine_dac_type}, 0, PIN_PA02},
     #elif defined(MCU_SAMD51)
@@ -76,7 +76,7 @@ static bool dac_init = false;
 #endif
 
 
-STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
+static mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,
     const mp_obj_t *all_args) {
 
     enum { ARG_id, ARG_vref };
@@ -150,12 +150,12 @@ STATIC mp_obj_t dac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void dac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     dac_obj_t *self = self_in;
     mp_printf(print, "DAC(%u, Pin=%q, vref=%d)", self->id, pin_find_by_id(self->gpio_id)->name, self->vref);
 }
 
-STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
+static mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
     Dac *dac = dac_bases[0]; // Just one DAC
     int value = mp_obj_get_int(value_in);
     if (value < 0 || value > MAX_DAC_VALUE) {
@@ -172,11 +172,11 @@ STATIC mp_obj_t dac_write(mp_obj_t self_in, mp_obj_t value_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(dac_write_obj, dac_write);
 
-STATIC const mp_rom_map_elem_t dac_locals_dict_table[] = {
+static const mp_rom_map_elem_t dac_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&dac_write_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(dac_locals_dict, dac_locals_dict_table);
+static MP_DEFINE_CONST_DICT(dac_locals_dict, dac_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_dac_type,

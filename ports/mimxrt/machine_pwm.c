@@ -70,9 +70,9 @@ static char *ERRMSG_FREQ = "PWM frequency too low";
 static char *ERRMSG_INIT = "PWM set-up failed";
 static char *ERRMSG_VALUE = "value larger than period";
 
-STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self);
+static void mp_machine_pwm_start(machine_pwm_obj_t *self);
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->is_flexpwm) {
         mp_printf(print, "<FLEXPWM module=%u submodule=%u ", self->module, self->submodule);
@@ -103,7 +103,7 @@ STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_p
 
 // Utility functions for decoding and converting
 //
-STATIC uint32_t duty_ns_to_duty_u16(uint32_t freq, uint32_t duty_ns) {
+static uint32_t duty_ns_to_duty_u16(uint32_t freq, uint32_t duty_ns) {
     uint64_t duty = (uint64_t)duty_ns * freq * PWM_FULL_SCALE / 1000000000ULL;
     if (duty > PWM_FULL_SCALE) {
         mp_raise_ValueError(MP_ERROR_TEXT(ERRMSG_VALUE));
@@ -111,7 +111,7 @@ STATIC uint32_t duty_ns_to_duty_u16(uint32_t freq, uint32_t duty_ns) {
     return (uint32_t)duty;
 }
 
-STATIC uint8_t module_decode(char channel) {
+static uint8_t module_decode(char channel) {
     switch (channel) {
         case '0':
             return kPWM_Module_0;
@@ -126,7 +126,7 @@ STATIC uint8_t module_decode(char channel) {
     }
 }
 
-STATIC uint8_t channel_decode(char channel) {
+static uint8_t channel_decode(char channel) {
     switch (channel) {
         case 'A':
             return kPWM_PwmA;
@@ -140,7 +140,7 @@ STATIC uint8_t channel_decode(char channel) {
 }
 
 // decode the AF objects module and Port number. Returns NULL if it is not a FLEXPWM object
-STATIC const machine_pin_af_obj_t *af_name_decode_flexpwm(const machine_pin_af_obj_t *af_obj,
+static const machine_pin_af_obj_t *af_name_decode_flexpwm(const machine_pin_af_obj_t *af_obj,
     uint8_t *module, uint8_t *submodule, uint8_t *channel) {
     const char *str;
     size_t len;
@@ -158,7 +158,7 @@ STATIC const machine_pin_af_obj_t *af_name_decode_flexpwm(const machine_pin_af_o
 }
 
 #ifdef FSL_FEATURE_SOC_TMR_COUNT
-STATIC uint8_t qtmr_decode(char channel) {
+static uint8_t qtmr_decode(char channel) {
     switch (channel) {
         case '0':
             return kQTMR_Channel_0;
@@ -174,7 +174,7 @@ STATIC uint8_t qtmr_decode(char channel) {
 }
 
 // decode the AF objects module and Port number. Returns NULL if it is not a QTMR object
-STATIC const machine_pin_af_obj_t *af_name_decode_qtmr(const machine_pin_af_obj_t *af_obj, uint8_t *module, uint8_t *channel) {
+static const machine_pin_af_obj_t *af_name_decode_qtmr(const machine_pin_af_obj_t *af_obj, uint8_t *module, uint8_t *channel) {
     const char *str;
     size_t len;
     str = (char *)qstr_data(af_obj->name, &len);
@@ -190,7 +190,7 @@ STATIC const machine_pin_af_obj_t *af_name_decode_qtmr(const machine_pin_af_obj_
 }
 #endif
 
-STATIC bool is_board_pin(const machine_pin_obj_t *pin) {
+static bool is_board_pin(const machine_pin_obj_t *pin) {
     const mp_map_t *board_map = &machine_pin_board_pins_locals_dict.map;
     for (uint i = 0; i < board_map->alloc; i++) {
         if (pin == MP_OBJ_TO_PTR(board_map->table[i].value)) {
@@ -202,7 +202,7 @@ STATIC bool is_board_pin(const machine_pin_obj_t *pin) {
 
 // Functions for configuring the PWM Device
 //
-STATIC int calc_prescaler(uint32_t clock, uint32_t freq) {
+static int calc_prescaler(uint32_t clock, uint32_t freq) {
     float temp = (float)clock / (float)PWM_FULL_SCALE / (float)freq;
     for (int prescale = 0; prescale < 8; prescale++, temp /= 2) {
         if (temp <= 1) {
@@ -213,7 +213,7 @@ STATIC int calc_prescaler(uint32_t clock, uint32_t freq) {
     return -1;
 }
 
-STATIC void configure_flexpwm(machine_pwm_obj_t *self) {
+static void configure_flexpwm(machine_pwm_obj_t *self) {
     pwm_signal_param_u16_t pwmSignal;
 
     // Initialize PWM module.
@@ -300,7 +300,7 @@ STATIC void configure_flexpwm(machine_pwm_obj_t *self) {
 }
 
 #ifdef FSL_FEATURE_SOC_TMR_COUNT
-STATIC void configure_qtmr(machine_pwm_obj_t *self) {
+static void configure_qtmr(machine_pwm_obj_t *self) {
     qtmr_config_t qtmrConfig;
     int prescale;
     #if defined(MIMXRT117x_SERIES)
@@ -331,7 +331,7 @@ STATIC void configure_qtmr(machine_pwm_obj_t *self) {
 }
 #endif // FSL_FEATURE_SOC_TMR_COUNT
 
-STATIC void configure_pwm(machine_pwm_obj_t *self) {
+static void configure_pwm(machine_pwm_obj_t *self) {
     // Set the clock frequencies
     // Freq range is 15Hz to ~ 3 MHz.
     static bool set_frequency = true;
@@ -360,7 +360,7 @@ STATIC void configure_pwm(machine_pwm_obj_t *self) {
 
 // Micropython API functions
 //
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
     size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_freq, ARG_duty_u16, ARG_duty_ns, ARG_center, ARG_align,
            ARG_invert, ARG_sync, ARG_xor, ARG_deadtime };
@@ -444,7 +444,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self,
 }
 
 // PWM(pin | pin-tuple, freq, [args])
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // Check number of arguments
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
@@ -580,7 +580,7 @@ void machine_pwm_deinit_all(void) {
     #endif
 }
 
-STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_start(machine_pwm_obj_t *self) {
     if (self->is_flexpwm) {
         PWM_StartTimer(self->instance, 1 << self->submodule);
     #ifdef FSL_FEATURE_SOC_TMR_COUNT
@@ -590,7 +590,7 @@ STATIC void mp_machine_pwm_start(machine_pwm_obj_t *self) {
     }
 }
 
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     if (self->is_flexpwm) {
         PWM_StopTimer(self->instance, 1 << self->submodule);
     #ifdef FSL_FEATURE_SOC_TMR_COUNT

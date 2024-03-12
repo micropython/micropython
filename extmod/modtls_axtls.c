@@ -65,23 +65,23 @@ struct ssl_args {
     mp_arg_val_t do_handshake;
 };
 
-STATIC const mp_obj_type_t ssl_context_type;
-STATIC const mp_obj_type_t ssl_socket_type;
+static const mp_obj_type_t ssl_context_type;
+static const mp_obj_type_t ssl_socket_type;
 
-STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
+static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname);
 
 /******************************************************************************/
 // Helper functions.
 
 // Table of error strings corresponding to SSL_xxx error codes.
-STATIC const char *const ssl_error_tab1[] = {
+static const char *const ssl_error_tab1[] = {
     "NOT_OK",
     "DEAD",
     "CLOSE_NOTIFY",
     "EAGAIN",
 };
-STATIC const char *const ssl_error_tab2[] = {
+static const char *const ssl_error_tab2[] = {
     "CONN_LOST",
     "RECORD_OVERFLOW",
     "SOCK_SETUP_FAILURE",
@@ -103,7 +103,7 @@ STATIC const char *const ssl_error_tab2[] = {
     "NOT_SUPPORTED",
 };
 
-STATIC NORETURN void ssl_raise_error(int err) {
+static NORETURN void ssl_raise_error(int err) {
     MP_STATIC_ASSERT(SSL_NOT_OK - 3 == SSL_EAGAIN);
     MP_STATIC_ASSERT(SSL_ERROR_CONN_LOST - 18 == SSL_ERROR_NOT_SUPPORTED);
 
@@ -138,7 +138,7 @@ STATIC NORETURN void ssl_raise_error(int err) {
 /******************************************************************************/
 // SSLContext type.
 
-STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
     // The "protocol" argument is ignored in this implementation.
@@ -155,20 +155,20 @@ STATIC mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
+static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     self->key = key_obj;
     self->cert = cert_obj;
 }
 
 // SSLContext.load_cert_chain(certfile, keyfile)
-STATIC mp_obj_t ssl_context_load_cert_chain(mp_obj_t self_in, mp_obj_t cert, mp_obj_t pkey) {
+static mp_obj_t ssl_context_load_cert_chain(mp_obj_t self_in, mp_obj_t cert, mp_obj_t pkey) {
     mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
     ssl_context_load_key(self, pkey, cert);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_load_cert_chain);
+static MP_DEFINE_CONST_FUN_OBJ_3(ssl_context_load_cert_chain_obj, ssl_context_load_cert_chain);
 
-STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_server_side, ARG_do_handshake_on_connect, ARG_server_hostname };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
@@ -186,15 +186,15 @@ STATIC mp_obj_t ssl_context_wrap_socket(size_t n_args, const mp_obj_t *pos_args,
     return ssl_socket_make_new(self, sock, args[ARG_server_side].u_bool,
         args[ARG_do_handshake_on_connect].u_bool, args[ARG_server_hostname].u_obj);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(ssl_context_wrap_socket_obj, 2, ssl_context_wrap_socket);
+static MP_DEFINE_CONST_FUN_OBJ_KW(ssl_context_wrap_socket_obj, 2, ssl_context_wrap_socket);
 
-STATIC const mp_rom_map_elem_t ssl_context_locals_dict_table[] = {
+static const mp_rom_map_elem_t ssl_context_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_load_cert_chain), MP_ROM_PTR(&ssl_context_load_cert_chain_obj)},
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&ssl_context_wrap_socket_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ssl_context_locals_dict, ssl_context_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     ssl_context_type,
     MP_QSTR_SSLContext,
     MP_TYPE_FLAG_NONE,
@@ -205,7 +205,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 // SSLSocket type.
 
-STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
+static mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t sock,
     bool server_side, bool do_handshake_on_connect, mp_obj_t server_hostname) {
 
     #if MICROPY_PY_SSL_FINALISER
@@ -276,7 +276,7 @@ STATIC mp_obj_t ssl_socket_make_new(mp_obj_ssl_context_t *ssl_context, mp_obj_t 
     return o;
 }
 
-STATIC mp_uint_t ssl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t ssl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
     if (o->ssl_sock == NULL) {
@@ -325,7 +325,7 @@ STATIC mp_uint_t ssl_socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *
     return size;
 }
 
-STATIC mp_uint_t ssl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
+static mp_uint_t ssl_socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
     if (o->ssl_sock == NULL) {
@@ -357,7 +357,7 @@ eagain:
     return r;
 }
 
-STATIC mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
+static mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     mp_obj_ssl_socket_t *self = MP_OBJ_TO_PTR(o_in);
     if (request == MP_STREAM_CLOSE) {
         if (self->ssl_sock == NULL) {
@@ -378,7 +378,7 @@ STATIC mp_uint_t ssl_socket_ioctl(mp_obj_t o_in, mp_uint_t request, uintptr_t ar
     return mp_get_stream(self->sock)->ioctl(self->sock, request, arg, errcode);
 }
 
-STATIC mp_obj_t ssl_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
+static mp_obj_t ssl_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(self_in);
     mp_obj_t sock = o->sock;
     mp_obj_t dest[3];
@@ -388,9 +388,9 @@ STATIC mp_obj_t ssl_socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     o->blocking = mp_obj_is_true(flag_in);
     return res;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_socket_setblocking_obj, ssl_socket_setblocking);
+static MP_DEFINE_CONST_FUN_OBJ_2(ssl_socket_setblocking_obj, ssl_socket_setblocking);
 
-STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
+static const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
     { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
     { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
@@ -401,15 +401,15 @@ STATIC const mp_rom_map_elem_t ssl_socket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___del__), MP_ROM_PTR(&mp_stream_close_obj) },
     #endif
 };
-STATIC MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ssl_socket_locals_dict, ssl_socket_locals_dict_table);
 
-STATIC const mp_stream_p_t ssl_socket_stream_p = {
+static const mp_stream_p_t ssl_socket_stream_p = {
     .read = ssl_socket_read,
     .write = ssl_socket_write,
     .ioctl = ssl_socket_ioctl,
 };
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     ssl_socket_type,
     MP_QSTR_SSLSocket,
     MP_TYPE_FLAG_NONE,
@@ -420,7 +420,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************/
 // ssl module.
 
-STATIC const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_tls) },
 
     // Classes.
@@ -430,7 +430,7 @@ STATIC const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_CLIENT), MP_ROM_INT(PROTOCOL_TLS_CLIENT) },
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_SERVER), MP_ROM_INT(PROTOCOL_TLS_SERVER) },
 };
-STATIC MP_DEFINE_CONST_DICT(mp_module_tls_globals, mp_module_tls_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_tls_globals, mp_module_tls_globals_table);
 
 const mp_obj_module_t mp_module_tls = {
     .base = { &mp_type_module },

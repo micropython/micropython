@@ -57,18 +57,18 @@ typedef struct _mp_obj_match_t {
     const char *caps[0];
 } mp_obj_match_t;
 
-STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args);
+static mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args);
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_obj_type_t re_type;
+static const mp_obj_type_t re_type;
 #endif
 
-STATIC void match_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void match_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<match num=%d>", self->num_matches);
 }
 
-STATIC mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
+static mp_obj_t match_group(mp_obj_t self_in, mp_obj_t no_in) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
     mp_int_t no = mp_obj_get_int(no_in);
     if (no < 0 || no >= self->num_matches) {
@@ -87,7 +87,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(match_group_obj, match_group);
 
 #if MICROPY_PY_RE_MATCH_GROUPS
 
-STATIC mp_obj_t match_groups(mp_obj_t self_in) {
+static mp_obj_t match_groups(mp_obj_t self_in) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(self_in);
     if (self->num_matches <= 1) {
         return mp_const_empty_tuple;
@@ -104,7 +104,7 @@ MP_DEFINE_CONST_FUN_OBJ_1(match_groups_obj, match_groups);
 
 #if MICROPY_PY_RE_MATCH_SPAN_START_END
 
-STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span[2]) {
+static void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span[2]) {
     mp_obj_match_t *self = MP_OBJ_TO_PTR(args[0]);
 
     mp_int_t no = 0;
@@ -141,21 +141,21 @@ STATIC void match_span_helper(size_t n_args, const mp_obj_t *args, mp_obj_t span
     span[1] = mp_obj_new_int(e);
 }
 
-STATIC mp_obj_t match_span(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t match_span(size_t n_args, const mp_obj_t *args) {
     mp_obj_t span[2];
     match_span_helper(n_args, args, span);
     return mp_obj_new_tuple(2, span);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_span_obj, 1, 2, match_span);
 
-STATIC mp_obj_t match_start(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t match_start(size_t n_args, const mp_obj_t *args) {
     mp_obj_t span[2];
     match_span_helper(n_args, args, span);
     return span[0];
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_start_obj, 1, 2, match_start);
 
-STATIC mp_obj_t match_end(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t match_end(size_t n_args, const mp_obj_t *args) {
     mp_obj_t span[2];
     match_span_helper(n_args, args, span);
     return span[1];
@@ -165,7 +165,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(match_end_obj, 1, 2, match_end);
 #endif
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
+static const mp_rom_map_elem_t match_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_group), MP_ROM_PTR(&match_group_obj) },
     #if MICROPY_PY_RE_MATCH_GROUPS
     { MP_ROM_QSTR(MP_QSTR_groups), MP_ROM_PTR(&match_groups_obj) },
@@ -177,9 +177,9 @@ STATIC const mp_rom_map_elem_t match_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
+static MP_DEFINE_CONST_DICT(match_locals_dict, match_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     match_type,
     MP_QSTR_match,
     MP_TYPE_FLAG_NONE,
@@ -188,13 +188,13 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif
 
-STATIC void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void re_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_re_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<re %p>", self);
 }
 
-STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
+static mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     (void)n_args;
     mp_obj_re_t *self;
     if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
@@ -222,17 +222,17 @@ STATIC mp_obj_t re_exec(bool is_anchored, uint n_args, const mp_obj_t *args) {
     return MP_OBJ_FROM_PTR(match);
 }
 
-STATIC mp_obj_t re_match(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t re_match(size_t n_args, const mp_obj_t *args) {
     return re_exec(true, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_match_obj, 2, 4, re_match);
 
-STATIC mp_obj_t re_search(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t re_search(size_t n_args, const mp_obj_t *args) {
     return re_exec(false, n_args, args);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_search_obj, 2, 4, re_search);
 
-STATIC mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t re_split(size_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self = MP_OBJ_TO_PTR(args[0]);
     Subject subj;
     size_t len;
@@ -279,7 +279,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_split_obj, 2, 3, re_split);
 
 #if MICROPY_PY_RE_SUB
 
-STATIC mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t re_sub_helper(size_t n_args, const mp_obj_t *args) {
     mp_obj_re_t *self;
     if (mp_obj_is_type(args[0], (mp_obj_type_t *)&re_type)) {
         self = MP_OBJ_TO_PTR(args[0]);
@@ -401,7 +401,7 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(re_sub_obj, 3, 5, re_sub_helper);
 #endif
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
+static const mp_rom_map_elem_t re_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
     { MP_ROM_QSTR(MP_QSTR_search), MP_ROM_PTR(&re_search_obj) },
     { MP_ROM_QSTR(MP_QSTR_split), MP_ROM_PTR(&re_split_obj) },
@@ -410,9 +410,9 @@ STATIC const mp_rom_map_elem_t re_locals_dict_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
+static MP_DEFINE_CONST_DICT(re_locals_dict, re_locals_dict_table);
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     re_type,
     MP_QSTR_re,
     MP_TYPE_FLAG_NONE,
@@ -421,7 +421,7 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
     );
 #endif
 
-STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
     const char *re_str = mp_obj_str_get_str(args[0]);
     int size = re1_5_sizecode(re_str);
@@ -450,7 +450,7 @@ STATIC mp_obj_t mod_re_compile(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_re_compile_obj, 1, 2, mod_re_compile);
 
 #if !MICROPY_ENABLE_DYNRUNTIME
-STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_re) },
     { MP_ROM_QSTR(MP_QSTR_compile), MP_ROM_PTR(&mod_re_compile_obj) },
     { MP_ROM_QSTR(MP_QSTR_match), MP_ROM_PTR(&re_match_obj) },
@@ -463,7 +463,7 @@ STATIC const mp_rom_map_elem_t mp_module_re_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_re_globals, mp_module_re_globals_table);
 
 const mp_obj_module_t mp_module_re = {
     .base = { &mp_type_module },

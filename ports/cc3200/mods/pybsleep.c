@@ -120,12 +120,12 @@ typedef struct {
 /******************************************************************************
  DECLARE PRIVATE DATA
  ******************************************************************************/
-STATIC nvic_reg_store_t    *nvic_reg_store;
-STATIC pybsleep_data_t   pybsleep_data = {NULL, NULL, NULL};
+static nvic_reg_store_t    *nvic_reg_store;
+static pybsleep_data_t   pybsleep_data = {NULL, NULL, NULL};
 volatile arm_cm4_core_regs_t vault_arm_registers;
-STATIC pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
-STATIC pybsleep_wake_reason_t pybsleep_wake_reason = PYB_SLP_WAKED_PWRON;
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static pybsleep_reset_cause_t pybsleep_reset_cause = PYB_SLP_PWRON_RESET;
+static pybsleep_wake_reason_t pybsleep_wake_reason = PYB_SLP_WAKED_PWRON;
+static MP_DEFINE_CONST_OBJ_TYPE(
     pyb_sleep_type,
     MP_QSTR_sleep,
     MP_TYPE_FLAG_NONE
@@ -134,15 +134,15 @@ STATIC MP_DEFINE_CONST_OBJ_TYPE(
 /******************************************************************************
  DECLARE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC pyb_sleep_obj_t *pyb_sleep_find (mp_obj_t obj);
-STATIC void pyb_sleep_flash_powerdown (void);
-STATIC NORETURN void pyb_sleep_suspend_enter (void);
+static pyb_sleep_obj_t *pyb_sleep_find (mp_obj_t obj);
+static void pyb_sleep_flash_powerdown (void);
+static NORETURN void pyb_sleep_suspend_enter (void);
 void pyb_sleep_suspend_exit (void);
-STATIC void pyb_sleep_obj_wakeup (void);
-STATIC void PRCMInterruptHandler (void);
-STATIC void pyb_sleep_iopark (bool hibernate);
-STATIC bool setup_timer_lpds_wake (void);
-STATIC bool setup_timer_hibernate_wake (void);
+static void pyb_sleep_obj_wakeup (void);
+static void PRCMInterruptHandler (void);
+static void pyb_sleep_iopark (bool hibernate);
+static bool setup_timer_lpds_wake (void);
+static bool setup_timer_hibernate_wake (void);
 
 /******************************************************************************
  DEFINE PUBLIC FUNCTIONS
@@ -304,7 +304,7 @@ pybsleep_wake_reason_t pyb_sleep_get_wake_reason (void) {
 /******************************************************************************
  DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC pyb_sleep_obj_t *pyb_sleep_find (mp_obj_t obj) {
+static pyb_sleep_obj_t *pyb_sleep_find (mp_obj_t obj) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_sleep_obj_list).len; i++) {
         // search for the object and then remove it
         pyb_sleep_obj_t *sleep_obj = ((pyb_sleep_obj_t *)(MP_STATE_PORT(pyb_sleep_obj_list).items[i]));
@@ -315,7 +315,7 @@ STATIC pyb_sleep_obj_t *pyb_sleep_find (mp_obj_t obj) {
     return NULL;
 }
 
-STATIC void pyb_sleep_flash_powerdown (void) {
+static void pyb_sleep_flash_powerdown (void) {
     uint32_t status;
 
     // Enable clock for SSPI module
@@ -360,7 +360,7 @@ STATIC void pyb_sleep_flash_powerdown (void) {
     MAP_SPICSDisable(SSPI_BASE);
 }
 
-STATIC NORETURN void pyb_sleep_suspend_enter (void) {
+static NORETURN void pyb_sleep_suspend_enter (void) {
     // enable full RAM retention
     MAP_PRCMSRAMRetentionEnable(PRCM_SRAM_COL_1 | PRCM_SRAM_COL_2 | PRCM_SRAM_COL_3 | PRCM_SRAM_COL_4, PRCM_SRAM_LPDS_RET);
 
@@ -479,7 +479,7 @@ void pyb_sleep_suspend_exit (void) {
     mp_raise_type(&mp_type_SystemExit);
 }
 
-STATIC void PRCMInterruptHandler (void) {
+static void PRCMInterruptHandler (void) {
     // reading the interrupt status automatically clears the interrupt
     if (PRCM_INT_SLOW_CLK_CTR == MAP_PRCMIntStatus()) {
         // reconfigure it again (if repeat is true)
@@ -519,14 +519,14 @@ STATIC void PRCMInterruptHandler (void) {
     }
 }
 
-STATIC void pyb_sleep_obj_wakeup (void) {
+static void pyb_sleep_obj_wakeup (void) {
     for (mp_uint_t i = 0; i < MP_STATE_PORT(pyb_sleep_obj_list).len; i++) {
         pyb_sleep_obj_t *sleep_obj = ((pyb_sleep_obj_t *)MP_STATE_PORT(pyb_sleep_obj_list).items[i]);
         sleep_obj->wakeup(sleep_obj->obj);
     }
 }
 
-STATIC void pyb_sleep_iopark (bool hibernate) {
+static void pyb_sleep_iopark (bool hibernate) {
     const mp_map_t *named_map = &pin_board_pins_locals_dict.map;
     for (uint i = 0; i < named_map->used; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
@@ -583,7 +583,7 @@ STATIC void pyb_sleep_iopark (bool hibernate) {
 #endif
 }
 
-STATIC bool setup_timer_lpds_wake (void) {
+static bool setup_timer_lpds_wake (void) {
     uint64_t t_match, t_curr;
     int64_t t_remaining;
 
@@ -618,7 +618,7 @@ STATIC bool setup_timer_lpds_wake (void) {
     return false;
 }
 
-STATIC bool setup_timer_hibernate_wake (void) {
+static bool setup_timer_hibernate_wake (void) {
     uint64_t t_match, t_curr;
     int64_t t_remaining;
 

@@ -53,26 +53,26 @@
 /******************************************************************************
 DECLARE PRIVATE FUNCTIONS
 ******************************************************************************/
-STATIC pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
-STATIC pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit);
-STATIC int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);
-STATIC void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type);
-STATIC void pin_deassign (pin_obj_t* pin);
-STATIC void pin_obj_configure (const pin_obj_t *self);
-STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *wake_pin, uint *idx);
-STATIC void pin_irq_enable (mp_obj_t self_in);
-STATIC void pin_irq_disable (mp_obj_t self_in);
-STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority);
-STATIC void pin_validate_mode (uint mode);
-STATIC void pin_validate_pull (uint pull);
-STATIC void pin_validate_drive (uint strength);
-STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8_t *unit, uint8_t *type);
-STATIC uint8_t pin_get_value(const pin_obj_t* self);
-STATIC void GPIOA0IntHandler (void);
-STATIC void GPIOA1IntHandler (void);
-STATIC void GPIOA2IntHandler (void);
-STATIC void GPIOA3IntHandler (void);
-STATIC void EXTI_Handler(uint port);
+static pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name);
+static pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit);
+static int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type);
+static void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type);
+static void pin_deassign (pin_obj_t* pin);
+static void pin_obj_configure (const pin_obj_t *self);
+static void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *wake_pin, uint *idx);
+static void pin_irq_enable (mp_obj_t self_in);
+static void pin_irq_disable (mp_obj_t self_in);
+static void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority);
+static void pin_validate_mode (uint mode);
+static void pin_validate_pull (uint pull);
+static void pin_validate_drive (uint strength);
+static void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8_t *unit, uint8_t *type);
+static uint8_t pin_get_value(const pin_obj_t* self);
+static void GPIOA0IntHandler (void);
+static void GPIOA1IntHandler (void);
+static void GPIOA2IntHandler (void);
+static void GPIOA3IntHandler (void);
+static void EXTI_Handler(uint port);
 
 /******************************************************************************
 DEFINE CONSTANTS
@@ -100,8 +100,8 @@ typedef struct {
 /******************************************************************************
 DECLARE PRIVATE DATA
 ******************************************************************************/
-STATIC const mp_irq_methods_t pin_irq_methods;
-STATIC pybpin_wake_pin_t pybpin_wake_pin[PYBPIN_NUM_WAKE_PINS] =
+static const mp_irq_methods_t pin_irq_methods;
+static pybpin_wake_pin_t pybpin_wake_pin[PYBPIN_NUM_WAKE_PINS] =
                                     { {.active = false, .lpds = PYBPIN_WAKES_NOT, .hib = PYBPIN_WAKES_NOT},
                                       {.active = false, .lpds = PYBPIN_WAKES_NOT, .hib = PYBPIN_WAKES_NOT},
                                       {.active = false, .lpds = PYBPIN_WAKES_NOT, .hib = PYBPIN_WAKES_NOT},
@@ -205,7 +205,7 @@ int8_t pin_find_af_index (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_
 /******************************************************************************
 DEFINE PRIVATE FUNCTIONS
  ******************************************************************************/
-STATIC pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
+static pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t name) {
     const mp_map_t *named_map = &named_pins->map;
     mp_map_elem_t *named_elem = mp_map_lookup((mp_map_t*)named_map, name, MP_MAP_LOOKUP);
     if (named_elem != NULL && named_elem->value != NULL) {
@@ -214,7 +214,7 @@ STATIC pin_obj_t *pin_find_named_pin(const mp_obj_dict_t *named_pins, mp_obj_t n
     return NULL;
 }
 
-STATIC pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit) {
+static pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uint port, uint bit) {
     const mp_map_t *named_map = &named_pins->map;
     for (uint i = 0; i < named_map->used; i++) {
         if ((((pin_obj_t *)named_map->table[i].value)->port == port) &&
@@ -225,7 +225,7 @@ STATIC pin_obj_t *pin_find_pin_by_port_bit (const mp_obj_dict_t *named_pins, uin
     return NULL;
 }
 
-STATIC int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
+static int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, uint8_t type) {
     for (int i = 0; i < pin->num_afs; i++) {
         if (pin->af_list[i].fn == fn && pin->af_list[i].unit == unit && pin->af_list[i].type == type) {
             return pin->af_list[i].idx;
@@ -234,7 +234,7 @@ STATIC int8_t pin_obj_find_af (const pin_obj_t* pin, uint8_t fn, uint8_t unit, u
     return -1;
 }
 
-STATIC void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type) {
+static void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type) {
     const mp_map_t *named_map = &pin_board_pins_locals_dict.map;
     for (uint i = 0; i < named_map->used - 1; i++) {
         pin_obj_t * pin = (pin_obj_t *)named_map->table[i].value;
@@ -250,12 +250,12 @@ STATIC void pin_free_af_from_pins (uint8_t fn, uint8_t unit, uint8_t type) {
     }
 }
 
-STATIC void pin_deassign (pin_obj_t* pin) {
+static void pin_deassign (pin_obj_t* pin) {
     pin_config (pin, PIN_MODE_0, GPIO_DIR_MODE_IN, PIN_TYPE_STD, -1, PIN_STRENGTH_4MA);
     pin->used = false;
 }
 
-STATIC void pin_obj_configure (const pin_obj_t *self) {
+static void pin_obj_configure (const pin_obj_t *self) {
     uint32_t type;
     if (self->mode == PIN_TYPE_ANALOG) {
         type = PIN_TYPE_ANALOG;
@@ -299,7 +299,7 @@ STATIC void pin_obj_configure (const pin_obj_t *self) {
     MAP_PinConfigSet(self->pin_num, self->strength, type);
 }
 
-STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *hib_pin, uint *idx) {
+static void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *hib_pin, uint *idx) {
     // pin_num is actually : (package_pin - 1)
     switch (self->pin_num) {
     case 56:    // GP2
@@ -332,7 +332,7 @@ STATIC void pin_get_hibernate_pin_and_idx (const pin_obj_t *self, uint *hib_pin,
     }
 }
 
-STATIC void pin_irq_enable (mp_obj_t self_in) {
+static void pin_irq_enable (mp_obj_t self_in) {
     const pin_obj_t *self = self_in;
     uint hib_pin, idx;
 
@@ -364,7 +364,7 @@ STATIC void pin_irq_enable (mp_obj_t self_in) {
     }
 }
 
-STATIC void pin_irq_disable (mp_obj_t self_in) {
+static void pin_irq_disable (mp_obj_t self_in) {
     const pin_obj_t *self = self_in;
     uint hib_pin, idx;
 
@@ -383,12 +383,12 @@ STATIC void pin_irq_disable (mp_obj_t self_in) {
     MAP_GPIOIntDisable(self->port, self->bit);
 }
 
-STATIC int pin_irq_flags (mp_obj_t self_in) {
+static int pin_irq_flags (mp_obj_t self_in) {
     const pin_obj_t *self = self_in;
     return self->irq_flags;
 }
 
-STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority) {
+static void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t priority) {
     void *handler;
     uint32_t intnum;
 
@@ -419,25 +419,25 @@ STATIC void pin_extint_register(pin_obj_t *self, uint32_t intmode, uint32_t prio
     MAP_IntPrioritySet(intnum, priority);
 }
 
-STATIC void pin_validate_mode (uint mode) {
+static void pin_validate_mode (uint mode) {
     if (mode != GPIO_DIR_MODE_IN && mode != GPIO_DIR_MODE_OUT && mode != PIN_TYPE_OD &&
         mode != GPIO_DIR_MODE_ALT && mode != GPIO_DIR_MODE_ALT_OD) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
-STATIC void pin_validate_pull (uint pull) {
+static void pin_validate_pull (uint pull) {
     if (pull != PIN_TYPE_STD && pull != PIN_TYPE_STD_PU && pull != PIN_TYPE_STD_PD) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
-STATIC void pin_validate_drive(uint strength) {
+static void pin_validate_drive(uint strength) {
     if (strength != PIN_STRENGTH_2MA && strength != PIN_STRENGTH_4MA && strength != PIN_STRENGTH_6MA) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
     }
 }
 
-STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8_t *unit, uint8_t *type) {
+static void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8_t *unit, uint8_t *type) {
     for (int i = 0; i < pin->num_afs; i++) {
         if (pin->af_list[i].idx == idx) {
             *fn = pin->af_list[i].fn;
@@ -449,7 +449,7 @@ STATIC void pin_validate_af(const pin_obj_t* pin, int8_t idx, uint8_t *fn, uint8
     mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
-STATIC uint8_t pin_get_value (const pin_obj_t* self) {
+static uint8_t pin_get_value (const pin_obj_t* self) {
     uint32_t value;
     bool setdir = false;
     if (self->mode == PIN_TYPE_OD || self->mode == GPIO_DIR_MODE_ALT_OD) {
@@ -472,24 +472,24 @@ STATIC uint8_t pin_get_value (const pin_obj_t* self) {
     return value ? 1 : 0;
 }
 
-STATIC void GPIOA0IntHandler (void) {
+static void GPIOA0IntHandler (void) {
     EXTI_Handler(GPIOA0_BASE);
 }
 
-STATIC void GPIOA1IntHandler (void) {
+static void GPIOA1IntHandler (void) {
     EXTI_Handler(GPIOA1_BASE);
 }
 
-STATIC void GPIOA2IntHandler (void) {
+static void GPIOA2IntHandler (void) {
     EXTI_Handler(GPIOA2_BASE);
 }
 
-STATIC void GPIOA3IntHandler (void) {
+static void GPIOA3IntHandler (void) {
     EXTI_Handler(GPIOA3_BASE);
 }
 
 // common interrupt handler
-STATIC void EXTI_Handler(uint port) {
+static void EXTI_Handler(uint port) {
     uint32_t bits = MAP_GPIOIntStatus(port, true);
     MAP_GPIOIntClear(port, bits);
 
@@ -517,7 +517,7 @@ STATIC void EXTI_Handler(uint port) {
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC const mp_arg_t pin_init_args[] = {
+static const mp_arg_t pin_init_args[] = {
     { MP_QSTR_mode,                        MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
     { MP_QSTR_pull,                        MP_ARG_OBJ, {.u_obj = mp_const_none} },
     { MP_QSTR_value,    MP_ARG_KW_ONLY  |  MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -526,7 +526,7 @@ STATIC const mp_arg_t pin_init_args[] = {
 };
 #define pin_INIT_NUM_ARGS MP_ARRAY_SIZE(pin_init_args)
 
-STATIC mp_obj_t pin_obj_init_helper(pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pin_obj_init_helper(pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // parse args
     mp_arg_val_t args[pin_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args, pos_args, kw_args, pin_INIT_NUM_ARGS, pin_init_args, args);
@@ -590,7 +590,7 @@ invalid_args:
     mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
 
-STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_obj_t *self = self_in;
     uint32_t pull = self->pull;
     uint32_t drive = self->strength;
@@ -643,7 +643,7 @@ STATIC void pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t
     mp_printf(print, ", alt=%d)", alt);
 }
 
-STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Run an argument through the mapper and return the result.
@@ -656,12 +656,12 @@ STATIC mp_obj_t pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_
     return (mp_obj_t)pin;
 }
 
-STATIC mp_obj_t pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
+static mp_obj_t pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
     return pin_obj_init_helper(args[0], n_args - 1, args + 1, kw_args);
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(pin_init_obj, 1, pin_obj_init);
 
-STATIC mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         // get the value
@@ -678,15 +678,15 @@ STATIC mp_obj_t pin_value(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_value_obj, 1, 2, pin_value);
 
-STATIC mp_obj_t pin_id(mp_obj_t self_in) {
+static mp_obj_t pin_id(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
     return MP_OBJ_NEW_QSTR(self->name);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_id_obj, pin_id);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_id_obj, pin_id);
 
-STATIC mp_obj_t pin_mode(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_mode(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(self->mode);
@@ -698,9 +698,9 @@ STATIC mp_obj_t pin_mode(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mode_obj, 1, 2, pin_mode);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_mode_obj, 1, 2, pin_mode);
 
-STATIC mp_obj_t pin_pull(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_pull(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         if (self->pull == PIN_TYPE_STD) {
@@ -720,9 +720,9 @@ STATIC mp_obj_t pin_pull(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_pull_obj, 1, 2, pin_pull);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_pull_obj, 1, 2, pin_pull);
 
-STATIC mp_obj_t pin_drive(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t pin_drive(size_t n_args, const mp_obj_t *args) {
     pin_obj_t *self = args[0];
     if (n_args == 1) {
         return mp_obj_new_int(self->strength);
@@ -734,15 +734,15 @@ STATIC mp_obj_t pin_drive(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_drive_obj, 1, 2, pin_drive);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(pin_drive_obj, 1, 2, pin_drive);
 
-STATIC mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 0, 1, false);
     mp_obj_t _args[2] = {self_in, *args};
     return pin_value (n_args + 1, _args);
 }
 
-STATIC mp_obj_t pin_alt_list(mp_obj_t self_in) {
+static mp_obj_t pin_alt_list(mp_obj_t self_in) {
     pin_obj_t *self = self_in;
     mp_obj_t af[2];
     mp_obj_t afs = mp_obj_new_list(0, NULL);
@@ -754,10 +754,10 @@ STATIC mp_obj_t pin_alt_list(mp_obj_t self_in) {
     }
     return afs;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pin_alt_list_obj, pin_alt_list);
+static MP_DEFINE_CONST_FUN_OBJ_1(pin_alt_list_obj, pin_alt_list);
 
 /// \method irq(trigger, priority, handler, wake)
-STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     mp_arg_val_t args[mp_irq_INIT_NUM_ARGS];
     mp_arg_parse_all(n_args - 1, pos_args + 1, kw_args, mp_irq_INIT_NUM_ARGS, mp_irq_init_args, args);
     pin_obj_t *self = pos_args[0];
@@ -896,9 +896,9 @@ STATIC mp_obj_t pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_ar
 invalid_args:
     mp_raise_ValueError(MP_ERROR_TEXT("invalid argument(s) value"));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
+static MP_DEFINE_CONST_FUN_OBJ_KW(pin_irq_obj, 1, pin_irq);
 
-STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
+static const mp_rom_map_elem_t pin_locals_dict_table[] = {
     // instance methods
     { MP_ROM_QSTR(MP_QSTR_init),                    MP_ROM_PTR(&pin_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_value),                   MP_ROM_PTR(&pin_value_obj) },
@@ -929,7 +929,7 @@ STATIC const mp_rom_map_elem_t pin_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IRQ_HIGH_LEVEL),          MP_ROM_INT(PYB_PIN_HIGH_LEVEL) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pin_locals_dict, pin_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pin_type,
@@ -941,14 +941,14 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &pin_locals_dict
     );
 
-STATIC const mp_irq_methods_t pin_irq_methods = {
+static const mp_irq_methods_t pin_irq_methods = {
     .init = pin_irq,
     .enable = pin_irq_enable,
     .disable = pin_irq_disable,
     .flags = pin_irq_flags,
 };
 
-STATIC void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void pin_named_pins_obj_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     pin_named_pins_obj_t *self = self_in;
     mp_printf(print, "<Pin.%q>", self->name);
 }

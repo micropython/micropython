@@ -7,7 +7,7 @@
 /******************************************************************************/
 // MicroPython bindings
 
-STATIC mp_obj_t mod_wipy_heartbeat(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t mod_wipy_heartbeat(size_t n_args, const mp_obj_t *args) {
     if (n_args) {
         mperror_enable_heartbeat (mp_obj_is_true(args[0]));
         return mp_const_none;
@@ -15,14 +15,14 @@ STATIC mp_obj_t mod_wipy_heartbeat(size_t n_args, const mp_obj_t *args) {
         return mp_obj_new_bool(mperror_is_heartbeat_enabled());
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_wipy_heartbeat_obj, 0, 1, mod_wipy_heartbeat);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_wipy_heartbeat_obj, 0, 1, mod_wipy_heartbeat);
 
-STATIC const mp_rom_map_elem_t wipy_module_globals_table[] = {
+static const mp_rom_map_elem_t wipy_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__),        MP_ROM_QSTR(MP_QSTR_wipy) },
     { MP_ROM_QSTR(MP_QSTR_heartbeat),       MP_ROM_PTR(&mod_wipy_heartbeat_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(wipy_module_globals, wipy_module_globals_table);
+static MP_DEFINE_CONST_DICT(wipy_module_globals, wipy_module_globals_table);
 
 const mp_obj_module_t wipy_module = {
     .base = { &mp_type_module },

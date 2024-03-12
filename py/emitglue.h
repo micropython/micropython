@@ -63,7 +63,7 @@ typedef const void *mp_proto_fun_t;
 // is guaranteed to have either its first or second byte non-zero.  So if both bytes are
 // zero then the mp_proto_fun_t pointer must be an mp_raw_code_t.
 static inline bool mp_proto_fun_is_bytecode(mp_proto_fun_t proto_fun) {
-    const uint8_t *header = proto_fun;
+    const uint8_t *header = (const uint8_t *)proto_fun;
     return (header[0] | (header[1] << 8)) != (MP_PROTO_FUN_INDICATOR_RAW_CODE_0 | (MP_PROTO_FUN_INDICATOR_RAW_CODE_1 << 8));
 }
 

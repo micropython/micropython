@@ -142,21 +142,21 @@ static esp_espnow_obj_t *_get_singleton_initialised() {
 
 // Allocate and initialise the ESPNow module as a singleton.
 // Returns the initialised espnow_singleton.
-STATIC mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
+static mp_obj_t espnow_make_new(const mp_obj_type_t *type, size_t n_args,
     size_t n_kw, const mp_obj_t *all_args) {
 
     return _get_singleton();
 }
 
 // Forward declare the send and recv ESPNow callbacks
-STATIC void send_cb(uint8_t *mac_addr, uint8_t status);
+static void send_cb(uint8_t *mac_addr, uint8_t status);
 
-STATIC void recv_cb(uint8_t *mac_addr, uint8_t *data, uint8_t len);
+static void recv_cb(uint8_t *mac_addr, uint8_t *data, uint8_t len);
 
 // ESPNow.deinit(): De-initialise the ESPNOW software stack, disable callbacks
 // and deallocate the recv data buffers.
 // Note: this function is called from main.c:mp_task() to cleanup before soft
-// reset, so cannot be declared STATIC and must guard against self == NULL;.
+// reset, so cannot be declared static and must guard against self == NULL;.
 mp_obj_t espnow_deinit(mp_obj_t _) {
     esp_espnow_obj_t *self = _get_singleton();
     if (self->recv_buffer != NULL) {
@@ -174,7 +174,7 @@ mp_obj_t espnow_deinit(mp_obj_t _) {
 // Initialise the Espressif ESPNOW software stack, register callbacks and
 // allocate the recv data buffers.
 // Returns True if interface is active, else False.
-STATIC mp_obj_t espnow_active(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t espnow_active(size_t n_args, const mp_obj_t *args) {
     esp_espnow_obj_t *self = args[0];
     if (n_args > 1) {
         if (mp_obj_is_true(args[1])) {
@@ -193,13 +193,13 @@ STATIC mp_obj_t espnow_active(size_t n_args, const mp_obj_t *args) {
     }
     return mp_obj_new_bool(self->recv_buffer != NULL);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_active_obj, 1, 2, espnow_active);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_active_obj, 1, 2, espnow_active);
 
 // ESPNow.config(): Initialise the data buffers and ESP-NOW functions.
 // Initialise the Espressif ESPNOW software stack, register callbacks and
 // allocate the recv data buffers.
 // Returns True if interface is active, else False.
-STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     esp_espnow_obj_t *self = _get_singleton();
     enum { ARG_rxbuf, ARG_timeout_ms };
     static const mp_arg_t allowed_args[] = {
@@ -217,7 +217,7 @@ STATIC mp_obj_t espnow_config(size_t n_args, const mp_obj_t *pos_args, mp_map_t 
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_config_obj, 1, espnow_config);
+static MP_DEFINE_CONST_FUN_OBJ_KW(espnow_config_obj, 1, espnow_config);
 
 // ### The ESP_Now send and recv callback routines
 //
@@ -225,7 +225,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(espnow_config_obj, 1, espnow_config);
 // Callback triggered when a sent packet is acknowledged by the peer (or not).
 // Just count the number of responses and number of failures.
 // These are used in the send()/write() logic.
-STATIC void send_cb(uint8_t *mac_addr, uint8_t status) {
+static void send_cb(uint8_t *mac_addr, uint8_t status) {
     esp_espnow_obj_t *self = _get_singleton();
     self->tx_responses++;
     if (status != ESP_NOW_SEND_SUCCESS) {
@@ -238,7 +238,7 @@ STATIC void send_cb(uint8_t *mac_addr, uint8_t status) {
 // ESPNow packet.
 // If the buffer is full, drop the message and increment the dropped count.
 // Schedules the user callback if one has been registered (ESPNow.config()).
-STATIC void recv_cb(uint8_t *mac_addr, uint8_t *msg, uint8_t msg_len) {
+static void recv_cb(uint8_t *mac_addr, uint8_t *msg, uint8_t msg_len) {
     esp_espnow_obj_t *self = _get_singleton();
     ringbuf_t *buf = self->recv_buffer;
     // TODO: Test this works with ">".
@@ -298,7 +298,7 @@ static int ringbuf_get_bytes_wait(ringbuf_t *r, uint8_t *data, size_t len, mp_in
 //      buffers: list of bytearrays to store values: [peer, message].
 // Default timeout is set with ESPNow.config(timeout=milliseconds).
 // Return (None, None) on timeout.
-STATIC mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
     esp_espnow_obj_t *self = _get_singleton_initialised();
 
     size_t timeout_ms = ((n_args > 2 && args[2] != mp_const_none)
@@ -339,7 +339,7 @@ STATIC mp_obj_t espnow_recvinto(size_t n_args, const mp_obj_t *args) {
 
     return MP_OBJ_NEW_SMALL_INT(msg_len);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_recvinto_obj, 2, 3, espnow_recvinto);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_recvinto_obj, 2, 3, espnow_recvinto);
 
 // Used by espnow_send() for sends() with sync==True.
 // Wait till all pending sent packet responses have been received.
@@ -365,7 +365,7 @@ static void _wait_for_pending_responses(esp_espnow_obj_t *self) {
 //   True  if sync==True and message is received successfully by all recipients
 //   False if sync==True and message is not received by at least one recipient
 // Raises: EAGAIN if the internal espnow buffers are full.
-STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t espnow_send(size_t n_args, const mp_obj_t *args) {
     esp_espnow_obj_t *self = _get_singleton_initialised();
 
     bool sync = n_args <= 3 || args[3] == mp_const_none || mp_obj_is_true(args[3]);
@@ -402,7 +402,7 @@ STATIC mp_obj_t espnow_send(size_t n_args, const mp_obj_t *args) {
     // Return False if sync and any peers did not respond.
     return mp_obj_new_bool(!(sync && self->tx_failures != saved_failures));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_send_obj, 3, 4, espnow_send);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_send_obj, 3, 4, espnow_send);
 
 // ### Peer Management Functions
 //
@@ -410,11 +410,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_send_obj, 3, 4, espnow_send);
 // Set the ESP-NOW Primary Master Key (pmk) (for encrypted communications).
 // Raise OSError if not initialised.
 // Raise ValueError if key is not a bytes-like object exactly 16 bytes long.
-STATIC mp_obj_t espnow_set_pmk(mp_obj_t _, mp_obj_t key) {
+static mp_obj_t espnow_set_pmk(mp_obj_t _, mp_obj_t key) {
     check_esp_err(esp_now_set_kok(_get_bytes_len(key, ESP_NOW_KEY_LEN), ESP_NOW_KEY_LEN));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(espnow_set_pmk_obj, espnow_set_pmk);
+static MP_DEFINE_CONST_FUN_OBJ_2(espnow_set_pmk_obj, espnow_set_pmk);
 
 // ESPNow.add_peer(peer_mac, [lmk, [channel, [ifidx, [encrypt]]]])
 // Positional args set to None will be left at defaults.
@@ -422,7 +422,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(espnow_set_pmk_obj, espnow_set_pmk);
 // Raise ValueError if mac or LMK are not bytes-like objects or wrong length.
 // Raise TypeError if invalid keyword args or too many positional args.
 // Return None.
-STATIC mp_obj_t espnow_add_peer(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t espnow_add_peer(size_t n_args, const mp_obj_t *args) {
     check_esp_err(
         esp_now_add_peer(
             _get_bytes_len(args[1], ESP_NOW_ETH_ALEN),
@@ -433,19 +433,19 @@ STATIC mp_obj_t espnow_add_peer(size_t n_args, const mp_obj_t *args) {
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_add_peer_obj, 2, 4, espnow_add_peer);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(espnow_add_peer_obj, 2, 4, espnow_add_peer);
 
 // ESPNow.del_peer(peer_mac): Unregister peer_mac.
 // Raise OSError if not initialised.
 // Raise ValueError if peer is not a bytes-like objects or wrong length.
 // Return None.
-STATIC mp_obj_t espnow_del_peer(mp_obj_t _, mp_obj_t peer) {
+static mp_obj_t espnow_del_peer(mp_obj_t _, mp_obj_t peer) {
     esp_now_del_peer(_get_bytes_len(peer, ESP_NOW_ETH_ALEN));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(espnow_del_peer_obj, espnow_del_peer);
+static MP_DEFINE_CONST_FUN_OBJ_2(espnow_del_peer_obj, espnow_del_peer);
 
-STATIC const mp_rom_map_elem_t esp_espnow_locals_dict_table[] = {
+static const mp_rom_map_elem_t esp_espnow_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&espnow_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&espnow_config_obj) },
     { MP_ROM_QSTR(MP_QSTR_recvinto), MP_ROM_PTR(&espnow_recvinto_obj) },
@@ -456,9 +456,9 @@ STATIC const mp_rom_map_elem_t esp_espnow_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_add_peer), MP_ROM_PTR(&espnow_add_peer_obj) },
     { MP_ROM_QSTR(MP_QSTR_del_peer), MP_ROM_PTR(&espnow_del_peer_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(esp_espnow_locals_dict, esp_espnow_locals_dict_table);
+static MP_DEFINE_CONST_DICT(esp_espnow_locals_dict, esp_espnow_locals_dict_table);
 
-STATIC const mp_rom_map_elem_t espnow_globals_dict_table[] = {
+static const mp_rom_map_elem_t espnow_globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR__espnow) },
     { MP_ROM_QSTR(MP_QSTR_ESPNowBase), MP_ROM_PTR(&esp_espnow_type) },
     { MP_ROM_QSTR(MP_QSTR_MAX_DATA_LEN), MP_ROM_INT(ESP_NOW_MAX_DATA_LEN)},
@@ -467,13 +467,13 @@ STATIC const mp_rom_map_elem_t espnow_globals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MAX_TOTAL_PEER_NUM), MP_ROM_INT(ESP_NOW_MAX_TOTAL_PEER_NUM)},
     { MP_ROM_QSTR(MP_QSTR_MAX_ENCRYPT_PEER_NUM), MP_ROM_INT(ESP_NOW_MAX_ENCRYPT_PEER_NUM)},
 };
-STATIC MP_DEFINE_CONST_DICT(espnow_globals_dict, espnow_globals_dict_table);
+static MP_DEFINE_CONST_DICT(espnow_globals_dict, espnow_globals_dict_table);
 
 // ### Dummy Buffer Protocol support
 // ...so asyncio can poll.ipoll() on this device
 
 // Support ioctl(MP_STREAM_POLL, ) for asyncio
-STATIC mp_uint_t espnow_stream_ioctl(mp_obj_t self_in, mp_uint_t request,
+static mp_uint_t espnow_stream_ioctl(mp_obj_t self_in, mp_uint_t request,
     uintptr_t arg, int *errcode) {
     if (request != MP_STREAM_POLL) {
         *errcode = MP_EINVAL;
@@ -484,7 +484,7 @@ STATIC mp_uint_t espnow_stream_ioctl(mp_obj_t self_in, mp_uint_t request,
            arg ^ ((ringbuf_avail(self->recv_buffer) == 0) ? MP_STREAM_POLL_RD : 0);
 }
 
-STATIC const mp_stream_p_t espnow_stream_p = {
+static const mp_stream_p_t espnow_stream_p = {
     .ioctl = espnow_stream_ioctl,
 };
 

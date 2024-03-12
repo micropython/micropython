@@ -78,13 +78,13 @@ function download_s140_nrf52_7_3_0
 
 SCRIPT_DIR="$(cd -P "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [ $# -eq 0 ]; then 
+if [ $# -eq 0 ]; then
     echo "No Bluetooth LE stack defined, downloading all."
     download_s110_nrf51_8_0_0 ${SCRIPT_DIR}
     download_s132_nrf52_6_1_1 ${SCRIPT_DIR}
     download_s140_nrf52_6_1_1 ${SCRIPT_DIR}
     download_s140_nrf52_7_3_0 ${SCRIPT_DIR}
-else 
+else
     case $1 in
         "s110_nrf51" )
             download_s110_nrf51_8_0_0 ${SCRIPT_DIR} ;;

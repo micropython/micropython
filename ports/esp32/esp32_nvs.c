@@ -43,7 +43,7 @@ typedef struct _esp32_nvs_obj_t {
 } esp32_nvs_obj_t;
 
 // *esp32_nvs_new allocates a python NVS object given a handle to an esp-idf namespace C obj.
-STATIC esp32_nvs_obj_t *esp32_nvs_new(nvs_handle_t namespace) {
+static esp32_nvs_obj_t *esp32_nvs_new(nvs_handle_t namespace) {
     esp32_nvs_obj_t *self = mp_obj_malloc(esp32_nvs_obj_t, &esp32_nvs_type);
     self->namespace = namespace;
     return self;
@@ -51,13 +51,13 @@ STATIC esp32_nvs_obj_t *esp32_nvs_new(nvs_handle_t namespace) {
 
 // esp32_nvs_print prints an NVS object, unfortunately it doesn't seem possible to extract the
 // namespace string or anything else from the opaque handle provided by esp-idf.
-STATIC void esp32_nvs_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void esp32_nvs_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     // esp32_nvs_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "<NVS namespace>");
 }
 
 // esp32_nvs_make_new constructs a handle to an NVS namespace.
-STATIC mp_obj_t esp32_nvs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t esp32_nvs_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     // Check args
     mp_arg_check_num(n_args, n_kw, 1, 1, false);
 
@@ -69,27 +69,27 @@ STATIC mp_obj_t esp32_nvs_make_new(const mp_obj_type_t *type, size_t n_args, siz
 }
 
 // esp32_nvs_set_i32 sets a 32-bit integer value
-STATIC mp_obj_t esp32_nvs_set_i32(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
+static mp_obj_t esp32_nvs_set_i32(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
     esp32_nvs_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *key = mp_obj_str_get_str(key_in);
     int32_t value = mp_obj_get_int(value_in);
     check_esp_err(nvs_set_i32(self->namespace, key, value));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_nvs_set_i32_obj, esp32_nvs_set_i32);
+static MP_DEFINE_CONST_FUN_OBJ_3(esp32_nvs_set_i32_obj, esp32_nvs_set_i32);
 
 // esp32_nvs_get_i32 reads a 32-bit integer value
-STATIC mp_obj_t esp32_nvs_get_i32(mp_obj_t self_in, mp_obj_t key_in) {
+static mp_obj_t esp32_nvs_get_i32(mp_obj_t self_in, mp_obj_t key_in) {
     esp32_nvs_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *key = mp_obj_str_get_str(key_in);
     int32_t value;
     check_esp_err(nvs_get_i32(self->namespace, key, &value));
     return mp_obj_new_int(value);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_nvs_get_i32_obj, esp32_nvs_get_i32);
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_nvs_get_i32_obj, esp32_nvs_get_i32);
 
 // esp32_nvs_set_blob writes a buffer object into a binary blob value.
-STATIC mp_obj_t esp32_nvs_set_blob(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
+static mp_obj_t esp32_nvs_set_blob(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
     esp32_nvs_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *key = mp_obj_str_get_str(key_in);
     mp_buffer_info_t value;
@@ -97,10 +97,10 @@ STATIC mp_obj_t esp32_nvs_set_blob(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t v
     check_esp_err(nvs_set_blob(self->namespace, key, value.buf, value.len));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_nvs_set_blob_obj, esp32_nvs_set_blob);
+static MP_DEFINE_CONST_FUN_OBJ_3(esp32_nvs_set_blob_obj, esp32_nvs_set_blob);
 
 // esp32_nvs_get_blob reads a binary blob value into a bytearray. Returns actual length.
-STATIC mp_obj_t esp32_nvs_get_blob(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
+static mp_obj_t esp32_nvs_get_blob(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t value_in) {
     esp32_nvs_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *key = mp_obj_str_get_str(key_in);
     // get buffer to be filled
@@ -112,26 +112,26 @@ STATIC mp_obj_t esp32_nvs_get_blob(mp_obj_t self_in, mp_obj_t key_in, mp_obj_t v
     check_esp_err(nvs_get_blob(self->namespace, key, value.buf, &length));
     return MP_OBJ_NEW_SMALL_INT(length);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp32_nvs_get_blob_obj, esp32_nvs_get_blob);
+static MP_DEFINE_CONST_FUN_OBJ_3(esp32_nvs_get_blob_obj, esp32_nvs_get_blob);
 
 // esp32_nvs_erase_key erases one key.
-STATIC mp_obj_t esp32_nvs_erase_key(mp_obj_t self_in, mp_obj_t key_in) {
+static mp_obj_t esp32_nvs_erase_key(mp_obj_t self_in, mp_obj_t key_in) {
     esp32_nvs_obj_t *self = MP_OBJ_TO_PTR(self_in);
     const char *key = mp_obj_str_get_str(key_in);
     check_esp_err(nvs_erase_key(self->namespace, key));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp32_nvs_erase_key_obj, esp32_nvs_erase_key);
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_nvs_erase_key_obj, esp32_nvs_erase_key);
 
 // esp32_nvs_commit commits any changes to flash.
-STATIC mp_obj_t esp32_nvs_commit(mp_obj_t self_in) {
+static mp_obj_t esp32_nvs_commit(mp_obj_t self_in) {
     esp32_nvs_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_esp_err(nvs_commit(self->namespace));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp32_nvs_commit_obj, esp32_nvs_commit);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp32_nvs_commit_obj, esp32_nvs_commit);
 
-STATIC const mp_rom_map_elem_t esp32_nvs_locals_dict_table[] = {
+static const mp_rom_map_elem_t esp32_nvs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_i32), MP_ROM_PTR(&esp32_nvs_get_i32_obj) },
     { MP_ROM_QSTR(MP_QSTR_set_i32), MP_ROM_PTR(&esp32_nvs_set_i32_obj) },
     { MP_ROM_QSTR(MP_QSTR_get_blob), MP_ROM_PTR(&esp32_nvs_get_blob_obj) },
@@ -139,7 +139,7 @@ STATIC const mp_rom_map_elem_t esp32_nvs_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_erase_key), MP_ROM_PTR(&esp32_nvs_erase_key_obj) },
     { MP_ROM_QSTR(MP_QSTR_commit), MP_ROM_PTR(&esp32_nvs_commit_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(esp32_nvs_locals_dict, esp32_nvs_locals_dict_table);
+static MP_DEFINE_CONST_DICT(esp32_nvs_locals_dict, esp32_nvs_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     esp32_nvs_type,

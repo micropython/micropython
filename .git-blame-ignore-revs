@@ -1,3 +1,12 @@
+# all: Prune trailing whitespace.
+dda9b9c6da5d3c31fa8769e581a753e95a270803
+
+# all: Remove the "STATIC" macro and just use "static" instead.
+decf8e6a8bb940d5829ca3296790631fcece7b21
+
+# renesas-ra: Fix spelling mistakes found by codespell.
+b3f2f18f927fa2fad10daf63d8c391331f5edf58
+
 # all: Update Python formatting to ruff-format.
 bbd8760bd9a2302e5abee29db279102bb11d7732
 

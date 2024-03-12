@@ -46,7 +46,7 @@ void error_check(bool status, mp_rom_error_text_t msg) {
     }
 }
 
-STATIC mp_obj_t esp_osdebug(mp_obj_t val) {
+static mp_obj_t esp_osdebug(mp_obj_t val) {
     if (val == mp_const_none) {
         uart_os_config(-1);
     } else {
@@ -54,9 +54,9 @@ STATIC mp_obj_t esp_osdebug(mp_obj_t val) {
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_osdebug_obj, esp_osdebug);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_osdebug_obj, esp_osdebug);
 
-STATIC mp_obj_t esp_sleep_type(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_sleep_type(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
         return mp_obj_new_int(wifi_get_sleep_type());
     } else {
@@ -64,9 +64,9 @@ STATIC mp_obj_t esp_sleep_type(size_t n_args, const mp_obj_t *args) {
         return mp_const_none;
     }
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_sleep_type_obj, 0, 1, esp_sleep_type);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_sleep_type_obj, 0, 1, esp_sleep_type);
 
-STATIC mp_obj_t esp_deepsleep(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t esp_deepsleep(size_t n_args, const mp_obj_t *args) {
     uint32_t sleep_us = n_args > 0 ? mp_obj_get_int(args[0]) : 0;
     // prepare for RTC reset at wake up
     rtc_prepare_deepsleep(sleep_us);
@@ -74,14 +74,14 @@ STATIC mp_obj_t esp_deepsleep(size_t n_args, const mp_obj_t *args) {
     system_deep_sleep(sleep_us);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 2, esp_deepsleep);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_deepsleep_obj, 0, 2, esp_deepsleep);
 
-STATIC mp_obj_t esp_flash_id() {
+static mp_obj_t esp_flash_id() {
     return mp_obj_new_int(spi_flash_get_id());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_id_obj, esp_flash_id);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_id_obj, esp_flash_id);
 
-STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
+static mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
 
     mp_int_t len;
@@ -111,9 +111,9 @@ STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t len_or_buf_in) {
     }
     mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
+static MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
 
-STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
+static mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     mp_int_t offset = mp_obj_get_int(offset_in);
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
@@ -128,9 +128,9 @@ STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, const mp_obj_t buf_in) {
     }
     mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
+static MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
 
-STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
+static mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     mp_int_t sector = mp_obj_get_int(sector_in);
     ets_loop_iter(); // flash access takes time so run any pending tasks
     SpiFlashOpResult res = spi_flash_erase_sector(sector);
@@ -140,9 +140,9 @@ STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
     }
     mp_raise_OSError(res == SPI_FLASH_RESULT_TIMEOUT ? MP_ETIMEDOUT : MP_EIO);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
 
-STATIC mp_obj_t esp_flash_size(void) {
+static mp_obj_t esp_flash_size(void) {
     extern char flashchip;
     // For SDK 1.5.2, either address has shifted and not mirrored in
     // eagle.rom.addr.v6.ld, or extra initial member was added.
@@ -157,7 +157,7 @@ STATIC mp_obj_t esp_flash_size(void) {
     #endif
     return mp_obj_new_int_from_uint(flash->chip_size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
 // If there's just 1 loadable segment at the start of flash,
 // we assume there's a yaota8266 bootloader.
@@ -165,12 +165,12 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
 
 extern byte _firmware_size[];
 
-STATIC mp_obj_t esp_flash_user_start(void) {
+static mp_obj_t esp_flash_user_start(void) {
     return MP_OBJ_NEW_SMALL_INT((uint32_t)_firmware_size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj, esp_flash_user_start);
 
-STATIC mp_obj_t esp_check_fw(void) {
+static mp_obj_t esp_check_fw(void) {
     MD5_CTX ctx;
     char *fw_start = (char *)0x40200000;
     if (IS_OTA_FIRMWARE()) {
@@ -195,10 +195,10 @@ STATIC mp_obj_t esp_check_fw(void) {
     printf("\n");
     return mp_obj_new_bool(memcmp(digest, fw_start + size, sizeof(digest)) == 0);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp_check_fw_obj, esp_check_fw);
 
 #if MICROPY_ESP8266_APA102
-STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
+static mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t buf) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
     esp_apa102_write(mp_obj_get_pin(clockPin),
@@ -206,35 +206,35 @@ STATIC mp_obj_t esp_apa102_write_(mp_obj_t clockPin, mp_obj_t dataPin, mp_obj_t 
         (uint8_t *)bufinfo.buf, bufinfo.len);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
+static MP_DEFINE_CONST_FUN_OBJ_3(esp_apa102_write_obj, esp_apa102_write_);
 #endif
 
-STATIC mp_obj_t esp_freemem() {
+static mp_obj_t esp_freemem() {
     return MP_OBJ_NEW_SMALL_INT(system_get_free_heap_size());
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_freemem_obj, esp_freemem);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp_freemem_obj, esp_freemem);
 
-STATIC mp_obj_t esp_meminfo() {
+static mp_obj_t esp_meminfo() {
     system_print_meminfo();
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_meminfo_obj, esp_meminfo);
+static MP_DEFINE_CONST_FUN_OBJ_0(esp_meminfo_obj, esp_meminfo);
 
-STATIC mp_obj_t esp_malloc(mp_obj_t size_in) {
+static mp_obj_t esp_malloc(mp_obj_t size_in) {
     return MP_OBJ_NEW_SMALL_INT((mp_uint_t)os_malloc(mp_obj_get_int(size_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_malloc_obj, esp_malloc);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_malloc_obj, esp_malloc);
 
-STATIC mp_obj_t esp_free(mp_obj_t addr_in) {
+static mp_obj_t esp_free(mp_obj_t addr_in) {
     os_free((void *)mp_obj_get_int(addr_in));
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_free_obj, esp_free);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_free_obj, esp_free);
 
-STATIC mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
+static mp_obj_t esp_esf_free_bufs(mp_obj_t idx_in) {
     return MP_OBJ_NEW_SMALL_INT(ets_esf_free_bufs(mp_obj_get_int(idx_in)));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
+static MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
 
 #if MICROPY_EMIT_XTENSA || MICROPY_EMIT_INLINE_XTENSA
 
@@ -257,11 +257,11 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_esf_free_bufs_obj, esp_esf_free_bufs);
 #define ESP_NATIVE_CODE_FLASH (1)
 
 extern uint32_t _lit4_end;
-STATIC uint32_t esp_native_code_location;
-STATIC uint32_t esp_native_code_start;
-STATIC uint32_t esp_native_code_end;
-STATIC uint32_t esp_native_code_cur;
-STATIC uint32_t esp_native_code_erased;
+static uint32_t esp_native_code_location;
+static uint32_t esp_native_code_start;
+static uint32_t esp_native_code_end;
+static uint32_t esp_native_code_cur;
+static uint32_t esp_native_code_erased;
 
 void esp_native_code_init(void) {
     esp_native_code_location = ESP_NATIVE_CODE_IRAM1;
@@ -317,7 +317,7 @@ void *esp_native_code_commit(void *buf, size_t len, void *reloc) {
     return dest;
 }
 
-STATIC mp_obj_t esp_set_native_code_location(mp_obj_t start_in, mp_obj_t len_in) {
+static mp_obj_t esp_set_native_code_location(mp_obj_t start_in, mp_obj_t len_in) {
     if (start_in == mp_const_none && len_in == mp_const_none) {
         // use end of iram1 region
         esp_native_code_init();
@@ -335,11 +335,11 @@ STATIC mp_obj_t esp_set_native_code_location(mp_obj_t start_in, mp_obj_t len_in)
     }
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_set_native_code_location_obj, esp_set_native_code_location);
+static MP_DEFINE_CONST_FUN_OBJ_2(esp_set_native_code_location_obj, esp_set_native_code_location);
 
 #endif
 
-STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
+static const mp_rom_map_elem_t esp_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp) },
 
     { MP_ROM_QSTR(MP_QSTR_osdebug), MP_ROM_PTR(&esp_osdebug_obj) },
@@ -371,7 +371,7 @@ STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);
+static MP_DEFINE_CONST_DICT(esp_module_globals, esp_module_globals_table);
 
 const mp_obj_module_t esp_module = {
     .base = { &mp_type_module },

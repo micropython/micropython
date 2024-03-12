@@ -116,8 +116,8 @@ extern "C"
 #define PIN_MODE_14	 0x0000000E
 #define PIN_MODE_15	 0x0000000F
 // Note : PIN_MODE_255 is a dummy define for pinmux utility code generation
-// PIN_MODE_255 should never be used in any user code.  
-#define PIN_MODE_255 0x000000FF  
+// PIN_MODE_255 should never be used in any user code.
+#define PIN_MODE_255 0x000000FF
 
 //*****************************************************************************
 // Macros that can be used with PinDirModeSet() and returned from

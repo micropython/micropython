@@ -289,7 +289,7 @@ class PinGenerator:
     def print_board_locals_dict(self, out_source):
         print(file=out_source)
         print(
-            "STATIC const mp_rom_map_elem_t machine_pin_board_pins_locals_dict_table[] = {",
+            "static const mp_rom_map_elem_t machine_pin_board_pins_locals_dict_table[] = {",
             file=out_source,
         )
         for pin in self.available_pins():
@@ -318,7 +318,7 @@ class PinGenerator:
     def print_cpu_locals_dict(self, out_source):
         print(file=out_source)
         print(
-            "STATIC const mp_rom_map_elem_t machine_pin_cpu_pins_locals_dict_table[] = {",
+            "static const mp_rom_map_elem_t machine_pin_cpu_pins_locals_dict_table[] = {",
             file=out_source,
         )
         for pin in self.available_pins(exclude_hidden=True):

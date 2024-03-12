@@ -89,7 +89,7 @@ void accel_init(void) {
     #endif
 }
 
-STATIC void accel_start(void) {
+static void accel_start(void) {
     // start the I2C bus in master mode
     i2c_init(I2C1, MICROPY_HW_I2C1_SCL, MICROPY_HW_I2C1_SDA, 400000, I2C_TIMEOUT_MS);
 
@@ -153,7 +153,7 @@ typedef struct _pyb_accel_obj_t {
     int16_t buf[NUM_AXIS * FILT_DEPTH];
 } pyb_accel_obj_t;
 
-STATIC pyb_accel_obj_t pyb_accel_obj;
+static pyb_accel_obj_t pyb_accel_obj;
 
 /// \classmethod \constructor()
 /// Create and return an accelerometer object.
@@ -166,7 +166,7 @@ STATIC pyb_accel_obj_t pyb_accel_obj;
 ///     accel = pyb.Accel()
 ///     pyb.delay(20)
 ///     print(accel.x())
-STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // check arguments
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
 
@@ -177,7 +177,7 @@ STATIC mp_obj_t pyb_accel_make_new(const mp_obj_type_t *type, size_t n_args, siz
     return MP_OBJ_FROM_PTR(&pyb_accel_obj);
 }
 
-STATIC mp_obj_t read_axis(int axis) {
+static mp_obj_t read_axis(int axis) {
     uint8_t data[1] = { axis };
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
@@ -186,28 +186,28 @@ STATIC mp_obj_t read_axis(int axis) {
 
 /// \method x()
 /// Get the x-axis value.
-STATIC mp_obj_t pyb_accel_x(mp_obj_t self_in) {
+static mp_obj_t pyb_accel_x(mp_obj_t self_in) {
     return read_axis(ACCEL_REG_X);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_x_obj, pyb_accel_x);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_x_obj, pyb_accel_x);
 
 /// \method y()
 /// Get the y-axis value.
-STATIC mp_obj_t pyb_accel_y(mp_obj_t self_in) {
+static mp_obj_t pyb_accel_y(mp_obj_t self_in) {
     return read_axis(ACCEL_REG_Y);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_y_obj, pyb_accel_y);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_y_obj, pyb_accel_y);
 
 /// \method z()
 /// Get the z-axis value.
-STATIC mp_obj_t pyb_accel_z(mp_obj_t self_in) {
+static mp_obj_t pyb_accel_z(mp_obj_t self_in) {
     return read_axis(ACCEL_REG_Z);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_z_obj, pyb_accel_z);
 
 /// \method tilt()
 /// Get the tilt register.
-STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
+static mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
     #if MICROPY_HW_HAS_MMA7660
     uint8_t data[1] = { ACCEL_REG_TILT };
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
@@ -218,11 +218,11 @@ STATIC mp_obj_t pyb_accel_tilt(mp_obj_t self_in) {
     return 0;
     #endif
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_tilt_obj, pyb_accel_tilt);
 
 /// \method filtered_xyz()
 /// Get a 3-tuple of filtered x, y and z values.
-STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
+static mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
     pyb_accel_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     memmove(self->buf, self->buf + NUM_AXIS, NUM_AXIS * (FILT_DEPTH - 1) * sizeof(int16_t));
@@ -251,9 +251,9 @@ STATIC mp_obj_t pyb_accel_filtered_xyz(mp_obj_t self_in) {
 
     return mp_obj_new_tuple(3, tuple);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
+static MP_DEFINE_CONST_FUN_OBJ_1(pyb_accel_filtered_xyz_obj, pyb_accel_filtered_xyz);
 
-STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
+static mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
     uint8_t data[1] = { mp_obj_get_int(reg) };
     i2c_writeto(I2C1, ACCEL_ADDR, data, 1, false);
     i2c_readfrom(I2C1, ACCEL_ADDR, data, 1, true);
@@ -261,14 +261,14 @@ STATIC mp_obj_t pyb_accel_read(mp_obj_t self_in, mp_obj_t reg) {
 }
 MP_DEFINE_CONST_FUN_OBJ_2(pyb_accel_read_obj, pyb_accel_read);
 
-STATIC mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
+static mp_obj_t pyb_accel_write(mp_obj_t self_in, mp_obj_t reg, mp_obj_t val) {
     uint8_t data[2] = { mp_obj_get_int(reg), mp_obj_get_int(val) };
     i2c_writeto(I2C1, ACCEL_ADDR, data, 2, true);
     return mp_const_none;
 }
 MP_DEFINE_CONST_FUN_OBJ_3(pyb_accel_write_obj, pyb_accel_write);
 
-STATIC const mp_rom_map_elem_t pyb_accel_locals_dict_table[] = {
+static const mp_rom_map_elem_t pyb_accel_locals_dict_table[] = {
     // TODO add init, deinit, and perhaps reset methods
     { MP_ROM_QSTR(MP_QSTR_x), MP_ROM_PTR(&pyb_accel_x_obj) },
     { MP_ROM_QSTR(MP_QSTR_y), MP_ROM_PTR(&pyb_accel_y_obj) },
@@ -279,7 +279,7 @@ STATIC const mp_rom_map_elem_t pyb_accel_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&pyb_accel_write_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(pyb_accel_locals_dict, pyb_accel_locals_dict_table);
+static MP_DEFINE_CONST_DICT(pyb_accel_locals_dict, pyb_accel_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     pyb_accel_type,

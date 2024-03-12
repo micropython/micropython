@@ -37,7 +37,7 @@ typedef struct _machine_rtc_obj_t {
 } machine_rtc_obj_t;
 
 // Singleton RTC object.
-STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
+static const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};
 
 // Start the RTC Timer.
 void machine_rtc_start(bool force) {
@@ -85,7 +85,7 @@ void rtc_gettime(timeutils_struct_time_t *tm) {
     tm->tm_sec = RTC->MODE2.CLOCK.bit.SECOND;
 }
 
-STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     // Check arguments.
     mp_arg_check_num(n_args, n_kw, 0, 0, false);
     // RTC was already started at boot time. So nothing to do here.
@@ -93,7 +93,7 @@ STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, s
     return (mp_obj_t)&machine_rtc_obj;
 }
 
-STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args) {
     // Rtc *rtc = RTC;
     if (n_args == 1) {
         // Get date and time.
@@ -137,21 +137,21 @@ STATIC mp_obj_t machine_rtc_datetime_helper(size_t n_args, const mp_obj_t *args)
     }
 }
 
-STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
+static mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {
     return machine_rtc_datetime_helper(n_args, args);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_rtc_datetime_obj, 1, 2, machine_rtc_datetime);
 
-STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
+static mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {
     mp_obj_t args[2] = {self_in, date};
     machine_rtc_datetime_helper(2, args);
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_init_obj, machine_rtc_init);
 
 // calibration(cal)
 // When the argument is a number in the range [-16 to 15], set the calibration value.
-STATIC mp_obj_t machine_rtc_calibration(mp_obj_t self_in, mp_obj_t cal_in) {
+static mp_obj_t machine_rtc_calibration(mp_obj_t self_in, mp_obj_t cal_in) {
     int8_t cal = 0;
     // Make it negative for a "natural" behavior:
     // value > 0: faster, value < 0: slower
@@ -159,14 +159,14 @@ STATIC mp_obj_t machine_rtc_calibration(mp_obj_t self_in, mp_obj_t cal_in) {
     RTC->MODE2.FREQCORR.reg = (uint8_t)cal;
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_calibration_obj, machine_rtc_calibration);
+static MP_DEFINE_CONST_FUN_OBJ_2(machine_rtc_calibration_obj, machine_rtc_calibration);
 
-STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
+static const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_rtc_init_obj) },
     { MP_ROM_QSTR(MP_QSTR_datetime), MP_ROM_PTR(&machine_rtc_datetime_obj) },
     { MP_ROM_QSTR(MP_QSTR_calibration), MP_ROM_PTR(&machine_rtc_calibration_obj) },
 };
-STATIC MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
+static MP_DEFINE_CONST_DICT(machine_rtc_locals_dict, machine_rtc_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     machine_rtc_type,

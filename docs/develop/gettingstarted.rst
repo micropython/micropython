@@ -112,7 +112,7 @@ Check that you have Python available on your system:
 .. code-block:: bash
 
    $ python3
-   Python 3.5.0 (default, Jul 17 2020, 14:04:10) 
+   Python 3.5.0 (default, Jul 17 2020, 14:04:10)
    [GCC 5.4.0 20160609] on linux
    Type "help", "copyright", "credits" or "license" for more information.
    >>> 

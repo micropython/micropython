@@ -48,7 +48,7 @@ typedef struct _machine_spi_obj_t {
     uint8_t phase;
 } machine_spi_obj_t;
 
-STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
+static void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {
     (void)self_in;
 
     if (dest == NULL) {
@@ -94,13 +94,13 @@ STATIC void machine_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8
 /******************************************************************************/
 // MicroPython bindings for HSPI
 
-STATIC void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void machine_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_spi_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "HSPI(id=1, baudrate=%u, polarity=%u, phase=%u)",
         self->baudrate, self->polarity, self->phase);
 }
 
-STATIC void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void machine_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     machine_spi_obj_t *self = (machine_spi_obj_t *)self_in;
 
     enum { ARG_baudrate, ARG_polarity, ARG_phase };
@@ -170,7 +170,7 @@ mp_obj_t machine_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC const mp_machine_spi_p_t machine_spi_p = {
+static const mp_machine_spi_p_t machine_spi_p = {
     .init = machine_spi_init,
     .transfer = machine_spi_transfer,
 };

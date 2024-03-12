@@ -44,7 +44,7 @@ typedef struct _machine_pwm_obj_t {
     mp_hal_pin_obj_t pwm;
 } machine_pwm_obj_t;
 
-STATIC machine_pwm_obj_t machine_pwm_obj[] = {
+static machine_pwm_obj_t machine_pwm_obj[] = {
     #if defined(MICROPY_HW_PWM_0A)
     {{&machine_pwm_type}, R_GPT0, 0, 0, 'A', 0, 0ul, MICROPY_HW_PWM_0A},
     #endif
@@ -134,12 +134,12 @@ STATIC machine_pwm_obj_t machine_pwm_obj[] = {
 /******************************************************************************/
 // MicroPython bindings for PWM
 
-STATIC void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+static void mp_machine_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_pwm_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    mp_printf(print, "PWM(GTIOC %d%c[#%d], runing=%u, freq=%u, duty=%u)", self->ch, self->id, self->pwm->pin, self->active, self->freq, self->duty);
+    mp_printf(print, "PWM(GTIOC %d%c[#%d], active=%u, freq=%u, duty=%u)", self->ch, self->id, self->pwm->pin, self->active, self->freq, self->duty);
 }
 
-STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     uint32_t D = 0ul;
 
     enum { ARG_freq, ARG_duty };
@@ -178,7 +178,7 @@ STATIC void mp_machine_pwm_init_helper(machine_pwm_obj_t *self, size_t n_args, c
     }
 }
 
-STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_hal_pin_obj_t pin_id = MP_OBJ_NULL;
     machine_pwm_obj_t *self = MP_OBJ_NULL;
 
@@ -223,7 +223,7 @@ STATIC mp_obj_t mp_machine_pwm_make_new(const mp_obj_type_t *type, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
+static void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     ra_gpt_timer_deinit(self->pwm->pin, self->ch, self->id);
     self->active = 0;
     self->ch = 0;
@@ -232,11 +232,11 @@ STATIC void mp_machine_pwm_deinit(machine_pwm_obj_t *self) {
     self->freq = 0;
 }
 
-STATIC mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_freq_get(machine_pwm_obj_t *self) {
     return MP_OBJ_NEW_SMALL_INT((uint32_t)ra_gpt_timer_get_freq(self->ch));
 }
 
-STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
+static void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     if (freq) {
         ra_gpt_timer_set_freq(self->ch, (float)freq);
         self->freq = (uint32_t)ra_gpt_timer_get_freq(self->ch);
@@ -255,13 +255,13 @@ STATIC void mp_machine_pwm_freq_set(machine_pwm_obj_t *self, mp_int_t freq) {
     }
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get(machine_pwm_obj_t *self) {
     // give the result in %
     uint64_t Dc = ra_gpt_timer_get_duty(self->ch, self->id) * 100;
     return MP_OBJ_NEW_SMALL_INT(Dc / ra_gpt_timer_get_period(self->ch));
 }
 
-STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
+static void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
     // assume duty is in %
     if (duty < 0 || duty > 100) {
         mp_raise_ValueError(MP_ERROR_TEXT("duty should be 0-100"));
@@ -286,13 +286,13 @@ STATIC void mp_machine_pwm_duty_set(machine_pwm_obj_t *self, mp_int_t duty) {
     }
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_u16(machine_pwm_obj_t *self) {
     // give the result in ratio (u16 / 65535)
     uint64_t Dc = ra_gpt_timer_get_duty(self->ch, self->id) * 65535;
     return MP_OBJ_NEW_SMALL_INT(Dc / ra_gpt_timer_get_period(self->ch));
 }
 
-STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
+static void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u16) {
     // assume duty is a ratio (u16 / 65535)
     if (duty_u16 < 0 || duty_u16 > 65535) {
         mp_raise_ValueError(MP_ERROR_TEXT("duty should be 0-65535"));
@@ -317,14 +317,14 @@ STATIC void mp_machine_pwm_duty_set_u16(machine_pwm_obj_t *self, mp_int_t duty_u
     }
 }
 
-STATIC mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
+static mp_obj_t mp_machine_pwm_duty_get_ns(machine_pwm_obj_t *self) {
     // give the result in ns
     float ns = ra_gpt_timer_tick_time(self->ch);
     ns *= (float)ra_gpt_timer_get_duty(self->ch, self->id);
     return MP_OBJ_NEW_SMALL_INT(ns);
 }
 
-STATIC void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
+static void mp_machine_pwm_duty_set_ns(machine_pwm_obj_t *self, mp_int_t duty_ns) {
     // assume duty is ns
     uint32_t ns_min = (uint32_t)ra_gpt_timer_tick_time(self->ch);
     uint32_t ns_max = ns_min * ra_gpt_timer_get_period(self->ch);
