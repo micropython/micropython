@@ -659,6 +659,7 @@ SRC_SHARED_MODULE_ALL = \
 	keypad/Event.c \
 	keypad/EventQueue.c \
 	keypad/KeyMatrix.c \
+	keypad/DemuxKeyMatrix.c \
 	keypad/ShiftRegisterKeys.c \
 	keypad/Keys.c \
 	memorymonitor/__init__.c \

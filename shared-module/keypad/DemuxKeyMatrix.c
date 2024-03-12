@@ -30,12 +30,12 @@
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/keypad/EventQueue.h"
+#include "shared-bindings/keypad/DemuxKeyMatrix.h"
 #include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/util.h"
 #include "supervisor/port.h"
 #include "supervisor/shared/tick.h"
-#include "DemuxKeyMatrix.h"
 
 static void demuxkeymatrix_scan_now(void *self_in, mp_obj_t timestamp);
 static size_t demuxkeymatrix_get_key_count(void *self_in);
@@ -45,11 +45,11 @@ static keypad_scanner_funcs_t keymatrix_funcs = {
     .get_key_count = demuxkeymatrix_get_key_count,
 };
 
-static mp_uint_t row_column_to_key_number(cardputer_demuxkeymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
+static mp_uint_t row_column_to_key_number(keypad_demuxkeymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
     return row * self->column_digitalinouts->len + column;
 }
 
-void common_hal_cardputer_demuxkeymatrix_construct(cardputer_demuxkeymatrix_obj_t *self, mp_uint_t num_row_addr_pins, const mcu_pin_obj_t *row_addr_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], mp_float_t interval, size_t max_events) {
+void common_hal_keypad_demuxkeymatrix_construct(keypad_demuxkeymatrix_obj_t *self, mp_uint_t num_row_addr_pins, const mcu_pin_obj_t *row_addr_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], mp_float_t interval, size_t max_events) {
 
     mp_obj_t row_addr_dios[num_row_addr_pins];
     for (size_t row = 0; row < num_row_addr_pins; row++) {
@@ -81,7 +81,7 @@ void common_hal_cardputer_demuxkeymatrix_construct(cardputer_demuxkeymatrix_obj_
     keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events);
 }
 
-void common_hal_cardputer_demuxkeymatrix_deinit(cardputer_demuxkeymatrix_obj_t *self) {
+void common_hal_keypad_demuxkeymatrix_deinit(keypad_demuxkeymatrix_obj_t *self) {
     if (common_hal_keypad_deinited(self)) {
         return;
     }
@@ -101,33 +101,33 @@ void common_hal_cardputer_demuxkeymatrix_deinit(cardputer_demuxkeymatrix_obj_t *
     common_hal_keypad_deinit_core(self);
 }
 
-size_t common_hal_cardputer_demuxkeymatrix_get_row_count(cardputer_demuxkeymatrix_obj_t *self) {
+size_t common_hal_keypad_demuxkeymatrix_get_row_count(keypad_demuxkeymatrix_obj_t *self) {
     return 1 << self->row_addr_digitalinouts->len;
 }
 
-size_t common_hal_cardputer_demuxkeymatrix_get_column_count(cardputer_demuxkeymatrix_obj_t *self) {
+size_t common_hal_keypad_demuxkeymatrix_get_column_count(keypad_demuxkeymatrix_obj_t *self) {
     return self->column_digitalinouts->len;
 }
 
-mp_uint_t common_hal_cardputer_demuxkeymatrix_row_column_to_key_number(cardputer_demuxkeymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
+mp_uint_t common_hal_keypad_demuxkeymatrix_row_column_to_key_number(keypad_demuxkeymatrix_obj_t *self, mp_uint_t row, mp_uint_t column) {
     return row_column_to_key_number(self, row, column);
 }
 
-void common_hal_cardputer_demuxkeymatrix_key_number_to_row_column(cardputer_demuxkeymatrix_obj_t *self, mp_uint_t key_number, mp_uint_t *row, mp_uint_t *column) {
-    const size_t num_columns = common_hal_cardputer_demuxkeymatrix_get_column_count(self);
+void common_hal_keypad_demuxkeymatrix_key_number_to_row_column(keypad_demuxkeymatrix_obj_t *self, mp_uint_t key_number, mp_uint_t *row, mp_uint_t *column) {
+    const size_t num_columns = common_hal_keypad_demuxkeymatrix_get_column_count(self);
     *row = key_number / num_columns;
     *column = key_number % num_columns;
 }
 
 static size_t demuxkeymatrix_get_key_count(void *self_in) {
-    cardputer_demuxkeymatrix_obj_t *self = self_in;
-    return common_hal_cardputer_demuxkeymatrix_get_column_count(self) * common_hal_cardputer_demuxkeymatrix_get_row_count(self);
+    keypad_demuxkeymatrix_obj_t *self = self_in;
+    return common_hal_keypad_demuxkeymatrix_get_column_count(self) * common_hal_keypad_demuxkeymatrix_get_row_count(self);
 }
 
 static void demuxkeymatrix_scan_now(void *self_in, mp_obj_t timestamp) {
-    cardputer_demuxkeymatrix_obj_t *self = self_in;
+    keypad_demuxkeymatrix_obj_t *self = self_in;
 
-    for (size_t row = 0; row < common_hal_cardputer_demuxkeymatrix_get_row_count(self); row++) {
+    for (size_t row = 0; row < common_hal_keypad_demuxkeymatrix_get_row_count(self); row++) {
         // Set the row address on demultiplexer
         size_t mask = 0b00000001;
         for (size_t row_addr_pin = 0; row_addr_pin < self->row_addr_digitalinouts->len; row_addr_pin++) {
@@ -136,7 +136,7 @@ static void demuxkeymatrix_scan_now(void *self_in, mp_obj_t timestamp) {
             mask = mask << 1;
         }
 
-        for (size_t column = 0; column < common_hal_cardputer_demuxkeymatrix_get_column_count(self); column++) {
+        for (size_t column = 0; column < common_hal_keypad_demuxkeymatrix_get_column_count(self); column++) {
             mp_uint_t key_number = row_column_to_key_number(self, row, column);
             const bool previous = self->currently_pressed[key_number];
             self->previously_pressed[key_number] = previous;

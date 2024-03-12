@@ -30,12 +30,12 @@
 #include "py/runtime.h"
 #include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/keypad/Event.h"
+#include "shared-bindings/keypad/DemuxKeyMatrix.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
-#include "DemuxKeyMatrixBindings.h"
 
-//| class KeyMatrix:
-//|     """Manage Cardputer 2D matrix of keyboard.
+//| class DemuxKeyMatrix:
+//|     """Manage Cardputer 2D matrix of keys with a demultiplexer to drive rows and pins on columns.
 //|
 //|     .. raw:: html
 //|
@@ -43,7 +43,9 @@
 //|         <details>
 //|         <summary>Available on these boards</summary>
 //|         <ul>
-//|         <li> M5Stack Cardputer
+//|         {% for board in support_matrix_reverse["keypad.DemuxKeyMatrix"] %}
+//|         <li> {{ board }}
+//|         {% endfor %}
 //|         </ul>
 //|         </details>
 //|         </p>
@@ -60,14 +62,14 @@
 //|         """
 //|         Create a `Keys` object that will scan the key matrix attached to the given row and column pins.
 //|         There should not be any external pull-ups or pull-downs on the matrix:
-//|         ``KeyMatrix`` enables internal pull-ups or pull-downs on the pins as necessary.
+//|         ``DemuxKeyMatrix`` enables internal pull-ups or pull-downs on the pins as necessary.
 //|
 //|         The keys are numbered sequentially from zero. A key number can be computed
 //|         by ``row * len(column_pins) + column``.
 //|
 //|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
 //|
-//|         :param Sequence[microcontroller.Pin] row_addr_pins: The pins attached to the rows decoder.
+//|         :param Sequence[microcontroller.Pin] row_addr_pins: The pins attached to the rows demultiplexer.
 //|         :param Sequence[microcontroller.Pin] column_pins: The pins attached to the columns.
 //|         :param float interval: Scan keys no more often than ``interval`` to allow for debouncing.
 //|           ``interval`` is in float seconds. The default is 0.020 (20 msecs).
@@ -78,8 +80,9 @@
 //|         """
 //|         ...
 
-STATIC mp_obj_t cardputer_demuxkeymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
-    cardputer_demuxkeymatrix_obj_t *self = mp_obj_malloc(cardputer_demuxkeymatrix_obj_t, &cardputer_demuxkeymatrix_type);
+STATIC mp_obj_t keypad_demuxkeymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+    #if CIRCUITPY_KEYPAD_DEMUXKEYMATRIX
+    keypad_demuxkeymatrix_obj_t *self = mp_obj_malloc(keypad_demuxkeymatrix_obj_t, &keypad_demuxkeymatrix_type);
     enum { ARG_row_addr_pins, ARG_column_pins, ARG_interval, ARG_max_events };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_row_addr_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
@@ -118,19 +121,24 @@ STATIC mp_obj_t cardputer_demuxkeymatrix_make_new(const mp_obj_type_t *type, siz
         column_pins_array[column] = pin;
     }
 
-    common_hal_cardputer_demuxkeymatrix_construct(self, num_row_addr_pins, row_addr_pins_array, num_column_pins, column_pins_array, interval, max_events);
+    common_hal_keypad_demuxkeymatrix_construct(self, num_row_addr_pins, row_addr_pins_array, num_column_pins, column_pins_array, interval, max_events);
     return MP_OBJ_FROM_PTR(self);
+    #else
+    mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_DemuxKeyMatrix);
+
+    #endif
 }
 
+#if CIRCUITPY_KEYPAD_DEMUXKEYMATRIX
 //|     def deinit(self) -> None:
 //|         """Stop scanning and release the pins."""
 //|         ...
-STATIC mp_obj_t cardputer_demuxkeymatrix_deinit(mp_obj_t self_in) {
-    cardputer_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
-    common_hal_cardputer_demuxkeymatrix_deinit(self);
+STATIC mp_obj_t keypad_demuxkeymatrix_deinit(mp_obj_t self_in) {
+    keypad_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    common_hal_keypad_demuxkeymatrix_deinit(self);
     return MP_ROM_NONE;
 }
-MP_DEFINE_CONST_FUN_OBJ_1(cardputer_demuxkeymatrix_deinit_obj, cardputer_demuxkeymatrix_deinit);
+MP_DEFINE_CONST_FUN_OBJ_1(keypad_demuxkeymatrix_deinit_obj, keypad_demuxkeymatrix_deinit);
 
 //|     def __enter__(self) -> KeyMatrix:
 //|         """No-op used by Context Managers."""
@@ -141,14 +149,14 @@ MP_DEFINE_CONST_FUN_OBJ_1(cardputer_demuxkeymatrix_deinit_obj, cardputer_demuxke
 //|         """Automatically deinitializes when exiting a context. See
 //|         :ref:`lifetime-and-contextmanagers` for more info."""
 //|         ...
-STATIC mp_obj_t cardputer_demuxkeymatrix___exit__(size_t n_args, const mp_obj_t *args) {
+STATIC mp_obj_t keypad_demuxkeymatrix___exit__(size_t n_args, const mp_obj_t *args) {
     (void)n_args;
-    common_hal_cardputer_demuxkeymatrix_deinit(args[0]);
+    common_hal_keypad_demuxkeymatrix_deinit(args[0]);
     return MP_ROM_NONE;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(cardputer_demuxkeymatrix___exit___obj, 4, 4, cardputer_demuxkeymatrix___exit__);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(keypad_demuxkeymatrix___exit___obj, 4, 4, keypad_demuxkeymatrix___exit__);
 
-STATIC void check_for_deinit(cardputer_demuxkeymatrix_obj_t *self) {
+STATIC void check_for_deinit(keypad_demuxkeymatrix_obj_t *self) {
     if (common_hal_keypad_deinited(self)) {
         raise_deinited_error();
     }
@@ -174,8 +182,8 @@ STATIC void check_for_deinit(cardputer_demuxkeymatrix_obj_t *self) {
 //|         :rtype: Tuple[int]
 //|         """
 //|         ...
-STATIC mp_obj_t cardputer_demuxkeymatrix_key_number_to_row_column(mp_obj_t self_in, mp_obj_t key_number_in) {
-    cardputer_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t keypad_demuxkeymatrix_key_number_to_row_column(mp_obj_t self_in, mp_obj_t key_number_in) {
+    keypad_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
     const mp_uint_t key_number = (mp_uint_t)mp_arg_validate_int_range(
@@ -185,7 +193,7 @@ STATIC mp_obj_t cardputer_demuxkeymatrix_key_number_to_row_column(mp_obj_t self_
 
     mp_uint_t row;
     mp_uint_t column;
-    common_hal_cardputer_demuxkeymatrix_key_number_to_row_column(self, key_number, &row, &column);
+    common_hal_keypad_demuxkeymatrix_key_number_to_row_column(self, key_number, &row, &column);
 
     mp_obj_t row_column[2];
     row_column[0] = MP_OBJ_NEW_SMALL_INT(row);
@@ -193,51 +201,55 @@ STATIC mp_obj_t cardputer_demuxkeymatrix_key_number_to_row_column(mp_obj_t self_
 
     return mp_obj_new_tuple(2, row_column);
 }
-MP_DEFINE_CONST_FUN_OBJ_2(cardputer_demuxkeymatrix_key_number_to_row_column_obj, cardputer_demuxkeymatrix_key_number_to_row_column);
+MP_DEFINE_CONST_FUN_OBJ_2(keypad_demuxkeymatrix_key_number_to_row_column_obj, keypad_demuxkeymatrix_key_number_to_row_column);
 
 //|     def row_column_to_key_number(self, row: int, column: int) -> int:
 //|         """Return the key number for a given row and column.
 //|         The key number is ``row * len(column_pins) + column``.
 //|         """
 //|         ...
-STATIC mp_obj_t cardputer_demuxkeymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
-    cardputer_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
+STATIC mp_obj_t keypad_demuxkeymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
+    keypad_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
 
     const mp_uint_t row = (mp_uint_t)mp_arg_validate_int_range(
-        mp_obj_get_int(row_in), 0, (mp_int_t)common_hal_cardputer_demuxkeymatrix_get_row_count(self), MP_QSTR_row);
+        mp_obj_get_int(row_in), 0, (mp_int_t)common_hal_keypad_demuxkeymatrix_get_row_count(self), MP_QSTR_row);
 
     const mp_int_t column = (mp_uint_t)mp_arg_validate_int_range(
-        mp_obj_get_int(column_in), 0, (mp_int_t)common_hal_cardputer_demuxkeymatrix_get_column_count(self), MP_QSTR_column);
+        mp_obj_get_int(column_in), 0, (mp_int_t)common_hal_keypad_demuxkeymatrix_get_column_count(self), MP_QSTR_column);
 
     return MP_OBJ_NEW_SMALL_INT(
-        (mp_int_t)common_hal_cardputer_demuxkeymatrix_row_column_to_key_number(self, row, column));
+        (mp_int_t)common_hal_keypad_demuxkeymatrix_row_column_to_key_number(self, row, column));
 }
-MP_DEFINE_CONST_FUN_OBJ_3(cardputer_demuxkeymatrix_row_column_to_key_number_obj, cardputer_demuxkeymatrix_row_column_to_key_number);
+MP_DEFINE_CONST_FUN_OBJ_3(keypad_demuxkeymatrix_row_column_to_key_number_obj, keypad_demuxkeymatrix_row_column_to_key_number);
 
 //|     events: EventQueue
 //|     """The `EventQueue` associated with this `Keys` object. (read-only)
 //|     """
 //|
 
-STATIC const mp_rom_map_elem_t cardputer_demuxkeymatrix_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&cardputer_demuxkeymatrix_deinit_obj) },
+STATIC const mp_rom_map_elem_t keypad_demuxkeymatrix_locals_dict_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&keypad_demuxkeymatrix_deinit_obj) },
     { MP_ROM_QSTR(MP_QSTR___enter__),                MP_ROM_PTR(&default___enter___obj) },
-    { MP_ROM_QSTR(MP_QSTR___exit__),                 MP_ROM_PTR(&cardputer_demuxkeymatrix___exit___obj) },
+    { MP_ROM_QSTR(MP_QSTR___exit__),                 MP_ROM_PTR(&keypad_demuxkeymatrix___exit___obj) },
 
     { MP_ROM_QSTR(MP_QSTR_events),                   MP_ROM_PTR(&keypad_generic_events_obj) },
     { MP_ROM_QSTR(MP_QSTR_key_count),                MP_ROM_PTR(&keypad_generic_key_count_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset),                    MP_ROM_PTR(&keypad_generic_reset_obj) },
-    { MP_ROM_QSTR(MP_QSTR_key_number_to_row_column), MP_ROM_PTR(&cardputer_demuxkeymatrix_key_number_to_row_column_obj) },
-    { MP_ROM_QSTR(MP_QSTR_row_column_to_key_number), MP_ROM_PTR(&cardputer_demuxkeymatrix_row_column_to_key_number_obj) },
+    { MP_ROM_QSTR(MP_QSTR_key_number_to_row_column), MP_ROM_PTR(&keypad_demuxkeymatrix_key_number_to_row_column_obj) },
+    { MP_ROM_QSTR(MP_QSTR_row_column_to_key_number), MP_ROM_PTR(&keypad_demuxkeymatrix_row_column_to_key_number_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(cardputer_demuxkeymatrix_locals_dict, cardputer_demuxkeymatrix_locals_dict_table);
+STATIC MP_DEFINE_CONST_DICT(keypad_demuxkeymatrix_locals_dict, keypad_demuxkeymatrix_locals_dict_table);
+
+#endif
 
 MP_DEFINE_CONST_OBJ_TYPE(
-    cardputer_demuxkeymatrix_type,
+    keypad_demuxkeymatrix_type,
     MP_QSTR_KeyMatrix,
     MP_TYPE_FLAG_HAS_SPECIAL_ACCESSORS,
-    make_new, cardputer_demuxkeymatrix_make_new,
-    locals_dict, &cardputer_demuxkeymatrix_locals_dict
+    make_new, keypad_demuxkeymatrix_make_new
+    #if CIRCUITPY_KEYPAD_DEMUXKEYMATRIX
+    , locals_dict, &keypad_demuxkeymatrix_locals_dict
+    #endif
     );

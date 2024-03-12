@@ -24,13 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPADE_DEMUXKEYMATRIX_H
+#define MICROPY_INCLUDED_SHARED_MODULE_KEYPADE_DEMUXKEYMATRIX_H
 
-#include "py/objlist.h"
-#include "DemuxKeyMatrix.h"
+#include "py/obj.h"
+#include "py/objtuple.h"
 
-extern const mp_obj_type_t cardputer_demuxkeymatrix_type;
+#include "common-hal/digitalio/DigitalInOut.h"
+#include "shared-module/keypad/__init__.h"
+#include "shared-module/keypad/EventQueue.h"
 
+typedef struct {
+    KEYPAD_SCANNER_COMMON_FIELDS;
+    mp_obj_tuple_t *row_addr_digitalinouts;
+    mp_obj_tuple_t *column_digitalinouts;
+} keypad_demuxkeymatrix_obj_t;
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_KEYMATRIX_H
+void keypad_demuxkeymatrix_scan(keypad_demuxkeymatrix_obj_t *self);
+
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPADE_DEMUXKEYMATRIX_H
