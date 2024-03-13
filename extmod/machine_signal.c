@@ -24,12 +24,11 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_MACHINE
-
 #include <string.h>
-
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_SIGNAL
+
 #include "extmod/modmachine.h"
 #include "extmod/virtpin.h"
 
@@ -181,4 +180,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     locals_dict, &signal_locals_dict
     );
 
-#endif // MICROPY_PY_MACHINE
+#endif // MICROPY_PY_MACHINE_SIGNAL
