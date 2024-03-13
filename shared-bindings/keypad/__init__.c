@@ -101,7 +101,9 @@ STATIC mp_rom_map_elem_t keypad_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_KeyMatrix),         MP_OBJ_FROM_PTR(&keypad_keymatrix_type) },
     { MP_ROM_QSTR(MP_QSTR_Keys),              MP_OBJ_FROM_PTR(&keypad_keys_type) },
     { MP_ROM_QSTR(MP_QSTR_ShiftRegisterKeys), MP_OBJ_FROM_PTR(&keypad_shiftregisterkeys_type) },
+    #if CIRCUITPY_KEYPAD_DEMUXKEYMATRIX
     { MP_ROM_QSTR(MP_QSTR_DemuxKeyMatrix),    MP_OBJ_FROM_PTR(&keypad_demuxkeymatrix_type) },
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(keypad_module_globals, keypad_module_globals_table);

@@ -659,7 +659,6 @@ SRC_SHARED_MODULE_ALL = \
 	keypad/Event.c \
 	keypad/EventQueue.c \
 	keypad/KeyMatrix.c \
-	keypad/DemuxKeyMatrix.c \
 	keypad/ShiftRegisterKeys.c \
 	keypad/Keys.c \
 	memorymonitor/__init__.c \
@@ -738,6 +737,11 @@ SRC_SHARED_MODULE_ALL += \
 	ssl/__init__.c \
 	ssl/SSLContext.c \
 	ssl/SSLSocket.c
+endif
+
+ifeq ($(CIRCUITPY_KEYPAD_DEMUXKEYMATRIX),1)
+SRC_SHARED_MODULE_ALL += \
+	keypad/DemuxKeyMatrix.c
 endif
 
 # If supporting _bleio via HCI, make devices/ble_hci/common-hal/_bleio be includable,
