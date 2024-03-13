@@ -115,7 +115,9 @@ int main(void) {
         // Execute user scripts.
         int ret = pyexec_file_if_exists("boot.py");
 
+        #if MICROPY_HW_ENABLE_USBDEV
         mp_usbd_init();
+        #endif
 
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
