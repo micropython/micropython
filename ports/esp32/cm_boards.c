@@ -39,8 +39,7 @@ static void init_perse_missionctrl(){
 void cm_boards_init(){
 	// TODO: efuse check board
 
-	if(1){
+	if(0){
 		init_artemis();
-		printf("Hello from setup!\n");
 	}
 }
