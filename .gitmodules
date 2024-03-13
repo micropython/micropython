@@ -65,3 +65,6 @@
 [submodule "lib/libmetal"]
 	path = lib/libmetal
 	url = https://github.com/OpenAMP/libmetal.git
+[submodule "lib/arduino-lib"]
+	path = lib/arduino-lib
+	url = https://github.com/arduino/arduino-lib-mpy.git
