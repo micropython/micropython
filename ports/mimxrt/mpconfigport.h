@@ -147,6 +147,8 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-mimxrt"
 #endif
 
+#define MICROPY_HW_ENABLE_USBDEV            (1)
+
 // Hooks to add builtins
 
 #if defined(IOMUX_TABLE_ENET)
