@@ -9,6 +9,4 @@
 #define MICROPY_HW_I2C0_SCL                 (9)
 #define MICROPY_HW_I2C0_SDA                 (8)
 
-#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)     ARTEMIS_ESP32_enter_bootloader()
-void ARTEMIS_ESP32_enter_bootloader(void);
 
