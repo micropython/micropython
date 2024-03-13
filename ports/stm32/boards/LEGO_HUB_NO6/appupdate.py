@@ -7,9 +7,6 @@ import struct, machine, fwupdate, spiflash, pyb
 _IOCTL_BLOCK_COUNT = const(4)
 _IOCTL_BLOCK_SIZE = const(5)
 
-_SPIFLASH_UPDATE_KEY_ADDR = const(1020 * 1024)
-_SPIFLASH_UPDATE_KEY_VALUE = const(0x12345678)
-
 _FILESYSTEM_ADDR = const(0x8000_0000 + 1024 * 1024)
 
 # Roundabout way to get actual filesystem size from config.
@@ -26,9 +23,6 @@ def update_app(filename):
     if not elems:
         return
 
-    # Create the update key.
-    key = struct.pack("<I", _SPIFLASH_UPDATE_KEY_VALUE)
-
     # Create a SPI flash object.
     spi = machine.SoftSPI(
         sck=machine.Pin.board.FLASH_SCK,
@@ -41,11 +35,5 @@ def update_app(filename):
     # We can't use pyb.Flash() because we need to write to the "reserved" 1M area.
     flash = spiflash.SPIFlash(spi, cs)
 
-    # Write the update key and elements to the SPI flash.
-    flash.erase_block(_SPIFLASH_UPDATE_KEY_ADDR)
-    flash.write(_SPIFLASH_UPDATE_KEY_ADDR, key + elems)
-
     # Enter mboot with a request to do a filesystem-load update.
-    # If there is a power failure during the update (eg battery removed) then
-    # mboot will read the SPI flash update key and elements and retry.
     machine.bootloader(elems)
