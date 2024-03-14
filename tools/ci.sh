@@ -366,6 +366,12 @@ function ci_stm32_nucleo_build {
     diff $BUILD_WB55/firmware.unpack.dfu $BUILD_WB55/firmware.unpack_no_sk.dfu
 }
 
+function ci_stm32_misc_build {
+    make ${MAKEOPTS} -C mpy-cross
+    make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA submodules
+    make ${MAKEOPTS} -C ports/stm32 BOARD=ARDUINO_GIGA
+}
+
 ########################################################################################
 # ports/unix
 
