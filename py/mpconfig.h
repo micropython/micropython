@@ -1702,6 +1702,11 @@ typedef double mp_float_t;
 #define MICROPY_PY_MACHINE_PULSE (0)
 #endif
 
+// Whether to provide the "machine.mem8/16/32" objects
+#ifndef MICROPY_PY_MACHINE_MEMX
+#define MICROPY_PY_MACHINE_MEMX (MICROPY_PY_MACHINE)
+#endif
+
 // Whether to provide the "machine.Signal" class
 #ifndef MICROPY_PY_MACHINE_SIGNAL
 #define MICROPY_PY_MACHINE_SIGNAL (MICROPY_PY_MACHINE)

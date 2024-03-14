@@ -27,7 +27,7 @@
 #include "py/runtime.h"
 #include "extmod/modmachine.h"
 
-#if MICROPY_PY_MACHINE
+#if MICROPY_PY_MACHINE_MEMX
 
 // If you wish to override the functions for mapping the machine_mem read/write
 // address, then add a #define for MICROPY_MACHINE_MEM_GET_READ_ADDR and/or
@@ -113,4 +113,4 @@ const machine_mem_obj_t machine_mem8_obj = {{&machine_mem_type}, 1};
 const machine_mem_obj_t machine_mem16_obj = {{&machine_mem_type}, 2};
 const machine_mem_obj_t machine_mem32_obj = {{&machine_mem_type}, 4};
 
-#endif // MICROPY_PY_MACHINE
+#endif // MICROPY_PY_MACHINE_MEMX
