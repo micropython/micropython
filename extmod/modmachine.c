@@ -138,9 +138,11 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_machine) },
 
     // Memory access objects.
+    #if MICROPY_PY_MACHINE_MEMX
     { MP_ROM_QSTR(MP_QSTR_mem8), MP_ROM_PTR(&machine_mem8_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem16), MP_ROM_PTR(&machine_mem16_obj) },
     { MP_ROM_QSTR(MP_QSTR_mem32), MP_ROM_PTR(&machine_mem32_obj) },
+    #endif
 
     // Miscellaneous functions.
     #if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
