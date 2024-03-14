@@ -43,10 +43,13 @@ static void mp_machine_idle(void);
 NORETURN void mp_machine_bootloader(size_t n_args, const mp_obj_t *args);
 #endif
 
-#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
-static mp_obj_t mp_machine_unique_id(void);
+#if MICROPY_PY_MACHINE_RESET
 NORETURN static void mp_machine_reset(void);
 static mp_int_t mp_machine_reset_cause(void);
+#endif
+
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+static mp_obj_t mp_machine_unique_id(void);
 static mp_obj_t mp_machine_get_freq(void);
 static void mp_machine_set_freq(size_t n_args, const mp_obj_t *args);
 static void mp_machine_lightsleep(size_t n_args, const mp_obj_t *args);
@@ -77,12 +80,7 @@ static mp_obj_t machine_idle(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(machine_idle_obj, machine_idle);
 
-#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
-
-static mp_obj_t machine_unique_id(void) {
-    return mp_machine_unique_id();
-}
-MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
+#if MICROPY_PY_MACHINE_RESET
 
 NORETURN static mp_obj_t machine_reset(void) {
     mp_machine_reset();
@@ -93,6 +91,15 @@ static mp_obj_t machine_reset_cause(void) {
     return MP_OBJ_NEW_SMALL_INT(mp_machine_reset_cause());
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_reset_cause_obj, machine_reset_cause);
+
+#endif
+
+#if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+
+static mp_obj_t machine_unique_id(void) {
+    return mp_machine_unique_id();
+}
+MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
 
 static mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
     if (n_args == 0) {
@@ -154,7 +161,7 @@ static const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_PY_MACHINE_BOOTLOADER
     { MP_ROM_QSTR(MP_QSTR_bootloader), MP_ROM_PTR(&machine_bootloader_obj) },
     #endif
-    #if MICROPY_PY_MACHINE_BARE_METAL_FUNCS
+    #if MICROPY_PY_MACHINE_RESET
     { MP_ROM_QSTR(MP_QSTR_reset), MP_ROM_PTR(&machine_reset_obj) },
     { MP_ROM_QSTR(MP_QSTR_reset_cause), MP_ROM_PTR(&machine_reset_cause_obj) },
     #endif
