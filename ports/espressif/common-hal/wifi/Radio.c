@@ -381,8 +381,6 @@ wifi_radio_error_t common_hal_wifi_radio_connect(wifi_radio_obj_t *self, uint8_t
             (self->last_disconnect_reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT)
             ) {
             return WIFI_RADIO_ERROR_AUTH_FAIL;
-        } else if (self->last_disconnect_reason == WIFI_REASON_NO_AP_FOUND) {
-            return WIFI_RADIO_ERROR_NO_AP_FOUND;
         }
         return self->last_disconnect_reason;
     } else {
