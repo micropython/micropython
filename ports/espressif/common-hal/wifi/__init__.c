@@ -104,19 +104,14 @@ static void event_handler(void *arg, esp_event_base_t event_base,
                 wifi_event_sta_disconnected_t *d = (wifi_event_sta_disconnected_t *)event_data;
                 uint8_t reason = d->reason;
                 ESP_LOGW(TAG, "reason %d 0x%02x", reason, reason);
-                if (radio->retries_left > 0) {
-                    if (
-                        reason != WIFI_REASON_AUTH_FAIL &&
-                        reason != WIFI_REASON_NO_AP_FOUND &&
-                        reason != WIFI_REASON_ASSOC_LEAVE) {
-                        radio->retries_left--;
-                        ESP_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
-                        esp_wifi_connect();
-                        return;
-                    }
-                } else if (reason == WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT) {
-                    ESP_LOGW(TAG, "reason %d masked as %d", WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT, WIFI_REASON_AUTH_FAIL);
-                    reason = WIFI_REASON_AUTH_FAIL;
+                if (radio->retries_left > 0 &&
+                    reason != WIFI_REASON_AUTH_FAIL &&
+                    reason != WIFI_REASON_NO_AP_FOUND &&
+                    reason != WIFI_REASON_ASSOC_LEAVE) {
+                    radio->retries_left--;
+                    ESP_LOGI(TAG, "Retrying connect. %d retries remaining", radio->retries_left);
+                    esp_wifi_connect();
+                    return;
                 }
 
                 radio->last_disconnect_reason = reason;
