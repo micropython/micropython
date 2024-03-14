@@ -6,7 +6,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 12:55-0600\n"
-"PO-Revision-Date: 2024-02-22 14:16+0000\n"
+"PO-Revision-Date: 2024-03-11 09:56+0000\n"
 "Last-Translator: Wellington Terumi Uemura <wellingtonuemura@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -105,7 +105,7 @@ msgstr "%q e %q devem compartilhar uma unidade de clock"
 
 #: ports/nrf/common-hal/watchdog/WatchDogTimer.c
 msgid "%q cannot be changed once mode is set to %q"
-msgstr ""
+msgstr "%q não pode ser alterado quando o modo é definido como %q"
 
 #: shared-bindings/microcontroller/Pin.c
 msgid "%q contains duplicate pins"
@@ -2355,6 +2355,11 @@ msgstr "Você pressionou o botão DOWN na inicialização."
 msgid "You pressed the BOOT button at start up"
 msgstr "Você pressionou o botão BOOT na inicialização"
 
+#: ports/espressif/boards/adafruit_feather_esp32c6_4mbflash_nopsram/mpconfigboard.h
+#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
+msgid "You pressed the BOOT button at start up."
+msgstr ""
+
 #: ports/espressif/boards/adafruit_huzzah32_breakout/mpconfigboard.h
 msgid "You pressed the GPIO0 button at start up."
 msgstr "Você pressionou o botão GPIO0 durante a inicialização."
@@ -2370,10 +2375,6 @@ msgstr "Você pressionou o botão SW38 na inicialização."
 #: ports/espressif/boards/hardkernel_odroid_go/mpconfigboard.h
 msgid "You pressed the VOLUME button at start up."
 msgstr "Você pressionou o botão VOLUME na inicialização."
-
-#: ports/espressif/boards/adafruit_itsybitsy_esp32/mpconfigboard.h
-msgid "You pressed the boot button at start up."
-msgstr "Você pressionou o botão de inicialização na inicialização."
 
 #: ports/espressif/boards/m5stack_atom_echo/mpconfigboard.h
 #: ports/espressif/boards/m5stack_atom_lite/mpconfigboard.h
@@ -4399,6 +4400,9 @@ msgstr "zi deve ser de um tipo float"
 #: extmod/ulab/code/scipy/signal/signal.c
 msgid "zi must be of shape (n_section, 2)"
 msgstr "zi deve estar na forma (n_section, 2)"
+
+#~ msgid "You pressed the boot button at start up."
+#~ msgstr "Você pressionou o botão de inicialização na inicialização."
 
 #~ msgid "Error: Failure to bind"
 #~ msgstr "Erro: Falha na vinculação"

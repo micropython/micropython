@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2019 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,28 +26,29 @@
 
 // Micropython setup
 
-#define MICROPY_HW_BOARD_NAME       "Adafruit ItsyBitsy ESP32"
-#define MICROPY_HW_MCU_NAME         "ESP32"
+#define MICROPY_HW_BOARD_NAME       "LOLIN S3 PRO 16MB Flash 8MB PSRAM"
+#define MICROPY_HW_MCU_NAME         "ESP32S3"
 
-#define MICROPY_HW_NEOPIXEL (&pin_GPIO0)
-#define CIRCUITPY_STATUS_LED_POWER (&pin_GPIO2)
+#define MICROPY_HW_NEOPIXEL (&pin_GPIO38)
 
-#define MICROPY_HW_LED_STATUS (&pin_GPIO13)
+// #define MICROPY_HW_LED_STATUS (&pin_GPIO14)
 
-#define CIRCUITPY_BOARD_I2C         (1)
-#define CIRCUITPY_BOARD_I2C_PIN     {{.scl = &pin_GPIO27, .sda = &pin_GPIO15}}
+#define DEFAULT_BUTTON (&pin_GPIO0)
 
-#define CIRCUITPY_BOARD_SPI         (1)
-#define CIRCUITPY_BOARD_SPI_PIN     {{.clock = &pin_GPIO19, .mosi = &pin_GPIO21, .miso = &pin_GPIO22}}
+#define DEFAULT_I2C_BUS_SCL (&pin_GPIO10)
+#define DEFAULT_I2C_BUS_SDA (&pin_GPIO9)
 
-#define CIRCUITPY_BOARD_UART        (1)
-#define CIRCUITPY_BOARD_UART_PIN    {{.tx = &pin_GPIO20, .rx = &pin_GPIO8}}
+#define DEFAULT_SPI_BUS_SCK (&pin_GPIO12)
+#define DEFAULT_SPI_BUS_MOSI (&pin_GPIO11)
+#define DEFAULT_SPI_BUS_MISO (&pin_GPIO13)
 
-#define CIRCUITPY_BOOT_BUTTON       (&pin_GPIO35)
+#define DEFAULT_TF_CS (&pin_GPIO46)
+#define DEFAULT_TS_CS (&pin_GPIO45)
+#define DEFAULT_TFT_CS (&pin_GPIO48)
+#define DEFAULT_TFT_DC (&pin_GPIO47)
+#define DEFAULT_TFT_RST (&pin_GPIO21)
+#define DEFAULT_TFT_LED (&pin_GPIO14)
 
-// Explanation of how a user got into safe mode
-#define BOARD_USER_SAFE_MODE_ACTION MP_ERROR_TEXT("You pressed the BOOT button at start up.")
 
-// UART pins attached to the USB-serial converter chip
-#define CIRCUITPY_CONSOLE_UART_TX (&pin_GPIO1)
-#define CIRCUITPY_CONSOLE_UART_RX (&pin_GPIO3)
+#define DEFAULT_TX0 (&pin_GPIO43)
+#define DEFAULT_RX0 (&pin_GPIO44)

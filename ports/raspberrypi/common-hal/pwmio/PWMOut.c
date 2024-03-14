@@ -123,12 +123,6 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
     uint16_t duty,
     uint32_t frequency,
     bool variable_frequency) {
-    self->pin = pin;
-    self->variable_frequency = variable_frequency;
-    self->duty_cycle = duty;
-
-    claim_pin(pin);
-
     if (frequency == 0 || frequency > (common_hal_mcu_processor_get_frequency() / 2)) {
         return PWMOUT_INVALID_FREQUENCY;
     }
@@ -141,6 +135,11 @@ pwmout_result_t common_hal_pwmio_pwmout_construct(pwmio_pwmout_obj_t *self,
         return r;
     }
 
+    claim_pin(pin);
+
+    self->pin = pin;
+    self->variable_frequency = variable_frequency;
+    self->duty_cycle = duty;
     self->slice = slice;
     self->ab_channel = ab_channel;
 
