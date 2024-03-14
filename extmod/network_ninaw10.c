@@ -153,7 +153,7 @@ static void network_ninaw10_poll_connect(mp_sched_node_t *node) {
             debug_printf("poll_connect() status: %d reason %d\n", status, reason);
             if (nina_connect(self->ssid, self->security, self->key, 0) != 0) {
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"),
+                    MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s"),
                     self->ssid, self->security, self->key);
             }
         } else {
@@ -197,14 +197,14 @@ static mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
             int error = 0;
             if ((error = nina_init()) != 0) {
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("Failed to initialize Nina-W10 module, error: %d\n"), error);
+                    MP_ERROR_TEXT("failed to initialize Nina-W10 module, error: %d"), error);
             }
             // check firmware version
             uint8_t semver[NINA_FW_VER_LEN];
             if (nina_fw_version(semver) != 0) {
                 nina_deinit();
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("Failed to read firmware version, error: %d\n"), error);
+                    MP_ERROR_TEXT("failed to read firmware version, error: %d"), error);
             }
             // Check the minimum supported firmware version.
             uint32_t fwmin = (NINA_FW_VER_MIN_MAJOR * 100) +
@@ -217,7 +217,7 @@ static mp_obj_t network_ninaw10_active(size_t n_args, const mp_obj_t *args) {
 
             if (fwver < fwmin) {
                 mp_raise_msg_varg(&mp_type_OSError,
-                    MP_ERROR_TEXT("Firmware version mismatch. Minimum supported firmware is v%d.%d.%d found v%d.%d.%d\n"),
+                    MP_ERROR_TEXT("firmware version mismatch, minimum supported firmware is v%d.%d.%d found v%d.%d.%d"),
                     NINA_FW_VER_MIN_MAJOR, NINA_FW_VER_MIN_MINOR, NINA_FW_VER_MIN_PATCH, semver[NINA_FW_VER_MAJOR_OFFS] - 48,
                     semver[NINA_FW_VER_MINOR_OFFS] - 48, semver[NINA_FW_VER_PATCH_OFFS] - 48);
             }
@@ -273,7 +273,7 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
     const char *ssid = mp_obj_str_get_str(args[ARG_ssid].u_obj);
 
     if (strlen(ssid) == 0) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("SSID can't be empty!"));
+        mp_raise_ValueError(MP_ERROR_TEXT("SSID can't be empty"));
     }
 
     // get encryption key
@@ -292,7 +292,7 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
 
     // Ensure that the key is not empty if a security mode is used.
     if (security != NINA_SEC_OPEN && strlen(key) == 0) {
-        mp_raise_msg(&mp_type_OSError, MP_ERROR_TEXT("Key can't be empty!"));
+        mp_raise_ValueError(MP_ERROR_TEXT("key can't be empty"));
     }
 
     // Activate the interface if not active.
@@ -309,7 +309,7 @@ static mp_obj_t network_ninaw10_connect(mp_uint_t n_args, const mp_obj_t *pos_ar
         // Initialize WiFi in Station mode.
         if (nina_connect(ssid, security, key, 0) != 0) {
             mp_raise_msg_varg(&mp_type_OSError,
-                MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s\n"), ssid, security, key);
+                MP_ERROR_TEXT("could not connect to ssid=%s, sec=%d, key=%s"), ssid, security, key);
         }
 
         // Save connection info to re-connect if needed.
