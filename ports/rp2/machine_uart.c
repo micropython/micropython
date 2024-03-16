@@ -367,7 +367,11 @@ static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args,
             self->timeout_char = min_timeout_char;
         }
 
-        uart_init(self->uart, self->baudrate);
+        uint32_t new_baudrate = uart_init(self->uart, self->baudrate);
+        uint32_t baudrate_diff = new_baudrate > self->baudrate ? new_baudrate - self->baudrate : self->baudrate - new_baudrate;
+        if (baudrate_diff > (self->baudrate / 50)) {
+            mp_raise_ValueError(MP_ERROR_TEXT("Invalid baud rate"));
+        }
         uart_set_format(self->uart, self->bits, self->stop, self->parity);
         __DSB(); // make sure UARTLCR_H register is written to
         uart_set_fifo_enabled(self->uart, true);
