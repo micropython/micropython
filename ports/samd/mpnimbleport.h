@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Damien P. George
+ * Copyright (c) 2020 Jim Mussared
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_MODMACHINE_H
-#define MICROPY_INCLUDED_SAMD_MODMACHINE_H
+#ifndef MICROPY_INCLUDED_RP2_MPNIMBLEPORT_H
+#define MICROPY_INCLUDED_RP2_MPNIMBLEPORT_H
 
-#include "py/obj.h"
-#include "shared/timeutils/timeutils.h"
-
-#if MICROPY_PY_MACHINE_DAC
-extern const mp_obj_type_t machine_dac_type;
-#endif
-
-void rtc_gettime(timeutils_struct_time_t *tm);
-void machine_uart_set_baudrate(mp_obj_t self, uint32_t baudrate);
-
-#endif // MICROPY_INCLUDED_SAMD_MODMACHINE_H
+#endif // MICROPY_INCLUDED_RP2_MPNIMBLEPORT_H

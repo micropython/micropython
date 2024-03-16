@@ -18,6 +18,7 @@ working with this board it may be useful to get an overview of the microcontroll
    general.rst
    tutorial/intro.rst
    pinout.rst
+   wlan_pinout.rst
 
 
 Installing MicroPython
@@ -508,6 +509,58 @@ with the Neopixel driver from the MicroPython driver library::
 
 machine.bitstream() is set up for a SAMD21 clock frequency of 48MHz and a SAMD51
 clock frequency of 120 MHz. At other clock frequencies, the timing will not fit.
+
+WLAN and BLE
+------------
+
+Some boards can be combined with an ESP32 based WLAN module to support
+WLAN and BLE connectivity. WLAN is then another class
+of the the :mod:`network` module.::
+
+    import network
+
+    wlan = network.WLAN(network.STA_IF) # create station interface
+    wlan.active(True)       # activate the interface
+    wlan.scan()             # scan for access points
+    wlan.isconnected()      # check if the station is connected to an AP
+    wlan.connect('ssid', 'key') # connect to an AP
+    wlan.config('mac')      # get the interface's MAC address
+    wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
+
+    ap = network.WLAN(network.AP_IF) # create access-point interface
+    ap.active(True)         # activate the interface
+    ap.config(ssid='ESP-AP') # set the SSID of the access point
+
+A useful function for connecting to your local WiFi network is::
+
+    def do_connect():
+        import network
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        if not wlan.isconnected():
+            print('connecting to network...')
+            wlan.connect('ssid', 'key')
+            while not wlan.isconnected():
+                pass
+        print('network config:', wlan.ifconfig())
+
+Once the network is established the :mod:`socket <socket>` module can be used
+to create and use TCP/UDP sockets as usual, and the ``requests`` module for
+convenient HTTP requests.
+
+Supported boards are:
+
+- Adafruit Metro M4 Airlift: WLAN adapter built-in
+- Adafruit ItsyBitsy M4 with e.g. the Adafruit ItsyBity Airlift boards
+- Adafruit Feather M4 with e.g. the Adafruit Feather Airlift boards
+- Sparkfun SAMD51 Things Plus with e.g. the Adafruit Feather Airlift boards
+- Adafruit Grand Central M4 with e.g. the Adafruit Airlift Uno board
+
+More boards may support it. Basic WiFi support could even be provided
+for SAMD21 board with external flash. As external
+WLAN module, any ESP32 based breakout can be used. It has to be loaded
+with the proper firmware and wired up accordingly. For the wiring
+scheme, see the :ref:`WLAN connection scheme <samd_wlan_pinout>`.
 
 Transferring files
 ------------------
