@@ -991,6 +991,12 @@ typedef double mp_float_t;
 #define MICROPY_VFS_LFS2 (0)
 #endif
 
+// Use a special long jump in nlrthumb.c, which may be necessary if nlr.o and
+// nlrthumb.o are linked far apart from each other.
+#ifndef MICROPY_NLR_THUMB_FORCE_LONG_JUMP
+#define MICROPY_NLR_THUMB_FORCE_LONG_JUMP (0)
+#endif
+
 /*****************************************************************************/
 /* Fine control over Python builtins, classes, modules, etc                  */
 
