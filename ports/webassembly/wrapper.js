@@ -35,7 +35,7 @@ var mainProgram = function()
 
   MP_JS_EPOCH = Date.now();
 
-  if (typeof window === 'undefined' && require.main === module) {
+  if (ENVIRONMENT_IS_NODE && require.main === module) {
       var fs = require('fs');
       var heap_size = 128 * 1024;
       var contents = '';
