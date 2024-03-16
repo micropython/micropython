@@ -578,7 +578,7 @@ See :ref:`machine.WDT <machine.WDT>`. ::
     from machine import WDT
 
     # enable the WDT with a timeout of 5s (1s is the minimum)
-    wdt = WDT(timeout=5000)
+    wdt = WDT(timeout=5000)  # timeout in milliseconds
     wdt.feed()
 
 .. _Deep_sleep_mode:
