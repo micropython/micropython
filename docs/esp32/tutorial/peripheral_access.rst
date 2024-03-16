@@ -17,7 +17,6 @@ the prescaler of the MCPWM0 peripheral.
     DPORT_PERIP_RST_EN_REG = const(DR_REG_DPORT_BASE + 0x0C4)
     DPORT_PWM0_CLK_EN = const(1 << 17)
     MCPWM0 = const(0x3FF5E000)
-    MCPWM1 = const(0x3FF6C000)
 
     # Enable CLK and disable RST.
     print(hex(mem32[DPORT_PERIP_CLK_EN_REG] & 0xffffffff))
@@ -31,6 +30,18 @@ the prescaler of the MCPWM0 peripheral.
     print(hex(mem32[MCPWM0])) # read PWM_CLK_CFG_REG (reset value = 0)
     mem32[MCPWM0] = 0x55      # change PWM_CLK_PRESCALE
     print(hex(mem32[MCPWM0])) # read PWM_CLK_CFG_REG
+
+The specific addresses will be different on different ESP32
+models. For example, ESP32-S3 uses these values:
+
+.. code-block:: python3
+
+    DR_REG_DPORT_BASE = const(0x600C_0000)
+    DPORT_PERIP_CLK_EN0_REG = const(DR_REG_DPORT_BASE + 0x0018)
+    DPORT_PERIP_RST_EN0_REG = const(DR_REG_DPORT_BASE + 0x0020)
+    DPORT_PWM0_CLK_EN = const(1 << 17)
+    MCPWM0 = const(0x6001_E000 + 0x0004)
+    ...
 
 Note that before a peripheral can be used its clock must be enabled and it must
 be taken out of reset.  In the above example the following registers are used
