@@ -1264,7 +1264,26 @@ int mp_bluetooth_gap_pair(uint16_t conn_handle) {
 
 int mp_bluetooth_gap_passkey(uint16_t conn_handle, uint8_t action, mp_int_t passkey) {
     DEBUG_printf("mp_bluetooth_gap_passkey: conn_handle=%d action=%d passkey=%d\n", conn_handle, action, (int)passkey);
-    return MP_EOPNOTSUPP;
+    switch (action) {
+        case MP_BLUETOOTH_PASSKEY_ACTION_INPUT: {
+            sm_passkey_input(conn_handle, passkey);
+            break;
+        }
+        case MP_BLUETOOTH_PASSKEY_ACTION_DISPLAY: {
+            sm_use_fixed_passkey_in_display_role(passkey);
+            break;
+        }
+        case MP_BLUETOOTH_PASSKEY_ACTION_NUMERIC_COMPARISON: {
+            if (passkey != 0) {
+                sm_numeric_comparison_confirm(conn_handle);
+            }
+            break;
+        }
+        default: {
+            return MP_EINVAL;
+        }
+    }
+    return 0;
 }
 
 #endif // MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
