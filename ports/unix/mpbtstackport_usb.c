@@ -147,7 +147,7 @@ void mp_bluetooth_btstack_port_deinit(void) {
 // stack_limit:
 // Value that will be used for mp_stack_set_limit().
 //
-STATIC void init_mp_state_thread(mp_state_thread_t *ts, mp_uint_t stack_limit) {
+static void init_mp_state_thread(mp_state_thread_t *ts, mp_uint_t stack_limit) {
 
     mp_thread_set_state(ts);
     mp_stack_set_top(ts + 1); // need to include ts in root-pointer scan
@@ -167,7 +167,7 @@ STATIC void init_mp_state_thread(mp_state_thread_t *ts, mp_uint_t stack_limit) {
 //
 // The function was extracted from invoke_irq_handler() in extmod/modbluetooth.c.
 //
-STATIC void deinit_mp_state_thread() {
+static void deinit_mp_state_thread() {
 
     MP_THREAD_GIL_EXIT();
     mp_thread_set_state(NULL);
