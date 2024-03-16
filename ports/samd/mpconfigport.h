@@ -128,6 +128,11 @@
 #define MICROPY_PY_MACHINE_WDT_TIMEOUT_MS   (1)
 #define MICROPY_PLATFORM_VERSION            "ASF4"
 
+#if MICROPY_PY_MACHINE_DAC_TIMED || MICROPY_PY_MACHINE_ADC_READ_TIMED
+#define MICROPY_HW_DMA_MANAGER              (1)
+#define MICROPY_HW_TC_MANAGER               (1)
+#endif
+
 #define MP_STATE_PORT MP_STATE_VM
 
 // Miscellaneous settings

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Damien P. George
+ * Copyright (c) 2022 Robert Hammelrath
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_SAMD_SAMD_SOC_H
-#define MICROPY_INCLUDED_SAMD_SAMD_SOC_H
+#ifndef MICROPY_INCLUDED_SAMD_TCINSTANCE_H
+#define MICROPY_INCLUDED_SAMD_TCINSTANCE_H
 
-#include <stdint.h>
-#include "sam.h"
-#include "clock_config.h"
+#include "py/runtime.h"
 
-typedef struct _samd_unique_id_t {
-    uint8_t bytes[16];
-} samd_unique_id_t;
 
-extern Sercom *sercom_instance[];
+int allocate_tc_instance(void);
+void free_tc_instance(int tc_index);
+int configure_tc(int tc_index, int freq, int event);
+void tc_deinit(void);
 
-void samd_init(void);
-void samd_main(void);
+extern Tc *tc_instance_list[];
 
-void USB_Handler_wrapper(void);
-
-void sercom_enable(Sercom *spi, int state);
-void sercom_register_irq(int sercom_id, void (*sercom_irq_handler));
-void dma_register_irq(int dma_channel, void (*dma_irq_handler));
-
-// Each device has a unique 128-bit serial number. The uniqueness of the serial number is
-// guaranteed only when using all 128 bits.
-void samd_get_unique_id(samd_unique_id_t *id);
-
-#define SERCOM_IRQ_TYPE_UART  (0)
-#define SERCOM_IRQ_TYPE_SPI   (1)
-#define SERCOM_IRQ_TYPE_I2C   (2)
-
-#endif // MICROPY_INCLUDED_SAMD_SAMD_SOC_H
+#endif // MICROPY_INCLUDED_SAMD_TCINSTANCE_H
