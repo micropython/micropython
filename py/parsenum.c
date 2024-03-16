@@ -78,6 +78,9 @@ mp_obj_t mp_parse_num_integer(const char *restrict str_, size_t len, int base, m
     // string should be an integer number
     mp_int_t int_val = 0;
     const byte *restrict str_val_start = str;
+    if (base == 0) {
+        goto value_error;
+    }
     for (; str < top; str++) {
         // get next digit as a value
         mp_uint_t dig = *str;
