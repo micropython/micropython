@@ -162,6 +162,11 @@ These are working configurations for LAN interfaces of popular boards::
     lan = network.LAN(id=0, mdc=Pin(23), mdio=Pin(18), power=Pin(5),
                       phy_type=network.PHY_IP101, phy_addr=1)
 
+UDP MULTICAST
+^^^^^^^^^^^^^
+
+See client/server example in the :ref:`esp32_udp_multicast` tutorial.
+
 Delay and timing
 ----------------
 
