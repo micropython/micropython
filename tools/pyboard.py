@@ -165,13 +165,72 @@ class TelnetToSerial:
         else:
             return n_waiting
 
+# A thread that constantly reads from subp stdout and puts data into a queue (FIFO list)
+# When tested, it reads double '\r' which messes up the further code, so if double '\r' detected, skip one
+def read_stream(stream, q):
+    data_prec = b""
+    while True:
+        data = stream.read(1)
+        if (data_prec == data) and (data_prec == b'\r'):
+            continue
+        else:
+            q.put(data)
+        data_prec = data
 
-class ProcessToSerial:
-    "Execute a process and emulate serial connection using its stdin/stdout."
+class ProcessToSerialThreading:
+    "Execute a process and emulate serial connection using its stdin/stdout. Communication with stdout is done through the read_stream thread"
 
-    def __init__(self, cmd):
+    def __init__(self, cmd):       
         import subprocess
+        
+        # On Windows, preexec_fn parameter should be replaced by start_new_session
+        self.subp = subprocess.Popen(
+            cmd,
+            bufsize=0,
+            shell=True,
+            start_new_session=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+        )
 
+        # On Windows, select can not be used, a thread is used instead 
+        # that constantly reads from subp.stdout and completes a queue
+        import threading
+        import queue
+        self.q = queue.Queue()
+        self.t = threading.Thread(target=read_stream, args=(self.subp.stdout, self.q))
+        self.t.daemon=True # Makes thread exit when main script exits
+        self.t.start()
+
+    def close(self):
+        import signal
+        os.kill(self.subp.pid, signal.SIGTERM)
+
+    def read(self, size=1):
+        data = b""
+        # On Windows, data will be read from the queue that is completed by the thread
+        i = 0
+        while i != size:
+            data += self.q.get()
+            i += 1
+        return data
+
+    def write(self, data):
+        self.subp.stdin.write(data)
+        return len(data)
+
+    def inWaiting(self):
+        if self.q.empty():
+            return 0
+        else:
+            return 1
+
+class ProcessToSerialPosix:
+    "Execute a process and emulate serial connection using its stdin/stdout. Using select to check if any data available on stdout"
+
+    def __init__(self, cmd):      
+        import subprocess
+        
         self.subp = subprocess.Popen(
             cmd,
             bufsize=0,
@@ -180,7 +239,7 @@ class ProcessToSerial:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
         )
-
+        
         # Initially was implemented with selectors, but that adds Python3
         # dependency. However, there can be race conditions communicating
         # with a particular child process (like QEMU), and selectors may
@@ -197,7 +256,6 @@ class ProcessToSerial:
 
     def close(self):
         import signal
-
         os.killpg(os.getpgid(self.subp.pid), signal.SIGTERM)
 
     def read(self, size=1):
@@ -217,6 +275,12 @@ class ProcessToSerial:
             return 1
         return 0
 
+# Class selector based on select module platform dependancy (available on Unix, but not on Windows)
+import select
+if hasattr(select, "poll"):
+    ProcessToSerial = ProcessToSerialPosix
+else:
+    ProcessToSerial = ProcessToSerialThreading 
 
 class ProcessPtyToTerminal:
     """Execute a process which creates a PTY and prints slave PTY as
