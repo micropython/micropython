@@ -134,45 +134,6 @@ void mp_bluetooth_btstack_port_deinit(void) {
     DEBUG_printf("mp_bluetooth_btstack_port_deinit: end\n");
 }
 
-//
-// This function is to be called from a system thread which is not a MicroPython thread.
-// It sets up the relevant MicroPython state and obtains the GIL, to synchronize with the
-// rest of the runtime.
-//
-// The function was extracted from invoke_irq_handler() in extmod/modbluetooth.c.
-//
-// ts:
-// Pointer to a mp_state_thread_t that holds the state.
-//
-// stack_limit:
-// Value that will be used for mp_stack_set_limit().
-//
-static void init_mp_state_thread(mp_state_thread_t *ts, mp_uint_t stack_limit) {
-
-    mp_thread_set_state(ts);
-    mp_stack_set_top(ts + 1); // need to include ts in root-pointer scan
-    mp_stack_set_limit(stack_limit);
-    ts->gc_lock_depth = 0;
-    ts->nlr_jump_callback_top = NULL;
-    ts->mp_pending_exception = MP_OBJ_NULL;
-    mp_locals_set(mp_state_ctx.thread.dict_locals); // set from the outer context
-    mp_globals_set(mp_state_ctx.thread.dict_globals); // set from the outer context
-    MP_THREAD_GIL_ENTER();
-}
-
-//
-// This function is to be called after mp_blutooth_init_mp_state_thread() before
-// ending the thread.
-// It gives back the GIL and resets the MicroPython state.
-//
-// The function was extracted from invoke_irq_handler() in extmod/modbluetooth.c.
-//
-static void deinit_mp_state_thread() {
-
-    MP_THREAD_GIL_EXIT();
-    mp_thread_set_state(NULL);
-}
-
 static void *btstack_thread(void *arg) {
     (void)arg;
 
@@ -184,7 +145,8 @@ static void *btstack_thread(void *arg) {
     // to synchronised with the rest of the runtime.
 
     mp_state_thread_t ts;
-    init_mp_state_thread(&ts, 40000 * (sizeof(void *) / 4) - 1024);
+    mp_thread_init_state(&ts, 40000 * (sizeof(void *) / 4) - 1024, NULL, NULL);
+    MP_THREAD_GIL_ENTER();
 
     log_info("btstack_thread: HCI_POWER_ON");
     hci_power_control(HCI_POWER_ON);
@@ -193,8 +155,9 @@ static void *btstack_thread(void *arg) {
 
     log_info("btstack_thread: end");
 
-    // reset the MicroPython state
-    deinit_mp_state_thread();
+    // Give back the GIL and reset the MicroPython state.
+    MP_THREAD_GIL_EXIT();
+    mp_thread_set_state(NULL);
 
     return NULL;
 }
