@@ -600,6 +600,9 @@ SRC_QSTR += $(SRC_C) $(SRC_CXX) $(SHARED_SRC_C) $(GEN_PINS_SRC)
 # which source files might need it.
 $(OBJ): | $(GEN_PINS_HDR)
 
+# Automatically rebuild if specific settings are changed on command line
+$(OBJ): $(call depend_var, USE_MBOOT)
+
 # With conditional pins, we may need to regenerate qstrdefs.h when config
 # options change.
 $(HEADER_BUILD)/qstrdefs.generated.h: $(BOARD_DIR)/mpconfigboard.h
