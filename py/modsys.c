@@ -180,6 +180,26 @@ static mp_obj_t mp_sys_print_exception(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_sys_print_exception_obj, 1, 2, mp_sys_print_exception);
 
+#if MICROPY_PY_SYS_EXC_TRACEBACK
+STATIC mp_obj_t mp_sys_exc_traceback(mp_obj_t exc) {
+    if (!mp_obj_is_exception_instance(exc)) {
+        mp_raise_TypeError(MP_ERROR_TEXT("not an exception"));
+    }
+    size_t n, *values;
+    mp_obj_exception_get_traceback(exc, &n, &values);
+    // Assumption: n is a multiple of 3.
+    mp_obj_t obj = mp_obj_new_list(n, NULL);
+    mp_obj_list_t *list = MP_OBJ_TO_PTR(obj);
+    for (size_t i = 0; i < list->len; i += 3) {
+        list->items[i + 0] = MP_OBJ_NEW_QSTR(values[i + 0]);       // filename
+        list->items[i + 1] = MP_OBJ_NEW_SMALL_INT(values[i + 1]);  // line
+        list->items[i + 2] = MP_OBJ_NEW_QSTR(values[i + 2]);       // block
+    }
+    return obj;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_sys_exc_traceback_obj, mp_sys_exc_traceback);
+#endif
+
 #if MICROPY_PY_SYS_EXC_INFO
 static mp_obj_t mp_sys_exc_info(void) {
     mp_obj_t cur_exc = MP_OBJ_FROM_PTR(MP_STATE_VM(cur_exception));
@@ -334,6 +354,9 @@ static const mp_rom_map_elem_t mp_module_sys_globals_table[] = {
      */
 
     { MP_ROM_QSTR(MP_QSTR_print_exception), MP_ROM_PTR(&mp_sys_print_exception_obj) },
+    #if MICROPY_PY_SYS_EXC_TRACEBACK
+    { MP_ROM_QSTR(MP_QSTR__exc_traceback), MP_ROM_PTR(&mp_sys_exc_traceback_obj) },
+    #endif
     #if MICROPY_PY_SYS_ATEXIT
     { MP_ROM_QSTR(MP_QSTR_atexit), MP_ROM_PTR(&mp_sys_atexit_obj) },
     #endif
