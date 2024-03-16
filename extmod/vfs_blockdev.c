@@ -32,6 +32,18 @@
 
 #if MICROPY_VFS
 
+// Block device functions are expected to return 0 on success
+// and negative integer on errors. Check for positive integer
+// results as some callers (i.e. littlefs) will produce corrupt
+// results from these.
+static int mp_vfs_check_result(mp_obj_t ret) {
+    int i = MP_OBJ_SMALL_INT_VALUE(ret);
+    if (i > 0) {
+        mp_raise_OSError(MP_EINVAL);
+    }
+    return i;
+}
+
 void mp_vfs_blockdev_init(mp_vfs_blockdev_t *self, mp_obj_t bdev) {
     mp_load_method(bdev, MP_QSTR_readblocks, self->readblocks);
     mp_load_method_maybe(bdev, MP_QSTR_writeblocks, self->writeblocks);
@@ -69,7 +81,7 @@ int mp_vfs_blockdev_read_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t b
     if (ret == mp_const_none) {
         return 0;
     } else {
-        return MP_OBJ_SMALL_INT_VALUE(ret);
+        return mp_vfs_check_result(ret);
     }
 }
 
@@ -106,7 +118,7 @@ int mp_vfs_blockdev_write_ext(mp_vfs_blockdev_t *self, size_t block_num, size_t 
     if (ret == mp_const_none) {
         return 0;
     } else {
-        return MP_OBJ_SMALL_INT_VALUE(ret);
+        return mp_vfs_check_result(ret);
     }
 }
 
