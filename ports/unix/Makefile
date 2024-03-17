@@ -49,8 +49,14 @@ MICROPY_BLUETOOTH_BTSTACK_USB ?= 0
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
 
-endif
-endif
+# Set the file that will be included by "extmod/btstack/btstack_config.h"
+# 
+# The original file "extmod/btstack/btstack_config_common.h"
+# will be included by it. 
+MICROPY_BLUETOOTH_BTSTACK_CONFIG_FILE ?= '"ports/unix/btstack_config.h"'
+
+endif # MICROPY_BLUETOOTH_BTSTACK
+endif # MICROPY_PY_BLUETOOTH
 
 # include py core make definitions
 include $(TOP)/py/py.mk
