@@ -106,6 +106,10 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
     #endif
 }
 
+// Because ssl_socket_send and ssl_socket_recv_into are callbacks from mbedtls code,
+// it is not OK to exit them by raising an exception (nlr_jump'ing through
+// foreign code is not permitted). Instead, preserve the error number of any OSError
+// and turn anything else into -MP_EINVAL.
 STATIC int call_method_errno(size_t n_args, const mp_obj_t *args) {
     nlr_buf_t nlr;
     mp_int_t result = -MP_EINVAL;
@@ -140,28 +144,28 @@ static int ssl_socket_recv_into(ssl_sslsocket_obj_t *self, byte *buf, size_t len
     return call_method_errno(1, self->recv_into_args);
 }
 
-static int ssl_socket_connect(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
+static void ssl_socket_connect(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
     self->connect_args[2] = addr_in;
-    return call_method_errno(1, self->connect_args);
+    mp_call_method_n_kw(1, 0, self->connect_args);
 }
 
-static int ssl_socket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
+static void ssl_socket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
     self->bind_args[2] = addr_in;
-    return call_method_errno(1, self->bind_args);
+    mp_call_method_n_kw(1, 0, self->bind_args);
 }
 
-static int ssl_socket_close(ssl_sslsocket_obj_t *self) {
-    return call_method_errno(0, self->close_args);
+static void ssl_socket_close(ssl_sslsocket_obj_t *self) {
+    mp_call_method_n_kw(0, 0, self->close_args);
 }
 
 static void ssl_socket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
     self->settimeout_args[2] = timeout_obj;
-    return mp_call_method_n_kw(1, 0, self->settimeout_args);
+    mp_call_method_n_kw(1, 0, self->settimeout_args);
 }
 
-static int ssl_socket_listen(ssl_sslsocket_obj_t *self, mp_int_t backlog) {
+static void ssl_socket_listen(ssl_sslsocket_obj_t *self, mp_int_t backlog) {
     self->listen_args[2] = MP_OBJ_NEW_SMALL_INT(backlog);
-    return call_method_errno(1, self->listen_args);
+    mp_call_method_n_kw(1, 0, self->listen_args);
 }
 
 static mp_obj_t ssl_socket_accept(ssl_sslsocket_obj_t *self) {
@@ -179,13 +183,10 @@ STATIC int _mbedtls_ssl_send(void *ctx, const byte *buf, size_t len) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_WRITE;
         }
-        return -err; // convert an MP_ERRNO to something mbedtls passes through as error
-    } else {
-        return out_sz;
     }
+    return out_sz;
 }
 
-// _mbedtls_ssl_recv is called by mbedtls to receive bytes from the underlying socket
 STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
     ssl_sslsocket_obj_t *self = (ssl_sslsocket_obj_t *)ctx;
 
@@ -196,10 +197,8 @@ STATIC int _mbedtls_ssl_recv(void *ctx, byte *buf, size_t len) {
         if (mp_is_nonblocking_error(err)) {
             return MBEDTLS_ERR_SSL_WANT_READ;
         }
-        return -err;
-    } else {
-        return out_sz;
     }
+    return out_sz;
 }
 
 
@@ -361,8 +360,8 @@ mp_uint_t common_hal_ssl_sslsocket_send(ssl_sslsocket_obj_t *self, const uint8_t
     mbedtls_raise_error(ret);
 }
 
-size_t common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
-    return ssl_socket_bind(self, addr_in);
+void common_hal_ssl_sslsocket_bind(ssl_sslsocket_obj_t *self, mp_obj_t addr_in) {
+    ssl_socket_bind(self, addr_in);
 }
 
 void common_hal_ssl_sslsocket_close(ssl_sslsocket_obj_t *self) {
@@ -426,7 +425,7 @@ bool common_hal_ssl_sslsocket_get_connected(ssl_sslsocket_obj_t *self) {
     return !self->closed;
 }
 
-bool common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog) {
+void common_hal_ssl_sslsocket_listen(ssl_sslsocket_obj_t *self, int backlog) {
     return ssl_socket_listen(self, backlog);
 }
 

@@ -88,11 +88,7 @@ STATIC mp_obj_t ssl_sslsocket_bind(mp_obj_t self_in, mp_obj_t addr_in) {
     mp_obj_t *addr_items;
     mp_obj_get_array_fixed_n(addr_in, 2, &addr_items);
 
-    size_t error = common_hal_ssl_sslsocket_bind(self, addr_in);
-    if (error != 0) {
-        mp_raise_OSError(error);
-    }
-
+    common_hal_ssl_sslsocket_bind(self, addr_in);
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_bind_obj, ssl_sslsocket_bind);
