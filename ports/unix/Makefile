@@ -33,6 +33,25 @@ QSTR_GLOBAL_DEPENDENCIES += $(VARIANT_DIR)/mpconfigvariant.h
 # OS name, for simple autoconfig
 UNAME_S := $(shell uname -s)
 
+# If the variant enables it, enable modbluetooth.
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
+
+# Figure out which BTstack transport to use.
+ifeq ($(HAVE_LIBUSB),1)
+# Default to btstack-over-usb.
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 0
+else
+# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
+MICROPY_BLUETOOTH_BTSTACK_USB ?= 0
+MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
+endif
+
+endif
+endif
+
 # include py core make definitions
 include $(TOP)/py/py.mk
 include $(TOP)/extmod/extmod.mk
@@ -144,20 +163,8 @@ ifeq ($(MICROPY_SSL_AXTLS),1)
 endif
 endif
 
-# If the variant enables it, enable modbluetooth.
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
-HAVE_LIBUSB := $(shell (which pkg-config > /dev/null && pkg-config --exists libusb-1.0) 2>/dev/null && echo '1')
-
-# Figure out which BTstack transport to use.
-ifeq ($(HAVE_LIBUSB),1)
-# Default to btstack-over-usb.
-MICROPY_BLUETOOTH_BTSTACK_USB ?= 1
-else
-# Fallback to HCI controller via a H4 UART (e.g. Zephyr on nRF) over a /dev/tty serial port.
-MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
-endif
-
 SRC_BTSTACK_C += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
 endif
 endif
