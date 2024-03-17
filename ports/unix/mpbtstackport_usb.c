@@ -34,12 +34,12 @@
 #include "py/runtime.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/stackctrl.h"
 
 #include "lib/btstack/src/btstack.h"
 #include "lib/btstack/src/hci_transport_usb.h"
-#include "lib/btstack/platform/embedded/btstack_run_loop_embedded.h"
-#include "lib/btstack/platform/embedded/hal_cpu.h"
-#include "lib/btstack/platform/embedded/hal_time_ms.h"
+#include "lib/btstack/platform/posix/btstack_run_loop_posix.h"
+#include "lib/btstack/platform/posix/hci_dump_posix_fs.h"
 
 #include "extmod/btstack/modbluetooth_btstack.h"
 
@@ -49,9 +49,21 @@
 #error Unix btstack requires MICROPY_PY_THREAD
 #endif
 
-static const useconds_t USB_POLL_INTERVAL_US = 1000;
+#define DEBUG_printf(...) // printf("mpbtstackport_usb.c: " __VA_ARGS__)
 
 void mp_bluetooth_btstack_port_init_usb(void) {
+
+    #if MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP
+    // log into file using HCI_DUMP_PACKETLOGGER format
+    const char *pklg_path = "/tmp/hci_dump.pklg";
+    hci_dump_posix_fs_open(pklg_path, HCI_DUMP_PACKETLOGGER);
+    const hci_dump_t *hci_dump_impl = hci_dump_posix_fs_get_instance();
+    hci_dump_init(hci_dump_impl);
+    printf("Packet Log: %s\n", pklg_path);
+    #endif
+
+    btstack_run_loop_init(btstack_run_loop_posix_get_instance());
+
     // MICROPYBTUSB can be a ':'' or '-' separated port list.
     char *path = getenv("MICROPYBTUSB");
     if (path != NULL) {
@@ -76,35 +88,114 @@ void mp_bluetooth_btstack_port_init_usb(void) {
 static pthread_t bstack_thread_id;
 
 void mp_bluetooth_btstack_port_deinit(void) {
-    hci_power_control(HCI_POWER_OFF);
+    DEBUG_printf("mp_bluetooth_btstack_port_deinit: begin: mp_bluetooth_btstack_state=%d\n", mp_bluetooth_btstack_state);
 
-    // Wait for the poll loop to terminate when the state is set to OFF.
+    // Workaround:
+    //
+    // Possibly hci_power_control(HCI_POWER_OFF);
+    // crashes with memory fault if state is already MP_BLUETOOTH_BTSTACK_STATE_OFF.
+    if (mp_bluetooth_btstack_state != MP_BLUETOOTH_BTSTACK_STATE_OFF &&
+        mp_bluetooth_btstack_state != MP_BLUETOOTH_BTSTACK_STATE_TIMEOUT) {
+
+        hci_power_control(HCI_POWER_OFF);
+
+        DEBUG_printf("mp_bluetooth_btstack_port_deinit: after HCI_POWER_OFF: mp_bluetooth_btstack_state=%d\n", mp_bluetooth_btstack_state);
+    }
+
+    // btstack_run_loop_trigger_exit() will call btstack_run_loop_t::trigger_exit()
+    // i.e. btstack_run_loop_posix_trigger_exit().
+    // And that will trigger the exit of btstack_run_loop_execute()
+    // i.e. btstack_run_loop_posix_execute().
+    btstack_run_loop_trigger_exit();
+
+    // A call of btstack_run_loop_poll_data_sources_from_irq() is needed
+    // additional to btstack_run_loop_trigger_exit() to exit the posix run loop.
+    //
+    // Otherwise the posix run loop will wait forever for ready File Descriptors.
+    //
+    // Hint:
+    // btstack_run_loop_poll_data_sources_from_irq()
+    // calls btstack_run_loop_posix_poll_data_sources_from_irq()
+    btstack_run_loop_poll_data_sources_from_irq();
+
+    // MicroPython threads are created with PTHREAD_CREATE_DETACHED.
+    //
+    // Nonetheless the thread is created with PTHREAD_CREATE_JOINABLE and
+    // pthread_join() is used.
+
+    DEBUG_printf("mp_bluetooth_btstack_port_deinit: pthread_join()\n");
     pthread_join(bstack_thread_id, NULL);
+
+    #if MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP
+    DEBUG_printf("mp_bluetooth_btstack_port_deinit: hci_dump_posix_fs_close()\n");
+    hci_dump_posix_fs_close();
+    #endif
+
+    DEBUG_printf("mp_bluetooth_btstack_port_deinit: end\n");
 }
 
+//
+// This function is to be called from a system thread which is not a MicroPython thread.
+// It sets up the relevant MicroPython state and obtains the GIL, to synchronize with the
+// rest of the runtime.
+//
+// The function was extracted from invoke_irq_handler() in extmod/modbluetooth.c.
+//
+// ts:
+// Pointer to a mp_state_thread_t that holds the state.
+//
+// stack_limit:
+// Value that will be used for mp_stack_set_limit().
+//
+STATIC void init_mp_state_thread(mp_state_thread_t *ts, mp_uint_t stack_limit) {
 
-// Provided by mpbstackport_common.c.
-extern bool mp_bluetooth_hci_poll(void);
+    mp_thread_set_state(ts);
+    mp_stack_set_top(ts + 1); // need to include ts in root-pointer scan
+    mp_stack_set_limit(stack_limit);
+    ts->gc_lock_depth = 0;
+    ts->nlr_jump_callback_top = NULL;
+    ts->mp_pending_exception = MP_OBJ_NULL;
+    mp_locals_set(mp_state_ctx.thread.dict_locals); // set from the outer context
+    mp_globals_set(mp_state_ctx.thread.dict_globals); // set from the outer context
+    MP_THREAD_GIL_ENTER();
+}
+
+//
+// This function is to be called after mp_blutooth_init_mp_state_thread() before
+// ending the thread.
+// It gives back the GIL and resets the MicroPython state.
+//
+// The function was extracted from invoke_irq_handler() in extmod/modbluetooth.c.
+//
+STATIC void deinit_mp_state_thread() {
+
+    MP_THREAD_GIL_EXIT();
+    mp_thread_set_state(NULL);
+}
 
 static void *btstack_thread(void *arg) {
     (void)arg;
+
+    // This code runs on an non-MicroPython thread.
+    // But some of the code e.g. in "extmod/btstack/modbluetooth_btstack.c"
+    // make calls that needs the state of a MicroPython thread e. g. "m_del()".
+    //
+    // So set up relevant MicroPython state and obtain the GIL,
+    // to synchronised with the rest of the runtime.
+
+    mp_state_thread_t ts;
+    init_mp_state_thread(&ts, 40000 * (sizeof(void *) / 4) - 1024);
+
+    log_info("btstack_thread: HCI_POWER_ON");
     hci_power_control(HCI_POWER_ON);
 
-    // modbluetooth_btstack.c will have set the state to STARTING before
-    // calling mp_bluetooth_btstack_port_start.
-    // This loop will terminate when the HCI_POWER_OFF above results
-    // in modbluetooth_btstack.c setting the state back to OFF.
-    // Or, if a timeout results in it being set to TIMEOUT.
+    btstack_run_loop_execute();
 
-    while (true) {
-        if (!mp_bluetooth_hci_poll()) {
-            break;
-        }
+    log_info("btstack_thread: end");
 
-        // The USB transport schedules events to the run loop at 1ms intervals,
-        // and the implementation currently polls rather than selects.
-        usleep(USB_POLL_INTERVAL_US);
-    }
+    // reset the MicroPython state
+    deinit_mp_state_thread();
+
     return NULL;
 }
 

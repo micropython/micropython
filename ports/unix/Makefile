@@ -49,6 +49,12 @@ MICROPY_BLUETOOTH_BTSTACK_USB ?= 0
 MICROPY_BLUETOOTH_BTSTACK_H4 ?= 1
 endif
 
+# MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP could be set to 1 to activate logging
+# to file "/tmp/hci_dump.pklg" for btstack-over-usb.
+ifndef MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP
+MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP ?= 0
+endif
+
 # Set the file that will be included by "extmod/btstack/btstack_config.h"
 # 
 # The original file "extmod/btstack/btstack_config_common.h"
@@ -171,7 +177,21 @@ endif
 
 ifeq ($(MICROPY_PY_BLUETOOTH),1)
 ifeq ($(MICROPY_BLUETOOTH_BTSTACK),1)
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),0)
 SRC_BTSTACK_C += lib/btstack/platform/embedded/btstack_run_loop_embedded.c
+endif
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_USB),1)
+SRC_BTSTACK_C += lib/btstack/platform/posix/btstack_run_loop_posix.c
+
+ifeq ($(MICROPY_BLUETOOTH_BTSTACK_HCI_DUMP),1)
+CFLAGS += -DMICROPY_BLUETOOTH_BTSTACK_HCI_DUMP=1
+SRC_BTSTACK_C += lib/btstack/platform/posix/hci_dump_posix_fs.c
+endif
+
+endif
+
 endif
 endif
 
