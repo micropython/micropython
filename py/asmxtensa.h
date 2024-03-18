@@ -203,8 +203,9 @@ static inline void asm_xtensa_op_movi(asm_xtensa_t *as, uint reg_dest, int32_t i
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRI8(2, 10, (imm12 >> 8) & 0xf, reg_dest, imm12 & 0xff));
 }
 
-static inline void asm_xtensa_op_movi_n(asm_xtensa_t *as, uint reg_dest, int imm4) {
-    asm_xtensa_op16(as, ASM_XTENSA_ENCODE_RI7(12, reg_dest, imm4));
+// Argument must be in the range (-32 .. 95) inclusive.
+static inline void asm_xtensa_op_movi_n(asm_xtensa_t *as, uint reg_dest, int imm7) {
+    asm_xtensa_op16(as, ASM_XTENSA_ENCODE_RI7(12, reg_dest, imm7));
 }
 
 static inline void asm_xtensa_op_mull(asm_xtensa_t *as, uint reg_dest, uint reg_src_a, uint reg_src_b) {
