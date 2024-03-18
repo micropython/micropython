@@ -107,7 +107,7 @@ Methods
 
    Get or set general network interface parameters. These methods allow to work
    with additional parameters beyond standard IP configuration (as dealt with by
-   `WLAN.ifconfig()`). These include network-specific and hardware-specific
+   `AbstractNIC.ipconfig()`). These include network-specific and hardware-specific
    parameters. For setting parameters, keyword argument syntax should be used,
    multiple parameters can be set at once. For querying, parameters name should
    be quoted as a string, and only one parameter can be queries at time::

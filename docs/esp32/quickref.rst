@@ -89,7 +89,7 @@ The :mod:`network` module::
     wlan.isconnected()      # check if the station is connected to an AP
     wlan.connect('ssid', 'key') # connect to an AP
     wlan.config('mac')      # get the interface's MAC address
-    wlan.ifconfig()         # get the interface's IP/netmask/gw/DNS addresses
+    wlan.ipconfig('addr4')  # get the interface's IPv4 addresses
 
     ap = network.WLAN(network.AP_IF) # create access-point interface
     ap.config(ssid='ESP-AP') # set the SSID of the access point
@@ -107,7 +107,7 @@ A useful function for connecting to your local WiFi network is::
             wlan.connect('ssid', 'key')
             while not wlan.isconnected():
                 pass
-        print('network config:', wlan.ifconfig())
+        print('network config:', wlan.ipconfig('addr4'))
 
 Once the network is established the :mod:`socket <socket>` module can be used
 to create and use TCP/UDP sockets as usual, and the ``requests`` module for
@@ -130,7 +130,7 @@ To use the wired interfaces one has to specify the pins and mode ::
 
     lan = network.LAN(mdc=PIN_MDC, ...)   # Set the pin and mode configuration
     lan.active(True)                      # activate the interface
-    lan.ifconfig()                        # get the interface's IP/netmask/gw/DNS addresses
+    lan.ipconfig('addr4')                 # get the interface's IPv4 addresses
 
 
 The keyword arguments for the constructor defining the PHY type and interface are:
