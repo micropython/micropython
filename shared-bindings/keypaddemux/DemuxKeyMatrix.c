@@ -60,7 +60,7 @@
 //|         max_events: int = 64,
 //|     ) -> None:
 //|         """
-//|         Create a `Keys` object that will scan the key matrix attached to the given row and column pins.
+//|         Create a `keypad.Keys` object that will scan the key matrix attached to the given row and column pins.
 //|         There should not be any external pull-ups or pull-downs on the matrix:
 //|         ``DemuxKeyMatrix`` enables internal pull-ups or pull-downs on the pins as necessary.
 //|
