@@ -83,7 +83,7 @@ ADDITIONAL_MODULES = {
     "select": "MICROPY_PY_SELECT_SELECT",
     "sys": "CIRCUITPY_SYS",
     "terminalio": "CIRCUITPY_DISPLAYIO",
-    "usb": "CIRCUITPY_USB_HOST",
+    "usb": "CIRCUITPY_PYUSB",
 }
 
 MODULES_NOT_IN_BINDINGS = [ "binascii", "errno", "json", "re", "ulab" ]

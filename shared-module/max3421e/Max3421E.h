@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Dan Halbert for Adafruit Industries
+ * Copyright (c) 2024 Scott Shawcroft for Adafruit Industries
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #pragma once
 
-#define EIC_HANDLER_NO_INTERRUPT 0x0
-#define EIC_HANDLER_PULSEIN 0x1
-#define EIC_HANDLER_INCREMENTAL_ENCODER 0x2
-#define EIC_HANDLER_PS2 0x3
-#define EIC_HANDLER_COUNTER 0x04
-#define EIC_HANDLER_ALARM 0x05
-#define EIC_HANDLER_MAX3421E 0x06
+#include "common-hal/busio/SPI.h"
+#include "common-hal/digitalio/DigitalInOut.h"
+#include "shared-module/displayio/Group.h"
 
-void set_eic_handler(uint8_t channel, uint8_t eic_handler);
-void shared_eic_handler(uint8_t channel);
+#define CIRCUITPY_USB_MAX3421_INSTANCE 2
+
+typedef struct {
+    mp_obj_base_t base;
+    busio_spi_obj_t *bus;
+    digitalio_digitalinout_obj_t chip_select;
+    digitalio_digitalinout_obj_t irq;
+    uint32_t baudrate;
+    bool bus_locked;
+} max3421e_max3421e_obj_t;
+
+// Ports need to implement these two functions in order to support pin interrupts.
+
+// Setup irq on self->irq to call tuh_int_handler(rhport, true) on falling edge
+void common_hal_max3421e_max3421e_init_irq(max3421e_max3421e_obj_t *self);
+
+// Deinit the irq
+void common_hal_max3421e_max3421e_deinit_irq(max3421e_max3421e_obj_t *self);
+
+// Enable or disable the irq interrupt.
+void common_hal_max3421e_max3421e_irq_enabled(max3421e_max3421e_obj_t *self, bool enabled);
+
+// Queue up the actual interrupt handler for when the SPI bus is free.
+void max3421e_interrupt_handler(max3421e_max3421e_obj_t *self);

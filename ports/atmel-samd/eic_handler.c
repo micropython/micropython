@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "common-hal/max3421e/Max3421E.h"
 #include "common-hal/pulseio/PulseIn.h"
 #include "common-hal/ps2io/Ps2.h"
 #include "common-hal/rotaryio/IncrementalEncoder.h"
@@ -70,6 +71,12 @@ void shared_eic_handler(uint8_t channel) {
         #if CIRCUITPY_ALARM
         case EIC_HANDLER_ALARM:
             pin_alarm_callback(channel);
+            break;
+        #endif
+
+        #if CIRCUITPY_MAX3421E
+        case EIC_HANDLER_MAX3421E:
+            samd_max3421e_interrupt_handler(channel);
             break;
         #endif
 

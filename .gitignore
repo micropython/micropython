@@ -91,3 +91,7 @@ TAGS
 
 # Uncrustify formatting
 *.uncrustify
+
+# clangd cache
+##############
+.cache
