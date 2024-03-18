@@ -54,6 +54,8 @@
 #define OPCODE_MOVZX_RM8_TO_R32  (0xb6) /* 0x0f 0xb6/r */
 #define OPCODE_MOVZX_RM16_TO_R32 (0xb7) /* 0x0f 0xb7/r */
 #define OPCODE_LEA_MEM_TO_R32    (0x8d) /* /r */
+#define OPCODE_NOT_RM32          (0xf7) /* /2 */
+#define OPCODE_NEG_RM32          (0xf7) /* /3 */
 #define OPCODE_AND_R32_TO_RM32   (0x21) /* /r */
 #define OPCODE_OR_R32_TO_RM32    (0x09) /* /r */
 #define OPCODE_XOR_R32_TO_RM32   (0x31) /* /r */
@@ -242,6 +244,14 @@ size_t asm_x86_mov_i32_to_r32(asm_x86_t *as, int32_t src_i32, int dest_r32) {
     size_t loc = mp_asm_base_get_code_pos(&as->base);
     asm_x86_write_word32(as, src_i32);
     return loc;
+}
+
+void asm_x86_not_r32(asm_x86_t *as, int dest_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, 2, OPCODE_NOT_RM32);
+}
+
+void asm_x86_neg_r32(asm_x86_t *as, int dest_r32) {
+    asm_x86_generic_r32_r32(as, dest_r32, 3, OPCODE_NEG_RM32);
 }
 
 void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32) {

@@ -211,6 +211,10 @@ static inline void asm_xtensa_op_mull(asm_xtensa_t *as, uint reg_dest, uint reg_
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 2, 8, reg_dest, reg_src_a, reg_src_b));
 }
 
+static inline void asm_xtensa_op_neg(asm_xtensa_t *as, uint reg_dest, uint reg_src) {
+    asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 0, 6, reg_dest, 0, reg_src));
+}
+
 static inline void asm_xtensa_op_or(asm_xtensa_t *as, uint reg_dest, uint reg_src_a, uint reg_src_b) {
     asm_xtensa_op24(as, ASM_XTENSA_ENCODE_RRR(0, 0, 2, reg_dest, reg_src_a, reg_src_b));
 }
@@ -371,6 +375,7 @@ void asm_xtensa_call_ind_win(asm_xtensa_t *as, uint idx);
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_xtensa_mov_reg_local_addr((as), (reg_dest), ASM_NUM_REGS_SAVED + (local_num))
 #define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_xtensa_mov_reg_pcrel((as), (reg_dest), (label))
 
+#define ASM_NEG_REG(as, reg_dest) asm_xtensa_op_neg((as), (reg_dest), (reg_dest))
 #define ASM_LSL_REG_REG(as, reg_dest, reg_shift) \
     do { \
         asm_xtensa_op_ssl((as), (reg_shift)); \
