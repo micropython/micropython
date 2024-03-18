@@ -28,8 +28,8 @@
 #include "shared-bindings/busio/SPI.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "py/mperrno.h"
-#include "py/nlr.h"
 #include "py/runtime.h"
+#include "shared/runtime/interrupt_char.h"
 
 void common_hal_adafruit_bus_device_spidevice_construct(adafruit_bus_device_spidevice_obj_t *self, busio_spi_obj_t *spi,  digitalio_digitalinout_obj_t *cs,
     bool cs_active_value, uint32_t baudrate, uint8_t polarity, uint8_t phase, uint8_t extra_clocks) {
@@ -49,7 +49,11 @@ mp_obj_t common_hal_adafruit_bus_device_spidevice_enter(adafruit_bus_device_spid
         mp_load_method(self->spi, MP_QSTR_try_lock, dest);
 
         while (!mp_obj_is_true(mp_call_method_n_kw(0, 0, dest))) {
-            mp_handle_pending(true);
+            RUN_BACKGROUND_TASKS;
+            // Break out on ctrl-C.
+            if (mp_hal_is_interrupted()) {
+                mp_handle_pending(true);
+            }
         }
     }
 
