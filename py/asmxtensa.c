@@ -185,7 +185,9 @@ size_t asm_xtensa_mov_reg_i32(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
 }
 
 void asm_xtensa_mov_reg_i32_optimised(asm_xtensa_t *as, uint reg_dest, uint32_t i32) {
-    if (SIGNED_FIT12(i32)) {
+    if (-32 <= (int)i32 && (int)i32 <= 95) {
+        asm_xtensa_op_movi_n(as, reg_dest, i32);
+    } else if (SIGNED_FIT12(i32)) {
         asm_xtensa_op_movi(as, reg_dest, i32);
     } else {
         asm_xtensa_mov_reg_i32(as, reg_dest, i32);
