@@ -20,7 +20,7 @@ This class provides a driver for the WiFi network processor in the WiPy. Example
     wlan.connect('your-ssid', auth=(WLAN.WPA2, 'your-key'))
     while not wlan.isconnected():
         time.sleep_ms(50)
-    print(wlan.ifconfig())
+    print(wlan.ipconfig("addr4"))
 
     # now use socket as usual
     ...
@@ -96,16 +96,10 @@ Methods
    In case of STA mode, returns ``True`` if connected to a WiFi access point and has a valid IP address.
    In AP mode returns ``True`` when a station is connected, ``False`` otherwise.
 
-.. method:: WLANWiPy.ifconfig(if_id=0, config=['dhcp' or configtuple])
+.. method:: WLANWiPy.ipconfig('param')
+            WLANWiPy.ipconfig(param=value, ...)
 
-   With no parameters given returns a 4-tuple of *(ip, subnet_mask, gateway, DNS_server)*.
-
-   if ``'dhcp'`` is passed as a parameter then the DHCP client is enabled and the IP params
-   are negotiated with the AP.
-
-   If the 4-tuple config is given then a static IP is configured. For instance::
-
-      wlan.ifconfig(config=('192.168.0.4', '255.255.255.0', '192.168.0.1', '8.8.8.8'))
+   See :meth:`AbstractNIC.ipconfig <AbstractNIC.ipconfig>`. Supported parameters are: ``dhcp4``, ``addr4``, ``gw4``.
 
 .. method:: WLANWiPy.mode([mode])
 
