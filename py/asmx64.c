@@ -54,6 +54,8 @@
 #define OPCODE_MOVZX_RM8_TO_R64  (0xb6) /* 0x0f 0xb6/r */
 #define OPCODE_MOVZX_RM16_TO_R64 (0xb7) /* 0x0f 0xb7/r */
 #define OPCODE_LEA_MEM_TO_R64    (0x8d) /* /r */
+#define OPCODE_NOT_RM64          (0xf7) /* /2 */
+#define OPCODE_NEG_RM64          (0xf7) /* /3 */
 #define OPCODE_AND_R64_TO_RM64   (0x21) /* /r */
 #define OPCODE_OR_R64_TO_RM64    (0x09) /* /r */
 #define OPCODE_XOR_R64_TO_RM64   (0x31) /* /r */
@@ -360,6 +362,14 @@ void asm_x64_mov_i64_to_r64_optimised(asm_x64_t *as, int64_t src_i64, int dest_r
         // 10 bytes
         asm_x64_mov_i64_to_r64(as, src_i64, dest_r64);
     }
+}
+
+void asm_x64_not_r64(asm_x64_t *as, int dest_r64) {
+    asm_x64_generic_r64_r64(as, dest_r64, 2, OPCODE_NOT_RM64);
+}
+
+void asm_x64_neg_r64(asm_x64_t *as, int dest_r64) {
+    asm_x64_generic_r64_r64(as, dest_r64, 3, OPCODE_NEG_RM64);
 }
 
 void asm_x64_and_r64_r64(asm_x64_t *as, int dest_r64, int src_r64) {

@@ -77,6 +77,11 @@ static uint asm_arm_op_mvn_imm(uint rd, uint imm) {
     return 0x3e00000 | (rd << 12) | imm;
 }
 
+static uint asm_arm_op_mvn_reg(uint rd, uint rm) {
+    // mvn rd, rm
+    return 0x1e00000 | (rd << 12) | rm;
+}
+
 static uint asm_arm_op_add_imm(uint rd, uint rn, uint imm) {
     // add rd, rn, #imm
     return 0x2800000 | (rn << 16) | (rd << 12) | (imm & 0xFF);
@@ -95,6 +100,11 @@ static uint asm_arm_op_sub_imm(uint rd, uint rn, uint imm) {
 static uint asm_arm_op_sub_reg(uint rd, uint rn, uint rm) {
     // sub rd, rn, rm
     return 0x0400000 | (rn << 16) | (rd << 12) | rm;
+}
+
+static uint asm_arm_op_rsb_imm(uint rd, uint rn, uint imm) {
+    // rsb rd, rn, #imm
+    return 0x2600000 | (rn << 16) | (rd << 12) | (imm & 0xFF);
 }
 
 static uint asm_arm_op_mul_reg(uint rd, uint rm, uint rs) {
@@ -228,9 +238,21 @@ void asm_arm_setcc_reg(asm_arm_t *as, uint rd, uint cond) {
     emit(as, asm_arm_op_mov_imm(rd, 0) | (cond ^ (1 << 28))); // mov!COND rd, #0
 }
 
+void asm_arm_mvn_reg_reg(asm_arm_t *as, uint rd, uint rm) {
+    // mvn rd, rm
+    // computes: rd := ~rm
+    emit_al(as, asm_arm_op_mvn_reg(rd, rm));
+}
+
 void asm_arm_add_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {
     // add rd, rn, rm
     emit_al(as, asm_arm_op_add_reg(rd, rn, rm));
+}
+
+void asm_arm_rsb_reg_reg_imm(asm_arm_t *as, uint rd, uint rn, uint imm) {
+    // rsb rd, rn, #imm
+    // computes: rd := #imm - rn
+    emit_al(as, asm_arm_op_rsb_imm(rd, rn, imm));
 }
 
 void asm_arm_sub_reg_reg_reg(asm_arm_t *as, uint rd, uint rn, uint rm) {

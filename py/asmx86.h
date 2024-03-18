@@ -92,6 +92,8 @@ void asm_x86_mov_r32_to_mem32(asm_x86_t *as, int src_r32, int dest_r32, int dest
 void asm_x86_mov_mem8_to_r32zx(asm_x86_t *as, int src_r32, int src_disp, int dest_r32);
 void asm_x86_mov_mem16_to_r32zx(asm_x86_t *as, int src_r32, int src_disp, int dest_r32);
 void asm_x86_mov_mem32_to_r32(asm_x86_t *as, int src_r32, int src_disp, int dest_r32);
+void asm_x86_not_r32(asm_x86_t *as, int dest_r32);
+void asm_x86_neg_r32(asm_x86_t *as, int dest_r32);
 void asm_x86_and_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_or_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
 void asm_x86_xor_r32_r32(asm_x86_t *as, int dest_r32, int src_r32);
@@ -186,6 +188,8 @@ void asm_x86_call_ind(asm_x86_t *as, size_t fun_id, mp_uint_t n_args, int temp_r
 #define ASM_MOV_REG_LOCAL_ADDR(as, reg_dest, local_num) asm_x86_mov_local_addr_to_r32((as), (local_num), (reg_dest))
 #define ASM_MOV_REG_PCREL(as, reg_dest, label) asm_x86_mov_reg_pcrel((as), (reg_dest), (label))
 
+#define ASM_NOT_REG(as, reg) asm_x86_not_r32((as), (reg))
+#define ASM_NEG_REG(as, reg) asm_x86_neg_r32((as), (reg))
 #define ASM_LSL_REG(as, reg) asm_x86_shl_r32_cl((as), (reg))
 #define ASM_LSR_REG(as, reg) asm_x86_shr_r32_cl((as), (reg))
 #define ASM_ASR_REG(as, reg) asm_x86_sar_r32_cl((as), (reg))
