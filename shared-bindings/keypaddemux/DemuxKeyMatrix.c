@@ -67,13 +67,13 @@
 //|         The keys are numbered sequentially from zero. A key number can be computed
 //|         by ``row * len(column_pins) + column``.
 //|
-//|         An `EventQueue` is created when this object is created and is available in the `events` attribute.
+//|         An `keypad.EventQueue` is created when this object is created and is available in the `events` attribute.
 //|
 //|         :param Sequence[microcontroller.Pin] row_addr_pins: The pins attached to the rows demultiplexer.
 //|         :param Sequence[microcontroller.Pin] column_pins: The pins attached to the columns.
 //|         :param float interval: Scan keys no more often than ``interval`` to allow for debouncing.
 //|           ``interval`` is in float seconds. The default is 0.020 (20 msecs).
-//|         :param int max_events: maximum size of `events` `EventQueue`:
+//|         :param int max_events: maximum size of `events` `keypad.EventQueue`:
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
 //|           If a new event arrives when the queue is full, the oldest event is discarded.
@@ -134,7 +134,7 @@ STATIC mp_obj_t keypad_demux_demuxkeymatrix_deinit(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(keypad_demux_demuxkeymatrix_deinit_obj, keypad_demux_demuxkeymatrix_deinit);
 
-//|     def __enter__(self) -> KeyMatrix:
+//|     def __enter__(self) -> DemuxKeyMatrix:
 //|         """No-op used by Context Managers."""
 //|         ...
 //  Provided by context manager helper.
@@ -202,6 +202,7 @@ MP_DEFINE_CONST_FUN_OBJ_2(keypad_demux_demuxkeymatrix_key_number_to_row_column_o
 //|         The key number is ``row * len(column_pins) + column``.
 //|         """
 //|         ...
+//|
 STATIC mp_obj_t keypad_demux_demuxkeymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
     keypad_demux_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -216,11 +217,6 @@ STATIC mp_obj_t keypad_demux_demuxkeymatrix_row_column_to_key_number(mp_obj_t se
         (mp_int_t)common_hal_keypad_demux_demuxkeymatrix_row_column_to_key_number(self, row, column));
 }
 MP_DEFINE_CONST_FUN_OBJ_3(keypad_demux_demuxkeymatrix_row_column_to_key_number_obj, keypad_demux_demuxkeymatrix_row_column_to_key_number);
-
-//|     events: EventQueue
-//|     """The `EventQueue` associated with this `Keys` object. (read-only)
-//|     """
-//|
 
 STATIC const mp_rom_map_elem_t keypad_demux_demuxkeymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&keypad_demux_demuxkeymatrix_deinit_obj) },
