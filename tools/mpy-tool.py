@@ -1730,10 +1730,13 @@ def merge_mpy(compiled_modules, output_file):
         bytecode.append(0b00000010)  # prelude size (n_info=1, n_cell=0)
         bytecode.extend(b"\x00")  # simple_name: qstr index 0 (will use source filename)
         for idx in range(len(compiled_modules)):
-            bytecode.append(0x32)  # MP_BC_MAKE_FUNCTION
-            bytecode.append(idx)  # index raw code
-            bytecode.extend(b"\x34\x00\x59")  # MP_BC_CALL_FUNCTION, 0 args, MP_BC_POP_TOP
-        bytecode.extend(b"\x51\x63")  # MP_BC_LOAD_NONE, MP_BC_RETURN_VALUE
+            bytecode.append(Opcode.MP_BC_MAKE_FUNCTION)
+            bytecode.extend(mp_encode_uint(idx))  # index of raw code
+            bytecode.append(Opcode.MP_BC_CALL_FUNCTION)
+            bytecode.append(0)  # 0 arguments
+            bytecode.append(Opcode.MP_BC_POP_TOP)
+        bytecode.append(Opcode.MP_BC_LOAD_CONST_NONE)
+        bytecode.append(Opcode.MP_BC_RETURN_VALUE)
 
         merged_mpy.extend(mp_encode_uint(len(bytecode) << 3 | 1 << 2))  # length, has_children
         merged_mpy.extend(bytecode)
