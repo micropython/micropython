@@ -78,7 +78,7 @@ ADDITIONAL_MODULES = {
     "keypad.KeyMatrix": "CIRCUITPY_KEYPAD_KEYMATRIX",
     "keypad.Keys": "CIRCUITPY_KEYPAD_KEYS",
     "keypad.ShiftRegisterKeys": "CIRCUITPY_KEYPAD_SHIFTREGISTERKEYS",
-    "keypad.DemuxKeyMatrix": "CIRCUITPY_KEYPAD_DEMUXKEYMATRIX",
+    "keypaddemux.DemuxKeyMatrix": "CIRCUITPY_KEYPAD_DEMUX",
     "os.getenv": "CIRCUITPY_OS_GETENV",
     "select": "MICROPY_PY_SELECT_SELECT",
     "sys": "CIRCUITPY_SYS",

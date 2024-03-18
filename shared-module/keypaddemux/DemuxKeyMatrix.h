@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPADE_DEMUXKEYMATRIX_H
-#define MICROPY_INCLUDED_SHARED_MODULE_KEYPADE_DEMUXKEYMATRIX_H
+#ifndef MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
+#define MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
 
 #include "py/obj.h"
 #include "py/objtuple.h"
@@ -38,8 +38,8 @@ typedef struct {
     KEYPAD_SCANNER_COMMON_FIELDS;
     mp_obj_tuple_t *row_addr_digitalinouts;
     mp_obj_tuple_t *column_digitalinouts;
-} keypad_demuxkeymatrix_obj_t;
+} keypad_demux_demuxkeymatrix_obj_t;
 
-void keypad_demuxkeymatrix_scan(keypad_demuxkeymatrix_obj_t *self);
+void keypad_demux_demuxkeymatrix_scan(keypad_demux_demuxkeymatrix_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPADE_DEMUXKEYMATRIX_H
+#endif  // MICROPY_INCLUDED_SHARED_MODULE_KEYPAD_DEMUX_DEMUXKEYMATRIX_H

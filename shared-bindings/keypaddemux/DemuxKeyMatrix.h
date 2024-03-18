@@ -24,22 +24,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUXKEYMATRIX_H
-#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUXKEYMATRIX_H
+#ifndef MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
+#define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
 
 #include "py/objlist.h"
-#include "shared-module/keypad/DemuxKeyMatrix.h"
+#include "shared-module/keypaddemux/DemuxKeyMatrix.h"
 
-extern const mp_obj_type_t keypad_demuxkeymatrix_type;
+extern const mp_obj_type_t keypad_demux_demuxkeymatrix_type;
 
-void common_hal_keypad_demuxkeymatrix_construct(keypad_demuxkeymatrix_obj_t *self, mp_uint_t num_row_addr_pins, const mcu_pin_obj_t *row_addr_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], mp_float_t interval, size_t max_events);
+void common_hal_keypad_demux_demuxkeymatrix_construct(keypad_demux_demuxkeymatrix_obj_t *self, mp_uint_t num_row_addr_pins, const mcu_pin_obj_t *row_addr_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], mp_float_t interval, size_t max_events);
 
-void common_hal_keypad_demuxkeymatrix_deinit(keypad_demuxkeymatrix_obj_t *self);
+void common_hal_keypad_demux_demuxkeymatrix_deinit(keypad_demux_demuxkeymatrix_obj_t *self);
 
-void common_hal_keypad_demuxkeymatrix_key_number_to_row_column(keypad_demuxkeymatrix_obj_t *self, mp_uint_t key_number, mp_uint_t *row, mp_uint_t *column);
-mp_uint_t common_hal_keypad_demuxkeymatrix_row_column_to_key_number(keypad_demuxkeymatrix_obj_t *self, mp_uint_t row, mp_uint_t column);
+void common_hal_keypad_demux_demuxkeymatrix_key_number_to_row_column(keypad_demux_demuxkeymatrix_obj_t *self, mp_uint_t key_number, mp_uint_t *row, mp_uint_t *column);
+mp_uint_t common_hal_keypad_demux_demuxkeymatrix_row_column_to_key_number(keypad_demux_demuxkeymatrix_obj_t *self, mp_uint_t row, mp_uint_t column);
 
-size_t common_hal_keypad_demuxkeymatrix_get_column_count(keypad_demuxkeymatrix_obj_t *self);
-size_t common_hal_keypad_demuxkeymatrix_get_row_count(keypad_demuxkeymatrix_obj_t *self);
+size_t common_hal_keypad_demux_demuxkeymatrix_get_column_count(keypad_demux_demuxkeymatrix_obj_t *self);
+size_t common_hal_keypad_demux_demuxkeymatrix_get_row_count(keypad_demux_demuxkeymatrix_obj_t *self);
 
-#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUXKEYMATRIX_H
+#endif  // MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
