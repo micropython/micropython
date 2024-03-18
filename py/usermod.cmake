@@ -36,7 +36,15 @@ function(usermod_gather_sources SOURCES_VARNAME INCLUDE_DIRECTORIES_VARNAME INCL
 endfunction()
 
 # Include CMake files for user modules.
-if (USER_C_MODULES)
+if (EXISTS ${USER_C_MODULES}/${MICROPY_BOARD}_micropython.cmake)
+    message("Including User C Module(s) from ${USER_C_MODULE_PATH} for Board ${MICROPY_BOARD}")
+    include(${USER_C_MODULES}/${MICROPY_BOARD}_micropython.cmake)
+
+elseif(EXISTS ${USER_C_MODULES}/micropython.cmake)
+    message("Including User C Module(s) from ${USER_C_MODULE_PATH} from micropython.cnake")
+    include(${USER_C_MODULES}/micropython.cmake)
+
+elseif (USER_C_MODULES)
     foreach(USER_C_MODULE_PATH ${USER_C_MODULES})
         message("Including User C Module(s) from ${USER_C_MODULE_PATH}")
         include(${USER_C_MODULE_PATH})
