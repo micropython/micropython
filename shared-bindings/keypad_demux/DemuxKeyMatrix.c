@@ -217,8 +217,8 @@ STATIC mp_obj_t keypad_demux_demuxkeymatrix_row_column_to_key_number(mp_obj_t se
 }
 MP_DEFINE_CONST_FUN_OBJ_3(keypad_demux_demuxkeymatrix_row_column_to_key_number_obj, keypad_demux_demuxkeymatrix_row_column_to_key_number);
 
-//|     events: EventQueue
-//|     """The `EventQueue` associated with this `keypad.Keys` object. (read-only)
+//|     events: keypad.EventQueue
+//|     """The `keypad.EventQueue` associated with this `keypad.Keys` object. (read-only)
 //|     """
 //|
 
