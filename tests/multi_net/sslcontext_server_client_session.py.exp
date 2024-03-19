@@ -1,0 +1,29 @@
+--- instance0 ---
+b'client to server 0'
+b'client to server 1'
+b'client to server 2'
+b'client to server 3'
+b'client to server 4'
+b'client to server 5'
+b'client to server 6'
+--- instance1 ---
+b'server to client 0'
+<class 'SSLSession'>
+b'server to client 1'
+<class 'SSLSession'>
+True
+b'server to client 2'
+<class 'SSLSession'>
+True
+b'server to client 3'
+<class 'SSLSession'>
+True
+b'server to client 4'
+<class 'SSLSession'>
+True
+b'server to client 5'
+<class 'SSLSession'>
+True
+b'server to client 6'
+<class 'SSLSession'>
+True
