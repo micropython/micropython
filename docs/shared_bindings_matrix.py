@@ -38,7 +38,7 @@ SUPPORTED_PORTS = [
     "espressif",
     "litex",
     "mimxrt10xx",
-    "nrf",
+    "nordic",
     "raspberrypi",
     "silabs",
     "stm",

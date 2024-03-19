@@ -35,7 +35,7 @@ a reset into bootloader.)
 
 ## BLE
 
-The BLE workflow is enabled for nRF boards. By default, to prevent malicious access, it is disabled.
+The BLE workflow is enabled for Nordic boards. By default, to prevent malicious access, it is disabled.
 To connect to the BLE workflow, press the reset button while the status led blinks blue quickly
 after the safe mode blinks. The board will restart and broadcast the file transfer service UUID
 (`0xfebb`) along with the board's [Creation IDs](https://github.com/creationid/creators). This

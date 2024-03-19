@@ -57,7 +57,7 @@ Examples:
     cd ports/atmel-samd
     make BOARD=circuitplayground_express
 
-    cd ports/nrf
+    cd ports/nordic
     make BOARD=circuitplayground_bluefruit
 
 If you aren't sure what boards exist, have a peek in the boards subdirectory of your port.

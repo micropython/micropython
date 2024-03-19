@@ -73,7 +73,7 @@ time_alarm = alarm.time.TimeAlarm(monotonic_time=time.monotonic() + 10)
 pin_alarm = alarm.pin.PinAlarm(
     pin=wake_pin, value=True, edge=True, pull=True
 )  # STM32 must be this exact config
-# pin_alarm = alarm.pin.PinAlarm(pin=wake_pin, value=False, edge=False, pull=True)  # NRF and ESP32S2 must use level, not edge
+# pin_alarm = alarm.pin.PinAlarm(pin=wake_pin, value=False, edge=False, pull=True)  # Nordic and ESP32S2 must use level, not edge
 # pin_alarm = alarm.pin.PinAlarm(pin=wake_pin, value=False, edge=True, pull=True)   # RP2040 supports any config
 
 alarm.exit_and_deep_sleep_until_alarms(time_alarm, pin_alarm)
