@@ -78,7 +78,7 @@ NORETURN void nlr_jump(void *val) {
         "nop            \n"
         :
         : "r" (top)
-        :
+        : "memory"
         );
     MP_UNREACHABLE
 }
