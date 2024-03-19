@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/keypad/Event.h"
-#include "shared-bindings/keypaddemux/DemuxKeyMatrix.h"
+#include "shared-bindings/keypad_demux/DemuxKeyMatrix.h"
 #include "shared-bindings/microcontroller/Pin.h"
 #include "shared-bindings/util.h"
 
@@ -43,7 +43,7 @@
 //|         <details>
 //|         <summary>Available on these boards</summary>
 //|         <ul>
-//|         {% for board in support_matrix_reverse["keypaddemux.DemuxKeyMatrix"] %}
+//|         {% for board in support_matrix_reverse["keypad_demux.DemuxKeyMatrix"] %}
 //|         <li> {{ board }}
 //|         {% endfor %}
 //|         </ul>
@@ -202,7 +202,6 @@ MP_DEFINE_CONST_FUN_OBJ_2(keypad_demux_demuxkeymatrix_key_number_to_row_column_o
 //|         The key number is ``row * len(column_pins) + column``.
 //|         """
 //|         ...
-//|
 STATIC mp_obj_t keypad_demux_demuxkeymatrix_row_column_to_key_number(mp_obj_t self_in, mp_obj_t row_in, mp_obj_t column_in) {
     keypad_demux_demuxkeymatrix_obj_t *self = MP_OBJ_TO_PTR(self_in);
     check_for_deinit(self);
@@ -217,6 +216,11 @@ STATIC mp_obj_t keypad_demux_demuxkeymatrix_row_column_to_key_number(mp_obj_t se
         (mp_int_t)common_hal_keypad_demux_demuxkeymatrix_row_column_to_key_number(self, row, column));
 }
 MP_DEFINE_CONST_FUN_OBJ_3(keypad_demux_demuxkeymatrix_row_column_to_key_number_obj, keypad_demux_demuxkeymatrix_row_column_to_key_number);
+
+//|     events: EventQueue
+//|     """The `EventQueue` associated with this `keypad.Keys` object. (read-only)
+//|     """
+//|
 
 STATIC const mp_rom_map_elem_t keypad_demux_demuxkeymatrix_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_deinit),                   MP_ROM_PTR(&keypad_demux_demuxkeymatrix_deinit_obj) },

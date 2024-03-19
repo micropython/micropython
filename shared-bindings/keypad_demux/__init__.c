@@ -26,19 +26,19 @@
 
 #include "py/obj.h"
 
-#include "shared-bindings/keypaddemux/DemuxKeyMatrix.h"
+#include "shared-bindings/keypad_demux/DemuxKeyMatrix.h"
 #include "shared-bindings/util.h"
 
 //| """Support for scanning key matrices that use a demultiplexer
 //|
-//| The `keypaddemux` module provides native support to scan sets of keys or buttons,
+//| The `keypad_demux` module provides native support to scan sets of keys or buttons,
 //| connected in a row-and-column matrix.
 //|
 //| .. jinja
 //| """
 
 STATIC mp_rom_map_elem_t keypad_demux_module_globals_table[] = {
-    { MP_ROM_QSTR(MP_QSTR___name__),          MP_OBJ_NEW_QSTR(MP_QSTR_keypaddemux) },
+    { MP_ROM_QSTR(MP_QSTR___name__),          MP_OBJ_NEW_QSTR(MP_QSTR_keypad_demux) },
     { MP_ROM_QSTR(MP_QSTR_DemuxKeyMatrix),    MP_OBJ_FROM_PTR(&keypad_demux_demuxkeymatrix_type) },
 };
 
@@ -49,4 +49,4 @@ const mp_obj_module_t keypad_demux_module = {
     .globals = (mp_obj_dict_t *)&keypad_demux_module_globals,
 };
 
-MP_REGISTER_MODULE(MP_QSTR_keypaddemux, keypad_demux_module);
+MP_REGISTER_MODULE(MP_QSTR_keypad_demux, keypad_demux_module);

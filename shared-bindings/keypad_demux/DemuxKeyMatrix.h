@@ -28,7 +28,7 @@
 #define MICROPY_INCLUDED_SHARED_BINDINGS_KEYPAD_DEMUX_DEMUXKEYMATRIX_H
 
 #include "py/objlist.h"
-#include "shared-module/keypaddemux/DemuxKeyMatrix.h"
+#include "shared-module/keypad_demux/DemuxKeyMatrix.h"
 
 extern const mp_obj_type_t keypad_demux_demuxkeymatrix_type;
 

@@ -30,7 +30,7 @@
 #include "py/runtime.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "shared-bindings/keypad/EventQueue.h"
-#include "shared-bindings/keypaddemux/DemuxKeyMatrix.h"
+#include "shared-bindings/keypad_demux/DemuxKeyMatrix.h"
 #include "shared-bindings/keypad/__init__.h"
 #include "shared-bindings/supervisor/__init__.h"
 #include "shared-bindings/util.h"
