@@ -13,7 +13,7 @@ facilities for network sockets, both client-side and server-side.
 Functions
 ---------
 
-.. function:: ssl.wrap_socket(sock, server_side=False, key=None, cert=None, cert_reqs=CERT_NONE, cadata=None, server_hostname=None, do_handshake=True)
+.. function:: ssl.wrap_socket(sock, server_side=False, key=None, cert=None, cert_reqs=CERT_NONE, cadata=None, server_hostname=None, do_handshake=True, session=None)
 
     Wrap the given *sock* and return a new wrapped-socket object.  The implementation
     of this function is to first create an `SSLContext` and then call the `SSLContext.wrap_socket`
@@ -27,6 +27,9 @@ Functions
 
    - *cadata* is a bytes object containing the CA certificate chain (in DER format) that will
      validate the peer's certificate.  Currently only a single DER-encoded certificate is supported.
+
+   - *session* allows a client socket to reuse a session by passing a SSLSession object
+     previously retrieved from the ``session`` property of a wrapped-socket object.
 
    Depending on the underlying module implementation in a particular
    :term:`MicroPython port`, some or all keyword arguments above may be not supported.
@@ -66,7 +69,7 @@ class SSLContext
    Set the available ciphers for sockets created with this context.  *ciphers* should be
    a list of strings in the `IANA cipher suite format <https://wiki.mozilla.org/Security/Cipher_Suites>`_ .
 
-.. method:: SSLContext.wrap_socket(sock, *, server_side=False, do_handshake_on_connect=True, server_hostname=None)
+.. method:: SSLContext.wrap_socket(sock, *, server_side=False, do_handshake_on_connect=True, server_hostname=None, session=None)
 
    Takes a `stream` *sock* (usually socket.socket instance of ``SOCK_STREAM`` type),
    and returns an instance of ssl.SSLSocket, wrapping the underlying stream.
@@ -89,6 +92,9 @@ class SSLContext
      server certificate.  It also sets the name for Server Name Indication (SNI), allowing the server
      to present the proper certificate.
 
+   - *session* allows a client socket to reuse a session by passing a SSLSession object
+     previously retrieved from the ``session`` property of a ssl.SSLSocket object.
+
 .. warning::
 
    Some implementations of ``ssl`` module do NOT validate server certificates,
@@ -109,6 +115,19 @@ class SSLContext
    ``ssl.CERT_REQUIRED`` requires the device's date/time to be properly set, e.g. using
    `mpremote rtc --set <mpremote_command_rtc>` or ``ntptime``, and ``server_hostname``
    must be specified when on the client side.
+
+class SSLSession
+----------------
+
+.. class:: SSLSession(buf)
+
+    This constructor is a MicroPython extension to reconstruct a SSLSession object using
+    a bytes object previously returned by the ``serialize`` method.
+
+.. method:: SSLSession.serialize()
+
+   This function is a MicroPython extension to return a bytes object representing the
+   session, allowing it to be stored and reconstructed at a later time.
 
 Exceptions
 ----------
