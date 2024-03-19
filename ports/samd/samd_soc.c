@@ -116,7 +116,6 @@ void samd_init(void) {
     init_clocks(get_cpu_freq());
     init_us_counter();
     usb_init();
-    check_usb_recovery_mode();
     #if defined(MCU_SAMD51)
     mp_hal_ticks_cpu_enable();
     #endif

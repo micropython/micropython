@@ -34,6 +34,7 @@
 #include "shared/runtime/pyexec.h"
 #include "shared/runtime/softtimer.h"
 #include "shared/tinyusb/mp_usbd.h"
+#include "clock_config.h"
 
 extern uint8_t _sstack, _estack, _sheap, _eheap;
 extern void adc_deinit_all(void);
@@ -59,6 +60,7 @@ void samd_main(void) {
         int ret = pyexec_file_if_exists("boot.py");
 
         mp_usbd_init();
+        check_usb_clock_recovery_mode();
 
         if (ret & PYEXEC_FORCED_EXIT) {
             goto soft_reset_exit;
