@@ -267,7 +267,14 @@ STATIC void check_enabled(bleio_adapter_obj_t *adapter) {
 //     return true;
 // }
 
-char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0};
+// Includes trailing null.
+char default_ble_name[] = { 'C', 'I', 'R', 'C', 'U', 'I', 'T', 'P', 'Y', 0, 0, 0, 0, 0};
+
+static void _adapter_set_name(bleio_adapter_obj_t *self, mp_obj_str_t *name_obj) {
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(name_obj, &bufinfo, MP_BUFFER_READ);
+    bleio_characteristic_set_local_value(self->device_name_characteristic, &bufinfo);
+}
 
 // Get various values and limits set by the adapter.
 // Set event mask.
@@ -283,7 +290,7 @@ STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
     #endif
 
     if (!self->name) {
-        name_len = sizeof(default_ble_name);
+        name_len = sizeof(default_ble_name) - 1;
         bt_addr_t addr;
         hci_check_error(hci_read_bd_addr(&addr));
 
@@ -291,8 +298,10 @@ STATIC void bleio_adapter_hci_init(bleio_adapter_obj_t *self) {
         default_ble_name[name_len - 3] = nibble_to_hex_lower[addr.val[1] & 0xf];
         default_ble_name[name_len - 2] = nibble_to_hex_lower[addr.val[0] >> 4 & 0xf];
         default_ble_name[name_len - 1] = nibble_to_hex_lower[addr.val[0] & 0xf];
+        // default_ble_name[name_len] will be zero.
         self->name = mp_obj_new_str(default_ble_name, (uint8_t)name_len);
     }
+    _adapter_set_name(self, self->name);
 
     // Get version information.
     if (hci_read_local_version(&self->hci_version, &self->hci_revision, &self->lmp_version,
@@ -358,7 +367,6 @@ void common_hal_bleio_adapter_construct_hci_uart(bleio_adapter_obj_t *self, busi
 
     common_hal_bleio_adapter_set_enabled(self, true);
     bleio_adapter_hci_init(self);
-    common_hal_bleio_adapter_set_name(self, default_ble_name);
 }
 
 void common_hal_bleio_adapter_set_enabled(bleio_adapter_obj_t *self, bool enabled) {
@@ -426,9 +434,7 @@ mp_obj_str_t *common_hal_bleio_adapter_get_name(bleio_adapter_obj_t *self) {
 
 void common_hal_bleio_adapter_set_name(bleio_adapter_obj_t *self, const char *name) {
     self->name = mp_obj_new_str(name, strlen(name));
-    mp_buffer_info_t bufinfo;
-    mp_get_buffer_raise(self->name, &bufinfo, MP_BUFFER_READ);
-    bleio_characteristic_set_local_value(self->device_name_characteristic, &bufinfo);
+    _adapter_set_name(self, self->name);
 }
 
 
