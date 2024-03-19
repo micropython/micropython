@@ -54,6 +54,14 @@
 #include "mbedtls/version.h"
 #endif
 
+#if defined(MBEDTLS_CONFIG_FILE)
+#include MBEDTLS_CONFIG_FILE
+#endif
+
+#if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_TICKET_C)
+#include "mbedtls/ssl_ticket.h"
+#endif
+
 #define MP_STREAM_POLL_RDWR (MP_STREAM_POLL_RD | MP_STREAM_POLL_WR)
 
 // This corresponds to an SSLContext object.
@@ -65,6 +73,9 @@ typedef struct _mp_obj_ssl_context_t {
     mbedtls_x509_crt cacert;
     mbedtls_x509_crt cert;
     mbedtls_pk_context pkey;
+    #if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_TICKET_C)
+    mbedtls_ssl_ticket_context ticket;
+    #endif
     int authmode;
     int *ciphersuites;
     mp_obj_t handler;
@@ -283,6 +294,9 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_x509_crt_init(&self->cacert);
     mbedtls_x509_crt_init(&self->cert);
     mbedtls_pk_init(&self->pkey);
+    #if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_TICKET_C)
+    mbedtls_ssl_ticket_init(&self->ticket);
+    #endif
     self->ciphersuites = NULL;
     self->handler = mp_const_none;
 
@@ -321,6 +335,14 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     mbedtls_ssl_conf_dbg(&self->conf, mbedtls_debug, NULL);
     #endif
 
+    #if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_TICKET_C)
+    ret = mbedtls_ssl_ticket_setup(&self->ticket, mbedtls_ctr_drbg_random, &self->ctr_drbg, MBEDTLS_CIPHER_AES_256_GCM, 86400);
+    if (ret != 0) {
+        mbedtls_raise_error(ret);
+    }
+    mbedtls_ssl_conf_session_tickets_cb(&self->conf, mbedtls_ssl_ticket_write, mbedtls_ssl_ticket_parse, &self->ticket);
+    #endif
+
     return MP_OBJ_FROM_PTR(self);
 }
 
@@ -352,6 +374,9 @@ static void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
 #if MICROPY_PY_SSL_FINALISER
 static mp_obj_t ssl_context___del__(mp_obj_t self_in) {
     mp_obj_ssl_context_t *self = MP_OBJ_TO_PTR(self_in);
+    #if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_TICKET_C)
+    mbedtls_ssl_ticket_free(&self->ticket);
+    #endif
     mbedtls_pk_free(&self->pkey);
     mbedtls_x509_crt_free(&self->cert);
     mbedtls_x509_crt_free(&self->cacert);
