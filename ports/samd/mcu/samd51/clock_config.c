@@ -115,8 +115,8 @@ void set_cpu_freq(uint32_t cpu_freq_arg) {
     SysTick_Config(cpu_freq / 1000);
 }
 
-void check_usb_recovery_mode(void) {
-    #if !MICROPY_HW_XOSC32K
+void check_usb_clock_recovery_mode(void) {
+    #if MICROPY_HW_DFLL_USB_SYNC
     // Check USB status for up to 1 second. If not connected,
     // switch DFLL48M back to open loop
     for (int i = 0; i < 100; i++) {
@@ -144,7 +144,7 @@ void check_usb_recovery_mode(void) {
     OSCCTRL->DFLLCTRLB.reg = 0;
     while (OSCCTRL->DFLLSYNC.bit.DFLLCTRLB == 1) {
     }
-    #endif // MICROPY_HW_XOSC32K
+    #endif
 }
 
 // Purpose of the #defines for the clock configuration.
