@@ -76,6 +76,10 @@ int main(int argc, char **argv) {
     // This is a tickless port, interrupts should always trigger SEV.
     SCB->SCR |= SCB_SCR_SEVONPEND_Msk;
 
+    // set the MCU frequency and as a side effect the peripheral clock
+    // to 48 MHz.
+    set_sys_clock_khz(125000, false);
+
     #if MICROPY_HW_ENABLE_UART_REPL
     bi_decl(bi_program_feature("UART REPL"))
     setup_default_uart();
@@ -227,6 +231,12 @@ int main(int argc, char **argv) {
 
         gc_sweep_all();
         mp_deinit();
+        // Reset the MCU frequency
+        set_sys_clock_khz(125000, false);
+        #if MICROPY_HW_ENABLE_UART_REPL
+        setup_default_uart();
+        mp_uart_init();
+        #endif
     }
 
     return 0;
