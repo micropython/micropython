@@ -103,7 +103,7 @@ msgstr "%q and %q must be different"
 msgid "%q and %q must share a clock unit"
 msgstr "%q and %q must share a clock unit"
 
-#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/nordic/common-hal/watchdog/WatchDogTimer.c
 msgid "%q cannot be changed once mode is set to %q"
 msgstr ""
 
@@ -249,7 +249,7 @@ msgstr "%q out of bounds"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/nordic/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/rp2pio/StateMachine.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/argcheck.c
 #: shared-bindings/canio/Match.c shared-bindings/time/__init__.c
@@ -474,7 +474,7 @@ msgid "Address must be %d bytes long"
 msgstr "Address must be %d bytes long"
 
 #: ports/espressif/common-hal/memorymap/AddressRange.c
-#: ports/nrf/common-hal/memorymap/AddressRange.c
+#: ports/nordic/common-hal/memorymap/AddressRange.c
 #: ports/raspberrypi/common-hal/memorymap/AddressRange.c
 msgid "Address range not allowed"
 msgstr "Address range not allowed"
@@ -489,7 +489,7 @@ msgstr "All CAN peripherals are in use"
 
 #: ports/espressif/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/i2ctarget/I2CTarget.c
-#: ports/nrf/common-hal/busio/I2C.c
+#: ports/nordic/common-hal/busio/I2C.c
 msgid "All I2C peripherals are in use"
 msgstr "All I2C peripherals are in use"
 
@@ -499,17 +499,17 @@ msgstr "All I2C peripherals are in use"
 msgid "All RX FIFOs in use"
 msgstr "All RX FIFOs in use"
 
-#: ports/espressif/common-hal/busio/SPI.c ports/nrf/common-hal/busio/SPI.c
+#: ports/espressif/common-hal/busio/SPI.c ports/nordic/common-hal/busio/SPI.c
 msgid "All SPI peripherals are in use"
 msgstr "All SPI peripherals are in use"
 
-#: ports/espressif/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/espressif/common-hal/busio/UART.c ports/nordic/common-hal/busio/UART.c
 msgid "All UART peripherals are in use"
 msgstr "All UART peripherals are in use"
 
-#: ports/nrf/common-hal/countio/Counter.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/rotaryio/IncrementalEncoder.c
+#: ports/nordic/common-hal/countio/Counter.c
+#: ports/nordic/common-hal/pulseio/PulseIn.c
+#: ports/nordic/common-hal/rotaryio/IncrementalEncoder.c
 msgid "All channels in use"
 msgstr "All channels in use"
 
@@ -540,15 +540,16 @@ msgstr "All timers for this pin are in use"
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/atmel-samd/common-hal/pulseio/PulseOut.c
 #: ports/cxd56/common-hal/pulseio/PulseOut.c
-#: ports/nrf/common-hal/audiopwmio/PWMAudioOut.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c ports/nrf/peripherals/nrf/timers.c
+#: ports/nordic/common-hal/audiopwmio/PWMAudioOut.c
+#: ports/nordic/common-hal/pulseio/PulseIn.c
+#: ports/nordic/peripherals/nrf/timers.c
 #: ports/raspberrypi/common-hal/audiopwmio/PWMAudioOut.c
 #: ports/stm/peripherals/timers.c
 msgid "All timers in use"
 msgstr "All timers in use"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "Already advertising."
 msgstr "Already advertising."
 
@@ -691,7 +692,7 @@ msgstr "Buffer too small"
 
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/espressif/common-hal/paralleldisplaybus/ParallelBus.c
-#: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/nordic/common-hal/paralleldisplaybus/ParallelBus.c
 #: ports/raspberrypi/common-hal/paralleldisplaybus/ParallelBus.c
 #, c-format
 msgid "Bus pin %d is already in use"
@@ -734,7 +735,7 @@ msgid "Can only alarm on two low pins from deep sleep."
 msgstr "Can only alarm on two low pins from deep sleep."
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nordic/common-hal/_bleio/Characteristic.c
 msgid "Can't set CCCD on local Characteristic"
 msgstr "Can't set CCCD on local Characteristic"
 
@@ -756,12 +757,12 @@ msgstr "Cannot delete values"
 
 #: ports/atmel-samd/common-hal/digitalio/DigitalInOut.c
 #: ports/mimxrt10xx/common-hal/digitalio/DigitalInOut.c
-#: ports/nrf/common-hal/digitalio/DigitalInOut.c
+#: ports/nordic/common-hal/digitalio/DigitalInOut.c
 #: ports/raspberrypi/common-hal/digitalio/DigitalInOut.c
 msgid "Cannot get pull while in output mode"
 msgstr "Cannot get pull while in output mode"
 
-#: ports/nrf/common-hal/microcontroller/Processor.c
+#: ports/nordic/common-hal/microcontroller/Processor.c
 msgid "Cannot get temperature"
 msgstr "Cannot get temperature"
 
@@ -794,7 +795,7 @@ msgstr "Cannot specify RTS or CTS in RS485 mode"
 msgid "Cannot subclass slice"
 msgstr "Cannot subclass slice"
 
-#: ports/nrf/common-hal/alarm/pin/PinAlarm.c
+#: ports/nordic/common-hal/alarm/pin/PinAlarm.c
 msgid "Cannot wake on pin edge, only level"
 msgstr "Cannot wake on pin edge, only level"
 
@@ -855,7 +856,7 @@ msgid "DAC already in use"
 msgstr "DAC already in use"
 
 #: ports/atmel-samd/common-hal/paralleldisplaybus/ParallelBus.c
-#: ports/nrf/common-hal/paralleldisplaybus/ParallelBus.c
+#: ports/nordic/common-hal/paralleldisplaybus/ParallelBus.c
 msgid "Data 0 pin must be byte aligned"
 msgstr "Data 0 pin must be byte aligned"
 
@@ -868,12 +869,12 @@ msgid "Data format error (may be broken data)"
 msgstr "Data format error (may be broken data)"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "Data not supported with directed advertising"
 msgstr "Data not supported with directed advertising"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "Data too large for advertisement packet"
 msgstr "Data too large for advertisement packet"
 
@@ -889,7 +890,7 @@ msgstr "Destination capacity is smaller than destination_length."
 msgid "Device error or wrong termination of input stream"
 msgstr "Device error or wrong termination of input stream"
 
-#: ports/nrf/common-hal/audiobusio/I2SOut.c
+#: ports/nordic/common-hal/audiobusio/I2SOut.c
 msgid "Device in use"
 msgstr "Device in use"
 
@@ -938,7 +939,7 @@ msgid "Expected a kind of %q"
 msgstr "Expected a kind of %q"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "Extended advertisements with scan response not supported."
 msgstr "Extended advertisements with scan response not supported."
 
@@ -954,7 +955,7 @@ msgstr "FFT is implemented for linear arrays only"
 msgid "Failed sending command."
 msgstr "Failed sending command."
 
-#: ports/nrf/sd_mutex.c
+#: ports/nordic/sd_mutex.c
 #, c-format
 msgid "Failed to acquire mutex, err 0x%04x"
 msgstr "Failed to acquire mutex, err 0x%04x"
@@ -986,11 +987,11 @@ msgid "Failed to buffer the sample"
 msgstr "Failed to buffer the sample"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: internal error"
 msgstr "Failed to connect: internal error"
 
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "Failed to connect: timeout"
 msgstr "Failed to connect: timeout"
 
@@ -998,7 +999,7 @@ msgstr "Failed to connect: timeout"
 msgid "Failed to parse MP3 file"
 msgstr "Failed to parse MP3 file"
 
-#: ports/nrf/sd_mutex.c
+#: ports/nordic/sd_mutex.c
 #, c-format
 msgid "Failed to release mutex, err 0x%04x"
 msgstr "Failed to release mutex, err 0x%04x"
@@ -1131,11 +1132,11 @@ msgstr "Input taking too long"
 msgid "Input/output error"
 msgstr "Input/output error"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient authentication"
 msgstr "Insufficient authentication"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Insufficient encryption"
 msgstr "Insufficient encryption"
 
@@ -1211,7 +1212,7 @@ msgid "Invalid ADC Unit value"
 msgstr "Invalid ADC unit value"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Invalid BLE parameter"
 msgstr "Invalid BLE parameter"
 
@@ -1391,7 +1392,8 @@ msgstr "Nimble out of memory"
 #: ports/espressif/common-hal/busio/SPI.c
 #: ports/espressif/common-hal/busio/UART.c
 #: ports/mimxrt10xx/common-hal/busio/SPI.c
-#: ports/mimxrt10xx/common-hal/busio/UART.c ports/nrf/common-hal/busio/UART.c
+#: ports/mimxrt10xx/common-hal/busio/UART.c
+#: ports/nordic/common-hal/busio/UART.c
 #: ports/raspberrypi/common-hal/busio/UART.c ports/stm/common-hal/busio/SPI.c
 #: ports/stm/common-hal/busio/UART.c shared-bindings/fourwire/FourWire.c
 #: shared-bindings/i2cdisplaybus/I2CDisplayBus.c
@@ -1401,7 +1403,7 @@ msgid "No %q pin"
 msgstr "No %q pin"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Characteristic.c
+#: ports/nordic/common-hal/_bleio/Characteristic.c
 msgid "No CCCD for this Characteristic"
 msgstr "No CCCD for this Characteristic"
 
@@ -1480,7 +1482,7 @@ msgstr "No out in program"
 
 #: ports/atmel-samd/common-hal/busio/I2C.c
 #: ports/espressif/common-hal/busio/I2C.c
-#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nrf/common-hal/busio/I2C.c
+#: ports/mimxrt10xx/common-hal/busio/I2C.c ports/nordic/common-hal/busio/I2C.c
 #: ports/raspberrypi/common-hal/busio/I2C.c
 msgid "No pull up found on SDA or SCL; check your wiring"
 msgstr "No pull up found on SDA or SCL; check your wiring"
@@ -1509,7 +1511,7 @@ msgstr "No timer available"
 msgid "No usb host port initialized"
 msgstr "No USB host port initialised"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 msgid "Nordic system firmware out of memory"
 msgstr "Nordic system firmware out of memory"
 
@@ -1518,7 +1520,7 @@ msgid "Not a valid IP string"
 msgstr "Not a valid IP string"
 
 #: ports/espressif/common-hal/_bleio/__init__.c
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 #: shared-bindings/_bleio/CharacteristicBuffer.c
 msgid "Not connected"
 msgstr "Not connected"
@@ -1543,7 +1545,7 @@ msgid ""
 msgstr ""
 "Object has been deinitialised and can no longer be used. Create a new object."
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nordic/common-hal/busio/UART.c
 msgid "Odd parity is not supported"
 msgstr "Odd parity is not supported"
 
@@ -1613,7 +1615,7 @@ msgid "Only one address is allowed"
 msgstr "Only one address is allowed"
 
 #: ports/atmel-samd/common-hal/alarm/time/TimeAlarm.c
-#: ports/nrf/common-hal/alarm/time/TimeAlarm.c
+#: ports/nordic/common-hal/alarm/time/TimeAlarm.c
 #: ports/stm/common-hal/alarm/time/TimeAlarm.c
 msgid "Only one alarm.time alarm can be set"
 msgstr "Only one alarm.time alarm can be set"
@@ -1789,7 +1791,7 @@ msgid "RNG Init Error"
 msgstr "RNG init Error"
 
 #: ports/atmel-samd/common-hal/busio/UART.c ports/cxd56/common-hal/busio/UART.c
-#: ports/nrf/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
+#: ports/nordic/common-hal/busio/UART.c ports/stm/common-hal/busio/UART.c
 msgid "RS485"
 msgstr "RS485"
 
@@ -1892,7 +1894,7 @@ msgid "Scale dimensions must divide by 3"
 msgstr "Scale dimensions must divide by 3"
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "Scan already in progress. Stop with stop_scan."
 msgstr "Scan already in progress. Stop with stop_scan."
 
@@ -2011,7 +2013,7 @@ msgid "Time is in the past."
 msgstr "Time is in the past."
 
 #: ports/espressif/common-hal/_bleio/Adapter.c
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 #, c-format
 msgid "Timeout is too long: Maximum timeout length is %d seconds"
 msgstr "Timeout is too long: Maximum timeout length is %d seconds"
@@ -2033,7 +2035,7 @@ msgid "Too many displays"
 msgstr "Too many displays"
 
 #: ports/espressif/common-hal/_bleio/PacketBuffer.c
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+#: ports/nordic/common-hal/_bleio/PacketBuffer.c
 msgid "Total data to write is larger than %q"
 msgstr "Total data to write is larger than %q"
 
@@ -2149,7 +2151,7 @@ msgstr "Unable to write to read-only memory"
 msgid "Unable to write to sleep_memory."
 msgstr "Unable to write to sleep_memory."
 
-#: ports/nrf/common-hal/_bleio/UUID.c
+#: ports/nordic/common-hal/_bleio/UUID.c
 msgid "Unexpected nrfx uuid type"
 msgstr "Unexpected nrfx uuid type"
 
@@ -2173,7 +2175,7 @@ msgstr "Unknown error code %d"
 msgid "Unknown failure %d"
 msgstr "Unknown failure %d"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown gatt error: 0x%04x"
 msgstr "Unknown gatt error: 0x%04x"
@@ -2183,7 +2185,7 @@ msgstr "Unknown gatt error: 0x%04x"
 msgid "Unknown reason."
 msgstr "Unknown reason."
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown security error: 0x%04x"
 msgstr "Unknown security error: 0x%04x"
@@ -2193,7 +2195,7 @@ msgstr "Unknown security error: 0x%04x"
 msgid "Unknown system firmware error at %s:%d: %d"
 msgstr "Unknown system firmware error at %s:%d: %d"
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 #, c-format
 msgid "Unknown system firmware error: %04x"
 msgstr "Unknown system firmware error: %04x"
@@ -2209,7 +2211,7 @@ msgstr "Unknown system firmware error: %d"
 msgid "Unmatched number of items on RHS (expected %d, got %d)."
 msgstr "Unmatched number of items on RHS (expected %d, got %d)."
 
-#: ports/nrf/common-hal/_bleio/__init__.c
+#: ports/nordic/common-hal/_bleio/__init__.c
 msgid ""
 "Unspecified issue. Can be that the pairing prompt on the other device was "
 "declined or ignored."
@@ -2239,15 +2241,15 @@ msgstr "Update failed"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Descriptor.c
+#: ports/nordic/common-hal/_bleio/Characteristic.c
+#: ports/nordic/common-hal/_bleio/Descriptor.c
 msgid "Value length != required fixed length"
 msgstr "Value length != required fixed length"
 
 #: ports/espressif/common-hal/_bleio/Characteristic.c
 #: ports/espressif/common-hal/_bleio/Descriptor.c
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Descriptor.c
+#: ports/nordic/common-hal/_bleio/Characteristic.c
+#: ports/nordic/common-hal/_bleio/Descriptor.c
 msgid "Value length > max_length"
 msgstr "Value length > max_length"
 
@@ -2263,7 +2265,7 @@ msgstr "Voltage read timed out"
 msgid "WARNING: Your code filename has two extensions\n"
 msgstr "WARNING: Your code filename has two extensions\n"
 
-#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/nordic/common-hal/watchdog/WatchDogTimer.c
 msgid "WatchDogTimer cannot be deinitialized once mode is set to RESET"
 msgstr "WatchDogTimer cannot be deinitialised once mode is set to RESET"
 
@@ -2295,7 +2297,7 @@ msgid "Woken up by alarm.\n"
 msgstr "Woken up by alarm.\n"
 
 #: ports/espressif/common-hal/_bleio/PacketBuffer.c
-#: ports/nrf/common-hal/_bleio/PacketBuffer.c
+#: ports/nordic/common-hal/_bleio/PacketBuffer.c
 msgid "Writes not supported on Characteristic"
 msgstr "Writes not supported on Characteristic"
 
@@ -2349,7 +2351,7 @@ msgstr "You pressed the VOLUME button at start up."
 msgid "You pressed the central button at start up."
 msgstr "You pressed the central button at start up."
 
-#: ports/nrf/boards/aramcon2_badge/mpconfigboard.h
+#: ports/nordic/boards/aramcon2_badge/mpconfigboard.h
 msgid "You pressed the left button at start up."
 msgstr "You pressed the left button at start up."
 
@@ -2939,7 +2941,7 @@ msgstr "end of format while looking for conversion specifier"
 msgid "epoch_time not supported on this board"
 msgstr "epoch_time not supported on this board"
 
-#: ports/nrf/common-hal/busio/UART.c
+#: ports/nordic/common-hal/busio/UART.c
 #, c-format
 msgid "error = 0x%08lX"
 msgstr "error = 0x%08lX"
@@ -3429,8 +3431,8 @@ msgid "matrix is not positive definite"
 msgstr "matrix is not positive definite"
 
 #: ports/espressif/common-hal/_bleio/Descriptor.c
-#: ports/nrf/common-hal/_bleio/Characteristic.c
-#: ports/nrf/common-hal/_bleio/Descriptor.c
+#: ports/nordic/common-hal/_bleio/Characteristic.c
+#: ports/nordic/common-hal/_bleio/Descriptor.c
 #, c-format
 msgid "max_length must be 0-%d when fixed_length is %s"
 msgstr "max_length must be 0-%d when fixed_length is %s"
@@ -3590,7 +3592,7 @@ msgid "no such attribute"
 msgstr "no such attribute"
 
 #: ports/espressif/common-hal/_bleio/Connection.c
-#: ports/nrf/common-hal/_bleio/Connection.c
+#: ports/nordic/common-hal/_bleio/Connection.c
 msgid "non-UUID found in service_uuids_whitelist"
 msgstr "non-UUID found in service_uuids_whitelist"
 
@@ -3602,7 +3604,7 @@ msgstr "non-default argument follows default argument"
 msgid "non-hex digit found"
 msgstr "non-hex digit found"
 
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "non-zero timeout must be > 0.01"
 msgstr "non-zero timeout must be > 0.01"
 
@@ -3708,7 +3710,7 @@ msgstr "offset must be >= 0"
 msgid "offset must be non-negative and no greater than buffer length"
 msgstr "offset must be non-negative and not greater than buffer length"
 
-#: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/nordic/common-hal/audiobusio/PDMIn.c
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only bit_depth=16 is supported"
 msgstr "only bit_depth=16 is supported"
@@ -3725,7 +3727,7 @@ msgstr "only ndarrays can be concatenated"
 msgid "only oversample=64 is supported"
 msgstr "only oversample=64 is supported"
 
-#: ports/nrf/common-hal/audiobusio/PDMIn.c
+#: ports/nordic/common-hal/audiobusio/PDMIn.c
 #: ports/stm/common-hal/audiobusio/PDMIn.c
 msgid "only sample_rate=16000 is supported"
 msgstr "only sample_rate=16000 is supported"
@@ -3837,7 +3839,7 @@ msgstr "pop from an empty PulseIn"
 
 #: ports/atmel-samd/common-hal/pulseio/PulseIn.c
 #: ports/cxd56/common-hal/pulseio/PulseIn.c
-#: ports/nrf/common-hal/pulseio/PulseIn.c
+#: ports/nordic/common-hal/pulseio/PulseIn.c
 #: ports/raspberrypi/common-hal/pulseio/PulseIn.c
 #: ports/stm/common-hal/pulseio/PulseIn.c py/objdict.c py/objlist.c py/objset.c
 #: shared-bindings/ps2io/Ps2.c
@@ -4057,11 +4059,11 @@ msgstr "syntax error in uctypes descriptor"
 msgid "ticks interval overflow"
 msgstr "ticks interval overflow"
 
-#: ports/nrf/common-hal/watchdog/WatchDogTimer.c
+#: ports/nordic/common-hal/watchdog/WatchDogTimer.c
 msgid "timeout duration exceeded the maximum supported value"
 msgstr "timeout duration exceeded the maximum supported value"
 
-#: ports/nrf/common-hal/_bleio/Adapter.c
+#: ports/nordic/common-hal/_bleio/Adapter.c
 msgid "timeout must be < 655.35 secs"
 msgstr "timeout must be < 655.35 secs"
 
