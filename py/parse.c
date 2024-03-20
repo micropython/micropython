@@ -1386,6 +1386,7 @@ void mp_parse_tree_clear(mp_parse_tree_t *tree) {
         m_del(byte, chunk, sizeof(mp_parse_chunk_t) + chunk->alloc);
         chunk = next;
     }
+    tree->chunk = NULL; // Avoid dangling pointer that may live on stack
 }
 
 #endif // MICROPY_ENABLE_COMPILER
