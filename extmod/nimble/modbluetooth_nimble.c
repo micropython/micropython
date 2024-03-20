@@ -519,24 +519,30 @@ static int central_gap_event_cb(struct ble_gap_event *event, void *arg) {
 
 // On ports such as ESP32 where we only implement the bindings, then
 // the port must provide these functions.
-// But for STM32 / Unix-H4, we provide a default implementation of the
+// For STM32 / Unix-H4, we provide a default implementation of the
 // port-specific functionality.
 // TODO: In the future if a port ever needs to customise these functions
 // then investigate using MP_WEAK or splitting them out to another .c file.
 
+#if !MICROPY_BLUETOOTH_NIMBLE_CONTROLLER
 #include "transport/uart/ble_hci_uart.h"
+#endif
 
 void mp_bluetooth_nimble_port_hci_init(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_init (nimble default)\n");
+    #if MYNEWT_VAL_BLE_HCI_TRANSPORT_UART
     // This calls mp_bluetooth_hci_uart_init (via ble_hci_uart_init --> hal_uart_config --> mp_bluetooth_hci_uart_init).
     ble_hci_uart_init();
+    #endif
     mp_bluetooth_hci_controller_init();
 }
 
 void mp_bluetooth_nimble_port_hci_deinit(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_deinit (nimble default)\n");
     mp_bluetooth_hci_controller_deinit();
+    #if MYNEWT_VAL_BLE_HCI_TRANSPORT_UART
     mp_bluetooth_hci_uart_deinit();
+    #endif
 }
 
 void mp_bluetooth_nimble_port_start(void) {
@@ -600,16 +606,16 @@ int mp_bluetooth_init(void) {
     MP_STATE_PORT(bluetooth_nimble_memory) = NULL;
     #endif
 
-    // Allow port (ESP32) to override NimBLE's HCI init.
-    // Otherwise default implementation above calls ble_hci_uart_init().
-    mp_bluetooth_nimble_port_hci_init();
-
     // Static initialization is complete, can start processing events.
     mp_bluetooth_nimble_ble_state = MP_BLUETOOTH_NIMBLE_BLE_STATE_WAITING_FOR_SYNC;
 
     // Initialise NimBLE memory and data structures.
     DEBUG_printf("mp_bluetooth_init: nimble_port_init\n");
     nimble_port_init();
+
+    // Allow port (ESP32) to override NimBLE's HCI init.
+    // Otherwise default implementation above calls ble_hci_uart_init().
+    mp_bluetooth_nimble_port_hci_init();
 
     ble_hs_cfg.reset_cb = reset_cb;
     ble_hs_cfg.sync_cb = sync_cb;

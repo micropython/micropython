@@ -56,9 +56,13 @@ typedef struct _machine_rtc_obj_t {
 } machine_rtc_obj_t;
 
 static const nrfx_rtc_t machine_rtc_instances[] = {
+#if NRFX_RTC0_ENABLED
     NRFX_RTC_INSTANCE(0),
+#endif
+#if NRFX_RTC1_ENABLED
     NRFX_RTC_INSTANCE(1),
-    #if defined(NRF52_SERIES)
+    #endif
+    #if NRFX_RTC2_ENABLED
     NRFX_RTC_INSTANCE(2),
     #endif
 };

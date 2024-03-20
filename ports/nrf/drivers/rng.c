@@ -31,6 +31,7 @@
 
 #include "nrf_rng.h"
 #include "drivers/rng.h"
+#include "py/runtime.h"
 
 #if BLUETOOTH_SD
 #include "nrf_soc.h"
@@ -38,8 +39,35 @@
 #define BLUETOOTH_STACK_ENABLED() (ble_drv_stack_enabled())
 #endif
 
+
+#if MICROPY_PY_BLUETOOTH
+#include "controller/ble_ll.h"
+#include "extmod/modbluetooth.h"
+#include "mpnimbleport.h"
+
+// Will be set by ble_npl_hw_set_isr() during init 
+func nrf_ble_isr_rng = NULL;
+
+void RNG_IRQHandler(void)
+{
+    /*** nimble/drivers/nrf52/src/ble_hw.c */
+    if (nrf_ble_isr_rng != NULL) {
+        nrf_ble_isr_rng();
+    }
+}
+#endif
+
 static inline uint32_t generate_hw_random(void) {
     uint32_t retval = 0;
+    
+    #if MICROPY_PY_BLUETOOTH
+    if (!mp_bluetooth_is_active()) {
+        // This is safe to re-init if we can't be sure it's already done.
+        ble_ll_rand_init();
+    }
+    ble_ll_rand_data_get((uint8_t *)&retval, 4);
+
+    #else
     uint8_t * p_retval = (uint8_t *)&retval;
 
     nrf_rng_event_clear(NRF_RNG, NRF_RNG_EVENT_VALRDY);
@@ -55,7 +83,7 @@ static inline uint32_t generate_hw_random(void) {
     }
 
     nrf_rng_task_trigger(NRF_RNG, NRF_RNG_TASK_STOP);
-
+    #endif
     return retval;
 }
 

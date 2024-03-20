@@ -22,6 +22,13 @@ SD_LOWER = $(shell echo $(SD) | tr '[:upper:]' '[:lower:]')
 include $(BOARD_DIR)/mpconfigboard.mk
 
 ifeq ($(SD), )
+	ifeq ($(MCU_VARIANT),$(filter $(MCU_VARIANT),nrf51 nrf52))
+	# On nrf51 and nrf52 use modbluetooth & nimble by default unless SD is manually specified.
+	MICROPY_PY_BLUETOOTH ?= 1
+	MICROPY_BLUETOOTH_NIMBLE ?= 1
+	MICROPY_BLUETOOTH_NIMBLE_CONTROLLER ?= 1
+	endif
+
 	# If the build directory is not given, make it reflect the board name.
 	BUILD ?= build-$(BOARD)
 	include ../../py/mkenv.mk
@@ -54,12 +61,11 @@ endif
 QSTR_DEFS = qstrdefsport.h
 
 # MicroPython feature configurations
-ifeq ($(DEBUG), 0)
+ifneq ($(DEBUG), 1)
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 endif
 
 FROZEN_MANIFEST ?= modules/manifest.py
-
 # include py core make definitions
 include ../../py/py.mk
 include ../../extmod/extmod.mk
@@ -246,6 +252,36 @@ SRC_C += \
 	drivers/bluetooth/ble_uart.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 
+
+
+ifeq ($(MICROPY_PY_BLUETOOTH),1)
+
+ifneq ($(SD), )
+$(error "MICROPY_PY_BLUETOOTH cannot be used at same time as SD")
+endif
+
+# NRF chips support directly running the entire stack, so enable the controller.
+MICROPY_BLUETOOTH_NIMBLE_CONTROLLER=1
+
+ifeq ($(MICROPY_BLUETOOTH_NIMBLE),1)
+
+GIT_SUBMODULES += lib/mynewt-nimble
+
+SRC_C += \
+    mpnimbleport.c \
+    mpbthciport.c
+
+INC += -I$(TOP)/$(NIMBLE_LIB_DIR)/nimble/drivers/$(MCU_VARIANT)/include
+SRC_LIB_C += \
+    $(NIMBLE_LIB_DIR)/nimble/drivers/$(MCU_VARIANT)/src/ble_hw.c \
+    $(NIMBLE_LIB_DIR)/nimble/drivers/$(MCU_VARIANT)/src/ble_phy.c
+ifeq ($(MCU_VARIANT), nrf52)
+SRC_LIB_C += $(NIMBLE_LIB_DIR)/nimble/drivers/$(MCU_VARIANT)/src/ble_phy_trace.c
+endif
+
+endif
+endif
+
 ifeq ($(MCU_SUB_VARIANT), nrf52840)
 # Add support for USB using TinyUSB.
 
@@ -281,6 +317,14 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	os/microbitfs.c \
 	board/modboard.c \
 	board/led.c \
+	music/modmusic.c \
+	music/musictunes.c \
+	nrf/modnrf.c \
+	nrf/flashbdev.c \
+	)
+
+ifneq ($(SD), )
+DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/modubluepy.c \
 	ubluepy/ubluepy_peripheral.c \
 	ubluepy/ubluepy_service.c \
@@ -291,12 +335,9 @@ DRIVERS_SRC_C += $(addprefix modules/,\
 	ubluepy/ubluepy_descriptor.c \
 	ubluepy/ubluepy_scanner.c \
 	ubluepy/ubluepy_scan_entry.c \
-	music/modmusic.c \
-	music/musictunes.c \
 	ble/modble.c \
-	nrf/modnrf.c \
-	nrf/flashbdev.c \
 	)
+endif
 
 # Custom micropython startup file with smaller interrupt vector table
 # than the file provided in nrfx.
@@ -314,6 +355,7 @@ OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SYSTEM_C_SRC:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_LIB_C:.c=.o))
 OBJ += $(addprefix $(BUILD)/, $(SRC_SHARED_C:.c=.o))
+#OBJ += $(addprefix $(BUILD)/, $(EXTMOD_SRC_C:.c=.o))
 OBJ += $(GEN_PINS_SRC:.c=.o)
 
 $(BUILD)/$(OOFATFS_DIR)/ff.o: COPT += -Os
@@ -454,8 +496,12 @@ nrfutil_dfu_sd: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)nrfutil pkg generate --hw-version 52 --sd-req 0x00 --sd-id 0x00 --softdevice $(BUILD)/stripped_sd.hex $(BUILD)/stripped_sd.zip
 	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/stripped_sd.zip -p $(NRFUTIL_PORT) -t 0
 
-nrfutil_dfu_deploy: $(BUILD)/$(OUTPUT_FILENAME).hex
+$(BUILD)/$(OUTPUT_FILENAME)_dfu.zip: $(BUILD)/$(OUTPUT_FILENAME).hex
 	$(Q)nrfutil pkg generate --hw-version 52 --sd-req $(NRFUTIL_SD_REQ) --application-version 1 --application $(BUILD)/$(OUTPUT_FILENAME).hex $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
+
+nrfutil_pkg: $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip
+
+nrfutil_dfu_deploy: nrfutil_pkg
 	$(Q)nrfutil dfu usb-serial -pkg $(BUILD)/$(OUTPUT_FILENAME)_dfu.zip -p $(NRFUTIL_PORT) -t 0
 
 deploy: nrfutil_dfu_deploy

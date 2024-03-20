@@ -30,6 +30,8 @@
 #include "nimble/ble.h"
 #include "nimble/nimble_npl.h"
 #include "extmod/nimble/hal/hal_uart.h"
+#include "os/os_cputime.h"
+#include "hal/hal_timer.h"
 
 #include "extmod/modbluetooth.h"
 #include "extmod/nimble/modbluetooth_nimble.h"
@@ -44,7 +46,7 @@
 #define DEBUG_TIME_printf(...) // printf(__VA_ARGS__)
 #define DEBUG_CRIT_printf(...) // printf(__VA_ARGS__)
 
-bool ble_npl_os_started(void) {
+ MP_WEAK bool ble_npl_os_started(void) {
     DEBUG_OS_printf("ble_npl_os_started\n");
     return true;
 }
@@ -175,6 +177,24 @@ int nimble_sprintf(char *str, const char *fmt, ...) {
     return 0;
 }
 
+// Function to implement `strncat()` function in C
+char* strncat(char* destination, const char* source, size_t num)
+{
+    // make `ptr` point to the end of the destination string
+    char* ptr = destination + strlen(destination);
+ 
+    // Appends characters of the source to the destination string
+    while (*source != '\0' && num--) {
+        *ptr++ = *source++;
+    }
+ 
+    // null terminate destination string
+    *ptr = '\0';
+ 
+    // destination string is returned by standard `strncat()`
+    return destination;
+}
+
 /******************************************************************************/
 // EVENTQ
 
@@ -277,6 +297,61 @@ void ble_npl_eventq_put(struct ble_npl_eventq *evq, struct ble_npl_event *ev) {
     // poll bluetooth to handle any new tasks from the new event.
     mp_bluetooth_hci_poll_now();
 }
+
+struct ble_npl_event *ble_npl_eventq_get(struct ble_npl_eventq *evq, ble_npl_time_t tmo) {
+    if (tmo != BLE_NPL_TIME_FOREVER && tmo != 0) {
+        tmo += mp_hal_ticks_ms();
+    }
+
+    struct ble_npl_event *ev = NULL;        
+    os_sr_t sr;
+    do {
+        ev = evq->head;
+        if (ev) {
+            OS_ENTER_CRITICAL(sr);
+            // Remove this event from the queue.
+            evq->head = ev->next;
+            if (ev->next) {
+                ev->next->prev = NULL;
+                ev->next = NULL;
+            }
+            ev->prev = NULL;
+
+            ev->pending = false;
+
+            // Stop searching and execute this event.
+            OS_EXIT_CRITICAL(sr);
+            break;
+        }
+    } while (tmo != 0 && (tmo == BLE_NPL_TIME_FOREVER || tmo < mp_hal_ticks_ms()));
+    
+    return ev;
+}
+
+void ble_npl_event_run(struct ble_npl_event *ev) {
+    // Run the event handler.
+    DEBUG_EVENT_printf("ble_npl_event_run(%p)\n", ev);
+    ev->fn(ev);
+}
+
+inline bool ble_npl_event_is_queued(struct ble_npl_event *ev) {
+    return ev->pending;
+}
+
+void ble_npl_eventq_run(struct ble_npl_eventq *evq) {
+    printf("ble_npl_eventq_run\n");
+    assert(0);
+}
+
+void ble_npl_eventq_remove(struct ble_npl_eventq *evq, struct ble_npl_event *ev) {
+    DEBUG_EVENT_printf("ble_npl_eventq_remove(%p, %p (%p, %p))\n", evq, ev, ev->prev, ev->next);
+    os_sr_t sr;
+    OS_ENTER_CRITICAL(sr);
+    // Set the previous events next to this events next, so removing it from the chain
+    ev->prev->next = ev->next;
+    OS_EXIT_CRITICAL(sr);
+}
+
 
 void ble_npl_event_init(struct ble_npl_event *ev, ble_npl_event_fn *fn, void *arg) {
     DEBUG_EVENT_printf("ble_npl_event_init(%p, %p, %p)\n", ev, fn, arg);
@@ -473,7 +548,7 @@ void ble_npl_callout_set_arg(struct ble_npl_callout *c, void *arg) {
 }
 
 /******************************************************************************/
-// TIME
+// TIME (ticks in ms)
 
 uint32_t ble_npl_time_get(void) {
     DEBUG_TIME_printf("ble_npl_time_get -> %u\n", (uint)mp_hal_ticks_ms());
