@@ -82,6 +82,18 @@ mp_uint_t mp_stream_rw(mp_obj_t stream, void *buf_, mp_uint_t size, int *errcode
     return done;
 }
 
+mp_off_t mp_stream_seek(mp_obj_t stream, mp_off_t offset, int whence, int *errcode) {
+    struct mp_stream_seek_t seek_s;
+    seek_s.offset = offset;
+    seek_s.whence = whence;
+    const mp_stream_p_t *stream_p = mp_get_stream(stream);
+    mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, errcode);
+    if (res == MP_STREAM_ERROR) {
+        return (mp_off_t)-1;
+    }
+    return seek_s.offset;
+}
+
 const mp_stream_p_t *mp_get_stream_raise(mp_obj_t self_in, int flags) {
     const mp_obj_type_t *type = mp_obj_get_type(self_in);
     if (MP_OBJ_TYPE_HAS_SLOT(type, protocol)) {
@@ -445,28 +457,26 @@ static mp_obj_t mp_stream___exit__(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream___exit___obj, 4, 4, mp_stream___exit__);
 
 static mp_obj_t stream_seek(size_t n_args, const mp_obj_t *args) {
-    struct mp_stream_seek_t seek_s;
     // TODO: Could be uint64
-    seek_s.offset = mp_obj_get_int(args[1]);
-    seek_s.whence = SEEK_SET;
+    mp_off_t offset = mp_obj_get_int(args[1]);
+    int whence = SEEK_SET;
     if (n_args == 3) {
-        seek_s.whence = mp_obj_get_int(args[2]);
+        whence = mp_obj_get_int(args[2]);
     }
 
     // In POSIX, it's error to seek before end of stream, we enforce it here.
-    if (seek_s.whence == SEEK_SET && seek_s.offset < 0) {
+    if (whence == SEEK_SET && offset < 0) {
         mp_raise_OSError(MP_EINVAL);
     }
 
-    const mp_stream_p_t *stream_p = mp_get_stream(args[0]);
     int error;
-    mp_uint_t res = stream_p->ioctl(args[0], MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &error);
-    if (res == MP_STREAM_ERROR) {
+    mp_off_t res = mp_stream_seek(args[0], offset, whence, &error);
+    if (res == (mp_off_t)-1) {
         mp_raise_OSError(error);
     }
 
     // TODO: Could be uint64
-    return mp_obj_new_int_from_uint(seek_s.offset);
+    return mp_obj_new_int_from_uint(res);
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_stream_seek_obj, 2, 3, stream_seek);
 
@@ -545,16 +555,11 @@ ssize_t mp_stream_posix_read(void *stream, void *buf, size_t len) {
 }
 
 off_t mp_stream_posix_lseek(void *stream, off_t offset, int whence) {
-    const mp_obj_base_t *o = stream;
-    const mp_stream_p_t *stream_p = MP_OBJ_TYPE_GET_SLOT(o->type, protocol);
-    struct mp_stream_seek_t seek_s;
-    seek_s.offset = offset;
-    seek_s.whence = whence;
-    mp_uint_t res = stream_p->ioctl(MP_OBJ_FROM_PTR(stream), MP_STREAM_SEEK, (mp_uint_t)(uintptr_t)&seek_s, &errno);
-    if (res == MP_STREAM_ERROR) {
+    mp_off_t res = mp_stream_seek(MP_OBJ_FROM_PTR(stream), offset, whence, &errno);
+    if (res == (mp_off_t)-1) {
         return -1;
     }
-    return seek_s.offset;
+    return res;
 }
 
 int mp_stream_posix_fsync(void *stream) {

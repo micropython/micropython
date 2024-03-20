@@ -63,7 +63,12 @@
 #ifndef MICROPY_HW_USB_DESC_STR_MAX
 #define MICROPY_HW_USB_DESC_STR_MAX (32)
 #endif
+// Support machine.USBDevice
+#ifndef MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+#define MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE    (1)
 #endif
+
+#endif // MICROPY_HW_ENABLE_USBDEV
 
 #define MICROPY_PY_SYS_PLATFORM             "samd"
 
@@ -73,6 +78,7 @@
 #define MICROPY_PY_TIME_INCLUDEFILE         "ports/samd/modtime.c"
 #define MICROPY_PY_MACHINE                  (1)
 #define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/samd/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET            (1)
 #define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
 #define MICROPY_PY_MACHINE_BOOTLOADER       (1)
 #define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)

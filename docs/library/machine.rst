@@ -265,3 +265,4 @@ Classes
    machine.WDT.rst
    machine.SD.rst
    machine.SDCard.rst
+   machine.USBDevice.rst

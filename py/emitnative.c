@@ -2259,15 +2259,38 @@ static void emit_native_pop_except_jump(emit_t *emit, mp_uint_t label, bool with
 }
 
 static void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
-    vtype_kind_t vtype;
-    emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
-    if (vtype == VTYPE_PYOBJ) {
+    vtype_kind_t vtype = peek_vtype(emit, 0);
+    if (vtype == VTYPE_INT || vtype == VTYPE_UINT) {
+        if (op == MP_UNARY_OP_POSITIVE) {
+            // No-operation, just leave the argument on the stack.
+        } else if (op == MP_UNARY_OP_NEGATIVE) {
+            int reg = REG_RET;
+            emit_pre_pop_reg_flexible(emit, &vtype, &reg, reg, reg);
+            ASM_NEG_REG(emit->as, reg);
+            emit_post_push_reg(emit, vtype, reg);
+        } else if (op == MP_UNARY_OP_INVERT) {
+            #ifdef ASM_NOT_REG
+            int reg = REG_RET;
+            emit_pre_pop_reg_flexible(emit, &vtype, &reg, reg, reg);
+            ASM_NOT_REG(emit->as, reg);
+            #else
+            int reg = REG_RET;
+            emit_pre_pop_reg_flexible(emit, &vtype, &reg, REG_ARG_1, reg);
+            ASM_MOV_REG_IMM(emit->as, REG_ARG_1, -1);
+            ASM_XOR_REG_REG(emit->as, reg, REG_ARG_1);
+            #endif
+            emit_post_push_reg(emit, vtype, reg);
+        } else {
+            EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
+                MP_ERROR_TEXT("'not' not implemented"), mp_binary_op_method_name[op]);
+        }
+    } else if (vtype == VTYPE_PYOBJ) {
+        emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
         emit_call_with_imm_arg(emit, MP_F_UNARY_OP, op, REG_ARG_1);
         emit_post_push_reg(emit, VTYPE_PYOBJ, REG_RET);
     } else {
-        adjust_stack(emit, 1);
         EMIT_NATIVE_VIPER_TYPE_ERROR(emit,
-            MP_ERROR_TEXT("unary op %q not implemented"), mp_unary_op_method_name[op]);
+            MP_ERROR_TEXT("can't do unary op of '%q'"), vtype_to_qstr(vtype));
     }
 }
 

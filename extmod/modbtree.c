@@ -57,8 +57,8 @@
 #undef CIRCLEQ_INSERT_TAIL
 #undef CIRCLEQ_REMOVE
 
-#include <db.h>
-#include <../../btree/btree.h>
+#include "berkeley-db/db.h"
+#include "berkeley-db/btree.h"
 
 typedef struct _mp_obj_btree_t {
     mp_obj_base_t base;

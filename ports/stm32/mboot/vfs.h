@@ -93,4 +93,22 @@ int vfs_lfs2_mount(vfs_lfs2_context_t *ctx, mboot_addr_t base_addr, mboot_addr_t
 
 #endif
 
+#if MBOOT_VFS_RAW
+
+// A raw VFS contains a contiguous, single file without any metadata.
+
+typedef struct _vfs_raw_context_t {
+    mboot_addr_t seg0_base_addr;
+    mboot_addr_t seg0_byte_len;
+    mboot_addr_t seg1_base_addr;
+    mboot_addr_t seg1_byte_len;
+    mboot_addr_t file_pos;
+} vfs_raw_context_t;
+
+extern const stream_methods_t vfs_raw_stream_methods;
+
+int vfs_raw_mount(vfs_raw_context_t *ctx, mboot_addr_t seg0_base_addr, mboot_addr_t seg0_byte_len, mboot_addr_t seg1_base_addr, mboot_addr_t seg1_byte_len);
+
+#endif
+
 #endif // MICROPY_INCLUDED_STM32_MBOOT_VFS_H

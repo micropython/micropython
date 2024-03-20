@@ -25,6 +25,7 @@ jobs:
         ci_func:  # names are functions in ci.sh
           - stm32_pyb_build
           - stm32_nucleo_build
+          - stm32_misc_build
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v4

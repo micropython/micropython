@@ -120,6 +120,7 @@ SRC_C += \
 	ui.c \
 	vfs_fat.c \
 	vfs_lfs.c \
+	vfs_raw.c \
 	drivers/bus/softspi.c \
 	drivers/bus/softqspi.c \
 	drivers/memory/spiflash.c \

@@ -221,6 +221,10 @@ int main(int argc, char **argv) {
         mp_thread_deinit();
         #endif
         soft_timer_deinit();
+        #if MICROPY_HW_ENABLE_USB_RUNTIME_DEVICE
+        mp_usbd_deinit();
+        #endif
+
         gc_sweep_all();
         mp_deinit();
     }

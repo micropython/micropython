@@ -915,6 +915,12 @@ static mp_obj_t wiznet5k_ifconfig(size_t n_args, const mp_obj_t *args) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(wiznet5k_ifconfig_obj, 1, 2, wiznet5k_ifconfig);
 
+static mp_obj_t network_wiznet5k_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    wiznet5k_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    return mod_network_nic_ipconfig(&self->netif, n_args - 1, args + 1, kwargs);
+}
+static MP_DEFINE_CONST_FUN_OBJ_KW(wiznet5k_ipconfig_obj, 1, network_wiznet5k_ipconfig);
+
 static mp_obj_t send_ethernet_wrapper(mp_obj_t self_in, mp_obj_t buf_in) {
     wiznet5k_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_buffer_info_t buf;
@@ -1008,6 +1014,9 @@ static const mp_rom_map_elem_t wiznet5k_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_isconnected), MP_ROM_PTR(&wiznet5k_isconnected_obj) },
     { MP_ROM_QSTR(MP_QSTR_active), MP_ROM_PTR(&wiznet5k_active_obj) },
     { MP_ROM_QSTR(MP_QSTR_ifconfig), MP_ROM_PTR(&wiznet5k_ifconfig_obj) },
+    #if WIZNET5K_WITH_LWIP_STACK
+    { MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&wiznet5k_ipconfig_obj) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_status), MP_ROM_PTR(&wiznet5k_status_obj) },
     { MP_ROM_QSTR(MP_QSTR_config), MP_ROM_PTR(&wiznet5k_config_obj) },
     #if WIZNET5K_WITH_LWIP_STACK

@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2022 Angus Gratton
+ * Copyright (c) 2023-2024 Arduino SA
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,25 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ *
+ * OpenAMP's remoteproc class.
  */
-#ifndef MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_INTERNAL_H
-#define MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_INTERNAL_H
-#include "tusb.h"
+#ifndef MICROPY_INCLUDED_MODOPENAMP_REMOTEPROC_H
+#define MICROPY_INCLUDED_MODOPENAMP_REMOTEPROC_H
 
-// Static USB device descriptor values
-extern const tusb_desc_device_t mp_usbd_desc_device_static;
-extern const uint8_t mp_usbd_desc_cfg_static[USBD_STATIC_DESC_LEN];
+#include "openamp/remoteproc.h"
+#include "openamp/remoteproc_loader.h"
 
-#endif // MICROPY_INCLUDED_SHARED_TINYUSB_MP_USBD_INTERNAL_H
+void *mp_openamp_remoteproc_store_alloc(void);
+struct remoteproc *mp_openamp_remoteproc_init(struct remoteproc *rproc,
+    const struct remoteproc_ops *ops, void *arg);
+void *mp_openamp_remoteproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
+    metal_phys_addr_t *da, size_t size, unsigned int attribute,
+    struct metal_io_region **io);
+int mp_openamp_remoteproc_start(struct remoteproc *rproc);
+int mp_openamp_remoteproc_stop(struct remoteproc *rproc);
+int mp_openamp_remoteproc_config(struct remoteproc *rproc, void *data);
+void mp_openamp_remoteproc_remove(struct remoteproc *rproc);
+int mp_openamp_remoteproc_shutdown(struct remoteproc *rproc);
+
+#endif // MICROPY_INCLUDED_MODOPENAMP_REMOTEPROC_H

@@ -45,6 +45,10 @@ void mp_os_deactivate(size_t dupterm_idx, const char *msg, mp_obj_t exc) {
     if (exc != MP_OBJ_NULL) {
         mp_obj_print_exception(&mp_plat_print, exc);
     }
+    if (term == MP_OBJ_NULL) {
+        // Dupterm was already closed.
+        return;
+    }
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_stream_close(term);
