@@ -33,6 +33,7 @@
 
 #include "extmod/modbluetooth.h"
 #include "extmod/nimble/modbluetooth_nimble.h"
+#include "mpbthciport.h" // for port specific mp_bluetooth_hci_poll_now()
 
 #define DEBUG_OS_printf(...) // printf(__VA_ARGS__)
 #define DEBUG_MALLOC_printf(...) // printf(__VA_ARGS__)
@@ -273,6 +274,8 @@ void ble_npl_eventq_put(struct ble_npl_eventq *evq, struct ble_npl_event *ev) {
         }
     }
     OS_EXIT_CRITICAL(sr);
+    // poll bluetooth to handle any new tasks from the new event.
+    mp_bluetooth_hci_poll_now();
 }
 
 void ble_npl_event_init(struct ble_npl_event *ev, ble_npl_event_fn *fn, void *arg) {
