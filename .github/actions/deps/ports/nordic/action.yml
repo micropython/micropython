@@ -1,4 +1,4 @@
-name: Fetch nrf port deps
+name: Fetch nordic port deps
 
 runs:
   using: composite

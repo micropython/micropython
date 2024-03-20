@@ -27,6 +27,7 @@ ports_to_delete = [
     "esp8266",
     "mimxrt",
     "minimal",
+    "nordic",
     "pic16bit",
     "powerpc",
     "qemu-arm",
@@ -58,31 +59,6 @@ while line:
     elif state == "UA":
         git.rm(path)
     line = out_buf.readline()
-
-# MicroPython added their nrf code in ports/nrf too. So, we always take our version.
-out_buf = StringIO()
-git.status("--porcelain=1", "ports/nrf", _out=out_buf)
-out_buf.seek(0)
-line = out_buf.readline()
-while line:
-    state, path = line.split()
-    if state == "UU":
-        git.checkout("--ours", path)
-        git.add(path)
-    elif state == "UA":
-        git.rm(path)
-    elif state == "AA":
-        git.rm("-f", path)
-    elif state == "A":
-        git.rm("-f", path)
-    elif state == "DU":
-        git.rm(path)
-    elif state == "DD":
-        git.rm(path)
-    else:
-        print(state, path)
-    line = out_buf.readline()
-
 
 # MicroPython has their own CI settings. Let's not use them now.
 out_buf = StringIO()
