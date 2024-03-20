@@ -81,7 +81,7 @@
 
 // Common constants.
 #ifndef MP_BLUETOOTH_DEFAULT_ATTR_LEN
-#define MP_BLUETOOTH_DEFAULT_ATTR_LEN (20)
+#define MP_BLUETOOTH_DEFAULT_ATTR_LEN (256)
 #endif
 
 #define MP_BLUETOOTH_CCCD_LEN (2)
