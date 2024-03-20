@@ -18,6 +18,7 @@ usage() {
   echo "  -n            run not yet implemented tests only"
   echo "  -w            run wifi tests => needs secrets.py key file>"
   echo "  -v            run virtual filesystem related tests. If followed by -x, runs advance tests too."
+  echo "  -b            run bitsream script."
   echo "  --dev0        device to be used"
   echo "  --dev1        second device to be used (for multi test)"
   echo "  --psoc6       run only psoc6 port related tests"
@@ -39,10 +40,13 @@ for arg in "$@"; do
   esac
 done
 
-while getopts "acd:e:fhimnptwvx" o; do
+while getopts "abcd:e:fhimnptwvx" o; do
   case "${o}" in
     a)
        all=1
+       ;;
+    b)
+       bitstream=1
        ;;
     c)
        cleanResultsDirectoryFirst=1
@@ -133,6 +137,10 @@ fi
 
 if [ -z "${afs}" ]; then
   afs=0
+fi
+
+if [ -z "${bitstream}" ]; then
+  bitstream=0
 fi
 
 if [ -z "${psoc6OnlyMulti}" ]; then
@@ -430,6 +438,24 @@ if [ ${hwext} -eq 1 ]; then
 
 fi
 
+
+if [ ${bitstream} -eq 1 ]; then
+
+  echo "  running bitstream tests ... "
+  echo
+
+  chmod 777 ./psoc6/test_scripts/bit.py
+
+  python3 ./psoc6/test_scripts/bit.py ${device0} 0
+
+  echo " running bitstream listen.."
+
+  ./run-tests.py --target psoc6 --device ${device1} \
+      \
+      psoc6/bitstream_listen.py \
+    |tee -a ${resultsFile}
+
+fi
 
 ### not yet enabled/implemented, therefore failing
 if [ ${notYetImplemented} -eq 1 ]; then
