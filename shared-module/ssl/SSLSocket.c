@@ -434,7 +434,7 @@ mp_obj_t common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self) {
     mp_obj_t sock = mp_obj_subscr(accepted, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL);
     ssl_sslsocket_obj_t *sslsock = common_hal_ssl_sslcontext_wrap_socket(self->ssl_context, sock, true, NULL);
     do_handshake(sslsock);
-    mp_obj_t peer = mp_obj_subscr(accepted, MP_OBJ_NEW_SMALL_INT(0), MP_OBJ_SENTINEL);
+    mp_obj_t peer = mp_obj_subscr(accepted, MP_OBJ_NEW_SMALL_INT(1), MP_OBJ_SENTINEL);
     mp_obj_t tuple_contents[2];
     tuple_contents[0] = MP_OBJ_FROM_PTR(sslsock);
     tuple_contents[1] = peer;
