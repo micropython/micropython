@@ -576,6 +576,17 @@ static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
 }
 
 static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, int *_errno) {
+    if (socket->timeout > 0) {
+        mp_uint_t start = mp_hal_ticks_ms();
+        while (getSn_SR(socket->fileno) == SOCK_ESTABLISHED && getSn_RX_RSR(socket->fileno) == 0) {
+            if (mp_hal_ticks_ms() - start > socket->timeout) {
+                *_errno = MP_ETIMEDOUT;
+                return -1;
+            }
+            mp_event_wait_ms(1);
+        }
+    }
+
     MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(recv)(socket->fileno, buf, len);
     MP_THREAD_GIL_ENTER();
@@ -619,6 +630,18 @@ static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
 
 static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte *buf, mp_uint_t len, byte *ip, mp_uint_t *port, int *_errno) {
     uint16_t port2;
+
+    if (socket->timeout > 0) {
+        mp_uint_t start = mp_hal_ticks_ms();
+        while (getSn_SR(socket->fileno) != SOCK_CLOSED && getSn_RX_RSR(socket->fileno) == 0) {
+            if (mp_hal_ticks_ms() - start > socket->timeout) {
+                *_errno = MP_ETIMEDOUT;
+                return -1;
+            }
+            mp_event_wait_ms(1);
+        }
+    }
+
     MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(recvfrom)(socket->fileno, buf, len, ip, &port2);
     MP_THREAD_GIL_ENTER();
