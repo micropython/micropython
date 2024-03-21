@@ -151,11 +151,11 @@ void common_hal_busio_uart_construct(busio_uart_obj_t *self,
         uart_config.flow_ctrl = UART_HW_FLOWCTRL_CTS;
     }
 
-    if (receiver_buffer_size <= UART_FIFO_LEN) {
-        receiver_buffer_size = UART_FIFO_LEN + 8;
+    if (receiver_buffer_size <= UART_HW_FIFO_LEN(self->uart_num)) {
+        receiver_buffer_size = UART_HW_FIFO_LEN(self->uart_num) + 8;
     }
 
-    uart_config.rx_flow_ctrl_thresh = UART_FIFO_LEN - 8;
+    uart_config.rx_flow_ctrl_thresh = UART_HW_FIFO_LEN(self->uart_num) - 8;
     // Install the driver before we change the settings.
     if (uart_driver_install(self->uart_num, receiver_buffer_size, 0, 20, &self->event_queue, 0) != ESP_OK ||
         uart_set_mode(self->uart_num, mode) != ESP_OK) {
