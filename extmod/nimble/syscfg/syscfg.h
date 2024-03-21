@@ -26,9 +26,6 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_LOG_LEVEL (255)
 #endif
 
-/*** compiler/arm-none-eabi-m4 */
-#define MYNEWT_VAL_HARDFLOAT (1)
-
 /*** kernel/os */
 #define MYNEWT_VAL_FLOAT_USER (0)
 #define MYNEWT_VAL_MSYS_1_BLOCK_COUNT (12)
@@ -188,18 +185,6 @@ int nimble_sprintf(char *str, const char *fmt, ...);
 #define MYNEWT_VAL_MCU_HFCLK_SOURCE (1)
 #endif
 
-#ifndef MYNEWT_VAL_MCU_TARGET__nRF52810
-#define MYNEWT_VAL_MCU_TARGET__nRF52810 (0)
-#endif
-#ifndef MYNEWT_VAL_MCU_TARGET__nRF52811
-#define MYNEWT_VAL_MCU_TARGET__nRF52811 (0)
-#endif
-#ifndef MYNEWT_VAL_MCU_TARGET__nRF52832
-#define MYNEWT_VAL_MCU_TARGET__nRF52832 (0)
-#endif
-#ifndef MYNEWT_VAL_MCU_TARGET__nRF52840
-#define MYNEWT_VAL_MCU_TARGET__nRF52840 (1)
-#endif
 #ifndef MYNEWT_VAL_MCU_TARGET
 #define MYNEWT_VAL_MCU_TARGET (1)
 #endif
