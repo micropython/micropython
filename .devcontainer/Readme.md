@@ -11,7 +11,7 @@ the following steps.
   - choose "+ new with options..." from the "..."-menu
   - in the following screen select the branch and then
   - select the port instead of "Default project configuration"
-    (unsupported: ports not using cortex-m or esp-idf)  
+    (unsupported: ports not using cortex-m or esp-idf)\
     ![](./codespace_options.png)
   - update region as necessary
   - finally, click on the green "Create codespace" button
