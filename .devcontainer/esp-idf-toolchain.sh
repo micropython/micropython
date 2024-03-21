@@ -13,7 +13,7 @@ echo -e "[esp-idf-toolchain.sh] starting install"
 
 echo -e "[esp-idf-toolchain.sh] fetch packages"
 sudo apt-get update
-sudo apt-get -y install ninja-build cmake libusb-1.0-0 
+sudo apt-get -y install ninja-build cmake libusb-1.0-0
 
 # --- esp-idf   --------------------------------------------------------------
 
