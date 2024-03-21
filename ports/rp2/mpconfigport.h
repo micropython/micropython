@@ -218,6 +218,10 @@ extern const struct _mp_obj_type_t mod_network_nic_type_nina;
 #if MICROPY_PY_NETWORK_WIZNET5K
 extern const struct _mp_obj_type_t mod_network_nic_type_wiznet5k;
 #define MICROPY_HW_NIC_WIZNET5K             { MP_ROM_QSTR(MP_QSTR_WIZNET5K), MP_ROM_PTR(&mod_network_nic_type_wiznet5k) },
+// This Network interface requires the extended socket state for timeouts and non-blocking
+#ifndef MICROPY_PY_SOCKET_EXTENDED_STATE
+#define MICROPY_PY_SOCKET_EXTENDED_STATE    (1)
+#endif
 #else
 #define MICROPY_HW_NIC_WIZNET5K
 #endif
