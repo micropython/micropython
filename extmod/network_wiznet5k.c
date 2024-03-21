@@ -68,7 +68,10 @@
 
 #else // WIZNET5K_PROVIDED_STACK
 // Uses TCP Stack provided in Wiznet controller
-// TODO: Not all micropython modnetwork / socket features are provided
+// Requires extended socket state for ::send...
+#if !MICROPY_PY_SOCKET_EXTENDED_STATE
+#error WIZNET5K_PROVIDED_STACK requires MICROPY_PY_SOCKET_EXTENDED_STATE
+#endif
 
 #include "lib/wiznet5k/Ethernet/socket.h"
 #include "lib/wiznet5k/Internet/DNS/dns.h"
@@ -469,8 +472,15 @@ static void wiznet5k_socket_close(mod_network_socket_obj_t *socket) {
 }
 
 static int wiznet5k_socket_bind(mod_network_socket_obj_t *socket, byte *ip, mp_uint_t port, int *_errno) {
+    uint8_t flag = 0;
+    if (socket->timeout == 0) {
+        // Setup non-blocking mode
+        flag |= SOCK_IO_NONBLOCK;
+    }
+
     // open the socket in server mode (if port != 0)
-    mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->fileno, socket->type, port, 0);
+    mp_int_t ret = WIZCHIP_EXPORT(socket)(socket->fileno, socket->type, port, flag);
+
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
@@ -545,6 +555,10 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
         *_errno = -ret;
         return -1;
     }
+    else if (ret == SOCK_BUSY) {
+        *_errno = MP_EAGAIN;
+        return -1;
+    }
 
     // success
     return 0;
@@ -561,6 +575,10 @@ static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const by
         *_errno = -ret;
         return -1;
     }
+    else if (ret == SOCK_BUSY) {
+        *_errno = MP_EAGAIN;
+        return -1;
+    }
     return ret;
 }
 
@@ -573,6 +591,10 @@ static mp_uint_t wiznet5k_socket_recv(mod_network_socket_obj_t *socket, byte *bu
     if (ret < 0) {
         wiznet5k_socket_close(socket);
         *_errno = -ret;
+        return -1;
+    }
+    else if (ret == SOCK_BUSY) {
+        *_errno = MP_EAGAIN;
         return -1;
     }
     return ret;
@@ -595,6 +617,10 @@ static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const 
         *_errno = -ret;
         return -1;
     }
+    else if (ret == SOCK_BUSY) {
+        *_errno = MP_EAGAIN;
+        return -1;
+    }
     return ret;
 }
 
@@ -609,27 +635,47 @@ static mp_uint_t wiznet5k_socket_recvfrom(mod_network_socket_obj_t *socket, byte
         *_errno = -ret;
         return -1;
     }
+    else if (ret == SOCK_BUSY) {
+        *_errno = MP_EAGAIN;
+        return -1;
+    }
     return ret;
 }
 
 static int wiznet5k_socket_setsockopt(mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno) {
-    // TODO
-    *_errno = MP_EINVAL;
-    return -1;
+    switch (opt) {
+        // level: SOL_SOCKET
+        case MOD_NETWORK_SO_REUSEADDR:
+        case MOD_NETWORK_SO_BROADCAST:
+            // Implied/not-required in Wiznet sockets
+            break;
+
+        default:
+            *_errno = MP_EINVAL;
+            return -1;
+    }
+
+    return 0;
 }
 
 static int wiznet5k_socket_settimeout(mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno) {
-    // TODO
-    *_errno = MP_EINVAL;
-    return -1;
-
-    /*
+    uint8_t arg;
     if (timeout_ms == 0) {
         // set non-blocking mode
-        uint8_t arg = SOCK_IO_NONBLOCK;
-        WIZCHIP_EXPORT(ctlsocket)(socket->fileno, CS_SET_IOMODE, &arg);
+        arg = SOCK_IO_NONBLOCK;
     }
-    */
+    else {
+        arg = SOCK_IO_BLOCK;
+    }
+
+    mp_int_t ret = WIZCHIP_EXPORT(ctlsocket)(socket->fileno, CS_SET_IOMODE, &arg);
+    if (ret < 0) {
+        *_errno = -ret;
+        return -1;
+    }
+
+    socket->timeout = timeout_ms;
+    return 0;
 }
 
 static int wiznet5k_socket_ioctl(mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno) {
