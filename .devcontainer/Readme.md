@@ -19,7 +19,7 @@ the following steps.
   2. Your codespace is created. Cloning the image and the repo is quite fast,
      but preparing it for CircuitPython-development takes about 10 minutes.
      But this is a one-time task: once created, your codespace exists
-     until you explicitly delete it or until it times out (default: 30 days).  
+     until you explicitly delete it or until it times out (default: 30 days).\
      (Technical note: due to a bug in codespace creation, the setup is
      triggered from `$HOME/.bashrc` and runs in the background).
 
