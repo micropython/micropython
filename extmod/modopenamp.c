@@ -28,9 +28,11 @@
 
 #if MICROPY_PY_OPENAMP
 
+#include <stdarg.h>
 #include "py/obj.h"
 #include "py/nlr.h"
 #include "py/runtime.h"
+#include "py/mpprint.h"
 
 #include "metal/sys.h"
 #include "metal/alloc.h"
@@ -315,6 +317,13 @@ static mp_obj_t openamp_new_service_callback(mp_obj_t ns_callback) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(openamp_new_service_callback_obj, openamp_new_service_callback);
 
+void openamp_metal_log_handler(enum metal_log_level level, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    mp_vprintf(&mp_plat_print, fmt, args);
+    va_end(args);
+}
+
 void openamp_init(void) {
     if (MP_STATE_PORT(virtio_device) != NULL) {
         // Already initialized.
@@ -322,7 +331,14 @@ void openamp_init(void) {
     }
 
     struct metal_device *device;
-    struct metal_init_params metal_params = METAL_INIT_DEFAULTS;
+    struct metal_init_params metal_params = { 0 };
+
+    #if METAL_LOG_HANDLER_ENABLE
+    // If logging is enabled, set the default log level and handler before
+    // calling metal_init, to allow ports to override them in metal_sys_init.
+    metal_params.log_level = METAL_LOG_DEBUG;
+    metal_params.log_handler = openamp_metal_log_handler;
+    #endif
 
     // Initialize libmetal.
     metal_init(&metal_params);
