@@ -58,6 +58,7 @@
 //|         column_pins: Sequence[microcontroller.Pin],
 //|         interval: float = 0.020,
 //|         max_events: int = 64,
+//|         debounce_threshold: int = 1,
 //|     ) -> None:
 //|         """
 //|         Create a `keypad.Keys` object that will scan the key matrix attached to the given row and column pins.
@@ -77,17 +78,22 @@
 //|           maximum number of key transition events that are saved.
 //|           Must be >= 1.
 //|           If a new event arrives when the queue is full, the oldest event is discarded.
+//|         :param int debounce_threshold: Emit events for state changes only after a key has been
+//|           in the respective state for ``debounce_threshold`` times on average.
+//|           Successive measurements are spaced apart by ``interval`` seconds.
+//|           The default is 1, which resolves immediately. The maximum is 127.
 //|         """
 //|         ...
 
 STATIC mp_obj_t keypad_demux_demuxkeymatrix_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     keypad_demux_demuxkeymatrix_obj_t *self = mp_obj_malloc(keypad_demux_demuxkeymatrix_obj_t, &keypad_demux_demuxkeymatrix_type);
-    enum { ARG_row_addr_pins, ARG_column_pins, ARG_interval, ARG_max_events };
+    enum { ARG_row_addr_pins, ARG_column_pins, ARG_interval, ARG_max_events, ARG_debounce_threshold };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_row_addr_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_column_pins, MP_ARG_REQUIRED | MP_ARG_OBJ },
         { MP_QSTR_interval, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
         { MP_QSTR_max_events, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 64} },
+        { MP_QSTR_debounce_threshold, MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = 1} },
     };
     mp_arg_val_t args[MP_ARRAY_SIZE(allowed_args)];
     mp_arg_parse_all_kw_array(n_args, n_kw, all_args, MP_ARRAY_SIZE(allowed_args), allowed_args, args);
@@ -102,6 +108,7 @@ STATIC mp_obj_t keypad_demux_demuxkeymatrix_make_new(const mp_obj_type_t *type, 
     const mp_float_t interval =
         mp_arg_validate_obj_float_non_negative(args[ARG_interval].u_obj, 0.020f, MP_QSTR_interval);
     const size_t max_events = (size_t)mp_arg_validate_int_min(args[ARG_max_events].u_int, 1, MP_QSTR_max_events);
+    const uint8_t debounce_threshold = (uint8_t)mp_arg_validate_int_range(args[ARG_debounce_threshold].u_int, 1, 127, MP_QSTR_debounce_threshold);
 
     const mcu_pin_obj_t *row_addr_pins_array[num_row_addr_pins];
     const mcu_pin_obj_t *column_pins_array[num_column_pins];
@@ -120,7 +127,7 @@ STATIC mp_obj_t keypad_demux_demuxkeymatrix_make_new(const mp_obj_type_t *type, 
         column_pins_array[column] = pin;
     }
 
-    common_hal_keypad_demux_demuxkeymatrix_construct(self, num_row_addr_pins, row_addr_pins_array, num_column_pins, column_pins_array, interval, max_events);
+    common_hal_keypad_demux_demuxkeymatrix_construct(self, num_row_addr_pins, row_addr_pins_array, num_column_pins, column_pins_array, interval, max_events, debounce_threshold);
     return MP_OBJ_FROM_PTR(self);
 }
 

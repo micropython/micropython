@@ -99,16 +99,17 @@ void keypad_deregister_scanner(keypad_scanner_obj_t *scanner) {
     supervisor_release_lock(&keypad_scanners_linked_list_lock);
 }
 
-void keypad_construct_common(keypad_scanner_obj_t *self, mp_float_t interval, size_t max_events) {
+void keypad_construct_common(keypad_scanner_obj_t *self, mp_float_t interval, size_t max_events, uint8_t debounce_threshold) {
     size_t key_count = common_hal_keypad_generic_get_key_count(self);
-    self->currently_pressed = (bool *)m_malloc(sizeof(bool) * key_count);
-    self->previously_pressed = (bool *)m_malloc(sizeof(bool) * key_count);
+    self->debounce_counter = (int8_t *)m_malloc(sizeof(int8_t) * key_count);
 
     self->interval_ticks = (mp_uint_t)(interval * 1024);   // interval * 1000 * (1024/1000)
 
     keypad_eventqueue_obj_t *events = mp_obj_malloc(keypad_eventqueue_obj_t, &keypad_eventqueue_type);
     common_hal_keypad_eventqueue_construct(events, max_events);
     self->events = events;
+
+    self->debounce_threshold = debounce_threshold;
 
     // Add self to the list of active keypad scanners.
     keypad_register_scanner(self);
@@ -127,11 +128,27 @@ static void keypad_scan_maybe(keypad_scanner_obj_t *self, uint64_t now) {
     keypad_scan_now(self, now);
 }
 
+bool keypad_debounce(keypad_scanner_obj_t *self, mp_uint_t key_number, bool current) {
+    if (current) {
+        if ((self->debounce_counter[key_number] < self->debounce_threshold) &&
+            (++self->debounce_counter[key_number] == 0)) {
+            self->debounce_counter[key_number] = self->debounce_threshold;
+            return true;
+        }
+    } else {
+        if ((self->debounce_counter[key_number] > -self->debounce_threshold) &&
+            (--self->debounce_counter[key_number] == 0)) {
+            self->debounce_counter[key_number] = -self->debounce_threshold;
+            return true;
+        }
+    }
+    return false;
+}
+
 void common_hal_keypad_generic_reset(void *self_in) {
     keypad_scanner_obj_t *self = self_in;
     size_t key_count = common_hal_keypad_generic_get_key_count(self);
-    memset(self->previously_pressed, false, key_count);
-    memset(self->currently_pressed, false, key_count);
+    memset(self->debounce_counter, self->debounce_threshold, key_count);
     keypad_scan_now(self, port_get_raw_ticks(NULL));
 }
 
