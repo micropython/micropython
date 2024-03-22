@@ -14,32 +14,57 @@ hold/accumulate various objects.
 Classes
 -------
 
-.. class:: deque(iterable, maxlen[, flags])
+.. class:: deque(iterable, maxlen[, flag])
 
-    Deques (double-ended queues) are a list-like container that support O(1)
-    appends and pops from either side of the deque.  New deques are created
-    using the following arguments:
+    Deques (pronounced "deck" and short for "double-ended queue") are fixed length
+    list-like containers that support O(1) appends and pops from either side of the
+    deque.  New deques are created using the following arguments:
 
-        - *iterable* must be the empty tuple, and the new deque is created empty.
+        - *iterable* must be specified as an empty or non-empty iterable.
+          If the iterable is empty, the new deque is created empty.  If the
+          iterable is not empty, the new deque is created with the items
+          from the iterable.
 
         - *maxlen* must be specified and the deque will be bounded to this
           maximum length.  Once the deque is full, any new items added will
           discard items from the opposite end.
 
-        - The optional *flags* can be 1 to check for overflow when adding items.
+        - *flag* is optional and can be set to 1 to check for overflow when
+          adding items.  If the deque is full and overflow checking is enabled,
+          an IndexError will be raised when adding items.
 
-    As well as supporting ``bool`` and ``len``, deque objects have the following
-    methods:
+    Deque objects have the following methods:
 
     .. method:: deque.append(x)
 
         Add *x* to the right side of the deque.
         Raises IndexError if overflow checking is enabled and there is no more room left.
 
+    .. method:: deque.appendleft(x)
+
+        Add *x* to the left side of the deque.
+        Raises IndexError if overflow checking is enabled and there is no more room left.
+
+    .. method:: deque.pop()
+
+        Remove and return an item from the right side of the deque.
+        Raises IndexError if no items are present.
+
     .. method:: deque.popleft()
 
         Remove and return an item from the left side of the deque.
         Raises IndexError if no items are present.
+
+    .. method:: deque.extend(iterable)
+
+        Extend the right side of the deque by appending items from the *iterable* argument.
+        Raises IndexError if overflow checking is enabled and there is no more room left
+        for all of the items in *iterable*.
+
+    In addition to the above, deques support iteration, ``bool``, ``len(d)``, ``reversed(d)``,
+    membership testing with the ``in`` operator, and subscript references like ``d[0]``.
+    Note: Indexed access is O(1) at both ends but slows to O(n) in the middle of the deque,
+    so for fast random access use a ``list`` instead.
 
 .. function:: namedtuple(name, fields)
 
