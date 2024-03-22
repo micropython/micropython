@@ -163,8 +163,6 @@ CFLAGS += -Os -DNDEBUG
 LDFLAGS += -Os
 endif
 
-LIBS = \
-
 ifeq ($(MCU_VARIANT), nrf52)
 
 SRC_LIB_C += $(SRC_LIB_LIBM_C)
