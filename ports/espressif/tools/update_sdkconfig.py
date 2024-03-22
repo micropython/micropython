@@ -56,6 +56,7 @@ TARGET_SETTINGS = [
     "CONFIG_BT_CTRL_PINNED_TO_CORE",
     "CONFIG_SPIRAM_SPEED_2",
     "CONFIG_SPIRAM_BANKSWITCH_ENABLE",  # For ESP32
+    "CONFIG_ESP_WIFI_RX_IRAM_OPT",
 ]
 
 BOARD_SETTINGS = [
@@ -360,6 +361,11 @@ def update(debug, board, update_all):
                     target_kconfig_snippets.add(loc)
                     target_symbols = target_symbols.union(differing_keys)
 
+            # We treat SPIRAM differently so make sure it isn't a target related
+            # symbol (even though some targets don't support SPIRAM).
+            if "SPIRAM" in target_symbols:
+                target_symbols.remove("SPIRAM")
+
             # kconfig settings can be set by others. item.referenced doesn't
             # know this. So we collect all things that reference this using
             # rev_dep.
@@ -428,7 +434,9 @@ def update(debug, board, update_all):
                     # Always document the above settings. Settings below should
                     # be non-default.
                     pass
-                elif matches_group(config_string, PSRAM_SETTINGS) or psram_reference:
+                elif matches_group(config_string, PSRAM_SETTINGS) or (
+                    psram_reference and not target_setting
+                ):
                     print("  " * (len(current_group) + 1), "psram shared")
                     last_psram_group = add_group(psram_settings, last_psram_group, current_group)
                     psram_settings.append(config_string)

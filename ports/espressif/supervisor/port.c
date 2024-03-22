@@ -407,7 +407,7 @@ void reset_to_bootloader(void) {
 }
 
 void reset_cpu(void) {
-    #ifndef CONFIG_IDF_TARGET_ARCH_RISCV
+    #if CIRCUITPY_DEBUG
     esp_backtrace_print(100);
     #endif
     esp_restart();
