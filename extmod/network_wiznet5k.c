@@ -113,6 +113,13 @@ typedef struct _wiznet5k_obj_t {
     #endif
 } wiznet5k_obj_t;
 
+#if WIZNET5K_PROVIDED_STACK
+typedef struct _wiznet5k_socket_extra_t {
+    byte        remote_ip[4];
+    mp_uint_t   remote_port;
+} wiznet5k_socket_extra_t;
+#endif
+
 #if WIZNET5K_WITH_LWIP_STACK
 #define IS_ACTIVE(self) (self->netif.flags & NETIF_FLAG_UP)
 #else // WIZNET5K_PROVIDED_STACK
@@ -444,6 +451,8 @@ static int wiznet5k_socket_socket(mod_network_socket_obj_t *socket, int *_errno)
             *_errno = MP_EMFILE;
             return -1;
         }
+
+        socket->_private = NULL;
     }
 
     // WIZNET does not have a concept of pure "open socket".  You need to know
@@ -538,26 +547,51 @@ static int wiznet5k_socket_connect(mod_network_socket_obj_t *socket, byte *ip, m
         return -1;
     }
 
-    // now connect
-    MP_THREAD_GIL_EXIT();
-    mp_int_t ret = WIZCHIP_EXPORT(connect)(socket->fileno, ip, port);
-    MP_THREAD_GIL_ENTER();
+    // WIZnet doesn't support connect on UDP sockets. TODO: Stash the remote
+    // information for use with the ::send method, if used on this UDP socket.
+    if (socket->type == Sn_MR_TCP) {
+        // now connect
+        MP_THREAD_GIL_EXIT();
+        mp_int_t ret = WIZCHIP_EXPORT(connect)(socket->fileno, ip, port);
+        MP_THREAD_GIL_ENTER();
 
-    if (ret < 0) {
-        wiznet5k_socket_close(socket);
-        *_errno = -ret;
-        return -1;
+        if (ret < 0) {
+            wiznet5k_socket_close(socket);
+            *_errno = -ret;
+            return -1;
+        }
+        else if (ret == SOCK_BUSY) {
+            *_errno = MP_EAGAIN;
+            return -1;
+        }
     }
-    else if (ret == SOCK_BUSY) {
-        *_errno = MP_EAGAIN;
-        return -1;
+    else if (socket->type == Sn_MR_UDP) {
+        // For POSIX usage of ::send later, stash the remote IP and port
+        wiznet5k_socket_extra_t *extra = (wiznet5k_socket_extra_t *)m_malloc(sizeof(wiznet5k_socket_extra_t));
+        if (extra == NULL) {
+            *_errno = MP_ENOMEM;
+            return -1;
+        }
+        memcpy(extra->remote_ip, ip, 4);
+        extra->remote_port = port;
+        socket->_private = extra;
     }
 
     // success
     return 0;
 }
 
+static mp_uint_t wiznet5k_socket_sendto(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, byte *ip, mp_uint_t port, int *_errno);
 static mp_uint_t wiznet5k_socket_send(mod_network_socket_obj_t *socket, const byte *buf, mp_uint_t len, int *_errno) {
+    if (socket->type == Sn_MR_UDP) {
+        if (socket->_private != NULL) {
+            wiznet5k_socket_extra_t *extra = (wiznet5k_socket_extra_t*) socket->_private;
+            return wiznet5k_socket_sendto(socket, buf, len, extra->remote_ip, extra->remote_port, _errno);
+        }
+        *_errno = MP_ENOTCONN;
+        return -1;
+    }
+
     MP_THREAD_GIL_EXIT();
     mp_int_t ret = WIZCHIP_EXPORT(send)(socket->fileno, (byte *)buf, len);
     MP_THREAD_GIL_ENTER();
