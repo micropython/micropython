@@ -35,6 +35,12 @@
 #include "hpl_time_measure.h"
 #include "sam.h"
 
+#define MICROPY_BEGIN_ATOMIC_SECTION()     disable_irq()
+#define MICROPY_END_ATOMIC_SECTION(state)  enable_irq(state)
+
+#define MICROPY_PY_PENDSV_ENTER   uint32_t atomic_state = raise_irq_pri(IRQ_PRI_PENDSV)
+#define MICROPY_PY_PENDSV_EXIT    restore_irq_pri(atomic_state)
+
 #define MICROPY_HW_USB_CDC_TX_TIMEOUT (500)
 
 extern int mp_interrupt_char;
@@ -42,6 +48,16 @@ extern volatile uint32_t systick_ms;
 uint64_t mp_hal_ticks_us_64(void);
 
 void mp_hal_set_interrupt_char(int c);
+
+__attribute__((always_inline)) static inline void enable_irq(uint32_t state) {
+    __set_PRIMASK(state);
+}
+
+__attribute__((always_inline)) static inline uint32_t disable_irq(void) {
+    uint32_t state = __get_PRIMASK();
+    __disable_irq();
+    return state;
+}
 
 #define mp_hal_delay_us_fast  mp_hal_delay_us
 

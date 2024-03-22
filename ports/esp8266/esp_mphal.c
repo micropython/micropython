@@ -28,15 +28,15 @@
 #include "ets_sys.h"
 #include "etshal.h"
 #include "uart.h"
-#include "esp_mphal.h"
 #include "user_interface.h"
 #include "ets_alt_task.h"
+#include "py/mphal.h"
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "extmod/misc.h"
 #include "shared/runtime/pyexec.h"
 
-STATIC byte stdin_ringbuf_array[256];
+static byte stdin_ringbuf_array[256];
 ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0};
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len);
 const mp_print_t mp_debug_print = {NULL, mp_hal_debug_tx_strn_cooked};
@@ -53,7 +53,7 @@ void mp_hal_init(void) {
 void MP_FASTCODE(mp_hal_delay_us)(uint32_t us) {
     uint32_t start = system_get_time();
     while (system_get_time() - start < us) {
-        ets_event_poll();
+        mp_event_handle_nowait();
     }
 }
 
@@ -94,8 +94,14 @@ void mp_hal_debug_str(const char *str) {
 }
 #endif
 
-void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
-    mp_os_dupterm_tx_strn(str, len);
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, uint32_t len) {
+    int dupterm_res = mp_os_dupterm_tx_strn(str, len);
+    if (dupterm_res < 0) {
+        // no outputs, nothing was written
+        return 0;
+    } else {
+        return dupterm_res;
+    }
 }
 
 void mp_hal_debug_tx_strn_cooked(void *env, const char *str, uint32_t len) {
@@ -122,11 +128,6 @@ uint64_t mp_hal_time_ns(void) {
     return pyb_rtc_get_us_since_epoch() * 1000ULL;
 }
 
-void ets_event_poll(void) {
-    ets_loop_iter();
-    mp_handle_pending(true);
-}
-
 void __assert_func(const char *file, int line, const char *func, const char *expr) {
     printf("assert:%s:%d:%s: %s\n", file, line, func, expr);
     mp_raise_msg(&mp_type_AssertionError, MP_ERROR_TEXT("C-level assert"));
@@ -139,31 +140,19 @@ void MP_FASTCODE(mp_hal_signal_input)(void) {
     #endif
 }
 
-STATIC void dupterm_task_handler(os_event_t *evt) {
-    static byte lock;
-    if (lock) {
-        return;
-    }
-    lock = 1;
-    while (1) {
-        int c = mp_os_dupterm_rx_chr();
-        if (c < 0) {
-            break;
-        }
-        ringbuf_put(&stdin_ringbuf, c);
-    }
-    mp_hal_signal_input();
-    lock = 0;
+// this bit is unused in the Xtensa PS register
+#define ETS_LOOP_ITER_BIT (12)
+
+uint32_t esp_disable_irq(void) {
+    uint32_t state = disable_irq();
+    state = (state & ~(1 << ETS_LOOP_ITER_BIT)) | (ets_loop_iter_disable << ETS_LOOP_ITER_BIT);
+    ets_loop_iter_disable = 1;
+    return state;
 }
 
-STATIC os_event_t dupterm_evt_queue[4];
-
-void dupterm_task_init() {
-    system_os_task(dupterm_task_handler, DUPTERM_TASK_ID, dupterm_evt_queue, MP_ARRAY_SIZE(dupterm_evt_queue));
-}
-
-void mp_hal_signal_dupterm_input(void) {
-    system_os_post(DUPTERM_TASK_ID, 0, 0);
+void esp_enable_irq(uint32_t state) {
+    ets_loop_iter_disable = (state >> ETS_LOOP_ITER_BIT) & 1;
+    enable_irq(state & ~(1 << ETS_LOOP_ITER_BIT));
 }
 
 // Get pointer to esf_buf bookkeeping structure

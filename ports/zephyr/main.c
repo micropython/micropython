@@ -96,7 +96,7 @@ void init_zephyr(void) {
 }
 
 #if MICROPY_VFS
-STATIC void vfs_init(void) {
+static void vfs_init(void) {
     mp_obj_t bdev = NULL;
     mp_obj_t mount_point;
     const char *mount_point_str = NULL;
@@ -189,7 +189,7 @@ void gc_collect(void) {
 }
 
 #if !MICROPY_READER_VFS
-mp_lexer_t *mp_lexer_new_from_file(const char *filename) {
+mp_lexer_t *mp_lexer_new_from_file(qstr filename) {
     mp_raise_OSError(ENOENT);
 }
 #endif

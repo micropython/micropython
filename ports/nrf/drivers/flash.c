@@ -33,13 +33,13 @@
 #include "nrf_soc.h"
 
 // Rotates bits in `value` left `shift` times.
-STATIC inline uint32_t rotate_left(uint32_t value, uint32_t shift) {
+static inline uint32_t rotate_left(uint32_t value, uint32_t shift) {
     return (value << shift) | (value >> (32 - shift));
 }
 
-STATIC volatile flash_state_t flash_operation_state = FLASH_STATE_BUSY;
+static volatile flash_state_t flash_operation_state = FLASH_STATE_BUSY;
 
-STATIC void operation_init(void) {
+static void operation_init(void) {
     flash_operation_state = FLASH_STATE_BUSY;
 }
 
@@ -47,7 +47,7 @@ void flash_operation_finished(flash_state_t result) {
     flash_operation_state = result;
 }
 
-STATIC bool operation_wait(uint32_t result) {
+static bool operation_wait(uint32_t result) {
     if (ble_drv_stack_enabled() != 1) {
         // SoftDevice is not enabled, no event will be generated.
         return result == NRF_SUCCESS;

@@ -25,8 +25,9 @@
  * THE SOFTWARE.
  */
 
-#include "py/runtime.h"
-#include "py/stream.h"
+// This file is never compiled standalone, it's included directly from
+// extmod/machine_uart.c via MICROPY_PY_MACHINE_UART_INCLUDEFILE.
+
 #include "py/mphal.h"
 #include "ticks.h"
 #include "fsl_common.h"
@@ -72,10 +73,8 @@ typedef struct _iomux_table_t {
     uint32_t configRegister;
 } iomux_table_t;
 
-extern const mp_obj_type_t machine_uart_type;
-
-STATIC const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
-STATIC LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
+static const uint8_t uart_index_table[] = MICROPY_HW_UART_INDEX;
+static LPUART_Type *uart_base_ptr_table[] = LPUART_BASE_PTRS;
 static const iomux_table_t iomux_table_uart[] = {
     IOMUX_TABLE_UART
 };
@@ -83,9 +82,9 @@ static const iomux_table_t iomux_table_uart_cts_rts[] = {
     IOMUX_TABLE_UART_CTS_RTS
 };
 
-STATIC const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
-STATIC const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
-STATIC const char *_flow_name[] = {"None", "RTS", "CTS", "RTS|CTS"};
+static const char *_parity_name[] = {"None", "", "0", "1"};  // Is defined as 0, 2, 3
+static const char *_invert_name[] = {"None", "INV_TX", "INV_RX", "INV_TX|INV_RX"};
+static const char *_flow_name[] = {"None", "RTS", "CTS", "RTS|CTS"};
 
 #define RX (iomux_table_uart[index + 1])
 #define TX (iomux_table_uart[index])
@@ -153,29 +152,26 @@ static void machine_uart_ensure_active(machine_uart_obj_t *uart) {
     }
 }
 
-#if !defined(MIMXRT117x_SERIES)
-static inline void uart_set_clock_divider(uint32_t baudrate) {
-    // For baud rates < 460800 divide the clock by 10, supporting baud rates down to 50 baud.
-    if (baudrate >= 460800) {
-        CLOCK_SetDiv(kCLOCK_UartDiv, 0);
-    } else {
-        CLOCK_SetDiv(kCLOCK_UartDiv, 9);
-    }
-}
-#endif
-
 void machine_uart_set_baudrate(mp_obj_t uart_in, uint32_t baudrate) {
     machine_uart_obj_t *uart = MP_OBJ_TO_PTR(uart_in);
     #if defined(MIMXRT117x_SERIES)
     // Use the Lpuart1 clock value, which is set for All UART devices.
     LPUART_SetBaudRate(uart->lpuart, baudrate, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
     #else
-    uart_set_clock_divider(baudrate);
     LPUART_SetBaudRate(uart->lpuart, baudrate, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
     #endif
 }
 
-STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
+/******************************************************************************/
+// MicroPython bindings for UART
+
+#define MICROPY_PY_MACHINE_UART_CLASS_CONSTANTS \
+    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) }, \
+    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) }, \
+    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) }, \
+    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) }, \
+
+static void mp_machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     mp_printf(print, "UART(%u, baudrate=%u, bits=%u, parity=%s, stop=%u, flow=%s, "
         "rxbuf=%d, txbuf=%d, timeout=%u, timeout_char=%u, invert=%s)",
@@ -186,7 +182,7 @@ STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_pri
         _invert_name[self->invert]);
 }
 
-STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+static void mp_machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     enum { ARG_baudrate, ARG_bits, ARG_parity, ARG_stop, ARG_flow,
            ARG_timeout, ARG_timeout_char, ARG_invert, ARG_rxbuf, ARG_txbuf};
     static const mp_arg_t allowed_args[] = {
@@ -315,7 +311,6 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         // Use the Lpuart1 clock value, which is set for All UART devices.
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetRootClockFreq(kCLOCK_Root_Lpuart1));
         #else
-        uart_set_clock_divider(self->config.baudRate_Bps);
         LPUART_Init(self->lpuart, &self->config, CLOCK_GetClockRootFreq(kCLOCK_UartClkRoot));
         #endif
         LPUART_TransferCreateHandle(self->lpuart, &self->handle,  LPUART_UserCallback, self);
@@ -341,11 +336,9 @@ STATIC mp_obj_t machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args
         self->lpuart->STAT |= 1 << LPUART_STAT_BRK13_SHIFT;
         LPUART_EnableTx(self->lpuart, true);
     }
-
-    return MP_OBJ_FROM_PTR(self);
 }
 
-STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t mp_machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 1, MP_OBJ_FUN_ARGS_MAX, true);
 
     // Get UART bus.
@@ -371,53 +364,33 @@ STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, 
     if (uart_present) {
         mp_map_t kw_args;
         mp_map_init_fixed_table(&kw_args, n_kw, args + n_args);
-        return machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+        mp_machine_uart_init_helper(self, n_args - 1, args + 1, &kw_args);
+        return MP_OBJ_FROM_PTR(self);
     } else {
         return mp_const_none;
     }
 }
 
-// uart.init(baud, [kwargs])
-STATIC mp_obj_t machine_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {
-    return machine_uart_init_helper(args[0], n_args - 1, args + 1, kw_args);
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(machine_uart_init_obj, 1, machine_uart_init);
-
 // uart.deinit()
-STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static void mp_machine_uart_deinit(machine_uart_obj_t *self) {
     LPUART_SoftwareReset(self->lpuart);
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_deinit_obj, machine_uart_deinit);
 
-STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static mp_int_t mp_machine_uart_any(machine_uart_obj_t *self) {
     machine_uart_ensure_active(self);
     size_t count = LPUART_TransferGetRxRingBufferLength(self->lpuart, &self->handle);
-    return MP_OBJ_NEW_SMALL_INT(count);
+    return count;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_any_obj, machine_uart_any);
 
-STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
+static bool mp_machine_uart_txdone(machine_uart_obj_t *self) {
+    return self->tx_status == kStatus_LPUART_TxIdle;
+}
+
+static void mp_machine_uart_sendbreak(machine_uart_obj_t *self) {
     machine_uart_ensure_active(self);
     self->lpuart->CTRL |= 1 << LPUART_CTRL_SBK_SHIFT; // Set SBK bit
     self->lpuart->CTRL &= ~LPUART_CTRL_SBK_MASK; // Clear SBK bit
-    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_sendbreak_obj, machine_uart_sendbreak);
-
-STATIC mp_obj_t machine_uart_txdone(mp_obj_t self_in) {
-    machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
-
-    if (self->tx_status == kStatus_LPUART_TxIdle) {
-        return mp_const_true;
-    } else {
-        return mp_const_false;
-    }
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(machine_uart_txdone_obj, machine_uart_txdone);
 
 // Reset all defined UARTs
 void machine_uart_deinit_all(void) {
@@ -428,31 +401,7 @@ void machine_uart_deinit_all(void) {
     }
 }
 
-STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {
-    { MP_ROM_QSTR(MP_QSTR_init), MP_ROM_PTR(&machine_uart_init_obj) },
-    { MP_ROM_QSTR(MP_QSTR_deinit), MP_ROM_PTR(&machine_uart_deinit_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_any), MP_ROM_PTR(&machine_uart_any_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_flush), MP_ROM_PTR(&mp_stream_flush_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read), MP_ROM_PTR(&mp_stream_read_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readline), MP_ROM_PTR(&mp_stream_unbuffered_readline_obj) },
-    { MP_ROM_QSTR(MP_QSTR_readinto), MP_ROM_PTR(&mp_stream_readinto_obj) },
-    { MP_ROM_QSTR(MP_QSTR_write), MP_ROM_PTR(&mp_stream_write_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_sendbreak), MP_ROM_PTR(&machine_uart_sendbreak_obj) },
-    { MP_ROM_QSTR(MP_QSTR_txdone), MP_ROM_PTR(&machine_uart_txdone_obj) },
-
-    { MP_ROM_QSTR(MP_QSTR_RTS), MP_ROM_INT(UART_HWCONTROL_RTS) },
-    { MP_ROM_QSTR(MP_QSTR_CTS), MP_ROM_INT(UART_HWCONTROL_CTS) },
-
-    { MP_ROM_QSTR(MP_QSTR_INV_TX), MP_ROM_INT(UART_INVERT_TX) },
-    { MP_ROM_QSTR(MP_QSTR_INV_RX), MP_ROM_INT(UART_INVERT_RX) },
-
-};
-STATIC MP_DEFINE_CONST_DICT(machine_uart_locals_dict, machine_uart_locals_dict_table);
-
-STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     uint64_t t = ticks_us64() + (uint64_t)self->timeout * 1000;
     uint64_t timeout_char_us = (uint64_t)self->timeout_char * 1000;
@@ -487,7 +436,7 @@ STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t siz
     return size;
 }
 
-STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
+static mp_uint_t mp_machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {
     machine_uart_obj_t *self = MP_OBJ_TO_PTR(self_in);
     lpuart_transfer_t xfer;
     uint64_t t;
@@ -547,7 +496,7 @@ STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uin
     return size;
 }
 
-STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {
+static mp_uint_t mp_machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {
     machine_uart_obj_t *self = self_in;
     mp_uint_t ret;
     if (request == MP_STREAM_POLL) {
@@ -571,7 +520,7 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
             self->config.baudRate_Bps + ticks_us64();
 
         do {
-            if (machine_uart_txdone((mp_obj_t)self) == mp_const_true) {
+            if (mp_machine_uart_txdone(self)) {
                 return 0;
             }
             MICROPY_EVENT_POLL_HOOK
@@ -585,20 +534,3 @@ STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint
     }
     return ret;
 }
-
-STATIC const mp_stream_p_t uart_stream_p = {
-    .read = machine_uart_read,
-    .write = machine_uart_write,
-    .ioctl = machine_uart_ioctl,
-    .is_text = false,
-};
-
-MP_DEFINE_CONST_OBJ_TYPE(
-    machine_uart_type,
-    MP_QSTR_UART,
-    MP_TYPE_FLAG_ITER_IS_STREAM,
-    make_new, machine_uart_make_new,
-    print, machine_uart_print,
-    protocol, &uart_stream_p,
-    locals_dict, &machine_uart_locals_dict
-    );

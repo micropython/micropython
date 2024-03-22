@@ -24,13 +24,12 @@
  * THE SOFTWARE.
  */
 
-#include "py/mpconfig.h"
-#if MICROPY_PY_MACHINE
-
-#include "py/obj.h"
 #include "py/runtime.h"
+
+#if MICROPY_PY_MACHINE_PIN_BASE
+
+#include "extmod/modmachine.h"
 #include "extmod/virtpin.h"
-#include "extmod/machine_pinbase.h"
 
 // PinBase class
 
@@ -41,11 +40,11 @@ typedef struct _mp_pinbase_t {
     mp_obj_base_t base;
 } mp_pinbase_t;
 
-STATIC const mp_pinbase_t pinbase_singleton = {
+static const mp_pinbase_t pinbase_singleton = {
     .base = { &machine_pinbase_type },
 };
 
-STATIC mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
+static mp_obj_t pinbase_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     (void)type;
     (void)n_args;
     (void)n_kw;
@@ -73,7 +72,7 @@ mp_uint_t pinbase_ioctl(mp_obj_t obj, mp_uint_t request, uintptr_t arg, int *err
     return -1;
 }
 
-STATIC const mp_pin_p_t pinbase_pin_p = {
+static const mp_pin_p_t pinbase_pin_p = {
     .ioctl = pinbase_ioctl,
 };
 
@@ -85,4 +84,4 @@ MP_DEFINE_CONST_OBJ_TYPE(
     protocol, &pinbase_pin_p
     );
 
-#endif // MICROPY_PY_MACHINE
+#endif // MICROPY_PY_MACHINE_PIN_BASE

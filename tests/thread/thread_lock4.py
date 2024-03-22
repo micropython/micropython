@@ -36,14 +36,18 @@ output_lock = _thread.allocate_lock()
 
 # spawn threads to do the jobs
 for i in range(4):
-    _thread.start_new_thread(thread_entry, ())
+    try:
+        _thread.start_new_thread(thread_entry, ())
+    except OSError:
+        # System cannot create a new thead, so stop trying to create them.
+        break
 
 # wait for the jobs to complete
 while True:
     with jobs_lock:
         if len(output) == n_jobs:
             break
-    time.sleep(1)
+    time.sleep(0)
 
 # sort and print the results
 output.sort(key=lambda x: x[0])

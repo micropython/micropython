@@ -32,7 +32,7 @@ Methods
 
     The program is added to the instruction memory of this PIO instance. If the
     instruction memory already contains this program, then its offset is
-    re-used so as to save on instruction memory.
+    reused so as to save on instruction memory.
 
     - *freq* is the frequency in Hz to run the state machine at. Defaults to
       the system clock frequency.
@@ -140,3 +140,10 @@ Methods
 
      Optionally configure it.
 
+Buffer protocol
+---------------
+
+The StateMachine class supports the `buffer protocol`, allowing direct access to the transmit
+and receive FIFOs for each state machine. This is primarily in order to allow StateMachine
+objects to be passed directly as the read or write parameters when configuring a `rp2.DMA()`
+channel.

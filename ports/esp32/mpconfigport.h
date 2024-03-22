@@ -9,7 +9,7 @@
 #include "esp_random.h"
 #include "esp_system.h"
 #include "freertos/FreeRTOS.h"
-#include "driver/i2s.h"
+#include "driver/i2s_std.h"
 #include "esp_wifi_types.h"
 
 #ifndef MICROPY_CONFIG_ROM_LEVEL
@@ -26,6 +26,20 @@
 // memory allocation policies
 #define MICROPY_ALLOC_PATH_MAX              (128)
 
+// Initial Python heap size.  This starts small but adds new heap areas on demand due to
+// the settings MICROPY_GC_SPLIT_HEAP and MICROPY_GC_SPLIT_HEAP_AUTO.  The value is
+// different for different MCUs and is chosen so they can grow the heap once (double it)
+// and still have enough internal RAM to start WiFi and make a HTTPS request.
+#ifndef MICROPY_GC_INITIAL_HEAP_SIZE
+#if CONFIG_IDF_TARGET_ESP32
+#define MICROPY_GC_INITIAL_HEAP_SIZE        (56 * 1024)
+#elif CONFIG_IDF_TARGET_ESP32S2 && !CONFIG_SPIRAM
+#define MICROPY_GC_INITIAL_HEAP_SIZE        (36 * 1024)
+#else
+#define MICROPY_GC_INITIAL_HEAP_SIZE        (64 * 1024)
+#endif
+#endif
+
 // emitters
 #define MICROPY_PERSISTENT_CODE_LOAD        (1)
 #if !CONFIG_IDF_TARGET_ESP32C3
@@ -40,7 +54,9 @@
 #define MICROPY_COMP_CONST_FOLDING_COMPILER_WORKAROUND (1)
 
 // optimisations
+#ifndef MICROPY_OPT_COMPUTED_GOTO
 #define MICROPY_OPT_COMPUTED_GOTO           (1)
+#endif
 
 // Python internal features
 #define MICROPY_READER_VFS                  (1)
@@ -72,19 +88,20 @@
 #define MICROPY_GC_SPLIT_HEAP_AUTO          (1)
 
 // extended modules
-#ifndef MICROPY_ESPNOW
-#define MICROPY_ESPNOW                      (1)
+#ifndef MICROPY_PY_ESPNOW
+#define MICROPY_PY_ESPNOW                   (1)
 #endif
 #ifndef MICROPY_PY_BLUETOOTH
 #define MICROPY_PY_BLUETOOTH                (1)
 #define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS (1)
 #define MICROPY_PY_BLUETOOTH_USE_SYNC_EVENTS_WITH_INTERLOCK (1)
-#define MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE (CONFIG_BT_NIMBLE_TASK_STACK_SIZE)
+#define MICROPY_PY_BLUETOOTH_SYNC_EVENT_STACK_SIZE (CONFIG_BT_NIMBLE_TASK_STACK_SIZE - 2048)
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
 #define MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING (1)
 #define MICROPY_BLUETOOTH_NIMBLE            (1)
 #define MICROPY_BLUETOOTH_NIMBLE_BINDINGS_ONLY (1)
 #endif
+#define MICROPY_PY_HASHLIB_MD5              (1)
 #define MICROPY_PY_HASHLIB_SHA1             (1)
 #define MICROPY_PY_HASHLIB_SHA256           (1)
 #define MICROPY_PY_CRYPTOLIB                (1)
@@ -96,8 +113,21 @@
 #define MICROPY_PY_OS_UNAME                 (1)
 #define MICROPY_PY_OS_URANDOM               (1)
 #define MICROPY_PY_MACHINE                  (1)
+#define MICROPY_PY_MACHINE_INCLUDEFILE      "ports/esp32/modmachine.c"
+#define MICROPY_PY_MACHINE_RESET            (1)
+#define MICROPY_PY_MACHINE_BARE_METAL_FUNCS (1)
+#define MICROPY_PY_MACHINE_DISABLE_IRQ_ENABLE_IRQ (1)
+#define MICROPY_PY_MACHINE_ADC              (1)
+#define MICROPY_PY_MACHINE_ADC_INCLUDEFILE  "ports/esp32/machine_adc.c"
+#define MICROPY_PY_MACHINE_ADC_ATTEN_WIDTH  (1)
+#define MICROPY_PY_MACHINE_ADC_INIT         (1)
+#define MICROPY_PY_MACHINE_ADC_READ         (1)
+#define MICROPY_PY_MACHINE_ADC_READ_UV      (1)
+#define MICROPY_PY_MACHINE_ADC_BLOCK        (1)
+#define MICROPY_PY_MACHINE_ADC_BLOCK_INCLUDEFILE "ports/esp32/machine_adc_block.c"
 #define MICROPY_PY_MACHINE_PIN_MAKE_NEW     mp_pin_make_new
 #define MICROPY_PY_MACHINE_BITSTREAM        (1)
+#define MICROPY_PY_MACHINE_DHT_READINTO     (1)
 #define MICROPY_PY_MACHINE_PULSE            (1)
 #define MICROPY_PY_MACHINE_PWM              (1)
 #define MICROPY_PY_MACHINE_PWM_DUTY         (1)
@@ -110,11 +140,20 @@
 #define MICROPY_PY_MACHINE_SPI_LSB          (1)
 #define MICROPY_PY_MACHINE_SOFTSPI          (1)
 #ifndef MICROPY_PY_MACHINE_DAC
-#define MICROPY_PY_MACHINE_DAC              (1)
+#define MICROPY_PY_MACHINE_DAC              (SOC_DAC_SUPPORTED)
 #endif
 #ifndef MICROPY_PY_MACHINE_I2S
-#define MICROPY_PY_MACHINE_I2S              (1)
+#define MICROPY_PY_MACHINE_I2S              (SOC_I2S_SUPPORTED)
 #endif
+#define MICROPY_PY_MACHINE_I2S_INCLUDEFILE  "ports/esp32/machine_i2s.c"
+#define MICROPY_PY_MACHINE_I2S_FINALISER    (1)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_RX  (I2S_DIR_RX)
+#define MICROPY_PY_MACHINE_I2S_CONSTANT_TX  (I2S_DIR_TX)
+#define MICROPY_PY_MACHINE_UART             (1)
+#define MICROPY_PY_MACHINE_UART_INCLUDEFILE "ports/esp32/machine_uart.c"
+#define MICROPY_PY_MACHINE_UART_SENDBREAK   (1)
+#define MICROPY_PY_MACHINE_WDT              (1)
+#define MICROPY_PY_MACHINE_WDT_INCLUDEFILE  "ports/esp32/machine_wdt.c"
 #define MICROPY_PY_NETWORK (1)
 #ifndef MICROPY_PY_NETWORK_HOSTNAME_DEFAULT
 #if CONFIG_IDF_TARGET_ESP32
@@ -144,13 +183,17 @@
 #define MICROPY_PY_ONEWIRE                  (1)
 #define MICROPY_PY_SOCKET_EVENTS            (MICROPY_PY_WEBREPL)
 #define MICROPY_PY_BLUETOOTH_RANDOM_ADDR    (1)
-#define MICROPY_PY_BLUETOOTH_DEFAULT_GAP_NAME ("ESP32")
 
 // fatfs configuration
 #define MICROPY_FATFS_ENABLE_LFN            (1)
 #define MICROPY_FATFS_RPATH                 (2)
 #define MICROPY_FATFS_MAX_SS                (4096)
 #define MICROPY_FATFS_LFN_CODE_PAGE         437 /* 1=SFN/ANSI 437=LFN/U.S.(OEM) */
+
+// task size
+#ifndef MICROPY_TASK_STACK_SIZE
+#define MICROPY_TASK_STACK_SIZE             (16 * 1024)
+#endif
 
 #define MP_STATE_PORT MP_STATE_VM
 
@@ -160,13 +203,6 @@
 void *esp_native_code_commit(void *, size_t, void *);
 #define MP_PLAT_COMMIT_EXEC(buf, len, reloc) esp_native_code_commit(buf, len, reloc)
 #define MP_SSIZE_MAX (0x7fffffff)
-
-// Note: these "critical nested" macros do not ensure cross-CPU exclusion,
-// the only disable interrupts on the current CPU.  To full manage exclusion
-// one should use portENTER_CRITICAL/portEXIT_CRITICAL instead.
-#include "freertos/FreeRTOS.h"
-#define MICROPY_BEGIN_ATOMIC_SECTION() portSET_INTERRUPT_MASK_FROM_ISR()
-#define MICROPY_END_ATOMIC_SECTION(state) portCLEAR_INTERRUPT_MASK_FROM_ISR(state)
 
 #if MICROPY_PY_SOCKET_EVENTS
 #define MICROPY_PY_SOCKET_EVENTS_HANDLER extern void socket_events_handler(void); socket_events_handler();
@@ -195,7 +231,11 @@ void *esp_native_code_commit(void *, size_t, void *);
 #endif
 
 // Functions that should go in IRAM
+// For ESP32 with SPIRAM workaround, firmware is larger and uses more static IRAM,
+// so in that configuration don't put too many functions in IRAM.
+#if !(CONFIG_IDF_TARGET_ESP32 && CONFIG_SPIRAM && CONFIG_SPIRAM_CACHE_WORKAROUND)
 #define MICROPY_WRAP_MP_BINARY_OP(f) IRAM_ATTR f
+#endif
 #define MICROPY_WRAP_MP_EXECUTE_BYTECODE(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_LOAD_GLOBAL(f) IRAM_ATTR f
 #define MICROPY_WRAP_MP_LOAD_NAME(f) IRAM_ATTR f
@@ -230,7 +270,17 @@ typedef long mp_off_t;
 #endif
 
 #ifndef MICROPY_BOARD_ENTER_BOOTLOADER
-#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args)
+// RTC has a register to trigger bootloader on these targets
+#if CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3 || CONFIG_IDF_TARGET_ESP32C2 || CONFIG_IDF_TARGET_ESP32C3
+#define MICROPY_ESP32_USE_BOOTLOADER_RTC    (1)
+#define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) machine_bootloader_rtc()
+#endif
+#endif
+
+#ifdef MICROPY_BOARD_ENTER_BOOTLOADER
+#define MICROPY_PY_MACHINE_BOOTLOADER       (1)
+#else
+#define MICROPY_PY_MACHINE_BOOTLOADER       (0)
 #endif
 
 #ifndef MICROPY_BOARD_STARTUP

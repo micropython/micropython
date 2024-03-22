@@ -176,7 +176,7 @@ static void jump_to_non_secure(void)
     }
 }
 
-int main(void) {
+void _start(void) {
     configure_flash();
     configure_ram();
     configure_peripherals();
@@ -186,9 +186,4 @@ int main(void) {
     while (1) {
 	;
     }
-
-    return 0;
 }
-
-void _start(void) {main();}
-

@@ -4,10 +4,12 @@
  * Copyright (c) 2023 Arduino SA
  */
 
-#define MICROPY_HW_BOARD_NAME       "GIGA"
+#define MICROPY_HW_BOARD_NAME       "Arduino GIGA R1 WiFi"
 #define MICROPY_HW_MCU_NAME         "STM32H747"
-#define MICROPY_PY_SYS_PLATFORM     "Giga"
-#define MICROPY_HW_FLASH_FS_LABEL   "Giga"
+#define MICROPY_HW_FLASH_FS_LABEL   "GIGA R1 WiFi"
+
+// Network config
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT "mpy-giga-r1-wifi"
 
 #define MICROPY_OBJ_REPR            (MICROPY_OBJ_REPR_C)
 #define UINT_FMT                    "%u"
@@ -30,7 +32,7 @@ typedef unsigned int mp_uint_t;     // must be pointer size
 
 // Flash storage config
 #define MICROPY_HW_SPIFLASH_ENABLE_CACHE            (1)
-#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (1)
+#define MICROPY_HW_ENABLE_INTERNAL_FLASH_STORAGE    (0)
 
 #define MICROPY_BOARD_STARTUP       GIGA_board_startup
 void GIGA_board_startup(void);
@@ -38,6 +40,7 @@ void GIGA_board_startup(void);
 #define MICROPY_BOARD_EARLY_INIT    GIGA_board_early_init
 void GIGA_board_early_init(void);
 
+#define MICROPY_HW_ENTER_BOOTLOADER_VIA_RESET   (0)
 #define MICROPY_BOARD_ENTER_BOOTLOADER(nargs, args) GIGA_board_enter_bootloader()
 void GIGA_board_enter_bootloader(void);
 
@@ -45,10 +48,6 @@ void GIGA_board_low_power(int mode);
 #define MICROPY_BOARD_LEAVE_STOP    GIGA_board_low_power(0);
 #define MICROPY_BOARD_ENTER_STOP    GIGA_board_low_power(1);
 #define MICROPY_BOARD_ENTER_STANDBY GIGA_board_low_power(2);
-
-void GIGA_board_osc_enable(int enable);
-#define MICROPY_BOARD_OSC_ENABLE    GIGA_board_osc_enable(1);
-#define MICROPY_BOARD_OSC_DISABLE   GIGA_board_osc_enable(0);
 
 // PLL1 480MHz/48MHz SDMMC and FDCAN
 // USB and RNG are clocked from the HSI48
@@ -106,6 +105,12 @@ void GIGA_board_osc_enable(int enable);
 
 // SMPS configuration
 #define MICROPY_HW_PWR_SMPS_CONFIG      (PWR_LDO_SUPPLY)
+
+// Configure the analog switches for dual-pad pins.
+#define MICROPY_HW_ANALOG_SWITCH_PA0    (SYSCFG_SWITCH_PA0_OPEN)
+#define MICROPY_HW_ANALOG_SWITCH_PA1    (SYSCFG_SWITCH_PA1_OPEN)
+#define MICROPY_HW_ANALOG_SWITCH_PC2    (SYSCFG_SWITCH_PC2_OPEN)
+#define MICROPY_HW_ANALOG_SWITCH_PC3    (SYSCFG_SWITCH_PC3_OPEN)
 
 // There is an external 32kHz oscillator
 #define RTC_ASYNCH_PREDIV           (0)
@@ -187,9 +192,9 @@ extern struct _spi_bdev_t spi_bdev;
 #define MICROPY_HW_USRSW_PRESSED    (1)
 
 // LEDs
-#define MICROPY_HW_LED1             (pyb_pin_LEDR) // red
-#define MICROPY_HW_LED2             (pyb_pin_LEDG) // green
-#define MICROPY_HW_LED3             (pyb_pin_LEDB) // yellow
+#define MICROPY_HW_LED1             (pyb_pin_LED_RED) // red
+#define MICROPY_HW_LED2             (pyb_pin_LED_GREEN) // green
+#define MICROPY_HW_LED3             (pyb_pin_LED_BLUE) // yellow
 #define MICROPY_HW_LED_ON(pin)      (mp_hal_pin_low(pin))
 #define MICROPY_HW_LED_OFF(pin)     (mp_hal_pin_high(pin))
 

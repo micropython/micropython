@@ -31,13 +31,13 @@
 
 #include "modubluepy.h"
 
-STATIC void ubluepy_delegate_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+static void ubluepy_delegate_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_delegate_obj_t * self = (ubluepy_delegate_obj_t *)o;
     (void)self;
     mp_printf(print, "DefaultDelegate()");
 }
 
-STATIC mp_obj_t ubluepy_delegate_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ubluepy_delegate_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     ubluepy_delegate_obj_t *s = mp_obj_malloc(ubluepy_delegate_obj_t, type);
 
     return MP_OBJ_FROM_PTR(s);
@@ -46,28 +46,28 @@ STATIC mp_obj_t ubluepy_delegate_make_new(const mp_obj_type_t *type, size_t n_ar
 /// \method handleConnection()
 /// Handle connection events.
 ///
-STATIC mp_obj_t delegate_handle_conn(mp_obj_t self_in) {
+static mp_obj_t delegate_handle_conn(mp_obj_t self_in) {
     ubluepy_delegate_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     (void)self;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_delegate_handle_conn_obj, delegate_handle_conn);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_delegate_handle_conn_obj, delegate_handle_conn);
 
 /// \method handleNotification()
 /// Handle notification events.
 ///
-STATIC mp_obj_t delegate_handle_notif(mp_obj_t self_in) {
+static mp_obj_t delegate_handle_notif(mp_obj_t self_in) {
     ubluepy_delegate_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     (void)self;
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_delegate_handle_notif_obj, delegate_handle_notif);
+static MP_DEFINE_CONST_FUN_OBJ_1(ubluepy_delegate_handle_notif_obj, delegate_handle_notif);
 
-STATIC const mp_rom_map_elem_t ubluepy_delegate_locals_dict_table[] = {
+static const mp_rom_map_elem_t ubluepy_delegate_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_handleConnection),   MP_ROM_PTR(&ubluepy_delegate_handle_conn_obj) },
     { MP_ROM_QSTR(MP_QSTR_handleNotification), MP_ROM_PTR(&ubluepy_delegate_handle_notif_obj) },
 #if 0
@@ -75,7 +75,7 @@ STATIC const mp_rom_map_elem_t ubluepy_delegate_locals_dict_table[] = {
 #endif
 };
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_delegate_locals_dict, ubluepy_delegate_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ubluepy_delegate_locals_dict, ubluepy_delegate_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     ubluepy_delegate_type,

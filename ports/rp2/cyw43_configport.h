@@ -30,6 +30,7 @@
 #include "py/mpconfig.h"
 #include "py/mperrno.h"
 #include "py/mphal.h"
+#include "py/runtime.h"
 #include "extmod/modnetwork.h"
 #include "pendsv.h"
 
@@ -48,7 +49,7 @@
 #define CYW43_THREAD_EXIT               MICROPY_PY_LWIP_EXIT
 #define CYW43_THREAD_LOCK_CHECK
 
-#define CYW43_HOST_NAME                 mod_network_hostname
+#define CYW43_HOST_NAME                 mod_network_hostname_data
 
 #define CYW43_SDPCM_SEND_COMMON_WAIT \
     if (get_core_num() == 0) { \
@@ -90,24 +91,23 @@
 
 #define cyw43_schedule_internal_poll_dispatch(func) pendsv_schedule_dispatch(PENDSV_DISPATCH_CYW43, func)
 
-// Bluetooth uses the C heap to load its firmware (provided by pico-sdk).
-// Space is reserved for this, see MICROPY_C_HEAP_SIZE.
+// Bluetooth requires dynamic memory allocation to load its firmware (the allocation
+// call is made from pico-sdk).  This allocation is always done at thread-level, not
+// from an IRQ, so is safe to delegate to the MicroPython GC heap.
 #ifndef cyw43_malloc
-#define cyw43_malloc malloc
+#define cyw43_malloc(nmemb) m_tracked_calloc(nmemb, 1)
 #endif
 #ifndef cyw43_free
-#define cyw43_free free
+#define cyw43_free m_tracked_free
 #endif
 
 void cyw43_post_poll_hook(void);
 extern volatile int cyw43_has_pending;
 
 static inline void cyw43_yield(void) {
-    uint32_t my_interrupts = save_and_disable_interrupts();
     if (!cyw43_has_pending) {
-        __WFI();
+        best_effort_wfe_or_timeout(make_timeout_time_ms(1));
     }
-    restore_interrupts(my_interrupts);
 }
 
 static inline void cyw43_delay_us(uint32_t us) {
@@ -117,14 +117,9 @@ static inline void cyw43_delay_us(uint32_t us) {
 }
 
 static inline void cyw43_delay_ms(uint32_t ms) {
-    uint32_t us = ms * 1000;
-    int32_t start = mp_hal_ticks_us();
-    while (mp_hal_ticks_us() - start < us) {
-        cyw43_yield();
-        MICROPY_EVENT_POLL_HOOK_FAST;
-    }
+    mp_hal_delay_ms(ms);
 }
 
-#define CYW43_EVENT_POLL_HOOK MICROPY_EVENT_POLL_HOOK_FAST
+#define CYW43_EVENT_POLL_HOOK mp_event_handle_nowait()
 
 #endif // MICROPY_INCLUDED_RP2_CYW43_CONFIGPORT_H

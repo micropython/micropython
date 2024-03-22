@@ -28,7 +28,7 @@ for name, f in (
     ("radians", math.radians),
     ("degrees", math.degrees),
 ):
-    for x in (0, 1, 1.1, -1, -1.1, inf, -inf, nan):
+    for x in (0, 1, 1.12, -1, -1.12, inf, -inf, nan):
         try:
             ans = "%.4f" % f(x)
         except ValueError:

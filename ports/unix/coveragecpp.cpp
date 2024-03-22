@@ -5,7 +5,7 @@ extern "C" {
 #if defined(MICROPY_UNIX_COVERAGE)
 
 // Just to test building of C++ code.
-STATIC mp_obj_t extra_cpp_coverage_impl() {
+static mp_obj_t extra_cpp_coverage_impl() {
     return mp_const_none;
 }
 

@@ -31,10 +31,10 @@
 #include "py/runtime.h"
 #include "py/stackctrl.h"
 
-STATIC mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
-STATIC mp_obj_list_t *list_new(size_t n);
-STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
-STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
+static mp_obj_t mp_obj_new_list_iterator(mp_obj_t list, size_t cur, mp_obj_iter_buf_t *iter_buf);
+static mp_obj_list_t *list_new(size_t n);
+static mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in);
+static mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
 
 // TODO: Move to mpconfig.h
 #define LIST_MIN_ALLOC 4
@@ -42,7 +42,7 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args);
 /******************************************************************************/
 /* list                                                                       */
 
-STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+static void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     mp_obj_list_t *o = MP_OBJ_TO_PTR(o_in);
     const char *item_separator = ", ";
     if (!(MICROPY_PY_JSON && kind == PRINT_JSON)) {
@@ -62,7 +62,7 @@ STATIC void list_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
     mp_print_str(print, "]");
 }
 
-STATIC mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
+static mp_obj_t list_extend_from_iter(mp_obj_t list, mp_obj_t iterable) {
     mp_obj_t iter = mp_getiter(iterable, NULL);
     mp_obj_t item;
     while ((item = mp_iternext(iter)) != MP_OBJ_STOP_ITERATION) {
@@ -90,7 +90,7 @@ mp_obj_t mp_obj_list_make_new(const mp_obj_type_t *type_in, size_t n_args, size_
     }
 }
 
-STATIC mp_obj_t list_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
+static mp_obj_t list_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     switch (op) {
         case MP_UNARY_OP_BOOL:
@@ -108,7 +108,7 @@ STATIC mp_obj_t list_unary_op(mp_unary_op_t op, mp_obj_t self_in) {
     }
 }
 
-STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
+static mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     mp_obj_list_t *o = MP_OBJ_TO_PTR(lhs);
     switch (op) {
         case MP_BINARY_OP_ADD: {
@@ -158,7 +158,7 @@ STATIC mp_obj_t list_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs) {
     }
 }
 
-STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
+static mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     if (value == MP_OBJ_NULL) {
         // delete
         #if MICROPY_PY_BUILTINS_SLICE
@@ -234,7 +234,7 @@ STATIC mp_obj_t list_subscr(mp_obj_t self_in, mp_obj_t index, mp_obj_t value) {
     }
 }
 
-STATIC mp_obj_t list_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
+static mp_obj_t list_getiter(mp_obj_t o_in, mp_obj_iter_buf_t *iter_buf) {
     return mp_obj_new_list_iterator(o_in, 0, iter_buf);
 }
 
@@ -250,7 +250,7 @@ mp_obj_t mp_obj_list_append(mp_obj_t self_in, mp_obj_t arg) {
     return mp_const_none; // return None, as per CPython
 }
 
-STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
+static mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     if (mp_obj_is_type(arg_in, &mp_type_list)) {
         mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
@@ -271,7 +271,7 @@ STATIC mp_obj_t list_extend(mp_obj_t self_in, mp_obj_t arg_in) {
     return mp_const_none; // return None, as per CPython
 }
 
-STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(args[0]);
     if (self->len == 0) {
@@ -290,7 +290,7 @@ STATIC mp_obj_t list_pop(size_t n_args, const mp_obj_t *args) {
     return ret;
 }
 
-STATIC void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj_t binop_less_result) {
+static void mp_quicksort(mp_obj_t *head, mp_obj_t *tail, mp_obj_t key_fn, mp_obj_t binop_less_result) {
     MP_STACK_CHECK();
     while (head < tail) {
         mp_obj_t *h = head - 1;
@@ -348,7 +348,7 @@ mp_obj_t mp_obj_list_sort(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_
     return mp_const_none;
 }
 
-STATIC mp_obj_t list_clear(mp_obj_t self_in) {
+static mp_obj_t list_clear(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     self->len = 0;
@@ -358,25 +358,25 @@ STATIC mp_obj_t list_clear(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t list_copy(mp_obj_t self_in) {
+static mp_obj_t list_copy(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_obj_new_list(self->len, self->items);
 }
 
-STATIC mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
+static mp_obj_t list_count(mp_obj_t self_in, mp_obj_t value) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     return mp_seq_count_obj(self->items, self->len, value);
 }
 
-STATIC mp_obj_t list_index(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t list_index(size_t n_args, const mp_obj_t *args) {
     mp_check_self(mp_obj_is_type(args[0], &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(args[0]);
     return mp_seq_index_obj(self->items, self->len, n_args, args);
 }
 
-STATIC mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
+static mp_obj_t list_insert(mp_obj_t self_in, mp_obj_t idx, mp_obj_t obj) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
     // insert has its own strange index logic
@@ -410,7 +410,7 @@ mp_obj_t mp_obj_list_remove(mp_obj_t self_in, mp_obj_t value) {
     return mp_const_none;
 }
 
-STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
+static mp_obj_t list_reverse(mp_obj_t self_in) {
     mp_check_self(mp_obj_is_type(self_in, &mp_type_list));
     mp_obj_list_t *self = MP_OBJ_TO_PTR(self_in);
 
@@ -424,19 +424,19 @@ STATIC mp_obj_t list_reverse(mp_obj_t self_in) {
     return mp_const_none;
 }
 
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_extend_obj, list_extend);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, mp_obj_list_remove);
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
-STATIC MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 1, mp_obj_list_sort);
+static MP_DEFINE_CONST_FUN_OBJ_2(list_append_obj, mp_obj_list_append);
+static MP_DEFINE_CONST_FUN_OBJ_2(list_extend_obj, list_extend);
+static MP_DEFINE_CONST_FUN_OBJ_1(list_clear_obj, list_clear);
+static MP_DEFINE_CONST_FUN_OBJ_1(list_copy_obj, list_copy);
+static MP_DEFINE_CONST_FUN_OBJ_2(list_count_obj, list_count);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_index_obj, 2, 4, list_index);
+static MP_DEFINE_CONST_FUN_OBJ_3(list_insert_obj, list_insert);
+static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(list_pop_obj, 1, 2, list_pop);
+static MP_DEFINE_CONST_FUN_OBJ_2(list_remove_obj, mp_obj_list_remove);
+static MP_DEFINE_CONST_FUN_OBJ_1(list_reverse_obj, list_reverse);
+static MP_DEFINE_CONST_FUN_OBJ_KW(list_sort_obj, 1, mp_obj_list_sort);
 
-STATIC const mp_rom_map_elem_t list_locals_dict_table[] = {
+static const mp_rom_map_elem_t list_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_append), MP_ROM_PTR(&list_append_obj) },
     { MP_ROM_QSTR(MP_QSTR_clear), MP_ROM_PTR(&list_clear_obj) },
     { MP_ROM_QSTR(MP_QSTR_copy), MP_ROM_PTR(&list_copy_obj) },
@@ -450,7 +450,7 @@ STATIC const mp_rom_map_elem_t list_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_sort), MP_ROM_PTR(&list_sort_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(list_locals_dict, list_locals_dict_table);
+static MP_DEFINE_CONST_DICT(list_locals_dict, list_locals_dict_table);
 
 MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_list,
@@ -474,7 +474,7 @@ void mp_obj_list_init(mp_obj_list_t *o, size_t n) {
     mp_seq_clear(o->items, n, o->alloc, sizeof(*o->items));
 }
 
-STATIC mp_obj_list_t *list_new(size_t n) {
+static mp_obj_list_t *list_new(size_t n) {
     mp_obj_list_t *o = m_new_obj(mp_obj_list_t);
     mp_obj_list_init(o, n);
     return o;
@@ -519,7 +519,7 @@ typedef struct _mp_obj_list_it_t {
     size_t cur;
 } mp_obj_list_it_t;
 
-STATIC mp_obj_t list_it_iternext(mp_obj_t self_in) {
+static mp_obj_t list_it_iternext(mp_obj_t self_in) {
     mp_obj_list_it_t *self = MP_OBJ_TO_PTR(self_in);
     mp_obj_list_t *list = MP_OBJ_TO_PTR(self->list);
     if (self->cur < list->len) {

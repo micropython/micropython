@@ -44,7 +44,7 @@
 #define CC2564_TIMER_BT_SLOWCLOCK_TIM_CH 4
 #endif
 
-STATIC void cc2564_wait_cts_low(mp_hal_pin_obj_t cts, uint32_t timeout_ms) {
+static void cc2564_wait_cts_low(mp_hal_pin_obj_t cts, uint32_t timeout_ms) {
     for (int i = 0; i < timeout_ms; ++i) {
         if (mp_hal_pin_read(cts) == 0) {
             break;

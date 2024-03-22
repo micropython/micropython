@@ -6,7 +6,7 @@ extern "C" {
 #endif
 /* Number of interrupts allocated */
 #ifndef VECTOR_DATA_IRQ_COUNT
-#define VECTOR_DATA_IRQ_COUNT    (29)
+#define VECTOR_DATA_IRQ_COUNT    (30)
 #endif
 /* ISR prototypes */
 void sci_uart_rxi_isr(void);
@@ -92,6 +92,8 @@ void spi_eri_isr(void);
 #define SPI1_TEI_IRQn          ((IRQn_Type)27)  /* SPI1 TEI (Transmission complete event) */
 #define VECTOR_NUMBER_SPI1_ERI ((IRQn_Type)28)  /* SPI1 ERI (Error) */
 #define SPI1_ERI_IRQn          ((IRQn_Type)28)  /* SPI1 ERI (Error) */
+#define VECTOR_NUMBER_ICU_IRQ2 ((IRQn_Type)29)  /* ICU IRQ2 (External pin interrupt 2) */
+#define ICU_IRQ2_IRQn          ((IRQn_Type)29)  /* ICU IRQ2 (External pin interrupt 2) */
 #ifdef __cplusplus
 }
 #endif

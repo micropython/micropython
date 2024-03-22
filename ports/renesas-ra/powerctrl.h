@@ -37,6 +37,6 @@ NORETURN void powerctrl_enter_bootloader(uint32_t r0, uint32_t bl_addr);
 void powerctrl_check_enter_bootloader(void);
 
 void powerctrl_enter_stop_mode(void);
-void powerctrl_enter_standby_mode(void);
+NORETURN void powerctrl_enter_standby_mode(void);
 
 #endif // MICROPY_INCLUDED_RA_POWERCTRL_H

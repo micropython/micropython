@@ -1,13 +1,8 @@
 try:
-    import errno
-    import os
-except ImportError:
-    print("SKIP")
-    raise SystemExit
+    import errno, os, vfs
 
-try:
-    os.VfsFat
-except AttributeError:
+    vfs.VfsFat
+except (ImportError, AttributeError):
     print("SKIP")
     raise SystemExit
 
@@ -38,32 +33,32 @@ class RAMFS:
 
 try:
     bdev = RAMFS(50)
-    os.VfsFat.mkfs(bdev)
+    vfs.VfsFat.mkfs(bdev)
 except MemoryError:
     print("SKIP")
     raise SystemExit
 
-vfs = os.VfsFat(bdev)
-os.mount(vfs, "/ramdisk")
+fs = vfs.VfsFat(bdev)
+vfs.mount(fs, "/ramdisk")
 os.chdir("/ramdisk")
 
 try:
-    vfs.mkdir("foo_dir")
+    fs.mkdir("foo_dir")
 except OSError as e:
     print(e.errno == errno.EEXIST)
 
 try:
-    vfs.remove("foo_dir")
+    fs.remove("foo_dir")
 except OSError as e:
     print(e.errno == errno.EISDIR)
 
 try:
-    vfs.remove("no_file.txt")
+    fs.remove("no_file.txt")
 except OSError as e:
     print(e.errno == errno.ENOENT)
 
 try:
-    vfs.rename("foo_dir", "/null/file")
+    fs.rename("foo_dir", "/null/file")
 except OSError as e:
     print(e.errno == errno.ENOENT)
 
@@ -79,34 +74,34 @@ with open("foo_dir/sub_file.txt", "w") as f:
 
 # directory not empty
 try:
-    vfs.rmdir("foo_dir")
+    fs.rmdir("foo_dir")
 except OSError as e:
     print(e.errno == errno.EACCES)
 
 # trim full path
-vfs.rename("foo_dir/file-in-dir.txt", "foo_dir/file.txt")
-print(list(vfs.ilistdir("foo_dir")))
+fs.rename("foo_dir/file-in-dir.txt", "foo_dir/file.txt")
+print(list(fs.ilistdir("foo_dir")))
 
-vfs.rename("foo_dir/file.txt", "moved-to-root.txt")
-print(list(vfs.ilistdir()))
+fs.rename("foo_dir/file.txt", "moved-to-root.txt")
+print(list(fs.ilistdir()))
 
 # check that renaming to existing file will overwrite it
 with open("temp", "w") as f:
     f.write("new text")
-vfs.rename("temp", "moved-to-root.txt")
-print(list(vfs.ilistdir()))
+fs.rename("temp", "moved-to-root.txt")
+print(list(fs.ilistdir()))
 with open("moved-to-root.txt") as f:
     print(f.read())
 
 # valid removes
-vfs.remove("foo_dir/sub_file.txt")
-vfs.rmdir("foo_dir")
-print(list(vfs.ilistdir()))
+fs.remove("foo_dir/sub_file.txt")
+fs.rmdir("foo_dir")
+print(list(fs.ilistdir()))
 
 # disk full
 try:
-    bsize = vfs.statvfs("/ramdisk")[0]
-    free = vfs.statvfs("/ramdisk")[2] + 1
+    bsize = fs.statvfs("/ramdisk")[0]
+    free = fs.statvfs("/ramdisk")[2] + 1
     f = open("large_file.txt", "wb")
     f.write(bytearray(bsize * free))
 except OSError as e:

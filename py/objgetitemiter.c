@@ -35,7 +35,7 @@ typedef struct _mp_obj_getitem_iter_t {
     mp_obj_t args[3];
 } mp_obj_getitem_iter_t;
 
-STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
+static mp_obj_t it_iternext(mp_obj_t self_in) {
     mp_obj_getitem_iter_t *self = MP_OBJ_TO_PTR(self_in);
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
@@ -56,7 +56,7 @@ STATIC mp_obj_t it_iternext(mp_obj_t self_in) {
     }
 }
 
-STATIC MP_DEFINE_CONST_OBJ_TYPE(
+static MP_DEFINE_CONST_OBJ_TYPE(
     mp_type_it,
     MP_QSTR_iterator,
     MP_TYPE_FLAG_ITER_IS_ITERNEXT,

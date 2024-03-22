@@ -3,35 +3,35 @@
 //
 // Interface APIs for free-rtos function calls
 //
-// Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/ 
-// 
-// 
-//  Redistribution and use in source and binary forms, with or without 
-//  modification, are permitted provided that the following conditions 
+// Copyright (C) 2014 Texas Instruments Incorporated - http://www.ti.com/
+//
+//
+//  Redistribution and use in source and binary forms, with or without
+//  modification, are permitted provided that the following conditions
 //  are met:
 //
-//    Redistributions of source code must retain the above copyright 
+//    Redistributions of source code must retain the above copyright
 //    notice, this list of conditions and the following disclaimer.
 //
 //    Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the 
-//    documentation and/or other materials provided with the   
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the
 //    distribution.
 //
 //    Neither the name of Texas Instruments Incorporated nor the names of
 //    its contributors may be used to endorse or promote products derived
 //    from this software without specific prior written permission.
 //
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
-//  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+//  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
 //  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-//  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
-//  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
-//  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+//  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+//  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+//  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
 //  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
 //  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-//  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
-//  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
+//  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+//  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 //  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 //*****************************************************************************
@@ -57,7 +57,7 @@ static void vSimpleLinkSpawnTask( void *pvParameters );
 //Queue Handler
 QueueHandle_t xSimpleLinkSpawnQueue = NULL;
 TaskHandle_t xSimpleLinkSpawnTaskHndl = NULL;
-// Queue size 
+// Queue size
 #define slQUEUE_SIZE				( 3 )
 #define SL_SPAWN_MAX_WAIT_MS        ( 200 )
 
@@ -282,7 +282,7 @@ OsiReturnVal_e osi_TaskCreate(P_OSI_TASK_ENTRY pEntry,const signed char * const 
                               unsigned long uxPriority,OsiTaskHandle* pTaskHandle)
 {
 	ASSERT (pdPASS == xTaskCreate( pEntry, (char const*)pcName,
-                                (usStackDepth/(sizeof( portSTACK_TYPE ))), 
+                                (usStackDepth/(sizeof( portSTACK_TYPE ))),
                                 pvParameters,(unsigned portBASE_TYPE)uxPriority,
                                 (TaskHandle_t*)pTaskHandle ));
 	return OSI_OK;
@@ -417,7 +417,7 @@ OsiReturnVal_e osi_Spawn(P_OSI_SPAWN_ENTRY pEntry , void* pValue , unsigned long
 
 
 /*!
-	\brief 	This is the simplelink spawn task to call SL callback from a different context 
+	\brief 	This is the simplelink spawn task to call SL callback from a different context
 
 	\param	pvParameters		-	pointer to the task parameter
 
@@ -510,7 +510,7 @@ void VDeleteSimpleLinkSpawnTask( void )
 	\note
 	\warning
 */
-OsiReturnVal_e osi_MsgQCreate(OsiMsgQ_t* 		pMsgQ , 
+OsiReturnVal_e osi_MsgQCreate(OsiMsgQ_t* 		pMsgQ ,
 			      char*			pMsgQName,
 			      unsigned long 		MsgSize,
 			      unsigned long		MaxMsgs)
@@ -607,8 +607,8 @@ void * mem_Malloc(unsigned long Size)
 	\brief 	This function to call the memory de-allocation function of the FREERTOS
 
 	\param	pMem		-	pointer to the memory which needs to be freed
-	
-	\return - void 
+
+	\return - void
 	\note
 	\warning
 */
@@ -622,7 +622,7 @@ void mem_Free(void *pMem)
 	\param	pBuf	     -	 pointer to the memory to be fill
         \param  Val          -   Value to be fill
         \param  Size         -   Size of the memory which needs to be fill
-	\return - void 
+	\return - void
 	\note
 	\warning
 */
@@ -637,8 +637,8 @@ void  mem_set(void *pBuf,int Val,size_t Size)
       \param	pDst	-	pointer to the destination
       \param pSrc     -   pointer to the source
       \param Size     -   Size of the memory which needs to be copy
-      
-      \return - void 
+
+      \return - void
       \note
       \warning
 */
@@ -650,8 +650,8 @@ void  mem_copy(void *pDst, void *pSrc,size_t Size)
 
 /*!
 	\brief 	This function use to entering into critical section
-	\param	void		
-	\return - void 
+	\param	void
+	\return - void
 	\note
 	\warning
 */
@@ -663,8 +663,8 @@ void osi_EnterCritical(void)
 
 /*!
 	\brief 	This function use to exit critical section
-	\param	void		
-	\return - void 
+	\param	void
+	\return - void
 	\note
 	\warning
 */

@@ -13,3 +13,10 @@ else
 LD_FILES = boards/stm32h573xi.ld boards/common_basic.ld
 TEXT0_ADDR = 0x08000000
 endif
+
+# MicroPython settings
+MICROPY_PY_LWIP = 1
+MICROPY_PY_SSL = 1
+MICROPY_SSL_MBEDTLS = 1
+
+FROZEN_MANIFEST = $(BOARD_DIR)/manifest.py

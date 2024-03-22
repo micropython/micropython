@@ -29,7 +29,7 @@
 #include "modmachine.h"
 
 // Return the localtime as an 8-tuple.
-STATIC mp_obj_t mp_time_localtime_get(void) {
+static mp_obj_t mp_time_localtime_get(void) {
     timeutils_struct_time_t tm;
     rtc_gettime(&tm);
     tm.tm_wday = timeutils_calc_weekday(tm.tm_year, tm.tm_mon, tm.tm_mday);
@@ -48,7 +48,7 @@ STATIC mp_obj_t mp_time_localtime_get(void) {
 }
 
 // Returns the number of seconds, as an integer, since the Epoch.
-STATIC mp_obj_t mp_time_time_get(void) {
+static mp_obj_t mp_time_time_get(void) {
     timeutils_struct_time_t tm;
     rtc_gettime(&tm);
     return mp_obj_new_int_from_uint(timeutils_mktime(

@@ -26,7 +26,7 @@ Constructors
 
    Access the ADC peripheral identified by *id*, which may be an integer
    or string.
-   
+
    The *bits* argument, if given, sets the resolution in bits of the
    conversion process.  If not specified then the previous or default
    resolution is used.
@@ -39,9 +39,9 @@ Methods
    Configure the ADC peripheral.  *bits* will set the resolution of the
    conversion process.
 
-.. method:: ADCBlock.connect(channel)
-            ADCBlock.connect(source)
-            ADCBlock.connect(channel, source)
+.. method:: ADCBlock.connect(channel, *, ...)
+            ADCBlock.connect(source, *, ...)
+            ADCBlock.connect(channel, source, *, ...)
 
    Connect up a channel on the ADC peripheral so it is ready for sampling,
    and return an :ref:`ADC <machine.ADC>` object that represents that connection.
@@ -56,3 +56,6 @@ Methods
 
    If both *channel* and *source* are given then they are connected together
    and made ready for sampling.
+
+   Any additional keyword arguments are used to configure the returned ADC object,
+   via its :meth:`init <machine.ADC.init>` method.

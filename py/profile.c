@@ -40,7 +40,7 @@
 #define prof_trace_cb MP_STATE_THREAD(prof_trace_callback)
 #define QSTR_MAP(context, idx) (context->constants.qstr_table[idx])
 
-STATIC uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
+static uint mp_prof_bytecode_lineno(const mp_raw_code_t *rc, size_t bc) {
     const mp_bytecode_prelude_t *prelude = &rc->prelude;
     return mp_bytecode_get_source_line(prelude->line_info, prelude->line_info_top, bc);
 }
@@ -71,7 +71,7 @@ void mp_prof_extract_prelude(const byte *bytecode, mp_bytecode_prelude_t *prelud
 /******************************************************************************/
 // code object
 
-STATIC void code_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+static void code_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_code_t *o = MP_OBJ_TO_PTR(o_in);
     const mp_raw_code_t *rc = o->rc;
@@ -85,7 +85,7 @@ STATIC void code_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t k
         );
 }
 
-STATIC mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_raw_code_t *rc) {
+static mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_raw_code_t *rc) {
     mp_obj_tuple_t *consts = MP_OBJ_TO_PTR(mp_obj_new_tuple(rc->n_children + 1, NULL));
 
     size_t const_no = 0;
@@ -101,7 +101,7 @@ STATIC mp_obj_tuple_t *code_consts(const mp_module_context_t *context, const mp_
     return consts;
 }
 
-STATIC mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
+static mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
     // const mp_bytecode_prelude_t *prelude = &rc->prelude;
     uint start = 0;
     uint stop = rc->fun_data_len - start;
@@ -139,7 +139,7 @@ STATIC mp_obj_t raw_code_lnotab(const mp_raw_code_t *rc) {
     return o;
 }
 
-STATIC void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+static void code_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
         return;
@@ -202,7 +202,7 @@ mp_obj_t mp_obj_new_code(const mp_module_context_t *context, const mp_raw_code_t
 /******************************************************************************/
 // frame object
 
-STATIC void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
+static void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t kind) {
     (void)kind;
     mp_obj_frame_t *frame = MP_OBJ_TO_PTR(o_in);
     mp_obj_code_t *code = frame->code;
@@ -217,7 +217,7 @@ STATIC void frame_print(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t 
         );
 }
 
-STATIC void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+static void frame_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     if (dest[0] != MP_OBJ_NULL) {
         // not load attribute
         return;
@@ -294,7 +294,7 @@ typedef struct {
     mp_obj_t arg;
 } prof_callback_args_t;
 
-STATIC mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t *args) {
+static mp_obj_t mp_prof_callback_invoke(mp_obj_t callback, prof_callback_args_t *args) {
     assert(mp_obj_is_callable(callback));
 
     mp_prof_is_executing = true;
@@ -474,7 +474,7 @@ typedef struct _mp_dis_instruction_t {
     mp_obj_t argobjex_cache;
 } mp_dis_instruction_t;
 
-STATIC const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_table, mp_dis_instruction_t *instruction) {
+static const byte *mp_prof_opcode_decode(const byte *ip, const mp_uint_t *const_table, mp_dis_instruction_t *instruction) {
     mp_uint_t unum;
     const byte *ptr;
     mp_obj_t obj;

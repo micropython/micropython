@@ -44,7 +44,8 @@ int mp_hal_stdin_rx_chr(void) {
 }
 
 // Send string of given length
-void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+mp_uint_t mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
+    mp_uint_t ret = len;
     #ifdef CONFIG_CONSOLE_SUBSYS
     while (len--) {
         char c = *str++;
@@ -60,4 +61,5 @@ void mp_hal_stdout_tx_strn(const char *str, mp_uint_t len) {
         uart_poll_out(uart_console_dev, *str++);
     }
     #endif
+    return ret;
 }

@@ -9,6 +9,5 @@ if(NOT MICROPY_PORT_DIR)
 endif()
 
 list(APPEND MICROPY_SOURCE_LIB ${MICROPY_DIR}/shared/runtime/gchelper_generic.c)
-list(APPEND IDF_COMPONENTS riscv)
 
 include(${MICROPY_PORT_DIR}/esp32_common.cmake)

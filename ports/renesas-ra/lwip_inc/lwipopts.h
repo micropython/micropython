@@ -42,12 +42,14 @@
 extern uint32_t rng_read(void);
 #define LWIP_RAND() rng_read()
 
-// lwip takes 26700 bytes
-#define MEM_SIZE (8000)
-#define TCP_MSS (800)
-#define TCP_WND (8 * TCP_MSS)
-#define TCP_SND_BUF (8 * TCP_MSS)
-#define MEMP_NUM_TCP_SEG (32)
+#define MEM_SIZE                        (16 * 1024)
+#define TCP_MSS                         (1460)
+#define TCP_OVERSIZE                    (TCP_MSS)
+#define TCP_WND                         (8 * TCP_MSS)
+#define TCP_SND_BUF                     (8 * TCP_MSS)
+#define TCP_SND_QUEUELEN                (2 * (TCP_SND_BUF / TCP_MSS))
+#define TCP_QUEUE_OOSEQ                 (1)
+#define MEMP_NUM_TCP_SEG                (2 * TCP_SND_QUEUELEN)
 
 typedef uint32_t sys_prot_t;
 

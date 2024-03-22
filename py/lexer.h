@@ -191,7 +191,7 @@ mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len
 
 // If MICROPY_READER_POSIX or MICROPY_READER_VFS aren't enabled then
 // this function must be implemented by the port.
-mp_lexer_t *mp_lexer_new_from_file(const char *filename);
+mp_lexer_t *mp_lexer_new_from_file(qstr filename);
 
 #if MICROPY_HELPER_LEXER_UNIX
 mp_lexer_t *mp_lexer_new_from_fd(qstr filename, int fd, bool close_fd);

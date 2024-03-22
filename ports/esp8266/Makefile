@@ -38,7 +38,7 @@ MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_SSL = 1
 MICROPY_SSL_AXTLS = 1
 AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
-BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
+BTREE_DEFS_EXTRA = -DMICROPY_BERKELEY_DB_DEFPSIZE=1024 -DMICROPY_BERKELEY_DB_MINCACHE=3
 
 FROZEN_MANIFEST ?= boards/manifest.py
 
@@ -78,8 +78,8 @@ LD_FILES ?= boards/esp8266_2m.ld
 LDFLAGS += -nostdlib -T $(LD_FILES) -Map=$(@:.elf=.map) --cref
 LIBS += -L$(ESP_SDK)/lib -lmain -ljson -llwip_open -lpp -lnet80211 -lwpa -lphy -lnet80211
 
-ifeq ($(MICROPY_ESPNOW),1)
-CFLAGS += -DMICROPY_ESPNOW=1
+ifeq ($(MICROPY_PY_ESPNOW),1)
+CFLAGS += -DMICROPY_PY_ESPNOW=1
 LIBS += -lespnow
 endif
 
@@ -110,14 +110,10 @@ SRC_C = \
 	uart.c \
 	esppwm.c \
 	espapa102.c \
-	modmachine.c \
 	machine_bitstream.c \
 	machine_pin.c \
 	machine_rtc.c \
-	machine_adc.c \
-	machine_uart.c \
-	machine_wdt.c \
-	machine_hspi.c \
+	machine_spi.c \
 	modesp.c \
 	network_wlan.c \
 	ets_alt_task.c \
@@ -126,40 +122,13 @@ SRC_C = \
 	hspi.c \
 	$(wildcard $(BOARD_DIR)/*.c) \
 
-ifeq ($(MICROPY_ESPNOW),1)
+ifeq ($(MICROPY_PY_ESPNOW),1)
 SRC_C += \
 	modespnow.c
 endif
 
-LIB_SRC_C = $(addprefix lib/,\
-	libm/math.c \
-	libm/fmodf.c \
-	libm/nearbyintf.c \
-	libm/ef_sqrt.c \
-	libm/erf_lgamma.c \
-	libm/kf_rem_pio2.c \
-	libm/kf_sin.c \
-	libm/kf_cos.c \
-	libm/kf_tan.c \
-	libm/ef_rem_pio2.c \
-	libm/sf_erf.c \
-	libm/sf_sin.c \
-	libm/sf_cos.c \
-	libm/sf_tan.c \
-	libm/sf_frexp.c \
-	libm/sf_modf.c \
-	libm/sf_ldexp.c \
-	libm/acoshf.c \
-	libm/asinfacosf.c \
-	libm/asinhf.c \
-	libm/atanf.c \
-	libm/atanhf.c \
-	libm/atan2f.c \
-	libm/log1pf.c \
-	libm/roundf.c \
-	libm/wf_lgamma.c \
-	libm/wf_tgamma.c \
-	)
+LIB_SRC_C += $(SRC_LIB_LIBM_C)
+LIB_SRC_C += $(SRC_LIB_LIBM_SQRT_SW_C)
 
 SHARED_SRC_C = $(addprefix shared/,\
 	libc/__errno.c \
@@ -190,8 +159,6 @@ OBJ += $(addprefix $(BUILD)/, $(DRIVERS_SRC_C:.c=.o))
 
 # List of sources for qstr extraction
 SRC_QSTR += $(SRC_C) $(SHARED_SRC_C)
-# Append any auto-generated sources that are needed by sources listed in SRC_QSTR
-SRC_QSTR_AUTO_DEPS +=
 
 all: $(FWBIN)
 

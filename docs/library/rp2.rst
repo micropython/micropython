@@ -241,6 +241,7 @@ Classes
 .. toctree::
     :maxdepth: 1
 
+    rp2.DMA.rst
     rp2.Flash.rst
     rp2.PIO.rst
     rp2.StateMachine.rst

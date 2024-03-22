@@ -34,7 +34,6 @@ import subprocess
 
 # Relative to top-level repo dir.
 PATHS = [
-    # C
     "drivers/ninaw10/*.[ch]",
     "extmod/*.[ch]",
     "extmod/btstack/*.[ch]",
@@ -47,14 +46,6 @@ PATHS = [
     "mpy-cross/*.[ch]",
     "ports/**/*.[ch]",
     "py/*.[ch]",
-    # Python
-    "drivers/**/*.py",
-    "examples/**/*.py",
-    "extmod/**/*.py",
-    "ports/**/*.py",
-    "py/**/*.py",
-    "tools/**/*.py",
-    "tests/**/*.py",
 ]
 
 EXCLUSIONS = [
@@ -76,27 +67,14 @@ EXCLUSIONS = [
     # STM32 USB dev/host code is mostly 3rd party.
     "ports/stm32/usbdev/**/*.[ch]",
     "ports/stm32/usbhost/**/*.[ch]",
-    # Teensy core code is 3rd party.
-    "ports/teensy/core/*.[ch]",
     # STM32 build includes generated Python code.
     "ports/*/build*",
-    # not real python files
-    "tests/**/repl_*.py",
-    # needs careful attention before applying automatic formatting
-    "tests/basics/*.py",
 ]
 
 # Path to repo top-level dir.
 TOP = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 UNCRUSTIFY_CFG = os.path.join(TOP, "tools/uncrustify.cfg")
-PYPROJECT_TOML = os.path.join(TOP, "pyproject.toml")
-
-C_EXTS = (
-    ".c",
-    ".h",
-)
-PY_EXTS = (".py",)
 
 
 def list_files(paths, exclusions=None, prefix=""):
@@ -184,16 +162,11 @@ def main():
     else:
         files = list_files(PATHS, EXCLUSIONS, TOP)
 
-    # Extract files matching a specific language.
-    def lang_files(exts):
-        for file in files:
-            if os.path.splitext(file)[1].lower() in exts:
-                yield file
-
     # Run tool on N files at a time (to avoid making the command line too long).
-    def batch(cmd, files, N=200):
+    def batch(cmd, N=200):
+        files_iter = iter(files)
         while True:
-            file_args = list(itertools.islice(files, N))
+            file_args = list(itertools.islice(files_iter, N))
             if not file_args:
                 break
             subprocess.check_call(cmd + file_args)
@@ -203,18 +176,19 @@ def main():
         command = ["uncrustify", "-c", UNCRUSTIFY_CFG, "-lC", "--no-backup"]
         if not args.v:
             command.append("-q")
-        batch(command, lang_files(C_EXTS))
-        for file in lang_files(C_EXTS):
+        batch(command)
+        for file in files:
             fixup_c(file)
 
-    # Format Python files with black.
+    # Format Python files with "ruff format" (using config in pyproject.toml).
     if format_py:
-        command = ["black", "--fast", "--config={}".format(PYPROJECT_TOML)]
+        command = ["ruff", "format"]
         if args.v:
             command.append("-v")
         else:
             command.append("-q")
-        batch(command, lang_files(PY_EXTS))
+        command.append(".")
+        subprocess.check_call(command, cwd=TOP)
 
 
 if __name__ == "__main__":

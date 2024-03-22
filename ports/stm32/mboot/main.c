@@ -109,14 +109,12 @@
 // These bits are used to detect valid application firmware at APPLICATION_ADDR
 #define APP_VALIDITY_BITS (0x00000003)
 
-// Symbol provided by the linker, at the address in flash where mboot can start erasing/writing.
-extern uint8_t _mboot_writable_flash_start;
+// Symbols provided by the linker, the protected flash address range where mboot lives.
+extern uint8_t _mboot_protected_flash_start;
+extern uint8_t _mboot_protected_flash_end_exclusive;
 
 // For 1ms system ticker.
 volatile uint32_t systick_ms;
-
-// The sector number of the first sector that can be erased/written.
-int32_t first_writable_flash_sector;
 
 // Global dfu state
 dfu_context_t dfu_context SECTION_NOZERO_BSS;
@@ -410,10 +408,10 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 /******************************************************************************/
 // FLASH
 
-#if defined(STM32G0)
+#define FLASH_START (FLASH_BASE)
+
+#if defined(STM32G0) || defined(STM32H5)
 #define FLASH_END (FLASH_BASE + FLASH_SIZE - 1)
-#elif defined(STM32H5)
-#define FLASH_END (0x08000000 + 2 * 1024 * 1024)
 #elif defined(STM32WB)
 #define FLASH_END FLASH_END_ADDR
 #endif
@@ -437,7 +435,7 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #elif defined(STM32G0)
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*02Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H5)
-#define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*08Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
+#define FLASH_LAYOUT_TEMPLATE "@Internal Flash  /0x08000000/???*08Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H743xx)
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/16*128Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #elif defined(STM32H750xx)
@@ -446,30 +444,47 @@ void mp_hal_pin_config_speed(uint32_t port_pin, uint32_t speed) {
 #define FLASH_LAYOUT_STR "@Internal Flash  /0x08000000/256*04Kg" MBOOT_SPIFLASH_LAYOUT MBOOT_SPIFLASH2_LAYOUT
 #endif
 
-static int mboot_flash_mass_erase(void) {
-    // Erase all flash pages after mboot.
-    uint32_t start_addr = (uint32_t)&_mboot_writable_flash_start;
-    uint32_t num_words = (FLASH_END + 1 - start_addr) / sizeof(uint32_t);
-    int ret = flash_erase(start_addr, num_words);
-    return ret;
+#if !defined(FLASH_LAYOUT_STR)
+
+#define FLASH_LAYOUT_STR_ALLOC (sizeof(FLASH_LAYOUT_TEMPLATE))
+
+// Build the flash layout string from a template with total flash size inserted.
+static size_t build_flash_layout_str(char *buf) {
+    size_t len = FLASH_LAYOUT_STR_ALLOC - 1;
+    memcpy(buf, FLASH_LAYOUT_TEMPLATE, len + 1);
+    unsigned int num_sectors = FLASH_SIZE / FLASH_SECTOR_SIZE;
+    buf += 31; // location of "???" in FLASH_LAYOUT_TEMPLATE
+    for (unsigned int i = 0; i < 3; ++i) {
+        *buf-- = '0' + num_sectors % 10;
+        num_sectors /= 10;
+    }
+    return len;
+}
+
+#endif
+
+static bool flash_is_modifiable_addr_range(uint32_t addr, uint32_t len) {
+    return addr + len < (uint32_t)&_mboot_protected_flash_start
+           || addr >= (uint32_t)&_mboot_protected_flash_end_exclusive;
 }
 
 static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
+    // Compute start and end address of the sector being erased.
     uint32_t sector_size = 0;
     uint32_t sector_start = 0;
-    int32_t sector = flash_get_sector_info(addr, &sector_start, &sector_size);
-    if (sector < first_writable_flash_sector) {
+    int ret = flash_get_sector_info(addr, &sector_start, &sector_size);
+    *next_addr = sector_start + sector_size;
+
+    if (ret < 0 || !flash_is_modifiable_addr_range(addr, *next_addr - addr)) {
         // Don't allow to erase the sector with this bootloader in it, or invalid sectors
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
-        dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
-                                          : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
+        dfu_context.error = (ret < 0) ? MBOOT_ERROR_STR_INVALID_ADDRESS_IDX
+                                      : MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
         return -MBOOT_ERRNO_FLASH_ERASE_DISALLOWED;
     }
 
-    *next_addr = sector_start + sector_size;
-
     // Erase the flash page.
-    int ret = flash_erase(sector_start, sector_size / sizeof(uint32_t));
+    ret = flash_erase(sector_start);
     if (ret != 0) {
         return ret;
     }
@@ -484,13 +499,30 @@ static int mboot_flash_page_erase(uint32_t addr, uint32_t *next_addr) {
     return 0;
 }
 
+static int mboot_flash_mass_erase(void) {
+    // Erase all flash pages except those disallowed because they overlap with mboot.
+    uint32_t addr = FLASH_START;
+    while (addr <= FLASH_END) {
+        int ret = mboot_flash_page_erase(addr, &addr);
+        if (ret != 0 && ret != -MBOOT_ERRNO_FLASH_ERASE_DISALLOWED) {
+            return ret;
+        }
+    }
+
+    // Reset any errors from disallowed page erases.
+    dfu_context.status = DFU_STATUS_OK;
+    dfu_context.error = 0;
+
+    return 0;
+}
+
 static int mboot_flash_write(uint32_t addr, const uint8_t *src8, size_t len) {
-    int32_t sector = flash_get_sector_info(addr, NULL, NULL);
-    if (sector < first_writable_flash_sector) {
+    bool valid = flash_is_valid_addr(addr);
+    if (!valid || !flash_is_modifiable_addr_range(addr, len)) {
         // Don't allow to write the sector with this bootloader in it, or invalid sectors.
         dfu_context.status = DFU_STATUS_ERROR_ADDRESS;
-        dfu_context.error = (sector == 0) ? MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX
-                                          : MBOOT_ERROR_STR_INVALID_ADDRESS_IDX;
+        dfu_context.error = (!valid) ? MBOOT_ERROR_STR_INVALID_ADDRESS_IDX
+                                     : MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX;
         return -MBOOT_ERRNO_FLASH_WRITE_DISALLOWED;
     }
 
@@ -743,8 +775,12 @@ void i2c_slave_process_rx_end(i2c_slave_t *i2c) {
     } else if (buf[0] == I2C_CMD_RESET && len == 0) {
         dfu_context.leave_dfu = true;
     } else if (buf[0] == I2C_CMD_GETLAYOUT && len == 0) {
+        #if defined(FLASH_LAYOUT_STR)
         len = strlen(FLASH_LAYOUT_STR);
         memcpy(buf, FLASH_LAYOUT_STR, len);
+        #else
+        len = build_flash_layout_str(buf);
+        #endif
     } else if (buf[0] == I2C_CMD_MASSERASE && len == 0) {
         len = do_mass_erase();
     } else if (buf[0] == I2C_CMD_PAGEERASE && len == 4) {
@@ -966,7 +1002,9 @@ static int dfu_handle_tx(int cmd, int arg, int len, uint8_t *buf, int max_len) {
 
 typedef struct _pyb_usbdd_obj_t {
     bool started;
+    #if USE_USB_POLLING
     bool tx_pending;
+    #endif
     USBD_HandleTypeDef hUSBDDevice;
 
     uint8_t bRequest;
@@ -1000,8 +1038,20 @@ typedef struct _pyb_usbdd_obj_t {
 #define MBOOT_USB_PID BOOTLOADER_DFU_USB_PID
 #endif
 
+// Special string descriptor value for Microsoft WCID support.
+// If the USB device responds to this string with the correct data (see msft100_str_desc)
+// then the Windows host will request further information about the configuration of
+// the device (see msft100_id).  This allows the device to set a Windows USB driver.
+// For more details about WCID see:
+// - https://github.com/pbatard/libwdi/wiki/WCID-Devices
+// - https://github.com/newaetech/naeusb/blob/main/wcid.md
+#define MSFT_WCID_STR_DESC_VALUE (0xee)
+
+// Vendor code, can be anything.
+#define MSFT100_VENDOR_CODE (0x42)
+
 #if !MICROPY_HW_USB_IS_MULTI_OTG
-STATIC const uint8_t usbd_fifo_size[USBD_PMA_NUM_FIFO] = {
+static const uint8_t usbd_fifo_size[USBD_PMA_NUM_FIFO] = {
     32, 32, // EP0(out), EP0(in)
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // 14x unused
 };
@@ -1022,10 +1072,20 @@ __ALIGN_BEGIN static const uint8_t USBD_LangIDDesc[USB_LEN_LANGID_STR_DESC] __AL
 };
 
 static const uint8_t dev_descr[0x12] = {
-    0x12, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x40,
+    0x12, // bLength
+    0x01, // bDescriptorType: Device
+    0x00, 0x02, // USB version: 2.00
+    0x00, // bDeviceClass
+    0x00, // bDeviceSubClass
+    0x00, // bDeviceProtocol
+    0x40, // bMaxPacketSize
     LOBYTE(MBOOT_USB_VID), HIBYTE(MBOOT_USB_VID),
     LOBYTE(MBOOT_USB_PID), HIBYTE(MBOOT_USB_PID),
-    0x00, 0x22, 0x01, 0x02, 0x03, 0x01
+    0x00, 0x03, // bcdDevice: 3.00
+    0x01, // iManufacturer
+    0x02, // iProduct
+    0x03, // iSerialNumber
+    0x01, // bNumConfigurations: 1
 };
 
 // This may be modified by USBD_GetDescriptor
@@ -1034,6 +1094,32 @@ static uint8_t cfg_descr[9 + 9 + 9] =
     "\x09\x04\x00\x00\x00\xfe\x01\x02\x04"
     "\x09\x21\x0b\xff\x00\x00\x08\x1a\x01" // \x00\x08 goes with USB_XFER_SIZE
 ;
+
+__ALIGN_BEGIN static const uint8_t msft100_str_desc[18] __ALIGN_END = {
+    0x12, 0x03,
+    'M', 0x00,
+    'S', 0x00,
+    'F', 0x00,
+    'T', 0x00,
+    '1', 0x00,
+    '0', 0x00,
+    '0', 0x00,
+    MSFT100_VENDOR_CODE,
+    0x00,
+};
+
+__ALIGN_BEGIN static const uint8_t msft100_id[40] __ALIGN_END = {
+    0x28, 0x00, 0x00, 0x00,
+    0x00, 0x01, // 1.00
+    0x04, 0x00,
+    0x01,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00,
+    0x01,
+    'W', 'I', 'N', 'U', 'S', 'B', 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
 
 static uint8_t *pyb_usbdd_DeviceDescriptor(USBD_HandleTypeDef *pdev, uint16_t *length) {
     *length = USB_LEN_DEV_DESC;
@@ -1098,7 +1184,15 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
         }
 
         case USBD_IDX_CONFIG_STR:
+            #if defined(FLASH_LAYOUT_STR)
             USBD_GetString((uint8_t *)FLASH_LAYOUT_STR, str_desc, length);
+            #else
+            {
+                char buf[FLASH_LAYOUT_STR_ALLOC];
+                build_flash_layout_str(buf);
+                USBD_GetString((uint8_t *)buf, str_desc, length);
+            }
+            #endif
             return str_desc;
 
         case MBOOT_ERROR_STR_OVERWRITE_BOOTLOADER_IDX:
@@ -1118,6 +1212,10 @@ static uint8_t *pyb_usbdd_StrDescriptor(USBD_HandleTypeDef *pdev, uint8_t idx, u
             USBD_GetString((uint8_t *)MBOOT_ERROR_STR_INVALID_READ, str_desc, length);
             return str_desc;
         #endif
+
+        case MSFT_WCID_STR_DESC_VALUE:
+            *length = sizeof(msft100_str_desc);
+            return (uint8_t *)msft100_str_desc; // the data should only be read from this buf
 
         default:
             return NULL;
@@ -1147,8 +1245,24 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
     self->bRequest = req->bRequest;
     self->wValue = req->wValue;
     self->wLength = req->wLength;
-    if (req->bmRequest == 0x21) {
-        // host-to-device request
+
+    if ((req->bmRequest & 0xe0) == 0xc0) {
+        // device-to-host vendor request
+        if (req->wIndex == 0x04 && req->bRequest == MSFT100_VENDOR_CODE) {
+            // WCID: Compatible ID Feature Descriptor
+            #if USE_USB_POLLING
+            self->tx_pending = true;
+            #endif
+            int len = MIN(req->wLength, 40);
+            memcpy(self->tx_buf, msft100_id, len);
+            USBD_CtlSendData(&self->hUSBDDevice, self->tx_buf, len);
+            return USBD_OK;
+        } else {
+            USBD_CtlError(pdev, req);
+            return USBD_OK;
+        }
+    } else if (req->bmRequest == 0x21) {
+        // host-to-device class request
         if (req->wLength == 0) {
             // no data, process command straight away
             dfu_handle_rx(self->bRequest, self->wValue, 0, NULL);
@@ -1157,10 +1271,12 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
             USBD_CtlPrepareRx(pdev, self->rx_buf, req->wLength);
         }
     } else if (req->bmRequest == 0xa1) {
-        // device-to-host request
+        // device-to-host class request
         int len = dfu_handle_tx(self->bRequest, self->wValue, self->wLength, self->tx_buf, USB_XFER_SIZE);
         if (len >= 0) {
+            #if USE_USB_POLLING
             self->tx_pending = true;
+            #endif
             USBD_CtlSendData(&self->hUSBDDevice, self->tx_buf, len);
         }
     }
@@ -1168,9 +1284,10 @@ static uint8_t pyb_usbdd_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *r
 }
 
 static uint8_t pyb_usbdd_EP0_TxSent(USBD_HandleTypeDef *pdev) {
+    #if USE_USB_POLLING
     pyb_usbdd_obj_t *self = (pyb_usbdd_obj_t *)pdev->pClassData;
     self->tx_pending = false;
-    #if !USE_USB_POLLING
+    #else
     // Process now that we have sent a response
     dfu_process();
     #endif
@@ -1243,7 +1360,9 @@ static int pyb_usbdd_detect_port(void) {
 
 static void pyb_usbdd_init(pyb_usbdd_obj_t *self, int phy_id) {
     self->started = false;
+    #if USE_USB_POLLING
     self->tx_pending = false;
+    #endif
     USBD_HandleTypeDef *usbd = &self->hUSBDDevice;
     usbd->id = phy_id;
     usbd->dev_state = USBD_STATE_DEFAULT;
@@ -1420,12 +1539,6 @@ enter_bootloader:
     pri <<= (8 - __NVIC_PRIO_BITS);
     __ASM volatile ("msr basepri_max, %0" : : "r" (pri) : "memory");
     #endif
-
-    // Compute the first erasable/writable internal flash sector.
-    first_writable_flash_sector = flash_get_sector_info((uint32_t)&_mboot_writable_flash_start, NULL, NULL);
-    if (first_writable_flash_sector < 0) {
-        first_writable_flash_sector = INT32_MAX;
-    }
 
     #if defined(MBOOT_SPIFLASH_ADDR)
     MBOOT_SPIFLASH_SPIFLASH->config = MBOOT_SPIFLASH_CONFIG;

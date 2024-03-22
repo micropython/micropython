@@ -98,7 +98,7 @@ Then also edit ``py/lexer.c`` to add the new keyword literal text:
 .. code-block:: c
    :emphasize-lines: 12
 
-   STATIC const char *const tok_kw[] = {
+   static const char *const tok_kw[] = {
        ...
        "or",
        "pass",
@@ -157,7 +157,7 @@ The most relevant method you should know about is this:
        mp_compile_to_raw_code(parse_tree, source_file, is_repl, &cm);
 
        // Create and return a function object that executes the outer module.
-       return mp_make_function_from_raw_code(cm.rc, cm.context, NULL);
+       return mp_make_function_from_proto_fun(cm.rc, cm.context, NULL);
    }
 
 The compiler compiles the code in four passes: scope, stack size, code size and emit.
@@ -301,7 +301,7 @@ code statement:
 
 .. code-block:: c
 
-   STATIC void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
+   static void emit_native_unary_op(emit_t *emit, mp_unary_op_t op) {
         vtype_kind_t vtype;
         emit_pre_pop_reg(emit, &vtype, REG_ARG_2);
         if (vtype == VTYPE_PYOBJ) {

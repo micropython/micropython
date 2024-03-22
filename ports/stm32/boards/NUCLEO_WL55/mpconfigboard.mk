@@ -9,5 +9,5 @@ TEXT0_ADDR = 0x08000000
 MICROPY_VFS_FAT = 0
 MICROPY_VFS_LFS2 = 1
 
-# Don't include default frozen modules because MCU is tight on flash space
-FROZEN_MANIFEST ?=
+# Board-specific manifest (doesn't include default modules, adds LoRa driver).
+FROZEN_MANIFEST ?= $(BOARD_DIR)/manifest.py

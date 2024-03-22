@@ -41,37 +41,37 @@
 #endif
 
 // Command line options, with their defaults
-STATIC uint emit_opt = MP_EMIT_OPT_NONE;
+static uint emit_opt = MP_EMIT_OPT_NONE;
 mp_uint_t mp_verbose_flag = 0;
 
 // Heap size of GC heap (if enabled)
 // Make it larger on a 64 bit machine, because pointers are larger.
 long heap_size = 1024 * 1024 * (sizeof(mp_uint_t) / 4);
 
-STATIC void stdout_print_strn(void *env, const char *str, size_t len) {
+static void stdout_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t dummy = write(STDOUT_FILENO, str, len);
     (void)dummy;
 }
 
-STATIC const mp_print_t mp_stdout_print = {NULL, stdout_print_strn};
+static const mp_print_t mp_stdout_print = {NULL, stdout_print_strn};
 
-STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
+static void stderr_print_strn(void *env, const char *str, size_t len) {
     (void)env;
     ssize_t dummy = write(STDERR_FILENO, str, len);
     (void)dummy;
 }
 
-STATIC const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
+static const mp_print_t mp_stderr_print = {NULL, stderr_print_strn};
 
-STATIC int compile_and_save(const char *file, const char *output_file, const char *source_file) {
+static int compile_and_save(const char *file, const char *output_file, const char *source_file) {
     nlr_buf_t nlr;
     if (nlr_push(&nlr) == 0) {
         mp_lexer_t *lex;
         if (strcmp(file, "-") == 0) {
             lex = mp_lexer_new_from_fd(MP_QSTR__lt_stdin_gt_, STDIN_FILENO, false);
         } else {
-            lex = mp_lexer_new_from_file(file);
+            lex = mp_lexer_new_from_file(qstr_from_str(file));
         }
 
         qstr source_name;
@@ -104,7 +104,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
                 vstr_add_str(&vstr, output_file);
             }
 
-            mp_raw_code_save_file(&cm, vstr_null_terminated_str(&vstr));
+            mp_raw_code_save_file(&cm, qstr_from_strn(vstr.buf, vstr.len));
             vstr_clear(&vstr);
         }
 
@@ -117,7 +117,7 @@ STATIC int compile_and_save(const char *file, const char *output_file, const cha
     }
 }
 
-STATIC int usage(char **argv) {
+static int usage(char **argv) {
     printf(
         "usage: %s [<opts>] [-X <implopt>] [--] <input filename>\n"
         "Options:\n"
@@ -155,7 +155,7 @@ STATIC int usage(char **argv) {
 }
 
 // Process options which set interpreter init options
-STATIC void pre_process_options(int argc, char **argv) {
+static void pre_process_options(int argc, char **argv) {
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
             if (strcmp(argv[a], "-X") == 0) {
@@ -201,7 +201,7 @@ STATIC void pre_process_options(int argc, char **argv) {
     }
 }
 
-STATIC char *backslash_to_forwardslash(char *path) {
+static char *backslash_to_forwardslash(char *path) {
     for (char *p = path; p != NULL && *p != '\0'; ++p) {
         if (*p == '\\') {
             *p = '/';

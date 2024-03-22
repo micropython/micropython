@@ -52,7 +52,7 @@
         character data".
  */
 
-STATIC char get_fmt_type(const char **fmt) {
+static char get_fmt_type(const char **fmt) {
     char t = **fmt;
     switch (t) {
         case '!':
@@ -71,7 +71,7 @@ STATIC char get_fmt_type(const char **fmt) {
     return t;
 }
 
-STATIC mp_uint_t get_fmt_num(const char **p) {
+static mp_uint_t get_fmt_num(const char **p) {
     const char *num = *p;
     uint len = 1;
     while (unichar_isdigit(*++num)) {
@@ -82,7 +82,7 @@ STATIC mp_uint_t get_fmt_num(const char **p) {
     return val;
 }
 
-STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
+static size_t calc_size_items(const char *fmt, size_t *total_sz) {
     char fmt_type = get_fmt_type(&fmt);
     size_t total_cnt = 0;
     size_t size;
@@ -112,7 +112,7 @@ STATIC size_t calc_size_items(const char *fmt, size_t *total_sz) {
     return total_cnt;
 }
 
-STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
+static mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     size_t size;
     calc_size_items(fmt, &size);
@@ -120,7 +120,7 @@ STATIC mp_obj_t struct_calcsize(mp_obj_t fmt_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(struct_calcsize_obj, struct_calcsize);
 
-STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
     // unpack requires that the buffer be exactly the right size.
     // unpack_from requires that the buffer be "big enough".
     // Since we implement unpack and unpack_from using the same function
@@ -180,7 +180,7 @@ STATIC mp_obj_t struct_unpack_from(size_t n_args, const mp_obj_t *args) {
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_unpack_from_obj, 2, 3, struct_unpack_from);
 
 // This function assumes there is enough room in p to store all the values
-STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
+static void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, const mp_obj_t *args) {
     const char *fmt = mp_obj_str_get_str(fmt_in);
     char fmt_type = get_fmt_type(&fmt);
 
@@ -219,7 +219,7 @@ STATIC void struct_pack_into_internal(mp_obj_t fmt_in, byte *p, size_t n_args, c
     }
 }
 
-STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
     // TODO: "The arguments must match the values required by the format exactly."
     mp_int_t size = MP_OBJ_SMALL_INT_VALUE(struct_calcsize(args[0]));
     vstr_t vstr;
@@ -231,7 +231,7 @@ STATIC mp_obj_t struct_pack(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_obj, 1, MP_OBJ_FUN_ARGS_MAX, struct_pack);
 
-STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
+static mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[1], &bufinfo, MP_BUFFER_WRITE);
     mp_int_t offset = mp_obj_get_int(args[2]);
@@ -257,7 +257,7 @@ STATIC mp_obj_t struct_pack_into(size_t n_args, const mp_obj_t *args) {
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(struct_pack_into_obj, 3, MP_OBJ_FUN_ARGS_MAX, struct_pack_into);
 
-STATIC const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
+static const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_struct) },
     { MP_ROM_QSTR(MP_QSTR_calcsize), MP_ROM_PTR(&struct_calcsize_obj) },
     { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&struct_pack_obj) },
@@ -266,7 +266,7 @@ STATIC const mp_rom_map_elem_t mp_module_struct_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_unpack_from), MP_ROM_PTR(&struct_unpack_from_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_table);
+static MP_DEFINE_CONST_DICT(mp_module_struct_globals, mp_module_struct_globals_table);
 
 const mp_obj_module_t mp_module_struct = {
     .base = { &mp_type_module },

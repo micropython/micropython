@@ -30,7 +30,7 @@ TEST_MAPPINGS = {
 
 # Code to allow a target MicroPython to import an .mpy from RAM
 injected_import_hook_code = """\
-import sys, os, io
+import sys, io, vfs
 class __File(io.IOBase):
   def __init__(self):
     self.off = 0
@@ -52,7 +52,7 @@ class __FS:
       raise OSError(-2) # ENOENT
   def open(self, path, mode):
     return __File()
-os.mount(__FS(), '/__remote')
+vfs.mount(__FS(), '/__remote')
 sys.path.insert(0, '/__remote')
 sys.modules['{}'] = __import__('__injected')
 """

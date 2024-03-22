@@ -30,7 +30,7 @@
 
 void ra_init(void) {
     ra_int_init();
-    SysTick_Config(PCLK / 1000);
+    SysTick_Config(MICROPY_HW_MCU_SYSCLK / 1000);
     internal_flash_init();
 }
 

@@ -26,7 +26,7 @@
 
 #include "py/runtime.h"
 #include "py/mphal.h"
-#include "modmachine.h"
+#include "extmod/modmachine.h"
 
 #if MICROPY_HW_USB_CDC_1200BPS_TOUCH && MICROPY_HW_ENABLE_USBDEV
 
@@ -34,7 +34,7 @@
 
 static mp_sched_node_t mp_bootloader_sched_node;
 
-STATIC void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
+static void usbd_cdc_run_bootloader_task(mp_sched_node_t *node) {
     mp_hal_delay_ms(250);
     machine_bootloader(0, NULL);
 }

@@ -94,7 +94,6 @@
     <ClCompile Include="$(PyBaseDir)ports\unix\gccollect.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\input.c"/>
     <ClCompile Include="$(PyBaseDir)ports\unix\main.c"/>
-    <ClCompile Include="$(PyBaseDir)ports\unix\modmachine.c" />
     <ClCompile Include="$(PyVariantDir)*.c" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +101,9 @@
     <ClInclude Include="@(PyExtModInclude)" />
     <ClInclude Include="$(PyBaseDir)ports\windows\*.h" />
     <ClInclude Include="$(PyBaseDir)ports\windows\msvc\*.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="micropython.rc" />
   </ItemGroup>
   <Import Project="msvc/genhdr.targets" />
   <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />

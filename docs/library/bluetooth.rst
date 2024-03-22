@@ -312,7 +312,7 @@ Broadcaster Role (Advertiser)
     in all broadcasts, and *resp_data* is send in reply to an active scan.
 
     **Note:** if *adv_data* (or *resp_data*) is ``None``, then the data passed
-    to the previous call to ``gap_advertise`` will be re-used. This allows a
+    to the previous call to ``gap_advertise`` will be reused. This allows a
     broadcaster to resume advertising with just ``gap_advertise(interval_us)``.
     To clear the advertising payload pass an empty ``bytes``, i.e. ``b''``.
 
@@ -722,7 +722,7 @@ Pairing and bonding
     and ``_IRQ_SET_SECRET`` events.
 
     **Note:** This is currently only supported when using the NimBLE stack on
-    STM32 and Unix (not ESP32).
+    ESP32, STM32 and Unix.
 
 .. method:: BLE.gap_pair(conn_handle, /)
 

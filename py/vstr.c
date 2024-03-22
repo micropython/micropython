@@ -104,7 +104,7 @@ char *vstr_extend(vstr_t *vstr, size_t size) {
     return p;
 }
 
-STATIC void vstr_ensure_extra(vstr_t *vstr, size_t size) {
+static void vstr_ensure_extra(vstr_t *vstr, size_t size) {
     if (vstr->len + size > vstr->alloc) {
         if (vstr->fixed_buf) {
             // We can't reallocate, and the caller is expecting the space to
@@ -183,7 +183,7 @@ void vstr_add_strn(vstr_t *vstr, const char *str, size_t len) {
     vstr->len += len;
 }
 
-STATIC char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
+static char *vstr_ins_blank_bytes(vstr_t *vstr, size_t byte_pos, size_t byte_len) {
     size_t l = vstr->len;
     if (byte_pos > l) {
         byte_pos = l;

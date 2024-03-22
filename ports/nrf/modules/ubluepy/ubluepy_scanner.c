@@ -35,7 +35,7 @@
 #include "ble_drv.h"
 #include "mphalport.h"
 
-STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_data_t * data) {
+static void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_data_t * data) {
     ubluepy_scanner_obj_t *self = MP_OBJ_TO_PTR(self_in);
 
     ubluepy_scan_entry_obj_t * item = mp_obj_malloc(ubluepy_scan_entry_obj_t, &ubluepy_scan_entry_type);
@@ -62,13 +62,13 @@ STATIC void adv_event_handler(mp_obj_t self_in, uint16_t event_id, ble_drv_adv_d
     ble_drv_scan_start(true);
 }
 
-STATIC void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
+static void ubluepy_scanner_print(const mp_print_t *print, mp_obj_t o, mp_print_kind_t kind) {
     ubluepy_scanner_obj_t * self = (ubluepy_scanner_obj_t *)o;
     (void)self;
     mp_printf(print, "Scanner");
 }
 
-STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
+static mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
 
     };
@@ -86,7 +86,7 @@ STATIC mp_obj_t ubluepy_scanner_make_new(const mp_obj_type_t *type, size_t n_arg
 /// Scan for devices. Timeout is in milliseconds and will set the duration
 /// of the scanning.
 ///
-STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
+static mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
     ubluepy_scanner_obj_t * self = MP_OBJ_TO_PTR(self_in);
     mp_int_t timeout = mp_obj_get_int(timeout_in);
 
@@ -105,13 +105,13 @@ STATIC mp_obj_t scanner_scan(mp_obj_t self_in, mp_obj_t timeout_in) {
 
     return self->adv_reports;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_scanner_scan_obj, scanner_scan);
+static MP_DEFINE_CONST_FUN_OBJ_2(ubluepy_scanner_scan_obj, scanner_scan);
 
-STATIC const mp_rom_map_elem_t ubluepy_scanner_locals_dict_table[] = {
+static const mp_rom_map_elem_t ubluepy_scanner_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_scan), MP_ROM_PTR(&ubluepy_scanner_scan_obj) },
 };
 
-STATIC MP_DEFINE_CONST_DICT(ubluepy_scanner_locals_dict, ubluepy_scanner_locals_dict_table);
+static MP_DEFINE_CONST_DICT(ubluepy_scanner_locals_dict, ubluepy_scanner_locals_dict_table);
 
 
 MP_DEFINE_CONST_OBJ_TYPE(

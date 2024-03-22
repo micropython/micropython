@@ -35,7 +35,7 @@ typedef struct _mp_lexer_str32_buf_t {
     uint8_t byte_off;
 } mp_lexer_str32_buf_t;
 
-STATIC mp_uint_t str32_buf_next_byte(void *sb_in) {
+static mp_uint_t str32_buf_next_byte(void *sb_in) {
     mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t *)sb_in;
     byte c = sb->val & 0xff;
     if (c == 0) {
@@ -52,7 +52,7 @@ STATIC mp_uint_t str32_buf_next_byte(void *sb_in) {
     return c;
 }
 
-STATIC void str32_buf_free(void *sb_in) {
+static void str32_buf_free(void *sb_in) {
     mp_lexer_str32_buf_t *sb = (mp_lexer_str32_buf_t *)sb_in;
     m_del_obj(mp_lexer_str32_buf_t, sb);
 }

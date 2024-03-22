@@ -1,11 +1,11 @@
 /******************************************************************************
  * @file     mpu_armv8.h
  * @brief    CMSIS MPU API for Armv8-M and Armv8.1-M MPU
- * @version  V5.1.0
- * @date     08. March 2019
+ * @version  V5.1.3
+ * @date     03. February 2021
  ******************************************************************************/
 /*
- * Copyright (c) 2017-2019 Arm Limited. All rights reserved.
+ * Copyright (c) 2017-2021 Arm Limited. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -44,7 +44,7 @@
 * \param WA Write Allocation: Set to 1 to use cache allocation on write miss.
 */
 #define ARM_MPU_ATTR_MEMORY_(NT, WB, RA, WA) \
-  (((NT & 1U) << 3U) | ((WB & 1U) << 2U) | ((RA & 1U) << 1U) | (WA & 1U))
+  ((((NT) & 1U) << 3U) | (((WB) & 1U) << 2U) | (((RA) & 1U) << 1U) | ((WA) & 1U))
 
 /** \brief Device memory type non Gathering, non Re-ordering, non Early Write Acknowledgement */
 #define ARM_MPU_ATTR_DEVICE_nGnRnE (0U)
@@ -62,7 +62,7 @@
 * \param O Outer memory attributes
 * \param I O == ARM_MPU_ATTR_DEVICE: Device memory attributes, else: Inner memory attributes
 */
-#define ARM_MPU_ATTR(O, I) (((O & 0xFU) << 4U) | (((O & 0xFU) != 0U) ? (I & 0xFU) : ((I & 0x3U) << 2U)))
+#define ARM_MPU_ATTR(O, I) ((((O) & 0xFU) << 4U) | ((((O) & 0xFU) != 0U) ? ((I) & 0xFU) : (((I) & 0x3U) << 2U)))
 
 /** \brief Normal memory non-shareable  */
 #define ARM_MPU_SH_NON   (0U)
@@ -77,7 +77,7 @@
 * \param RO Read-Only: Set to 1 for read-only memory.
 * \param NP Non-Privileged: Set to 1 for non-privileged memory.
 */
-#define ARM_MPU_AP_(RO, NP) (((RO & 1U) << 1U) | (NP & 1U))
+#define ARM_MPU_AP_(RO, NP) ((((RO) & 1U) << 1U) | ((NP) & 1U))
 
 /** \brief Region Base Address Register value
 * \param BASE The base address bits [31:5] of a memory region. The value is zero extended. Effective address gets 32 byte aligned.
@@ -87,18 +87,18 @@
 * \oaram XN eXecute Never: Set to 1 for a non-executable memory region.
 */
 #define ARM_MPU_RBAR(BASE, SH, RO, NP, XN) \
-  ((BASE & MPU_RBAR_BASE_Msk) | \
-  ((SH << MPU_RBAR_SH_Pos) & MPU_RBAR_SH_Msk) | \
+  (((BASE) & MPU_RBAR_BASE_Msk) | \
+  (((SH) << MPU_RBAR_SH_Pos) & MPU_RBAR_SH_Msk) | \
   ((ARM_MPU_AP_(RO, NP) << MPU_RBAR_AP_Pos) & MPU_RBAR_AP_Msk) | \
-  ((XN << MPU_RBAR_XN_Pos) & MPU_RBAR_XN_Msk))
+  (((XN) << MPU_RBAR_XN_Pos) & MPU_RBAR_XN_Msk))
 
 /** \brief Region Limit Address Register value
 * \param LIMIT The limit address bits [31:5] for this memory region. The value is one extended.
 * \param IDX The attribute index to be associated with this memory region.
 */
 #define ARM_MPU_RLAR(LIMIT, IDX) \
-  ((LIMIT & MPU_RLAR_LIMIT_Msk) | \
-  ((IDX << MPU_RLAR_AttrIndx_Pos) & MPU_RLAR_AttrIndx_Msk) | \
+  (((LIMIT) & MPU_RLAR_LIMIT_Msk) | \
+  (((IDX) << MPU_RLAR_AttrIndx_Pos) & MPU_RLAR_AttrIndx_Msk) | \
   (MPU_RLAR_EN_Msk))
 
 #if defined(MPU_RLAR_PXN_Pos)
@@ -109,9 +109,9 @@
 * \param IDX The attribute index to be associated with this memory region.
 */
 #define ARM_MPU_RLAR_PXN(LIMIT, PXN, IDX) \
-  ((LIMIT & MPU_RLAR_LIMIT_Msk) | \
-  ((PXN << MPU_RLAR_PXN_Pos) & MPU_RLAR_PXN_Msk) | \
-  ((IDX << MPU_RLAR_AttrIndx_Pos) & MPU_RLAR_AttrIndx_Msk) | \
+  (((LIMIT) & MPU_RLAR_LIMIT_Msk) | \
+  (((PXN) << MPU_RLAR_PXN_Pos) & MPU_RLAR_PXN_Msk) | \
+  (((IDX) << MPU_RLAR_AttrIndx_Pos) & MPU_RLAR_AttrIndx_Msk) | \
   (MPU_RLAR_EN_Msk))
   
 #endif
@@ -129,6 +129,7 @@ typedef struct {
 */
 __STATIC_INLINE void ARM_MPU_Enable(uint32_t MPU_Control)
 {
+  __DMB();
   MPU->CTRL = MPU_Control | MPU_CTRL_ENABLE_Msk;
 #ifdef SCB_SHCSR_MEMFAULTENA_Msk
   SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
@@ -146,6 +147,8 @@ __STATIC_INLINE void ARM_MPU_Disable(void)
   SCB->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
 #endif
   MPU->CTRL  &= ~MPU_CTRL_ENABLE_Msk;
+  __DSB();
+  __ISB();
 }
 
 #ifdef MPU_NS
@@ -154,6 +157,7 @@ __STATIC_INLINE void ARM_MPU_Disable(void)
 */
 __STATIC_INLINE void ARM_MPU_Enable_NS(uint32_t MPU_Control)
 {
+  __DMB();
   MPU_NS->CTRL = MPU_Control | MPU_CTRL_ENABLE_Msk;
 #ifdef SCB_SHCSR_MEMFAULTENA_Msk
   SCB_NS->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
@@ -171,6 +175,8 @@ __STATIC_INLINE void ARM_MPU_Disable_NS(void)
   SCB_NS->SHCSR &= ~SCB_SHCSR_MEMFAULTENA_Msk;
 #endif
   MPU_NS->CTRL  &= ~MPU_CTRL_ENABLE_Msk;
+  __DSB();
+  __ISB();
 }
 #endif
 
@@ -275,7 +281,7 @@ __STATIC_INLINE void ARM_MPU_SetRegion_NS(uint32_t rnr, uint32_t rbar, uint32_t 
 }
 #endif
 
-/** Memcopy with strictly ordered memory access, e.g. for register targets.
+/** Memcpy with strictly ordered memory access, e.g. used by code in ARM_MPU_LoadEx()
 * \param dst Destination data is copied to.
 * \param src Source data is copied from.
 * \param len Amount of data words to be copied.

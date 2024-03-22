@@ -76,7 +76,9 @@ class SerialTransport(Transport):
         delayed = False
         for attempt in range(wait + 1):
             try:
-                if os.name == "nt":
+                if device.startswith("rfc2217://"):
+                    self.serial = serial.serial_for_url(device, **serial_kwargs)
+                elif os.name == "nt":
                     self.serial = serial.Serial(**serial_kwargs)
                     self.serial.port = device
                     portinfo = list(serial.tools.list_ports.grep(device))  # type: ignore
@@ -329,7 +331,7 @@ class SerialTransport(Transport):
     def fs_stat(self, src):
         try:
             self.exec("import os")
-            return os.stat_result(self.eval("os.stat(%s)" % (("'%s'" % src)), parse=True))
+            return os.stat_result(self.eval("os.stat(%s)" % ("'%s'" % src), parse=True))
         except TransportError as e:
             reraise_filesystem_error(e, src)
 
@@ -751,6 +753,13 @@ class RemoteFile(io.IOBase):
             machine.mem32[arg] = self.seek(machine.mem32[arg], machine.mem32[arg + 4])
         elif request == 4:  # CLOSE
             self.close()
+        elif request == 11:  # BUFFER_SIZE
+            # This is used as the vfs_reader buffer. n + 4 should be less than 255 to
+            # fit in stdin ringbuffer on supported ports. n + 7 should be multiple of 16
+            # to efficiently use gc blocks in mp_reader_vfs_t.
+            return 249
+        else:
+            return -1
         return 0
 
     def flush(self):

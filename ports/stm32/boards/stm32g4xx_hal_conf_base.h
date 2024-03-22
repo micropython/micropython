@@ -26,51 +26,6 @@
 #ifndef MICROPY_INCLUDED_STM32G4XX_HAL_CONF_BASE_H
 #define MICROPY_INCLUDED_STM32G4XX_HAL_CONF_BASE_H
 
-// Include various HAL modules for convenience
-
-#include "stm32g4xx_hal_rcc.h"
-#include "stm32g4xx_hal_gpio.h"
-#include "stm32g4xx_hal_dma.h"
-#include "stm32g4xx_hal_cortex.h"
-#include "stm32g4xx_hal_adc.h"
-#include "stm32g4xx_hal_comp.h"
-#include "stm32g4xx_hal_cordic.h"
-#include "stm32g4xx_hal_crc.h"
-#include "stm32g4xx_hal_cryp.h"
-#include "stm32g4xx_hal_dac.h"
-#include "stm32g4xx_hal_exti.h"
-#include "stm32g4xx_hal_fdcan.h"
-#include "stm32g4xx_hal_flash.h"
-#include "stm32g4xx_hal_fmac.h"
-#include "stm32g4xx_hal_hrtim.h"
-#include "stm32g4xx_hal_irda.h"
-#include "stm32g4xx_hal_iwdg.h"
-#include "stm32g4xx_hal_i2c.h"
-#include "stm32g4xx_hal_i2s.h"
-#include "stm32g4xx_hal_lptim.h"
-#include "stm32g4xx_hal_nand.h"
-#include "stm32g4xx_hal_nor.h"
-#include "stm32g4xx_hal_opamp.h"
-#include "stm32g4xx_hal_pcd.h"
-#include "stm32g4xx_hal_pwr.h"
-#include "stm32g4xx_hal_qspi.h"
-#include "stm32g4xx_hal_rng.h"
-#include "stm32g4xx_hal_rtc.h"
-#include "stm32g4xx_hal_sai.h"
-#include "stm32g4xx_hal_smartcard.h"
-#include "stm32g4xx_hal_smbus.h"
-#include "stm32g4xx_hal_spi.h"
-#include "stm32g4xx_hal_sram.h"
-#include "stm32g4xx_hal_tim.h"
-#include "stm32g4xx_hal_uart.h"
-#include "stm32g4xx_hal_usart.h"
-#include "stm32g4xx_hal_wwdg.h"
-
-#include "stm32g4xx_ll_adc.h"
-#include "stm32g4xx_ll_rtc.h"
-#include "stm32g4xx_ll_usart.h"
-#include "stm32g4xx_ll_lpuart.h"
-
 #define HAL_MODULE_ENABLED
 #define HAL_ADC_MODULE_ENABLED
 #define HAL_COMP_MODULE_ENABLED
@@ -124,6 +79,49 @@
 #define  INSTRUCTION_CACHE_ENABLE   1
 #define  DATA_CACHE_ENABLE          1
 #define  USE_SPI_CRC                1
+
+// Include various HAL modules for convenience
+#include "stm32g4xx_hal_rcc.h"
+#include "stm32g4xx_hal_gpio.h"
+#include "stm32g4xx_hal_dma.h"
+#include "stm32g4xx_hal_cortex.h"
+#include "stm32g4xx_hal_adc.h"
+#include "stm32g4xx_hal_comp.h"
+#include "stm32g4xx_hal_cordic.h"
+#include "stm32g4xx_hal_crc.h"
+#include "stm32g4xx_hal_cryp.h"
+#include "stm32g4xx_hal_dac.h"
+#include "stm32g4xx_hal_exti.h"
+#include "stm32g4xx_hal_fdcan.h"
+#include "stm32g4xx_hal_flash.h"
+#include "stm32g4xx_hal_fmac.h"
+#include "stm32g4xx_hal_hrtim.h"
+#include "stm32g4xx_hal_irda.h"
+#include "stm32g4xx_hal_iwdg.h"
+#include "stm32g4xx_hal_i2c.h"
+#include "stm32g4xx_hal_i2s.h"
+#include "stm32g4xx_hal_lptim.h"
+#include "stm32g4xx_hal_nand.h"
+#include "stm32g4xx_hal_nor.h"
+#include "stm32g4xx_hal_opamp.h"
+#include "stm32g4xx_hal_pcd.h"
+#include "stm32g4xx_hal_pwr.h"
+#include "stm32g4xx_hal_qspi.h"
+#include "stm32g4xx_hal_rng.h"
+#include "stm32g4xx_hal_rtc.h"
+#include "stm32g4xx_hal_sai.h"
+#include "stm32g4xx_hal_smartcard.h"
+#include "stm32g4xx_hal_smbus.h"
+#include "stm32g4xx_hal_spi.h"
+#include "stm32g4xx_hal_sram.h"
+#include "stm32g4xx_hal_tim.h"
+#include "stm32g4xx_hal_uart.h"
+#include "stm32g4xx_hal_usart.h"
+#include "stm32g4xx_hal_wwdg.h"
+#include "stm32g4xx_ll_adc.h"
+#include "stm32g4xx_ll_rtc.h"
+#include "stm32g4xx_ll_usart.h"
+#include "stm32g4xx_ll_lpuart.h"
 
 // HAL parameter assertions are disabled
 #define assert_param(expr) ((void)0)

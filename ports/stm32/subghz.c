@@ -34,7 +34,7 @@
 
 // Interface to the STM32WL series "SUBGHZ Radio" module
 
-STATIC void handle_radio_irq() {
+static void handle_radio_irq() {
     // Level-triggered interrupts means the interrupt has to be cleared before
     // this function returns.
     //
@@ -90,7 +90,7 @@ void subghz_deinit(void) {
     __HAL_RCC_SUBGHZ_RADIO_RELEASE_RESET();
 }
 
-STATIC mp_obj_t subghz_cs(mp_obj_t value) {
+static mp_obj_t subghz_cs(mp_obj_t value) {
     // Treat the same as normal SPI - truthy is "unselected",
     //   falsey is active low "selected",
     if (mp_obj_is_true(value)) {
@@ -103,7 +103,7 @@ STATIC mp_obj_t subghz_cs(mp_obj_t value) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(subghz_cs_obj, subghz_cs);
 
-STATIC mp_obj_t subghz_irq(mp_obj_t handler) {
+static mp_obj_t subghz_irq(mp_obj_t handler) {
     MP_STATE_PORT(subghz_callback) = handler;
 
     if (mp_obj_is_true(handler)) {
@@ -117,7 +117,7 @@ STATIC mp_obj_t subghz_irq(mp_obj_t handler) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(subghz_irq_obj, subghz_irq);
 
-STATIC mp_obj_t subghz_is_busy(void) {
+static mp_obj_t subghz_is_busy(void) {
     // Read the raw unmasked busy signal. This should be checked before driving
     // CS low to start a command.
     //

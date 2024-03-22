@@ -7,6 +7,7 @@
 #define MICROPY_HW_LED_OFF(pin) (mp_hal_pin_low(pin))
 
 #define MICROPY_HW_NUM_PIN_IRQS (2 * 32)
+#define MICROPY_PY_MACHINE_SDCARD    (0)
 
 // Define mapping logical UART # to hardware UART #
 // LPUART1 on USB_DBG  -> 0

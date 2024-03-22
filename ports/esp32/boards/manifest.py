@@ -5,7 +5,7 @@ include("$(MPY_DIR)/extmod/asyncio")
 require("bundle-networking")
 
 # Require some micropython-lib modules.
-# require("aioespnow")
+require("aioespnow")
 require("dht")
 require("ds18x20")
 require("neopixel")

@@ -64,7 +64,7 @@ u32_t sys_now(void) {
     return mp_hal_ticks_ms();
 }
 
-STATIC void pyb_lwip_poll(void) {
+static void pyb_lwip_poll(void) {
     #if MICROPY_PY_NETWORK_WIZNET5K
     // Poll the NIC for incoming data
     wiznet5k_poll();
@@ -72,6 +72,10 @@ STATIC void pyb_lwip_poll(void) {
 
     // Run the lwIP internal updates
     sys_check_timeouts();
+
+    #if LWIP_NETIF_LOOPBACK
+    netif_poll_all();
+    #endif
 }
 
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms) {

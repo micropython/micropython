@@ -1,0 +1,10 @@
+--- instance0 ---
+server running
+handle connection
+(-29824, 'MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE')
+server done
+--- instance1 ---
+write: b'client data'
+drain
+(-30592, 'MBEDTLS_ERR_SSL_FATAL_ALERT_MESSAGE')
+client done

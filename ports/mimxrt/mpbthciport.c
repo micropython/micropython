@@ -29,6 +29,7 @@
 #include "py/stream.h"
 #include "py/mphal.h"
 #include "extmod/modbluetooth.h"
+#include "extmod/modmachine.h"
 #include "extmod/mpbthci.h"
 #include "shared/runtime/softtimer.h"
 #include "modmachine.h"
@@ -36,15 +37,19 @@
 
 #if MICROPY_PY_BLUETOOTH
 
+#ifndef MICROPY_HW_BLE_UART_FLOW_CONTROL
+#define MICROPY_HW_BLE_UART_FLOW_CONTROL (3)
+#endif
+
 #define DEBUG_printf(...) // mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 #define ERROR_printf(...) mp_printf(&mp_plat_print, "mpbthciport.c: " __VA_ARGS__)
 
 uint8_t mp_bluetooth_hci_cmd_buf[4 + 256];
 
-STATIC mp_sched_node_t mp_bluetooth_hci_sched_node;
-STATIC soft_timer_entry_t mp_bluetooth_hci_soft_timer;
+static mp_sched_node_t mp_bluetooth_hci_sched_node;
+static soft_timer_entry_t mp_bluetooth_hci_soft_timer;
 
-STATIC void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
+static void mp_bluetooth_hci_soft_timer_callback(soft_timer_entry_t *self) {
     mp_bluetooth_hci_poll_now();
 }
 
@@ -57,7 +62,7 @@ void mp_bluetooth_hci_init(void) {
         );
 }
 
-STATIC void mp_bluetooth_hci_start_polling(void) {
+static void mp_bluetooth_hci_start_polling(void) {
     mp_bluetooth_hci_poll_now();
 }
 
@@ -66,7 +71,7 @@ void mp_bluetooth_hci_poll_in_ms(uint32_t ms) {
 }
 
 // For synchronous mode, we run all BLE stack code inside a scheduled task.
-STATIC void run_events_scheduled_task(mp_sched_node_t *node) {
+static void run_events_scheduled_task(mp_sched_node_t *node) {
     // This will process all buffered HCI UART data, and run any callouts or events.
     mp_bluetooth_hci_poll();
 }
@@ -85,13 +90,14 @@ int mp_bluetooth_hci_uart_init(uint32_t port, uint32_t baudrate) {
     mp_obj_t args[] = {
         MP_OBJ_NEW_SMALL_INT(port),
         MP_OBJ_NEW_QSTR(MP_QSTR_baudrate), MP_OBJ_NEW_SMALL_INT(baudrate),
+        MP_OBJ_NEW_QSTR(MP_QSTR_flow), MP_OBJ_NEW_SMALL_INT(MICROPY_HW_BLE_UART_FLOW_CONTROL),
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout), MP_OBJ_NEW_SMALL_INT(200),
         MP_OBJ_NEW_QSTR(MP_QSTR_timeout_char), MP_OBJ_NEW_SMALL_INT(200),
         MP_OBJ_NEW_QSTR(MP_QSTR_txbuf), MP_OBJ_NEW_SMALL_INT(768),
         MP_OBJ_NEW_QSTR(MP_QSTR_rxbuf), MP_OBJ_NEW_SMALL_INT(768),
     };
 
-    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 1, 5, args);
+    mp_bthci_uart = MP_OBJ_TYPE_GET_SLOT(&machine_uart_type, make_new)((mp_obj_t)&machine_uart_type, 1, 6, args);
     MP_STATE_PORT(mp_bthci_uart) = mp_bthci_uart;
 
     // Start the HCI polling to process any initial events/packets.

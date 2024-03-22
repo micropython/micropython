@@ -121,7 +121,7 @@
 #endif
 
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
-STATIC void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
+static void gc_setup_area(mp_state_mem_area_t *area, void *start, void *end) {
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
     // T = A + F + P
     //     F = A * BLOCKS_PER_ATB / BLOCKS_PER_FTB
@@ -239,7 +239,7 @@ void gc_add(void *start, void *end) {
 
 #if MICROPY_GC_SPLIT_HEAP_AUTO
 // Try to automatically add a heap area large enough to fulfill 'failed_alloc'.
-STATIC bool gc_try_add_heap(size_t failed_alloc) {
+static bool gc_try_add_heap(size_t failed_alloc) {
     // 'needed' is the size of a heap large enough to hold failed_alloc, with
     // the additional metadata overheads as calculated in gc_setup_area().
     //
@@ -282,13 +282,27 @@ STATIC bool gc_try_add_heap(size_t failed_alloc) {
     // - If the new heap won't fit in the available free space, add the largest
     //   new heap that will fit (this may lead to failed system heap allocations
     //   elsewhere, but some allocation will likely fail in this circumstance!)
-    size_t total_heap = 0;
+
+    // Compute total number of blocks in the current heap.
+    size_t total_blocks = 0;
     for (mp_state_mem_area_t *area = &MP_STATE_MEM(area);
          area != NULL;
          area = NEXT_AREA(area)) {
-        total_heap += area->gc_pool_end - area->gc_alloc_table_start;
-        total_heap += ALLOC_TABLE_GAP_BYTE + sizeof(mp_state_mem_area_t);
+        total_blocks += area->gc_alloc_table_byte_len * BLOCKS_PER_ATB;
     }
+
+    // Compute bytes needed to build a heap with total_blocks blocks.
+    size_t total_heap =
+        total_blocks / BLOCKS_PER_ATB
+        #if MICROPY_ENABLE_FINALISER
+        + total_blocks / BLOCKS_PER_FTB
+        #endif
+        + total_blocks * BYTES_PER_BLOCK
+        + ALLOC_TABLE_GAP_BYTE
+        + sizeof(mp_state_mem_area_t);
+
+    // Round up size to the nearest multiple of BYTES_PER_BLOCK.
+    total_heap = (total_heap + BYTES_PER_BLOCK - 1) & (~(BYTES_PER_BLOCK - 1));
 
     DEBUG_printf("total_heap " UINT_FMT " bytes\n", total_heap);
 
@@ -335,7 +349,7 @@ bool gc_is_locked(void) {
 #if MICROPY_GC_SPLIT_HEAP
 // Returns the area to which this pointer belongs, or NULL if it isn't
 // allocated on the GC-managed heap.
-STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
+static inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
     if (((uintptr_t)(ptr) & (BYTES_PER_BLOCK - 1)) != 0) {   // must be aligned on a block
         return NULL;
     }
@@ -369,9 +383,9 @@ STATIC inline mp_state_mem_area_t *gc_get_ptr_area(const void *ptr) {
 // blocks on the stack. When all children have been checked, pop off the
 // topmost block on the stack and repeat with that one.
 #if MICROPY_GC_SPLIT_HEAP
-STATIC void gc_mark_subtree(mp_state_mem_area_t *area, size_t block)
+static void gc_mark_subtree(mp_state_mem_area_t *area, size_t block)
 #else
-STATIC void gc_mark_subtree(size_t block)
+static void gc_mark_subtree(size_t block)
 #endif
 {
     // Start with the block passed in the argument.
@@ -442,7 +456,7 @@ STATIC void gc_mark_subtree(size_t block)
     }
 }
 
-STATIC void gc_deal_with_stack_overflow(void) {
+static void gc_deal_with_stack_overflow(void) {
     while (MP_STATE_MEM(gc_stack_overflow)) {
         MP_STATE_MEM(gc_stack_overflow) = 0;
 
@@ -463,7 +477,7 @@ STATIC void gc_deal_with_stack_overflow(void) {
     }
 }
 
-STATIC void gc_sweep(void) {
+static void gc_sweep(void) {
     #if MICROPY_PY_GC_COLLECT_RETVAL
     MP_STATE_MEM(gc_collected) = 0;
     #endif
