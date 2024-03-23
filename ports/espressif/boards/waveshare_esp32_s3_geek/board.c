@@ -50,9 +50,8 @@ uint8_t display_init_sequence[] = {
     0x29, 0x80, 0xFF,  // _DISPON and Delay 500ms
 };
 
-static void display_init(void)
-{
-    
+static void display_init(void) {
+
     busio_spi_obj_t *spi = common_hal_board_create_spi(0);
     fourwire_fourwire_obj_t *bus = &allocate_display_bus()->fourwire_bus;
 
@@ -75,8 +74,8 @@ static void display_init(void)
         50000000, // Baudrate
         0, // Polarity
         0 // Phase
-    
-    );
+
+        );
 
     busdisplay_busdisplay_obj_t *display = &allocate_display()->display;
     display->base.type = &busdisplay_busdisplay_type;
@@ -109,11 +108,10 @@ static void display_init(void)
         60, // native_frames_per_second
         true, // backlight_on_high
         false, // SH1107_addressing
-        1000 //backlight pwm frequency
-    );
+        1000 // backlight pwm frequency
+        );
 }
 
 void board_init(void) {
     display_init();
 }
-
