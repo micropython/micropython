@@ -6,6 +6,7 @@ STATIC const mp_rom_map_elem_t board_module_globals_table[] = {
 
     // Boot button (can also be used as regular button)
     { MP_ROM_QSTR(MP_QSTR_IO0), MP_ROM_PTR(&pin_GPIO0) },
+    { MP_ROM_QSTR(MP_QSTR_BUTTON), MP_ROM_PTR(&pin_GPIO0) },
     // GPIO
     { MP_ROM_QSTR(MP_QSTR_IO6), MP_ROM_PTR(&pin_GPIO6) },
     // 7-12 LCD
