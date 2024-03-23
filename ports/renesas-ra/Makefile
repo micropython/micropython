@@ -140,12 +140,11 @@ LDFLAGS += --gc-sections
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
 CFLAGS += -DPENDSV_DEBUG
-#COPT = -Og
-COPT = -Os
+COPT ?= -Os
 # Disable text compression in debug builds
 MICROPY_ROM_TEXT_COMPRESSION = 0
 else
-COPT += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 endif
 
 # Flags for optional C++ source code

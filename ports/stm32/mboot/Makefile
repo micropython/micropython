@@ -90,9 +90,9 @@ LDFLAGS += --gc-sections
 # Debugging/Optimization
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -DPENDSV_DEBUG
-COPT = -Og
+COPT ?= -Og
 else
-COPT += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 endif
 
 $(BUILD)/shared/libc/string0.o: CFLAGS += $(CFLAGS_BUILTIN)

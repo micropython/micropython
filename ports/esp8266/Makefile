@@ -89,10 +89,10 @@ LIBS += -L$(dir $(LIBGCC_FILE_NAME)) -lgcc
 # Debugging/Optimization
 CFLAGS += -g  # always include debug info in the ELF
 ifeq ($(DEBUG), 1)
-COPT = -O0
+COPT ?= -O0
 else
 CFLAGS += -fdata-sections -ffunction-sections
-COPT += -Os -DNDEBUG
+COPT ?= -Os -DNDEBUG
 LDFLAGS += --gc-sections
 endif
 

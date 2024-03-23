@@ -25,9 +25,9 @@ CFLAGS += -fdata-sections -ffunction-sections -fno-asynchronous-unwind-tables
 # Debugging/Optimization
 ifdef DEBUG
 CFLAGS += -g
-COPT = -O0
+COPT ?= -O0
 else
-COPT = -Os #-DNDEBUG
+COPT ?= -Os #-DNDEBUG
 endif
 
 # On OSX, 'gcc' is a symlink to clang unless a real gcc is installed.
