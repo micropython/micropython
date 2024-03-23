@@ -1,5 +1,5 @@
 USB_VID = 0x303a
-USB_PID = 0x7003
+USB_PID = 0x81ea
 USB_PRODUCT = "ESP32-S3-GEEK"
 USB_MANUFACTURER = "Waveshare Electronics"
 
