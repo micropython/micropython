@@ -103,6 +103,7 @@ the following libraries.
    micropython.rst
    neopixel.rst
    network.rst
+   ntptime.rst
    openamp.rst
    uctypes.rst
    vfs.rst
