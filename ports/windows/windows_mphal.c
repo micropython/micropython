@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include "windows_version.h"
 
 #include "py/runtime.h"
 #include "py/mphal.h"

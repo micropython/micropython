@@ -23,6 +23,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifdef _WIN32
+#include "ports/windows/windows_version.h"
+#endif
 
 #include "py/runtime.h"
 #include "py/mperrno.h"
