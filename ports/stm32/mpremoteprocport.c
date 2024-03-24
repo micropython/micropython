@@ -40,11 +40,9 @@
 #include "metal/utilities.h"
 #include "extmod/modopenamp_remoteproc.h"
 
-#define DEBUG_printf(...)   // mp_printf(&mp_plat_print, __VA_ARGS__)
-
 struct remoteproc *mp_openamp_remoteproc_init(struct remoteproc *rproc,
     const struct remoteproc_ops *ops, void *arg) {
-    DEBUG_printf("rproc_init()\n");
+    metal_log(METAL_LOG_DEBUG, "rproc_init()\n");
 
     rproc->ops = ops;
     rproc->state = RPROC_OFFLINE;
@@ -56,7 +54,7 @@ struct remoteproc *mp_openamp_remoteproc_init(struct remoteproc *rproc,
 void *mp_openamp_remoteproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa,
     metal_phys_addr_t *da, size_t size, unsigned int attribute,
     struct metal_io_region **io) {
-    DEBUG_printf("rproc_mmap(): pa 0x%p da 0x%p io 0x%p size %u\n", *pa, *da, *io, size);
+    metal_log(METAL_LOG_DEBUG, "rproc_mmap(): pa 0x%p da 0x%p io 0x%p size %u\n", *pa, *da, *io, size);
 
     struct remoteproc_mem *mem;
     metal_phys_addr_t lpa = *pa;
@@ -100,11 +98,11 @@ void *mp_openamp_remoteproc_mmap(struct remoteproc *rproc, metal_phys_addr_t *pa
 }
 
 int mp_openamp_remoteproc_start(struct remoteproc *rproc) {
-    DEBUG_printf("rproc_start()\n");
+    metal_log(METAL_LOG_DEBUG, "rproc_start()\n");
     if ((RCC->GCR & RCC_GCR_BOOT_C2) || (FLASH->OPTSR_CUR & FLASH_OPTSR_BCM4)) {
         // The CM4 core has already been started manually, or auto-boot is enabled
         // via the option bytes, in either case the core can't be restarted.
-        DEBUG_printf("rproc_start(): CM4 core is already booted.\n");
+        metal_log(METAL_LOG_DEBUG, "rproc_start(): CM4 core is already booted.\n");
         return -1;
     }
 
@@ -122,7 +120,7 @@ int mp_openamp_remoteproc_start(struct remoteproc *rproc) {
 }
 
 int mp_openamp_remoteproc_stop(struct remoteproc *rproc) {
-    DEBUG_printf("rproc_stop()\n");
+    metal_log(METAL_LOG_DEBUG, "rproc_stop()\n");
     if (rproc->state == RPROC_RUNNING) {
         // There's no straightforward way to reset or shut down
         // the remote processor, so a full system reset is needed.
@@ -132,18 +130,18 @@ int mp_openamp_remoteproc_stop(struct remoteproc *rproc) {
 }
 
 int mp_openamp_remoteproc_config(struct remoteproc *rproc, void *data) {
-    DEBUG_printf("rproc_config()\n");
+    metal_log(METAL_LOG_DEBUG, "rproc_config()\n");
     (void)rproc;
     return 0;
 }
 
 void mp_openamp_remoteproc_remove(struct remoteproc *rproc) {
-    DEBUG_printf("rproc_remove()\n");
+    metal_log(METAL_LOG_DEBUG, "rproc_remove()\n");
     (void)rproc;
 }
 
 int mp_openamp_remoteproc_shutdown(struct remoteproc *rproc) {
-    DEBUG_printf("rproc_shutdown()\n");
+    metal_log(METAL_LOG_DEBUG, "rproc_shutdown()\n");
     if (rproc->state == RPROC_RUNNING) {
         // There's no straightforward way to reset or shut down
         // the remote processor, so a full system reset is needed.
