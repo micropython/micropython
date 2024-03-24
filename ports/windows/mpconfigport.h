@@ -132,6 +132,8 @@
 #define MICROPY_STACKLESS_STRICT    (0)
 #endif
 
+#define MICROPY_PY_SOCKET 1
+
 #define MICROPY_PY_OS               (1)
 #define MICROPY_PY_OS_INCLUDEFILE   "ports/unix/modos.c"
 #define MICROPY_PY_OS_ERRNO         (1)

@@ -60,6 +60,7 @@ SRC_C = \
 	windows_mphal.c \
 	realpath.c \
 	init.c \
+	modsocket.c \
 	fmode.c \
 	$(wildcard $(VARIANT_DIR)/*.c)
 
