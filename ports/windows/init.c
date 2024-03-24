@@ -29,10 +29,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
+#include <winsock2.h>
 #ifdef _MSC_VER
 #include <crtdbg.h>
 #endif
 #include "fmode.h"
+
+#ifdef _MSC_VER
+#pragma comment(lib, "Ws2_32.lib")
+#endif
 
 extern BOOL WINAPI console_sighandler(DWORD evt);
 
@@ -63,6 +68,10 @@ void init() {
     _set_output_format(_TWO_DIGIT_EXPONENT);
     #endif
     set_fmode_binary();
+
+    // Initialize Winsock
+    WSADATA winsockData;
+    WSAStartup(MAKEWORD(2, 2), &winsockData);
 }
 
 void deinit() {
