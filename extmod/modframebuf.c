@@ -577,9 +577,7 @@ static mp_obj_t framebuf_ellipse(size_t n_args, const mp_obj_t *args_in) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_ellipse_obj, 6, 8, framebuf_ellipse);
 
-#if MICROPY_PY_ARRAY && !MICROPY_ENABLE_DYNRUNTIME
-// TODO: poly needs mp_binary_get_size & mp_binary_get_val_array which aren't
-// available in dynruntime.h yet.
+#if MICROPY_PY_ARRAY
 
 static mp_int_t poly_int(mp_buffer_info_t *bufinfo, size_t index) {
     return mp_obj_get_int(mp_binary_get_val_array(bufinfo->typecode, bufinfo->buf, index));
@@ -696,7 +694,8 @@ static mp_obj_t framebuf_poly(size_t n_args, const mp_obj_t *args_in) {
     return mp_const_none;
 }
 static MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(framebuf_poly_obj, 5, 6, framebuf_poly);
-#endif // MICROPY_PY_ARRAY && !MICROPY_ENABLE_DYNRUNTIME
+
+#endif // MICROPY_PY_ARRAY
 
 static mp_obj_t framebuf_blit(size_t n_args, const mp_obj_t *args_in) {
     mp_obj_framebuf_t *self = MP_OBJ_TO_PTR(args_in[0]);
