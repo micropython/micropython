@@ -82,7 +82,7 @@ other things.  For these drivers see:
 Constructor
 -----------
 
-.. class:: I2S(id, *, sck, ws, sd, mck=None, mode, bits, format, rate, ibuf)
+.. class:: I2S(id, *, sck, ws=None, sd, mck=None, mode, bits, format, rate, ibuf)
 
    Construct an I2S object of the given id:
 
@@ -91,7 +91,8 @@ Constructor
    Keyword-only parameters that are supported on all ports:
 
      - ``sck`` is a pin object for the serial clock line
-     - ``ws`` is a pin object for the word select line
+     - ``ws`` is a pin object for the word select line;
+       can be left unset if using ``I2S.PDM_RX`` mode
      - ``sd`` is a pin object for the serial data line
      - ``mck`` is a pin object for the master clock line;
        master clock frequency is sampling rate * 256
@@ -154,6 +155,10 @@ Constants
 .. data:: I2S.TX
 
    for initialising the I2S bus ``mode`` to transmit
+
+.. data:: I2S.PDM_RX
+
+   for initialising the I2S bus ``mode`` to receive in PDM mode
 
 .. data:: I2S.STEREO
 
