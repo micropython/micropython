@@ -200,13 +200,22 @@ STATIC mp_obj_t ssl_sslsocket_send(mp_obj_t self_in, mp_obj_t buf_in) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(ssl_sslsocket_send_obj, ssl_sslsocket_send);
 
-// //|     def setsockopt(self, level: int, optname: int, value: int) -> None:
+// //|     def setsockopt(self, level: int, optname: int, value: int | ReadableBuffer) -> None:
 // //|         """Sets socket options"""
 // //|         ...
 // //|
-// STATIC mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
-// }
-// STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_setsockopt_obj, 4, 4, ssl_sslsocket_setsockopt);
+STATIC mp_obj_t ssl_sslsocket_setsockopt(size_t n_args, const mp_obj_t *args) {
+    ssl_sslsocket_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    mp_obj_t level = args[1];
+    mp_obj_t optname = args[2];
+    mp_obj_t optval = args[3];
+
+    // throws on error
+    common_hal_ssl_sslsocket_setsockopt(self, level, optname, optval);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(ssl_sslsocket_setsockopt_obj, 4, 4, ssl_sslsocket_setsockopt);
 
 //|     def settimeout(self, value: int) -> None:
 //|         """Set the timeout value for this socket.
@@ -252,7 +261,7 @@ STATIC const mp_rom_map_elem_t ssl_sslsocket_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_recv_into), MP_ROM_PTR(&ssl_sslsocket_recv_into_obj) },
     { MP_ROM_QSTR(MP_QSTR_send), MP_ROM_PTR(&ssl_sslsocket_send_obj) },
     { MP_ROM_QSTR(MP_QSTR_setblocking), MP_ROM_PTR(&ssl_sslsocket_setblocking_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&ssl_sslsocket_setsockopt_obj) },
+    { MP_ROM_QSTR(MP_QSTR_setsockopt), MP_ROM_PTR(&ssl_sslsocket_setsockopt_obj) },
     { MP_ROM_QSTR(MP_QSTR_settimeout), MP_ROM_PTR(&ssl_sslsocket_settimeout_obj) },
 };
 

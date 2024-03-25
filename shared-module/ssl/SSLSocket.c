@@ -158,6 +158,13 @@ static void ssl_socket_close(ssl_sslsocket_obj_t *self) {
     mp_call_method_n_kw(0, 0, self->close_args);
 }
 
+static void ssl_socket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t level_obj, mp_obj_t opt_obj, mp_obj_t optval_obj) {
+    self->setsockopt_args[2] = level_obj;
+    self->setsockopt_args[3] = opt_obj;
+    self->setsockopt_args[4] = optval_obj;
+    mp_call_method_n_kw(3, 0, self->setsockopt_args);
+}
+
 static void ssl_socket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
     self->settimeout_args[2] = timeout_obj;
     mp_call_method_n_kw(1, 0, self->settimeout_args);
@@ -233,6 +240,7 @@ ssl_sslsocket_obj_t *common_hal_ssl_sslcontext_wrap_socket(ssl_sslcontext_obj_t 
     mp_load_method(socket, MP_QSTR_recv_into, o->recv_into_args);
     mp_load_method(socket, MP_QSTR_send, o->send_args);
     mp_load_method(socket, MP_QSTR_settimeout, o->settimeout_args);
+    mp_load_method(socket, MP_QSTR_setsockopt, o->setsockopt_args);
 
     mbedtls_ssl_init(&o->ssl);
     mbedtls_ssl_config_init(&o->conf);
@@ -439,6 +447,10 @@ mp_obj_t common_hal_ssl_sslsocket_accept(ssl_sslsocket_obj_t *self) {
     tuple_contents[0] = MP_OBJ_FROM_PTR(sslsock);
     tuple_contents[1] = peer;
     return mp_obj_new_tuple(2, tuple_contents);
+}
+
+void common_hal_ssl_sslsocket_setsockopt(ssl_sslsocket_obj_t *self, mp_obj_t level_obj, mp_obj_t optname_obj, mp_obj_t optval_obj) {
+    ssl_socket_setsockopt(self, level_obj, optname_obj, optval_obj);
 }
 
 void common_hal_ssl_sslsocket_settimeout(ssl_sslsocket_obj_t *self, mp_obj_t timeout_obj) {
