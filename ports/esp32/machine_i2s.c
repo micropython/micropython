@@ -29,6 +29,9 @@
 
 #include "py/mphal.h"
 #include "driver/i2s_std.h"
+#if MICROPY_PY_MACHINE_PDM
+#include "driver/i2s_pdm.h"
+#endif
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -125,6 +128,9 @@ static int8_t get_frame_mapping_index(i2s_data_bit_width_t bits, format_t format
 static i2s_data_bit_width_t get_dma_bits(uint8_t mode, i2s_data_bit_width_t bits) {
     if (mode == MICROPY_PY_MACHINE_I2S_CONSTANT_TX) {
         return bits;
+    } else if (mode == MICROPY_PY_MACHINE_I2S_PDM_RX) { // PDM Rx
+        // fixed to 16-bit per ESP-IDF documentation
+        return I2S_DATA_BIT_WIDTH_16BIT;
     } else { // Master Rx
         // read 32 bit samples for I2S hardware.  e.g. MEMS microphones
         return I2S_DATA_BIT_WIDTH_32BIT;
@@ -132,7 +138,8 @@ static i2s_data_bit_width_t get_dma_bits(uint8_t mode, i2s_data_bit_width_t bits
 }
 
 static i2s_slot_mode_t get_dma_format(uint8_t mode, format_t format) {
-    if (mode == MICROPY_PY_MACHINE_I2S_CONSTANT_TX) {
+    if ((mode == MICROPY_PY_MACHINE_I2S_CONSTANT_TX) ||
+        (mode == MICROPY_PY_MACHINE_I2S_PDM_RX)) {
         if (format == MONO) {
             return I2S_SLOT_MODE_MONO;
         } else {  // STEREO
@@ -305,15 +312,20 @@ i2s_event_callbacks_t i2s_callbacks_null = {
 };
 
 static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *args) {
+    int8_t mode = args[ARG_mode].u_int;
+    int8_t ws = -1;
+
     // are Pins valid?
     int8_t sck = args[ARG_sck].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sck].u_obj);
-    int8_t ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_ws].u_obj);
+    if (mode != (MICROPY_PY_MACHINE_I2S_PDM_RX)) {
+        ws = args[ARG_ws].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_ws].u_obj);
+    }
     int8_t sd = args[ARG_sd].u_obj == MP_OBJ_NULL ? -1 : machine_pin_get_id(args[ARG_sd].u_obj);
 
     // is Mode valid?
-    int8_t mode = args[ARG_mode].u_int;
     if ((mode != (MICROPY_PY_MACHINE_I2S_CONSTANT_RX)) &&
-        (mode != (MICROPY_PY_MACHINE_I2S_CONSTANT_TX))) {
+        (mode != (MICROPY_PY_MACHINE_I2S_CONSTANT_TX)) &&
+        (mode != (MICROPY_PY_MACHINE_I2S_PDM_RX))) {
         mp_raise_ValueError(MP_ERROR_TEXT("invalid mode"));
     }
 
@@ -368,33 +380,64 @@ static void mp_machine_i2s_init_helper(machine_i2s_obj_t *self, mp_arg_val_t *ar
         ESP_ERROR_CHECK(i2s_new_channel(&chan_config, NULL, &self->i2s_chan_handle));
     }
 
-    i2s_std_slot_config_t slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(get_dma_bits(mode, bits), get_dma_format(mode, format));
-    slot_cfg.slot_mask = I2S_STD_SLOT_BOTH;
+    if (mode != MICROPY_PY_MACHINE_I2S_PDM_RX) {
+        i2s_std_slot_config_t slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(get_dma_bits(mode, bits), get_dma_format(mode, format));
+        slot_cfg.slot_mask = I2S_STD_SLOT_BOTH;
 
-    i2s_std_config_t std_cfg = {
-        .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(self->rate),
-        .slot_cfg = slot_cfg,
-        .gpio_cfg = {
-            .mclk = I2S_GPIO_UNUSED,
-            .bclk = self->sck,
-            .ws = self->ws,
-            .invert_flags = {
-                .mclk_inv = false,
-                .bclk_inv = false,
-                .ws_inv = false,
+        i2s_std_config_t std_cfg = {
+            .clk_cfg = I2S_STD_CLK_DEFAULT_CONFIG(self->rate),
+            .slot_cfg = slot_cfg,
+            .gpio_cfg = {
+                .mclk = I2S_GPIO_UNUSED,
+                .bclk = self->sck,
+                .ws = self->ws,
+                .invert_flags = {
+                    .mclk_inv = false,
+                    .bclk_inv = false,
+                    .ws_inv = false,
+                },
             },
-        },
-    };
+        };
 
-    if (mode == MICROPY_PY_MACHINE_I2S_CONSTANT_TX) {
-        std_cfg.gpio_cfg.dout = self->sd;
-        std_cfg.gpio_cfg.din = I2S_GPIO_UNUSED;
-    } else { // rx
-        std_cfg.gpio_cfg.dout = I2S_GPIO_UNUSED;
-        std_cfg.gpio_cfg.din = self->sd;
+        if (mode == MICROPY_PY_MACHINE_I2S_CONSTANT_TX) {
+            std_cfg.gpio_cfg.dout = self->sd;
+            std_cfg.gpio_cfg.din = I2S_GPIO_UNUSED;
+        } else { // rx
+            std_cfg.gpio_cfg.dout = I2S_GPIO_UNUSED;
+            std_cfg.gpio_cfg.din = self->sd;
+        }
+
+        ESP_ERROR_CHECK(i2s_channel_init_std_mode(self->i2s_chan_handle, &std_cfg));
+    } else { // PDM mode
+        #if MICROPY_PY_MACHINE_PDM
+        // PDM can only be in id 0
+        if (self->i2s_id != 0) {
+            mp_raise_ValueError(MP_ERROR_TEXT("invalid i2s id for PDM mode"));
+        }
+
+        i2s_pdm_rx_slot_config_t slot_cfg = I2S_PDM_RX_SLOT_DEFAULT_CONFIG(get_dma_bits(mode, bits), get_dma_format(mode, format));
+
+        slot_cfg.slot_mask = I2S_PDM_SLOT_BOTH;
+
+        i2s_pdm_rx_config_t pdm_cfg = {
+            .clk_cfg = I2S_PDM_RX_CLK_DEFAULT_CONFIG(self->rate),
+            .slot_cfg = slot_cfg,
+            .gpio_cfg = {
+                .clk = self->sck,
+                .din = self->sd,
+                .invert_flags = {
+                    .clk_inv = false,
+                },
+            },
+        };
+        pdm_cfg.clk_cfg.dn_sample_mode = I2S_PDM_DSR_MAX;
+
+        ESP_ERROR_CHECK(i2s_channel_init_pdm_rx_mode(self->i2s_chan_handle, &pdm_cfg));
+        #else
+        mp_raise_ValueError(MP_ERROR_TEXT("invalid mode"));
+        #endif
     }
 
-    ESP_ERROR_CHECK(i2s_channel_init_std_mode(self->i2s_chan_handle, &std_cfg));
     ESP_ERROR_CHECK(i2s_channel_register_event_callback(self->i2s_chan_handle, &i2s_callbacks, self));
     ESP_ERROR_CHECK(i2s_channel_enable(self->i2s_chan_handle));
 }
