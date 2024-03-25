@@ -25,8 +25,12 @@
  */
 
 #include "shared-bindings/floppyio/__init__.h"
+#if CIRCUITPY_DIGITALIO
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #include "common-hal/floppyio/__init__.h"
+#else
+#define FLOPPYIO_SAMPLERATE (24000000)
+#endif
 
 #include <math.h>
 #include <stdint.h>
@@ -53,6 +57,7 @@
 //|     ...
 //|
 STATIC mp_obj_t floppyio_flux_readinto(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
+    #if CIRCUITPY_DIGITALIO
     enum { ARG_buffer, ARG_data, ARG_index, ARG_index_wait };
     static const mp_arg_t allowed_args[] = {
         { MP_QSTR_buffer, MP_ARG_REQUIRED | MP_ARG_OBJ, {.u_obj = MP_OBJ_NULL} },
@@ -74,6 +79,9 @@ STATIC mp_obj_t floppyio_flux_readinto(size_t n_args, const mp_obj_t *pos_args, 
         MICROPY_FLOAT_CONST(.220);
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_floppyio_flux_readinto(bufinfo.buf, bufinfo.len, data, index, index_wait_ms));
+    #else
+    mp_raise_NotImplementedError(NULL);
+    #endif
 }
 MP_DEFINE_CONST_FUN_OBJ_KW(floppyio_flux_readinto_obj, 0, floppyio_flux_readinto);
 

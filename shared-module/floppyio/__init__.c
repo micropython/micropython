@@ -29,8 +29,10 @@
 
 #include "shared-bindings/time/__init__.h"
 #include "shared-bindings/floppyio/__init__.h"
+#if CIRCUITPY_DIGITALIO
 #include "common-hal/floppyio/__init__.h"
 #include "shared-bindings/digitalio/DigitalInOut.h"
+#endif
 
 #ifndef T2_5
 #define T2_5 (FLOPPYIO_SAMPLERATE * 5 / 2 / 1000000)
@@ -41,6 +43,7 @@
 
 #include "lib/adafruit_floppy/src/mfm_impl.h"
 
+#if CIRCUITPY_DIGITALIO
 MP_WEAK
 __attribute__((optimize("O3")))
 int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalinout_obj_t *data, digitalio_digitalinout_obj_t *index, mp_int_t index_wait_ms) {
@@ -65,6 +68,7 @@ int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalin
     // wait for index pulse low
     while (READ_INDEX()) { /* NOTHING */
         if (supervisor_ticks_ms32() > index_deadline_ms) {
+            common_hal_mcu_enable_interrupts();
             return 0;
         }
     }
@@ -100,6 +104,7 @@ int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalin
 
     return pulses_ptr - pulses;
 }
+#endif
 
 int common_hal_floppyio_mfm_readinto(const mp_buffer_info_t *buf, const mp_buffer_info_t *flux_buf, uint8_t *validity, size_t t2_max, size_t t3_max) {
     mfm_io_t io = {
