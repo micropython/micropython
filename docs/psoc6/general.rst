@@ -37,10 +37,11 @@ CY8CPROTO-062-4343W
 
 Pinout
 ******
-    .. image:: img/cy8cproto-062-4343w-pinout.png
-        :width: 1400
 
+    .. image:: img/CY8CPROTO-062-4343W-pinout.png
+        :width: 550
 
+    
 Technical specifications
 ************************
 Links for product details:
@@ -53,8 +54,10 @@ CY8CPROTO-063-BLE
 
 Pinout
 ******
-    .. image:: img/cy8cproto-063-ble-pinout.png
-        :width: 400
+
+    .. image:: img/CY8PROTO-063-BLE-pinout.png
+        :width: 300
+
 
 Technical specifications
 ************************
