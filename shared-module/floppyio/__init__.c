@@ -34,26 +34,20 @@
 #include "shared-bindings/digitalio/DigitalInOut.h"
 #endif
 
-#ifndef T2_5
-#define T2_5 (FLOPPYIO_SAMPLERATE * 5 / 2 / 1000000)
-#endif
-#ifndef T3_5
-#define T3_5 (FLOPPYIO_SAMPLERATE * 7 / 2 / 1000000)
-#endif
-
 #include "lib/adafruit_floppy/src/mfm_impl.h"
 
 #if CIRCUITPY_DIGITALIO
 MP_WEAK
 __attribute__((optimize("O3")))
 int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalinout_obj_t *data, digitalio_digitalinout_obj_t *index, mp_int_t index_wait_ms) {
+    mp_printf(&mp_plat_print, "common_hal_floppyio_flux_readinto in %s\n", __FILE__);
     uint32_t index_mask;
     volatile uint32_t *index_port = common_hal_digitalio_digitalinout_get_reg(index, DIGITALINOUT_REG_READ, &index_mask);
 
     uint32_t data_mask;
     volatile uint32_t *data_port = common_hal_digitalio_digitalinout_get_reg(data, DIGITALINOUT_REG_READ, &data_mask);
 
-    uint32_t index_deadline_ms = mp_hal_ticks_ms() + index_wait_ms;
+    uint32_t index_deadline_ms = supervisor_ticks_ms32() + index_wait_ms;
 #undef READ_INDEX
 #undef READ_DATA
 #define READ_INDEX() (!!(*index_port & index_mask))
@@ -69,6 +63,7 @@ int common_hal_floppyio_flux_readinto(void *buf, size_t len, digitalio_digitalin
     while (READ_INDEX()) { /* NOTHING */
         if (supervisor_ticks_ms32() > index_deadline_ms) {
             common_hal_mcu_enable_interrupts();
+            mp_raise_RuntimeError(MP_ERROR_TEXT("timeout waiting for index pulse"));
             return 0;
         }
     }

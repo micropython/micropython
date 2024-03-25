@@ -40,7 +40,10 @@
 #include "py/runtime.h"
 
 //| def flux_readinto(
-//|     buffer: WriteableBuffer, data: digitalio.DigitalInOut, index: digitalio.DigitalInOut
+//|     buffer: WriteableBuffer,
+//|     data: digitalio.DigitalInOut,
+//|     index: digitalio.DigitalInOut,
+//|     index_wait=0.220,
 //| ) -> int:
 //|     """Read flux transition information into the buffer.
 //|
@@ -52,6 +55,7 @@
 //|     :param buffer: Read data into this buffer.  Each element represents the time between successive zero-to-one transitions.
 //|     :param data: Pin on which the flux data appears
 //|     :param index: Pin on which the index pulse appears
+//|     :param index_wait: Time to wait, in seconds, for the index pulse
 //|     :return: The actual number of bytes of read
 //|     """
 //|     ...
@@ -76,7 +80,7 @@ STATIC mp_obj_t floppyio_flux_readinto(size_t n_args, const mp_obj_t *pos_args, 
 
     mp_int_t index_wait_ms = args[ARG_index_wait].u_obj ?
         MICROPY_FLOAT_C_FUN(round)(mp_arg_validate_type_float(args[ARG_index_wait].u_obj, MP_QSTR_index_wait) * 1000) :
-        MICROPY_FLOAT_CONST(.220);
+        220;
 
     return MP_OBJ_NEW_SMALL_INT(common_hal_floppyio_flux_readinto(bufinfo.buf, bufinfo.len, data, index, index_wait_ms));
     #else
@@ -88,7 +92,8 @@ MP_DEFINE_CONST_FUN_OBJ_KW(floppyio_flux_readinto_obj, 0, floppyio_flux_readinto
 //| def mfm_readinto(
 //|     buffer: WriteableBuffer,
 //|     flux: ReadableBuffer,
-//|     flux_t1_nominal: int,
+//|     flux_t2_max: int,
+//|     flux_t3_max: int,
 //|     validity: bytearray | None = None,
 //|     clear_validity: bool = True,
 //| ) -> int:
