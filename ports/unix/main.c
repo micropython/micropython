@@ -562,7 +562,11 @@ MP_NOINLINE int main_(int argc, char **argv) {
             // First entry is empty. We've already added an empty entry to sys.path, so skip it.
             ++path;
         }
-        bool path_remaining = *path;
+        // Allocating path_remaining on the stack can lead to compiler warnings about this
+        // variable being clobbered when nlr is implemented using setjmp/longjmp.  Its
+        // value must be preserved across calls to setjmp/longjmp.
+        static bool path_remaining;
+        path_remaining = *path;
         while (path_remaining) {
             char *path_entry_end = strchr(path, PATHLIST_SEP_CHAR);
             if (path_entry_end == NULL) {
