@@ -29,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include "py/binary.h"
 #include "py/runtime.h"
 #include "py/smallint.h"
 #include "py/nativeglue.h"
@@ -330,6 +331,9 @@ const mp_fun_table_t mp_fun_table = {
     mp_obj_get_float_to_d,
     mp_get_buffer,
     mp_get_stream_raise,
+    mp_binary_get_size,
+    mp_binary_get_val_array,
+    mp_binary_set_val_array,
     &mp_plat_print,
     &mp_type_type,
     &mp_type_str,

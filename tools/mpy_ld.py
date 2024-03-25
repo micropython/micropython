@@ -52,6 +52,7 @@ MP_SCOPE_FLAG_VIPERRELOC = 0x10
 MP_SCOPE_FLAG_VIPERRODATA = 0x20
 MP_SCOPE_FLAG_VIPERBSS = 0x40
 MP_SMALL_INT_BITS = 31
+MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET = 70
 
 # ELF constants
 R_386_32 = 1
@@ -754,7 +755,7 @@ def link_objects(env, native_qstr_vals_len):
     # Resolve unknown symbols
     mp_fun_table_sec = Section(".external.mp_fun_table", b"", 0)
     fun_table = {
-        key: 67 + idx
+        key: MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET + idx
         for idx, key in enumerate(
             [
                 "mp_type_type",
