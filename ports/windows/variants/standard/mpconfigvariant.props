@@ -3,4 +3,7 @@
   <PropertyGroup>
     <FrozenManifest>$(PyWinDir)\variants\manifest.py</FrozenManifest>
   </PropertyGroup>
+  <ItemGroup>
+    <PySubmodules Include="lib/micropython-lib" />
+  </ItemGroup>
 </Project>

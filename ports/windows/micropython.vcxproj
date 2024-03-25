@@ -108,7 +108,7 @@
   </ItemGroup>
   <Import Project="msvc/genhdr.targets" />
   <Import Project="$(CustomPropsFile)" Condition="exists('$(CustomPropsFile)')" />
-  <Target Name="GenerateMicroPythonSources" BeforeTargets="BuildGenerateSources" DependsOnTargets="GenerateHeaders;FreezeModules">
+  <Target Name="GenerateMicroPythonSources" BeforeTargets="BuildGenerateSources" DependsOnTargets="UpdateSubmodulesIfInIDE;GenerateHeaders;FreezeModules">
   </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
