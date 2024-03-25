@@ -82,7 +82,9 @@ using(var outFile = System.IO.File.CreateText(OutputFile)) {
       </QstrDependencies>
     </ItemGroup>
     <PropertyGroup>
-      <PyPreProcCommand>$(PyClTool) /nologo /I@(PyIncDirs, ' /I') /D@(PreProcDefs, ' /D')</PyPreProcCommand>
+      <!--Command is going to run via shell so need to escape quotes. -->
+      <UnescapedPreProcDefs>/D@(PreProcDefs, ' /D')</UnescapedPreProcDefs>
+      <PyPreProcCommand>$(PyClTool) /nologo /I@(PyIncDirs, ' /I') $([System.String]::Copy('$(UnescapedPreProcDefs)').Replace('"','\"'))</PyPreProcCommand>
       <ForceQstrRebuild>@(QstrDependencies->AnyHaveMetadataValue('Changed', 'True'))</ForceQstrRebuild>
       <RunPreProcConcat>@(PyQstrSourceFiles->AnyHaveMetadataValue('Changed', 'True'))</RunPreProcConcat>
     </PropertyGroup>
