@@ -88,7 +88,7 @@ class FreezeError(Exception):
 
 class Config:
     MPY_VERSION = 6
-    MPY_SUB_VERSION = 2
+    MPY_SUB_VERSION = 3
     MICROPY_LONGINT_IMPL_NONE = 0
     MICROPY_LONGINT_IMPL_LONGLONG = 1
     MICROPY_LONGINT_IMPL_MPZ = 2
