@@ -87,6 +87,7 @@
   <ItemGroup>
     <ClCompile Include="@(PyCoreSource)" />
     <ClCompile Include="@(PyExtModSource)" />
+    <ClCompile Include="@(PyThirdPartySource)" />
     <ClCompile Include="$(PyBaseDir)shared\readline\*.c" />
     <ClCompile Include="$(PyBaseDir)shared\runtime\gchelper_generic.c" />
     <ClCompile Include="$(PyBaseDir)ports\windows\*.c" />
