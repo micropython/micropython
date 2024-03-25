@@ -692,6 +692,8 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
             skip_tests.add("micropython/extreme_exc.py")
             skip_tests.add("micropython/heapalloc_exc_compressed_emg_exc.py")
             skip_tests.add("micropython/import_mpy_invalid.py")
+        elif args.target == "qemu-riscv":
+            skip_tests.add("misc/print_exception.py")  # requires sys stdfiles
 
     # Some tests are known to fail on 64-bit machines
     if pyb is None and platform.architecture()[0] == "64bit":
@@ -1039,6 +1041,7 @@ the last matching regex is used:
         "unix",
         "qemu-arm",
         "webassembly",
+        "qemu-riscv",
     )
     EXTERNAL_TARGETS = (
         "pyboard",
@@ -1143,6 +1146,12 @@ the last matching regex is used:
                 )
             elif args.target == "webassembly":
                 test_dirs += ("float", "ports/webassembly")
+            elif args.target == "qemu-riscv":
+                if not args.write_exp:
+                    raise ValueError("--target=qemu-riscv must be used with --write-exp")
+                # Generate expected output files for qemu run.
+                # This list should match the test_dirs tuple in tinytest-codegen.py.
+                test_dirs += ("float",)
         else:
             # run tests from these directories
             test_dirs = args.test_dirs
