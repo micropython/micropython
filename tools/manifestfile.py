@@ -291,7 +291,7 @@ class ManifestFile:
     def _search(self, base_path, package_path, files, exts, kind, opt=None, strict=False):
         base_path = self._resolve_path(base_path)
 
-        if files:
+        if files is not None:
             # Use explicit list of files (relative to package_path).
             for file in files:
                 if package_path:
