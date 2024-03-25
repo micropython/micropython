@@ -418,6 +418,20 @@ static mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
                         wifi_set_sleep_type(mp_obj_get_int(kwargs->table[i].value));
                         break;
                     }
+                    case MP_QSTR_auto_connect: {
+                        wifi_station_set_auto_connect(mp_obj_is_true(kwargs->table[i].value));
+                        break;
+                    }
+                    case MP_QSTR_reconnects: {
+                        req_if = STATION_IF;
+                        if (self->if_id == STATION_IF) {
+                            int reconnects = mp_obj_get_int(kwargs->table[i].value);
+                            // parameter reconnects == -1 means to retry forever.
+                            wifi_station_set_reconnect_policy((reconnects != 0));
+                            wifi_station_dhcpc_set_maxtry((reconnects == -1) ? 255 : reconnects);
+                        }
+                        break;
+                    }
                     default:
                         goto unknown;
                 }
@@ -487,6 +501,10 @@ static mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs
         }
         case MP_QSTR_pm: {
             val = MP_OBJ_NEW_SMALL_INT(wifi_get_sleep_type());
+            break;
+        }
+        case MP_QSTR_auto_connect: {
+            val = mp_obj_new_bool(wifi_station_get_auto_connect());
             break;
         }
         default:
