@@ -156,7 +156,12 @@ typedef struct _mp_fun_table_t {
     double (*obj_get_float_to_d)(mp_obj_t o);
     bool (*get_buffer)(mp_obj_t obj, mp_buffer_info_t *bufinfo, mp_uint_t flags);
     const mp_stream_p_t *(*get_stream_raise)(mp_obj_t self_in, int flags);
+    size_t (*binary_get_size)(char struct_type, char val_type, size_t *palign);
+    mp_obj_t (*binary_get_val_array)(char typecode, void *p, size_t index);
+    void (*binary_set_val_array)(char typecode, void *p, size_t index, mp_obj_t val_in);
     const mp_print_t *plat_print;
+    // The following entries start at index 70 and are referenced by tools-mpy_ld.py,
+    // see constant MP_FUN_TABLE_MP_TYPE_TYPE_OFFSET.
     const mp_obj_type_t *type_type;
     const mp_obj_type_t *type_str;
     const mp_obj_type_t *type_list;
