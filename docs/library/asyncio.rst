@@ -277,11 +277,27 @@ TCP stream connections
 
     This is a coroutine.
 
+.. method:: Stream.awrite(buf)
+
+    Write *buf* to the stream.
+
+    This method is slightly more efficient than the usual
+    `Stream.write`-plus-`Stream.drain` combination. It ignores the output
+    buffer.
+
+    This is a coroutine, and a MicroPython extension.
+
 .. method:: Stream.write(buf)
 
-    Accumulated *buf* to the output buffer.  The data is only flushed when
-    `Stream.drain` is called.  It is recommended to call `Stream.drain` immediately
-    after calling this function.
+    Add *buf* to the output buffer.  The data is only flushed when
+    `Stream.drain` is called.  It is recommended to call `Stream.drain`
+    immediately after calling this function.
+
+    If the output buffer is empty when *write* is called, part or all of
+    *buf* might be written immediately instead of getting buffered.
+
+    If compatibility to CPython is not required, consider using `Stream.awrite`
+    instead.
 
 .. method:: Stream.drain()
 
