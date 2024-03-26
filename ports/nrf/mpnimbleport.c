@@ -61,10 +61,14 @@ void mp_bluetooth_hci_controller_init(void) {
 
     // Tell the host that we are ready to receive packets
     ble_ll_hci_send_noop();
+
+    // Start polling for date.
+    mp_bluetooth_hci_poll_now();
 }
 
 void mp_bluetooth_hci_controller_deinit(void) {
     mp_bluetooth_hci_deinit();
+
 }
 
 // The global BLE controller LL data object
@@ -91,6 +95,11 @@ void mp_bluetooth_hci_poll(void) {
 
         // Run any remaining events.
         mp_bluetooth_nimble_os_eventq_run_all();
+    }
+    if (mp_bluetooth_nimble_ble_state != MP_BLUETOOTH_NIMBLE_BLE_STATE_OFF) {
+        // Call this function again in 128ms to check for new events.
+        // TODO: improve this by only calling back when needed.
+        mp_bluetooth_hci_poll_in_ms(128);
     }
 }
 
@@ -123,6 +132,7 @@ static func nrf_ble_isr_rtc0 = NULL;
 void RADIO_IRQHandler(void) {
     if (nrf_ble_isr_phy != NULL) {
         nrf_ble_isr_phy();
+        mp_bluetooth_hci_poll_in_ms(5);
     }
 }
 

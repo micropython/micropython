@@ -30,8 +30,9 @@
 void mp_bluetooth_hci_init(void);
 void mp_bluetooth_hci_deinit(void);
 
-// Poll the HCI now.
-int32_t mp_bluetooth_hci_poll_now(void);
+// Poll the HCI now, or after a certain timeout.
+void mp_bluetooth_hci_poll_now(void);
+void mp_bluetooth_hci_poll_in_ms(uint32_t ms);
 
 // Must be provided by the stack bindings (e.g. mpnimbleport.c or mpbtstackport.c).
 // Request new HCI data and pass to the stack, and run pending events/callouts.
