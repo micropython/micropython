@@ -455,6 +455,15 @@ target_link_options(${MICROPY_TARGET} PRIVATE
     -Wl,--wrap=dcd_event_handler
 )
 
+# Apply optimisations to performance-critical source code.
+set_source_files_properties(
+    ${MICROPY_PY_DIR}/map.c
+    ${MICROPY_PY_DIR}/mpz.c
+    ${MICROPY_PY_DIR}/vm.c
+    PROPERTIES
+    COMPILE_OPTIONS "-O2"
+)
+
 set_source_files_properties(
     ${PICO_SDK_PATH}/src/rp2_common/pico_double/double_math.c
     ${PICO_SDK_PATH}/src/rp2_common/pico_float/float_math.c
