@@ -45,7 +45,7 @@ Install MSYS2 from http://repo.msys2.org/distrib, start the msys2.exe shell and
 install the build tools:
 
     pacman -Syuu
-    pacman -S make mingw-w64-x86_64-gcc pkg-config python3
+    pacman -S make mingw-w64-x86_64-gcc pkg-config mingw-w64-x86_64-python3
 
 Start the mingw64.exe shell and build:
 
