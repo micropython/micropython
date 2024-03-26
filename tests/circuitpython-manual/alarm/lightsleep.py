@@ -58,7 +58,7 @@ def show_noalarm():
 
 ## PinAlarm only needs to be set once
 pin_alarm = alarm.pin.PinAlarm(pin=wake_pin, value=False, edge=True, pull=True)  # STM32, RP2040
-# pin_alarm = alarm.pin.PinAlarm(pin=wake_pin, value=False, edge=False, pull=True)  # NRF, ESP32-S2, RP2040
+# pin_alarm = alarm.pin.PinAlarm(pin=wake_pin, value=False, edge=False, pull=True)  # Nordic, ESP32-S2, RP2040
 
 while True:
     ## TimeAlarms must be reset each time you sleep, since they use monotonic time

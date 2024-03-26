@@ -278,8 +278,8 @@ jobs:
       run: make -j4 -C ports/atmel-samd BOARD=feather_m0_express TRANSLATION=zh_Latn_pinyin
     - name: build samd51
       run: make -j4 -C ports/atmel-samd BOARD=feather_m4_express TRANSLATION=es
-    - name: build nrf
-      run: make -j4 -C ports/nrf BOARD=feather_nrf52840_express TRANSLATION=fr
+    - name: build nordic
+      run: make -j4 -C ports/nordic BOARD=feather_nrf52840_express TRANSLATION=fr
     - name: build stm
       run: make -j4 -C ports/stm BOARD=feather_stm32f405_express TRANSLATION=pt_BR
     # I gave up trying to do esp builds on windows when I saw

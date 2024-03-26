@@ -4,9 +4,10 @@ Supported Ports
 CircuitPython supports a number of microcontroller families. Support quality for each varies
 depending on the active contributors for each port.
 
-Adafruit sponsored developers are actively contributing to atmel-samd, mimxrt10xx, nrf and stm
-ports. They also maintain the other ports in order to ensure the boards build. Additional testing
-is limited.
+Adafruit sponsored developers are actively contributing to atmel-samd, mimxrt10xx, nordic,
+raspberrypi, and stm ports.
+They also maintain the other ports in order to ensure the boards build.
+Additional testing is limited.
 
 .. toctree::
     :maxdepth: 2
@@ -17,7 +18,7 @@ is limited.
     ../ports/espressif/README
     ../ports/litex/README
     ../ports/mimxrt10xx/README
-    ../ports/nrf/README
+    ../ports/nordic/README
     ../ports/raspberrypi/README
     ../ports/silabs/README
     ../ports/stm/README
