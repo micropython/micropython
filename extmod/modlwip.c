@@ -69,6 +69,8 @@
 #define IP_ADD_MEMBERSHIP 0x400
 #define IP_DROP_MEMBERSHIP 0x401
 
+#define TCP_NODELAY TF_NODELAY
+
 // For compatibilily with older lwIP versions.
 #ifndef ip_set_option
 #define ip_set_option(pcb, opt)   ((pcb)->so_options |= (opt))
@@ -742,9 +744,10 @@ static mp_uint_t lwip_tcp_send(lwip_socket_obj_t *socket, const byte *buf, mp_ui
         MICROPY_PY_LWIP_REENTER
     }
 
-    // If the output buffer is getting full then send the data to the lower layers
-    if (err == ERR_OK && tcp_sndbuf(socket->pcb.tcp) < TCP_SND_BUF / 4) {
-        err = tcp_output(socket->pcb.tcp);
+    // Use nagle algorithm to determine when to send segment buffer (can be
+    // disabled with TCP_NODELAY socket option)
+    if (err == ERR_OK) {
+        err = tcp_output_nagle(socket->pcb.tcp);
     }
 
     MICROPY_PY_LWIP_EXIT
@@ -1440,6 +1443,17 @@ static mp_obj_t lwip_socket_setsockopt(size_t n_args, const mp_obj_t *args) {
             break;
         }
 
+        // level: IPPROTO_TCP
+        case TCP_NODELAY: {
+            mp_int_t val = mp_obj_get_int(args[3]);
+            if (val) {
+                tcp_set_flags(socket->pcb.tcp, opt);
+            } else {
+                tcp_clear_flags(socket->pcb.tcp, opt);
+            }
+            break;
+        }
+
         default:
             printf("Warning: lwip.setsockopt() not implemented\n");
     }
@@ -1829,6 +1843,9 @@ static const mp_rom_map_elem_t mp_module_lwip_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_IPPROTO_IP), MP_ROM_INT(0) },
     { MP_ROM_QSTR(MP_QSTR_IP_ADD_MEMBERSHIP), MP_ROM_INT(IP_ADD_MEMBERSHIP) },
     { MP_ROM_QSTR(MP_QSTR_IP_DROP_MEMBERSHIP), MP_ROM_INT(IP_DROP_MEMBERSHIP) },
+
+    { MP_ROM_QSTR(MP_QSTR_IPPROTO_TCP), MP_ROM_INT(IP_PROTO_TCP) },
+    { MP_ROM_QSTR(MP_QSTR_TCP_NODELAY), MP_ROM_INT(TCP_NODELAY) },
 };
 
 static MP_DEFINE_CONST_DICT(mp_module_lwip_globals, mp_module_lwip_globals_table);
