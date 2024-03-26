@@ -69,7 +69,7 @@ static bool display_init(void) {
         &pin_GPIO35,    // DC
         &pin_GPIO3,     // CS
         NULL,           // RST
-        32000000,       // baudrate
+        40000000,       // baudrate
         0,              // polarity
         0               // phase
         );
