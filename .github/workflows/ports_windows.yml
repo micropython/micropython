@@ -42,6 +42,8 @@ jobs:
           configuration: Debug
         - visualstudio: '2019'
           configuration: Debug
+    env:
+      CI_BUILD_CONFIGURATION: ${{ matrix.configuration }}
     runs-on: ${{ matrix.runner }}
     steps:
     - name: Install Visual Studio 2017
