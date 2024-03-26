@@ -1207,7 +1207,7 @@ int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int l
                     if (enable) {
                         ip_set_option(self->pcb.ip, SOF_REUSEADDR);
                     } else {
-                        ip_set_option(self->pcb.ip, SOF_REUSEADDR);
+                        ip_reset_option(self->pcb.ip, SOF_REUSEADDR);
                     }
                     return 0;
                     break;
