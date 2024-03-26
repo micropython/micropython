@@ -31,6 +31,8 @@
 #if MICROPY_ENABLE_COMPILER
 
 // These low numbered qstrs should fit in 8 bits.  See assertions below.
+// The (unescaped) names appear in `unsorted_str_list` in the QSTR
+// generator script py/makeqstrdata.py to ensure they are assigned low numbers.
 static const uint8_t scope_simple_name_table[] = {
     [SCOPE_MODULE] = MP_QSTR__lt_module_gt_,
     [SCOPE_LAMBDA] = MP_QSTR__lt_lambda_gt_,
