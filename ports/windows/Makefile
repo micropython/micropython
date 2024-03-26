@@ -101,6 +101,9 @@ include $(TOP)/py/mkrules.mk
 
 .PHONY: test test_full
 
+# Note for recent gcc versions like 13.2:
+# - mingw64-x86_64 gcc builds will pass the math_domain_special test
+# - mingw64-ucrt64 gcc builds will pass all of the below tests
 RUN_TESTS_SKIP += -e math_fun -e float2int_double -e float_parse -e math_domain_special
 
 test: $(BUILD)/$(PROG) $(TOP)/tests/run-tests.py
