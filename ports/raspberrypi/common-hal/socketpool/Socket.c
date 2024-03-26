@@ -1184,8 +1184,8 @@ void common_hal_socketpool_socket_settimeout(socketpool_socket_obj_t *self, uint
 }
 
 int common_hal_socketpool_socket_setsockopt(socketpool_socket_obj_t *self, int level, int optname, const void *value, size_t optlen) {
-    int one = 1;
-    bool enable = optlen == sizeof(&one) && memcmp(value, &one, optlen);
+    int zero = 0;
+    bool enable = optlen == sizeof(&zero) && memcmp(value, &zero, optlen);
 
     switch (level) {
         case SOCKETPOOL_IPPROTO_TCP:
