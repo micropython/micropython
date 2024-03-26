@@ -10,7 +10,8 @@ mpr_connect = f"../tools/mpremote/mpremote.py connect {device}"
 mpr_file_cp = f"{mpr_connect} cp {file_location} :{remote_directory_path}"
 mpr_ls = f"{mpr_connect} fs ls /"
 mpr_rm = f"{mpr_connect} fs rm "
-mpr_reset =f"../tools/mpremote/mpremote.py reset"
+mpr_reset = f"../tools/mpremote/mpremote.py reset"
+
 
 def exec(cmd, op_file_path="null"):
     if cmd == mpr_rm:
@@ -23,14 +24,11 @@ def exec(cmd, op_file_path="null"):
         with open(op_file_path, "a") as file:
             subprocess.check_call(cmd, shell=True, stdout=file)
 
-#bistream generation
+
+# bitsream generation
 
 print("copying file to remote device")
 exec(mpr_rm, "main.py")
 exec(mpr_file_cp)
 print("Resest board")
 subprocess.run(mpr_reset, shell=True)
-
-
-
-

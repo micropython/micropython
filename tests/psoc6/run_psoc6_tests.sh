@@ -452,7 +452,7 @@ if [ ${bitstream} -eq 1 ]; then
 
   ./run-tests.py --target psoc6 --device ${device1} \
       \
-      psoc6/bitstream_listen.py \
+      psoc6/bitstream/bitstream_listen.py \
     |tee -a ${resultsFile}
 
 fi
