@@ -2,9 +2,9 @@ MicroPython port to STM32 MCUs
 ==============================
 
 This directory contains the port of MicroPython to ST's line of STM32
-microcontrollers.  Supported MCU series are: STM32F0, STM32F4, STM32F7,
-STM32H7, STM32L0, STM32L4 and STM32WB.  Parts of the code here utilise the
-STM32Cube HAL library.
+microcontrollers.  Supported MCU series are: STM32F0, STM32F4, STM32F7, STM32G0,
+STM32G4, STM32H5, STM32H7, STM32L0, STM32L1, STM32L4, STM32WL and STM32WB.
+Parts of the code here utilise the STM32Cube HAL library.
 
 The officially supported boards are the line of pyboards: PYBv1.0 and PYBv1.1
 (both with STM32F405), PYBLITEv1.0 (with STM32F411) and PYBD-SFx (with
@@ -15,12 +15,6 @@ details.
 Other boards that are supported include ST Discovery and Nucleo boards.
 See the boards/ subdirectory, which contains the configuration files used
 to build each individual board.
-
-The STM32H7 series has preliminary support: there is a working REPL via
-USB and UART, as well as very basic peripheral support, but some things do
-not work and none of the advanced features of the STM32H7 are yet supported,
-such as the clock tree.  At this point the STM32H7 should be considered as a
-fast version of the STM32F7.
 
 Build instructions
 ------------------
