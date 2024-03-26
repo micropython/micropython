@@ -3,8 +3,10 @@
     - sn: 072002F302098400
       hw_ext: 0.1.0
     - sn: 1C14031D03201400
+      hw_ext: 0.2.0
 - board_type: CY8CPROTO-063-BLE
   board_list:
     - sn: 100D0F1400052400
+      hw_ext: 0.2.0
     - sn: 03180F1400052400
       hw_ext: 0.1.0

@@ -446,11 +446,11 @@ if [ ${bitstream} -eq 1 ]; then
 
   chmod 777 ./psoc6/test_scripts/bit.py
 
-  python3 ./psoc6/test_scripts/bit.py ${device0} 0
+  python3 ./psoc6/test_scripts/bit.py ${device1} 0
 
   echo " running bitstream listen.."
 
-  ./run-tests.py --target psoc6 --device ${device1} \
+  ./run-tests.py --target psoc6 --device ${device0} \
       \
       psoc6/bitstream/bitstream_listen.py \
     |tee -a ${resultsFile}
