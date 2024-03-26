@@ -304,7 +304,11 @@ void port_interrupt_after_ticks(uint32_t ticks) {
 
 void port_idle_until_interrupt(void) {
     common_hal_mcu_disable_interrupts();
+    #if CIRCUITPY_USB_HOST
     if (!background_callback_pending() && !tud_task_event_ready() && !tuh_task_event_ready() && !_woken_up) {
+    #else
+    if (!background_callback_pending() && !tud_task_event_ready() && !_woken_up) {
+        #endif
         __DSB();
         __WFI();
     }
