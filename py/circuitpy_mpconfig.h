@@ -26,7 +26,7 @@
 
 // This file contains settings that are common across CircuitPython ports, to make
 // sure that the same feature set and settings are used, such as in atmel-samd
-// and nrf.
+// and nordic.
 
 #ifndef __INCLUDED_MPCONFIG_CIRCUITPY_H
 #define __INCLUDED_MPCONFIG_CIRCUITPY_H

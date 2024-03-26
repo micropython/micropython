@@ -252,6 +252,9 @@ endif
 ifeq ($(CIRCUITPY_KEYPAD),1)
 SRC_PATTERNS += keypad/%
 endif
+ifeq ($(CIRCUITPY_KEYPAD_DEMUX),1)
+SRC_PATTERNS += keypad_demux/%
+endif
 ifeq ($(CIRCUITPY_LOCALE),1)
 SRC_PATTERNS += locale/%
 endif
@@ -737,6 +740,12 @@ SRC_SHARED_MODULE_ALL += \
 	ssl/__init__.c \
 	ssl/SSLContext.c \
 	ssl/SSLSocket.c
+endif
+
+ifeq ($(CIRCUITPY_KEYPAD_DEMUX),1)
+SRC_SHARED_MODULE_ALL += \
+	keypad_demux/__init__.c \
+	keypad_demux/DemuxKeyMatrix.c
 endif
 
 # If supporting _bleio via HCI, make devices/ble_hci/common-hal/_bleio be includable,
