@@ -44,7 +44,7 @@ static keypad_scanner_funcs_t shiftregisterkeys_funcs = {
     .get_key_count = shiftregisterkeys_get_key_count,
 };
 
-void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, const mcu_pin_obj_t *clock_pin, mp_uint_t num_data_pins, const mcu_pin_obj_t *data_pins[], const mcu_pin_obj_t *latch_pin, bool value_to_latch, mp_uint_t num_key_counts, size_t key_counts[], bool value_when_pressed, mp_float_t interval, size_t max_events) {
+void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_t *self, const mcu_pin_obj_t *clock_pin, mp_uint_t num_data_pins, const mcu_pin_obj_t *data_pins[], const mcu_pin_obj_t *latch_pin, bool value_to_latch, mp_uint_t num_key_counts, size_t key_counts[], bool value_when_pressed, mp_float_t interval, size_t max_events, uint8_t debounce_threshold) {
 
     digitalio_digitalinout_obj_t *clock =
         mp_obj_malloc(digitalio_digitalinout_obj_t, &digitalio_digitalinout_type);
@@ -94,7 +94,7 @@ void common_hal_keypad_shiftregisterkeys_construct(keypad_shiftregisterkeys_obj_
     self->value_when_pressed = value_when_pressed;
     self->funcs = &shiftregisterkeys_funcs;
 
-    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events);
+    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events, debounce_threshold);
 }
 
 void common_hal_keypad_shiftregisterkeys_deinit(keypad_shiftregisterkeys_obj_t *self) {
@@ -143,7 +143,7 @@ static void shiftregisterkeys_scan_now(void *self_in, mp_obj_t timestamp) {
     for (mp_uint_t scan_number = 0; scan_number < self->max_key_count; scan_number++) {
         common_hal_digitalio_digitalinout_set_value(self->clock, false);
 
-        // Zero-th data appears on on the data pin immediately, without shifting.
+        // Zero-th data appears on the data pin immediately, without shifting.
 
         // Loop through all the data pins that share the latch
         mp_uint_t index = 0;
@@ -157,17 +157,13 @@ static void shiftregisterkeys_scan_now(void *self_in, mp_obj_t timestamp) {
 
             mp_uint_t key_number = scan_number + index;
 
-            // Remember the previous up/down state.
-            const bool previous = self->currently_pressed[key_number];
-            self->previously_pressed[key_number] = previous;
-
+            // Get the current state.
             // Get the current state.
             const bool current =
                 common_hal_digitalio_digitalinout_get_value(self->data_pins->items[i]) == self->value_when_pressed;
-            self->currently_pressed[key_number] = current;
 
             // Record any transitions.
-            if (previous != current) {
+            if (keypad_debounce((keypad_scanner_obj_t *)self, key_number, current)) {
                 keypad_eventqueue_record(self->events, key_number, current, timestamp);
             }
 

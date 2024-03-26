@@ -49,7 +49,7 @@ static mp_uint_t row_column_to_key_number(keypad_demux_demuxkeymatrix_obj_t *sel
     return row * self->column_digitalinouts->len + column;
 }
 
-void common_hal_keypad_demux_demuxkeymatrix_construct(keypad_demux_demuxkeymatrix_obj_t *self, mp_uint_t num_row_addr_pins, const mcu_pin_obj_t *row_addr_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], mp_float_t interval, size_t max_events) {
+void common_hal_keypad_demux_demuxkeymatrix_construct(keypad_demux_demuxkeymatrix_obj_t *self, mp_uint_t num_row_addr_pins, const mcu_pin_obj_t *row_addr_pins[], mp_uint_t num_column_pins, const mcu_pin_obj_t *column_pins[], mp_float_t interval, size_t max_events, uint8_t debounce_threshold) {
 
     mp_obj_t row_addr_dios[num_row_addr_pins];
     for (size_t row = 0; row < num_row_addr_pins; row++) {
@@ -72,13 +72,9 @@ void common_hal_keypad_demux_demuxkeymatrix_construct(keypad_demux_demuxkeymatri
     }
     self->column_digitalinouts = mp_obj_new_tuple(num_column_pins, column_dios);
 
-    size_t num_rows = 1 << num_row_addr_pins;
-    self->currently_pressed = (bool *)m_malloc(sizeof(bool) * num_rows * num_column_pins);
-    self->previously_pressed = (bool *)m_malloc(sizeof(bool) * num_rows * num_column_pins);
-
     self->funcs = &keymatrix_funcs;
 
-    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events);
+    keypad_construct_common((keypad_scanner_obj_t *)self, interval, max_events, debounce_threshold);
 }
 
 void common_hal_keypad_demux_demuxkeymatrix_deinit(keypad_demux_demuxkeymatrix_obj_t *self) {
@@ -138,16 +134,13 @@ static void demuxkeymatrix_scan_now(void *self_in, mp_obj_t timestamp) {
 
         for (size_t column = 0; column < common_hal_keypad_demux_demuxkeymatrix_get_column_count(self); column++) {
             mp_uint_t key_number = row_column_to_key_number(self, row, column);
-            const bool previous = self->currently_pressed[key_number];
-            self->previously_pressed[key_number] = previous;
 
             // Get the current state, by reading whether the column got pulled to the row value or not.
             // If low, the key is pressed.
             const bool current = !common_hal_digitalio_digitalinout_get_value(self->column_digitalinouts->items[column]);
-            self->currently_pressed[key_number] = current;
 
             // Record any transitions.
-            if (previous != current) {
+            if (keypad_debounce((keypad_scanner_obj_t *)self, key_number, current)) {
                 keypad_eventqueue_record(self->events, key_number, current, timestamp);
             }
         }
