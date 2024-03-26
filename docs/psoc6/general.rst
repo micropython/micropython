@@ -39,7 +39,7 @@ Pinout
 ******
 
     .. image:: img/CY8CPROTO-062-4343W-pinout.png
-        :width: 550
+        :width: 500
 
     
 Technical specifications
@@ -56,7 +56,7 @@ Pinout
 ******
 
     .. image:: img/CY8PROTO-063-BLE-pinout.png
-        :width: 300
+        :width: 350
 
 
 Technical specifications
