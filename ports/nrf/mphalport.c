@@ -38,6 +38,8 @@
 #include "nrfx_config.h"
 #include "drivers/bluetooth/ble_uart.h"
 #include "shared/tinyusb/mp_usbd_cdc.h"
+#include "pendsv.h"
+#include "shared/runtime/softtimer.h"
 
 #if MICROPY_PY_TIME_TICKS
 #include "nrfx_rtc.h"
@@ -61,6 +63,16 @@
 static uint8_t stdin_ringbuf_array[MICROPY_HW_STDIN_BUFFER_LEN];
 ringbuf_t stdin_ringbuf = { stdin_ringbuf_array, sizeof(stdin_ringbuf_array), 0, 0 };
 
+volatile uint32_t uwTick = 0;
+
+void SysTick_Handler(void) {
+    uint32_t next_tick = uwTick + 1;
+    uwTick = next_tick;
+
+    if (soft_timer_next == next_tick) {
+        pendsv_schedule_dispatch(PENDSV_DISPATCH_SOFT_TIMER, soft_timer_handler);
+    }
+}
 
 void mp_nrf_start_lfclk(void) {
     if (!nrf_clock_lf_start_task_status_get(NRF_CLOCK)) {

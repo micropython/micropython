@@ -41,6 +41,7 @@
 #include "py/compile.h"
 #include "extmod/modmachine.h"
 #include "shared/runtime/pyexec.h"
+#include "shared/runtime/softtimer.h"
 #include "readline.h"
 #include "gccollect.h"
 #include "modmachine.h"
@@ -54,6 +55,7 @@
 #include "i2c.h"
 #include "adc.h"
 #include "rtcounter.h"
+#include "pendsv.h"
 
 #if MICROPY_PY_BLUETOOTH
 #include "extmod/modbluetooth.h"
@@ -122,6 +124,8 @@ void NORETURN _start(void) {
     MICROPY_BOARD_EARLY_INIT();
 
 soft_reset:
+
+    pendsv_init();
 
     #if MICROPY_PY_TIME_TICKS
     rtc1_init_time_ticks();
@@ -309,6 +313,7 @@ soft_reset:
     mp_bluetooth_deinit();
     #endif
 
+    soft_timer_deinit();
     mp_deinit();
 
     printf("MPY: soft reboot\n");

@@ -199,6 +199,7 @@ SRC_SHARED_C += $(addprefix shared/,\
 	readline/readline.c \
 	runtime/mpirq.c \
 	runtime/pyexec.c \
+	runtime/softtimer.c \
 	runtime/stdout_helpers.c \
 	runtime/sys_stdio_mphal.c \
 	runtime/interrupt_char.c \
@@ -240,6 +241,7 @@ SRC_NRFX += $(addprefix lib/nrfx/drivers/src/,\
 SRC_C += \
 	main.c \
 	mphalport.c \
+	pendsv.c \
 	help.c \
 	gccollect.c \
 	pin_named_pins.c \
