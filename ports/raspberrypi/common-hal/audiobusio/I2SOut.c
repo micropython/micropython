@@ -83,7 +83,7 @@ const uint16_t i2s_program_left_justified[] = {
     0x6201,
 //     jmp y-- bitloop1  side 0b01 [2]
     0x0a83,
-//     out pins 1        side 0b10 [2]
+//     out pins 1        side 0b00 [2]
     0x6201,
 //     set y 14          side 0b01 [2]
     0xea4e,
@@ -96,6 +96,67 @@ const uint16_t i2s_program_left_justified[] = {
     0x7201
 };
 
+// Another version of i2s_program with the LRCLC and BCLK pin swapped
+const uint16_t i2s_program_swap[] = {
+// ; Load the next set of samples
+//                     ;        /--- BCLK
+//                     ;        |/-- LRCLK
+//                     ;        ||
+//     pull noblock      side 0b11 ; Loads OSR with the next FIFO value or X
+    0x9880,
+//     mov x osr         side 0b11 ; Save the new value in case we need it again
+    0xb827,
+//     set y 14          side 0b11
+    0xf84e,
+// bitloop1:
+//     out pins 1        side 0b01 [2]
+    0x6a01,
+//     jmp y-- bitloop1  side 0b11 [2]
+    0x1a83,
+//     out pins 1        side 0b00 [2]
+    0x6201,
+//     set y 14          side 0b10 [2]
+    0xf24e,
+// bitloop0:
+//     out pins 1        side 0b00 [2]
+    0x6201,
+//     jmp y-- bitloop0  side 0b10 [2]
+    0x1287,
+//     out pins 1        side 0b01 [2]
+    0x6a01
+};
+
+// Another version of i2s_program_left_justified with the LRCLC and BCLK pin
+// swapped.
+const uint16_t i2s_program_left_justified_swap[] = {
+// ; Load the next set of samples
+//                     ;        /--- BCLK
+//                     ;        |/-- LRCLK
+//                     ;        ||
+//     pull noblock      side 0b11 ; Loads OSR with the next FIFO value or X
+    0x9880,
+//     mov x osr         side 0b11 ; Save the new value in case we need it again
+    0xb827,
+//     set y 14          side 0b11
+    0xf84e,
+// bitloop1:
+//     out pins 1        side 0b00 [2]
+    0x6201,
+//     jmp y-- bitloop1  side 0b10 [2]
+    0x1283,
+//     out pins 1        side 0b00 [2]
+    0x6201,
+//     set y 14          side 0b10 [2]
+    0xf24e,
+// bitloop0:
+//     out pins 1        side 0b01 [2]
+    0x6a01,
+//     jmp y-- bitloop0  side 0b11 [2]
+    0x1a87,
+//     out pins 1        side 0b01 [2]
+    0x6a01
+};
+
 void i2sout_reset(void) {
 }
 
@@ -106,16 +167,34 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
     if (main_clock != NULL) {
         mp_raise_NotImplementedError_varg(MP_ERROR_TEXT("%q"), MP_QSTR_main_clock);
     }
-    if (bit_clock->number != word_select->number - 1) {
-        mp_raise_ValueError(MP_ERROR_TEXT("Bit clock and word select must be sequential GPIO pins"));
-    }
+    const mcu_pin_obj_t *sideset_pin = NULL;
+    const uint16_t *program = NULL;
+    size_t program_len = 0;
 
-    const uint16_t *program = i2s_program;
-    size_t program_len = sizeof(i2s_program) / sizeof(i2s_program[0]);
-    if (left_justified) {
-        program = i2s_program_left_justified;
-        program_len = sizeof(i2s_program_left_justified) / sizeof(i2s_program_left_justified[0]);
-        ;
+    if (bit_clock->number == word_select->number - 1) {
+        sideset_pin = bit_clock;
+
+        if (left_justified) {
+            program_len = sizeof(i2s_program_left_justified) / sizeof(i2s_program_left_justified[0]);
+            program = i2s_program_left_justified;
+        } else {
+            program_len = sizeof(i2s_program) / sizeof(i2s_program[0]);
+            program = i2s_program;
+        }
+
+    } else if (bit_clock->number == word_select->number + 1) {
+        sideset_pin = word_select;
+
+        if (left_justified) {
+            program_len = sizeof(i2s_program_left_justified_swap) / sizeof(i2s_program_left_justified_swap[0]);
+            program = i2s_program_left_justified_swap;
+        } else {
+            program_len = sizeof(i2s_program_swap) / sizeof(i2s_program_swap[0]);
+            program = i2s_program_swap;
+        }
+
+    } else {
+        mp_raise_ValueError(MP_ERROR_TEXT("Bit clock and word select must be sequential GPIO pins"));
     }
 
     // Use the state machine to manage pins.
@@ -129,7 +208,7 @@ void common_hal_audiobusio_i2sout_construct(audiobusio_i2sout_obj_t *self,
         NULL, 0, // in pins
         0, 0, // in pulls
         NULL, 0, 0, 0x1f, // set pins
-        bit_clock, 2, 0, 0x1f, // sideset pins
+        sideset_pin, 2, 0, 0x1f, // sideset pins
         false, // No sideset enable
         NULL, PULL_NONE, // jump pin
         0, // wait gpio pins
