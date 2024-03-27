@@ -34,6 +34,7 @@
 #include <string.h>
 
 #include "py/runtime.h"
+#include "py/parsenum.h"
 #include "py/mperrno.h"
 #include "shared/netutils/netutils.h"
 #include "modnetwork.h"
@@ -42,7 +43,7 @@
 #include "esp_netif.h"
 #include "esp_wifi.h"
 #include "lwip/sockets.h"
-// #include "lwip/dns.h"
+#include "lwip/dns.h"
 
 NORETURN void esp_exceptions_helper(esp_err_t e) {
     switch (e) {
@@ -153,6 +154,175 @@ static mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {
     }
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_network_ifconfig_obj, 1, 2, esp_ifconfig);
+
+static mp_obj_t esp_network_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[0])) {
+            case MP_QSTR_dns: {
+                char addr_str[IPADDR_STRLEN_MAX];
+                ipaddr_ntoa_r(dns_getserver(0), addr_str, sizeof(addr_str));
+                return mp_obj_new_str(addr_str, strlen(addr_str));
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+    } else {
+        // Set config value(s)
+        if (n_args != 0) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dns: {
+                        ip_addr_t dns;
+                        size_t addr_len;
+                        const char *addr_str = mp_obj_str_get_data(e->value, &addr_len);
+                        if (!ipaddr_aton(addr_str, &dns)) {
+                            mp_raise_ValueError(MP_ERROR_TEXT("invalid arguments as dns server"));
+                        }
+                        dns_setserver(0, &dns);
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(esp_network_ipconfig_obj, 0, esp_network_ipconfig);
+
+static mp_obj_t esp_ipconfig(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {
+    base_if_obj_t *self = MP_OBJ_TO_PTR(args[0]);
+    esp_netif_ip_info_t info;
+    esp_netif_get_ip_info(self->netif, &info);
+
+    if (kwargs->used == 0) {
+        // Get config value
+        if (n_args != 2) {
+            mp_raise_TypeError(MP_ERROR_TEXT("must query one param"));
+        }
+
+        switch (mp_obj_str_get_qstr(args[1])) {
+            case MP_QSTR_dhcp4: {
+                if (self->if_id == ESP_IF_WIFI_STA || self->if_id == ESP_IF_ETH) {
+                    esp_netif_dhcp_status_t status;
+                    esp_exceptions(esp_netif_dhcpc_get_status(self->netif, &status));
+                    return mp_obj_new_bool(status == ESP_NETIF_DHCP_STARTED);
+                } else {
+                    mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                    break;
+                }
+            }
+            case MP_QSTR_addr4: {
+                mp_obj_t tuple[2] = {
+                    netutils_format_ipv4_addr((uint8_t *)&info.ip, NETUTILS_BIG),
+                    netutils_format_ipv4_addr((uint8_t *)&info.netmask, NETUTILS_BIG),
+                };
+                return mp_obj_new_tuple(2, tuple);
+            }
+            case MP_QSTR_gw4: {
+                return netutils_format_ipv4_addr((uint8_t *)&info.gw, NETUTILS_BIG);
+            }
+            default: {
+                mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                break;
+            }
+        }
+        return mp_const_none;
+    } else {
+        // Set config value(s)
+        if (n_args != 1) {
+            mp_raise_TypeError(MP_ERROR_TEXT("can't specify pos and kw args"));
+        }
+        int touched_ip_info = 0;
+        for (size_t i = 0; i < kwargs->alloc; ++i) {
+            if (MP_MAP_SLOT_IS_FILLED(kwargs, i)) {
+                mp_map_elem_t *e = &kwargs->table[i];
+                switch (mp_obj_str_get_qstr(e->key)) {
+                    case MP_QSTR_dhcp4: {
+                        esp_netif_dhcp_status_t status;
+                        if (self->if_id == ESP_IF_WIFI_STA || self->if_id == ESP_IF_ETH) {
+                            esp_exceptions(esp_netif_dhcpc_get_status(self->netif, &status));
+                            if (mp_obj_is_true(e->value) && status != ESP_NETIF_DHCP_STARTED) {
+                                esp_exceptions(esp_netif_dhcpc_start(self->netif));
+                            } else if (!mp_obj_is_true(e->value) && status == ESP_NETIF_DHCP_STARTED) {
+                                esp_exceptions(esp_netif_dhcpc_stop(self->netif));
+                            }
+                        } else {
+                            mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                            break;
+                        }
+                        break;
+                    }
+                    case MP_QSTR_addr4: {
+                        if (e->value != mp_const_none && mp_obj_is_str(e->value)) {
+                            size_t addr_len;
+                            const char *input_str = mp_obj_str_get_data(e->value, &addr_len);
+                            char *split = strchr(input_str, '/');
+                            if (split) {
+                                mp_obj_t prefix_obj = mp_parse_num_integer(split + 1, strlen(split + 1), 10, NULL);
+                                int prefix_bits = mp_obj_get_int(prefix_obj);
+                                uint32_t mask = -(1u << (32 - prefix_bits));
+                                uint32_t *m = (uint32_t *)&info.netmask;
+                                *m = esp_netif_htonl(mask);
+                            }
+                            netutils_parse_ipv4_addr(e->value, (void *)&info.ip, NETUTILS_BIG);
+                        } else if (e->value != mp_const_none) {
+                            mp_obj_t *items;
+                            mp_obj_get_array_fixed_n(e->value, 2, &items);
+                            netutils_parse_ipv4_addr(items[0], (void *)&info.ip, NETUTILS_BIG);
+                            netutils_parse_ipv4_addr(items[1], (void *)&info.netmask, NETUTILS_BIG);
+                        }
+                        touched_ip_info = 1;
+                        break;
+                    }
+                    case MP_QSTR_gw4: {
+                        netutils_parse_ipv4_addr(e->value, (void *)&info.gw, NETUTILS_BIG);
+                        touched_ip_info = 1;
+                        break;
+                    }
+                    default: {
+                        mp_raise_ValueError(MP_ERROR_TEXT("unexpected key"));
+                        break;
+                    }
+                }
+            }
+        }
+        if (self->if_id == ESP_IF_WIFI_STA || self->if_id == ESP_IF_ETH) {
+            if (touched_ip_info) {
+                esp_err_t e = esp_netif_dhcpc_stop(self->netif);
+                if (e != ESP_OK && e != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
+                    esp_exceptions_helper(e);
+                }
+                esp_exceptions(esp_netif_set_ip_info(self->netif, &info));
+            }
+        } else if (self->if_id == ESP_IF_WIFI_AP) {
+            esp_err_t e = esp_netif_dhcps_stop(self->netif);
+            if (e != ESP_OK && e != ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED) {
+                esp_exceptions_helper(e);
+            }
+            esp_exceptions(esp_netif_set_ip_info(self->netif, &info));
+            esp_exceptions(esp_netif_dhcps_start(self->netif));
+        }
+
+    }
+    return mp_const_none;
+}
+MP_DEFINE_CONST_FUN_OBJ_KW(esp_nic_ipconfig_obj, 1, esp_ipconfig);
 
 mp_obj_t esp_ifname(esp_netif_t *netif) {
     char ifname[NETIF_NAMESIZE + 1] = {0};
