@@ -337,9 +337,13 @@ static mp_obj_t samd_qspiflash_make_new(const mp_obj_type_t *type, size_t n_args
     // The write in progress bit should be low.
     while (read_status() & 0x01) {
     }
-    // The suspended write/erase bit should be low.
-    while (read_status2() & 0x80) {
+
+    if (!flash_device->single_status_byte) {
+        // The suspended write/erase bit should be low.
+        while (read_status2() & 0x80) {
+        }
     }
+
     run_command(QSPI_CMD_ENABLE_RESET);
     run_command(QSPI_CMD_RESET);
     // Wait 30us for the reset
