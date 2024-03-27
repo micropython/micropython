@@ -129,7 +129,10 @@ static void rtc_irq_time(nrfx_rtc_int_type_t event) {
 
 void rtc1_init_time_ticks(void) {
     // Start the low-frequency clock (if it hasn't been started already)
-    mp_nrf_start_lfclk();
+    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
+        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
+        rtc_offset_check();
+    }
     // Uninitialize first, then set overflow IRQ and first CC event
     nrfx_rtc_uninit(&rtc1);
     nrfx_rtc_init(&rtc1, &rtc_config_time_ticks, rtc_irq_time);
@@ -138,8 +141,7 @@ void rtc1_init_time_ticks(void) {
     nrfx_rtc_enable(&rtc1);
 }
 
-mp_uint_t mp_hal_ticks_ms(void) {
-    // Compute: (rtc_overflows << 24 + COUNTER) * 1000 / 32768
+uint64_t ticks_ms_64(void) {    // Compute: (rtc_overflows << 24 + COUNTER) * 1000 / 32768
     //
     // Note that COUNTER * 1000 / 32768 would overflow during calculation, so use
     // the less obvious * 125 / 4096 calculation (overflow secure).
@@ -151,7 +153,11 @@ mp_uint_t mp_hal_ticks_ms(void) {
     uint32_t counter;
     // guard against overflow irq
     RTC1_GET_TICKS_ATOMIC(rtc1, overflows, counter)
-    return (overflows << 9) * 1000 + (counter * 125 / 4096);
+    return ((uint64_t)overflows << 9) * 1000 + (counter * 125 / 4096);
+}
+
+mp_uint_t mp_hal_ticks_ms(void) {
+    return ticks_ms_64();
 }
 
 mp_uint_t mp_hal_ticks_us(void) {
