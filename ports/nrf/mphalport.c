@@ -67,6 +67,7 @@ void mp_nrf_start_lfclk(void) {
         }
         #endif
         nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
+        rtc_offset_check();
     }
 }
 
