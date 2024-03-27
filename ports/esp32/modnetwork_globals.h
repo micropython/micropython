@@ -11,6 +11,7 @@
 { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&esp_network_ppp_make_new_obj) },
 #endif
 { MP_ROM_QSTR(MP_QSTR_phy_mode), MP_ROM_PTR(&esp_network_phy_mode_obj) },
+{ MP_ROM_QSTR(MP_QSTR_ipconfig), MP_ROM_PTR(&esp_network_ipconfig_obj) },
 
 #if MICROPY_PY_NETWORK_WLAN
 { MP_ROM_QSTR(MP_QSTR_STA_IF), MP_ROM_INT(WIFI_IF_STA)},
