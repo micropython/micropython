@@ -431,11 +431,12 @@ void mp_usbd_init(void) {
 // Top-level USB device deinit.
 //
 // This variant is called from soft reset, NULLs out the USB device
-// singleton instance from MP_STATE_VM, and disconnects the port.
+// singleton instance from MP_STATE_VM, and disconnects the port if a
+// runtime device was active.
 void mp_usbd_deinit(void) {
     mp_obj_usb_device_t *usbd = MP_OBJ_TO_PTR(MP_STATE_VM(usbd));
     MP_STATE_VM(usbd) = MP_OBJ_NULL;
-    if (usbd) {
+    if (usbd && usbd->active) {
         // Disconnect if a runtime USB device was active
         mp_usbd_disconnect(usbd);
     }
