@@ -226,3 +226,8 @@ function python_index_semantics(target, index_in) {
     }
     return index;
 }
+
+async function proxy_arun(task) {
+    await task._coro;
+    task._coro = null;
+}

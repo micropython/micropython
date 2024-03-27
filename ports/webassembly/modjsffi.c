@@ -61,12 +61,26 @@ static mp_obj_t mp_jsffi_to_js(mp_obj_t arg) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_to_js_obj, mp_jsffi_to_js);
 
+EM_JS(void, arun, (uint32_t * out), {
+    const task = proxy_convert_mp_to_js_obj_jsside(out);
+    proxy_arun(task);
+});
+
+static mp_obj_t mp_jsffi_create_task(mp_obj_t arg) {
+    uint32_t out[3];
+    proxy_convert_mp_to_js_obj_cside(arg, out);
+    arun(out);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_create_task_obj, mp_jsffi_create_task);
+
 static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jsffi) },
 
     { MP_ROM_QSTR(MP_QSTR_JsProxy), MP_ROM_PTR(&mp_type_jsproxy) },
     { MP_ROM_QSTR(MP_QSTR_create_proxy), MP_ROM_PTR(&mp_jsffi_create_proxy_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_js), MP_ROM_PTR(&mp_jsffi_to_js_obj) },
+    { MP_ROM_QSTR(MP_QSTR_create_task), MP_ROM_PTR(&mp_jsffi_create_task_obj) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_jsffi_globals, mp_module_jsffi_globals_table);
 

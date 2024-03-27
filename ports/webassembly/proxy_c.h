@@ -42,6 +42,7 @@ void proxy_c_init(void);
 mp_obj_t proxy_convert_js_to_mp_obj_cside(uint32_t *value);
 void proxy_convert_mp_to_js_obj_cside(mp_obj_t obj, uint32_t *out);
 void proxy_convert_mp_to_js_exc_cside(void *exc, uint32_t *out);
+void proxy_arun(uint32_t *value);
 
 mp_obj_t mp_obj_new_jsproxy(int ref);
 void mp_obj_jsproxy_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest);
