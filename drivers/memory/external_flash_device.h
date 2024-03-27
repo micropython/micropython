@@ -442,6 +442,23 @@ typedef struct {
         .single_status_byte = false, \
 }
 
+// Settings for the ISSI devices
+#define IS25LPWP064D { \
+        .total_size = (1 << 23), /* 8 MiB */ \
+        .start_up_time_us = 5000, \
+        .manufacturer_id = 0x9D, \
+        .memory_type = 0x60, \
+        .capacity = 0x17, \
+        .max_clock_speed_mhz = 80, \
+        .quad_enable_bit_mask = 0x40, \
+        .has_sector_protection = false, \
+        .supports_fast_read = true, \
+        .supports_qspi = true, \
+        .supports_qspi_writes = true, \
+        .write_status_register_split = false, \
+        .single_status_byte = true, \
+}
+
 // Settings for a GENERIC device with the most common setting
 #define GENERIC { \
         .total_size = (1 << 21), /* 2 MiB */ \
