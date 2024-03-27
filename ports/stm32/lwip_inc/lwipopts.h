@@ -1,7 +1,7 @@
 #ifndef MICROPY_INCLUDED_STM32_LWIP_LWIPOPTS_H
 #define MICROPY_INCLUDED_STM32_LWIP_LWIPOPTS_H
 
-#include <stdint.h>
+#include "py/mpconfig.h"
 
 // This protection is not needed, instead we execute all lwIP code at PendSV priority
 #define SYS_ARCH_DECL_PROTECT(lev) do { } while (0)
@@ -35,6 +35,12 @@
 #define LWIP_DNS_SUPPORT_MDNS_QUERIES   1
 #define LWIP_MDNS_RESPONDER             1
 #define LWIP_IGMP                       1
+
+#if MICROPY_PY_LWIP_PPP
+#define PPP_SUPPORT                     1
+#define PAP_SUPPORT                     1
+#define CHAP_SUPPORT                    1
+#endif
 
 #define LWIP_NUM_NETIF_CLIENT_DATA      LWIP_MDNS_RESPONDER
 #define MEMP_NUM_UDP_PCB                (4 + LWIP_MDNS_RESPONDER)
@@ -76,5 +82,8 @@ extern uint32_t rng_get(void);
 #endif
 
 typedef uint32_t sys_prot_t;
+
+// Needed for PPP.
+#define sys_jiffies sys_now
 
 #endif // MICROPY_INCLUDED_STM32_LWIP_LWIPOPTS_H
