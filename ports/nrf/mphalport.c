@@ -129,10 +129,7 @@ static void rtc_irq_time(nrfx_rtc_int_type_t event) {
 
 void rtc1_init_time_ticks(void) {
     // Start the low-frequency clock (if it hasn't been started already)
-    if (!nrf_clock_lf_is_running(NRF_CLOCK)) {
-        nrf_clock_task_trigger(NRF_CLOCK, NRF_CLOCK_TASK_LFCLKSTART);
-        rtc_offset_check();
-    }
+    mp_nrf_start_lfclk();
     // Uninitialize first, then set overflow IRQ and first CC event
     nrfx_rtc_uninit(&rtc1);
     nrfx_rtc_init(&rtc1, &rtc_config_time_ticks, rtc_irq_time);
