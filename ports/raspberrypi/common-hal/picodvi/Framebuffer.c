@@ -143,15 +143,15 @@ void common_hal_picodvi_framebuffer_construct(picodvi_framebuffer_obj_t *self,
 
     bool color_framebuffer = color_depth >= 8;
     const struct dvi_timing *timing = NULL;
-    if ((width == 640 && height == 240)) {
-        timing = &dvi_timing_640x480p_60hz;
-    } else if ((width == 800 && height == 240)) {
-        timing = &dvi_timing_800x480p_60hz;
-    } else if ((width == 640 && height == 480) ||
-               (width == 320 && height == 240)) {
+    if ((width == 640 && height == 480) ||
+        (width == 320 && height == 240) ||
+        (width == 640 && height == 240)
+        ) {
         timing = &dvi_timing_640x480p_60hz;
     } else if ((width == 800 && height == 480) ||
-               (width == 400 && height == 240)) {
+               (width == 400 && height == 240) ||
+               (width == 800 && height == 240) ||
+               ) {
         timing = &dvi_timing_800x480p_60hz;
     } else {
         if (height != 480 && height != 240) {
