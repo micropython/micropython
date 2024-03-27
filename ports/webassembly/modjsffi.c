@@ -61,12 +61,47 @@ static mp_obj_t mp_jsffi_to_js(mp_obj_t arg) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_to_js_obj, mp_jsffi_to_js);
 
+// *FORMAT-OFF*
+EM_JS(void, create_task, (uint32_t * out), {
+    const task = proxy_convert_mp_to_js_obj_jsside(out);
+    queueMicrotask(() =>
+        Promise.resolve(task._coro).then(() => {
+            task._coro = null;
+        })
+    );
+});
+// *FORMAT-ON*
+
+static mp_obj_t mp_jsffi_create_task(mp_obj_t arg) {
+    uint32_t out[3];
+    proxy_convert_mp_to_js_obj_cside(arg, out);
+    create_task(out);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_create_task_obj, mp_jsffi_create_task);
+
+// *FORMAT-OFF*
+EM_JS(void, promise_with_timeout_ms, (double ms, uint32_t * out), {
+    const ret = new Promise((resolve) => setTimeout(resolve, ms));
+    proxy_convert_js_to_mp_obj_jsside(ret, out);
+});
+// *FORMAT-ON*
+
+static mp_obj_t mp_jsffi_async_timeout(mp_obj_t arg) {
+    uint32_t out[3];
+    promise_with_timeout_ms(mp_obj_get_float_to_d(arg) * 1000.0, out);
+    return proxy_convert_js_to_mp_obj_cside(out);
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(mp_jsffi_async_timeout_obj, mp_jsffi_async_timeout);
+
 static const mp_rom_map_elem_t mp_module_jsffi_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_jsffi) },
 
     { MP_ROM_QSTR(MP_QSTR_JsProxy), MP_ROM_PTR(&mp_type_jsproxy) },
     { MP_ROM_QSTR(MP_QSTR_create_proxy), MP_ROM_PTR(&mp_jsffi_create_proxy_obj) },
     { MP_ROM_QSTR(MP_QSTR_to_js), MP_ROM_PTR(&mp_jsffi_to_js_obj) },
+    { MP_ROM_QSTR(MP_QSTR_create_task), MP_ROM_PTR(&mp_jsffi_create_task_obj) },
+    { MP_ROM_QSTR(MP_QSTR_async_timeout), MP_ROM_PTR(&mp_jsffi_async_timeout_obj) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_jsffi_globals, mp_module_jsffi_globals_table);
 

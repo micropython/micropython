@@ -1,3 +1,5 @@
+module("asyncio.py", base_path="$(PORT_DIR)")
+
 require("abc")
 require("base64")
 require("collections")
