@@ -312,19 +312,15 @@ int i2c_init(i2c_t *i2c, mp_hal_pin_obj_t scl, mp_hal_pin_obj_t sda, uint32_t fr
     // Enable I2C peripheral clock
     volatile uint32_t tmp;
     (void)tmp;
-    switch (i2c_id) {
-        case 0:
-        case 1:
-        case 2:
-            RCC->APB1ENR |= RCC_APB1ENR_I2C1EN << i2c_id;
-            tmp = RCC->APB1ENR; // delay after RCC clock enable
-            break;
-        #if defined(STM32H7)
-        case 3:
-            RCC->APB4ENR |= RCC_APB4ENR_I2C4EN;
-            tmp = RCC->APB4ENR; // delay after RCC clock enable
-            break;
-        #endif
+    #if defined(STM32H7)
+    if (i2c_id == 3) {
+        RCC->APB4ENR |= RCC_APB4ENR_I2C4EN;
+        tmp = RCC->APB4ENR; // delay after RCC clock enable
+    } else
+    #endif
+    {
+        RCC->APB1ENR |= RCC_APB1ENR_I2C1EN << i2c_id;
+        tmp = RCC->APB1ENR; // delay after RCC clock enable
     }
 
     // Initialise I2C peripheral
