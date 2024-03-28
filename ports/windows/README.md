@@ -69,6 +69,7 @@ In the IDE, open `micropython-cross.vcxproj` and `micropython.vcxproj` and build
 To build from the command line:
 
     msbuild ../../mpy-cross/mpy-cross.vcxproj
+    msbuild micropython.vcxproj /t:UpdateSubmodules
     msbuild micropython.vcxproj
 
 __Variants__

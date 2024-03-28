@@ -700,6 +700,11 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
     # Some tests use unsupported features on Windows
     if os.name == "nt":
         skip_tests.add("import/import_file.py")  # works but CPython prints forward slashes
+        # Socket + select is not implemented.
+        skip_tests.add("extmod/select_ipoll.py")
+        skip_tests.add("extmod/select_poll_basic.py")
+        skip_tests.add("extmod/select_poll_custom.py")
+        skip_tests.add("extmod/select_poll_udp.py")
 
     # Some tests are known to fail with native emitter
     # Remove them from the below when they work
