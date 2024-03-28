@@ -39,6 +39,8 @@
 #define PROTOCOL_TLS_CLIENT (0)
 #define PROTOCOL_TLS_SERVER (1)
 
+#define CERT_NONE (0)
+
 // This corresponds to an SSLContext object.
 typedef struct _mp_obj_ssl_context_t {
     mp_obj_base_t base;
@@ -155,6 +157,25 @@ static mp_obj_t ssl_context_make_new(const mp_obj_type_t *type_in, size_t n_args
     return MP_OBJ_FROM_PTR(self);
 }
 
+static void ssl_context_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
+    if (dest[0] == MP_OBJ_NULL) {
+        // Load attribute.
+        if (attr == MP_QSTR_verify_mode) {
+            // CERT_NONE is the only supported verify_mode value.
+            dest[0] = MP_OBJ_NEW_SMALL_INT(CERT_NONE);
+        } else {
+            // Continue lookup in locals_dict.
+            dest[1] = MP_OBJ_SENTINEL;
+        }
+    } else if (dest[1] != MP_OBJ_NULL) {
+        // Store attribute.
+        if (attr == MP_QSTR_verify_mode) {
+            // CERT_NONE is the only supported verify_mode value, so no need to store anything.
+            dest[0] = MP_OBJ_NULL;
+        }
+    }
+}
+
 static void ssl_context_load_key(mp_obj_ssl_context_t *self, mp_obj_t key_obj, mp_obj_t cert_obj) {
     self->key = key_obj;
     self->cert = cert_obj;
@@ -199,6 +220,7 @@ static MP_DEFINE_CONST_OBJ_TYPE(
     MP_QSTR_SSLContext,
     MP_TYPE_FLAG_NONE,
     make_new, ssl_context_make_new,
+    attr, ssl_context_attr,
     locals_dict, &ssl_context_locals_dict
     );
 
@@ -429,6 +451,7 @@ static const mp_rom_map_elem_t mp_module_tls_globals_table[] = {
     // Constants.
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_CLIENT), MP_ROM_INT(PROTOCOL_TLS_CLIENT) },
     { MP_ROM_QSTR(MP_QSTR_PROTOCOL_TLS_SERVER), MP_ROM_INT(PROTOCOL_TLS_SERVER) },
+    { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(CERT_NONE) },
 };
 static MP_DEFINE_CONST_DICT(mp_module_tls_globals, mp_module_tls_globals_table);
 
