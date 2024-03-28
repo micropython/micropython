@@ -44,7 +44,7 @@
 #include "modesp32.h"
 #include "genhdr/pins.h"
 
-#if CONFIG_IDF_TARGET_ESP32C3
+#if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
 #include "soc/usb_serial_jtag_reg.h"
 #endif
 
@@ -153,13 +153,13 @@ static mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_
     // reset the pin to digital if this is a mode-setting init (grab it back from ADC)
     if (args[ARG_mode].u_obj != mp_const_none) {
         if (rtc_gpio_is_valid_gpio(index)) {
-            #if !CONFIG_IDF_TARGET_ESP32C3
+            #if !(CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6)
             rtc_gpio_deinit(index);
             #endif
         }
     }
 
-    #if CONFIG_IDF_TARGET_ESP32C3
+    #if CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
     if (index == 18 || index == 19) {
         CLEAR_PERI_REG_MASK(USB_SERIAL_JTAG_CONF0_REG, USB_SERIAL_JTAG_USB_PAD_ENABLE);
     }

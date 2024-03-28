@@ -108,7 +108,7 @@ track of the code size of the core runtime and VM.
 
 In addition, the following ports are provided in this repository:
  - [cc3200](ports/cc3200) -- Texas Instruments CC3200 (including PyCom WiPy).
- - [esp32](ports/esp32) -- Espressif ESP32 SoC (including ESP32S2, ESP32S3, ESP32C3).
+ - [esp32](ports/esp32) -- Espressif ESP32 SoC (including ESP32S2, ESP32S3, ESP32C3, ESP32C6).
  - [esp8266](ports/esp8266) -- Espressif ESP8266 SoC.
  - [mimxrt](ports/mimxrt) -- NXP m.iMX RT (including Teensy 4.x).
  - [nrf](ports/nrf) -- Nordic Semiconductor nRF51 and nRF52.

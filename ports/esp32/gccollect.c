@@ -61,7 +61,7 @@ void gc_collect(void) {
     gc_collect_end();
 }
 
-#elif CONFIG_IDF_TARGET_ESP32C3
+#elif CONFIG_IDF_TARGET_ESP32C3 || CONFIG_IDF_TARGET_ESP32C6
 
 #include "shared/runtime/gchelper.h"
 

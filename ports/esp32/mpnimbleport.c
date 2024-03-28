@@ -32,7 +32,7 @@
 
 #define DEBUG_printf(...) // printf("nimble (esp32): " __VA_ARGS__)
 
-#include "esp_nimble_hci.h"
+// #include "esp_nimble_hci.h"
 #include "nimble/nimble_port.h"
 #include "nimble/nimble_port_freertos.h"
 
@@ -46,13 +46,14 @@ static void ble_host_task(void *param) {
 
 void mp_bluetooth_nimble_port_hci_init(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_init\n");
-    esp_nimble_hci_init();
+    // nimble_port_init();
+    // esp_nimble_hci_init();
 }
 
 void mp_bluetooth_nimble_port_hci_deinit(void) {
     DEBUG_printf("mp_bluetooth_nimble_port_hci_deinit\n");
-
-    esp_nimble_hci_deinit();
+    // nimble_port_deinit();
+    // esp_nimble_hci_deinit();
 }
 
 void mp_bluetooth_nimble_port_start(void) {
