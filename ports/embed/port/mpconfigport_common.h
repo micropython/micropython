@@ -40,3 +40,13 @@ typedef long mp_off_t;
 #endif
 
 #define MICROPY_MPHALPORT_H "port/mphalport.h"
+
+// Default implementation for applications that want output to go to the system
+// printf(). If you don't, or don't have printf() available, or use
+// shared/libc/printf.c (MICROPY_USE_INTERNAL_PRINTF) which would be a circular
+// definition, #undef this and implement mp_hal_stdout_tx_strn_cooked().
+#define MP_PLAT_PRINT_STRN(str, len) \
+    do { \
+        extern int printf(const char *fmt, ...); \
+        printf("%.*s", (int)len, str); \
+    } while (0)
