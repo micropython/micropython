@@ -135,6 +135,11 @@ uint32_t trng_random_u32(void);
 #define MICROPY_PY_HASHLIB_SHA1             (MICROPY_PY_SSL)
 #define MICROPY_PY_CRYPTOLIB                (MICROPY_PY_SSL)
 
+#ifndef MICROPY_PY_THREAD
+#define MICROPY_PY_THREAD (1)
+#endif
+
+
 #ifndef MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE
 #define MICROPY_PY_BLUETOOTH_ENABLE_CENTRAL_MODE (1)
 #endif
@@ -185,6 +190,24 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
 
 #define MP_STATE_PORT MP_STATE_VM
 
+#if MICROPY_PY_THREAD
+
+#define MICROPY_EVENT_POLL_HOOK \
+    do { \
+        extern void mp_handle_pending(bool); \
+        mp_handle_pending(true); \
+        if (pyb_thread_enabled) { \
+            MP_THREAD_GIL_EXIT(); \
+            pyb_thread_yield(); \
+            MP_THREAD_GIL_ENTER(); \
+        } else { \
+            __WFE(); \
+        } \
+    } while (0);
+
+#define MICROPY_THREAD_YIELD() pyb_thread_yield()
+
+#else
 // Miscellaneous settings
 #ifndef  MICROPY_EVENT_POLL_HOOK
 #define MICROPY_EVENT_POLL_HOOK \
@@ -193,6 +216,10 @@ extern const struct _mp_obj_type_t mp_network_cyw43_type;
         mp_handle_pending(true); \
         __WFE(); \
     } while (0);
+#endif
+
+#define MICROPY_THREAD_YIELD()
+
 #endif
 
 #define MICROPY_MAKE_POINTER_CALLABLE(p) ((void *)((mp_uint_t)(p) | 1))
