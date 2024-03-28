@@ -35,6 +35,7 @@ endif
 ifneq ($(BAUD),)
 BAUD_ARG := -b $(BAUD)
 endif
+DEVICE += $(PORT_ARG) $(BAUD_ARG)
 
 PYTHON ?= python3
 
@@ -63,7 +64,7 @@ endif
 HELP_BUILD_ERROR ?= "See \033[1;31mhttps://github.com/micropython/micropython/wiki/Build-Troubleshooting\033[0m"
 
 define RUN_IDF_PY
-	idf.py $(IDFPY_FLAGS) -B $(BUILD) $(PORT_ARG) $(BAUD_ARG) $(1)
+	idf.py $(IDFPY_FLAGS) -B $(BUILD) $(1)
 endef
 
 all:
@@ -82,13 +83,13 @@ clean:
 	$(call RUN_IDF_PY,fullclean)
 
 deploy:
-	$(call RUN_IDF_PY,flash)
+	$(call RUN_IDF_PY,$(DEVICE) flash)
 
 erase:
-	$(call RUN_IDF_PY,erase-flash)
+	$(call RUN_IDF_PY,$(DEVICE) erase-flash)
 
 monitor:
-	$(call RUN_IDF_PY,monitor)
+	$(call RUN_IDF_PY,$(DEVICE) monitor)
 
 size:
 	$(call RUN_IDF_PY,size)
