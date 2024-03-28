@@ -74,6 +74,7 @@ void rtc1_init_time_ticks();
 mp_uint_t mp_hal_ticks_ms(void);
 #define mp_hal_ticks_us() (0)
 #endif
+extern void rtc_offset_check(void);
 
 // TODO: empty implementation for now. Used by machine_spi.c:69
 #define mp_hal_delay_us_fast(p)
