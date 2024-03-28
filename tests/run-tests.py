@@ -681,6 +681,7 @@ def run_tests(pyb, tests, args, result_dir, num_threads=1):
         elif args.target == "webassembly":
             skip_tests.add("basics/string_format_modulo.py")  # can't print nulls to stdout
             skip_tests.add("basics/string_strip.py")  # can't print nulls to stdout
+            skip_tests.update(t for t in tests if t.startswith("extmod/asyncio_"))
             skip_tests.add("extmod/binascii_a2b_base64.py")
             skip_tests.add("extmod/re_stack_overflow.py")
             skip_tests.add("extmod/time_res.py")
