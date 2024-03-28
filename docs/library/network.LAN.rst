@@ -10,7 +10,7 @@ Example usage::
 
     import network
     nic = network.LAN(0)
-    print(nic.ifconfig())
+    print(nic.ifconfig("addr4"))
 
     # now use socket as usual
     ...

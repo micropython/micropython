@@ -24,7 +24,7 @@ For example::
         print("Waiting for connection...")
         while not nic.isconnected():
             time.sleep(1)
-    print(nic.ifconfig())
+    print(nic.ipconfig("addr4"))
 
     # now use socket as usual
     import socket
@@ -113,8 +113,46 @@ parameter should be `id`.
          connected to the AP.  The list contains tuples of the form
          (MAC, RSSI).
 
+.. method:: AbstractNIC.ipconfig('param')
+            AbstractNIC.ipconfig(param=value, ...)
+
+       Get or set interface-specific ip-configuration interface parameters.
+       Supported parameters are (availability subject to compile-time flags):
+
+       * ``dhcp4`` (``True/False``) obtain an IPv4 address, gateway and dns
+         server via DHCP. This method does not block and wait for an address
+         to be obtained. To check if an address was obtained, use the read-only
+         property ``has_dhcp4``.
+       * ``gw4`` Get/set the IPv4 default-gateway.
+       * ``dhcp6`` (``True/False``) obtain a DNS server via stateless DHCPv6.
+         Obtaining IP Addresses via DHCPv6 is currently not implemented.
+       * ``autoconf6`` (``True/False``) obtain a stateless IPv6 address via
+         the network prefix shared in router advertisements. To check if a
+         stateless address was obtained, use the read-only
+         property ``has_autoconf6``.
+       * ``addr4`` (e.g. ``192.168.0.4/24``) obtain the current IPv4 address
+         and network mask as ``(ip, subnet)``-tuple, regardless of how this
+         address was obtained. This method can be used to set a static IPv4
+         address either as ``(ip, subnet)``-tuple or in CIDR-notation.
+       * ``addr6`` (e.g. ``fe80::1234:5678``) obtain a list of current IPv6
+         addresses as ``(ip, state, preferred_lifetime, valid_lifetime)``-tuple.
+         This include link-local, slaac and static addresses.
+         ``preferred_lifetime`` and ``valid_lifetime`` represent the remaining
+         valid and preferred lifetime of each IPv6 address, in seconds.
+         ``state`` indicates the current state of the address:
+
+         * ``0x08`` - ``0x0f`` indicates the address is tentative, counting the
+           number of probes sent.
+         * ``0x10`` The address is deprecated (but still valid)
+         * ``0x30`` The address is preferred (and valid)
+         * ``0x40`` The address is duplicated and can not be used.
+
+       This method can be used to set a static IPv6
+       address.
+
 .. method:: AbstractNIC.ifconfig([(ip, subnet, gateway, dns)])
 
+       Deprecated, only non-lwip ports.
        Get/set IP-level network interface parameters: IP address, subnet mask,
        gateway and DNS server. When called with no arguments, this method returns
        a 4-tuple with the above information. To set the above values, pass a
@@ -194,6 +232,19 @@ The following are functions available in the network module.
     is raised.
 
     The default hostname is typically the name of the board.
+
+.. function:: ipconfig('param')
+              ipconfig(param=value, ...)
+
+       Get or set global ip-configuration parameters.
+       Supported parameters are (availability subject to compile-time flags):
+
+       * ``dns`` Get/set DNS server. This method can support both, IPv4 and
+         IPv6 addresses.
+       * ``prefer`` (``4/6``) Specify which address type to return, if a domain
+         name has both A and AAAA records. Note, that this does not clear the
+         local DNS cache, so that any previously obtained addresses might not
+         change.
 
 .. function:: phy_mode([mode])
 
