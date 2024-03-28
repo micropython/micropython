@@ -1,7 +1,14 @@
+# Test making HTTPS requests to sites that may require advanced ciphers.
+
 import sys
 import select
 import socket
 import ssl
+
+# Don't run if ssl doesn't support required certificates (eg axtls).
+if not hasattr(ssl, "CERT_REQUIRED"):
+    print("SKIP")
+    raise SystemExit
 
 
 def test_one(site, opts):
