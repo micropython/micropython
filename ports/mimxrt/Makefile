@@ -132,7 +132,6 @@ SRC_HAL_IMX_C += \
 	$(MCU_DIR)/drivers/fsl_lpi2c.c \
 	$(MCU_DIR)/drivers/fsl_lpspi.c \
 	$(MCU_DIR)/drivers/fsl_lpspi_edma.c \
-	$(MCU_DIR)/drivers/fsl_lpuart.c \
 	$(MCU_DIR)/drivers/fsl_pit.c \
 	$(MCU_DIR)/drivers/fsl_pwm.c \
 	$(MCU_DIR)/drivers/fsl_sai.c \
@@ -190,6 +189,7 @@ SRC_C += \
 	eth.c \
 	fatfs_port.c \
 	flash.c \
+	hal/fsl_lpuart.c \
 	hal/pwm_backport.c \
 	help.c \
 	led.c \
