@@ -1,5 +1,5 @@
 MicroPython \.\+ version
-Use \.\+
+Type "help()" for more information.
 >>> # REPL tests of GNU-ish readline navigation
 >>> # history buffer navigation
 >>> 1
